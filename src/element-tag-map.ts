@@ -1,4 +1,4 @@
-// Element tag map adapted TypeScript `lib.dom.d.ts`
+// Element tag map adapted from TypeScript (`lib.dom.d.ts`)
 // https://github.com/microsoft/TypeScript/blob/master/lib/lib.dom.d.ts#L19263
 const tag_map = {
   a: "HTMLAnchorElement",
