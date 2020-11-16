@@ -1,0 +1,61 @@
+{
+  "name": "sveld",
+  "version": "0.1.0-rc.0",
+  "license": "Apache-2.0",
+  "description": "Documentation generator for Svelte component libraries.",
+  "author": "Eric Liu (https://github.com/metonym)",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc -w",
+    "test": "run-p test:*",
+    "test:unit": "tsnd node_modules/tape/bin/tape tests/*.test.ts",
+    "test:svelte-check": "svelte-check --workspace tests/check",
+    "test:integration": "node tests/integration",
+    "format": "prettier --write '{src,tests}/**/*.ts'",
+    "prepack": "run-s build test"
+  },
+  "dependencies": {
+    "comment-parser": "^0.7.6",
+    "fs-extra": "^9.0.1",
+    "prettier": "^2.1.2"
+  },
+  "peerDependencies": {
+    "svelte": "^3.20.x"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^9.0.4",
+    "@types/node": "^14.14.7",
+    "@types/prettier": "^2.1.5",
+    "@types/tape": "^4.13.0",
+    "npm-run-all": "^4.1.5",
+    "rollup": "^2.33.2",
+    "svelte": "^3.29.7",
+    "svelte-check": "^1.1.12",
+    "tape": "^5.0.1",
+    "ts-node-dev": "^1.0.0",
+    "typescript": "^4.0.5"
+  },
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ibm/sveld.git"
+  },
+  "homepage": "https://github.com/ibm/sveld",
+  "bugs": "https://github.com/ibm/sveld/issues",
+  "keywords": [
+    "svelte",
+    "svelte component",
+    "documentation",
+    "docgen",
+    "typescript",
+    "definitions",
+    "JSDocs"
+  ],
+  "prettier": {
+    "printWidth": 120
+  }
+}

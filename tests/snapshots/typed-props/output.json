@@ -1,0 +1,43 @@
+{
+  "props": [
+    {
+      "name": "prop1",
+      "kind": "let",
+      "description": "prop1 description 1\nprop1 description 2",
+      "type": "string",
+      "isFunction": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "prop2",
+      "kind": "let",
+      "description": "prop2 description 1\nprop2 description 2",
+      "value": "null",
+      "isFunction": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "prop3",
+      "kind": "let",
+      "type": "4 | '4'",
+      "value": "4",
+      "isFunction": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "prop4",
+      "kind": "let",
+      "type": "\"red\" | \"blue\"",
+      "value": "\"red\"",
+      "isFunction": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "slots": [],
+  "events": [],
+  "typedefs": []
+}

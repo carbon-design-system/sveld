@@ -1,0 +1,38 @@
+{
+  "props": [
+    {
+      "name": "ref",
+      "kind": "let",
+      "type": "null | HTMLButtonElement | HTMLHeadingElement",
+      "isFunction": false,
+      "constant": false,
+      "reactive": true
+    },
+    {
+      "name": "ref2",
+      "kind": "let",
+      "type": "null | HTMLDivElement",
+      "isFunction": false,
+      "constant": false,
+      "reactive": true
+    },
+    {
+      "name": "propBool",
+      "kind": "let",
+      "type": "boolean",
+      "value": "false",
+      "isFunction": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "slot_props": "{}"
+    }
+  ],
+  "events": [],
+  "typedefs": []
+}

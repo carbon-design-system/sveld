@@ -1,0 +1,67 @@
+{
+  "props": [
+    {
+      "name": "propBool",
+      "kind": "let",
+      "type": "boolean",
+      "value": "true",
+      "isFunction": false,
+      "constant": false,
+      "reactive": true
+    },
+    {
+      "name": "propString",
+      "kind": "let",
+      "type": "string",
+      "value": "\"\"",
+      "isFunction": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "name",
+      "kind": "let",
+      "type": "string",
+      "isFunction": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "id",
+      "kind": "let",
+      "type": "string",
+      "value": "\"\" + Math.random().toString(36)",
+      "isFunction": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "propConst",
+      "kind": "const",
+      "type": "{ [key: string]: boolean; }",
+      "value": "{ [\"1\"]: true }",
+      "isFunction": false,
+      "constant": true,
+      "reactive": false
+    },
+    {
+      "name": "fn",
+      "kind": "function",
+      "type": "() => any",
+      "value": "() => {     localBool = !localBool;   }",
+      "isFunction": true,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "fallback": "{name}",
+      "slot_props": "{}"
+    }
+  ],
+  "events": [],
+  "typedefs": []
+}

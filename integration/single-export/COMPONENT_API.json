@@ -1,0 +1,40 @@
+{
+  "total": 1,
+  "components": [
+    {
+      "moduleName": "Button",
+      "filePath": "/src/Button.svelte",
+      "props": [
+        {
+          "name": "type",
+          "kind": "let",
+          "type": "string",
+          "value": "\"button\"",
+          "isFunction": false,
+          "constant": false,
+          "reactive": false
+        },
+        {
+          "name": "primary",
+          "kind": "let",
+          "type": "boolean",
+          "value": "false",
+          "isFunction": false,
+          "constant": false,
+          "reactive": false
+        }
+      ],
+      "slots": [
+        {
+          "name": "__default__",
+          "default": true,
+          "fallback": "Click me",
+          "slot_props": "{}"
+        }
+      ],
+      "events": [{ "type": "forwarded", "name": "click", "element": "button" }],
+      "typedefs": [],
+      "rest_props": { "type": "Element", "name": "button" }
+    }
+  ]
+}

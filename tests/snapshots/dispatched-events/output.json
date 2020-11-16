@@ -1,0 +1,21 @@
+{
+  "props": [],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "slot_props": "{}"
+    }
+  ],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "hover"
+    },
+    {
+      "type": "dispatched",
+      "name": "destroy"
+    }
+  ],
+  "typedefs": []
+}

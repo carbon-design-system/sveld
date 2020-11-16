@@ -1,0 +1,33 @@
+{
+  "props": [],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "slot_props": "{}"
+    }
+  ],
+  "events": [
+    {
+      "type": "forwarded",
+      "name": "click",
+      "element": "button"
+    },
+    {
+      "type": "forwarded",
+      "name": "focus",
+      "element": "button"
+    },
+    {
+      "type": "forwarded",
+      "name": "blur",
+      "element": "button"
+    },
+    {
+      "type": "forwarded",
+      "name": "mouseover",
+      "element": "h1"
+    }
+  ],
+  "typedefs": []
+}

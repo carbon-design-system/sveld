@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "outDir": "lib",
+    "skipLibCheck": true,
+    "strict": true,
+  },
+  "include": ["src"],
+}

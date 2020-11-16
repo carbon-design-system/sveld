@@ -1,0 +1,10 @@
+{
+  "props": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "rest_props": {
+    "type": "Element",
+    "name": "h1"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "props": [
+    {
+      "name": "ref",
+      "kind": "let",
+      "type": "null | HTMLButtonElement",
+      "isFunction": false,
+      "constant": false,
+      "reactive": true
+    }
+  ],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "slot_props": "{}"
+    }
+  ],
+  "events": [],
+  "typedefs": []
+}

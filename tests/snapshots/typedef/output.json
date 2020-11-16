@@ -1,0 +1,37 @@
+{
+  "props": [
+    {
+      "name": "id",
+      "kind": "let",
+      "type": "string",
+      "value": "\"id-\" + Math.random().toString(36)",
+      "isFunction": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "prop1",
+      "kind": "let",
+      "type": "MyTypedef",
+      "value": "{ [\"1\"]: true }",
+      "isFunction": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "slot_props": "{ prop1: MyTypedef }"
+    }
+  ],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{ [key: string]: boolean; }",
+      "name": "MyTypedef",
+      "ts": "interface MyTypedef { [key: string]: boolean; }"
+    }
+  ]
+}
