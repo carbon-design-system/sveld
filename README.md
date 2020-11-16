@@ -1,5 +1,8 @@
 # sveld
 
+[![NPM][npm]][npm-url]
+[![Build][build]][build-badge]
+
 > Documentation generator for Svelte component libraries.
 
 `sveld` is a Rollup plugin that generates TypeScript definitions for Svelte component libraries. It can also generate component documentation in Markdown and JSON output formats. Component documentation (e.g. prop types, descriptions, slot signatures) can be augmented through JSDoc annotations, a markup language for JavaScript code.
@@ -253,3 +256,8 @@ Refer to the [contributing guidelines](CONTRIBUTING.md).
 ## License
 
 [Apache-2.0](LICENSE)
+
+[npm]: https://img.shields.io/npm/v/sveld.svg
+[npm-url]: https://npmjs.com/package/sveld
+[build]: https://travis-ci.com/ibm/sveld.svg?branch=main
+[build-badge]: https://travis-ci.com/ibm/sveld
