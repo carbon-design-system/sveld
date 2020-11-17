@@ -3,7 +3,7 @@
 [![NPM][npm]][npm-url]
 [![Build][build]][build-badge]
 
-`sveld` is a documentation generator for Svelte component libraries. It can also generate component documentation in Markdown and JSON output formats. Component documentation (e.g. prop types, descriptions, slot signatures) can be augmented through JSDoc annotations, a markup language for JavaScript code.
+`sveld` is a documentation generator for Svelte component libraries. It uses the Svelte compiler to generate TypeScript definitions as well as component documentation in Markdown and JSON output formats. Component documentation (e.g. prop types, descriptions, slot signatures) can be augmented through JSDoc annotations, a markup language for JavaScript code.
 
 The purpose of this project is to enhance the end user experience of consuming third party Svelte components and libraries with minimal documentation effort required by the author. For example, TypeScript definitions may be used during development via intelligent code completion in Integrated Development Environments (IDE) like VSCode.
 
