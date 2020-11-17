@@ -1,6 +1,6 @@
 {
   "name": "sveld",
-  "version": "0.1.0-rc.1",
+  "version": "0.1.0-rc.2",
   "license": "Apache-2.0",
   "description": "Documentation generator for Svelte component libraries.",
   "author": "Eric Liu (https://github.com/metonym)",
@@ -43,7 +43,8 @@
     "sveld": "./cli.js"
   },
   "files": [
-    "lib"
+    "lib",
+    "cli.js"
   ],
   "repository": {
     "type": "git",
