@@ -6,7 +6,7 @@ import writeJson, { WriteJsonOptions } from "./writer/writer-json";
 import writeMarkdown, { WriteMarkdownOptions } from "./writer/writer-markdown";
 import ComponentParser, { ParsedComponent } from "./ComponentParser";
 
-interface PluginSveldOptions {
+export interface PluginSveldOptions {
   types?: boolean;
   typesOptions?: WriteTsDefinitionsOptions;
   json?: boolean;
@@ -25,6 +25,27 @@ export interface ComponentDocApi extends ParsedComponent {
 export type ComponentDocs = Map<ComponentModuleName, ComponentDocApi>;
 
 export default function pluginSveld(opts?: PluginSveldOptions) {
+  let result: GenerateBundleResult;
+
+  return {
+    name: "plugin-sveld",
+    async generateBundle({}, bundle: Rollup.OutputBundle) {
+      result = await generateBundle(bundle);
+    },
+    writeBundle() {
+      writeOutput(result, opts);
+    },
+  };
+}
+
+interface GenerateBundleResult {
+  exports: string[];
+  rendered_exports: string[];
+  default_export: { moduleName: null | string; only: boolean };
+  components: ComponentDocs;
+}
+
+export async function generateBundle(bundle: Rollup.OutputBundle) {
   let exports: string[] = [];
   let rendered_exports: string[] = [];
   let default_export: { moduleName: null | string; only: boolean } = {
@@ -35,74 +56,77 @@ export default function pluginSveld(opts?: PluginSveldOptions) {
 
   const parser = new ComponentParser();
 
-  return {
-    name: "plugin-sveld",
-    async generateBundle({}, bundle: Rollup.OutputBundle) {
-      for (const filename in bundle) {
-        const chunkOrAsset = bundle[filename];
+  for (const filename in bundle) {
+    const chunkOrAsset = bundle[filename];
 
-        if (chunkOrAsset.type !== "asset" && chunkOrAsset.isEntry) {
-          exports = chunkOrAsset.exports;
+    if (chunkOrAsset.type !== "asset" && chunkOrAsset.isEntry) {
+      exports = chunkOrAsset.exports;
 
-          for (const filePath in chunkOrAsset.modules) {
-            // options.input assumes the Rollup entry point is `index.js`
-            if (filePath.endsWith("index.js")) {
-              rendered_exports = chunkOrAsset.modules[filePath].renderedExports;
-            }
+      for (const filePath in chunkOrAsset.modules) {
+        // options.input assumes the Rollup entry point is `index.js`
+        if (filePath.endsWith("index.js")) {
+          rendered_exports = chunkOrAsset.modules[filePath].renderedExports;
+        }
 
-            if (!/node_modules/.test(filePath)) {
-              const parsed = path.parse(filePath);
-              const moduleName = parsed.name;
-              const single_default_export = exports.length === 1 && exports[0] === "default";
+        if (!/node_modules/.test(filePath)) {
+          const parsed = path.parse(filePath);
+          const moduleName = parsed.name;
+          const single_default_export = exports.length === 1 && exports[0] === "default";
 
-              if (exports.includes("default")) {
-                default_export.moduleName = moduleName;
-                default_export.only = single_default_export;
-              }
+          if (exports.includes("default")) {
+            default_export.moduleName = moduleName;
+            default_export.only = single_default_export;
+          }
 
-              if (parsed.ext === ".svelte" && (exports.includes(moduleName) || single_default_export)) {
-                const source = await fs.readFile(filePath, "utf-8");
+          if (parsed.ext === ".svelte" && (exports.includes(moduleName) || single_default_export)) {
+            const source = await fs.readFile(filePath, "utf-8");
 
-                components.set(moduleName, {
-                  moduleName,
-                  filePath,
-                  ...parser.parseSvelteComponent(source, {
-                    moduleName,
-                    filePath,
-                  }),
-                });
-              }
-            }
+            components.set(moduleName, {
+              moduleName,
+              filePath,
+              ...parser.parseSvelteComponent(source, {
+                moduleName,
+                filePath,
+              }),
+            });
           }
         }
       }
-    },
-    writeBundle() {
-      if (opts?.types !== false) {
-        writeTsDefinitions(components, {
-          inputDir: "src",
-          outDir: "types",
-          preamble: "",
-          ...opts?.typesOptions,
-          exports,
-          default_export,
-          rendered_exports,
-        });
-      }
+    }
+  }
 
-      if (opts?.json) {
-        writeJson(components, {
-          outFile: "COMPONENT_API.json",
-          ...opts?.jsonOptions,
-        });
-      }
-
-      if (opts?.markdown) {
-        writeMarkdown(components, {
-          outFile: "COMPONENT_INDEX.md",
-          ...opts?.markdownOptions,
-        });
-      }
-    },
+  return {
+    exports,
+    rendered_exports,
+    default_export,
+    components,
   };
+}
+
+export function writeOutput(result: GenerateBundleResult, opts?: PluginSveldOptions) {
+  if (opts?.types !== false) {
+    writeTsDefinitions(result.components, {
+      inputDir: "src",
+      outDir: "types",
+      preamble: "",
+      ...opts?.typesOptions,
+      exports: result.exports,
+      default_export: result.default_export,
+      rendered_exports: result.rendered_exports,
+    });
+  }
+
+  if (opts?.json) {
+    writeJson(result.components, {
+      outFile: "COMPONENT_API.json",
+      ...opts?.jsonOptions,
+    });
+  }
+
+  if (opts?.markdown) {
+    writeMarkdown(result.components, {
+      outFile: "COMPONENT_INDEX.md",
+      ...opts?.markdownOptions,
+    });
+  }
 }

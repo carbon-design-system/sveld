@@ -6,6 +6,7 @@
   "module": "./lib/index.mjs",
   "types": "./types/index.d.ts",
   "scripts": {
+    "sveld": "node ../../cli",
     "build": "rollup -c"
   },
   "devDependencies": {

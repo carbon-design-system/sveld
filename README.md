@@ -3,9 +3,7 @@
 [![NPM][npm]][npm-url]
 [![Build][build]][build-badge]
 
-> Documentation generator for Svelte component libraries.
-
-`sveld` is a Rollup plugin that generates TypeScript definitions for Svelte component libraries. It can also generate component documentation in Markdown and JSON output formats. Component documentation (e.g. prop types, descriptions, slot signatures) can be augmented through JSDoc annotations, a markup language for JavaScript code.
+`sveld` is a documentation generator for Svelte component libraries. It uses the Svelte compiler to generate TypeScript definitions as well as component documentation in Markdown and JSON output formats. Component documentation (e.g. prop types, descriptions, slot signatures) can be augmented through JSDoc annotations, a markup language for JavaScript code.
 
 The purpose of this project is to enhance the end user experience of consuming third party Svelte components and libraries with minimal documentation effort required by the author. For example, TypeScript definitions may be used during development via intelligent code completion in Integrated Development Environments (IDE) like VSCode.
 
@@ -108,6 +106,7 @@ export default class Button {
 - [Usage](#usage)
   - [Installation](#installation)
   - [Set-up with Rollup](#set-up-with-rollup)
+  - [CLI](#cli)
   - [Publishing to NPM](#publishing-to-npm)
 - [Available Options](#available-options)
 - [API](#api)
@@ -167,6 +166,20 @@ The [integration](integration) folder contains example set-ups:
 - [single-export](integration/single-export): library that exports one component
 - [multi-export](multi-export): multi-component library without JSDoc annotations (types are inferred)
 - [multi-export-typed](multi-export-typed): multi-component library with JSDoc annotations
+
+### CLI
+
+The CLI wraps the Rollup plugin and expects the entry file to be `src/index.js`. By default, only TypeScript definitions are generated.
+
+```sh
+sveld
+```
+
+Append `--json` or `--markdown` flags to generate documentation in JSON/Markdown formats, respectively.
+
+```sh
+sveld --json --markdown
+```
 
 ### Publishing to NPM
 
