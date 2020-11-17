@@ -1,6 +1,6 @@
 {
   "name": "sveld",
-  "version": "0.1.0-rc.0",
+  "version": "0.1.0-rc.1",
   "license": "Apache-2.0",
   "description": "Documentation generator for Svelte component libraries.",
   "author": "Eric Liu (https://github.com/metonym)",
