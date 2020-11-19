@@ -1,0 +1,29 @@
+{
+  "props": [
+    {
+      "name": "edit",
+      "kind": "let",
+      "type": "boolean",
+      "value": "false",
+      "isFunction": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "heading",
+      "kind": "let",
+      "type": "boolean",
+      "value": "false",
+      "isFunction": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "rest_props": {
+    "type": "Element",
+    "name": "h1 | span"
+  }
+}

@@ -51,8 +51,13 @@ function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleN
   let prop_def = EMPTY_STR;
 
   if (def.rest_props?.type === "Element") {
+    const extend_tag_map = def.rest_props.name
+      .split("|")
+      .map((name) => `svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["${name.trim()}"]>`)
+      .join(",");
+
     prop_def = `
-    export interface ${props_name} extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["${def.rest_props.name}"]> {
+    export interface ${props_name} extends ${extend_tag_map} {
       ${props}
     }
   `;

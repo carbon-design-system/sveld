@@ -215,14 +215,14 @@ export default class ComponentParser {
 
   private parseCustomTypes() {
     commentParser(this.source!).forEach(({ tags }) => {
-      tags.forEach(({ tag, type: tagType, name, description, ...rest }) => {
+      tags.forEach(({ tag, type: tagType, name, description }) => {
         const type = this.aliasType(tagType);
 
         switch (tag) {
           case "restProps":
             this.rest_props = {
               type: "Element",
-              name,
+              name: type,
             };
             break;
           case "slot":
