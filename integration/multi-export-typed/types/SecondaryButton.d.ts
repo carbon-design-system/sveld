@@ -1,7 +1,7 @@
 /// <reference types="svelte" />
 import { ButtonProps } from "./Button";
 
-export interface SecondaryButtonProps extends ButtonProps, svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["button"]> {}
+export interface SecondaryButtonProps extends ButtonProps {}
 
 export default class SecondaryButton {
   $$prop_def: SecondaryButtonProps;

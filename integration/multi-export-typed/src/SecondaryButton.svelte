@@ -1,7 +1,9 @@
 <script>
   /** @extends {"./Button"} ButtonProps */
+
+  import Button from "./Button.svelte";
 </script>
 
-<button {...$$restProps} on:click>
+<Button {...$$restProps} on:click>
   <slot>Click me</slot>
-</button>
+</Button>

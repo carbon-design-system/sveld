@@ -56,16 +56,16 @@ function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleN
       .map((name) => `svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["${name.trim()}"]>`)
       .join(",");
 
-    const _extends = def.extends !== undefined ? `${def.extends.interface}, ` : "";
-
     prop_def = `
-    export interface ${props_name} extends ${_extends}${extend_tag_map} {
+    export interface ${props_name} extends ${
+      def.extends !== undefined ? `${def.extends.interface}, ` : ""
+    }${extend_tag_map} {
       ${props}
     }
   `;
   } else {
     prop_def = `
-    export interface ${props_name} {
+    export interface ${props_name} ${def.extends !== undefined ? `extends ${def.extends.interface}` : ""} {
       ${props}
     }
   `;

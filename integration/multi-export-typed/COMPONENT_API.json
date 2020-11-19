@@ -49,9 +49,9 @@
           "slot_props": "{}"
         }
       ],
-      "events": [{ "type": "forwarded", "name": "click", "element": "button" }],
+      "events": [{ "type": "forwarded", "name": "click", "element": "Button" }],
       "typedefs": [],
-      "rest_props": { "type": "Element", "name": "button" },
+      "rest_props": { "type": "InlineComponent", "name": "Button" },
       "extends": { "interface": "ButtonProps", "import": "\"./Button\"" }
     },
     {
