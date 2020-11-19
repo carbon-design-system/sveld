@@ -1,8 +1,10 @@
 import * as path from "path";
+import * as fs from "fs";
 import { ComponentDocApi, ComponentDocs } from "../rollup-plugin";
 import Writer from "./Writer";
 
 export interface WriteJsonOptions {
+  input: string;
   outFile: string;
 }
 
@@ -12,11 +14,12 @@ interface JsonOutput {
 }
 
 export default async function writeJson(components: ComponentDocs, options: WriteJsonOptions) {
+  const file_path = fs.lstatSync(options.input).isDirectory() ? options.input : path.dirname(options.input);
   const output: JsonOutput = {
     total: components.size,
     components: Array.from(components, ([moduleName, component]) => ({
       ...component,
-      filePath: component.filePath.replace(process.cwd(), ""),
+      filePath: path.join("/", file_path, component.filePath),
     })),
   };
 
