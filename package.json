@@ -2,7 +2,7 @@
   "name": "sveld",
   "version": "0.1.0-rc.5",
   "license": "Apache-2.0",
-  "description": "Documentation generator for Svelte component libraries.",
+  "description": "Generate TypeScript definitions for your Svelte components.",
   "author": "Eric Liu (https://github.com/metonym)",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",

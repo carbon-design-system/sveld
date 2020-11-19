@@ -3,18 +3,19 @@
 [![NPM][npm]][npm-url]
 [![Build][build]][build-badge]
 
-`sveld` is a documentation generator for Svelte component libraries. It uses the Svelte compiler to generate TypeScript definitions as well as component documentation in Markdown and JSON output formats. Component documentation (e.g. prop types, descriptions, slot signatures) can be augmented through JSDoc annotations, a markup language for JavaScript code.
+`sveld` generates TypeScript definitions for Svelte components. It uses the Svelte compiler to statically analyze a Svelte component for props, events, slots and more. Prop types and signatures can be augmented using JSDoc notation. This library can also output component documentation in Markdown and JSON output formats.
 
-The purpose of this project is to enhance the end user experience of consuming third party Svelte components and libraries with minimal documentation effort required by the author. For example, TypeScript definitions may be used during development via intelligent code completion in Integrated Development Environments (IDE) like VSCode.
+The purpose of this project is to make third party Svelte components and libraries compatible with the Svelte Language Server and TypeScript with minimal effort by the author. For example, TypeScript definitions may be used during development via intelligent code completion in Integrated Development Environments (IDE) like VSCode.
 
 The core of this library is extracted from [carbon-components-svelte](https://github.com/IBM/carbon-components-svelte).
 
 ---
 
-Say that you have a basic Button component:
+Given a Svelte file, sveld can infer basic prop types to generate TypeScript definitions compatible with the [Svelte Language Server](https://github.com/sveltejs/language-tools):
+
+**Button.svelte**
 
 ```svelte
-<!-- Button.svelte -->
 <script>
   export let type = "button";
   export let primary = false;
@@ -25,10 +26,9 @@ Say that you have a basic Button component:
 </button>
 ```
 
-sveld can statically analyze the component and infer basic prop types to generate TypeScript definitions compatible with the [Svelte Language Server](https://github.com/sveltejs/language-tools):
+**Button.d.ts**
 
 ```ts
-// Button.d.ts
 /// <reference types="svelte" />
 
 export interface ButtonProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["button"]> {
@@ -54,9 +54,9 @@ export default class Button {
 }
 ```
 
-Sometimes, inferred prop types are not enough.
+Sometimes, inferring prop types is insufficient.
 
-You can augment the definitions using [JSDoc](https://jsdoc.app/) annotations.
+Prop/event/slot types and signatures can be augmented using [JSDoc](https://jsdoc.app/) notations.
 
 ```js
 /** @type {"button" | "submit" | "reset"} */
@@ -71,7 +71,6 @@ export let primary = false;
 The accompanying JSDoc annotations would generate the following:
 
 ```ts
-// Button.d.ts
 /// <reference types="svelte" />
 
 export interface ButtonProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["button"]> {
@@ -172,13 +171,13 @@ The [integration](integration) folder contains example set-ups:
 The CLI wraps the Rollup plugin and expects the entry file to be `src/index.js`. By default, only TypeScript definitions are generated.
 
 ```sh
-sveld
+npx sveld
 ```
 
 Append `--json` or `--markdown` flags to generate documentation in JSON/Markdown formats, respectively.
 
 ```sh
-sveld --json --markdown
+npx sveld --json --markdown
 ```
 
 ### Publishing to NPM
