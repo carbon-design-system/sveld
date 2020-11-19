@@ -1,8 +1,20 @@
 import * as Rollup from "rollup";
+import * as fs from "fs";
 import * as path from "path";
 import * as svelte from "rollup-plugin-svelte";
 import resolve from "@rollup/plugin-node-resolve";
 import { generateBundle, PluginSveldOptions, writeOutput } from "./rollup-plugin";
+
+function getSvelteEntry() {
+  try {
+    const pkg_path = path.join(process.cwd(), "package.json");
+    const pkg = JSON.parse(fs.readFileSync(pkg_path, "utf-8"));
+    return pkg.svelte;
+  } catch (e) {
+    process.stderr.write(e + "\n");
+    return null;
+  }
+}
 
 export async function cli(process: NodeJS.Process) {
   const options: PluginSveldOptions = process.argv
@@ -14,8 +26,9 @@ export async function cli(process: NodeJS.Process) {
     })
     .reduce((a, c) => ({ ...a, ...c }), {});
 
+  const input = getSvelteEntry() || "src/index.js";
   const rollup_bundle = await Rollup.rollup({
-    input: path.join(process.cwd(), "src/index.js"),
+    input,
     plugins: [
       // @ts-ignore
       svelte(),
@@ -26,7 +39,7 @@ export async function cli(process: NodeJS.Process) {
   const { output } = await rollup_bundle.generate({});
 
   // @ts-ignore
-  const result = await generateBundle(output);
+  const result = await generateBundle(output, input);
 
-  writeOutput(result, options);
+  writeOutput(result, options, input);
 }

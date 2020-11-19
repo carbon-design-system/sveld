@@ -2,7 +2,7 @@
   "name": "single-component",
   "version": "0.0.1",
   "private": true,
-  "svelte": "./src/index.js",
+  "svelte": "./component/index.js",
   "module": "./lib/index.mjs",
   "types": "./types/index.d.ts",
   "scripts": {

@@ -121,7 +121,7 @@ export function writeTsDefinition(component: ComponentDocApi) {
 }
 
 function createExport(file_path: string, { moduleName, isDefault }: { moduleName: string; isDefault: boolean }) {
-  return `export { default as ${isDefault ? "default" : moduleName} } from "./${file_path}";`;
+  return `export { default as ${isDefault ? "default" : moduleName} } from "${file_path}";`;
 }
 
 export interface WriteTsDefinitionsOptions {
@@ -134,7 +134,6 @@ export interface WriteTsDefinitionsOptions {
 }
 
 export default async function writeTsDefinitions(components: ComponentDocs, options: WriteTsDefinitionsOptions) {
-  const base_path = path.join(process.cwd(), options.inputDir);
   const ts_folder_path = path.join(process.cwd(), options.outDir);
   const ts_base_path = path.join(ts_folder_path, "index.d.ts");
   const writer = new Writer({ parser: "typescript", printWidth: 120 });
@@ -143,36 +142,24 @@ export default async function writeTsDefinitions(components: ComponentDocs, opti
 
   for await (const [moduleName, component] of components) {
     const ts_filepath = component.filePath.replace(".svelte", ".d.ts");
-    const write_ts_filepath = path.join(ts_folder_path, ts_filepath.replace(base_path, ""));
-    const write_ts_filename = path.relative(base_path, ts_filepath.replace(".d.ts", ""));
+    const ts_path = component.filePath.replace(".svelte", "");
+    const export_path = ts_path.startsWith("./") ? ts_path : "./" + ts_path;
 
     if (options.default_export.moduleName == null) {
-      indexDTs += createExport(write_ts_filename, {
-        moduleName,
-        isDefault: false,
-      });
+      indexDTs += createExport(export_path, { moduleName, isDefault: false });
     } else {
       if (options.default_export.only) {
-        indexDTs += createExport(write_ts_filename, {
-          moduleName,
-          isDefault: true,
-        });
+        indexDTs += createExport(export_path, { moduleName, isDefault: true });
       } else {
-        indexDTs += createExport(write_ts_filename, {
-          moduleName,
-          isDefault: false,
-        });
+        indexDTs += createExport(export_path, { moduleName, isDefault: false });
 
         if (options.rendered_exports.includes(moduleName)) {
-          indexDTs += createExport(write_ts_filename, {
-            moduleName,
-            isDefault: true,
-          });
+          indexDTs += createExport(export_path, { moduleName, isDefault: true });
         }
       }
     }
 
-    await writer.write(write_ts_filepath, writeTsDefinition(component));
+    await writer.write(path.join(ts_folder_path, ts_filepath), writeTsDefinition(component));
   }
 
   await writer.write(ts_base_path, indexDTs);

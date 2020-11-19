@@ -26,14 +26,20 @@ export type ComponentDocs = Map<ComponentModuleName, ComponentDocApi>;
 
 export default function pluginSveld(opts?: PluginSveldOptions) {
   let result: GenerateBundleResult;
+  let input: string;
 
   return {
     name: "plugin-sveld",
+    buildStart(options: Rollup.InputOptions) {
+      if (options.input) {
+        input = Array.isArray(options.input) ? options.input[0] : (options.input as string);
+      }
+    },
     async generateBundle({}, bundle: Rollup.OutputBundle) {
-      result = await generateBundle(bundle);
+      result = await generateBundle(bundle, input);
     },
     writeBundle() {
-      writeOutput(result, opts);
+      writeOutput(result, opts || {}, input);
     },
   };
 }
@@ -45,7 +51,7 @@ interface GenerateBundleResult {
   components: ComponentDocs;
 }
 
-export async function generateBundle(bundle: Rollup.OutputBundle) {
+export async function generateBundle(bundle: Rollup.OutputBundle, input: string) {
   let exports: string[] = [];
   let rendered_exports: string[] = [];
   let default_export: { moduleName: null | string; only: boolean } = {
@@ -80,10 +86,9 @@ export async function generateBundle(bundle: Rollup.OutputBundle) {
 
           if (parsed.ext === ".svelte" && (exports.includes(moduleName) || single_default_export)) {
             const source = await fs.readFile(filePath, "utf-8");
-
             components.set(moduleName, {
               moduleName,
-              filePath,
+              filePath: path.relative(path.join(process.cwd(), input), filePath).replace(/\..\//g, "./"),
               ...parser.parseSvelteComponent(source, {
                 moduleName,
                 filePath,
@@ -103,7 +108,7 @@ export async function generateBundle(bundle: Rollup.OutputBundle) {
   };
 }
 
-export function writeOutput(result: GenerateBundleResult, opts?: PluginSveldOptions) {
+export function writeOutput(result: GenerateBundleResult, opts: PluginSveldOptions, input: string) {
   if (opts?.types !== false) {
     writeTsDefinitions(result.components, {
       inputDir: "src",
@@ -120,6 +125,7 @@ export function writeOutput(result: GenerateBundleResult, opts?: PluginSveldOpti
     writeJson(result.components, {
       outFile: "COMPONENT_API.json",
       ...opts?.jsonOptions,
+      input,
     });
   }
 

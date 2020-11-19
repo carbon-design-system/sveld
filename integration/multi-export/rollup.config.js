@@ -6,7 +6,7 @@ import sveld from "sveld";
 const production = !process.env.ROLLUP_WATCH;
 
 export default {
-  input: "src",
+  input: "src/index.js",
   output: { format: "es", file: pkg.module },
   plugins: [
     svelte(),
@@ -17,10 +17,7 @@ export default {
         markdownOptions: {
           onAppend: (type, document, components) => {
             if (type === "h1")
-              document.append(
-                "quote",
-                `${components.size} components exported from ${pkg.name}@${pkg.version}.`
-              );
+              document.append("quote", `${components.size} components exported from ${pkg.name}@${pkg.version}.`);
           },
         },
         json: true,
