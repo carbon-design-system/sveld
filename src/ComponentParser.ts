@@ -195,7 +195,8 @@ export default class ComponentParser {
     }
   }
 
-  private addDispatchedEvent(name: string, detail?: string) {
+  private addDispatchedEvent(name?: string, detail?: string) {
+    if (name === undefined) return;
     if (this.events.has(name)) {
       const existing_event = this.events.get(name) as DispatchedEvent;
 

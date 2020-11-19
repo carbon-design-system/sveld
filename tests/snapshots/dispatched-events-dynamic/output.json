@@ -1,0 +1,12 @@
+{
+  "props": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "KEY",
+      "detail": "{key: string;}"
+    }
+  ],
+  "typedefs": []
+}
