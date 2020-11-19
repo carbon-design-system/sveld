@@ -24,7 +24,7 @@ function addCommentLine(value: any, returnValue?: any) {
   return `* ${returnValue || value}\n`;
 }
 
-function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleName">) {
+function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleName" | "extends">) {
   const props = def.props
     .map((prop) => {
       const prop_comments = [
@@ -56,8 +56,10 @@ function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleN
       .map((name) => `svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["${name.trim()}"]>`)
       .join(",");
 
+    const _extends = def.extends !== undefined ? `${def.extends.interface}, ` : "";
+
     prop_def = `
-    export interface ${props_name} extends ${extend_tag_map} {
+    export interface ${props_name} extends ${_extends}${extend_tag_map} {
       ${props}
     }
   `;
@@ -104,17 +106,23 @@ function genEventDef(def: Pick<ComponentDocApi, "events">) {
   `;
 }
 
+function genImports(def: Pick<ComponentDocApi, "extends">) {
+  if (def.extends === undefined) return "";
+  return `import { ${def.extends.interface} } from ${def.extends.import};`;
+}
+
 export function writeTsDefinition(component: ComponentDocApi) {
-  const { moduleName, typedefs, props, slots, events, rest_props } = component;
+  const { moduleName, typedefs, props, slots, events, rest_props, extends: _extends } = component;
   const { props_name, prop_def } = genPropDef({
     moduleName,
     props,
     rest_props,
+    extends: _extends,
   });
 
   return `
   /// <reference types="svelte" />
-
+  ${genImports({ extends: _extends })}
   ${getTypeDefs({ typedefs })}
   ${prop_def}
 

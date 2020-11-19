@@ -91,6 +91,11 @@ interface ComponentElement {
 
 type RestProps = undefined | ComponentInlineElement | ComponentElement;
 
+interface Extends {
+  interface: string;
+  import: string;
+}
+
 interface ComponentPropBindings {
   elements: string[];
 }
@@ -101,6 +106,7 @@ export interface ParsedComponent {
   events: ComponentEvent[];
   typedefs: TypeDef[];
   rest_props: RestProps;
+  extends?: Extends;
 }
 
 export default class ComponentParser {
@@ -108,6 +114,7 @@ export default class ComponentParser {
   private source?: string;
   private compiled?: CompiledSvelteCode;
   private rest_props?: RestProps;
+  private extends?: Extends;
   private readonly reactive_vars: Set<string> = new Set();
   private readonly props: Map<ComponentPropName, ComponentProp> = new Map();
   private readonly slots: Map<ComponentSlotName, ComponentSlot> = new Map();
@@ -219,6 +226,12 @@ export default class ComponentParser {
         const type = this.aliasType(tagType);
 
         switch (tag) {
+          case "extends":
+            this.extends = {
+              interface: name,
+              import: type,
+            };
+            break;
           case "restProps":
             this.rest_props = {
               type: "Element",
@@ -248,6 +261,7 @@ export default class ComponentParser {
     this.source = undefined;
     this.compiled = undefined;
     this.rest_props = undefined;
+    this.extends = undefined;
     this.reactive_vars.clear();
     this.props.clear();
     this.slots.clear();
@@ -498,6 +512,7 @@ export default class ComponentParser {
       events: ComponentParser.mapToArray(this.events),
       typedefs: ComponentParser.mapToArray(this.typedefs),
       rest_props: this.rest_props,
+      extends: this.extends,
     };
   }
 }

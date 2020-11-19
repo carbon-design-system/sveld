@@ -1,12 +1,13 @@
 # Component Index
 
-> 3 components exported from multi-export-typed@0.0.1.
+> 4 components exported from multi-export-typed@0.0.1.
 
 ## Components
 
 - [`Button`](#button)
 - [`Link`](#link)
 - [`Quote`](#quote)
+- [`SecondaryButton`](#secondarybutton)
 
 ---
 
@@ -67,3 +68,21 @@ None.
 ### Events
 
 None.
+
+## `SecondaryButton`
+
+### Props
+
+None.
+
+### Slots
+
+| Slot name | Default | Props | Fallback              |
+| :-------- | :------ | :---- | :-------------------- |
+| --        | Yes     | --    | <code>Click me</code> |
+
+### Events
+
+| Event name | Type      | Detail |
+| :--------- | :-------- | :----- |
+| click      | forwarded | --     |

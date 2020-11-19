@@ -1,5 +1,5 @@
 {
-  "total": 3,
+  "total": 4,
   "components": [
     {
       "moduleName": "Button",
@@ -36,6 +36,23 @@
       "events": [{ "type": "forwarded", "name": "click", "element": "button" }],
       "typedefs": [],
       "rest_props": { "type": "Element", "name": "button" }
+    },
+    {
+      "moduleName": "SecondaryButton",
+      "filePath": "/src/SecondaryButton.svelte",
+      "props": [],
+      "slots": [
+        {
+          "name": "__default__",
+          "default": true,
+          "fallback": "Click me",
+          "slot_props": "{}"
+        }
+      ],
+      "events": [{ "type": "forwarded", "name": "click", "element": "button" }],
+      "typedefs": [],
+      "rest_props": { "type": "Element", "name": "button" },
+      "extends": { "interface": "ButtonProps", "import": "\"./Button\"" }
     },
     {
       "moduleName": "Link",
