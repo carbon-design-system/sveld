@@ -116,7 +116,7 @@ export default class Button {
 
 sveld uses the Svelte compiler to statically analyze all Svelte components exported from a library to generate documentation that is useful for the end user.
 
-Extracted component documentation:
+Extracted metadata:
 
 - exported props
 - slots
@@ -149,7 +149,7 @@ import resolve from "@rollup/plugin-node-resolve";
 import sveld from "sveld";
 
 export default {
-  input: "src/index.js", // the input file must be named `index.js`
+  input: "src/index.js",
   output: {
     format: "es",
     file: "lib/index.mjs",
@@ -168,7 +168,7 @@ The [integration](integration) folder contains example set-ups:
 
 ### CLI
 
-The CLI wraps the Rollup plugin and expects the entry file to be `src/index.js`. By default, only TypeScript definitions are generated.
+The CLI wraps the Rollup plugin and uses the `"svelte"` field defined in your `package.json` as the entry point.
 
 ```sh
 npx sveld
@@ -269,7 +269,7 @@ Refer to the [contributing guidelines](CONTRIBUTING.md).
 
 [Apache-2.0](LICENSE)
 
-[npm]: https://img.shields.io/npm/v/sveld.svg
-[npm-url]: https://npmjs.com/package/sveld?color=%23161616
+[npm]: https://img.shields.io/npm/v/sveld.svg?color=%23161616
+[npm-url]: https://npmjs.com/package/sveld
 [build]: https://travis-ci.com/ibm/sveld.svg?branch=main
 [build-badge]: https://travis-ci.com/ibm/sveld
