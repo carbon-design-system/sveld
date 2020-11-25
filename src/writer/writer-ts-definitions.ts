@@ -16,7 +16,11 @@ export function getTypeDefs(def: Pick<ComponentDocApi, "typedefs">) {
 }
 
 function clampKey(key: string) {
-  return /\-/.test(key) ? `["${key}"]` : key;
+  if (/(\-|\s+)/.test(key)) {
+    return /(\"|\')/.test(key) ? key : `["${key}"]`;
+  }
+
+  return key;
 }
 
 function addCommentLine(value: any, returnValue?: any) {
@@ -81,7 +85,7 @@ function genSlotDef(def: Pick<ComponentDocApi, "slots">) {
   return def.slots
     .map(({ name, slot_props, ...rest }) => {
       const key = rest.default ? "default" : clampKey(name!);
-      return `${key}: ${formatTsProps(slot_props)};`;
+      return `${clampKey(key)}: ${formatTsProps(slot_props)};`;
     })
     .join("\n");
 }
@@ -89,7 +93,7 @@ function genSlotDef(def: Pick<ComponentDocApi, "slots">) {
 function genEventDef(def: Pick<ComponentDocApi, "events">) {
   return def.events
     .map((event) => {
-      return `${event.name}: ${
+      return `${clampKey(event.name)}: ${
         event.type === "dispatched" ? `CustomEvent<${event.detail || ANY_TYPE}>` : `WindowEventMap["${event.name}"]`
       };`;
     })

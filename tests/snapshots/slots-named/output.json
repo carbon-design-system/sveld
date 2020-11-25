@@ -18,6 +18,18 @@
       "slot_props": "{}"
     },
     {
+      "name": "bold heading",
+      "default": false,
+      "fallback": "{text}",
+      "slot_props": "{ text: string }"
+    },
+    {
+      "name": "subheading",
+      "default": false,
+      "fallback": "{text}",
+      "slot_props": "{ text: string }"
+    },
+    {
       "name": "text",
       "default": false,
       "fallback": "{text}",

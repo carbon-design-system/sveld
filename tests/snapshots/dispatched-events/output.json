@@ -15,6 +15,10 @@
     {
       "type": "dispatched",
       "name": "destroy"
+    },
+    {
+      "type": "dispatched",
+      "name": "destroy--component"
     }
   ],
   "typedefs": []
