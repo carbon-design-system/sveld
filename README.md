@@ -9,6 +9,8 @@ The purpose of this project is to make third party Svelte components and librari
 
 The core of this library is extracted from [carbon-components-svelte](https://github.com/IBM/carbon-components-svelte).
 
+**Note:** The generated TS definitions require [Svelte version 3.30](https://github.com/sveltejs/svelte/blob/master/CHANGELOG.md#3300) or greater.
+
 ---
 
 Given a Svelte file, sveld can infer basic prop types to generate TypeScript definitions compatible with the [Svelte Language Server](https://github.com/sveltejs/language-tools):
@@ -26,10 +28,13 @@ Given a Svelte file, sveld can infer basic prop types to generate TypeScript def
 </button>
 ```
 
+The generated definition extends the typed `SvelteComponent` interface.
+
 **Button.d.ts**
 
 ```ts
 /// <reference types="svelte" />
+import { SvelteComponent } from "svelte";
 
 export interface ButtonProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["button"]> {
   /**
@@ -43,15 +48,7 @@ export interface ButtonProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNam
   primary?: boolean;
 }
 
-export default class Button {
-  $$prop_def: ButtonProps;
-  $$slot_def: {
-    default: {};
-  };
-
-  $on(eventname: "click", cb: (event: WindowEventMap["click"]) => void): () => void;
-  $on(eventname: string, cb: (event: Event) => void): () => void;
-}
+export default class Button extends SvelteComponent<ButtonProps, { click: WindowEventMap["click"] }, { default: {} }> {}
 ```
 
 Sometimes, inferring prop types is insufficient.
@@ -72,6 +69,7 @@ The accompanying JSDoc annotations would generate the following:
 
 ```ts
 /// <reference types="svelte" />
+import { SvelteComponent } from "svelte";
 
 export interface ButtonProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["button"]> {
   /**
@@ -86,15 +84,7 @@ export interface ButtonProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNam
   primary?: boolean;
 }
 
-export default class Button {
-  $$prop_def: ButtonProps;
-  $$slot_def: {
-    default: {};
-  };
-
-  $on(eventname: "click", cb: (event: WindowEventMap["click"]) => void): () => void;
-  $on(eventname: string, cb: (event: Event) => void): () => void;
-}
+export default class Button extends SvelteComponent<ButtonProps, { click: WindowEventMap["click"] }, { default: {} }> {}
 ```
 
 ---
