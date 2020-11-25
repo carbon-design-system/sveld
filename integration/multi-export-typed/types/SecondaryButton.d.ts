@@ -1,14 +1,11 @@
 /// <reference types="svelte" />
+import { SvelteComponent } from "svelte";
 import { ButtonProps } from "./Button";
 
 export interface SecondaryButtonProps extends ButtonProps {}
 
-export default class SecondaryButton {
-  $$prop_def: SecondaryButtonProps;
-  $$slot_def: {
-    default: {};
-  };
-
-  $on(eventname: "click", cb: (event: WindowEventMap["click"]) => void): () => void;
-  $on(eventname: string, cb: (event: Event) => void): () => void;
-}
+export default class SecondaryButton extends SvelteComponent<
+  SecondaryButtonProps,
+  { click: WindowEventMap["click"] },
+  { default: {} }
+> {}

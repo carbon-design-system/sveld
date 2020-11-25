@@ -1,4 +1,5 @@
 /// <reference types="svelte" />
+import { SvelteComponent } from "svelte";
 
 export type Author = string;
 
@@ -14,11 +15,4 @@ export interface QuoteProps extends svelte.JSX.HTMLAttributes<HTMLElementTagName
   author?: Author;
 }
 
-export default class Quote {
-  $$prop_def: QuoteProps;
-  $$slot_def: {
-    default: {};
-  };
-
-  $on(eventname: string, cb: (event: Event) => void): () => void;
-}
+export default class Quote extends SvelteComponent<QuoteProps, {}, { default: {} }> {}

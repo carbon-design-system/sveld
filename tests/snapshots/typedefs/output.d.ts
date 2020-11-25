@@ -1,4 +1,5 @@
 /// <reference types="svelte" />
+import { SvelteComponent } from "svelte";
 
 export interface MyTypedef {
   [key: string]: boolean;
@@ -6,7 +7,7 @@ export interface MyTypedef {
 
 export type MyTypedefArray = MyTypedef[];
 
-export interface inputProps {
+export interface InputProps {
   /**
    * @default { ["1"]: true }
    */
@@ -18,11 +19,8 @@ export interface inputProps {
   prop2?: MyTypedefArray;
 }
 
-export default class input {
-  $$prop_def: inputProps;
-  $$slot_def: {
-    default: { prop1: MyTypedef; prop2: MyTypedefArray };
-  };
-
-  $on(eventname: string, cb: (event: Event) => void): () => void;
-}
+export default class Input extends SvelteComponent<
+  InputProps,
+  {},
+  { default: { prop1: MyTypedef; prop2: MyTypedefArray } }
+> {}

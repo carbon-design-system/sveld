@@ -78,32 +78,22 @@ function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleN
 }
 
 function genSlotDef(def: Pick<ComponentDocApi, "slots">) {
-  const slots = def.slots
+  return def.slots
     .map(({ name, slot_props, ...rest }) => {
       const key = rest.default ? "default" : clampKey(name!);
       return `${key}: ${formatTsProps(slot_props)};`;
     })
     .join("\n");
-
-  return `$$slot_def: {
-            ${slots}
-          }`;
 }
 
 function genEventDef(def: Pick<ComponentDocApi, "events">) {
-  const events = def.events
+  return def.events
     .map((event) => {
-      const handler =
-        event.type === "dispatched" ? `CustomEvent<${event.detail || ANY_TYPE}>` : `WindowEventMap["${event.name}"]`;
-
-      return `$on(eventname: "${event.name}", cb: (event: ${handler}) => void): () => void;`;
+      return `${event.name}: ${
+        event.type === "dispatched" ? `CustomEvent<${event.detail || ANY_TYPE}>` : `WindowEventMap["${event.name}"]`
+      };`;
     })
     .join("\n");
-
-  return `
-    ${events}
-    $on(eventname: string, cb: (event: Event) => void): () => void;
-  `;
 }
 
 function genImports(def: Pick<ComponentDocApi, "extends">) {
@@ -122,15 +112,16 @@ export function writeTsDefinition(component: ComponentDocApi) {
 
   return `
   /// <reference types="svelte" />
+  import { SvelteComponent } from "svelte";
   ${genImports({ extends: _extends })}
   ${getTypeDefs({ typedefs })}
   ${prop_def}
 
-  export default class ${moduleName} {
-    $$prop_def: ${props_name}
-    ${genSlotDef({ slots })}
-    ${genEventDef({ events })}
-  }`;
+  export default class ${moduleName} extends SvelteComponent<
+      ${props_name},
+      {${genEventDef({ events })}},
+      {${genSlotDef({ slots })}}
+    > {}`;
 }
 
 function createExport(file_path: string, { moduleName, isDefault }: { moduleName: string; isDefault: boolean }) {

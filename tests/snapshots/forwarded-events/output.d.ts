@@ -1,16 +1,15 @@
 /// <reference types="svelte" />
+import { SvelteComponent } from "svelte";
 
-export interface inputProps {}
+export interface InputProps {}
 
-export default class input {
-  $$prop_def: inputProps;
-  $$slot_def: {
-    default: {};
-  };
-
-  $on(eventname: "click", cb: (event: WindowEventMap["click"]) => void): () => void;
-  $on(eventname: "focus", cb: (event: WindowEventMap["focus"]) => void): () => void;
-  $on(eventname: "blur", cb: (event: WindowEventMap["blur"]) => void): () => void;
-  $on(eventname: "mouseover", cb: (event: WindowEventMap["mouseover"]) => void): () => void;
-  $on(eventname: string, cb: (event: Event) => void): () => void;
-}
+export default class Input extends SvelteComponent<
+  InputProps,
+  {
+    click: WindowEventMap["click"];
+    focus: WindowEventMap["focus"];
+    blur: WindowEventMap["blur"];
+    mouseover: WindowEventMap["mouseover"];
+  },
+  { default: {} }
+> {}

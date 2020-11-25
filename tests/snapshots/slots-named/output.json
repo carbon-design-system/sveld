@@ -1,0 +1,29 @@
+{
+  "props": [
+    {
+      "name": "text",
+      "kind": "let",
+      "type": "string",
+      "value": "\"\"",
+      "isFunction": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "fallback": "Default text",
+      "slot_props": "{}"
+    },
+    {
+      "name": "text",
+      "default": false,
+      "fallback": "{text}",
+      "slot_props": "{ text: string }"
+    }
+  ],
+  "events": [],
+  "typedefs": []
+}

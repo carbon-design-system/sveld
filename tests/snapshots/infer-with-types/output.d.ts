@@ -1,6 +1,7 @@
 /// <reference types="svelte" />
+import { SvelteComponent } from "svelte";
 
-export interface inputProps {
+export interface InputProps {
   /**
    * @default true
    */
@@ -30,11 +31,4 @@ export interface inputProps {
   fn?: () => any;
 }
 
-export default class input {
-  $$prop_def: inputProps;
-  $$slot_def: {
-    default: {};
-  };
-
-  $on(eventname: string, cb: (event: Event) => void): () => void;
-}
+export default class Input extends SvelteComponent<InputProps, {}, { default: {} }> {}
