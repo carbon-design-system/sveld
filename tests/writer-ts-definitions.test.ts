@@ -18,7 +18,7 @@ test("writeTsDefinition", (t) => {
         },
       ],
     }),
-    "interface MyTypedef { [key: string]: boolean; }"
+    "export interface MyTypedef { [key: string]: boolean; }"
   );
 
   const parsed_output: ParsedComponent = {
