@@ -270,6 +270,6 @@ Refer to the [contributing guidelines](CONTRIBUTING.md).
 [Apache-2.0](LICENSE)
 
 [npm]: https://img.shields.io/npm/v/sveld.svg
-[npm-url]: https://npmjs.com/package/sveld
+[npm-url]: https://npmjs.com/package/sveld?color=%23161616
 [build]: https://travis-ci.com/ibm/sveld.svg?branch=main
 [build-badge]: https://travis-ci.com/ibm/sveld
