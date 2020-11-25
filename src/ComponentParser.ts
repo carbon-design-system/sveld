@@ -2,14 +2,7 @@ import { compile, walk } from "svelte/compiler";
 import * as commentParser from "comment-parser";
 import { Ast, TemplateNode, Var } from "svelte/types/compiler/interfaces";
 import { getElementByTag } from "./element-tag-map";
-
-declare module "svelte/compiler" {
-  interface Visitor {
-    enter?: (node: TemplateNode, parent: any, prop: any) => void;
-  }
-
-  export const walk: (ast: Ast, visitor?: Visitor) => void;
-}
+import { Node } from "estree-walker";
 
 interface CompiledSvelteCode {
   vars: Var[];
@@ -284,11 +277,11 @@ export default class ComponentParser {
     let dispatcher_name: undefined | string = undefined;
     let callees: { name: string; arguments: any }[] = [];
 
-    walk(this.compiled.ast, {
+    walk((this.compiled.ast as unknown) as Node, {
       enter: (node, parent, prop) => {
         if (node.type === "CallExpression") {
           if (node.callee.name === "createEventDispatcher") {
-            dispatcher_name = parent.id.name;
+            dispatcher_name = parent?.id.name;
           }
 
           callees.push({
@@ -298,7 +291,7 @@ export default class ComponentParser {
         }
 
         if (node.type === "Spread" && node?.expression.name === "$$restProps") {
-          if (this.rest_props === undefined) {
+          if (this.rest_props === undefined && (parent?.type === "InlineComponent" || parent?.type === "Element")) {
             this.rest_props = {
               type: parent.type,
               name: parent.name,
@@ -414,7 +407,7 @@ export default class ComponentParser {
               return { ...slot_props, [name]: slot_prop_value };
             }, {});
 
-          const fallback = node.children
+          const fallback = (node.children as TemplateNode[])
             ?.map(({ start, end }) => this.sourceAtPos(start, end))
             .join("")
             .trim();
@@ -423,7 +416,7 @@ export default class ComponentParser {
         }
 
         if (node.type === "EventHandler" && node.expression == null) {
-          if (!this.events.has(node.name)) {
+          if (!this.events.has(node.name) && parent !== undefined) {
             this.events.set(node.name, {
               type: "forwarded",
               name: node.name,
