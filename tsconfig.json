@@ -5,7 +5,6 @@
     "moduleResolution": "node",
     "outDir": "lib",
     "skipLibCheck": true,
-    "strict": true,
-  },
-  "include": ["src"],
+    "strict": true
+  }
 }

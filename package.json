@@ -7,7 +7,7 @@
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc -p tsconfig.lib.json",
     "build:watch": "tsc -w",
     "test": "run-p test:*",
     "test:unit": "tsnd node_modules/tape/bin/tape tests/*.test.ts",
@@ -26,6 +26,7 @@
     "svelte": "^3.30.0"
   },
   "devDependencies": {
+    "@tsconfig/svelte": "^1.0.10",
     "@types/fs-extra": "^9.0.4",
     "@types/node": "^14.14.10",
     "@types/prettier": "^2.1.5",

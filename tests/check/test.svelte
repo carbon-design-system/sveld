@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button, Link, Quote } from ".";
+  import { Button, Header, Link, Quote } from "./index";
 </script>
 
 <Button class="" style="" on:click primary={false} />
@@ -23,3 +23,15 @@
   on:load={({ detail }) => {
     console.log(detail);
   }} />
+
+<Header
+  style="color: red;"
+  on:load={(e) => {
+    console.log(e.detail.ts);
+  }}
+  on:click={(e) => {
+    console.log(e);
+  }}
+  let:prop>
+  {prop}
+</Header>

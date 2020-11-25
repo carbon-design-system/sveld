@@ -1,10 +1,6 @@
 /// <reference types="svelte" />
+import { SvelteComponent } from "svelte";
 
-export interface inputProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["h1"]> {}
+export interface InputProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["h1"]> {}
 
-export default class input {
-  $$prop_def: inputProps;
-  $$slot_def: {};
-
-  $on(eventname: string, cb: (event: Event) => void): () => void;
-}
+export default class Input extends SvelteComponent<InputProps, {}, {}> {}

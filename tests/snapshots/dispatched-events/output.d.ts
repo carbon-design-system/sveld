@@ -1,14 +1,10 @@
 /// <reference types="svelte" />
+import { SvelteComponent } from "svelte";
 
-export interface inputProps {}
+export interface InputProps {}
 
-export default class input {
-  $$prop_def: inputProps;
-  $$slot_def: {
-    default: {};
-  };
-
-  $on(eventname: "hover", cb: (event: CustomEvent<any>) => void): () => void;
-  $on(eventname: "destroy", cb: (event: CustomEvent<any>) => void): () => void;
-  $on(eventname: string, cb: (event: Event) => void): () => void;
-}
+export default class Input extends SvelteComponent<
+  InputProps,
+  { hover: CustomEvent<any>; destroy: CustomEvent<any> },
+  { default: {} }
+> {}

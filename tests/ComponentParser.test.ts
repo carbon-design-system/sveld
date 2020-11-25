@@ -21,11 +21,11 @@ test("ComponentParser", async (t) => {
     const ts_def_path = path.join(SNAPSHOTS_FOLDER, file, TS_DEF_FILE);
     const source = await fs.readFile(input_path, "utf-8");
     const parsed_component = parser.parseSvelteComponent(source, {
-      moduleName: "input",
+      moduleName: "Input",
       filePath: input_path,
     });
     const component_api = {
-      moduleName: "input",
+      moduleName: "Input",
       filePath: input_path,
       ...parsed_component,
     };
