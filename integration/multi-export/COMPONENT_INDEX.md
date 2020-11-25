@@ -54,7 +54,7 @@ None.
 ### Types
 
 ```ts
-type Author = string;
+export type Author = string;
 ```
 
 ### Props

@@ -1,6 +1,6 @@
 /// <reference types="svelte" />
 
-type Author = string;
+export type Author = string;
 
 export interface QuoteProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["blockquote"]> {
   /**
