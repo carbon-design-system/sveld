@@ -16,7 +16,7 @@ export function getTypeDefs(def: Pick<ComponentDocApi, "typedefs">) {
 }
 
 function clampKey(key: string) {
-  if (/(\-|\s+)/.test(key)) {
+  if (/(\-|\s+|\:)/.test(key)) {
     return /(\"|\')/.test(key) ? key : `["${key}"]`;
   }
 

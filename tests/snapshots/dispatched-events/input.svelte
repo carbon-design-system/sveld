@@ -6,6 +6,7 @@
   onDestroy(() => {
     dispatcher("destroy");
     dispatcher("destroy--component");
+    dispatcher("destroy:component");
   });
 </script>
 
