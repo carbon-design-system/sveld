@@ -1,6 +1,6 @@
 /// <reference types="svelte" />
 
-interface MyTypedef {
+export interface MyTypedef {
   [key: string]: boolean;
 }
 

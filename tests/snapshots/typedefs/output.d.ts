@@ -1,10 +1,10 @@
 /// <reference types="svelte" />
 
-interface MyTypedef {
+export interface MyTypedef {
   [key: string]: boolean;
 }
 
-type MyTypedefArray = MyTypedef[];
+export type MyTypedefArray = MyTypedef[];
 
 export interface inputProps {
   /**
