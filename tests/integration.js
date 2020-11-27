@@ -19,8 +19,12 @@ const execCwd = async (dir, ...args) => await exec(`yarn --cwd ${dir} ${args}`);
     for await (const dir of dirs) {
       await execCwd(dir, `link "${name}"`);
       await execCwd(dir, "install");
-      const { stdout } = await execCwd(dir, "build");
-      process.stdout.write(stdout + "\n");
+      
+      const build = await execCwd(dir, "build");
+      process.stdout.write(build.stdout + "\n");
+
+      const svelteCheck = await execCwd(dir, "svelte-check");
+      process.stdout.write(svelteCheck.stdout + "\n");
     }
 
     process.exit(0);
