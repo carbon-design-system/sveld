@@ -3,17 +3,21 @@
 [![NPM][npm]][npm-url]
 [![Build][build]][build-badge]
 
-`sveld` generates TypeScript definitions for Svelte components. It uses the Svelte compiler to statically analyze a Svelte component for props, events, slots and more. Prop types and signatures can be augmented using JSDoc notation. This library can also output component documentation in Markdown and JSON output formats.
+`sveld` generates TypeScript definitions for Svelte components by statically analyzing components for props, events, slots and more. Prop types and signatures can be augmented using JSDoc notation. This library can also emit component documentation in Markdown and JSON output formats.
 
 The purpose of this project is to make third party Svelte components and libraries compatible with the Svelte Language Server and TypeScript with minimal effort by the author. For example, TypeScript definitions may be used during development via intelligent code completion in Integrated Development Environments (IDE) like VSCode.
 
-The core of this library is extracted from [carbon-components-svelte](https://github.com/IBM/carbon-components-svelte).
+[Carbon Components Svelte](https://github.com/IBM/carbon-components-svelte) uses this library to auto-generate component types and API metadata:
+
+- **[TypeScript definitions](https://github.com/IBM/carbon-components-svelte/blob/master/types)**: Component TypeScript definitions
+- **[Component Index](https://github.com/IBM/carbon-components-svelte/blob/master/COMPONENT_INDEX.md)**: Markdown file documenting component props, slots, and events
+- **[Component API](https://github.com/IBM/carbon-components-svelte/blob/master/docs/src/COMPONENT_API.json)**: Component API metadata in JSON format
 
 **Note:** The generated TS definitions require [Svelte version 3.30](https://github.com/sveltejs/svelte/blob/master/CHANGELOG.md#3300) or greater.
 
 ---
 
-Given a Svelte file, sveld can infer basic prop types to generate TypeScript definitions compatible with the [Svelte Language Server](https://github.com/sveltejs/language-tools):
+Given a Svelte component, sveld can infer basic prop types to generate TypeScript definitions compatible with the [Svelte Language Server](https://github.com/sveltejs/language-tools):
 
 **Button.svelte**
 
@@ -259,7 +263,7 @@ Refer to the [contributing guidelines](CONTRIBUTING.md).
 
 [Apache-2.0](LICENSE)
 
-[npm]: https://img.shields.io/npm/v/sveld.svg?color=%23161616
+[npm]: https://img.shields.io/npm/v/sveld.svg?color=262626&style=for-the-badge
 [npm-url]: https://npmjs.com/package/sveld
-[build]: https://travis-ci.com/ibm/sveld.svg?branch=main
+[build]: https://img.shields.io/travis/com/ibm/sveld?color=24a148&style=for-the-badge
 [build-badge]: https://travis-ci.com/ibm/sveld
