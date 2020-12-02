@@ -1,5 +1,5 @@
 /// <reference types="svelte" />
-import { SvelteComponent } from "svelte";
+import { SvelteComponentTyped } from "svelte";
 
 export interface InputProps {
   /**
@@ -8,7 +8,7 @@ export interface InputProps {
   text?: string;
 }
 
-export default class Input extends SvelteComponent<
+export default class Input extends SvelteComponentTyped<
   InputProps,
   {},
   { default: {}; ["bold heading"]: { text: string }; subheading: { text: string }; text: { text: string } }

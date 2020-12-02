@@ -1,6 +1,6 @@
 /// <reference types="svelte" />
 
-import { SvelteComponent } from "svelte";
+import { SvelteComponentTyped } from "svelte";
 
 export interface HeaderProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["header"]> {
   /**
@@ -14,7 +14,7 @@ export interface HeaderProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNam
   primary?: boolean;
 }
 
-export default class Header extends SvelteComponent<
+export default class Header extends SvelteComponentTyped<
   HeaderProps,
   {
     load: CustomEvent<{ ts: number }>;

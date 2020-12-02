@@ -1,5 +1,5 @@
 /// <reference types="svelte" />
-import { SvelteComponent } from "svelte";
+import { SvelteComponentTyped } from "svelte";
 
 export interface MyTypedef {
   [key: string]: boolean;
@@ -17,4 +17,4 @@ export interface InputProps {
   prop1?: MyTypedef;
 }
 
-export default class Input extends SvelteComponent<InputProps, {}, { default: { prop1: MyTypedef } }> {}
+export default class Input extends SvelteComponentTyped<InputProps, {}, { default: { prop1: MyTypedef } }> {}

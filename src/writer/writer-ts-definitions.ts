@@ -116,12 +116,12 @@ export function writeTsDefinition(component: ComponentDocApi) {
 
   return `
   /// <reference types="svelte" />
-  import { SvelteComponent } from "svelte";
+  import { SvelteComponentTyped } from "svelte";
   ${genImports({ extends: _extends })}
   ${getTypeDefs({ typedefs })}
   ${prop_def}
 
-  export default class ${moduleName} extends SvelteComponent<
+  export default class ${moduleName} extends SvelteComponentTyped<
       ${props_name},
       {${genEventDef({ events })}},
       {${genSlotDef({ slots })}}

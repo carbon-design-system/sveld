@@ -1,5 +1,5 @@
 /// <reference types="svelte" />
-import { SvelteComponent } from "svelte";
+import { SvelteComponentTyped } from "svelte";
 
 export type Author = string;
 
@@ -15,4 +15,4 @@ export interface QuoteProps extends svelte.JSX.HTMLAttributes<HTMLElementTagName
   author?: Author;
 }
 
-export default class Quote extends SvelteComponent<QuoteProps, {}, { default: {} }> {}
+export default class Quote extends SvelteComponentTyped<QuoteProps, {}, { default: {} }> {}
