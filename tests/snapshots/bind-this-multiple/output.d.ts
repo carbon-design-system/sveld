@@ -1,5 +1,5 @@
 /// <reference types="svelte" />
-import { SvelteComponent } from "svelte";
+import { SvelteComponentTyped } from "svelte";
 
 export interface InputProps {
   ref?: null | HTMLButtonElement | HTMLHeadingElement;
@@ -12,4 +12,4 @@ export interface InputProps {
   propBool?: boolean;
 }
 
-export default class Input extends SvelteComponent<InputProps, {}, { default: {} }> {}
+export default class Input extends SvelteComponentTyped<InputProps, {}, { default: {} }> {}

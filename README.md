@@ -13,7 +13,7 @@ The purpose of this project is to make third party Svelte components and librari
 - **[Component Index](https://github.com/IBM/carbon-components-svelte/blob/master/COMPONENT_INDEX.md)**: Markdown file documenting component props, slots, and events
 - **[Component API](https://github.com/IBM/carbon-components-svelte/blob/master/docs/src/COMPONENT_API.json)**: Component API metadata in JSON format
 
-**Note:** The generated TS definitions require [Svelte version 3.30](https://github.com/sveltejs/svelte/blob/master/CHANGELOG.md#3300) or greater.
+**Please note** that the generated TS definitions require [Svelte version 3.31](https://github.com/sveltejs/svelte/blob/master/CHANGELOG.md#3300) or greater.
 
 ---
 
@@ -32,13 +32,13 @@ Given a Svelte component, sveld can infer basic prop types to generate TypeScrip
 </button>
 ```
 
-The generated definition extends the typed `SvelteComponent` interface.
+The generated definition extends the official `SvelteComponentTyped` interface exported from Svelte.
 
 **Button.d.ts**
 
 ```ts
 /// <reference types="svelte" />
-import { SvelteComponent } from "svelte";
+import { SvelteComponentTyped } from "svelte";
 
 export interface ButtonProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["button"]> {
   /**
@@ -52,7 +52,7 @@ export interface ButtonProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNam
   primary?: boolean;
 }
 
-export default class Button extends SvelteComponent<ButtonProps, { click: WindowEventMap["click"] }, { default: {} }> {}
+export default class Button extends SvelteComponentTyped<ButtonProps, { click: WindowEventMap["click"] }, { default: {} }> {}
 ```
 
 Sometimes, inferring prop types is insufficient.
@@ -73,7 +73,7 @@ The accompanying JSDoc annotations would generate the following:
 
 ```ts
 /// <reference types="svelte" />
-import { SvelteComponent } from "svelte";
+import { SvelteComponentTyped } from "svelte";
 
 export interface ButtonProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["button"]> {
   /**
@@ -88,7 +88,7 @@ export interface ButtonProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNam
   primary?: boolean;
 }
 
-export default class Button extends SvelteComponent<ButtonProps, { click: WindowEventMap["click"] }, { default: {} }> {}
+export default class Button extends SvelteComponentTyped<ButtonProps, { click: WindowEventMap["click"] }, { default: {} }> {}
 ```
 
 ---
