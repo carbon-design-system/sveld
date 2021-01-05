@@ -40,7 +40,17 @@
     {
       "moduleName": "SecondaryButton",
       "filePath": "/src/SecondaryButton.svelte",
-      "props": [],
+      "props": [
+        {
+          "name": "secondary",
+          "kind": "const",
+          "type": "boolean",
+          "value": "true",
+          "isFunction": false,
+          "constant": true,
+          "reactive": false
+        }
+      ],
       "slots": [
         {
           "name": "__default__",

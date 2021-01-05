@@ -73,7 +73,9 @@ None.
 
 ### Props
 
-None.
+| Prop name | Kind               | Reactive | Type                 | Default value     | Description |
+| :-------- | :----------------- | :------- | :------------------- | ----------------- | ----------- |
+| secondary | <code>const</code> | No       | <code>boolean</code> | <code>true</code> | --          |
 
 ### Slots
 

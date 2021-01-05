@@ -1,6 +1,8 @@
 <script>
   /** @extends {"./Button"} ButtonProps */
 
+  export const secondary = true;
+
   import Button from "./Button.svelte";
 </script>
 
