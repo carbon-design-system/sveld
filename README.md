@@ -111,6 +111,12 @@ export default class Button extends SvelteComponentTyped<
   - [Publishing to NPM](#publishing-to-npm)
 - [Available Options](#available-options)
 - [API Reference](#api-reference)
+  - [@type](#type)
+  - [@typedef](#typedef)
+  - [@slot](#slot)
+  - [@event](#event)
+  - [@restProps](#restprops)
+  - [@extends](#extends)
 - [Contributing](#contributing)
 - [License](#license)
 
