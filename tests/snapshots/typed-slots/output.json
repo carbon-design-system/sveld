@@ -1,0 +1,27 @@
+{
+  "props": [
+    {
+      "name": "prop",
+      "kind": "let",
+      "type": "number",
+      "value": "0",
+      "isFunction": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "slot_props": "{ prop: number; doubled: number; }"
+    },
+    {
+      "name": "description",
+      "default": false,
+      "slot_props": "{ props: { class?: string; } }"
+    }
+  ],
+  "events": [],
+  "typedefs": []
+}

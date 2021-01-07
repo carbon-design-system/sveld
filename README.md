@@ -3,21 +3,21 @@
 [![NPM][npm]][npm-url]
 [![Build][build]][build-badge]
 
-`sveld` generates TypeScript definitions for Svelte components by statically analyzing components for props, events, slots and more. Prop types and signatures can be augmented using JSDoc notation. This library can also emit component documentation in Markdown and JSON output formats.
+`sveld` generates TypeScript definitions for Svelte components by statically analyzing their props, events, slots and more. Prop types and signatures can be defined using [JSDoc notation](https://jsdoc.app/). This documentation generator can also emit component documentation in Markdown and JSON output formats.
 
-The purpose of this project is to make third party Svelte components and libraries compatible with the Svelte Language Server and TypeScript with minimal effort by the author. For example, TypeScript definitions may be used during development via intelligent code completion in Integrated Development Environments (IDE) like VSCode.
+The purpose of this project is to make third party Svelte component libraries compatible with the Svelte Language Server and TypeScript with minimal effort required by the author. For example, TypeScript definitions may be used during development via intelligent code completion in Integrated Development Environments (IDE) like VSCode.
 
 [Carbon Components Svelte](https://github.com/IBM/carbon-components-svelte) uses this library to auto-generate component types and API metadata:
 
-- **[TypeScript definitions](https://github.com/IBM/carbon-components-svelte/blob/master/types)**: Component TypeScript definitions
-- **[Component Index](https://github.com/IBM/carbon-components-svelte/blob/master/COMPONENT_INDEX.md)**: Markdown file documenting component props, slots, and events
-- **[Component API](https://github.com/IBM/carbon-components-svelte/blob/master/docs/src/COMPONENT_API.json)**: Component API metadata in JSON format
+- [TypeScript definitions](https://github.com/IBM/carbon-components-svelte/blob/master/types): Component TypeScript definitions
+- [Component Index](https://github.com/IBM/carbon-components-svelte/blob/master/COMPONENT_INDEX.md): Markdown file documenting component props, slots, and events
+- [Component API](https://github.com/IBM/carbon-components-svelte/blob/master/docs/src/COMPONENT_API.json): Component API metadata in JSON format
 
-**Please note** that the generated TS definitions require [Svelte version 3.31](https://github.com/sveltejs/svelte/blob/master/CHANGELOG.md#3300) or greater.
+**Please note** that the generated TypeScript definitions require [Svelte version 3.31](https://github.com/sveltejs/svelte/blob/master/CHANGELOG.md#3300) or greater.
 
 ---
 
-Given a Svelte component, sveld can infer basic prop types to generate TypeScript definitions compatible with the [Svelte Language Server](https://github.com/sveltejs/language-tools):
+Given a Svelte component, `sveld` can infer basic prop types to generate TypeScript definitions compatible with the [Svelte Language Server](https://github.com/sveltejs/language-tools):
 
 **Button.svelte**
 
@@ -52,7 +52,11 @@ export interface ButtonProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNam
   primary?: boolean;
 }
 
-export default class Button extends SvelteComponentTyped<ButtonProps, { click: WindowEventMap["click"] }, { default: {} }> {}
+export default class Button extends SvelteComponentTyped<
+  ButtonProps,
+  { click: WindowEventMap["click"] },
+  { default: {} }
+> {}
 ```
 
 Sometimes, inferring prop types is insufficient.
@@ -88,7 +92,11 @@ export interface ButtonProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNam
   primary?: boolean;
 }
 
-export default class Button extends SvelteComponentTyped<ButtonProps, { click: WindowEventMap["click"] }, { default: {} }> {}
+export default class Button extends SvelteComponentTyped<
+  ButtonProps,
+  { click: WindowEventMap["click"] },
+  { default: {} }
+> {}
 ```
 
 ---
@@ -102,7 +110,13 @@ export default class Button extends SvelteComponentTyped<ButtonProps, { click: W
   - [CLI](#cli)
   - [Publishing to NPM](#publishing-to-npm)
 - [Available Options](#available-options)
-- [API](#api)
+- [API Reference](#api-reference)
+  - [@type](#type)
+  - [@typedef](#typedef)
+  - [@slot](#slot)
+  - [@event](#event)
+  - [@restProps](#restprops)
+  - [@extends](#extends)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -112,13 +126,15 @@ sveld uses the Svelte compiler to statically analyze all Svelte components expor
 
 Extracted metadata:
 
-- exported props
+- props
 - slots
 - forwarded events
 - dispatched events
 - `$$restProps`
 
 This library adopts a progressively enhanced approach. Any property type that cannot be inferred (e.g. "hello" is a string) falls back to "any" to minimize incorrectly typed properties or signatures. To mitigate this, the library author can add JSDoc annotations to specify types that cannot be reliably inferred. This represents a progressively enhanced approach because JSDocs are comments that can be ignored by the compiler.
+
+The generated TypeScript definitions for a component extends the `SvelteComponentTyped` interface available in svelte version 3.31.
 
 ## Usage
 
@@ -204,55 +220,187 @@ sveld({
 })
 ```
 
-## API
+## API Reference
 
-The parsed component API resembles the following:
+### `@type`
 
-```ts
-interface ParsedComponent {
-  props: Array<{
-    name: string;
-    kind: "let" | "const" | "function";
-    constant: boolean;
-    type?: string;
-    value?: any;
-    description?: string;
-    isFunction: boolean;
-    reactive: boolean;
-  }>;
-  slots: Array<{
-    name?: string;
-    default: boolean;
-    fallback?: string;
-    slot_props?: string;
-  }>;
-  events: Array<ForwardedEvent | DispatchedEvent>;
-  typedefs: Array<{
-    type: string;
-    name: string;
-    description?: string;
-    ts: string;
-  }>;
-  rest_props?: {
-    type: "InlineComponent" | "Element";
-    name: string;
-  };
-}
+Without a `@type` annotation, sveld will infer the primitive type for a prop:
 
-interface ForwardedEvent {
-  type: "forwarded";
-  name: string;
-  element: {
-    type: "InlineComponent" | "Element";
-    name: string;
-  };
-}
+```js
+export let kind = "primary";
+// inferred type: "string"
+```
 
-interface DispatchedEvent {
-  type: "dispatched";
-  name: string;
-  detail?: any;
-}
+Use the `@type` tag to explicitly document the type. In the following example, the `kind` property has an enumerated (enum) type.
+
+Signature:
+
+```js
+/**
+ * Optional description
+ * @type {Type}
+ */
+```
+
+Example:
+
+```js
+/**
+ * Specify the kind of button
+ * @type {"primary" | "secondary" | "tertiary"}
+ */
+export let kind = "primary";
+
+/**
+ * Specify the Carbon icon to render
+ * @type {typeof import("carbon-icons-svelte").CarbonIcon}
+ */
+export let renderIcon = Close20;
+```
+
+### `@typedef`
+
+The `@typedef` tag can be used to define a common type that is used multiple times within a component. All typedefs defined in a component will be exported from the generated TypeScript definition file.
+
+Signature:
+
+```js
+/**
+ * @typedef {Type} TypeName
+ */
+```
+
+Example:
+
+```js
+/**
+ * @typedef {string} AuthorName
+ * @typedef {{ name?: AuthorName; dob?: string; }} Author
+ */
+
+/** @type {Author} */
+export let author = {};
+
+/** @type {Author[]} */
+export let authors = [];
+```
+
+### `@slot`
+
+Use the `@slot` tag for typing component slots.
+
+Signature:
+
+```js
+/**
+ * @slot {Type} [slot name]
+ */
+```
+
+Example:
+
+```svelte
+<script>
+  /**
+   * @slot {{ prop: number; doubled: number; }}
+   * @slot {{ props: { class?: string; } }} description
+   */
+
+  export let prop = 0;
+</script>
+
+<h1>
+  <slot {prop} doubled={prop * 2} />
+</h1>
+
+<p>
+  <slot name="description" props={{ class: $$props.class }} />
+</p>
+```
+
+### `@event`
+
+Use the `@event` tag for typing dispatched events. An event name must be specified.
+
+Signature:
+
+```js
+/**
+ * @event {EventDetail} eventname
+ */
+```
+
+Example:
+
+```js
+/**
+ * @event {{ key: string }} button:key
+ */
+
+export let key = "";
+
+import { createEventDispatcher } from "svelte";
+
+const dispatch = createEventDispatcher();
+
+$: dispatch("button:key", { key });
+```
+
+### `@restProps`
+
+sveld can pick up inline HTML elements that `$$restProps` is forwarded to. However, it cannot infer the underlying element for instantiated components.
+
+You can use the `@restProps` tag to explicitly define element tags that `$$restProps` is forwarded to.
+
+Signature:
+
+```js
+/**
+ * Single element
+ * @restProps {tagname}
+ *
+ * Multiple elements
+ * @restProps {tagname-1 | tagname-2 | tagname-3}
+ */
+```
+
+Example:
+
+```svelte
+<script>
+  /** @restProps {h1 | button} */
+  export let edit = false;
+
+  import Button from "../";
+</script>
+
+{#if edit}
+  <Button {...$$restProps} />
+{:else}
+  <h1 {...$$restProps}><slot /></h1>
+{/if}
+```
+
+### `@extends`
+
+In some cases, a component may be based on another component. The `@extends` tag can be used to extend generated component props.
+
+Signature:
+
+```js
+/**
+ * @extends {<relative path to component>} ComponentProps
+ */
+```
+
+Example:
+
+```js
+/** @extends {"./Button"} ButtonProps */
+
+export const secondary = true;
+
+import Button from "./Button.svelte";
 ```
 
 ## Contributing

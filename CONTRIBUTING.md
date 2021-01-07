@@ -31,11 +31,7 @@ yarn install
 
 ### Unit tests
 
-Run `yarn test:unit` to run the unit tests.
-
-#### `svelte-check`
-
-Run `yarn test:svelte-check` to validate sample, generated Type definitions in the `tests/check` foldeer.
+Ensure the unit tests pass by running `yarn test:unit`.
 
 ### Integration tests
 
@@ -54,7 +50,7 @@ It does the following:
 1. Build the library
 2. Run unit/svelte-check/integration tests in parallel
 
-The CI should pass if no errors are thrown.
+The CI should pass if no unexpected errors occur.
 
 ## Submitting a Pull Request
 
