@@ -1,20 +1,8 @@
 import * as Rollup from "rollup";
-import * as fs from "fs";
-import * as path from "path";
 import * as svelte from "rollup-plugin-svelte";
 import resolve from "@rollup/plugin-node-resolve";
 import { generateBundle, PluginSveldOptions, writeOutput } from "./rollup-plugin";
-
-function getSvelteEntry() {
-  try {
-    const pkg_path = path.join(process.cwd(), "package.json");
-    const pkg = JSON.parse(fs.readFileSync(pkg_path, "utf-8"));
-    return pkg.svelte;
-  } catch (e) {
-    process.stderr.write(e + "\n");
-    return null;
-  }
-}
+import { getSvelteEntry } from "./get-svelte-entry";
 
 export async function cli(process: NodeJS.Process) {
   const options: PluginSveldOptions = process.argv
