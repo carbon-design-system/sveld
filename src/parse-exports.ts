@@ -3,7 +3,7 @@ import * as acorn from "acorn";
 interface NodeImportDeclaration extends acorn.Node {
   type: "ImportDeclaration";
   specifiers: [{ local: { name: string } }];
-  source: { value: string };
+  source: null | { value: string };
 }
 
 interface NodeExportNamedDeclaration extends acorn.Node, Pick<NodeImportDeclaration, "source"> {
@@ -18,7 +18,7 @@ interface NodeExportDefaultDeclaration extends acorn.Node {
 
 type BodyNode = NodeImportDeclaration | NodeExportNamedDeclaration | NodeExportDefaultDeclaration;
 
-export type ParsedExports = Record<string, { source?: string; default: boolean }>;
+export type ParsedExports = Record<string, { source: string; default: boolean; mixed?: boolean }>;
 
 export function parseExports(source: string) {
   const ast = acorn.parse(source, {
@@ -36,7 +36,7 @@ export function parseExports(source: string) {
       if (id in exports_by_identifier) {
         exports_by_identifier[id].default = true;
       } else {
-        exports_by_identifier[id] = { default: true };
+        exports_by_identifier[id] = { source: "", default: true };
       }
     }
 
@@ -45,10 +45,16 @@ export function parseExports(source: string) {
       const id = exported_name || node.specifiers[0].local.name;
 
       if (id in exports_by_identifier) {
-        exports_by_identifier[id].source = node.source.value;
+        if (node.type === "ExportNamedDeclaration") {
+          exports_by_identifier[id].mixed = true;
+        }
+
+        if (!exports_by_identifier[id].source) {
+          exports_by_identifier[id].source = node.source?.value ?? "";
+        }
       } else {
         exports_by_identifier[id] = {
-          source: node.source.value,
+          source: node.source?.value ?? "",
           default: id === "default",
         };
       }

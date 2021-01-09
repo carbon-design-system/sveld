@@ -69,3 +69,14 @@ test("parseExports – multiple named exports with a default export (declaration
   });
   t.end();
 });
+
+test("parseExports – mixed exports", (t) => {
+  const source = `
+    import Component from "./Component.svelte";
+
+    export { Component };
+    export default Component;`;
+
+  t.deepEqual(parseExports(source), { Component: { source: "./Component.svelte", default: true, mixed: true } });
+  t.end();
+});
