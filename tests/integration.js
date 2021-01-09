@@ -19,7 +19,7 @@ const execCwd = async (dir, ...args) => await exec(`yarn --cwd ${dir} ${args}`);
     for await (const dir of dirs) {
       await execCwd(dir, `link "${name}"`);
       await execCwd(dir, "install");
-      
+
       const build = await execCwd(dir, "build");
       process.stdout.write(build.stdout + "\n");
 

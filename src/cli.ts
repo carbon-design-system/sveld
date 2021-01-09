@@ -24,10 +24,9 @@ export async function cli(process: NodeJS.Process) {
     ],
   });
 
-  const { output } = await rollup_bundle.generate({});
+  await rollup_bundle.generate({});
 
-  // @ts-ignore
-  const result = await generateBundle(output, input);
+  const result = await generateBundle(input);
 
   writeOutput(result, options, input);
 }
