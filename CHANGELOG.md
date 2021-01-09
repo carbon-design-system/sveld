@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.6.0](https://github.com/IBM/carbon-icons-svelte/releases/tag/v0.6.0) - 2021-01-09
 
-- use `acorn` to parse/create TypeScript exports (should address #13 )
+- use `acorn` to parse/create TypeScript exports
 - use `fast-glob` to collect all `*.svelte` files from the Svelte source folder specified in `package.json#svelte`
-- format TS definitions using a prettier printWidth of 80 instead of 120
+- format TS definitions using a prettier `printWidth` of 80 instead of 120
 
 **Breaking Changes**
 
@@ -21,13 +21,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Breaking Changes**
 
-- users will require Svelte version >=3.31 to consume generated TypeScript definitions
+- Svelte version >=3.31 is required to use generated TypeScript definitions
 
 ## [0.4.2](https://github.com/IBM/carbon-icons-svelte/releases/tag/v0.4.2) - 2020-11-25
 
 **Fixes**
 
-- test colon when clamping keys
+- account for `:` when clamping object keys
 
 ## [0.4.1](https://github.com/IBM/carbon-icons-svelte/releases/tag/v0.4.1) - 2020-11-25
 
@@ -37,49 +37,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.4.1](https://github.com/IBM/carbon-icons-svelte/releases/tag/v0.4.0) - 2020-11-25
 
-- Output format for TypeScript definitions extends `SvelteComponent` instead of stubbing class internals used by the Svelte Language Server
+- output format for TypeScript definitions extends `SvelteComponent` instead of stubbing class internals used by the Svelte Language Server
 
 **Breaking Changes**
 
-- Requires svelte version 3.30 or greater
+- Svelte version >=3.30 is required to use generated TypeScript definitions
 
 ## [0.3.0](https://github.com/IBM/carbon-icons-svelte/releases/tag/v0.3.0) - 2020-11-25
 
-- Export component `typedefs` in TypeScript definitions
+- export component `typedefs` in TypeScript definitions
 
 ## [0.2.1](https://github.com/IBM/carbon-icons-svelte/releases/tag/v0.2.1) - 2020-11-19
 
-- Extend interface for empty props use case
+- extend interface for empty props use case
 
 ## [0.2.0](https://github.com/IBM/carbon-icons-svelte/releases/tag/v0.2.0) - 2020-11-19
 
-- Support `@extends` JSDoc syntax to extend imported component prop interfaces
+- support `@extends` tag to extend imported component prop interfaces
 
 ## [0.1.0](https://github.com/IBM/carbon-icons-svelte/releases/tag/v0.1.0) - 2020-11-19
 
-- Allow custom `restProps` type as a definition
-- Fix "undefined" event by checking if the event name is undefined
+- support `@restProps` tag
+- fix "undefined" event by checking if the event name is undefined
 
 ## [0.1.0-rc.5](https://github.com/IBM/carbon-icons-svelte/releases/tag/v0.1.0-rc.5) - 2020-11-18
 
-- For the CLI, use the "svelte" field in `package.json` for the entry point to uncompiled Svelte source code; falls back to "src/index.js"
+- use `package.json#svelte` for the entry point to uncompiled Svelte source code
 
 ## [0.1.0-rc.4](https://github.com/IBM/carbon-icons-svelte/releases/tag/v0.1.0-rc.4) - 2020-11-17
 
-- Add `rollup` to dependencies
+- add `rollup` to dependencies
 
 ## [0.1.0-rc.3](https://github.com/IBM/carbon-icons-svelte/releases/tag/v0.1.0-rc.3) - 2020-11-17
 
-- Add `svelte` to dependencies
+- add `svelte` to dependencies
 
 ## [0.1.0-rc.2](https://github.com/IBM/carbon-icons-svelte/releases/tag/v0.1.0-rc.2) - 2020-11-17
 
-- Add `cli.js` to publishable files
+- add `cli.js` to publishable files
 
 ## [0.1.0-rc.1](https://github.com/IBM/carbon-icons-svelte/releases/tag/v0.1.0-rc.1) - 2020-11-17
 
-- Enable CLI usage by wrapping Rollup plugin
+- enable CLI usage by wrapping Rollup plugin
 
 ## [0.1.0-rc.0](https://github.com/IBM/carbon-icons-svelte/releases/tag/v0.1.0-rc.0) - 2020-11-16
 
-- Initial release
+- initial release
