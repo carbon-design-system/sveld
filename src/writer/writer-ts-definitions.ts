@@ -139,7 +139,7 @@ export interface WriteTsDefinitionsOptions {
 
 export default async function writeTsDefinitions(components: ComponentDocs, options: WriteTsDefinitionsOptions) {
   const ts_base_path = path.join(process.cwd(), options.outDir, "index.d.ts");
-  const writer = new Writer({ parser: "typescript", printWidth: 120 });
+  const writer = new Writer({ parser: "typescript", printWidth: 80 });
   const indexDTs = options.preamble + createExports(options.exports);
 
   for await (const [moduleName, component] of components) {
