@@ -18,13 +18,15 @@ interface NodeExportDefaultDeclaration extends acorn.Node {
 
 type BodyNode = NodeImportDeclaration | NodeExportNamedDeclaration | NodeExportDefaultDeclaration;
 
+export type ParsedExports = Record<string, { source?: string; default: boolean }>;
+
 export function parseExports(source: string) {
   const ast = acorn.parse(source, {
     ecmaVersion: "latest",
     sourceType: "module",
   });
 
-  const exports_by_identifier: Record<string, { source?: string; default: boolean }> = {};
+  const exports_by_identifier: ParsedExports = {};
 
   // @ts-ignore
   ast.body.forEach((node: BodyNode) => {
