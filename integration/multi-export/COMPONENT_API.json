@@ -3,7 +3,7 @@
   "components": [
     {
       "moduleName": "Button",
-      "filePath": "/src/Button.svelte",
+      "filePath": "src/Button.svelte",
       "props": [
         {
           "name": "type",
@@ -38,7 +38,7 @@
     },
     {
       "moduleName": "Link",
-      "filePath": "/src/Link.svelte",
+      "filePath": "src/Link.svelte",
       "props": [],
       "slots": [
         {
@@ -54,7 +54,7 @@
     },
     {
       "moduleName": "Quote",
-      "filePath": "/src/Quote.svelte",
+      "filePath": "src/Quote.svelte",
       "props": [
         {
           "name": "quote",

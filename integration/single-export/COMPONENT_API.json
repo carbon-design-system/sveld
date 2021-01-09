@@ -3,7 +3,7 @@
   "components": [
     {
       "moduleName": "Button",
-      "filePath": "/component/Button.svelte",
+      "filePath": "component/Button.svelte",
       "props": [
         {
           "name": "type",
