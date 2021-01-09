@@ -1,3 +1,9 @@
+os:
+  - linux
+  - windows
+  - osx
+env:
+  - YARN_GPG=no
 language: node_js
 node_js: 12
 cache: yarn
