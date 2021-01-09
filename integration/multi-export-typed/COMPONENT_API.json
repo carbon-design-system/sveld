@@ -3,7 +3,7 @@
   "components": [
     {
       "moduleName": "Button",
-      "filePath": "/src/Button.svelte",
+      "filePath": "src/Button.svelte",
       "props": [
         {
           "name": "type",
@@ -38,35 +38,8 @@
       "rest_props": { "type": "Element", "name": "button" }
     },
     {
-      "moduleName": "SecondaryButton",
-      "filePath": "/src/SecondaryButton.svelte",
-      "props": [
-        {
-          "name": "secondary",
-          "kind": "const",
-          "type": "boolean",
-          "value": "true",
-          "isFunction": false,
-          "constant": true,
-          "reactive": false
-        }
-      ],
-      "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "fallback": "Click me",
-          "slot_props": "{}"
-        }
-      ],
-      "events": [{ "type": "forwarded", "name": "click", "element": "Button" }],
-      "typedefs": [],
-      "rest_props": { "type": "InlineComponent", "name": "Button" },
-      "extends": { "interface": "ButtonProps", "import": "\"./Button\"" }
-    },
-    {
       "moduleName": "Link",
-      "filePath": "/src/Link.svelte",
+      "filePath": "src/Link.svelte",
       "props": [],
       "slots": [
         {
@@ -82,7 +55,7 @@
     },
     {
       "moduleName": "Quote",
-      "filePath": "/src/Quote.svelte",
+      "filePath": "src/Quote.svelte",
       "props": [
         {
           "name": "quote",
@@ -114,6 +87,33 @@
       "events": [],
       "typedefs": [],
       "rest_props": { "type": "Element", "name": "blockquote" }
+    },
+    {
+      "moduleName": "SecondaryButton",
+      "filePath": "src/SecondaryButton.svelte",
+      "props": [
+        {
+          "name": "secondary",
+          "kind": "const",
+          "type": "boolean",
+          "value": "true",
+          "isFunction": false,
+          "constant": true,
+          "reactive": false
+        }
+      ],
+      "slots": [
+        {
+          "name": "__default__",
+          "default": true,
+          "fallback": "Click me",
+          "slot_props": "{}"
+        }
+      ],
+      "events": [{ "type": "forwarded", "name": "click", "element": "Button" }],
+      "typedefs": [],
+      "rest_props": { "type": "InlineComponent", "name": "Button" },
+      "extends": { "interface": "ButtonProps", "import": "\"./Button\"" }
     }
   ]
 }

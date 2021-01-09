@@ -1,4 +1,6 @@
 import * as path from "path";
+import { convertSvelteExt, createExports } from "../create-exports";
+import { ParsedExports } from "../parse-exports";
 import { ComponentDocApi, ComponentDocs } from "../rollup-plugin";
 import Writer from "./Writer";
 
@@ -128,46 +130,21 @@ export function writeTsDefinition(component: ComponentDocApi) {
     > {}`;
 }
 
-function createExport(file_path: string, { moduleName, isDefault }: { moduleName: string; isDefault: boolean }) {
-  return `export { default as ${isDefault ? "default" : moduleName} } from "${file_path}";`;
-}
-
 export interface WriteTsDefinitionsOptions {
   outDir: string;
   inputDir: string;
   preamble: string;
-  exports: string[];
-  default_export: { moduleName: null | string; only: boolean };
-  rendered_exports: string[];
+  exports: ParsedExports;
 }
 
 export default async function writeTsDefinitions(components: ComponentDocs, options: WriteTsDefinitionsOptions) {
-  const ts_folder_path = path.join(process.cwd(), options.outDir);
-  const ts_base_path = path.join(ts_folder_path, "index.d.ts");
-  const writer = new Writer({ parser: "typescript", printWidth: 120 });
-
-  let indexDTs = options.preamble;
+  const ts_base_path = path.join(process.cwd(), options.outDir, "index.d.ts");
+  const writer = new Writer({ parser: "typescript", printWidth: 80 });
+  const indexDTs = options.preamble + createExports(options.exports);
 
   for await (const [moduleName, component] of components) {
-    const ts_filepath = component.filePath.replace(".svelte", ".d.ts");
-    const ts_path = component.filePath.replace(".svelte", "");
-    const export_path = ts_path.startsWith("./") ? ts_path : "./" + ts_path;
-
-    if (options.default_export.moduleName == null) {
-      indexDTs += createExport(export_path, { moduleName, isDefault: false });
-    } else {
-      if (options.default_export.only) {
-        indexDTs += createExport(export_path, { moduleName, isDefault: true });
-      } else {
-        indexDTs += createExport(export_path, { moduleName, isDefault: false });
-
-        if (options.rendered_exports.includes(moduleName)) {
-          indexDTs += createExport(export_path, { moduleName, isDefault: true });
-        }
-      }
-    }
-
-    await writer.write(path.join(ts_folder_path, ts_filepath), writeTsDefinition(component));
+    const ts_filepath = convertSvelteExt(component.filePath).replace(options.inputDir, options.outDir);
+    await writer.write(ts_filepath, writeTsDefinition(component));
   }
 
   await writer.write(ts_base_path, indexDTs);
