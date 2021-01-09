@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@rollup/plugin-node-resolve": "^11.0.1",
+    "acorn": "^8.0.4",
     "comment-parser": "^0.7.6",
     "fs-extra": "^9.0.1",
     "prettier": "^2.2.1",
