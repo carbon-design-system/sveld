@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0](https://github.com/IBM/carbon-icons-svelte/releases/tag/v0.6.0) - 2021-01-09
+
+- use `acorn` to parse/create TypeScript exports (should address #13 )
+- use `fast-glob` to collect all `*.svelte` files from the Svelte source folder specified in `package.json#svelte`
+- format TS definitions using a prettier printWidth of 80 instead of 120
+
+**Breaking Changes**
+
+- `filePath` in generated JSON output is relative instead of absolute (normalized using `path.normalize`)
+
 ## [0.5.0](https://github.com/IBM/carbon-icons-svelte/releases/tag/v0.5.0) - 2020-12-05
 
 - generate TypeScript definitions to use `SvelteComponentTyped` interface instead of `SvelteComponent`
