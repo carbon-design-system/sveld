@@ -299,7 +299,7 @@ export default class ComponentParser {
           }
         }
 
-        if (node.type === "ExportNamedDeclaration") {
+        if (node.type === "ExportNamedDeclaration" && node.declaration != null) {
           const { type: declaration_type, id, init, body } = node.declaration.declarations
             ? node.declaration.declarations[0]
             : node.declaration;
