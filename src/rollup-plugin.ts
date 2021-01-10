@@ -6,15 +6,14 @@ import writeMarkdown, { WriteMarkdownOptions } from "./writer/writer-markdown";
 import ComponentParser, { ParsedComponent } from "./ComponentParser";
 import { getSvelteEntry } from "./get-svelte-entry";
 import { ParsedExports, parseExports } from "./parse-exports";
-import { getSvelteFiles } from "./get-svelte-files";
 
 export interface PluginSveldOptions {
   types?: boolean;
-  typesOptions?: WriteTsDefinitionsOptions;
+  typesOptions?: Partial<Omit<WriteTsDefinitionsOptions, "inputDir">>;
   json?: boolean;
-  jsonOptions?: WriteJsonOptions;
+  jsonOptions?: Partial<Omit<WriteJsonOptions, "inputDir">>;
   markdown?: boolean;
-  markdownOptions?: WriteMarkdownOptions;
+  markdownOptions?: Partial<WriteMarkdownOptions>;
 }
 
 type ComponentModuleName = string;
@@ -52,13 +51,15 @@ interface GenerateBundleResult {
 }
 
 export async function generateBundle(input: string) {
+  const dir = fs.lstatSync(input).isFile() ? path.dirname(input) : input;
   const entry = fs.readFileSync(input, "utf-8");
   const exports = parseExports(entry);
   const components: ComponentDocs = new Map();
   const parser = new ComponentParser();
 
-  for (const { filePath, moduleName } of getSvelteFiles(input)) {
-    const source = await fs.readFile(filePath, "utf-8");
+  for (const [moduleName, entry] of Object.entries(exports)) {
+    const filePath = entry.source;
+    const source = await fs.readFile(path.resolve(dir, filePath), "utf-8");
 
     components.set(moduleName, {
       moduleName,
@@ -77,13 +78,15 @@ export async function generateBundle(input: string) {
 }
 
 export function writeOutput(result: GenerateBundleResult, opts: PluginSveldOptions, input: string) {
+  const inputDir = path.dirname(input);
+
   if (opts?.types !== false) {
     writeTsDefinitions(result.components, {
-      inputDir: path.dirname(input),
       outDir: "types",
       preamble: "",
       ...opts?.typesOptions,
       exports: result.exports,
+      inputDir,
     });
   }
 
@@ -92,6 +95,7 @@ export function writeOutput(result: GenerateBundleResult, opts: PluginSveldOptio
       outFile: "COMPONENT_API.json",
       ...opts?.jsonOptions,
       input,
+      inputDir,
     });
   }
 

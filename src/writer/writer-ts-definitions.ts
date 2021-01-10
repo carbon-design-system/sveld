@@ -143,7 +143,7 @@ export default async function writeTsDefinitions(components: ComponentDocs, opti
   const indexDTs = options.preamble + createExports(options.exports);
 
   for await (const [moduleName, component] of components) {
-    const ts_filepath = convertSvelteExt(component.filePath).replace(options.inputDir, options.outDir);
+    const ts_filepath = convertSvelteExt(path.join(options.outDir, component.filePath));
     await writer.write(ts_filepath, writeTsDefinition(component));
   }
 

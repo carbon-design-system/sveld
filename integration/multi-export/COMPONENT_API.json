@@ -1,5 +1,5 @@
 {
-  "total": 3,
+  "total": 4,
   "components": [
     {
       "moduleName": "Button",
@@ -35,6 +35,14 @@
       "events": [{ "type": "forwarded", "name": "click", "element": "button" }],
       "typedefs": [],
       "rest_props": { "type": "Element", "name": "button" }
+    },
+    {
+      "moduleName": "Header",
+      "filePath": "src/nested/Header.svelte",
+      "props": [],
+      "slots": [{ "name": "__default__", "default": true, "slot_props": "{}" }],
+      "events": [],
+      "typedefs": []
     },
     {
       "moduleName": "Link",
