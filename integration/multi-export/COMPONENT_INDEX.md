@@ -1,10 +1,11 @@
 # Component Index
 
-> 3 components exported from multi-export@0.0.1.
+> 4 components exported from multi-export@0.0.1.
 
 ## Components
 
 - [`Button`](#button)
+- [`Header`](#header)
 - [`Link`](#link)
 - [`Quote`](#quote)
 
@@ -30,6 +31,22 @@
 | Event name | Type      | Detail |
 | :--------- | :-------- | :----- |
 | click      | forwarded | --     |
+
+## `Header`
+
+### Props
+
+None.
+
+### Slots
+
+| Slot name | Default | Props | Fallback |
+| :-------- | :------ | :---- | :------- |
+| --        | Yes     | --    | --       |
+
+### Events
+
+None.
 
 ## `Link`
 

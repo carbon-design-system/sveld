@@ -4,6 +4,7 @@ import Writer from "./Writer";
 
 export interface WriteJsonOptions {
   input: string;
+  inputDir: string;
   outFile: string;
 }
 
@@ -17,7 +18,7 @@ export default async function writeJson(components: ComponentDocs, options: Writ
     total: components.size,
     components: Array.from(components, ([moduleName, component]) => ({
       ...component,
-      filePath: path.normalize(component.filePath),
+      filePath: path.join(options.inputDir, path.normalize(component.filePath)),
     })).sort((a, b) => {
       if (a.moduleName < b.moduleName) return -1;
       if (a.moduleName > b.moduleName) return 1;
