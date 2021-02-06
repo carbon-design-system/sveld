@@ -1,6 +1,6 @@
 {
   "name": "sveld",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "license": "Apache-2.0",
   "description": "Generate TypeScript definitions for your Svelte components.",
   "author": "Eric Liu (https://github.com/metonym)",
