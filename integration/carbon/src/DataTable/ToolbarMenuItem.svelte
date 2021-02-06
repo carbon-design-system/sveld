@@ -1,0 +1,9 @@
+<script>
+  /** @extends {"../OverflowMenu/OverflowMenuItem"} OverflowMenuItemProps */
+
+  import { OverflowMenuItem } from "../OverflowMenu";
+</script>
+
+<OverflowMenuItem {...$$restProps} on:click on:keydown>
+  <slot />
+</OverflowMenuItem>
