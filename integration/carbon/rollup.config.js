@@ -15,6 +15,7 @@ export default {
     commonjs(),
     production &&
       sveld({
+        glob: true,
         typesOptions: {
           preamble: `// TypeScript definitions for ${pkg.name}@${pkg.version}\n\n`,
         },
