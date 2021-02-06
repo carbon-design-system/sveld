@@ -1,5 +1,6 @@
 import * as fs from "fs-extra";
 import * as path from "path";
+import * as fg from "fast-glob";
 import writeTsDefinitions, { WriteTsDefinitionsOptions } from "./writer/writer-ts-definitions";
 import writeJson, { WriteJsonOptions } from "./writer/writer-json";
 import writeMarkdown, { WriteMarkdownOptions } from "./writer/writer-markdown";
@@ -8,6 +9,7 @@ import { getSvelteEntry } from "./get-svelte-entry";
 import { ParsedExports, parseExports } from "./parse-exports";
 
 export interface PluginSveldOptions {
+  glob?: boolean;
   types?: boolean;
   typesOptions?: Partial<Omit<WriteTsDefinitionsOptions, "inputDir">>;
   json?: boolean;
@@ -36,7 +38,7 @@ export default function pluginSveld(opts?: PluginSveldOptions) {
     },
     async generateBundle() {
       if (input != null) {
-        result = await generateBundle(input);
+        result = await generateBundle(input, opts?.glob === true);
       }
     },
     writeBundle() {
@@ -50,10 +52,22 @@ interface GenerateBundleResult {
   components: ComponentDocs;
 }
 
-export async function generateBundle(input: string) {
+export async function generateBundle(input: string, glob: boolean) {
   const dir = fs.lstatSync(input).isFile() ? path.dirname(input) : input;
   const entry = fs.readFileSync(input, "utf-8");
   const exports = parseExports(entry);
+
+  if (glob) {
+    fg.sync([`${dir}/**/*.svelte`]).forEach((file) => {
+      const moduleName = path.parse(file).name.replace(/\-/g, "");
+      const source = "./" + path.relative(dir, file);
+
+      if (exports[moduleName]) {
+        exports[moduleName].source = source;
+      }
+    });
+  }
+
   const components: ComponentDocs = new Map();
   const parser = new ComponentParser();
 

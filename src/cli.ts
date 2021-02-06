@@ -26,7 +26,7 @@ export async function cli(process: NodeJS.Process) {
 
   await rollup_bundle.generate({});
 
-  const result = await generateBundle(input);
+  const result = await generateBundle(input, options?.glob === true);
 
   writeOutput(result, options, input);
 }

@@ -2,13 +2,13 @@ import * as acorn from "acorn";
 
 interface NodeImportDeclaration extends acorn.Node {
   type: "ImportDeclaration";
-  specifiers: [{ local: { name: string } }];
+  specifiers: { local: { name: string } }[];
   source: null | { value: string };
 }
 
 interface NodeExportNamedDeclaration extends acorn.Node, Pick<NodeImportDeclaration, "source"> {
   type: "ExportNamedDeclaration";
-  specifiers: [{ local: { name: string }; exported: { name: string } }];
+  specifiers: { local: { name: string }; exported: { name: string } }[];
 }
 
 interface NodeExportDefaultDeclaration extends acorn.Node {
@@ -40,15 +40,30 @@ export function parseExports(source: string) {
       }
     }
 
-    if (node.type === "ImportDeclaration" || node.type === "ExportNamedDeclaration") {
-      const exported_name = node.type === "ExportNamedDeclaration" ? node.specifiers[0].exported?.name : undefined;
-      const id = exported_name || node.specifiers[0].local.name;
+    if (node.type === "ExportNamedDeclaration") {
+      node.specifiers.forEach((specifier) => {
+        const exported_name = specifier.exported.name;
+        const id = exported_name || specifier.local.name;
+
+        if (id in exports_by_identifier) {
+          if (node.type === "ExportNamedDeclaration") {
+            exports_by_identifier[id].mixed = true;
+          }
+
+          if (!exports_by_identifier[id].source) {
+            exports_by_identifier[id].source = node.source?.value ?? "";
+          }
+        } else {
+          exports_by_identifier[id] = {
+            source: node.source?.value ?? "",
+            default: id === "default",
+          };
+        }
+      });
+    } else if (node.type === "ImportDeclaration") {
+      const id = node.specifiers[0].local.name;
 
       if (id in exports_by_identifier) {
-        if (node.type === "ExportNamedDeclaration") {
-          exports_by_identifier[id].mixed = true;
-        }
-
         if (!exports_by_identifier[id].source) {
           exports_by_identifier[id].source = node.source?.value ?? "";
         }
