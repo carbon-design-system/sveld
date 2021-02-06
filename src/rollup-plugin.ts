@@ -1,5 +1,6 @@
 import * as fs from "fs-extra";
 import * as path from "path";
+import * as fg from "fast-glob";
 import writeTsDefinitions, { WriteTsDefinitionsOptions } from "./writer/writer-ts-definitions";
 import writeJson, { WriteJsonOptions } from "./writer/writer-json";
 import writeMarkdown, { WriteMarkdownOptions } from "./writer/writer-markdown";
@@ -54,6 +55,17 @@ export async function generateBundle(input: string) {
   const dir = fs.lstatSync(input).isFile() ? path.dirname(input) : input;
   const entry = fs.readFileSync(input, "utf-8");
   const exports = parseExports(entry);
+
+  fg.sync([`${dir}/**/*.svelte`]).forEach((file) => {
+    const { name, ...rest } = path.parse(file);
+    const moduleName = name.replace(/\-/g, "");
+    const source = "./" + path.relative(dir, file);
+
+    if (exports[moduleName]) {
+      exports[moduleName].source = source;
+    }
+  });
+
   const components: ComponentDocs = new Map();
   const parser = new ComponentParser();
 

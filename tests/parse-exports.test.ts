@@ -80,3 +80,13 @@ test("parseExports – mixed exports", (t) => {
   t.deepEqual(parseExports(source), { Component: { source: "./Component.svelte", default: true, mixed: true } });
   t.end();
 });
+
+test("parseExports – multiple, non-default exports", (t) => {
+  const source = `export { Component, Component2 } from "./component";`;
+
+  t.deepEqual(parseExports(source), {
+    Component: { source: "./component", default: false },
+    Component2: { source: "./component", default: false },
+  });
+  t.end();
+});
