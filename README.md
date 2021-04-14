@@ -173,8 +173,8 @@ When building the library with Rollup, TypeScript definitions will be written to
 The [integration](integration) folder contains example set-ups:
 
 - [single-export](integration/single-export): library that exports one component
-- [multi-export](multi-export): multi-component library without JSDoc annotations (types are inferred)
-- [multi-export-typed](multi-export-typed): multi-component library with JSDoc annotations
+- [multi-export](integration/multi-export): multi-component library without JSDoc annotations (types are inferred)
+- [multi-export-typed](integration/multi-export-typed): multi-component library with JSDoc annotations
 
 ### CLI
 
