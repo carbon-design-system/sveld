@@ -7,6 +7,8 @@ import writeMarkdown, { WriteMarkdownOptions } from "./writer/writer-markdown";
 import ComponentParser, { ParsedComponent } from "./ComponentParser";
 import { getSvelteEntry } from "./get-svelte-entry";
 import { ParsedExports, parseExports } from "./parse-exports";
+import { preprocess } from "svelte/compiler";
+import { replace, typescript } from "svelte-preprocess";
 
 export interface PluginSveldOptions {
   glob?: boolean;
@@ -77,10 +79,20 @@ export async function generateBundle(input: string, glob: boolean) {
 
     if (ext === '.svelte') {
       const source = await fs.readFile(path.resolve(dir, filePath), "utf-8");
+
+      const { code: processed } = await preprocess(
+        source,
+        [
+          typescript(),
+          replace([[/<style.+<\/style>/gims, ""]]),
+        ],
+        { filename: path.basename(filePath) }
+      );
+
       components.set(moduleName, {
         moduleName,
         filePath,
-        ...parser.parseSvelteComponent(source, {
+        ...parser.parseSvelteComponent(processed, {
           moduleName,
           filePath,
         }),
