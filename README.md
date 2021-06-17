@@ -175,6 +175,9 @@ The [integration](integration) folder contains example set-ups:
 - [single-export](integration/single-export): library that exports one component
 - [multi-export](integration/multi-export): multi-component library without JSDoc annotations (types are inferred)
 - [multi-export-typed](integration/multi-export-typed): multi-component library with JSDoc annotations
+- [multi-export-typed-ts-only](integration/multi-export-typed-ts-only): multi-component library that only generates TS definitions
+- [glob](integration/glob): library that uses the glob strategy to collect/analyze \*.svelte files
+- [carbon](integration/carbon): full `carbon-components-svelte` example
 
 ### CLI
 
