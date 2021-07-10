@@ -1,9 +1,9 @@
 {
   "name": "sveld",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "license": "Apache-2.0",
   "description": "Generate TypeScript definitions for your Svelte components.",
-  "author": "Eric Liu (https://github.com/metonym)",
+  "author": "IBM",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "scripts": {
