@@ -32,6 +32,7 @@ function addCommentLine(value: any, returnValue?: any) {
 
 function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleName" | "extends">) {
   const props = def.props
+    .filter((prop) => !prop.isFunctionDeclaration)
     .map((prop) => {
       const prop_comments = [
         addCommentLine(prop.description?.replace(/\n/g, "\n* ")),
@@ -102,6 +103,29 @@ function genEventDef(def: Pick<ComponentDocApi, "events">) {
     .join("\n");
 }
 
+function genAccessors(def: Pick<ComponentDocApi, "props">) {
+  return def.props
+    .filter((prop) => prop.isFunctionDeclaration)
+    .map((prop) => {
+      const prop_comments = [
+        addCommentLine(prop.description?.replace(/\n/g, "\n* ")),
+        /*  addCommentLine(
+          prop.value,
+          `@default ${typeof prop.value === "string" ? prop.value.replace(/\s+/g, " ") : prop.value}`
+        ), */
+      ]
+        .filter(Boolean)
+        .join("");
+
+      let prop_value = /* prop.constant && !prop.isFunction ? prop.value :  */ prop.type;
+
+      return `
+    ${prop_comments.length > 0 ? `/**\n${prop_comments}*/` : EMPTY_STR}
+    ${prop.name}?: ${prop_value};`;
+    })
+    .join("\n");
+}
+
 function genImports(def: Pick<ComponentDocApi, "extends">) {
   if (def.extends === undefined) return "";
   return `import { ${def.extends.interface} } from ${def.extends.import};`;
@@ -127,7 +151,9 @@ export function writeTsDefinition(component: ComponentDocApi) {
       ${props_name},
       {${genEventDef({ events })}},
       {${genSlotDef({ slots })}}
-    > {}`;
+    > {
+      ${genAccessors({ props })}
+    }`;
 }
 
 export interface WriteTsDefinitionsOptions {

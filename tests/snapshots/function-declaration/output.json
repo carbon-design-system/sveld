@@ -1,0 +1,48 @@
+{
+  "props": [
+    {
+      "name": "fnA",
+      "kind": "let",
+      "type": "() => {}",
+      "value": "() => {}",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "fnB",
+      "kind": "const",
+      "type": "() => {}",
+      "value": "() => {}",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "constant": true,
+      "reactive": false
+    },
+    {
+      "name": "add",
+      "kind": "function",
+      "type": "() => any",
+      "value": "() => {     return a + b;   }",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "multiply",
+      "kind": "function",
+      "description": "Multiplies two numbers",
+      "type": "(a: number, b: number) => number",
+      "value": "() => {     return a * b;   }",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "slots": [],
+  "events": [],
+  "typedefs": []
+}

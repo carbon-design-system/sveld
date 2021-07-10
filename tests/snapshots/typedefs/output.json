@@ -6,6 +6,7 @@
       "type": "MyTypedef",
       "value": "{ [\"1\"]: true }",
       "isFunction": false,
+      "isFunctionDeclaration": false,
       "constant": false,
       "reactive": false
     },
@@ -15,6 +16,7 @@
       "type": "MyTypedefArray",
       "value": "[]",
       "isFunction": false,
+      "isFunctionDeclaration": false,
       "constant": false,
       "reactive": false
     }

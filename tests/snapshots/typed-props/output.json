@@ -6,6 +6,7 @@
       "description": "prop1 description 1\nprop1 description 2",
       "type": "string",
       "isFunction": false,
+      "isFunctionDeclaration": false,
       "constant": false,
       "reactive": false
     },
@@ -15,6 +16,7 @@
       "description": "prop2 description 1\nprop2 description 2",
       "value": "null",
       "isFunction": false,
+      "isFunctionDeclaration": false,
       "constant": false,
       "reactive": false
     },
@@ -24,6 +26,7 @@
       "type": "4 | '4'",
       "value": "4",
       "isFunction": false,
+      "isFunctionDeclaration": false,
       "constant": false,
       "reactive": false
     },
@@ -33,6 +36,7 @@
       "type": "\"red\" | \"blue\"",
       "value": "\"red\"",
       "isFunction": false,
+      "isFunctionDeclaration": false,
       "constant": false,
       "reactive": false
     }

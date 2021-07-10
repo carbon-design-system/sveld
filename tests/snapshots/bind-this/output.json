@@ -5,6 +5,7 @@
       "kind": "let",
       "type": "null | HTMLButtonElement",
       "isFunction": false,
+      "isFunctionDeclaration": false,
       "constant": false,
       "reactive": true
     }
