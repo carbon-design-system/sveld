@@ -12,6 +12,7 @@
           "type": "\"start\" | \"end\"",
           "value": "\"end\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -21,6 +22,7 @@
           "description": "Specify the size of the accordion",
           "type": "\"sm\" | \"xl\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -31,6 +33,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -41,6 +44,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -86,6 +90,7 @@
           "type": "string",
           "value": "\"title\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -96,6 +101,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -106,6 +112,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -116,6 +123,7 @@
           "type": "string",
           "value": "\"Expand/Collapse\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -151,6 +159,7 @@
           "type": "number",
           "value": "4",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -161,6 +170,7 @@
           "type": "\"start\" | \"end\"",
           "value": "\"end\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -170,6 +180,7 @@
           "description": "Specify the size of the accordion",
           "type": "\"sm\" | \"xl\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -180,6 +191,7 @@
           "type": "boolean",
           "value": "true",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -205,6 +217,7 @@
           "type": "\"2x1\" | \"16x9\" | \"4x3\" | \"1x1\" | \"3x4\" | \"9x16\" | \"1x2\"",
           "value": "\"2x1\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -225,6 +238,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -235,6 +249,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -279,6 +294,7 @@
           "description": "Set the `href` to use an anchor link",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -289,6 +305,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -320,6 +337,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -330,6 +348,7 @@
           "type": "number",
           "value": "3",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -355,6 +374,7 @@
           "type": "\"primary\" | \"secondary\" | \"tertiary\" | \"ghost\" | \"danger\" | \"danger-tertiary\" | \"danger-ghost\"",
           "value": "\"primary\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -365,6 +385,7 @@
           "type": "\"default\" | \"field\" | \"small\"",
           "value": "\"default\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -375,6 +396,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -384,6 +406,7 @@
           "description": "Specify the icon from `carbon-icons-svelte` to render",
           "type": "typeof import(\"carbon-icons-svelte\").CarbonIcon",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -393,6 +416,7 @@
           "description": "Specify the ARIA label for the button icon",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -403,6 +427,7 @@
           "type": "\"start\" | \"center\" | \"end\"",
           "value": "\"center\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -413,6 +438,7 @@
           "type": "\"top\" | \"right\" | \"bottom\" | \"left\"",
           "value": "\"bottom\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -423,6 +449,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -433,6 +460,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -443,6 +471,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -452,6 +481,7 @@
           "description": "Set the `href` to use an anchor link",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -462,6 +492,7 @@
           "type": "string",
           "value": "\"0\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -472,6 +503,7 @@
           "type": "string",
           "value": "\"button\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -482,6 +514,7 @@
           "type": "null | HTMLAnchorElement | HTMLButtonElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -529,6 +562,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -548,6 +582,7 @@
           "description": "Set the `href` to use an anchor link",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -558,6 +593,7 @@
           "type": "\"default\" | \"field\" | \"small\"",
           "value": "\"default\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -567,6 +603,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -592,6 +629,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -602,6 +640,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -612,6 +651,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -622,6 +662,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -632,6 +673,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -642,6 +684,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -652,6 +695,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -662,6 +706,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -671,6 +716,7 @@
           "description": "Specify the title attribute for the label element",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -681,6 +727,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -691,6 +738,7 @@
           "type": "null | HTMLInputElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -744,6 +792,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -754,6 +803,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -763,6 +813,7 @@
           "description": "Set the `href`",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -789,6 +840,7 @@
           "type": "\"single\" | \"inline\" | \"multi\"",
           "value": "\"single\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -798,6 +850,7 @@
           "description": "Set the code snippet text\nAlternatively, use the default slot (e.g., <CodeSnippet>{`code`}</CodeSnippet>)",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -808,6 +861,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -818,6 +872,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -828,6 +883,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -838,6 +894,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -848,6 +905,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -858,6 +916,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -867,6 +926,7 @@
           "description": "Specify the ARIA label for the copy button icon",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -876,6 +936,7 @@
           "description": "Specify the ARIA label of the copy button",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -886,6 +947,7 @@
           "type": "string",
           "value": "\"Copied!\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -896,6 +958,7 @@
           "type": "number",
           "value": "2000",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -906,6 +969,7 @@
           "type": "string",
           "value": "\"Show less\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -916,6 +980,7 @@
           "type": "string",
           "value": "\"Show more\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -926,6 +991,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -936,6 +1002,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -946,6 +1013,7 @@
           "type": "null | HTMLPreElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -995,6 +1063,7 @@
           "type": "\"single\" | \"multi\"",
           "value": "\"single\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -1020,6 +1089,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1030,6 +1100,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1040,6 +1111,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1050,6 +1122,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1060,6 +1133,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1069,6 +1143,7 @@
           "description": "Specify the aspect ratio of the column",
           "type": "\"2x1\" | \"16x9\" | \"9x16\" | \"1x2\" | \"4x3\" | \"3x4\" | \"1x1\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1078,6 +1153,7 @@
           "description": "Set the small breakpoint",
           "type": "ColumnBreakpoint",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1087,6 +1163,7 @@
           "description": "Set the medium breakpoint",
           "type": "ColumnBreakpoint",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1096,6 +1173,7 @@
           "description": "Set the large breakpoint",
           "type": "ColumnBreakpoint",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1105,6 +1183,7 @@
           "description": "Set the extra large breakpoint",
           "type": "ColumnBreakpoint",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1114,6 +1193,7 @@
           "description": "Set the maximum breakpoint",
           "type": "ColumnBreakpoint",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -1156,6 +1236,7 @@
           "type": "ComboBoxItem[]",
           "value": "[]",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1166,6 +1247,7 @@
           "type": "(item: ComboBoxItem) => string",
           "value": "(item) => item.text || item.id",
           "isFunction": true,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1176,6 +1258,7 @@
           "type": "number",
           "value": "-1",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -1186,6 +1269,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -1195,6 +1279,7 @@
           "description": "Set the size of the combobox",
           "type": "\"sm\" | \"xl\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1205,6 +1290,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1215,6 +1301,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1225,6 +1312,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1235,6 +1323,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1245,6 +1334,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1255,6 +1345,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1265,6 +1356,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1275,6 +1367,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -1285,6 +1378,7 @@
           "type": "(item: ComboBoxItem, value: string) => boolean",
           "value": "() => true",
           "isFunction": true,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1294,6 +1388,7 @@
           "description": "Override the default translation ids",
           "type": "(id: any) => string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1304,6 +1399,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1313,6 +1409,7 @@
           "description": "Specify a name attribute for the input",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1323,6 +1420,7 @@
           "type": "null | HTMLInputElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -1333,6 +1431,7 @@
           "type": "null | HTMLDivElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -1369,6 +1468,7 @@
           "description": "Set the size of the composed modal",
           "type": "\"xs\" | \"sm\" | \"lg\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1379,6 +1479,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -1389,6 +1490,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1399,6 +1501,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1409,6 +1512,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1419,6 +1523,7 @@
           "type": "null | string",
           "value": "\"[data-modal-primary-focus]\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1429,6 +1534,7 @@
           "type": "null | HTMLDivElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -1458,6 +1564,7 @@
           "type": "string",
           "value": "\"main-content\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -1478,6 +1585,7 @@
           "type": "number",
           "value": "0",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -1488,6 +1596,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1497,6 +1606,7 @@
           "description": "Specify the size of the content switcher",
           "type": "\"sm\" | \"xl\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -1523,6 +1633,7 @@
           "type": "string",
           "value": "\"Copied!\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1533,6 +1644,7 @@
           "type": "number",
           "value": "2000",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1543,6 +1655,7 @@
           "type": "null | HTMLButtonElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -1573,6 +1686,7 @@
           "type": "string",
           "value": "\"Copy to clipboard\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -1597,6 +1711,7 @@
           "type": "DataTableHeader[]",
           "value": "[]",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1607,6 +1722,7 @@
           "type": "DataTableRow[]",
           "value": "[]",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -1616,6 +1732,7 @@
           "description": "Set the size of the data table",
           "type": "\"compact\" | \"short\" | \"tall\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1626,6 +1743,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1636,6 +1754,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1646,6 +1765,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1656,6 +1776,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1666,6 +1787,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -1676,6 +1798,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1686,6 +1809,7 @@
           "type": "DataTableRowId[]",
           "value": "[]",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -1696,6 +1820,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1706,6 +1831,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -1716,6 +1842,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1726,6 +1853,7 @@
           "type": "DataTableRowId[]",
           "value": "[]",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -1736,6 +1864,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -1853,6 +1982,7 @@
           "type": "number",
           "value": "5",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1863,6 +1993,7 @@
           "type": "number",
           "value": "5",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1872,6 +2003,7 @@
           "description": "Set the size of the data table",
           "type": "\"compact\" | \"short\" | \"tall\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1882,6 +2014,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1892,6 +2025,7 @@
           "type": "boolean",
           "value": "true",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1902,6 +2036,7 @@
           "type": "string[] | Partial<DataTableHeader>[]",
           "value": "[]",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1912,6 +2047,7 @@
           "type": "boolean",
           "value": "true",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -1941,6 +2077,7 @@
           "type": "\"simple\" | \"single\" | \"range\"",
           "value": "\"simple\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1951,6 +2088,7 @@
           "type": "number | string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -1960,6 +2098,7 @@
           "description": "Specify the element to append the calendar to",
           "type": "HTMLElement",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1970,6 +2109,7 @@
           "type": "string",
           "value": "\"m/d/Y\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1980,6 +2120,7 @@
           "type": "null | string | Date",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -1990,6 +2131,7 @@
           "type": "null | string | Date",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2000,6 +2142,7 @@
           "type": "string",
           "value": "\"en\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2010,6 +2153,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2020,6 +2164,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2030,6 +2175,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -2055,6 +2201,7 @@
           "description": "Set the size of the input",
           "type": "\"sm\" | \"xl\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2065,6 +2212,7 @@
           "type": "string",
           "value": "\"text\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2075,6 +2223,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2085,6 +2234,7 @@
           "type": "string",
           "value": "\"\\\\d{1,2}\\\\/\\\\d{1,2}\\\\/\\\\d{4}\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2095,6 +2245,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2105,6 +2256,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2115,6 +2267,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2125,6 +2278,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2135,6 +2289,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2145,6 +2300,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2155,6 +2311,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2164,6 +2321,7 @@
           "description": "Set a name for the input element",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2174,6 +2332,7 @@
           "type": "null | HTMLInputElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -2198,6 +2357,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2208,6 +2368,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -2233,6 +2394,7 @@
           "type": "DropdownItem[]",
           "value": "[]",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2243,6 +2405,7 @@
           "type": "(item: DropdownItem) => string",
           "value": "(item) => item.text || item.id",
           "isFunction": true,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2253,6 +2416,7 @@
           "type": "number",
           "value": "-1",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -2263,6 +2427,7 @@
           "type": "\"default\" | \"inline\"",
           "value": "\"default\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2272,6 +2437,7 @@
           "description": "Specify the size of the dropdown field",
           "type": "\"sm\" | \"lg\" | \"xl\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2282,6 +2448,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -2292,6 +2459,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -2302,6 +2470,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2312,6 +2481,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2322,6 +2492,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2332,6 +2503,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2342,6 +2514,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2352,6 +2525,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2362,6 +2536,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2372,6 +2547,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2381,6 +2557,7 @@
           "description": "Specify the list box label",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2390,6 +2567,7 @@
           "description": "Override the default translation ids",
           "type": "(id: any) => string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2400,6 +2578,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2409,6 +2588,7 @@
           "description": "Specify a name attribute for the list box",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2419,6 +2599,7 @@
           "type": "null | HTMLButtonElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -2461,6 +2642,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -2486,6 +2668,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -2496,6 +2679,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2506,6 +2690,7 @@
           "type": "number",
           "value": "0",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -2516,6 +2701,7 @@
           "type": "number",
           "value": "0",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -2526,6 +2712,7 @@
           "type": "string",
           "value": "\"Interact to expand Tile\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2536,6 +2723,7 @@
           "type": "string",
           "value": "\"Interact to collapse Tile\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2546,6 +2734,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2556,6 +2745,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2566,6 +2756,7 @@
           "type": "string",
           "value": "\"0\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2576,6 +2767,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2586,6 +2778,7 @@
           "type": "null | HTMLButtonElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -2615,6 +2808,7 @@
           "type": "\"uploading\" | \"edit\" | \"complete\"",
           "value": "\"uploading\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2625,6 +2819,7 @@
           "type": "string[]",
           "value": "[]",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2635,6 +2830,7 @@
           "type": "File[]",
           "value": "[]",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -2645,6 +2841,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2655,6 +2852,7 @@
           "type": "() => void",
           "value": "() => {     files = [];   }",
           "isFunction": true,
+          "isFunctionDeclaration": false,
           "constant": true,
           "reactive": false
         },
@@ -2665,6 +2863,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2675,6 +2874,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2685,6 +2885,7 @@
           "type": "\"primary\" | \"secondary\" | \"tertiary\" | \"ghost\" | \"danger\"",
           "value": "\"primary\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2695,6 +2896,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2705,6 +2907,7 @@
           "type": "string",
           "value": "\"Provide icon description\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2715,6 +2918,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -2748,6 +2952,7 @@
           "type": "string[]",
           "value": "[]",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2758,6 +2963,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2768,6 +2974,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2778,6 +2985,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2788,6 +2996,7 @@
           "type": "\"primary\" | \"secondary\" | \"tertiary\" | \"ghost\" | \"danger\"",
           "value": "\"primary\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2798,6 +3007,7 @@
           "type": "string",
           "value": "\"Add file\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -2808,6 +3018,7 @@
           "type": "string",
           "value": "\"button\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2818,6 +3029,7 @@
           "type": "string",
           "value": "\"0\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2828,6 +3040,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2838,6 +3051,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2848,6 +3062,7 @@
           "type": "null | HTMLInputElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -2872,6 +3087,7 @@
           "type": "string[]",
           "value": "[]",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2882,6 +3098,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2892,6 +3109,7 @@
           "type": "(files: FileList) => FileList",
           "value": "(files) => files",
           "isFunction": true,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2902,6 +3120,7 @@
           "type": "string",
           "value": "\"Add file\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2912,6 +3131,7 @@
           "type": "string",
           "value": "\"button\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2922,6 +3142,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2932,6 +3153,7 @@
           "type": "string",
           "value": "\"0\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2942,6 +3164,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2952,6 +3175,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -2962,6 +3186,7 @@
           "type": "null | HTMLInputElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -2990,6 +3215,7 @@
           "type": "\"uploading\" | \"edit\" | \"complete\"",
           "value": "\"uploading\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3000,6 +3226,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3010,6 +3237,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3020,6 +3248,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3030,6 +3259,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3040,6 +3270,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3050,6 +3281,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -3089,6 +3321,7 @@
           "type": "\"uploading\" | \"edit\" | \"complete\"",
           "value": "\"uploading\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3099,6 +3332,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3109,6 +3343,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -3156,6 +3391,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3166,6 +3402,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3176,6 +3413,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3186,6 +3424,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -3225,6 +3464,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -3250,6 +3490,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3260,6 +3501,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3270,6 +3512,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3280,6 +3523,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3290,6 +3534,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3300,6 +3545,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3310,6 +3556,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3320,6 +3567,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -3346,6 +3594,7 @@
           "type": "boolean",
           "value": "true",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3356,6 +3605,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -3365,6 +3615,7 @@
           "description": "Specify the ARIA label for the header",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3374,6 +3625,7 @@
           "description": "Specify the `href` attribute",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3383,6 +3635,7 @@
           "description": "Specify the company name",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3393,6 +3646,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3403,6 +3657,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3413,6 +3668,7 @@
           "type": "null | HTMLAnchorElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -3442,6 +3698,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -3451,6 +3708,7 @@
           "description": "Specify the icon from `carbon-icons-svelte` to render",
           "type": "typeof import(\"carbon-icons-svelte\").CarbonIcon",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3460,6 +3718,7 @@
           "description": "Specify the text\nAlternatively, use the named slot \"text\" (e.g., <div slot=\"text\">...</div>)",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3470,6 +3729,7 @@
           "type": "null | HTMLButtonElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -3480,6 +3740,7 @@
           "type": "false | HeaderActionSlideTransition",
           "value": "{ duration: 200 }",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -3517,6 +3778,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3526,6 +3788,7 @@
           "description": "Specify the `href` attribute",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3535,6 +3798,7 @@
           "description": "Specify the icon from `carbon-icons-svelte` to render",
           "type": "typeof import(\"carbon-icons-svelte\").CarbonIcon",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3545,6 +3809,7 @@
           "type": "null | HTMLAnchorElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -3565,6 +3830,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -3592,6 +3858,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3601,6 +3868,7 @@
           "description": "Specify the icon to render",
           "type": "typeof import(\"carbon-icons-svelte\").CarbonIcon",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3611,6 +3879,7 @@
           "type": "null | HTMLButtonElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -3637,6 +3906,7 @@
           "description": "Specify the ARIA label for the nav",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -3656,6 +3926,7 @@
           "description": "Specify the `href` attribute",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3665,6 +3936,7 @@
           "description": "Specify the text",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3675,6 +3947,7 @@
           "type": "null | HTMLAnchorElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -3704,6 +3977,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -3714,6 +3988,7 @@
           "type": "string",
           "value": "\"/\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3723,6 +3998,7 @@
           "description": "Specify the text",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3733,6 +4009,7 @@
           "type": "null | HTMLAnchorElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -3743,6 +4020,7 @@
           "type": "string",
           "value": "\"Expand/Collapse\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -3779,6 +4057,7 @@
           "description": "Specify the `href` attribute",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3789,6 +4068,7 @@
           "type": "null | HTMLAnchorElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -3817,6 +4097,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -3827,6 +4108,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -3837,6 +4119,7 @@
           "type": "null | HTMLInputElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -3847,6 +4130,7 @@
           "type": "HeaderSearchResult[]",
           "value": "[]",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3857,6 +4141,7 @@
           "type": "number",
           "value": "0",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -3911,6 +4196,7 @@
           "description": "Specify the icon from `carbon-icons-svelte` to render",
           "type": "typeof import(\"carbon-icons-svelte\").CarbonIcon",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3921,6 +4207,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -3954,6 +4241,7 @@
           "type": "number",
           "value": "16",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -3979,6 +4267,7 @@
           "type": "\"active\" | \"inactive\" | \"finished\" | \"error\"",
           "value": "\"active\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3988,6 +4277,7 @@
           "description": "Set the loading description",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -3997,6 +4287,7 @@
           "description": "Specify the ARIA label for the loading icon",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4007,6 +4298,7 @@
           "type": "number",
           "value": "1500",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -4033,6 +4325,7 @@
           "type": "\"error\" | \"info\" | \"info-square\" | \"success\" | \"warning\" | \"warning-alt\"",
           "value": "\"error\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4043,6 +4336,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4053,6 +4347,7 @@
           "type": "number",
           "value": "0",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4063,6 +4358,7 @@
           "type": "string",
           "value": "\"alert\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4073,6 +4369,7 @@
           "type": "string",
           "value": "\"Title\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4083,6 +4380,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4093,6 +4391,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4103,6 +4402,7 @@
           "type": "string",
           "value": "\"Closes notification\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -4135,6 +4435,7 @@
           "description": "Specify the size of the link",
           "type": "\"sm\" | \"lg\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4144,6 +4445,7 @@
           "description": "Specify the href value",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4154,6 +4456,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4164,6 +4467,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4174,6 +4478,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4184,6 +4489,7 @@
           "type": "null | HTMLAnchorElement | HTMLParagraphElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -4208,6 +4514,7 @@
           "description": "Set the size of the list box",
           "type": "\"sm\" | \"xl\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4218,6 +4525,7 @@
           "type": "\"default\" | \"inline\"",
           "value": "\"default\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4228,6 +4536,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4238,6 +4547,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4248,6 +4558,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4258,6 +4569,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4268,6 +4580,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4278,6 +4591,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4288,6 +4602,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -4311,6 +4626,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4321,6 +4637,7 @@
           "type": "string",
           "value": "\"combobox\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4331,6 +4648,7 @@
           "type": "string",
           "value": "\"-1\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4341,6 +4659,7 @@
           "type": "{ close: \"close\", open: \"open\" }",
           "value": "{ close: \"close\", open: \"open\" }",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": true,
           "reactive": false
         },
@@ -4351,6 +4670,7 @@
           "type": "(id: ListBoxFieldTranslationId) => string",
           "value": "(id) => defaultTranslations[id]",
           "isFunction": true,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4361,6 +4681,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4371,6 +4692,7 @@
           "type": "null | HTMLDivElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -4404,6 +4726,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4414,6 +4737,7 @@
           "type": "null | HTMLDivElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -4434,6 +4758,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4444,6 +4769,7 @@
           "type": "{ close: \"close\", open: \"open\" }",
           "value": "{ close: \"close\", open: \"open\" }",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": true,
           "reactive": false
         },
@@ -4454,6 +4780,7 @@
           "type": "(id: ListBoxMenuIconTranslationId) => string",
           "value": "(id) => defaultTranslations[id]",
           "isFunction": true,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -4480,6 +4807,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4490,6 +4818,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -4513,6 +4842,7 @@
           "description": "Specify the number of selected items",
           "type": "any",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4523,6 +4853,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4533,6 +4864,7 @@
           "type": "{     clearAll: \"clearAll\",     clearSelection: \"clearSelection\",   }",
           "value": "{     clearAll: \"clearAll\",     clearSelection: \"clearSelection\",   }",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": true,
           "reactive": false
         },
@@ -4543,6 +4875,7 @@
           "type": "(id: ListBoxSelectionTranslationId) => string",
           "value": "(id) => defaultTranslations[id]",
           "isFunction": true,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4553,6 +4886,7 @@
           "type": "null | HTMLDivElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -4593,6 +4927,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4603,6 +4938,7 @@
           "type": "boolean",
           "value": "true",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4613,6 +4949,7 @@
           "type": "boolean",
           "value": "true",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4623,6 +4960,7 @@
           "type": "string",
           "value": "\"Active loading indicator\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4633,6 +4971,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -4652,6 +4991,7 @@
           "description": "Set the size of the modal",
           "type": "\"xs\" | \"sm\" | \"lg\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4662,6 +5002,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -4672,6 +5013,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4682,6 +5024,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4692,6 +5035,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4701,6 +5045,7 @@
           "description": "Specify the modal heading",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4710,6 +5055,7 @@
           "description": "Specify the modal label",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4719,6 +5065,7 @@
           "description": "Specify the ARIA label for the modal",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4729,6 +5076,7 @@
           "type": "string",
           "value": "\"Close the modal\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4739,6 +5087,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4749,6 +5098,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4759,6 +5109,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4769,6 +5120,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4779,6 +5131,7 @@
           "type": "boolean",
           "value": "true",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4789,6 +5142,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4799,6 +5153,7 @@
           "type": "string",
           "value": "\"[data-modal-primary-focus]\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4809,6 +5164,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4819,6 +5175,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4829,6 +5186,7 @@
           "type": "null | HTMLDivElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -4873,6 +5231,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4883,6 +5242,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -4903,6 +5263,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4913,6 +5274,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4922,6 +5284,7 @@
           "description": "Specify a class for the primary button",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4932,6 +5295,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4941,6 +5305,7 @@
           "description": "Specify a class for the secondary button",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4951,6 +5316,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -4971,6 +5337,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4981,6 +5348,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -4991,6 +5359,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5001,6 +5370,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5011,6 +5381,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5021,6 +5392,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5031,6 +5403,7 @@
           "type": "string",
           "value": "\"Close\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -5051,6 +5424,7 @@
           "type": "MultiSelectItem[]",
           "value": "[]",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -5061,6 +5435,7 @@
           "type": "(item: MultiSelectItem) => string",
           "value": "(item) => item.text || item.id",
           "isFunction": true,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5071,6 +5446,7 @@
           "type": "MultiSelectItemId[]",
           "value": "[]",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -5081,6 +5457,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -5090,6 +5467,7 @@
           "description": "Set the size of the combobox",
           "type": "\"sm\" | \"lg\" | \"xl\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5100,6 +5478,7 @@
           "type": "\"default\" | \"inline\"",
           "value": "\"default\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5110,6 +5489,7 @@
           "type": "\"top\" | \"fixed\" | \"top-after-reopen\"",
           "value": "\"top-after-reopen\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5120,6 +5500,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5130,6 +5511,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5140,6 +5522,7 @@
           "type": "(item: MultiSelectItem, value: string) => string",
           "value": "(item, value) =>     item.text.toLowerCase().includes(value.toLowerCase())",
           "isFunction": true,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5150,6 +5533,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -5160,6 +5544,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5170,6 +5555,7 @@
           "type": "string",
           "value": "\"en\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5180,6 +5566,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5190,6 +5577,7 @@
           "type": "((a: MultiSelectItem, b: MultiSelectItem) => MultiSelectItem) | (() => void)",
           "value": "(a, b) =>     a.text.localeCompare(b.text, locale, { numeric: true })",
           "isFunction": true,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5199,6 +5587,7 @@
           "description": "Override the default translation ids",
           "type": "(id: any) => string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5209,6 +5598,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5219,6 +5609,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5229,6 +5620,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5239,6 +5631,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5249,6 +5642,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5259,6 +5653,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5269,6 +5664,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5279,6 +5675,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5289,6 +5686,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5298,6 +5696,7 @@
           "description": "Specify a name attribute for the select",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -5354,6 +5753,7 @@
           "type": "\"toast\" | \"inline\"",
           "value": "\"toast\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5363,6 +5763,7 @@
           "description": "Specify the icon from `carbon-icons-svelte` to render",
           "type": "typeof import(\"carbon-icons-svelte\").CarbonIcon",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5372,6 +5773,7 @@
           "description": "Specify the title of the icon",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5382,6 +5784,7 @@
           "type": "string",
           "value": "\"Close icon\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -5407,6 +5810,7 @@
           "type": "\"error\" | \"info\" | \"info-square\" | \"success\" | \"warning\" | \"warning-alt\"",
           "value": "\"error\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5417,6 +5821,7 @@
           "type": "\"toast\" | \"inline\"",
           "value": "\"toast\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5427,6 +5832,7 @@
           "type": "string",
           "value": "\"Closes notification\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -5446,6 +5852,7 @@
           "type": "\"toast\" | \"inline\"",
           "value": "\"toast\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5456,6 +5863,7 @@
           "type": "string",
           "value": "\"Title\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5466,6 +5874,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5476,6 +5885,7 @@
           "type": "string",
           "value": "\"Caption\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -5494,6 +5904,7 @@
           "description": "Set the size of the input",
           "type": "\"sm\" | \"xl\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5504,6 +5915,7 @@
           "type": "number | string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -5514,6 +5926,7 @@
           "type": "number",
           "value": "1",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5523,6 +5936,7 @@
           "description": "Specify the maximum value",
           "type": "number",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5532,6 +5946,7 @@
           "description": "Specify the minimum value",
           "type": "number",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5542,6 +5957,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5552,6 +5968,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5562,6 +5979,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5572,6 +5990,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5582,6 +6001,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5592,6 +6012,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5602,6 +6023,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5612,6 +6034,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5622,6 +6045,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5632,6 +6056,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5642,6 +6067,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5652,6 +6078,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5662,6 +6089,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5672,6 +6100,7 @@
           "type": "(id: NumberInputTranslationId) => string",
           "value": "(id) => defaultTranslations[id]",
           "isFunction": true,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5682,6 +6111,7 @@
           "type": "{ increment: \"increment\"; decrement: \"decrement\" }",
           "value": "{     increment: \"increment\",     decrement: \"decrement\",   }",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": true,
           "reactive": false
         },
@@ -5692,6 +6122,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5701,6 +6132,7 @@
           "description": "Specify a name attribute for the input",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5711,6 +6143,7 @@
           "type": "null | HTMLInputElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -5751,6 +6184,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -5776,6 +6210,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5786,6 +6221,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -5825,6 +6261,7 @@
           "description": "Specify the size of the overflow menu",
           "type": "\"sm\" | \"xl\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5835,6 +6272,7 @@
           "type": "\"top\" | \"bottom\"",
           "value": "\"bottom\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5845,6 +6283,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -5855,6 +6294,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5865,6 +6305,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5874,6 +6315,7 @@
           "description": "Specify the menu options class",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5883,6 +6325,7 @@
           "description": "Specify the icon from `carbon-icons-svelte` to render",
           "type": "typeof import(\"carbon-icons-svelte\").CarbonIcon",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5892,6 +6335,7 @@
           "description": "Specify the icon class",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5902,6 +6346,7 @@
           "type": "string",
           "value": "\"Open and close list of options\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5912,6 +6357,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5922,6 +6368,7 @@
           "type": "null | HTMLButtonElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -5932,6 +6379,7 @@
           "type": "null | HTMLUListElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -5971,6 +6419,7 @@
           "type": "string",
           "value": "\"Provide text\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5981,6 +6430,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -5991,6 +6441,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -6001,6 +6452,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6011,6 +6463,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6021,6 +6474,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6031,6 +6485,7 @@
           "type": "boolean",
           "value": "true",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6041,6 +6496,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6051,6 +6507,7 @@
           "type": "null | HTMLAnchorElement | HTMLButtonElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -6081,6 +6538,7 @@
           "type": "number",
           "value": "1",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -6091,6 +6549,7 @@
           "type": "number",
           "value": "0",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6101,6 +6560,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6111,6 +6571,7 @@
           "type": "string",
           "value": "\"Next page\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6121,6 +6582,7 @@
           "type": "string",
           "value": "\"Previous page\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6131,6 +6593,7 @@
           "type": "string",
           "value": "\"Items per page:\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6141,6 +6604,7 @@
           "type": "(min: number, max: number) => string",
           "value": "(min, max) => `${min}–${max} items`",
           "isFunction": true,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6151,6 +6615,7 @@
           "type": "(min: number, max: number, total: number) => string",
           "value": "(min, max, total) =>     `${min}–${max} of ${total} items`",
           "isFunction": true,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6161,6 +6626,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6171,6 +6637,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6181,6 +6648,7 @@
           "type": "number",
           "value": "10",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -6191,6 +6659,7 @@
           "type": "number[]",
           "value": "[10]",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6201,6 +6670,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6211,6 +6681,7 @@
           "type": "(page: number) => string",
           "value": "(page) => `page ${page}`",
           "isFunction": true,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6221,6 +6692,7 @@
           "type": "(current: number, total: number) => string",
           "value": "(current, total) =>     `of ${total} page${total === 1 ? \"\" : \"s\"}`",
           "isFunction": true,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6231,6 +6703,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -6257,6 +6730,7 @@
           "type": "number",
           "value": "0",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -6267,6 +6741,7 @@
           "type": "number",
           "value": "10",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6277,6 +6752,7 @@
           "type": "number",
           "value": "10",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6287,6 +6763,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6297,6 +6774,7 @@
           "type": "string",
           "value": "\"Next page\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6307,6 +6785,7 @@
           "type": "string",
           "value": "\"Previous page\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -6356,6 +6835,7 @@
           "description": "Set the size of the input",
           "type": "\"sm\" | \"xl\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6366,6 +6846,7 @@
           "type": "number | string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -6376,6 +6857,7 @@
           "type": "\"text\" | \"password\"",
           "value": "\"password\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -6386,6 +6868,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6396,6 +6879,7 @@
           "type": "string",
           "value": "\"Hide password\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6406,6 +6890,7 @@
           "type": "string",
           "value": "\"Show password\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6416,6 +6901,7 @@
           "type": "\"start\" | \"center\" | \"end\"",
           "value": "\"center\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6426,6 +6912,7 @@
           "type": "\"top\" | \"right\" | \"bottom\" | \"left\"",
           "value": "\"bottom\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6436,6 +6923,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6446,6 +6934,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6456,6 +6945,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6466,6 +6956,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6476,6 +6967,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6486,6 +6978,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6496,6 +6989,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6506,6 +7000,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6515,6 +7010,7 @@
           "description": "Specify a name attribute for the input",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6525,6 +7021,7 @@
           "type": "null | HTMLInputElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -6555,6 +7052,7 @@
           "type": "number",
           "value": "0",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -6565,6 +7063,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6575,6 +7074,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6585,6 +7085,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -6611,6 +7112,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6621,6 +7123,7 @@
           "type": "number",
           "value": "4",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -6646,6 +7149,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -6656,6 +7160,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -6666,6 +7171,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6676,6 +7182,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6686,6 +7193,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6696,6 +7204,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6706,6 +7215,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6716,6 +7226,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -6749,6 +7260,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6759,6 +7271,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -6769,6 +7282,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6779,6 +7293,7 @@
           "type": "\"right\" | \"left\"",
           "value": "\"right\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6789,6 +7304,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6799,6 +7315,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6809,6 +7326,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6819,6 +7337,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6829,6 +7348,7 @@
           "type": "null | HTMLInputElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -6848,6 +7368,7 @@
           "description": "Set the selected radio button value",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -6858,6 +7379,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6868,6 +7390,7 @@
           "type": "\"right\" | \"left\"",
           "value": "\"right\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6878,6 +7401,7 @@
           "type": "\"horizontal\" | \"vertical\"",
           "value": "\"horizontal\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6887,6 +7411,7 @@
           "description": "Set an id for the container div element",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -6927,6 +7452,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -6937,6 +7463,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6947,6 +7474,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6957,6 +7485,7 @@
           "type": "string",
           "value": "\"0\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6967,6 +7496,7 @@
           "type": "string",
           "value": "\"Tile checkmark\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6977,6 +7507,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -6987,6 +7518,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -7014,6 +7546,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7024,6 +7557,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7034,6 +7568,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7044,6 +7579,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7054,6 +7590,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7064,6 +7601,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7074,6 +7612,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -7099,6 +7638,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7109,6 +7649,7 @@
           "type": "\"sm\" | \"lg\" | \"xl\"",
           "value": "\"xl\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7119,6 +7660,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7129,6 +7671,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7139,6 +7682,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7149,6 +7693,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -7159,6 +7704,7 @@
           "type": "string",
           "value": "\"text\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7169,6 +7715,7 @@
           "type": "string",
           "value": "\"Search...\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7179,6 +7726,7 @@
           "type": "\"on\" | \"off\"",
           "value": "\"off\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7189,6 +7737,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7199,6 +7748,7 @@
           "type": "string",
           "value": "\"Clear search input\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7209,6 +7759,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7219,6 +7770,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7229,6 +7781,7 @@
           "type": "null | HTMLInputElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -7271,6 +7824,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7281,6 +7835,7 @@
           "type": "\"sm\" | \"lg\" | \"xl\"",
           "value": "\"xl\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -7305,6 +7860,7 @@
           "description": "Specify the selected item value",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -7314,6 +7870,7 @@
           "description": "Set the size of the select input",
           "type": "\"sm\" | \"xl\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7324,6 +7881,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7334,6 +7892,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7344,6 +7903,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7354,6 +7914,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7363,6 +7924,7 @@
           "description": "Specify a name attribute for the select element",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7373,6 +7935,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7383,6 +7946,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7393,6 +7957,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7403,6 +7968,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7413,6 +7979,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7423,6 +7990,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7433,6 +8001,7 @@
           "type": "null | HTMLSelectElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -7456,6 +8025,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7466,6 +8036,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7476,6 +8047,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7486,6 +8058,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -7505,6 +8078,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7515,6 +8089,7 @@
           "type": "string",
           "value": "\"Provide label\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -7535,6 +8110,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -7560,6 +8136,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -7570,6 +8147,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7580,6 +8158,7 @@
           "type": "string",
           "value": "\"title\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7590,6 +8169,7 @@
           "type": "string",
           "value": "\"value\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7600,6 +8180,7 @@
           "type": "string",
           "value": "\"0\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7610,6 +8191,7 @@
           "type": "string",
           "value": "\"Tile checkmark\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7620,6 +8202,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7630,6 +8213,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7640,6 +8224,7 @@
           "type": "null | HTMLInputElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -7666,6 +8251,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7675,6 +8261,7 @@
           "description": "Specify the ARIA label for the nav",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7685,6 +8272,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -7713,6 +8301,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7722,6 +8311,7 @@
           "description": "Specify the `href` attribute",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7731,6 +8321,7 @@
           "description": "Specify the text",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7740,6 +8331,7 @@
           "description": "Specify the icon from `carbon-icons-svelte` to render",
           "type": "typeof import(\"carbon-icons-svelte\").CarbonIcon",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7750,6 +8342,7 @@
           "type": "null | HTMLAnchorElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -7770,6 +8363,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -7779,6 +8373,7 @@
           "description": "Specify the text",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7788,6 +8383,7 @@
           "description": "Specify the icon from `carbon-icons-svelte` to render",
           "type": "typeof import(\"carbon-icons-svelte\").CarbonIcon",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7798,6 +8394,7 @@
           "type": "null | HTMLButtonElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -7817,6 +8414,7 @@
           "description": "Set to `true` to select the item",
           "type": "boolean",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7826,6 +8424,7 @@
           "description": "Specify the `href` attribute",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7835,6 +8434,7 @@
           "description": "Specify the item text",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7845,6 +8445,7 @@
           "type": "null | HTMLAnchorElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -7879,6 +8480,7 @@
           "type": "number",
           "value": "3",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7889,6 +8491,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7899,6 +8502,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7909,6 +8513,7 @@
           "type": "string",
           "value": "\"100%\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -7934,6 +8539,7 @@
           "type": "string",
           "value": "\"#main-content\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7944,6 +8550,7 @@
           "type": "string",
           "value": "\"0\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -7971,6 +8578,7 @@
           "type": "number",
           "value": "0",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -7981,6 +8589,7 @@
           "type": "number",
           "value": "100",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -7991,6 +8600,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8001,6 +8611,7 @@
           "type": "number",
           "value": "0",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8011,6 +8622,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8021,6 +8633,7 @@
           "type": "number",
           "value": "1",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8031,6 +8644,7 @@
           "type": "number",
           "value": "4",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8041,6 +8655,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8051,6 +8666,7 @@
           "type": "string",
           "value": "\"number\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8061,6 +8677,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8071,6 +8688,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8081,6 +8699,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8091,6 +8710,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8101,6 +8721,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8111,6 +8732,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8121,6 +8743,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8131,6 +8754,7 @@
           "type": "null | HTMLDivElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -8157,6 +8781,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -8181,6 +8806,7 @@
           "description": "Specify the selected structured list row value",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -8191,6 +8817,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8201,6 +8828,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -8241,6 +8869,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8251,6 +8880,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -8290,6 +8920,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -8300,6 +8931,7 @@
           "type": "string",
           "value": "\"title\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8310,6 +8942,7 @@
           "type": "string",
           "value": "\"value\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8320,6 +8953,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8330,6 +8964,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8340,6 +8975,7 @@
           "type": "null | HTMLInputElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -8360,6 +8996,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8370,6 +9007,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8380,6 +9018,7 @@
           "type": "string",
           "value": "\"0\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -8406,6 +9045,7 @@
           "type": "number",
           "value": "5",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8416,6 +9056,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -8441,6 +9082,7 @@
           "type": "string",
           "value": "\"Provide text\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8451,6 +9093,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -8461,6 +9104,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8471,6 +9115,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8481,6 +9126,7 @@
           "type": "null | HTMLButtonElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -8514,6 +9160,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8524,6 +9171,7 @@
           "type": "string",
           "value": "\"#\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8534,6 +9182,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8544,6 +9193,7 @@
           "type": "string",
           "value": "\"0\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8554,6 +9204,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8564,6 +9215,7 @@
           "type": "null | HTMLAnchorElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -8596,6 +9248,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -8615,6 +9268,7 @@
           "description": "Set the size of the table",
           "type": "\"compact\" | \"short\" | \"tall\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8625,6 +9279,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8635,6 +9290,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8645,6 +9301,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8655,6 +9312,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8665,6 +9323,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -8708,6 +9367,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8718,6 +9378,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8728,6 +9389,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -8762,6 +9424,7 @@
           "type": "string",
           "value": "\"col\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8772,6 +9435,7 @@
           "type": "() => string",
           "value": "() => \"\"",
           "isFunction": true,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8782,6 +9446,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -8821,6 +9486,7 @@
           "type": "number",
           "value": "0",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -8831,6 +9497,7 @@
           "type": "\"default\" | \"container\"",
           "value": "\"default\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8841,6 +9508,7 @@
           "type": "string",
           "value": "\"Show menu options\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8851,6 +9519,7 @@
           "type": "string",
           "value": "\"#\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -8878,6 +9547,7 @@
           "type": "number",
           "value": "4",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -8902,6 +9572,7 @@
           "description": "Specify the type of tag",
           "type": "\"red\" | \"magenta\" | \"purple\" | \"blue\" | \"cyan\" | \"teal\" | \"green\" | \"gray\" | \"cool-gray\" | \"warm-gray\" | \"high-contrast\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8912,6 +9583,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8922,6 +9594,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8932,6 +9605,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8942,6 +9616,7 @@
           "type": "string",
           "value": "\"Clear filter\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8951,6 +9626,7 @@
           "description": "Specify the icon from `carbon-icons-svelte` to render",
           "type": "typeof import(\"carbon-icons-svelte\").CarbonIcon",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -8961,6 +9637,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -9007,6 +9684,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -9017,6 +9695,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9027,6 +9706,7 @@
           "type": "number",
           "value": "50",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9037,6 +9717,7 @@
           "type": "number",
           "value": "4",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9047,6 +9728,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9057,6 +9739,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9067,6 +9750,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9077,6 +9761,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9087,6 +9772,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9097,6 +9783,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9107,6 +9794,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9117,6 +9805,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9126,6 +9815,7 @@
           "description": "Specify a name attribute for the input",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9136,6 +9826,7 @@
           "type": "null | HTMLTextAreaElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -9165,6 +9856,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -9189,6 +9881,7 @@
           "description": "Set the size of the input",
           "type": "\"sm\" | \"xl\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9199,6 +9892,7 @@
           "type": "number | string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -9209,6 +9903,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9219,6 +9914,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9229,6 +9925,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9239,6 +9936,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9249,6 +9947,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9259,6 +9958,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9268,6 +9968,7 @@
           "description": "Specify a name attribute for the input",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9278,6 +9979,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9288,6 +9990,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9298,6 +10001,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9308,6 +10012,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9318,6 +10023,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9328,6 +10034,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9338,6 +10045,7 @@
           "type": "null | HTMLInputElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -9348,6 +10056,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9358,6 +10067,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -9388,6 +10098,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -9413,6 +10124,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -9437,6 +10149,7 @@
           "description": "Specify the selected tile value",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -9447,6 +10160,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9457,6 +10171,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -9476,6 +10191,7 @@
           "description": "Specify the size of the input",
           "type": "\"sm\" | \"xl\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9486,6 +10202,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -9496,6 +10213,7 @@
           "type": "string",
           "value": "\"text\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9506,6 +10224,7 @@
           "type": "string",
           "value": "\"hh=mm\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9516,6 +10235,7 @@
           "type": "string",
           "value": "\"(1[012]|[1-9]):[0-5][0-9](\\\\s)?\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9526,6 +10246,7 @@
           "type": "number",
           "value": "5",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9536,6 +10257,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9546,6 +10268,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9556,6 +10279,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9566,6 +10290,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9576,6 +10301,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9586,6 +10312,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9596,6 +10323,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9605,6 +10333,7 @@
           "description": "Specify a name attribute for the input",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9615,6 +10344,7 @@
           "type": "null | HTMLInputElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -9644,6 +10374,7 @@
           "type": "number | string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -9654,6 +10385,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9664,6 +10396,7 @@
           "type": "string",
           "value": "\"Open list of options\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9674,6 +10407,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9683,6 +10417,7 @@
           "type": "boolean",
           "value": "true",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9693,6 +10428,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9702,6 +10438,7 @@
           "description": "Specify a name attribute for the select element",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9712,6 +10449,7 @@
           "type": "null | HTMLSelectElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -9737,6 +10475,7 @@
           "type": "\"error\" | \"info\" | \"info-square\" | \"success\" | \"warning\" | \"warning-alt\"",
           "value": "\"error\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9747,6 +10486,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9757,6 +10497,7 @@
           "type": "number",
           "value": "0",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9767,6 +10508,7 @@
           "type": "string",
           "value": "\"alert\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9777,6 +10519,7 @@
           "type": "string",
           "value": "\"Title\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9787,6 +10530,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9797,6 +10541,7 @@
           "type": "string",
           "value": "\"Caption\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9807,6 +10552,7 @@
           "type": "string",
           "value": "\"Closes notification\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9817,6 +10563,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -9847,6 +10594,7 @@
           "type": "\"default\" | \"sm\"",
           "value": "\"default\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9857,6 +10605,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -9867,6 +10616,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9877,6 +10627,7 @@
           "type": "string",
           "value": "\"Off\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9887,6 +10638,7 @@
           "type": "string",
           "value": "\"On\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9897,6 +10649,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9907,6 +10660,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9916,6 +10670,7 @@
           "description": "Specify a name attribute for the checkbox input",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -9950,6 +10705,7 @@
           "type": "\"default\" | \"sm\"",
           "value": "\"default\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9960,6 +10716,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -9970,6 +10727,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -9995,6 +10753,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -10005,6 +10764,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -10015,6 +10775,7 @@
           "type": "string",
           "value": "\"Off\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -10025,6 +10786,7 @@
           "type": "string",
           "value": "\"On\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -10035,6 +10797,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -10045,6 +10808,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -10054,6 +10818,7 @@
           "description": "Specify a name attribute for the checkbox input",
           "type": "string",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -10083,6 +10848,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -10093,6 +10859,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -10118,6 +10885,7 @@
           "type": "\"sm\" | \"default\"",
           "value": "\"default\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -10138,6 +10906,7 @@
           "type": "(totalSelected: number) => string",
           "value": "(totalSelected) =>     `${totalSelected} item${totalSelected === 1 ? \"\" : \"s\"} selected`",
           "isFunction": true,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -10199,6 +10968,7 @@
           "type": "number | string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -10209,6 +10979,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -10219,6 +10990,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -10229,6 +11001,7 @@
           "type": "string",
           "value": "\"0\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -10239,6 +11012,7 @@
           "type": "null | HTMLInputElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -10264,6 +11038,7 @@
           "type": "\"start\" | \"center\" | \"end\"",
           "value": "\"center\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -10274,6 +11049,7 @@
           "type": "\"top\" | \"right\" | \"bottom\" | \"left\"",
           "value": "\"bottom\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -10284,6 +11060,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -10294,6 +11071,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -10303,6 +11081,7 @@
           "description": "Specify the icon from `carbon-icons-svelte` to render for the tooltip button\nIcon size must be 16px (e.g., `Add16`, `Task16`)",
           "type": "typeof import(\"carbon-icons-svelte\").CarbonIcon",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -10313,6 +11092,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -10323,6 +11103,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -10333,6 +11114,7 @@
           "type": "string",
           "value": "\"0\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -10343,6 +11125,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -10353,6 +11136,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -10363,6 +11147,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -10373,6 +11158,7 @@
           "type": "null | HTMLDivElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -10383,6 +11169,7 @@
           "type": "null | HTMLDivElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         },
@@ -10393,6 +11180,7 @@
           "type": "null | HTMLDivElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -10430,6 +11218,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -10440,6 +11229,7 @@
           "type": "\"start\" | \"center\" | \"end\"",
           "value": "\"center\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -10450,6 +11240,7 @@
           "type": "\"top\" | \"bottom\"",
           "value": "\"bottom\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -10460,6 +11251,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -10470,6 +11262,7 @@
           "type": "null | HTMLButtonElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -10504,6 +11297,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -10514,6 +11308,7 @@
           "type": "\"start\" | \"center\" | \"end\"",
           "value": "\"center\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -10524,6 +11319,7 @@
           "type": "\"top\" | \"right\" | \"bottom\" | \"left\"",
           "value": "\"bottom\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -10534,6 +11330,7 @@
           "type": "string",
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -10544,6 +11341,7 @@
           "type": "null | HTMLButtonElement",
           "value": "null",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": true
         }
@@ -10578,6 +11376,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }

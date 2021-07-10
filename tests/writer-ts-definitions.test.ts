@@ -29,6 +29,7 @@ test("writeTsDefinition", (t) => {
         type: "boolean",
         value: "true",
         isFunction: false,
+        isFunctionDeclaration: false,
         constant: false,
         reactive: true,
       },
@@ -38,6 +39,7 @@ test("writeTsDefinition", (t) => {
         type: "string",
         value: '""',
         isFunction: false,
+        isFunctionDeclaration: false,
         constant: false,
         reactive: false,
       },
@@ -46,6 +48,7 @@ test("writeTsDefinition", (t) => {
         kind: "let",
         type: "string",
         isFunction: false,
+        isFunctionDeclaration: false,
         constant: false,
         reactive: false,
       },
@@ -55,6 +58,7 @@ test("writeTsDefinition", (t) => {
         type: "string",
         value: '"" + Math.random().toString(36)',
         isFunction: false,
+        isFunctionDeclaration: false,
         constant: false,
         reactive: false,
       },
@@ -64,6 +68,7 @@ test("writeTsDefinition", (t) => {
         type: "{ [key: string]: boolean; }",
         value: '{ ["1"]: true }',
         isFunction: false,
+        isFunctionDeclaration: false,
         constant: true,
         reactive: false,
       },
@@ -73,6 +78,7 @@ test("writeTsDefinition", (t) => {
         type: "() => {     localBool = !localBool;   }",
         value: "() => {     localBool = !localBool;   }",
         isFunction: true,
+        isFunctionDeclaration: false,
         constant: false,
         reactive: false,
       },
@@ -98,7 +104,7 @@ test("writeTsDefinition", (t) => {
 
   t.equal(
     writeTsDefinition(component_api),
-    '\n  /// <reference types="svelte" />\n  import { SvelteComponentTyped } from "svelte";\n  \n  \n  \n    export interface ModuleNameProps  {\n      \n      /**\n* @default true\n*/\n      propBool?: boolean;\n\n      /**\n* @default ""\n*/\n      propString?: string;\n\n      \n      name?: string;\n\n      /**\n* @default "" + Math.random().toString(36)\n*/\n      id?: string;\n\n      /**\n* @constant\n* @default { ["1"]: true }\n*/\n      propConst?: { ["1"]: true };\n\n      /**\n* @default () => { localBool = !localBool; }\n*/\n      fn?: () => {     localBool = !localBool;   };\n    }\n  \n\n  export default class ModuleName extends SvelteComponentTyped<\n      ModuleNameProps,\n      {},\n      {default: {}\n;}\n    > {}'
+    '\n  /// <reference types="svelte" />\n  import { SvelteComponentTyped } from "svelte";\n  \n  \n  \n    export interface ModuleNameProps  {\n      \n      /**\n* @default true\n*/\n      propBool?: boolean;\n\n      /**\n* @default ""\n*/\n      propString?: string;\n\n      \n      name?: string;\n\n      /**\n* @default "" + Math.random().toString(36)\n*/\n      id?: string;\n\n      /**\n* @constant\n* @default { ["1"]: true }\n*/\n      propConst?: { ["1"]: true };\n\n      /**\n* @default () => { localBool = !localBool; }\n*/\n      fn?: () => {     localBool = !localBool;   };\n    }\n  \n\n  export default class ModuleName extends SvelteComponentTyped<\n      ModuleNameProps,\n      {},\n      {default: {}\n;}\n    > {\n      \n    }'
   );
   t.end();
 });

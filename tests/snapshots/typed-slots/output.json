@@ -6,6 +6,7 @@
       "type": "number",
       "value": "0",
       "isFunction": false,
+      "isFunctionDeclaration": false,
       "constant": false,
       "reactive": false
     }

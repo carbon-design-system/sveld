@@ -11,6 +11,7 @@
           "type": "\"button\" | \"submit\" | \"reset\"",
           "value": "\"button\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -21,6 +22,7 @@
           "type": "boolean",
           "value": "false",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -63,6 +65,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         },
@@ -72,6 +75,7 @@
           "type": "string",
           "value": "\"\"",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
         }
@@ -98,6 +102,7 @@
           "type": "boolean",
           "value": "true",
           "isFunction": false,
+          "isFunctionDeclaration": false,
           "constant": true,
           "reactive": false
         }

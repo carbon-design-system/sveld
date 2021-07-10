@@ -6,6 +6,7 @@
       "type": "boolean",
       "value": "false",
       "isFunction": false,
+      "isFunctionDeclaration": false,
       "constant": false,
       "reactive": false
     },
@@ -15,6 +16,7 @@
       "type": "boolean",
       "value": "false",
       "isFunction": false,
+      "isFunctionDeclaration": false,
       "constant": false,
       "reactive": false
     }

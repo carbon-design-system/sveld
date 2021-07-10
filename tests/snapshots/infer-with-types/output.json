@@ -6,6 +6,7 @@
       "type": "boolean",
       "value": "true",
       "isFunction": false,
+      "isFunctionDeclaration": false,
       "constant": false,
       "reactive": true
     },
@@ -15,6 +16,7 @@
       "type": "string",
       "value": "\"\"",
       "isFunction": false,
+      "isFunctionDeclaration": false,
       "constant": false,
       "reactive": false
     },
@@ -23,6 +25,7 @@
       "kind": "let",
       "type": "string",
       "isFunction": false,
+      "isFunctionDeclaration": false,
       "constant": false,
       "reactive": false
     },
@@ -32,6 +35,7 @@
       "type": "string",
       "value": "\"\" + Math.random().toString(36)",
       "isFunction": false,
+      "isFunctionDeclaration": false,
       "constant": false,
       "reactive": false
     },
@@ -41,6 +45,7 @@
       "type": "{ [key: string]: boolean; }",
       "value": "{ [\"1\"]: true }",
       "isFunction": false,
+      "isFunctionDeclaration": false,
       "constant": true,
       "reactive": false
     },
@@ -50,6 +55,7 @@
       "type": "() => any",
       "value": "() => {     localBool = !localBool;   }",
       "isFunction": true,
+      "isFunctionDeclaration": true,
       "constant": false,
       "reactive": false
     }

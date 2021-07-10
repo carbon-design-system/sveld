@@ -5,6 +5,7 @@
       "kind": "let",
       "type": "null | HTMLButtonElement | HTMLHeadingElement",
       "isFunction": false,
+      "isFunctionDeclaration": false,
       "constant": false,
       "reactive": true
     },
@@ -13,6 +14,7 @@
       "kind": "let",
       "type": "null | HTMLDivElement",
       "isFunction": false,
+      "isFunctionDeclaration": false,
       "constant": false,
       "reactive": true
     },
@@ -22,6 +24,7 @@
       "type": "boolean",
       "value": "false",
       "isFunction": false,
+      "isFunctionDeclaration": false,
       "constant": false,
       "reactive": false
     }

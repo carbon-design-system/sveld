@@ -28,6 +28,7 @@ interface ComponentProp {
   value?: any;
   description?: string;
   isFunction: boolean;
+  isFunctionDeclaration: boolean;
   reactive: boolean;
 }
 
@@ -311,6 +312,7 @@ export default class ComponentParser {
           let kind = node.declaration.kind;
           let description = undefined;
           let isFunction = false;
+          let isFunctionDeclaration = false;
 
           if (init != null) {
             if (
@@ -342,8 +344,9 @@ export default class ComponentParser {
           if (declaration_type === "FunctionDeclaration") {
             value = "() => " + this.sourceAtPos(body.start, body.end)?.replace(/\n/g, " ");
             type = "() => any";
-            isFunction = true;
             kind = "function";
+            isFunction = true;
+            isFunctionDeclaration = true;
           }
 
           if (node.leadingComments) {
@@ -365,6 +368,7 @@ export default class ComponentParser {
             type,
             value,
             isFunction,
+            isFunctionDeclaration,
             constant: kind === "const",
             reactive: this.reactive_vars.has(prop_name),
           });
