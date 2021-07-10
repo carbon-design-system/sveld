@@ -147,7 +147,7 @@ export function writeTsDefinition(component: ComponentDocApi) {
   ${getTypeDefs({ typedefs })}
   ${prop_def}
 
-  export default class ${moduleName} extends SvelteComponentTyped<
+  export default class ${moduleName === 'default' ? '' : moduleName} extends SvelteComponentTyped<
       ${props_name},
       {${genEventDef({ events })}},
       {${genSlotDef({ slots })}}

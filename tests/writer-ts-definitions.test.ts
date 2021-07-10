@@ -108,3 +108,21 @@ test("writeTsDefinition", (t) => {
   );
   t.end();
 });
+
+test('writeTsDefinition – "default" module name', (t) => {
+  const component_api: ComponentDocApi = {
+    moduleName: "default",
+    filePath: "./src/ModuleName.svelte",
+    props: [],
+    slots: [],
+    events: [],
+    typedefs: [],
+    rest_props: undefined,
+  };
+
+  t.equal(
+    writeTsDefinition(component_api),
+    '\n  /// <reference types="svelte" />\n  import { SvelteComponentTyped } from "svelte";\n  \n  \n  \n    export interface defaultProps  {\n      \n    }\n  \n\n  export default class  extends SvelteComponentTyped<\n      defaultProps,\n      {},\n      {}\n    > {\n      \n    }'
+  );
+  t.end();
+});
