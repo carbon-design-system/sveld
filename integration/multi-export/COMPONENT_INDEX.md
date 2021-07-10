@@ -15,10 +15,11 @@
 
 ### Props
 
-| Prop name | Kind             | Reactive | Type                 | Default value         | Description |
-| :-------- | :--------------- | :------- | :------------------- | --------------------- | ----------- |
-| type      | <code>let</code> | No       | <code>string</code>  | <code>"button"</code> | --          |
-| primary   | <code>let</code> | No       | <code>boolean</code> | <code>false</code>    | --          |
+| Prop name | Kind                  | Reactive | Type                   | Default value                          | Description |
+| :-------- | :-------------------- | :------- | :--------------------- | -------------------------------------- | ----------- |
+| type      | <code>let</code>      | No       | <code>string</code>    | <code>"button"</code>                  | --          |
+| primary   | <code>let</code>      | No       | <code>boolean</code>   | <code>false</code>                     | --          |
+| print     | <code>function</code> | No       | <code>() => any</code> | <code>() => { console.log(0); }</code> | --          |
 
 ### Slots
 
