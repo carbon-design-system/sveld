@@ -121,7 +121,7 @@ function genAccessors(def: Pick<ComponentDocApi, "props">) {
 
       return `
     ${prop_comments.length > 0 ? `/**\n${prop_comments}*/` : EMPTY_STR}
-    ${prop.name}?: ${prop_value};`;
+    ${prop.name}: ${prop_value};`;
     })
     .join("\n");
 }
