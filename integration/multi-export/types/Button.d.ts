@@ -18,4 +18,6 @@ export default class Button extends SvelteComponentTyped<
   ButtonProps,
   { click: WindowEventMap["click"] },
   { default: {} }
-> {}
+> {
+  print: () => any;
+}

@@ -24,6 +24,16 @@
           "isFunctionDeclaration": false,
           "constant": false,
           "reactive": false
+        },
+        {
+          "name": "print",
+          "kind": "function",
+          "type": "() => any",
+          "value": "() => {     console.log(0);   }",
+          "isFunction": true,
+          "isFunctionDeclaration": true,
+          "constant": false,
+          "reactive": false
         }
       ],
       "slots": [

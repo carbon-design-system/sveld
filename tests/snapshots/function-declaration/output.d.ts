@@ -15,10 +15,10 @@ export interface InputProps {
 }
 
 export default class Input extends SvelteComponentTyped<InputProps, {}, {}> {
-  add?: () => any;
+  add: () => any;
 
   /**
    * Multiplies two numbers
    */
-  multiply?: (a: number, b: number) => number;
+  multiply: (a: number, b: number) => number;
 }
