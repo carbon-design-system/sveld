@@ -77,17 +77,12 @@ export async function generateBundle(input: string, glob: boolean) {
     const filePath = entry.source,
       ext = path.parse(filePath).ext;
 
-    if (ext === '.svelte') {
+    if (ext === ".svelte") {
       const source = await fs.readFile(path.resolve(dir, filePath), "utf-8");
 
-      const { code: processed } = await preprocess(
-        source,
-        [
-          typescript(),
-          replace([[/<style.+<\/style>/gims, ""]]),
-        ],
-        { filename: path.basename(filePath) }
-      );
+      const { code: processed } = await preprocess(source, [typescript(), replace([[/<style.+<\/style>/gims, ""]])], {
+        filename: path.basename(filePath),
+      });
 
       components.set(moduleName, {
         moduleName,
