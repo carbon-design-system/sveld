@@ -32,7 +32,7 @@ function addCommentLine(value: any, returnValue?: any) {
 
 function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleName" | "extends">) {
   const props = def.props
-    .filter((prop) => !prop.isFunctionDeclaration)
+    .filter((prop) => !prop.isFunctionDeclaration && prop.kind !== "const")
     .map((prop) => {
       const prop_comments = [
         addCommentLine(prop.description?.replace(/\n/g, "\n* ")),
@@ -105,9 +105,18 @@ function genEventDef(def: Pick<ComponentDocApi, "events">) {
 
 function genAccessors(def: Pick<ComponentDocApi, "props">) {
   return def.props
-    .filter((prop) => prop.isFunctionDeclaration)
+    .filter((prop) => prop.isFunctionDeclaration || prop.kind === "const")
     .map((prop) => {
-      const prop_comments = [addCommentLine(prop.description?.replace(/\n/g, "\n* "))].filter(Boolean).join("");
+      const prop_comments = [
+        addCommentLine(prop.description?.replace(/\n/g, "\n* ")),
+        addCommentLine(prop.constant, "@constant"),
+        addCommentLine(
+          prop.value,
+          `@default ${typeof prop.value === "string" ? prop.value.replace(/\s+/g, " ") : prop.value}`
+        ),
+      ]
+        .filter(Boolean)
+        .join("");
 
       return `
     ${prop_comments.length > 0 ? `/**\n${prop_comments}*/` : EMPTY_STR}
@@ -137,7 +146,7 @@ export function writeTsDefinition(component: ComponentDocApi) {
   ${getTypeDefs({ typedefs })}
   ${prop_def}
 
-  export default class ${moduleName === 'default' ? '' : moduleName} extends SvelteComponentTyped<
+  export default class ${moduleName === "default" ? "" : moduleName} extends SvelteComponentTyped<
       ${props_name},
       {${genEventDef({ events })}},
       {${genSlotDef({ slots })}}
