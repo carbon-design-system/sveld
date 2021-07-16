@@ -64,5 +64,8 @@
   ],
   "prettier": {
     "printWidth": 120
-  }
+  },
+  "contributors": [
+    "Eric Liu (https://github.com/metonym)"
+  ]
 }
