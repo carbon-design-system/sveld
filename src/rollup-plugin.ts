@@ -63,11 +63,11 @@ export async function generateBundle(input: string, glob: boolean) {
     fg.sync([`${dir}/**/*.svelte`]).forEach((file) => {
       const moduleName = path.parse(file).name.replace(/\-/g, "");
       let source = "./" + path.relative(dir, file);
-      console.log("generateBundle1", source);
+
       if (path.sep !== "/") {
         source = source.split(path.sep).join("/");
       }
-      console.log("generateBundle2", source);
+
       if (exports[moduleName]) {
         exports[moduleName].source = source;
       }
