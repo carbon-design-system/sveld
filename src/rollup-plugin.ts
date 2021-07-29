@@ -58,7 +58,6 @@ export async function generateBundle(input: string, glob: boolean) {
   const dir = fs.lstatSync(input).isFile() ? path.dirname(input) : input;
   const entry = fs.readFileSync(input, "utf-8");
   const exports = parseExports(entry);
-  console.log("generateBundle");
   if (glob) {
     fg.sync([`${dir}/**/*.svelte`]).forEach((file) => {
       const moduleName = path.parse(file).name.replace(/\-/g, "");
