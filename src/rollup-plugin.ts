@@ -66,6 +66,7 @@ export async function generateBundle(input: string, glob: boolean) {
       if (path.sep !== "/") {
         source = source.replace(path.sep, "/");
       }
+      
       if (exports[moduleName]) {
         exports[moduleName].source = source;
       }
