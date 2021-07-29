@@ -3,7 +3,6 @@
   "version": "0.8.3",
   "license": "Apache-2.0",
   "description": "Generate TypeScript definitions for your Svelte components.",
-  "author": "IBM",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "scripts": {
@@ -49,10 +48,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/ibm/sveld.git"
+    "url": "https://github.com/carbon-design-system/sveld.git"
   },
-  "homepage": "https://github.com/ibm/sveld",
-  "bugs": "https://github.com/ibm/sveld/issues",
+  "homepage": "https://github.com/carbon-design-system/sveld",
+  "bugs": "https://github.com/carbon-design-system/sveld/issues",
   "keywords": [
     "svelte",
     "svelte component",
