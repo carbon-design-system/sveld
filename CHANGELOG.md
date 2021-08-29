@@ -5,9 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+- add isAccessor field to API
+- update Markdown writer to generate a separate table for accessors
+
 ## [0.9.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.9.0) - 2021-08-28
 
-- - omit `@constant`, `@default` notations for component accessors
+- omit `@constant`, `@default` notations for component accessors
 
 ## [0.8.3](https://github.com/carbon-design-system/sveld/releases/tag/v0.8.3) - 2021-07-29
 
