@@ -21,14 +21,7 @@ export interface InputProps {
 }
 
 export default class Input extends SvelteComponentTyped<InputProps, {}, { default: {} }> {
-  /**
-   * @constant
-   * @default { ["1"]: true }
-   */
   propConst: { [key: string]: boolean };
 
-  /**
-   * @default () => { localBool = !localBool; }
-   */
   fn: () => any;
 }

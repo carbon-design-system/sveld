@@ -107,16 +107,7 @@ function genAccessors(def: Pick<ComponentDocApi, "props">) {
   return def.props
     .filter((prop) => prop.isFunctionDeclaration || prop.kind === "const")
     .map((prop) => {
-      const prop_comments = [
-        addCommentLine(prop.description?.replace(/\n/g, "\n* ")),
-        addCommentLine(prop.constant, "@constant"),
-        addCommentLine(
-          prop.value,
-          `@default ${typeof prop.value === "string" ? prop.value.replace(/\s+/g, " ") : prop.value}`
-        ),
-      ]
-        .filter(Boolean)
-        .join("");
+      const prop_comments = [addCommentLine(prop.description?.replace(/\n/g, "\n* "))].filter(Boolean).join("");
 
       return `
     ${prop_comments.length > 0 ? `/**\n${prop_comments}*/` : EMPTY_STR}
