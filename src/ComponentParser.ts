@@ -385,6 +385,8 @@ export default class ComponentParser {
                 replace: false,
               };
 
+              if (value === undefined) return {};
+
               if (value[0]) {
                 const { type, expression, raw, start, end } = value[0];
 
