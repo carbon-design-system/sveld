@@ -1,4 +1,4 @@
-export { default as Button } from "./Button";
-export { default as Link } from "./Link";
-export { default as Quote } from "./Quote";
-export { default as Header } from "./nested/Header";
+export { default as Button } from "./Button.svelte";
+export { default as Link } from "./Link.svelte";
+export { default as Quote } from "./Quote.svelte";
+export { default as Header } from "./nested/Header.svelte";
