@@ -9,9 +9,5 @@ export default class SecondaryButton extends SvelteComponentTyped<
   { click: WindowEventMap["click"] },
   { default: {} }
 > {
-  /**
-   * @constant
-   * @default true
-   */
   secondary: boolean;
 }
