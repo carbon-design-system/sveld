@@ -6,7 +6,7 @@
   "module": "./lib/index.mjs",
   "types": "./types/index.d.ts",
   "scripts": {
-    "svelte-check": "svelte-check --workspace test",
+    "svelte-check": "svelte-check --workspace test/*",
     "build": "rollup -c"
   },
   "dependencies": {
