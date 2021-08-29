@@ -8,9 +8,7 @@
 
 {#if edit}
   <Button {...$$restProps} />
-{:else}
-  {#if heading}
-    <!-- svelte-ignore a11y-missing-content -->
-    <h1 {...$$restProps} />
-  {:else}<span {...$$restProps} />{/if}
-{/if}
+{:else if heading}
+  <!-- svelte-ignore a11y-missing-content -->
+  <h1 {...$$restProps} />
+{:else}<span {...$$restProps} />{/if}

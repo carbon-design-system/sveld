@@ -7,7 +7,7 @@
     return a + b;
   }
 
-  /** 
+  /**
    * Multiplies two numbers
    * @type {(a: number, b: number) => number}
    */

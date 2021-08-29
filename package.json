@@ -11,7 +11,7 @@
     "test": "run-p test:*",
     "test:unit": "tsnd node_modules/tape/bin/tape tests/*.test.ts",
     "test:integration": "node tests/integration",
-    "format": "prettier --write '{src,tests}/**/*.ts'",
+    "format": "prettier --write '{src,tests}/**/*.{ts,svelte}'",
     "prepack": "run-s build test"
   },
   "peerDependencies": {
@@ -36,6 +36,7 @@
     "@types/prettier": "^2.3.2",
     "@types/tape": "^4.13.2",
     "npm-run-all": "^4.1.5",
+    "prettier-plugin-svelte": "^2.4.0",
     "tape": "^5.3.1",
     "ts-node-dev": "^1.1.1"
   },

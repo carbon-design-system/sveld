@@ -1,0 +1,18 @@
+{
+  "props": [],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "fallback": "Default text",
+      "slot_props": "{ a: number; }"
+    },
+    {
+      "name": "text",
+      "default": false,
+      "slot_props": "{ a: number; }"
+    }
+  ],
+  "events": [],
+  "typedefs": []
+}

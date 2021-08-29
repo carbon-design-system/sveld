@@ -15,7 +15,8 @@
 <button type="button" />
 <h1
   on:mouseover={() => {
-    dispatcher('hover', { h1: true });
-  }}>
+    dispatcher("hover", { h1: true });
+  }}
+>
   <slot />
 </h1>
