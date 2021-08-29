@@ -19,8 +19,5 @@ export default class Button extends SvelteComponentTyped<
   { click: WindowEventMap["click"] },
   { default: {} }
 > {
-  /**
-   * @default () => { console.log(0); }
-   */
   print: () => any;
 }
