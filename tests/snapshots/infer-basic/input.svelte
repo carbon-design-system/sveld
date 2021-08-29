@@ -19,6 +19,7 @@
   class:id
   on:click={() => {
     propBool = !propBool;
-  }}>
+  }}
+>
   <slot>{name}</slot>
 </div>

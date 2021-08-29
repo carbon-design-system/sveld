@@ -1,8 +1,8 @@
 <script>
   const props = {
-    a: 4
-  }
+    a: 4,
+  };
 </script>
 
 <slot {...props}>Default text</slot>
-<slot name="text" {...props}></slot>
+<slot name="text" {...props} />

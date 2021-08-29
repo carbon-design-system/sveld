@@ -278,7 +278,7 @@ export default class ComponentParser {
     let dispatcher_name: undefined | string = undefined;
     let callees: { name: string; arguments: any }[] = [];
 
-    walk((this.compiled.ast as unknown) as Node, {
+    walk(this.compiled.ast as unknown as Node, {
       enter: (node, parent, prop) => {
         if (node.type === "CallExpression") {
           if (node.callee.name === "createEventDispatcher") {
@@ -301,9 +301,12 @@ export default class ComponentParser {
         }
 
         if (node.type === "ExportNamedDeclaration" && node.declaration != null) {
-          const { type: declaration_type, id, init, body } = node.declaration.declarations
-            ? node.declaration.declarations[0]
-            : node.declaration;
+          const {
+            type: declaration_type,
+            id,
+            init,
+            body,
+          } = node.declaration.declarations ? node.declaration.declarations[0] : node.declaration;
 
           const prop_name = id.name;
 

@@ -13,4 +13,5 @@
   on:keydown={(e) => {
     dispatcher(e.key);
     dispatcher(KEY, { key: e.key });
-  }} />
+  }}
+/>
