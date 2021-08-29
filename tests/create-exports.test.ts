@@ -80,7 +80,7 @@ test("removeSvelteExt", (t) => {
 });
 
 test("convertSvelteExt", (t) => {
-  t.equal(convertSvelteExt("input.svelte"), "input.d.ts");
-  t.equal(convertSvelteExt("ComponentName.svelte"), "ComponentName.d.ts");
+  t.equal(convertSvelteExt("input.svelte"), "input.svelte.d.ts");
+  t.equal(convertSvelteExt("ComponentName.svelte"), "ComponentName.svelte.d.ts");
   t.end();
 });

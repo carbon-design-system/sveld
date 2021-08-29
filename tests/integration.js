@@ -9,6 +9,7 @@ const dirs = fs
   .readdirSync("integration")
   .map((i) => path.join("integration", i))
   .filter((i) => fs.lstatSync(i).isDirectory());
+const rmdir = promisify(fs.rmdirSync)
 
 const execCwd = async (dir, ...args) => await exec(`yarn --cwd ${dir} ${args}`);
 
@@ -17,6 +18,8 @@ const execCwd = async (dir, ...args) => await exec(`yarn --cwd ${dir} ${args}`);
     await exec("yarn link");
 
     for await (const dir of dirs) {
+      fs.rmdirSync(path.join(dir, 'types'), { recursive: true });
+
       await execCwd(dir, `link "${name}"`);
       await execCwd(dir, "install");
 
