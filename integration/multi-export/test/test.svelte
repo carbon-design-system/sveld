@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { Button, Link, Quote, Header } from "../types";
+  import { Button, Link, Quote } from "../types";
+  import Header from "../types/nested/Header.svelte"
 </script>
 
 <Button
@@ -15,4 +16,4 @@
 
 <Quote author={'author'} />
 
-<Header>text</Header>
+<Header>Test</Header>

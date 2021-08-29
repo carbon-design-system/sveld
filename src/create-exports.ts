@@ -23,5 +23,5 @@ export function removeSvelteExt(filePath: string): string {
 }
 
 export function convertSvelteExt(filePath: string): string {
-  return filePath.replace(/\.svelte$/, ".d.ts");
+  return filePath.replace(/\.svelte$/, ".svelte.d.ts");
 }
