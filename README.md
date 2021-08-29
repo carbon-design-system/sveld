@@ -34,7 +34,7 @@ Given a Svelte component, `sveld` can infer basic prop types to generate TypeScr
 
 The generated definition extends the official `SvelteComponentTyped` interface exported from Svelte.
 
-**Button.d.ts**
+**Button.svelte.d.ts**
 
 ```ts
 /// <reference types="svelte" />
