@@ -4,21 +4,21 @@ import { convertSvelteExt, createExports, removeSvelteExt } from "../src/create-
 test("createExports – single default export", (t) => {
   const source = { default: { source: "./Component.svelte", default: true } };
 
-  t.deepEqual(createExports(source), 'export { default } from "./Component";');
+  t.deepEqual(createExports(source), 'export { default } from "./Component.svelte";');
   t.end();
 });
 
 test("createExports – single default export (declaration)", (t) => {
   const source = { Component: { source: "./Component.svelte", default: true } };
 
-  t.deepEqual(createExports(source), 'export { default } from "./Component";');
+  t.deepEqual(createExports(source), 'export { default } from "./Component.svelte";');
   t.end();
 });
 
 test("createExports – single named export", (t) => {
   const source = { Component: { source: "./Component.svelte", default: false } };
 
-  t.deepEqual(createExports(source), 'export { default as Component } from "./Component";');
+  t.deepEqual(createExports(source), 'export { default as Component } from "./Component.svelte";');
   t.end();
 });
 
@@ -30,7 +30,7 @@ test("createExports – multiple named exports", (t) => {
 
   t.deepEqual(
     createExports(source),
-    'export { default as Component } from "./Component";\nexport { default as Component2 } from "./Component2";'
+    'export { default as Component } from "./Component.svelte";\nexport { default as Component2 } from "./Component2.svelte";'
   );
   t.end();
 });
@@ -44,7 +44,7 @@ test("createExports – multiple named exports with a default export", (t) => {
 
   t.deepEqual(
     createExports(source),
-    'export { default as Component } from "./Component";\nexport { default as Component2 } from "./Component2";\nexport { default } from "./Component2";'
+    'export { default as Component } from "./Component.svelte";\nexport { default as Component2 } from "./Component2.svelte";\nexport { default } from "./Component2.svelte";'
   );
   t.end();
 });
@@ -58,7 +58,7 @@ test("createExports – multiple named exports with a default export (declaratio
 
   t.deepEqual(
     createExports(source),
-    'export { default as Component } from "./Component";\nexport { default as Component2 } from "./Component2";\nexport { default } from "./Component3";'
+    'export { default as Component } from "./Component.svelte";\nexport { default as Component2 } from "./Component2.svelte";\nexport { default } from "./Component3.svelte";'
   );
   t.end();
 });
@@ -68,7 +68,7 @@ test("createExports – mixed exports", (t) => {
 
   t.deepEqual(
     createExports(source),
-    'export { default as Component } from "./Component";\nexport { default } from "./Component";'
+    'export { default as Component } from "./Component.svelte";\nexport { default } from "./Component.svelte";'
   );
   t.end();
 });

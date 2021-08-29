@@ -1,2 +1,2 @@
-export { default as Button } from "./Button";
-export { default } from "./Button";
+export { default as Button } from "./Button.svelte";
+export { default } from "./Button.svelte";
