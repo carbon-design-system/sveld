@@ -1,7 +1,6 @@
 # sveld
 
 [![NPM][npm]][npm-url]
-[![Build][build]][build-badge]
 
 `sveld` generates TypeScript definitions for Svelte components by statically analyzing their props, events, slots and more. Prop types and signatures can be defined using [JSDoc notation](https://jsdoc.app/). This documentation generator can also emit component documentation in Markdown and JSON output formats.
 
@@ -416,5 +415,3 @@ Refer to the [contributing guidelines](CONTRIBUTING.md).
 
 [npm]: https://img.shields.io/npm/v/sveld.svg?color=262626&style=for-the-badge
 [npm-url]: https://npmjs.com/package/sveld
-[build]: https://img.shields.io/travis/com/ibm/sveld?color=24a148&style=for-the-badge
-[build-badge]: https://travis-ci.com/ibm/sveld
