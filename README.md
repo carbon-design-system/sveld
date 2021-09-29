@@ -1,6 +1,8 @@
 # sveld
 
 [![NPM][npm]][npm-url]
+![GitHub](https://img.shields.io/github/license/carbon-design-system/sveld?color=262626&style=for-the-badge)
+![npm downloads to date](https://img.shields.io/npm/dt/sveld?color=262626&style=for-the-badge)
 
 `sveld` generates TypeScript definitions for Svelte components by statically analyzing their props, events, slots and more. Prop types and signatures can be defined using [JSDoc notation](https://jsdoc.app/). This documentation generator can also emit component documentation in Markdown and JSON output formats.
 
