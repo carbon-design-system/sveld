@@ -90,12 +90,7 @@
   import { createEventDispatcher } from "svelte";
   import WarningFilled16 from "carbon-icons-svelte/lib/WarningFilled16/WarningFilled16.svelte";
   import WarningAltFilled16 from "carbon-icons-svelte/lib/WarningAltFilled16/WarningAltFilled16.svelte";
-  import {
-    ListBox,
-    ListBoxMenu,
-    ListBoxMenuIcon,
-    ListBoxMenuItem,
-  } from "../ListBox";
+  import { ListBox, ListBoxMenu, ListBoxMenuIcon, ListBoxMenuItem } from "../ListBox";
 
   const dispatch = createEventDispatcher();
 
@@ -125,113 +120,102 @@
 </script>
 
 <svelte:window
-  on:click="{({ target }) => {
+  on:click={({ target }) => {
     if (open && ref && !ref.contains(target)) {
       open = false;
     }
-  }}"
+  }}
 />
 
 <div
-  class:bx--dropdown__wrapper="{true}"
-  class:bx--list-box__wrapper="{true}"
-  class:bx--dropdown__wrapper--inline="{inline}"
-  class:bx--list-box__wrapper--inline="{inline}"
-  class:bx--dropdown__wrapper--inline--invalid="{inline && invalid}"
+  class:bx--dropdown__wrapper={true}
+  class:bx--list-box__wrapper={true}
+  class:bx--dropdown__wrapper--inline={inline}
+  class:bx--list-box__wrapper--inline={inline}
+  class:bx--dropdown__wrapper--inline--invalid={inline && invalid}
   {...$$restProps}
 >
   {#if titleText}
-    <label
-      for="{id}"
-      class:bx--label="{true}"
-      class:bx--label--disabled="{disabled}"
-    >
+    <label for={id} class:bx--label={true} class:bx--label--disabled={disabled}>
       {titleText}
     </label>
   {/if}
   <ListBox
-    type="{type}"
-    size="{size}"
-    id="{id}"
-    name="{name}"
-    aria-label="{$$props['aria-label']}"
-    class="bx--dropdown {invalid && 'bx--dropdown--invalid'} {!invalid &&
-      warn &&
-      'bx--dropdown--warning'} {open && 'bx--dropdown--open'}
-      {size ===
-      'sm' && 'bx--dropdown--sm'}
-      {size === 'xl' &&
-      'bx--dropdown--xl'}
-      {inline &&
-      'bx--dropdown--inline'}
-      {disabled &&
-      'bx--dropdown--disabled'}
+    {type}
+    {size}
+    {id}
+    {name}
+    aria-label={$$props["aria-label"]}
+    class="bx--dropdown {invalid && 'bx--dropdown--invalid'} {!invalid && warn && 'bx--dropdown--warning'} {open &&
+      'bx--dropdown--open'}
+      {size === 'sm' && 'bx--dropdown--sm'}
+      {size === 'xl' && 'bx--dropdown--xl'}
+      {inline && 'bx--dropdown--inline'}
+      {disabled && 'bx--dropdown--disabled'}
       {light && 'bx--dropdown--light'}"
-    on:click="{({ target }) => {
+    on:click={({ target }) => {
       open = ref.contains(target) ? !open : false;
-    }}"
-    disabled="{disabled}"
-    open="{open}"
-    invalid="{invalid}"
-    invalidText="{invalidText}"
-    light="{light}"
-    warn="{warn}"
-    warnText="{warnText}"
+    }}
+    {disabled}
+    {open}
+    {invalid}
+    {invalidText}
+    {light}
+    {warn}
+    {warnText}
   >
     {#if invalid}
       <WarningFilled16 class="bx--list-box__invalid-icon" />
     {/if}
     {#if !invalid && warn}
-      <WarningAltFilled16
-        class="bx--list-box__invalid-icon bx--list-box__invalid-icon--warning"
-      />
+      <WarningAltFilled16 class="bx--list-box__invalid-icon bx--list-box__invalid-icon--warning" />
     {/if}
     <button
-      bind:this="{ref}"
-      class:bx--list-box__field="{true}"
+      bind:this={ref}
+      class:bx--list-box__field={true}
       tabindex="0"
       role="button"
-      aria-expanded="{open}"
-      on:keydown="{({ key }) => {
-        if (key === 'Enter') {
+      aria-expanded={open}
+      on:keydown={({ key }) => {
+        if (key === "Enter") {
           open = !open;
           if (highlightedIndex > -1 && highlightedIndex !== selectedIndex) {
             selectedIndex = highlightedIndex;
             open = false;
           }
-        } else if (key === 'Tab') {
+        } else if (key === "Tab") {
           open = false;
           ref.blur();
-        } else if (key === 'ArrowDown') {
+        } else if (key === "ArrowDown") {
           change(1);
-        } else if (key === 'ArrowUp') {
+        } else if (key === "ArrowUp") {
           change(-1);
         }
-      }}"
-      disabled="{disabled}"
-      translateWithId="{translateWithId}"
-      id="{id}"
+      }}
+      {disabled}
+      {translateWithId}
+      {id}
     >
       <span class="bx--list-box__label">
         {#if selectedItem}{itemToString(selectedItem)}{:else}{label}{/if}
       </span>
-      <ListBoxMenuIcon open="{open}" translateWithId="{translateWithId}" />
+      <ListBoxMenuIcon {open} {translateWithId} />
     </button>
     {#if open}
-      <ListBoxMenu aria-labelledby="{id}" id="{id}">
+      <ListBoxMenu aria-labelledby={id} {id}>
         {#each items as item, i (item.id)}
           <ListBoxMenuItem
-            id="{item.id}"
-            active="{selectedIndex === i || selectedId === item.id}"
-            highlighted="{highlightedIndex === i || selectedIndex === i}"
-            on:click="{() => {
+            id={item.id}
+            active={selectedIndex === i || selectedId === item.id}
+            highlighted={highlightedIndex === i || selectedIndex === i}
+            on:click={() => {
               selectedId = item.id;
               selectedIndex = i;
               ref.focus();
-            }}"
-            on:mouseenter="{() => {
+            }}
+            on:mouseenter={() => {
               highlightedIndex = i;
-            }}"
+            }}
           >
             {itemToString(item)}
           </ListBoxMenuItem>
@@ -240,10 +224,7 @@
     {/if}
   </ListBox>
   {#if !inline && !invalid && !warn && helperText}
-    <div
-      class:bx--form__helper-text="{true}"
-      class:bx--form__helper-text--disabled="{disabled}"
-    >
+    <div class:bx--form__helper-text={true} class:bx--form__helper-text--disabled={disabled}>
       {helperText}
     </div>
   {/if}

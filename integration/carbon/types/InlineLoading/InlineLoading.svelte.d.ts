@@ -1,8 +1,7 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface InlineLoadingProps
-  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
+export interface InlineLoadingProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
   /**
    * Set the loading status
    * @default "active"

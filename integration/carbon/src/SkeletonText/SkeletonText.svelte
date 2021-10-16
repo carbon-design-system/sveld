@@ -29,22 +29,18 @@
 {#if paragraph}
   <div {...$$restProps} on:click on:mouseover on:mouseenter on:mouseleave>
     {#each rows as { width }}
-      <p
-        class:bx--skeleton__text="{true}"
-        class:bx--skeleton__heading="{heading}"
-        style="width: {width}"
-      ></p>
+      <p class:bx--skeleton__text={true} class:bx--skeleton__heading={heading} style="width: {width}" />
     {/each}
   </div>
 {:else}
   <p
-    class:bx--skeleton__text="{true}"
-    class:bx--skeleton__heading="{heading}"
+    class:bx--skeleton__text={true}
+    class:bx--skeleton__heading={heading}
     {...$$restProps}
     style="width: {width};{$$restProps.style}"
     on:click
     on:mouseover
     on:mouseenter
     on:mouseleave
-  ></p>
+  />
 {/if}

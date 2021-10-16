@@ -1,8 +1,7 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface StructuredListProps
-  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
+export interface StructuredListProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
   /**
    * Specify the selected structured list row value
    */

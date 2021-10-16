@@ -11,7 +11,7 @@
     "test": "run-p test:*",
     "test:unit": "tsnd node_modules/tape/bin/tape tests/*.test.ts",
     "test:integration": "node tests/integration",
-    "format": "prettier --write '{src,tests}/**/*.{ts,svelte}'",
+    "format": "prettier --write '{src,tests,integration}/**/*.{ts,svelte}'",
     "prepack": "run-s build test"
   },
   "peerDependencies": {

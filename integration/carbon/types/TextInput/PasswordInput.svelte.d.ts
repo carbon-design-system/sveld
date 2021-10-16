@@ -1,8 +1,7 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface PasswordInputProps
-  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["input"]> {
+export interface PasswordInputProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["input"]> {
   /**
    * Set the size of the input
    */

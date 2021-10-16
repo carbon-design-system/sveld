@@ -1,8 +1,7 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface OrderedListProps
-  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["ol"]> {
+export interface OrderedListProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["ol"]> {
   /**
    * Set to `true` to use the nested variant
    * @default false

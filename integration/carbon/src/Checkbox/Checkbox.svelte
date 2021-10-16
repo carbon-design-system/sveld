@@ -48,17 +48,11 @@
 </script>
 
 {#if skeleton}
-  <CheckboxSkeleton
-    {...$$restProps}
-    on:click
-    on:mouseover
-    on:mouseenter
-    on:mouseleave
-  />
+  <CheckboxSkeleton {...$$restProps} on:click on:mouseover on:mouseenter on:mouseleave />
 {:else}
   <div
-    class:bx--form-item="{true}"
-    class:bx--checkbox-wrapper="{true}"
+    class:bx--form-item={true}
+    class:bx--checkbox-wrapper={true}
     {...$$restProps}
     on:click
     on:mouseover
@@ -66,25 +60,22 @@
     on:mouseleave
   >
     <input
-      bind:this="{ref}"
+      bind:this={ref}
       type="checkbox"
-      checked="{checked}"
-      disabled="{disabled}"
-      id="{id}"
-      indeterminate="{indeterminate}"
-      name="{name}"
-      readonly="{readonly}"
-      class:bx--checkbox="{true}"
+      {checked}
+      {disabled}
+      {id}
+      {indeterminate}
+      {name}
+      {readonly}
+      class:bx--checkbox={true}
       on:change
-      on:change="{() => {
+      on:change={() => {
         checked = !checked;
-      }}"
+      }}
     />
-    <label for="{id}" title="{title}" class:bx--checkbox-label="{true}">
-      <span
-        class:bx--checkbox-label-text="{true}"
-        class:bx--visually-hidden="{hideLabel}"
-      >
+    <label for={id} {title} class:bx--checkbox-label={true}>
+      <span class:bx--checkbox-label-text={true} class:bx--visually-hidden={hideLabel}>
         {labelText}
       </span>
     </label>

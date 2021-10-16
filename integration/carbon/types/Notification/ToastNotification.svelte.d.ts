@@ -1,19 +1,12 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface ToastNotificationProps
-  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
+export interface ToastNotificationProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
   /**
    * Specify the kind of notification
    * @default "error"
    */
-  kind?:
-    | "error"
-    | "info"
-    | "info-square"
-    | "success"
-    | "warning"
-    | "warning-alt";
+  kind?: "error" | "info" | "info-square" | "success" | "warning" | "warning-alt";
 
   /**
    * Set to `true` to use the low contrast variant

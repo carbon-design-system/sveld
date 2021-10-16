@@ -25,19 +25,15 @@
 
 <button
   type="button"
-  aria-label="{iconDescription}"
-  title="{iconDescription}"
-  class:bx--toast-notification__close-button="{notificationType === 'toast'}"
-  class:bx--inline-notification__close-button="{notificationType === 'inline'}"
+  aria-label={iconDescription}
+  title={iconDescription}
+  class:bx--toast-notification__close-button={notificationType === "toast"}
+  class:bx--inline-notification__close-button={notificationType === "inline"}
   {...$$restProps}
   on:click
   on:mouseover
   on:mouseenter
   on:mouseleave
 >
-  <svelte:component
-    this="{icon}"
-    title="{title}"
-    class="bx--{notificationType}-notification__close-icon"
-  />
+  <svelte:component this={icon} {title} class="bx--{notificationType}-notification__close-icon" />
 </button>

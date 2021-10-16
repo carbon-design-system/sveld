@@ -55,82 +55,77 @@
 </script>
 
 <svelte:window
-  on:mouseup="{({ target }) => {
+  on:mouseup={({ target }) => {
     if (target && elTypeSearch) {
       if (!elTypeSearch.contains(target)) {
         searchIsActive = false;
         isSearchFocus = false;
       }
     }
-  }}"
+  }}
 />
 
 <div
-  bind:this="{elTypeSearch}"
+  bind:this={elTypeSearch}
   role="search"
   class="search-wrapper"
-  class:search-wrapper-hidden="{!searchIsActive}"
-  class:search-focus="{isSearchFocus || searchIsActive}"
+  class:search-wrapper-hidden={!searchIsActive}
+  class:search-focus={isSearchFocus || searchIsActive}
 >
-  <div
-    id="right-panel-action-search"
-    class="search-wrapper-2"
-    role="combobox"
-    aria-expanded="{searchIsActive}"
-  >
+  <div id="right-panel-action-search" class="search-wrapper-2" role="combobox" aria-expanded={searchIsActive}>
     <button
-      tabindex="{searchTabIndex}"
+      tabindex={searchTabIndex}
       aria-label="Search"
-      class:bx--header__action="{true}"
-      class:btn-search="{true}"
-      class:btn-search-disabled="{searchIsActive}"
-      on:click="{() => {
+      class:bx--header__action={true}
+      class:btn-search={true}
+      class:btn-search-disabled={searchIsActive}
+      on:click={() => {
         isSearchFocus = true;
         searchIsActive = true;
-        dispatch('focusInputSearch');
-      }}"
+        dispatch("focusInputSearch");
+      }}
       type="button"
-      on:keydown="{({ key }) => {
-        if (key === 'Enter') {
+      on:keydown={({ key }) => {
+        if (key === "Enter") {
           searchIsActive = !searchIsActive;
         }
-      }}"
+      }}
     >
-      <Icon title="Search" tabindex="0" render="{Search20}" />
+      <Icon title="Search" tabindex="0" render={Search20} />
     </button>
     <input
-      bind:this="{elInput}"
+      bind:this={elInput}
       id="input-search-field"
       type="text"
       autocomplete="off"
-      tabindex="{closeTabIndex}"
+      tabindex={closeTabIndex}
       class="input-search"
-      class:input-hidden="{!searchIsActive}"
+      class:input-hidden={!searchIsActive}
       placeholder="Search"
-      on:focus="{() => dispatch('focusInputSearch')}"
-      on:focusout="{() => dispatch('focusOutInputSearch')}"
-      on:input="{dispatchInputs}"
+      on:focus={() => dispatch("focusInputSearch")}
+      on:focusout={() => dispatch("focusOutInputSearch")}
+      on:input={dispatchInputs}
     />
     <button
       id="right-panel-close-search"
-      tabindex="{closeTabIndex}"
-      class:bx--header__action="{true}"
-      class:btn-clear="{true}"
-      class:btn-clear-hidden="{!searchIsActive}"
+      tabindex={closeTabIndex}
+      class:bx--header__action={true}
+      class:btn-clear={true}
+      class:btn-clear-hidden={!searchIsActive}
       type="button"
       aria-label="Clear search"
-      on:click="{() => {
+      on:click={() => {
         isSearchFocus = false;
         searchIsActive = false;
         searchStore.clear();
-      }}"
-      on:keydown="{({ key }) => {
-        if (key === 'Enter') {
+      }}
+      on:keydown={({ key }) => {
+        if (key === "Enter") {
           searchIsActive = !searchIsActive;
         }
-      }}"
+      }}
     >
-      <Icon title="Close" tabindex="0" render="{Close20}" />
+      <Icon title="Close" tabindex="0" render={Close20} />
     </button>
   </div>
 </div>
@@ -145,8 +140,7 @@
     height: 3rem;
     background-color: #393939;
     color: #fff;
-    transition: max-width 0.11s cubic-bezier(0.2, 0, 0.38, 0.9),
-      background 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
+    transition: max-width 0.11s cubic-bezier(0.2, 0, 0.38, 0.9), background 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
   }
 
   .search-wrapper-hidden {
@@ -171,8 +165,7 @@
     padding: 0;
     flex-shrink: 0;
     opacity: 1;
-    transition: background-color 0.11s cubic-bezier(0.2, 0, 0.38, 0.9),
-      opacity 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
+    transition: background-color 0.11s cubic-bezier(0.2, 0, 0.38, 0.9), opacity 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
   }
 
   .btn-search-disabled {
@@ -208,8 +201,7 @@
     flex-shrink: 0;
     opacity: 1;
     display: block;
-    transition: background-color 0.11s cubic-bezier(0.2, 0, 0.38, 0.9),
-      opacity 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
+    transition: background-color 0.11s cubic-bezier(0.2, 0, 0.38, 0.9), opacity 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
   }
 
   .btn-clear:hover {

@@ -1,8 +1,7 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface StructuredListInputProps
-  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["input"]> {
+export interface StructuredListInputProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["input"]> {
   /**
    * Set to `true` to check the input
    * @default false
@@ -40,8 +39,4 @@ export interface StructuredListInputProps
   ref?: null | HTMLInputElement;
 }
 
-export default class StructuredListInput extends SvelteComponentTyped<
-  StructuredListInputProps,
-  {},
-  {}
-> {}
+export default class StructuredListInput extends SvelteComponentTyped<StructuredListInputProps, {}, {}> {}

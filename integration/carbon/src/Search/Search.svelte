@@ -79,69 +79,61 @@
 </script>
 
 {#if skeleton}
-  <SearchSkeleton
-    small="{small}"
-    size="{size}"
-    {...$$restProps}
-    on:click
-    on:mouseover
-    on:mouseenter
-    on:mouseleave
-  />
+  <SearchSkeleton {small} {size} {...$$restProps} on:click on:mouseover on:mouseenter on:mouseleave />
 {:else}
   <div
-    class:bx--search="{true}"
-    class:bx--search--light="{light}"
-    class:bx--search--disabled="{disabled}"
-    class:bx--search--sm="{size === 'sm' || small}"
-    class:bx--search--lg="{size === 'lg'}"
-    class:bx--search--xl="{size === 'xl'}"
+    class:bx--search={true}
+    class:bx--search--light={light}
+    class:bx--search--disabled={disabled}
+    class:bx--search--sm={size === "sm" || small}
+    class:bx--search--lg={size === "lg"}
+    class:bx--search--xl={size === "xl"}
     {...$$restProps}
   >
     <Search16 class="bx--search-magnifier" />
-    <label for="{id}" class:bx--label="{true}">{labelText}</label>
+    <label for={id} class:bx--label={true}>{labelText}</label>
     <!-- svelte-ignore a11y-autofocus -->
     <input
-      bind:this="{ref}"
+      bind:this={ref}
       role="searchbox"
-      class:bx--search-input="{true}"
-      autofocus="{autofocus}"
-      autocomplete="{autocomplete}"
-      disabled="{disabled}"
-      id="{id}"
-      placeholder="{placeholder}"
-      type="{type}"
-      value="{value}"
-      aria-hidden="{$$props['aria-hidden']}"
+      class:bx--search-input={true}
+      {autofocus}
+      {autocomplete}
+      {disabled}
+      {id}
+      {placeholder}
+      {type}
+      {value}
+      aria-hidden={$$props["aria-hidden"]}
       on:change
       on:input
-      on:input="{({ target }) => {
+      on:input={({ target }) => {
         value = target.value;
-      }}"
+      }}
       on:focus
       on:blur
       on:keydown
-      on:keydown="{({ key }) => {
-        if (key === 'Escape') {
-          value = '';
-          dispatch('clear');
+      on:keydown={({ key }) => {
+        if (key === "Escape") {
+          value = "";
+          dispatch("clear");
         }
-      }}"
+      }}
     />
     <button
       type="button"
-      aria-label="{closeButtonLabelText}"
-      disabled="{disabled}"
-      class:bx--search-close="{true}"
-      class:bx--search-close--hidden="{value === ''}"
+      aria-label={closeButtonLabelText}
+      {disabled}
+      class:bx--search-close={true}
+      class:bx--search-close--hidden={value === ""}
       on:click
-      on:click="{() => {
-        value = '';
+      on:click={() => {
+        value = "";
         ref.focus();
-        dispatch('clear');
-      }}"
+        dispatch("clear");
+      }}
     >
-      <svelte:component this="{size === 'xl' ? Close20 : Close16}" />
+      <svelte:component this={size === "xl" ? Close20 : Close16} />
     </button>
   </div>
 {/if}

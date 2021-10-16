@@ -3,8 +3,7 @@ import { SvelteComponentTyped } from "svelte";
 
 export type ListBoxSelectionTranslationId = "clearAll" | "clearSelection";
 
-export interface ListBoxSelectionProps
-  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
+export interface ListBoxSelectionProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
   /**
    * Specify the number of selected items
    */

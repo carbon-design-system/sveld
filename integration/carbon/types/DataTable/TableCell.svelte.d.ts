@@ -1,8 +1,7 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface TableCellProps
-  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["td"]> {}
+export interface TableCellProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["td"]> {}
 
 export default class TableCell extends SvelteComponentTyped<
   TableCellProps,

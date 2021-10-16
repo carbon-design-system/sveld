@@ -48,22 +48,14 @@
   /** Set an id for the date picker element */
   export let id = "ccs-" + Math.random().toString(36);
 
-  import {
-    createEventDispatcher,
-    setContext,
-    afterUpdate,
-    onDestroy,
-  } from "svelte";
+  import { createEventDispatcher, setContext, afterUpdate, onDestroy } from "svelte";
   import { writable, derived } from "svelte/store";
   import { createCalendar } from "./createCalendar";
 
   const dispatch = createEventDispatcher();
   const inputs = writable([]);
   const inputIds = derived(inputs, (_) => _.map(({ id }) => id));
-  const labelTextEmpty = derived(
-    inputs,
-    (_) => _.filter(({ labelText }) => !!labelText).length === 0
-  );
+  const labelTextEmpty = derived(inputs, (_) => _.filter(({ labelText }) => !!labelText).length === 0);
   const inputValue = writable(value);
   const mode = writable(datePickerType);
   const range = derived(mode, (_) => _ === "range");
@@ -162,7 +154,7 @@
 </script>
 
 <svelte:body
-  on:click="{({ target }) => {
+  on:click={({ target }) => {
     if (!calendar || !calendar.isOpen) {
       return;
     }
@@ -172,27 +164,17 @@
     if (!calendar.calendarContainer.contains(target)) {
       calendar.close();
     }
-  }}" />
+  }} />
 
-<div
-  class:bx--form-item="{true}"
-  {...$$restProps}
-  on:click
-  on:mouseover
-  on:mouseenter
-  on:mouseleave
->
+<div class:bx--form-item={true} {...$$restProps} on:click on:mouseover on:mouseenter on:mouseleave>
   <div
-    bind:this="{datePickerRef}"
-    id="{id}"
-    class:bx--date-picker="{true}"
-    class:bx--date-picker--short="{short}"
-    class:bx--date-picker--light="{light}"
-    class="{datePickerType &&
-      `bx--date-picker--${datePickerType}`}
-      {datePickerType === 'range' &&
-      $labelTextEmpty &&
-      'bx--date-picker--nolabel'}"
+    bind:this={datePickerRef}
+    {id}
+    class:bx--date-picker={true}
+    class:bx--date-picker--short={short}
+    class:bx--date-picker--light={light}
+    class="{datePickerType && `bx--date-picker--${datePickerType}`}
+      {datePickerType === 'range' && $labelTextEmpty && 'bx--date-picker--nolabel'}"
   >
     <slot />
   </div>

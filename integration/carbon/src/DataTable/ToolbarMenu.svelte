@@ -1,5 +1,5 @@
 <script>
-  /** @extends {"../OverflowMenu/OverflowMenu"} OverflowMenuProps */
+  /** @extends {"../OverflowMenu/OverflowMenu.svelte"} OverflowMenuProps */
 
   import { getContext } from "svelte";
   import Settings16 from "carbon-icons-svelte/lib/Settings16";
@@ -15,7 +15,7 @@
 
 <OverflowMenu
   bind:menuRef
-  icon="{Settings16}"
+  icon={Settings16}
   {...$$restProps}
   class="bx--toolbar-action bx--overflow-menu {$$restProps.class}"
   flipped

@@ -131,92 +131,79 @@
   $: incrementLabel = translateWithId("increment");
   $: decrementLabel = translateWithId("decrement");
   $: value = Number(inputValue);
-  $: error =
-    invalid || (!allowEmpty && value === "") || value > max || value < min;
+  $: error = invalid || (!allowEmpty && value === "") || value > max || value < min;
   $: errorId = `error-${id}`;
-  $: ariaLabel =
-    $$props["aria-label"] ||
-    "Numeric input field with increment and decrement buttons";
+  $: ariaLabel = $$props["aria-label"] || "Numeric input field with increment and decrement buttons";
 </script>
 
-<div
-  class:bx--form-item="{true}"
-  {...$$restProps}
-  on:click
-  on:mouseover
-  on:mouseenter
-  on:mouseleave
->
+<div class:bx--form-item={true} {...$$restProps} on:click on:mouseover on:mouseenter on:mouseleave>
   <div
-    data-invalid="{error || undefined}"
-    class:bx--number="{true}"
-    class:bx--number--helpertext="{true}"
-    class:bx--number--readonly="{readonly}"
-    class:bx--number--light="{light}"
-    class:bx--number--nolabel="{hideLabel}"
-    class:bx--number--mobile="{mobile}"
-    class="{size && `bx--number--${size}`}"
+    data-invalid={error || undefined}
+    class:bx--number={true}
+    class:bx--number--helpertext={true}
+    class:bx--number--readonly={readonly}
+    class:bx--number--light={light}
+    class:bx--number--nolabel={hideLabel}
+    class:bx--number--mobile={mobile}
+    class={size && `bx--number--${size}`}
   >
     {#if mobile}
       {#if label}
         <label
-          for="{id}"
-          class:bx--label="{true}"
-          class:bx--label--disabled="{disabled}"
-          class:bx--visually-hidden="{hideLabel}"
+          for={id}
+          class:bx--label={true}
+          class:bx--label--disabled={disabled}
+          class:bx--visually-hidden={hideLabel}
         >
           <slot name="label">{label}</slot>
         </label>
       {/if}
-      <div
-        class:bx--number__input-wrapper="{true}"
-        class:bx--number__input-wrapper--warning="{!invalid && warn}"
-      >
+      <div class:bx--number__input-wrapper={true} class:bx--number__input-wrapper--warning={!invalid && warn}>
         <button
           type="button"
           aria-live="polite"
           aria-atomic="true"
-          title="{decrementLabel}"
-          aria-label="{decrementLabel || iconDescription}"
-          class:bx--number__control-btn="{true}"
-          class:down-icon="{true}"
-          on:click="{() => {
+          title={decrementLabel}
+          aria-label={decrementLabel || iconDescription}
+          class:bx--number__control-btn={true}
+          class:down-icon={true}
+          on:click={() => {
             updateValue(-1);
-          }}"
-          disabled="{disabled}"
+          }}
+          {disabled}
         >
           <CaretDownGlyph class="down-icon" />
         </button>
         <input
-          bind:this="{ref}"
+          bind:this={ref}
           type="number"
           pattern="[0-9]*"
-          aria-label="{label ? undefined : ariaLabel}"
+          aria-label={label ? undefined : ariaLabel}
           on:input
-          on:input="{({ target }) => {
+          on:input={({ target }) => {
             inputValue = target.value;
-          }}"
-          disabled="{disabled}"
-          id="{id}"
-          name="{name}"
-          max="{max}"
-          min="{min}"
-          step="{step}"
-          value="{value}"
-          readonly="{readonly}"
+          }}
+          {disabled}
+          {id}
+          {name}
+          {max}
+          {min}
+          {step}
+          {value}
+          {readonly}
         />
         <button
           type="button"
           aria-live="polite"
           aria-atomic="true"
-          title="{incrementLabel}"
-          aria-label="{incrementLabel || iconDescription}"
-          class:bx--number__control-btn="{true}"
-          class:up-icon="{true}"
-          on:click="{() => {
+          title={incrementLabel}
+          aria-label={incrementLabel || iconDescription}
+          class:bx--number__control-btn={true}
+          class:up-icon={true}
+          on:click={() => {
             updateValue(1);
-          }}"
-          disabled="{disabled}"
+          }}
+          {disabled}
         >
           <CaretUpGlyph class="up-icon" />
         </button>
@@ -224,59 +211,54 @@
     {:else}
       {#if label}
         <label
-          for="{id}"
-          class:bx--label="{true}"
-          class:bx--label--disabled="{disabled}"
-          class:bx--visually-hidden="{hideLabel}"
+          for={id}
+          class:bx--label={true}
+          class:bx--label--disabled={disabled}
+          class:bx--visually-hidden={hideLabel}
         >
           <slot name="label">{label}</slot>
         </label>
       {/if}
-      <div
-        class:bx--number__input-wrapper="{true}"
-        class:bx--number__input-wrapper--warning="{!invalid && warn}"
-      >
+      <div class:bx--number__input-wrapper={true} class:bx--number__input-wrapper--warning={!invalid && warn}>
         <input
-          bind:this="{ref}"
+          bind:this={ref}
           type="number"
           pattern="[0-9]*"
-          aria-describedby="{errorId}"
-          data-invalid="{invalid || undefined}"
-          aria-invalid="{invalid || undefined}"
-          aria-label="{label ? undefined : ariaLabel}"
+          aria-describedby={errorId}
+          data-invalid={invalid || undefined}
+          aria-invalid={invalid || undefined}
+          aria-label={label ? undefined : ariaLabel}
           on:input
-          on:input="{({ target }) => {
+          on:input={({ target }) => {
             inputValue = target.value;
-          }}"
-          disabled="{disabled}"
-          id="{id}"
-          max="{max}"
-          min="{min}"
-          step="{step}"
-          value="{value}"
-          readonly="{readonly}"
+          }}
+          {disabled}
+          {id}
+          {max}
+          {min}
+          {step}
+          {value}
+          {readonly}
         />
         {#if invalid}
           <WarningFilled16 class="bx--number__invalid" />
         {/if}
         {#if !invalid && warn}
-          <WarningAltFilled16
-            class="bx--number__invalid bx--number__invalid--warning"
-          />
+          <WarningAltFilled16 class="bx--number__invalid bx--number__invalid--warning" />
         {/if}
-        <div class:bx--number__controls="{true}">
+        <div class:bx--number__controls={true}>
           <button
             type="button"
             aria-live="polite"
             aria-atomic="true"
-            title="{incrementLabel || iconDescription}"
-            aria-label="{incrementLabel || iconDescription}"
-            class:bx--number__control-btn="{true}"
-            class:up-icon="{true}"
-            on:click="{() => {
+            title={incrementLabel || iconDescription}
+            aria-label={incrementLabel || iconDescription}
+            class:bx--number__control-btn={true}
+            class:up-icon={true}
+            on:click={() => {
               updateValue(1);
-            }}"
-            disabled="{disabled}"
+            }}
+            {disabled}
           >
             <CaretUpGlyph class="up-icon" />
           </button>
@@ -284,14 +266,14 @@
             type="button"
             aria-live="polite"
             aria-atomic="true"
-            title="{decrementLabel || iconDescription}"
-            aria-label="{decrementLabel || iconDescription}"
-            class:bx--number__control-btn="{true}"
-            class:down-icon="{true}"
-            on:click="{() => {
+            title={decrementLabel || iconDescription}
+            aria-label={decrementLabel || iconDescription}
+            class:bx--number__control-btn={true}
+            class:down-icon={true}
+            on:click={() => {
               updateValue(-1);
-            }}"
-            disabled="{disabled}"
+            }}
+            {disabled}
           >
             <CaretDownGlyph class="down-icon" />
           </button>
@@ -299,20 +281,17 @@
       </div>
     {/if}
     {#if !error && !warn && helperText}
-      <div
-        class:bx--form__helper-text="{true}"
-        class:bx--form__helper-text--disabled="{disabled}"
-      >
+      <div class:bx--form__helper-text={true} class:bx--form__helper-text--disabled={disabled}>
         {helperText}
       </div>
     {/if}
     {#if error}
-      <div id="{errorId}" class:bx--form-requirement="{true}">
+      <div id={errorId} class:bx--form-requirement={true}>
         {invalidText}
       </div>
     {/if}
     {#if !error && warn}
-      <div id="{errorId}" class:bx--form-requirement="{true}">{warnText}</div>
+      <div id={errorId} class:bx--form-requirement={true}>{warnText}</div>
     {/if}
   </div>
 </div>

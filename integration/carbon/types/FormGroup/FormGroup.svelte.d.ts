@@ -1,8 +1,7 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface FormGroupProps
-  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["fieldset"]> {
+export interface FormGroupProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["fieldset"]> {
   /**
    * Set to `true` to indicate an invalid state
    * @default false

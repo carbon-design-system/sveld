@@ -1,8 +1,7 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface FormLabelProps
-  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["label"]> {
+export interface FormLabelProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["label"]> {
   /**
    * Set an id to be used by the label element
    * @default "ccs-" + Math.random().toString(36)

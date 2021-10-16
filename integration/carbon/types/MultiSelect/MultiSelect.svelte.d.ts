@@ -10,8 +10,7 @@ export interface MultiSelectItem {
   text: MultiSelectItemText;
 }
 
-export interface MultiSelectProps
-  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
+export interface MultiSelectProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
   /**
    * Set the multiselect items
    * @default []
@@ -101,9 +100,7 @@ export interface MultiSelectProps
    * The default sorting compare the item text value
    * @default (a, b) => a.text.localeCompare(b.text, locale, { numeric: true })
    */
-  sortItem?:
-    | ((a: MultiSelectItem, b: MultiSelectItem) => MultiSelectItem)
-    | (() => void);
+  sortItem?: ((a: MultiSelectItem, b: MultiSelectItem) => MultiSelectItem) | (() => void);
 
   /**
    * Override the default translation ids

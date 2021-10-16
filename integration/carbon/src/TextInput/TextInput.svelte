@@ -74,9 +74,9 @@
 </script>
 
 <div
-  class:bx--form-item="{true}"
-  class:bx--text-input-wrapper="{true}"
-  class:bx--text-input-wrapper--inline="{inline}"
+  class:bx--form-item={true}
+  class:bx--text-input-wrapper={true}
+  class:bx--text-input-wrapper--inline={inline}
   on:click
   on:mouseover
   on:mouseenter
@@ -86,21 +86,21 @@
     <div class="bx--text-input__label-helper-wrapper">
       {#if labelText}
         <label
-          for="{id}"
-          class:bx--label="{true}"
-          class:bx--visually-hidden="{hideLabel}"
-          class:bx--label--disabled="{disabled}"
-          class:bx--label--inline="{inline}"
-          class="{inline && !!size && `bx--label--inline--${size}`}"
+          for={id}
+          class:bx--label={true}
+          class:bx--visually-hidden={hideLabel}
+          class:bx--label--disabled={disabled}
+          class:bx--label--inline={inline}
+          class={inline && !!size && `bx--label--inline--${size}`}
         >
           {labelText}
         </label>
       {/if}
       {#if !isFluid && helperText}
         <div
-          class:bx--form__helper-text="{true}"
-          class:bx--form__helper-text--disabled="{disabled}"
-          class:bx--form__helper-text--inline="{inline}"
+          class:bx--form__helper-text={true}
+          class:bx--form__helper-text--disabled={disabled}
+          class:bx--form__helper-text--inline={inline}
         >
           {helperText}
         </div>
@@ -109,25 +109,22 @@
   {/if}
   {#if !inline && labelText}
     <label
-      for="{id}"
-      class:bx--label="{true}"
-      class:bx--visually-hidden="{hideLabel}"
-      class:bx--label--disabled="{disabled}"
-      class:bx--label--inline="{inline}"
-      class="{inline && !!size && `bx--label--inline--${size}`}"
+      for={id}
+      class:bx--label={true}
+      class:bx--visually-hidden={hideLabel}
+      class:bx--label--disabled={disabled}
+      class:bx--label--inline={inline}
+      class={inline && !!size && `bx--label--inline--${size}`}
     >
       {labelText}
     </label>
   {/if}
-  <div
-    class:bx--text-input__field-outer-wrapper="{true}"
-    class:bx--text-input__field-outer-wrapper--inline="{inline}"
-  >
+  <div class:bx--text-input__field-outer-wrapper={true} class:bx--text-input__field-outer-wrapper--inline={inline}>
     <div
-      data-invalid="{invalid || undefined}"
-      data-warn="{warn || undefined}"
-      class:bx--text-input__field-wrapper="{true}"
-      class:bx--text-input__field-wrapper--warning="{!invalid && warn}"
+      data-invalid={invalid || undefined}
+      data-warn={warn || undefined}
+      class:bx--text-input__field-wrapper={true}
+      class:bx--text-input__field-wrapper--warning={!invalid && warn}
     >
       {#if invalid}
         <WarningFilled16 class="bx--text-input__invalid-icon" />
@@ -139,61 +136,61 @@
         />
       {/if}
       <input
-        bind:this="{ref}"
-        data-invalid="{invalid || undefined}"
-        aria-invalid="{invalid || undefined}"
-        data-warn="{warn || undefined}"
-        aria-describedby="{invalid ? errorId : warn ? warnId : undefined}"
-        disabled="{disabled}"
-        id="{id}"
-        name="{name}"
-        placeholder="{placeholder}"
-        type="{type}"
-        value="{value}"
-        required="{required}"
-        class:bx--text-input="{true}"
-        class:bx--text-input--light="{light}"
-        class:bx--text-input--invalid="{invalid}"
-        class:bx--text-input--warn="{warn}"
+        bind:this={ref}
+        data-invalid={invalid || undefined}
+        aria-invalid={invalid || undefined}
+        data-warn={warn || undefined}
+        aria-describedby={invalid ? errorId : warn ? warnId : undefined}
+        {disabled}
+        {id}
+        {name}
+        {placeholder}
+        {type}
+        {value}
+        {required}
+        class:bx--text-input={true}
+        class:bx--text-input--light={light}
+        class:bx--text-input--invalid={invalid}
+        class:bx--text-input--warn={warn}
         {...$$restProps}
-        class="{size && `bx--text-input--${size}`}"
+        class={size && `bx--text-input--${size}`}
         on:change
         on:input
-        on:input="{({ target }) => {
+        on:input={({ target }) => {
           value = target.value;
-        }}"
+        }}
         on:keydown
         on:focus
         on:blur
       />
       {#if isFluid}
-        <hr class:bx--text-input__divider="{true}" />
+        <hr class:bx--text-input__divider={true} />
       {/if}
       {#if isFluid && !inline && invalid}
-        <div class:bx--form-requirement="{true}" id="{errorId}">
+        <div class:bx--form-requirement={true} id={errorId}>
           {invalidText}
         </div>
       {/if}
       {#if isFluid && !inline && warn}
-        <div class:bx--form-requirement="{true}" id="{warnId}">{warnText}</div>
+        <div class:bx--form-requirement={true} id={warnId}>{warnText}</div>
       {/if}
     </div>
     {#if !invalid && !warn && !isFluid && !inline && helperText}
       <div
-        class:bx--form__helper-text="{true}"
-        class:bx--form__helper-text--disabled="{disabled}"
-        class:bx--form__helper-text--inline="{inline}"
+        class:bx--form__helper-text={true}
+        class:bx--form__helper-text--disabled={disabled}
+        class:bx--form__helper-text--inline={inline}
       >
         {helperText}
       </div>
     {/if}
     {#if !isFluid && invalid}
-      <div class:bx--form-requirement="{true}" id="{errorId}">
+      <div class:bx--form-requirement={true} id={errorId}>
         {invalidText}
       </div>
     {/if}
     {#if !isFluid && !invalid && warn}
-      <div class:bx--form-requirement="{true}" id="{warnId}">{warnText}</div>
+      <div class:bx--form-requirement={true} id={warnId}>{warnText}</div>
     {/if}
   </div>
 </div>

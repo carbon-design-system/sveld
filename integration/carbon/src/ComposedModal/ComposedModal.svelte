@@ -26,14 +26,7 @@
   /** Obtain a reference to the top-level HTML element */
   export let ref = null;
 
-  import {
-    createEventDispatcher,
-    tick,
-    setContext,
-    onMount,
-    afterUpdate,
-    onDestroy,
-  } from "svelte";
+  import { createEventDispatcher, tick, setContext, onMount, afterUpdate, onDestroy } from "svelte";
 
   const dispatch = createEventDispatcher();
 
@@ -55,8 +48,7 @@
 
   function focus(element) {
     if (selectorPrimaryFocus == null) return;
-    const node =
-      (element || innerModal).querySelector(selectorPrimaryFocus) || buttonRef;
+    const node = (element || innerModal).querySelector(selectorPrimaryFocus) || buttonRef;
     if (node != null) node.focus();
   }
 
@@ -88,38 +80,38 @@
 </script>
 
 <div
-  bind:this="{ref}"
+  bind:this={ref}
   role="presentation"
-  class:bx--modal="{true}"
-  class:is-visible="{open}"
-  class:bx--modal--danger="{danger}"
+  class:bx--modal={true}
+  class:is-visible={open}
+  class:bx--modal--danger={danger}
   {...$$restProps}
   on:click
-  on:click="{() => {
+  on:click={() => {
     if (!didClickInnerModal && !preventCloseOnClickOutside) open = false;
     didClickInnerModal = false;
-  }}"
+  }}
   on:mouseover
   on:mouseenter
   on:mouseleave
   on:transitionend
-  on:transitionend="{({ currentTarget }) => {
+  on:transitionend={({ currentTarget }) => {
     if (didOpen) {
       focus(currentTarget);
       didOpen = false;
     }
-  }}"
+  }}
 >
   <div
-    bind:this="{innerModal}"
-    class:bx--modal-container="{true}"
-    class:bx--modal-container--xs="{size === 'xs'}"
-    class:bx--modal-container--sm="{size === 'sm'}"
-    class:bx--modal-container--lg="{size === 'lg'}"
-    class="{containerClass}"
-    on:click="{() => {
+    bind:this={innerModal}
+    class:bx--modal-container={true}
+    class:bx--modal-container--xs={size === "xs"}
+    class:bx--modal-container--sm={size === "sm"}
+    class:bx--modal-container--lg={size === "lg"}
+    class={containerClass}
+    on:click={() => {
       didClickInnerModal = true;
-    }}"
+    }}
   >
     <slot />
   </div>

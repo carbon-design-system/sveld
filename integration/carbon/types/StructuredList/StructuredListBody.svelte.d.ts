@@ -1,8 +1,7 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface StructuredListBodyProps
-  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {}
+export interface StructuredListBodyProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {}
 
 export default class StructuredListBody extends SvelteComponentTyped<
   StructuredListBodyProps,

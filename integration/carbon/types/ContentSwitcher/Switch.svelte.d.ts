@@ -1,8 +1,7 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface SwitchProps
-  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["button"]> {
+export interface SwitchProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["button"]> {
   /**
    * Specify the switch text
    * Alternatively, use the "text" slot  (e.g., <span slot="text">...</span>)

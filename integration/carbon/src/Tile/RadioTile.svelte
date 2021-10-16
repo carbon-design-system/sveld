@@ -32,43 +32,40 @@
 
 <input
   type="radio"
-  id="{id}"
-  name="{name}"
-  value="{value}"
-  checked="{checked}"
-  tabindex="{tabindex}"
-  class:bx--tile-input="{true}"
+  {id}
+  {name}
+  {value}
+  {checked}
+  {tabindex}
+  class:bx--tile-input={true}
   on:change
-  on:change="{() => {
+  on:change={() => {
     update(value);
-  }}"
+  }}
   on:keydown
-  on:keydown="{(e) => {
-    if (e.key === ' ' || e.key === 'Enter') {
+  on:keydown={(e) => {
+    if (e.key === " " || e.key === "Enter") {
       e.preventDefault();
       update(value);
     }
-  }}"
+  }}
 />
 <label
-  for="{id}"
-  class:bx--tile="{true}"
-  class:bx--tile--selectable="{true}"
-  class:bx--tile--is-selected="{checked}"
-  class:bx--tile--light="{light}"
+  for={id}
+  class:bx--tile={true}
+  class:bx--tile--selectable={true}
+  class:bx--tile--is-selected={checked}
+  class:bx--tile--light={light}
   {...$$restProps}
   on:click
   on:mouseover
   on:mouseenter
   on:mouseleave
 >
-  <span class:bx--tile__checkmark="{true}">
-    <CheckmarkFilled16
-      aria-label="{iconDescription}"
-      title="{iconDescription}"
-    />
+  <span class:bx--tile__checkmark={true}>
+    <CheckmarkFilled16 aria-label={iconDescription} title={iconDescription} />
   </span>
-  <span class:bx--tile-content="{true}">
+  <span class:bx--tile-content={true}>
     <slot />
   </span>
 </label>

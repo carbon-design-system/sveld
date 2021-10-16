@@ -14,13 +14,13 @@
 
 <button
   type="button"
-  bind:this="{ref}"
-  class:bx--header__action="{true}"
-  class:bx--header__action--active="{isActive}"
+  bind:this={ref}
+  class:bx--header__action={true}
+  class:bx--header__action--active={isActive}
   {...$$restProps}
   on:click
 >
   <slot>
-    <svelte:component this="{icon}" />
+    <svelte:component this={icon} />
   </slot>
 </button>

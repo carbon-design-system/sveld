@@ -1,8 +1,7 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface AccordionSkeletonProps
-  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["ul"]> {
+export interface AccordionSkeletonProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["ul"]> {
   /**
    * Specify the number of accordion items to render
    * @default 4

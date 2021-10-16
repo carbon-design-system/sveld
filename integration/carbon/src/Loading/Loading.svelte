@@ -18,64 +18,44 @@
 </script>
 
 {#if withOverlay}
-  <div
-    class:bx--loading-overlay="{true}"
-    class:bx--loading-overlay--stop="{!active}"
-    {...$$restProps}
-  >
+  <div class:bx--loading-overlay={true} class:bx--loading-overlay--stop={!active} {...$$restProps}>
     <div
       aria-atomic="true"
-      aria-labelledby="{id}"
-      aria-live="{active ? 'assertive' : 'off'}"
-      class:bx--loading="{true}"
-      class:bx--loading--small="{small}"
-      class:bx--loading--stop="{!active}"
+      aria-labelledby={id}
+      aria-live={active ? "assertive" : "off"}
+      class:bx--loading={true}
+      class:bx--loading--small={small}
+      class:bx--loading--stop={!active}
     >
       <!-- svelte-ignore a11y-label-has-associated-control -->
-      <label class:bx--visually-hidden="{true}" id="{id}">{description}</label>
-      <svg class:bx--loading__svg="{true}" viewBox="0 0 100 100">
+      <label class:bx--visually-hidden={true} {id}>{description}</label>
+      <svg class:bx--loading__svg={true} viewBox="0 0 100 100">
         <title>{description}</title>
         {#if small}
-          <circle
-            class:bx--loading__background="{true}"
-            cx="50%"
-            cy="50%"
-            r="{spinnerRadius}"></circle>
+          <circle class:bx--loading__background={true} cx="50%" cy="50%" r={spinnerRadius} />
         {/if}
-        <circle
-          class:bx--loading__stroke="{true}"
-          cx="50%"
-          cy="50%"
-          r="{spinnerRadius}"></circle>
+        <circle class:bx--loading__stroke={true} cx="50%" cy="50%" r={spinnerRadius} />
       </svg>
     </div>
   </div>
 {:else}
   <div
     aria-atomic="true"
-    aria-labelledby="{id}"
-    aria-live="{active ? 'assertive' : 'off'}"
-    class:bx--loading="{true}"
-    class:bx--loading--small="{small}"
-    class:bx--loading--stop="{!active}"
+    aria-labelledby={id}
+    aria-live={active ? "assertive" : "off"}
+    class:bx--loading={true}
+    class:bx--loading--small={small}
+    class:bx--loading--stop={!active}
     {...$$restProps}
   >
     <!-- svelte-ignore a11y-label-has-associated-control -->
-    <label class:bx--visually-hidden="{true}" id="{id}">{description}</label>
-    <svg class:bx--loading__svg="{true}" viewBox="0 0 100 100">
+    <label class:bx--visually-hidden={true} {id}>{description}</label>
+    <svg class:bx--loading__svg={true} viewBox="0 0 100 100">
       <title>{description}</title>
       {#if small}
-        <circle
-          class:bx--loading__background="{true}"
-          cx="50%"
-          cy="50%"
-          r="{spinnerRadius}"></circle>
+        <circle class:bx--loading__background={true} cx="50%" cy="50%" r={spinnerRadius} />
       {/if}
-      <circle
-        class:bx--loading__stroke="{true}"
-        cx="50%"
-        cy="50%"
-        r="{spinnerRadius}"></circle>
+      <circle class:bx--loading__stroke={true} cx="50%" cy="50%" r={spinnerRadius} />
     </svg>
   </div>
 {/if}

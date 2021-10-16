@@ -7,8 +7,7 @@ export interface HeaderActionSlideTransition {
   easing?: (t: number) => number;
 }
 
-export interface HeaderActionProps
-  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["button"]> {
+export interface HeaderActionProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["button"]> {
   /**
    * Set to `true` to open the panel
    * @default false

@@ -22,20 +22,20 @@
 
 {#if fixed}
   <div
-    on:click="{() => {
+    on:click={() => {
       isOpen = false;
-    }}"
-    class:bx--side-nav__overlay="{true}"
-    class:bx--side-nav__overlay-active="{isOpen}"
-  ></div>
+    }}
+    class:bx--side-nav__overlay={true}
+    class:bx--side-nav__overlay-active={isOpen}
+  />
 {/if}
 <nav
-  aria-label="{ariaLabel}"
-  class:bx--side-nav__navigation="{true}"
-  class:bx--side-nav="{true}"
-  class:bx--side-nav--ux="{true}"
-  class:bx--side-nav--expanded="{isOpen}"
-  class:bx--side-nav--collapsed="{!isOpen}"
+  aria-label={ariaLabel}
+  class:bx--side-nav__navigation={true}
+  class:bx--side-nav={true}
+  class:bx--side-nav--ux={true}
+  class:bx--side-nav--expanded={isOpen}
+  class:bx--side-nav--collapsed={!isOpen}
   {...$$restProps}
 >
   <slot />

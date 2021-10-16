@@ -1,8 +1,7 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface SkipToContentProps
-  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["a"]> {
+export interface SkipToContentProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["a"]> {
   /**
    * Specify the `href` attribute
    * @default "#main-content"

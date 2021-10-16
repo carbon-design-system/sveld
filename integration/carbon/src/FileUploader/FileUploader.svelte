@@ -76,46 +76,39 @@
   });
 </script>
 
-<div
-  class:bx--form-item="{true}"
-  {...$$restProps}
-  on:click
-  on:mouseover
-  on:mouseenter
-  on:mouseleave
->
-  <strong class:bx--file--label="{true}">{labelTitle}</strong>
-  <p class:bx--label-description="{true}">{labelDescription}</p>
+<div class:bx--form-item={true} {...$$restProps} on:click on:mouseover on:mouseenter on:mouseleave>
+  <strong class:bx--file--label={true}>{labelTitle}</strong>
+  <p class:bx--label-description={true}>{labelDescription}</p>
   <FileUploaderButton
     disableLabelChanges
-    labelText="{buttonLabel}"
-    accept="{accept}"
-    name="{name}"
-    multiple="{multiple}"
-    kind="{kind}"
+    labelText={buttonLabel}
+    {accept}
+    {name}
+    {multiple}
+    {kind}
     on:change
-    on:change="{({ target }) => {
+    on:change={({ target }) => {
       files = [...target.files];
-    }}"
+    }}
   />
-  <div class:bx--file-container="{true}">
+  <div class:bx--file-container={true}>
     {#each files as { name }, i (name)}
-      <span class:bx--file__selected-file="{true}">
-        <p class:bx--file-filename="{true}">{name}</p>
-        <span class:bx--file__state-container="{true}">
+      <span class:bx--file__selected-file={true}>
+        <p class:bx--file-filename={true}>{name}</p>
+        <span class:bx--file__state-container={true}>
           <Filename
-            iconDescription="{iconDescription}"
-            status="{status}"
+            {iconDescription}
+            {status}
             on:keydown
-            on:keydown="{({ key }) => {
-              if (key === ' ' || key === 'Enter') {
+            on:keydown={({ key }) => {
+              if (key === " " || key === "Enter") {
                 files = files.filter((_, index) => index !== i);
               }
-            }}"
+            }}
             on:click
-            on:click="{() => {
+            on:click={() => {
               files = files.filter((_, index) => index !== i);
-            }}"
+            }}
           />
         </span>
       </span>

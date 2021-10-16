@@ -1,6 +1,6 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
-import { ButtonProps } from "./button/button";
+import { ButtonProps } from "../button/button.svelte";
 
 export interface SecondaryButtonProps extends ButtonProps {}
 

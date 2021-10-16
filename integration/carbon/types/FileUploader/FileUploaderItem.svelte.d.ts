@@ -1,8 +1,7 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface FileUploaderItemProps
-  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["span"]> {
+export interface FileUploaderItemProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["span"]> {
   /**
    * Specify the file uploader status
    * @default "uploading"

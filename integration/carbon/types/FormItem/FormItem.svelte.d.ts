@@ -1,8 +1,7 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface FormItemProps
-  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {}
+export interface FormItemProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {}
 
 export default class FormItem extends SvelteComponentTyped<
   FormItemProps,

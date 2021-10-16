@@ -1,8 +1,7 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface HeaderGlobalActionProps
-  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["button"]> {
+export interface HeaderGlobalActionProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["button"]> {
   /**
    * Set to `true` to use the active variant
    * @default false
