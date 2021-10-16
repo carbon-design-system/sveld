@@ -1,7 +1,8 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface ProgressStepProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["li"]> {
+export interface ProgressStepProps
+  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["li"]> {
   /**
    * Set to `true` for the complete variant
    * @default false

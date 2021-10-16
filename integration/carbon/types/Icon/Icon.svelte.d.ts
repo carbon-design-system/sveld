@@ -2,7 +2,9 @@
 import { SvelteComponentTyped } from "svelte";
 import { IconSkeletonProps } from "./IconSkeleton.svelte";
 
-export interface IconProps extends IconSkeletonProps, svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["svg"]> {
+export interface IconProps
+  extends IconSkeletonProps,
+    svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["svg"]> {
   /**
    * Specify the icon from `carbon-icons-svelte` to render
    */

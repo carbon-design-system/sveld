@@ -1,7 +1,8 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface HeaderNavMenuProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["a"]> {
+export interface HeaderNavMenuProps
+  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["a"]> {
   /**
    * Set to `true` to toggle the expanded state
    * @default false

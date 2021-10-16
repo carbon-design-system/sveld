@@ -1,7 +1,8 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface NotificationButtonProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["button"]> {
+export interface NotificationButtonProps
+  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["button"]> {
   /**
    * Set the type of notification
    * @default "toast"

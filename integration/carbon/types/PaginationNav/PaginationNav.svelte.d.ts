@@ -1,7 +1,8 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface PaginationNavProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["nav"]> {
+export interface PaginationNavProps
+  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["nav"]> {
   /**
    * Specify the current page index
    * @default 0

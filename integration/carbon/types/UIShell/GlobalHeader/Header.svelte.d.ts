@@ -1,7 +1,8 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface HeaderProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["a"]> {
+export interface HeaderProps
+  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["a"]> {
   /**
    * Set to `false` to hide the side nav by default
    * @default true

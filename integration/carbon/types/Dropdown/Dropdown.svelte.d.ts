@@ -10,7 +10,8 @@ export interface DropdownItem {
   text: DropdownItemText;
 }
 
-export interface DropdownProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
+export interface DropdownProps
+  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
   /**
    * Set the dropdown items
    * @default []

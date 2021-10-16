@@ -6,7 +6,13 @@ export interface NotificationIconProps {
    * Specify the kind of notification icon
    * @default "error"
    */
-  kind?: "error" | "info" | "info-square" | "success" | "warning" | "warning-alt";
+  kind?:
+    | "error"
+    | "info"
+    | "info-square"
+    | "success"
+    | "warning"
+    | "warning-alt";
 
   /**
    * Set the type of notification
@@ -21,4 +27,8 @@ export interface NotificationIconProps {
   iconDescription?: string;
 }
 
-export default class NotificationIcon extends SvelteComponentTyped<NotificationIconProps, {}, {}> {}
+export default class NotificationIcon extends SvelteComponentTyped<
+  NotificationIconProps,
+  {},
+  {}
+> {}

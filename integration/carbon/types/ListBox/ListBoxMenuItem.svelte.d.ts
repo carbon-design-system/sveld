@@ -1,7 +1,8 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface ListBoxMenuItemProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
+export interface ListBoxMenuItemProps
+  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
   /**
    * Set to `true` to enable the active state
    * @default false

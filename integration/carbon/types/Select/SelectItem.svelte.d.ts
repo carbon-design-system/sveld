@@ -27,4 +27,8 @@ export interface SelectItemProps {
   disabled?: boolean;
 }
 
-export default class SelectItem extends SvelteComponentTyped<SelectItemProps, {}, {}> {}
+export default class SelectItem extends SvelteComponentTyped<
+  SelectItemProps,
+  {},
+  {}
+> {}

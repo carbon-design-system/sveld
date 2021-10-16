@@ -1,7 +1,8 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface TableHeaderProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["th"]> {
+export interface TableHeaderProps
+  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["th"]> {
   /**
    * Specify the `scope` attribute
    * @default "col"

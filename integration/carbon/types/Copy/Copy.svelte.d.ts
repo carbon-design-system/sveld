@@ -1,7 +1,8 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface CopyProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["button"]> {
+export interface CopyProps
+  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["button"]> {
   /**
    * Set the feedback text shown after clicking the button
    * @default "Copied!"

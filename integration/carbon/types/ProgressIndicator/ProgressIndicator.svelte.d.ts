@@ -1,7 +1,8 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface ProgressIndicatorProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["ul"]> {
+export interface ProgressIndicatorProps
+  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["ul"]> {
   /**
    * Specify the current step index
    * @default 0

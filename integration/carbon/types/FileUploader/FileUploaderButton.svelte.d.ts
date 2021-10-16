@@ -1,7 +1,8 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface FileUploaderButtonProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["input"]> {
+export interface FileUploaderButtonProps
+  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["input"]> {
   /**
    * Specify the accepted file types
    * @default []

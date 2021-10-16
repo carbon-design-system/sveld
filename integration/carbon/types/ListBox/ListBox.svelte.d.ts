@@ -1,7 +1,8 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface ListBoxProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
+export interface ListBoxProps
+  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
   /**
    * Set the size of the list box
    */

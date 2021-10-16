@@ -1,7 +1,8 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface ModalFooterProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
+export interface ModalFooterProps
+  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
   /**
    * Specify the primary button text
    * @default ""
@@ -37,4 +38,8 @@ export interface ModalFooterProps extends svelte.JSX.HTMLAttributes<HTMLElementT
   danger?: boolean;
 }
 
-export default class ModalFooter extends SvelteComponentTyped<ModalFooterProps, {}, { default: {} }> {}
+export default class ModalFooter extends SvelteComponentTyped<
+  ModalFooterProps,
+  {},
+  { default: {} }
+> {}

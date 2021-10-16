@@ -1,7 +1,8 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface OverflowMenuProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["button"]> {
+export interface OverflowMenuProps
+  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["button"]> {
   /**
    * Specify the size of the overflow menu
    */

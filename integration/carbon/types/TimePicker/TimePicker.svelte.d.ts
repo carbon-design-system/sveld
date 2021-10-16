@@ -1,7 +1,8 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface TimePickerProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
+export interface TimePickerProps
+  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
   /**
    * Specify the size of the input
    */

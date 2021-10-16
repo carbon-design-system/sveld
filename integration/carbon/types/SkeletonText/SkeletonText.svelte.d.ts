@@ -1,7 +1,8 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface SkeletonTextProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
+export interface SkeletonTextProps
+  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
   /**
    * Specify the number of lines to render
    * @default 3

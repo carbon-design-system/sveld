@@ -1,7 +1,8 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface ButtonSkeletonProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["a"]> {
+export interface ButtonSkeletonProps
+  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["a"]> {
   /**
    * Set the `href` to use an anchor link
    */

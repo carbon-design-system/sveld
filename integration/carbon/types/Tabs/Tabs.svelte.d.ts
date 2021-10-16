@@ -1,7 +1,8 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface TabsProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
+export interface TabsProps
+  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
   /**
    * Specify the selected tab index
    * @default 0

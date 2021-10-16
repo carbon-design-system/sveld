@@ -1,7 +1,8 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface RadioTileProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["label"]> {
+export interface RadioTileProps
+  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["label"]> {
   /**
    * Set to `true` to check the tile
    * @default false

@@ -7,7 +7,8 @@ export interface HeaderSearchResult {
   description?: string;
 }
 
-export interface HeaderSearchProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["input"]> {
+export interface HeaderSearchProps
+  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["input"]> {
   /**
    * Specify the search input value
    * @default ""

@@ -1,7 +1,8 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface ExpandableTileProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["button"]> {
+export interface ExpandableTileProps
+  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["button"]> {
   /**
    * Set to `true` to expand the tile
    * @default false

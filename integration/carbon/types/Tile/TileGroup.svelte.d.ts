@@ -1,7 +1,8 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface TileGroupProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["fieldset"]> {
+export interface TileGroupProps
+  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["fieldset"]> {
   /**
    * Specify the selected tile value
    */

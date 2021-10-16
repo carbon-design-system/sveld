@@ -1,7 +1,8 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface TooltipDefinitionProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
+export interface TooltipDefinitionProps
+  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
   /**
    * Specify the tooltip text
    * @default ""

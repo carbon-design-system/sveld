@@ -1,7 +1,8 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface TextAreaProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["textarea"]> {
+export interface TextAreaProps
+  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["textarea"]> {
   /**
    * Specify the textarea value
    * @default ""

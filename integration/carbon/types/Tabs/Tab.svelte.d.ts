@@ -1,7 +1,8 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface TabProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["li"]> {
+export interface TabProps
+  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["li"]> {
   /**
    * Specify the tab label
    * Alternatively, use the default slot (e.g., <Tab><span>Label</span></Tab>)

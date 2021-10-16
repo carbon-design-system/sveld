@@ -1,7 +1,8 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface FileUploaderDropContainerProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
+export interface FileUploaderDropContainerProps
+  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
   /**
    * Specify the accepted file types
    * @default []

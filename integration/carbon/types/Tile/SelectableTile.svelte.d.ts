@@ -1,7 +1,8 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface SelectableTileProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["label"]> {
+export interface SelectableTileProps
+  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["label"]> {
   /**
    * Set to `true` to select the tile
    * @default false

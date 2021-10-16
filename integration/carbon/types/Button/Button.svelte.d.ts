@@ -11,7 +11,14 @@ export interface ButtonProps
    * Specify the kind of button
    * @default "primary"
    */
-  kind?: "primary" | "secondary" | "tertiary" | "ghost" | "danger" | "danger-tertiary" | "danger-ghost";
+  kind?:
+    | "primary"
+    | "secondary"
+    | "tertiary"
+    | "ghost"
+    | "danger"
+    | "danger-tertiary"
+    | "danger-ghost";
 
   /**
    * Specify the size of button

@@ -1,7 +1,8 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export interface HeaderNavItemProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["a"]> {
+export interface HeaderNavItemProps
+  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["a"]> {
   /**
    * Specify the `href` attribute
    */
