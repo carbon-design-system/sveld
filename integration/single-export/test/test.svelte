@@ -7,7 +7,8 @@
   primary={false}
   on:click={(e) => {
     console.log(e);
-  }}>
+  }}
+>
   Text
 </Button>
 
@@ -16,6 +17,7 @@
   primary={false}
   on:click={(e) => {
     console.log(e);
-  }}>
+  }}
+>
   Text
 </Button2>

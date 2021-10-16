@@ -26,12 +26,7 @@
    */
   export let id = undefined;
 
-  import {
-    beforeUpdate,
-    createEventDispatcher,
-    onMount,
-    setContext,
-  } from "svelte";
+  import { beforeUpdate, createEventDispatcher, onMount, setContext } from "svelte";
   import { writable } from "svelte/store";
 
   const dispatch = createEventDispatcher();
@@ -63,20 +58,12 @@
   });
 </script>
 
-<div
-  id="{id}"
-  class:bx--form-item="{true}"
-  {...$$restProps}
-  on:click
-  on:mouseover
-  on:mouseenter
-  on:mouseleave
->
+<div {id} class:bx--form-item={true} {...$$restProps} on:click on:mouseover on:mouseenter on:mouseleave>
   <div
-    class:bx--radio-button-group="{true}"
-    class:bx--radio-button-group--vertical="{orientation === 'vertical'}"
-    class="{labelPosition && `bx--radio-button-group--label-${labelPosition}`}"
-    disabled="{disabled}"
+    class:bx--radio-button-group={true}
+    class:bx--radio-button-group--vertical={orientation === "vertical"}
+    class={labelPosition && `bx--radio-button-group--label-${labelPosition}`}
+    {disabled}
   >
     <slot />
   </div>

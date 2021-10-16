@@ -83,76 +83,66 @@
 </script>
 
 <div
-  class:bx--form-item="{true}"
-  class:bx--text-input-wrapper="{true}"
-  class:bx--password-input-wrapper="{!isFluid}"
+  class:bx--form-item={true}
+  class:bx--text-input-wrapper={true}
+  class:bx--password-input-wrapper={!isFluid}
   on:click
   on:mouseover
   on:mouseenter
   on:mouseleave
 >
   {#if labelText}
-    <label
-      for="{id}"
-      class:bx--label="{true}"
-      class:bx--visually-hidden="{hideLabel}"
-      class:bx--label--disabled="{disabled}"
-    >
+    <label for={id} class:bx--label={true} class:bx--visually-hidden={hideLabel} class:bx--label--disabled={disabled}>
       {labelText}
     </label>
   {/if}
-  <div
-    class:bx--text-input__field-wrapper="{true}"
-    data-invalid="{invalid || undefined}"
-  >
+  <div class:bx--text-input__field-wrapper={true} data-invalid={invalid || undefined}>
     {#if invalid}
       <WarningFilled16 class="bx--text-input__invalid-icon" />
     {/if}
     <input
-      bind:this="{ref}"
-      data-invalid="{invalid || undefined}"
-      aria-invalid="{invalid || undefined}"
-      aria-describedby="{invalid ? errorId : undefined}"
-      id="{id}"
-      name="{name}"
-      placeholder="{placeholder}"
-      type="{type}"
-      value="{value}"
-      disabled="{disabled}"
-      class:bx--text-input="{true}"
-      class:bx--password-input="{true}"
-      class:bx--text-input--light="{light}"
-      class:bx--text-input--invalid="{invalid}"
+      bind:this={ref}
+      data-invalid={invalid || undefined}
+      aria-invalid={invalid || undefined}
+      aria-describedby={invalid ? errorId : undefined}
+      {id}
+      {name}
+      {placeholder}
+      {type}
+      {value}
+      {disabled}
+      class:bx--text-input={true}
+      class:bx--password-input={true}
+      class:bx--text-input--light={light}
+      class:bx--text-input--invalid={invalid}
       {...$$restProps}
-      class="{size && `bx--text-input--${size}`}"
+      class={size && `bx--text-input--${size}`}
       on:change
       on:input
-      on:input="{({ target }) => {
+      on:input={({ target }) => {
         value = target.value;
-      }}"
+      }}
       on:keydown
       on:focus
       on:blur
     />
     <button
       type="button"
-      disabled="{disabled}"
-      class:bx--text-input--password__visibility__toggle="{true}"
-      class:bx--btn="{true}"
-      class:bx--btn--icon-only="{true}"
-      class:bx--btn--disabled="{disabled}"
-      class:bx--tooltip__trigger="{true}"
-      class:bx--tooltip--a11y="{true}"
-      class="{tooltipPosition &&
-        `bx--tooltip--${tooltipPosition}`}
-        {tooltipAlignment &&
-        `bx--tooltip--align-${tooltipAlignment}`}"
-      on:click="{() => {
-        type = type === 'password' ? 'text' : 'password';
-      }}"
+      {disabled}
+      class:bx--text-input--password__visibility__toggle={true}
+      class:bx--btn={true}
+      class:bx--btn--icon-only={true}
+      class:bx--btn--disabled={disabled}
+      class:bx--tooltip__trigger={true}
+      class:bx--tooltip--a11y={true}
+      class="{tooltipPosition && `bx--tooltip--${tooltipPosition}`}
+        {tooltipAlignment && `bx--tooltip--align-${tooltipAlignment}`}"
+      on:click={() => {
+        type = type === "password" ? "text" : "password";
+      }}
     >
       {#if !disabled}
-        <span class:bx--assistive-text="{true}">
+        <span class:bx--assistive-text={true}>
           {#if type === "text"}
             {hidePasswordLabel}
           {:else}{showPasswordLabel}{/if}
@@ -166,14 +156,11 @@
     </button>
   </div>
   {#if !invalid && helperText}
-    <div
-      class:bx--form__helper-text="{true}"
-      class:bx--form__helper-text--disabled="{disabled}"
-    >
+    <div class:bx--form__helper-text={true} class:bx--form__helper-text--disabled={disabled}>
       {helperText}
     </div>
   {/if}
   {#if invalid}
-    <div class:bx--form-requirement="{true}" id="{errorId}">{invalidText}</div>
+    <div class:bx--form-requirement={true} id={errorId}>{invalidText}</div>
   {/if}
 </div>

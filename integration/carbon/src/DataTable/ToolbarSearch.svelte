@@ -32,17 +32,17 @@
 </script>
 
 <div
-  tabindex="{expanded ? '-1' : tabindex}"
-  class:bx--toolbar-action="{true}"
-  class:bx--toolbar-search-container-active="{expanded}"
-  class:bx--toolbar-search-container-expandable="{!persistent}"
-  class:bx--toolbar-search-container-persistent="{persistent}"
-  on:click="{expandSearch}"
-  on:focus="{expandSearch}"
+  tabindex={expanded ? "-1" : tabindex}
+  class:bx--toolbar-action={true}
+  class:bx--toolbar-search-container-active={expanded}
+  class:bx--toolbar-search-container-expandable={!persistent}
+  class:bx--toolbar-search-container-persistent={persistent}
+  on:click={expandSearch}
+  on:focus={expandSearch}
 >
   <Search
     size="sm"
-    tabindex="{expanded ? tabindex : '-1'}"
+    tabindex={expanded ? tabindex : "-1"}
     {...$$restProps}
     bind:ref
     bind:value
@@ -50,8 +50,8 @@
     on:input
     on:focus
     on:blur
-    on:blur="{() => {
+    on:blur={() => {
       expanded = !persistent && !!value.length;
-    }}"
+    }}
   />
 </div>

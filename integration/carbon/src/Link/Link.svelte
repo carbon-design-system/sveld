@@ -26,11 +26,11 @@
 
 {#if disabled}
   <p
-    bind:this="{ref}"
-    class:bx--link="{true}"
-    class:bx--link--disabled="{disabled}"
-    class:bx--link--inline="{inline}"
-    class:bx--link--visited="{visited}"
+    bind:this={ref}
+    class:bx--link={true}
+    class:bx--link--disabled={disabled}
+    class:bx--link--inline={inline}
+    class:bx--link--visited={visited}
     {...$$restProps}
     on:click
     on:mouseover
@@ -42,15 +42,15 @@
 {:else}
   <!-- svelte-ignore a11y-missing-attribute -->
   <a
-    bind:this="{ref}"
-    class:bx--link="{true}"
-    class:bx--link--disabled="{disabled}"
-    class:bx--link--inline="{inline}"
-    class:bx--link--visited="{visited}"
-    class:bx--link--sm="{size === 'sm'}"
-    class:bx--link--lg="{size === 'lg'}"
-    rel="{$$restProps.target === '_blank' ? 'noopener noreferrer' : undefined}"
-    href="{href}"
+    bind:this={ref}
+    class:bx--link={true}
+    class:bx--link--disabled={disabled}
+    class:bx--link--inline={inline}
+    class:bx--link--visited={visited}
+    class:bx--link--sm={size === "sm"}
+    class:bx--link--lg={size === "lg"}
+    rel={$$restProps.target === "_blank" ? "noopener noreferrer" : undefined}
+    {href}
     {...$$restProps}
     on:click
     on:mouseover

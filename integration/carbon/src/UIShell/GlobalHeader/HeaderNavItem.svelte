@@ -17,12 +17,12 @@
 
 <li>
   <a
-    bind:this="{ref}"
+    bind:this={ref}
     role="menuitem"
     tabindex="0"
-    href="{href}"
-    rel="{$$restProps.target === '_blank' ? 'noopener noreferrer' : undefined}"
-    class:bx--header__menu-item="{true}"
+    {href}
+    rel={$$restProps.target === "_blank" ? "noopener noreferrer" : undefined}
+    class:bx--header__menu-item={true}
     {...$$restProps}
     on:click
     on:mouseover
@@ -33,6 +33,6 @@
     on:focus
     on:blur
   >
-    <span class:bx--text-truncate--end="{true}">{text}</span>
+    <span class:bx--text-truncate--end={true}>{text}</span>
   </a>
 </li>

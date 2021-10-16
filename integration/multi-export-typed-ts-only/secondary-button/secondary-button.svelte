@@ -1,5 +1,5 @@
 <script>
-  /** @extends {"./button/button"} ButtonProps */
+  /** @extends {"../button/button.svelte"} ButtonProps */
 
   export const secondary = true;
 

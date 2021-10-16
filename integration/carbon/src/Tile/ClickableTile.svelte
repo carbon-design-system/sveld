@@ -14,23 +14,23 @@
 
 <!-- svelte-ignore a11y-missing-attribute -->
 <a
-  class:bx--tile="{true}"
-  class:bx--tile--clickable="{true}"
-  class:bx--tile--is-clicked="{clicked}"
-  class:bx--tile--light="{light}"
-  rel="{$$restProps.target === '_blank' ? 'noopener noreferrer' : undefined}"
+  class:bx--tile={true}
+  class:bx--tile--clickable={true}
+  class:bx--tile--is-clicked={clicked}
+  class:bx--tile--light={light}
+  rel={$$restProps.target === "_blank" ? "noopener noreferrer" : undefined}
   {...$$restProps}
-  href="{href}"
+  {href}
   on:click
-  on:click="{() => {
+  on:click={() => {
     clicked = !clicked;
-  }}"
+  }}
   on:keydown
-  on:keydown="{({ key }) => {
-    if (key === ' ' || key === 'Enter') {
+  on:keydown={({ key }) => {
+    if (key === " " || key === "Enter") {
       clicked = !clicked;
     }
-  }}"
+  }}
   on:mouseover
   on:mouseenter
   on:mouseleave

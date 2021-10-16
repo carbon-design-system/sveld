@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { Button, Link, Quote } from "../";
-  import Button2 from "../types/button/button";
+  import { Button, Link, Quote, SecondaryButton } from "../";
+  import Button2 from "../types/button/button.svelte";
 </script>
 
 <Button
@@ -8,7 +8,8 @@
   primary={false}
   on:click={(e) => {
     console.log(e);
-  }}>
+  }}
+>
   Text
 </Button>
 
@@ -17,10 +18,13 @@
   primary={false}
   on:click={(e) => {
     console.log(e);
-  }}>
+  }}
+>
   Text
 </Button2>
 
+<SecondaryButton primary={false} />
+
 <Link style="color: red" href="#">Text</Link>
 
-<Quote author={'author'} />
+<Quote author={"author"} />

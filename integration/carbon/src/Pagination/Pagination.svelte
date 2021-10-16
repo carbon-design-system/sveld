@@ -31,8 +31,7 @@
    * Override the item range text
    * @type {(min: number, max: number, total: number) => string}
    */
-  export let itemRangeText = (min, max, total) =>
-    `${min}–${max} of ${total} items`;
+  export let itemRangeText = (min, max, total) => `${min}–${max} of ${total} items`;
 
   /** Set to `true` to disable the page input */
   export let pageInputDisabled = false;
@@ -62,8 +61,7 @@
    * Override the page range text
    * @type {(current: number, total: number) => string}
    */
-  export let pageRangeText = (current, total) =>
-    `of ${total} page${total === 1 ? "" : "s"}`;
+  export let pageRangeText = (current, total) => `of ${total} page${total === 1 ? "" : "s"}`;
 
   /** Set an id for the top-level element */
   export let id = "ccs-" + Math.random().toString(36);
@@ -94,13 +92,13 @@
   $: forwardButtonDisabled = disabled || page === totalPages;
 </script>
 
-<div id="{id}" class:bx--pagination="{true}" {...$$restProps}>
-  <div class:bx--pagination__left="{true}">
+<div {id} class:bx--pagination={true} {...$$restProps}>
+  <div class:bx--pagination__left={true}>
     {#if !pageSizeInputDisabled}
       <label
         id="bx--pagination-select-{id}-count-label"
         for="bx--pagination-select-{id}"
-        class:bx--pagination__text="{true}"
+        class:bx--pagination__text={true}
       >
         {itemsPerPageText}
       </label>
@@ -110,14 +108,14 @@
         hideLabel
         noLabel
         inline
-        bind:selected="{pageSize}"
+        bind:selected={pageSize}
       >
         {#each pageSizes as size, i (size)}
-          <SelectItem value="{size}" text="{size.toString()}" />
+          <SelectItem value={size} text={size.toString()} />
         {/each}
       </Select>
     {/if}
-    <span class:bx--pagination__text="{!pageSizeInputDisabled}">
+    <span class:bx--pagination__text={!pageSizeInputDisabled}>
       {#if pagesUnknown}
         {itemText(pageSize * (page - 1) + 1, page * pageSize)}
       {:else}
@@ -129,7 +127,7 @@
       {/if}
     </span>
   </div>
-  <div class:bx--pagination__right="{true}">
+  <div class:bx--pagination__right={true}>
     {#if !pageInputDisabled}
       <Select
         id="bx--pagination-select-{id + 2}"
@@ -137,13 +135,13 @@
         labelText="Page number, of {totalPages} pages"
         inline
         hideLabel
-        bind:selected="{page}"
+        bind:selected={page}
       >
         {#each selectItems as size, i (size)}
-          <SelectItem value="{size + 1}" text="{(size + 1).toString()}" />
+          <SelectItem value={size + 1} text={(size + 1).toString()} />
         {/each}
       </Select>
-      <span class:bx--pagination__text="{true}">
+      <span class:bx--pagination__text={true}>
         {#if pagesUnknown}
           {pageText(page)}
         {:else}{pageRangeText(page, totalPages)}{/if}
@@ -154,30 +152,30 @@
       kind="ghost"
       tooltipAlignment="center"
       tooltipPosition="top"
-      icon="{CaretLeft16}"
-      iconDescription="{backwardText}"
-      disabled="{backButtonDisabled}"
+      icon={CaretLeft16}
+      iconDescription={backwardText}
+      disabled={backButtonDisabled}
       class="bx--pagination__button bx--pagination__button--backward {backButtonDisabled
         ? 'bx--pagination__button--no-index'
         : ''}"
-      on:click="{() => {
+      on:click={() => {
         page--;
-      }}"
+      }}
     />
     <Button
       hasIconOnly
       kind="ghost"
       tooltipAlignment="end"
       tooltipPosition="top"
-      icon="{CaretRight16}"
-      iconDescription="{forwardText}"
-      disabled="{forwardButtonDisabled}"
+      icon={CaretRight16}
+      iconDescription={forwardText}
+      disabled={forwardButtonDisabled}
       class="bx--pagination__button bx--pagination__button--forward {forwardButtonDisabled
         ? 'bx--pagination__button--no-index'
         : ''}"
-      on:click="{() => {
+      on:click={() => {
         page++;
-      }}"
+      }}
     />
   </div>
 </div>

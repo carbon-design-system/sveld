@@ -1,5 +1,5 @@
 <script>
-  /** @extends {"../Copy/Copy"} CopyProps */
+  /** @extends {"../Copy/Copy.svelte"} CopyProps */
 
   /** Set the title and ARIA label for the copy button */
   export let iconDescription = "Copy to clipboard";
@@ -10,8 +10,8 @@
 
 <Copy
   class="bx--copy-btn"
-  aria-label="{iconDescription}"
-  title="{iconDescription}"
+  aria-label={iconDescription}
+  title={iconDescription}
   {...$$restProps}
   on:click
   on:animationend

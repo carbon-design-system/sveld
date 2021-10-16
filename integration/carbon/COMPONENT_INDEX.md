@@ -818,12 +818,12 @@ export interface DataTableCell {
 
 ### Slots
 
-| Slot name    | Default | Props                                                     | Fallback                                                                                    |
-| :----------- | :------ | :-------------------------------------------------------- | :------------------------------------------------------------------------------------------ |
-| --           | Yes     | --                                                        | --                                                                                          |
-| cell         | No      | <code>{ row: DataTableRow; cell: DataTableCell; } </code> | <code>{headers[j].display<br /> ? headers[j].display(cell.value)<br /> : cell.value}</code> |
-| cell-header  | No      | <code>{ header: DataTableNonEmptyHeader; } </code>        | <code>{header.value}</code>                                                                 |
-| expanded-row | No      | <code>{ row: DataTableRow; } </code>                      | --                                                                                          |
+| Slot name    | Default | Props                                                     | Fallback                                                                        |
+| :----------- | :------ | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| --           | Yes     | --                                                        | --                                                                              |
+| cell         | No      | <code>{ row: DataTableRow; cell: DataTableCell; } </code> | <code>{headers[j].display ? headers[j].display(cell.value) : cell.value}</code> |
+| cell-header  | No      | <code>{ header: DataTableNonEmptyHeader; } </code>        | <code>{header.value}</code>                                                     |
+| expanded-row | No      | <code>{ row: DataTableRow; } </code>                      | --                                                                              |
 
 ### Events
 
@@ -1474,9 +1474,9 @@ None.
 
 ### Slots
 
-| Slot name | Default | Props | Fallback                                              |
-| :-------- | :------ | :---- | :---------------------------------------------------- |
-| --        | Yes     | --    | <code>&lt;svelte:component this="{icon}" /&gt;</code> |
+| Slot name | Default | Props | Fallback                                            |
+| :-------- | :------ | :---- | :-------------------------------------------------- |
+| --        | Yes     | --    | <code>&lt;svelte:component this={icon} /&gt;</code> |
 
 ### Events
 
@@ -2404,10 +2404,10 @@ None.
 
 ### Slots
 
-| Slot name | Default | Props | Fallback                                                                                                                                                                                   |
-| :-------- | :------ | :---- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| --        | Yes     | --    | --                                                                                                                                                                                         |
-| menu      | No      | --    | <code>&lt;svelte:component<br /> this="{icon}"<br /> aria-label="{iconDescription}"<br /> title="{iconDescription}"<br /> class="bx--overflow-menu\_\_icon {iconClass}"<br /> /&gt;</code> |
+| Slot name | Default | Props | Fallback                                                                                                                                                                             |
+| :-------- | :------ | :---- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| --        | Yes     | --    | --                                                                                                                                                                                   |
+| menu      | No      | --    | <code>&lt;svelte:component<br /> this={icon}<br /> aria-label={iconDescription}<br /> title={iconDescription}<br /> class="bx--overflow-menu\_\_icon {iconClass}"<br /> /&gt;</code> |
 
 ### Events
 
@@ -2438,9 +2438,9 @@ None.
 
 ### Slots
 
-| Slot name | Default | Props | Fallback                                                                                                            |
-| :-------- | :------ | :---- | :------------------------------------------------------------------------------------------------------------------ |
-| --        | Yes     | --    | <code>&lt;div class:bx--overflow-menu-options\_\_option-content="{true}"&gt;<br /> {text}<br /> &lt;/div&gt;</code> |
+| Slot name | Default | Props | Fallback                                                                                                          |
+| :-------- | :------ | :---- | :---------------------------------------------------------------------------------------------------------------- |
+| --        | Yes     | --    | <code>&lt;div class:bx--overflow-menu-options\_\_option-content={true}&gt;<br /> {text}<br /> &lt;/div&gt;</code> |
 
 ### Events
 
@@ -2635,9 +2635,9 @@ None.
 
 ### Slots
 
-| Slot name | Default | Props                                                    | Fallback                                                                  |
-| :-------- | :------ | :------------------------------------------------------- | :------------------------------------------------------------------------ |
-| --        | Yes     | <code>{ props: { class: 'bx--progress-label' } } </code> | <code>&lt;p class:bx--progress-label="{true}"&gt;{label}&lt;/p&gt;</code> |
+| Slot name | Default | Props                                                    | Fallback                                                                |
+| :-------- | :------ | :------------------------------------------------------- | :---------------------------------------------------------------------- |
+| --        | Yes     | <code>{ props: { class: "bx--progress-label" } } </code> | <code>&lt;p class:bx--progress-label={true}&gt;{label}&lt;/p&gt;</code> |
 
 ### Events
 
@@ -3636,7 +3636,7 @@ None.
 
 | Slot name | Default | Props                                                  | Fallback |
 | :-------- | :------ | :----------------------------------------------------- | :------- |
-| --        | Yes     | <code>{ props: { class: 'bx--tag\_\_label' } } </code> | --       |
+| --        | Yes     | <code>{ props: { class: "bx--tag\_\_label" } } </code> | --       |
 
 ### Events
 
@@ -4182,11 +4182,11 @@ None.
 
 ### Slots
 
-| Slot name   | Default | Props | Fallback                                                                |
-| :---------- | :------ | :---- | :---------------------------------------------------------------------- |
-| --          | Yes     | --    | --                                                                      |
-| icon        | No      | --    | <code>&lt;svelte:component this="{icon}" name="{iconName}" /&gt;</code> |
-| triggerText | No      | --    | <code>{triggerText}</code>                                              |
+| Slot name   | Default | Props | Fallback                                                            |
+| :---------- | :------ | :---- | :------------------------------------------------------------------ |
+| --          | Yes     | --    | --                                                                  |
+| icon        | No      | --    | <code>&lt;svelte:component this={icon} name={iconName} /&gt;</code> |
+| triggerText | No      | --    | <code>{triggerText}</code>                                          |
 
 ### Events
 

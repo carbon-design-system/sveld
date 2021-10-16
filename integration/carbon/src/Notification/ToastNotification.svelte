@@ -61,35 +61,28 @@
 
 {#if open}
   <div
-    role="{role}"
-    kind="{kind}"
-    class:bx--toast-notification="{true}"
-    class:bx--toast-notification--low-contrast="{lowContrast}"
-    class:bx--toast-notification--error="{kind === 'error'}"
-    class:bx--toast-notification--info="{kind === 'info'}"
-    class:bx--toast-notification--info-square="{kind === 'info-square'}"
-    class:bx--toast-notification--success="{kind === 'success'}"
-    class:bx--toast-notification--warning="{kind === 'warning'}"
-    class:bx--toast-notification--warning-alt="{kind === 'warning-alt'}"
+    {role}
+    {kind}
+    class:bx--toast-notification={true}
+    class:bx--toast-notification--low-contrast={lowContrast}
+    class:bx--toast-notification--error={kind === "error"}
+    class:bx--toast-notification--info={kind === "info"}
+    class:bx--toast-notification--info-square={kind === "info-square"}
+    class:bx--toast-notification--success={kind === "success"}
+    class:bx--toast-notification--warning={kind === "warning"}
+    class:bx--toast-notification--warning-alt={kind === "warning-alt"}
     {...$$restProps}
     on:click
     on:mouseover
     on:mouseenter
     on:mouseleave
   >
-    <NotificationIcon kind="{kind}" iconDescription="{iconDescription}" />
-    <NotificationTextDetails
-      title="{title}"
-      subtitle="{subtitle}"
-      caption="{caption}"
-    >
+    <NotificationIcon {kind} {iconDescription} />
+    <NotificationTextDetails {title} {subtitle} {caption}>
       <slot />
     </NotificationTextDetails>
     {#if !hideCloseButton}
-      <NotificationButton
-        iconDescription="{iconDescription}"
-        on:click="{close}"
-      />
+      <NotificationButton {iconDescription} on:click={close} />
     {/if}
   </div>
 {/if}

@@ -41,31 +41,29 @@
     ctx.declareRef({ key: "selection", ref });
   }
 
-  $: description = selectionCount
-    ? translateWithId("clearAll")
-    : translateWithId("clearSelection");
+  $: description = selectionCount ? translateWithId("clearAll") : translateWithId("clearSelection");
 </script>
 
 <div
-  bind:this="{ref}"
+  bind:this={ref}
   role="button"
   aria-label="Clear Selection"
-  tabindex="{disabled ? '-1' : '0'}"
-  title="{description}"
-  class:bx--list-box__selection="{true}"
-  class:bx--tag--filter="{selectionCount}"
-  class:bx--list-box__selection--multi="{selectionCount}"
+  tabindex={disabled ? "-1" : "0"}
+  title={description}
+  class:bx--list-box__selection={true}
+  class:bx--tag--filter={selectionCount}
+  class:bx--list-box__selection--multi={selectionCount}
   {...$$restProps}
-  on:click|preventDefault|stopPropagation="{(e) => {
+  on:click|preventDefault|stopPropagation={(e) => {
     if (!disabled) {
-      dispatch('clear', e);
+      dispatch("clear", e);
     }
-  }}"
-  on:keydown|stopPropagation="{(e) => {
-    if (!disabled && e.key === 'Enter') {
-      dispatch('clear', e);
+  }}
+  on:keydown|stopPropagation={(e) => {
+    if (!disabled && e.key === "Enter") {
+      dispatch("clear", e);
     }
-  }}"
+  }}
 >
   {#if selectionCount}{selectionCount}{/if}
   <Close16 />

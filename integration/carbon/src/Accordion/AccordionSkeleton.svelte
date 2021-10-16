@@ -22,12 +22,12 @@
 </script>
 
 <ul
-  class:bx--skeleton="{true}"
-  class:bx--accordion="{true}"
-  class:bx--accordion--start="{align === 'start'}"
-  class:bx--accordion--end="{align === 'end'}"
-  class:bx--accordion--sm="{size === 'sm'}"
-  class:bx--accordion--xl="{size === 'xl'}"
+  class:bx--skeleton={true}
+  class:bx--accordion={true}
+  class:bx--accordion--start={align === "start"}
+  class:bx--accordion--end={align === "end"}
+  class:bx--accordion--sm={size === "sm"}
+  class:bx--accordion--xl={size === "xl"}
   {...$$restProps}
   on:click
   on:mouseover
@@ -35,11 +35,8 @@
   on:mouseleave
 >
   {#if open}
-    <li
-      class:bx--accordion__item="{true}"
-      class:bx--accordion__item--active="{true}"
-    >
-      <span class:bx--accordion__heading="{true}">
+    <li class:bx--accordion__item={true} class:bx--accordion__item--active={true}>
+      <span class:bx--accordion__heading={true}>
         <ChevronRight16 class="bx--accordion__arrow" />
         <SkeletonText class="bx--accordion__title" />
       </span>

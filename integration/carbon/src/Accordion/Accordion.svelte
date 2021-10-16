@@ -1,5 +1,5 @@
 <script>
-  /** @extends {"./AccordionSkeleton"} AccordionSkeletonProps */
+  /** @extends {"./AccordionSkeleton.svelte"} AccordionSkeletonProps */
 
   /**
    * Specify alignment of accordion item chevron icon
@@ -31,22 +31,14 @@
 </script>
 
 {#if skeleton}
-  <AccordionSkeleton
-    {...$$restProps}
-    align="{align}"
-    size="{size}"
-    on:click
-    on:mouseover
-    on:mouseenter
-    on:mouseleave
-  />
+  <AccordionSkeleton {...$$restProps} {align} {size} on:click on:mouseover on:mouseenter on:mouseleave />
 {:else}
   <ul
-    class:bx--accordion="{true}"
-    class:bx--accordion--start="{align === 'start'}"
-    class:bx--accordion--end="{align === 'end'}"
-    class:bx--accordion--sm="{size === 'sm'}"
-    class:bx--accordion--xl="{size === 'xl'}"
+    class:bx--accordion={true}
+    class:bx--accordion--start={align === "start"}
+    class:bx--accordion--end={align === "end"}
+    class:bx--accordion--sm={size === "sm"}
+    class:bx--accordion--xl={size === "xl"}
     {...$$restProps}
     on:click
     on:mouseover

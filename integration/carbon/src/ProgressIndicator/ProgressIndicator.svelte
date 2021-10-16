@@ -16,9 +16,7 @@
 
   const dispatch = createEventDispatcher();
   const steps = writable([]);
-  const stepsById = derived(steps, ($) =>
-    $.reduce((a, c) => ({ ...a, [c.id]: c }), {})
-  );
+  const stepsById = derived(steps, ($) => $.reduce((a, c) => ({ ...a, [c.id]: c }), {}));
 
   setContext("ProgressIndicator", {
     steps,
@@ -61,9 +59,9 @@
 </script>
 
 <ul
-  class:bx--progress="{true}"
-  class:bx--progress--vertical="{vertical}"
-  class:bx--progress--space-equal="{spaceEqually && !vertical}"
+  class:bx--progress={true}
+  class:bx--progress--vertical={vertical}
+  class:bx--progress--space-equal={spaceEqually && !vertical}
   {...$$restProps}
   on:click
   on:mouseover

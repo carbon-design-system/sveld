@@ -76,7 +76,7 @@
       "rest_props": { "type": "InlineComponent", "name": "AccordionSkeleton" },
       "extends": {
         "interface": "AccordionSkeletonProps",
-        "import": "\"./AccordionSkeleton\""
+        "import": "\"./AccordionSkeleton.svelte\""
       }
     },
     {
@@ -281,7 +281,7 @@
       "rest_props": { "type": "InlineComponent", "name": "BreadcrumbSkeleton" },
       "extends": {
         "interface": "BreadcrumbSkeletonProps",
-        "import": "\"./BreadcrumbSkeleton\""
+        "import": "\"./BreadcrumbSkeleton.svelte\""
       }
     },
     {
@@ -548,7 +548,7 @@
       "rest_props": { "type": "Element", "name": "button | a | div" },
       "extends": {
         "interface": "ButtonSkeletonProps",
-        "import": "\"./ButtonSkeleton\""
+        "import": "\"./ButtonSkeleton.svelte\""
       }
     },
     {
@@ -1698,7 +1698,10 @@
       ],
       "typedefs": [],
       "rest_props": { "type": "InlineComponent", "name": "Copy" },
-      "extends": { "interface": "CopyProps", "import": "\"../Copy/Copy\"" }
+      "extends": {
+        "interface": "CopyProps",
+        "import": "\"../Copy/Copy.svelte\""
+      }
     },
     {
       "moduleName": "DataTable",
@@ -1874,7 +1877,7 @@
         {
           "name": "cell",
           "default": false,
-          "fallback": "{headers[j].display\n                    ? headers[j].display(cell.value)\n                    : cell.value}",
+          "fallback": "{headers[j].display ? headers[j].display(cell.value) : cell.value}",
           "slot_props": "{ row: DataTableRow; cell: DataTableCell; }"
         },
         {
@@ -2063,7 +2066,7 @@
       "rest_props": { "type": "Element", "name": "div" },
       "extends": {
         "interface": "DataTableHeader",
-        "import": "\"../DataTable/DataTable\""
+        "import": "\"../DataTable/DataTable.svelte\""
       }
     },
     {
@@ -3888,7 +3891,7 @@
         {
           "name": "__default__",
           "default": true,
-          "fallback": "<svelte:component this=\"{icon}\" />",
+          "fallback": "<svelte:component this={icon} />",
           "slot_props": "{}"
         }
       ],
@@ -4227,7 +4230,7 @@
       "rest_props": { "type": "Element", "name": "svg" },
       "extends": {
         "interface": "IconSkeletonProps",
-        "import": "\"./IconSkeleton\""
+        "import": "\"./IconSkeleton.svelte\""
       }
     },
     {
@@ -5520,7 +5523,7 @@
           "kind": "let",
           "description": "Override the filtering logic\nThe default filtering is an exact string comparison",
           "type": "(item: MultiSelectItem, value: string) => string",
-          "value": "(item, value) =>     item.text.toLowerCase().includes(value.toLowerCase())",
+          "value": "(item, value) => item.text.toLowerCase().includes(value.toLowerCase())",
           "isFunction": true,
           "isFunctionDeclaration": false,
           "constant": false,
@@ -5575,7 +5578,7 @@
           "kind": "let",
           "description": "Override the sorting logic\nThe default sorting compare the item text value",
           "type": "((a: MultiSelectItem, b: MultiSelectItem) => MultiSelectItem) | (() => void)",
-          "value": "(a, b) =>     a.text.localeCompare(b.text, locale, { numeric: true })",
+          "value": "(a, b) => a.text.localeCompare(b.text, locale, { numeric: true })",
           "isFunction": true,
           "isFunctionDeclaration": false,
           "constant": false,
@@ -6249,7 +6252,7 @@
       ],
       "typedefs": [],
       "rest_props": { "type": "InlineComponent", "name": "Link" },
-      "extends": { "interface": "LinkProps", "import": "\"./Link\"" }
+      "extends": { "interface": "LinkProps", "import": "\"./Link.svelte\"" }
     },
     {
       "moduleName": "OverflowMenu",
@@ -6389,7 +6392,7 @@
         {
           "name": "menu",
           "default": false,
-          "fallback": "<svelte:component\n      this=\"{icon}\"\n      aria-label=\"{iconDescription}\"\n      title=\"{iconDescription}\"\n      class=\"bx--overflow-menu__icon {iconClass}\"\n    />",
+          "fallback": "<svelte:component\n      this={icon}\n      aria-label={iconDescription}\n      title={iconDescription}\n      class=\"bx--overflow-menu__icon {iconClass}\"\n    />",
           "slot_props": "{}"
         }
       ],
@@ -6516,7 +6519,7 @@
         {
           "name": "__default__",
           "default": true,
-          "fallback": "<div class:bx--overflow-menu-options__option-content=\"{true}\">\n          {text}\n        </div>",
+          "fallback": "<div class:bx--overflow-menu-options__option-content={true}>\n          {text}\n        </div>",
           "slot_props": "{}"
         }
       ],
@@ -6613,7 +6616,7 @@
           "kind": "let",
           "description": "Override the item range text",
           "type": "(min: number, max: number, total: number) => string",
-          "value": "(min, max, total) =>     `${min}–${max} of ${total} items`",
+          "value": "(min, max, total) => `${min}–${max} of ${total} items`",
           "isFunction": true,
           "isFunctionDeclaration": false,
           "constant": false,
@@ -6690,7 +6693,7 @@
           "kind": "let",
           "description": "Override the page range text",
           "type": "(current: number, total: number) => string",
-          "value": "(current, total) =>     `of ${total} page${total === 1 ? \"\" : \"s\"}`",
+          "value": "(current, total) => `of ${total} page${total === 1 ? \"\" : \"s\"}`",
           "isFunction": true,
           "isFunctionDeclaration": false,
           "constant": false,
@@ -7235,8 +7238,8 @@
         {
           "name": "__default__",
           "default": true,
-          "fallback": "<p class:bx--progress-label=\"{true}\">{label}</p>",
-          "slot_props": "{ props: { class: 'bx--progress-label' } }"
+          "fallback": "<p class:bx--progress-label={true}>{label}</p>",
+          "slot_props": "{ props: { class: \"bx--progress-label\" } }"
         }
       ],
       "events": [
@@ -9646,7 +9649,7 @@
         {
           "name": "__default__",
           "default": true,
-          "slot_props": "{ props: { class: 'bx--tag__label' } }"
+          "slot_props": "{ props: { class: \"bx--tag__label\" } }"
         }
       ],
       "events": [
@@ -10904,7 +10907,7 @@
           "kind": "let",
           "description": "Override the total items selected text",
           "type": "(totalSelected: number) => string",
-          "value": "(totalSelected) =>     `${totalSelected} item${totalSelected === 1 ? \"\" : \"s\"} selected`",
+          "value": "(totalSelected) => `${totalSelected} item${totalSelected === 1 ? \"\" : \"s\"} selected`",
           "isFunction": true,
           "isFunctionDeclaration": false,
           "constant": false,
@@ -10934,7 +10937,7 @@
       "rest_props": { "type": "InlineComponent", "name": "OverflowMenu" },
       "extends": {
         "interface": "OverflowMenuProps",
-        "import": "\"../OverflowMenu/OverflowMenu\""
+        "import": "\"../OverflowMenu/OverflowMenu.svelte\""
       }
     },
     {
@@ -10954,7 +10957,7 @@
       "rest_props": { "type": "InlineComponent", "name": "OverflowMenuItem" },
       "extends": {
         "interface": "OverflowMenuItemProps",
-        "import": "\"../OverflowMenu/OverflowMenuItem\""
+        "import": "\"../OverflowMenu/OverflowMenuItem.svelte\""
       }
     },
     {
@@ -11190,7 +11193,7 @@
         {
           "name": "icon",
           "default": false,
-          "fallback": "<svelte:component this=\"{icon}\" name=\"{iconName}\" />",
+          "fallback": "<svelte:component this={icon} name={iconName} />",
           "slot_props": "{}"
         },
         {

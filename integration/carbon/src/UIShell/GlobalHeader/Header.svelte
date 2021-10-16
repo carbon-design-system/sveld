@@ -40,29 +40,20 @@
 
   let winWidth = undefined;
 
-  $: isSideNavOpen =
-    expandedByDefault && winWidth >= 1056 && !persistentHamburgerMenu;
-  $: ariaLabel = company
-    ? `${company} `
-    : "" + (uiShellAriaLabel || $$props["aria-label"] || platformName);
+  $: isSideNavOpen = expandedByDefault && winWidth >= 1056 && !persistentHamburgerMenu;
+  $: ariaLabel = company ? `${company} ` : "" + (uiShellAriaLabel || $$props["aria-label"] || platformName);
 </script>
 
-<svelte:window bind:innerWidth="{winWidth}" />
+<svelte:window bind:innerWidth={winWidth} />
 
-<header role="banner" aria-label="{ariaLabel}" class:bx--header="{true}">
+<header role="banner" aria-label={ariaLabel} class:bx--header={true}>
   <slot name="skip-to-content" />
   {#if ($shouldRenderHamburgerMenu && winWidth < 1056) || persistentHamburgerMenu}
-    <HamburgerMenu bind:isOpen="{isSideNavOpen}" />
+    <HamburgerMenu bind:isOpen={isSideNavOpen} />
   {/if}
-  <a
-    href="{href}"
-    class:bx--header__name="{true}"
-    bind:this="{ref}"
-    {...$$restProps}
-    on:click
-  >
+  <a {href} class:bx--header__name={true} bind:this={ref} {...$$restProps} on:click>
     {#if company}
-      <span class:bx--header__name--prefix="{true}">{company}&nbsp;</span>
+      <span class:bx--header__name--prefix={true}>{company}&nbsp;</span>
     {/if}
     <slot name="platform">{platformName}</slot>
   </a>

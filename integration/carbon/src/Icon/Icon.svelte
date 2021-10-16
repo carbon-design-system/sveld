@@ -1,6 +1,6 @@
 <script>
   /**
-   * @extends {"./IconSkeleton"} IconSkeletonProps
+   * @extends {"./IconSkeleton.svelte"} IconSkeletonProps
    * @restProps {svg}
    */
 
@@ -17,20 +17,7 @@
 </script>
 
 {#if skeleton}
-  <IconSkeleton
-    {...$$restProps}
-    on:click
-    on:mouseover
-    on:mouseenter
-    on:mouseleave
-  />
+  <IconSkeleton {...$$restProps} on:click on:mouseover on:mouseenter on:mouseleave />
 {:else}
-  <svelte:component
-    this="{render}"
-    {...$$restProps}
-    on:click
-    on:mouseover
-    on:mouseenter
-    on:mouseleave
-  />
+  <svelte:component this={render} {...$$restProps} on:click on:mouseover on:mouseenter on:mouseleave />
 {/if}

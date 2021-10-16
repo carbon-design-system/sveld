@@ -17,19 +17,16 @@
 </script>
 
 <button
-  bind:this="{ref}"
+  bind:this={ref}
   type="button"
   title="Open menu"
-  aria-label="{ariaLabel}"
-  class:bx--header__action="{true}"
-  class:bx--header__menu-trigger="{true}"
-  class:bx--header__menu-toggle="{true}"
+  aria-label={ariaLabel}
+  class:bx--header__action={true}
+  class:bx--header__menu-trigger={true}
+  class:bx--header__menu-toggle={true}
   {...$$restProps}
   on:click
-  on:click="{() => (isOpen = !isOpen)}"
+  on:click={() => (isOpen = !isOpen)}
 >
-  <Icon
-    title="{isOpen ? 'Close' : 'Open Menu'}"
-    render="{isOpen ? Close20 : Menu20}"
-  />
+  <Icon title={isOpen ? "Close" : "Open Menu"} render={isOpen ? Close20 : Menu20} />
 </button>

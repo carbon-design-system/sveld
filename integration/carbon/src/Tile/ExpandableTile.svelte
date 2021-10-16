@@ -46,47 +46,44 @@
     const style = getComputedStyle(ref);
 
     tilePadding =
-      parseInt(style.getPropertyValue("padding-top"), 10) +
-      parseInt(style.getPropertyValue("padding-bottom"), 10);
+      parseInt(style.getPropertyValue("padding-top"), 10) + parseInt(style.getPropertyValue("padding-bottom"), 10);
   });
 </script>
 
 <button
-  bind:this="{ref}"
+  bind:this={ref}
   type="button"
-  id="{id}"
-  aria-expanded="{expanded}"
-  tabindex="{tabindex}"
-  title="{expanded ? tileExpandedIconText : tileCollapsedIconText}"
-  class:bx--tile="{true}"
-  class:bx--tile--expandable="{true}"
-  class:bx--tile--is-expanded="{expanded}"
-  class:bx--tile--light="{light}"
+  {id}
+  aria-expanded={expanded}
+  {tabindex}
+  title={expanded ? tileExpandedIconText : tileCollapsedIconText}
+  class:bx--tile={true}
+  class:bx--tile--expandable={true}
+  class:bx--tile--is-expanded={expanded}
+  class:bx--tile--light={light}
   {...$$restProps}
-  style="{expanded
-    ? $$restProps.style
-    : `${$$restProps.style}; max-height: ${tileMaxHeight + tilePadding}px`}"
+  style={expanded ? $$restProps.style : `${$$restProps.style}; max-height: ${tileMaxHeight + tilePadding}px`}
   on:click
-  on:click="{() => {
+  on:click={() => {
     expanded = !expanded;
-  }}"
+  }}
   on:keypress
   on:mouseover
   on:mouseenter
   on:mouseleave
 >
-  <div bind:this="{refContent}">
-    <div bind:this="{refAbove}" class:bx--tile-content="{true}">
-      <span class:bx--tile-content__above-the-fold="{true}">
+  <div bind:this={refContent}>
+    <div bind:this={refAbove} class:bx--tile-content={true}>
+      <span class:bx--tile-content__above-the-fold={true}>
         <slot name="above" />
       </span>
     </div>
-    <div class:bx--tile__chevron="{true}">
+    <div class:bx--tile__chevron={true}>
       <span>{expanded ? tileExpandedLabel : tileCollapsedLabel}</span>
       <ChevronDown16 />
     </div>
-    <div class:bx--tile-content="{true}">
-      <span class:bx--tile-content__below-the-fold="{true}">
+    <div class:bx--tile-content={true}>
+      <span class:bx--tile-content__below-the-fold={true}>
         <slot name="below" />
       </span>
     </div>

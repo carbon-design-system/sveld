@@ -45,7 +45,7 @@
 </script>
 
 <div
-  class:bx--inline-loading="{true}"
+  class:bx--inline-loading={true}
   aria-live="assertive"
   {...$$restProps}
   on:click
@@ -53,21 +53,16 @@
   on:mouseenter
   on:mouseleave
 >
-  <div class:bx--inline-loading__animation="{true}">
+  <div class:bx--inline-loading__animation={true}>
     {#if status === "error"}
       <Error20 class="bx--inline-loading--error" />
     {:else if status === "finished"}
       <CheckmarkFilled16 class="bx--inline-loading__checkmark-container" />
     {:else if status === "inactive" || status === "active"}
-      <Loading
-        small
-        description="{iconDescription}"
-        withOverlay="{false}"
-        active="{status === 'active'}"
-      />
+      <Loading small description={iconDescription} withOverlay={false} active={status === "active"} />
     {/if}
   </div>
   {#if description}
-    <div class:bx--inline-loading__text="{true}">{description}</div>
+    <div class:bx--inline-loading__text={true}>{description}</div>
   {/if}
 </div>

@@ -21,15 +21,15 @@
 </script>
 
 <a
-  bind:this="{ref}"
-  class:bx--header__action="{true}"
-  class:bx--header__action--active="{linkIsActive}"
-  class:action-link="{true}"
-  href="{href}"
-  rel="{$$restProps.target === '_blank' ? 'noopener noreferrer' : undefined}"
+  bind:this={ref}
+  class:bx--header__action={true}
+  class:bx--header__action--active={linkIsActive}
+  class:action-link={true}
+  {href}
+  rel={$$restProps.target === "_blank" ? "noopener noreferrer" : undefined}
   {...$$restProps}
 >
-  <Icon render="{icon}" />
+  <Icon render={icon} />
 </a>
 
 <style>

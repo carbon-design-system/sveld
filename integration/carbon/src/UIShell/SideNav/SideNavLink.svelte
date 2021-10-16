@@ -26,25 +26,22 @@
   import Icon from "../../Icon/Icon.svelte";
 </script>
 
-<li class:bx--side-nav__item="{true}">
+<li class:bx--side-nav__item={true}>
   <a
-    bind:this="{ref}"
-    aria-current="{isSelected ? 'page' : undefined}"
-    href="{href}"
-    rel="{$$restProps.target === '_blank' ? 'noopener noreferrer' : undefined}"
-    class:bx--side-nav__link="{true}"
-    class:bx--side-nav__link--current="{isSelected}"
+    bind:this={ref}
+    aria-current={isSelected ? "page" : undefined}
+    {href}
+    rel={$$restProps.target === "_blank" ? "noopener noreferrer" : undefined}
+    class:bx--side-nav__link={true}
+    class:bx--side-nav__link--current={isSelected}
     {...$$restProps}
     on:click
   >
     {#if icon}
-      <div
-        class:bx--side-nav__icon="{true}"
-        class:bx--side-nav__icon--small="{true}"
-      >
-        <Icon render="{icon}" />
+      <div class:bx--side-nav__icon={true} class:bx--side-nav__icon--small={true}>
+        <Icon render={icon} />
       </div>
     {/if}
-    <span class:bx--side-nav__link-text="{true}">{text}</span>
+    <span class:bx--side-nav__link-text={true}>{text}</span>
   </a>
 </li>

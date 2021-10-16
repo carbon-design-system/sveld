@@ -13,9 +13,9 @@
   <!-- svelte-ignore a11y-label-has-associated-control -->
   <label
     role="presentation"
-    tabindex="{tabindex}"
-    class:bx--structured-list-row="{true}"
-    class:bx--structured-list-row--header-row="{head}"
+    {tabindex}
+    class:bx--structured-list-row={true}
+    class:bx--structured-list-row--header-row={head}
     {...$$restProps}
     on:click
     on:mouseover
@@ -27,8 +27,8 @@
   </label>
 {:else}
   <div
-    class:bx--structured-list-row="{true}"
-    class:bx--structured-list-row--header-row="{head}"
+    class:bx--structured-list-row={true}
+    class:bx--structured-list-row--header-row={head}
     {...$$restProps}
     on:click
     on:mouseover

@@ -4,8 +4,8 @@
 </script>
 
 <ul
-  class:bx--list--unordered="{true}"
-  class:bx--list--nested="{nested}"
+  class:bx--list--unordered={true}
+  class:bx--list--nested={nested}
   {...$$restProps}
   on:click
   on:mouseover
