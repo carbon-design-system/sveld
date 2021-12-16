@@ -126,7 +126,7 @@ function genComponentComment(def: Pick<ComponentDocApi, "componentComment">) {
   if (!/\n/.test(def.componentComment)) return `/** ${def.componentComment.trim()} */`;
   return `/*${def.componentComment
     .split("\n")
-    .map((line) => `* ${line.trim()}`)
+    .map((line) => `* ${line}`)
     .join("\n")}\n*/`;
 }
 
