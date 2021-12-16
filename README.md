@@ -407,6 +407,38 @@ export const secondary = true;
 import Button from "./Button.svelte";
 ```
 
+### `@component` comments
+
+The Svelte Language Server supports component-level comments through the following syntax: `<!-- @component [comment] -->`.
+
+`sveld` will copy these over to the exported default component in the TypeScript definition.
+
+Example:
+
+```svelte
+<!-- @component
+@example
+<Button>
+  Text
+</Button>
+-->
+<button>
+  <slot />
+</button>
+```
+
+Output:
+
+```ts
+/**
+ * @example
+ * <Button>
+ *   Text
+ * </Button>
+ */
+export default class Button extends SvelteComponentTyped<ButtonProps, {}, { default: {} }> {}
+```
+
 ## Contributing
 
 Refer to the [contributing guidelines](CONTRIBUTING.md).
