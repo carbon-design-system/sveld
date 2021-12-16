@@ -77,7 +77,8 @@
       "extends": {
         "interface": "AccordionSkeletonProps",
         "import": "\"./AccordionSkeleton.svelte\""
-      }
+      },
+      "componentComment": "\n@example\n<Accordion>\n  <AccordionItem>...</AccordionItem>\n</Accordion>"
     },
     {
       "moduleName": "AccordionItem",
@@ -146,7 +147,8 @@
         { "type": "forwarded", "name": "keydown", "element": "button" }
       ],
       "typedefs": [],
-      "rest_props": { "type": "Element", "name": "li" }
+      "rest_props": { "type": "Element", "name": "li" },
+      "componentComment": " `AccordionItem` is slottable"
     },
     {
       "moduleName": "AccordionSkeleton",

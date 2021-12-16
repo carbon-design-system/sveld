@@ -30,6 +30,12 @@
   setContext("Accordion", { disableItems });
 </script>
 
+<!-- @component
+@example
+<Accordion>
+  <AccordionItem>...</AccordionItem>
+</Accordion>
+-->
 {#if skeleton}
   <AccordionSkeleton {...$$restProps} {align} {size} on:click on:mouseover on:mouseenter on:mouseleave />
 {:else}

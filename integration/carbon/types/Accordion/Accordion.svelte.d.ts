@@ -27,6 +27,12 @@ export interface AccordionProps extends AccordionSkeletonProps {
   skeleton?: boolean;
 }
 
+/**
+ * @example
+ * <Accordion>
+ *   <AccordionItem>...</AccordionItem>
+ * </Accordion>
+ */
 export default class Accordion extends SvelteComponentTyped<
   AccordionProps,
   {
