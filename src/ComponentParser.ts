@@ -101,6 +101,7 @@ export interface ParsedComponent {
   typedefs: TypeDef[];
   rest_props: RestProps;
   extends?: Extends;
+  componentComment?: string;
 }
 
 export default class ComponentParser {
@@ -109,6 +110,7 @@ export default class ComponentParser {
   private compiled?: CompiledSvelteCode;
   private rest_props?: RestProps;
   private extends?: Extends;
+  private componentComment?: string;
   private readonly reactive_vars: Set<string> = new Set();
   private readonly props: Map<ComponentPropName, ComponentProp> = new Map();
   private readonly slots: Map<ComponentSlotName, ComponentSlot> = new Map();
@@ -256,6 +258,7 @@ export default class ComponentParser {
     this.compiled = undefined;
     this.rest_props = undefined;
     this.extends = undefined;
+    this.componentComment = undefined;
     this.reactive_vars.clear();
     this.props.clear();
     this.slots.clear();
@@ -375,6 +378,14 @@ export default class ComponentParser {
             constant: kind === "const",
             reactive: this.reactive_vars.has(prop_name),
           });
+        }
+
+        if (node.type === "Comment") {
+          let data: string = node?.data?.trim() ?? "";
+
+          if (/^@component/.test(data)) {
+            this.componentComment = data.replace(/^@component/, "");
+          }
         }
 
         if (node.type === "Slot") {
@@ -515,6 +526,7 @@ export default class ComponentParser {
       typedefs: ComponentParser.mapToArray(this.typedefs),
       rest_props: this.rest_props,
       extends: this.extends,
+      componentComment: this.componentComment,
     };
   }
 }
