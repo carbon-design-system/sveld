@@ -1,0 +1,13 @@
+{
+  "props": [],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "slot_props": "{}"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "componentComment": "\n@example\n<div>\n  Component comment\n</div>"
+}

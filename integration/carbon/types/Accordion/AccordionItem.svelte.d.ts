@@ -29,6 +29,7 @@ export interface AccordionItemProps
   iconDescription?: string;
 }
 
+/** `AccordionItem` is slottable */
 export default class AccordionItem extends SvelteComponentTyped<
   AccordionItemProps,
   {

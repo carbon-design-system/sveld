@@ -34,6 +34,7 @@
   });
 </script>
 
+<!-- @component `AccordionItem` is slottable -->
 <li
   class:bx--accordion__item={true}
   class:bx--accordion__item--active={open}

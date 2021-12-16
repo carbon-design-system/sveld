@@ -121,8 +121,17 @@ function genImports(def: Pick<ComponentDocApi, "extends">) {
   return `import { ${def.extends.interface} } from ${def.extends.import};`;
 }
 
+function genComponentComment(def: Pick<ComponentDocApi, "componentComment">) {
+  if (!def.componentComment) return "";
+  if (!/\n/.test(def.componentComment)) return `/** ${def.componentComment.trim()} */`;
+  return `/*${def.componentComment
+    .split("\n")
+    .map((line) => `* ${line}`)
+    .join("\n")}\n*/`;
+}
+
 export function writeTsDefinition(component: ComponentDocApi) {
-  const { moduleName, typedefs, props, slots, events, rest_props, extends: _extends } = component;
+  const { moduleName, typedefs, props, slots, events, rest_props, extends: _extends, componentComment } = component;
   const { props_name, prop_def } = genPropDef({
     moduleName,
     props,
@@ -136,7 +145,7 @@ export function writeTsDefinition(component: ComponentDocApi) {
   ${genImports({ extends: _extends })}
   ${getTypeDefs({ typedefs })}
   ${prop_def}
-
+  ${genComponentComment({ componentComment })}
   export default class ${moduleName === "default" ? "" : moduleName} extends SvelteComponentTyped<
       ${props_name},
       {${genEventDef({ events })}},
