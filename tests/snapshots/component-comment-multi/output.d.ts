@@ -4,6 +4,9 @@ import { SvelteComponentTyped } from "svelte";
 export interface InputProps {}
 
 /**
- * Component comment
+ * @example
+ * <div>
+ *   Component comment
+ * </div>
  */
 export default class Input extends SvelteComponentTyped<InputProps, {}, { default: {} }> {}

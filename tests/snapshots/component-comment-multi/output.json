@@ -9,5 +9,5 @@
   ],
   "events": [],
   "typedefs": [],
-  "componentComment": "\n Component comment"
+  "componentComment": "\n@example\n<div>\n  Component comment\n</div>"
 }
