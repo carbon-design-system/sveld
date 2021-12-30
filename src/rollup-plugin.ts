@@ -9,7 +9,7 @@ import { getSvelteEntry } from "./get-svelte-entry";
 import { ParsedExports, parseExports } from "./parse-exports";
 import { preprocess } from "svelte/compiler";
 import { replace, typescript } from "svelte-preprocess";
-import { normalizeSeparators } from './path';
+import { normalizeSeparators } from "./path";
 
 export interface PluginSveldOptions {
   glob?: boolean;
