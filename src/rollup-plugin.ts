@@ -9,6 +9,7 @@ import { getSvelteEntry } from "./get-svelte-entry";
 import { ParsedExports, parseExports } from "./parse-exports";
 import { preprocess } from "svelte/compiler";
 import { replace, typescript } from "svelte-preprocess";
+import { normalizeSeparators } from './path';
 
 export interface PluginSveldOptions {
   glob?: boolean;
@@ -62,11 +63,7 @@ export async function generateBundle(input: string, glob: boolean) {
   if (glob) {
     fg.sync([`${dir}/**/*.svelte`]).forEach((file) => {
       const moduleName = path.parse(file).name.replace(/\-/g, "");
-      let source = "./" + path.relative(dir, file);
-
-      if (path.sep !== "/") {
-        source = source.split(path.sep).join("/");
-      }
+      let source = normalizeSeparators("./" + path.relative(dir, file));
 
       if (exports[moduleName]) {
         exports[moduleName].source = source;

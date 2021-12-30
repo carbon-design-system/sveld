@@ -18,7 +18,9 @@ const execCwd = async (dir, ...args) => await exec(`yarn --cwd ${dir} ${args}`);
     await exec("yarn link");
 
     for await (const dir of dirs) {
-      fs.rmdirSync(path.join(dir, 'types'), { recursive: true });
+      const typesDir = path.join(dir, 'types');
+      if (fs.existsSync(typesDir))
+        fs.rmdirSync(typesDir, { recursive: true });
 
       await execCwd(dir, `link "${name}"`);
       await execCwd(dir, "install");

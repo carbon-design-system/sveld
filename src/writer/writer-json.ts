@@ -1,4 +1,5 @@
 import * as path from "path";
+import { normalizeSeparators } from '../path';
 import { ComponentDocApi, ComponentDocs } from "../rollup-plugin";
 import Writer from "./Writer";
 
@@ -18,7 +19,9 @@ export default async function writeJson(components: ComponentDocs, options: Writ
     total: components.size,
     components: Array.from(components, ([moduleName, component]) => ({
       ...component,
-      filePath: path.join(options.inputDir, path.normalize(component.filePath)),
+      filePath: normalizeSeparators(
+        path.join(options.inputDir, path.normalize(component.filePath))
+      ),
     })).sort((a, b) => {
       if (a.moduleName < b.moduleName) return -1;
       if (a.moduleName > b.moduleName) return 1;
