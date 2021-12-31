@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add isAccessor field to API
 - update Markdown writer to generate a separate table for accessors
 
+## [0.11.1](https://github.com/carbon-design-system/sveld/releases/tag/v0.11.1) - 2021-12-31
+
+- replace backslashes with forward slashes in COMPONENT_API.json `filePath` values
+
 ## [0.11.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.11.0) - 2021-12-16
 
 - support writing `<!-- @component -->` comments in Svelte components to TypeScript definitions
