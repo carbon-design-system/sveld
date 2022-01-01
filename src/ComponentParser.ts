@@ -3,6 +3,7 @@ import * as commentParser from "comment-parser";
 import { Ast, TemplateNode, Var } from "svelte/types/compiler/interfaces";
 import { getElementByTag } from "./element-tag-map";
 import { Node } from "estree-walker";
+import type { VariableDeclaration } from "estree";
 
 interface CompiledSvelteCode {
   vars: Var[];
@@ -112,6 +113,7 @@ export default class ComponentParser {
   private extends?: Extends;
   private componentComment?: string;
   private readonly reactive_vars: Set<string> = new Set();
+  private readonly vars: Set<VariableDeclaration> = new Set();
   private readonly props: Map<ComponentPropName, ComponentProp> = new Map();
   private readonly slots: Map<ComponentSlotName, ComponentSlot> = new Map();
   private readonly events: Map<ComponentEventName, ComponentEvent> = new Map();
@@ -303,7 +305,28 @@ export default class ComponentParser {
           }
         }
 
-        if (node.type === "ExportNamedDeclaration" && node.declaration != null) {
+        if (node.type === 'VariableDeclaration') {
+          this.vars.add(node);
+        }
+
+        if (node.type === "ExportNamedDeclaration") {
+          // Handle renamed exports
+          let prop_name: string;
+          if (node.declaration == null && node.specifiers[0]?.type === 'ExportSpecifier') {
+            const specifier = node.specifiers[0];
+            const localName = specifier.local.name, exportedName = specifier.exported.name;
+            let declaration: VariableDeclaration;
+            // Search through all variable declarations for this variable
+            //  Limitation: the variable must have been declared before the export
+            this.vars.forEach(varDecl => {
+              if (varDecl.declarations.some(decl => decl.id.type === 'Identifier' && decl.id.name === localName)) {
+                declaration = varDecl;
+              }
+            });
+            node.declaration = declaration!;
+            prop_name = exportedName;
+          }
+
           const {
             type: declaration_type,
             id,
@@ -311,7 +334,7 @@ export default class ComponentParser {
             body,
           } = node.declaration.declarations ? node.declaration.declarations[0] : node.declaration;
 
-          const prop_name = id.name;
+          prop_name ??= id.name;
 
           let value = undefined;
           let type = undefined;
