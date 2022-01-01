@@ -1,0 +1,18 @@
+{
+  "props": [
+    {
+      "name": "class",
+      "kind": "let",
+      "description": "Just your average CSS class string.",
+      "type": "string|null",
+      "value": "\"test\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "slots": [],
+  "events": [],
+  "typedefs": []
+}
