@@ -305,21 +305,22 @@ export default class ComponentParser {
           }
         }
 
-        if (node.type === 'VariableDeclaration') {
+        if (node.type === "VariableDeclaration") {
           this.vars.add(node);
         }
 
         if (node.type === "ExportNamedDeclaration") {
           // Handle renamed exports
           let prop_name: string;
-          if (node.declaration == null && node.specifiers[0]?.type === 'ExportSpecifier') {
+          if (node.declaration == null && node.specifiers[0]?.type === "ExportSpecifier") {
             const specifier = node.specifiers[0];
-            const localName = specifier.local.name, exportedName = specifier.exported.name;
+            const localName = specifier.local.name,
+              exportedName = specifier.exported.name;
             let declaration: VariableDeclaration;
             // Search through all variable declarations for this variable
             //  Limitation: the variable must have been declared before the export
-            this.vars.forEach(varDecl => {
-              if (varDecl.declarations.some(decl => decl.id.type === 'Identifier' && decl.id.name === localName)) {
+            this.vars.forEach((varDecl) => {
+              if (varDecl.declarations.some((decl) => decl.id.type === "Identifier" && decl.id.name === localName)) {
                 declaration = varDecl;
               }
             });
