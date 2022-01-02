@@ -306,7 +306,7 @@ export default class ComponentParser {
         }
 
         if (node.type === "VariableDeclaration") {
-          this.vars.add(node);
+          this.vars.add(node as unknown as VariableDeclaration);
         }
 
         if (node.type === "ExportNamedDeclaration") {
