@@ -18,7 +18,7 @@ function escapeHtml(text: string) {
 }
 
 function formatPropValue(value: any) {
-  if (value === undefined) return MD_TYPE_UNDEFINED;
+  if (value === undefined) return `<code>${value}</code>`;
   return `<code>${value.replace(/`/g, "\\`").replace(/\|/g, "&#124;")}</code>`;
 }
 
