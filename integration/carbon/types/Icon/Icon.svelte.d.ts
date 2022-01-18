@@ -7,6 +7,7 @@ export interface IconProps
     svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["svg"]> {
   /**
    * Specify the icon from `carbon-icons-svelte` to render
+   * @default undefined
    */
   render?: typeof import("carbon-icons-svelte").CarbonIcon;
 

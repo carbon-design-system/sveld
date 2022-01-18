@@ -11,11 +11,13 @@ export interface NotificationButtonProps
 
   /**
    * Specify the icon from `carbon-icons-svelte` to render
+   * @default undefined
    */
   icon?: typeof import("carbon-icons-svelte").CarbonIcon;
 
   /**
    * Specify the title of the icon
+   * @default undefined
    */
   title?: string;
 

@@ -11,11 +11,13 @@ export interface SideNavMenuProps
 
   /**
    * Specify the text
+   * @default undefined
    */
   text?: string;
 
   /**
    * Specify the icon from `carbon-icons-svelte` to render
+   * @default undefined
    */
   icon?: typeof import("carbon-icons-svelte").CarbonIcon;
 

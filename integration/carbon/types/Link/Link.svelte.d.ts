@@ -5,11 +5,13 @@ export interface LinkProps
   extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["p"]> {
   /**
    * Specify the size of the link
+   * @default undefined
    */
   size?: "sm" | "lg";
 
   /**
    * Specify the href value
+   * @default undefined
    */
   href?: string;
 
