@@ -52,8 +52,6 @@ function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleN
         .filter(Boolean)
         .join("");
 
-      console.log(prop_comments);
-
       let prop_value = prop.constant && !prop.isFunction ? prop.value : prop.type;
 
       return `
