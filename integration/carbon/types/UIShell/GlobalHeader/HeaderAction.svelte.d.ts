@@ -17,12 +17,14 @@ export interface HeaderActionProps
 
   /**
    * Specify the icon from `carbon-icons-svelte` to render
+   * @default undefined
    */
   icon?: typeof import("carbon-icons-svelte").CarbonIcon;
 
   /**
    * Specify the text
    * Alternatively, use the named slot "text" (e.g., <div slot="text">...</div>)
+   * @default undefined
    */
   text?: string;
 

@@ -34,11 +34,13 @@ export interface ButtonProps
 
   /**
    * Specify the icon from `carbon-icons-svelte` to render
+   * @default undefined
    */
   icon?: typeof import("carbon-icons-svelte").CarbonIcon;
 
   /**
    * Specify the ARIA label for the button icon
+   * @default undefined
    */
   iconDescription?: string;
 
@@ -76,6 +78,7 @@ export interface ButtonProps
 
   /**
    * Set the `href` to use an anchor link
+   * @default undefined
    */
   href?: string;
 

@@ -11,6 +11,7 @@ export interface CodeSnippetProps {
   /**
    * Set the code snippet text
    * Alternatively, use the default slot (e.g., <CodeSnippet>{`code`}</CodeSnippet>)
+   * @default undefined
    */
   code?: string;
 
@@ -54,11 +55,13 @@ export interface CodeSnippetProps {
 
   /**
    * Specify the ARIA label for the copy button icon
+   * @default undefined
    */
   copyButtonDescription?: string;
 
   /**
    * Specify the ARIA label of the copy button
+   * @default undefined
    */
   copyLabel?: string;
 

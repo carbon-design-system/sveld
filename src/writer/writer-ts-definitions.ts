@@ -34,13 +34,20 @@ function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleN
   const props = def.props
     .filter((prop) => !prop.isFunctionDeclaration && prop.kind !== "const")
     .map((prop) => {
+      let defaultValue = prop.value;
+
+      if (typeof prop.value === "string") {
+        defaultValue = prop.value.replace(/\s+/g, " ");
+      }
+
+      if (prop.value === undefined) {
+        defaultValue = "undefined";
+      }
+
       const prop_comments = [
         addCommentLine(prop.description?.replace(/\n/g, "\n* ")),
         addCommentLine(prop.constant, "@constant"),
-        addCommentLine(
-          prop.value,
-          `@default ${typeof prop.value === "string" ? prop.value.replace(/\s+/g, " ") : prop.value}`
-        ),
+        `* @default ${defaultValue}\n`,
       ]
         .filter(Boolean)
         .join("");

@@ -12,6 +12,9 @@ export interface InputProps {
    */
   propString?: string;
 
+  /**
+   * @default undefined
+   */
   name?: string;
 
   /**

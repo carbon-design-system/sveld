@@ -17,6 +17,7 @@ export interface DatePickerProps
 
   /**
    * Specify the element to append the calendar to
+   * @default undefined
    */
   appendTo?: HTMLElement;
 

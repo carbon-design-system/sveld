@@ -52,6 +52,7 @@ export interface CheckboxProps {
 
   /**
    * Specify the title attribute for the label element
+   * @default undefined
    */
   title?: string;
 

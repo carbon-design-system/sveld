@@ -6,6 +6,7 @@ export interface TagProps
     svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["span"]> {
   /**
    * Specify the type of tag
+   * @default undefined
    */
   type?:
     | "red"
@@ -46,6 +47,7 @@ export interface TagProps
 
   /**
    * Specify the icon from `carbon-icons-svelte` to render
+   * @default undefined
    */
   icon?: typeof import("carbon-icons-svelte").CarbonIcon;
 
