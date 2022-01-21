@@ -149,7 +149,7 @@ yarn add -D sveld
 npm i -D sveld
 ```
 
-### Set-up with Rollup
+### Rollup
 
 Import and add `sveld` as a plugin to your `rollup.config.js`.
 
@@ -194,9 +194,35 @@ Append `--json` or `--markdown` flags to generate documentation in JSON/Markdown
 npx sveld --json --markdown
 ```
 
+### Node.js
+
+You can also use sveld programmatically in Node.js.
+
+Note: sveld will still determine the entry point using the `svelte` field in your `package.json`.
+
+```js
+const { sveld } = require("sveld");
+const pkg = require("./package.json");
+
+sveld({
+  glob: true,
+  markdown: true,
+  markdownOptions: {
+    onAppend: (type, document, components) => {
+      if (type === "h1")
+        document.append("quote", `${components.size} components exported from ${pkg.name}@${pkg.version}.`);
+    },
+  },
+  json: true,
+  jsonOptions: {
+    outFile: "docs/src/COMPONENT_API.json",
+  },
+});
+```
+
 ### Publishing to NPM
 
-Specify the entry point for the TypeScript definitions in your `package.json`.
+TypeScript definitions are outputted to the `types` folder by default. Don't forget to include the folder in your `package.json` when publishing the package to NPM.
 
 ```diff
 {
