@@ -4,10 +4,21 @@ import * as path from "path";
 export type SvelteEntryPoint = string;
 
 /**
- * Get the file path entrypoint for uncompiled Svelte source code
+ * Get the file path entry point for uncompiled Svelte source code
  * Expects a "svelte" field in the consumer's `package.json`
  */
-export function getSvelteEntry(): SvelteEntryPoint | null {
+export function getSvelteEntry(entryPoint?: SvelteEntryPoint): SvelteEntryPoint | null {
+  if (entryPoint) {
+    const entry_path = path.join(process.cwd(), entryPoint);
+
+    if (fs.existsSync(entry_path)) {
+      return entry_path;
+    } else {
+      process.stdout.write(`Invalid entry point: ${entry_path}.\n`);
+      return null;
+    }
+  }
+
   const pkg_path = path.join(process.cwd(), "package.json");
 
   if (fs.existsSync(pkg_path)) {
@@ -15,8 +26,8 @@ export function getSvelteEntry(): SvelteEntryPoint | null {
 
     if (pkg.svelte !== undefined) return pkg.svelte;
 
-    process.stdout.write("Could not determine an entrypoint.\n");
-    process.stdout.write('Specify an entrypoint to your Svelte code in the "svelte" field of your package.json.\n');
+    process.stdout.write("Could not determine an entry point.\n");
+    process.stdout.write('Specify an entry point to your Svelte code in the "svelte" field of your package.json.\n');
     return null;
   } else {
     process.stdout.write("Could not locate a package.json file.\n");
