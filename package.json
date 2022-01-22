@@ -23,12 +23,12 @@
     "comment-parser": "^0.7.6",
     "fast-glob": "^3.2.7",
     "fs-extra": "^9.0.1",
-    "prettier": "^2.3.2",
-    "rollup": "^2.56.3",
+    "prettier": "^2.5.1",
+    "rollup": "^2.66.0",
     "rollup-plugin-svelte": "^7.1.0",
-    "svelte": "^3.42.4",
-    "svelte-preprocess": "^4.8.0",
-    "typescript": "^4.4.2"
+    "svelte": "^3.46.2",
+    "svelte-preprocess": "^4.10.2",
+    "typescript": "^4.5.5"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.12",
