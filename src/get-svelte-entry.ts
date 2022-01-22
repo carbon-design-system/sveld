@@ -12,7 +12,7 @@ export function getSvelteEntry(entryPoint?: SvelteEntryPoint): SvelteEntryPoint 
     const entry_path = path.join(process.cwd(), entryPoint);
 
     if (fs.existsSync(entry_path)) {
-      return entry_path;
+      return entryPoint;
     } else {
       process.stdout.write(`Invalid entry point: ${entry_path}.\n`);
       return null;
