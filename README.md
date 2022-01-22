@@ -196,15 +196,16 @@ npx sveld --json --markdown
 
 ### Node.js
 
-You can also use sveld programmatically in Node.js.
+You can also use `sveld` programmatically in Node.js.
 
-Note: sveld will still determine the entry point using the `svelte` field in your `package.json`.
+If no `input` is specified, `sveld` will infer the entry point based on the `package.json#svelte` field.
 
 ```js
 const { sveld } = require("sveld");
 const pkg = require("./package.json");
 
 sveld({
+  input: "./src/index.js",
   glob: true,
   markdown: true,
   markdownOptions: {

@@ -1,8 +1,17 @@
 import { getSvelteEntry } from "./get-svelte-entry";
 import { PluginSveldOptions, generateBundle, writeOutput } from "./rollup-plugin";
 
-export async function sveld(opts?: PluginSveldOptions) {
-  const input = getSvelteEntry();
+interface SveldOptions extends PluginSveldOptions {
+  /**
+   * Specify the input to the uncompiled Svelte source.
+   * If no value is provided, `sveld` will attempt to infer
+   * the entry point from the `package.json#svelte` field.
+   */
+  input?: string;
+}
+
+export async function sveld(opts?: SveldOptions) {
+  const input = getSvelteEntry(opts?.input);
   if (input === null) return;
   const result = await generateBundle(input, opts?.glob === true);
   writeOutput(result, opts || {}, input);
