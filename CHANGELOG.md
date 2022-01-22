@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add isAccessor field to API
 - update Markdown writer to generate a separate table for accessors
 
+## [0.13.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.13.0) - 2022-01-22
+
+- export `sveld` for programmatic usage
+
 ## [0.12.1](https://github.com/carbon-design-system/sveld/releases/tag/v0.12.1) - 2022-01-20
 
 - specify `@default undefined` for undefined prop values (i.e., `let prop1; let prop2 = undefined`)
