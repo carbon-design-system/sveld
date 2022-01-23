@@ -125,9 +125,9 @@ export default class Button extends SvelteComponentTyped<
 
 ## Approach
 
-sveld uses the Svelte compiler to statically analyze all Svelte components exported from a library to generate documentation that is useful for the end user.
+`sveld` uses the Svelte compiler to statically analyze Svelte components exported from a library to generate documentation useful to the end user.
 
-Extracted metadata:
+Extracted metadata include:
 
 - props
 - slots
@@ -135,7 +135,7 @@ Extracted metadata:
 - dispatched events
 - `$$restProps`
 
-This library adopts a progressively enhanced approach. Any property type that cannot be inferred (e.g. "hello" is a string) falls back to "any" to minimize incorrectly typed properties or signatures. To mitigate this, the library author can add JSDoc annotations to specify types that cannot be reliably inferred. This represents a progressively enhanced approach because JSDocs are comments that can be ignored by the compiler.
+This library adopts a progressively enhanced approach. Any property type that cannot be inferred (e.g., "hello" is a string) falls back to "any" to minimize incorrectly typed properties or signatures. To mitigate this, the library author can add JSDoc annotations to specify types that cannot be reliably inferred. This represents a progressively enhanced approach because JSDocs are comments that can be ignored by the compiler.
 
 The generated TypeScript definitions for a component extends the `SvelteComponentTyped` interface available in svelte version 3.31.
 
@@ -149,6 +149,8 @@ Install `sveld` as a development dependency.
 yarn add -D sveld
 # OR
 npm i -D sveld
+# OR
+pnpm i -D sveld
 ```
 
 ### Rollup
@@ -257,7 +259,7 @@ sveld({
 
 ### `@type`
 
-Without a `@type` annotation, sveld will infer the primitive type for a prop:
+Without a `@type` annotation, `sveld` will infer the primitive type for a prop:
 
 ```js
 export let kind = "primary";
@@ -320,7 +322,7 @@ export let authors = [];
 
 ### `@slot`
 
-Use the `@slot` tag for typing component slots.
+Use the `@slot` tag for typing component slots. Note that `@slot` is a non-standard JSDoc tag.
 
 Signature:
 
@@ -381,9 +383,9 @@ $: dispatch("button:key", { key });
 
 ### `@restProps`
 
-sveld can pick up inline HTML elements that `$$restProps` is forwarded to. However, it cannot infer the underlying element for instantiated components.
+`sveld` can pick up inline HTML elements that `$$restProps` is forwarded to. However, it cannot infer the underlying element for instantiated components.
 
-You can use the `@restProps` tag to explicitly define element tags that `$$restProps` is forwarded to.
+You can use the `@restProps` tag to specify the element tags that `$$restProps` is forwarded to.
 
 Signature:
 
