@@ -107,7 +107,8 @@ export default class Button extends SvelteComponentTyped<
 - [Approach](#approach)
 - [Usage](#usage)
   - [Installation](#installation)
-  - [Set-up with Rollup](#set-up-with-rollup)
+  - [Rollup](#rollup)
+  - [Node.js](#nodejs)
   - [CLI](#cli)
   - [Publishing to NPM](#publishing-to-npm)
 - [Available Options](#available-options)
@@ -118,6 +119,7 @@ export default class Button extends SvelteComponentTyped<
   - [@event](#event)
   - [@restProps](#restprops)
   - [@extends](#extends)
+  - [@component comments](#component-comments)
 - [Contributing](#contributing)
 - [License](#license)
 
