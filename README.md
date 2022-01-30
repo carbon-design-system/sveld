@@ -177,7 +177,7 @@ When building the library with Rollup, TypeScript definitions will be written to
 
 If we want to customize the output folder of typescript definitions , we can customize the `typesOptions.outDir` of `sveld` as below. 
 
-For example, if we want the output to be in `dist` folder (instead of the default `types` folder), we can enter the following
+For example, specify the following for the output to be emitted to the `dist` folder:
 
 ```diff
 sveld({
