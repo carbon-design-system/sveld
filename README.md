@@ -173,7 +173,19 @@ export default {
 };
 ```
 
-When building the library with Rollup, TypeScript definitions will be written to the `types` folder.
+When building the library with Rollup, TypeScript definitions will be written to the `types` folder by default.
+
+If we want to customize the output folder of typescript definitions , we can customize the `typesOptions.outDir` of `sveld` as below. 
+
+For example, if we want the output to be in `dist` folder (instead of the default `types` folder), we can enter the following
+
+```diff
+sveld({
++  typesOptions: {
++    outDir: 'dist'
++  }
+})
+```
 
 The [integration](integration) folder contains example set-ups:
 
