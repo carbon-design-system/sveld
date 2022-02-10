@@ -1,0 +1,17 @@
+{
+  "props": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "custom-focus",
+      "detail": "FocusEvent | number"
+    },
+    {
+      "type": "dispatched",
+      "name": "blur",
+      "detail": "FocusEvent | CustomEvent<FocusEvent>"
+    }
+  ],
+  "typedefs": []
+}
