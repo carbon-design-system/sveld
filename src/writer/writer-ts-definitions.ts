@@ -101,10 +101,14 @@ function genSlotDef(def: Pick<ComponentDocApi, "slots">) {
 }
 
 function genEventDef(def: Pick<ComponentDocApi, "events">) {
+  const createDispatchedEvent = (detail: string = ANY_TYPE) => {
+    if (/CustomEvent/.test(detail)) return detail;
+    return `CustomEvent<${detail}>`;
+  };
   return def.events
     .map((event) => {
       return `${clampKey(event.name)}: ${
-        event.type === "dispatched" ? `CustomEvent<${event.detail || ANY_TYPE}>` : `WindowEventMap["${event.name}"]`
+        event.type === "dispatched" ? createDispatchedEvent(event.detail) : `WindowEventMap["${event.name}"]`
       };`;
     })
     .join("\n");
