@@ -1,0 +1,17 @@
+{
+  "props": [
+    {
+      "name": "a",
+      "kind": "const",
+      "type": "string",
+      "value": "\"\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "constant": true,
+      "reactive": false
+    }
+  ],
+  "slots": [],
+  "events": [],
+  "typedefs": []
+}
