@@ -27,6 +27,7 @@
           "reactive": false
         }
       ],
+      "moduleExports": [],
       "slots": [
         {
           "name": "__default__",
@@ -43,6 +44,7 @@
       "moduleName": "Link",
       "filePath": "src/Link.svelte",
       "props": [],
+      "moduleExports": [],
       "slots": [
         {
           "name": "__default__",
@@ -80,6 +82,7 @@
           "reactive": false
         }
       ],
+      "moduleExports": [],
       "slots": [
         {
           "name": "__default__",
@@ -107,6 +110,7 @@
           "reactive": false
         }
       ],
+      "moduleExports": [],
       "slots": [
         {
           "name": "__default__",

@@ -26,6 +26,7 @@
           "reactive": false
         }
       ],
+      "moduleExports": [],
       "slots": [
         {
           "name": "__default__",
