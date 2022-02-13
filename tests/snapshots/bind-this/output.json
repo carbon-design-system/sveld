@@ -10,6 +10,7 @@
       "reactive": true
     }
   ],
+  "moduleExports": [],
   "slots": [
     {
       "name": "__default__",

@@ -141,8 +141,30 @@ function genComponentComment(def: Pick<ComponentDocApi, "componentComment">) {
     .join("\n")}\n*/`;
 }
 
+function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">) {
+  return def.moduleExports
+    .map((prop) => {
+      const prop_comments = [addCommentLine(prop.description?.replace(/\n/g, "\n* "))].filter(Boolean).join("");
+
+      return `
+      ${prop_comments.length > 0 ? `/**\n${prop_comments}*/` : EMPTY_STR}
+      export type ${prop.name} = ${prop.type || ANY_TYPE};`;
+    })
+    .join("\n");
+}
+
 export function writeTsDefinition(component: ComponentDocApi) {
-  const { moduleName, typedefs, props, slots, events, rest_props, extends: _extends, componentComment } = component;
+  const {
+    moduleName,
+    typedefs,
+    props,
+    moduleExports,
+    slots,
+    events,
+    rest_props,
+    extends: _extends,
+    componentComment,
+  } = component;
   const { props_name, prop_def } = genPropDef({
     moduleName,
     props,
@@ -154,6 +176,7 @@ export function writeTsDefinition(component: ComponentDocApi) {
   /// <reference types="svelte" />
   import { SvelteComponentTyped } from "svelte";
   ${genImports({ extends: _extends })}
+  ${genModuleExports({ moduleExports })}
   ${getTypeDefs({ typedefs })}
   ${prop_def}
   ${genComponentComment({ componentComment })}
@@ -176,7 +199,7 @@ export interface WriteTsDefinitionsOptions {
 export default async function writeTsDefinitions(components: ComponentDocs, options: WriteTsDefinitionsOptions) {
   const ts_base_path = path.join(process.cwd(), options.outDir, "index.d.ts");
   const writer = new Writer({ parser: "typescript", printWidth: 80 });
-  const indexDTs = options.preamble + createExports(options.exports);
+  const indexDTs = options.preamble + createExports(options.exports, components);
 
   for await (const [moduleName, component] of components) {
     const ts_filepath = convertSvelteExt(path.join(options.outDir, component.filePath));

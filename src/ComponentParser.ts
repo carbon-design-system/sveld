@@ -1,4 +1,4 @@
-import { compile, walk } from "svelte/compiler";
+import { compile, walk, parse } from "svelte/compiler";
 import * as commentParser from "comment-parser";
 import { Ast, TemplateNode, Var } from "svelte/types/compiler/interfaces";
 import { getElementByTag } from "./element-tag-map";
@@ -97,6 +97,7 @@ interface ComponentPropBindings {
 
 export interface ParsedComponent {
   props: ComponentProp[];
+  moduleExports: ComponentProp[];
   slots: ComponentSlot[];
   events: ComponentEvent[];
   typedefs: TypeDef[];
@@ -109,12 +110,14 @@ export default class ComponentParser {
   private options?: ComponentParserOptions;
   private source?: string;
   private compiled?: CompiledSvelteCode;
+  private parsed?: Ast;
   private rest_props?: RestProps;
   private extends?: Extends;
   private componentComment?: string;
   private readonly reactive_vars: Set<string> = new Set();
   private readonly vars: Set<VariableDeclaration> = new Set();
   private readonly props: Map<ComponentPropName, ComponentProp> = new Map();
+  private readonly moduleExports: Map<ComponentPropName, ComponentProp> = new Map();
   private readonly slots: Map<ComponentSlotName, ComponentSlot> = new Map();
   private readonly events: Map<ComponentEventName, ComponentEvent> = new Map();
   private readonly typedefs: Map<TypeDefName, TypeDef> = new Map();
@@ -168,6 +171,21 @@ export default class ComponentParser {
       });
     } else {
       this.props.set(prop_name, data);
+    }
+  }
+
+  private addModuleExport(prop_name: string, data: ComponentProp) {
+    if (ComponentParser.assignValue(prop_name) === undefined) return;
+
+    if (this.moduleExports.has(prop_name)) {
+      const existing_slot = this.moduleExports.get(prop_name)!;
+
+      this.moduleExports.set(prop_name, {
+        ...existing_slot,
+        ...data,
+      });
+    } else {
+      this.moduleExports.set(prop_name, data);
     }
   }
 
@@ -258,11 +276,13 @@ export default class ComponentParser {
   public cleanup() {
     this.source = undefined;
     this.compiled = undefined;
+    this.parsed = undefined;
     this.rest_props = undefined;
     this.extends = undefined;
     this.componentComment = undefined;
     this.reactive_vars.clear();
     this.props.clear();
+    this.moduleExports.clear();
     this.slots.clear();
     this.events.clear();
     this.typedefs.clear();
@@ -277,13 +297,94 @@ export default class ComponentParser {
     this.cleanup();
     this.source = source;
     this.compiled = compile(source);
+    this.parsed = parse(source);
     this.collectReactiveVars();
     this.parseCustomTypes();
+
+    walk(this.parsed?.module, {
+      enter: (node) => {
+        if (node.type === "ExportNamedDeclaration") {
+          const {
+            type: declaration_type,
+            id,
+            init,
+            body,
+          } = node.declaration?.declarations ? node.declaration.declarations[0] : node.declaration;
+
+          let prop_name = id.name;
+          let value = undefined;
+          let type = undefined;
+          let kind = node.declaration.kind;
+          let description = undefined;
+          let isFunction = false;
+          let isFunctionDeclaration = false;
+
+          if (init != null) {
+            if (
+              init.type === "ObjectExpression" ||
+              init.type === "BinaryExpression" ||
+              init.type === "ArrayExpression" ||
+              init.type === "ArrowFunctionExpression"
+            ) {
+              value = this.sourceAtPos(init.start, init.end)?.replace(/\n/g, " ");
+              type = value;
+              isFunction = init.type === "ArrowFunctionExpression";
+
+              if (init.type === "BinaryExpression") {
+                if (init?.left.type === "Literal" && typeof init?.left.value === "string") {
+                  type = "string";
+                }
+              }
+            } else {
+              if (init.type === "UnaryExpression") {
+                value = this.sourceAtPos(init.start, init.end);
+                type = typeof init.argument?.value;
+              } else {
+                value = init.raw;
+                type = init.value == null ? undefined : typeof init.value;
+              }
+            }
+          }
+
+          if (declaration_type === "FunctionDeclaration") {
+            value = "() => " + this.sourceAtPos(body.start, body.end)?.replace(/\n/g, " ");
+            type = "() => any";
+            kind = "function";
+            isFunction = true;
+            isFunctionDeclaration = true;
+          }
+
+          if (node.leadingComments) {
+            const last_comment = node.leadingComments[node.leadingComments.length - 1];
+            const comment = commentParser(ComponentParser.formatComment(last_comment.value));
+            const tag = comment[0]?.tags[comment[0]?.tags.length - 1];
+            if (tag?.tag === "type") type = this.aliasType(tag.type);
+            description = ComponentParser.assignValue(comment[0]?.description);
+          }
+
+          if (!description && this.typedefs.has(type)) {
+            description = this.typedefs.get(type)!.description;
+          }
+
+          this.addModuleExport(prop_name, {
+            name: prop_name,
+            kind,
+            description,
+            type,
+            value,
+            isFunction,
+            isFunctionDeclaration,
+            constant: kind === "const",
+            reactive: false,
+          });
+        }
+      },
+    });
 
     let dispatcher_name: undefined | string = undefined;
     let callees: { name: string; arguments: any }[] = [];
 
-    walk(this.compiled.ast as unknown as Node, {
+    walk({ html: this.parsed.html, instance: this.parsed.instance } as unknown as Node, {
       enter: (node, parent, prop) => {
         if (node.type === "CallExpression") {
           if (node.callee.name === "createEventDispatcher") {
@@ -519,6 +620,7 @@ export default class ComponentParser {
 
         return prop;
       }),
+      moduleExports: ComponentParser.mapToArray(this.moduleExports),
       slots: ComponentParser.mapToArray(this.slots)
         .map((slot) => {
           try {

@@ -1,5 +1,6 @@
 {
   "props": [],
+  "moduleExports": [],
   "slots": [
     {
       "name": "__default__",
