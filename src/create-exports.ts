@@ -12,17 +12,17 @@ export function createExports(parsed_exports: ParsedExports, components: Compone
 
     let named_exports = "";
 
-    if (module_exports.length > 0) named_exports = module_exports.join(", ");
+    if (module_exports.length > 0) named_exports = ", " + module_exports.join(", ");
 
     if (id === "default" || exportee.default) {
       if (exportee.mixed) {
-        return `export { default as ${id}, ${named_exports} } from "${exportee.source}";\nexport { default } from "${exportee.source}";`;
+        return `export { default as ${id}${named_exports} } from "${exportee.source}";\nexport { default } from "${exportee.source}";`;
       }
 
-      return `export { default, ${named_exports} } from "${exportee.source}";`;
+      return `export { default${named_exports} } from "${exportee.source}";`;
     }
 
-    return `export { default as ${id}, ${named_exports} } from "${exportee.source}";`;
+    return `export { default as ${id}${named_exports} } from "${exportee.source}";`;
   });
 
   return source.join("\n");
