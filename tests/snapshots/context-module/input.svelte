@@ -1,5 +1,15 @@
 <script context="module">
-  export const a = 4;
+  // should not be exported
+  const c = 0;
+  const d = () => {};
+
+  export const a = { b: 4 };
+
+  /**
+   * Description for e
+   * @type {{ [key: string]: any; }}
+   */
+  export const e = { b: 4 };
 
   /**
    * Log something
@@ -8,6 +18,8 @@
   export function log(message) {
     console.log(message);
   }
+
+  export const b = () => {};
 </script>
 
 <script>

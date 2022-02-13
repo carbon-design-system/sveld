@@ -11,6 +11,50 @@
       "reactive": false
     }
   ],
+  "moduleExports": [
+    {
+      "name": "a",
+      "kind": "const",
+      "type": "{ b: 4 }",
+      "value": "{ b: 4 }",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "constant": true,
+      "reactive": false
+    },
+    {
+      "name": "e",
+      "kind": "const",
+      "description": "Description for e",
+      "type": "{ [key: string]: any; }",
+      "value": "{ b: 4 }",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "constant": true,
+      "reactive": false
+    },
+    {
+      "name": "log",
+      "kind": "function",
+      "description": "Log something",
+      "type": "(message: string) => void",
+      "value": "() => {     console.log(message);   }",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "b",
+      "kind": "const",
+      "type": "() => {}",
+      "value": "() => {}",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "constant": true,
+      "reactive": false
+    }
+  ],
   "slots": [],
   "events": [],
   "typedefs": []
