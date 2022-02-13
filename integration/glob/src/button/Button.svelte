@@ -11,12 +11,12 @@
     }
     return depth;
   }
+  
   /**
    * Finds the nearest parent tree node
-   * @param {HTMLElement} node
-   * @returns {null | HTMLElement}
+   * @type {(node: HTMLElement) => null | HTMLElement}
    */
-  function findParentTreeNode(node) {
+  export function findParentTreeNode(node) {
     if (node.classList.contains("bx--tree-parent-node")) return node;
     if (node.classList.contains("bx--tree")) return null;
     return findParentTreeNode(node.parentNode);

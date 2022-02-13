@@ -46,6 +46,17 @@
           "isFunctionDeclaration": true,
           "constant": false,
           "reactive": false
+        },
+        {
+          "name": "findParentTreeNode",
+          "kind": "function",
+          "description": "Finds the nearest parent tree node",
+          "type": "(node: HTMLElement) => null | HTMLElement",
+          "value": "() => {     if (node.classList.contains(\"bx--tree-parent-node\")) return node;     if (node.classList.contains(\"bx--tree\")) return null;     return findParentTreeNode(node.parentNode);   }",
+          "isFunction": true,
+          "isFunctionDeclaration": true,
+          "constant": false,
+          "reactive": false
         }
       ],
       "slots": [
