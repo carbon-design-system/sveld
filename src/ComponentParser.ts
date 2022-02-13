@@ -1,4 +1,4 @@
-import { compile, walk } from "svelte/compiler";
+import { compile, walk, parse } from "svelte/compiler";
 import * as commentParser from "comment-parser";
 import { Ast, TemplateNode, Var } from "svelte/types/compiler/interfaces";
 import { getElementByTag } from "./element-tag-map";
@@ -109,6 +109,7 @@ export default class ComponentParser {
   private options?: ComponentParserOptions;
   private source?: string;
   private compiled?: CompiledSvelteCode;
+  private parsed?: Ast;
   private rest_props?: RestProps;
   private extends?: Extends;
   private componentComment?: string;
@@ -258,6 +259,7 @@ export default class ComponentParser {
   public cleanup() {
     this.source = undefined;
     this.compiled = undefined;
+    this.parsed = undefined;
     this.rest_props = undefined;
     this.extends = undefined;
     this.componentComment = undefined;
@@ -277,13 +279,14 @@ export default class ComponentParser {
     this.cleanup();
     this.source = source;
     this.compiled = compile(source);
+    this.parsed = parse(source);
     this.collectReactiveVars();
     this.parseCustomTypes();
 
     let dispatcher_name: undefined | string = undefined;
     let callees: { name: string; arguments: any }[] = [];
 
-    walk(this.compiled.ast as unknown as Node, {
+    walk({ html: this.parsed.html, instance: this.parsed.instance } as unknown as Node, {
       enter: (node, parent, prop) => {
         if (node.type === "CallExpression") {
           if (node.callee.name === "createEventDispatcher") {
