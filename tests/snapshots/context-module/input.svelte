@@ -3,6 +3,8 @@
   const c = 0;
   const d = () => {};
 
+  export const bool = "";
+
   export const a = { b: 4 };
 
   /**

@@ -1,7 +1,7 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
-export type tree = false;
+export type tree = boolean;
 
 export type computeTreeLeafDepth = () => any;
 

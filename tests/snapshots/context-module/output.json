@@ -13,6 +13,16 @@
   ],
   "moduleExports": [
     {
+      "name": "bool",
+      "kind": "const",
+      "type": "string",
+      "value": "\"\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "constant": true,
+      "reactive": false
+    },
+    {
       "name": "a",
       "kind": "const",
       "type": "{ b: 4 }",

@@ -1,12 +1,14 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
+export type bool = string;
+
 export type a = { b: 4 };
 
 /**
  * Description for e
  */
-export type e = { b: 4 };
+export type e = { [key: string]: any };
 
 /**
  * Log something

@@ -146,11 +146,9 @@ function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">) {
     .map((prop) => {
       const prop_comments = [addCommentLine(prop.description?.replace(/\n/g, "\n* "))].filter(Boolean).join("");
 
-      let prop_value = prop.constant && !prop.isFunction ? prop.value : prop.type;
-
       return `
       ${prop_comments.length > 0 ? `/**\n${prop_comments}*/` : EMPTY_STR}
-      export type ${prop.name} = ${prop_value};`;
+      export type ${prop.name} = ${prop.type || ANY_TYPE};`;
     })
     .join("\n");
 }
