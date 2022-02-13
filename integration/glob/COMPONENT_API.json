@@ -26,7 +26,28 @@
           "reactive": false
         }
       ],
-      "moduleExports": [],
+      "moduleExports": [
+        {
+          "name": "tree",
+          "kind": "const",
+          "type": "boolean",
+          "value": "false",
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "constant": true,
+          "reactive": false
+        },
+        {
+          "name": "computeTreeLeafDepth",
+          "kind": "function",
+          "type": "() => any",
+          "value": "() => {     let depth = 0;     if (node == null) return depth;     let parentNode = node.parentNode;     while (parentNode != null && parentNode.getAttribute(\"role\") !== \"tree\") {       parentNode = parentNode.parentNode;       if (parentNode.tagName === \"LI\") depth++;     }     return depth;   }",
+          "isFunction": true,
+          "isFunctionDeclaration": true,
+          "constant": false,
+          "reactive": false
+        }
+      ],
       "slots": [
         {
           "name": "__default__",

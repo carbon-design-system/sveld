@@ -1,6 +1,10 @@
 /// <reference types="svelte" />
 import { SvelteComponentTyped } from "svelte";
 
+export type tree = false;
+
+export type computeTreeLeafDepth = () => any;
+
 export interface ButtonProps
   extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["button"]> {
   /**
