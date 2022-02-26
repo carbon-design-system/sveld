@@ -1,0 +1,72 @@
+// Vitest Snapshot v1
+
+exports[`writerTsDefinition > "default" module name 1`] = `
+"
+  /// <reference types=\\"svelte\\" />
+  import { SvelteComponentTyped } from \\"svelte\\";
+  
+  
+  
+  
+    export interface defaultProps  {
+      
+    }
+  
+  
+  export default class  extends SvelteComponentTyped<
+      defaultProps,
+      {},
+      {}
+    > {
+      
+    }"
+`;
+
+exports[`writerTsDefinition > writeTsDefinition 1`] = `
+"
+  /// <reference types=\\"svelte\\" />
+  import { SvelteComponentTyped } from \\"svelte\\";
+  
+  
+  
+  
+    export interface ModuleNameProps  {
+      
+      /**
+* @default true
+*/
+      propBool?: boolean;
+
+      /**
+* @default \\"\\"
+*/
+      propString?: string;
+
+      /**
+* @default undefined
+*/
+      name?: string;
+
+      /**
+* @default \\"\\" + Math.random().toString(36)
+*/
+      id?: string;
+
+      /**
+* @default () => { localBool = !localBool; }
+*/
+      fn?: () => {     localBool = !localBool;   };
+    }
+  
+  
+  export default class ModuleName extends SvelteComponentTyped<
+      ModuleNameProps,
+      {},
+      {default: {}
+;}
+    > {
+      
+    
+    propConst: { [key: string]: boolean; };
+    }"
+`;

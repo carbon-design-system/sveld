@@ -1,86 +1,87 @@
-import * as test from "tape";
+import { describe, test, expect } from "vitest";
 import { convertSvelteExt, createExports, removeSvelteExt } from "../src/create-exports";
 
-test("createExports – single default export", (t) => {
-  const source = { default: { source: "./Component.svelte", default: true } };
+describe("createExports", () => {
+  test("single default export", () => {
+    const source = { default: { source: "./Component.svelte", default: true } };
 
-  t.deepEqual(createExports(source, new Map()), 'export { default } from "./Component.svelte";');
-  t.end();
-});
+    expect(createExports(source, new Map())).toMatchInlineSnapshot(
+      '"export { default } from \\"./Component.svelte\\";"'
+    );
+  });
 
-test("createExports – single default export (declaration)", (t) => {
-  const source = { Component: { source: "./Component.svelte", default: true } };
+  test("single default export (declaration)", () => {
+    const source = { Component: { source: "./Component.svelte", default: true } };
 
-  t.deepEqual(createExports(source, new Map()), 'export { default } from "./Component.svelte";');
-  t.end();
-});
+    expect(createExports(source, new Map())).toMatchInlineSnapshot(
+      '"export { default } from \\"./Component.svelte\\";"'
+    );
+  });
 
-test("createExports – single named export", (t) => {
-  const source = { Component: { source: "./Component.svelte", default: false } };
+  test("single named export", () => {
+    const source = { Component: { source: "./Component.svelte", default: false } };
 
-  t.deepEqual(createExports(source, new Map()), 'export { default as Component } from "./Component.svelte";');
-  t.end();
-});
+    expect(createExports(source, new Map())).toMatchInlineSnapshot(
+      '"export { default as Component } from \\"./Component.svelte\\";"'
+    );
+  });
 
-test("createExports – multiple named exports", (t) => {
-  const source = {
-    Component: { source: "./Component.svelte", default: false },
-    Component2: { source: "./Component2.svelte", default: false },
-  };
+  test("multiple named exports", () => {
+    const source = {
+      Component: { source: "./Component.svelte", default: false },
+      Component2: { source: "./Component2.svelte", default: false },
+    };
 
-  t.deepEqual(
-    createExports(source, new Map()),
-    'export { default as Component } from "./Component.svelte";\nexport { default as Component2 } from "./Component2.svelte";'
-  );
-  t.end();
-});
+    expect(createExports(source, new Map())).toMatchInlineSnapshot(`
+      "export { default as Component } from \\"./Component.svelte\\";
+      export { default as Component2 } from \\"./Component2.svelte\\";"
+    `);
+  });
 
-test("createExports – multiple named exports with a default export", (t) => {
-  const source = {
-    Component: { source: "./Component.svelte", default: false },
-    Component2: { source: "./Component2.svelte", default: false },
-    default: { source: "./Component2.svelte", default: true },
-  };
+  test("multiple named exports with a default export", () => {
+    const source = {
+      Component: { source: "./Component.svelte", default: false },
+      Component2: { source: "./Component2.svelte", default: false },
+      default: { source: "./Component2.svelte", default: true },
+    };
 
-  t.deepEqual(
-    createExports(source, new Map()),
-    'export { default as Component } from "./Component.svelte";\nexport { default as Component2 } from "./Component2.svelte";\nexport { default } from "./Component2.svelte";'
-  );
-  t.end();
-});
+    expect(createExports(source, new Map())).toMatchInlineSnapshot(`
+      "export { default as Component } from \\"./Component.svelte\\";
+      export { default as Component2 } from \\"./Component2.svelte\\";
+      export { default } from \\"./Component2.svelte\\";"
+    `);
+  });
 
-test("createExports – multiple named exports with a default export (declaration)", (t) => {
-  const source = {
-    Component: { source: "./Component.svelte", default: false },
-    Component2: { source: "./Component2.svelte", default: false },
-    Component3: { source: "./Component3.svelte", default: true },
-  };
+  test("multiple named exports with a default export (declaration)", () => {
+    const source = {
+      Component: { source: "./Component.svelte", default: false },
+      Component2: { source: "./Component2.svelte", default: false },
+      Component3: { source: "./Component3.svelte", default: true },
+    };
 
-  t.deepEqual(
-    createExports(source, new Map()),
-    'export { default as Component } from "./Component.svelte";\nexport { default as Component2 } from "./Component2.svelte";\nexport { default } from "./Component3.svelte";'
-  );
-  t.end();
-});
+    expect(createExports(source, new Map())).toMatchInlineSnapshot(`
+      "export { default as Component } from \\"./Component.svelte\\";
+      export { default as Component2 } from \\"./Component2.svelte\\";
+      export { default } from \\"./Component3.svelte\\";"
+    `);
+  });
 
-test("createExports – mixed exports", (t) => {
-  const source = { Component: { source: "./Component.svelte", default: true, mixed: true } };
+  test("mixed exports", () => {
+    const source = { Component: { source: "./Component.svelte", default: true, mixed: true } };
 
-  t.deepEqual(
-    createExports(source, new Map()),
-    'export { default as Component } from "./Component.svelte";\nexport { default } from "./Component.svelte";'
-  );
-  t.end();
-});
+    expect(createExports(source, new Map())).toMatchInlineSnapshot(`
+      "export { default as Component } from \\"./Component.svelte\\";
+      export { default } from \\"./Component.svelte\\";"
+    `);
+  });
 
-test("removeSvelteExt", (t) => {
-  t.equal(removeSvelteExt("input.svelte"), "input");
-  t.equal(removeSvelteExt("ComponentName.svelte"), "ComponentName");
-  t.end();
-});
+  test("removeSvelteExt", () => {
+    expect(removeSvelteExt("input.svelte")).toEqual("input");
+    expect(removeSvelteExt("ComponentName.svelte")).toEqual("ComponentName");
+  });
 
-test("convertSvelteExt", (t) => {
-  t.equal(convertSvelteExt("input.svelte"), "input.svelte.d.ts");
-  t.equal(convertSvelteExt("ComponentName.svelte"), "ComponentName.svelte.d.ts");
-  t.end();
+  test("convertSvelteExt", () => {
+    expect(convertSvelteExt("input.svelte")).toEqual("input.svelte.d.ts");
+    expect(convertSvelteExt("ComponentName.svelte")).toEqual("ComponentName.svelte.d.ts");
+  });
 });

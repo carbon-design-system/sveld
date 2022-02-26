@@ -1,9 +1,8 @@
-import * as test from "tape";
+import { test, expect } from "vitest";
 import { getElementByTag } from "../src/element-tag-map";
 
-test("getElementByTag", (t) => {
-  t.equal(getElementByTag(""), "HTMLElement");
-  t.equal(getElementByTag("div"), "HTMLDivElement");
-  t.equal(getElementByTag("body"), "HTMLBodyElement");
-  t.end();
+test("getElementByTag", () => {
+  expect(getElementByTag("")).toEqual("HTMLElement");
+  expect(getElementByTag("div")).toEqual("HTMLDivElement");
+  expect(getElementByTag("body")).toEqual("HTMLBodyElement");
 });
