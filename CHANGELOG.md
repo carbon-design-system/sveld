@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add isAccessor field to API
 - update Markdown writer to generate a separate table for accessors -->
 
+## [0.13.4](https://github.com/carbon-design-system/sveld/releases/tag/v0.13.4) - 2022-02-26
+
+- use file name as module name if library only has a single default export
+
 ## [0.13.3](https://github.com/carbon-design-system/sveld/releases/tag/v0.13.3) - 2022-02-13
 
 - component module exports should not be recognized as accessors
