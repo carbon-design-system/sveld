@@ -1,19 +1,25 @@
 name: CI
+
 on:
   pull_request:
   push:
     branches:
       - master
+
 jobs:
   build:
     strategy:
       matrix:
         node: [16]
         os: [ubuntu-latest, windows-latest, macos-latest]
+
     runs-on: ${{ matrix.os }}
+
     steps:
       - uses: actions/checkout@v2
-      - name: Install dependencies, build, and test the library
+
+      - name: Build and test the library
         run: |
           yarn
-          yarn prepack
+          yarn test:unit
+          yarn test:snapshot
