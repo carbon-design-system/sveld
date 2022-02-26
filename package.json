@@ -10,8 +10,8 @@
     "build:watch": "tsc -w",
     "test": "run-p test:*",
     "test:unit": "vitest",
-    "test:snapshot": "node tests/snapshot",
-    "test:integration": "node tests/integration",
+    "test:snapshot": "node tests/test-snapshot",
+    "test:integration": "node tests/test-integration",
     "format": "prettier --write \"{src,tests}/**/*.{js,ts,svelte}\"",
     "prepack": "run-s build test"
   },
