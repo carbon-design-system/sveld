@@ -1,9 +1,8 @@
-import * as test from "tape";
-import * as fs from "fs-extra";
-import * as path from "path";
-import ComponentParser from "../src/ComponentParser";
-import { writeTsDefinition } from "../src/writer/writer-ts-definitions";
-import Writer from "../src/writer/Writer";
+const fs = require("fs-extra");
+const path = require("path");
+const ComponentParser = require("../lib/ComponentParser").default;
+const { writeTsDefinition } = require("../lib/writer/writer-ts-definitions");
+const Writer = require("../lib/writer/Writer").default;
 
 const writer = new Writer({ parser: "typescript", printWidth: 120 });
 const SNAPSHOTS_FOLDER = path.join(process.cwd(), "tests", "snapshots");
@@ -11,7 +10,7 @@ const INPUT_FILE = "input.svelte";
 const OUTPUT_FILE = "output.json";
 const TS_DEF_FILE = "output.d.ts";
 
-test("ComponentParser", async (t) => {
+(async () => {
   const input_files = fs.readdirSync(SNAPSHOTS_FOLDER);
   const parser = new ComponentParser({ verbose: true });
 
@@ -30,12 +29,9 @@ test("ComponentParser", async (t) => {
       ...parsed_component,
     };
 
-    t.assert(parsed_component);
-
     await fs.writeFile(output_path, JSON.stringify(parsed_component, null, 2));
     await writer.write(ts_def_path, writeTsDefinition(component_api));
   }
 
   parser.cleanup();
-  t.end();
-});
+})();

@@ -301,85 +301,87 @@ export default class ComponentParser {
     this.collectReactiveVars();
     this.parseCustomTypes();
 
-    walk(this.parsed?.module, {
-      enter: (node) => {
-        if (node.type === "ExportNamedDeclaration") {
-          const {
-            type: declaration_type,
-            id,
-            init,
-            body,
-          } = node.declaration?.declarations ? node.declaration.declarations[0] : node.declaration;
+    if (this.parsed?.module) {
+      walk(this.parsed?.module, {
+        enter: (node) => {
+          if (node.type === "ExportNamedDeclaration") {
+            const {
+              type: declaration_type,
+              id,
+              init,
+              body,
+            } = node.declaration?.declarations ? node.declaration.declarations[0] : node.declaration;
 
-          let prop_name = id.name;
-          let value = undefined;
-          let type = undefined;
-          let kind = node.declaration.kind;
-          let description = undefined;
-          let isFunction = false;
-          let isFunctionDeclaration = false;
+            let prop_name = id.name;
+            let value = undefined;
+            let type = undefined;
+            let kind = node.declaration.kind;
+            let description = undefined;
+            let isFunction = false;
+            let isFunctionDeclaration = false;
 
-          if (init != null) {
-            if (
-              init.type === "ObjectExpression" ||
-              init.type === "BinaryExpression" ||
-              init.type === "ArrayExpression" ||
-              init.type === "ArrowFunctionExpression"
-            ) {
-              value = this.sourceAtPos(init.start, init.end)?.replace(/\n/g, " ");
-              type = value;
-              isFunction = init.type === "ArrowFunctionExpression";
+            if (init != null) {
+              if (
+                init.type === "ObjectExpression" ||
+                init.type === "BinaryExpression" ||
+                init.type === "ArrayExpression" ||
+                init.type === "ArrowFunctionExpression"
+              ) {
+                value = this.sourceAtPos(init.start, init.end)?.replace(/\n/g, " ");
+                type = value;
+                isFunction = init.type === "ArrowFunctionExpression";
 
-              if (init.type === "BinaryExpression") {
-                if (init?.left.type === "Literal" && typeof init?.left.value === "string") {
-                  type = "string";
+                if (init.type === "BinaryExpression") {
+                  if (init?.left.type === "Literal" && typeof init?.left.value === "string") {
+                    type = "string";
+                  }
+                }
+              } else {
+                if (init.type === "UnaryExpression") {
+                  value = this.sourceAtPos(init.start, init.end);
+                  type = typeof init.argument?.value;
+                } else {
+                  value = init.raw;
+                  type = init.value == null ? undefined : typeof init.value;
                 }
               }
-            } else {
-              if (init.type === "UnaryExpression") {
-                value = this.sourceAtPos(init.start, init.end);
-                type = typeof init.argument?.value;
-              } else {
-                value = init.raw;
-                type = init.value == null ? undefined : typeof init.value;
-              }
             }
-          }
 
-          if (declaration_type === "FunctionDeclaration") {
-            value = "() => " + this.sourceAtPos(body.start, body.end)?.replace(/\n/g, " ");
-            type = "() => any";
-            kind = "function";
-            isFunction = true;
-            isFunctionDeclaration = true;
-          }
+            if (declaration_type === "FunctionDeclaration") {
+              value = "() => " + this.sourceAtPos(body.start, body.end)?.replace(/\n/g, " ");
+              type = "() => any";
+              kind = "function";
+              isFunction = true;
+              isFunctionDeclaration = true;
+            }
 
-          if (node.leadingComments) {
-            const last_comment = node.leadingComments[node.leadingComments.length - 1];
-            const comment = commentParser(ComponentParser.formatComment(last_comment.value));
-            const tag = comment[0]?.tags[comment[0]?.tags.length - 1];
-            if (tag?.tag === "type") type = this.aliasType(tag.type);
-            description = ComponentParser.assignValue(comment[0]?.description);
-          }
+            if (node.leadingComments) {
+              const last_comment = node.leadingComments[node.leadingComments.length - 1];
+              const comment = commentParser(ComponentParser.formatComment(last_comment.value));
+              const tag = comment[0]?.tags[comment[0]?.tags.length - 1];
+              if (tag?.tag === "type") type = this.aliasType(tag.type);
+              description = ComponentParser.assignValue(comment[0]?.description);
+            }
 
-          if (!description && this.typedefs.has(type)) {
-            description = this.typedefs.get(type)!.description;
-          }
+            if (!description && this.typedefs.has(type)) {
+              description = this.typedefs.get(type)!.description;
+            }
 
-          this.addModuleExport(prop_name, {
-            name: prop_name,
-            kind,
-            description,
-            type,
-            value,
-            isFunction,
-            isFunctionDeclaration,
-            constant: kind === "const",
-            reactive: false,
-          });
-        }
-      },
-    });
+            this.addModuleExport(prop_name, {
+              name: prop_name,
+              kind,
+              description,
+              type,
+              value,
+              isFunction,
+              isFunctionDeclaration,
+              constant: kind === "const",
+              reactive: false,
+            });
+          }
+        },
+      });
+    }
 
     let dispatcher_name: undefined | string = undefined;
     let callees: { name: string; arguments: any }[] = [];

@@ -1,19 +1,32 @@
 name: CI
+
 on:
   pull_request:
   push:
     branches:
       - master
+
 jobs:
   build:
     strategy:
       matrix:
         node: [16]
         os: [ubuntu-latest, windows-latest, macos-latest]
+
     runs-on: ${{ matrix.os }}
+
     steps:
       - uses: actions/checkout@v2
-      - name: Install dependencies, build, and test the library
+
+      - uses: actions/cache@v2
+        id: yarn-cache
+        with:
+          path: "**/node_modules"
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Build and test the library
         run: |
           yarn
-          yarn prepack
+          yarn build
+          yarn test:unit run
+          yarn test:snapshot

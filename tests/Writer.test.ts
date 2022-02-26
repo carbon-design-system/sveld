@@ -1,26 +1,25 @@
-import * as test from "tape";
+import { describe, test, expect } from "vitest";
 import Writer from "../src/writer/Writer";
 
-test("Writer – TypeScript", (t) => {
-  const writer = new Writer({ parser: "typescript", printWidth: 120 });
+describe("Writer", () => {
+  test("TypeScript", () => {
+    const writer = new Writer({ parser: "typescript", printWidth: 120 });
 
-  t.equal(writer.format("interface I {a:boolean}"), "interface I {\n  a: boolean;\n}\n");
-  t.equal(writer.format("a:boolean}"), "a:boolean}");
-  t.end();
-});
+    expect(writer.format("interface I {a:boolean}")).toEqual("interface I {\n  a: boolean;\n}\n");
+    expect(writer.format("a:boolean}")).toEqual("a:boolean}");
+  });
 
-test("Writer – JSON", (t) => {
-  const writer = new Writer({ parser: "json", printWidth: 80 });
+  test("JSON", () => {
+    const writer = new Writer({ parser: "json", printWidth: 80 });
 
-  t.equal(writer.format("{a:null}"), '{ "a": null }\n');
-  t.equal(writer.format("a:null"), "a:null");
-  t.end();
-});
+    expect(writer.format("{a:null}")).toEqual('{ "a": null }\n');
+    expect(writer.format("a:null")).toEqual("a:null");
+  });
 
-test("Writer – Markdown", (t) => {
-  const writer = new Writer({ parser: "markdown", printWidth: 80 });
+  test("Markdown", () => {
+    const writer = new Writer({ parser: "markdown", printWidth: 80 });
 
-  t.equal(writer.format("## text"), "## text\n");
-  t.deepEqual(writer.format({ a: null }), { a: null });
-  t.end();
+    expect(writer.format("## text")).toEqual("## text\n");
+    expect(writer.format({ a: null })).toEqual({ a: null });
+  });
 });

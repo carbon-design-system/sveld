@@ -1,4 +1,4 @@
-/**/*.DS_Store
-/lib
-/**/build
-/**/node_modules
+.DS_Store
+lib
+build
+node_modules
