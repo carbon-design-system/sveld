@@ -11,7 +11,7 @@
     "test:unit": "vitest",
     "test:snapshot": "node tests/test-snapshot",
     "test:integration": "node tests/test-integration",
-    "format": "prettier --write \"{src,tests}/**/*.{js,ts,svelte}\"",
+    "format": "prettier --write \"{src,tests}/**/*.{js,ts,svelte,md}\"",
     "prepack": "yarn build"
   },
   "peerDependencies": {

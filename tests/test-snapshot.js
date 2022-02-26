@@ -34,4 +34,4 @@ const TS_DEF_FILE = "output.d.ts";
   }
 
   parser.cleanup();
-})()
+})();
