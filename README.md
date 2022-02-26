@@ -173,11 +173,11 @@ export default {
 };
 ```
 
-When building the library with Rollup, TypeScript definitions will be written to the `types` folder by default.
+When building the library, TypeScript definitions are emitted to the `types` folder by default.
 
-Use the `typesOptions.outDir` option to customize the output folder. 
+Customize the output folder using the `typesOptions.outDir` option.
 
-For example, specify the following for the output to be emitted to the `dist` folder:
+The following example emits the output to the `dist` folder:
 
 ```diff
 sveld({
@@ -190,6 +190,7 @@ sveld({
 The [integration](integration) folder contains example set-ups:
 
 - [single-export](integration/single-export): library that exports one component
+- [single-export-default-only](integration/single-export-default-only): library that exports one component using the concise `export { default } ...` syntax
 - [multi-export](integration/multi-export): multi-component library without JSDoc annotations (types are inferred)
 - [multi-export-typed](integration/multi-export-typed): multi-component library with JSDoc annotations
 - [multi-export-typed-ts-only](integration/multi-export-typed-ts-only): multi-component library that only generates TS definitions
