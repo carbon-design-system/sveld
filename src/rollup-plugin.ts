@@ -73,10 +73,17 @@ export async function generateBundle(input: string, glob: boolean) {
 
   const components: ComponentDocs = new Map();
   const parser = new ComponentParser();
+  const exportEntries = Object.entries(exports);
 
-  for (const [moduleName, entry] of Object.entries(exports)) {
-    const filePath = entry.source,
-      ext = path.parse(filePath).ext;
+  for (const [exportName, entry] of exportEntries) {
+    const filePath = entry.source;
+    const { ext, name } = path.parse(filePath);
+
+    let moduleName = exportName;
+
+    if (exportEntries.length === 1 && exportName === "default") {
+      moduleName = name;
+    }
 
     if (ext === ".svelte") {
       const source = await fs.readFile(path.resolve(dir, filePath), "utf-8");
