@@ -69,7 +69,9 @@ type ComponentEvent = ForwardedEvent | DispatchedEvent;
 
 type TypeDefName = string;
 
-interface TypeDef extends Pick<commentParser.Tag, "type" | "name"> {
+interface TypeDef {
+  type: string;
+  name: string;
   description?: string;
   ts: string;
 }
@@ -237,7 +239,7 @@ export default class ComponentParser {
   }
 
   private parseCustomTypes() {
-    commentParser(this.source!).forEach(({ tags }) => {
+    commentParser.parse(this.source!, { spacing: "preserve" }).forEach(({ tags }) => {
       tags.forEach(({ tag, type: tagType, name, description }) => {
         const type = this.aliasType(tagType);
 
@@ -291,7 +293,7 @@ export default class ComponentParser {
 
   public parseSvelteComponent(source: string, diagnostics: ComponentParserDiagnostics): ParsedComponent {
     if (this.options?.verbose) {
-      process.stdout.write(`[parsing] "${diagnostics.moduleName}" ${diagnostics.filePath}\n`);
+      console.log(`[parsing] "${diagnostics.moduleName}" ${diagnostics.filePath}\n`);
     }
 
     this.cleanup();
@@ -357,10 +359,12 @@ export default class ComponentParser {
 
             if (node.leadingComments) {
               const last_comment = node.leadingComments[node.leadingComments.length - 1];
-              const comment = commentParser(ComponentParser.formatComment(last_comment.value));
+              const comment = commentParser.parse(ComponentParser.formatComment(last_comment.value), {
+                spacing: "preserve",
+              });
               const tag = comment[0]?.tags[comment[0]?.tags.length - 1];
               if (tag?.tag === "type") type = this.aliasType(tag.type);
-              description = ComponentParser.assignValue(comment[0]?.description);
+              description = ComponentParser.assignValue(comment[0]?.description?.trim());
             }
 
             if (!description && this.typedefs.has(type)) {
@@ -484,10 +488,12 @@ export default class ComponentParser {
 
           if (node.leadingComments) {
             const last_comment = node.leadingComments[node.leadingComments.length - 1];
-            const comment = commentParser(ComponentParser.formatComment(last_comment.value));
+            const comment = commentParser.parse(ComponentParser.formatComment(last_comment.value), {
+              spacing: "preserve",
+            });
             const tag = comment[0]?.tags[comment[0]?.tags.length - 1];
             if (tag?.tag === "type") type = this.aliasType(tag.type);
-            description = ComponentParser.assignValue(comment[0]?.description);
+            description = ComponentParser.assignValue(comment[0]?.description?.trim());
           }
 
           if (!description && this.typedefs.has(type)) {
