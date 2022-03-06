@@ -208,5 +208,5 @@ export default async function writeTsDefinitions(components: ComponentDocs, opti
 
   await writer.write(ts_base_path, indexDTs);
 
-  process.stdout.write(`created TypeScript definitions.\n`);
+  console.log(`created TypeScript definitions.`);
 }

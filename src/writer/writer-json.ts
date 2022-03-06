@@ -31,5 +31,5 @@ export default async function writeJson(components: ComponentDocs, options: Writ
   const writer = new Writer({ parser: "json", printWidth: 80 });
   await writer.write(output_path, JSON.stringify(output));
 
-  process.stdout.write(`created "${options.outFile}".\n`);
+  console.log(`created "${options.outFile}".\n`);
 }

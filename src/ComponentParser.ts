@@ -293,7 +293,7 @@ export default class ComponentParser {
 
   public parseSvelteComponent(source: string, diagnostics: ComponentParserDiagnostics): ParsedComponent {
     if (this.options?.verbose) {
-      console.log(`[parsing] "${diagnostics.moduleName}" ${diagnostics.filePath}\n`);
+      console.log(`[parsing] "${diagnostics.moduleName}" ${diagnostics.filePath}`);
     }
 
     this.cleanup();
