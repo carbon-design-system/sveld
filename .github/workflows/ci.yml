@@ -27,6 +27,6 @@ jobs:
       - name: Build and test the library
         run: |
           yarn
-          yarn build
+          yarn prepack
           yarn test:unit run
           yarn test:snapshot
