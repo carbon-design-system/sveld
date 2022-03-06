@@ -1,4 +1,4 @@
-const fs = require("fs-extra");
+const fsp = require("fs/promises");
 const path = require("path");
 const ComponentParser = require("../lib/ComponentParser").default;
 const { writeTsDefinition } = require("../lib/writer/writer-ts-definitions");
@@ -11,14 +11,14 @@ const OUTPUT_FILE = "output.json";
 const TS_DEF_FILE = "output.d.ts";
 
 (async () => {
-  const input_files = fs.readdirSync(SNAPSHOTS_FOLDER);
+  const input_files = await fsp.readdir(SNAPSHOTS_FOLDER);
   const parser = new ComponentParser({ verbose: true });
 
   for await (const file of input_files) {
     const input_path = path.join(SNAPSHOTS_FOLDER, file, INPUT_FILE);
     const output_path = path.join(SNAPSHOTS_FOLDER, file, OUTPUT_FILE);
     const ts_def_path = path.join(SNAPSHOTS_FOLDER, file, TS_DEF_FILE);
-    const source = await fs.readFile(input_path, "utf-8");
+    const source = await fsp.readFile(input_path, "utf-8");
     const parsed_component = parser.parseSvelteComponent(source, {
       moduleName: "Input",
       filePath: input_path,
@@ -29,7 +29,7 @@ const TS_DEF_FILE = "output.d.ts";
       ...parsed_component,
     };
 
-    await fs.writeFile(output_path, JSON.stringify(parsed_component, null, 2));
+    await fsp.writeFile(output_path, JSON.stringify(parsed_component, null, 2));
     await writer.write(ts_def_path, writeTsDefinition(component_api));
   }
 

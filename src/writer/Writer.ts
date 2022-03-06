@@ -1,4 +1,5 @@
-import * as fs from "fs-extra";
+import * as path from "path";
+import * as fsp from "fs/promises";
 import * as prettier from "prettier";
 
 interface WriterOptions extends Pick<prettier.ParserOptions, "parser" | "printWidth"> {}
@@ -14,17 +15,13 @@ export default class Writer {
     try {
       return prettier.format(raw, this.options);
     } catch (error) {
-      process.stderr.write(error + "\n");
+      console.error(error);
       return raw;
     }
   }
 
   public async write(filePath: string, raw: any) {
-    try {
-      await fs.ensureFile(filePath);
-      await fs.writeFile(filePath, this.format(raw));
-    } catch (error) {
-      process.stderr.write(error + "\n");
-    }
+    await fsp.mkdir(path.parse(filePath).dir, { recursive: true });
+    await fsp.writeFile(filePath, this.format(raw));
   }
 }
