@@ -1,4 +1,5 @@
-const fs = require("fs-extra");
+const fs = require("fs");
+const fsp = require("fs/promises");
 const path = require("path");
 const { exec: child_process_exec } = require("child_process");
 const { promisify } = require("util");
@@ -18,18 +19,19 @@ const execCwd = async (dir, ...args) => await exec(`yarn --cwd ${dir} ${args}`);
 
     for await (const dir of dirs) {
       const typesDir = path.join(dir, "types");
+
       if (fs.existsSync(typesDir)) {
-        await fs.rm(typesDir, { recursive: true });
+        fs.rmSync(typesDir, { recursive: true, force: true });
       }
 
       await execCwd(dir, `link "${name}"`);
       await execCwd(dir, "install");
 
       const build = await execCwd(dir, "build");
-      process.stdout.write(build.stdout + "\n");
+      console.log(build.stdout + "\n");
 
       const svelteCheck = await execCwd(dir, "svelte-check");
-      process.stdout.write(svelteCheck.stdout + "\n");
+      console.log(svelteCheck.stdout + "\n");
     }
 
     process.exit(0);

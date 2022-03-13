@@ -1,4 +1,5 @@
-import * as fs from "fs-extra";
+import * as fs from "fs";
+import * as fsp from "fs/promises";
 import * as path from "path";
 import * as fg from "fast-glob";
 import writeTsDefinitions, { WriteTsDefinitionsOptions } from "./writer/writer-ts-definitions";
@@ -86,8 +87,7 @@ export async function generateBundle(input: string, glob: boolean) {
     }
 
     if (ext === ".svelte") {
-      const source = await fs.readFile(path.resolve(dir, filePath), "utf-8");
-
+      const source = await fsp.readFile(path.resolve(dir, filePath), "utf-8");
       const { code: processed } = await preprocess(source, [typescript(), replace([[/<style.+<\/style>/gims, ""]])], {
         filename: path.basename(filePath),
       });
@@ -133,7 +133,7 @@ export function writeOutput(result: GenerateBundleResult, opts: PluginSveldOptio
 
   if (opts?.markdown) {
     writeMarkdown(result.components, {
-      outFile: "COMPONENT_INDEX.md",
+      outFile: path.join(process.cwd(), "COMPONENT_INDEX.md"),
       ...opts?.markdownOptions,
     });
   }

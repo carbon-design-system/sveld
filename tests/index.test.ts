@@ -9,7 +9,6 @@ test("Library dependencies", () => {
       "acorn",
       "comment-parser",
       "fast-glob",
-      "fs-extra",
       "prettier",
       "rollup",
       "rollup-plugin-svelte",

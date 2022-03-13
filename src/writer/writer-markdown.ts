@@ -43,12 +43,13 @@ function formatEventDetail(detail?: string) {
 }
 
 export interface WriteMarkdownOptions {
+  write?: boolean;
   outFile: string;
   onAppend?: (type: AppendType, document: WriterMarkdown, components: ComponentDocs) => void;
 }
 
 export default async function writeMarkdown(components: ComponentDocs, options: WriteMarkdownOptions) {
-  const output_path = path.join(process.cwd(), options.outFile);
+  const write = options?.write !== false;
   const document = new WriterMarkdown({
     onAppend: (type, document) => {
       options.onAppend?.call(null, type, document, components);
@@ -128,7 +129,10 @@ export default async function writeMarkdown(components: ComponentDocs, options: 
     }
   });
 
-  await document.write(output_path, document.end());
+  if (write) {
+    await document.write(options.outFile, document.end());
+    console.log(`created "${options.outFile}".`);
+  }
 
-  process.stdout.write(`created "${options.outFile}".\n`);
+  return document.end();
 }

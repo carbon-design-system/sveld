@@ -14,7 +14,7 @@ export function getSvelteEntry(entryPoint?: SvelteEntryPoint): SvelteEntryPoint 
     if (fs.existsSync(entry_path)) {
       return entryPoint;
     } else {
-      process.stdout.write(`Invalid entry point: ${entry_path}.\n`);
+      console.log(`Invalid entry point: ${entry_path}.`);
       return null;
     }
   }
@@ -26,11 +26,11 @@ export function getSvelteEntry(entryPoint?: SvelteEntryPoint): SvelteEntryPoint 
 
     if (pkg.svelte !== undefined) return pkg.svelte;
 
-    process.stdout.write("Could not determine an entry point.\n");
-    process.stdout.write('Specify an entry point to your Svelte code in the "svelte" field of your package.json.\n');
+    console.log("Could not determine an entry point.\n");
+    console.log('Specify an entry point to your Svelte code in the "svelte" field of your package.json.\n');
     return null;
   } else {
-    process.stdout.write("Could not locate a package.json file.\n");
+    console.log("Could not locate a package.json file.\n");
     return null;
   }
 }

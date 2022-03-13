@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: sveld
+    env: static
+    buildCommand: yarn build
+    staticPublishPath: playground/dist
