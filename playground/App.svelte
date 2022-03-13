@@ -97,21 +97,21 @@
               {#if tabTypeScript}
                 <svelte:component this={tabTypeScript} {parsed_component} {moduleName} />
               {:else}
-                <InlineLoading />
+                <InlineLoading style="margin: var(--cds-spacing-05)" />
               {/if}
             </TabContent>
             <TabContent>
               {#if tabJson}
                 <svelte:component this={tabJson} {parsed_component} {moduleName} />
               {:else}
-                <InlineLoading />
+                <InlineLoading style="margin: var(--cds-spacing-05)" />
               {/if}
             </TabContent>
             <TabContent>
               {#if tabMarkdown}
                 <svelte:component this={tabMarkdown} {parsed_component} {moduleName} />
               {:else}
-                <InlineLoading />
+                <InlineLoading style="margin: var(--cds-spacing-05)" />
               {/if}
             </TabContent>
           </div>
