@@ -28,5 +28,5 @@ jobs:
         run: |
           yarn
           yarn prepack
-          yarn test:unit run
+          yarn test:unit
           yarn test:snapshot
