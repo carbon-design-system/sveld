@@ -129,7 +129,7 @@ function genAccessors(def: Pick<ComponentDocApi, "props">) {
 
 function genImports(def: Pick<ComponentDocApi, "extends">) {
   if (def.extends === undefined) return "";
-  return `import { ${def.extends.interface} } from ${def.extends.import};`;
+  return `import type { ${def.extends.interface} } from ${def.extends.import};`;
 }
 
 function genComponentComment(def: Pick<ComponentDocApi, "componentComment">) {

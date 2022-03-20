@@ -1,6 +1,6 @@
 /// <reference types="svelte" />
 import type { SvelteComponentTyped } from "svelte";
-import { AccordionSkeletonProps } from "./AccordionSkeleton.svelte";
+import type { AccordionSkeletonProps } from "./AccordionSkeleton.svelte";
 
 export interface AccordionProps extends AccordionSkeletonProps {
   /**
