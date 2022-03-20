@@ -1,6 +1,6 @@
 /// <reference types="svelte" />
 import type { SvelteComponentTyped } from "svelte";
-import { OverflowMenuItemProps } from "../OverflowMenu/OverflowMenuItem.svelte";
+import type { OverflowMenuItemProps } from "../OverflowMenu/OverflowMenuItem.svelte";
 
 export interface ToolbarMenuItemProps extends OverflowMenuItemProps {}
 
