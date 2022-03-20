@@ -1,5 +1,5 @@
 /// <reference types="svelte" />
-import { SvelteComponentTyped } from "svelte";
+import type { SvelteComponentTyped } from "svelte";
 import { IconSkeletonProps } from "./IconSkeleton.svelte";
 
 export interface IconProps

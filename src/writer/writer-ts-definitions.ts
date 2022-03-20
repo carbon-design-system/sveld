@@ -174,7 +174,7 @@ export function writeTsDefinition(component: ComponentDocApi) {
 
   return `
   /// <reference types="svelte" />
-  import { SvelteComponentTyped } from "svelte";
+  import type { SvelteComponentTyped } from "svelte";
   ${genImports({ extends: _extends })}
   ${genModuleExports({ moduleExports })}
   ${getTypeDefs({ typedefs })}
