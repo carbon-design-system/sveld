@@ -3,3 +3,4 @@ lib
 build
 dist
 node_modules
+pnpm*

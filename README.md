@@ -233,7 +233,8 @@ sveld({
   },
   json: true,
   jsonOptions: {
-    outFile: "docs/src/COMPONENT_API.json",
+    outFile: "docs/src/mycomponentname-api.json",
+    outDir: "docs/src/mycomponentname-api.json", // optional, if specified, all JSON files will be written in this folder
   },
 });
 ```
