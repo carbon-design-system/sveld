@@ -1,20 +1,7 @@
 /// <reference types="svelte" />
 import type { SvelteComponentTyped } from "svelte";
 
-export interface SkipToContentProps
-  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["a"]> {
-  /**
-   * Specify the `href` attribute
-   * @default "#main-content"
-   */
-  href?: string;
-
-  /**
-   * Specify the tabindex
-   * @default "0"
-   */
-  tabindex?: string;
-
+export interface InputProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["a"]> {
   /**
    * SvelteKit attribute to enable data prefetching
    * if a link is hovered over or touched on mobile.
@@ -32,8 +19,4 @@ export interface SkipToContentProps
   "sveltekit:noscroll"?: boolean;
 }
 
-export default class SkipToContent extends SvelteComponentTyped<
-  SkipToContentProps,
-  { click: WindowEventMap["click"] },
-  { default: {} }
-> {}
+export default class Input extends SvelteComponentTyped<InputProps, {}, { default: {} }> {}

@@ -1,4 +1,6 @@
 <script>
+  /** @restProps {a | p} */
+
   /**
    * Specify the size of the link
    * @type {"sm" | "lg"}
