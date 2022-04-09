@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add isAccessor field to API
 - update Markdown writer to generate a separate table for accessors -->
 
+## [0.14.1](https://github.com/carbon-design-system/sveld/releases/tag/v0.14.1) - 2022-04-09
+
+- svg `$$restProps` should extend the correct attributes
+
 ## [0.14.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.14.0) - 2022-04-09
 
 - add `sveltekit:prefetch`, `sveltekit:noscroll` attributes to props that extend `a` attributes
