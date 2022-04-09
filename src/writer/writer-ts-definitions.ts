@@ -65,9 +65,26 @@ function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleN
     if (elements.includes("a")) {
       initial_props.push(
         [
-          '/** @default false */\n"sveltekit:prefetch"?: boolean;',
           "\n",
-          '/** @default false */\n"sveltekit:noscroll"?: boolean;',
+          `
+          /**
+           * SvelteKit attribute to enable data prefetching
+           * if a link is hovered over or touched on mobile.
+           * @see https://kit.svelte.dev/docs/a-options#sveltekit-prefetch
+           * @default false
+           */
+           "sveltekit:prefetch"?: boolean;
+          `,
+          "\n",
+          `
+          /**
+           * SvelteKit attribute to prevent scrolling
+           * after the link is clicked.
+           * @see https://kit.svelte.dev/docs/a-options#sveltekit-prefetch
+           * @default false
+           */
+           "sveltekit:noscroll"?: boolean;
+          `,
         ].join("\n")
       );
     }
