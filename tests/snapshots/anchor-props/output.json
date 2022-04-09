@@ -1,0 +1,17 @@
+{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "slot_props": "{}"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "rest_props": {
+    "type": "Element",
+    "name": "a"
+  }
+}
