@@ -99,7 +99,15 @@ function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleN
   if (def.rest_props?.type === "Element") {
     const extend_tag_map = def.rest_props.name
       .split("|")
-      .map((name) => `svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["${name.trim()}"]>`)
+      .map((name) => {
+        const element = name.trim();
+
+        if (element === "svg") {
+          return "svelte.JSX.SVGAttributes<SVGSVGElement>";
+        }
+
+        return `svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["${element}"]>`;
+      })
       .join(",");
 
     prop_def = `
