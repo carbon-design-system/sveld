@@ -31,7 +31,7 @@ function addCommentLine(value: any, returnValue?: any) {
 }
 
 function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleName" | "extends">) {
-  const props = def.props
+  const initial_props = def.props
     .filter((prop) => !prop.isFunctionDeclaration && prop.kind !== "const")
     .map((prop) => {
       let defaultValue = prop.value;
@@ -57,8 +57,23 @@ function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleN
       return `
       ${prop_comments.length > 0 ? `/**\n${prop_comments}*/` : EMPTY_STR}
       ${prop.name}?: ${prop_value};`;
-    })
-    .join("\n");
+    });
+
+  if (def.rest_props?.type === "Element") {
+    const elements = def.rest_props?.name.split("|").map((element) => element.replace(/\s+/g, ""));
+
+    if (elements.includes("a")) {
+      initial_props.push(
+        [
+          '/** @default false */\n"sveltekit:prefetch"?: boolean;',
+          "\n",
+          '/** @default false */\n"sveltekit:noscroll"?: boolean;',
+        ].join("\n")
+      );
+    }
+  }
+
+  const props = initial_props.join("\n");
 
   const props_name = `${def.moduleName}Props`;
 
