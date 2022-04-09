@@ -19,6 +19,11 @@ export interface ButtonSkeletonProps
    * @default false
    */
   small?: boolean;
+  /** @default false */
+  "sveltekit:prefetch"?: boolean;
+
+  /** @default false */
+  "sveltekit:noscroll"?: boolean;
 }
 
 export default class ButtonSkeleton extends SvelteComponentTyped<

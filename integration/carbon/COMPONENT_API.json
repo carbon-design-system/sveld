@@ -4567,7 +4567,7 @@
         { "type": "forwarded", "name": "mouseleave", "element": "p" }
       ],
       "typedefs": [],
-      "rest_props": { "type": "Element", "name": "p" }
+      "rest_props": { "type": "Element", "name": "a | p" }
     },
     {
       "moduleName": "ListBox",

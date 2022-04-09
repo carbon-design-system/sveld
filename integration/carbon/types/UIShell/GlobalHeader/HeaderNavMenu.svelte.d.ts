@@ -32,6 +32,11 @@ export interface HeaderNavMenuProps
    * @default "Expand/Collapse"
    */
   iconDescription?: string;
+  /** @default false */
+  "sveltekit:prefetch"?: boolean;
+
+  /** @default false */
+  "sveltekit:noscroll"?: boolean;
 }
 
 export default class HeaderNavMenu extends SvelteComponentTyped<

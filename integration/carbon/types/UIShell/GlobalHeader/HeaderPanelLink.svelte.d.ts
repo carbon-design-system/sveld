@@ -14,6 +14,11 @@ export interface HeaderPanelLinkProps
    * @default null
    */
   ref?: null | HTMLAnchorElement;
+  /** @default false */
+  "sveltekit:prefetch"?: boolean;
+
+  /** @default false */
+  "sveltekit:noscroll"?: boolean;
 }
 
 export default class HeaderPanelLink extends SvelteComponentTyped<

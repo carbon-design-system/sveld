@@ -32,6 +32,11 @@ export interface SideNavLinkProps
    * @default null
    */
   ref?: null | HTMLAnchorElement;
+  /** @default false */
+  "sveltekit:prefetch"?: boolean;
+
+  /** @default false */
+  "sveltekit:noscroll"?: boolean;
 }
 
 export default class SideNavLink extends SvelteComponentTyped<

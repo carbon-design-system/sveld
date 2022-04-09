@@ -20,6 +20,11 @@ export interface HeaderNavItemProps
    * @default null
    */
   ref?: null | HTMLAnchorElement;
+  /** @default false */
+  "sveltekit:prefetch"?: boolean;
+
+  /** @default false */
+  "sveltekit:noscroll"?: boolean;
 }
 
 export default class HeaderNavItem extends SvelteComponentTyped<

@@ -14,6 +14,11 @@ export interface SkipToContentProps
    * @default "0"
    */
   tabindex?: string;
+  /** @default false */
+  "sveltekit:prefetch"?: boolean;
+
+  /** @default false */
+  "sveltekit:noscroll"?: boolean;
 }
 
 export default class SkipToContent extends SvelteComponentTyped<

@@ -26,6 +26,11 @@ export interface SideNavMenuItemProps
    * @default null
    */
   ref?: null | HTMLAnchorElement;
+  /** @default false */
+  "sveltekit:prefetch"?: boolean;
+
+  /** @default false */
+  "sveltekit:noscroll"?: boolean;
 }
 
 export default class SideNavMenuItem extends SvelteComponentTyped<

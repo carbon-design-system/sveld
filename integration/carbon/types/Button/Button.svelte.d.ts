@@ -99,6 +99,11 @@ export interface ButtonProps
    * @default null
    */
   ref?: null | HTMLAnchorElement | HTMLButtonElement;
+  /** @default false */
+  "sveltekit:prefetch"?: boolean;
+
+  /** @default false */
+  "sveltekit:noscroll"?: boolean;
 }
 
 export default class Button extends SvelteComponentTyped<
