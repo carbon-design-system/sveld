@@ -14,13 +14,12 @@
   } from "carbon-components-svelte";
   import { onMount } from "svelte";
   import ComponentParser from "../src/ComponentParser";
-  import Input from "./CodeEditor.svelte";
+  import CodeEditor from "./CodeEditor.svelte";
   import data from "./data";
   import TabContentOverlay from "./TabContentOverlay.svelte";
 
   const parser = new ComponentParser();
 
-  let size;
   let selectedId = data[0].moduleName;
   let tabTypeScript;
   let tabJson;
@@ -48,7 +47,7 @@
 
   let parsed_component = {};
   let parse_error = null;
-  let codemirror;
+  let codemirror = null;
 
   $: {
     try {
@@ -79,7 +78,13 @@
             codemirror.setValue(value);
           }}
         />
-        <Input bind:code={value} bind:codemirror />
+        <CodeEditor
+          bind:code={value}
+          bind:codemirror
+          on:change={(e) => {
+            value = e.detail;
+          }}
+        />
       </Column>
       <Column xlg={9} lg={10} sm={8}>
         <FormLabel id="output">Sveld output</FormLabel>

@@ -1,13 +1,15 @@
 <script>
   export let code = "";
+  export let codemirror = null;
 
   import CodeMirror from "codemirror";
   import "codemirror/mode/htmlmixed/htmlmixed";
   import "codemirror/theme/zenburn.css";
-  import { onMount } from "svelte";
+  import { onMount, createEventDispatcher } from "svelte";
+
+  const dispatch = createEventDispatcher();
 
   let ref;
-  export let codemirror = null;
 
   $: if (ref && !codemirror) {
     codemirror = CodeMirror(ref, {
@@ -16,7 +18,7 @@
       theme: "zenburn",
     });
     codemirror.on("change", () => {
-      code = codemirror.getValue();
+      dispatch("change", codemirror.getValue());
     });
   }
 
