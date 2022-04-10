@@ -1,7 +1,7 @@
 <script context="module">
-  import json from "svelte-highlight/src/languages/json";
-  import typescript from "svelte-highlight/src/languages/typescript";
-  import markdown from "svelte-highlight/src/languages/markdown";
+  import json from "svelte-highlight/languages/json";
+  import typescript from "svelte-highlight/languages/typescript";
+  import markdown from "svelte-highlight/languages/markdown";
 
   const LANG = {
     json,
@@ -17,7 +17,7 @@
 
   import { CopyButton } from "carbon-components-svelte";
   import Highlight from "svelte-highlight";
-  import "svelte-highlight/src/styles/zenburn.css";
+  import "svelte-highlight/styles/zenburn.css";
 </script>
 
 <div class="code-highlighter" class:noWrap>
