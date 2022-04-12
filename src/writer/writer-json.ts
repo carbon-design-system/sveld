@@ -30,7 +30,7 @@ async function writeJsonComponents(components: ComponentDocs, options: WriteJson
 
   output.map((c) => {
     const outFile = path.resolve(
-      path.join(dirname(options.outDir as string), `${c.moduleName.toLowerCase()}-api.json`)
+      path.join(options.outDir || "", `${c.moduleName.toLowerCase()}-api.json`));
     );
     const writer = new Writer({ parser: "json", printWidth: 80 });
     console.log(`created ${outFile}"\n`);
