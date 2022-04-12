@@ -18,7 +18,6 @@ interface JsonOutput {
 }
 
 async function writeJsonComponents(components: ComponentDocs, options: WriteJsonOptions) {
-  debugger;
   const output = Array.from(components, ([moduleName, component]) => ({
     ...component,
     filePath: normalizeSeparators(path.join(options.inputDir, path.normalize(component.filePath))),
