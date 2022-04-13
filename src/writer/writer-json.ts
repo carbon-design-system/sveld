@@ -34,7 +34,6 @@ async function writeJsonComponents(components: ComponentDocs, options: WriteJson
 }
 
 async function writeJsonLocal(components: ComponentDocs, options: WriteJsonOptions) {
-  debugger;
   const output: JsonOutput = {
     total: components.size,
     components: Array.from(components, ([moduleName, component]) => ({
