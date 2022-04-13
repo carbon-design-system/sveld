@@ -1,5 +1,4 @@
-import * as path from "path";
-import { dirname } from "path";
+import path from "path";
 import { normalizeSeparators } from "../path";
 import { ComponentDocApi, ComponentDocs } from "../rollup-plugin";
 import Writer from "./Writer";
@@ -12,7 +11,6 @@ export interface WriteJsonOptions {
 }
 
 interface JsonOutput {
-  module?: string;
   total: number;
   components: ComponentDocApi[];
 }
@@ -28,9 +26,7 @@ async function writeJsonComponents(components: ComponentDocs, options: WriteJson
   });
 
   output.map((c) => {
-    const outFile = path.resolve(
-      path.join(options.outDir || "", `${c.moduleName.toLowerCase()}-api.json`));
-    );
+    const outFile = path.resolve(path.join(options.outDir || "", `${c.moduleName.toLowerCase()}-api.json`));
     const writer = new Writer({ parser: "json", printWidth: 80 });
     console.log(`created ${outFile}"\n`);
     return writer.write(outFile, JSON.stringify(c));
