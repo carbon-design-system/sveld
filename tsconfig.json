@@ -6,8 +6,7 @@
     "outDir": "lib",
     "skipLibCheck": true,
     "strict": true,
-    "esModuleInterop": true,
-    "sourceMap": true
+    "esModuleInterop": true
   },
   "include": ["src/**/*"]
 }
