@@ -238,6 +238,23 @@ sveld({
 });
 ```
 
+#### `jsonOptions.outDir`
+
+If `json` is `true`, a `COMPONENT_API.json` file will be generated at the root of your project. This file contains documentation for all components.
+
+Use the `jsonOptions.outDir` option to specify the folder for individual JSON files to be emitted.
+
+```js
+sveld({
+  json: true,
+  jsonOptions: {
+    // an individual JSON file will be generated for each component API
+    // e.g. "docs/Button.api.json"
+    outDir: "docs",
+  },
+});
+```
+
 ### Publishing to NPM
 
 TypeScript definitions are outputted to the `types` folder by default. Don't forget to include the folder in your `package.json` when publishing the package to NPM.
