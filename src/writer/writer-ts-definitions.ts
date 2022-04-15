@@ -78,9 +78,19 @@ function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleN
           "\n",
           `
           /**
+           * SvelteKit attribute to trigger a full page
+           * reload after the link is clicked.
+           * @see https://kit.svelte.dev/docs/a-options#sveltekit-reload
+           * @default false
+           */
+           "sveltekit:reload"?: boolean;
+          `,
+          "\n",
+          `
+          /**
            * SvelteKit attribute to prevent scrolling
            * after the link is clicked.
-           * @see https://kit.svelte.dev/docs/a-options#sveltekit-prefetch
+           * @see https://kit.svelte.dev/docs/a-options#sveltekit-noscroll
            * @default false
            */
            "sveltekit:noscroll"?: boolean;
