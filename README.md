@@ -233,8 +233,24 @@ sveld({
   },
   json: true,
   jsonOptions: {
-    outFile: "docs/src/mycomponentname-api.json",
-    outDir: "docs/src/mycomponentname-api.json", // optional, if specified, all JSON files will be written in this folder
+    outFile: "docs/src/COMPONENT_API.json",
+  },
+});
+```
+
+#### `jsonOptions.outDir`
+
+If `json` is `true`, a `COMPONENT_API.json` file will be generated at the root of your project. This file contains documentation for all components.
+
+Use the `jsonOptions.outDir` option to specify the folder for individual JSON files to be emitted.
+
+```js
+sveld({
+  json: true,
+  jsonOptions: {
+    // an individual JSON file will be generated for each component API
+    // e.g. "docs/Button.api.json"
+    outDir: "docs",
   },
 });
 ```
