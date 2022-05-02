@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add isAccessor field to API
 - update Markdown writer to generate a separate table for accessors -->
 
+## [0.15.1](https://github.com/carbon-design-system/sveld/releases/tag/v0.15.1) - 2022-05-01
+
+- function exported from `<script context="module">` should be typed as functions, not types
+
 ## [0.15.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.15.0) - 2022-04-14
 
 - add `jsonOptions.outDir` option to emit JSON files for individual components
