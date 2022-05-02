@@ -196,9 +196,20 @@ function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">) {
     .map((prop) => {
       const prop_comments = [addCommentLine(prop.description?.replace(/\n/g, "\n* "))].filter(Boolean).join("");
 
+      let type_def = `export type ${prop.name} = ${prop.type || ANY_TYPE};`;
+
+      const is_function = prop.type && /=>/.test(prop.type);
+
+      if (is_function) {
+        const [first, second, ...rest] = prop.type!.split("=>");
+        const rest_type = rest.map((item) => "=>" + item).join("");
+
+        type_def = `export declare function ${prop.name}${first}:${second}${rest_type};`;
+      }
+
       return `
       ${prop_comments.length > 0 ? `/**\n${prop_comments}*/` : EMPTY_STR}
-      export type ${prop.name} = ${prop.type || ANY_TYPE};`;
+      ${type_def}`;
     })
     .join("\n");
 }

@@ -63,6 +63,26 @@
       "isFunctionDeclaration": false,
       "constant": true,
       "reactive": false
+    },
+    {
+      "name": "b2",
+      "kind": "const",
+      "type": "() => () => {}",
+      "value": "() => () => {}",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "constant": true,
+      "reactive": false
+    },
+    {
+      "name": "b3",
+      "kind": "const",
+      "type": "() => () => false",
+      "value": "() => () => false",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "constant": true,
+      "reactive": false
     }
   ],
   "slots": [],
