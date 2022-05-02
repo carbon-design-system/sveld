@@ -3,12 +3,14 @@ import type { SvelteComponentTyped } from "svelte";
 
 export type tree = boolean;
 
-export type computeTreeLeafDepth = () => any;
+export declare function computeTreeLeafDepth(): any;
 
 /**
  * Finds the nearest parent tree node
  */
-export type findParentTreeNode = (node: HTMLElement) => null | HTMLElement;
+export declare function findParentTreeNode(
+  node: HTMLElement
+): null | HTMLElement;
 
 export interface ButtonProps
   extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["button"]> {
