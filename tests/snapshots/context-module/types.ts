@@ -1,6 +1,14 @@
-import { a, e, log } from "./output";
+import { a, e, log, b2, b3 } from "./output";
 
-const a: log = () => {};
+log("");
+
+b2()();
+
+const function_b3: typeof b3 = () => () => false;
+
+const result = b3()();
+
+const a: typeof log = () => {};
 
 // @ts-expect-error
 a(4);

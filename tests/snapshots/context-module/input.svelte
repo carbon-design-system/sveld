@@ -22,6 +22,11 @@
   }
 
   export const b = () => {};
+
+  export const b2 = () => () => {};
+
+  /** @type {() => () => false} */
+  export const b3 = () => () => false;
 </script>
 
 <script>

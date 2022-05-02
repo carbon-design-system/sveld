@@ -13,9 +13,13 @@ export type e = { [key: string]: any };
 /**
  * Log something
  */
-export type log = (message: string) => void;
+export declare function log(message: string): void;
 
-export type b = () => {};
+export declare function b(): {};
+
+export declare function b2(): () => {};
+
+export declare function b3(): () => false;
 
 export interface InputProps {}
 
