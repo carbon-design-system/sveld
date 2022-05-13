@@ -659,16 +659,16 @@ None.
 
 ### Events
 
-| Event name    | Type       | Detail |
-| :------------ | :--------- | :----- |
-| click         | forwarded  | --     |
-| mouseover     | forwarded  | --     |
-| mouseenter    | forwarded  | --     |
-| mouseleave    | forwarded  | --     |
-| transitionend | forwarded  | --     |
-| submit        | dispatched | --     |
-| close         | dispatched | --     |
-| open          | dispatched | --     |
+| Event name    | Type       | Detail            |
+| :------------ | :--------- | :---------------- |
+| click         | forwarded  | --                |
+| mouseover     | forwarded  | --                |
+| mouseenter    | forwarded  | --                |
+| mouseleave    | forwarded  | --                |
+| transitionend | forwarded  | --                |
+| submit        | dispatched | <code>null</code> |
+| close         | dispatched | <code>null</code> |
+| open          | dispatched | <code>null</code> |
 
 ## `Content`
 
@@ -1418,10 +1418,10 @@ export interface HeaderActionSlideTransition {
 
 ### Events
 
-| Event name | Type       | Detail |
-| :--------- | :--------- | :----- |
-| click      | forwarded  | --     |
-| close      | dispatched | --     |
+| Event name | Type       | Detail            |
+| :--------- | :--------- | :---------------- |
+| click      | forwarded  | --                |
+| close      | dispatched | <code>null</code> |
 
 ## `HeaderActionLink`
 
@@ -1459,8 +1459,8 @@ None.
 | Event name          | Type       | Detail                                                |
 | :------------------ | :--------- | :---------------------------------------------------- |
 | inputSearch         | dispatched | <code>{ action: "search"; textInput: string; }</code> |
-| focusInputSearch    | dispatched | --                                                    |
-| focusOutInputSearch | dispatched | --                                                    |
+| focusInputSearch    | dispatched | <code>null</code>                                     |
+| focusOutInputSearch | dispatched | <code>null</code>                                     |
 
 ## `HeaderGlobalAction`
 
@@ -1731,13 +1731,13 @@ None.
 
 ### Events
 
-| Event name | Type       | Detail |
-| :--------- | :--------- | :----- |
-| click      | forwarded  | --     |
-| mouseover  | forwarded  | --     |
-| mouseenter | forwarded  | --     |
-| mouseleave | forwarded  | --     |
-| success    | dispatched | --     |
+| Event name | Type       | Detail            |
+| :--------- | :--------- | :---------------- |
+| click      | forwarded  | --                |
+| mouseover  | forwarded  | --                |
+| mouseenter | forwarded  | --                |
+| mouseleave | forwarded  | --                |
+| success    | dispatched | <code>null</code> |
 
 ## `InlineNotification`
 
@@ -2040,17 +2040,17 @@ None.
 
 ### Events
 
-| Event name              | Type       | Detail |
-| :---------------------- | :--------- | :----- |
-| keydown                 | forwarded  | --     |
-| click                   | forwarded  | --     |
-| mouseover               | forwarded  | --     |
-| mouseenter              | forwarded  | --     |
-| mouseleave              | forwarded  | --     |
-| submit                  | dispatched | --     |
-| click:button--secondary | dispatched | --     |
-| close                   | dispatched | --     |
-| open                    | dispatched | --     |
+| Event name              | Type       | Detail            |
+| :---------------------- | :--------- | :---------------- |
+| keydown                 | forwarded  | --                |
+| click                   | forwarded  | --                |
+| mouseover               | forwarded  | --                |
+| mouseenter              | forwarded  | --                |
+| mouseleave              | forwarded  | --                |
+| submit                  | dispatched | <code>null</code> |
+| click:button--secondary | dispatched | <code>null</code> |
+| close                   | dispatched | <code>null</code> |
+| open                    | dispatched | <code>null</code> |
 
 ## `ModalBody`
 
@@ -2804,18 +2804,18 @@ None.
 
 ### Events
 
-| Event name | Type       | Detail |
-| :--------- | :--------- | :----- |
-| click      | forwarded  | --     |
-| mouseover  | forwarded  | --     |
-| mouseenter | forwarded  | --     |
-| mouseleave | forwarded  | --     |
-| change     | forwarded  | --     |
-| input      | forwarded  | --     |
-| focus      | forwarded  | --     |
-| blur       | forwarded  | --     |
-| keydown    | forwarded  | --     |
-| clear      | dispatched | --     |
+| Event name | Type       | Detail            |
+| :--------- | :--------- | :---------------- |
+| click      | forwarded  | --                |
+| mouseover  | forwarded  | --                |
+| mouseenter | forwarded  | --                |
+| mouseleave | forwarded  | --                |
+| change     | forwarded  | --                |
+| input      | forwarded  | --                |
+| focus      | forwarded  | --                |
+| blur       | forwarded  | --                |
+| keydown    | forwarded  | --                |
+| clear      | dispatched | <code>null</code> |
 
 ## `SearchSkeleton`
 
@@ -3640,13 +3640,13 @@ None.
 
 ### Events
 
-| Event name | Type       | Detail |
-| :--------- | :--------- | :----- |
-| click      | forwarded  | --     |
-| mouseover  | forwarded  | --     |
-| mouseenter | forwarded  | --     |
-| mouseleave | forwarded  | --     |
-| close      | dispatched | --     |
+| Event name | Type       | Detail            |
+| :--------- | :--------- | :---------------- |
+| click      | forwarded  | --                |
+| mouseover  | forwarded  | --                |
+| mouseenter | forwarded  | --                |
+| mouseleave | forwarded  | --                |
+| close      | dispatched | <code>null</code> |
 
 ## `TagSkeleton`
 

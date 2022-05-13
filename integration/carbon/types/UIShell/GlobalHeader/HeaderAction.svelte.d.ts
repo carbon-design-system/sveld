@@ -44,6 +44,6 @@ export interface HeaderActionProps
 
 export default class HeaderAction extends SvelteComponentTyped<
   HeaderActionProps,
-  { click: WindowEventMap["click"]; close: CustomEvent<any> },
+  { click: WindowEventMap["click"]; close: CustomEvent<null> },
   { default: {}; text: {} }
 > {}

@@ -126,10 +126,10 @@ export default class Modal extends SvelteComponentTyped<
     mouseover: WindowEventMap["mouseover"];
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
-    submit: CustomEvent<any>;
-    ["click:button--secondary"]: CustomEvent<any>;
-    close: CustomEvent<any>;
-    open: CustomEvent<any>;
+    submit: CustomEvent<null>;
+    ["click:button--secondary"]: CustomEvent<null>;
+    close: CustomEvent<null>;
+    open: CustomEvent<null>;
   },
   { default: {}; heading: {}; label: {} }
 > {}

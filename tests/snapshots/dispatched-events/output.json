@@ -15,15 +15,18 @@
     },
     {
       "type": "dispatched",
-      "name": "destroy"
+      "name": "destroy",
+      "detail": "null"
     },
     {
       "type": "dispatched",
-      "name": "destroy--component"
+      "name": "destroy--component",
+      "detail": "null"
     },
     {
       "type": "dispatched",
-      "name": "destroy:component"
+      "name": "destroy:component",
+      "detail": "null"
     }
   ],
   "typedefs": []
