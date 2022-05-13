@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add isAccessor field to API
 - update Markdown writer to generate a separate table for accessors -->
 
+## [0.15.2](https://github.com/carbon-design-system/sveld/releases/tag/v0.15.2) - 2022-05-13
+
+- dispatched event type without detail should default to `null`, not `any`
+
 ## [0.15.1](https://github.com/carbon-design-system/sveld/releases/tag/v0.15.1) - 2022-05-01
 
 - function exported from `<script context="module">` should be typed as functions, not types
