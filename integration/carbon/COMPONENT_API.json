@@ -1566,9 +1566,9 @@
         { "type": "forwarded", "name": "mouseenter", "element": "div" },
         { "type": "forwarded", "name": "mouseleave", "element": "div" },
         { "type": "forwarded", "name": "transitionend", "element": "div" },
-        { "type": "dispatched", "name": "submit" },
-        { "type": "dispatched", "name": "close" },
-        { "type": "dispatched", "name": "open" }
+        { "type": "dispatched", "name": "submit", "detail": "null" },
+        { "type": "dispatched", "name": "close", "detail": "null" },
+        { "type": "dispatched", "name": "open", "detail": "null" }
       ],
       "typedefs": [],
       "rest_props": { "type": "Element", "name": "div" }
@@ -3805,7 +3805,7 @@
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "button" },
-        { "type": "dispatched", "name": "close" }
+        { "type": "dispatched", "name": "close", "detail": "null" }
       ],
       "typedefs": [
         {
@@ -3893,8 +3893,12 @@
           "name": "inputSearch",
           "detail": "{ action: \"search\"; textInput: string; }"
         },
-        { "type": "dispatched", "name": "focusInputSearch" },
-        { "type": "dispatched", "name": "focusOutInputSearch" }
+        { "type": "dispatched", "name": "focusInputSearch", "detail": "null" },
+        {
+          "type": "dispatched",
+          "name": "focusOutInputSearch",
+          "detail": "null"
+        }
       ],
       "typedefs": []
     },
@@ -4372,7 +4376,7 @@
         { "type": "forwarded", "name": "mouseover", "element": "div" },
         { "type": "forwarded", "name": "mouseenter", "element": "div" },
         { "type": "forwarded", "name": "mouseleave", "element": "div" },
-        { "type": "dispatched", "name": "success" }
+        { "type": "dispatched", "name": "success", "detail": "null" }
       ],
       "typedefs": [],
       "rest_props": { "type": "Element", "name": "div" }
@@ -5286,10 +5290,14 @@
         { "type": "forwarded", "name": "mouseover", "element": "div" },
         { "type": "forwarded", "name": "mouseenter", "element": "div" },
         { "type": "forwarded", "name": "mouseleave", "element": "div" },
-        { "type": "dispatched", "name": "submit" },
-        { "type": "dispatched", "name": "click:button--secondary" },
-        { "type": "dispatched", "name": "close" },
-        { "type": "dispatched", "name": "open" }
+        { "type": "dispatched", "name": "submit", "detail": "null" },
+        {
+          "type": "dispatched",
+          "name": "click:button--secondary",
+          "detail": "null"
+        },
+        { "type": "dispatched", "name": "close", "detail": "null" },
+        { "type": "dispatched", "name": "open", "detail": "null" }
       ],
       "typedefs": [],
       "rest_props": { "type": "Element", "name": "div" }
@@ -7910,7 +7918,7 @@
         { "type": "forwarded", "name": "focus", "element": "input" },
         { "type": "forwarded", "name": "blur", "element": "input" },
         { "type": "forwarded", "name": "keydown", "element": "input" },
-        { "type": "dispatched", "name": "clear" }
+        { "type": "dispatched", "name": "clear", "detail": "null" }
       ],
       "typedefs": [],
       "rest_props": { "type": "InlineComponent", "name": "SearchSkeleton" }
@@ -9791,7 +9799,7 @@
         { "type": "forwarded", "name": "mouseover", "element": "TagSkeleton" },
         { "type": "forwarded", "name": "mouseenter", "element": "TagSkeleton" },
         { "type": "forwarded", "name": "mouseleave", "element": "TagSkeleton" },
-        { "type": "dispatched", "name": "close" }
+        { "type": "dispatched", "name": "close", "detail": "null" }
       ],
       "typedefs": [],
       "rest_props": { "type": "Element", "name": "div | span" }
