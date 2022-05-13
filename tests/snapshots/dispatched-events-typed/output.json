@@ -16,7 +16,8 @@
     },
     {
       "type": "dispatched",
-      "name": "destroy"
+      "name": "destroy",
+      "detail": "null"
     }
   ],
   "typedefs": []
