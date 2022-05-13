@@ -220,20 +220,26 @@ export default class ComponentParser {
     }
   }
 
-  private addDispatchedEvent(name?: string, detail?: string) {
+  private addDispatchedEvent({ name, detail, has_argument }: { name?: string; detail: string; has_argument: boolean }) {
     if (name === undefined) return;
+
+    /**
+     * `e.detail` should be `null` if the dispatcher
+     * is not provided a second argument and if
+     * `@event` is not specified.
+     */
+    const default_detail = !has_argument && !detail ? "null" : ComponentParser.assignValue(detail);
     if (this.events.has(name)) {
       const existing_event = this.events.get(name) as DispatchedEvent;
-
       this.events.set(name, {
         ...existing_event,
-        detail: existing_event.detail === undefined ? ComponentParser.assignValue(detail) : existing_event.detail,
+        detail: existing_event.detail === undefined ? default_detail : existing_event.detail,
       });
     } else {
       this.events.set(name, {
         type: "dispatched",
         name,
-        detail: ComponentParser.assignValue(detail),
+        detail: default_detail,
       });
     }
   }
@@ -260,7 +266,7 @@ export default class ComponentParser {
             this.addSlot(name, type);
             break;
           case "event":
-            this.addDispatchedEvent(name, type);
+            this.addDispatchedEvent({ name, detail: type, has_argument: false });
             break;
           case "typedef":
             this.typedefs.set(name, {
@@ -604,9 +610,14 @@ export default class ComponentParser {
       callees.forEach((callee) => {
         if (callee.name === dispatcher_name) {
           const event_name = callee.arguments[0]?.value;
-          const event_detail = callee.arguments[1]?.value;
+          const event_argument = callee.arguments[1];
+          const event_detail = event_argument?.value;
 
-          this.addDispatchedEvent(event_name, event_detail);
+          this.addDispatchedEvent({
+            name: event_name,
+            detail: event_detail,
+            has_argument: Boolean(event_argument),
+          });
         }
       });
     }
