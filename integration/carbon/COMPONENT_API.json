@@ -401,7 +401,7 @@
         {
           "name": "hasIconOnly",
           "kind": "let",
-          "description": "Set to `true` for the icon-only variant",
+          "description": "Set to `true` for the icon-only variant\n@deprecated inferred using the $$slots API",
           "type": "boolean",
           "value": "false",
           "isFunction": false,
@@ -611,6 +611,7 @@
         {
           "name": "small",
           "kind": "let",
+          "description": "@deprecated this prop will be removed in the next major release\nUse size=\"small\" instead",
           "type": "boolean",
           "value": "false",
           "isFunction": false,
@@ -3959,7 +3960,7 @@
         {
           "name": "ariaLabel",
           "kind": "let",
-          "description": "Specify the ARIA label for the nav",
+          "description": "Specify the ARIA label for the nav\n@deprecated use \"aria-label\" instead",
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
@@ -7743,6 +7744,7 @@
         {
           "name": "small",
           "kind": "let",
+          "description": "@deprecated this prop will be removed in the next major release\nUse size=\"sm\" instead",
           "type": "boolean",
           "value": "false",
           "isFunction": false,
@@ -7930,6 +7932,7 @@
         {
           "name": "small",
           "kind": "let",
+          "description": "@deprecated this prop will be removed in the next major release\nSet to `true` to use the small variant",
           "type": "boolean",
           "value": "false",
           "isFunction": false,
@@ -10567,6 +10570,7 @@
         {
           "name": "hideLabel",
           "kind": "let",
+          "description": "@deprecated The `hideLabel` prop for `TimePickerSelect` is no longer needed and has been deprecated. It will be removed in the next major release.\nSet to `false` to show the label text",
           "type": "boolean",
           "value": "true",
           "isFunction": false,

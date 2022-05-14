@@ -453,7 +453,7 @@ export default class ComponentParser {
           let value = undefined;
           let type = undefined;
           let kind = node.declaration.kind;
-          let description = undefined;
+          let description: undefined | string = undefined;
           let isFunction = false;
           let isFunctionDeclaration = false;
 
@@ -497,9 +497,24 @@ export default class ComponentParser {
             const comment = commentParser.parse(ComponentParser.formatComment(last_comment.value), {
               spacing: "preserve",
             });
+
             const tag = comment[0]?.tags[comment[0]?.tags.length - 1];
             if (tag?.tag === "type") type = this.aliasType(tag.type);
             description = ComponentParser.assignValue(comment[0]?.description?.trim());
+
+            const additional_tags = comment[0]?.tags.filter(
+              (tag) => !["type", "extends", "restProps", "slot", "event", "typedef"].includes(tag.tag)
+            );
+
+            if (additional_tags.length > 0 && description === undefined) {
+              description = "";
+            }
+
+            additional_tags.forEach((tag) => {
+              description += `${description ? "\n" : ""}@${tag.tag} ${tag.name}${
+                tag.description ? ` ${tag.description}` : ""
+              }`;
+            });
           }
 
           if (!description && this.typedefs.has(type)) {

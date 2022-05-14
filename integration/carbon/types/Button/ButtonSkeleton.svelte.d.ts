@@ -16,6 +16,8 @@ export interface ButtonSkeletonProps
   size?: "default" | "field" | "small";
 
   /**
+   * @deprecated this prop will be removed in the next major release
+   * Use size="small" instead
    * @default false
    */
   small?: boolean;

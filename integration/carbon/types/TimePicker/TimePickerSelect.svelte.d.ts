@@ -28,6 +28,8 @@ export interface TimePickerSelectProps
   labelText?: string;
 
   /**
+   * @deprecated The `hideLabel` prop for `TimePickerSelect` is no longer needed and has been deprecated. It will be removed in the next major release.
+   * Set to `false` to show the label text
    * @default true
    */
   hideLabel?: boolean;

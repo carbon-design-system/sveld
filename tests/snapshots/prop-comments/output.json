@@ -1,0 +1,47 @@
+{
+  "props": [
+    {
+      "name": "prop",
+      "kind": "let",
+      "description": "This is a comment.\n@see https://github.com/\n@deprecated this prop will be removed in the next major release.",
+      "type": "boolean | string",
+      "value": "true",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "prop1",
+      "kind": "let",
+      "description": "@see https://github.com/",
+      "type": "boolean",
+      "value": "true",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "prop2",
+      "kind": "let",
+      "description": "This is a comment.",
+      "type": "boolean | string",
+      "value": "true",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "slot_props": "{ prop: boolean | string, prop1: boolean, prop2: boolean | string }"
+    }
+  ],
+  "events": [],
+  "typedefs": []
+}

@@ -4,6 +4,8 @@ import type { SvelteComponentTyped } from "svelte";
 export interface SearchSkeletonProps
   extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
   /**
+   * @deprecated this prop will be removed in the next major release
+   * Set to `true` to use the small variant
    * @default false
    */
   small?: boolean;
