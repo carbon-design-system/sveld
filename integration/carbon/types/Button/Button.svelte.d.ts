@@ -28,6 +28,7 @@ export interface ButtonProps
 
   /**
    * Set to `true` for the icon-only variant
+   * @deprecated inferred using the $$slots API
    * @default false
    */
   hasIconOnly?: boolean;

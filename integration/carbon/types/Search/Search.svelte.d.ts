@@ -3,6 +3,8 @@ import type { SvelteComponentTyped } from "svelte";
 
 export interface SearchProps {
   /**
+   * @deprecated this prop will be removed in the next major release
+   * Use size="sm" instead
    * @default false
    */
   small?: boolean;

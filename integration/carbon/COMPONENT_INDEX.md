@@ -337,7 +337,7 @@ None.
 | Prop name        | Kind             | Reactive | Type                                                                                                                                      | Default value          | Description                                                                                                                                                                                   |
 | :--------------- | :--------------- | :------- | :---------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | ref              | <code>let</code> | Yes      | <code>null &#124; HTMLAnchorElement &#124; HTMLButtonElement</code>                                                                       | <code>null</code>      | Obtain a reference to the HTML element                                                                                                                                                        |
-| hasIconOnly      | <code>let</code> | Yes      | <code>boolean</code>                                                                                                                      | <code>false</code>     | Set to `true` for the icon-only variant                                                                                                                                                       |
+| hasIconOnly      | <code>let</code> | Yes      | <code>boolean</code>                                                                                                                      | <code>false</code>     | Set to `true` for the icon-only variant<br />@deprecated inferred using the $$slots API                                                                                                       |
 | kind             | <code>let</code> | No       | <code>"primary" &#124; "secondary" &#124; "tertiary" &#124; "ghost" &#124; "danger" &#124; "danger-tertiary" &#124; "danger-ghost"</code> | <code>"primary"</code> | Specify the kind of button                                                                                                                                                                    |
 | size             | <code>let</code> | No       | <code>"default" &#124; "field" &#124; "small"</code>                                                                                      | <code>"default"</code> | Specify the size of button                                                                                                                                                                    |
 | icon             | <code>let</code> | No       | <code>typeof import("carbon-icons-svelte").CarbonIcon</code>                                                                              | <code>undefined</code> | Specify the icon from `carbon-icons-svelte` to render                                                                                                                                         |
@@ -388,11 +388,11 @@ None.
 
 ### Props
 
-| Prop name | Kind             | Reactive | Type                                                 | Default value          | Description                          |
-| :-------- | :--------------- | :------- | :--------------------------------------------------- | ---------------------- | ------------------------------------ |
-| href      | <code>let</code> | No       | <code>string</code>                                  | <code>undefined</code> | Set the `href` to use an anchor link |
-| size      | <code>let</code> | No       | <code>"default" &#124; "field" &#124; "small"</code> | <code>"default"</code> | Specify the size of button skeleton  |
-| small     | <code>let</code> | No       | <code>boolean</code>                                 | <code>false</code>     | --                                   |
+| Prop name | Kind             | Reactive | Type                                                 | Default value          | Description                                                                                   |
+| :-------- | :--------------- | :------- | :--------------------------------------------------- | ---------------------- | --------------------------------------------------------------------------------------------- |
+| href      | <code>let</code> | No       | <code>string</code>                                  | <code>undefined</code> | Set the `href` to use an anchor link                                                          |
+| size      | <code>let</code> | No       | <code>"default" &#124; "field" &#124; "small"</code> | <code>"default"</code> | Specify the size of button skeleton                                                           |
+| small     | <code>let</code> | No       | <code>boolean</code>                                 | <code>false</code>     | @deprecated this prop will be removed in the next major release<br />Use size="small" instead |
 
 ### Slots
 
@@ -1488,9 +1488,9 @@ None.
 
 ### Props
 
-| Prop name | Kind             | Reactive | Type                | Default value          | Description                        |
-| :-------- | :--------------- | :------- | :------------------ | ---------------------- | ---------------------------------- |
-| ariaLabel | <code>let</code> | No       | <code>string</code> | <code>undefined</code> | Specify the ARIA label for the nav |
+| Prop name | Kind             | Reactive | Type                | Default value          | Description                                                                  |
+| :-------- | :--------------- | :------- | :------------------ | ---------------------- | ---------------------------------------------------------------------------- |
+| ariaLabel | <code>let</code> | No       | <code>string</code> | <code>undefined</code> | Specify the ARIA label for the nav<br />@deprecated use "aria-label" instead |
 
 ### Slots
 
@@ -2781,22 +2781,22 @@ None.
 
 ### Props
 
-| Prop name            | Kind             | Reactive | Type                                      | Default value                                    | Description                                             |
-| :------------------- | :--------------- | :------- | :---------------------------------------- | ------------------------------------------------ | ------------------------------------------------------- |
-| ref                  | <code>let</code> | Yes      | <code>null &#124; HTMLInputElement</code> | <code>null</code>                                | Obtain a reference to the input HTML element            |
-| value                | <code>let</code> | Yes      | <code>string</code>                       | <code>""</code>                                  | Specify the value of the search input                   |
-| small                | <code>let</code> | No       | <code>boolean</code>                      | <code>false</code>                               | --                                                      |
-| size                 | <code>let</code> | No       | <code>"sm" &#124; "lg" &#124; "xl"</code> | <code>"xl"</code>                                | Specify the size of the search input                    |
-| skeleton             | <code>let</code> | No       | <code>boolean</code>                      | <code>false</code>                               | Set to `true` to display the skeleton state             |
-| light                | <code>let</code> | No       | <code>boolean</code>                      | <code>false</code>                               | Set to `true` to enable the light variant               |
-| disabled             | <code>let</code> | No       | <code>boolean</code>                      | <code>false</code>                               | Set to `true` to disable the search input               |
-| type                 | <code>let</code> | No       | <code>string</code>                       | <code>"text"</code>                              | Specify the `type` attribute of the search input        |
-| placeholder          | <code>let</code> | No       | <code>string</code>                       | <code>"Search..."</code>                         | Specify the `placeholder` attribute of the search input |
-| autocomplete         | <code>let</code> | No       | <code>"on" &#124; "off"</code>            | <code>"off"</code>                               | Specify the `autocomplete` attribute                    |
-| autofocus            | <code>let</code> | No       | <code>boolean</code>                      | <code>false</code>                               | Set to `true` to auto focus the search element          |
-| closeButtonLabelText | <code>let</code> | No       | <code>string</code>                       | <code>"Clear search input"</code>                | Specify the close button label text                     |
-| labelText            | <code>let</code> | No       | <code>string</code>                       | <code>""</code>                                  | Specify the label text                                  |
-| id                   | <code>let</code> | No       | <code>string</code>                       | <code>"ccs-" + Math.random().toString(36)</code> | Set an id for the input element                         |
+| Prop name            | Kind             | Reactive | Type                                      | Default value                                    | Description                                                                                |
+| :------------------- | :--------------- | :------- | :---------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| ref                  | <code>let</code> | Yes      | <code>null &#124; HTMLInputElement</code> | <code>null</code>                                | Obtain a reference to the input HTML element                                               |
+| value                | <code>let</code> | Yes      | <code>string</code>                       | <code>""</code>                                  | Specify the value of the search input                                                      |
+| small                | <code>let</code> | No       | <code>boolean</code>                      | <code>false</code>                               | @deprecated this prop will be removed in the next major release<br />Use size="sm" instead |
+| size                 | <code>let</code> | No       | <code>"sm" &#124; "lg" &#124; "xl"</code> | <code>"xl"</code>                                | Specify the size of the search input                                                       |
+| skeleton             | <code>let</code> | No       | <code>boolean</code>                      | <code>false</code>                               | Set to `true` to display the skeleton state                                                |
+| light                | <code>let</code> | No       | <code>boolean</code>                      | <code>false</code>                               | Set to `true` to enable the light variant                                                  |
+| disabled             | <code>let</code> | No       | <code>boolean</code>                      | <code>false</code>                               | Set to `true` to disable the search input                                                  |
+| type                 | <code>let</code> | No       | <code>string</code>                       | <code>"text"</code>                              | Specify the `type` attribute of the search input                                           |
+| placeholder          | <code>let</code> | No       | <code>string</code>                       | <code>"Search..."</code>                         | Specify the `placeholder` attribute of the search input                                    |
+| autocomplete         | <code>let</code> | No       | <code>"on" &#124; "off"</code>            | <code>"off"</code>                               | Specify the `autocomplete` attribute                                                       |
+| autofocus            | <code>let</code> | No       | <code>boolean</code>                      | <code>false</code>                               | Set to `true` to auto focus the search element                                             |
+| closeButtonLabelText | <code>let</code> | No       | <code>string</code>                       | <code>"Clear search input"</code>                | Specify the close button label text                                                        |
+| labelText            | <code>let</code> | No       | <code>string</code>                       | <code>""</code>                                  | Specify the label text                                                                     |
+| id                   | <code>let</code> | No       | <code>string</code>                       | <code>"ccs-" + Math.random().toString(36)</code> | Set an id for the input element                                                            |
 
 ### Slots
 
@@ -2821,10 +2821,10 @@ None.
 
 ### Props
 
-| Prop name | Kind             | Reactive | Type                                      | Default value      | Description                          |
-| :-------- | :--------------- | :------- | :---------------------------------------- | ------------------ | ------------------------------------ |
-| small     | <code>let</code> | No       | <code>boolean</code>                      | <code>false</code> | --                                   |
-| size      | <code>let</code> | No       | <code>"sm" &#124; "lg" &#124; "xl"</code> | <code>"xl"</code>  | Specify the size of the search input |
+| Prop name | Kind             | Reactive | Type                                      | Default value      | Description                                                                                                 |
+| :-------- | :--------------- | :------- | :---------------------------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------- |
+| small     | <code>let</code> | No       | <code>boolean</code>                      | <code>false</code> | @deprecated this prop will be removed in the next major release<br />Set to `true` to use the small variant |
+| size      | <code>let</code> | No       | <code>"sm" &#124; "lg" &#124; "xl"</code> | <code>"xl"</code>  | Specify the size of the search input                                                                        |
 
 ### Slots
 
@@ -3880,16 +3880,16 @@ None.
 
 ### Props
 
-| Prop name       | Kind             | Reactive | Type                                       | Default value                                    | Description                                     |
-| :-------------- | :--------------- | :------- | :----------------------------------------- | ------------------------------------------------ | ----------------------------------------------- |
-| ref             | <code>let</code> | Yes      | <code>null &#124; HTMLSelectElement</code> | <code>null</code>                                | Obtain a reference to the select HTML element   |
-| value           | <code>let</code> | Yes      | <code>number &#124; string</code>          | <code>""</code>                                  | Specify the select value                        |
-| disabled        | <code>let</code> | No       | <code>boolean</code>                       | <code>false</code>                               | Set to `true` to disable the select             |
-| iconDescription | <code>let</code> | No       | <code>string</code>                        | <code>"Open list of options"</code>              | Specify the ARIA label for the chevron icon     |
-| labelText       | <code>let</code> | No       | <code>string</code>                        | <code>""</code>                                  | Specify the label text                          |
-| hideLabel       | <code>let</code> | No       | <code>boolean</code>                       | <code>true</code>                                | --                                              |
-| id              | <code>let</code> | No       | <code>string</code>                        | <code>"ccs-" + Math.random().toString(36)</code> | Set an id for the select element                |
-| name            | <code>let</code> | No       | <code>string</code>                        | <code>undefined</code>                           | Specify a name attribute for the select element |
+| Prop name       | Kind             | Reactive | Type                                       | Default value                                    | Description                                                                                                                                                                                   |
+| :-------------- | :--------------- | :------- | :----------------------------------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ref             | <code>let</code> | Yes      | <code>null &#124; HTMLSelectElement</code> | <code>null</code>                                | Obtain a reference to the select HTML element                                                                                                                                                 |
+| value           | <code>let</code> | Yes      | <code>number &#124; string</code>          | <code>""</code>                                  | Specify the select value                                                                                                                                                                      |
+| disabled        | <code>let</code> | No       | <code>boolean</code>                       | <code>false</code>                               | Set to `true` to disable the select                                                                                                                                                           |
+| iconDescription | <code>let</code> | No       | <code>string</code>                        | <code>"Open list of options"</code>              | Specify the ARIA label for the chevron icon                                                                                                                                                   |
+| labelText       | <code>let</code> | No       | <code>string</code>                        | <code>""</code>                                  | Specify the label text                                                                                                                                                                        |
+| hideLabel       | <code>let</code> | No       | <code>boolean</code>                       | <code>true</code>                                | @deprecated The `hideLabel` prop for `TimePickerSelect` is no longer needed and has been deprecated. It will be removed in the next major release.<br />Set to `false` to show the label text |
+| id              | <code>let</code> | No       | <code>string</code>                        | <code>"ccs-" + Math.random().toString(36)</code> | Set an id for the select element                                                                                                                                                              |
+| name            | <code>let</code> | No       | <code>string</code>                        | <code>undefined</code>                           | Specify a name attribute for the select element                                                                                                                                               |
 
 ### Slots
 
