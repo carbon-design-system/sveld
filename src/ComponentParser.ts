@@ -508,10 +508,13 @@ export default class ComponentParser {
 
             if (additional_tags.length > 0 && description === undefined) {
               description = "";
-              additional_tags.forEach((tag) => {
-                description += `${description ? "\n" : ""}@${tag.tag} ${tag.name}`;
-              });
             }
+
+            additional_tags.forEach((tag) => {
+              description += `${description ? "\n" : ""}@${tag.tag} ${tag.name}${
+                tag.description ? ` ${tag.description}` : ""
+              }`;
+            });
           }
 
           if (!description && this.typedefs.has(type)) {

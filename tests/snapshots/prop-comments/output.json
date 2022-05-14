@@ -3,7 +3,7 @@
     {
       "name": "prop",
       "kind": "let",
-      "description": "This is a comment.",
+      "description": "This is a comment.\n@see https://github.com/\n@deprecated this prop will be removed in the next major release.",
       "type": "boolean | string",
       "value": "true",
       "isFunction": false,
