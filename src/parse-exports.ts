@@ -1,6 +1,7 @@
 import * as acorn from "acorn";
 import * as fs from "fs";
 import path from "path";
+import { normalizeSeparators } from "./path";
 
 interface NodeImportDeclaration extends acorn.Node {
   type: "ImportDeclaration";
@@ -62,7 +63,13 @@ export function parseExports(source: string, dir: string) {
       const export_file = fs.readFileSync(file_path, "utf-8");
       const exports = parseExports(export_file, path.dirname(file_path));
 
-      for (const [key, value] of Object.entries(exports)) exports_by_identifier[key] = value;
+      for (const [key, value] of Object.entries(exports)) {
+        const source = normalizeSeparators("./" + path.join(node.source.value, value.source));
+        exports_by_identifier[key] = {
+          ...value,
+          source
+        };
+      }
     } else if (node.type === "ExportNamedDeclaration") {
       node.specifiers.forEach((specifier) => {
         const exported_name = specifier.exported.name;
