@@ -59,7 +59,7 @@ interface GenerateBundleResult {
 export async function generateBundle(input: string, glob: boolean) {
   const dir = fs.lstatSync(input).isFile() ? path.dirname(input) : input;
   const entry = fs.readFileSync(input, "utf-8");
-  const exports = parseExports(entry);
+  const exports = parseExports(entry, dir);
 
   if (glob) {
     fg.sync([`${dir}/**/*.svelte`]).forEach((file) => {
