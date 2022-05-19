@@ -56,7 +56,7 @@ function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleN
 
       return `
       ${prop_comments.length > 0 ? `/**\n${prop_comments}*/` : EMPTY_STR}
-      ${prop.name}?: ${prop_value};`;
+      ${prop.name}${prop.isRequired ? "" : "?"}: ${prop_value};`;
     });
 
   if (def.rest_props?.type === "Element") {
