@@ -7,6 +7,7 @@
       "value": "true",
       "isFunction": false,
       "isFunctionDeclaration": false,
+      "isRequired": false,
       "constant": false,
       "reactive": true
     },
@@ -17,6 +18,7 @@
       "value": "\"\"",
       "isFunction": false,
       "isFunctionDeclaration": false,
+      "isRequired": false,
       "constant": false,
       "reactive": false
     },
@@ -26,6 +28,7 @@
       "type": "string",
       "isFunction": false,
       "isFunctionDeclaration": false,
+      "isRequired": false,
       "constant": false,
       "reactive": false
     },
@@ -36,6 +39,7 @@
       "value": "\"\" + Math.random().toString(36)",
       "isFunction": false,
       "isFunctionDeclaration": false,
+      "isRequired": false,
       "constant": false,
       "reactive": false
     },
@@ -46,6 +50,7 @@
       "value": "{ [\"1\"]: true }",
       "isFunction": false,
       "isFunctionDeclaration": false,
+      "isRequired": false,
       "constant": true,
       "reactive": false
     },
@@ -56,6 +61,7 @@
       "value": "() => {     localBool = !localBool;   }",
       "isFunction": true,
       "isFunctionDeclaration": true,
+      "isRequired": false,
       "constant": false,
       "reactive": false
     }

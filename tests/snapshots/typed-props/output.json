@@ -7,6 +7,7 @@
       "type": "string",
       "isFunction": false,
       "isFunctionDeclaration": false,
+      "isRequired": false,
       "constant": false,
       "reactive": false
     },
@@ -17,6 +18,7 @@
       "value": "null",
       "isFunction": false,
       "isFunctionDeclaration": false,
+      "isRequired": false,
       "constant": false,
       "reactive": false
     },
@@ -27,6 +29,7 @@
       "value": "4",
       "isFunction": false,
       "isFunctionDeclaration": false,
+      "isRequired": false,
       "constant": false,
       "reactive": false
     },
@@ -37,6 +40,7 @@
       "value": "\"red\"",
       "isFunction": false,
       "isFunctionDeclaration": false,
+      "isRequired": false,
       "constant": false,
       "reactive": false
     }

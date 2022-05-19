@@ -8,6 +8,7 @@
       "value": "\"test\"",
       "isFunction": false,
       "isFunctionDeclaration": false,
+      "isRequired": false,
       "constant": false,
       "reactive": false
     }

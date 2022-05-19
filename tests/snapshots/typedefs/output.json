@@ -7,6 +7,7 @@
       "value": "{ [\"1\"]: true }",
       "isFunction": false,
       "isFunctionDeclaration": false,
+      "isRequired": false,
       "constant": false,
       "reactive": false
     },
@@ -17,6 +18,7 @@
       "value": "[]",
       "isFunction": false,
       "isFunctionDeclaration": false,
+      "isRequired": false,
       "constant": false,
       "reactive": false
     }
