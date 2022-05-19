@@ -12,6 +12,7 @@
           "value": "\"button\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -23,6 +24,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -86,6 +88,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -96,6 +99,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
