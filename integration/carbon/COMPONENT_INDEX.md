@@ -976,7 +976,7 @@ export interface DropdownItem {
 | open            | No       | <code>let</code> | Yes      | <code>boolean</code>                        | <code>false</code>                                    | Set to `true` to open the dropdown            |
 | selectedIndex   | No       | <code>let</code> | Yes      | <code>number</code>                         | <code>-1</code>                                       | Specify the selected item index               |
 | items           | No       | <code>let</code> | No       | <code>DropdownItem[]</code>                 | <code>[]</code>                                       | Set the dropdown items                        |
-| itemToString    | No       | <code>let</code> | No       | <code>(item: DropdownItem) => string</code> | <code>(item) => item.text &#124;&#124; item.id</code> | Override the display of a dropdown item       |
+| itemToString    | Yes      | <code>let</code> | No       | <code>(item: DropdownItem) => string</code> | <code>(item) => item.text &#124;&#124; item.id</code> | Override the display of a dropdown item       |
 | type            | No       | <code>let</code> | No       | <code>"default" &#124; "inline"</code>      | <code>"default"</code>                                | Specify the type of dropdown                  |
 | size            | No       | <code>let</code> | No       | <code>"sm" &#124; "lg" &#124; "xl"</code>   | <code>undefined</code>                                | Specify the size of the dropdown field        |
 | light           | No       | <code>let</code> | No       | <code>boolean</code>                        | <code>false</code>                                    | Set to `true` to enable the light variant     |

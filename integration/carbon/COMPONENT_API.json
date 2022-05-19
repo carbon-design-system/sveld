@@ -2601,7 +2601,7 @@
           "value": "(item) => item.text || item.id",
           "isFunction": true,
           "isFunctionDeclaration": false,
-          "isRequired": false,
+          "isRequired": true,
           "constant": false,
           "reactive": false
         },
