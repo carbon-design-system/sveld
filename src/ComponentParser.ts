@@ -30,6 +30,7 @@ interface ComponentProp {
   description?: string;
   isFunction: boolean;
   isFunctionDeclaration: boolean;
+  isRequired: boolean;
   reactive: boolean;
 }
 
@@ -385,6 +386,7 @@ export default class ComponentParser {
               value,
               isFunction,
               isFunctionDeclaration,
+              isRequired: false,
               constant: kind === "const",
               reactive: false,
             });
@@ -456,6 +458,7 @@ export default class ComponentParser {
           let description: undefined | string = undefined;
           let isFunction = false;
           let isFunctionDeclaration = false;
+          let isRequired = false;
 
           if (init != null) {
             if (
@@ -511,9 +514,12 @@ export default class ComponentParser {
             }
 
             additional_tags.forEach((tag) => {
-              description += `${description ? "\n" : ""}@${tag.tag} ${tag.name}${
-                tag.description ? ` ${tag.description}` : ""
-              }`;
+              isRequired = tag.tag === "required";
+              if (!isRequired) {
+                description += `${description ? "\n" : ""}@${tag.tag} ${tag.name}${
+                  tag.description ? ` ${tag.description}` : ""
+                }`;
+              }
             });
           }
 
@@ -529,6 +535,7 @@ export default class ComponentParser {
             value,
             isFunction,
             isFunctionDeclaration,
+            isRequired,
             constant: kind === "const",
             reactive: this.reactive_vars.has(prop_name),
           });

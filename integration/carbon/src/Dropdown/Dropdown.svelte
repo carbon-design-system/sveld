@@ -14,6 +14,7 @@
 
   /**
    * Override the display of a dropdown item
+   * @required
    * @type {(item: DropdownItem) => string}
    */
   export let itemToString = (item) => item.text || item.id;

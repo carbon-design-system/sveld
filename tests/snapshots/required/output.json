@@ -1,24 +1,26 @@
 {
   "props": [
     {
-      "name": "id",
+      "name": "prop",
       "kind": "let",
-      "type": "string",
-      "value": "\"id-\" + Math.random().toString(36)",
+      "description": "",
+      "type": "boolean",
+      "value": "true",
       "isFunction": false,
       "isFunctionDeclaration": false,
-      "isRequired": false,
+      "isRequired": true,
       "constant": false,
       "reactive": false
     },
     {
       "name": "prop1",
       "kind": "let",
-      "type": "MyTypedef",
-      "value": "{ [\"1\"]: true }",
+      "description": "This is a comment.",
+      "type": "boolean | string",
+      "value": "true",
       "isFunction": false,
       "isFunctionDeclaration": false,
-      "isRequired": false,
+      "isRequired": true,
       "constant": false,
       "reactive": false
     }
@@ -28,15 +30,9 @@
     {
       "name": "__default__",
       "default": true,
-      "slot_props": "{ prop1: MyTypedef }"
+      "slot_props": "{ prop: boolean, prop1: boolean | string }"
     }
   ],
   "events": [],
-  "typedefs": [
-    {
-      "type": "{ [key: string]: boolean; }",
-      "name": "MyTypedef",
-      "ts": "interface MyTypedef { [key: string]: boolean; }"
-    }
-  ]
+  "typedefs": []
 }

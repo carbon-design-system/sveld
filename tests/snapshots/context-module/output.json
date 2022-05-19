@@ -7,6 +7,7 @@
       "value": "\"\"",
       "isFunction": false,
       "isFunctionDeclaration": false,
+      "isRequired": false,
       "constant": true,
       "reactive": false
     }
@@ -19,6 +20,7 @@
       "value": "\"\"",
       "isFunction": false,
       "isFunctionDeclaration": false,
+      "isRequired": false,
       "constant": true,
       "reactive": false
     },
@@ -29,6 +31,7 @@
       "value": "{ b: 4 }",
       "isFunction": false,
       "isFunctionDeclaration": false,
+      "isRequired": false,
       "constant": true,
       "reactive": false
     },
@@ -40,6 +43,7 @@
       "value": "{ b: 4 }",
       "isFunction": false,
       "isFunctionDeclaration": false,
+      "isRequired": false,
       "constant": true,
       "reactive": false
     },
@@ -51,6 +55,7 @@
       "value": "() => {     console.log(message);   }",
       "isFunction": true,
       "isFunctionDeclaration": true,
+      "isRequired": false,
       "constant": false,
       "reactive": false
     },
@@ -61,6 +66,7 @@
       "value": "() => {}",
       "isFunction": true,
       "isFunctionDeclaration": false,
+      "isRequired": false,
       "constant": true,
       "reactive": false
     },
@@ -71,6 +77,7 @@
       "value": "() => () => {}",
       "isFunction": true,
       "isFunctionDeclaration": false,
+      "isRequired": false,
       "constant": true,
       "reactive": false
     },
@@ -81,6 +88,7 @@
       "value": "() => () => false",
       "isFunction": true,
       "isFunctionDeclaration": false,
+      "isRequired": false,
       "constant": true,
       "reactive": false
     }

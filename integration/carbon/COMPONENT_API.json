@@ -13,6 +13,7 @@
           "value": "\"end\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -23,6 +24,7 @@
           "type": "\"sm\" | \"xl\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -34,6 +36,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -45,6 +48,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -93,6 +97,7 @@
           "value": "\"title\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -104,6 +109,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -115,6 +121,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -126,6 +133,7 @@
           "value": "\"Expand/Collapse\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -164,6 +172,7 @@
           "value": "4",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -175,6 +184,7 @@
           "value": "\"end\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -185,6 +195,7 @@
           "type": "\"sm\" | \"xl\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -196,6 +207,7 @@
           "value": "true",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -223,6 +235,7 @@
           "value": "\"2x1\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -245,6 +258,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -256,6 +270,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -302,6 +317,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -313,6 +329,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -346,6 +363,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -357,6 +375,7 @@
           "value": "3",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -384,6 +403,7 @@
           "value": "\"primary\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -395,6 +415,7 @@
           "value": "\"default\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -406,6 +427,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -416,6 +438,7 @@
           "type": "typeof import(\"carbon-icons-svelte\").CarbonIcon",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -426,6 +449,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -437,6 +461,7 @@
           "value": "\"center\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -448,6 +473,7 @@
           "value": "\"bottom\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -459,6 +485,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -470,6 +497,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -481,6 +509,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -491,6 +520,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -502,6 +532,7 @@
           "value": "\"0\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -513,6 +544,7 @@
           "value": "\"button\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -524,6 +556,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -573,6 +606,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -594,6 +628,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -605,6 +640,7 @@
           "value": "\"default\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -616,6 +652,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -643,6 +680,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -654,6 +692,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -665,6 +704,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -676,6 +716,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -687,6 +728,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -698,6 +740,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -709,6 +752,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -720,6 +764,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -730,6 +775,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -741,6 +787,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -752,6 +799,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -808,6 +856,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -819,6 +868,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -829,6 +879,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -857,6 +908,7 @@
           "value": "\"single\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -867,6 +919,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -878,6 +931,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -889,6 +943,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -900,6 +955,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -911,6 +967,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -922,6 +979,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -933,6 +991,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -943,6 +1002,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -953,6 +1013,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -964,6 +1025,7 @@
           "value": "\"Copied!\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -975,6 +1037,7 @@
           "value": "2000",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -986,6 +1049,7 @@
           "value": "\"Show less\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -997,6 +1061,7 @@
           "value": "\"Show more\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1008,6 +1073,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -1019,6 +1085,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1030,6 +1097,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -1081,6 +1149,7 @@
           "value": "\"single\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -1108,6 +1177,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1119,6 +1189,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1130,6 +1201,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1141,6 +1213,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1152,6 +1225,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1162,6 +1236,7 @@
           "type": "\"2x1\" | \"16x9\" | \"9x16\" | \"1x2\" | \"4x3\" | \"3x4\" | \"1x1\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1172,6 +1247,7 @@
           "type": "ColumnBreakpoint",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1182,6 +1258,7 @@
           "type": "ColumnBreakpoint",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1192,6 +1269,7 @@
           "type": "ColumnBreakpoint",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1202,6 +1280,7 @@
           "type": "ColumnBreakpoint",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1212,6 +1291,7 @@
           "type": "ColumnBreakpoint",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -1256,6 +1336,7 @@
           "value": "[]",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1267,6 +1348,7 @@
           "value": "(item) => item.text || item.id",
           "isFunction": true,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1278,6 +1360,7 @@
           "value": "-1",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -1289,6 +1372,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -1299,6 +1383,7 @@
           "type": "\"sm\" | \"xl\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1310,6 +1395,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1321,6 +1407,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1332,6 +1419,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1343,6 +1431,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1354,6 +1443,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1365,6 +1455,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1376,6 +1467,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1387,6 +1479,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -1398,6 +1491,7 @@
           "value": "() => true",
           "isFunction": true,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1408,6 +1502,7 @@
           "type": "(id: any) => string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1419,6 +1514,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1429,6 +1525,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1440,6 +1537,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -1451,6 +1549,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -1489,6 +1588,7 @@
           "type": "\"xs\" | \"sm\" | \"lg\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1500,6 +1600,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -1511,6 +1612,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1522,6 +1624,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1533,6 +1636,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1544,6 +1648,7 @@
           "value": "\"[data-modal-primary-focus]\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1555,6 +1660,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -1586,6 +1692,7 @@
           "value": "\"main-content\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -1608,6 +1715,7 @@
           "value": "0",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -1619,6 +1727,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1629,6 +1738,7 @@
           "type": "\"sm\" | \"xl\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -1657,6 +1767,7 @@
           "value": "\"Copied!\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1668,6 +1779,7 @@
           "value": "2000",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1679,6 +1791,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -1711,6 +1824,7 @@
           "value": "\"Copy to clipboard\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -1740,6 +1854,7 @@
           "value": "[]",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1751,6 +1866,7 @@
           "value": "[]",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -1761,6 +1877,7 @@
           "type": "\"compact\" | \"short\" | \"tall\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1772,6 +1889,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1783,6 +1901,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1794,6 +1913,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1805,6 +1925,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1816,6 +1937,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -1827,6 +1949,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1838,6 +1961,7 @@
           "value": "[]",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -1849,6 +1973,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1860,6 +1985,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -1871,6 +1997,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -1882,6 +2009,7 @@
           "value": "[]",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -1893,6 +2021,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -2012,6 +2141,7 @@
           "value": "5",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2023,6 +2153,7 @@
           "value": "5",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2033,6 +2164,7 @@
           "type": "\"compact\" | \"short\" | \"tall\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2044,6 +2176,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2055,6 +2188,7 @@
           "value": "true",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2066,6 +2200,7 @@
           "value": "[]",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2077,6 +2212,7 @@
           "value": "true",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -2108,6 +2244,7 @@
           "value": "\"simple\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2119,6 +2256,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -2129,6 +2267,7 @@
           "type": "HTMLElement",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2140,6 +2279,7 @@
           "value": "\"m/d/Y\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2151,6 +2291,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2162,6 +2303,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2173,6 +2315,7 @@
           "value": "\"en\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2184,6 +2327,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2195,6 +2339,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2206,6 +2351,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -2233,6 +2379,7 @@
           "type": "\"sm\" | \"xl\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2244,6 +2391,7 @@
           "value": "\"text\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2255,6 +2403,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2266,6 +2415,7 @@
           "value": "\"\\\\d{1,2}\\\\/\\\\d{1,2}\\\\/\\\\d{4}\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2277,6 +2427,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2288,6 +2439,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2299,6 +2451,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2310,6 +2463,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2321,6 +2475,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2332,6 +2487,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2343,6 +2499,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2353,6 +2510,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2364,6 +2522,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -2390,6 +2549,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2401,6 +2561,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -2428,6 +2589,7 @@
           "value": "[]",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2439,6 +2601,7 @@
           "value": "(item) => item.text || item.id",
           "isFunction": true,
           "isFunctionDeclaration": false,
+          "isRequired": true,
           "constant": false,
           "reactive": false
         },
@@ -2450,6 +2613,7 @@
           "value": "-1",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -2461,6 +2625,7 @@
           "value": "\"default\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2471,6 +2636,7 @@
           "type": "\"sm\" | \"lg\" | \"xl\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2482,6 +2648,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -2493,6 +2660,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -2504,6 +2672,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2515,6 +2684,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2526,6 +2696,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2537,6 +2708,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2548,6 +2720,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2559,6 +2732,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2570,6 +2744,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2581,6 +2756,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2591,6 +2767,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2601,6 +2778,7 @@
           "type": "(id: any) => string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2612,6 +2790,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2622,6 +2801,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2633,6 +2813,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -2677,6 +2858,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -2704,6 +2886,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -2715,6 +2898,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2726,6 +2910,7 @@
           "value": "0",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -2737,6 +2922,7 @@
           "value": "0",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -2748,6 +2934,7 @@
           "value": "\"Interact to expand Tile\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2759,6 +2946,7 @@
           "value": "\"Interact to collapse Tile\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2770,6 +2958,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2781,6 +2970,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2792,6 +2982,7 @@
           "value": "\"0\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2803,6 +2994,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2814,6 +3006,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -2845,6 +3038,7 @@
           "value": "\"uploading\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2856,6 +3050,7 @@
           "value": "[]",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2867,6 +3062,7 @@
           "value": "[]",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -2878,6 +3074,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2889,6 +3086,7 @@
           "value": "() => {     files = [];   }",
           "isFunction": true,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": true,
           "reactive": false
         },
@@ -2900,6 +3098,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2911,6 +3110,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2922,6 +3122,7 @@
           "value": "\"primary\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2933,6 +3134,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2944,6 +3146,7 @@
           "value": "\"Provide icon description\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -2955,6 +3158,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -2990,6 +3194,7 @@
           "value": "[]",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3001,6 +3206,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3012,6 +3218,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3023,6 +3230,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3034,6 +3242,7 @@
           "value": "\"primary\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3045,6 +3254,7 @@
           "value": "\"Add file\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -3056,6 +3266,7 @@
           "value": "\"button\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3067,6 +3278,7 @@
           "value": "\"0\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3078,6 +3290,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3089,6 +3302,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3100,6 +3314,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -3126,6 +3341,7 @@
           "value": "[]",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3137,6 +3353,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3148,6 +3365,7 @@
           "value": "(files) => files",
           "isFunction": true,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3159,6 +3377,7 @@
           "value": "\"Add file\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3170,6 +3389,7 @@
           "value": "\"button\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3181,6 +3401,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3192,6 +3413,7 @@
           "value": "\"0\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3203,6 +3425,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3214,6 +3437,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3225,6 +3449,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -3255,6 +3480,7 @@
           "value": "\"uploading\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3266,6 +3492,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3277,6 +3504,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3288,6 +3516,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3299,6 +3528,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3310,6 +3540,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3321,6 +3552,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -3363,6 +3595,7 @@
           "value": "\"uploading\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3374,6 +3607,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3385,6 +3619,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -3436,6 +3671,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3447,6 +3683,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3458,6 +3695,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3469,6 +3707,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -3511,6 +3750,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -3538,6 +3778,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3549,6 +3790,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3560,6 +3802,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3571,6 +3814,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3582,6 +3826,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3593,6 +3838,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3604,6 +3850,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3615,6 +3862,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -3643,6 +3891,7 @@
           "value": "true",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3654,6 +3903,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -3664,6 +3914,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3674,6 +3925,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3684,6 +3936,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3695,6 +3948,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3706,6 +3960,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3717,6 +3972,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -3748,6 +4004,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -3758,6 +4015,7 @@
           "type": "typeof import(\"carbon-icons-svelte\").CarbonIcon",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3768,6 +4026,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3779,6 +4038,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -3790,6 +4050,7 @@
           "value": "{ duration: 200 }",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -3829,6 +4090,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3839,6 +4101,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3849,6 +4112,7 @@
           "type": "typeof import(\"carbon-icons-svelte\").CarbonIcon",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3860,6 +4124,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -3882,6 +4147,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -3915,6 +4181,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3925,6 +4192,7 @@
           "type": "typeof import(\"carbon-icons-svelte\").CarbonIcon",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3936,6 +4204,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -3964,6 +4233,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -3985,6 +4255,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -3995,6 +4266,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4006,6 +4278,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -4037,6 +4310,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -4048,6 +4322,7 @@
           "value": "\"/\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4058,6 +4333,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4069,6 +4345,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -4080,6 +4357,7 @@
           "value": "\"Expand/Collapse\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -4119,6 +4397,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4130,6 +4409,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -4161,6 +4441,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -4172,6 +4453,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -4183,6 +4465,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -4194,6 +4477,7 @@
           "value": "[]",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4205,6 +4489,7 @@
           "value": "0",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -4262,6 +4547,7 @@
           "type": "typeof import(\"carbon-icons-svelte\").CarbonIcon",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4273,6 +4559,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -4308,6 +4595,7 @@
           "value": "16",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -4335,6 +4623,7 @@
           "value": "\"active\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4345,6 +4634,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4355,6 +4645,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4366,6 +4657,7 @@
           "value": "1500",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -4394,6 +4686,7 @@
           "value": "\"error\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4405,6 +4698,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4416,6 +4710,7 @@
           "value": "0",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4427,6 +4722,7 @@
           "value": "\"alert\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4438,6 +4734,7 @@
           "value": "\"Title\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4449,6 +4746,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4460,6 +4758,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4471,6 +4770,7 @@
           "value": "\"Closes notification\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -4505,6 +4805,7 @@
           "type": "\"sm\" | \"lg\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4515,6 +4816,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4526,6 +4828,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4537,6 +4840,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4548,6 +4852,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4559,6 +4864,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -4585,6 +4891,7 @@
           "type": "\"sm\" | \"xl\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4596,6 +4903,7 @@
           "value": "\"default\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4607,6 +4915,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4618,6 +4927,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4629,6 +4939,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4640,6 +4951,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4651,6 +4963,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4662,6 +4975,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4673,6 +4987,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -4698,6 +5013,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4709,6 +5025,7 @@
           "value": "\"combobox\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4720,6 +5037,7 @@
           "value": "\"-1\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4731,6 +5049,7 @@
           "value": "{ close: \"close\", open: \"open\" }",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": true,
           "reactive": false
         },
@@ -4742,6 +5061,7 @@
           "value": "(id) => defaultTranslations[id]",
           "isFunction": true,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4753,6 +5073,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4764,6 +5085,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -4799,6 +5121,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4810,6 +5133,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -4832,6 +5156,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4843,6 +5168,7 @@
           "value": "{ close: \"close\", open: \"open\" }",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": true,
           "reactive": false
         },
@@ -4854,6 +5180,7 @@
           "value": "(id) => defaultTranslations[id]",
           "isFunction": true,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -4882,6 +5209,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4893,6 +5221,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -4918,6 +5247,7 @@
           "type": "any",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4929,6 +5259,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4940,6 +5271,7 @@
           "value": "{     clearAll: \"clearAll\",     clearSelection: \"clearSelection\",   }",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": true,
           "reactive": false
         },
@@ -4951,6 +5283,7 @@
           "value": "(id) => defaultTranslations[id]",
           "isFunction": true,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -4962,6 +5295,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -5005,6 +5339,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5016,6 +5351,7 @@
           "value": "true",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5027,6 +5363,7 @@
           "value": "true",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5038,6 +5375,7 @@
           "value": "\"Active loading indicator\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5049,6 +5387,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -5070,6 +5409,7 @@
           "type": "\"xs\" | \"sm\" | \"lg\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5081,6 +5421,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -5092,6 +5433,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5103,6 +5445,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5114,6 +5457,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5124,6 +5468,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5134,6 +5479,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5144,6 +5490,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5155,6 +5502,7 @@
           "value": "\"Close the modal\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5166,6 +5514,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5177,6 +5526,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5188,6 +5538,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5199,6 +5550,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5210,6 +5562,7 @@
           "value": "true",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5221,6 +5574,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5232,6 +5586,7 @@
           "value": "\"[data-modal-primary-focus]\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5243,6 +5598,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5254,6 +5610,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5265,6 +5622,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -5315,6 +5673,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5326,6 +5685,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -5348,6 +5708,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5359,6 +5720,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5369,6 +5731,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5380,6 +5743,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5390,6 +5754,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5401,6 +5766,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -5423,6 +5789,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5434,6 +5801,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5445,6 +5813,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5456,6 +5825,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5467,6 +5837,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5478,6 +5849,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5489,6 +5861,7 @@
           "value": "\"Close\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -5511,6 +5884,7 @@
           "value": "[]",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -5522,6 +5896,7 @@
           "value": "(item) => item.text || item.id",
           "isFunction": true,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5533,6 +5908,7 @@
           "value": "[]",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -5544,6 +5920,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -5554,6 +5931,7 @@
           "type": "\"sm\" | \"lg\" | \"xl\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5565,6 +5943,7 @@
           "value": "\"default\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5576,6 +5955,7 @@
           "value": "\"top-after-reopen\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5587,6 +5967,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5598,6 +5979,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5609,6 +5991,7 @@
           "value": "(item, value) => item.text.toLowerCase().includes(value.toLowerCase())",
           "isFunction": true,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5620,6 +6003,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -5631,6 +6015,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5642,6 +6027,7 @@
           "value": "\"en\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5653,6 +6039,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5664,6 +6051,7 @@
           "value": "(a, b) => a.text.localeCompare(b.text, locale, { numeric: true })",
           "isFunction": true,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5674,6 +6062,7 @@
           "type": "(id: any) => string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5685,6 +6074,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5696,6 +6086,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5707,6 +6098,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5718,6 +6110,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5729,6 +6122,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5740,6 +6134,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5751,6 +6146,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5762,6 +6158,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5773,6 +6170,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5783,6 +6181,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -5842,6 +6241,7 @@
           "value": "\"toast\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5852,6 +6252,7 @@
           "type": "typeof import(\"carbon-icons-svelte\").CarbonIcon",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5862,6 +6263,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5873,6 +6275,7 @@
           "value": "\"Close icon\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -5900,6 +6303,7 @@
           "value": "\"error\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5911,6 +6315,7 @@
           "value": "\"toast\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5922,6 +6327,7 @@
           "value": "\"Closes notification\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -5943,6 +6349,7 @@
           "value": "\"toast\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5954,6 +6361,7 @@
           "value": "\"Title\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5965,6 +6373,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -5976,6 +6385,7 @@
           "value": "\"Caption\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -5996,6 +6406,7 @@
           "type": "\"sm\" | \"xl\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6007,6 +6418,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -6018,6 +6430,7 @@
           "value": "1",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6028,6 +6441,7 @@
           "type": "number",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6038,6 +6452,7 @@
           "type": "number",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6049,6 +6464,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6060,6 +6476,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6071,6 +6488,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6082,6 +6500,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6093,6 +6512,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6104,6 +6524,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6115,6 +6536,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6126,6 +6548,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6137,6 +6560,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6148,6 +6572,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6159,6 +6584,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6170,6 +6596,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6181,6 +6608,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6192,6 +6620,7 @@
           "value": "(id) => defaultTranslations[id]",
           "isFunction": true,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6203,6 +6632,7 @@
           "value": "{     increment: \"increment\",     decrement: \"decrement\",   }",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": true,
           "reactive": false
         },
@@ -6214,6 +6644,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6224,6 +6655,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6235,6 +6667,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -6277,6 +6710,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -6304,6 +6738,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6315,6 +6750,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -6357,6 +6793,7 @@
           "type": "\"sm\" | \"xl\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6368,6 +6805,7 @@
           "value": "\"bottom\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6379,6 +6817,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -6390,6 +6829,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6401,6 +6841,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6411,6 +6852,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6421,6 +6863,7 @@
           "type": "typeof import(\"carbon-icons-svelte\").CarbonIcon",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6431,6 +6874,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6442,6 +6886,7 @@
           "value": "\"Open and close list of options\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6453,6 +6898,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6464,6 +6910,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -6475,6 +6922,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -6516,6 +6964,7 @@
           "value": "\"Provide text\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6527,6 +6976,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6538,6 +6988,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -6549,6 +7000,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6560,6 +7012,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6571,6 +7024,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6582,6 +7036,7 @@
           "value": "true",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6593,6 +7048,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6604,6 +7060,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -6636,6 +7093,7 @@
           "value": "1",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -6647,6 +7105,7 @@
           "value": "0",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6658,6 +7117,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6669,6 +7129,7 @@
           "value": "\"Next page\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6680,6 +7141,7 @@
           "value": "\"Previous page\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6691,6 +7153,7 @@
           "value": "\"Items per page:\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6702,6 +7165,7 @@
           "value": "(min, max) => `${min}–${max} items`",
           "isFunction": true,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6713,6 +7177,7 @@
           "value": "(min, max, total) => `${min}–${max} of ${total} items`",
           "isFunction": true,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6724,6 +7189,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6735,6 +7201,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6746,6 +7213,7 @@
           "value": "10",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -6757,6 +7225,7 @@
           "value": "[10]",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6768,6 +7237,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6779,6 +7249,7 @@
           "value": "(page) => `page ${page}`",
           "isFunction": true,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6790,6 +7261,7 @@
           "value": "(current, total) => `of ${total} page${total === 1 ? \"\" : \"s\"}`",
           "isFunction": true,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6801,6 +7273,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -6829,6 +7302,7 @@
           "value": "0",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -6840,6 +7314,7 @@
           "value": "10",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6851,6 +7326,7 @@
           "value": "10",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6862,6 +7338,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6873,6 +7350,7 @@
           "value": "\"Next page\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6884,6 +7362,7 @@
           "value": "\"Previous page\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -6936,6 +7415,7 @@
           "type": "\"sm\" | \"xl\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6947,6 +7427,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -6958,6 +7439,7 @@
           "value": "\"password\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -6969,6 +7451,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6980,6 +7463,7 @@
           "value": "\"Hide password\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -6991,6 +7475,7 @@
           "value": "\"Show password\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7002,6 +7487,7 @@
           "value": "\"center\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7013,6 +7499,7 @@
           "value": "\"bottom\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7024,6 +7511,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7035,6 +7523,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7046,6 +7535,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7057,6 +7547,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7068,6 +7559,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7079,6 +7571,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7090,6 +7583,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7101,6 +7595,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7111,6 +7606,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7122,6 +7618,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -7154,6 +7651,7 @@
           "value": "0",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -7165,6 +7663,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7176,6 +7675,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7187,6 +7687,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -7215,6 +7716,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7226,6 +7728,7 @@
           "value": "4",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -7253,6 +7756,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -7264,6 +7768,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -7275,6 +7780,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7286,6 +7792,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7297,6 +7804,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7308,6 +7816,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7319,6 +7828,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7330,6 +7840,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -7365,6 +7876,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7376,6 +7888,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -7387,6 +7900,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7398,6 +7912,7 @@
           "value": "\"right\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7409,6 +7924,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7420,6 +7936,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7431,6 +7948,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7442,6 +7960,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7453,6 +7972,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -7474,6 +7994,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -7485,6 +8006,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7496,6 +8018,7 @@
           "value": "\"right\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7507,6 +8030,7 @@
           "value": "\"horizontal\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7517,6 +8041,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -7560,6 +8085,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -7571,6 +8097,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7582,6 +8109,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7593,6 +8121,7 @@
           "value": "\"0\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7604,6 +8133,7 @@
           "value": "\"Tile checkmark\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7615,6 +8145,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7626,6 +8157,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -7655,6 +8187,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7666,6 +8199,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7677,6 +8211,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7688,6 +8223,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7699,6 +8235,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7710,6 +8247,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7721,6 +8259,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -7749,6 +8288,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7760,6 +8300,7 @@
           "value": "\"xl\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7771,6 +8312,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7782,6 +8324,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7793,6 +8336,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7804,6 +8348,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -7815,6 +8360,7 @@
           "value": "\"text\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7826,6 +8372,7 @@
           "value": "\"Search...\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7837,6 +8384,7 @@
           "value": "\"off\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7848,6 +8396,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7859,6 +8408,7 @@
           "value": "\"Clear search input\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7870,6 +8420,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7881,6 +8432,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7892,6 +8444,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -7937,6 +8490,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7948,6 +8502,7 @@
           "value": "\"xl\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -7974,6 +8529,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -7984,6 +8540,7 @@
           "type": "\"sm\" | \"xl\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -7995,6 +8552,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8006,6 +8564,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8017,6 +8576,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8028,6 +8588,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8038,6 +8599,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8049,6 +8611,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8060,6 +8623,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8071,6 +8635,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8082,6 +8647,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8093,6 +8659,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8104,6 +8671,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8115,6 +8683,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -8140,6 +8709,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8151,6 +8721,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8162,6 +8733,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8173,6 +8745,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -8194,6 +8767,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8205,6 +8779,7 @@
           "value": "\"Provide label\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -8227,6 +8802,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -8254,6 +8830,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -8265,6 +8842,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8276,6 +8854,7 @@
           "value": "\"title\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8287,6 +8866,7 @@
           "value": "\"value\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8298,6 +8878,7 @@
           "value": "\"0\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8309,6 +8890,7 @@
           "value": "\"Tile checkmark\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8320,6 +8902,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8331,6 +8914,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8342,6 +8926,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -8370,6 +8955,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8380,6 +8966,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8391,6 +8978,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -8422,6 +9010,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8432,6 +9021,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8442,6 +9032,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8452,6 +9043,7 @@
           "type": "typeof import(\"carbon-icons-svelte\").CarbonIcon",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8463,6 +9055,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -8485,6 +9078,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -8495,6 +9089,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8505,6 +9100,7 @@
           "type": "typeof import(\"carbon-icons-svelte\").CarbonIcon",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8516,6 +9112,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -8537,6 +9134,7 @@
           "type": "boolean",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8547,6 +9145,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8557,6 +9156,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8568,6 +9168,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -8605,6 +9206,7 @@
           "value": "3",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8616,6 +9218,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8627,6 +9230,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8638,6 +9242,7 @@
           "value": "\"100%\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -8665,6 +9270,7 @@
           "value": "\"#main-content\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8676,6 +9282,7 @@
           "value": "\"0\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -8705,6 +9312,7 @@
           "value": "0",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -8716,6 +9324,7 @@
           "value": "100",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8727,6 +9336,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8738,6 +9348,7 @@
           "value": "0",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8749,6 +9360,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8760,6 +9372,7 @@
           "value": "1",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8771,6 +9384,7 @@
           "value": "4",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8782,6 +9396,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8793,6 +9408,7 @@
           "value": "\"number\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8804,6 +9420,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8815,6 +9432,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8826,6 +9444,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8837,6 +9456,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8848,6 +9468,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8859,6 +9480,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8870,6 +9492,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8881,6 +9504,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -8909,6 +9533,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -8935,6 +9560,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -8946,6 +9572,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -8957,6 +9584,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -9000,6 +9628,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9011,6 +9640,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -9053,6 +9683,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -9064,6 +9695,7 @@
           "value": "\"title\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9075,6 +9707,7 @@
           "value": "\"value\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9086,6 +9719,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9097,6 +9731,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9108,6 +9743,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -9130,6 +9766,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9141,6 +9778,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9152,6 +9790,7 @@
           "value": "\"0\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -9180,6 +9819,7 @@
           "value": "5",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9191,6 +9831,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -9218,6 +9859,7 @@
           "value": "\"Provide text\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9229,6 +9871,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -9240,6 +9883,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9251,6 +9895,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9262,6 +9907,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -9297,6 +9943,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9308,6 +9955,7 @@
           "value": "\"#\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9319,6 +9967,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9330,6 +9979,7 @@
           "value": "\"0\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9341,6 +9991,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9352,6 +10003,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -9386,6 +10038,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -9407,6 +10060,7 @@
           "type": "\"compact\" | \"short\" | \"tall\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9418,6 +10072,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9429,6 +10084,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9440,6 +10096,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9451,6 +10108,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9462,6 +10120,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -9509,6 +10168,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9520,6 +10180,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9531,6 +10192,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -9568,6 +10230,7 @@
           "value": "\"col\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9579,6 +10242,7 @@
           "value": "() => \"\"",
           "isFunction": true,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9590,6 +10254,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -9632,6 +10297,7 @@
           "value": "0",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -9643,6 +10309,7 @@
           "value": "\"default\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9654,6 +10321,7 @@
           "value": "\"Show menu options\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9665,6 +10333,7 @@
           "value": "\"#\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -9694,6 +10363,7 @@
           "value": "4",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -9720,6 +10390,7 @@
           "type": "\"red\" | \"magenta\" | \"purple\" | \"blue\" | \"cyan\" | \"teal\" | \"green\" | \"gray\" | \"cool-gray\" | \"warm-gray\" | \"high-contrast\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9731,6 +10402,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9742,6 +10414,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9753,6 +10426,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9764,6 +10438,7 @@
           "value": "\"Clear filter\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9774,6 +10449,7 @@
           "type": "typeof import(\"carbon-icons-svelte\").CarbonIcon",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9785,6 +10461,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -9834,6 +10511,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -9845,6 +10523,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9856,6 +10535,7 @@
           "value": "50",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9867,6 +10547,7 @@
           "value": "4",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9878,6 +10559,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9889,6 +10571,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9900,6 +10583,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9911,6 +10595,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9922,6 +10607,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9933,6 +10619,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9944,6 +10631,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9955,6 +10643,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9965,6 +10654,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -9976,6 +10666,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -10007,6 +10698,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -10033,6 +10725,7 @@
           "type": "\"sm\" | \"xl\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10044,6 +10737,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -10055,6 +10749,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10066,6 +10761,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10077,6 +10773,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10088,6 +10785,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10099,6 +10797,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10110,6 +10809,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10120,6 +10820,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10131,6 +10832,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10142,6 +10844,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10153,6 +10856,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10164,6 +10868,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10175,6 +10880,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10186,6 +10892,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10197,6 +10904,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -10208,6 +10916,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10219,6 +10928,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -10251,6 +10961,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -10278,6 +10989,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -10304,6 +11016,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -10315,6 +11028,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10326,6 +11040,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -10347,6 +11062,7 @@
           "type": "\"sm\" | \"xl\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10358,6 +11074,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -10369,6 +11086,7 @@
           "value": "\"text\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10380,6 +11098,7 @@
           "value": "\"hh=mm\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10391,6 +11110,7 @@
           "value": "\"(1[012]|[1-9]):[0-5][0-9](\\\\s)?\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10402,6 +11122,7 @@
           "value": "5",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10413,6 +11134,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10424,6 +11146,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10435,6 +11158,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10446,6 +11170,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10457,6 +11182,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10468,6 +11194,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10479,6 +11206,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10489,6 +11217,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10500,6 +11229,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -10531,6 +11261,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -10542,6 +11273,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10553,6 +11285,7 @@
           "value": "\"Open list of options\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10564,6 +11297,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10575,6 +11309,7 @@
           "value": "true",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10586,6 +11321,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10596,6 +11332,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10607,6 +11344,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -10634,6 +11372,7 @@
           "value": "\"error\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10645,6 +11384,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10656,6 +11396,7 @@
           "value": "0",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10667,6 +11408,7 @@
           "value": "\"alert\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10678,6 +11420,7 @@
           "value": "\"Title\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10689,6 +11432,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10700,6 +11444,7 @@
           "value": "\"Caption\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10711,6 +11456,7 @@
           "value": "\"Closes notification\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10722,6 +11468,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -10754,6 +11501,7 @@
           "value": "\"default\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10765,6 +11513,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -10776,6 +11525,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10787,6 +11537,7 @@
           "value": "\"Off\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10798,6 +11549,7 @@
           "value": "\"On\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10809,6 +11561,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10820,6 +11573,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10830,6 +11584,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -10866,6 +11621,7 @@
           "value": "\"default\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10877,6 +11633,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10888,6 +11645,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -10915,6 +11673,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -10926,6 +11685,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10937,6 +11697,7 @@
           "value": "\"Off\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10948,6 +11709,7 @@
           "value": "\"On\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10959,6 +11721,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10970,6 +11733,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -10980,6 +11744,7 @@
           "type": "string",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -11011,6 +11776,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -11022,6 +11788,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -11049,6 +11816,7 @@
           "value": "\"default\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -11071,6 +11839,7 @@
           "value": "(totalSelected) => `${totalSelected} item${totalSelected === 1 ? \"\" : \"s\"} selected`",
           "isFunction": true,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -11137,6 +11906,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -11148,6 +11918,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -11159,6 +11930,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -11170,6 +11942,7 @@
           "value": "\"0\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -11181,6 +11954,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -11208,6 +11982,7 @@
           "value": "\"center\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -11219,6 +11994,7 @@
           "value": "\"bottom\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -11230,6 +12006,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -11241,6 +12018,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -11251,6 +12029,7 @@
           "type": "typeof import(\"carbon-icons-svelte\").CarbonIcon",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -11262,6 +12041,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -11273,6 +12053,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -11284,6 +12065,7 @@
           "value": "\"0\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -11295,6 +12077,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -11306,6 +12089,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -11317,6 +12101,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -11328,6 +12113,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -11339,6 +12125,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         },
@@ -11350,6 +12137,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -11389,6 +12177,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -11400,6 +12189,7 @@
           "value": "\"center\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -11411,6 +12201,7 @@
           "value": "\"bottom\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -11422,6 +12213,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -11433,6 +12225,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -11469,6 +12262,7 @@
           "value": "\"\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -11480,6 +12274,7 @@
           "value": "\"center\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -11491,6 +12286,7 @@
           "value": "\"bottom\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -11502,6 +12298,7 @@
           "value": "\"ccs-\" + Math.random().toString(36)",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -11513,6 +12310,7 @@
           "value": "null",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": true
         }
@@ -11549,6 +12347,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }

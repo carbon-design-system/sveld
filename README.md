@@ -115,6 +115,7 @@ export default class Button extends SvelteComponentTyped<
 - [API Reference](#api-reference)
   - [@type](#type)
   - [@typedef](#typedef)
+  - [@required](#required)
   - [@slot](#slot)
   - [@event](#event)
   - [@restProps](#restprops)
@@ -349,6 +350,36 @@ export let author = {};
 /** @type {Author[]} */
 export let authors = [];
 ```
+
+### `@required`
+
+By default, all props are typed as optional.
+
+Use the `@required` tag to denote a component prop as required.
+
+Example:
+
+```js
+/**
+ * This prop is required
+ * @required
+ */
+export let isRequired = true;
+```
+
+TypeScript output:
+
+```ts
+export interface ComponentProps {
+  /**
+   * This prop is required
+   * @default true
+   */
+  isRequired: boolean;
+}
+```
+
+Because `@required` is non-standard JSDoc tag, it is omitted from the prop comment in the TypeScript definitions.
 
 ### `@slot`
 

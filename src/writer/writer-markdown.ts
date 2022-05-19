@@ -3,7 +3,7 @@ import { ComponentDocs } from "../rollup-plugin";
 import WriterMarkdown, { AppendType } from "./WriterMarkdown";
 import { formatTsProps, getTypeDefs } from "./writer-ts-definitions";
 
-const PROP_TABLE_HEADER = `| Prop name | Kind | Reactive | Type | Default value | Description |\n| :- | :- | :- | :- |\n`;
+const PROP_TABLE_HEADER = `| Prop name | Required | Kind | Reactive | Type | Default value | Description |\n| :- | :- | :- | :- |\n`;
 const SLOT_TABLE_HEADER = `| Slot name | Default | Props | Fallback |\n| :- | :- | :- | :- |\n`;
 const EVENT_TABLE_HEADER = `| Event name | Type | Detail |\n| :- | :- | :- |\n`;
 const MD_TYPE_UNDEFINED = "--";
@@ -88,7 +88,7 @@ export default async function writeMarkdown(components: ComponentDocs, options: 
         .forEach((prop) => {
           document.append(
             "raw",
-            `| ${prop.name} | ${`<code>${prop.kind}</code>`} | ${prop.reactive ? "Yes" : "No"} | ${formatPropType(
+            `| ${prop.name} | ${prop.isRequired ? 'Yes' : 'No'} | ${`<code>${prop.kind}</code>`} | ${prop.reactive ? "Yes" : "No"} | ${formatPropType(
               prop.type
             )} | ${formatPropValue(prop.value)} | ${formatPropDescription(prop.description)} |\n`
           );

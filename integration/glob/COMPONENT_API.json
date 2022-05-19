@@ -12,6 +12,7 @@
           "value": "\"button2\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -22,6 +23,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
@@ -34,6 +36,7 @@
           "value": "false",
           "isFunction": false,
           "isFunctionDeclaration": false,
+          "isRequired": false,
           "constant": true,
           "reactive": false
         },
@@ -44,6 +47,7 @@
           "value": "() => {     let depth = 0;     if (node == null) return depth;     let parentNode = node.parentNode;     while (parentNode != null && parentNode.getAttribute(\"role\") !== \"tree\") {       parentNode = parentNode.parentNode;       if (parentNode.tagName === \"LI\") depth++;     }     return depth;   }",
           "isFunction": true,
           "isFunctionDeclaration": true,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
@@ -55,6 +59,7 @@
           "value": "() => {     if (node.classList.contains(\"bx--tree-parent-node\")) return node;     if (node.classList.contains(\"bx--tree\")) return null;     return findParentTreeNode(node.parentNode);   }",
           "isFunction": true,
           "isFunctionDeclaration": true,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         }
