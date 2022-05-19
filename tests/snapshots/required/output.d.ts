@@ -3,14 +3,12 @@ import type { SvelteComponentTyped } from "svelte";
 
 export interface InputProps {
   /**
-   * @required
    * @default true
    */
   prop: boolean;
 
   /**
    * This is a comment.
-   * @required
    * @default true
    */
   prop1: boolean | string;
