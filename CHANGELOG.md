@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add isAccessor field to API
 - update Markdown writer to generate a separate table for accessors -->
 
+## [0.16.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.16.0) - 2022-05-19
+
+- support `@required` tag to denote required component props
+- support wildcard export in svelte entry point
+
 ## [0.15.3](https://github.com/carbon-design-system/sveld/releases/tag/v0.15.3) - 2022-05-14
 
 - preserve JSDoc tags in prop comments
