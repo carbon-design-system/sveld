@@ -3,24 +3,24 @@
     {
       "name": "prop",
       "kind": "let",
-      "description": "",
+      "description": "@required ",
       "type": "boolean",
       "value": "true",
       "isFunction": false,
       "isFunctionDeclaration": false,
-      "isRequired": true,
+      "isRequired": false,
       "constant": false,
       "reactive": false
     },
     {
       "name": "prop1",
       "kind": "let",
-      "description": "This is a comment.",
+      "description": "This is a comment.\n@required ",
       "type": "boolean | string",
       "value": "true",
       "isFunction": false,
       "isFunctionDeclaration": false,
-      "isRequired": true,
+      "isRequired": false,
       "constant": false,
       "reactive": false
     },
