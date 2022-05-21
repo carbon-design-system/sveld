@@ -515,12 +515,9 @@ export default class ComponentParser {
             }
 
             additional_tags.forEach((tag) => {
-              isRequired = tag.tag === "required";
-              if (!isRequired) {
-                description += `${description ? "\n" : ""}@${tag.tag} ${tag.name}${
-                  tag.description ? ` ${tag.description}` : ""
-                }`;
-              }
+              description += `${description ? "\n" : ""}@${tag.tag} ${tag.name}${
+                tag.description ? ` ${tag.description}` : ""
+              }`;
             });
           }
 
