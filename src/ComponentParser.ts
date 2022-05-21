@@ -458,7 +458,7 @@ export default class ComponentParser {
           let description: undefined | string = undefined;
           let isFunction = false;
           let isFunctionDeclaration = false;
-          let isRequired = false;
+          let isRequired = init == null;
 
           if (init != null) {
             if (
