@@ -23,6 +23,25 @@
       "isRequired": true,
       "constant": false,
       "reactive": false
+    },
+    {
+      "name": "prop2",
+      "kind": "let",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "prop3",
+      "kind": "let",
+      "type": "boolean",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -30,7 +49,7 @@
     {
       "name": "__default__",
       "default": true,
-      "slot_props": "{ prop: boolean, prop1: boolean | string }"
+      "slot_props": "{ prop: boolean, prop1: boolean | string, prop2: any, prop3: boolean }"
     }
   ],
   "events": [],

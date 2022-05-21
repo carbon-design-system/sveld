@@ -37,7 +37,7 @@
       "kind": "let",
       "isFunction": false,
       "isFunctionDeclaration": false,
-      "isRequired": false,
+      "isRequired": true,
       "constant": false,
       "reactive": false
     },
@@ -70,7 +70,7 @@
       "value": "() => {     localBool = !localBool;   }",
       "isFunction": true,
       "isFunctionDeclaration": true,
-      "isRequired": false,
+      "isRequired": true,
       "constant": false,
       "reactive": false
     }

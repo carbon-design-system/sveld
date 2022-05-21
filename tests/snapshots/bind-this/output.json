@@ -6,7 +6,7 @@
       "type": "null | HTMLButtonElement",
       "isFunction": false,
       "isFunctionDeclaration": false,
-      "isRequired": false,
+      "isRequired": true,
       "constant": false,
       "reactive": true
     }

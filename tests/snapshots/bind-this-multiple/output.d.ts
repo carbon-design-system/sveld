@@ -5,12 +5,12 @@ export interface InputProps {
   /**
    * @default undefined
    */
-  ref?: null | HTMLButtonElement | HTMLHeadingElement;
+  ref: null | HTMLButtonElement | HTMLHeadingElement;
 
   /**
    * @default undefined
    */
-  ref2?: null | HTMLDivElement;
+  ref2: null | HTMLDivElement;
 
   /**
    * @default false

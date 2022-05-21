@@ -7,7 +7,7 @@ export interface InputProps {
    * prop1 description 2
    * @default undefined
    */
-  prop1?: string;
+  prop1: string;
 
   /**
    * prop2 description 1

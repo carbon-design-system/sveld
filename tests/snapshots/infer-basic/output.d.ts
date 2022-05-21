@@ -20,7 +20,7 @@ export interface InputProps {
   /**
    * @default undefined
    */
-  name?: undefined;
+  name: undefined;
 
   /**
    * @default "" + Math.random().toString(36)

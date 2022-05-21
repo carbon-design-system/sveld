@@ -6,7 +6,7 @@
       "type": "null | HTMLButtonElement | HTMLHeadingElement",
       "isFunction": false,
       "isFunctionDeclaration": false,
-      "isRequired": false,
+      "isRequired": true,
       "constant": false,
       "reactive": true
     },
@@ -16,7 +16,7 @@
       "type": "null | HTMLDivElement",
       "isFunction": false,
       "isFunctionDeclaration": false,
-      "isRequired": false,
+      "isRequired": true,
       "constant": false,
       "reactive": true
     },
