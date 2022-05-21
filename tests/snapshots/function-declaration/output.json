@@ -29,7 +29,7 @@
       "value": "() => {     return a + b;   }",
       "isFunction": true,
       "isFunctionDeclaration": true,
-      "isRequired": true,
+      "isRequired": false,
       "constant": false,
       "reactive": false
     },
@@ -41,7 +41,7 @@
       "value": "() => {     return a * b;   }",
       "isFunction": true,
       "isFunctionDeclaration": true,
-      "isRequired": true,
+      "isRequired": false,
       "constant": false,
       "reactive": false
     }
