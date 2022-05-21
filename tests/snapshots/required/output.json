@@ -3,9 +3,30 @@
     {
       "name": "prop",
       "kind": "let",
-      "description": "",
+      "description": "@required ",
       "type": "boolean",
       "value": "true",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "prop1",
+      "kind": "let",
+      "description": "This is a comment.\n@required ",
+      "type": "boolean | string",
+      "value": "true",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "prop2",
+      "kind": "let",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -13,11 +34,9 @@
       "reactive": false
     },
     {
-      "name": "prop1",
+      "name": "prop3",
       "kind": "let",
-      "description": "This is a comment.",
-      "type": "boolean | string",
-      "value": "true",
+      "type": "boolean",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -30,7 +49,7 @@
     {
       "name": "__default__",
       "default": true,
-      "slot_props": "{ prop: boolean, prop1: boolean | string }"
+      "slot_props": "{ prop: boolean, prop1: boolean | string, prop2: any, prop3: boolean }"
     }
   ],
   "events": [],

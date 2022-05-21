@@ -15,7 +15,7 @@ export interface InputProps {
   /**
    * @default undefined
    */
-  name?: string;
+  name: string;
 
   /**
    * @default "" + Math.random().toString(36)

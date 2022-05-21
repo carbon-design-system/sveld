@@ -458,7 +458,7 @@ export default class ComponentParser {
           let description: undefined | string = undefined;
           let isFunction = false;
           let isFunctionDeclaration = false;
-          let isRequired = false;
+          let isRequired = kind === "let" && init == null;
 
           if (init != null) {
             if (
@@ -505,21 +505,19 @@ export default class ComponentParser {
             if (tag?.tag === "type") type = this.aliasType(tag.type);
             description = ComponentParser.assignValue(comment[0]?.description?.trim());
 
-            const additional_tags = comment[0]?.tags.filter(
-              (tag) => !["type", "extends", "restProps", "slot", "event", "typedef"].includes(tag.tag)
-            ) ?? [];
+            const additional_tags =
+              comment[0]?.tags.filter(
+                (tag) => !["type", "extends", "restProps", "slot", "event", "typedef"].includes(tag.tag)
+              ) ?? [];
 
             if (additional_tags.length > 0 && description === undefined) {
               description = "";
             }
 
             additional_tags.forEach((tag) => {
-              isRequired = tag.tag === "required";
-              if (!isRequired) {
-                description += `${description ? "\n" : ""}@${tag.tag} ${tag.name}${
-                  tag.description ? ` ${tag.description}` : ""
-                }`;
-              }
+              description += `${description ? "\n" : ""}@${tag.tag} ${tag.name}${
+                tag.description ? ` ${tag.description}` : ""
+              }`;
             });
           }
 

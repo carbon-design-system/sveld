@@ -20,9 +20,10 @@ export interface DropdownProps
 
   /**
    * Override the display of a dropdown item
+   * @required
    * @default (item) => item.text || item.id
    */
-  itemToString: (item: DropdownItem) => string;
+  itemToString?: (item: DropdownItem) => string;
 
   /**
    * Specify the selected item index

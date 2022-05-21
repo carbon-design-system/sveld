@@ -969,28 +969,28 @@ export interface DropdownItem {
 
 ### Props
 
-| Prop name       | Required | Kind             | Reactive | Type                                        | Default value                                         | Description                                   |
-| :-------------- | :------- | :--------------- | :------- | ------------------------------------------- | ----------------------------------------------------- | --------------------------------------------- |
-| ref             | No       | <code>let</code> | Yes      | <code>null &#124; HTMLButtonElement</code>  | <code>null</code>                                     | Obtain a reference to the button HTML element |
-| inline          | No       | <code>let</code> | Yes      | <code>boolean</code>                        | <code>false</code>                                    | Set to `true` to use the inline variant       |
-| open            | No       | <code>let</code> | Yes      | <code>boolean</code>                        | <code>false</code>                                    | Set to `true` to open the dropdown            |
-| selectedIndex   | No       | <code>let</code> | Yes      | <code>number</code>                         | <code>-1</code>                                       | Specify the selected item index               |
-| items           | No       | <code>let</code> | No       | <code>DropdownItem[]</code>                 | <code>[]</code>                                       | Set the dropdown items                        |
-| itemToString    | Yes      | <code>let</code> | No       | <code>(item: DropdownItem) => string</code> | <code>(item) => item.text &#124;&#124; item.id</code> | Override the display of a dropdown item       |
-| type            | No       | <code>let</code> | No       | <code>"default" &#124; "inline"</code>      | <code>"default"</code>                                | Specify the type of dropdown                  |
-| size            | No       | <code>let</code> | No       | <code>"sm" &#124; "lg" &#124; "xl"</code>   | <code>undefined</code>                                | Specify the size of the dropdown field        |
-| light           | No       | <code>let</code> | No       | <code>boolean</code>                        | <code>false</code>                                    | Set to `true` to enable the light variant     |
-| disabled        | No       | <code>let</code> | No       | <code>boolean</code>                        | <code>false</code>                                    | Set to `true` to disable the dropdown         |
-| titleText       | No       | <code>let</code> | No       | <code>string</code>                         | <code>""</code>                                       | Specify the title text                        |
-| invalid         | No       | <code>let</code> | No       | <code>boolean</code>                        | <code>false</code>                                    | Set to `true` to indicate an invalid state    |
-| invalidText     | No       | <code>let</code> | No       | <code>string</code>                         | <code>""</code>                                       | Specify the invalid state text                |
-| warn            | No       | <code>let</code> | No       | <code>boolean</code>                        | <code>false</code>                                    | Set to `true` to indicate an warning state    |
-| warnText        | No       | <code>let</code> | No       | <code>string</code>                         | <code>""</code>                                       | Specify the warning state text                |
-| helperText      | No       | <code>let</code> | No       | <code>string</code>                         | <code>""</code>                                       | Specify the helper text                       |
-| label           | No       | <code>let</code> | No       | <code>string</code>                         | <code>undefined</code>                                | Specify the list box label                    |
-| translateWithId | No       | <code>let</code> | No       | <code>(id: any) => string</code>            | <code>undefined</code>                                | Override the default translation ids          |
-| id              | No       | <code>let</code> | No       | <code>string</code>                         | <code>"ccs-" + Math.random().toString(36)</code>      | Set an id for the list box component          |
-| name            | No       | <code>let</code> | No       | <code>string</code>                         | <code>undefined</code>                                | Specify a name attribute for the list box     |
+| Prop name       | Required | Kind             | Reactive | Type                                        | Default value                                         | Description                                            |
+| :-------------- | :------- | :--------------- | :------- | ------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------ |
+| ref             | No       | <code>let</code> | Yes      | <code>null &#124; HTMLButtonElement</code>  | <code>null</code>                                     | Obtain a reference to the button HTML element          |
+| inline          | No       | <code>let</code> | Yes      | <code>boolean</code>                        | <code>false</code>                                    | Set to `true` to use the inline variant                |
+| open            | No       | <code>let</code> | Yes      | <code>boolean</code>                        | <code>false</code>                                    | Set to `true` to open the dropdown                     |
+| selectedIndex   | No       | <code>let</code> | Yes      | <code>number</code>                         | <code>-1</code>                                       | Specify the selected item index                        |
+| items           | No       | <code>let</code> | No       | <code>DropdownItem[]</code>                 | <code>[]</code>                                       | Set the dropdown items                                 |
+| itemToString    | No       | <code>let</code> | No       | <code>(item: DropdownItem) => string</code> | <code>(item) => item.text &#124;&#124; item.id</code> | Override the display of a dropdown item<br />@required |
+| type            | No       | <code>let</code> | No       | <code>"default" &#124; "inline"</code>      | <code>"default"</code>                                | Specify the type of dropdown                           |
+| size            | No       | <code>let</code> | No       | <code>"sm" &#124; "lg" &#124; "xl"</code>   | <code>undefined</code>                                | Specify the size of the dropdown field                 |
+| light           | No       | <code>let</code> | No       | <code>boolean</code>                        | <code>false</code>                                    | Set to `true` to enable the light variant              |
+| disabled        | No       | <code>let</code> | No       | <code>boolean</code>                        | <code>false</code>                                    | Set to `true` to disable the dropdown                  |
+| titleText       | No       | <code>let</code> | No       | <code>string</code>                         | <code>""</code>                                       | Specify the title text                                 |
+| invalid         | No       | <code>let</code> | No       | <code>boolean</code>                        | <code>false</code>                                    | Set to `true` to indicate an invalid state             |
+| invalidText     | No       | <code>let</code> | No       | <code>string</code>                         | <code>""</code>                                       | Specify the invalid state text                         |
+| warn            | No       | <code>let</code> | No       | <code>boolean</code>                        | <code>false</code>                                    | Set to `true` to indicate an warning state             |
+| warnText        | No       | <code>let</code> | No       | <code>string</code>                         | <code>""</code>                                       | Specify the warning state text                         |
+| helperText      | No       | <code>let</code> | No       | <code>string</code>                         | <code>""</code>                                       | Specify the helper text                                |
+| label           | No       | <code>let</code> | No       | <code>string</code>                         | <code>undefined</code>                                | Specify the list box label                             |
+| translateWithId | No       | <code>let</code> | No       | <code>(id: any) => string</code>            | <code>undefined</code>                                | Override the default translation ids                   |
+| id              | No       | <code>let</code> | No       | <code>string</code>                         | <code>"ccs-" + Math.random().toString(36)</code>      | Set an id for the list box component                   |
+| name            | No       | <code>let</code> | No       | <code>string</code>                         | <code>undefined</code>                                | Specify a name attribute for the list box              |
 
 ### Slots
 
