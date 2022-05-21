@@ -2596,12 +2596,12 @@
         {
           "name": "itemToString",
           "kind": "let",
-          "description": "Override the display of a dropdown item",
+          "description": "Override the display of a dropdown item\n@required ",
           "type": "(item: DropdownItem) => string",
           "value": "(item) => item.text || item.id",
           "isFunction": true,
           "isFunctionDeclaration": false,
-          "isRequired": true,
+          "isRequired": false,
           "constant": false,
           "reactive": false
         },
