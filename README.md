@@ -39,7 +39,7 @@ The generated definition extends the official `SvelteComponentTyped` interface e
 
 ```ts
 /// <reference types="svelte" />
-import { SvelteComponentTyped } from "svelte";
+import type { SvelteComponentTyped } from "svelte";
 
 export interface ButtonProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["button"]> {
   /**
