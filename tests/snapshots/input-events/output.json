@@ -1,0 +1,23 @@
+{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "forwarded",
+      "name": "input",
+      "element": "input"
+    },
+    {
+      "type": "forwarded",
+      "name": "change",
+      "element": "input"
+    },
+    {
+      "type": "forwarded",
+      "name": "paste",
+      "element": "input"
+    }
+  ],
+  "typedefs": []
+}
