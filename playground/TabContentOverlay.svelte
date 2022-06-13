@@ -22,6 +22,7 @@
     height: 100%;
     padding: 1rem;
     background: var(--cds-overlay-01);
+    outline-offset: -2px;
   }
 
   :global([slot="content"]) {
