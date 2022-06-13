@@ -425,6 +425,11 @@ export default class ComponentParser {
         }
 
         if (node.type === "ExportNamedDeclaration") {
+          // Handle export {}
+          if (node.declaration == null && node.specifiers.length === 0) {
+            return;
+          }
+
           // Handle renamed exports
           let prop_name: string;
           if (node.declaration == null && node.specifiers[0]?.type === "ExportSpecifier") {
