@@ -1,0 +1,3 @@
+<script>
+  export {};
+</script>
