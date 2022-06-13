@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add isAccessor field to API
 - update Markdown writer to generate a separate table for accessors -->
 
+## [0.17.2](https://github.com/carbon-design-system/sveld/releases/tag/v0.17.2) - 2022-06-13
+
+- handle `export {}` in script block
+
 ## [0.17.1](https://github.com/carbon-design-system/sveld/releases/tag/v0.17.1) - 2022-06-02
 
 - use correct type for forwarded cut/copy/paste events
