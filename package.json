@@ -9,7 +9,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test:unit": "vitest",
+    "test:unit": "vitest -r tests",
     "test:snapshot": "node tests/test-snapshot",
     "test:integration": "node tests/test-integration",
     "format": "prettier --write \"{src,tests}/**/*.{js,ts,svelte,md}\"",
