@@ -59,47 +59,6 @@ function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleN
       ${prop.name}${prop.isRequired ? "" : "?"}: ${prop_value};`;
     });
 
-  if (def.rest_props?.type === "Element") {
-    const elements = def.rest_props?.name.split("|").map((element) => element.replace(/\s+/g, ""));
-
-    if (elements.includes("a")) {
-      initial_props.push(
-        [
-          "\n",
-          `
-          /**
-           * SvelteKit attribute to enable data prefetching
-           * if a link is hovered over or touched on mobile.
-           * @see https://kit.svelte.dev/docs/a-options#sveltekit-prefetch
-           * @default false
-           */
-           "sveltekit:prefetch"?: boolean;
-          `,
-          "\n",
-          `
-          /**
-           * SvelteKit attribute to trigger a full page
-           * reload after the link is clicked.
-           * @see https://kit.svelte.dev/docs/a-options#sveltekit-reload
-           * @default false
-           */
-           "sveltekit:reload"?: boolean;
-          `,
-          "\n",
-          `
-          /**
-           * SvelteKit attribute to prevent scrolling
-           * after the link is clicked.
-           * @see https://kit.svelte.dev/docs/a-options#sveltekit-noscroll
-           * @default false
-           */
-           "sveltekit:noscroll"?: boolean;
-          `,
-        ].join("\n")
-      );
-    }
-  }
-
   const props = initial_props.join("\n");
 
   const props_name = `${def.moduleName}Props`;
