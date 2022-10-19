@@ -25,6 +25,7 @@ export interface ContentSwitcherProps
 export default class ContentSwitcher extends SvelteComponentTyped<
   ContentSwitcherProps,
   {
+    /** Fired when the `selectedIndex` is updated. */
     change: CustomEvent<number>;
     click: WindowEventMap["click"];
     mouseover: WindowEventMap["mouseover"];

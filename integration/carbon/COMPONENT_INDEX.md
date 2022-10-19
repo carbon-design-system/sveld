@@ -434,6 +434,7 @@ None.
 | Event name | Type       | Detail               |
 | :--------- | :--------- | :------------------- |
 | check      | dispatched | <code>boolean</code> |
+| uncheck    | dispatched | <code>boolean</code> |
 | click      | forwarded  | --                   |
 | mouseover  | forwarded  | --                   |
 | mouseenter | forwarded  | --                   |

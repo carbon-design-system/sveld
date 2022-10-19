@@ -1,6 +1,6 @@
 <script>
   /**
-   * @event {{ h1: boolean; }} hover
+   * @event {{ h1: boolean; }} hover - Fired on mouseover.
    */
 
   import { onDestroy, createEventDispatcher } from "svelte";

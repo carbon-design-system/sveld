@@ -124,11 +124,15 @@ function genEventDef(def: Pick<ComponentDocApi, "events">) {
   };
   return def.events
     .map((event) => {
-      return `${clampKey(event.name)}: ${
+      let description = "";
+      if (event.type === "dispatched" && event.description) {
+        description = "/** " + event.description + " */\n";
+      }
+      return `${description}${clampKey(event.name)}: ${
         event.type === "dispatched" ? createDispatchedEvent(event.detail) : `${mapEvent(event.name)}["${event.name}"]`
-      };`;
+      };\n`;
     })
-    .join("\n");
+    .join("");
 }
 
 function genAccessors(def: Pick<ComponentDocApi, "props">) {

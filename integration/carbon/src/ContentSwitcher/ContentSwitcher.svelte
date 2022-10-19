@@ -1,6 +1,6 @@
 <script>
   /**
-   * @event {number} change
+   * @event {number} change - Fired when the `selectedIndex` is updated.
    */
 
   /** Set the selected index of the switch item */
