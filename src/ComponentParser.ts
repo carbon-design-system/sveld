@@ -198,7 +198,15 @@ export default class ComponentParser {
     return type;
   }
 
-  private addSlot(slot_name?: string, slot_props?: string, slot_fallback?: string) {
+  private addSlot({
+    slot_name,
+    slot_props,
+    slot_fallback,
+  }: {
+    slot_name?: string;
+    slot_props?: string;
+    slot_fallback?: string;
+  }) {
     const default_slot = slot_name === undefined || slot_name === "";
     const name: ComponentSlotName = default_slot ? DEFAULT_SLOT_NAME : slot_name!;
     const fallback = ComponentParser.assignValue(slot_fallback);
@@ -273,7 +281,10 @@ export default class ComponentParser {
             };
             break;
           case "slot":
-            this.addSlot(name, type);
+            this.addSlot({
+              slot_name: name,
+              slot_props: type,
+            });
             break;
           case "event":
             this.addDispatchedEvent({
@@ -610,7 +621,11 @@ export default class ComponentParser {
             .join("")
             .trim();
 
-          this.addSlot(slot_name, JSON.stringify(slot_props, null, 2), fallback);
+          this.addSlot({
+            slot_name,
+            slot_props: JSON.stringify(slot_props, null, 2),
+            slot_fallback: fallback,
+          });
         }
 
         if (node.type === "EventHandler" && node.expression == null) {
