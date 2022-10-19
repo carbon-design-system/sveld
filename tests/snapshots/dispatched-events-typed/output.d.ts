@@ -5,6 +5,9 @@ export interface InputProps {}
 
 export default class Input extends SvelteComponentTyped<
   InputProps,
-  { hover: CustomEvent<{ h1: boolean }>; destroy: CustomEvent<null> },
+  {
+    /** Fired on mouseover. */ hover: CustomEvent<{ h1: boolean }>;
+    destroy: CustomEvent<null>;
+  },
   { default: {} }
 > {}
