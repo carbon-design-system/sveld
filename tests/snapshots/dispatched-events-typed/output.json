@@ -12,7 +12,8 @@
     {
       "type": "dispatched",
       "name": "hover",
-      "detail": "{ h1: boolean; }"
+      "detail": "{ h1: boolean; }",
+      "description": "Fired on mouseover."
     },
     {
       "type": "dispatched",

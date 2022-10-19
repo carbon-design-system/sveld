@@ -64,6 +64,7 @@ interface DispatchedEvent {
   type: "dispatched";
   name: string;
   detail?: any;
+  description?: string;
 }
 
 type ComponentEvent = ForwardedEvent | DispatchedEvent;
@@ -221,7 +222,12 @@ export default class ComponentParser {
     }
   }
 
-  private addDispatchedEvent({ name, detail, has_argument }: { name?: string; detail: string; has_argument: boolean }) {
+  private addDispatchedEvent({
+    name,
+    detail,
+    has_argument,
+    description,
+  }: Pick<DispatchedEvent, "name" | "description"> & { detail: string; has_argument: boolean }) {
     if (name === undefined) return;
 
     /**
@@ -230,17 +236,20 @@ export default class ComponentParser {
      * `@event` is not specified.
      */
     const default_detail = !has_argument && !detail ? "null" : ComponentParser.assignValue(detail);
+    const event_description = description?.split("-").pop()?.trim();
     if (this.events.has(name)) {
       const existing_event = this.events.get(name) as DispatchedEvent;
       this.events.set(name, {
         ...existing_event,
         detail: existing_event.detail === undefined ? default_detail : existing_event.detail,
+        description: existing_event.description || event_description,
       });
     } else {
       this.events.set(name, {
         type: "dispatched",
         name,
         detail: default_detail,
+        description: event_description,
       });
     }
   }
@@ -267,7 +276,12 @@ export default class ComponentParser {
             this.addSlot(name, type);
             break;
           case "event":
-            this.addDispatchedEvent({ name, detail: type, has_argument: false });
+            this.addDispatchedEvent({
+              name,
+              detail: type,
+              has_argument: false,
+              description: !!description ? description : undefined,
+            });
             break;
           case "typedef":
             this.typedefs.set(name, {

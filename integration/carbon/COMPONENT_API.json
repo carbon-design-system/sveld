@@ -807,7 +807,18 @@
       "moduleExports": [],
       "slots": [],
       "events": [
-        { "type": "dispatched", "name": "check", "detail": "boolean" },
+        {
+          "type": "dispatched",
+          "name": "check",
+          "detail": "boolean",
+          "description": "Fired when checking the input."
+        },
+        {
+          "type": "dispatched",
+          "name": "uncheck",
+          "detail": "boolean",
+          "description": "Fired when unchecking the input."
+        },
         { "type": "forwarded", "name": "click", "element": "CheckboxSkeleton" },
         {
           "type": "forwarded",
@@ -1746,7 +1757,12 @@
       "moduleExports": [],
       "slots": [{ "name": "__default__", "default": true, "slot_props": "{}" }],
       "events": [
-        { "type": "dispatched", "name": "change", "detail": "number" },
+        {
+          "type": "dispatched",
+          "name": "change",
+          "detail": "number",
+          "description": "Fired when the `selectedIndex` is updated."
+        },
         { "type": "forwarded", "name": "click", "element": "div" },
         { "type": "forwarded", "name": "mouseover", "element": "div" },
         { "type": "forwarded", "name": "mouseenter", "element": "div" },

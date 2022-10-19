@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Accordion, AccordionItem } from "../types";
+  import { Accordion, AccordionItem, Checkbox } from "../types";
   import Button from "../types/Button/Button.svelte";
 </script>
 
@@ -8,3 +8,5 @@
 </Accordion>
 
 <Button>Text</Button>
+
+<Checkbox on:check />

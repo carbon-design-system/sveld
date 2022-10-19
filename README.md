@@ -385,13 +385,15 @@ Example:
 
 ### `@event`
 
-Use the `@event` tag for typing dispatched events. An event name must be specified.
+Use the `@event` tag to type dispatched events. An event name is required and a description optional.
+
+Use `null` as the value if no event detail is provided.
 
 Signature:
 
 ```js
 /**
- * @event {EventDetail} eventname
+ * @event {EventDetail} eventname [event description]
  */
 ```
 
@@ -400,6 +402,7 @@ Example:
 ```js
 /**
  * @event {{ key: string }} button:key
+ * @event {null} key – Fired when `key` changes.
  */
 
 export let key = "";
@@ -409,6 +412,20 @@ import { createEventDispatcher } from "svelte";
 const dispatch = createEventDispatcher();
 
 $: dispatch("button:key", { key });
+$: if (key) dispatch("key");
+```
+
+Output:
+
+```ts
+export default class Component extends SvelteComponentTyped<
+  ComponentProps,
+  {
+    "button:key": CustomEvent<{ key: string }>;
+    /** Fired when `key` changes. */ key: CustomEvent<null>;
+  },
+  {}
+> {}
 ```
 
 ### `@restProps`

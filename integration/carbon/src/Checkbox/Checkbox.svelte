@@ -1,6 +1,7 @@
 <script>
   /**
-   * @event {boolean} check
+   * @event {boolean} check Fired when checking the input.
+   * @event {boolean} uncheck Fired when unchecking the input.
    */
 
   /** Specify whether the checkbox is checked */
