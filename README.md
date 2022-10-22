@@ -354,11 +354,19 @@ export let authors = [];
 
 Use the `@slot` tag for typing component slots. Note that `@slot` is a non-standard JSDoc tag.
 
+Descriptions are optional for named slots. Currently, the default slot cannot have a description.
+
 Signature:
 
 ```js
 /**
- * @slot {Type} [slot name]
+ * @slot {Type} slot-name [slot description]
+ */
+
+Omit the `slot-name` to type the default slot.
+
+/**
+ * @slot {Type}
  */
 ```
 
@@ -368,7 +376,8 @@ Example:
 <script>
   /**
    * @slot {{ prop: number; doubled: number; }}
-   * @slot {{ props: { class?: string; } }} description
+   * @slot {{}} title
+   * @slot {{ prop: number }} body - Customize the paragraph text.
    */
 
   export let prop = 0;
@@ -376,10 +385,11 @@ Example:
 
 <h1>
   <slot {prop} doubled={prop * 2} />
+  <slot name="title" />
 </h1>
 
 <p>
-  <slot name="description" props={{ class: $$props.class }} />
+  <slot name="body" {prop} />
 </p>
 ```
 

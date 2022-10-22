@@ -8,7 +8,7 @@
    * @typedef {{ id: any; [key: string]: DataTableValue; }} DataTableRow
    * @typedef {string} DataTableRowId
    * @typedef {{ key: DataTableKey; value: DataTableValue; }} DataTableCell
-   * @slot {{ row: DataTableRow; }} expanded-row
+   * @slot {{ row: DataTableRow; }} expanded-row - The expanded row
    * @slot {{ header: DataTableNonEmptyHeader; }} cell-header
    * @slot {{ row: DataTableRow; cell: DataTableCell; }} cell
    * @event {{ header?: DataTableHeader; row?: DataTableRow; cell?: DataTableCell; }} click

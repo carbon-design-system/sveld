@@ -11,5 +11,9 @@ export interface InputProps {
 export default class Input extends SvelteComponentTyped<
   InputProps,
   {},
-  { default: { prop: number; doubled: number }; description: { props: { class?: string } } }
+  {
+    default: { prop: number; doubled: number };
+    /** description */
+    description: { props: { class?: string } };
+  }
 > {}
