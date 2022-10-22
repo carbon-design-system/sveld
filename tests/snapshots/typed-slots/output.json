@@ -22,7 +22,8 @@
     {
       "name": "description",
       "default": false,
-      "slot_props": "{ props: { class?: string; } }"
+      "slot_props": "{ props: { class?: string; } }",
+      "description": "description"
     }
   ],
   "events": [],

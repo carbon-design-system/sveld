@@ -156,6 +156,7 @@ export default class DataTable extends SvelteComponentTyped<
     default: {};
     cell: { row: DataTableRow; cell: DataTableCell };
     ["cell-header"]: { header: DataTableNonEmptyHeader };
+    /** The expanded row */
     ["expanded-row"]: { row: DataTableRow };
   }
 > {}

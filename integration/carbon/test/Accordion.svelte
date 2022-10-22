@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Accordion, AccordionItem, Checkbox } from "../types";
+  import { Accordion, AccordionItem, Checkbox, DataTable } from "../types";
   import Button from "../types/Button/Button.svelte";
 </script>
 
@@ -10,3 +10,9 @@
 <Button>Text</Button>
 
 <Checkbox on:check />
+
+<DataTable>
+  <span slot="expanded-row" let:row>
+    {row.id}
+  </span>
+</DataTable>

@@ -2060,7 +2060,8 @@
         {
           "name": "expanded-row",
           "default": false,
-          "slot_props": "{ row: DataTableRow; }"
+          "slot_props": "{ row: DataTableRow; }",
+          "description": "The expanded row"
         }
       ],
       "events": [

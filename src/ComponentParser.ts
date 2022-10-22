@@ -43,6 +43,7 @@ interface ComponentSlot {
   default: boolean;
   fallback?: string;
   slot_props?: string;
+  description?: string;
 }
 
 interface SlotPropValue {
@@ -202,15 +203,18 @@ export default class ComponentParser {
     slot_name,
     slot_props,
     slot_fallback,
+    slot_description,
   }: {
     slot_name?: string;
     slot_props?: string;
     slot_fallback?: string;
+    slot_description?: string;
   }) {
     const default_slot = slot_name === undefined || slot_name === "";
     const name: ComponentSlotName = default_slot ? DEFAULT_SLOT_NAME : slot_name!;
     const fallback = ComponentParser.assignValue(slot_fallback);
     const props = ComponentParser.assignValue(slot_props);
+    const description = slot_description?.split("-").pop()?.trim();
 
     if (this.slots.has(name)) {
       const existing_slot = this.slots.get(name)!;
@@ -219,6 +223,7 @@ export default class ComponentParser {
         ...existing_slot,
         fallback,
         slot_props: existing_slot.slot_props === undefined ? props : existing_slot.slot_props,
+        description: existing_slot.description || description,
       });
     } else {
       this.slots.set(name, {
@@ -226,6 +231,7 @@ export default class ComponentParser {
         default: default_slot,
         fallback,
         slot_props,
+        description,
       });
     }
   }
@@ -284,6 +290,7 @@ export default class ComponentParser {
             this.addSlot({
               slot_name: name,
               slot_props: type,
+              slot_description: !!description ? description : undefined,
             });
             break;
           case "event":

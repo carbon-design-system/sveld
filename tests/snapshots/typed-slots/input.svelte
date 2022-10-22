@@ -1,7 +1,7 @@
 <script>
   /**
    * @slot {{ prop: number; doubled: number; }}
-   * @slot {{ props: { class?: string; } }} description
+   * @slot {{ props: { class?: string; } }} description - description
    */
 
   export let prop = 0;
