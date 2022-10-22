@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add isAccessor field to API
 - update Markdown writer to generate a separate table for accessors -->
 
+## [0.18.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.18.0) - 2022-10-22
+
+- support `@slot` tag descriptions for named slots
+- support `@event` tag descriptions
+- remove `sveltekit:*` attributes from type definitions
+
 ## [0.17.2](https://github.com/carbon-design-system/sveld/releases/tag/v0.17.2) - 2022-06-13
 
 - handle `export {}` in script block
