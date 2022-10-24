@@ -19,6 +19,11 @@ interface ComponentParserOptions {
   verbose?: boolean;
 }
 
+interface Tags {
+  tag: string;
+  value: string;
+}
+
 type ComponentPropName = string;
 
 interface ComponentProp {
@@ -32,6 +37,7 @@ interface ComponentProp {
   isFunctionDeclaration: boolean;
   isRequired: boolean;
   reactive: boolean;
+  tags?: Tags[];
 }
 
 const DEFAULT_SLOT_NAME = "__default__";
@@ -109,6 +115,7 @@ export interface ParsedComponent {
   rest_props: RestProps;
   extends?: Extends;
   componentComment?: string;
+  tags?: Tags[];
 }
 
 export default class ComponentParser {
@@ -119,6 +126,7 @@ export default class ComponentParser {
   private rest_props?: RestProps;
   private extends?: Extends;
   private componentComment?: string;
+  private tags?: { tag: string, value: string }[];
   private readonly reactive_vars: Set<string> = new Set();
   private readonly vars: Set<VariableDeclaration> = new Set();
   private readonly props: Map<ComponentPropName, ComponentProp> = new Map();
@@ -314,6 +322,55 @@ export default class ComponentParser {
     });
   }
 
+  private parseDescriptionAndTagsFromComments(jsDocs: string) {
+    let description: string = '';
+    let tags: Tags[] = [];
+    let capturingDescription = true;
+    let currentTag = '';
+    let currentCapture = '';
+    let currentChar = '';
+
+    for (let x = 0; x < jsDocs.length; x++) {
+      currentChar = jsDocs[x];
+      switch (currentChar) {
+        case '@':
+          //tag at front wipes out description
+          if (capturingDescription && x < 1) {
+            capturingDescription = false;
+          }
+          // normal capture of leading description till a tag
+          if (capturingDescription && currentCapture.length > 1) {
+            description = currentCapture;
+            currentCapture = '';
+            capturingDescription = false;
+          }
+          //two tags in a row, stash the first before capturing name of second below.
+          if (currentTag.length > 1) {
+            tags.push({ tag: currentTag, value: currentCapture });
+            currentTag = '';
+            currentCapture = '';
+          }
+          //at start of tag, seek till space char for tag name
+          while (x != jsDocs.length && currentChar != ' ') {
+            currentTag += currentChar;
+            x++;
+            currentChar = jsDocs[x];
+          }
+          break;
+        default:
+          // capturing value of description or tag
+          currentCapture += currentChar;
+          break;
+      }
+    }
+    //if a tag finishes the jsDoc string
+    if (currentTag.length) {
+      tags.push({ tag: currentTag, value: currentCapture });
+    }
+    return { description: description, tags: tags };
+  }
+
+
   public cleanup() {
     this.source = undefined;
     this.compiled = undefined;
@@ -321,6 +378,7 @@ export default class ComponentParser {
     this.rest_props = undefined;
     this.extends = undefined;
     this.componentComment = undefined;
+    this.tags = [];
     this.reactive_vars.clear();
     this.props.clear();
     this.moduleExports.clear();
@@ -496,6 +554,7 @@ export default class ComponentParser {
           let isFunction = false;
           let isFunctionDeclaration = false;
           let isRequired = kind === "let" && init == null;
+          let tags:Tags[] = [];
 
           if (init != null) {
             if (
@@ -552,9 +611,7 @@ export default class ComponentParser {
             }
 
             additional_tags.forEach((tag) => {
-              description += `${description ? "\n" : ""}@${tag.tag} ${tag.name}${
-                tag.description ? ` ${tag.description}` : ""
-              }`;
+              tags.push({ tag: '@' + tag.tag, value: tag.name + (tag.description.length ? ' ' + tag.description: '') })
             });
           }
 
@@ -573,6 +630,7 @@ export default class ComponentParser {
             isRequired,
             constant: kind === "const",
             reactive: this.reactive_vars.has(prop_name),
+            tags
           });
         }
 
@@ -580,7 +638,9 @@ export default class ComponentParser {
           let data: string = node?.data?.trim() ?? "";
 
           if (/^@component/.test(data)) {
-            this.componentComment = data.replace(/^@component/, "");
+            const parsedComments = this.parseDescriptionAndTagsFromComments(data.replace(/^@component/, ""));
+            this.componentComment = parsedComments.description;
+            this.tags = parsedComments.tags
           }
         }
 
@@ -733,6 +793,7 @@ export default class ComponentParser {
       rest_props: this.rest_props,
       extends: this.extends,
       componentComment: this.componentComment,
+      tags: this.tags
     };
   }
 }
