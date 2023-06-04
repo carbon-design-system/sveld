@@ -79,11 +79,19 @@ function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleN
       })
       .join(",");
 
+    /**
+     * Components that extend HTML elements should allow for `data-*` attributes.
+     * @see https://github.com/sveltejs/language-tools/issues/1825
+     */
+    const dataAttributes = "[key: `data-${string}`]: any;";
+
     prop_def = `
     export interface ${props_name} extends ${
       def.extends !== undefined ? `${def.extends.interface}, ` : ""
     }${extend_tag_map} {
       ${props}
+      
+      ${dataAttributes}
     }
   `;
   } else {
