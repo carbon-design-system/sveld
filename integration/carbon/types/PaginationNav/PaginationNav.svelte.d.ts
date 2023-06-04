@@ -38,6 +38,8 @@ export interface PaginationNavProps
    * @default "Previous page"
    */
   backwardText?: string;
+
+  [key: `data-${string}`]: any;
 }
 
 export default class PaginationNav extends SvelteComponentTyped<

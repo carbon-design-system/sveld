@@ -14,6 +14,8 @@ export interface QuoteProps
    * @default ""
    */
   author?: Author;
+
+  [key: `data-${string}`]: any;
 }
 
 export default class Quote extends SvelteComponentTyped<

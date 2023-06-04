@@ -20,6 +20,8 @@ export interface TableContainerProps
    * @default false
    */
   stickyHeader?: boolean;
+
+  [key: `data-${string}`]: any;
 }
 
 export default class TableContainer extends SvelteComponentTyped<

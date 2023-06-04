@@ -171,6 +171,8 @@ export interface MultiSelectProps
    * @default undefined
    */
   name?: string;
+
+  [key: `data-${string}`]: any;
 }
 
 export default class MultiSelect extends SvelteComponentTyped<

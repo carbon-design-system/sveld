@@ -26,6 +26,8 @@ export interface FormGroupProps
    * @default ""
    */
   legendText?: string;
+
+  [key: `data-${string}`]: any;
 }
 
 export default class FormGroup extends SvelteComponentTyped<

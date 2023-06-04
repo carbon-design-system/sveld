@@ -14,6 +14,8 @@ export interface OrderedListProps
    * @default false
    */
   native?: boolean;
+
+  [key: `data-${string}`]: any;
 }
 
 export default class OrderedList extends SvelteComponentTyped<

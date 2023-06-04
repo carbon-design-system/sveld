@@ -80,6 +80,8 @@ export interface DatePickerInputProps
    * @default null
    */
   ref?: null | HTMLInputElement;
+
+  [key: `data-${string}`]: any;
 }
 
 export default class DatePickerInput extends SvelteComponentTyped<

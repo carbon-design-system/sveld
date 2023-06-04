@@ -14,6 +14,8 @@ export interface StructuredListSkeletonProps
    * @default false
    */
   border?: boolean;
+
+  [key: `data-${string}`]: any;
 }
 
 export default class StructuredListSkeleton extends SvelteComponentTyped<

@@ -86,6 +86,8 @@ export interface SelectProps
    * @default null
    */
   ref?: null | HTMLSelectElement;
+
+  [key: `data-${string}`]: any;
 }
 
 export default class Select extends SvelteComponentTyped<

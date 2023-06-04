@@ -110,6 +110,8 @@ export interface TextInputProps
    * @default false
    */
   inline?: boolean;
+
+  [key: `data-${string}`]: any;
 }
 
 export default class TextInput extends SvelteComponentTyped<

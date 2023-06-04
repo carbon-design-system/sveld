@@ -20,6 +20,8 @@ export interface StructuredListProps
    * @default false
    */
   selection?: boolean;
+
+  [key: `data-${string}`]: any;
 }
 
 export default class StructuredList extends SvelteComponentTyped<

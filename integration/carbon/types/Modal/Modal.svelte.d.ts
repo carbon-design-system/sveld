@@ -116,6 +116,8 @@ export interface ModalProps
    * @default null
    */
   ref?: null | HTMLDivElement;
+
+  [key: `data-${string}`]: any;
 }
 
 export default class Modal extends SvelteComponentTyped<

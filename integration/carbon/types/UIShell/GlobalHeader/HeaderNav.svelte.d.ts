@@ -9,6 +9,8 @@ export interface HeaderNavProps
    * @default undefined
    */
   ariaLabel?: string;
+
+  [key: `data-${string}`]: any;
 }
 
 export default class HeaderNav extends SvelteComponentTyped<

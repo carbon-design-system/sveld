@@ -51,6 +51,8 @@ export interface HeaderProps
    * @default null
    */
   ref?: null | HTMLAnchorElement;
+
+  [key: `data-${string}`]: any;
 }
 
 export default class Header extends SvelteComponentTyped<

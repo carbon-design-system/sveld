@@ -100,6 +100,8 @@ export interface ButtonProps
    * @default null
    */
   ref?: null | HTMLAnchorElement | HTMLButtonElement;
+
+  [key: `data-${string}`]: any;
 }
 
 export default class Button extends SvelteComponentTyped<

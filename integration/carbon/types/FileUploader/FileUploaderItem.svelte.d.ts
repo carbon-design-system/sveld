@@ -44,6 +44,8 @@ export interface FileUploaderItemProps
    * @default ""
    */
   name?: string;
+
+  [key: `data-${string}`]: any;
 }
 
 export default class FileUploaderItem extends SvelteComponentTyped<

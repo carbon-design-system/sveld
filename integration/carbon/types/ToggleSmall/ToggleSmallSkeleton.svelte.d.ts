@@ -14,6 +14,8 @@ export interface ToggleSmallSkeletonProps
    * @default "ccs-" + Math.random().toString(36)
    */
   id?: string;
+
+  [key: `data-${string}`]: any;
 }
 
 export default class ToggleSmallSkeleton extends SvelteComponentTyped<

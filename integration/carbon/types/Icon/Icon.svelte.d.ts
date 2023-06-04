@@ -16,6 +16,8 @@ export interface IconProps
    * @default false
    */
   skeleton?: boolean;
+
+  [key: `data-${string}`]: any;
 }
 
 export default class Icon extends SvelteComponentTyped<
