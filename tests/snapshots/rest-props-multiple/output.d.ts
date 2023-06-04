@@ -13,6 +13,8 @@ export interface InputProps
    * @default false
    */
   heading?: boolean;
+
+  [key: `data-${string}`]: any;
 }
 
 export default class Input extends SvelteComponentTyped<InputProps, {}, {}> {}
