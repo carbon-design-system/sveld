@@ -8,6 +8,8 @@ export interface ToolbarBatchActionsProps
    * @default (totalSelected) => `${totalSelected} item${totalSelected === 1 ? "" : "s"} selected`
    */
   formatTotalSelected?: (totalSelected: number) => string;
+
+  [key: `data-${string}`]: any;
 }
 
 export default class ToolbarBatchActions extends SvelteComponentTyped<

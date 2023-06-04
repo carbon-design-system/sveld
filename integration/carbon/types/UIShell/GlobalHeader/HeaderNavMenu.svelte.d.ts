@@ -32,6 +32,8 @@ export interface HeaderNavMenuProps
    * @default "Expand/Collapse"
    */
   iconDescription?: string;
+
+  [key: `data-${string}`]: any;
 }
 
 export default class HeaderNavMenu extends SvelteComponentTyped<

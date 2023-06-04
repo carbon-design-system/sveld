@@ -32,6 +32,8 @@ export interface RadioButtonGroupProps
    * @default undefined
    */
   id?: string;
+
+  [key: `data-${string}`]: any;
 }
 
 export default class RadioButtonGroup extends SvelteComponentTyped<

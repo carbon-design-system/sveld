@@ -20,6 +20,8 @@ export interface CopyProps
    * @default null
    */
   ref?: null | HTMLButtonElement;
+
+  [key: `data-${string}`]: any;
 }
 
 export default class Copy extends SvelteComponentTyped<

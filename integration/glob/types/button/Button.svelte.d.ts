@@ -23,6 +23,8 @@ export interface ButtonProps
    * @default false
    */
   primary?: boolean;
+
+  [key: `data-${string}`]: any;
 }
 
 export default class Button extends SvelteComponentTyped<

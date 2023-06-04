@@ -20,6 +20,8 @@ export interface ContentSwitcherProps
    * @default undefined
    */
   size?: "sm" | "xl";
+
+  [key: `data-${string}`]: any;
 }
 
 export default class ContentSwitcher extends SvelteComponentTyped<

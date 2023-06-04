@@ -62,6 +62,8 @@ export interface ToastNotificationProps
    * @default false
    */
   hideCloseButton?: boolean;
+
+  [key: `data-${string}`]: any;
 }
 
 export default class ToastNotification extends SvelteComponentTyped<

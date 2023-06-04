@@ -8,6 +8,8 @@ export interface UnorderedListProps
    * @default false
    */
   nested?: boolean;
+
+  [key: `data-${string}`]: any;
 }
 
 export default class UnorderedList extends SvelteComponentTyped<

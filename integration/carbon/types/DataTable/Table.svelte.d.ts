@@ -38,6 +38,8 @@ export interface TableProps
    * @default false
    */
   stickyHeader?: boolean;
+
+  [key: `data-${string}`]: any;
 }
 
 export default class Table extends SvelteComponentTyped<

@@ -27,6 +27,8 @@ export interface AccordionItemProps
    * @default "Expand/Collapse"
    */
   iconDescription?: string;
+
+  [key: `data-${string}`]: any;
 }
 
 /** `AccordionItem` is slottable */

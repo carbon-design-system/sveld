@@ -56,6 +56,8 @@ export interface RadioButtonProps
    * @default null
    */
   ref?: null | HTMLInputElement;
+
+  [key: `data-${string}`]: any;
 }
 
 export default class RadioButton extends SvelteComponentTyped<

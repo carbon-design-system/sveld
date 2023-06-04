@@ -20,6 +20,8 @@ export interface SideNavProps
    * @default false
    */
   isOpen?: boolean;
+
+  [key: `data-${string}`]: any;
 }
 
 export default class SideNav extends SvelteComponentTyped<

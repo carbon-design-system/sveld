@@ -8,6 +8,8 @@ export interface IconSkeletonProps
    * @default 16
    */
   size?: number;
+
+  [key: `data-${string}`]: any;
 }
 
 export default class IconSkeleton extends SvelteComponentTyped<

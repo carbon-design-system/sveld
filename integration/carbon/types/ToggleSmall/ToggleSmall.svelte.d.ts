@@ -44,6 +44,8 @@ export interface ToggleSmallProps
    * @default undefined
    */
   name?: string;
+
+  [key: `data-${string}`]: any;
 }
 
 export default class ToggleSmall extends SvelteComponentTyped<

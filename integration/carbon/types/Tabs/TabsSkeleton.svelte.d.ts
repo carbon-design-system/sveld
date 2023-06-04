@@ -8,6 +8,8 @@ export interface TabsSkeletonProps
    * @default 4
    */
   count?: number;
+
+  [key: `data-${string}`]: any;
 }
 
 export default class TabsSkeleton extends SvelteComponentTyped<
