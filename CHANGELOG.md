@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add isAccessor field to API
 - update Markdown writer to generate a separate table for accessors -->
 
+## [0.18.1](https://github.com/carbon-design-system/sveld/releases/tag/v0.18.1) - 2023-06-04
+
+- allow `data-*` attributes for props forwarded to HTML elements for `svelte-check@3.x` compatibility
+
 ## [0.18.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.18.0) - 2022-10-22
 
 - support `@slot` tag descriptions for named slots
