@@ -4,7 +4,7 @@
   "license": "Apache-2.0",
   "description": "Generate TypeScript definitions for your Svelte components.",
   "type": "module",
-  "main": "./lib/index.js",
+  "module": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "scripts": {
     "dev": "vite",
@@ -24,9 +24,9 @@
     "prettier": "^2.6.2",
     "rollup": "^2.70.2",
     "rollup-plugin-svelte": "^7.1.5",
-    "svelte": "^4.0.0",
+    "svelte": "^4.0.5",
     "svelte-preprocess": "^5.0.3",
-    "typescript": "^5.0.0"
+    "typescript": "^5.1.6"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^2.4.1",
@@ -37,8 +37,8 @@
     "codemirror": "5.65.5",
     "prettier-plugin-svelte": "^2.10.1",
     "svelte-highlight": "^6.2.1",
-    "vite": "^4.3.9",
-    "vitest": "^0.24.3"
+    "vite": "^4.4.2",
+    "vitest": "^0.33.0"
   },
   "bin": {
     "sveld": "./cli.js"
