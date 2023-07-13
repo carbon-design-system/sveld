@@ -22,6 +22,31 @@ exports[`writerTsDefinition > "default" module name 1`] = `
     }"
 `;
 
+exports[`writerTsDefinition > $$restProps extend modern HTML types 1`] = `
+"
+  /// <reference types=\\"svelte\\" />
+  import type { SvelteComponentTyped } from \\"svelte\\";
+  
+import type { SvelteHTMLElements } from 'svelte/elements'
+  
+  
+  
+    export interface defaultProps extends Partial<SvelteHTMLElements[\\"div\\"]> {
+      
+      
+      [key: \`data-\${string}\`]: any;
+    }
+  
+  
+  export default class  extends SvelteComponentTyped<
+      defaultProps,
+      {},
+      {}
+    > {
+      
+    }"
+`;
+
 exports[`writerTsDefinition > writeTsDefinition 1`] = `
 "
   /// <reference types=\\"svelte\\" />

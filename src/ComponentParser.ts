@@ -2,7 +2,7 @@ import { compile, walk, parse } from "svelte/compiler";
 import * as commentParser from "comment-parser";
 import { Ast, TemplateNode, Var } from "svelte/types/compiler/interfaces";
 import { getElementByTag } from "./element-tag-map";
-import { Node } from "estree-walker";
+import type { Node } from "estree";
 import type { VariableDeclaration } from "estree";
 
 interface CompiledSvelteCode {
@@ -343,7 +343,7 @@ export default class ComponentParser {
     this.parseCustomTypes();
 
     if (this.parsed?.module) {
-      walk(this.parsed?.module, {
+      walk(this.parsed as unknown as Node, {
         enter: (node) => {
           if (node.type === "ExportNamedDeclaration") {
             const {

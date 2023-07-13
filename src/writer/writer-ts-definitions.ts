@@ -71,11 +71,7 @@ function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleN
       .map((name) => {
         const element = name.trim();
 
-        if (element === "svg") {
-          return "svelte.JSX.SVGAttributes<SVGSVGElement>";
-        }
-
-        return `svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["${element}"]>`;
+        return `Partial<SvelteHTMLElements["${element}"]>`;
       })
       .join(",");
 
@@ -157,9 +153,17 @@ function genAccessors(def: Pick<ComponentDocApi, "props">) {
     .join("\n");
 }
 
-function genImports(def: Pick<ComponentDocApi, "extends">) {
-  if (def.extends === undefined) return "";
-  return `import type { ${def.extends.interface} } from ${def.extends.import};`;
+function genImports(def: ComponentDocApi) {
+  let imports = "";
+  if (def.extends) {
+    imports += `import type { ${def.extends.interface} } from ${def.extends.import};`;
+  }
+
+  if (def.rest_props?.type === "Element") {
+    imports += `\nimport type { SvelteHTMLElements } from 'svelte/elements'`;
+  }
+
+  return imports;
 }
 
 function genComponentComment(def: Pick<ComponentDocApi, "componentComment">) {
@@ -216,7 +220,7 @@ export function writeTsDefinition(component: ComponentDocApi) {
   return `
   /// <reference types="svelte" />
   import type { SvelteComponentTyped } from "svelte";
-  ${genImports({ extends: _extends })}
+  ${genImports(component)}
   ${genModuleExports({ moduleExports })}
   ${getTypeDefs({ typedefs })}
   ${prop_def}

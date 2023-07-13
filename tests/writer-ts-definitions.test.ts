@@ -31,6 +31,7 @@ describe("writerTsDefinition", () => {
           isFunctionDeclaration: false,
           constant: false,
           reactive: true,
+          isRequired: false,
         },
         {
           name: "propString",
@@ -41,6 +42,7 @@ describe("writerTsDefinition", () => {
           isFunctionDeclaration: false,
           constant: false,
           reactive: false,
+          isRequired: false,
         },
         {
           name: "name",
@@ -50,6 +52,7 @@ describe("writerTsDefinition", () => {
           isFunctionDeclaration: false,
           constant: false,
           reactive: false,
+          isRequired: false,
         },
         {
           name: "id",
@@ -60,6 +63,7 @@ describe("writerTsDefinition", () => {
           isFunctionDeclaration: false,
           constant: false,
           reactive: false,
+          isRequired: false,
         },
         {
           name: "propConst",
@@ -70,6 +74,7 @@ describe("writerTsDefinition", () => {
           isFunctionDeclaration: false,
           constant: true,
           reactive: false,
+          isRequired: false,
         },
         {
           name: "fn",
@@ -80,6 +85,7 @@ describe("writerTsDefinition", () => {
           isFunctionDeclaration: false,
           constant: false,
           reactive: false,
+          isRequired: false,
         },
       ],
       moduleExports: [],
@@ -100,6 +106,24 @@ describe("writerTsDefinition", () => {
       moduleName: "ModuleName",
       filePath: "./src/ModuleName.svelte",
       ...parsed_output,
+    };
+
+    expect(writeTsDefinition(component_api)).toMatchSnapshot();
+  });
+
+  test("$$restProps extend modern HTML types", () => {
+    const component_api: ComponentDocApi = {
+      moduleName: "default",
+      filePath: "./src/ModuleName.svelte",
+      props: [],
+      moduleExports: [],
+      slots: [],
+      events: [],
+      typedefs: [],
+      rest_props: {
+        type: "Element",
+        name: "div",
+      },
     };
 
     expect(writeTsDefinition(component_api)).toMatchSnapshot();
