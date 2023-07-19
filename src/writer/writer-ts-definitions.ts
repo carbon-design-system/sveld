@@ -7,6 +7,9 @@ import Writer from "./Writer";
 const ANY_TYPE = "any";
 const EMPTY_STR = "";
 
+// Svelte 4 is not compatible with `{}`
+const EMPTY_EVENTS = "Record<string, any>";
+
 export function formatTsProps(props?: string) {
   if (props === undefined) return ANY_TYPE;
   return props + "\n";
@@ -71,24 +74,21 @@ function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleN
       .map((name) => {
         const element = name.trim();
 
-        if (element === "svg") {
-          return "svelte.JSX.SVGAttributes<SVGSVGElement>";
-        }
-
-        return `svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["${element}"]>`;
+        return `SvelteHTMLElements["${element}"]`;
       })
-      .join(",");
+      .join("&");
 
     /**
      * Components that extend HTML elements should allow for `data-*` attributes.
      * @see https://github.com/sveltejs/language-tools/issues/1825
+     *
+     * Even though Svelte 4 does this automatically, we need to preserve this for Svelte 3.
      */
     const dataAttributes = "[key: `data-${string}`]: any;";
 
     prop_def = `
-    export interface ${props_name} extends ${
-      def.extends !== undefined ? `${def.extends.interface}, ` : ""
-    }${extend_tag_map} {
+    ${extend_tag_map ? `type RestProps = ${extend_tag_map};\n` : ""}
+    export interface ${props_name} extends ${def.extends !== undefined ? `${def.extends.interface}, ` : ""}RestProps {
       ${props}
       
       ${dataAttributes}
@@ -131,7 +131,10 @@ function genEventDef(def: Pick<ComponentDocApi, "events">) {
     if (/CustomEvent/.test(detail)) return detail;
     return `CustomEvent<${detail}>`;
   };
-  return def.events
+
+  if (def.events.length === 0) return EMPTY_EVENTS;
+
+  const events_map = def.events
     .map((event) => {
       let description = "";
       if (event.type === "dispatched" && event.description) {
@@ -142,6 +145,8 @@ function genEventDef(def: Pick<ComponentDocApi, "events">) {
       };\n`;
     })
     .join("");
+
+  return `{${events_map}}`;
 }
 
 function genAccessors(def: Pick<ComponentDocApi, "props">) {
@@ -214,8 +219,9 @@ export function writeTsDefinition(component: ComponentDocApi) {
   });
 
   return `
-  /// <reference types="svelte" />
-  import type { SvelteComponentTyped } from "svelte";
+  import type { SvelteComponentTyped } from "svelte";${
+    rest_props?.type === "Element" ? `import type { SvelteHTMLElements } from "svelte/elements";\n` : ""
+  }
   ${genImports({ extends: _extends })}
   ${genModuleExports({ moduleExports })}
   ${getTypeDefs({ typedefs })}
@@ -223,7 +229,7 @@ export function writeTsDefinition(component: ComponentDocApi) {
   ${genComponentComment({ componentComment })}
   export default class ${moduleName === "default" ? "" : moduleName} extends SvelteComponentTyped<
       ${props_name},
-      {${genEventDef({ events })}},
+      ${genEventDef({ events })},
       {${genSlotDef({ slots })}}
     > {
       ${genAccessors({ props })}
