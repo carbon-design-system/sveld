@@ -2,7 +2,6 @@
 
 exports[`writerTsDefinition > "default" module name 1`] = `
 "
-  /// <reference types=\\"svelte\\" />
   import type { SvelteComponentTyped } from \\"svelte\\";
   
   
@@ -15,7 +14,7 @@ exports[`writerTsDefinition > "default" module name 1`] = `
   
   export default class  extends SvelteComponentTyped<
       defaultProps,
-      {},
+      Record<string, any>,
       {}
     > {
       
@@ -24,7 +23,6 @@ exports[`writerTsDefinition > "default" module name 1`] = `
 
 exports[`writerTsDefinition > writeTsDefinition 1`] = `
 "
-  /// <reference types=\\"svelte\\" />
   import type { SvelteComponentTyped } from \\"svelte\\";
   
   
@@ -61,7 +59,7 @@ exports[`writerTsDefinition > writeTsDefinition 1`] = `
   
   export default class ModuleName extends SvelteComponentTyped<
       ModuleNameProps,
-      {},
+      Record<string, any>,
       {default: {}
 ;}
     > {

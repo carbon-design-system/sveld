@@ -1,5 +1,5 @@
-/// <reference types="svelte" />
 import type { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
 
 export type MultiSelectItemId = string;
 
@@ -10,8 +10,9 @@ export interface MultiSelectItem {
   text: MultiSelectItemText;
 }
 
-export interface MultiSelectProps
-  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
+type RestProps = SvelteHTMLElements["div"];
+
+export interface MultiSelectProps extends RestProps {
   /**
    * Set the multiselect items
    * @default []

@@ -1,5 +1,5 @@
-/// <reference types="svelte" />
 import type { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
 
 export interface HeaderActionSlideTransition {
   delay?: number;
@@ -7,8 +7,9 @@ export interface HeaderActionSlideTransition {
   easing?: (t: number) => number;
 }
 
-export interface HeaderActionProps
-  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["button"]> {
+type RestProps = SvelteHTMLElements["button"];
+
+export interface HeaderActionProps extends RestProps {
   /**
    * Set to `true` to open the panel
    * @default false

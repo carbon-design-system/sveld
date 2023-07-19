@@ -1,4 +1,3 @@
-/// <reference types="svelte" />
 import type { SvelteComponentTyped } from "svelte";
 
 export interface NotificationTextDetailsProps {
@@ -29,6 +28,6 @@ export interface NotificationTextDetailsProps {
 
 export default class NotificationTextDetails extends SvelteComponentTyped<
   NotificationTextDetailsProps,
-  {},
+  Record<string, any>,
   { default: {} }
 > {}

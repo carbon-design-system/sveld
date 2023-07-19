@@ -1,4 +1,3 @@
-/// <reference types="svelte" />
 import type { SvelteComponentTyped } from "svelte";
 
 export interface MyTypedef {
@@ -21,6 +20,6 @@ export interface InputProps {
 
 export default class Input extends SvelteComponentTyped<
   InputProps,
-  {},
+  Record<string, any>,
   { default: { prop1: MyTypedef; prop2: MyTypedefArray } }
 > {}

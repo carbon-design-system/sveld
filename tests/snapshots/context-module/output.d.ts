@@ -1,4 +1,3 @@
-/// <reference types="svelte" />
 import type { SvelteComponentTyped } from "svelte";
 
 export type bool = string;
@@ -23,6 +22,6 @@ export declare function b3(): () => false;
 
 export interface InputProps {}
 
-export default class Input extends SvelteComponentTyped<InputProps, {}, {}> {
+export default class Input extends SvelteComponentTyped<InputProps, Record<string, any>, {}> {
   a: string;
 }

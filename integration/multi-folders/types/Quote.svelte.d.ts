@@ -1,10 +1,11 @@
-/// <reference types="svelte" />
 import type { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
 
 export type Author = string;
 
-export interface QuoteProps
-  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["blockquote"]> {
+type RestProps = SvelteHTMLElements["blockquote"];
+
+export interface QuoteProps extends RestProps {
   /**
    * @default ""
    */
@@ -20,6 +21,6 @@ export interface QuoteProps
 
 export default class Quote extends SvelteComponentTyped<
   QuoteProps,
-  {},
+  Record<string, any>,
   { default: {} }
 > {}
