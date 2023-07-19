@@ -10,6 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add isAccessor field to API
 - update Markdown writer to generate a separate table for accessors -->
 
+## [0.19.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.19.0) - 2023-07-19
+
+**Breaking Changes**
+
+- if using Svelte 3, the generated TypeScript definitions now require version 3.55 or higher
+
+**Features**
+
+- support Svelte 4 in the generated TypeScript definitions
+
 ## [0.18.1](https://github.com/carbon-design-system/sveld/releases/tag/v0.18.1) - 2023-06-04
 
 - allow `data-*` attributes for props forwarded to HTML elements for `svelte-check@3.x` compatibility
