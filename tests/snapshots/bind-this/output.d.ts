@@ -1,4 +1,3 @@
-/// <reference types="svelte" />
 import type { SvelteComponentTyped } from "svelte";
 
 export interface InputProps {
@@ -8,4 +7,4 @@ export interface InputProps {
   ref: null | HTMLButtonElement;
 }
 
-export default class Input extends SvelteComponentTyped<InputProps, {}, { default: {} }> {}
+export default class Input extends SvelteComponentTyped<InputProps, Record<string, any>, { default: {} }> {}

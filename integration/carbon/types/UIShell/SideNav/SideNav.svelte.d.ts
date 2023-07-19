@@ -1,8 +1,9 @@
-/// <reference types="svelte" />
 import type { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
 
-export interface SideNavProps
-  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["nav"]> {
+type RestProps = SvelteHTMLElements["nav"];
+
+export interface SideNavProps extends RestProps {
   /**
    * Set to `true` to use the fixed variant
    * @default false
@@ -26,6 +27,6 @@ export interface SideNavProps
 
 export default class SideNav extends SvelteComponentTyped<
   SideNavProps,
-  {},
+  Record<string, any>,
   { default: {} }
 > {}

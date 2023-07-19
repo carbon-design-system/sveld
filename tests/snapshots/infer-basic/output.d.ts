@@ -1,4 +1,3 @@
-/// <reference types="svelte" />
 import type { SvelteComponentTyped } from "svelte";
 
 export interface InputProps {
@@ -28,7 +27,7 @@ export interface InputProps {
   id?: string;
 }
 
-export default class Input extends SvelteComponentTyped<InputProps, {}, { default: {} }> {
+export default class Input extends SvelteComponentTyped<InputProps, Record<string, any>, { default: {} }> {
   propConst: { ["1"]: true };
 
   fn: () => any;

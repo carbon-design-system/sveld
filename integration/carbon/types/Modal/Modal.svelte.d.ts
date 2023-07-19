@@ -1,8 +1,9 @@
-/// <reference types="svelte" />
 import type { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
 
-export interface ModalProps
-  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
+type RestProps = SvelteHTMLElements["div"];
+
+export interface ModalProps extends RestProps {
   /**
    * Set the size of the modal
    * @default undefined

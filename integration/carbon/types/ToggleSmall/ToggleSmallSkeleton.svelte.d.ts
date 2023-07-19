@@ -1,8 +1,9 @@
-/// <reference types="svelte" />
 import type { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
 
-export interface ToggleSmallSkeletonProps
-  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
+type RestProps = SvelteHTMLElements["div"];
+
+export interface ToggleSmallSkeletonProps extends RestProps {
   /**
    * Specify the label text
    * @default ""

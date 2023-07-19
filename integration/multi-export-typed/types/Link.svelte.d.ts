@@ -1,8 +1,9 @@
-/// <reference types="svelte" />
 import type { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
 
-export interface LinkProps
-  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["a"]> {
+type RestProps = SvelteHTMLElements["a"];
+
+export interface LinkProps extends RestProps {
   [key: `data-${string}`]: any;
 }
 

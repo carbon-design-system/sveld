@@ -1,8 +1,9 @@
-/// <reference types="svelte" />
 import type { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
 
-export interface IconSkeletonProps
-  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
+type RestProps = SvelteHTMLElements["div"];
+
+export interface IconSkeletonProps extends RestProps {
   /**
    * Set the size of the icon
    * @default 16

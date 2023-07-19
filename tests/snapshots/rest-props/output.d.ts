@@ -1,8 +1,10 @@
-/// <reference types="svelte" />
 import type { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
 
-export interface InputProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["h1"]> {
+type RestProps = SvelteHTMLElements["h1"];
+
+export interface InputProps extends RestProps {
   [key: `data-${string}`]: any;
 }
 
-export default class Input extends SvelteComponentTyped<InputProps, {}, {}> {}
+export default class Input extends SvelteComponentTyped<InputProps, Record<string, any>, {}> {}

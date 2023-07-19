@@ -14,7 +14,7 @@ The purpose of this project is to make third party Svelte component libraries co
 - [Component Index](https://github.com/IBM/carbon-components-svelte/blob/master/COMPONENT_INDEX.md): Markdown file documenting component props, slots, and events
 - [Component API](https://github.com/IBM/carbon-components-svelte/blob/master/docs/src/COMPONENT_API.json): Component API metadata in JSON format
 
-**Please note** that the generated TypeScript definitions require [Svelte version 3.31](https://github.com/sveltejs/svelte/blob/master/CHANGELOG.md#3310) or greater.
+**Please note** that the generated TypeScript definitions require Svelte version 3.55 or greater.
 
 ---
 
@@ -38,10 +38,12 @@ The generated definition extends the official `SvelteComponentTyped` interface e
 **Button.svelte.d.ts**
 
 ```ts
-/// <reference types="svelte" />
 import type { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
 
-export interface ButtonProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["button"]> {
+type RestProps = SvelteHTMLElements["button"];
+
+export interface ButtonProps extends RestProps {
   /**
    * @default "button"
    */
@@ -77,10 +79,11 @@ export let primary = false;
 The accompanying JSDoc annotations would generate the following:
 
 ```ts
-/// <reference types="svelte" />
-import { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
 
-export interface ButtonProps extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["button"]> {
+type RestProps = SvelteHTMLElements["button"];
+
+export interface ButtonProps extends RestProps {
   /**
    * @default "button"
    */
@@ -136,8 +139,6 @@ Extracted metadata include:
 - `$$restProps`
 
 This library adopts a progressively enhanced approach. Any property type that cannot be inferred (e.g., "hello" is a string) falls back to "any" to minimize incorrectly typed properties or signatures. To mitigate this, the library author can add JSDoc annotations to specify types that cannot be reliably inferred. This represents a progressively enhanced approach because JSDocs are comments that can be ignored by the compiler.
-
-The generated TypeScript definitions for a component extends the `SvelteComponentTyped` interface available in svelte version 3.31.
 
 ## Usage
 

@@ -1,10 +1,11 @@
-/// <reference types="svelte" />
 import type { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
 import type { IconSkeletonProps } from "./IconSkeleton.svelte";
 
-export interface IconProps
-  extends IconSkeletonProps,
-    svelte.JSX.SVGAttributes<SVGSVGElement> {
+type RestProps = SvelteHTMLElements["svg"];
+
+export interface IconProps extends IconSkeletonProps, RestProps {
   /**
    * Specify the icon from `carbon-icons-svelte` to render
    * @default undefined

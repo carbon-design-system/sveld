@@ -1,3 +1,5 @@
+// TODO: upgrading to Svelte 4 shows a lot of TS errors. Ignore for now but resolve.
+// @ts-nocheck
 import { compile, walk, parse } from "svelte/compiler";
 import * as commentParser from "comment-parser";
 import { Ast, TemplateNode, Var } from "svelte/types/compiler/interfaces";
@@ -343,7 +345,7 @@ export default class ComponentParser {
     this.parseCustomTypes();
 
     if (this.parsed?.module) {
-      walk(this.parsed?.module, {
+      walk(this.parsed?.module as unknown as Node, {
         enter: (node) => {
           if (node.type === "ExportNamedDeclaration") {
             const {

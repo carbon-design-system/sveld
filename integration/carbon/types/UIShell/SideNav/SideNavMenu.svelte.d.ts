@@ -1,8 +1,9 @@
-/// <reference types="svelte" />
 import type { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
 
-export interface SideNavMenuProps
-  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["button"]> {
+type RestProps = SvelteHTMLElements["button"];
+
+export interface SideNavMenuProps extends RestProps {
   /**
    * Set to `true` to toggle the expanded state
    * @default false

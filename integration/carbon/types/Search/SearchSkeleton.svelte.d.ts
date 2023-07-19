@@ -1,8 +1,9 @@
-/// <reference types="svelte" />
 import type { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
 
-export interface SearchSkeletonProps
-  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
+type RestProps = SvelteHTMLElements["div"];
+
+export interface SearchSkeletonProps extends RestProps {
   /**
    * @deprecated this prop will be removed in the next major release
    * Set to `true` to use the small variant

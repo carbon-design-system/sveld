@@ -1,5 +1,5 @@
-/// <reference types="svelte" />
 import type { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
 
 export type tree = boolean;
 
@@ -12,8 +12,9 @@ export declare function findParentTreeNode(
   node: HTMLElement
 ): null | HTMLElement;
 
-export interface ButtonProps
-  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["button"]> {
+type RestProps = SvelteHTMLElements["button"];
+
+export interface ButtonProps extends RestProps {
   /**
    * @default "button2"
    */

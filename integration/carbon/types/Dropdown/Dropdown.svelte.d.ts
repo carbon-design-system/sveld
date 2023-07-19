@@ -1,5 +1,5 @@
-/// <reference types="svelte" />
 import type { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
 
 export type DropdownItemId = string;
 
@@ -10,8 +10,9 @@ export interface DropdownItem {
   text: DropdownItemText;
 }
 
-export interface DropdownProps
-  extends svelte.JSX.HTMLAttributes<HTMLElementTagNameMap["div"]> {
+type RestProps = SvelteHTMLElements["div"];
+
+export interface DropdownProps extends RestProps {
   /**
    * Set the dropdown items
    * @default []
