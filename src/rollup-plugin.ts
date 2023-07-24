@@ -133,7 +133,7 @@ export function writeOutput(result: GenerateBundleResult, opts: PluginSveldOptio
 
   if (opts?.markdown) {
     writeMarkdown(result.components, {
-      outFile: path.join(process.cwd(), "COMPONENT_INDEX.md"),
+      outFile: "COMPONENT_INDEX.md",
       ...opts?.markdownOptions,
     });
   }
