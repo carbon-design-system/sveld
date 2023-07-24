@@ -88,9 +88,11 @@ export default async function writeMarkdown(components: ComponentDocs, options: 
         .forEach((prop) => {
           document.append(
             "raw",
-            `| ${prop.name} | ${prop.isRequired ? 'Yes' : 'No'} | ${`<code>${prop.kind}</code>`} | ${prop.reactive ? "Yes" : "No"} | ${formatPropType(
-              prop.type
-            )} | ${formatPropValue(prop.value)} | ${formatPropDescription(prop.description)} |\n`
+            `| ${prop.name} | ${prop.isRequired ? "Yes" : "No"} | ${`<code>${prop.kind}</code>`} | ${
+              prop.reactive ? "Yes" : "No"
+            } | ${formatPropType(prop.type)} | ${formatPropValue(prop.value)} | ${formatPropDescription(
+              prop.description
+            )} |\n`
           );
         });
     } else {

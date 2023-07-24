@@ -23,7 +23,11 @@ interface NodeExportAllDeclaration extends acorn.Node, Pick<NodeImportDeclaratio
   type: "ExportAllDeclaration";
 }
 
-type BodyNode = NodeImportDeclaration | NodeExportNamedDeclaration | NodeExportDefaultDeclaration | NodeExportAllDeclaration;
+type BodyNode =
+  | NodeImportDeclaration
+  | NodeExportNamedDeclaration
+  | NodeExportDefaultDeclaration
+  | NodeExportAllDeclaration;
 
 export type ParsedExports = Record<string, { source: string; default: boolean; mixed?: boolean }>;
 
@@ -50,7 +54,7 @@ export function parseExports(source: string, dir: string) {
 
       let file_path = path.resolve(dir, node.source.value);
 
-      if (!fs.lstatSync(file_path).isFile()){
+      if (!fs.lstatSync(file_path).isFile()) {
         const files = fs.readdirSync(file_path);
 
         for (const file of files)
@@ -67,7 +71,7 @@ export function parseExports(source: string, dir: string) {
         const source = normalizeSeparators("./" + path.join(node.source.value, value.source));
         exports_by_identifier[key] = {
           ...value,
-          source
+          source,
         };
       }
     } else if (node.type === "ExportNamedDeclaration") {
