@@ -132,7 +132,8 @@ export default async function writeMarkdown(components: ComponentDocs, options: 
   });
 
   if (write) {
-    await document.write(options.outFile, document.end());
+    const outFile = path.join(process.cwd(), options.outFile);
+    await document.write(outFile, document.end());
     console.log(`created "${options.outFile}".`);
   }
 
