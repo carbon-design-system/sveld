@@ -1,6 +1,6 @@
 import { svelte } from "@sveltejs/vite-plugin-svelte";
-import { defineConfig } from "vite";
 import { optimizeImports } from "carbon-preprocess-svelte";
+import { defineConfig } from "vite";
 
 export default defineConfig({
   root: "playground",
@@ -10,6 +10,6 @@ export default defineConfig({
     }),
   ],
   optimizeDeps: {
-    include: ["highlight.js", "highlight.js/lib/core"],
+    exclude: ["carbon-components-svelte"],
   },
 });
