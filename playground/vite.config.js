@@ -3,7 +3,6 @@ import { optimizeImports } from "carbon-preprocess-svelte";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  root: "playground",
   plugins: [
     svelte({
       preprocess: [optimizeImports()],

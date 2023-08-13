@@ -4,7 +4,7 @@
 
   import plugin from "prettier/parser-typescript";
   import prettier from "prettier/standalone";
-  import { writeTsDefinition } from "../src/writer/writer-ts-definitions";
+  import { writeTsDefinition } from "../../src/writer/writer-ts-definitions";
   import CodeHighlighter from "./CodeHighlighter.svelte";
   import TabContentOverlay from "./TabContentOverlay.svelte";
 

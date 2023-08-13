@@ -4,7 +4,7 @@
 
   import plugin from "prettier/parser-markdown";
   import prettier from "prettier/standalone";
-  import writeMarkdown from "../src/writer/writer-markdown";
+  import writeMarkdown from "../../src/writer/writer-markdown";
   import CodeHighlighter from "./CodeHighlighter.svelte";
 
   let markdown = "";

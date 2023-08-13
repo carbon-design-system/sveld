@@ -1,7 +1,7 @@
 <script>
   import { Header, Content, HeaderUtilities, HeaderActionLink, SkipToContent } from "carbon-components-svelte";
   import LogoGithub20 from "./LogoGithub20.svelte";
-  import pkg from "../package.json";
+  import pkg from "../../package.json";
 </script>
 
 <svelte:head>
@@ -9,9 +9,7 @@
 </svelte:head>
 
 <Header aria-label="Navigation" href="/">
-  <svelte:fragment slot="skip-to-content">
-    <SkipToContent />
-  </svelte:fragment>
+  <SkipToContent slot="skip-to-content" />
   <span slot="platform">
     {pkg.name}
     <code title="Version {pkg.version}">v{pkg.version}</code>

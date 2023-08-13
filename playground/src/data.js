@@ -1,5 +1,5 @@
 export const button = {
-  moduleName: 'Button',
+  moduleName: "Button",
   code: `<script>
   export let type = "button";
   export let primary = false;
@@ -7,11 +7,11 @@ export const button = {
 
 <button {...$$restProps} {type} class:primary on:click>
   <slot>Click me</slot>
-</button>`
-}
+</button>`,
+};
 
 export const dynamic_dispatched_events = {
-  moduleName: 'Dispatched events',
+  moduleName: "Dispatched events",
   code: `<script>
   import { onDestroy, createEventDispatcher } from "svelte";
 
@@ -32,20 +32,16 @@ export const dynamic_dispatched_events = {
 >
   <slot />
 </h1>
-`
-}
+`,
+};
 
 export const forwarded_events = {
-  moduleName: 'Forwarded events',
+  moduleName: "Forwarded events",
   code: `<button type="button" on:click on:focus on:blur />
 <h1 on:mouseover on:mouseover={() => {}}>
   <slot />
 </h1>
-`
-}
+`,
+};
 
-export default [
-  button,
-  dynamic_dispatched_events,
-  forwarded_events
-]
+export default [button, dynamic_dispatched_events, forwarded_events];
