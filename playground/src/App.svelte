@@ -13,7 +13,7 @@
     InlineLoading,
   } from "carbon-components-svelte";
   import { onMount } from "svelte";
-  import ComponentParser from "../src/ComponentParser";
+  import ComponentParser from "../../src/ComponentParser";
   import CodeEditor from "./CodeEditor.svelte";
   import data from "./data";
   import TabContentOverlay from "./TabContentOverlay.svelte";
