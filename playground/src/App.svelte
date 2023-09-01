@@ -60,6 +60,10 @@
       parse_error = error;
     }
   }
+
+  $: if (value && codemirror) {
+    codemirror.setValue(value);
+  }
 </script>
 
 <Header>
@@ -74,9 +78,6 @@
             id: datum.moduleName,
             text: datum.moduleName,
           }))}
-          on:select={() => {
-            codemirror.setValue(value);
-          }}
         />
         <CodeEditor
           bind:code={value}
