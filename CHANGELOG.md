@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add isAccessor field to API
 - update Markdown writer to generate a separate table for accessors -->
 
+## [0.19.1](https://github.com/carbon-design-system/sveld/releases/tag/v0.19.1) - 2023-10-17
+
+**Fixes**
+
+- only print `outFile` when writing Markdown file
+- upgrade `svelte-preprocess` and `typescript` to ameliorate peer dependency warning
+
 ## [0.19.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.19.0) - 2023-07-19
 
 **Breaking Changes**
