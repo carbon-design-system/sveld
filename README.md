@@ -162,7 +162,7 @@ Import and add `sveld` as a plugin to your `rollup.config.js`.
 // rollup.config.js
 import svelte from "rollup-plugin-svelte";
 import resolve from "@rollup/plugin-node-resolve";
-import sveld from "sveld";
+import { sveld } from "sveld";
 
 export default {
   input: "src/index.js",
