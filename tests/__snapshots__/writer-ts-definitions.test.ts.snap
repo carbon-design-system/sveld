@@ -1,27 +1,6 @@
-// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+// Bun Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`writerTsDefinition > "default" module name 1`] = `
-"
-  import type { SvelteComponentTyped } from "svelte";
-  
-  
-  
-  
-    export interface defaultProps  {
-      
-    }
-  
-  
-  export default class  extends SvelteComponentTyped<
-      defaultProps,
-      Record<string, any>,
-      {}
-    > {
-      
-    }"
-`;
-
-exports[`writerTsDefinition > writeTsDefinition 1`] = `
+exports[`writerTsDefinition writeTsDefinition 1`] = `
 "
   import type { SvelteComponentTyped } from "svelte";
   
@@ -66,5 +45,26 @@ exports[`writerTsDefinition > writeTsDefinition 1`] = `
       
     
     propConst: { [key: string]: boolean; };
+    }"
+`;
+
+exports[`writerTsDefinition "default" module name 1`] = `
+"
+  import type { SvelteComponentTyped } from "svelte";
+  
+  
+  
+  
+    export interface defaultProps  {
+      
+    }
+  
+  
+  export default class  extends SvelteComponentTyped<
+      defaultProps,
+      Record<string, any>,
+      {}
+    > {
+      
     }"
 `;
