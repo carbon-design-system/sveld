@@ -1,13 +1,12 @@
 {
   "compilerOptions": {
-    "module": "ESNext",
-    "target": "ESNext",
+    "declaration": true,
+    "module": "CommonJS",
     "moduleResolution": "node",
     "outDir": "lib",
     "skipLibCheck": true,
     "strict": true,
-    "esModuleInterop": true,
-    "types": ["vitest/globals"]
+    "esModuleInterop": true
   },
-  "include": ["src/**/*", "tests/**/*"]
+  "include": ["src/**/*"]
 }
