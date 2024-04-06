@@ -14,7 +14,7 @@ const TS_DEF_FILE = "output.d.ts";
   const input_files = await fsp.readdir(SNAPSHOTS_FOLDER);
   const parser = new ComponentParser({ verbose: true });
 
-  for await (const file of input_files) {
+  const promises = input_files.map(async (file) => {
     const input_path = path.join(SNAPSHOTS_FOLDER, file, INPUT_FILE);
     const output_path = path.join(SNAPSHOTS_FOLDER, file, OUTPUT_FILE);
     const ts_def_path = path.join(SNAPSHOTS_FOLDER, file, TS_DEF_FILE);
@@ -31,7 +31,8 @@ const TS_DEF_FILE = "output.d.ts";
 
     await fsp.writeFile(output_path, JSON.stringify(parsed_component, null, 2));
     await writer.write(ts_def_path, writeTsDefinition(component_api));
-  }
+  });
 
+  await Promise.all(promises);
   parser.cleanup();
 })();
