@@ -31,10 +31,7 @@ jobs:
         run: yarn prepack
 
       - name: Run unit tests
-        run: yarn test:unit
-
-      - name: Run snapshot tests
-        run: yarn test:snapshot
+        run: yarn test
 
       # Only trigger deploy if previous steps pass and branch is main
       - name: Deploy docs

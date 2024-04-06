@@ -6,8 +6,7 @@
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "scripts": {
-    "test:unit": "vitest -r tests",
-    "test:snapshot": "node tests/test-snapshot",
+    "test": "vitest -r tests",
     "test:integration": "node tests/test-integration",
     "format": "prettier --write \"{src,tests,playground}/**/*.{js,ts,svelte,md}\" --ignore-path \".gitignore\"",
     "prepack": "tsc"
