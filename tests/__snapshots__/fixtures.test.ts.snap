@@ -1,0 +1,1730 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`fixtures > 'anchor-props/input.svelte' 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "slot_props": "{}"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "rest_props": {
+    "type": "Element",
+    "name": "a"
+  }
+}"
+`;
+
+exports[`fixtures > 'anchor-props/input.svelte' 2`] = `
+"import type { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+type RestProps = SvelteHTMLElements["a"];
+
+export interface AnchorPropsProps extends RestProps {
+  [key: \`data-\${string}\`]: any;
+}
+
+export default class AnchorProps extends SvelteComponentTyped<AnchorPropsProps, Record<string, any>, { default: {} }> {}
+"
+`;
+
+exports[`fixtures > 'bind-this/input.svelte' 1`] = `
+"{
+  "props": [
+    {
+      "name": "ref",
+      "kind": "let",
+      "type": "null | HTMLButtonElement",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": true
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "slot_props": "{}"
+    }
+  ],
+  "events": [],
+  "typedefs": []
+}"
+`;
+
+exports[`fixtures > 'bind-this/input.svelte' 2`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export interface BindThisProps {
+  /**
+   * @default undefined
+   */
+  ref: null | HTMLButtonElement;
+}
+
+export default class BindThis extends SvelteComponentTyped<BindThisProps, Record<string, any>, { default: {} }> {}
+"
+`;
+
+exports[`fixtures > 'bind-this-multiple/input.svelte' 1`] = `
+"{
+  "props": [
+    {
+      "name": "ref",
+      "kind": "let",
+      "type": "null | HTMLButtonElement | HTMLHeadingElement",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": true
+    },
+    {
+      "name": "ref2",
+      "kind": "let",
+      "type": "null | HTMLDivElement",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": true
+    },
+    {
+      "name": "propBool",
+      "kind": "let",
+      "type": "boolean",
+      "value": "false",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "slot_props": "{}"
+    }
+  ],
+  "events": [],
+  "typedefs": []
+}"
+`;
+
+exports[`fixtures > 'bind-this-multiple/input.svelte' 2`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export interface BindThisMultipleProps {
+  /**
+   * @default undefined
+   */
+  ref: null | HTMLButtonElement | HTMLHeadingElement;
+
+  /**
+   * @default undefined
+   */
+  ref2: null | HTMLDivElement;
+
+  /**
+   * @default false
+   */
+  propBool?: boolean;
+}
+
+export default class BindThisMultiple extends SvelteComponentTyped<
+  BindThisMultipleProps,
+  Record<string, any>,
+  { default: {} }
+> {}
+"
+`;
+
+exports[`fixtures > 'component-comment-multi/input.svelte' 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "slot_props": "{}"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "componentComment": "\\n@example\\n<div>\\n  Component comment\\n</div>"
+}"
+`;
+
+exports[`fixtures > 'component-comment-multi/input.svelte' 2`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export interface ComponentCommentMultiProps {}
+
+/**
+ * @example
+ * <div>
+ *   Component comment
+ * </div>
+ */
+export default class ComponentCommentMulti extends SvelteComponentTyped<
+  ComponentCommentMultiProps,
+  Record<string, any>,
+  { default: {} }
+> {}
+"
+`;
+
+exports[`fixtures > 'component-comment-single/input.svelte' 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "slot_props": "{}"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "componentComment": " Component comment"
+}"
+`;
+
+exports[`fixtures > 'component-comment-single/input.svelte' 2`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export interface ComponentCommentSingleProps {}
+
+/** Component comment */
+export default class ComponentCommentSingle extends SvelteComponentTyped<
+  ComponentCommentSingleProps,
+  Record<string, any>,
+  { default: {} }
+> {}
+"
+`;
+
+exports[`fixtures > 'context-module/input.svelte' 1`] = `
+"{
+  "props": [
+    {
+      "name": "a",
+      "kind": "const",
+      "type": "string",
+      "value": "\\"\\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [
+    {
+      "name": "bool",
+      "kind": "const",
+      "type": "string",
+      "value": "\\"\\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false
+    },
+    {
+      "name": "a",
+      "kind": "const",
+      "type": "{ b: 4 }",
+      "value": "{ b: 4 }",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false
+    },
+    {
+      "name": "e",
+      "kind": "const",
+      "description": "Description for e",
+      "type": "{ [key: string]: any; }",
+      "value": "{ b: 4 }",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false
+    },
+    {
+      "name": "log",
+      "kind": "function",
+      "description": "Log something",
+      "type": "(message: string) => void",
+      "value": "() => {     console.log(message);   }",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "b",
+      "kind": "const",
+      "type": "() => {}",
+      "value": "() => {}",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false
+    },
+    {
+      "name": "b2",
+      "kind": "const",
+      "type": "() => () => {}",
+      "value": "() => () => {}",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false
+    },
+    {
+      "name": "b3",
+      "kind": "const",
+      "type": "() => () => false",
+      "value": "() => () => false",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false
+    }
+  ],
+  "slots": [],
+  "events": [],
+  "typedefs": []
+}"
+`;
+
+exports[`fixtures > 'context-module/input.svelte' 2`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export type bool = string;
+
+export type a = { b: 4 };
+
+/**
+ * Description for e
+ */
+export type e = { [key: string]: any };
+
+/**
+ * Log something
+ */
+export declare function log(message: string): void;
+
+export declare function b(): {};
+
+export declare function b2(): () => {};
+
+export declare function b3(): () => false;
+
+export interface ContextModuleProps {}
+
+export default class ContextModule extends SvelteComponentTyped<ContextModuleProps, Record<string, any>, {}> {
+  a: string;
+}
+"
+`;
+
+exports[`fixtures > 'dispatched-events/input.svelte' 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "slot_props": "{}"
+    }
+  ],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "hover"
+    },
+    {
+      "type": "dispatched",
+      "name": "destroy",
+      "detail": "null"
+    },
+    {
+      "type": "dispatched",
+      "name": "destroy--component",
+      "detail": "null"
+    },
+    {
+      "type": "dispatched",
+      "name": "destroy:component",
+      "detail": "null"
+    }
+  ],
+  "typedefs": []
+}"
+`;
+
+exports[`fixtures > 'dispatched-events/input.svelte' 2`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export interface DispatchedEventsProps {}
+
+export default class DispatchedEvents extends SvelteComponentTyped<
+  DispatchedEventsProps,
+  {
+    hover: CustomEvent<any>;
+    destroy: CustomEvent<null>;
+    ["destroy--component"]: CustomEvent<null>;
+    ["destroy:component"]: CustomEvent<null>;
+  },
+  { default: {} }
+> {}
+"
+`;
+
+exports[`fixtures > 'dispatched-events-dynamic/input.svelte' 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "KEY",
+      "detail": "{key: string;}"
+    }
+  ],
+  "typedefs": []
+}"
+`;
+
+exports[`fixtures > 'dispatched-events-dynamic/input.svelte' 2`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export interface DispatchedEventsDynamicProps {}
+
+export default class DispatchedEventsDynamic extends SvelteComponentTyped<
+  DispatchedEventsDynamicProps,
+  { KEY: CustomEvent<{ key: string }> },
+  {}
+> {}
+"
+`;
+
+exports[`fixtures > 'dispatched-events-typed/input.svelte' 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "slot_props": "{}"
+    }
+  ],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "hover",
+      "detail": "{ h1: boolean; }",
+      "description": "Fired on mouseover."
+    },
+    {
+      "type": "dispatched",
+      "name": "destroy",
+      "detail": "null"
+    }
+  ],
+  "typedefs": []
+}"
+`;
+
+exports[`fixtures > 'dispatched-events-typed/input.svelte' 2`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export interface DispatchedEventsTypedProps {}
+
+export default class DispatchedEventsTyped extends SvelteComponentTyped<
+  DispatchedEventsTypedProps,
+  {
+    /** Fired on mouseover. */ hover: CustomEvent<{ h1: boolean }>;
+    destroy: CustomEvent<null>;
+  },
+  { default: {} }
+> {}
+"
+`;
+
+exports[`fixtures > 'empty-export/input.svelte' 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": []
+}"
+`;
+
+exports[`fixtures > 'empty-export/input.svelte' 2`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export interface EmptyExportProps {}
+
+export default class EmptyExport extends SvelteComponentTyped<EmptyExportProps, Record<string, any>, {}> {}
+"
+`;
+
+exports[`fixtures > 'forwarded-events/input.svelte' 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "slot_props": "{}"
+    }
+  ],
+  "events": [
+    {
+      "type": "forwarded",
+      "name": "click",
+      "element": "button"
+    },
+    {
+      "type": "forwarded",
+      "name": "focus",
+      "element": "button"
+    },
+    {
+      "type": "forwarded",
+      "name": "blur",
+      "element": "button"
+    },
+    {
+      "type": "forwarded",
+      "name": "mouseover",
+      "element": "h1"
+    }
+  ],
+  "typedefs": []
+}"
+`;
+
+exports[`fixtures > 'forwarded-events/input.svelte' 2`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export interface ForwardedEventsProps {}
+
+export default class ForwardedEvents extends SvelteComponentTyped<
+  ForwardedEventsProps,
+  {
+    click: WindowEventMap["click"];
+    focus: WindowEventMap["focus"];
+    blur: WindowEventMap["blur"];
+    mouseover: WindowEventMap["mouseover"];
+  },
+  { default: {} }
+> {}
+"
+`;
+
+exports[`fixtures > 'function-declaration/input.svelte' 1`] = `
+"{
+  "props": [
+    {
+      "name": "fnA",
+      "kind": "let",
+      "type": "() => {}",
+      "value": "() => {}",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "fnB",
+      "kind": "const",
+      "type": "() => {}",
+      "value": "() => {}",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false
+    },
+    {
+      "name": "add",
+      "kind": "function",
+      "type": "() => any",
+      "value": "() => {     return a + b;   }",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "multiply",
+      "kind": "function",
+      "description": "Multiplies two numbers",
+      "type": "(a: number, b: number) => number",
+      "value": "() => {     return a * b;   }",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": []
+}"
+`;
+
+exports[`fixtures > 'function-declaration/input.svelte' 2`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export interface FunctionDeclarationProps {
+  /**
+   * @default () => {}
+   */
+  fnA?: () => {};
+}
+
+export default class FunctionDeclaration extends SvelteComponentTyped<
+  FunctionDeclarationProps,
+  Record<string, any>,
+  {}
+> {
+  fnB: () => {};
+
+  add: () => any;
+
+  /**
+   * Multiplies two numbers
+   */
+  multiply: (a: number, b: number) => number;
+}
+"
+`;
+
+exports[`fixtures > 'infer-basic/input.svelte' 1`] = `
+"{
+  "props": [
+    {
+      "name": "ref",
+      "kind": "let",
+      "value": "null",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "propBool",
+      "kind": "let",
+      "type": "boolean",
+      "value": "true",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
+    },
+    {
+      "name": "propString",
+      "kind": "let",
+      "type": "string",
+      "value": "\\"\\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "name",
+      "kind": "let",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "id",
+      "kind": "let",
+      "type": "string",
+      "value": "\\"\\" + Math.random().toString(36)",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "propConst",
+      "kind": "const",
+      "type": "{ [\\"1\\"]: true }",
+      "value": "{ [\\"1\\"]: true }",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false
+    },
+    {
+      "name": "fn",
+      "kind": "function",
+      "type": "() => any",
+      "value": "() => {     localBool = !localBool;   }",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "fallback": "{name}",
+      "slot_props": "{}"
+    }
+  ],
+  "events": [],
+  "typedefs": []
+}"
+`;
+
+exports[`fixtures > 'infer-basic/input.svelte' 2`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export interface InferBasicProps {
+  /**
+   * @default null
+   */
+  ref?: undefined;
+
+  /**
+   * @default true
+   */
+  propBool?: boolean;
+
+  /**
+   * @default ""
+   */
+  propString?: string;
+
+  /**
+   * @default undefined
+   */
+  name: undefined;
+
+  /**
+   * @default "" + Math.random().toString(36)
+   */
+  id?: string;
+}
+
+export default class InferBasic extends SvelteComponentTyped<InferBasicProps, Record<string, any>, { default: {} }> {
+  propConst: { ["1"]: true };
+
+  fn: () => any;
+}
+"
+`;
+
+exports[`fixtures > 'infer-with-types/input.svelte' 1`] = `
+"{
+  "props": [
+    {
+      "name": "propBool",
+      "kind": "let",
+      "type": "boolean",
+      "value": "true",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
+    },
+    {
+      "name": "propString",
+      "kind": "let",
+      "type": "string",
+      "value": "\\"\\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "name",
+      "kind": "let",
+      "type": "string",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "id",
+      "kind": "let",
+      "type": "string",
+      "value": "\\"\\" + Math.random().toString(36)",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "propConst",
+      "kind": "const",
+      "type": "{ [key: string]: boolean; }",
+      "value": "{ [\\"1\\"]: true }",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false
+    },
+    {
+      "name": "fn",
+      "kind": "function",
+      "type": "() => any",
+      "value": "() => {     localBool = !localBool;   }",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "fallback": "{name}",
+      "slot_props": "{}"
+    }
+  ],
+  "events": [],
+  "typedefs": []
+}"
+`;
+
+exports[`fixtures > 'infer-with-types/input.svelte' 2`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export interface InferWithTypesProps {
+  /**
+   * @default true
+   */
+  propBool?: boolean;
+
+  /**
+   * @default ""
+   */
+  propString?: string;
+
+  /**
+   * @default undefined
+   */
+  name: string;
+
+  /**
+   * @default "" + Math.random().toString(36)
+   */
+  id?: string;
+}
+
+export default class InferWithTypes extends SvelteComponentTyped<
+  InferWithTypesProps,
+  Record<string, any>,
+  { default: {} }
+> {
+  propConst: { [key: string]: boolean };
+
+  fn: () => any;
+}
+"
+`;
+
+exports[`fixtures > 'input-events/input.svelte' 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "forwarded",
+      "name": "input",
+      "element": "input"
+    },
+    {
+      "type": "forwarded",
+      "name": "change",
+      "element": "input"
+    },
+    {
+      "type": "forwarded",
+      "name": "paste",
+      "element": "input"
+    }
+  ],
+  "typedefs": []
+}"
+`;
+
+exports[`fixtures > 'input-events/input.svelte' 2`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export interface InputEventsProps {}
+
+export default class InputEvents extends SvelteComponentTyped<
+  InputEventsProps,
+  {
+    input: WindowEventMap["input"];
+    change: WindowEventMap["change"];
+    paste: DocumentAndElementEventHandlersEventMap["paste"];
+  },
+  {}
+> {}
+"
+`;
+
+exports[`fixtures > 'mixed-events/input.svelte' 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "custom-focus",
+      "detail": "FocusEvent | number"
+    },
+    {
+      "type": "dispatched",
+      "name": "blur",
+      "detail": "FocusEvent | CustomEvent<FocusEvent>"
+    }
+  ],
+  "typedefs": []
+}"
+`;
+
+exports[`fixtures > 'mixed-events/input.svelte' 2`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export interface MixedEventsProps {}
+
+export default class MixedEvents extends SvelteComponentTyped<
+  MixedEventsProps,
+  { ["custom-focus"]: CustomEvent<FocusEvent | number>; blur: FocusEvent | CustomEvent<FocusEvent> },
+  {}
+> {}
+"
+`;
+
+exports[`fixtures > 'prop-comments/input.svelte' 1`] = `
+"{
+  "props": [
+    {
+      "name": "prop",
+      "kind": "let",
+      "description": "This is a comment.\\n@see https://github.com/\\n@deprecated this prop will be removed in the next major release.",
+      "type": "boolean | string",
+      "value": "true",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "prop1",
+      "kind": "let",
+      "description": "@see https://github.com/",
+      "type": "boolean",
+      "value": "true",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "prop2",
+      "kind": "let",
+      "description": "This is a comment.",
+      "type": "boolean | string",
+      "value": "true",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "slot_props": "{ prop: boolean | string, prop1: boolean, prop2: boolean | string }"
+    }
+  ],
+  "events": [],
+  "typedefs": []
+}"
+`;
+
+exports[`fixtures > 'prop-comments/input.svelte' 2`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export interface PropCommentsProps {
+  /**
+   * This is a comment.
+   * @see https://github.com/
+   * @deprecated this prop will be removed in the next major release.
+   * @default true
+   */
+  prop?: boolean | string;
+
+  /**
+   * @see https://github.com/
+   * @default true
+   */
+  prop1?: boolean;
+
+  /**
+   * This is a comment.
+   * @default true
+   */
+  prop2?: boolean | string;
+}
+
+export default class PropComments extends SvelteComponentTyped<
+  PropCommentsProps,
+  Record<string, any>,
+  { default: { prop: boolean | string; prop1: boolean; prop2: boolean | string } }
+> {}
+"
+`;
+
+exports[`fixtures > 'renamed-props/input.svelte' 1`] = `
+"{
+  "props": [
+    {
+      "name": "class",
+      "kind": "let",
+      "description": "Just your average CSS class string.",
+      "type": "string|null",
+      "value": "\\"test\\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": []
+}"
+`;
+
+exports[`fixtures > 'renamed-props/input.svelte' 2`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export interface RenamedPropsProps {
+  /**
+   * Just your average CSS class string.
+   * @default "test"
+   */
+  class?: string | null;
+}
+
+export default class RenamedProps extends SvelteComponentTyped<RenamedPropsProps, Record<string, any>, {}> {}
+"
+`;
+
+exports[`fixtures > 'required/input.svelte' 1`] = `
+"{
+  "props": [
+    {
+      "name": "prop",
+      "kind": "let",
+      "description": "@required ",
+      "type": "boolean",
+      "value": "true",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "prop1",
+      "kind": "let",
+      "description": "This is a comment.\\n@required ",
+      "type": "boolean | string",
+      "value": "true",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "prop2",
+      "kind": "let",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "prop3",
+      "kind": "let",
+      "type": "boolean",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "slot_props": "{ prop: boolean, prop1: boolean | string, prop2: any, prop3: boolean }"
+    }
+  ],
+  "events": [],
+  "typedefs": []
+}"
+`;
+
+exports[`fixtures > 'required/input.svelte' 2`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export interface RequiredProps {
+  /**
+   * @required
+   * @default true
+   */
+  prop?: boolean;
+
+  /**
+   * This is a comment.
+   * @required
+   * @default true
+   */
+  prop1?: boolean | string;
+
+  /**
+   * @default undefined
+   */
+  prop2: undefined;
+
+  /**
+   * @default undefined
+   */
+  prop3: boolean;
+}
+
+export default class Required extends SvelteComponentTyped<
+  RequiredProps,
+  Record<string, any>,
+  { default: { prop: boolean; prop1: boolean | string; prop2: any; prop3: boolean } }
+> {}
+"
+`;
+
+exports[`fixtures > 'rest-props/input.svelte' 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "rest_props": {
+    "type": "Element",
+    "name": "h1"
+  }
+}"
+`;
+
+exports[`fixtures > 'rest-props/input.svelte' 2`] = `
+"import type { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+type RestProps = SvelteHTMLElements["h1"];
+
+export interface RestPropsProps extends RestProps {
+  [key: \`data-\${string}\`]: any;
+}
+
+export default class RestProps extends SvelteComponentTyped<RestPropsProps, Record<string, any>, {}> {}
+"
+`;
+
+exports[`fixtures > 'rest-props-multiple/input.svelte' 1`] = `
+"{
+  "props": [
+    {
+      "name": "edit",
+      "kind": "let",
+      "type": "boolean",
+      "value": "false",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "heading",
+      "kind": "let",
+      "type": "boolean",
+      "value": "false",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "rest_props": {
+    "type": "Element",
+    "name": "h1 | span"
+  }
+}"
+`;
+
+exports[`fixtures > 'rest-props-multiple/input.svelte' 2`] = `
+"import type { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+type RestProps = SvelteHTMLElements["h1"] & SvelteHTMLElements["span"];
+
+export interface RestPropsMultipleProps extends RestProps {
+  /**
+   * @default false
+   */
+  edit?: boolean;
+
+  /**
+   * @default false
+   */
+  heading?: boolean;
+
+  [key: \`data-\${string}\`]: any;
+}
+
+export default class RestPropsMultiple extends SvelteComponentTyped<RestPropsMultipleProps, Record<string, any>, {}> {}
+"
+`;
+
+exports[`fixtures > 'slots-named/input.svelte' 1`] = `
+"{
+  "props": [
+    {
+      "name": "text",
+      "kind": "let",
+      "type": "string",
+      "value": "\\"\\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "fallback": "Default text",
+      "slot_props": "{}"
+    },
+    {
+      "name": "bold heading",
+      "default": false,
+      "fallback": "{text}",
+      "slot_props": "{ text: string }"
+    },
+    {
+      "name": "subheading",
+      "default": false,
+      "fallback": "{text}",
+      "slot_props": "{ text: string }"
+    },
+    {
+      "name": "text",
+      "default": false,
+      "fallback": "{text}",
+      "slot_props": "{ text: string }"
+    }
+  ],
+  "events": [],
+  "typedefs": []
+}"
+`;
+
+exports[`fixtures > 'slots-named/input.svelte' 2`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export interface SlotsNamedProps {
+  /**
+   * @default ""
+   */
+  text?: string;
+}
+
+export default class SlotsNamed extends SvelteComponentTyped<
+  SlotsNamedProps,
+  Record<string, any>,
+  { default: {}; ["bold heading"]: { text: string }; subheading: { text: string }; text: { text: string } }
+> {}
+"
+`;
+
+exports[`fixtures > 'slots-spread/input.svelte' 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "fallback": "Default text",
+      "slot_props": "{}"
+    },
+    {
+      "name": "text",
+      "default": false,
+      "slot_props": "{}"
+    }
+  ],
+  "events": [],
+  "typedefs": []
+}"
+`;
+
+exports[`fixtures > 'slots-spread/input.svelte' 2`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export interface SlotsSpreadProps {}
+
+export default class SlotsSpread extends SvelteComponentTyped<
+  SlotsSpreadProps,
+  Record<string, any>,
+  { default: {}; text: {} }
+> {}
+"
+`;
+
+exports[`fixtures > 'slots-spread-typed/input.svelte' 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "fallback": "Default text",
+      "slot_props": "{ a: number; }"
+    },
+    {
+      "name": "text",
+      "default": false,
+      "slot_props": "{ a: number; }"
+    }
+  ],
+  "events": [],
+  "typedefs": []
+}"
+`;
+
+exports[`fixtures > 'slots-spread-typed/input.svelte' 2`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export interface SlotsSpreadTypedProps {}
+
+export default class SlotsSpreadTyped extends SvelteComponentTyped<
+  SlotsSpreadTypedProps,
+  Record<string, any>,
+  { default: { a: number }; text: { a: number } }
+> {}
+"
+`;
+
+exports[`fixtures > 'svg-props/input.svelte' 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "rest_props": {
+    "type": "Element",
+    "name": "svg"
+  }
+}"
+`;
+
+exports[`fixtures > 'svg-props/input.svelte' 2`] = `
+"import type { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+type RestProps = SvelteHTMLElements["svg"];
+
+export interface SvgPropsProps extends RestProps {
+  [key: \`data-\${string}\`]: any;
+}
+
+export default class SvgProps extends SvelteComponentTyped<SvgPropsProps, Record<string, any>, {}> {}
+"
+`;
+
+exports[`fixtures > 'typed-props/input.svelte' 1`] = `
+"{
+  "props": [
+    {
+      "name": "prop1",
+      "kind": "let",
+      "description": "prop1 description 1\\nprop1 description 2",
+      "type": "string",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "prop2",
+      "kind": "let",
+      "description": "prop2 description 1\\nprop2 description 2",
+      "value": "null",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "prop3",
+      "kind": "let",
+      "type": "4 | '4'",
+      "value": "4",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "prop4",
+      "kind": "let",
+      "type": "\\"red\\" | \\"blue\\"",
+      "value": "\\"red\\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": []
+}"
+`;
+
+exports[`fixtures > 'typed-props/input.svelte' 2`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export interface TypedPropsProps {
+  /**
+   * prop1 description 1
+   * prop1 description 2
+   * @default undefined
+   */
+  prop1: string;
+
+  /**
+   * prop2 description 1
+   * prop2 description 2
+   * @default null
+   */
+  prop2?: undefined;
+
+  /**
+   * @default 4
+   */
+  prop3?: 4 | "4";
+
+  /**
+   * @default "red"
+   */
+  prop4?: "red" | "blue";
+}
+
+export default class TypedProps extends SvelteComponentTyped<TypedPropsProps, Record<string, any>, {}> {}
+"
+`;
+
+exports[`fixtures > 'typed-slots/input.svelte' 1`] = `
+"{
+  "props": [
+    {
+      "name": "prop",
+      "kind": "let",
+      "type": "number",
+      "value": "0",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "slot_props": "{ prop: number; doubled: number; }"
+    },
+    {
+      "name": "description",
+      "default": false,
+      "slot_props": "{ props: { class?: string; } }",
+      "description": "description"
+    }
+  ],
+  "events": [],
+  "typedefs": []
+}"
+`;
+
+exports[`fixtures > 'typed-slots/input.svelte' 2`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export interface TypedSlotsProps {
+  /**
+   * @default 0
+   */
+  prop?: number;
+}
+
+export default class TypedSlots extends SvelteComponentTyped<
+  TypedSlotsProps,
+  Record<string, any>,
+  {
+    default: { prop: number; doubled: number };
+    /** description */
+    description: { props: { class?: string } };
+  }
+> {}
+"
+`;
+
+exports[`fixtures > 'typedef/input.svelte' 1`] = `
+"{
+  "props": [
+    {
+      "name": "id",
+      "kind": "let",
+      "type": "string",
+      "value": "\\"id-\\" + Math.random().toString(36)",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "prop1",
+      "kind": "let",
+      "type": "MyTypedef",
+      "value": "{ [\\"1\\"]: true }",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "slot_props": "{ prop1: MyTypedef }"
+    }
+  ],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{ [key: string]: boolean; }",
+      "name": "MyTypedef",
+      "ts": "interface MyTypedef { [key: string]: boolean; }"
+    }
+  ]
+}"
+`;
+
+exports[`fixtures > 'typedef/input.svelte' 2`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export interface MyTypedef {
+  [key: string]: boolean;
+}
+
+export interface TypedefProps {
+  /**
+   * @default "id-" + Math.random().toString(36)
+   */
+  id?: string;
+
+  /**
+   * @default { ["1"]: true }
+   */
+  prop1?: MyTypedef;
+}
+
+export default class Typedef extends SvelteComponentTyped<
+  TypedefProps,
+  Record<string, any>,
+  { default: { prop1: MyTypedef } }
+> {}
+"
+`;
+
+exports[`fixtures > 'typedefs/input.svelte' 1`] = `
+"{
+  "props": [
+    {
+      "name": "prop1",
+      "kind": "let",
+      "type": "MyTypedef",
+      "value": "{ [\\"1\\"]: true }",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "prop2",
+      "kind": "let",
+      "type": "MyTypedefArray",
+      "value": "[]",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "slot_props": "{ prop1: MyTypedef, prop2: MyTypedefArray }"
+    }
+  ],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{ [key: string]: boolean; }",
+      "name": "MyTypedef",
+      "ts": "interface MyTypedef { [key: string]: boolean; }"
+    },
+    {
+      "type": "MyTypedef[]",
+      "name": "MyTypedefArray",
+      "ts": "type MyTypedefArray = MyTypedef[]"
+    }
+  ]
+}"
+`;
+
+exports[`fixtures > 'typedefs/input.svelte' 2`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export interface MyTypedef {
+  [key: string]: boolean;
+}
+
+export type MyTypedefArray = MyTypedef[];
+
+export interface TypedefsProps {
+  /**
+   * @default { ["1"]: true }
+   */
+  prop1?: MyTypedef;
+
+  /**
+   * @default []
+   */
+  prop2?: MyTypedefArray;
+}
+
+export default class Typedefs extends SvelteComponentTyped<
+  TypedefsProps,
+  Record<string, any>,
+  { default: { prop1: MyTypedef; prop2: MyTypedefArray } }
+> {}
+"
+`;
