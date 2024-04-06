@@ -1,7 +1,7 @@
-import { test, expect, describe } from "vitest";
-import { writeTsDefinition, formatTsProps, getTypeDefs } from "../src/writer/writer-ts-definitions";
-import { ComponentDocApi } from "../src/rollup-plugin";
+import { describe, expect, test } from "vitest";
 import { ParsedComponent } from "../src/ComponentParser";
+import { ComponentDocApi } from "../src/rollup-plugin";
+import { formatTsProps, getTypeDefs, writeTsDefinition } from "../src/writer/writer-ts-definitions";
 
 describe("writerTsDefinition", () => {
   test("writeTsDefinition", () => {
@@ -29,6 +29,7 @@ describe("writerTsDefinition", () => {
           value: "true",
           isFunction: false,
           isFunctionDeclaration: false,
+          isRequired: false,
           constant: false,
           reactive: true,
         },
@@ -39,6 +40,7 @@ describe("writerTsDefinition", () => {
           value: '""',
           isFunction: false,
           isFunctionDeclaration: false,
+          isRequired: false,
           constant: false,
           reactive: false,
         },
@@ -48,6 +50,7 @@ describe("writerTsDefinition", () => {
           type: "string",
           isFunction: false,
           isFunctionDeclaration: false,
+          isRequired: false,
           constant: false,
           reactive: false,
         },
@@ -58,6 +61,7 @@ describe("writerTsDefinition", () => {
           value: '"" + Math.random().toString(36)',
           isFunction: false,
           isFunctionDeclaration: false,
+          isRequired: false,
           constant: false,
           reactive: false,
         },
@@ -68,6 +72,7 @@ describe("writerTsDefinition", () => {
           value: '{ ["1"]: true }',
           isFunction: false,
           isFunctionDeclaration: false,
+          isRequired: false,
           constant: true,
           reactive: false,
         },
@@ -78,6 +83,7 @@ describe("writerTsDefinition", () => {
           value: "() => {     localBool = !localBool;   }",
           isFunction: true,
           isFunctionDeclaration: false,
+          isRequired: false,
           constant: false,
           reactive: false,
         },

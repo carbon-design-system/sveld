@@ -11,17 +11,13 @@ describe("createExports", () => {
   test("single default export (declaration)", () => {
     const source = { Component: { source: "./Component.svelte", default: true } };
 
-    expect(createExports(source, new Map())).toEqual(
-      'export { default } from "./Component.svelte";'
-    );
+    expect(createExports(source, new Map())).toEqual('export { default } from "./Component.svelte";');
   });
 
   test("single named export", () => {
     const source = { Component: { source: "./Component.svelte", default: false } };
 
-    expect(createExports(source, new Map())).toEqual(
-      'export { default as Component } from "./Component.svelte";'
-    );
+    expect(createExports(source, new Map())).toEqual('export { default as Component } from "./Component.svelte";');
   });
 
   test("multiple named exports", () => {
