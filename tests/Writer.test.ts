@@ -3,11 +3,11 @@ import Writer from "../src/writer/Writer";
 describe("Writer", () => {
   beforeEach(() => {
     // Suppress Prettier console errors
-    global.console.error = vi.fn();
+    global.console.error = jest.fn();
   });
 
   test("TypeScript", () => {
-    const consoleError = vi.spyOn(console, "error");
+    const consoleError = jest.spyOn(console, "error");
     const writer = new Writer({ parser: "typescript", printWidth: 120 });
 
     expect(writer.format("interface I {a:boolean}")).toEqual("interface I {\n  a: boolean;\n}\n");
@@ -18,7 +18,7 @@ describe("Writer", () => {
   });
 
   test("JSON", () => {
-    const consoleError = vi.spyOn(console, "error");
+    const consoleError = jest.spyOn(console, "error");
     const writer = new Writer({ parser: "json", printWidth: 80 });
 
     expect(writer.format("{a:null}")).toEqual('{ "a": null }\n');
