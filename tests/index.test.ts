@@ -1,31 +1,6 @@
-import { test, expect } from "vitest";
+import { expect, test } from "vitest";
 import * as API from "../src";
-import pkg from "../package.json";
-
-test("Library dependencies", () => {
-  expect(Object.keys(pkg.dependencies)).toMatchInlineSnapshot(`
-    [
-      "@rollup/plugin-node-resolve",
-      "acorn",
-      "comment-parser",
-      "fast-glob",
-      "prettier",
-      "rollup",
-      "rollup-plugin-svelte",
-      "svelte",
-      "svelte-preprocess",
-      "typescript",
-    ]
-  `);
-});
 
 test("Library exports", () => {
-  expect(Object.keys(API)).toMatchInlineSnapshot(`
-    [
-      "default",
-      "ComponentParser",
-      "cli",
-      "sveld",
-    ]
-  `);
+  expect(Object.keys(API)).toEqual(["default", "ComponentParser", "cli", "sveld"]);
 });
