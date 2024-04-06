@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface InputProps {
+export interface InferWithTypesProps {
   /**
    * @default true
    */
@@ -22,7 +22,11 @@ export interface InputProps {
   id?: string;
 }
 
-export default class Input extends SvelteComponentTyped<InputProps, Record<string, any>, { default: {} }> {
+export default class InferWithTypes extends SvelteComponentTyped<
+  InferWithTypesProps,
+  Record<string, any>,
+  { default: {} }
+> {
   propConst: { [key: string]: boolean };
 
   fn: () => any;

@@ -1,5 +1,5 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface InputProps {}
+export interface EmptyExportProps {}
 
-export default class Input extends SvelteComponentTyped<InputProps, Record<string, any>, {}> {}
+export default class EmptyExport extends SvelteComponentTyped<EmptyExportProps, Record<string, any>, {}> {}

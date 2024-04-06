@@ -1,13 +1,17 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface InputProps {
+export interface FunctionDeclarationProps {
   /**
    * @default () => {}
    */
   fnA?: () => {};
 }
 
-export default class Input extends SvelteComponentTyped<InputProps, Record<string, any>, {}> {
+export default class FunctionDeclaration extends SvelteComponentTyped<
+  FunctionDeclarationProps,
+  Record<string, any>,
+  {}
+> {
   fnB: () => {};
 
   add: () => any;

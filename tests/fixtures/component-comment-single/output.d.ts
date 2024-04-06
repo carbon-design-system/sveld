@@ -1,6 +1,10 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface InputProps {}
+export interface ComponentCommentSingleProps {}
 
 /** Component comment */
-export default class Input extends SvelteComponentTyped<InputProps, Record<string, any>, { default: {} }> {}
+export default class ComponentCommentSingle extends SvelteComponentTyped<
+  ComponentCommentSingleProps,
+  Record<string, any>,
+  { default: {} }
+> {}

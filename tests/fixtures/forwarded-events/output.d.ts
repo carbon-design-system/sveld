@@ -1,9 +1,9 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface InputProps {}
+export interface ForwardedEventsProps {}
 
-export default class Input extends SvelteComponentTyped<
-  InputProps,
+export default class ForwardedEvents extends SvelteComponentTyped<
+  ForwardedEventsProps,
   {
     click: WindowEventMap["click"];
     focus: WindowEventMap["focus"];

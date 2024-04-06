@@ -1,5 +1,9 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface InputProps {}
+export interface DispatchedEventsDynamicProps {}
 
-export default class Input extends SvelteComponentTyped<InputProps, { KEY: CustomEvent<{ key: string }> }, {}> {}
+export default class DispatchedEventsDynamic extends SvelteComponentTyped<
+  DispatchedEventsDynamicProps,
+  { KEY: CustomEvent<{ key: string }> },
+  {}
+> {}

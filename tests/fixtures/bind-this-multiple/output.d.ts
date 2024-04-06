@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface InputProps {
+export interface BindThisMultipleProps {
   /**
    * @default undefined
    */
@@ -17,4 +17,8 @@ export interface InputProps {
   propBool?: boolean;
 }
 
-export default class Input extends SvelteComponentTyped<InputProps, Record<string, any>, { default: {} }> {}
+export default class BindThisMultiple extends SvelteComponentTyped<
+  BindThisMultipleProps,
+  Record<string, any>,
+  { default: {} }
+> {}

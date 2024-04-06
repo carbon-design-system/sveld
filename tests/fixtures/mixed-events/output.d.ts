@@ -1,9 +1,9 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface InputProps {}
+export interface MixedEventsProps {}
 
-export default class Input extends SvelteComponentTyped<
-  InputProps,
+export default class MixedEvents extends SvelteComponentTyped<
+  MixedEventsProps,
   { ["custom-focus"]: CustomEvent<FocusEvent | number>; blur: FocusEvent | CustomEvent<FocusEvent> },
   {}
 > {}

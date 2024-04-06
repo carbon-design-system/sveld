@@ -1,10 +1,10 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface InputProps {
+export interface BindThisProps {
   /**
    * @default undefined
    */
   ref: null | HTMLButtonElement;
 }
 
-export default class Input extends SvelteComponentTyped<InputProps, Record<string, any>, { default: {} }> {}
+export default class BindThis extends SvelteComponentTyped<BindThisProps, Record<string, any>, { default: {} }> {}

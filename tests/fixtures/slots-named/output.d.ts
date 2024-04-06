@@ -1,14 +1,14 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface InputProps {
+export interface SlotsNamedProps {
   /**
    * @default ""
    */
   text?: string;
 }
 
-export default class Input extends SvelteComponentTyped<
-  InputProps,
+export default class SlotsNamed extends SvelteComponentTyped<
+  SlotsNamedProps,
   Record<string, any>,
   { default: {}; ["bold heading"]: { text: string }; subheading: { text: string }; text: { text: string } }
 > {}

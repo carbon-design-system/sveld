@@ -39,7 +39,7 @@ describe("fixtures", async () => {
     expect(api_ts).toMatchSnapshot();
 
     // Still write to disk to manually assert types as needed.
-    await fsp.writeFile(path.join(folder, "output.json"), api_json);
-    await fsp.writeFile(path.join(folder, "output.d.ts"), api_ts);
+    await fsp.writeFile(path.join(folder, dir, "output.json"), api_json);
+    await fsp.writeFile(path.join(folder, dir, "output.d.ts"), api_ts);
   });
 });

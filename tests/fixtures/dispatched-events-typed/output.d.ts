@@ -1,9 +1,9 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface InputProps {}
+export interface DispatchedEventsTypedProps {}
 
-export default class Input extends SvelteComponentTyped<
-  InputProps,
+export default class DispatchedEventsTyped extends SvelteComponentTyped<
+  DispatchedEventsTypedProps,
   {
     /** Fired on mouseover. */ hover: CustomEvent<{ h1: boolean }>;
     destroy: CustomEvent<null>;

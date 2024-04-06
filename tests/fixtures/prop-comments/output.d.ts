@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface InputProps {
+export interface PropCommentsProps {
   /**
    * This is a comment.
    * @see https://github.com/
@@ -22,8 +22,8 @@ export interface InputProps {
   prop2?: boolean | string;
 }
 
-export default class Input extends SvelteComponentTyped<
-  InputProps,
+export default class PropComments extends SvelteComponentTyped<
+  PropCommentsProps,
   Record<string, any>,
   { default: { prop: boolean | string; prop1: boolean; prop2: boolean | string } }
 > {}

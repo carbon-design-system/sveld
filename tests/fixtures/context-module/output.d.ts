@@ -20,8 +20,8 @@ export declare function b2(): () => {};
 
 export declare function b3(): () => false;
 
-export interface InputProps {}
+export interface ContextModuleProps {}
 
-export default class Input extends SvelteComponentTyped<InputProps, Record<string, any>, {}> {
+export default class ContextModule extends SvelteComponentTyped<ContextModuleProps, Record<string, any>, {}> {
   a: string;
 }

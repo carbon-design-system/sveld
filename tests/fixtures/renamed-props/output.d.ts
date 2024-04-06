@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface InputProps {
+export interface RenamedPropsProps {
   /**
    * Just your average CSS class string.
    * @default "test"
@@ -8,4 +8,4 @@ export interface InputProps {
   class?: string | null;
 }
 
-export default class Input extends SvelteComponentTyped<InputProps, Record<string, any>, {}> {}
+export default class RenamedProps extends SvelteComponentTyped<RenamedPropsProps, Record<string, any>, {}> {}

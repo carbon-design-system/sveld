@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface InputProps {
+export interface TypedPropsProps {
   /**
    * prop1 description 1
    * prop1 description 2
@@ -26,4 +26,4 @@ export interface InputProps {
   prop4?: "red" | "blue";
 }
 
-export default class Input extends SvelteComponentTyped<InputProps, Record<string, any>, {}> {}
+export default class TypedProps extends SvelteComponentTyped<TypedPropsProps, Record<string, any>, {}> {}

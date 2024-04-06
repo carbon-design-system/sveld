@@ -6,7 +6,7 @@ export interface MyTypedef {
 
 export type MyTypedefArray = MyTypedef[];
 
-export interface InputProps {
+export interface TypedefsProps {
   /**
    * @default { ["1"]: true }
    */
@@ -18,8 +18,8 @@ export interface InputProps {
   prop2?: MyTypedefArray;
 }
 
-export default class Input extends SvelteComponentTyped<
-  InputProps,
+export default class Typedefs extends SvelteComponentTyped<
+  TypedefsProps,
   Record<string, any>,
   { default: { prop1: MyTypedef; prop2: MyTypedefArray } }
 > {}

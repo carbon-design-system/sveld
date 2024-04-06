@@ -1,9 +1,9 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface InputProps {}
+export interface SlotsSpreadTypedProps {}
 
-export default class Input extends SvelteComponentTyped<
-  InputProps,
+export default class SlotsSpreadTyped extends SvelteComponentTyped<
+  SlotsSpreadTypedProps,
   Record<string, any>,
   { default: { a: number }; text: { a: number } }
 > {}
