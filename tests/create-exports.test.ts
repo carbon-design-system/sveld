@@ -6,7 +6,7 @@ describe("createExports", () => {
     const source = { default: { source: "./Component.svelte", default: true } };
 
     expect(createExports(source, new Map())).toMatchInlineSnapshot(
-      '"export { default } from \\"./Component.svelte\\";"'
+      `"export { default } from "./Component.svelte";"`
     );
   });
 
@@ -14,7 +14,7 @@ describe("createExports", () => {
     const source = { Component: { source: "./Component.svelte", default: true } };
 
     expect(createExports(source, new Map())).toMatchInlineSnapshot(
-      '"export { default } from \\"./Component.svelte\\";"'
+      `"export { default } from "./Component.svelte";"`
     );
   });
 
@@ -22,7 +22,7 @@ describe("createExports", () => {
     const source = { Component: { source: "./Component.svelte", default: false } };
 
     expect(createExports(source, new Map())).toMatchInlineSnapshot(
-      '"export { default as Component } from \\"./Component.svelte\\";"'
+      `"export { default as Component } from "./Component.svelte";"`
     );
   });
 
@@ -33,8 +33,8 @@ describe("createExports", () => {
     };
 
     expect(createExports(source, new Map())).toMatchInlineSnapshot(`
-      "export { default as Component } from \\"./Component.svelte\\";
-      export { default as Component2 } from \\"./Component2.svelte\\";"
+      "export { default as Component } from "./Component.svelte";
+      export { default as Component2 } from "./Component2.svelte";"
     `);
   });
 
@@ -46,9 +46,9 @@ describe("createExports", () => {
     };
 
     expect(createExports(source, new Map())).toMatchInlineSnapshot(`
-      "export { default as Component } from \\"./Component.svelte\\";
-      export { default as Component2 } from \\"./Component2.svelte\\";
-      export { default } from \\"./Component2.svelte\\";"
+      "export { default as Component } from "./Component.svelte";
+      export { default as Component2 } from "./Component2.svelte";
+      export { default } from "./Component2.svelte";"
     `);
   });
 
@@ -60,9 +60,9 @@ describe("createExports", () => {
     };
 
     expect(createExports(source, new Map())).toMatchInlineSnapshot(`
-      "export { default as Component } from \\"./Component.svelte\\";
-      export { default as Component2 } from \\"./Component2.svelte\\";
-      export { default } from \\"./Component3.svelte\\";"
+      "export { default as Component } from "./Component.svelte";
+      export { default as Component2 } from "./Component2.svelte";
+      export { default } from "./Component3.svelte";"
     `);
   });
 
@@ -70,8 +70,8 @@ describe("createExports", () => {
     const source = { Component: { source: "./Component.svelte", default: true, mixed: true } };
 
     expect(createExports(source, new Map())).toMatchInlineSnapshot(`
-      "export { default as Component } from \\"./Component.svelte\\";
-      export { default } from \\"./Component.svelte\\";"
+      "export { default as Component } from "./Component.svelte";
+      export { default } from "./Component.svelte";"
     `);
   });
 

@@ -2,7 +2,7 @@
 
 exports[`writerTsDefinition > "default" module name 1`] = `
 "
-  import type { SvelteComponentTyped } from \\"svelte\\";
+  import type { SvelteComponentTyped } from "svelte";
   
   
   
@@ -23,7 +23,7 @@ exports[`writerTsDefinition > "default" module name 1`] = `
 
 exports[`writerTsDefinition > writeTsDefinition 1`] = `
 "
-  import type { SvelteComponentTyped } from \\"svelte\\";
+  import type { SvelteComponentTyped } from "svelte";
   
   
   
@@ -36,7 +36,7 @@ exports[`writerTsDefinition > writeTsDefinition 1`] = `
       propBool?: boolean;
 
       /**
-* @default \\"\\"
+* @default ""
 */
       propString?: string;
 
@@ -46,7 +46,7 @@ exports[`writerTsDefinition > writeTsDefinition 1`] = `
       name?: string;
 
       /**
-* @default \\"\\" + Math.random().toString(36)
+* @default "" + Math.random().toString(36)
 */
       id?: string;
 
