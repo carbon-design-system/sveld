@@ -1,11 +1,11 @@
 // TODO: upgrading to Svelte 4 shows a lot of TS errors. Ignore for now but resolve.
 // @ts-nocheck
-import { compile, walk, parse } from "svelte/compiler";
 import * as commentParser from "comment-parser";
+import type { VariableDeclaration } from "estree";
+import { Node } from "estree-walker";
+import { compile, parse, walk } from "svelte/compiler";
 import { Ast, TemplateNode, Var } from "svelte/types/compiler/interfaces";
 import { getElementByTag } from "./element-tag-map";
-import { Node } from "estree-walker";
-import type { VariableDeclaration } from "estree";
 
 interface CompiledSvelteCode {
   vars: Var[];
@@ -134,7 +134,7 @@ export default class ComponentParser {
     this.options = options;
   }
 
-  private static mapToArray(map: Map<any, any>) {
+  private static mapToArray<T>(map: Map<any, T>) {
     return Array.from(map, ([key, value]) => value);
   }
 
@@ -370,7 +370,7 @@ export default class ComponentParser {
                 init.type === "ArrayExpression" ||
                 init.type === "ArrowFunctionExpression"
               ) {
-                value = this.sourceAtPos(init.start, init.end)?.replace(/\n/g, " ");
+                value = this.sourceAtPos(init.start, init.end)?.replace(/[\r\n]+/g, " ");
                 type = value;
                 isFunction = init.type === "ArrowFunctionExpression";
 
@@ -391,7 +391,7 @@ export default class ComponentParser {
             }
 
             if (declaration_type === "FunctionDeclaration") {
-              value = "() => " + this.sourceAtPos(body.start, body.end)?.replace(/\n/g, " ");
+              value = "() => " + this.sourceAtPos(body.start, body.end)?.replace(/[\r\n]+/g, " ");
               type = "() => any";
               kind = "function";
               isFunction = true;
@@ -506,7 +506,7 @@ export default class ComponentParser {
               init.type === "ArrayExpression" ||
               init.type === "ArrowFunctionExpression"
             ) {
-              value = this.sourceAtPos(init.start, init.end)?.replace(/\n/g, " ");
+              value = this.sourceAtPos(init.start, init.end)?.replace(/[\r\n]+/g, " ");
               type = value;
               isFunction = init.type === "ArrowFunctionExpression";
 
@@ -527,7 +527,7 @@ export default class ComponentParser {
           }
 
           if (declaration_type === "FunctionDeclaration") {
-            value = "() => " + this.sourceAtPos(body.start, body.end)?.replace(/\n/g, " ");
+            value = "() => " + this.sourceAtPos(body.start, body.end)?.replace(/[\r\n]+/g, " ");
             type = "() => any";
             kind = "function";
             isFunction = true;
@@ -582,7 +582,7 @@ export default class ComponentParser {
           let data: string = node?.data?.trim() ?? "";
 
           if (/^@component/.test(data)) {
-            this.componentComment = data.replace(/^@component/, "");
+            this.componentComment = data.replace(/^@component/, "").replace(/\r/g, "");
           }
         }
 
