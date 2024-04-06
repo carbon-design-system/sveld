@@ -24,7 +24,7 @@ jobs:
           path: "**/node_modules"
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
-      - name: Install dependenceis
+      - name: Install dependencies
         run: yarn install
 
       - name: Build the library
@@ -36,12 +36,9 @@ jobs:
       - name: Run snapshot tests
         run: yarn test:snapshot
 
-  deploy-docs:
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Trigger deploy
+      # Only trigger deploy if previous steps pass and branch is main
+      - name: Deploy docs
+        if: matrix.os == 'macos-latest' && github.ref == 'refs/heads/main'
         env:
           deploy_url: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
-        run: |
-          curl "$deploy_url"
+        run: curl "$deploy_url"
