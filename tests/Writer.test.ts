@@ -1,19 +1,33 @@
-import { describe, test, expect } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 import Writer from "../src/writer/Writer";
 
 describe("Writer", () => {
+  beforeEach(() => {
+    // Suppress Prettier console errors
+    global.console.error = vi.fn();
+  });
+
   test("TypeScript", () => {
+    const consoleError = vi.spyOn(console, "error");
     const writer = new Writer({ parser: "typescript", printWidth: 120 });
 
     expect(writer.format("interface I {a:boolean}")).toEqual("interface I {\n  a: boolean;\n}\n");
+    expect(consoleError).toHaveBeenCalledTimes(0);
+    // Invalid JSON should emit Prettier parsing error
     expect(writer.format("a:boolean}")).toEqual("a:boolean}");
+    expect(consoleError).toHaveBeenCalledTimes(1);
   });
 
   test("JSON", () => {
+    const consoleError = vi.spyOn(console, "error");
     const writer = new Writer({ parser: "json", printWidth: 80 });
 
     expect(writer.format("{a:null}")).toEqual('{ "a": null }\n');
+
+    expect(consoleError).toHaveBeenCalledTimes(0);
+    // Invalid JSON should emit Prettier parsing error
     expect(writer.format("a:null")).toEqual("a:null");
+    expect(consoleError).toHaveBeenCalledTimes(1);
   });
 
   test("Markdown", () => {
