@@ -24,12 +24,17 @@ jobs:
           path: "**/node_modules"
           key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
 
-      - name: Build and test the library
-        run: |
-          yarn
-          yarn prepack
-          yarn test:unit
-          yarn test:snapshot
+      - name: Install dependenceis
+        run: yarn install
+
+      - name: Build the library
+        run: yarn prepack
+
+      - name: Run unit tests
+        run: yarn test:unit
+
+      - name: Run snapshot tests
+        run: yarn test:snapshot
 
   deploy-docs:
     if: github.ref == 'refs/heads/main'
