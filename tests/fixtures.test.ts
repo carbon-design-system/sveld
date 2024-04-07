@@ -18,28 +18,43 @@ const fixtures = await Promise.all(
   })
 );
 
-describe("fixtures", async () => {
-  const parser = new ComponentParser();
-  const writer = new Writer({ parser: "typescript", printWidth: 120 });
+const createMetadata = (filePath: string) => {
+  const { dir } = path.parse(filePath);
+  const moduleName = dir
+    .split("-")
+    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+    .join("");
 
+  return { dir, moduleName, filePath };
+};
+
+const parser = new ComponentParser();
+const writer = new Writer({ parser: "typescript", printWidth: 120 });
+
+describe("fixtures (JSON)", async () => {
   test.each(fixtures)("$path", async (fixture) => {
-    const { dir } = path.parse(fixture.path);
-    const moduleName = dir
-      .split("-")
-      .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-      .join("");
-    const metadata = { moduleName, filePath: fixture.path };
+    const { dir, ...metadata } = createMetadata(fixture.path);
     const parsed_component = parser.parseSvelteComponent(fixture.source, metadata);
-
     const api_json = JSON.stringify(parsed_component, null, 2);
-    const api_ts = writer.format(writeTsDefinition({ ...metadata, ...parsed_component }));
 
     // Snapshot the output; if the test fails, output has changed.
     expect(api_json).toMatchSnapshot();
-    expect(api_ts).toMatchSnapshot();
 
     // Still write to disk to manually assert types as needed.
     await fsp.writeFile(path.join(folder, dir, "output.json"), api_json);
+  });
+});
+
+describe("fixtures (TypeScript)", async () => {
+  test.each(fixtures)("$path", async (fixture) => {
+    const { dir, ...metadata } = createMetadata(fixture.path);
+    const parsed_component = parser.parseSvelteComponent(fixture.source, metadata);
+    const api_ts = writer.format(writeTsDefinition({ ...metadata, ...parsed_component }));
+
+    // Snapshot the output; if the test fails, output has changed.
+    expect(api_ts).toMatchSnapshot();
+
+    // Still write to disk to manually assert types as needed.
     await fsp.writeFile(path.join(folder, dir, "output.d.ts"), api_ts);
   });
 });
