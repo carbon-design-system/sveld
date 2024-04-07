@@ -1,4 +1,3 @@
-import { test, expect } from "vitest";
 import WriterMarkdown from "../src/writer/WriterMarkdown";
 import type { AppendType } from "../src/writer/WriterMarkdown";
 

@@ -1,6 +1,5 @@
-import { describe, expect, test } from "vitest";
-import { ParsedComponent } from "../src/ComponentParser";
-import { ComponentDocApi } from "../src/rollup-plugin";
+import type { ParsedComponent } from "../src/ComponentParser";
+import type { ComponentDocApi } from "../src/rollup-plugin";
 import { formatTsProps, getTypeDefs, writeTsDefinition } from "../src/writer/writer-ts-definitions";
 
 describe("writerTsDefinition", () => {

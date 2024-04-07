@@ -1,4 +1,3 @@
-import { beforeEach, describe, expect, test, vi } from "vitest";
 import Writer from "../src/writer/Writer";
 
 describe("Writer", () => {

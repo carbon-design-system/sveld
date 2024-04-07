@@ -1,4 +1,3 @@
-import { describe, expect, test } from "vitest";
 import { convertSvelteExt, createExports, removeSvelteExt } from "../src/create-exports";
 
 describe("createExports", () => {
