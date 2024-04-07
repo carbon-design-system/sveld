@@ -1,4 +1,3 @@
-import { test, expect } from "vitest";
 import { getElementByTag } from "../src/element-tag-map";
 
 test("getElementByTag", () => {

@@ -1,7 +1,6 @@
 import fg from "fast-glob";
 import fsp from "node:fs/promises";
 import path from "node:path";
-import { describe, expect, test } from "vitest";
 import ComponentParser from "../src/ComponentParser";
 import Writer from "../src/writer/Writer";
 import { writeTsDefinition } from "../src/writer/writer-ts-definitions";
