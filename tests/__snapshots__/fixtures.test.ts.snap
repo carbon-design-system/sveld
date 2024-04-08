@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`fixtures (JSON) > 'anchor-props/input.svelte' 1`] = `
+exports[`fixtures (JSON) > 'component-comment-single/input.svelte' 1`] = `
 "{
   "props": [],
   "moduleExports": [],
@@ -20,7 +20,7 @@ exports[`fixtures (JSON) > 'anchor-props/input.svelte' 1`] = `
 }"
 `;
 
-exports[`fixtures (JSON) > 'bind-this/input.svelte' 1`] = `
+exports[`fixtures (JSON) > 'component-comment-single/input.svelte' 2`] = `
 "{
   "props": [
     {
@@ -47,7 +47,7 @@ exports[`fixtures (JSON) > 'bind-this/input.svelte' 1`] = `
 }"
 `;
 
-exports[`fixtures (JSON) > 'bind-this-multiple/input.svelte' 1`] = `
+exports[`fixtures (JSON) > 'component-comment-single/input.svelte' 3`] = `
 "{
   "props": [
     {
@@ -95,7 +95,7 @@ exports[`fixtures (JSON) > 'bind-this-multiple/input.svelte' 1`] = `
 }"
 `;
 
-exports[`fixtures (JSON) > 'component-comment-multi/input.svelte' 1`] = `
+exports[`fixtures (JSON) > 'component-comment-single/input.svelte' 4`] = `
 "{
   "props": [],
   "moduleExports": [],
@@ -112,7 +112,7 @@ exports[`fixtures (JSON) > 'component-comment-multi/input.svelte' 1`] = `
 }"
 `;
 
-exports[`fixtures (JSON) > 'component-comment-single/input.svelte' 1`] = `
+exports[`fixtures (JSON) > 'component-comment-single/input.svelte' 5`] = `
 "{
   "props": [],
   "moduleExports": [],
@@ -1112,7 +1112,7 @@ exports[`fixtures (JSON) > 'typedefs/input.svelte' 1`] = `
 }"
 `;
 
-exports[`fixtures (TypeScript) > 'anchor-props/input.svelte' 1`] = `
+exports[`fixtures (TypeScript) > 'component-comment-single/input.svelte' 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
@@ -1126,7 +1126,7 @@ export default class AnchorProps extends SvelteComponentTyped<AnchorPropsProps, 
 "
 `;
 
-exports[`fixtures (TypeScript) > 'bind-this/input.svelte' 1`] = `
+exports[`fixtures (TypeScript) > 'component-comment-single/input.svelte' 2`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
 export interface BindThisProps {
@@ -1140,7 +1140,7 @@ export default class BindThis extends SvelteComponentTyped<BindThisProps, Record
 "
 `;
 
-exports[`fixtures (TypeScript) > 'bind-this-multiple/input.svelte' 1`] = `
+exports[`fixtures (TypeScript) > 'component-comment-single/input.svelte' 3`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
 export interface BindThisMultipleProps {
@@ -1168,7 +1168,7 @@ export default class BindThisMultiple extends SvelteComponentTyped<
 "
 `;
 
-exports[`fixtures (TypeScript) > 'component-comment-multi/input.svelte' 1`] = `
+exports[`fixtures (TypeScript) > 'component-comment-single/input.svelte' 4`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
 export interface ComponentCommentMultiProps {}
@@ -1187,7 +1187,7 @@ export default class ComponentCommentMulti extends SvelteComponentTyped<
 "
 `;
 
-exports[`fixtures (TypeScript) > 'component-comment-single/input.svelte' 1`] = `
+exports[`fixtures (TypeScript) > 'component-comment-single/input.svelte' 5`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
 export interface ComponentCommentSingleProps {}
