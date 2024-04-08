@@ -1,5 +1,5 @@
 import { svelte } from "@sveltejs/vite-plugin-svelte";
-import { optimizeImports } from "carbon-preprocess-svelte";
+import { optimizeCss, optimizeImports } from "carbon-preprocess-svelte";
 import { defineConfig } from "vite";
 
 export default defineConfig({
@@ -7,6 +7,7 @@ export default defineConfig({
     svelte({
       preprocess: [optimizeImports()],
     }),
+    optimizeCss(),
   ],
   optimizeDeps: {
     exclude: ["carbon-components-svelte"],
