@@ -31,7 +31,7 @@ const parser = new ComponentParser();
 const writer = new Writer({ parser: "typescript", printWidth: 120 });
 
 describe("fixtures (JSON)", async () => {
-  test.each(fixtures)("$path", async (fixture) => {
+  test.concurrent.each(fixtures)("$path", async (fixture) => {
     const { dir, ...metadata } = createMetadata(fixture.path);
     const parsed_component = parser.parseSvelteComponent(fixture.source, metadata);
     const api_json = JSON.stringify(parsed_component, null, 2);
@@ -45,7 +45,7 @@ describe("fixtures (JSON)", async () => {
 });
 
 describe("fixtures (TypeScript)", async () => {
-  test.each(fixtures)("$path", async (fixture) => {
+  test.concurrent.each(fixtures)("$path", async (fixture) => {
     const { dir, ...metadata } = createMetadata(fixture.path);
     const parsed_component = parser.parseSvelteComponent(fixture.source, metadata);
     const api_ts = writer.format(writeTsDefinition({ ...metadata, ...parsed_component }));
