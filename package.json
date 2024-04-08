@@ -9,7 +9,7 @@
     "test": "vitest -r tests",
     "test:integration": "node tests/test-integration",
     "format": "prettier --write \"{src,tests,playground}/**/*.{js,ts,svelte,md}\" --ignore-path \".gitignore\"",
-    "prepack": "tsc -p tsconfig.build.json"
+    "build": "tsc -p tsconfig.build.json"
   },
   "dependencies": {
     "@rollup/plugin-node-resolve": "^13.2.1",

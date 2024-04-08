@@ -28,7 +28,7 @@ jobs:
         run: yarn install
 
       - name: Build the library
-        run: yarn prepack
+        run: yarn build
 
       - name: Run unit tests
         run: yarn test
