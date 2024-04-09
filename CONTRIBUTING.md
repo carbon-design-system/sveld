@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-For MacOS, prerequisites include [Node.js](https://nodejs.org/en/download/package-manager/#macos)(version 12 or greater) and [Yarn](https://yarnpkg.com/en/docs/install#mac-stable).
+[Bun](https://bun.sh/docs/installation).
 
 ## Set-up
 
@@ -24,22 +24,22 @@ git remote -v
 Finally, install the project dependencies:
 
 ```sh
-yarn install
+bun install
 ```
 
 ## Workflow
 
 ### Unit tests
 
-Ensure the unit tests pass by running `yarn test`.
+Ensure the unit tests pass by running `bun test`.
 
 ### End-to-end (e2e) tests
 
 Because this library is written in TypeScript, it must be transpiled to JavaScript before it can be used by e2e tests in the `tests/e2e` folder.
 
-Run `yarn build` to build the library. The transpiled JavaScript code is emitted to the `lib` folder.
+Run `bun run build` to build the library. The transpiled JavaScript code is emitted to the `lib` folder.
 
-To build the library in watch mode, run `yarn build -w`.
+To build the library in watch mode, run `bun run build -w`.
 
 ### Continuous Integration
 
@@ -66,4 +66,4 @@ git merge upstream/main
 
 ### Submit a PR
 
-After you've pushed your changes to remote, submit your PR. Make sure you are comparing `<YOUR_USER_ID>/feature` to `origin/master`.
+After you've pushed your changes to remote, submit your PR. Make sure you are comparing `<YOUR_USER_ID>/feature` to `origin/main`.
