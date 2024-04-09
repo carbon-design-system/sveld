@@ -147,11 +147,17 @@ This library adopts a progressively enhanced approach. Any property type that ca
 Install `sveld` as a development dependency.
 
 ```sh
-yarn add -D sveld
-# OR
+# npm
 npm i -D sveld
-# OR
+
+# pnpm
 pnpm i -D sveld
+
+# Bun
+bun i -D sveld
+
+# Yarn
+yarn add -D sveld
 ```
 
 ### Rollup
