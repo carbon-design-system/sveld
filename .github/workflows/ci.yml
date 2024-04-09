@@ -33,6 +33,9 @@ jobs:
       - name: Run unit tests
         run: yarn test
 
+      - name: Run e2e tests
+        run: yarn test:e2e
+
       # Only trigger deploy if previous steps pass and branch is main
       - name: Deploy docs
         if: matrix.os == 'macos-latest' && github.ref == 'refs/heads/main'
