@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add isAccessor field to API
 - update Markdown writer to generate a separate table for accessors -->
 
+## [0.19.2](https://github.com/carbon-design-system/sveld/releases/tag/v0.19.2) - 2024-04-08
+
+**Fixes**
+
+- `ComponentParser` should remove carriage returns (Windows)
+
 ## [0.19.1](https://github.com/carbon-design-system/sveld/releases/tag/v0.19.1) - 2023-10-17
 
 **Fixes**
