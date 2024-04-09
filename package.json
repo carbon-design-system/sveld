@@ -7,7 +7,7 @@
   "types": "./lib/index.d.ts",
   "scripts": {
     "test": "bun test",
-    "test:e2e": "bun test/test-e2e.ts",
+    "test:e2e": "bun tests/test-e2e.ts",
     "format": "bun --bun prettier --write \".\"",
     "build": "bun --bun tsc"
   },
