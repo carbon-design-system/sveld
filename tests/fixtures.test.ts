@@ -1,5 +1,5 @@
 import fg from "fast-glob";
-import fs from "node:fs"
+import fs from "node:fs";
 import fsp from "node:fs/promises";
 import path from "node:path";
 import ComponentParser from "../src/ComponentParser";

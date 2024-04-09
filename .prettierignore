@@ -1,0 +1,4 @@
+tests/e2e
+lib
+dist
+tests/**/*.json

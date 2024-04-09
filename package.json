@@ -8,7 +8,7 @@
   "scripts": {
     "test": "vitest -r tests",
     "test:e2e": "node tests/test-e2e",
-    "format": "prettier --write \"{src,tests,playground}/**/*.{js,ts,svelte,md}\" --ignore-path \".gitignore\"",
+    "format": "prettier --write \".\"",
     "build": "tsc -p tsconfig.build.json"
   },
   "dependencies": {
