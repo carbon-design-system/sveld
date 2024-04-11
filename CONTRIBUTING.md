@@ -31,24 +31,24 @@ yarn install
 
 ### Unit tests
 
-Ensure the unit tests pass by running `yarn test:unit`.
+Ensure the unit tests pass by running `yarn test`.
 
-### Integration tests
+### End-to-end (e2e) tests
 
-Because this library is written in TypeScript, it must be transpiled to JavaScript before it can be used by integration tests in the `integration` folder.
+Because this library is written in TypeScript, it must be transpiled to JavaScript before it can be used by e2e tests in the `tests/e2e` folder.
 
 Run `yarn build` to build the library. The transpiled JavaScript code is emitted to the `lib` folder.
 
-To build the library in watch mode, run `yarn build:watch`.
+To build the library in watch mode, run `yarn build -w`.
 
 ### Continuous Integration
 
-The `yarn prepack` command is executed in Travis CI.
+This project uses GitHub Actions for continuous integration (CI).
 
 It does the following:
 
 1. Build the library
-2. Run unit/svelte-check/integration tests in parallel
+2. Run unit tests
 
 The CI should pass if no unexpected errors occur.
 
@@ -60,8 +60,8 @@ Before submitting a pull request, make sure your fork is up to date with the lat
 
 ```sh
 git fetch upstream
-git checkout master
-git merge upstream/master
+git checkout main
+git merge upstream/main
 ```
 
 ### Submit a PR
