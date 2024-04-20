@@ -2,6 +2,8 @@
 # Currently, only npm supports publishing packages with provenance
 # https://docs.npmjs.com/generating-provenance-statements
 
+name: Publish to NPM
+
 on:
   push:
     tags:
