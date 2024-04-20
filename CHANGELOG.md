@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add isAccessor field to API
 - update Markdown writer to generate a separate table for accessors -->
 
+## [0.20.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.20.0) - 2024-04-20
+
+**Features**
+
+- support component generics via the custom `@generics` tag
+
 ## [0.19.2](https://github.com/carbon-design-system/sveld/releases/tag/v0.19.2) - 2024-04-08
 
 **Fixes**
