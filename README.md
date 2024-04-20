@@ -122,6 +122,7 @@ export default class Button extends SvelteComponentTyped<
   - [@event](#event)
   - [@restProps](#restprops)
   - [@extends](#extends)
+  - [@generics](#generics)
   - [@component comments](#component-comments)
 - [Contributing](#contributing)
 - [License](#license)
@@ -500,6 +501,45 @@ Example:
 export const secondary = true;
 
 import Button from "./Button.svelte";
+```
+
+### `@generics`
+
+Currently, to define generics for a Svelte component, you must use [`generics` attribute](https://github.com/dummdidumm/rfcs/blob/bfb14dc56a70ec6ddafebf2242b8e1500e06a032/text/ts-typing-props-slots-events.md#generics) on the script tag. Note that this feature is [experimental](https://svelte.dev/docs/typescript#experimental-advanced-typings) and may change in the future.
+
+However, the `generics` attribute only works if using `lang="ts"`; the language server will produce an error if `generics` is used without specifying `lang="ts"`.
+
+```svelte
+<!-- This causes an error because `lang="ts"` must be used. -->
+<script generics="Row extends DataTableRow = any"></script>
+```
+
+Because `sveld` is designed to support JavaScript-only usage as a baseline, the API design to specify generics uses a custom JSDoc tag `@generics`.
+
+Signature:
+
+```js
+/**
+ * @generics {GenericParameter} GenericName
+ */
+```
+
+Example
+
+```js
+/**
+ * @generics {Row extends DataTableRow = any} Row
+ */
+```
+
+The generated TypeScript definition will resemble the following:
+
+```ts
+export default class Component<Row extends DataTableRow = any> extends SvelteComponentTyped<
+  ComponentProps<Row>,
+  Record<string, any>,
+  Record<string, any>
+> {}
 ```
 
 ### `@component` comments
