@@ -81,6 +81,8 @@ interface TypeDef {
   ts: string;
 }
 
+type ComponentGenerics = [name: string, type: string];
+
 interface ComponentInlineElement {
   type: "InlineComponent";
   name: string;
@@ -108,6 +110,7 @@ export interface ParsedComponent {
   slots: ComponentSlot[];
   events: ComponentEvent[];
   typedefs: TypeDef[];
+  generics: null | ComponentGenerics;
   rest_props: RestProps;
   extends?: Extends;
   componentComment?: string;
@@ -128,6 +131,7 @@ export default class ComponentParser {
   private readonly slots: Map<ComponentSlotName, ComponentSlot> = new Map();
   private readonly events: Map<ComponentEventName, ComponentEvent> = new Map();
   private readonly typedefs: Map<TypeDefName, TypeDef> = new Map();
+  private readonly generics: ComponentGenerics = null;
   private readonly bindings: Map<ComponentPropName, ComponentPropBindings> = new Map();
 
   constructor(options?: ComponentParserOptions) {
@@ -311,6 +315,9 @@ export default class ComponentParser {
               ts: /(\}|\};)$/.test(type) ? `interface ${name} ${type}` : `type ${name} = ${type}`,
             });
             break;
+          case "generics":
+            this.generics = [name, type];
+            break;
         }
       });
     });
@@ -329,6 +336,7 @@ export default class ComponentParser {
     this.slots.clear();
     this.events.clear();
     this.typedefs.clear();
+    this.generics = null;
     this.bindings.clear();
   }
 
@@ -732,6 +740,7 @@ export default class ComponentParser {
         }),
       events: ComponentParser.mapToArray(this.events),
       typedefs: ComponentParser.mapToArray(this.typedefs),
+      generics: this.generics,
       rest_props: this.rest_props,
       extends: this.extends,
       componentComment: this.componentComment,

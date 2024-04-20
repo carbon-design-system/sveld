@@ -33,7 +33,7 @@ function addCommentLine(value: any, returnValue?: any) {
   return `* ${returnValue || value}\n`;
 }
 
-function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleName" | "extends">) {
+function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleName" | "extends" | "generics">) {
   const initial_props = def.props
     .filter((prop) => !prop.isFunctionDeclaration && prop.kind !== "const")
     .map((prop) => {
@@ -68,6 +68,8 @@ function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleN
 
   let prop_def = EMPTY_STR;
 
+  const genericsName = def.generics ? `<${def.generics[0]}>` : "";
+
   if (def.rest_props?.type === "Element") {
     const extend_tag_map = def.rest_props.name
       .split("|")
@@ -88,7 +90,9 @@ function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleN
 
     prop_def = `
     ${extend_tag_map ? `type RestProps = ${extend_tag_map};\n` : ""}
-    export interface ${props_name} extends ${def.extends !== undefined ? `${def.extends.interface}, ` : ""}RestProps {
+    export interface ${props_name}${genericsName} extends ${
+      def.extends !== undefined ? `${def.extends.interface}, ` : ""
+    }RestProps {
       ${props}
       
       ${dataAttributes}
@@ -96,7 +100,9 @@ function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleN
   `;
   } else {
     prop_def = `
-    export interface ${props_name} ${def.extends !== undefined ? `extends ${def.extends.interface}` : ""} {
+    export interface ${props_name}${genericsName} ${
+      def.extends !== undefined ? `extends ${def.extends.interface}` : ""
+    } {
       ${props}
     }
   `;
@@ -203,6 +209,7 @@ export function writeTsDefinition(component: ComponentDocApi) {
   const {
     moduleName,
     typedefs,
+    generics,
     props,
     moduleExports,
     slots,
@@ -216,7 +223,11 @@ export function writeTsDefinition(component: ComponentDocApi) {
     props,
     rest_props,
     extends: _extends,
+    generics,
   });
+
+  const generic = generics ? `<${generics[1]}>` : "";
+  const genericProps = generics ? `${props_name}<${generics[0]}>` : props_name;
 
   return `
   import type { SvelteComponentTyped } from "svelte";${
@@ -227,8 +238,8 @@ export function writeTsDefinition(component: ComponentDocApi) {
   ${getTypeDefs({ typedefs })}
   ${prop_def}
   ${genComponentComment({ componentComment })}
-  export default class ${moduleName === "default" ? "" : moduleName} extends SvelteComponentTyped<
-      ${props_name},
+  export default class ${moduleName === "default" ? "" : moduleName}${generic} extends SvelteComponentTyped<
+      ${genericProps},
       ${genEventDef({ events })},
       {${genSlotDef({ slots })}}
     > {
