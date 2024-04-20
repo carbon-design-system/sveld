@@ -4,6 +4,7 @@
   "slots": [],
   "events": [],
   "typedefs": [],
+  "generics": null,
   "rest_props": {
     "type": "Element",
     "name": "svg"

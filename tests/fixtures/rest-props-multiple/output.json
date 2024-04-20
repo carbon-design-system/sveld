@@ -27,6 +27,7 @@
   "slots": [],
   "events": [],
   "typedefs": [],
+  "generics": null,
   "rest_props": {
     "type": "Element",
     "name": "h1 | span"

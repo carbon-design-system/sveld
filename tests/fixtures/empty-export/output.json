@@ -3,5 +3,6 @@
   "moduleExports": [],
   "slots": [],
   "events": [],
-  "typedefs": []
+  "typedefs": [],
+  "generics": null
 }

@@ -19,5 +19,6 @@
       "element": "input"
     }
   ],
-  "typedefs": []
+  "typedefs": [],
+  "generics": null
 }

@@ -7,6 +7,7 @@ exports[`fixtures (JSON) "svg-props/input.svelte" 1`] = `
   "slots": [],
   "events": [],
   "typedefs": [],
+  "generics": null,
   "rest_props": {
     "type": "Element",
     "name": "svg"
@@ -57,7 +58,8 @@ exports[`fixtures (JSON) "slots-named/input.svelte" 1`] = `
     }
   ],
   "events": [],
-  "typedefs": []
+  "typedefs": [],
+  "generics": null
 }"
 `;
 
@@ -73,7 +75,8 @@ exports[`fixtures (JSON) "dispatched-events-dynamic/input.svelte" 1`] = `
       "detail": "{key: string;}"
     }
   ],
-  "typedefs": []
+  "typedefs": [],
+  "generics": null
 }"
 `;
 
@@ -129,7 +132,8 @@ exports[`fixtures (JSON) "function-declaration/input.svelte" 1`] = `
   "moduleExports": [],
   "slots": [],
   "events": [],
-  "typedefs": []
+  "typedefs": [],
+  "generics": null
 }"
 `;
 
@@ -166,7 +170,8 @@ exports[`fixtures (JSON) "forwarded-events/input.svelte" 1`] = `
       "element": "h1"
     }
   ],
-  "typedefs": []
+  "typedefs": [],
+  "generics": null
 }"
 `;
 
@@ -187,7 +192,8 @@ exports[`fixtures (JSON) "mixed-events/input.svelte" 1`] = `
       "detail": "FocusEvent | CustomEvent<FocusEvent>"
     }
   ],
-  "typedefs": []
+  "typedefs": [],
+  "generics": null
 }"
 `;
 
@@ -279,7 +285,8 @@ exports[`fixtures (JSON) "infer-basic/input.svelte" 1`] = `
     }
   ],
   "events": [],
-  "typedefs": []
+  "typedefs": [],
+  "generics": null
 }"
 `;
 
@@ -289,7 +296,8 @@ exports[`fixtures (JSON) "empty-export/input.svelte" 1`] = `
   "moduleExports": [],
   "slots": [],
   "events": [],
-  "typedefs": []
+  "typedefs": [],
+  "generics": null
 }"
 `;
 
@@ -323,7 +331,8 @@ exports[`fixtures (JSON) "typed-slots/input.svelte" 1`] = `
     }
   ],
   "events": [],
-  "typedefs": []
+  "typedefs": [],
+  "generics": null
 }"
 `;
 
@@ -359,7 +368,8 @@ exports[`fixtures (JSON) "dispatched-events/input.svelte" 1`] = `
       "detail": "null"
     }
   ],
-  "typedefs": []
+  "typedefs": [],
+  "generics": null
 }"
 `;
 
@@ -409,7 +419,8 @@ exports[`fixtures (JSON) "typedefs/input.svelte" 1`] = `
       "name": "MyTypedefArray",
       "ts": "type MyTypedefArray = MyTypedef[]"
     }
-  ]
+  ],
+  "generics": null
 }"
 `;
 
@@ -436,7 +447,8 @@ exports[`fixtures (JSON) "bind-this/input.svelte" 1`] = `
     }
   ],
   "events": [],
-  "typedefs": []
+  "typedefs": [],
+  "generics": null
 }"
 `;
 
@@ -464,7 +476,8 @@ exports[`fixtures (JSON) "dispatched-events-typed/input.svelte" 1`] = `
       "detail": "null"
     }
   ],
-  "typedefs": []
+  "typedefs": [],
+  "generics": null
 }"
 `;
 
@@ -490,7 +503,8 @@ exports[`fixtures (JSON) "input-events/input.svelte" 1`] = `
       "element": "input"
     }
   ],
-  "typedefs": []
+  "typedefs": [],
+  "generics": null
 }"
 `;
 
@@ -550,7 +564,8 @@ exports[`fixtures (JSON) "required/input.svelte" 1`] = `
     }
   ],
   "events": [],
-  "typedefs": []
+  "typedefs": [],
+  "generics": null
 }"
 `;
 
@@ -603,7 +618,8 @@ exports[`fixtures (JSON) "prop-comments/input.svelte" 1`] = `
     }
   ],
   "events": [],
-  "typedefs": []
+  "typedefs": [],
+  "generics": null
 }"
 `;
 
@@ -626,7 +642,8 @@ exports[`fixtures (JSON) "renamed-props/input.svelte" 1`] = `
   "moduleExports": [],
   "slots": [],
   "events": [],
-  "typedefs": []
+  "typedefs": [],
+  "generics": null
 }"
 `;
 
@@ -709,7 +726,8 @@ exports[`fixtures (JSON) "infer-with-types/input.svelte" 1`] = `
     }
   ],
   "events": [],
-  "typedefs": []
+  "typedefs": [],
+  "generics": null
 }"
 `;
 
@@ -811,7 +829,8 @@ exports[`fixtures (JSON) "context-module/input.svelte" 1`] = `
   ],
   "slots": [],
   "events": [],
-  "typedefs": []
+  "typedefs": [],
+  "generics": null
 }"
 `;
 
@@ -822,6 +841,7 @@ exports[`fixtures (JSON) "rest-props/input.svelte" 1`] = `
   "slots": [],
   "events": [],
   "typedefs": [],
+  "generics": null,
   "rest_props": {
     "type": "Element",
     "name": "h1"
@@ -859,6 +879,7 @@ exports[`fixtures (JSON) "rest-props-multiple/input.svelte" 1`] = `
   "slots": [],
   "events": [],
   "typedefs": [],
+  "generics": null,
   "rest_props": {
     "type": "Element",
     "name": "h1 | span"
@@ -879,6 +900,7 @@ exports[`fixtures (JSON) "component-comment-single/input.svelte" 1`] = `
   ],
   "events": [],
   "typedefs": [],
+  "generics": null,
   "componentComment": " Component comment"
 }"
 `;
@@ -927,7 +949,8 @@ exports[`fixtures (JSON) "bind-this-multiple/input.svelte" 1`] = `
     }
   ],
   "events": [],
-  "typedefs": []
+  "typedefs": [],
+  "generics": null
 }"
 `;
 
@@ -972,7 +995,8 @@ exports[`fixtures (JSON) "typedef/input.svelte" 1`] = `
       "name": "MyTypedef",
       "ts": "interface MyTypedef { [key: string]: boolean; }"
     }
-  ]
+  ],
+  "generics": null
 }"
 `;
 
@@ -989,6 +1013,7 @@ exports[`fixtures (JSON) "anchor-props/input.svelte" 1`] = `
   ],
   "events": [],
   "typedefs": [],
+  "generics": null,
   "rest_props": {
     "type": "Element",
     "name": "a"
@@ -1009,6 +1034,7 @@ exports[`fixtures (JSON) "component-comment-multi/input.svelte" 1`] = `
   ],
   "events": [],
   "typedefs": [],
+  "generics": null,
   "componentComment": "\n@example\n<div>\n  Component comment\n</div>"
 }"
 `;
@@ -1031,7 +1057,8 @@ exports[`fixtures (JSON) "slots-spread/input.svelte" 1`] = `
     }
   ],
   "events": [],
-  "typedefs": []
+  "typedefs": [],
+  "generics": null
 }"
 `;
 
@@ -1053,7 +1080,8 @@ exports[`fixtures (JSON) "slots-spread-typed/input.svelte" 1`] = `
     }
   ],
   "events": [],
-  "typedefs": []
+  "typedefs": [],
+  "generics": null
 }"
 `;
 
@@ -1108,7 +1136,46 @@ exports[`fixtures (JSON) "typed-props/input.svelte" 1`] = `
   "moduleExports": [],
   "slots": [],
   "events": [],
-  "typedefs": []
+  "typedefs": [],
+  "generics": null
+}"
+`;
+
+exports[`fixtures (JSON) "generics/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "rows",
+      "kind": "let",
+      "type": "ReadonlyArray<Row>",
+      "value": "[]",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "slot_props": "{ rows: ReadonlyArray<Row> }"
+    }
+  ],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "Record<string, any>",
+      "name": "DataTableRow",
+      "ts": "type DataTableRow = Record<string, any>"
+    }
+  ],
+  "generics": [
+    "Row",
+    "Row extends DataTableRow = DataTableRow"
+  ]
 }"
 `;
 
@@ -1729,68 +1796,22 @@ export default class TypedProps extends SvelteComponentTyped<TypedPropsProps, Re
 "
 `;
 
-exports[`fixtures (TypeScript) "svg-props/input.svelte" 1`] = `
+exports[`fixtures (TypeScript) "generics/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
-import type { SvelteHTMLElements } from "svelte/elements";
 
-type RestProps = SvelteHTMLElements["svg"];
+export type DataTableRow = Record<string, any>;
 
-export interface SvgPropsProps extends RestProps {
-  [key: \`data-${string}\`]: any;
-}
-
-export default class SvgProps extends SvelteComponentTyped<SvgPropsProps, Record<string, any>, {}> {}
-"
-`;
-
-exports[`fixtures (TypeScript) "rest-props/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
-import type { SvelteHTMLElements } from "svelte/elements";
-
-type RestProps = SvelteHTMLElements["h1"];
-
-export interface RestPropsProps extends RestProps {
-  [key: \`data-${string}\`]: any;
-}
-
-export default class RestProps extends SvelteComponentTyped<RestPropsProps, Record<string, any>, {}> {}
-"
-`;
-
-exports[`fixtures (TypeScript) "rest-props-multiple/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
-import type { SvelteHTMLElements } from "svelte/elements";
-
-type RestProps = SvelteHTMLElements["h1"] & SvelteHTMLElements["span"];
-
-export interface RestPropsMultipleProps extends RestProps {
+export interface GenericsProps<Row> {
   /**
-   * @default false
+   * @default []
    */
-  edit?: boolean;
-
-  /**
-   * @default false
-   */
-  heading?: boolean;
-
-  [key: \`data-${string}\`]: any;
+  rows?: ReadonlyArray<Row>;
 }
 
-export default class RestPropsMultiple extends SvelteComponentTyped<RestPropsMultipleProps, Record<string, any>, {}> {}
-"
-`;
-
-exports[`fixtures (TypeScript) "anchor-props/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
-import type { SvelteHTMLElements } from "svelte/elements";
-
-type RestProps = SvelteHTMLElements["a"];
-
-export interface AnchorPropsProps extends RestProps {
-  [key: \`data-${string}\`]: any;
-}
-
-export default class AnchorProps extends SvelteComponentTyped<AnchorPropsProps, Record<string, any>, { default: {} }> {}
+export default class Generics<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
+  GenericsProps<Row>,
+  Record<string, any>,
+  { default: { rows: ReadonlyArray<Row> } }
+> {}
 "
 `;

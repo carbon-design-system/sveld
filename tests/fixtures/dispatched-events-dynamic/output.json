@@ -9,5 +9,6 @@
       "detail": "{key: string;}"
     }
   ],
-  "typedefs": []
+  "typedefs": [],
+  "generics": null
 }
