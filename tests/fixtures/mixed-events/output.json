@@ -14,5 +14,6 @@
       "detail": "FocusEvent | CustomEvent<FocusEvent>"
     }
   ],
-  "typedefs": []
+  "typedefs": [],
+  "generics": null
 }

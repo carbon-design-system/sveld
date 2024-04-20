@@ -30,5 +30,6 @@
       "element": "h1"
     }
   ],
-  "typedefs": []
+  "typedefs": [],
+  "generics": null
 }

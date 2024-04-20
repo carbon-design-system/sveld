@@ -38,5 +38,6 @@
       "name": "MyTypedef",
       "ts": "interface MyTypedef { [key: string]: boolean; }"
     }
-  ]
+  ],
+  "generics": null
 }

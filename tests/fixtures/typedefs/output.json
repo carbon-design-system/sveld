@@ -43,5 +43,6 @@
       "name": "MyTypedefArray",
       "ts": "type MyTypedefArray = MyTypedef[]"
     }
-  ]
+  ],
+  "generics": null
 }

@@ -98,6 +98,7 @@ describe("writerTsDefinition", () => {
       ],
       events: [],
       typedefs: [],
+      generics: null,
       rest_props: undefined,
     };
 
@@ -119,6 +120,7 @@ describe("writerTsDefinition", () => {
       slots: [],
       events: [],
       typedefs: [],
+      generics: null,
       rest_props: undefined,
     };
 
