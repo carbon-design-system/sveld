@@ -7,7 +7,7 @@
   "types": "./types/index.d.ts",
   "scripts": {
     "sveld": "node ../../cli",
-    "svelte-check": "svelte-check --workspace test/*",
+    "svelte-check": "svelte-check --workspace test",
     "build": "rollup -c"
   },
   "devDependencies": {
