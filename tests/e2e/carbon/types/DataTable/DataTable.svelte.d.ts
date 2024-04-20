@@ -1,58 +1,68 @@
 import type { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
 
-export type DataTableKey = string;
+export type DataTableKey<Row> = Omit<keyof Row, "id">;
 
 export type DataTableValue = any;
 
-export interface DataTableEmptyHeader {
-  key: DataTableKey;
+export interface DataTableEmptyHeader<Row> {
+  key: DataTableKey<Row>;
   empty: boolean;
-  display?: (item: Value) => DataTableValue;
-  sort?: (a: DataTableValue, b: DataTableValue) => 0 | -1 | 1;
+  display?: (item: Value, row: Row) => DataTableValue;
+  sort?: false | ((a: DataTableValue, b: DataTableValue) => number);
   columnMenu?: boolean;
+  width?: string;
+  minWidth?: string;
 }
 
-export interface DataTableNonEmptyHeader {
-  key: DataTableKey;
+export interface DataTableNonEmptyHeader<Row> {
+  key: DataTableKey<Row>;
   value: DataTableValue;
-  display?: (item: Value) => DataTableValue;
-  sort?: (a: DataTableValue, b: DataTableValue) => 0 | -1 | 1;
+  display?: (item: Value, row: Row) => DataTableValue;
+  sort?: false | ((a: DataTableValue, b: DataTableValue) => number);
   columnMenu?: boolean;
+  width?: string;
+  minWidth?: string;
 }
 
-export type DataTableHeader = DataTableNonEmptyHeader | DataTableEmptyHeader;
+export type DataTableHeader<Row> =
+  | DataTableNonEmptyHeader<Row>
+  | DataTableEmptyHeader<Row>;
 
 export interface DataTableRow {
   id: any;
   [key: string]: DataTableValue;
 }
 
-export type DataTableRowId = string;
+export type DataTableRowId = any;
 
 export interface DataTableCell {
-  key: DataTableKey;
+  key: DataTableKey<Row>;
   value: DataTableValue;
+  display?: (item: Value, row: DataTableRow) => DataTableValue;
 }
 
-export interface DataTableProps {
+type RestProps = SvelteHTMLElements["div"];
+
+export interface DataTableProps<Row> extends RestProps {
   /**
    * Specify the data table headers
    * @default []
    */
-  headers?: DataTableHeader[];
+  headers?: ReadonlyArray<DataTableHeader<Row>>;
 
   /**
    * Specify the rows the data table should render
    * keys defined in `headers` are used for the row ids
    * @default []
    */
-  rows?: DataTableRow[];
+  rows?: ReadonlyArray<Row>;
 
   /**
    * Set the size of the data table
    * @default undefined
    */
-  size?: "compact" | "short" | "tall";
+  size?: "compact" | "short" | "medium" | "tall";
 
   /**
    * Specify the title of the data table
@@ -79,6 +89,18 @@ export interface DataTableProps {
   sortable?: boolean;
 
   /**
+   * Specify the header key to sort by
+   * @default null
+   */
+  sortKey?: DataTableKey;
+
+  /**
+   * Specify the sort direction
+   * @default "none"
+   */
+  sortDirection?: "none" | "ascending" | "descending";
+
+  /**
    * Set to `true` for the expandable variant
    * Automatically set to `true` if `batchExpansion` is `true`
    * @default false
@@ -95,7 +117,13 @@ export interface DataTableProps {
    * Specify the row ids to be expanded
    * @default []
    */
-  expandedRowIds?: DataTableRowId[];
+  expandedRowIds?: ReadonlyArray<DataTableRowId>;
+
+  /**
+   * Specify the ids for rows that should not be expandable
+   * @default []
+   */
+  nonExpandableRowIds?: ReadonlyArray<DataTableRowId>;
 
   /**
    * Set to `true` for the radio selection variant
@@ -120,42 +148,78 @@ export interface DataTableProps {
    * Specify the row ids to be selected
    * @default []
    */
-  selectedRowIds?: DataTableRowId[];
+  selectedRowIds?: ReadonlyArray<DataTableRowId>;
+
+  /**
+   * Specify the ids of rows that should not be selectable
+   * @default []
+   */
+  nonSelectableRowIds?: ReadonlyArray<DataTableRowId>;
 
   /**
    * Set to `true` to enable a sticky header
    * @default false
    */
   stickyHeader?: boolean;
+
+  /**
+   * Set to `true` to use static width
+   * @default false
+   */
+  useStaticWidth?: boolean;
+
+  /**
+   * Specify the number of items to display in a page
+   * @default 0
+   */
+  pageSize?: number;
+
+  /**
+   * Set to `number` to set current page
+   * @default 0
+   */
+  page?: number;
+
+  [key: `data-${string}`]: any;
 }
 
-export default class DataTable extends SvelteComponentTyped<
-  DataTableProps,
+export default class DataTable<
+  Row extends DataTableRow = DataTableRow
+> extends SvelteComponentTyped<
+  DataTableProps<Row>,
   {
     click: CustomEvent<{
-      header?: DataTableHeader;
-      row?: DataTableRow;
-      cell?: DataTableCell;
+      header?: DataTableHeader<Row>;
+      row?: Row;
+      cell?: DataTableCell<Row>;
     }>;
     ["click:header--expand"]: CustomEvent<{ expanded: boolean }>;
     ["click:header"]: CustomEvent<{
-      header: DataTableHeader;
-      sortDirection: "ascending" | "descending" | "none";
+      header: DataTableHeader<Row>;
+      sortDirection?: "ascending" | "descending" | "none";
     }>;
-    ["click:row"]: CustomEvent<DataTableRow>;
-    ["mouseenter:row"]: CustomEvent<DataTableRow>;
-    ["mouseleave:row"]: CustomEvent<DataTableRow>;
-    ["click:row--expand"]: CustomEvent<{
-      expanded: boolean;
-      row: DataTableRow;
+    ["click:header--select"]: CustomEvent<{
+      indeterminate: boolean;
+      selected: boolean;
     }>;
-    ["click:cell"]: CustomEvent<DataTableCell>;
+    ["click:row"]: CustomEvent<Row>;
+    ["mouseenter:row"]: CustomEvent<Row>;
+    ["mouseleave:row"]: CustomEvent<Row>;
+    ["click:row--expand"]: CustomEvent<{ expanded: boolean; row: Row }>;
+    ["click:row--select"]: CustomEvent<{ selected: boolean; row: Row }>;
+    ["click:cell"]: CustomEvent<DataTableCell<Row>>;
   },
   {
     default: {};
-    cell: { row: DataTableRow; cell: DataTableCell };
+    cell: {
+      row: Row;
+      cell: DataTableCell<Row>;
+      rowIndex: number;
+      cellIndex: number;
+    };
     ["cell-header"]: { header: DataTableNonEmptyHeader };
-    /** The expanded row */
-    ["expanded-row"]: { row: DataTableRow };
+    description: {};
+    ["expanded-row"]: { row: Row };
+    title: {};
   }
 > {}
