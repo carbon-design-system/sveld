@@ -40,6 +40,7 @@
       ],
       "events": [{ "type": "forwarded", "name": "click", "element": "button" }],
       "typedefs": [],
+      "generics": null,
       "rest_props": { "type": "Element", "name": "button" }
     },
     {
@@ -49,7 +50,8 @@
       "moduleExports": [],
       "slots": [{ "name": "__default__", "default": true, "slot_props": "{}" }],
       "events": [],
-      "typedefs": []
+      "typedefs": [],
+      "generics": null
     },
     {
       "moduleName": "Header",
@@ -58,7 +60,8 @@
       "moduleExports": [],
       "slots": [{ "name": "__default__", "default": true, "slot_props": "{}" }],
       "events": [],
-      "typedefs": []
+      "typedefs": [],
+      "generics": null
     },
     {
       "moduleName": "Link",
@@ -75,6 +78,7 @@
       ],
       "events": [{ "type": "forwarded", "name": "click", "element": "a" }],
       "typedefs": [],
+      "generics": null,
       "rest_props": { "type": "Element", "name": "a" }
     },
     {
@@ -117,6 +121,7 @@
       "typedefs": [
         { "type": "string", "name": "Author", "ts": "type Author = string" }
       ],
+      "generics": null,
       "rest_props": { "type": "Element", "name": "blockquote" }
     }
   ]
