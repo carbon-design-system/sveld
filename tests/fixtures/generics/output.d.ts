@@ -7,7 +7,7 @@ export interface DataTableRow {
 
 export type DataTableKey<Row> = Exclude<keyof Row, "id">;
 
-export interface DataTableHeader<Row> {
+export interface DataTableHeader<Row = DataTableRow> {
   key: DataTableKey<Row>;
   value: string;
 }

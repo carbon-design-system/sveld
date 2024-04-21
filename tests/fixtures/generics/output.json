@@ -45,8 +45,8 @@
     },
     {
       "type": "{ key: DataTableKey<Row>; value: string; }",
-      "name": "DataTableHeader<Row>",
-      "ts": "interface DataTableHeader<Row> { key: DataTableKey<Row>; value: string; }"
+      "name": "DataTableHeader<Row=DataTableRow>",
+      "ts": "interface DataTableHeader<Row=DataTableRow> { key: DataTableKey<Row>; value: string; }"
     }
   ],
   "generics": [

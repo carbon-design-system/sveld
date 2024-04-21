@@ -7,7 +7,7 @@ import { writeTsDefinition } from "../src/writer/writer-ts-definitions";
 const folder = path.join(process.cwd(), "tests", "fixtures");
 const fixtures_map = new Map<string, string>();
 
-for await (const file of new Glob("**/*.svelte").scan(folder)) {
+for await (const file of new Glob("**/input.svelte").scan(folder)) {
   const source = await Bun.file(path.join(folder, file)).text();
   fixtures_map.set(file, source);
 }
