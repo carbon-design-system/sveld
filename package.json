@@ -8,7 +8,7 @@
   "scripts": {
     "test": "bun test",
     "test:e2e": "bun tests/test-e2e.ts",
-    "format": "bun --bun prettier --write \".\"",
+    "format": "bun --bun prettier --write \".\" --cache",
     "build": "bun --bun tsc"
   },
   "dependencies": {
