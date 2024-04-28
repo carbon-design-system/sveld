@@ -27,5 +27,5 @@ export interface GenericsProps<Row> {
 export default class Generics<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
   GenericsProps<Row>,
   Record<string, any>,
-  { default: { rows: ReadonlyArray<Row> } }
+  { default: { headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> } }
 > {}

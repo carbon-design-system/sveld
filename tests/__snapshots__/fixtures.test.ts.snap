@@ -63,6 +63,65 @@ exports[`fixtures (JSON) "slots-named/input.svelte" 1`] = `
 }"
 `;
 
+exports[`fixtures (JSON) "generics-multiple/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "headers",
+      "kind": "let",
+      "type": "ReadonlyArray<DataTableHeader<Row, Header>>",
+      "value": "[]",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "rows",
+      "kind": "let",
+      "type": "ReadonlyArray<Row>",
+      "value": "[]",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "slot_props": "{ headers: ReadonlyArray<DataTableHeader<Row, Header>>, rows: ReadonlyArray<Row> }"
+    }
+  ],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{ id: string | number; [key: string]: any; }",
+      "name": "DataTableRow",
+      "ts": "interface DataTableRow { id: string | number; [key: string]: any; }"
+    },
+    {
+      "type": "Exclude<keyof Row, \"id\">",
+      "name": "DataTableKey<Row>",
+      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \"id\">"
+    },
+    {
+      "type": "{ key: DataTableKey<Row>; value: Header; }",
+      "name": "DataTableHeader<Row=DataTableRow,Header>",
+      "ts": "interface DataTableHeader<Row=DataTableRow,Header> { key: DataTableKey<Row>; value: Header; }"
+    }
+  ],
+  "generics": [
+    "Row,Header",
+    "Row extends DataTableRow = DataTableRow, Header extends DataTableRow"
+  ]
+}"
+`;
+
 exports[`fixtures (JSON) "dispatched-events-dynamic/input.svelte" 1`] = `
 "{
   "props": [],
@@ -1141,17 +1200,6 @@ exports[`fixtures (JSON) "typed-props/input.svelte" 1`] = `
 }"
 `;
 
-exports[`fixtures (JSON) "generics/Test.svelte" 1`] = `
-"{
-  "props": [],
-  "moduleExports": [],
-  "slots": [],
-  "events": [],
-  "typedefs": [],
-  "generics": null
-}"
-`;
-
 exports[`fixtures (JSON) "generics/input.svelte" 1`] = `
 "{
   "props": [
@@ -1183,7 +1231,7 @@ exports[`fixtures (JSON) "generics/input.svelte" 1`] = `
     {
       "name": "__default__",
       "default": true,
-      "slot_props": "{ rows: ReadonlyArray<Row> }"
+      "slot_props": "{ headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> }"
     }
   ],
   "events": [],
@@ -1239,6 +1287,44 @@ export default class SlotsNamed extends SvelteComponentTyped<
   SlotsNamedProps,
   Record<string, any>,
   { default: {}; ["bold heading"]: { text: string }; subheading: { text: string }; text: { text: string } }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "generics-multiple/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export interface DataTableRow {
+  id: string | number;
+  [key: string]: any;
+}
+
+export type DataTableKey<Row> = Exclude<keyof Row, "id">;
+
+export interface DataTableHeader<Row = DataTableRow, Header> {
+  key: DataTableKey<Row>;
+  value: Header;
+}
+
+export interface GenericsMultipleProps<Row, Header> {
+  /**
+   * @default []
+   */
+  headers?: ReadonlyArray<DataTableHeader<Row, Header>>;
+
+  /**
+   * @default []
+   */
+  rows?: ReadonlyArray<Row>;
+}
+
+export default class GenericsMultiple<
+  Row extends DataTableRow = DataTableRow,
+  Header extends DataTableRow
+> extends SvelteComponentTyped<
+  GenericsMultipleProps<Row, Header>,
+  Record<string, any>,
+  { default: { headers: ReadonlyArray<DataTableHeader<Row, Header>>; rows: ReadonlyArray<Row> } }
 > {}
 "
 `;
@@ -1828,15 +1914,6 @@ export default class TypedProps extends SvelteComponentTyped<TypedPropsProps, Re
 "
 `;
 
-exports[`fixtures (TypeScript) "generics/Test.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
-
-export interface GenericsProps {}
-
-export default class Generics extends SvelteComponentTyped<GenericsProps, Record<string, any>, {}> {}
-"
-`;
-
 exports[`fixtures (TypeScript) "generics/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
@@ -1867,205 +1944,7 @@ export interface GenericsProps<Row> {
 export default class Generics<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
   GenericsProps<Row>,
   Record<string, any>,
-  { default: { rows: ReadonlyArray<Row> } }
+  { default: { headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> } }
 > {}
-"
-`;
-
-exports[`fixtures (TypeScript) "svg-props/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
-import type { SvelteHTMLElements } from "svelte/elements";
-
-type RestProps = SvelteHTMLElements["svg"];
-
-export interface SvgPropsProps extends RestProps {
-  [key: \`data-${string}\`]: any;
-}
-
-export default class SvgProps extends SvelteComponentTyped<SvgPropsProps, Record<string, any>, {}> {}
-"
-`;
-
-exports[`fixtures (TypeScript) "rest-props/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
-import type { SvelteHTMLElements } from "svelte/elements";
-
-type RestProps = SvelteHTMLElements["h1"];
-
-export interface RestPropsProps extends RestProps {
-  [key: \`data-${string}\`]: any;
-}
-
-export default class RestProps extends SvelteComponentTyped<RestPropsProps, Record<string, any>, {}> {}
-"
-`;
-
-exports[`fixtures (TypeScript) "rest-props-multiple/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
-import type { SvelteHTMLElements } from "svelte/elements";
-
-type RestProps = SvelteHTMLElements["h1"] & SvelteHTMLElements["span"];
-
-export interface RestPropsMultipleProps extends RestProps {
-  /**
-   * @default false
-   */
-  edit?: boolean;
-
-  /**
-   * @default false
-   */
-  heading?: boolean;
-
-  [key: \`data-${string}\`]: any;
-}
-
-export default class RestPropsMultiple extends SvelteComponentTyped<RestPropsMultipleProps, Record<string, any>, {}> {}
-"
-`;
-
-exports[`fixtures (TypeScript) "anchor-props/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
-import type { SvelteHTMLElements } from "svelte/elements";
-
-type RestProps = SvelteHTMLElements["a"];
-
-export interface AnchorPropsProps extends RestProps {
-  [key: \`data-${string}\`]: any;
-}
-
-export default class AnchorProps extends SvelteComponentTyped<AnchorPropsProps, Record<string, any>, { default: {} }> {}
-"
-`;
-
-exports[`fixtures (TypeScript) "svg-props/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
-import type { SvelteHTMLElements } from "svelte/elements";
-
-type RestProps = SvelteHTMLElements["svg"];
-
-export interface SvgPropsProps extends RestProps {
-  [key: \`data-${string}\`]: any;
-}
-
-export default class SvgProps extends SvelteComponentTyped<SvgPropsProps, Record<string, any>, {}> {}
-"
-`;
-
-exports[`fixtures (TypeScript) "rest-props/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
-import type { SvelteHTMLElements } from "svelte/elements";
-
-type RestProps = SvelteHTMLElements["h1"];
-
-export interface RestPropsProps extends RestProps {
-  [key: \`data-${string}\`]: any;
-}
-
-export default class RestProps extends SvelteComponentTyped<RestPropsProps, Record<string, any>, {}> {}
-"
-`;
-
-exports[`fixtures (TypeScript) "rest-props-multiple/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
-import type { SvelteHTMLElements } from "svelte/elements";
-
-type RestProps = SvelteHTMLElements["h1"] & SvelteHTMLElements["span"];
-
-export interface RestPropsMultipleProps extends RestProps {
-  /**
-   * @default false
-   */
-  edit?: boolean;
-
-  /**
-   * @default false
-   */
-  heading?: boolean;
-
-  [key: \`data-${string}\`]: any;
-}
-
-export default class RestPropsMultiple extends SvelteComponentTyped<RestPropsMultipleProps, Record<string, any>, {}> {}
-"
-`;
-
-exports[`fixtures (TypeScript) "anchor-props/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
-import type { SvelteHTMLElements } from "svelte/elements";
-
-type RestProps = SvelteHTMLElements["a"];
-
-export interface AnchorPropsProps extends RestProps {
-  [key: \`data-${string}\`]: any;
-}
-
-export default class AnchorProps extends SvelteComponentTyped<AnchorPropsProps, Record<string, any>, { default: {} }> {}
-"
-`;
-
-exports[`fixtures (TypeScript) "svg-props/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
-import type { SvelteHTMLElements } from "svelte/elements";
-
-type RestProps = SvelteHTMLElements["svg"];
-
-export interface SvgPropsProps extends RestProps {
-  [key: \`data-${string}\`]: any;
-}
-
-export default class SvgProps extends SvelteComponentTyped<SvgPropsProps, Record<string, any>, {}> {}
-"
-`;
-
-exports[`fixtures (TypeScript) "rest-props/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
-import type { SvelteHTMLElements } from "svelte/elements";
-
-type RestProps = SvelteHTMLElements["h1"];
-
-export interface RestPropsProps extends RestProps {
-  [key: \`data-${string}\`]: any;
-}
-
-export default class RestProps extends SvelteComponentTyped<RestPropsProps, Record<string, any>, {}> {}
-"
-`;
-
-exports[`fixtures (TypeScript) "rest-props-multiple/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
-import type { SvelteHTMLElements } from "svelte/elements";
-
-type RestProps = SvelteHTMLElements["h1"] & SvelteHTMLElements["span"];
-
-export interface RestPropsMultipleProps extends RestProps {
-  /**
-   * @default false
-   */
-  edit?: boolean;
-
-  /**
-   * @default false
-   */
-  heading?: boolean;
-
-  [key: \`data-${string}\`]: any;
-}
-
-export default class RestPropsMultiple extends SvelteComponentTyped<RestPropsMultipleProps, Record<string, any>, {}> {}
-"
-`;
-
-exports[`fixtures (TypeScript) "anchor-props/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
-import type { SvelteHTMLElements } from "svelte/elements";
-
-type RestProps = SvelteHTMLElements["a"];
-
-export interface AnchorPropsProps extends RestProps {
-  [key: \`data-${string}\`]: any;
-}
-
-export default class AnchorProps extends SvelteComponentTyped<AnchorPropsProps, Record<string, any>, { default: {} }> {}
 "
 `;

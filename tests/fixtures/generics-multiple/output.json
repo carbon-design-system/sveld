@@ -3,7 +3,7 @@
     {
       "name": "headers",
       "kind": "let",
-      "type": "ReadonlyArray<DataTableHeader<Row>>",
+      "type": "ReadonlyArray<DataTableHeader<Row, Header>>",
       "value": "[]",
       "isFunction": false,
       "isFunctionDeclaration": false,
@@ -28,7 +28,7 @@
     {
       "name": "__default__",
       "default": true,
-      "slot_props": "{ headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> }"
+      "slot_props": "{ headers: ReadonlyArray<DataTableHeader<Row, Header>>, rows: ReadonlyArray<Row> }"
     }
   ],
   "events": [],
@@ -44,13 +44,13 @@
       "ts": "type DataTableKey<Row> = Exclude<keyof Row, \"id\">"
     },
     {
-      "type": "{ key: DataTableKey<Row>; value: string; }",
-      "name": "DataTableHeader<Row=DataTableRow>",
-      "ts": "interface DataTableHeader<Row=DataTableRow> { key: DataTableKey<Row>; value: string; }"
+      "type": "{ key: DataTableKey<Row>; value: Header; }",
+      "name": "DataTableHeader<Row=DataTableRow,Header>",
+      "ts": "interface DataTableHeader<Row=DataTableRow,Header> { key: DataTableKey<Row>; value: Header; }"
     }
   ],
   "generics": [
-    "Row",
-    "Row extends DataTableRow = DataTableRow"
+    "Row,Header",
+    "Row extends DataTableRow = DataTableRow, Header extends DataTableRow"
   ]
 }
