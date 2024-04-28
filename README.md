@@ -542,6 +542,22 @@ export default class Component<Row extends DataTableRow = any> extends SvelteCom
 > {}
 ```
 
+For a parameter list, the name should be comma-separated but not include spaces.
+
+```js
+/**
+ * @generics {Param1, Param2} Name1,Name2
+ */
+```
+
+```ts
+export default class Component<Param1, Param2> extends SvelteComponentTyped<
+  ComponentProps<Name1, Name2>,
+  Record<string, any>,
+  Record<string, any>
+> {}
+```
+
 ### `@component` comments
 
 The Svelte Language Server supports component-level comments through the following syntax: `<!-- @component [comment] -->`.
