@@ -13,6 +13,6 @@
     "codemirror": "^5.65.16",
     "prettier": "^2.8.8",
     "svelte-highlight": "^7.6.1",
-    "vite": "^5.2.12"
+    "vite": "^5.3.1"
   }
 }
