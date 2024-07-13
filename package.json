@@ -24,11 +24,11 @@
     "typescript": "^5.1.6"
   },
   "devDependencies": {
-    "@types/bun": "^1.0.12",
+    "@types/bun": "^1.1.6",
     "@types/jest": "^29.5.12",
-    "@types/node": "^20.4.9",
+    "@types/node": "^20.14.10",
     "@types/prettier": "^2.7.3",
-    "prettier-plugin-svelte": "^2.8.0"
+    "prettier-plugin-svelte": "^2.10.1"
   },
   "bin": {
     "sveld": "cli.js"
