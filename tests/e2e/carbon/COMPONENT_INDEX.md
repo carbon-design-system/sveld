@@ -762,7 +762,7 @@ None.
 ### Types
 
 ```ts
-export type DataTableKey<Row> = Omit<keyof Row, "id">;
+export type DataTableKey<Row> = Exclude<keyof Row, "id">;
 
 export type DataTableValue = any;
 
