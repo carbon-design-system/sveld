@@ -2223,9 +2223,9 @@
       ],
       "typedefs": [
         {
-          "type": "Omit<keyof Row, \"id\">",
+          "type": "Exclude<keyof Row, \"id\">",
           "name": "DataTableKey<Row>",
-          "ts": "type DataTableKey<Row> = Omit<keyof Row, \"id\">"
+          "ts": "type DataTableKey<Row> = Exclude<keyof Row, \"id\">"
         },
         {
           "type": "any",
