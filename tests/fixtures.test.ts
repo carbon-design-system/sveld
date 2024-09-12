@@ -54,7 +54,7 @@ describe("fixtures (TypeScript)", async () => {
       filePath,
       source: fixtures_map.get(filePath)!,
     });
-    const api_ts = writer.format(writeTsDefinition({ ...metadata, ...parsed_component }));
+    const api_ts = await writer.format(writeTsDefinition({ ...metadata, ...parsed_component }));
 
     // Snapshot the output; if the test fails, output has changed.
     expect(api_ts).toMatchSnapshot();

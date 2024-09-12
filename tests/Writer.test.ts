@@ -6,33 +6,33 @@ describe("Writer", () => {
     global.console.error = jest.fn();
   });
 
-  test("TypeScript", () => {
+  test("TypeScript", async () => {
     const consoleError = jest.spyOn(console, "error");
     const writer = new Writer({ parser: "typescript", printWidth: 120 });
 
-    expect(writer.format("interface I {a:boolean}")).toEqual("interface I {\n  a: boolean;\n}\n");
+    expect(await writer.format("interface I {a:boolean}")).toEqual("interface I {\n  a: boolean;\n}\n");
     expect(consoleError).toHaveBeenCalledTimes(0);
     // Invalid JSON should emit Prettier parsing error
-    expect(writer.format("a:boolean}")).toEqual("a:boolean}");
+    expect(await writer.format("a:boolean}")).toEqual("a:boolean}");
     expect(consoleError).toHaveBeenCalledTimes(1);
   });
 
-  test("JSON", () => {
+  test("JSON", async () => {
     const consoleError = jest.spyOn(console, "error");
     const writer = new Writer({ parser: "json", printWidth: 80 });
 
-    expect(writer.format("{a:null}")).toEqual('{ "a": null }\n');
+    expect(await writer.format("{a:null}")).toEqual('{ "a": null }\n');
 
     expect(consoleError).toHaveBeenCalledTimes(0);
     // Invalid JSON should emit Prettier parsing error
-    expect(writer.format("a:null")).toEqual("a:null");
+    expect(await writer.format("a:null")).toEqual("a:null");
     expect(consoleError).toHaveBeenCalledTimes(1);
   });
 
-  test("Markdown", () => {
+  test("Markdown", async () => {
     const writer = new Writer({ parser: "markdown", printWidth: 80 });
 
-    expect(writer.format("## text")).toEqual("## text\n");
-    expect(writer.format({ a: null })).toEqual({ a: null });
+    expect(await writer.format("## text")).toEqual("## text\n");
+    expect(await writer.format({ a: null })).toEqual({ a: null });
   });
 });
