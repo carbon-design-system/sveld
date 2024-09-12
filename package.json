@@ -15,12 +15,12 @@
     "@rollup/plugin-node-resolve": "^13.3.0",
     "acorn": "^8.12.1",
     "comment-parser": "^1.4.1",
-    "fast-glob": "^3.3.2",
     "prettier": "^2.8.8",
     "rollup": "^2.79.1",
     "rollup-plugin-svelte": "^7.2.2",
     "svelte": "^4.2.19",
     "svelte-preprocess": "^5.1.4",
+    "tinyglobby": "^0.2.6",
     "typescript": "^5.5.4"
   },
   "devDependencies": {
