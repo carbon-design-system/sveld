@@ -83,7 +83,7 @@ export default class WriterMarkdown extends Writer {
         .map(({ array, raw }) => {
           return `${array.join(" ")} - [${raw}](#${raw.toLowerCase().replace(/\`/g, "").replace(/\s+/g, "-")})`;
         })
-        .join("\n")
+        .join("\n"),
     );
 
     return this.source;
