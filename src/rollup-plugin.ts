@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as fsp from "fs/promises";
 import * as path from "path";
-import * as fg from "fast-glob";
+import { globSync } from "tinyglobby";
 import writeTsDefinitions, { WriteTsDefinitionsOptions } from "./writer/writer-ts-definitions";
 import writeJson, { WriteJsonOptions } from "./writer/writer-json";
 import writeMarkdown, { WriteMarkdownOptions } from "./writer/writer-markdown";
@@ -62,7 +62,7 @@ export async function generateBundle(input: string, glob: boolean) {
   const exports = parseExports(entry, dir);
 
   if (glob) {
-    fg.sync([`${dir}/**/*.svelte`]).forEach((file) => {
+    globSync([`${dir}/**/*.svelte`]).forEach((file) => {
       const moduleName = path.parse(file).name.replace(/\-/g, "");
       let source = normalizeSeparators("./" + path.relative(dir, file));
 
