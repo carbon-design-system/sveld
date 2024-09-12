@@ -16,7 +16,7 @@ describe("writerTsDefinition", () => {
             ts: "interface MyTypedef { [key: string]: boolean; }",
           },
         ],
-      })
+      }),
     ).toEqual("export interface MyTypedef { [key: string]: boolean; }");
 
     const parsed_output: ParsedComponent = {
