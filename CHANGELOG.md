@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add isAccessor field to API
 - update Markdown writer to generate a separate table for accessors -->
 
+## [0.20.1](https://github.com/carbon-design-system/sveld/releases/tag/v0.20.1) - 2024-09-12
+
+**Fixes**
+
+- reduce dependencies by replacing `fast-glob` with `tinyglobby`
+
 ## [0.20.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.20.0) - 2024-04-20
 
 **Features**
