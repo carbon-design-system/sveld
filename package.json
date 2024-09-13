@@ -26,7 +26,6 @@
   "devDependencies": {
     "@types/bun": "^1.1.9",
     "@types/jest": "^29.5.13",
-    "@types/node": "^22.5.4",
     "@types/prettier": "^2.7.3",
     "prettier-plugin-svelte": "^2.10.1"
   },
