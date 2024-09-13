@@ -16,7 +16,7 @@ type RestProps = SvelteHTMLElements["button"];
 
 export interface ButtonProps extends RestProps {
   /**
-   * @default "button2"
+   * @default "button"
    */
   type?: string;
 

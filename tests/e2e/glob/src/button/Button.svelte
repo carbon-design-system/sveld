@@ -23,8 +23,8 @@
   }
 </script>
 
-<script>
-  export let type = "button2";
+<script lang="ts">
+  export let type = "button" as const;
   export let primary = false;
 
   $: findParentTreeNode(null)
