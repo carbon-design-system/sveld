@@ -9,7 +9,7 @@
           "name": "type",
           "kind": "let",
           "type": "string",
-          "value": "\"button2\"",
+          "value": "\"button\"",
           "isFunction": false,
           "isFunctionDeclaration": false,
           "isRequired": false,
