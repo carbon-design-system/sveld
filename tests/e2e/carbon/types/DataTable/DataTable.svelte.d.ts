@@ -184,7 +184,7 @@ export interface DataTableProps<Row> extends RestProps {
 }
 
 export default class DataTable<
-  Row extends DataTableRow = DataTableRow
+  Row extends DataTableRow = DataTableRow,
 > extends SvelteComponentTyped<
   DataTableProps<Row>,
   {

@@ -1320,7 +1320,7 @@ export interface GenericsMultipleProps<Row, Header> {
 
 export default class GenericsMultiple<
   Row extends DataTableRow = DataTableRow,
-  Header extends DataTableRow
+  Header extends DataTableRow,
 > extends SvelteComponentTyped<
   GenericsMultipleProps<Row, Header>,
   Record<string, any>,
