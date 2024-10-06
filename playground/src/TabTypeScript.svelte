@@ -2,8 +2,9 @@
   export let parsed_component = {};
   export let moduleName = "";
 
-  import plugin from "prettier/parser-typescript";
-  import prettier from "prettier/standalone";
+  import pluginTypeScript from "prettier/plugins/typescript";
+  import pluginEstree from "prettier/plugins/estree";
+  import { format } from "prettier/standalone";
   import { writeTsDefinition } from "../../src/writer/writer-ts-definitions";
   import CodeHighlighter from "./CodeHighlighter.svelte";
   import TabContentOverlay from "./TabContentOverlay.svelte";
@@ -15,15 +16,17 @@
     moduleName,
   });
   $: {
-    try {
-      prettier_error = null;
-      code = prettier.format(code, {
-        parser: "typescript",
-        plugins: [plugin],
+    prettier_error = null;
+    format(code, {
+      parser: "typescript",
+      plugins: [pluginTypeScript, pluginEstree],
+    })
+      .then((formatted) => {
+        code = formatted;
+      })
+      .catch((error) => {
+        prettier_error = error;
       });
-    } catch (error) {
-      prettier_error = error;
-    }
   }
 </script>
 
