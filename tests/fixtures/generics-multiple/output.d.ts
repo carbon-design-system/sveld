@@ -7,7 +7,7 @@ export interface DataTableRow {
 
 export type DataTableKey<Row> = Exclude<keyof Row, "id">;
 
-export interface DataTableHeader<Row = DataTableRow, Header> {
+export interface DataTableHeader<Row = DataTableRow, Header = DataTableRow> {
   key: DataTableKey<Row>;
   value: Header;
 }
@@ -26,7 +26,7 @@ export interface GenericsMultipleProps<Row, Header> {
 
 export default class GenericsMultiple<
   Row extends DataTableRow = DataTableRow,
-  Header extends DataTableRow
+  Header extends DataTableRow = DataTableRow
 > extends SvelteComponentTyped<
   GenericsMultipleProps<Row, Header>,
   Record<string, any>,

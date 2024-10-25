@@ -111,13 +111,13 @@ exports[`fixtures (JSON) "generics-multiple/input.svelte" 1`] = `
     },
     {
       "type": "{ key: DataTableKey<Row>; value: Header; }",
-      "name": "DataTableHeader<Row=DataTableRow,Header>",
-      "ts": "interface DataTableHeader<Row=DataTableRow,Header> { key: DataTableKey<Row>; value: Header; }"
+      "name": "DataTableHeader<Row=DataTableRow,Header=DataTableRow>",
+      "ts": "interface DataTableHeader<Row=DataTableRow,Header=DataTableRow> { key: DataTableKey<Row>; value: Header; }"
     }
   ],
   "generics": [
     "Row,Header",
-    "Row extends DataTableRow = DataTableRow, Header extends DataTableRow"
+    "Row extends DataTableRow = DataTableRow, Header extends DataTableRow = DataTableRow"
   ]
 }"
 `;
@@ -1301,7 +1301,7 @@ export interface DataTableRow {
 
 export type DataTableKey<Row> = Exclude<keyof Row, "id">;
 
-export interface DataTableHeader<Row = DataTableRow, Header> {
+export interface DataTableHeader<Row = DataTableRow, Header = DataTableRow> {
   key: DataTableKey<Row>;
   value: Header;
 }
@@ -1320,7 +1320,7 @@ export interface GenericsMultipleProps<Row, Header> {
 
 export default class GenericsMultiple<
   Row extends DataTableRow = DataTableRow,
-  Header extends DataTableRow
+  Header extends DataTableRow = DataTableRow
 > extends SvelteComponentTyped<
   GenericsMultipleProps<Row, Header>,
   Record<string, any>,
