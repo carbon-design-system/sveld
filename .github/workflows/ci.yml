@@ -2,9 +2,13 @@ name: CI
 
 on:
   pull_request:
+    paths-ignore:
+      - "playground/**"
   push:
     branches:
       - main
+    paths-ignore:
+      - "playground/**"
 
 jobs:
   build:
