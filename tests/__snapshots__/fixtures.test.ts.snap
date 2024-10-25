@@ -897,21 +897,10 @@ exports[`fixtures (JSON) "rest-props-multiple/input.svelte" 1`] = `
 "{
   "props": [
     {
-      "name": "edit",
+      "name": "type",
       "kind": "let",
-      "type": "boolean",
-      "value": "false",
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false
-    },
-    {
-      "name": "heading",
-      "kind": "let",
-      "type": "boolean",
-      "value": "false",
+      "type": " \"ordered\" | \"unordered\" ",
+      "value": "\"ordered\"",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -926,7 +915,7 @@ exports[`fixtures (JSON) "rest-props-multiple/input.svelte" 1`] = `
   "generics": null,
   "rest_props": {
     "type": "Element",
-    "name": "h1 | span"
+    "name": "ul | ol"
   }
 }"
 `;
@@ -1715,18 +1704,13 @@ exports[`fixtures (TypeScript) "rest-props-multiple/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
-type RestProps = SvelteHTMLElements["h1"] & SvelteHTMLElements["span"];
+type RestProps = SvelteHTMLElements["ul"] & SvelteHTMLElements["ol"];
 
 export interface RestPropsMultipleProps extends RestProps {
   /**
-   * @default false
+   * @default "ordered"
    */
-  edit?: boolean;
-
-  /**
-   * @default false
-   */
-  heading?: boolean;
+  type?: "ordered" | "unordered";
 
   [key: \`data-${string}\`]: any;
 }

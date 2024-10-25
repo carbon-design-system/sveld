@@ -1,18 +1,13 @@
 import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
-type RestProps = SvelteHTMLElements["h1"] & SvelteHTMLElements["span"];
+type RestProps = SvelteHTMLElements["ul"] & SvelteHTMLElements["ol"];
 
 export interface RestPropsMultipleProps extends RestProps {
   /**
-   * @default false
+   * @default "ordered"
    */
-  edit?: boolean;
-
-  /**
-   * @default false
-   */
-  heading?: boolean;
+  type?: "ordered" | "unordered";
 
   [key: `data-${string}`]: any;
 }

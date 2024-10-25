@@ -1,14 +1,12 @@
 <script>
-  /** @restProps {h1 | span} */
-  export let edit = false;
-  export let heading = false;
-
-  import Button from "../";
+  /** @restProps {ul | ol} */
+  /** @type { "ordered" | "unordered" } */
+  export let type = "ordered";
 </script>
 
-{#if edit}
-  <Button {...$$restProps} />
-{:else if heading}
-  <!-- svelte-ignore a11y-missing-content -->
-  <h1 {...$$restProps} />
-{:else}<span {...$$restProps} />{/if}
+
+{#if type==='ordered'}
+  <ol {...$$restProps} {type} />
+{:else if type === "unordered"}
+  <ul {...$$restProps} {type} />
+{/if}
