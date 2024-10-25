@@ -3,9 +3,9 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface FileUploaderSkeletonProps extends RestProps {
+export type FileUploaderSkeletonProps = RestProps & {
   [key: `data-${string}`]: any;
-}
+};
 
 export default class FileUploaderSkeleton extends SvelteComponentTyped<
   FileUploaderSkeletonProps,

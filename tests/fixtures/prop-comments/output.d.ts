@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface PropCommentsProps {
+export type PropCommentsProps = {
   /**
    * This is a comment.
    * @see https://github.com/
@@ -20,7 +20,7 @@ export interface PropCommentsProps {
    * @default true
    */
   prop2?: boolean | string;
-}
+};
 
 export default class PropComments extends SvelteComponentTyped<
   PropCommentsProps,

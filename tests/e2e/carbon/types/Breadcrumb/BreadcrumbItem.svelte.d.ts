@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["li"];
 
-export interface BreadcrumbItemProps extends RestProps {
+export type BreadcrumbItemProps = RestProps & {
   /**
    * Set the `href` to use an anchor link
    * @default undefined
@@ -17,7 +17,7 @@ export interface BreadcrumbItemProps extends RestProps {
   isCurrentPage?: boolean;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class BreadcrumbItem extends SvelteComponentTyped<
   BreadcrumbItemProps,

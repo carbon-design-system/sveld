@@ -5,7 +5,7 @@ export type ListBoxFieldTranslationId = "close" | "open";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface ListBoxFieldProps extends RestProps {
+export type ListBoxFieldProps = RestProps & {
   /**
    * Set to `true` to disable the list box field
    * @default false
@@ -43,7 +43,7 @@ export interface ListBoxFieldProps extends RestProps {
   ref?: null | HTMLDivElement;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class ListBoxField extends SvelteComponentTyped<
   ListBoxFieldProps,

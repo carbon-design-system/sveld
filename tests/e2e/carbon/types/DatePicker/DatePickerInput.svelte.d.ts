@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface DatePickerInputProps extends RestProps {
+export type DatePickerInputProps = RestProps & {
   /**
    * Set the size of the input
    * @default undefined
@@ -83,7 +83,7 @@ export interface DatePickerInputProps extends RestProps {
   ref?: null | HTMLInputElement;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class DatePickerInput extends SvelteComponentTyped<
   DatePickerInputProps,

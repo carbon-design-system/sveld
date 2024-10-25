@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface CardProps {}
+export type CardProps = {};
 
 export default class Card extends SvelteComponentTyped<
   CardProps,

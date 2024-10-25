@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface GridProps extends RestProps {
+export type GridProps = RestProps & {
   /**
    * Set to `true` to render a custom HTML element
    * Props are destructured as `props` in the default slot (e.g., <Grid let:props><header {...props}>...</header></Grid>)
@@ -54,7 +54,7 @@ export interface GridProps extends RestProps {
   padding?: boolean;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class Grid extends SvelteComponentTyped<
   GridProps,

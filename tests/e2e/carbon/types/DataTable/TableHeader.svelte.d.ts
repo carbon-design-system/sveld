@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["th"];
 
-export interface TableHeaderProps extends RestProps {
+export type TableHeaderProps = RestProps & {
   /**
    * Specify the `scope` attribute
    * @default "col"
@@ -23,7 +23,7 @@ export interface TableHeaderProps extends RestProps {
   id?: string;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class TableHeader extends SvelteComponentTyped<
   TableHeaderProps,

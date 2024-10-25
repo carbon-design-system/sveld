@@ -3,9 +3,9 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["tr"];
 
-export interface TableRowProps extends RestProps {
+export type TableRowProps = RestProps & {
   [key: `data-${string}`]: any;
-}
+};
 
 export default class TableRow extends SvelteComponentTyped<
   TableRowProps,

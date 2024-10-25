@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["ol"];
 
-export interface OrderedListProps extends RestProps {
+export type OrderedListProps = RestProps & {
   /**
    * Set to `true` to use the nested variant
    * @default false
@@ -17,7 +17,7 @@ export interface OrderedListProps extends RestProps {
   native?: boolean;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class OrderedList extends SvelteComponentTyped<
   OrderedListProps,

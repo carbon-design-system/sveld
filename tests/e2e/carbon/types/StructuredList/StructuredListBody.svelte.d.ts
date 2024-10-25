@@ -3,9 +3,9 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface StructuredListBodyProps extends RestProps {
+export type StructuredListBodyProps = RestProps & {
   [key: `data-${string}`]: any;
-}
+};
 
 export default class StructuredListBody extends SvelteComponentTyped<
   StructuredListBodyProps,

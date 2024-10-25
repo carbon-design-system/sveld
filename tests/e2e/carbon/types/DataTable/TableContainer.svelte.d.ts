@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface TableContainerProps extends RestProps {
+export type TableContainerProps = RestProps & {
   /**
    * Specify the title of the data table
    * @default ""
@@ -23,7 +23,7 @@ export interface TableContainerProps extends RestProps {
   stickyHeader?: boolean;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class TableContainer extends SvelteComponentTyped<
   TableContainerProps,

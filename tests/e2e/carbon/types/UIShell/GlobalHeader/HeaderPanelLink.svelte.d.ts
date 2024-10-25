@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["a"];
 
-export interface HeaderPanelLinkProps extends RestProps {
+export type HeaderPanelLinkProps = RestProps & {
   /**
    * Specify the `href` attribute
    * @default undefined
@@ -17,7 +17,7 @@ export interface HeaderPanelLinkProps extends RestProps {
   ref?: null | HTMLAnchorElement;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class HeaderPanelLink extends SvelteComponentTyped<
   HeaderPanelLinkProps,

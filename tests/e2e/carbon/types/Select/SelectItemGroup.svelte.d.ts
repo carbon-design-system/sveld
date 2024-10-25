@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["optgroup"];
 
-export interface SelectItemGroupProps extends RestProps {
+export type SelectItemGroupProps = RestProps & {
   /**
    * Set to `true` to disable the optgroup element
    * @default false
@@ -17,7 +17,7 @@ export interface SelectItemGroupProps extends RestProps {
   label?: string;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class SelectItemGroup extends SvelteComponentTyped<
   SelectItemGroupProps,

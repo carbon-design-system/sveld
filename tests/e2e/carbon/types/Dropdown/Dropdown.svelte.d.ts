@@ -12,7 +12,7 @@ export interface DropdownItem {
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface DropdownProps extends RestProps {
+export type DropdownProps = RestProps & {
   /**
    * Set the dropdown items
    * @default []
@@ -135,7 +135,7 @@ export interface DropdownProps extends RestProps {
   ref?: null | HTMLButtonElement;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class Dropdown extends SvelteComponentTyped<
   DropdownProps,

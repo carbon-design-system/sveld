@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["a"];
 
-export interface HeaderProps extends RestProps {
+export type HeaderProps = RestProps & {
   /**
    * Set to `false` to hide the side nav by default
    * @default true
@@ -54,7 +54,7 @@ export interface HeaderProps extends RestProps {
   ref?: null | HTMLAnchorElement;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class Header extends SvelteComponentTyped<
   HeaderProps,

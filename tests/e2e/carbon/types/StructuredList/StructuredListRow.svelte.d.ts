@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["label"];
 
-export interface StructuredListRowProps extends RestProps {
+export type StructuredListRowProps = RestProps & {
   /**
    * Set to `true` to use as a header
    * @default false
@@ -23,7 +23,7 @@ export interface StructuredListRowProps extends RestProps {
   tabindex?: string;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class StructuredListRow extends SvelteComponentTyped<
   StructuredListRowProps,

@@ -3,9 +3,9 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["span"];
 
-export interface TagSkeletonProps extends RestProps {
+export type TagSkeletonProps = RestProps & {
   [key: `data-${string}`]: any;
-}
+};
 
 export default class TagSkeleton extends SvelteComponentTyped<
   TagSkeletonProps,

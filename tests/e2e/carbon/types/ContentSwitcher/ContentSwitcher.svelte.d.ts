@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface ContentSwitcherProps extends RestProps {
+export type ContentSwitcherProps = RestProps & {
   /**
    * Set the selected index of the switch item
    * @default 0
@@ -23,7 +23,7 @@ export interface ContentSwitcherProps extends RestProps {
   size?: "sm" | "xl";
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class ContentSwitcher extends SvelteComponentTyped<
   ContentSwitcherProps,

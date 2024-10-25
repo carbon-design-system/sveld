@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface NotificationTextDetailsProps {
+export type NotificationTextDetailsProps = {
   /**
    * Set the type of notification
    * @default "toast"
@@ -24,7 +24,7 @@ export interface NotificationTextDetailsProps {
    * @default "Caption"
    */
   caption?: string;
-}
+};
 
 export default class NotificationTextDetails extends SvelteComponentTyped<
   NotificationTextDetailsProps,

@@ -1,21 +1,10 @@
 {
   "props": [
     {
-      "name": "edit",
+      "name": "type",
       "kind": "let",
-      "type": "boolean",
-      "value": "false",
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false
-    },
-    {
-      "name": "heading",
-      "kind": "let",
-      "type": "boolean",
-      "value": "false",
+      "type": " \"ordered\" | \"unordered\" ",
+      "value": "\"ordered\"",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -30,6 +19,6 @@
   "generics": null,
   "rest_props": {
     "type": "Element",
-    "name": "h1 | span"
+    "name": "ul | ol"
   }
 }

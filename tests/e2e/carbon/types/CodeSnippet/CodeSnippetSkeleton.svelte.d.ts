@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface CodeSnippetSkeletonProps extends RestProps {
+export type CodeSnippetSkeletonProps = RestProps & {
   /**
    * Set the type of code snippet
    * @default "single"
@@ -11,7 +11,7 @@ export interface CodeSnippetSkeletonProps extends RestProps {
   type?: "single" | "multi";
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class CodeSnippetSkeleton extends SvelteComponentTyped<
   CodeSnippetSkeletonProps,

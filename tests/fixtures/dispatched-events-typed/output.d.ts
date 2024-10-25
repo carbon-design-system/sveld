@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface DispatchedEventsTypedProps {}
+export type DispatchedEventsTypedProps = {};
 
 export default class DispatchedEventsTyped extends SvelteComponentTyped<
   DispatchedEventsTypedProps,

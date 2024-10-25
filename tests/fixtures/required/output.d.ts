@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface RequiredProps {
+export type RequiredProps = {
   /**
    * @required
    * @default true
@@ -23,7 +23,7 @@ export interface RequiredProps {
    * @default undefined
    */
   prop3: boolean;
-}
+};
 
 export default class Required extends SvelteComponentTyped<
   RequiredProps,

@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["a"];
 
-export interface SideNavMenuItemProps extends RestProps {
+export type SideNavMenuItemProps = RestProps & {
   /**
    * Set to `true` to select the item
    * @default undefined
@@ -29,7 +29,7 @@ export interface SideNavMenuItemProps extends RestProps {
   ref?: null | HTMLAnchorElement;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class SideNavMenuItem extends SvelteComponentTyped<
   SideNavMenuItemProps,

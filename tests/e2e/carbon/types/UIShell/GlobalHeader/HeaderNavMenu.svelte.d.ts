@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["a"];
 
-export interface HeaderNavMenuProps extends RestProps {
+export type HeaderNavMenuProps = RestProps & {
   /**
    * Set to `true` to toggle the expanded state
    * @default false
@@ -35,7 +35,7 @@ export interface HeaderNavMenuProps extends RestProps {
   iconDescription?: string;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class HeaderNavMenu extends SvelteComponentTyped<
   HeaderNavMenuProps,

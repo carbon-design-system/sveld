@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["fieldset"];
 
-export interface FormGroupProps extends RestProps {
+export type FormGroupProps = RestProps & {
   /**
    * Set to `true` to indicate an invalid state
    * @default false
@@ -29,7 +29,7 @@ export interface FormGroupProps extends RestProps {
   legendText?: string;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class FormGroup extends SvelteComponentTyped<
   FormGroupProps,

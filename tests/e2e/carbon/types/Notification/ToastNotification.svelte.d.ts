@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface ToastNotificationProps extends RestProps {
+export type ToastNotificationProps = RestProps & {
   /**
    * Specify the kind of notification
    * @default "error"
@@ -65,7 +65,7 @@ export interface ToastNotificationProps extends RestProps {
   hideCloseButton?: boolean;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class ToastNotification extends SvelteComponentTyped<
   ToastNotificationProps,

@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["nav"];
 
-export interface SideNavProps extends RestProps {
+export type SideNavProps = RestProps & {
   /**
    * Set to `true` to use the fixed variant
    * @default false
@@ -23,7 +23,7 @@ export interface SideNavProps extends RestProps {
   isOpen?: boolean;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class SideNav extends SvelteComponentTyped<
   SideNavProps,

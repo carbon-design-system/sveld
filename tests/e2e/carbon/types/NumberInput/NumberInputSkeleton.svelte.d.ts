@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface NumberInputSkeletonProps extends RestProps {
+export type NumberInputSkeletonProps = RestProps & {
   /**
    * Set to `true` to hide the label text
    * @default false
@@ -11,7 +11,7 @@ export interface NumberInputSkeletonProps extends RestProps {
   hideLabel?: boolean;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class NumberInputSkeleton extends SvelteComponentTyped<
   NumberInputSkeletonProps,

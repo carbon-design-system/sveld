@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface StructuredListSkeletonProps extends RestProps {
+export type StructuredListSkeletonProps = RestProps & {
   /**
    * Specify the number of rows
    * @default 5
@@ -17,7 +17,7 @@ export interface StructuredListSkeletonProps extends RestProps {
   border?: boolean;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class StructuredListSkeleton extends SvelteComponentTyped<
   StructuredListSkeletonProps,

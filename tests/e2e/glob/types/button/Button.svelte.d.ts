@@ -14,7 +14,7 @@ export declare function findParentTreeNode(
 
 type RestProps = SvelteHTMLElements["button"];
 
-export interface ButtonProps extends RestProps {
+export type ButtonProps = RestProps & {
   /**
    * @default "button"
    */
@@ -26,7 +26,7 @@ export interface ButtonProps extends RestProps {
   primary?: boolean;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class Button extends SvelteComponentTyped<
   ButtonProps,

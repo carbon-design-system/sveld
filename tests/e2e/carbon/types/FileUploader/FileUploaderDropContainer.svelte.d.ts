@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface FileUploaderDropContainerProps extends RestProps {
+export type FileUploaderDropContainerProps = RestProps & {
   /**
    * Specify the accepted file types
    * @default []
@@ -66,7 +66,7 @@ export interface FileUploaderDropContainerProps extends RestProps {
   ref?: null | HTMLInputElement;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class FileUploaderDropContainer extends SvelteComponentTyped<
   FileUploaderDropContainerProps,

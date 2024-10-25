@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface ComposedModalProps extends RestProps {
+export type ComposedModalProps = RestProps & {
   /**
    * Set the size of the composed modal
    * @default undefined
@@ -47,7 +47,7 @@ export interface ComposedModalProps extends RestProps {
   ref?: null | HTMLDivElement;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class ComposedModal extends SvelteComponentTyped<
   ComposedModalProps,

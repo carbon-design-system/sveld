@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["button"];
 
-export interface CopyProps extends RestProps {
+export type CopyProps = RestProps & {
   /**
    * Set the feedback text shown after clicking the button
    * @default "Copied!"
@@ -23,7 +23,7 @@ export interface CopyProps extends RestProps {
   ref?: null | HTMLButtonElement;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class Copy extends SvelteComponentTyped<
   CopyProps,

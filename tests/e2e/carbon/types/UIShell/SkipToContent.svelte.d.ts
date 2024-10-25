@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["a"];
 
-export interface SkipToContentProps extends RestProps {
+export type SkipToContentProps = RestProps & {
   /**
    * Specify the `href` attribute
    * @default "#main-content"
@@ -17,7 +17,7 @@ export interface SkipToContentProps extends RestProps {
   tabindex?: string;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class SkipToContent extends SvelteComponentTyped<
   SkipToContentProps,
