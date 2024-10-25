@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface ToolbarSearchProps {
+export type ToolbarSearchProps = {
   /**
    * Specify the value of the search input
    * @default ""
@@ -30,7 +30,7 @@ export interface ToolbarSearchProps {
    * @default null
    */
   ref?: null | HTMLInputElement;
-}
+};
 
 export default class ToolbarSearch extends SvelteComponentTyped<
   ToolbarSearchProps,

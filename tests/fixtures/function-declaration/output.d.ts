@@ -1,11 +1,11 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface FunctionDeclarationProps {
+export type FunctionDeclarationProps = {
   /**
    * @default () => {}
    */
   fnA?: () => {};
-}
+};
 
 export default class FunctionDeclaration extends SvelteComponentTyped<
   FunctionDeclarationProps,

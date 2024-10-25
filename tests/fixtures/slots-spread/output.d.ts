@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface SlotsSpreadProps {}
+export type SlotsSpreadProps = {};
 
 export default class SlotsSpread extends SvelteComponentTyped<
   SlotsSpreadProps,

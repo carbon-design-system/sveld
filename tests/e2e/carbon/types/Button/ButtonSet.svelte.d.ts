@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface ButtonSetProps extends RestProps {
+type $ComponentProps = {
   /**
    * Set to `true` to stack the buttons vertically
    * @default false
@@ -11,7 +11,10 @@ export interface ButtonSetProps extends RestProps {
   stacked?: boolean;
 
   [key: `data-${string}`]: any;
-}
+};
+
+export type ButtonSetProps = Omit<RestProps, keyof $ComponentProps> &
+  $ComponentProps;
 
 export default class ButtonSet extends SvelteComponentTyped<
   ButtonSetProps,

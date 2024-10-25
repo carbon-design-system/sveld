@@ -4,7 +4,7 @@ export interface MyTypedef {
   [key: string]: boolean;
 }
 
-export interface TypedefProps {
+export type TypedefProps = {
   /**
    * @default "id-" + Math.random().toString(36)
    */
@@ -14,7 +14,7 @@ export interface TypedefProps {
    * @default { ["1"]: true }
    */
   prop1?: MyTypedef;
-}
+};
 
 export default class Typedef extends SvelteComponentTyped<
   TypedefProps,

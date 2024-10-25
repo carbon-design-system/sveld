@@ -3,9 +3,12 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["li"];
 
-export interface ListItemProps extends RestProps {
+type $ComponentProps = {
   [key: `data-${string}`]: any;
-}
+};
+
+export type ListItemProps = Omit<RestProps, keyof $ComponentProps> &
+  $ComponentProps;
 
 export default class ListItem extends SvelteComponentTyped<
   ListItemProps,

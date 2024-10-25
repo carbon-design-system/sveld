@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["button"];
 
-export interface ButtonProps extends RestProps {
+type $ComponentProps = {
   /**
    * @default "button"
    */
@@ -16,7 +16,10 @@ export interface ButtonProps extends RestProps {
   primary?: boolean;
 
   [key: `data-${string}`]: any;
-}
+};
+
+export type ButtonProps = Omit<RestProps, keyof $ComponentProps> &
+  $ComponentProps;
 
 export default class Button extends SvelteComponentTyped<
   ButtonProps,

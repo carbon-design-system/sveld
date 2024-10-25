@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["label"];
 
-export interface SelectableTileProps extends RestProps {
+type $ComponentProps = {
   /**
    * Set to `true` to select the tile
    * @default false
@@ -59,7 +59,10 @@ export interface SelectableTileProps extends RestProps {
   ref?: null | HTMLInputElement;
 
   [key: `data-${string}`]: any;
-}
+};
+
+export type SelectableTileProps = Omit<RestProps, keyof $ComponentProps> &
+  $ComponentProps;
 
 export default class SelectableTile extends SvelteComponentTyped<
   SelectableTileProps,

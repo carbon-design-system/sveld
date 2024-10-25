@@ -9,7 +9,7 @@ export interface HeaderActionSlideTransition {
 
 type RestProps = SvelteHTMLElements["button"];
 
-export interface HeaderActionProps extends RestProps {
+type $ComponentProps = {
   /**
    * Set to `true` to open the panel
    * @default false
@@ -43,7 +43,10 @@ export interface HeaderActionProps extends RestProps {
   transition?: false | HeaderActionSlideTransition;
 
   [key: `data-${string}`]: any;
-}
+};
+
+export type HeaderActionProps = Omit<RestProps, keyof $ComponentProps> &
+  $ComponentProps;
 
 export default class HeaderAction extends SvelteComponentTyped<
   HeaderActionProps,

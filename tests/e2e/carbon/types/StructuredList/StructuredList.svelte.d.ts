@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface StructuredListProps extends RestProps {
+type $ComponentProps = {
   /**
    * Specify the selected structured list row value
    * @default undefined
@@ -23,7 +23,10 @@ export interface StructuredListProps extends RestProps {
   selection?: boolean;
 
   [key: `data-${string}`]: any;
-}
+};
+
+export type StructuredListProps = Omit<RestProps, keyof $ComponentProps> &
+  $ComponentProps;
 
 export default class StructuredList extends SvelteComponentTyped<
   StructuredListProps,

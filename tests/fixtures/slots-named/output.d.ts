@@ -1,11 +1,11 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface SlotsNamedProps {
+export type SlotsNamedProps = {
   /**
    * @default ""
    */
   text?: string;
-}
+};
 
 export default class SlotsNamed extends SvelteComponentTyped<
   SlotsNamedProps,

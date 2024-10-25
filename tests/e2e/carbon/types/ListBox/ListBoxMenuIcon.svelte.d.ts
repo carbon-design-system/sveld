@@ -5,7 +5,7 @@ export type ListBoxMenuIconTranslationId = "close" | "open";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface ListBoxMenuIconProps extends RestProps {
+type $ComponentProps = {
   /**
    * Set to `true` to open the list box menu icon
    * @default false
@@ -19,7 +19,10 @@ export interface ListBoxMenuIconProps extends RestProps {
   translateWithId?: (id: ListBoxMenuIconTranslationId) => string;
 
   [key: `data-${string}`]: any;
-}
+};
+
+export type ListBoxMenuIconProps = Omit<RestProps, keyof $ComponentProps> &
+  $ComponentProps;
 
 export default class ListBoxMenuIcon extends SvelteComponentTyped<
   ListBoxMenuIconProps,

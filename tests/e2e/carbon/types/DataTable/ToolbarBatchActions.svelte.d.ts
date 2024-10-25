@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface ToolbarBatchActionsProps extends RestProps {
+type $ComponentProps = {
   /**
    * Override the total items selected text
    * @default (totalSelected) => `${totalSelected} item${totalSelected === 1 ? "" : "s"} selected`
@@ -11,7 +11,10 @@ export interface ToolbarBatchActionsProps extends RestProps {
   formatTotalSelected?: (totalSelected: number) => string;
 
   [key: `data-${string}`]: any;
-}
+};
+
+export type ToolbarBatchActionsProps = Omit<RestProps, keyof $ComponentProps> &
+  $ComponentProps;
 
 export default class ToolbarBatchActions extends SvelteComponentTyped<
   ToolbarBatchActionsProps,

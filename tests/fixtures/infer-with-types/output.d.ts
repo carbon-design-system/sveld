@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface InferWithTypesProps {
+export type InferWithTypesProps = {
   /**
    * @default true
    */
@@ -20,7 +20,7 @@ export interface InferWithTypesProps {
    * @default "" + Math.random().toString(36)
    */
   id?: string;
-}
+};
 
 export default class InferWithTypes extends SvelteComponentTyped<
   InferWithTypesProps,

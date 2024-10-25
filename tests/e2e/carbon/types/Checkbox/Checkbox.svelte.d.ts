@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface CheckboxProps {
+export type CheckboxProps = {
   /**
    * Specify whether the checkbox is checked
    * @default false
@@ -66,7 +66,7 @@ export interface CheckboxProps {
    * @default null
    */
   ref?: null | HTMLInputElement;
-}
+};
 
 export default class Checkbox extends SvelteComponentTyped<
   CheckboxProps,

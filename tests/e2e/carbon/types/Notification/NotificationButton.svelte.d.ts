@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["button"];
 
-export interface NotificationButtonProps extends RestProps {
+type $ComponentProps = {
   /**
    * Set the type of notification
    * @default "toast"
@@ -29,7 +29,10 @@ export interface NotificationButtonProps extends RestProps {
   iconDescription?: string;
 
   [key: `data-${string}`]: any;
-}
+};
+
+export type NotificationButtonProps = Omit<RestProps, keyof $ComponentProps> &
+  $ComponentProps;
 
 export default class NotificationButton extends SvelteComponentTyped<
   NotificationButtonProps,

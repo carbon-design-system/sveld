@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["nav"];
 
-export interface HeaderNavProps extends RestProps {
+type $ComponentProps = {
   /**
    * Specify the ARIA label for the nav
    * @deprecated use "aria-label" instead
@@ -12,7 +12,10 @@ export interface HeaderNavProps extends RestProps {
   ariaLabel?: string;
 
   [key: `data-${string}`]: any;
-}
+};
+
+export type HeaderNavProps = Omit<RestProps, keyof $ComponentProps> &
+  $ComponentProps;
 
 export default class HeaderNav extends SvelteComponentTyped<
   HeaderNavProps,

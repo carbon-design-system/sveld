@@ -1254,9 +1254,11 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["svg"];
 
-export interface SvgPropsProps extends RestProps {
+type $ComponentProps = {
   [key: \`data-${string}\`]: any;
-}
+};
+
+export type SvgPropsProps = Omit<RestProps, keyof $ComponentProps> & $ComponentProps;
 
 export default class SvgProps extends SvelteComponentTyped<SvgPropsProps, Record<string, any>, {}> {}
 "
@@ -1265,12 +1267,12 @@ export default class SvgProps extends SvelteComponentTyped<SvgPropsProps, Record
 exports[`fixtures (TypeScript) "slots-named/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export interface SlotsNamedProps {
+export type SlotsNamedProps = {
   /**
    * @default ""
    */
   text?: string;
-}
+};
 
 export default class SlotsNamed extends SvelteComponentTyped<
   SlotsNamedProps,
@@ -1295,7 +1297,7 @@ export interface DataTableHeader<Row = DataTableRow, Header = DataTableRow> {
   value: Header;
 }
 
-export interface GenericsMultipleProps<Row, Header> {
+export type GenericsMultipleProps<Row, Header> = {
   /**
    * @default []
    */
@@ -1305,7 +1307,7 @@ export interface GenericsMultipleProps<Row, Header> {
    * @default []
    */
   rows?: ReadonlyArray<Row>;
-}
+};
 
 export default class GenericsMultiple<
   Row extends DataTableRow = DataTableRow,
@@ -1321,7 +1323,7 @@ export default class GenericsMultiple<
 exports[`fixtures (TypeScript) "dispatched-events-dynamic/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export interface DispatchedEventsDynamicProps {}
+export type DispatchedEventsDynamicProps = {};
 
 export default class DispatchedEventsDynamic extends SvelteComponentTyped<
   DispatchedEventsDynamicProps,
@@ -1334,12 +1336,12 @@ export default class DispatchedEventsDynamic extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "function-declaration/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export interface FunctionDeclarationProps {
+export type FunctionDeclarationProps = {
   /**
    * @default () => {}
    */
   fnA?: () => {};
-}
+};
 
 export default class FunctionDeclaration extends SvelteComponentTyped<
   FunctionDeclarationProps,
@@ -1361,7 +1363,7 @@ export default class FunctionDeclaration extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "forwarded-events/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export interface ForwardedEventsProps {}
+export type ForwardedEventsProps = {};
 
 export default class ForwardedEvents extends SvelteComponentTyped<
   ForwardedEventsProps,
@@ -1379,7 +1381,7 @@ export default class ForwardedEvents extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "mixed-events/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export interface MixedEventsProps {}
+export type MixedEventsProps = {};
 
 export default class MixedEvents extends SvelteComponentTyped<
   MixedEventsProps,
@@ -1392,7 +1394,7 @@ export default class MixedEvents extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "infer-basic/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export interface InferBasicProps {
+export type InferBasicProps = {
   /**
    * @default null
    */
@@ -1417,7 +1419,7 @@ export interface InferBasicProps {
    * @default "" + Math.random().toString(36)
    */
   id?: string;
-}
+};
 
 export default class InferBasic extends SvelteComponentTyped<InferBasicProps, Record<string, any>, { default: {} }> {
   propConst: { ["1"]: true };
@@ -1430,7 +1432,7 @@ export default class InferBasic extends SvelteComponentTyped<InferBasicProps, Re
 exports[`fixtures (TypeScript) "empty-export/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export interface EmptyExportProps {}
+export type EmptyExportProps = {};
 
 export default class EmptyExport extends SvelteComponentTyped<EmptyExportProps, Record<string, any>, {}> {}
 "
@@ -1439,12 +1441,12 @@ export default class EmptyExport extends SvelteComponentTyped<EmptyExportProps, 
 exports[`fixtures (TypeScript) "typed-slots/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export interface TypedSlotsProps {
+export type TypedSlotsProps = {
   /**
    * @default 0
    */
   prop?: number;
-}
+};
 
 export default class TypedSlots extends SvelteComponentTyped<
   TypedSlotsProps,
@@ -1461,7 +1463,7 @@ export default class TypedSlots extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "dispatched-events/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export interface DispatchedEventsProps {}
+export type DispatchedEventsProps = {};
 
 export default class DispatchedEvents extends SvelteComponentTyped<
   DispatchedEventsProps,
@@ -1485,7 +1487,7 @@ export interface MyTypedef {
 
 export type MyTypedefArray = MyTypedef[];
 
-export interface TypedefsProps {
+export type TypedefsProps = {
   /**
    * @default { ["1"]: true }
    */
@@ -1495,7 +1497,7 @@ export interface TypedefsProps {
    * @default []
    */
   prop2?: MyTypedefArray;
-}
+};
 
 export default class Typedefs extends SvelteComponentTyped<
   TypedefsProps,
@@ -1508,12 +1510,12 @@ export default class Typedefs extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "bind-this/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export interface BindThisProps {
+export type BindThisProps = {
   /**
    * @default undefined
    */
   ref: null | HTMLButtonElement;
-}
+};
 
 export default class BindThis extends SvelteComponentTyped<BindThisProps, Record<string, any>, { default: {} }> {}
 "
@@ -1522,7 +1524,7 @@ export default class BindThis extends SvelteComponentTyped<BindThisProps, Record
 exports[`fixtures (TypeScript) "dispatched-events-typed/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export interface DispatchedEventsTypedProps {}
+export type DispatchedEventsTypedProps = {};
 
 export default class DispatchedEventsTyped extends SvelteComponentTyped<
   DispatchedEventsTypedProps,
@@ -1538,7 +1540,7 @@ export default class DispatchedEventsTyped extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "input-events/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export interface InputEventsProps {}
+export type InputEventsProps = {};
 
 export default class InputEvents extends SvelteComponentTyped<
   InputEventsProps,
@@ -1551,7 +1553,7 @@ export default class InputEvents extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "required/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export interface RequiredProps {
+export type RequiredProps = {
   /**
    * @required
    * @default true
@@ -1574,7 +1576,7 @@ export interface RequiredProps {
    * @default undefined
    */
   prop3: boolean;
-}
+};
 
 export default class Required extends SvelteComponentTyped<
   RequiredProps,
@@ -1587,7 +1589,7 @@ export default class Required extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "prop-comments/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export interface PropCommentsProps {
+export type PropCommentsProps = {
   /**
    * This is a comment.
    * @see https://github.com/
@@ -1607,7 +1609,7 @@ export interface PropCommentsProps {
    * @default true
    */
   prop2?: boolean | string;
-}
+};
 
 export default class PropComments extends SvelteComponentTyped<
   PropCommentsProps,
@@ -1620,13 +1622,13 @@ export default class PropComments extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "renamed-props/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export interface RenamedPropsProps {
+export type RenamedPropsProps = {
   /**
    * Just your average CSS class string.
    * @default "test"
    */
   class?: string | null;
-}
+};
 
 export default class RenamedProps extends SvelteComponentTyped<RenamedPropsProps, Record<string, any>, {}> {}
 "
@@ -1635,7 +1637,7 @@ export default class RenamedProps extends SvelteComponentTyped<RenamedPropsProps
 exports[`fixtures (TypeScript) "infer-with-types/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export interface InferWithTypesProps {
+export type InferWithTypesProps = {
   /**
    * @default true
    */
@@ -1655,7 +1657,7 @@ export interface InferWithTypesProps {
    * @default "" + Math.random().toString(36)
    */
   id?: string;
-}
+};
 
 export default class InferWithTypes extends SvelteComponentTyped<
   InferWithTypesProps,
@@ -1692,7 +1694,7 @@ export declare function b2(): () => {};
 
 export declare function b3(): () => false;
 
-export interface ContextModuleProps {}
+export type ContextModuleProps = {};
 
 export default class ContextModule extends SvelteComponentTyped<ContextModuleProps, Record<string, any>, {}> {
   a: string;
@@ -1706,14 +1708,16 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["ul"] & SvelteHTMLElements["ol"];
 
-export interface RestPropsMultipleProps extends RestProps {
+type $ComponentProps = {
   /**
    * @default "ordered"
    */
   type?: "ordered" | "unordered";
 
   [key: \`data-${string}\`]: any;
-}
+};
+
+export type RestPropsMultipleProps = Omit<RestProps, keyof $ComponentProps> & $ComponentProps;
 
 export default class RestPropsMultiple extends SvelteComponentTyped<RestPropsMultipleProps, Record<string, any>, {}> {}
 "
@@ -1722,7 +1726,7 @@ export default class RestPropsMultiple extends SvelteComponentTyped<RestPropsMul
 exports[`fixtures (TypeScript) "component-comment-single/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export interface ComponentCommentSingleProps {}
+export type ComponentCommentSingleProps = {};
 
 /** Component comment */
 export default class ComponentCommentSingle extends SvelteComponentTyped<
@@ -1736,7 +1740,7 @@ export default class ComponentCommentSingle extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "bind-this-multiple/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export interface BindThisMultipleProps {
+export type BindThisMultipleProps = {
   /**
    * @default undefined
    */
@@ -1751,7 +1755,7 @@ export interface BindThisMultipleProps {
    * @default false
    */
   propBool?: boolean;
-}
+};
 
 export default class BindThisMultiple extends SvelteComponentTyped<
   BindThisMultipleProps,
@@ -1768,7 +1772,7 @@ export interface MyTypedef {
   [key: string]: boolean;
 }
 
-export interface TypedefProps {
+export type TypedefProps = {
   /**
    * @default "id-" + Math.random().toString(36)
    */
@@ -1778,7 +1782,7 @@ export interface TypedefProps {
    * @default { ["1"]: true }
    */
   prop1?: MyTypedef;
-}
+};
 
 export default class Typedef extends SvelteComponentTyped<
   TypedefProps,
@@ -1794,9 +1798,11 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["h1"];
 
-export interface RestPropsSimpleProps extends RestProps {
+type $ComponentProps = {
   [key: \`data-${string}\`]: any;
-}
+};
+
+export type RestPropsSimpleProps = Omit<RestProps, keyof $ComponentProps> & $ComponentProps;
 
 export default class RestPropsSimple extends SvelteComponentTyped<RestPropsSimpleProps, Record<string, any>, {}> {}
 "
@@ -1808,9 +1814,11 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["a"];
 
-export interface AnchorPropsProps extends RestProps {
+type $ComponentProps = {
   [key: \`data-${string}\`]: any;
-}
+};
+
+export type AnchorPropsProps = Omit<RestProps, keyof $ComponentProps> & $ComponentProps;
 
 export default class AnchorProps extends SvelteComponentTyped<AnchorPropsProps, Record<string, any>, { default: {} }> {}
 "
@@ -1819,7 +1827,7 @@ export default class AnchorProps extends SvelteComponentTyped<AnchorPropsProps, 
 exports[`fixtures (TypeScript) "component-comment-multi/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export interface ComponentCommentMultiProps {}
+export type ComponentCommentMultiProps = {};
 
 /**
  * @example
@@ -1838,7 +1846,7 @@ export default class ComponentCommentMulti extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "slots-spread/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export interface SlotsSpreadProps {}
+export type SlotsSpreadProps = {};
 
 export default class SlotsSpread extends SvelteComponentTyped<
   SlotsSpreadProps,
@@ -1851,7 +1859,7 @@ export default class SlotsSpread extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "slots-spread-typed/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export interface SlotsSpreadTypedProps {}
+export type SlotsSpreadTypedProps = {};
 
 export default class SlotsSpreadTyped extends SvelteComponentTyped<
   SlotsSpreadTypedProps,
@@ -1864,7 +1872,7 @@ export default class SlotsSpreadTyped extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "typed-props/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export interface TypedPropsProps {
+export type TypedPropsProps = {
   /**
    * prop1 description 1
    * prop1 description 2
@@ -1888,7 +1896,7 @@ export interface TypedPropsProps {
    * @default "red"
    */
   prop4?: "red" | "blue";
-}
+};
 
 export default class TypedProps extends SvelteComponentTyped<TypedPropsProps, Record<string, any>, {}> {}
 "
@@ -1909,7 +1917,7 @@ export interface DataTableHeader<Row = DataTableRow> {
   value: string;
 }
 
-export interface GenericsProps<Row> {
+export type GenericsProps<Row> = {
   /**
    * @default []
    */
@@ -1919,7 +1927,7 @@ export interface GenericsProps<Row> {
    * @default []
    */
   rows?: ReadonlyArray<Row>;
-}
+};
 
 export default class Generics<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
   GenericsProps<Row>,

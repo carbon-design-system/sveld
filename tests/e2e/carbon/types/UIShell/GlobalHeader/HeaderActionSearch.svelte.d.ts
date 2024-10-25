@@ -1,12 +1,12 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface HeaderActionSearchProps {
+export type HeaderActionSearchProps = {
   /**
    * Set to `true` to focus the search
    * @default false
    */
   searchIsActive?: boolean;
-}
+};
 
 export default class HeaderActionSearch extends SvelteComponentTyped<
   HeaderActionSearchProps,

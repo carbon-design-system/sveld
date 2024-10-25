@@ -5,7 +5,7 @@ import type { IconSkeletonProps } from "./IconSkeleton.svelte";
 
 type RestProps = SvelteHTMLElements["svg"];
 
-export interface IconProps extends IconSkeletonProps, RestProps {
+type $ComponentProps = {
   /**
    * Specify the icon from `carbon-icons-svelte` to render
    * @default undefined
@@ -19,7 +19,10 @@ export interface IconProps extends IconSkeletonProps, RestProps {
   skeleton?: boolean;
 
   [key: `data-${string}`]: any;
-}
+};
+
+export type IconProps = Omit<RestProps, keyof $ComponentProps> &
+  $ComponentProps;
 
 export default class Icon extends SvelteComponentTyped<
   IconProps,

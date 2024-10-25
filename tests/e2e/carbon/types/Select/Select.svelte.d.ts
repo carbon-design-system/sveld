@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface SelectProps extends RestProps {
+type $ComponentProps = {
   /**
    * Specify the selected item value
    * @default undefined
@@ -89,7 +89,10 @@ export interface SelectProps extends RestProps {
   ref?: null | HTMLSelectElement;
 
   [key: `data-${string}`]: any;
-}
+};
+
+export type SelectProps = Omit<RestProps, keyof $ComponentProps> &
+  $ComponentProps;
 
 export default class Select extends SvelteComponentTyped<
   SelectProps,

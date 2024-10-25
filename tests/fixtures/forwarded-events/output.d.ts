@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface ForwardedEventsProps {}
+export type ForwardedEventsProps = {};
 
 export default class ForwardedEvents extends SvelteComponentTyped<
   ForwardedEventsProps,

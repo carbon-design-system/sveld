@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["a"];
 
-export interface HeaderActionLinkProps extends RestProps {
+type $ComponentProps = {
   /**
    * Set to `true` to use the active state
    * @default false
@@ -29,7 +29,10 @@ export interface HeaderActionLinkProps extends RestProps {
   ref?: null | HTMLAnchorElement;
 
   [key: `data-${string}`]: any;
-}
+};
+
+export type HeaderActionLinkProps = Omit<RestProps, keyof $ComponentProps> &
+  $ComponentProps;
 
 export default class HeaderActionLink extends SvelteComponentTyped<
   HeaderActionLinkProps,

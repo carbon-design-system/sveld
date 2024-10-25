@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["input"];
 
-export interface TextInputProps extends RestProps {
+type $ComponentProps = {
   /**
    * Set the size of the input
    * @default undefined
@@ -113,7 +113,10 @@ export interface TextInputProps extends RestProps {
   inline?: boolean;
 
   [key: `data-${string}`]: any;
-}
+};
+
+export type TextInputProps = Omit<RestProps, keyof $ComponentProps> &
+  $ComponentProps;
 
 export default class TextInput extends SvelteComponentTyped<
   TextInputProps,

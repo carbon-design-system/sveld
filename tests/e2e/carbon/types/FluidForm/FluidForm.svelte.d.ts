@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface FluidFormProps {}
+export type FluidFormProps = {};
 
 export default class FluidForm extends SvelteComponentTyped<
   FluidFormProps,

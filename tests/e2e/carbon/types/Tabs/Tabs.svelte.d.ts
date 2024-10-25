@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface TabsProps extends RestProps {
+type $ComponentProps = {
   /**
    * Specify the selected tab index
    * @default 0
@@ -29,7 +29,10 @@ export interface TabsProps extends RestProps {
   triggerHref?: string;
 
   [key: `data-${string}`]: any;
-}
+};
+
+export type TabsProps = Omit<RestProps, keyof $ComponentProps> &
+  $ComponentProps;
 
 export default class Tabs extends SvelteComponentTyped<
   TabsProps,

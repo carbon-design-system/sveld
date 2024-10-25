@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["button"];
 
-export interface SwitchProps extends RestProps {
+type $ComponentProps = {
   /**
    * Specify the switch text
    * Alternatively, use the "text" slot  (e.g., <span slot="text">...</span>)
@@ -36,7 +36,10 @@ export interface SwitchProps extends RestProps {
   ref?: null | HTMLButtonElement;
 
   [key: `data-${string}`]: any;
-}
+};
+
+export type SwitchProps = Omit<RestProps, keyof $ComponentProps> &
+  $ComponentProps;
 
 export default class Switch extends SvelteComponentTyped<
   SwitchProps,
