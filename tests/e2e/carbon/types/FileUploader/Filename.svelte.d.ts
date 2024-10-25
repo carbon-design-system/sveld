@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface FilenameProps {
+export type FilenameProps = {
   /**
    * Specify the file name status
    * @default "uploading"
@@ -18,7 +18,7 @@ export interface FilenameProps {
    * @default false
    */
   invalid?: boolean;
-}
+};
 
 export default class Filename extends SvelteComponentTyped<
   FilenameProps,

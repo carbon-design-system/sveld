@@ -3,9 +3,9 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["form"];
 
-export interface FormProps extends RestProps {
+export type FormProps = RestProps & {
   [key: `data-${string}`]: any;
-}
+};
 
 export default class Form extends SvelteComponentTyped<
   FormProps,

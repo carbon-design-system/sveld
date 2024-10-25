@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface ModalBodyProps extends RestProps {
+export type ModalBodyProps = RestProps & {
   /**
    * Set to `true` if the modal contains form elements
    * @default false
@@ -17,7 +17,7 @@ export interface ModalBodyProps extends RestProps {
   hasScrollingContent?: boolean;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class ModalBody extends SvelteComponentTyped<
   ModalBodyProps,

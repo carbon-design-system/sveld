@@ -8,7 +8,7 @@ export interface ComboBoxItem {
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface ComboBoxProps extends RestProps {
+export type ComboBoxProps = RestProps & {
   /**
    * Set the combobox items
    * @default []
@@ -124,7 +124,7 @@ export interface ComboBoxProps extends RestProps {
   listRef?: null | HTMLDivElement;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class ComboBox extends SvelteComponentTyped<
   ComboBoxProps,

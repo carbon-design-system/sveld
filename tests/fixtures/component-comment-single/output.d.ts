@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface ComponentCommentSingleProps {}
+export type ComponentCommentSingleProps = {};
 
 /** Component comment */
 export default class ComponentCommentSingle extends SvelteComponentTyped<

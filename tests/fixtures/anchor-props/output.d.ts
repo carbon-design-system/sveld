@@ -3,8 +3,8 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["a"];
 
-export interface AnchorPropsProps extends RestProps {
+export type AnchorPropsProps = RestProps & {
   [key: `data-${string}`]: any;
-}
+};
 
 export default class AnchorProps extends SvelteComponentTyped<AnchorPropsProps, Record<string, any>, { default: {} }> {}

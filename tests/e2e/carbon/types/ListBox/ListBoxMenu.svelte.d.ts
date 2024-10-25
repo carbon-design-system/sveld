@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface ListBoxMenuProps extends RestProps {
+export type ListBoxMenuProps = RestProps & {
   /**
    * Set an id for the top-level element
    * @default "ccs-" + Math.random().toString(36)
@@ -17,7 +17,7 @@ export interface ListBoxMenuProps extends RestProps {
   ref?: null | HTMLDivElement;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class ListBoxMenu extends SvelteComponentTyped<
   ListBoxMenuProps,

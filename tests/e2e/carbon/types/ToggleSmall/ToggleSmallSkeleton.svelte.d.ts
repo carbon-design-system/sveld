@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface ToggleSmallSkeletonProps extends RestProps {
+export type ToggleSmallSkeletonProps = RestProps & {
   /**
    * Specify the label text
    * @default ""
@@ -17,7 +17,7 @@ export interface ToggleSmallSkeletonProps extends RestProps {
   id?: string;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class ToggleSmallSkeleton extends SvelteComponentTyped<
   ToggleSmallSkeletonProps,

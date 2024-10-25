@@ -9,7 +9,7 @@ export interface HeaderSearchResult {
 
 type RestProps = SvelteHTMLElements["input"];
 
-export interface HeaderSearchProps extends RestProps {
+export type HeaderSearchProps = RestProps & {
   /**
    * Specify the search input value
    * @default ""
@@ -41,7 +41,7 @@ export interface HeaderSearchProps extends RestProps {
   selectedResultIndex?: number;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class HeaderSearch extends SvelteComponentTyped<
   HeaderSearchProps,

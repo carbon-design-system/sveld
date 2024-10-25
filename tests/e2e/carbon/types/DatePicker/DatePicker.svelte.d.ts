@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface DatePickerProps extends RestProps {
+export type DatePickerProps = RestProps & {
   /**
    * Specify the date picker type
    * @default "simple"
@@ -65,7 +65,7 @@ export interface DatePickerProps extends RestProps {
   id?: string;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class DatePicker extends SvelteComponentTyped<
   DatePickerProps,

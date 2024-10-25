@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["ul"];
 
-export interface UnorderedListProps extends RestProps {
+export type UnorderedListProps = RestProps & {
   /**
    * Set to `true` to use the nested variant
    * @default false
@@ -11,7 +11,7 @@ export interface UnorderedListProps extends RestProps {
   nested?: boolean;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class UnorderedList extends SvelteComponentTyped<
   UnorderedListProps,

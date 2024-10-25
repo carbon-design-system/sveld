@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface NotificationIconProps {
+export type NotificationIconProps = {
   /**
    * Specify the kind of notification icon
    * @default "error"
@@ -24,7 +24,7 @@ export interface NotificationIconProps {
    * @default "Closes notification"
    */
   iconDescription?: string;
-}
+};
 
 export default class NotificationIcon extends SvelteComponentTyped<
   NotificationIconProps,

@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface CodeSnippetProps {
+export type CodeSnippetProps = {
   /**
    * Set the type of code snippet
    * @default "single"
@@ -107,7 +107,7 @@ export interface CodeSnippetProps {
    * @default null
    */
   ref?: null | HTMLPreElement;
-}
+};
 
 export default class CodeSnippet extends SvelteComponentTyped<
   CodeSnippetProps,

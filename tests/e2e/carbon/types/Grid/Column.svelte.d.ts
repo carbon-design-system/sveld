@@ -12,7 +12,7 @@ export type ColumnBreakpoint = ColumnSize | ColumnSizeDescriptor;
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface ColumnProps extends RestProps {
+export type ColumnProps = RestProps & {
   /**
    * Set to `true` to render a custom HTML element
    * Props are destructured as `props` in the default slot (e.g., <Column let:props><article {...props}>...</article></Column>)
@@ -81,7 +81,7 @@ export interface ColumnProps extends RestProps {
   max?: ColumnBreakpoint;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class Column extends SvelteComponentTyped<
   ColumnProps,

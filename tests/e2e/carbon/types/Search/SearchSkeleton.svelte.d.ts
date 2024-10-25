@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface SearchSkeletonProps extends RestProps {
+export type SearchSkeletonProps = RestProps & {
   /**
    * @deprecated this prop will be removed in the next major release
    * Set to `true` to use the small variant
@@ -18,7 +18,7 @@ export interface SearchSkeletonProps extends RestProps {
   size?: "sm" | "lg" | "xl";
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class SearchSkeleton extends SvelteComponentTyped<
   SearchSkeletonProps,

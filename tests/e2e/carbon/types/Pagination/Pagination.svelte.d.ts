@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface PaginationProps extends RestProps {
+export type PaginationProps = RestProps & {
   /**
    * Specify the current page index
    * @default 1
@@ -101,7 +101,7 @@ export interface PaginationProps extends RestProps {
   id?: string;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class Pagination extends SvelteComponentTyped<
   PaginationProps,

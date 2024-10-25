@@ -3,9 +3,9 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface CheckboxSkeletonProps extends RestProps {
+export type CheckboxSkeletonProps = RestProps & {
   [key: `data-${string}`]: any;
-}
+};
 
 export default class CheckboxSkeleton extends SvelteComponentTyped<
   CheckboxSkeletonProps,

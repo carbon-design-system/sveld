@@ -12,7 +12,7 @@ export interface DataTableHeader<Row = DataTableRow> {
   value: string;
 }
 
-export interface GenericsProps<Row> {
+export type GenericsProps<Row> = {
   /**
    * @default []
    */
@@ -22,7 +22,7 @@ export interface GenericsProps<Row> {
    * @default []
    */
   rows?: ReadonlyArray<Row>;
-}
+};
 
 export default class Generics<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
   GenericsProps<Row>,

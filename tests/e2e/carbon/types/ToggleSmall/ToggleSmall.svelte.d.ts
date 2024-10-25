@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface ToggleSmallProps extends RestProps {
+export type ToggleSmallProps = RestProps & {
   /**
    * Set to `true` to toggle the checkbox input
    * @default false
@@ -47,7 +47,7 @@ export interface ToggleSmallProps extends RestProps {
   name?: string;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class ToggleSmall extends SvelteComponentTyped<
   ToggleSmallProps,

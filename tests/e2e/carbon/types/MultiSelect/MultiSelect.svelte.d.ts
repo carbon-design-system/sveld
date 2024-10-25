@@ -12,7 +12,7 @@ export interface MultiSelectItem {
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface MultiSelectProps extends RestProps {
+export type MultiSelectProps = RestProps & {
   /**
    * Set the multiselect items
    * @default []
@@ -174,7 +174,7 @@ export interface MultiSelectProps extends RestProps {
   name?: string;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class MultiSelect extends SvelteComponentTyped<
   MultiSelectProps,

@@ -3,9 +3,9 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface SkeletonPlaceholderProps extends RestProps {
+export type SkeletonPlaceholderProps = RestProps & {
   [key: `data-${string}`]: any;
-}
+};
 
 export default class SkeletonPlaceholder extends SvelteComponentTyped<
   SkeletonPlaceholderProps,

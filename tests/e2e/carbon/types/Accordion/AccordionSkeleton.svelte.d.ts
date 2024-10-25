@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["ul"];
 
-export interface AccordionSkeletonProps extends RestProps {
+export type AccordionSkeletonProps = RestProps & {
   /**
    * Specify the number of accordion items to render
    * @default 4
@@ -29,7 +29,7 @@ export interface AccordionSkeletonProps extends RestProps {
   open?: boolean;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class AccordionSkeleton extends SvelteComponentTyped<
   AccordionSkeletonProps,

@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface ComponentCommentMultiProps {}
+export type ComponentCommentMultiProps = {};
 
 /**
  * @example

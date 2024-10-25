@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["span"];
 
-export interface FileUploaderItemProps extends RestProps {
+export type FileUploaderItemProps = RestProps & {
   /**
    * Specify the file uploader status
    * @default "uploading"
@@ -47,7 +47,7 @@ export interface FileUploaderItemProps extends RestProps {
   name?: string;
 
   [key: `data-${string}`]: any;
-}
+};
 
 export default class FileUploaderItem extends SvelteComponentTyped<
   FileUploaderItemProps,
