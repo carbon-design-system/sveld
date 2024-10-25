@@ -893,21 +893,6 @@ exports[`fixtures (JSON) "context-module/input.svelte" 1`] = `
 }"
 `;
 
-exports[`fixtures (JSON) "rest-props/input.svelte" 1`] = `
-"{
-  "props": [],
-  "moduleExports": [],
-  "slots": [],
-  "events": [],
-  "typedefs": [],
-  "generics": null,
-  "rest_props": {
-    "type": "Element",
-    "name": "h1"
-  }
-}"
-`;
-
 exports[`fixtures (JSON) "rest-props-multiple/input.svelte" 1`] = `
 "{
   "props": [
@@ -1056,6 +1041,21 @@ exports[`fixtures (JSON) "typedef/input.svelte" 1`] = `
     }
   ],
   "generics": null
+}"
+`;
+
+exports[`fixtures (JSON) "rest-props-simple/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "rest_props": {
+    "type": "Element",
+    "name": "h1"
+  }
 }"
 `;
 
@@ -1715,20 +1715,6 @@ export default class ContextModule extends SvelteComponentTyped<ContextModulePro
 "
 `;
 
-exports[`fixtures (TypeScript) "rest-props/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
-import type { SvelteHTMLElements } from "svelte/elements";
-
-type RestProps = SvelteHTMLElements["h1"];
-
-export interface RestPropsProps extends RestProps {
-  [key: \`data-${string}\`]: any;
-}
-
-export default class RestProps extends SvelteComponentTyped<RestPropsProps, Record<string, any>, {}> {}
-"
-`;
-
 exports[`fixtures (TypeScript) "rest-props-multiple/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
@@ -1819,6 +1805,20 @@ export default class Typedef extends SvelteComponentTyped<
   Record<string, any>,
   { default: { prop1: MyTypedef } }
 > {}
+"
+`;
+
+exports[`fixtures (TypeScript) "rest-props-simple/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+type RestProps = SvelteHTMLElements["h1"];
+
+export interface RestPropsSimpleProps extends RestProps {
+  [key: \`data-${string}\`]: any;
+}
+
+export default class RestPropsSimple extends SvelteComponentTyped<RestPropsSimpleProps, Record<string, any>, {}> {}
 "
 `;
 
