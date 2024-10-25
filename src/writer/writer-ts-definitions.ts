@@ -124,11 +124,8 @@ function genSlotDef(def: Pick<ComponentDocApi, "slots">) {
     .join("\n");
 }
 
-const mapEvent = (name: string) => {
-  if (["cut", "copy", "paste"].includes(name)) {
-    return "DocumentAndElementEventHandlersEventMap";
-  }
-
+const mapEvent = () => {
+  // lib.dom.d.ts should map event types by name.
   return "WindowEventMap";
 };
 
@@ -147,7 +144,7 @@ function genEventDef(def: Pick<ComponentDocApi, "events">) {
         description = "/** " + event.description + " */\n";
       }
       return `${description}${clampKey(event.name)}: ${
-        event.type === "dispatched" ? createDispatchedEvent(event.detail) : `${mapEvent(event.name)}["${event.name}"]`
+        event.type === "dispatched" ? createDispatchedEvent(event.detail) : `${mapEvent()}["${event.name}"]`
       };\n`;
     })
     .join("");
