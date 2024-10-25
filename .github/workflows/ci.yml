@@ -28,6 +28,9 @@ jobs:
       - name: Run unit tests
         run: bun test
 
+      - name: Type check fixtures
+        run: bun run test:fixtures-types
+
       # Only trigger deploy if previous steps pass and branch is main
       - name: Deploy docs
         if: matrix.os == 'macos-latest' && github.ref == 'refs/heads/main'
