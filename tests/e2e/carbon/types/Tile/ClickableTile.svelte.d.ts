@@ -1,7 +1,7 @@
 import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
-type RestProps = SvelteHTMLElements["a"];
+type $RestProps = SvelteHTMLElements["a"];
 
 type $Props = {
   /**
@@ -25,7 +25,7 @@ type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type ClickableTileProps = Omit<RestProps, keyof $Props> & $Props;
+export type ClickableTileProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class ClickableTile extends SvelteComponentTyped<
   ClickableTileProps,

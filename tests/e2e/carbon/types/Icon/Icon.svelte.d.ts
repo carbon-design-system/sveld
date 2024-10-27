@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 import type { IconSkeletonProps } from "./IconSkeleton.svelte";
 
-type RestProps = SvelteHTMLElements["svg"];
+type $RestProps = SvelteHTMLElements["svg"];
 
 type $Props = {
   /**
@@ -21,7 +21,7 @@ type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type IconProps = Omit<RestProps, keyof $Props> & $Props;
+export type IconProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class Icon extends SvelteComponentTyped<
   IconProps,

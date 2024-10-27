@@ -1,7 +1,7 @@
 import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
-type RestProps = SvelteHTMLElements["button"];
+type $RestProps = SvelteHTMLElements["button"];
 
 type $Props = {
   /**
@@ -79,7 +79,7 @@ type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type OverflowMenuProps = Omit<RestProps, keyof $Props> & $Props;
+export type OverflowMenuProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class OverflowMenu extends SvelteComponentTyped<
   OverflowMenuProps,

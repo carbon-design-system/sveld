@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 export type ListBoxSelectionTranslationId = "clearAll" | "clearSelection";
 
-type RestProps = SvelteHTMLElements["div"];
+type $RestProps = SvelteHTMLElements["div"];
 
 type $Props = {
   /**
@@ -33,7 +33,7 @@ type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type ListBoxSelectionProps = Omit<RestProps, keyof $Props> & $Props;
+export type ListBoxSelectionProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class ListBoxSelection extends SvelteComponentTyped<
   ListBoxSelectionProps,

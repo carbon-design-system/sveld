@@ -41,7 +41,7 @@ The generated definition extends the official `SvelteComponentTyped` interface e
 import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
-type RestProps = SvelteHTMLElements["button"];
+type $RestProps = SvelteHTMLElements["button"];
 
 type $Props = {
   /**
@@ -57,7 +57,7 @@ type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type ButtonProps = Omit<RestProps, keyof $Props> & $Props;
+export type ButtonProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class Button extends SvelteComponentTyped<
   ButtonProps,
@@ -85,7 +85,7 @@ The accompanying JSDoc annotations would generate the following:
 ```ts
 import type { SvelteHTMLElements } from "svelte/elements";
 
-type RestProps = SvelteHTMLElements["button"];
+type $RestProps = SvelteHTMLElements["button"];
 
 type $Props = {
   /**
@@ -100,7 +100,7 @@ type $Props = {
   primary?: boolean;
 };
 
-export type ButtonProps = Omit<RestProps, keyof $Props> & $Props;
+export type ButtonProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class Button extends SvelteComponentTyped<
   ButtonProps,

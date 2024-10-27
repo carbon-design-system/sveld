@@ -1,7 +1,7 @@
 import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
-type RestProps = SvelteHTMLElements["div"] & SvelteHTMLElements["span"];
+type $RestProps = SvelteHTMLElements["div"] & SvelteHTMLElements["span"];
 
 type $Props = {
   /**
@@ -60,7 +60,7 @@ type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type TagProps = Omit<RestProps, keyof $Props> & $Props;
+export type TagProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class Tag extends SvelteComponentTyped<
   TagProps,

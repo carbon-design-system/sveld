@@ -1,7 +1,7 @@
 import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
-type RestProps = SvelteHTMLElements["section"];
+type $RestProps = SvelteHTMLElements["section"];
 
 type $Props = {
   /**
@@ -13,7 +13,7 @@ type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type ToolbarProps = Omit<RestProps, keyof $Props> & $Props;
+export type ToolbarProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class Toolbar extends SvelteComponentTyped<
   ToolbarProps,

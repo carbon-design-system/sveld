@@ -1,7 +1,7 @@
 import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
-type RestProps = SvelteHTMLElements["button"];
+type $RestProps = SvelteHTMLElements["button"];
 
 type $Props = {
   /**
@@ -38,7 +38,7 @@ type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type SwitchProps = Omit<RestProps, keyof $Props> & $Props;
+export type SwitchProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class Switch extends SvelteComponentTyped<
   SwitchProps,

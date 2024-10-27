@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 export type NumberInputTranslationId = "increment" | "decrement";
 
-type RestProps = SvelteHTMLElements["div"];
+type $RestProps = SvelteHTMLElements["div"];
 
 type $Props = {
   /**
@@ -141,7 +141,7 @@ type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type NumberInputProps = Omit<RestProps, keyof $Props> & $Props;
+export type NumberInputProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class NumberInput extends SvelteComponentTyped<
   NumberInputProps,

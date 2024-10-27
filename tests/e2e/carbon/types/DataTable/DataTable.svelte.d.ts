@@ -42,7 +42,7 @@ export interface DataTableCell {
   display?: (item: Value, row: DataTableRow) => DataTableValue;
 }
 
-type RestProps = SvelteHTMLElements["div"];
+type $RestProps = SvelteHTMLElements["div"];
 
 type $Props<Row> = {
   /**
@@ -183,7 +183,7 @@ type $Props<Row> = {
   [key: `data-${string}`]: any;
 };
 
-export type DataTableProps<Row> = Omit<RestProps, keyof $Props<Row>> &
+export type DataTableProps<Row> = Omit<$RestProps, keyof $Props<Row>> &
   $Props<Row>;
 
 export default class DataTable<

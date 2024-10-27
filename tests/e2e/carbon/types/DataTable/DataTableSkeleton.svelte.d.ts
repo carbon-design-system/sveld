@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 import type { DataTableHeader } from "../DataTable/DataTable.svelte";
 
-type RestProps = SvelteHTMLElements["div"];
+type $RestProps = SvelteHTMLElements["div"];
 
 type $Props = {
   /**
@@ -53,7 +53,7 @@ type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type DataTableSkeletonProps = Omit<RestProps, keyof $Props> & $Props;
+export type DataTableSkeletonProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class DataTableSkeleton extends SvelteComponentTyped<
   DataTableSkeletonProps,

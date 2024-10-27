@@ -1,7 +1,7 @@
 import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
-type RestProps = SvelteHTMLElements["nav"];
+type $RestProps = SvelteHTMLElements["nav"];
 
 type $Props = {
   /**
@@ -43,7 +43,7 @@ type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type PaginationNavProps = Omit<RestProps, keyof $Props> & $Props;
+export type PaginationNavProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class PaginationNav extends SvelteComponentTyped<
   PaginationNavProps,

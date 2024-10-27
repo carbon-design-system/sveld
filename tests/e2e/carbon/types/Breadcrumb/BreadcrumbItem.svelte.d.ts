@@ -1,7 +1,7 @@
 import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
-type RestProps = SvelteHTMLElements["li"];
+type $RestProps = SvelteHTMLElements["li"];
 
 type $Props = {
   /**
@@ -19,7 +19,7 @@ type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type BreadcrumbItemProps = Omit<RestProps, keyof $Props> & $Props;
+export type BreadcrumbItemProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class BreadcrumbItem extends SvelteComponentTyped<
   BreadcrumbItemProps,

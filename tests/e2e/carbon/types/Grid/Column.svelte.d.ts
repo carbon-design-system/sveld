@@ -10,7 +10,7 @@ export interface ColumnSizeDescriptor {
 
 export type ColumnBreakpoint = ColumnSize | ColumnSizeDescriptor;
 
-type RestProps = SvelteHTMLElements["div"];
+type $RestProps = SvelteHTMLElements["div"];
 
 type $Props = {
   /**
@@ -83,7 +83,7 @@ type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type ColumnProps = Omit<RestProps, keyof $Props> & $Props;
+export type ColumnProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class Column extends SvelteComponentTyped<
   ColumnProps,

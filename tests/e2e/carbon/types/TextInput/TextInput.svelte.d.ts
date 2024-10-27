@@ -1,7 +1,7 @@
 import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
-type RestProps = SvelteHTMLElements["input"];
+type $RestProps = SvelteHTMLElements["input"];
 
 type $Props = {
   /**
@@ -115,7 +115,7 @@ type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type TextInputProps = Omit<RestProps, keyof $Props> & $Props;
+export type TextInputProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class TextInput extends SvelteComponentTyped<
   TextInputProps,

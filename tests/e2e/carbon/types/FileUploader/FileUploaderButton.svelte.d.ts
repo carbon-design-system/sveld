@@ -1,7 +1,7 @@
 import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
-type RestProps = SvelteHTMLElements["input"];
+type $RestProps = SvelteHTMLElements["input"];
 
 type $Props = {
   /**
@@ -73,7 +73,7 @@ type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type FileUploaderButtonProps = Omit<RestProps, keyof $Props> & $Props;
+export type FileUploaderButtonProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class FileUploaderButton extends SvelteComponentTyped<
   FileUploaderButtonProps,
