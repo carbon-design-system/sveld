@@ -920,6 +920,17 @@ exports[`fixtures (JSON) "rest-props-multiple/input.svelte" 1`] = `
 }"
 `;
 
+exports[`fixtures (JSON) "no-props/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null
+}"
+`;
+
 exports[`fixtures (JSON) "component-comment-single/input.svelte" 1`] = `
 "{
   "props": [],
@@ -1720,6 +1731,15 @@ type $ComponentProps = {
 export type RestPropsMultipleProps = Omit<RestProps, keyof $ComponentProps> & $ComponentProps;
 
 export default class RestPropsMultiple extends SvelteComponentTyped<RestPropsMultipleProps, Record<string, any>, {}> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "no-props/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export type NoPropsProps = {};
+
+export default class NoProps extends SvelteComponentTyped<NoPropsProps, Record<string, any>, {}> {}
 "
 `;
 
