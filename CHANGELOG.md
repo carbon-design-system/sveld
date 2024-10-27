@@ -10,6 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add isAccessor field to API
 - update Markdown writer to generate a separate table for accessors -->
 
+## [0.21.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.21.0) - 2024-10-27
+
+**Breaking Changes**
+
+- use type alias instead of interface for exported component props type
+
+**Fixes**
+
+- prefix internal `RestProps` type with `$` to avoid conflicts with `Rest.svelte` as a component name
+
 ## [0.20.3](https://github.com/carbon-design-system/sveld/releases/tag/v0.20.3) - 2024-10-25
 
 **Fixes**
