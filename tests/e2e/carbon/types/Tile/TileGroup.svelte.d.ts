@@ -1,7 +1,7 @@
 import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
-type RestProps = SvelteHTMLElements["fieldset"];
+type $RestProps = SvelteHTMLElements["fieldset"];
 
 type $Props = {
   /**
@@ -25,7 +25,7 @@ type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type TileGroupProps = Omit<RestProps, keyof $Props> & $Props;
+export type TileGroupProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class TileGroup extends SvelteComponentTyped<
   TileGroupProps,

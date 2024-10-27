@@ -1,7 +1,7 @@
 import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
-type RestProps = SvelteHTMLElements["ol"];
+type $RestProps = SvelteHTMLElements["ol"];
 
 type $Props = {
   /**
@@ -19,7 +19,7 @@ type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type OrderedListProps = Omit<RestProps, keyof $Props> & $Props;
+export type OrderedListProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class OrderedList extends SvelteComponentTyped<
   OrderedListProps,

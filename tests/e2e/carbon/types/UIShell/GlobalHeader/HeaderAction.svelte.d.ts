@@ -7,7 +7,7 @@ export interface HeaderActionSlideTransition {
   easing?: (t: number) => number;
 }
 
-type RestProps = SvelteHTMLElements["button"];
+type $RestProps = SvelteHTMLElements["button"];
 
 type $Props = {
   /**
@@ -45,7 +45,7 @@ type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type HeaderActionProps = Omit<RestProps, keyof $Props> & $Props;
+export type HeaderActionProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class HeaderAction extends SvelteComponentTyped<
   HeaderActionProps,

@@ -7,7 +7,7 @@ export interface HeaderSearchResult {
   description?: string;
 }
 
-type RestProps = SvelteHTMLElements["input"];
+type $RestProps = SvelteHTMLElements["input"];
 
 type $Props = {
   /**
@@ -43,7 +43,7 @@ type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type HeaderSearchProps = Omit<RestProps, keyof $Props> & $Props;
+export type HeaderSearchProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class HeaderSearch extends SvelteComponentTyped<
   HeaderSearchProps,

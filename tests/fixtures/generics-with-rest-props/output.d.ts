@@ -13,7 +13,7 @@ export interface DataTableHeader<Row = DataTableRow> {
   value: string;
 }
 
-type RestProps = SvelteHTMLElements["div"];
+type $RestProps = SvelteHTMLElements["div"];
 
 type $Props<Row> = {
   /**
@@ -29,7 +29,7 @@ type $Props<Row> = {
   [key: `data-${string}`]: any;
 };
 
-export type GenericsWithRestPropsProps<Row> = Omit<RestProps, keyof $Props<Row>> & $Props<Row>;
+export type GenericsWithRestPropsProps<Row> = Omit<$RestProps, keyof $Props<Row>> & $Props<Row>;
 
 export default class GenericsWithRestProps<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
   GenericsWithRestPropsProps<Row>,

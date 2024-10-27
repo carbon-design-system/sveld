@@ -1,7 +1,7 @@
 import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
-type RestProps = SvelteHTMLElements["a"];
+type $RestProps = SvelteHTMLElements["a"];
 
 type $Props = {
   /**
@@ -56,7 +56,7 @@ type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type HeaderProps = Omit<RestProps, keyof $Props> & $Props;
+export type HeaderProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class Header extends SvelteComponentTyped<
   HeaderProps,

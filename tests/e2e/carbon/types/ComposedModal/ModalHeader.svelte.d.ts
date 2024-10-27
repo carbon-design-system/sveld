@@ -1,7 +1,7 @@
 import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
-type RestProps = SvelteHTMLElements["div"];
+type $RestProps = SvelteHTMLElements["div"];
 
 type $Props = {
   /**
@@ -49,7 +49,7 @@ type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type ModalHeaderProps = Omit<RestProps, keyof $Props> & $Props;
+export type ModalHeaderProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class ModalHeader extends SvelteComponentTyped<
   ModalHeaderProps,

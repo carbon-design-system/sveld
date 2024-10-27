@@ -1,7 +1,7 @@
 import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
-type RestProps = SvelteHTMLElements["label"];
+type $RestProps = SvelteHTMLElements["label"];
 
 type $Props = {
   /**
@@ -25,7 +25,7 @@ type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type StructuredListRowProps = Omit<RestProps, keyof $Props> & $Props;
+export type StructuredListRowProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class StructuredListRow extends SvelteComponentTyped<
   StructuredListRowProps,

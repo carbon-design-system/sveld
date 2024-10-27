@@ -1326,13 +1326,13 @@ exports[`fixtures (TypeScript) "svg-props/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
-type RestProps = SvelteHTMLElements["svg"];
+type $RestProps = SvelteHTMLElements["svg"];
 
 type $Props = {
   [key: \`data-${string}\`]: any;
 };
 
-export type SvgPropsProps = Omit<RestProps, keyof $Props> & $Props;
+export type SvgPropsProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class SvgProps extends SvelteComponentTyped<SvgPropsProps, Record<string, any>, {}> {}
 "
@@ -1597,7 +1597,7 @@ export interface DataTableHeader<Row = DataTableRow> {
   value: string;
 }
 
-type RestProps = SvelteHTMLElements["div"];
+type $RestProps = SvelteHTMLElements["div"];
 
 type $Props<Row> = {
   /**
@@ -1613,7 +1613,7 @@ type $Props<Row> = {
   [key: \`data-${string}\`]: any;
 };
 
-export type GenericsWithRestPropsProps<Row> = Omit<RestProps, keyof $Props<Row>> & $Props<Row>;
+export type GenericsWithRestPropsProps<Row> = Omit<$RestProps, keyof $Props<Row>> & $Props<Row>;
 
 export default class GenericsWithRestProps<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
   GenericsWithRestPropsProps<Row>,
@@ -1822,7 +1822,7 @@ exports[`fixtures (TypeScript) "rest-props-multiple/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
-type RestProps = SvelteHTMLElements["ul"] & SvelteHTMLElements["ol"];
+type $RestProps = SvelteHTMLElements["ul"] & SvelteHTMLElements["ol"];
 
 type $Props = {
   /**
@@ -1833,7 +1833,7 @@ type $Props = {
   [key: \`data-${string}\`]: any;
 };
 
-export type RestPropsMultipleProps = Omit<RestProps, keyof $Props> & $Props;
+export type RestPropsMultipleProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class RestPropsMultiple extends SvelteComponentTyped<RestPropsMultipleProps, Record<string, any>, {}> {}
 "
@@ -1921,13 +1921,13 @@ exports[`fixtures (TypeScript) "rest-props-simple/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
-type RestProps = SvelteHTMLElements["h1"];
+type $RestProps = SvelteHTMLElements["h1"];
 
 type $Props = {
   [key: \`data-${string}\`]: any;
 };
 
-export type RestPropsSimpleProps = Omit<RestProps, keyof $Props> & $Props;
+export type RestPropsSimpleProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class RestPropsSimple extends SvelteComponentTyped<RestPropsSimpleProps, Record<string, any>, {}> {}
 "
@@ -1937,13 +1937,13 @@ exports[`fixtures (TypeScript) "anchor-props/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
-type RestProps = SvelteHTMLElements["a"];
+type $RestProps = SvelteHTMLElements["a"];
 
 type $Props = {
   [key: \`data-${string}\`]: any;
 };
 
-export type AnchorPropsProps = Omit<RestProps, keyof $Props> & $Props;
+export type AnchorPropsProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class AnchorProps extends SvelteComponentTyped<AnchorPropsProps, Record<string, any>, { default: {} }> {}
 "

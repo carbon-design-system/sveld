@@ -1,7 +1,7 @@
 import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
-type RestProps = SvelteHTMLElements["a"];
+type $RestProps = SvelteHTMLElements["a"];
 
 type $Props = {
   /**
@@ -37,7 +37,7 @@ type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type HeaderNavMenuProps = Omit<RestProps, keyof $Props> & $Props;
+export type HeaderNavMenuProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class HeaderNavMenu extends SvelteComponentTyped<
   HeaderNavMenuProps,

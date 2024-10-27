@@ -1,7 +1,7 @@
 import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
-type RestProps = SvelteHTMLElements["li"];
+type $RestProps = SvelteHTMLElements["li"];
 
 type $Props = {
   /**
@@ -32,7 +32,7 @@ type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type AccordionItemProps = Omit<RestProps, keyof $Props> & $Props;
+export type AccordionItemProps = Omit<$RestProps, keyof $Props> & $Props;
 
 /** `AccordionItem` is slottable */
 export default class AccordionItem extends SvelteComponentTyped<

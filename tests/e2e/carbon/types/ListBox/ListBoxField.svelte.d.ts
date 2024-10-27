@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 export type ListBoxFieldTranslationId = "close" | "open";
 
-type RestProps = SvelteHTMLElements["div"];
+type $RestProps = SvelteHTMLElements["div"];
 
 type $Props = {
   /**
@@ -45,7 +45,7 @@ type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type ListBoxFieldProps = Omit<RestProps, keyof $Props> & $Props;
+export type ListBoxFieldProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class ListBoxField extends SvelteComponentTyped<
   ListBoxFieldProps,

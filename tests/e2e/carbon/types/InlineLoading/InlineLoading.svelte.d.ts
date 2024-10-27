@@ -1,7 +1,7 @@
 import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
-type RestProps = SvelteHTMLElements["div"];
+type $RestProps = SvelteHTMLElements["div"];
 
 type $Props = {
   /**
@@ -31,7 +31,7 @@ type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type InlineLoadingProps = Omit<RestProps, keyof $Props> & $Props;
+export type InlineLoadingProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class InlineLoading extends SvelteComponentTyped<
   InlineLoadingProps,

@@ -1,7 +1,7 @@
 import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
-type RestProps = SvelteHTMLElements["button"];
+type $RestProps = SvelteHTMLElements["button"];
 
 type $Props = {
   /**
@@ -38,7 +38,7 @@ type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type TooltipIconProps = Omit<RestProps, keyof $Props> & $Props;
+export type TooltipIconProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class TooltipIcon extends SvelteComponentTyped<
   TooltipIconProps,

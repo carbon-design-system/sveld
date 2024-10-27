@@ -1,7 +1,7 @@
 import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
-type RestProps = SvelteHTMLElements["blockquote"];
+type $RestProps = SvelteHTMLElements["blockquote"];
 
 type $Props = {
   /**
@@ -17,7 +17,7 @@ type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type QuoteProps = Omit<RestProps, keyof $Props> & $Props;
+export type QuoteProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class Quote extends SvelteComponentTyped<
   QuoteProps,

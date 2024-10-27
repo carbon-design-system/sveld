@@ -1,7 +1,7 @@
 import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
-type RestProps = SvelteHTMLElements["fieldset"];
+type $RestProps = SvelteHTMLElements["fieldset"];
 
 type $Props = {
   /**
@@ -31,7 +31,7 @@ type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type FormGroupProps = Omit<RestProps, keyof $Props> & $Props;
+export type FormGroupProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class FormGroup extends SvelteComponentTyped<
   FormGroupProps,

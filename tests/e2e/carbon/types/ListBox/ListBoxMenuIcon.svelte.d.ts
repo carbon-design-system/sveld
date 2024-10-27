@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 export type ListBoxMenuIconTranslationId = "close" | "open";
 
-type RestProps = SvelteHTMLElements["div"];
+type $RestProps = SvelteHTMLElements["div"];
 
 type $Props = {
   /**
@@ -21,7 +21,7 @@ type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type ListBoxMenuIconProps = Omit<RestProps, keyof $Props> & $Props;
+export type ListBoxMenuIconProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class ListBoxMenuIcon extends SvelteComponentTyped<
   ListBoxMenuIconProps,
