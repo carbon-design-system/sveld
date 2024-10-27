@@ -483,6 +483,69 @@ exports[`fixtures (JSON) "typedefs/input.svelte" 1`] = `
 }"
 `;
 
+exports[`fixtures (JSON) "generics-with-rest-props/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "headers",
+      "kind": "let",
+      "type": "ReadonlyArray<DataTableHeader<Row>>",
+      "value": "[]",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "rows",
+      "kind": "let",
+      "type": "ReadonlyArray<Row>",
+      "value": "[]",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "slot_props": "{ headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> }"
+    }
+  ],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{ id: string | number; [key: string]: any; }",
+      "name": "DataTableRow",
+      "ts": "interface DataTableRow { id: string | number; [key: string]: any; }"
+    },
+    {
+      "type": "Exclude<keyof Row, \"id\">",
+      "name": "DataTableKey<Row>",
+      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \"id\">"
+    },
+    {
+      "type": "{ key: DataTableKey<Row>; value: string; }",
+      "name": "DataTableHeader<Row=DataTableRow>",
+      "ts": "interface DataTableHeader<Row=DataTableRow> { key: DataTableKey<Row>; value: string; }"
+    }
+  ],
+  "generics": [
+    "Row",
+    "Row extends DataTableRow = DataTableRow"
+  ],
+  "rest_props": {
+    "type": "Element",
+    "name": "div"
+  }
+}"
+`;
+
 exports[`fixtures (JSON) "bind-this/input.svelte" 1`] = `
 "{
   "props": [
@@ -1514,6 +1577,48 @@ export default class Typedefs extends SvelteComponentTyped<
   TypedefsProps,
   Record<string, any>,
   { default: { prop1: MyTypedef; prop2: MyTypedefArray } }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "generics-with-rest-props/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+export interface DataTableRow {
+  id: string | number;
+  [key: string]: any;
+}
+
+export type DataTableKey<Row> = Exclude<keyof Row, "id">;
+
+export interface DataTableHeader<Row = DataTableRow> {
+  key: DataTableKey<Row>;
+  value: string;
+}
+
+type RestProps = SvelteHTMLElements["div"];
+
+type $Props<Row> = {
+  /**
+   * @default []
+   */
+  headers?: ReadonlyArray<DataTableHeader<Row>>;
+
+  /**
+   * @default []
+   */
+  rows?: ReadonlyArray<Row>;
+
+  [key: \`data-${string}\`]: any;
+};
+
+export type GenericsWithRestPropsProps<Row> = Omit<RestProps, keyof $Props<Row>> & $Props<Row>;
+
+export default class GenericsWithRestProps<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
+  GenericsWithRestPropsProps<Row>,
+  Record<string, any>,
+  { default: { headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> } }
 > {}
 "
 `;
