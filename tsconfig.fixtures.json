@@ -7,5 +7,5 @@
     "strict": true,
     "types": []
   },
-  "include": ["tests/fixtures/**/*.d.ts"]
+  "include": ["tests/fixtures/**/*.ts"]
 }
