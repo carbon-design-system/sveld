@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["label"];
 
-export interface RadioTileProps extends RestProps {
+type $Props = {
   /**
    * Set to `true` to check the tile
    * @default false
@@ -47,7 +47,9 @@ export interface RadioTileProps extends RestProps {
   name?: string;
 
   [key: `data-${string}`]: any;
-}
+};
+
+export type RadioTileProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class RadioTile extends SvelteComponentTyped<
   RadioTileProps,

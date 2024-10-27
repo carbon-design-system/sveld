@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface TabsSkeletonProps extends RestProps {
+type $Props = {
   /**
    * Specify the number of tabs to render
    * @default 4
@@ -11,7 +11,9 @@ export interface TabsSkeletonProps extends RestProps {
   count?: number;
 
   [key: `data-${string}`]: any;
-}
+};
+
+export type TabsSkeletonProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class TabsSkeleton extends SvelteComponentTyped<
   TabsSkeletonProps,

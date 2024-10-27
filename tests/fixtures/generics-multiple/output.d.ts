@@ -12,7 +12,7 @@ export interface DataTableHeader<Row = DataTableRow, Header = DataTableRow> {
   value: Header;
 }
 
-export interface GenericsMultipleProps<Row, Header> {
+export type GenericsMultipleProps<Row, Header> = {
   /**
    * @default []
    */
@@ -22,7 +22,7 @@ export interface GenericsMultipleProps<Row, Header> {
    * @default []
    */
   rows?: ReadonlyArray<Row>;
-}
+};
 
 export default class GenericsMultiple<
   Row extends DataTableRow = DataTableRow,

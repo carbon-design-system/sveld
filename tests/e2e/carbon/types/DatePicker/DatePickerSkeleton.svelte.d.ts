@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface DatePickerSkeletonProps extends RestProps {
+type $Props = {
   /**
    * Set to `true` to use the range variant
    * @default false
@@ -17,7 +17,9 @@ export interface DatePickerSkeletonProps extends RestProps {
   id?: string;
 
   [key: `data-${string}`]: any;
-}
+};
+
+export type DatePickerSkeletonProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class DatePickerSkeleton extends SvelteComponentTyped<
   DatePickerSkeletonProps,

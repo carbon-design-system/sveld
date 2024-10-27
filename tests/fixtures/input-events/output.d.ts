@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface InputEventsProps {}
+export type InputEventsProps = {};
 
 export default class InputEvents extends SvelteComponentTyped<
   InputEventsProps,

@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface TimePickerProps extends RestProps {
+type $Props = {
   /**
    * Specify the size of the input
    * @default undefined
@@ -95,7 +95,9 @@ export interface TimePickerProps extends RestProps {
   ref?: null | HTMLInputElement;
 
   [key: `data-${string}`]: any;
-}
+};
+
+export type TimePickerProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class TimePicker extends SvelteComponentTyped<
   TimePickerProps,

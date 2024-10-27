@@ -3,9 +3,11 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface FormItemProps extends RestProps {
+type $Props = {
   [key: `data-${string}`]: any;
-}
+};
+
+export type FormItemProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class FormItem extends SvelteComponentTyped<
   FormItemProps,

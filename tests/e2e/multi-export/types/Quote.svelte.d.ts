@@ -5,7 +5,7 @@ export type Author = string;
 
 type RestProps = SvelteHTMLElements["blockquote"];
 
-export interface QuoteProps extends RestProps {
+type $Props = {
   /**
    * @default ""
    */
@@ -17,7 +17,9 @@ export interface QuoteProps extends RestProps {
   author?: Author;
 
   [key: `data-${string}`]: any;
-}
+};
+
+export type QuoteProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class Quote extends SvelteComponentTyped<
   QuoteProps,

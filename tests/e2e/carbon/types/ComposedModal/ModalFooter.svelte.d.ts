@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface ModalFooterProps extends RestProps {
+type $Props = {
   /**
    * Specify the primary button text
    * @default ""
@@ -41,7 +41,9 @@ export interface ModalFooterProps extends RestProps {
   danger?: boolean;
 
   [key: `data-${string}`]: any;
-}
+};
+
+export type ModalFooterProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class ModalFooter extends SvelteComponentTyped<
   ModalFooterProps,

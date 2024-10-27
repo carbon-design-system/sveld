@@ -6,7 +6,7 @@ export interface MyTypedef {
 
 export type MyTypedefArray = MyTypedef[];
 
-export interface TypedefsProps {
+export type TypedefsProps = {
   /**
    * @default { ["1"]: true }
    */
@@ -16,7 +16,7 @@ export interface TypedefsProps {
    * @default []
    */
   prop2?: MyTypedefArray;
-}
+};
 
 export default class Typedefs extends SvelteComponentTyped<
   TypedefsProps,

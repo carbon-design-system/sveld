@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface HeaderProps {}
+export type HeaderProps = {};
 
 export default class Header extends SvelteComponentTyped<
   HeaderProps,

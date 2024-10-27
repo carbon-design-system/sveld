@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface InferBasicProps {
+export type InferBasicProps = {
   /**
    * @default null
    */
@@ -25,7 +25,7 @@ export interface InferBasicProps {
    * @default "" + Math.random().toString(36)
    */
   id?: string;
-}
+};
 
 export default class InferBasic extends SvelteComponentTyped<InferBasicProps, Record<string, any>, { default: {} }> {
   propConst: { ["1"]: true };

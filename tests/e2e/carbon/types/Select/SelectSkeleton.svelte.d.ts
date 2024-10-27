@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface SelectSkeletonProps extends RestProps {
+type $Props = {
   /**
    * Set to `true` to hide the label text
    * @default false
@@ -11,7 +11,9 @@ export interface SelectSkeletonProps extends RestProps {
   hideLabel?: boolean;
 
   [key: `data-${string}`]: any;
-}
+};
+
+export type SelectSkeletonProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class SelectSkeleton extends SvelteComponentTyped<
   SelectSkeletonProps,

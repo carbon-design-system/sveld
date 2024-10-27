@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["button"];
 
-export interface OverflowMenuProps extends RestProps {
+type $Props = {
   /**
    * Specify the size of the overflow menu
    * @default undefined
@@ -77,7 +77,9 @@ export interface OverflowMenuProps extends RestProps {
   menuRef?: null | HTMLUListElement;
 
   [key: `data-${string}`]: any;
-}
+};
+
+export type OverflowMenuProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class OverflowMenu extends SvelteComponentTyped<
   OverflowMenuProps,

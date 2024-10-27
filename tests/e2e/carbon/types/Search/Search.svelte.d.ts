@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export interface SearchProps {
+export type SearchProps = {
   /**
    * @deprecated this prop will be removed in the next major release
    * Use size="sm" instead
@@ -85,7 +85,7 @@ export interface SearchProps {
    * @default null
    */
   ref?: null | HTMLInputElement;
-}
+};
 
 export default class Search extends SvelteComponentTyped<
   SearchProps,

@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["section"];
 
-export interface TableProps extends RestProps {
+type $Props = {
   /**
    * Set the size of the table
    * @default undefined
@@ -41,7 +41,9 @@ export interface TableProps extends RestProps {
   stickyHeader?: boolean;
 
   [key: `data-${string}`]: any;
-}
+};
+
+export type TableProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class Table extends SvelteComponentTyped<
   TableProps,

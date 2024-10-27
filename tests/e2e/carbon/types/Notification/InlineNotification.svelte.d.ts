@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-export interface InlineNotificationProps extends RestProps {
+type $Props = {
   /**
    * Specify the kind of notification
    * @default "error"
@@ -59,7 +59,9 @@ export interface InlineNotificationProps extends RestProps {
   iconDescription?: string;
 
   [key: `data-${string}`]: any;
-}
+};
+
+export type InlineNotificationProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class InlineNotification extends SvelteComponentTyped<
   InlineNotificationProps,
