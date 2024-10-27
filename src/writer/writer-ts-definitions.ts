@@ -90,13 +90,13 @@ function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleN
 
     prop_def = `
     ${extend_tag_map ? `type RestProps = ${extend_tag_map};\n` : ""}
-    type $ComponentProps = {
+    type $Props = {
       ${props}
       
       ${dataAttributes}
     };
 
-    export type ${props_name}${genericsName} = Omit<RestProps, keyof $ComponentProps> & $ComponentProps;
+    export type ${props_name}${genericsName} = Omit<RestProps, keyof $Props> & $Props;
   `;
   } else {
     prop_def = `

@@ -3,12 +3,11 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["tbody"];
 
-type $ComponentProps = {
+type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type TableBodyProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type TableBodyProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class TableBody extends SvelteComponentTyped<
   TableBodyProps,

@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["section"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Specify the toolbar size
    * @default "default"
@@ -13,8 +13,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type ToolbarProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type ToolbarProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class Toolbar extends SvelteComponentTyped<
   ToolbarProps,

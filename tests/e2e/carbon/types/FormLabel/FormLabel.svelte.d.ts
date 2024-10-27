@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["label"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Set an id to be used by the label element
    * @default "ccs-" + Math.random().toString(36)
@@ -13,8 +13,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type FormLabelProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type FormLabelProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class FormLabel extends SvelteComponentTyped<
   FormLabelProps,

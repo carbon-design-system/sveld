@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["th"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Specify the `scope` attribute
    * @default "col"
@@ -25,8 +25,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type TableHeaderProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type TableHeaderProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class TableHeader extends SvelteComponentTyped<
   TableHeaderProps,

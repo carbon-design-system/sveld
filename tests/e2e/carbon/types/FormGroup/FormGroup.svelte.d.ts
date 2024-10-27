@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["fieldset"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Set to `true` to indicate an invalid state
    * @default false
@@ -31,8 +31,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type FormGroupProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type FormGroupProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class FormGroup extends SvelteComponentTyped<
   FormGroupProps,

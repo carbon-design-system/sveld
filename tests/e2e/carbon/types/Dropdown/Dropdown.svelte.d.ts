@@ -12,7 +12,7 @@ export interface DropdownItem {
 
 type RestProps = SvelteHTMLElements["div"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Set the dropdown items
    * @default []
@@ -137,8 +137,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type DropdownProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type DropdownProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class Dropdown extends SvelteComponentTyped<
   DropdownProps,

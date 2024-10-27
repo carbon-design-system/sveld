@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Specify the tooltip text
    * @default ""
@@ -37,8 +37,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type TooltipDefinitionProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type TooltipDefinitionProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class TooltipDefinition extends SvelteComponentTyped<
   TooltipDefinitionProps,

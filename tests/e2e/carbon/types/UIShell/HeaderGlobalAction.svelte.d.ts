@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["button"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Set to `true` to use the active variant
    * @default false
@@ -25,8 +25,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type HeaderGlobalActionProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type HeaderGlobalActionProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class HeaderGlobalAction extends SvelteComponentTyped<
   HeaderGlobalActionProps,

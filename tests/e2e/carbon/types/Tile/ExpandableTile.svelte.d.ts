@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["button"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Set to `true` to expand the tile
    * @default false
@@ -73,8 +73,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type ExpandableTileProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type ExpandableTileProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class ExpandableTile extends SvelteComponentTyped<
   ExpandableTileProps,

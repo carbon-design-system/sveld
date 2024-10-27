@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["li"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Set to `true` for the complete variant
    * @default false
@@ -55,8 +55,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type ProgressStepProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type ProgressStepProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class ProgressStep extends SvelteComponentTyped<
   ProgressStepProps,

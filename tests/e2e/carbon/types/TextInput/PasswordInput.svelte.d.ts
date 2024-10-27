@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["input"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Set the size of the input
    * @default undefined
@@ -115,8 +115,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type PasswordInputProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type PasswordInputProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class PasswordInput extends SvelteComponentTyped<
   PasswordInputProps,

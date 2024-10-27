@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Specify the date picker type
    * @default "simple"
@@ -67,8 +67,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type DatePickerProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type DatePickerProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class DatePicker extends SvelteComponentTyped<
   DatePickerProps,

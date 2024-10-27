@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Set to `true` to hide the breadcrumb trailing slash
    * @default false
@@ -19,8 +19,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type BreadcrumbSkeletonProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type BreadcrumbSkeletonProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class BreadcrumbSkeleton extends SvelteComponentTyped<
   BreadcrumbSkeletonProps,

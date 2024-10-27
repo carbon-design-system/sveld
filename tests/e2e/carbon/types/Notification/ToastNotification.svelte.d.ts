@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Specify the kind of notification
    * @default "error"
@@ -67,8 +67,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type ToastNotificationProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type ToastNotificationProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class ToastNotification extends SvelteComponentTyped<
   ToastNotificationProps,

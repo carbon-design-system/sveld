@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Specify the select value
    * @default ""
@@ -56,8 +56,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type TimePickerSelectProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type TimePickerSelectProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class TimePickerSelect extends SvelteComponentTyped<
   TimePickerSelectProps,

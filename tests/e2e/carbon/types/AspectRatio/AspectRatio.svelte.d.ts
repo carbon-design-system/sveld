@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Specify the aspect ratio
    * @default "2x1"
@@ -13,8 +13,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type AspectRatioProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type AspectRatioProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class AspectRatio extends SvelteComponentTyped<
   AspectRatioProps,

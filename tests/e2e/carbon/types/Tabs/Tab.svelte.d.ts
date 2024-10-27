@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["li"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Specify the tab label
    * Alternatively, use the default slot (e.g., <Tab><span>Label</span></Tab>)
@@ -44,7 +44,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type TabProps = Omit<RestProps, keyof $ComponentProps> & $ComponentProps;
+export type TabProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class Tab extends SvelteComponentTyped<
   TabProps,

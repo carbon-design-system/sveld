@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Set the selected index of the switch item
    * @default 0
@@ -25,8 +25,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type ContentSwitcherProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type ContentSwitcherProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class ContentSwitcher extends SvelteComponentTyped<
   ContentSwitcherProps,

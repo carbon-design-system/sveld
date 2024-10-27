@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["a"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Set the `href` to use an anchor link
    * @default undefined
@@ -26,8 +26,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type ButtonSkeletonProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type ButtonSkeletonProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class ButtonSkeleton extends SvelteComponentTyped<
   ButtonSkeletonProps,

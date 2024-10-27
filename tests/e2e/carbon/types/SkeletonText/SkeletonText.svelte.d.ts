@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Specify the number of lines to render
    * @default 3
@@ -31,8 +31,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type SkeletonTextProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type SkeletonTextProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class SkeletonText extends SvelteComponentTyped<
   SkeletonTextProps,

@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["ul"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Set to `true` to use the vertical variant
    * @default false
@@ -19,11 +19,8 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type ProgressIndicatorSkeletonProps = Omit<
-  RestProps,
-  keyof $ComponentProps
-> &
-  $ComponentProps;
+export type ProgressIndicatorSkeletonProps = Omit<RestProps, keyof $Props> &
+  $Props;
 
 export default class ProgressIndicatorSkeleton extends SvelteComponentTyped<
   ProgressIndicatorSkeletonProps,

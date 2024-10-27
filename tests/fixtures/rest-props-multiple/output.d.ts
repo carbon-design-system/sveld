@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["ul"] & SvelteHTMLElements["ol"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * @default "ordered"
    */
@@ -12,6 +12,6 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type RestPropsMultipleProps = Omit<RestProps, keyof $ComponentProps> & $ComponentProps;
+export type RestPropsMultipleProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class RestPropsMultiple extends SvelteComponentTyped<RestPropsMultipleProps, Record<string, any>, {}> {}

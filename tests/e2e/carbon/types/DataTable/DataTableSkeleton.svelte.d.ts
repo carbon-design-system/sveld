@@ -5,7 +5,7 @@ import type { DataTableHeader } from "../DataTable/DataTable.svelte";
 
 type RestProps = SvelteHTMLElements["div"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Specify the number of columns
    * Superseded by `headers` if `headers` is a non-empty array
@@ -53,8 +53,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type DataTableSkeletonProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type DataTableSkeletonProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class DataTableSkeleton extends SvelteComponentTyped<
   DataTableSkeletonProps,

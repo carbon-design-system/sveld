@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Set to `true` to use as a header
    * @default false
@@ -19,8 +19,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type StructuredListCellProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type StructuredListCellProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class StructuredListCell extends SvelteComponentTyped<
   StructuredListCellProps,

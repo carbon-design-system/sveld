@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["input"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Set to `true` to check the input
    * @default false
@@ -43,8 +43,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type StructuredListInputProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type StructuredListInputProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class StructuredListInput extends SvelteComponentTyped<
   StructuredListInputProps,

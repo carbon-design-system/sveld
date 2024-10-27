@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * @deprecated this prop will be removed in the next major release
    * Set to `true` to use the small variant
@@ -20,8 +20,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type SearchSkeletonProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type SearchSkeletonProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class SearchSkeleton extends SvelteComponentTyped<
   SearchSkeletonProps,

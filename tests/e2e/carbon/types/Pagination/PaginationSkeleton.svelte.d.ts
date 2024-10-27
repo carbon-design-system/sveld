@@ -3,12 +3,11 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-type $ComponentProps = {
+type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type PaginationSkeletonProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type PaginationSkeletonProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class PaginationSkeleton extends SvelteComponentTyped<
   PaginationSkeletonProps,

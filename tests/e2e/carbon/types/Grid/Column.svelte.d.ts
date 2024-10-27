@@ -12,7 +12,7 @@ export type ColumnBreakpoint = ColumnSize | ColumnSizeDescriptor;
 
 type RestProps = SvelteHTMLElements["div"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Set to `true` to render a custom HTML element
    * Props are destructured as `props` in the default slot (e.g., <Column let:props><article {...props}>...</article></Column>)
@@ -83,8 +83,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type ColumnProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type ColumnProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class Column extends SvelteComponentTyped<
   ColumnProps,

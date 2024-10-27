@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Specify the value of the slider
    * @default 0
@@ -109,8 +109,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type SliderProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type SliderProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class Slider extends SvelteComponentTyped<
   SliderProps,

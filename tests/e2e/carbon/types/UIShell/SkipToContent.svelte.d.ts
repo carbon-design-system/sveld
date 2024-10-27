@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["a"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Specify the `href` attribute
    * @default "#main-content"
@@ -19,8 +19,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type SkipToContentProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type SkipToContentProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class SkipToContent extends SvelteComponentTyped<
   SkipToContentProps,

@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Set to `true` if the modal contains form elements
    * @default false
@@ -19,8 +19,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type ModalBodyProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type ModalBodyProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class ModalBody extends SvelteComponentTyped<
   ModalBodyProps,

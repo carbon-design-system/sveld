@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Specify the title of the data table
    * @default ""
@@ -25,8 +25,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type TableContainerProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type TableContainerProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class TableContainer extends SvelteComponentTyped<
   TableContainerProps,

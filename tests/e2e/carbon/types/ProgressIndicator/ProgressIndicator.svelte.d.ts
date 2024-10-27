@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["ul"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Specify the current step index
    * @default 0
@@ -31,8 +31,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type ProgressIndicatorProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type ProgressIndicatorProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class ProgressIndicator extends SvelteComponentTyped<
   ProgressIndicatorProps,

@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["button"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Set the feedback text shown after clicking the button
    * @default "Copied!"
@@ -25,8 +25,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type CopyProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type CopyProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class Copy extends SvelteComponentTyped<
   CopyProps,

@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["nav"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Set to `true` to use the fixed variant
    * @default false
@@ -25,8 +25,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type SideNavProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type SideNavProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class SideNav extends SvelteComponentTyped<
   SideNavProps,

@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Set to `true` to render a custom HTML element
    * Props are destructured as `props` in the default slot (e.g., <Row let:props><section {...props}>...</section></Row>)
@@ -50,7 +50,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type RowProps = Omit<RestProps, keyof $ComponentProps> & $ComponentProps;
+export type RowProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class Row extends SvelteComponentTyped<
   RowProps,

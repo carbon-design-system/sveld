@@ -3,12 +3,11 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-type $ComponentProps = {
+type $Props = {
   [key: `data-${string}`]: any;
 };
 
-export type StructuredListHeadProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type StructuredListHeadProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class StructuredListHead extends SvelteComponentTyped<
   StructuredListHeadProps,

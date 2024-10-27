@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["a"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Set to `true` to select the current link
    * @default false
@@ -37,8 +37,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type SideNavLinkProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type SideNavLinkProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class SideNavLink extends SvelteComponentTyped<
   SideNavLinkProps,

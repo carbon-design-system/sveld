@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Set to `true` to enable the light variant
    * @default false
@@ -13,8 +13,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type TileProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type TileProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class Tile extends SvelteComponentTyped<
   TileProps,

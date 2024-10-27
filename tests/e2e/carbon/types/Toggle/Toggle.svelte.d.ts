@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Specify the toggle size
    * @default "default"
@@ -55,8 +55,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type ToggleProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type ToggleProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class Toggle extends SvelteComponentTyped<
   ToggleProps,

@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Set the type of code snippet
    * @default "single"
@@ -13,8 +13,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type CodeSnippetSkeletonProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type CodeSnippetSkeletonProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class CodeSnippetSkeleton extends SvelteComponentTyped<
   CodeSnippetSkeletonProps,

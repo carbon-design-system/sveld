@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Specify the selected structured list row value
    * @default undefined
@@ -25,8 +25,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type StructuredListProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type StructuredListProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class StructuredList extends SvelteComponentTyped<
   StructuredListProps,

@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Set an id for the top-level element
    * @default "ccs-" + Math.random().toString(36)
@@ -13,8 +13,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type TabContentProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type TabContentProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class TabContent extends SvelteComponentTyped<
   TabContentProps,

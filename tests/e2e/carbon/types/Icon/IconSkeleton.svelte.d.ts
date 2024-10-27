@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Set the size of the icon
    * @default 16
@@ -13,8 +13,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type IconSkeletonProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type IconSkeletonProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class IconSkeleton extends SvelteComponentTyped<
   IconSkeletonProps,

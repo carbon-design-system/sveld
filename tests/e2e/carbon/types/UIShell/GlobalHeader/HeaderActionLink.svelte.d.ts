@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["a"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Set to `true` to use the active state
    * @default false
@@ -31,8 +31,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type HeaderActionLinkProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type HeaderActionLinkProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class HeaderActionLink extends SvelteComponentTyped<
   HeaderActionLinkProps,

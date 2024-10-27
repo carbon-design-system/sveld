@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Specify the selected tab index
    * @default 0
@@ -31,8 +31,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type TabsProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type TabsProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class Tabs extends SvelteComponentTyped<
   TabsProps,

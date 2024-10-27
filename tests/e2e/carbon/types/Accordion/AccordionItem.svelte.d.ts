@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["li"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Specify the title of the accordion item heading
    * Alternatively, use the "title" slot (e.g., <div slot="title">...</div>)
@@ -32,8 +32,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type AccordionItemProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type AccordionItemProps = Omit<RestProps, keyof $Props> & $Props;
 
 /** `AccordionItem` is slottable */
 export default class AccordionItem extends SvelteComponentTyped<

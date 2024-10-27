@@ -7,7 +7,7 @@ type RestProps = SvelteHTMLElements["button"] &
   SvelteHTMLElements["a"] &
   SvelteHTMLElements["div"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Specify the kind of button
    * @default "primary"
@@ -105,8 +105,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type ButtonProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type ButtonProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class Button extends SvelteComponentTyped<
   ButtonProps,

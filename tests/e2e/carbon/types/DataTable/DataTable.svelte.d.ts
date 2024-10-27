@@ -44,7 +44,7 @@ export interface DataTableCell {
 
 type RestProps = SvelteHTMLElements["div"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Specify the data table headers
    * @default []
@@ -183,8 +183,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type DataTableProps<Row> = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type DataTableProps<Row> = Omit<RestProps, keyof $Props> & $Props;
 
 export default class DataTable<
   Row extends DataTableRow = DataTableRow

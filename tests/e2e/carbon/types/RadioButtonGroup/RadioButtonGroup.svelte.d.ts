@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Set the selected radio button value
    * @default undefined
@@ -37,8 +37,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type RadioButtonGroupProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type RadioButtonGroupProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class RadioButtonGroup extends SvelteComponentTyped<
   RadioButtonGroupProps,

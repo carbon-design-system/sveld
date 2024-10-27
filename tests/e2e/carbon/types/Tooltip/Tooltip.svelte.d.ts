@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["div"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Set the alignment of the tooltip relative to the icon
    * @default "center"
@@ -92,8 +92,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type TooltipProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type TooltipProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class Tooltip extends SvelteComponentTyped<
   TooltipProps,

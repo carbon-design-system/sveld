@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["li"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Specify the item text
    * Alternatively, use the default slot for a custom element
@@ -62,8 +62,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type OverflowMenuItemProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type OverflowMenuItemProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class OverflowMenuItem extends SvelteComponentTyped<
   OverflowMenuItemProps,

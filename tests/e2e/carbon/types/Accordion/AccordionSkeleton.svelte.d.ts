@@ -3,7 +3,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 type RestProps = SvelteHTMLElements["ul"];
 
-type $ComponentProps = {
+type $Props = {
   /**
    * Specify the number of accordion items to render
    * @default 4
@@ -31,8 +31,7 @@ type $ComponentProps = {
   [key: `data-${string}`]: any;
 };
 
-export type AccordionSkeletonProps = Omit<RestProps, keyof $ComponentProps> &
-  $ComponentProps;
+export type AccordionSkeletonProps = Omit<RestProps, keyof $Props> & $Props;
 
 export default class AccordionSkeleton extends SvelteComponentTyped<
   AccordionSkeletonProps,
