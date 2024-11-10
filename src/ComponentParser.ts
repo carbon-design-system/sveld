@@ -554,7 +554,7 @@ export default class ComponentParser {
 
             const additional_tags =
               comment[0]?.tags.filter(
-                (tag) => !["type", "extends", "restProps", "slot", "event", "typedef"].includes(tag.tag)
+                (tag) => !["type", "extends", "restProps", "slot", "event", "typedef"].includes(tag.tag),
               ) ?? [];
 
             if (additional_tags.length > 0 && description === undefined) {

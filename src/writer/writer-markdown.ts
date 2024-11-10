@@ -72,7 +72,7 @@ export default async function writeMarkdown(components: ComponentDocs, options: 
         "raw",
         `\`\`\`ts\n${getTypeDefs({
           typedefs: component.typedefs,
-        })}\n\`\`\`\n\n`
+        })}\n\`\`\`\n\n`,
       );
     }
 
@@ -91,8 +91,8 @@ export default async function writeMarkdown(components: ComponentDocs, options: 
             `| ${prop.name} | ${prop.isRequired ? "Yes" : "No"} | ${`<code>${prop.kind}</code>`} | ${
               prop.reactive ? "Yes" : "No"
             } | ${formatPropType(prop.type)} | ${formatPropValue(prop.value)} | ${formatPropDescription(
-              prop.description
-            )} |\n`
+              prop.description,
+            )} |\n`,
           );
         });
     } else {
@@ -106,8 +106,8 @@ export default async function writeMarkdown(components: ComponentDocs, options: 
         document.append(
           "raw",
           `| ${slot.default ? MD_TYPE_UNDEFINED : slot.name} | ${slot.default ? "Yes" : "No"} | ${formatSlotProps(
-            slot.slot_props
-          )} | ${formatSlotFallback(slot.fallback)} |\n`
+            slot.slot_props,
+          )} | ${formatSlotFallback(slot.fallback)} |\n`,
         );
       });
     } else {
@@ -123,7 +123,7 @@ export default async function writeMarkdown(components: ComponentDocs, options: 
           "raw",
           `| ${event.name} | ${event.type} | ${
             event.type === "dispatched" ? formatEventDetail(event.detail) : MD_TYPE_UNDEFINED
-          } |\n`
+          } |\n`,
         );
       });
     } else {

@@ -2,12 +2,13 @@
   export let parsed_component = {};
   export let moduleName = "";
 
-  import plugin from "prettier/parser-markdown";
-  import prettier from "prettier/standalone";
+  import pluginMarkdown from "prettier/plugins/markdown";
+  import { format } from "prettier/standalone";
   import writeMarkdown from "../../src/writer/writer-markdown";
   import CodeHighlighter from "./CodeHighlighter.svelte";
 
   let markdown = "";
+  let code = "";
 
   $: components = new Map([[moduleName, { ...parsed_component, moduleName }]]);
   $: writeMarkdown(components, { write: false })
@@ -17,10 +18,18 @@
     .catch((error) => {
       console.log(error);
     });
-  $: code = prettier.format(markdown, {
-    parser: "markdown",
-    plugins: [plugin],
-  });
+  $: {
+    format(markdown, {
+      parser: "markdown",
+      plugins: [pluginMarkdown],
+    })
+      .then((formatted) => {
+        code = formatted;
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
 </script>
 
 <CodeHighlighter noWrap language="markdown" {code} />
