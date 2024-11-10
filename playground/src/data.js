@@ -1,4 +1,5 @@
-export const button = {
+const button = {
+  name: "Button",
   moduleName: "Button",
   code: `<script>
   export let type = "button";
@@ -10,8 +11,9 @@ export const button = {
 </button>`,
 };
 
-export const dynamic_dispatched_events = {
-  moduleName: "Dispatched events",
+const dynamic_dispatched_events = {
+  name: "Dispatched events",
+  moduleName: "DispatchedEvents",
   code: `<script>
   import { onDestroy, createEventDispatcher } from "svelte";
 
@@ -35,8 +37,9 @@ export const dynamic_dispatched_events = {
 `,
 };
 
-export const forwarded_events = {
-  moduleName: "Forwarded events",
+const forwarded_events = {
+  name: "Forwarded events",
+  moduleName: "ForwardedEvents",
   code: `<button type="button" on:click on:focus on:blur />
 <h1 on:mouseover on:mouseover={() => {}}>
   <slot />
@@ -44,7 +47,8 @@ export const forwarded_events = {
 `,
 };
 
-export const generics = {
+const generics = {
+  name: "Generics",
   moduleName: "Generics",
   code: `<script>
   /**
