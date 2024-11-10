@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add isAccessor field to API
 - update Markdown writer to generate a separate table for accessors -->
 
+## [0.22.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.22.0) - 2024-11-10
+
+**Breaking Changes**
+
+- upgrade `prettier` to v3 (by default, `trailingComma` is now "all")
+
 ## [0.21.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.21.0) - 2024-10-27
 
 **Breaking Changes**
