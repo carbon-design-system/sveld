@@ -1,11 +1,14 @@
+<script context="module">
+  import CodeMirror from "codemirror";
+  import "codemirror/mode/htmlmixed/htmlmixed";
+  import "codemirror/theme/zenburn.css";
+</script>
+
 <script>
   // @ts-check
   export let code = "";
   export let codemirror = null;
 
-  import CodeMirror from "codemirror";
-  import "codemirror/mode/htmlmixed/htmlmixed";
-  import "codemirror/theme/zenburn.css";
   import { onMount, createEventDispatcher } from "svelte";
 
   const dispatch = createEventDispatcher();
