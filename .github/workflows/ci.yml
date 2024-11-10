@@ -2,13 +2,8 @@ name: CI
 
 on:
   pull_request:
-    paths-ignore:
-      - "playground/**"
   push:
-    branches:
-      - main
-    paths-ignore:
-      - "playground/**"
+    branches: [main]
 
 jobs:
   build:
@@ -30,13 +25,14 @@ jobs:
         run: bun run build
 
       - name: Run unit tests
-        run: bun test
+        run: bun run test
 
       - name: Type check fixtures
         run: bun run test:fixtures-types
 
-      # Only trigger deploy if previous steps pass and branch is main
       - name: Deploy docs
+        # Only trigger deploy if previous steps pass on main branch.
+        # Only fire once per branch push.
         if: matrix.os == 'macos-latest' && github.ref == 'refs/heads/main'
         env:
           deploy_url: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
