@@ -1,5 +1,4 @@
-<script>
-  // @ts-check
+<script lang="ts">
   import { Header, Content, HeaderUtilities, HeaderActionLink, SkipToContent } from "carbon-components-svelte";
   import LogoGithub20 from "./LogoGithub20.svelte";
   import pkg from "../../package.json";

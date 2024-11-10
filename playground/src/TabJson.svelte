@@ -1,5 +1,4 @@
-<script>
-  // @ts-check
+<script lang="ts">
   export let parsed_component = {};
 
   import CodeHighlighter from "./CodeHighlighter.svelte";
