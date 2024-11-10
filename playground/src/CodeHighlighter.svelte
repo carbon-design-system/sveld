@@ -1,4 +1,5 @@
 <script context="module">
+  // @ts-check
   import json from "svelte-highlight/languages/json";
   import typescript from "svelte-highlight/languages/typescript";
   import markdown from "svelte-highlight/languages/markdown";
@@ -11,6 +12,7 @@
 </script>
 
 <script>
+  // @ts-check
   export let code = "";
   export let language = "typescript";
   export let noWrap = false;

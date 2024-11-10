@@ -1,3 +1,5 @@
+// @ts-check
+
 const button = {
   name: "Button",
   moduleName: "Button",

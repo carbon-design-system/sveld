@@ -1,4 +1,5 @@
 <script>
+  // @ts-check
   export let parsed_component = {};
   export let moduleName = "";
 
