@@ -1,19 +1,18 @@
-<script context="module">
+<script lang="ts" context="module">
   import CodeMirror from "codemirror";
   import "codemirror/mode/htmlmixed/htmlmixed";
   import "codemirror/theme/zenburn.css";
 </script>
 
-<script>
-  // @ts-check
+<script lang="ts">
   export let code = "";
-  export let codemirror = null;
+  export let codemirror: CodeMirror.Editor | null = null;
 
   import { onMount, createEventDispatcher } from "svelte";
 
   const dispatch = createEventDispatcher();
 
-  let ref;
+  let ref: HTMLDivElement;
 
   onMount(() => {
     codemirror = CodeMirror(ref, {
@@ -21,8 +20,11 @@
       mode: "htmlmixed",
       theme: "zenburn",
     });
-    codemirror.doc.on("change", () => {
-      dispatch("change", codemirror.getValue());
+
+    codemirror.on("change", () => {
+      if (codemirror) {
+        dispatch("change", codemirror.getValue());
+      }
     });
 
     return () => {

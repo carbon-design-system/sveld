@@ -1,5 +1,4 @@
-<script context="module">
-  // @ts-check
+<script lang="ts" context="module">
   import json from "svelte-highlight/languages/json";
   import typescript from "svelte-highlight/languages/typescript";
   import markdown from "svelte-highlight/languages/markdown";
@@ -8,13 +7,12 @@
     json,
     typescript,
     markdown,
-  };
+  } as const;
 </script>
 
-<script>
-  // @ts-check
+<script lang="ts">
   export let code = "";
-  export let language = "typescript";
+  export let language: keyof typeof LANG = "typescript";
   export let noWrap = false;
 
   import { CopyButton } from "carbon-components-svelte";

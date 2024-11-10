@@ -1,5 +1,4 @@
-<script>
-  // @ts-check
+<script lang="ts">
   export let title = "";
 
   /** @type {"error" | "warning"} */

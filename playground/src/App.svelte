@@ -1,5 +1,4 @@
-<script>
-  // @ts-check
+<script lang="ts">
   import Header from "./Header.svelte";
   import {
     FormLabel,
@@ -12,7 +11,7 @@
     TabContent,
     InlineLoading,
   } from "carbon-components-svelte";
-  import { onMount, tick } from "svelte";
+  import { onMount, SvelteComponent, tick } from "svelte";
   import ComponentParser from "../../src/ComponentParser";
   import CodeEditor from "./CodeEditor.svelte";
   import data from "./data";
@@ -21,9 +20,9 @@
   const parser = new ComponentParser();
 
   let selectedId = data[0].moduleName;
-  let tabTypeScript;
-  let tabJson;
-  let tabMarkdown;
+  let tabTypeScript: typeof SvelteComponent<any>;
+  let tabJson: typeof SvelteComponent<any>;
+  let tabMarkdown: typeof SvelteComponent<any>;
 
   onMount(() => {
     import("./TabTypeScript.svelte").then((importee) => {
@@ -40,22 +39,25 @@
   });
 
   $: selected = data.find((datum) => datum.moduleName === selectedId);
-  $: value = selected.code;
-  $: moduleName = selected.moduleName;
+  $: value = selected?.code;
+  $: moduleName = selected?.moduleName ?? "Component";
 
   let parsed_component = {};
-  let parse_error = null;
-  let codemirror = null;
+  let parse_error: string | null = null;
+  let codemirror: CodeMirror.Editor | null = null;
 
   $: {
     try {
       parse_error = null;
-      parsed_component = parser.parseSvelteComponent(value, {
-        moduleName,
-        filePath: "VIRTUAL",
-      });
+
+      if (value) {
+        parsed_component = parser.parseSvelteComponent(value, {
+          moduleName,
+          filePath: "VIRTUAL",
+        });
+      }
     } catch (error) {
-      parse_error = error;
+      parse_error = error as string;
     }
   }
 </script>
@@ -70,19 +72,25 @@
           {selectedId}
           items={data.map((datum) => ({
             id: datum.moduleName,
-            text: datum.moduleName,
+            text: datum.name,
           }))}
           on:select={(e) => {
             selectedId = e.detail.selectedId;
 
             tick().then(() => {
-              codemirror.setValue(selected.code);
+              if (selected?.code) {
+                codemirror?.setValue(selected.code);
+              }
             });
           }}
         />
-        <CodeEditor bind:code={value} bind:codemirror on:change={(e) => {
+        <CodeEditor
+          bind:code={value}
+          bind:codemirror
+          on:change={(e) => {
             value = e.detail;
-          }} />
+          }}
+        />
       </Column>
       <Column xlg={9} lg={10} sm={8}>
         <FormLabel id="output">Sveld output</FormLabel>
