@@ -41,9 +41,7 @@
 
   $: selected = data.find((datum) => datum.moduleName === selectedId);
   $: value = selected.code;
-
-  // TODO: use module name from selected
-  $: moduleName = "Component";
+  $: moduleName = selected.moduleName;
 
   let parsed_component = {};
   let parse_error = null;
