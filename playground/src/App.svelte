@@ -1,6 +1,5 @@
 <script>
   // @ts-check
-  import "carbon-components-svelte/css/all.css";
   import Header from "./Header.svelte";
   import {
     FormLabel,
