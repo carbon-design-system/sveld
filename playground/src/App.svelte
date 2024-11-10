@@ -12,7 +12,7 @@
     TabContent,
     InlineLoading,
   } from "carbon-components-svelte";
-  import { onMount } from "svelte";
+  import { onMount, tick } from "svelte";
   import ComponentParser from "../../src/ComponentParser";
   import CodeEditor from "./CodeEditor.svelte";
   import data from "./data";
@@ -60,10 +60,6 @@
       parse_error = error;
     }
   }
-
-  $: if (value && codemirror) {
-    codemirror.setValue(value);
-  }
 </script>
 
 <Header>
@@ -73,19 +69,22 @@
         <Dropdown
           size="xl"
           titleText="Svelte code"
-          bind:selectedId
+          {selectedId}
           items={data.map((datum) => ({
             id: datum.moduleName,
             text: datum.moduleName,
           }))}
-        />
-        <CodeEditor
-          bind:code={value}
-          bind:codemirror
-          on:change={(e) => {
-            value = e.detail;
+          on:select={(e) => {
+            selectedId = e.detail.selectedId;
+
+            tick().then(() => {
+              codemirror.setValue(selected.code);
+            });
           }}
         />
+        <CodeEditor bind:code={value} bind:codemirror on:change={(e) => {
+            value = e.detail;
+          }} />
       </Column>
       <Column xlg={9} lg={10} sm={8}>
         <FormLabel id="output">Sveld output</FormLabel>

@@ -11,7 +11,7 @@
 
   let ref;
 
-  $: if (ref && !codemirror) {
+  onMount(() => {
     codemirror = CodeMirror(ref, {
       value: code,
       mode: "htmlmixed",
@@ -20,9 +20,7 @@
     codemirror.on("change", () => {
       dispatch("change", codemirror.getValue());
     });
-  }
 
-  onMount(() => {
     return () => {
       codemirror = null;
     };
