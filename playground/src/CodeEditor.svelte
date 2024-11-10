@@ -1,4 +1,5 @@
 <script>
+  // @ts-check
   export let code = "";
   export let codemirror = null;
 
@@ -17,7 +18,7 @@
       mode: "htmlmixed",
       theme: "zenburn",
     });
-    codemirror.on("change", () => {
+    codemirror.doc.on("change", () => {
       dispatch("change", codemirror.getValue());
     });
 
