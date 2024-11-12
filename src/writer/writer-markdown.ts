@@ -14,7 +14,10 @@ function formatPropType(type?: any) {
 }
 
 function escapeHtml(text: string) {
-  return text.replace(/\</g, "&lt;").replace(/\>/g, "&gt;");
+  // Find any HTML-like tags and wrap them in code tags
+  return text.replace(/(<[^>]+>)/g, (match) => {
+    return `<code>${match.replace(/\</g, "&lt;").replace(/\>/g, "&gt;")}</code>`;
+  });
 }
 
 function formatPropValue(value: any) {
