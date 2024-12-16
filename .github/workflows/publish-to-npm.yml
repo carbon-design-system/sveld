@@ -32,6 +32,9 @@ jobs:
       - name: Build package
         run: bun run build
 
+      - name: Prune package
+        run: bunx culls
+
       - name: Publish package
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
