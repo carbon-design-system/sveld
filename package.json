@@ -28,6 +28,7 @@
     "@types/bun": "^1.1.12",
     "@types/jest": "^29.5.13",
     "@types/prettier": "^3.0.0",
+    "culls": "^0.1.1",
     "prettier-plugin-svelte": "^3.2.7"
   },
   "bin": {
