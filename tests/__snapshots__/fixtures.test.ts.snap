@@ -22,7 +22,7 @@ exports[`fixtures (JSON) "slots-named/input.svelte" 1`] = `
       "name": "text",
       "kind": "let",
       "type": "string",
-      "value": "\"\"",
+      "value": "\\"\\"",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -105,9 +105,9 @@ exports[`fixtures (JSON) "generics-multiple/input.svelte" 1`] = `
       "ts": "interface DataTableRow { id: string | number; [key: string]: any; }"
     },
     {
-      "type": "Exclude<keyof Row, \"id\">",
+      "type": "Exclude<keyof Row, \\"id\\">",
       "name": "DataTableKey<Row>",
-      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \"id\">"
+      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \\"id\\">"
     },
     {
       "type": "{ key: DataTableKey<Row>; value: Header; }",
@@ -284,7 +284,7 @@ exports[`fixtures (JSON) "infer-basic/input.svelte" 1`] = `
       "name": "propString",
       "kind": "let",
       "type": "string",
-      "value": "\"\"",
+      "value": "\\"\\"",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -304,7 +304,7 @@ exports[`fixtures (JSON) "infer-basic/input.svelte" 1`] = `
       "name": "id",
       "kind": "let",
       "type": "string",
-      "value": "\"\" + Math.random().toString(36)",
+      "value": "\\"\\" + Math.random().toString(36)",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -314,8 +314,8 @@ exports[`fixtures (JSON) "infer-basic/input.svelte" 1`] = `
     {
       "name": "propConst",
       "kind": "const",
-      "type": "{ [\"1\"]: true }",
-      "value": "{ [\"1\"]: true }",
+      "type": "{ [\\"1\\"]: true }",
+      "value": "{ [\\"1\\"]: true }",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -439,7 +439,7 @@ exports[`fixtures (JSON) "typedefs/input.svelte" 1`] = `
       "name": "prop1",
       "kind": "let",
       "type": "MyTypedef",
-      "value": "{ [\"1\"]: true }",
+      "value": "{ [\\"1\\"]: true }",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -525,9 +525,9 @@ exports[`fixtures (JSON) "generics-with-rest-props/input.svelte" 1`] = `
       "ts": "interface DataTableRow { id: string | number; [key: string]: any; }"
     },
     {
-      "type": "Exclude<keyof Row, \"id\">",
+      "type": "Exclude<keyof Row, \\"id\\">",
       "name": "DataTableKey<Row>",
-      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \"id\">"
+      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \\"id\\">"
     },
     {
       "type": "{ key: DataTableKey<Row>; value: string; }",
@@ -648,7 +648,7 @@ exports[`fixtures (JSON) "required/input.svelte" 1`] = `
     {
       "name": "prop1",
       "kind": "let",
-      "description": "This is a comment.\n@required ",
+      "description": "This is a comment.\\n@required ",
       "type": "boolean | string",
       "value": "true",
       "isFunction": false,
@@ -697,7 +697,7 @@ exports[`fixtures (JSON) "prop-comments/input.svelte" 1`] = `
     {
       "name": "prop",
       "kind": "let",
-      "description": "This is a comment.\n@see https://github.com/\n@deprecated this prop will be removed in the next major release.",
+      "description": "This is a comment.\\n@see https://github.com/\\n@deprecated this prop will be removed in the next major release.",
       "type": "boolean | string",
       "value": "true",
       "isFunction": false,
@@ -753,7 +753,7 @@ exports[`fixtures (JSON) "renamed-props/input.svelte" 1`] = `
       "kind": "let",
       "description": "Just your average CSS class string.",
       "type": "string|null",
-      "value": "\"test\"",
+      "value": "\\"test\\"",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -787,7 +787,7 @@ exports[`fixtures (JSON) "infer-with-types/input.svelte" 1`] = `
       "name": "propString",
       "kind": "let",
       "type": "string",
-      "value": "\"\"",
+      "value": "\\"\\"",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -808,7 +808,7 @@ exports[`fixtures (JSON) "infer-with-types/input.svelte" 1`] = `
       "name": "id",
       "kind": "let",
       "type": "string",
-      "value": "\"\" + Math.random().toString(36)",
+      "value": "\\"\\" + Math.random().toString(36)",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -819,7 +819,7 @@ exports[`fixtures (JSON) "infer-with-types/input.svelte" 1`] = `
       "name": "propConst",
       "kind": "const",
       "type": "{ [key: string]: boolean; }",
-      "value": "{ [\"1\"]: true }",
+      "value": "{ [\\"1\\"]: true }",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -860,7 +860,7 @@ exports[`fixtures (JSON) "context-module/input.svelte" 1`] = `
       "name": "a",
       "kind": "const",
       "type": "string",
-      "value": "\"\"",
+      "value": "\\"\\"",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -873,7 +873,7 @@ exports[`fixtures (JSON) "context-module/input.svelte" 1`] = `
       "name": "bool",
       "kind": "const",
       "type": "string",
-      "value": "\"\"",
+      "value": "\\"\\"",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -962,8 +962,8 @@ exports[`fixtures (JSON) "rest-props-multiple/input.svelte" 1`] = `
     {
       "name": "type",
       "kind": "let",
-      "type": " \"ordered\" | \"unordered\" ",
-      "value": "\"ordered\"",
+      "type": " \\"ordered\\" | \\"unordered\\" ",
+      "value": "\\"ordered\\"",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -1068,7 +1068,7 @@ exports[`fixtures (JSON) "typedef/input.svelte" 1`] = `
       "name": "id",
       "kind": "let",
       "type": "string",
-      "value": "\"id-\" + Math.random().toString(36)",
+      "value": "\\"id-\\" + Math.random().toString(36)",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -1079,7 +1079,7 @@ exports[`fixtures (JSON) "typedef/input.svelte" 1`] = `
       "name": "prop1",
       "kind": "let",
       "type": "MyTypedef",
-      "value": "{ [\"1\"]: true }",
+      "value": "{ [\\"1\\"]: true }",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -1157,7 +1157,7 @@ exports[`fixtures (JSON) "component-comment-multi/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "componentComment": "\n@example\n<div>\n  Component comment\n</div>"
+  "componentComment": "\\n@example\\n<div>\\n  Component comment\\n</div>"
 }"
 `;
 
@@ -1213,7 +1213,7 @@ exports[`fixtures (JSON) "typed-props/input.svelte" 1`] = `
     {
       "name": "prop1",
       "kind": "let",
-      "description": "prop1 description 1\nprop1 description 2",
+      "description": "prop1 description 1\\nprop1 description 2",
       "type": "string",
       "isFunction": false,
       "isFunctionDeclaration": false,
@@ -1224,7 +1224,7 @@ exports[`fixtures (JSON) "typed-props/input.svelte" 1`] = `
     {
       "name": "prop2",
       "kind": "let",
-      "description": "prop2 description 1\nprop2 description 2",
+      "description": "prop2 description 1\\nprop2 description 2",
       "value": "null",
       "isFunction": false,
       "isFunctionDeclaration": false,
@@ -1246,8 +1246,8 @@ exports[`fixtures (JSON) "typed-props/input.svelte" 1`] = `
     {
       "name": "prop4",
       "kind": "let",
-      "type": "\"red\" | \"blue\"",
-      "value": "\"red\"",
+      "type": "\\"red\\" | \\"blue\\"",
+      "value": "\\"red\\"",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -1305,9 +1305,9 @@ exports[`fixtures (JSON) "generics/input.svelte" 1`] = `
       "ts": "interface DataTableRow { id: string | number; [key: string]: any; }"
     },
     {
-      "type": "Exclude<keyof Row, \"id\">",
+      "type": "Exclude<keyof Row, \\"id\\">",
       "name": "DataTableKey<Row>",
-      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \"id\">"
+      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \\"id\\">"
     },
     {
       "type": "{ key: DataTableKey<Row>; value: string; }",
@@ -1329,7 +1329,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 type $RestProps = SvelteHTMLElements["svg"];
 
 type $Props = {
-  [key: \`data-${string}\`]: any;
+  [key: \`data-\${string}\`]: any;
 };
 
 export type SvgPropsProps = Omit<$RestProps, keyof $Props> & $Props;
@@ -1610,7 +1610,7 @@ type $Props<Row> = {
    */
   rows?: ReadonlyArray<Row>;
 
-  [key: \`data-${string}\`]: any;
+  [key: \`data-\${string}\`]: any;
 };
 
 export type GenericsWithRestPropsProps<Row> = Omit<$RestProps, keyof $Props<Row>> & $Props<Row>;
@@ -1830,7 +1830,7 @@ type $Props = {
    */
   type?: "ordered" | "unordered";
 
-  [key: \`data-${string}\`]: any;
+  [key: \`data-\${string}\`]: any;
 };
 
 export type RestPropsMultipleProps = Omit<$RestProps, keyof $Props> & $Props;
@@ -1924,7 +1924,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 type $RestProps = SvelteHTMLElements["h1"];
 
 type $Props = {
-  [key: \`data-${string}\`]: any;
+  [key: \`data-\${string}\`]: any;
 };
 
 export type RestPropsSimpleProps = Omit<$RestProps, keyof $Props> & $Props;
@@ -1940,7 +1940,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 type $RestProps = SvelteHTMLElements["a"];
 
 type $Props = {
-  [key: \`data-${string}\`]: any;
+  [key: \`data-\${string}\`]: any;
 };
 
 export type AnchorPropsProps = Omit<$RestProps, keyof $Props> & $Props;
