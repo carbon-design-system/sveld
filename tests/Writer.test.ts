@@ -35,4 +35,13 @@ describe("Writer", () => {
     expect(await writer.format("## text")).toEqual("## text\n");
     expect(await writer.format({ a: null })).toEqual({ a: null });
   });
+
+  test("format handles non-string inputs", async () => {
+    const writer = new Writer({ parser: "json", printWidth: 80 });
+
+    expect(await writer.format({ complex: "object" })).toEqual({ complex: "object" });
+    expect(await writer.format(123)).toEqual(123);
+    expect(await writer.format(null)).toEqual(null);
+    expect(await writer.format(undefined)).toEqual(undefined);
+  });
 });
