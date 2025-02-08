@@ -66,7 +66,7 @@ describe("getSvelteEntry", () => {
     expect(console.log).toHaveBeenCalledWith(expect.stringContaining("Could not locate a package.json file"));
   });
 
-  test.skip("handles malformed package.json", () => {
+  test("handles malformed package.json", () => {
     jest.spyOn(fs, "existsSync").mockReturnValue(true);
     jest.spyOn(fs, "readFileSync").mockReturnValue("invalid json");
 

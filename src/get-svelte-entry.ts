@@ -21,16 +21,23 @@ export function getSvelteEntry(entryPoint?: SvelteEntryPoint): SvelteEntryPoint 
 
   const pkg_path = path.join(process.cwd(), "package.json");
 
-  if (fs.existsSync(pkg_path)) {
+  if (!fs.existsSync(pkg_path)) {
+    console.log("Could not locate a package.json file.\n");
+    return null;
+  }
+
+  try {
     const pkg: { svelte?: SvelteEntryPoint } = JSON.parse(fs.readFileSync(pkg_path, "utf-8"));
 
-    if (pkg.svelte !== undefined) return pkg.svelte;
+    if (typeof pkg.svelte === "string" && pkg.svelte.trim()) {
+      return pkg.svelte;
+    }
 
     console.log("Could not determine an entry point.\n");
     console.log('Specify an entry point to your Svelte code in the "svelte" field of your package.json.\n');
     return null;
-  } else {
-    console.log("Could not locate a package.json file.\n");
-    return null;
+  } catch (error) {
+    console.error("Error reading package.json:", error);
+    throw error;
   }
 }
