@@ -33,7 +33,7 @@
   });
 </script>
 
-<div bind:this={ref} />
+<div bind:this={ref}></div>
 
 <style>
   /**
