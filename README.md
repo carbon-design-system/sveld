@@ -4,7 +4,7 @@
 ![GitHub](https://img.shields.io/github/license/carbon-design-system/sveld?color=262626&style=for-the-badge)
 ![npm downloads to date](https://img.shields.io/npm/dt/sveld?color=262626&style=for-the-badge)
 
-`sveld` generates TypeScript definitions for Svelte components by statically analyzing their props, events, slots and more. Prop types and signatures can be defined using [JSDoc notation](https://jsdoc.app/). This documentation generator can also emit component documentation in Markdown and JSON output formats.
+`sveld` is a TypeScript definition generator for Svelte components. It analyzes props, events, slots, and other component features through static analysis. Types and signatures can be defined using [JSDoc notation](https://jsdoc.app/). The tool can also generate component documentation in Markdown and JSON formats.
 
 The purpose of this project is to make third party Svelte component libraries compatible with the Svelte Language Server and TypeScript with minimal effort required by the author. For example, TypeScript definitions may be used during development via intelligent code completion in Integrated Development Environments (IDE) like VSCode.
 
@@ -213,13 +213,13 @@ The [tests/e2e](tests/e2e) folder contains example set-ups:
 
 ### CLI
 
-The CLI wraps the Rollup plugin and uses the `"svelte"` field defined in your `package.json` as the entry point.
+The CLI uses the `"svelte"` field from your `package.json` as the entry point:
 
 ```sh
 npx sveld
 ```
 
-Append `--json` or `--markdown` flags to generate documentation in JSON/Markdown formats, respectively.
+Generate documentation in JSON and/or Markdown formats using the following flags:
 
 ```sh
 npx sveld --json --markdown
