@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "erasableSyntaxOnly": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "ignoreDeprecations": "5.0",
