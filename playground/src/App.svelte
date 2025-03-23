@@ -1,65 +1,55 @@
 <script lang="ts">
-  import Header from "./Header.svelte";
-  import {
-    FormLabel,
-    Dropdown,
-    Grid,
-    Row,
-    Column,
-    Tabs,
-    Tab,
-    TabContent,
-    InlineLoading,
-  } from "carbon-components-svelte";
-  import { onMount, SvelteComponent, tick } from "svelte";
-  import ComponentParser from "../../src/ComponentParser";
-  import CodeEditor from "./CodeEditor.svelte";
-  import data from "./data";
-  import TabContentOverlay from "./TabContentOverlay.svelte";
+import { Column, Dropdown, FormLabel, Grid, InlineLoading, Row, Tab, TabContent, Tabs } from "carbon-components-svelte";
+import { type SvelteComponent, onMount, tick } from "svelte";
+import ComponentParser from "../../src/ComponentParser";
+import CodeEditor from "./CodeEditor.svelte";
+import Header from "./Header.svelte";
+import TabContentOverlay from "./TabContentOverlay.svelte";
+import data from "./data";
 
-  const parser = new ComponentParser();
+const parser = new ComponentParser();
 
-  let selectedId = data[0].moduleName;
-  let tabTypeScript: typeof SvelteComponent<any>;
-  let tabJson: typeof SvelteComponent<any>;
-  let tabMarkdown: typeof SvelteComponent<any>;
+const selectedId = data[0].moduleName;
+let tabTypeScript: typeof SvelteComponent<any>;
+let tabJson: typeof SvelteComponent<any>;
+let tabMarkdown: typeof SvelteComponent<any>;
 
-  onMount(() => {
-    import("./TabTypeScript.svelte").then((importee) => {
-      tabTypeScript = importee.default;
-    });
-
-    import("./TabJson.svelte").then((importee) => {
-      tabJson = importee.default;
-    });
-
-    import("./TabMarkdown.svelte").then((importee) => {
-      tabMarkdown = importee.default;
-    });
+onMount(() => {
+  import("./TabTypeScript.svelte").then((importee) => {
+    tabTypeScript = importee.default;
   });
 
-  $: selected = data.find((datum) => datum.moduleName === selectedId);
-  $: value = selected?.code;
-  $: moduleName = selected?.moduleName ?? "Component";
+  import("./TabJson.svelte").then((importee) => {
+    tabJson = importee.default;
+  });
 
-  let parsed_component = {};
-  let parse_error: string | null = null;
-  let codemirror: CodeMirror.Editor | null = null;
+  import("./TabMarkdown.svelte").then((importee) => {
+    tabMarkdown = importee.default;
+  });
+});
 
-  $: {
-    try {
-      parse_error = null;
+$: selected = data.find((datum) => datum.moduleName === selectedId);
+$: value = selected?.code;
+$: moduleName = selected?.moduleName ?? "Component";
 
-      if (value) {
-        parsed_component = parser.parseSvelteComponent(value, {
-          moduleName,
-          filePath: "VIRTUAL",
-        });
-      }
-    } catch (error) {
-      parse_error = error as string;
+let parsed_component = {};
+let parse_error: string | null = null;
+const codemirror: CodeMirror.Editor | null = null;
+
+$: {
+  try {
+    parse_error = null;
+
+    if (value) {
+      parsed_component = parser.parseSvelteComponent(value, {
+        moduleName,
+        filePath: "VIRTUAL",
+      });
     }
+  } catch (error) {
+    parse_error = error as string;
   }
+}
 </script>
 
 <Header>
