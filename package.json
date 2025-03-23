@@ -9,7 +9,7 @@
     "test": "bun test",
     "test:fixtures-types": "bun --bun tsc --project tsconfig.fixtures.json",
     "test:e2e": "bun tests/test-e2e.ts",
-    "format": "bun --bun prettier --write \".\" --cache",
+    "format": "bunx biome check --write ./",
     "build": "bun --bun tsc"
   },
   "dependencies": {
@@ -27,36 +27,19 @@
   "devDependencies": {
     "@types/bun": "^1.2.15",
     "@types/jest": "^29.5.14",
-    "@types/prettier": "^3.0.0",
     "culls": "^0.1.1",
-    "prettier-plugin-svelte": "^3.4.0"
+    "@biomejs/biome": "1.9.4"
   },
   "bin": {
     "sveld": "cli.js"
   },
-  "files": [
-    "lib",
-    "cli.js"
-  ],
+  "files": ["lib", "cli.js"],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/carbon-design-system/sveld.git"
   },
   "homepage": "https://github.com/carbon-design-system/sveld",
   "bugs": "https://github.com/carbon-design-system/sveld/issues",
-  "keywords": [
-    "svelte",
-    "svelte component",
-    "documentation",
-    "docgen",
-    "typescript",
-    "definitions",
-    "JSDocs"
-  ],
-  "prettier": {
-    "printWidth": 120
-  },
-  "maintainers": [
-    "Eric Liu (https://github.com/metonym)"
-  ]
+  "keywords": ["svelte", "svelte component", "documentation", "docgen", "typescript", "definitions", "JSDocs"],
+  "maintainers": ["Eric Liu (https://github.com/metonym)"]
 }
