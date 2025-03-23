@@ -1,7 +1,7 @@
 <script lang="ts" context="module">
-  import CodeMirror from "codemirror";
-  import "codemirror/mode/htmlmixed/htmlmixed";
-  import "codemirror/theme/zenburn.css";
+import CodeMirror from "codemirror";
+import "codemirror/mode/htmlmixed/htmlmixed";
+import "codemirror/theme/zenburn.css";
 </script>
 
 <script lang="ts">

@@ -1,8 +1,8 @@
+import resolve from "@rollup/plugin-node-resolve";
 import * as Rollup from "rollup";
 import * as svelte from "rollup-plugin-svelte";
-import resolve from "@rollup/plugin-node-resolve";
-import { generateBundle, PluginSveldOptions, writeOutput } from "./rollup-plugin";
 import { getSvelteEntry } from "./get-svelte-entry";
+import { type PluginSveldOptions, generateBundle, writeOutput } from "./rollup-plugin";
 
 export async function cli(process: NodeJS.Process) {
   const options: PluginSveldOptions = process.argv

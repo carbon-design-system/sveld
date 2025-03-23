@@ -1,5 +1,5 @@
-import { Glob } from "bun";
 import path from "node:path";
+import { Glob } from "bun";
 import ComponentParser from "../src/ComponentParser";
 import Writer from "../src/writer/Writer";
 import { writeTsDefinition } from "../src/writer/writer-ts-definitions";

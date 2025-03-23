@@ -2,9 +2,9 @@
 // @ts-nocheck
 import * as commentParser from "comment-parser";
 import type { VariableDeclaration } from "estree";
-import { Node } from "estree-walker";
+import type { Node } from "estree-walker";
 import { compile, parse, walk } from "svelte/compiler";
-import { Ast, TemplateNode, Var } from "svelte/types/compiler/interfaces";
+import type { Ast, TemplateNode, Var } from "svelte/types/compiler/interfaces";
 import { getElementByTag } from "./element-tag-map";
 
 interface CompiledSvelteCode {
@@ -363,7 +363,7 @@ export default class ComponentParser {
               body,
             } = node.declaration?.declarations ? node.declaration.declarations[0] : node.declaration;
 
-            let prop_name = id.name;
+            const prop_name = id.name;
             let value = undefined;
             let type = undefined;
             let kind = node.declaration.kind;
@@ -438,7 +438,7 @@ export default class ComponentParser {
     }
 
     let dispatcher_name: undefined | string = undefined;
-    let callees: { name: string; arguments: any }[] = [];
+    const callees: { name: string; arguments: any }[] = [];
 
     walk({ html: this.parsed.html, instance: this.parsed.instance } as unknown as Node, {
       enter: (node, parent, prop) => {
@@ -505,7 +505,7 @@ export default class ComponentParser {
           let description: undefined | string = undefined;
           let isFunction = false;
           let isFunctionDeclaration = false;
-          let isRequired = kind === "let" && init == null;
+          const isRequired = kind === "let" && init == null;
 
           if (init != null) {
             if (
@@ -587,7 +587,7 @@ export default class ComponentParser {
         }
 
         if (node.type === "Comment") {
-          let data: string = node?.data?.trim() ?? "";
+          const data: string = node?.data?.trim() ?? "";
 
           if (/^@component/.test(data)) {
             this.componentComment = data.replace(/^@component/, "").replace(/\r/g, "");
@@ -600,7 +600,7 @@ export default class ComponentParser {
           const slot_props = node.attributes
             .filter((attr: { name?: string }) => attr.name !== "name")
             .reduce((slot_props: SlotProps, { name, value }: { name: string; value?: any }) => {
-              let slot_prop_value: SlotPropValue = {
+              const slot_prop_value: SlotPropValue = {
                 value: undefined,
                 replace: false,
               };

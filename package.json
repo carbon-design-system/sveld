@@ -25,10 +25,10 @@
     "typescript": "^5.8.3"
   },
   "devDependencies": {
+    "@biomejs/biome": "1.9.4",
     "@types/bun": "^1.2.15",
     "@types/jest": "^29.5.14",
-    "culls": "^0.1.1",
-    "@biomejs/biome": "1.9.4"
+    "culls": "^0.1.1"
   },
   "bin": {
     "sveld": "cli.js"

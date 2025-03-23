@@ -1,6 +1,6 @@
 import * as path from "path";
-import { ComponentDocs } from "../rollup-plugin";
-import WriterMarkdown, { AppendType } from "./WriterMarkdown";
+import type { ComponentDocs } from "../rollup-plugin";
+import WriterMarkdown, { type AppendType } from "./WriterMarkdown";
 import { formatTsProps, getTypeDefs } from "./writer-ts-definitions";
 
 const PROP_TABLE_HEADER = `| Prop name | Required | Kind | Reactive | Type | Default value | Description |\n| :- | :- | :- | :- |\n`;

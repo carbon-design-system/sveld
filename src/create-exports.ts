@@ -1,5 +1,5 @@
-import { ParsedExports } from "./parse-exports";
-import { ComponentDocs } from "./rollup-plugin";
+import type { ParsedExports } from "./parse-exports";
+import type { ComponentDocs } from "./rollup-plugin";
 
 export function createExports(parsed_exports: ParsedExports, components: ComponentDocs): string {
   const source = Object.entries(parsed_exports).map(([id, exportee]) => {
