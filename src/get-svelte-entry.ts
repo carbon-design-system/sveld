@@ -1,5 +1,5 @@
-import * as fs from "fs";
-import * as path from "path";
+import * as fs from "node:fs";
+import * as path from "node:path";
 
 export type SvelteEntryPoint = string;
 
@@ -13,10 +13,9 @@ export function getSvelteEntry(entryPoint?: SvelteEntryPoint): SvelteEntryPoint 
 
     if (fs.existsSync(entry_path)) {
       return entryPoint;
-    } else {
-      console.log(`Invalid entry point: ${entry_path}.`);
-      return null;
     }
+    console.log(`Invalid entry point: ${entry_path}.`);
+    return null;
   }
 
   const pkg_path = path.join(process.cwd(), "package.json");

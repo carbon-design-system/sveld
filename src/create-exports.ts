@@ -5,14 +5,14 @@ export function createExports(parsed_exports: ParsedExports, components: Compone
   const source = Object.entries(parsed_exports).map(([id, exportee]) => {
     let module_exports: string[] = [];
     if (components.has(id)) {
-      module_exports = components.get(id)!.moduleExports.map((moduleExport) => {
+      module_exports = components.get(id)?.moduleExports.map((moduleExport) => {
         return moduleExport.name;
       });
     }
 
     let named_exports = "";
 
-    if (module_exports.length > 0) named_exports = ", " + module_exports.join(", ");
+    if (module_exports.length > 0) named_exports = `, ${module_exports.join(", ")}`;
 
     if (id === "default" || exportee.default) {
       if (exportee.mixed) {

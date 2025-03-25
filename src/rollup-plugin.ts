@@ -1,6 +1,6 @@
-import * as fs from "fs";
-import * as path from "path";
-import * as fsp from "fs/promises";
+import * as fs from "node:fs";
+import * as fsp from "node:fs/promises";
+import * as path from "node:path";
 import { replace, typescript } from "svelte-preprocess";
 import { preprocess } from "svelte/compiler";
 import { globSync } from "tinyglobby";
@@ -64,7 +64,7 @@ export async function generateBundle(input: string, glob: boolean) {
   if (glob) {
     globSync([`${dir}/**/*.svelte`]).forEach((file) => {
       const moduleName = path.parse(file).name.replace(/\-/g, "");
-      const source = normalizeSeparators("./" + path.relative(dir, file));
+      const source = normalizeSeparators(`./${path.relative(dir, file)}`);
 
       if (exports[moduleName]) {
         exports[moduleName].source = source;

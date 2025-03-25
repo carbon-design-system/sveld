@@ -1,11 +1,12 @@
-import * as path from "path";
+import * as path from "node:path";
 import type { ComponentDocs } from "../rollup-plugin";
 import WriterMarkdown, { type AppendType } from "./WriterMarkdown";
 import { formatTsProps, getTypeDefs } from "./writer-ts-definitions";
 
-const PROP_TABLE_HEADER = `| Prop name | Required | Kind | Reactive | Type | Default value | Description |\n| :- | :- | :- | :- |\n`;
-const SLOT_TABLE_HEADER = `| Slot name | Default | Props | Fallback |\n| :- | :- | :- | :- |\n`;
-const EVENT_TABLE_HEADER = `| Event name | Type | Detail |\n| :- | :- | :- |\n`;
+const PROP_TABLE_HEADER =
+  "| Prop name | Required | Kind | Reactive | Type | Default value | Description |\n| :- | :- | :- | :- |\n";
+const SLOT_TABLE_HEADER = "| Slot name | Default | Props | Fallback |\n| :- | :- | :- | :- |\n";
+const EVENT_TABLE_HEADER = "| Event name | Type | Detail |\n| :- | :- | :- |\n";
 const MD_TYPE_UNDEFINED = "--";
 
 function formatPropType(type?: any) {

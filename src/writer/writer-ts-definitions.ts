@@ -1,4 +1,4 @@
-import * as path from "path";
+import * as path from "node:path";
 import { convertSvelteExt, createExports } from "../create-exports";
 import type { ParsedExports } from "../parse-exports";
 import type { ComponentDocApi, ComponentDocs } from "../rollup-plugin";
@@ -12,7 +12,7 @@ const EMPTY_EVENTS = "Record<string, any>";
 
 export function formatTsProps(props?: string) {
   if (props === undefined) return ANY_TYPE;
-  return props + "\n";
+  return `${props}\n`;
 }
 
 export function getTypeDefs(def: Pick<ComponentDocApi, "typedefs">) {
@@ -116,7 +116,7 @@ function genSlotDef(def: Pick<ComponentDocApi, "slots">) {
   return def.slots
     .map(({ name, slot_props, ...rest }) => {
       const key = rest.default ? "default" : clampKey(name!);
-      const description = rest.description ? "/** " + rest.description + " */\n" : "";
+      const description = rest.description ? `/** ${rest.description} */\n` : "";
       return `${description}${clampKey(key)}: ${formatTsProps(slot_props)};`;
     })
     .join("\n");
@@ -139,7 +139,7 @@ function genEventDef(def: Pick<ComponentDocApi, "events">) {
     .map((event) => {
       let description = "";
       if (event.type === "dispatched" && event.description) {
-        description = "/** " + event.description + " */\n";
+        description = `/** ${event.description} */\n`;
       }
       return `${description}${clampKey(event.name)}: ${
         event.type === "dispatched" ? createDispatchedEvent(event.detail) : `${mapEvent()}["${event.name}"]`
@@ -187,8 +187,8 @@ function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">) {
       const is_function = prop.type && /=>/.test(prop.type);
 
       if (is_function) {
-        const [first, second, ...rest] = prop.type!.split("=>");
-        const rest_type = rest.map((item) => "=>" + item).join("");
+        const [first, second, ...rest] = prop.type?.split("=>");
+        const rest_type = rest.map((item) => `=>${item}`).join("");
 
         type_def = `export declare function ${prop.name}${first}:${second}${rest_type};`;
       }
@@ -261,5 +261,5 @@ export default async function writeTsDefinitions(components: ComponentDocs, opti
 
   await writer.write(ts_base_path, indexDTs);
 
-  console.log(`created TypeScript definitions.`);
+  console.log("created TypeScript definitions.");
 }

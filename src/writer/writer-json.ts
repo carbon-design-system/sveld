@@ -1,4 +1,4 @@
-import path from "path";
+import path from "node:path";
 import { normalizeSeparators } from "../path";
 import type { ComponentDocApi, ComponentDocs } from "../rollup-plugin";
 import Writer from "./Writer";

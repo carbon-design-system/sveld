@@ -150,7 +150,7 @@ export default class ComponentParser {
     let formatted_comment = comment;
 
     if (!formatted_comment.startsWith("/*")) {
-      formatted_comment = "/*" + formatted_comment;
+      formatted_comment = `/*${formatted_comment}`;
     }
 
     if (!formatted_comment.endsWith("*/")) {
@@ -296,7 +296,7 @@ export default class ComponentParser {
             this.addSlot({
               slot_name: name,
               slot_props: type,
-              slot_description: !!description ? description : undefined,
+              slot_description: description ? description : undefined,
             });
             break;
           case "event":
@@ -304,7 +304,7 @@ export default class ComponentParser {
               name,
               detail: type,
               has_argument: false,
-              description: !!description ? description : undefined,
+              description: description ? description : undefined,
             });
             break;
           case "typedef":
@@ -399,7 +399,7 @@ export default class ComponentParser {
             }
 
             if (declaration_type === "FunctionDeclaration") {
-              value = "() => " + this.sourceAtPos(body.start, body.end)?.replace(/[\r\n]+/g, " ");
+              value = `() => ${this.sourceAtPos(body.start, body.end)?.replace(/[\r\n]+/g, " ")}`;
               type = "() => any";
               kind = "function";
               isFunction = true;
@@ -417,7 +417,7 @@ export default class ComponentParser {
             }
 
             if (!description && this.typedefs.has(type)) {
-              description = this.typedefs.get(type)!.description;
+              description = this.typedefs.get(type)?.description;
             }
 
             this.addModuleExport(prop_name, {
@@ -476,8 +476,8 @@ export default class ComponentParser {
           let prop_name: string;
           if (node.declaration == null && node.specifiers[0]?.type === "ExportSpecifier") {
             const specifier = node.specifiers[0];
-            const localName = specifier.local.name,
-              exportedName = specifier.exported.name;
+            const localName = specifier.local.name;
+            const exportedName = specifier.exported.name;
             let declaration: VariableDeclaration;
             // Search through all variable declarations for this variable
             //  Limitation: the variable must have been declared before the export
@@ -535,7 +535,7 @@ export default class ComponentParser {
           }
 
           if (declaration_type === "FunctionDeclaration") {
-            value = "() => " + this.sourceAtPos(body.start, body.end)?.replace(/[\r\n]+/g, " ");
+            value = `() => ${this.sourceAtPos(body.start, body.end)?.replace(/[\r\n]+/g, " ")}`;
             type = "() => any";
             kind = "function";
             isFunction = true;
@@ -569,7 +569,7 @@ export default class ComponentParser {
           }
 
           if (!description && this.typedefs.has(type)) {
-            description = this.typedefs.get(type)!.description;
+            description = this.typedefs.get(type)?.description;
           }
 
           this.addProp(prop_name, {
@@ -698,13 +698,11 @@ export default class ComponentParser {
         if (this.bindings.has(prop.name)) {
           return {
             ...prop,
-            type:
-              "null | " +
-              this.bindings
-                .get(prop.name)!
-                .elements.sort()
-                .map((element) => getElementByTag(element))
-                .join(" | "),
+            type: `null | ${this.bindings
+              .get(prop.name)
+              ?.elements.sort()
+              .map((element) => getElementByTag(element))
+              .join(" | ")}`,
           };
         }
 
@@ -726,7 +724,7 @@ export default class ComponentParser {
               new_props.push(`${key}: ${slot_props[key].value}`);
             });
 
-            const formatted_slot_props = new_props.length === 0 ? "{}" : "{ " + new_props.join(", ") + " }";
+            const formatted_slot_props = new_props.length === 0 ? "{}" : `{ ${new_props.join(", ")} }`;
 
             return { ...slot, slot_props: formatted_slot_props };
           } catch (e) {
