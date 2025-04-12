@@ -1,7 +1,7 @@
 import * as path from "path";
 import { convertSvelteExt, createExports } from "../create-exports";
-import { ParsedExports } from "../parse-exports";
-import { ComponentDocApi, ComponentDocs } from "../rollup-plugin";
+import type { ParsedExports } from "../parse-exports";
+import type { ComponentDocApi, ComponentDocs } from "../rollup-plugin";
 import Writer from "./Writer";
 
 const ANY_TYPE = "any";
@@ -55,7 +55,7 @@ function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleN
         .filter(Boolean)
         .join("");
 
-      let prop_value = prop.constant && !prop.isFunction ? prop.value : prop.type;
+      const prop_value = prop.constant && !prop.isFunction ? prop.value : prop.type;
 
       return `
       ${prop_comments.length > 0 ? `/**\n${prop_comments}*/` : EMPTY_STR}
