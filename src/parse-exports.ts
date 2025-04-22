@@ -1,6 +1,6 @@
-import * as acorn from "acorn";
 import * as fs from "fs";
 import path from "path";
+import * as acorn from "acorn";
 import { normalizeSeparators } from "./path";
 
 interface NodeImportDeclaration extends acorn.Node {
