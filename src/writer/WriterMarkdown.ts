@@ -36,7 +36,7 @@ export default class WriterMarkdown extends Writer {
       case "h3":
       case "h4":
       case "h5":
-      case "h6":
+      case "h6": {
         const length = Number(type.slice(-1));
 
         this.source += `${Array.from({ length })
@@ -50,6 +50,7 @@ export default class WriterMarkdown extends Writer {
           });
         }
         break;
+      }
       case "quote":
         this.source += `> ${raw}`;
         break;

@@ -1,8 +1,8 @@
 <script lang="ts">
-  export let title = "";
+export const title = "";
 
-  /** @type {"error" | "warning"} */
-  export let kind = "error";
+/** @type {"error" | "warning"} */
+export const kind = "error";
 </script>
 
 <div class="tab-content-overlay" class:error={kind === "error"} class:warning={kind === "warning"}>
