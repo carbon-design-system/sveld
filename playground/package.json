@@ -9,13 +9,13 @@
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^3.1.2",
     "@types/codemirror": "^5.60.16",
-    "carbon-components-svelte": "^0.89.2",
+    "carbon-components-svelte": "^0.89.7",
     "carbon-preprocess-svelte": "^0.11.11",
-    "codemirror": "^5.65.19",
-    "prettier": "^3.5.3",
+    "codemirror": "^5.65.20",
+    "prettier": "^3.6.2",
     "svelte": "^4.2.20",
-    "svelte-highlight": "^7.8.3",
-    "typescript": "^5.8.3",
-    "vite": "^5.4.19"
+    "svelte-highlight": "^7.8.4",
+    "typescript": "^5.9.2",
+    "vite": "^5.4.20"
   }
 }
