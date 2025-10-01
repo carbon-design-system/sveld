@@ -1,5 +1,5 @@
-import * as fs from "fs";
-import * as path from "path";
+import * as fs from "node:fs";
+import * as path from "node:path";
 import { getSvelteEntry } from "../src/get-svelte-entry";
 
 describe("getSvelteEntry", () => {
@@ -13,6 +13,10 @@ describe("getSvelteEntry", () => {
     jest.spyOn(fs, "readFileSync");
     jest.spyOn(console, "log").mockImplementation(() => {});
     jest.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  beforeAll(() => {
+    jest.restoreAllMocks();
   });
 
   afterEach(() => {
