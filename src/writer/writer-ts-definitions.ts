@@ -28,7 +28,7 @@ function clampKey(key: string) {
   return key;
 }
 
-function addCommentLine(value: any, returnValue?: any) {
+function addCommentLine(value: string | boolean | undefined, returnValue?: string) {
   if (!value) return undefined;
   return `* ${returnValue || value}\n`;
 }
@@ -86,6 +86,8 @@ function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleN
      *
      * Even though Svelte 4 does this automatically, we need to preserve this for Svelte 3.
      */
+
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: type generation
     const dataAttributes = "[key: `data-${string}`]: any;";
 
     // When both @extends and @restProps are present, merge all three type sources.
@@ -129,7 +131,7 @@ function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleN
 function genSlotDef(def: Pick<ComponentDocApi, "slots">) {
   return def.slots
     .map(({ name, slot_props, ...rest }) => {
-      const key = rest.default ? "default" : clampKey(name!);
+      const key = rest.default ? "default" : clampKey(name ?? "");
       const description = rest.description ? `/** ${rest.description} */\n` : "";
       return `${description}${clampKey(key)}: ${formatTsProps(slot_props)};`;
     })
@@ -200,8 +202,8 @@ function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">) {
 
       const is_function = prop.type && /=>/.test(prop.type);
 
-      if (is_function) {
-        const [first, second, ...rest] = prop.type?.split("=>");
+      if (is_function && prop.type) {
+        const [first, second, ...rest] = prop.type.split("=>");
         const rest_type = rest.map((item) => `=>${item}`).join("");
 
         type_def = `export declare function ${prop.name}${first}:${second}${rest_type};`;

@@ -19,10 +19,15 @@
 
   const parser = new ComponentParser();
 
+  type TabProps = {
+    parsed_component?: Record<string, unknown>;
+    moduleName?: string;
+  };
+
   let selectedId = data[0].moduleName;
-  let tabTypeScript: typeof SvelteComponent<any>;
-  let tabJson: typeof SvelteComponent<any>;
-  let tabMarkdown: typeof SvelteComponent<any>;
+  let tabTypeScript: typeof SvelteComponent<TabProps>;
+  let tabJson: typeof SvelteComponent<TabProps>;
+  let tabMarkdown: typeof SvelteComponent<TabProps>;
 
   onMount(() => {
     import("./TabTypeScript.svelte").then((importee) => {

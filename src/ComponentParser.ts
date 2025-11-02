@@ -28,7 +28,7 @@ interface ComponentProp {
   kind: "let" | "const" | "function";
   constant: boolean;
   type?: string;
-  value?: any;
+  value?: string;
   description?: string;
   isFunction: boolean;
   isFunctionDeclaration: boolean;
@@ -66,7 +66,7 @@ interface ForwardedEvent {
 interface DispatchedEvent {
   type: "dispatched";
   name: string;
-  detail?: any;
+  detail?: string;
   description?: string;
 }
 
@@ -138,7 +138,7 @@ export default class ComponentParser {
     this.options = options;
   }
 
-  private static mapToArray<T>(map: Map<any, T>) {
+  private static mapToArray<T>(map: Map<string, T>) {
     return Array.from(map, ([_key, value]) => value);
   }
 
@@ -167,14 +167,17 @@ export default class ComponentParser {
   private collectReactiveVars() {
     this.compiled?.vars
       .filter(({ reassigned, writable }) => reassigned && writable)
-      .forEach(({ name }) => this.reactive_vars.add(name));
+      .forEach(({ name }) => {
+        this.reactive_vars.add(name);
+      });
   }
 
   private addProp(prop_name: string, data: ComponentProp) {
     if (ComponentParser.assignValue(prop_name) === undefined) return;
 
     if (this.props.has(prop_name)) {
-      const existing_slot = this.props.get(prop_name)!;
+      const existing_slot = this.props.get(prop_name);
+      if (!existing_slot) return;
 
       this.props.set(prop_name, {
         ...existing_slot,
@@ -189,7 +192,8 @@ export default class ComponentParser {
     if (ComponentParser.assignValue(prop_name) === undefined) return;
 
     if (this.moduleExports.has(prop_name)) {
-      const existing_slot = this.moduleExports.get(prop_name)!;
+      const existing_slot = this.moduleExports.get(prop_name);
+      if (!existing_slot) return;
 
       this.moduleExports.set(prop_name, {
         ...existing_slot,
@@ -200,7 +204,7 @@ export default class ComponentParser {
     }
   }
 
-  private aliasType(type: any) {
+  private aliasType(type: string) {
     if (type === "*") return "any";
     return type;
   }
@@ -217,13 +221,14 @@ export default class ComponentParser {
     slot_description?: string;
   }) {
     const default_slot = slot_name === undefined || slot_name === "";
-    const name: ComponentSlotName = default_slot ? DEFAULT_SLOT_NAME : slot_name!;
+    const name: ComponentSlotName = default_slot ? DEFAULT_SLOT_NAME : (slot_name ?? "");
     const fallback = ComponentParser.assignValue(slot_fallback);
     const props = ComponentParser.assignValue(slot_props);
     const description = slot_description?.split("-").pop()?.trim();
 
     if (this.slots.has(name)) {
-      const existing_slot = this.slots.get(name)!;
+      const existing_slot = this.slots.get(name);
+      if (!existing_slot) return;
 
       this.slots.set(name, {
         ...existing_slot,
@@ -275,7 +280,7 @@ export default class ComponentParser {
   }
 
   private parseCustomTypes() {
-    commentParser.parse(this.source!, { spacing: "preserve" }).forEach(({ tags }) => {
+    commentParser.parse(this.source, { spacing: "preserve" }).forEach(({ tags }) => {
       tags.forEach(({ tag, type: tagType, name, description }) => {
         const type = this.aliasType(tagType);
 
@@ -364,10 +369,10 @@ export default class ComponentParser {
             } = node.declaration?.declarations ? node.declaration.declarations[0] : node.declaration;
 
             const prop_name = id.name;
-            let value;
-            let type;
+            let value: string | undefined;
+            let type: string | undefined;
             let kind = node.declaration.kind;
-            let description;
+            let description: string | undefined;
             let isFunction = false;
             let isFunctionDeclaration = false;
 
@@ -438,7 +443,7 @@ export default class ComponentParser {
     }
 
     let dispatcher_name: undefined | string;
-    const callees: { name: string; arguments: any }[] = [];
+    const callees: { name: string; arguments: Expression[] }[] = [];
 
     walk({ html: this.parsed.html, instance: this.parsed.instance } as unknown as Node, {
       enter: (node, parent, _prop) => {
@@ -486,7 +491,7 @@ export default class ComponentParser {
                 declaration = varDecl;
               }
             });
-            node.declaration = declaration!;
+            node.declaration = declaration;
             prop_name = exportedName;
           }
 
@@ -499,8 +504,8 @@ export default class ComponentParser {
 
           prop_name ??= id.name;
 
-          let value;
-          let type;
+          let value: string | undefined;
+          let type: string | undefined;
           let kind = node.declaration.kind;
           let description: undefined | string;
           let isFunction = false;
@@ -595,17 +600,17 @@ export default class ComponentParser {
         }
 
         if (node.type === "Slot") {
-          const slot_name = node.attributes.find((attr: any) => attr.name === "name")?.value[0].data;
+          const slot_name = node.attributes.find((attr: { name?: string }) => attr.name === "name")?.value[0].data;
 
           const slot_props = node.attributes
             .filter((attr: { name?: string }) => attr.name !== "name")
-            .reduce((slot_props: SlotProps, { name, value }: { name: string; value?: any }) => {
+            .reduce((slot_props: SlotProps, { name, value }: { name: string; value?: Expression[] }) => {
               const slot_prop_value: SlotPropValue = {
                 value: undefined,
                 replace: false,
               };
 
-              if (value === undefined) return {};
+              if (value === undefined) return slot_props;
 
               if (value[0]) {
                 const { type, expression, raw, start, end } = value[0];
@@ -630,7 +635,8 @@ export default class ComponentParser {
                 }
               }
 
-              return { ...slot_props, [name]: slot_prop_value };
+              slot_props[name] = slot_prop_value;
+              return slot_props;
             }, {});
 
           const fallback = (node.children as TemplateNode[])
@@ -660,7 +666,8 @@ export default class ComponentParser {
           const element_name = parent.name;
 
           if (this.bindings.has(prop_name)) {
-            const existing_bindings = this.bindings.get(prop_name)!;
+            const existing_bindings = this.bindings.get(prop_name);
+            if (!existing_bindings) return;
 
             if (!existing_bindings.elements.includes(element_name)) {
               this.bindings.set(prop_name, {
@@ -719,7 +726,7 @@ export default class ComponentParser {
 
             Object.keys(slot_props).forEach((key) => {
               if (slot_props[key].replace && slot_props[key].value !== undefined) {
-                slot_props[key].value = this.props.get(slot_props[key].value!)?.type;
+                slot_props[key].value = this.props.get(slot_props[key].value)?.type;
               }
 
               if (slot_props[key].value === undefined) slot_props[key].value = "any";
@@ -734,8 +741,8 @@ export default class ComponentParser {
           }
         })
         .sort((a, b) => {
-          if (a.name! < b.name!) return -1;
-          if (a.name! > b.name) return 1;
+          if (a.name < b.name) return -1;
+          if (a.name > b.name) return 1;
           return 0;
         }),
       events: ComponentParser.mapToArray(this.events),

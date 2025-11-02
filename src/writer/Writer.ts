@@ -11,7 +11,7 @@ export default class Writer {
     this.options = options;
   }
 
-  public async format(raw: any) {
+  public async format(raw: string) {
     try {
       const result = await prettier.format(raw, this.options);
       return result;
@@ -21,7 +21,7 @@ export default class Writer {
     }
   }
 
-  public async write(filePath: string, raw: any) {
+  public async write(filePath: string, raw: string) {
     await fsp.mkdir(path.parse(filePath).dir, { recursive: true });
     await fsp.writeFile(filePath, await this.format(raw));
   }

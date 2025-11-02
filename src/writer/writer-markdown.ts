@@ -8,7 +8,7 @@ const SLOT_TABLE_HEADER = `| Slot name | Default | Props | Fallback |\n| :- | :-
 const EVENT_TABLE_HEADER = `| Event name | Type | Detail |\n| :- | :- | :- |\n`;
 const MD_TYPE_UNDEFINED = "--";
 
-function formatPropType(type?: any) {
+function formatPropType(type?: string) {
   if (type === undefined) return MD_TYPE_UNDEFINED;
   return `<code>${type.replace(/\|/g, "&#124;")}</code>`;
 }
@@ -17,12 +17,12 @@ function escapeHtml(text: string) {
   return text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-function formatPropValue(value: any) {
+function formatPropValue(value: string | undefined) {
   if (value === undefined) return `<code>${value}</code>`;
   return `<code>${value.replace(/`/g, "\\`").replace(/\|/g, "&#124;")}</code>`;
 }
 
-function formatPropDescription(description: any) {
+function formatPropDescription(description: string | undefined) {
   if (description === undefined || description.trim().length === 0) return MD_TYPE_UNDEFINED;
   return escapeHtml(description).replace(/\n/g, "<br />");
 }
@@ -63,7 +63,8 @@ export default async function writeMarkdown(components: ComponentDocs, options: 
   const keys = Array.from(components.keys()).sort();
 
   keys.forEach((key) => {
-    const component = components.get(key)!;
+    const component = components.get(key);
+    if (!component) return;
 
     document.append("h2", `\`${component.moduleName}\``);
 
