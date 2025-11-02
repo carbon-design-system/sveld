@@ -1,16 +1,16 @@
-import * as fs from "fs";
-import * as fsp from "fs/promises";
-import * as path from "path";
-import { globSync } from "tinyglobby";
-import writeTsDefinitions, { WriteTsDefinitionsOptions } from "./writer/writer-ts-definitions";
-import writeJson, { WriteJsonOptions } from "./writer/writer-json";
-import writeMarkdown, { WriteMarkdownOptions } from "./writer/writer-markdown";
-import ComponentParser, { ParsedComponent } from "./ComponentParser";
-import { getSvelteEntry } from "./get-svelte-entry";
-import { ParsedExports, parseExports } from "./parse-exports";
+import * as fs from "node:fs";
+import * as fsp from "node:fs/promises";
+import * as path from "node:path";
 import { preprocess } from "svelte/compiler";
 import { replace, typescript } from "svelte-preprocess";
+import { globSync } from "tinyglobby";
+import ComponentParser, { type ParsedComponent } from "./ComponentParser";
+import { getSvelteEntry } from "./get-svelte-entry";
+import { type ParsedExports, parseExports } from "./parse-exports";
 import { normalizeSeparators } from "./path";
+import writeJson, { type WriteJsonOptions } from "./writer/writer-json";
+import writeMarkdown, { type WriteMarkdownOptions } from "./writer/writer-markdown";
+import writeTsDefinitions, { type WriteTsDefinitionsOptions } from "./writer/writer-ts-definitions";
 
 export interface PluginSveldOptions {
   glob?: boolean;
@@ -63,8 +63,8 @@ export async function generateBundle(input: string, glob: boolean) {
 
   if (glob) {
     globSync([`${dir}/**/*.svelte`]).forEach((file) => {
-      const moduleName = path.parse(file).name.replace(/\-/g, "");
-      let source = normalizeSeparators("./" + path.relative(dir, file));
+      const moduleName = path.parse(file).name.replace(/-/g, "");
+      const source = normalizeSeparators(`./${path.relative(dir, file)}`);
 
       if (exports[moduleName]) {
         exports[moduleName].source = source;

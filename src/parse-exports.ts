@@ -1,6 +1,6 @@
+import * as fs from "node:fs";
+import path from "node:path";
 import * as acorn from "acorn";
-import * as fs from "fs";
-import path from "path";
 import { normalizeSeparators } from "./path";
 
 interface NodeImportDeclaration extends acorn.Node {
@@ -39,7 +39,7 @@ export function parseExports(source: string, dir: string) {
 
   const exports_by_identifier: ParsedExports = {};
 
-  // @ts-ignore
+  // @ts-expect-error
   ast.body.forEach((node: BodyNode) => {
     if (node.type === "ExportDefaultDeclaration") {
       const id = node.declaration.name;
@@ -68,7 +68,7 @@ export function parseExports(source: string, dir: string) {
       const exports = parseExports(export_file, path.dirname(file_path));
 
       for (const [key, value] of Object.entries(exports)) {
-        const source = normalizeSeparators("./" + path.join(node.source.value, value.source));
+        const source = normalizeSeparators(`./${path.join(node.source.value, value.source)}`);
         exports_by_identifier[key] = {
           ...value,
           source,

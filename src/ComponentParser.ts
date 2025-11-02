@@ -2,9 +2,9 @@
 // @ts-nocheck
 import * as commentParser from "comment-parser";
 import type { VariableDeclaration } from "estree";
-import { Node } from "estree-walker";
+import type { Node } from "estree-walker";
 import { compile, parse, walk } from "svelte/compiler";
-import { Ast, TemplateNode, Var } from "svelte/types/compiler/interfaces";
+import type { Ast, TemplateNode, Var } from "svelte/types/compiler/interfaces";
 import { getElementByTag } from "./element-tag-map";
 
 interface CompiledSvelteCode {
@@ -139,7 +139,7 @@ export default class ComponentParser {
   }
 
   private static mapToArray<T>(map: Map<any, T>) {
-    return Array.from(map, ([key, value]) => value);
+    return Array.from(map, ([_key, value]) => value);
   }
 
   private static assignValue(value?: "" | string) {
@@ -150,7 +150,7 @@ export default class ComponentParser {
     let formatted_comment = comment;
 
     if (!formatted_comment.startsWith("/*")) {
-      formatted_comment = "/*" + formatted_comment;
+      formatted_comment = `/*${formatted_comment}`;
     }
 
     if (!formatted_comment.endsWith("*/")) {
@@ -296,7 +296,7 @@ export default class ComponentParser {
             this.addSlot({
               slot_name: name,
               slot_props: type,
-              slot_description: !!description ? description : undefined,
+              slot_description: description ? description : undefined,
             });
             break;
           case "event":
@@ -304,7 +304,7 @@ export default class ComponentParser {
               name,
               detail: type,
               has_argument: false,
-              description: !!description ? description : undefined,
+              description: description ? description : undefined,
             });
             break;
           case "typedef":
@@ -363,11 +363,11 @@ export default class ComponentParser {
               body,
             } = node.declaration?.declarations ? node.declaration.declarations[0] : node.declaration;
 
-            let prop_name = id.name;
-            let value = undefined;
-            let type = undefined;
+            const prop_name = id.name;
+            let value;
+            let type;
             let kind = node.declaration.kind;
-            let description = undefined;
+            let description;
             let isFunction = false;
             let isFunctionDeclaration = false;
 
@@ -399,7 +399,7 @@ export default class ComponentParser {
             }
 
             if (declaration_type === "FunctionDeclaration") {
-              value = "() => " + this.sourceAtPos(body.start, body.end)?.replace(/[\r\n]+/g, " ");
+              value = `() => ${this.sourceAtPos(body.start, body.end)?.replace(/[\r\n]+/g, " ")}`;
               type = "() => any";
               kind = "function";
               isFunction = true;
@@ -417,7 +417,7 @@ export default class ComponentParser {
             }
 
             if (!description && this.typedefs.has(type)) {
-              description = this.typedefs.get(type)!.description;
+              description = this.typedefs.get(type)?.description;
             }
 
             this.addModuleExport(prop_name, {
@@ -437,11 +437,11 @@ export default class ComponentParser {
       });
     }
 
-    let dispatcher_name: undefined | string = undefined;
-    let callees: { name: string; arguments: any }[] = [];
+    let dispatcher_name: undefined | string;
+    const callees: { name: string; arguments: any }[] = [];
 
     walk({ html: this.parsed.html, instance: this.parsed.instance } as unknown as Node, {
-      enter: (node, parent, prop) => {
+      enter: (node, parent, _prop) => {
         if (node.type === "CallExpression") {
           if (node.callee.name === "createEventDispatcher") {
             dispatcher_name = parent?.id.name;
@@ -499,13 +499,13 @@ export default class ComponentParser {
 
           prop_name ??= id.name;
 
-          let value = undefined;
-          let type = undefined;
+          let value;
+          let type;
           let kind = node.declaration.kind;
-          let description: undefined | string = undefined;
+          let description: undefined | string;
           let isFunction = false;
           let isFunctionDeclaration = false;
-          let isRequired = kind === "let" && init == null;
+          const isRequired = kind === "let" && init == null;
 
           if (init != null) {
             if (
@@ -535,7 +535,7 @@ export default class ComponentParser {
           }
 
           if (declaration_type === "FunctionDeclaration") {
-            value = "() => " + this.sourceAtPos(body.start, body.end)?.replace(/[\r\n]+/g, " ");
+            value = `() => ${this.sourceAtPos(body.start, body.end)?.replace(/[\r\n]+/g, " ")}`;
             type = "() => any";
             kind = "function";
             isFunction = true;
@@ -569,7 +569,7 @@ export default class ComponentParser {
           }
 
           if (!description && this.typedefs.has(type)) {
-            description = this.typedefs.get(type)!.description;
+            description = this.typedefs.get(type)?.description;
           }
 
           this.addProp(prop_name, {
@@ -587,7 +587,7 @@ export default class ComponentParser {
         }
 
         if (node.type === "Comment") {
-          let data: string = node?.data?.trim() ?? "";
+          const data: string = node?.data?.trim() ?? "";
 
           if (/^@component/.test(data)) {
             this.componentComment = data.replace(/^@component/, "").replace(/\r/g, "");
@@ -600,7 +600,7 @@ export default class ComponentParser {
           const slot_props = node.attributes
             .filter((attr: { name?: string }) => attr.name !== "name")
             .reduce((slot_props: SlotProps, { name, value }: { name: string; value?: any }) => {
-              let slot_prop_value: SlotPropValue = {
+              const slot_prop_value: SlotPropValue = {
                 value: undefined,
                 replace: false,
               };
@@ -701,8 +701,8 @@ export default class ComponentParser {
             type:
               "null | " +
               this.bindings
-                .get(prop.name)!
-                .elements.sort()
+                .get(prop.name)
+                ?.elements.sort()
                 .map((element) => getElementByTag(element))
                 .join(" | "),
           };
@@ -726,10 +726,10 @@ export default class ComponentParser {
               new_props.push(`${key}: ${slot_props[key].value}`);
             });
 
-            const formatted_slot_props = new_props.length === 0 ? "{}" : "{ " + new_props.join(", ") + " }";
+            const formatted_slot_props = new_props.length === 0 ? "{}" : `{ ${new_props.join(", ")} }`;
 
             return { ...slot, slot_props: formatted_slot_props };
-          } catch (e) {
+          } catch (_e) {
             return slot;
           }
         })

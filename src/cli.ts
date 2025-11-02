@@ -1,8 +1,8 @@
+import resolve from "@rollup/plugin-node-resolve";
 import * as Rollup from "rollup";
 import * as svelte from "rollup-plugin-svelte";
-import resolve from "@rollup/plugin-node-resolve";
-import { generateBundle, PluginSveldOptions, writeOutput } from "./rollup-plugin";
 import { getSvelteEntry } from "./get-svelte-entry";
+import { generateBundle, type PluginSveldOptions, writeOutput } from "./rollup-plugin";
 
 export async function cli(process: NodeJS.Process) {
   const options: PluginSveldOptions = process.argv
@@ -18,7 +18,7 @@ export async function cli(process: NodeJS.Process) {
   const rollup_bundle = await Rollup.rollup({
     input,
     plugins: [
-      // @ts-ignore
+      // @ts-expect-error
       svelte(),
       resolve(),
     ],
