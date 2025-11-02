@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add isAccessor field to API
 - update Markdown writer to generate a separate table for accessors -->
 
+## [0.22.2](https://github.com/carbon-design-system/sveld/releases/tag/v0.22.2) - 2025-11-02
+
+**Fixes**
+
+- merge `@extends` props with `@restProps` in type generation
+
 ## [0.22.1](https://github.com/carbon-design-system/sveld/releases/tag/v0.22.1) - 2025-02-17
 
 **Fixes**
