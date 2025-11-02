@@ -21,10 +21,11 @@ describe("Writer", () => {
     const consoleError = jest.spyOn(console, "error");
     const writer = new Writer({ parser: "json", printWidth: 80 });
 
-    expect(await writer.format("{a:null}")).toEqual('{ "a": null }\n');
+    // Valid JSON should be formatted (Biome adds a trailing newline)
+    expect(await writer.format('{"a":null}')).toEqual('{ "a": null }\n');
 
     expect(consoleError).toHaveBeenCalledTimes(0);
-    // Invalid JSON should emit Prettier parsing error
+    // Invalid JSON should emit Biome parsing error and return as-is
     expect(await writer.format("a:null")).toEqual("a:null");
     expect(consoleError).toHaveBeenCalledTimes(1);
   });
