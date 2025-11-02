@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { Header, Content, HeaderUtilities, HeaderActionLink, SkipToContent } from "carbon-components-svelte";
-  import LogoGithub20 from "./LogoGithub20.svelte";
+  import { Content, Header, HeaderActionLink, HeaderUtilities, SkipToContent } from "carbon-components-svelte";
   import pkg from "../../package.json";
+  import LogoGithub20 from "./LogoGithub20.svelte";
 </script>
 
 <svelte:head>

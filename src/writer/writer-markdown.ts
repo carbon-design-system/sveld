@@ -1,6 +1,6 @@
-import * as path from "path";
-import { ComponentDocs } from "../rollup-plugin";
-import WriterMarkdown, { AppendType } from "./WriterMarkdown";
+import * as path from "node:path";
+import type { ComponentDocs } from "../rollup-plugin";
+import WriterMarkdown, { type AppendType } from "./WriterMarkdown";
 import { formatTsProps, getTypeDefs } from "./writer-ts-definitions";
 
 const PROP_TABLE_HEADER = `| Prop name | Required | Kind | Reactive | Type | Default value | Description |\n| :- | :- | :- | :- |\n`;
@@ -14,7 +14,7 @@ function formatPropType(type?: any) {
 }
 
 function escapeHtml(text: string) {
-  return text.replace(/\</g, "&lt;").replace(/\>/g, "&gt;");
+  return text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 function formatPropValue(value: any) {

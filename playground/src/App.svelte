@@ -1,20 +1,20 @@
 <script lang="ts">
-  import Header from "./Header.svelte";
   import {
-    FormLabel,
-    Dropdown,
-    Grid,
-    Row,
     Column,
-    Tabs,
+    Dropdown,
+    FormLabel,
+    Grid,
+    InlineLoading,
+    Row,
     Tab,
     TabContent,
-    InlineLoading,
+    Tabs,
   } from "carbon-components-svelte";
   import { onMount, SvelteComponent, tick } from "svelte";
   import ComponentParser from "../../src/ComponentParser";
   import CodeEditor from "./CodeEditor.svelte";
   import data from "./data";
+  import Header from "./Header.svelte";
   import TabContentOverlay from "./TabContentOverlay.svelte";
 
   const parser = new ComponentParser();

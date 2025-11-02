@@ -1,5 +1,5 @@
-import * as path from "path";
-import * as fsp from "fs/promises";
+import * as fsp from "node:fs/promises";
+import * as path from "node:path";
 import * as prettier from "prettier";
 
 interface WriterOptions extends Pick<prettier.ParserOptions, "parser" | "printWidth"> {}

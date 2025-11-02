@@ -1,6 +1,10 @@
 import { normalizeSeparators } from "../src/path";
 
 describe("normalizeSeparators", () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   test("handles Unix-style paths (no change needed)", () => {
     expect(normalizeSeparators("./src/components/Button.svelte")).toBe("./src/components/Button.svelte");
     expect(normalizeSeparators("/usr/local/bin")).toBe("/usr/local/bin");
@@ -9,10 +13,7 @@ describe("normalizeSeparators", () => {
 
   test("converts Windows-style backslashes to forward slashes", () => {
     // Mock Windows separator
-    const originalSep = require("path").sep;
-    jest.mock("path", () => ({
-      sep: "\\",
-    }));
+    jest.mock("path", () => ({ sep: "\\" }));
 
     expect(normalizeSeparators(".\\src\\components\\Button.svelte")).toBe("./src/components/Button.svelte");
     expect(normalizeSeparators("C:\\Users\\test\\project")).toBe("C:/Users/test/project");

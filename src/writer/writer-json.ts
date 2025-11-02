@@ -1,6 +1,6 @@
-import path from "path";
+import path from "node:path";
 import { normalizeSeparators } from "../path";
-import { ComponentDocApi, ComponentDocs } from "../rollup-plugin";
+import type { ComponentDocApi, ComponentDocs } from "../rollup-plugin";
 import Writer from "./Writer";
 
 export interface WriteJsonOptions {
@@ -16,7 +16,7 @@ interface JsonOutput {
 }
 
 async function writeJsonComponents(components: ComponentDocs, options: WriteJsonOptions) {
-  const output = Array.from(components, ([moduleName, component]) => ({
+  const output = Array.from(components, ([_moduleName, component]) => ({
     ...component,
     filePath: normalizeSeparators(path.join(options.inputDir, path.normalize(component.filePath))),
   })).sort((a, b) => {
@@ -36,7 +36,7 @@ async function writeJsonComponents(components: ComponentDocs, options: WriteJson
 async function writeJsonLocal(components: ComponentDocs, options: WriteJsonOptions) {
   const output: JsonOutput = {
     total: components.size,
-    components: Array.from(components, ([moduleName, component]) => ({
+    components: Array.from(components, ([_moduleName, component]) => ({
       ...component,
       filePath: normalizeSeparators(path.join(options.inputDir, path.normalize(component.filePath))),
     })).sort((a, b) => {

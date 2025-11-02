@@ -2,8 +2,8 @@
   export let parsed_component = {};
   export let moduleName = "";
 
-  import pluginTypeScript from "prettier/plugins/typescript";
   import pluginEstree from "prettier/plugins/estree";
+  import pluginTypeScript from "prettier/plugins/typescript";
   import { format } from "prettier/standalone";
   import { writeTsDefinition } from "../../src/writer/writer-ts-definitions";
   import CodeHighlighter from "./CodeHighlighter.svelte";
