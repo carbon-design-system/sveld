@@ -1,7 +1,7 @@
 import * as path from "path";
 import { convertSvelteExt, createExports } from "../create-exports";
-import { ParsedExports } from "../parse-exports";
-import { ComponentDocApi, ComponentDocs } from "../rollup-plugin";
+import type { ParsedExports } from "../parse-exports";
+import type { ComponentDocApi, ComponentDocs } from "../rollup-plugin";
 import Writer from "./Writer";
 
 const ANY_TYPE = "any";
@@ -55,7 +55,7 @@ function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleN
         .filter(Boolean)
         .join("");
 
-      let prop_value = prop.constant && !prop.isFunction ? prop.value : prop.type;
+      const prop_value = prop.constant && !prop.isFunction ? prop.value : prop.type;
 
       return `
       ${prop_comments.length > 0 ? `/**\n${prop_comments}*/` : EMPTY_STR}
@@ -88,16 +88,30 @@ function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleN
      */
     const dataAttributes = "[key: `data-${string}`]: any;";
 
-    prop_def = `
+    // When both @extends and @restProps are present, merge all three type sources.
+    if (def.extends !== undefined) {
+      prop_def = `
     ${extend_tag_map ? `type $RestProps = ${extend_tag_map};\n` : ""}
     type $Props${genericsName} = {
       ${props}
-      
+
+      ${dataAttributes}
+    };
+
+    export type ${props_name}${genericsName} = Omit<$RestProps, keyof ($Props${genericsName} & ${def.extends.interface})> & $Props${genericsName} & ${def.extends.interface};
+  `;
+    } else {
+      prop_def = `
+    ${extend_tag_map ? `type $RestProps = ${extend_tag_map};\n` : ""}
+    type $Props${genericsName} = {
+      ${props}
+
       ${dataAttributes}
     };
 
     export type ${props_name}${genericsName} = Omit<$RestProps, keyof $Props${genericsName}> & $Props${genericsName};
   `;
+    }
   } else {
     prop_def = `
     export type ${props_name}${genericsName} = ${def.extends !== undefined ? `${def.extends.interface} & ` : ""} {
