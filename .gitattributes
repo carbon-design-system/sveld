@@ -1,0 +1,4 @@
+# Ensure consistent line endings across all platforms
+* text=auto eol=lf
+*.json text eol=lf
+*.snap text eol=lf
