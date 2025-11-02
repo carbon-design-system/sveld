@@ -9,7 +9,9 @@ const fixtures_map = new Map<string, string>();
 
 for await (const file of new Glob("**/input.svelte").scan(folder)) {
   const source = await Bun.file(path.join(folder, file)).text();
-  fixtures_map.set(file, source);
+  // Normalize path separators for cross-platform compatibility.
+  const normalizedFile = file.replace(/\\/g, "/");
+  fixtures_map.set(normalizedFile, source);
 }
 
 const parser = new ComponentParser();
