@@ -12,7 +12,15 @@ export async function cli(process: NodeJS.Process) {
       const key = flag.slice(2);
       return { [key]: value === undefined ? true : value };
     })
-    .reduce((a, c) => ({ ...a, ...c }), {});
+    .reduce(
+      (a, c) => {
+        for (const key in c) {
+          a[key] = c[key];
+        }
+        return a;
+      },
+      {} as Record<string, string | boolean>,
+    );
 
   const input = getSvelteEntry() || "src/index.js";
   const rollup_bundle = await Rollup.rollup({

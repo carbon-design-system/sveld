@@ -10,7 +10,7 @@ export type AppendType = "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "quote" | "p"
 
 interface TocLine {
   array: number[];
-  raw: any;
+  raw: string;
 }
 
 export default class WriterMarkdown extends Writer {
@@ -29,7 +29,7 @@ export default class WriterMarkdown extends Writer {
     return this;
   }
 
-  public append(type: AppendType, raw?: any) {
+  public append(type: AppendType, raw?: string) {
     switch (type) {
       case "h1":
       case "h2":
@@ -46,7 +46,7 @@ export default class WriterMarkdown extends Writer {
         if (this.hasToC && type === "h2") {
           this.toc.push({
             array: Array.from({ length: (length - 1) * 2 }),
-            raw,
+            raw: raw ?? "",
           });
         }
         break;

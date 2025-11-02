@@ -34,10 +34,11 @@ const getMetadata = (fixture: { filePath: string; source: string }) => {
 
 describe("fixtures (JSON)", async () => {
   test.each(files)("%p", async (filePath) => {
-    const { dir, parsed_component } = getMetadata({
-      filePath,
-      source: fixtures_map.get(filePath)!,
-    });
+    const source = fixtures_map.get(filePath);
+    if (!source) {
+      throw new Error(`Source not found for: ${filePath}`);
+    }
+    const { dir, parsed_component } = getMetadata({ filePath, source });
     const api_json = JSON.stringify(parsed_component, null, 2);
 
     // Snapshot the output; if the test fails, output has changed.
@@ -50,10 +51,11 @@ describe("fixtures (JSON)", async () => {
 
 describe("fixtures (TypeScript)", async () => {
   test.each(files)("%p", async (filePath) => {
-    const { dir, metadata, parsed_component } = getMetadata({
-      filePath,
-      source: fixtures_map.get(filePath)!,
-    });
+    const source = fixtures_map.get(filePath);
+    if (!source) {
+      throw new Error(`Source not found for: ${filePath}`);
+    }
+    const { dir, metadata, parsed_component } = getMetadata({ filePath, source });
     const api_ts = await writer.format(writeTsDefinition({ ...metadata, ...parsed_component }));
 
     // Snapshot the output; if the test fails, output has changed.
