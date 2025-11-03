@@ -163,6 +163,23 @@ export default class ComponentParser {
     return formatted_comment;
   }
 
+  /**
+   * Finds the last JSDoc block comment from an array of leading comments.
+   * Filters out single-line comments and TypeScript directives.
+   */
+  private static findJSDocComment(leadingComments: unknown[]): unknown {
+    // Search from end to find the last JSDoc block comment
+    for (let i = leadingComments.length - 1; i >= 0; i--) {
+      const comment = leadingComments[i];
+      // JSDoc comments are block comments (/* */) where the value starts with *
+      if (comment.type === "Block" && comment.value.trimStart().startsWith("*")) {
+        return comment;
+      }
+    }
+
+    return undefined;
+  }
+
   private sourceAtPos(start: number, end: number) {
     return this.source?.slice(start, end);
   }
@@ -421,13 +438,15 @@ export default class ComponentParser {
             }
 
             if (node.leadingComments) {
-              const last_comment = node.leadingComments[node.leadingComments.length - 1];
-              const comment = commentParser.parse(ComponentParser.formatComment(last_comment.value), {
-                spacing: "preserve",
-              });
-              const tag = comment[0]?.tags[comment[0]?.tags.length - 1];
-              if (tag?.tag === "type") type = this.aliasType(tag.type);
-              description = ComponentParser.assignValue(comment[0]?.description?.trim());
+              const jsdoc_comment = ComponentParser.findJSDocComment(node.leadingComments);
+              if (jsdoc_comment) {
+                const comment = commentParser.parse(ComponentParser.formatComment(jsdoc_comment.value), {
+                  spacing: "preserve",
+                });
+                const tag = comment[0]?.tags[comment[0]?.tags.length - 1];
+                if (tag?.tag === "type") type = this.aliasType(tag.type);
+                description = ComponentParser.assignValue(comment[0]?.description?.trim());
+              }
             }
 
             if (!description && this.typedefs.has(type)) {
@@ -557,29 +576,31 @@ export default class ComponentParser {
           }
 
           if (node.leadingComments) {
-            const last_comment = node.leadingComments[node.leadingComments.length - 1];
-            const comment = commentParser.parse(ComponentParser.formatComment(last_comment.value), {
-              spacing: "preserve",
-            });
+            const jsdoc_comment = ComponentParser.findJSDocComment(node.leadingComments);
+            if (jsdoc_comment) {
+              const comment = commentParser.parse(ComponentParser.formatComment(jsdoc_comment.value), {
+                spacing: "preserve",
+              });
 
-            const tag = comment[0]?.tags[comment[0]?.tags.length - 1];
-            if (tag?.tag === "type") type = this.aliasType(tag.type);
-            description = ComponentParser.assignValue(comment[0]?.description?.trim());
+              const tag = comment[0]?.tags[comment[0]?.tags.length - 1];
+              if (tag?.tag === "type") type = this.aliasType(tag.type);
+              description = ComponentParser.assignValue(comment[0]?.description?.trim());
 
-            const additional_tags =
-              comment[0]?.tags.filter(
-                (tag) => !["type", "extends", "restProps", "slot", "event", "typedef"].includes(tag.tag),
-              ) ?? [];
+              const additional_tags =
+                comment[0]?.tags.filter(
+                  (tag) => !["type", "extends", "restProps", "slot", "event", "typedef"].includes(tag.tag),
+                ) ?? [];
 
-            if (additional_tags.length > 0 && description === undefined) {
-              description = "";
+              if (additional_tags.length > 0 && description === undefined) {
+                description = "";
+              }
+
+              additional_tags.forEach((tag) => {
+                description += `${description ? "\n" : ""}@${tag.tag} ${tag.name}${
+                  tag.description ? ` ${tag.description}` : ""
+                }`;
+              });
             }
-
-            additional_tags.forEach((tag) => {
-              description += `${description ? "\n" : ""}@${tag.tag} ${tag.name}${
-                tag.description ? ` ${tag.description}` : ""
-              }`;
-            });
           }
 
           if (!description && this.typedefs.has(type)) {
