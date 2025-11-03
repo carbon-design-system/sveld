@@ -1,0 +1,27 @@
+{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "snowball",
+      "detail": "{ /** Indicates whether the snowball is tightly packed. */ isPacked: boolean; /** The speed of the snowball in mph. */ speed: number; }",
+      "description": "Snowball event fired when throwing a snowball."
+    },
+    {
+      "type": "dispatched",
+      "name": "change",
+      "detail": "null",
+      "description": "Will be fired if value has been changed"
+    },
+    {
+      "type": "dispatched",
+      "name": "submit",
+      "detail": "{ value: string }",
+      "description": "Form submission with value"
+    }
+  ],
+  "typedefs": [],
+  "generics": null
+}

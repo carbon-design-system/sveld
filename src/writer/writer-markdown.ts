@@ -5,7 +5,7 @@ import { formatTsProps, getTypeDefs } from "./writer-ts-definitions";
 
 const PROP_TABLE_HEADER = `| Prop name | Required | Kind | Reactive | Type | Default value | Description |\n| :- | :- | :- | :- |\n`;
 const SLOT_TABLE_HEADER = `| Slot name | Default | Props | Fallback |\n| :- | :- | :- | :- |\n`;
-const EVENT_TABLE_HEADER = `| Event name | Type | Detail |\n| :- | :- | :- |\n`;
+const EVENT_TABLE_HEADER = `| Event name | Type | Detail | Description |\n| :- | :- | :- | :- |\n`;
 const MD_TYPE_UNDEFINED = "--";
 
 function formatPropType(type?: string) {
@@ -124,7 +124,7 @@ export default async function writeMarkdown(components: ComponentDocs, options: 
           "raw",
           `| ${event.name} | ${event.type} | ${
             event.type === "dispatched" ? formatEventDetail(event.detail) : MD_TYPE_UNDEFINED
-          } |\n`,
+          } | ${formatPropDescription(event.description)} |\n`,
         );
       });
     } else {

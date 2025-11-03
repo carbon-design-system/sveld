@@ -25,6 +25,6 @@
 
 ### Events
 
-| Event name | Type      | Detail |
-| :--------- | :-------- | :----- |
-| click      | forwarded | --     |
+| Event name | Type      | Detail | Description |
+| :--------- | :-------- | :----- | :---------- |
+| click      | forwarded | --     | --          |

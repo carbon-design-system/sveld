@@ -290,7 +290,35 @@ export default class ComponentParser {
   }
 
   private parseCustomTypes() {
-    commentParser.parse(this.source, { spacing: "preserve" }).forEach(({ tags }) => {
+    commentParser.parse(this.source, { spacing: "preserve" }).forEach(({ tags, description: commentDescription }) => {
+      let currentEventName: string | undefined;
+      let currentEventType: string | undefined;
+      let currentEventDescription: string | undefined;
+      const eventProperties: Array<{ name: string; type: string; description?: string }> = [];
+
+      const finalizeEvent = () => {
+        if (currentEventName !== undefined) {
+          let detailType: string;
+          if (eventProperties.length > 0) {
+            detailType = this.buildEventDetailFromProperties(eventProperties, currentEventName);
+          } else {
+            detailType = currentEventType || "";
+          }
+
+          this.addDispatchedEvent({
+            name: currentEventName,
+            detail: detailType,
+            has_argument: false,
+            description: currentEventDescription,
+          });
+          this.eventDescriptions.set(currentEventName, currentEventDescription);
+          eventProperties.length = 0;
+          currentEventName = undefined;
+          currentEventType = undefined;
+          currentEventDescription = undefined;
+        }
+      };
+
       tags.forEach(({ tag, type: tagType, name, description }) => {
         const type = this.aliasType(tagType);
 
@@ -315,16 +343,30 @@ export default class ComponentParser {
             });
             break;
           case "event":
-            // Store event metadata (description and detail) from JSDoc
-            // This will be used later when we determine if the event is forwarded or dispatched
-            this.eventDescriptions.set(name, description ? description : undefined);
-            // For dispatched events, also store the detail type
-            this.addDispatchedEvent({
-              name,
-              detail: type,
-              has_argument: false,
-              description: description ? description : undefined,
-            });
+            // Finalize any previous event being built
+            finalizeEvent();
+
+            // Start tracking new event
+            currentEventName = name;
+            currentEventType = type;
+            // Use the main comment description if available, otherwise use inline description
+            currentEventDescription = commentDescription?.trim() || description || undefined;
+            break;
+          case "type":
+            // Track the @type tag for the current event
+            if (currentEventName !== undefined) {
+              currentEventType = type;
+            }
+            break;
+          case "property":
+            // Collect properties for the current event
+            if (currentEventName !== undefined) {
+              eventProperties.push({
+                name,
+                type,
+                description: description?.replace(/^-\s*/, "").trim(),
+              });
+            }
             break;
           case "typedef":
             this.typedefs.set(name, {
@@ -339,7 +381,28 @@ export default class ComponentParser {
             break;
         }
       });
+
+      // Finalize any remaining event
+      finalizeEvent();
     });
+  }
+
+  private buildEventDetailFromProperties(
+    properties: Array<{ name: string; type: string; description?: string }>,
+  ): string {
+    if (properties.length === 0) return "null";
+
+    // Build inline object type with property descriptions as JSDoc comments
+    const props = properties
+      .map(({ name, type, description }) => {
+        if (description) {
+          return `/** ${description} */ ${name}: ${type};`;
+        }
+        return `${name}: ${type};`;
+      })
+      .join(" ");
+
+    return `{ ${props} }`;
   }
 
   public cleanup() {
