@@ -137,6 +137,49 @@ describe("ComponentParser", () => {
     expect(constExport?.description).toBe("A constant value");
   });
 
+  test("strips TypeScript directives before parsing", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /**
+         * This JSDoc should be preserved
+         * @type {string}
+         */
+        // @ts-ignore - this directive should be stripped
+        export let prop1 = "test";
+
+        /**
+         * Another JSDoc comment
+         * @type {number}
+         */
+        // @ts-expect-error - this should also be stripped
+        export let prop2 = 42;
+
+        /**
+         * JSDoc without directive
+         */
+        export let prop3 = true;
+      </script>
+
+      <div>{prop1} {prop2} {prop3}</div>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.props).toHaveLength(3);
+
+    // All JSDoc comments should be preserved despite TypeScript directives
+    const prop1 = result.props.find((p) => p.name === "prop1");
+    expect(prop1?.description).toBe("This JSDoc should be preserved");
+    expect(prop1?.type).toBe("string");
+
+    const prop2 = result.props.find((p) => p.name === "prop2");
+    expect(prop2?.description).toBe("Another JSDoc comment");
+    expect(prop2?.type).toBe("number");
+
+    const prop3 = result.props.find((p) => p.name === "prop3");
+    expect(prop3?.description).toBe("JSDoc without directive");
+  });
+
   test("handles slots and slot props", () => {
     const parser = new ComponentParser();
     const source = `

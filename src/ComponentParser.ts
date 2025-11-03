@@ -164,20 +164,12 @@ export default class ComponentParser {
   }
 
   /**
-   * Finds the last JSDoc block comment from an array of leading comments.
-   * Filters out single-line comments and TypeScript directives.
+   * Finds the last comment from an array of leading comments.
+   * TypeScript directives are stripped before parsing, so we can safely take the last comment.
    */
   private static findJSDocComment(leadingComments: unknown[]): unknown {
-    // Search from end to find the last JSDoc block comment
-    for (let i = leadingComments.length - 1; i >= 0; i--) {
-      const comment = leadingComments[i];
-      // JSDoc comments are block comments (/* */) where the value starts with *
-      if (comment.type === "Block" && comment.value.trimStart().startsWith("*")) {
-        return comment;
-      }
-    }
-
-    return undefined;
+    if (!leadingComments || leadingComments.length === 0) return undefined;
+    return leadingComments[leadingComments.length - 1];
   }
 
   private sourceAtPos(start: number, end: number) {
@@ -371,15 +363,29 @@ export default class ComponentParser {
     this.bindings.clear();
   }
 
+  /**
+   * Strips TypeScript directive comments from script blocks only.
+   */
+  private static stripTypeScriptDirectivesFromScripts(source: string): string {
+    // Find all script blocks and strip directives only from within them
+    return source.replace(/(<script[^>]*>)([\s\S]*?)(<\/script>)/gi, (_match, openTag, scriptContent, closeTag) => {
+      // Remove TypeScript directives from script content only
+      const cleanedContent = scriptContent.replace(/\/\/\s*@ts-[^\n\r]*/g, "");
+      return openTag + cleanedContent + closeTag;
+    });
+  }
+
   public parseSvelteComponent(source: string, diagnostics: ComponentParserDiagnostics): ParsedComponent {
     if (this.options?.verbose) {
       console.log(`[parsing] "${diagnostics.moduleName}" ${diagnostics.filePath}`);
     }
 
     this.cleanup();
-    this.source = source;
-    this.compiled = compile(source);
-    this.parsed = parse(source);
+    // Strip TypeScript directives from script blocks only to prevent interference with JSDoc
+    const cleanedSource = ComponentParser.stripTypeScriptDirectivesFromScripts(source);
+    this.source = cleanedSource;
+    this.compiled = compile(cleanedSource);
+    this.parsed = parse(cleanedSource);
     this.collectReactiveVars();
     this.parseCustomTypes();
 
@@ -806,8 +812,16 @@ export default class ComponentParser {
                 slot_props[key].value = this.props.get(slot_props[key].value)?.type;
               }
 
-              if (slot_props[key].value === undefined) slot_props[key].value = "any";
-              new_props.push(`${key}: ${slot_props[key].value}`);
+              let propValue = slot_props[key].value;
+              if (propValue === undefined) {
+                propValue = "any";
+              } else if (typeof propValue === "string" && propValue.startsWith("{")) {
+                // If the value starts with {, it's a complex expression
+                // Use 'any' to avoid invalid TypeScript syntax
+                propValue = "any";
+              }
+
+              new_props.push(`${key}: ${propValue}`);
             });
 
             const formatted_slot_props = new_props.length === 0 ? "{}" : `{ ${new_props.join(", ")} }`;
