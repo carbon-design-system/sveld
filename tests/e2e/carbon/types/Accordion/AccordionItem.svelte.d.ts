@@ -45,5 +45,5 @@ export default class AccordionItem extends SvelteComponentTyped<
     mouseleave: WindowEventMap["mouseleave"];
     keydown: WindowEventMap["keydown"];
   },
-  { default: Record<string, never>; title: Record<string, never> }
+  { title: Record<string, never>; default: Record<string, never> }
 > {}

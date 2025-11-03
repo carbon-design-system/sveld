@@ -32,7 +32,7 @@
       "moduleExports": [],
       "slots": [
         {
-          "name": "__default__",
+          "name": null,
           "default": true,
           "fallback": "Click me",
           "slot_props": "Record<string, never>"
@@ -49,11 +49,7 @@
       "props": [],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [],
       "typedefs": [],
@@ -65,11 +61,7 @@
       "props": [],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [],
       "typedefs": [],
@@ -82,7 +74,7 @@
       "moduleExports": [],
       "slots": [
         {
-          "name": "__default__",
+          "name": null,
           "default": true,
           "fallback": "Link text",
           "slot_props": "Record<string, never>"
@@ -123,7 +115,7 @@
       "moduleExports": [],
       "slots": [
         {
-          "name": "__default__",
+          "name": null,
           "default": true,
           "fallback": "{quote}",
           "slot_props": "Record<string, never>"

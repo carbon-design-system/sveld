@@ -15,7 +15,7 @@
   "moduleExports": [],
   "slots": [
     {
-      "name": "__default__",
+      "name": null,
       "default": true,
       "slot_props": "{ prop: number; doubled: number; }"
     },

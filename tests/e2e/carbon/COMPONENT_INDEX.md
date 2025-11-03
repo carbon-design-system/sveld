@@ -204,8 +204,8 @@
 
 | Slot name | Default | Props                               | Fallback             |
 | :-------- | :------ | :---------------------------------- | :------------------- |
-| --        | Yes     | <code>Record<string, never> </code> | --                   |
 | title     | No      | <code>Record<string, never> </code> | <code>{title}</code> |
+| --        | Yes     | <code>Record<string, never> </code> | --                   |
 
 ### Events
 
@@ -835,12 +835,12 @@ export interface DataTableCell {
 
 | Slot name    | Default | Props                                                                                      | Fallback                                                                 |
 | :----------- | :------ | :----------------------------------------------------------------------------------------- | :----------------------------------------------------------------------- |
-| --           | Yes     | <code>Record<string, never> </code>                                                        | --                                                                       |
 | cell         | No      | <code>{ row: Row; cell: DataTableCell<Row>; rowIndex: number; cellIndex: number; } </code> | <code>{cell.display ? cell.display(cell.value, row) : cell.value}</code> |
 | cell-header  | No      | <code>{ header: DataTableNonEmptyHeader; } </code>                                         | <code>{header.value}</code>                                              |
 | description  | No      | <code>Record<string, never> </code>                                                        | <code>{description}</code>                                               |
 | expanded-row | No      | <code>{ row: Row; } </code>                                                                | --                                                                       |
 | title        | No      | <code>Record<string, never> </code>                                                        | <code>{title}</code>                                                     |
+| --           | Yes     | <code>Record<string, never> </code>                                                        | --                                                                       |
 
 ### Events
 
@@ -1396,9 +1396,9 @@ None.
 
 | Slot name       | Default | Props                               | Fallback                    |
 | :-------------- | :------ | :---------------------------------- | :-------------------------- |
-| --              | Yes     | <code>Record<string, never> </code> | --                          |
 | platform        | No      | <code>Record<string, never> </code> | <code>{platformName}</code> |
 | skip-to-content | No      | <code>Record<string, never> </code> | --                          |
+| --              | Yes     | <code>Record<string, never> </code> | --                          |
 
 ### Events
 
@@ -1432,8 +1432,8 @@ export interface HeaderActionSlideTransition {
 
 | Slot name | Default | Props                               | Fallback                                                    |
 | :-------- | :------ | :---------------------------------- | :---------------------------------------------------------- |
-| --        | Yes     | <code>Record<string, never> </code> | --                                                          |
 | text      | No      | <code>Record<string, never> </code> | <code>{#if text}&lt;span&gt;{text}&lt;/span&gt;{/if}</code> |
+| --        | Yes     | <code>Record<string, never> </code> | --                                                          |
 
 ### Events
 
@@ -2053,9 +2053,9 @@ None.
 
 | Slot name | Default | Props                               | Fallback                    |
 | :-------- | :------ | :---------------------------------- | :-------------------------- |
-| --        | Yes     | <code>Record<string, never> </code> | --                          |
 | heading   | No      | <code>Record<string, never> </code> | <code>{modalHeading}</code> |
 | label     | No      | <code>Record<string, never> </code> | <code>{modalLabel}</code>   |
+| --        | Yes     | <code>Record<string, never> </code> | --                          |
 
 ### Events
 
@@ -2425,8 +2425,8 @@ None.
 
 | Slot name | Default | Props                               | Fallback                                                                                                                                                                             |
 | :-------- | :------ | :---------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| --        | Yes     | <code>Record<string, never> </code> | --                                                                                                                                                                                   |
 | menu      | No      | <code>Record<string, never> </code> | <code>&lt;svelte:component<br /> this={icon}<br /> aria-label={iconDescription}<br /> title={iconDescription}<br /> class="bx--overflow-menu\_\_icon {iconClass}"<br /> /&gt;</code> |
+| --        | Yes     | <code>Record<string, never> </code> | --                                                                                                                                                                                   |
 
 ### Events
 
@@ -4203,9 +4203,9 @@ None.
 
 | Slot name   | Default | Props                               | Fallback                                                            |
 | :---------- | :------ | :---------------------------------- | :------------------------------------------------------------------ |
-| --          | Yes     | <code>Record<string, never> </code> | --                                                                  |
 | icon        | No      | <code>Record<string, never> </code> | <code>&lt;svelte:component this={icon} name={iconName} /&gt;</code> |
 | triggerText | No      | <code>Record<string, never> </code> | <code>{triggerText}</code>                                          |
+| --          | Yes     | <code>Record<string, never> </code> | --                                                                  |
 
 ### Events
 
@@ -4259,8 +4259,8 @@ None.
 
 | Slot name | Default | Props                               | Fallback                   |
 | :-------- | :------ | :---------------------------------- | :------------------------- |
-| --        | Yes     | <code>Record<string, never> </code> | --                         |
 | text      | No      | <code>Record<string, never> </code> | <code>{tooltipText}</code> |
+| --        | Yes     | <code>Record<string, never> </code> | --                         |
 
 ### Events
 
