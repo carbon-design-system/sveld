@@ -25,7 +25,7 @@ export type InferWithTypesProps = {
 export default class InferWithTypes extends SvelteComponentTyped<
   InferWithTypesProps,
   Record<string, any>,
-  { default: {} }
+  { default: Record<string, never> }
 > {
   propConst: { [key: string]: boolean };
 

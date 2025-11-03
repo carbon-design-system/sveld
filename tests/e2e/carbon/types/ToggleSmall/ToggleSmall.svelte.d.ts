@@ -63,5 +63,5 @@ export default class ToggleSmall extends SvelteComponentTyped<
     focus: WindowEventMap["focus"];
     blur: WindowEventMap["blur"];
   },
-  {}
+  Record<string, never>
 > {}

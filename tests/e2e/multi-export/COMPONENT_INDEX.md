@@ -23,9 +23,9 @@
 
 ### Slots
 
-| Slot name | Default | Props | Fallback              |
-| :-------- | :------ | :---- | :-------------------- |
-| --        | Yes     | --    | <code>Click me</code> |
+| Slot name | Default | Props                               | Fallback              |
+| :-------- | :------ | :---------------------------------- | :-------------------- |
+| --        | Yes     | <code>Record<string, never> </code> | <code>Click me</code> |
 
 ### Events
 
@@ -41,9 +41,9 @@ None.
 
 ### Slots
 
-| Slot name | Default | Props | Fallback |
-| :-------- | :------ | :---- | :------- |
-| --        | Yes     | --    | --       |
+| Slot name | Default | Props                               | Fallback |
+| :-------- | :------ | :---------------------------------- | :------- |
+| --        | Yes     | <code>Record<string, never> </code> | --       |
 
 ### Events
 
@@ -57,9 +57,9 @@ None.
 
 ### Slots
 
-| Slot name | Default | Props | Fallback               |
-| :-------- | :------ | :---- | :--------------------- |
-| --        | Yes     | --    | <code>Link text</code> |
+| Slot name | Default | Props                               | Fallback               |
+| :-------- | :------ | :---------------------------------- | :--------------------- |
+| --        | Yes     | <code>Record<string, never> </code> | <code>Link text</code> |
 
 ### Events
 
@@ -84,9 +84,9 @@ export type Author = string;
 
 ### Slots
 
-| Slot name | Default | Props | Fallback             |
-| :-------- | :------ | :---- | :------------------- |
-| --        | Yes     | --    | <code>{quote}</code> |
+| Slot name | Default | Props                               | Fallback             |
+| :-------- | :------ | :---------------------------------- | :------------------- |
+| --        | Yes     | <code>Record<string, never> </code> | <code>{quote}</code> |
 
 ### Events
 

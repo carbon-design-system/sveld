@@ -36,5 +36,5 @@ export type HeaderActionLinkProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class HeaderActionLink extends SvelteComponentTyped<
   HeaderActionLinkProps,
   Record<string, any>,
-  {}
+  Record<string, never>
 > {}

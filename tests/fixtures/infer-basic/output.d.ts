@@ -27,7 +27,11 @@ export type InferBasicProps = {
   id?: string;
 };
 
-export default class InferBasic extends SvelteComponentTyped<InferBasicProps, Record<string, any>, { default: {} }> {
+export default class InferBasic extends SvelteComponentTyped<
+  InferBasicProps,
+  Record<string, any>,
+  { default: Record<string, never> }
+> {
   propConst: { ["1"]: true };
 
   fn: () => any;

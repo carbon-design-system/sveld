@@ -14,4 +14,8 @@ type $Props = {
 
 export type RestPropsMultipleProps = Omit<$RestProps, keyof $Props> & $Props;
 
-export default class RestPropsMultiple extends SvelteComponentTyped<RestPropsMultipleProps, Record<string, any>, {}> {}
+export default class RestPropsMultiple extends SvelteComponentTyped<
+  RestPropsMultipleProps,
+  Record<string, any>,
+  Record<string, never>
+> {}

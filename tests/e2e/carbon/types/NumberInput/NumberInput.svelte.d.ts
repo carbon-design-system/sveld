@@ -153,7 +153,7 @@ export default class NumberInput extends SvelteComponentTyped<
     mouseleave: WindowEventMap["mouseleave"];
     input: WindowEventMap["input"];
   },
-  { label: {} }
+  { label: Record<string, never> }
 > {
   /**
    * Default translation ids

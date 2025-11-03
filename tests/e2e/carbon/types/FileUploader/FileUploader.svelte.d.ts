@@ -81,7 +81,7 @@ export default class FileUploader extends SvelteComponentTyped<
     change: WindowEventMap["change"];
     keydown: WindowEventMap["keydown"];
   },
-  {}
+  Record<string, never>
 > {
   /**
    * Override the default behavior of clearing the array of uploaded files

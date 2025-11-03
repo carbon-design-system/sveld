@@ -148,5 +148,5 @@ export default class Dropdown extends SvelteComponentTyped<
       selectedItem: DropdownItem;
     }>;
   },
-  {}
+  Record<string, never>
 > {}

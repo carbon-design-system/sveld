@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export type ForwardedEventsNativeWithJsdocProps = {};
+export type ForwardedEventsNativeWithJsdocProps = Record<string, never>;
 
 export default class ForwardedEventsNativeWithJsdoc extends SvelteComponentTyped<
   ForwardedEventsNativeWithJsdocProps,
@@ -11,5 +11,5 @@ export default class ForwardedEventsNativeWithJsdoc extends SvelteComponentTyped
     /** Fired when the button loses focus */
     blur: WindowEventMap["blur"];
   },
-  { default: {} }
+  { default: Record<string, never> }
 > {}

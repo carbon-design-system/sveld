@@ -118,5 +118,5 @@ export default class CodeSnippet extends SvelteComponentTyped<
     mouseleave: WindowEventMap["mouseleave"];
     animationend: WindowEventMap["animationend"];
   },
-  { default: {} }
+  { default: Record<string, never> }
 > {}

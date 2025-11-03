@@ -15,5 +15,5 @@ export default class HeaderActionSearch extends SvelteComponentTyped<
     focusInputSearch: CustomEvent<null>;
     focusOutInputSearch: CustomEvent<null>;
   },
-  {}
+  Record<string, never>
 > {}

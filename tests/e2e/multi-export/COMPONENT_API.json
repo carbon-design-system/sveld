@@ -45,7 +45,7 @@
           "name": "__default__",
           "default": true,
           "fallback": "Click me",
-          "slot_props": "{}"
+          "slot_props": "Record<string, never>"
         }
       ],
       "events": [{ "type": "forwarded", "name": "click", "element": "button" }],
@@ -58,7 +58,13 @@
       "filePath": "src/nested/Header.svelte",
       "props": [],
       "moduleExports": [],
-      "slots": [{ "name": "__default__", "default": true, "slot_props": "{}" }],
+      "slots": [
+        {
+          "name": "__default__",
+          "default": true,
+          "slot_props": "Record<string, never>"
+        }
+      ],
       "events": [],
       "typedefs": [],
       "generics": null
@@ -73,7 +79,7 @@
           "name": "__default__",
           "default": true,
           "fallback": "Link text",
-          "slot_props": "{}"
+          "slot_props": "Record<string, never>"
         }
       ],
       "events": [{ "type": "forwarded", "name": "click", "element": "a" }],
@@ -114,7 +120,7 @@
           "name": "__default__",
           "default": true,
           "fallback": "{quote}",
-          "slot_props": "{}"
+          "slot_props": "Record<string, never>"
         }
       ],
       "events": [],

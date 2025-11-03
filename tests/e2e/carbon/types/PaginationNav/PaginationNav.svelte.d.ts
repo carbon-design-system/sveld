@@ -49,8 +49,8 @@ export default class PaginationNav extends SvelteComponentTyped<
   PaginationNavProps,
   {
     change: CustomEvent<{ page: number }>;
-    ["click:button--previous"]: CustomEvent<{ page: number }>;
-    ["click:button--next"]: CustomEvent<{ page: number }>;
+    "click:button--previous": CustomEvent<{ page: number }>;
+    "click:button--next": CustomEvent<{ page: number }>;
   },
-  {}
+  Record<string, never>
 > {}

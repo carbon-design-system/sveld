@@ -40,5 +40,5 @@ export default class ToolbarSearch extends SvelteComponentTyped<
     focus: WindowEventMap["focus"];
     blur: WindowEventMap["blur"];
   },
-  {}
+  Record<string, never>
 > {}

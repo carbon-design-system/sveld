@@ -20,5 +20,5 @@ export type BindThisMultipleProps = {
 export default class BindThisMultiple extends SvelteComponentTyped<
   BindThisMultipleProps,
   Record<string, any>,
-  { default: {} }
+  { default: Record<string, never> }
 > {}

@@ -81,7 +81,7 @@
       "name": "__default__",
       "default": true,
       "fallback": "{name}",
-      "slot_props": "{}"
+      "slot_props": "Record<string, never>"
     }
   ],
   "events": [],

@@ -22,5 +22,5 @@ export type QuoteProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class Quote extends SvelteComponentTyped<
   QuoteProps,
   Record<string, any>,
-  { default: {} }
+  { default: Record<string, never> }
 > {}

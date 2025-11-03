@@ -69,7 +69,7 @@
           "name": "__default__",
           "default": true,
           "fallback": "Click me",
-          "slot_props": "{}"
+          "slot_props": "Record<string, never>"
         }
       ],
       "events": [{ "type": "forwarded", "name": "click", "element": "button" }],

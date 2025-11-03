@@ -10,6 +10,9 @@ const EMPTY_STR = "";
 // Svelte 4 is not compatible with `{}`
 const EMPTY_EVENTS = "Record<string, any>";
 
+// Avoid `{}` type per Biome linter rule noBannedTypes
+const EMPTY_OBJECT = "Record<string, never>";
+
 export function formatTsProps(props?: string) {
   if (props === undefined) return ANY_TYPE;
   return `${props}\n`;
@@ -115,11 +118,18 @@ function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleN
   `;
     }
   } else {
-    prop_def = `
+    // Use EMPTY_OBJECT when there are no props and no extends
+    if (props.trim() === "" && def.extends === undefined) {
+      prop_def = `
+    export type ${props_name}${genericsName} = ${EMPTY_OBJECT};
+  `;
+    } else {
+      prop_def = `
     export type ${props_name}${genericsName} = ${def.extends !== undefined ? `${def.extends.interface} & ` : ""} {
       ${props}
     }
   `;
+    }
   }
 
   return {
@@ -129,13 +139,17 @@ function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleN
 }
 
 function genSlotDef(def: Pick<ComponentDocApi, "slots">) {
-  return def.slots
+  if (def.slots.length === 0) return EMPTY_OBJECT;
+
+  const slotDefs = def.slots
     .map(({ name, slot_props, ...rest }) => {
       const key = rest.default ? "default" : clampKey(name ?? "");
       const description = rest.description ? `/** ${rest.description} */\n` : "";
       return `${description}${clampKey(key)}: ${formatTsProps(slot_props)};`;
     })
     .join("\n");
+
+  return `{${slotDefs}}`;
 }
 
 const mapEvent = () => {
@@ -381,7 +395,7 @@ export function writeTsDefinition(component: ComponentDocApi) {
   export default class ${moduleName === "default" ? "" : moduleName}${generic} extends SvelteComponentTyped<
       ${genericProps},
       ${genEventDef({ events })},
-      {${genSlotDef({ slots })}}
+      ${genSlotDef({ slots })}
     > {
       ${genAccessors({ props })}
     }`;

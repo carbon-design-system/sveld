@@ -55,15 +55,13 @@ exports[`writerTsDefinition "default" module name 1`] = `
   
   
   
-    export type defaultProps =  {
-      
-    }
+    export type defaultProps = Record<string, never>;
   
   
   export default class  extends SvelteComponentTyped<
       defaultProps,
       Record<string, any>,
-      {}
+      Record<string, never>
     > {
       
     }"

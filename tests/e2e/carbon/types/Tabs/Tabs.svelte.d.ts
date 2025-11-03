@@ -40,5 +40,5 @@ export default class Tabs extends SvelteComponentTyped<
     click: WindowEventMap["click"];
     change: CustomEvent<any>;
   },
-  { default: {}; content: {} }
+  { default: Record<string, never>; content: Record<string, never> }
 > {}

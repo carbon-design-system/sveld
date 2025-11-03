@@ -22,5 +22,5 @@ export type ButtonProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class Button extends SvelteComponentTyped<
   ButtonProps,
   { click: WindowEventMap["click"] },
-  { default: {} }
+  { default: Record<string, never> }
 > {}

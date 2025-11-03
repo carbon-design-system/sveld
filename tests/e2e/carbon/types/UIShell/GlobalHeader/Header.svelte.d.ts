@@ -61,5 +61,9 @@ export type HeaderProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class Header extends SvelteComponentTyped<
   HeaderProps,
   { click: WindowEventMap["click"] },
-  { default: {}; platform: {}; ["skip-to-content"]: {} }
+  {
+    default: Record<string, never>;
+    platform: Record<string, never>;
+    "skip-to-content": Record<string, never>;
+  }
 > {}

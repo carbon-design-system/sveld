@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export type MixedEventTypesProps = {};
+export type MixedEventTypesProps = Record<string, never>;
 
 export default class MixedEventTypes extends SvelteComponentTyped<
   MixedEventTypesProps,
@@ -11,5 +11,5 @@ export default class MixedEventTypes extends SvelteComponentTyped<
     change: WindowEventMap["change"];
     submit: CustomEvent<any>;
   },
-  {}
+  Record<string, never>
 > {}

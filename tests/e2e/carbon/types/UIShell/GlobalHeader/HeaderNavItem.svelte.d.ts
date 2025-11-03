@@ -39,5 +39,5 @@ export default class HeaderNavItem extends SvelteComponentTyped<
     focus: WindowEventMap["focus"];
     blur: WindowEventMap["blur"];
   },
-  {}
+  Record<string, never>
 > {}

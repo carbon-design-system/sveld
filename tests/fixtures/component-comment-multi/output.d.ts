@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export type ComponentCommentMultiProps = {};
+export type ComponentCommentMultiProps = Record<string, never>;
 
 /**
  * @example
@@ -11,5 +11,5 @@ export type ComponentCommentMultiProps = {};
 export default class ComponentCommentMulti extends SvelteComponentTyped<
   ComponentCommentMultiProps,
   Record<string, any>,
-  { default: {} }
+  { default: Record<string, never> }
 > {}

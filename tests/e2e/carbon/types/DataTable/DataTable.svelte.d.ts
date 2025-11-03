@@ -196,33 +196,33 @@ export default class DataTable<
       row?: Row;
       cell?: DataTableCell<Row>;
     }>;
-    ["click:header--expand"]: CustomEvent<{ expanded: boolean }>;
-    ["click:header"]: CustomEvent<{
+    "click:header--expand": CustomEvent<{ expanded: boolean }>;
+    "click:header": CustomEvent<{
       header: DataTableHeader<Row>;
       sortDirection?: "ascending" | "descending" | "none";
     }>;
-    ["click:header--select"]: CustomEvent<{
+    "click:header--select": CustomEvent<{
       indeterminate: boolean;
       selected: boolean;
     }>;
-    ["click:row"]: CustomEvent<Row>;
-    ["mouseenter:row"]: CustomEvent<Row>;
-    ["mouseleave:row"]: CustomEvent<Row>;
-    ["click:row--expand"]: CustomEvent<{ expanded: boolean; row: Row }>;
-    ["click:row--select"]: CustomEvent<{ selected: boolean; row: Row }>;
-    ["click:cell"]: CustomEvent<DataTableCell<Row>>;
+    "click:row": CustomEvent<Row>;
+    "mouseenter:row": CustomEvent<Row>;
+    "mouseleave:row": CustomEvent<Row>;
+    "click:row--expand": CustomEvent<{ expanded: boolean; row: Row }>;
+    "click:row--select": CustomEvent<{ selected: boolean; row: Row }>;
+    "click:cell": CustomEvent<DataTableCell<Row>>;
   },
   {
-    default: {};
+    default: Record<string, never>;
     cell: {
       row: Row;
       cell: DataTableCell<Row>;
       rowIndex: number;
       cellIndex: number;
     };
-    ["cell-header"]: { header: DataTableNonEmptyHeader };
-    description: {};
-    ["expanded-row"]: { row: Row };
-    title: {};
+    "cell-header": { header: DataTableNonEmptyHeader };
+    description: Record<string, never>;
+    "expanded-row": { row: Row };
+    title: Record<string, never>;
   }
 > {}

@@ -8,4 +8,8 @@ export type RenamedPropsProps = {
   class?: string | null;
 };
 
-export default class RenamedProps extends SvelteComponentTyped<RenamedPropsProps, Record<string, any>, {}> {}
+export default class RenamedProps extends SvelteComponentTyped<
+  RenamedPropsProps,
+  Record<string, any>,
+  Record<string, never>
+> {}

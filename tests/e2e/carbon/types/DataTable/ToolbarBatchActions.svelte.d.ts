@@ -18,5 +18,5 @@ export type ToolbarBatchActionsProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class ToolbarBatchActions extends SvelteComponentTyped<
   ToolbarBatchActionsProps,
   Record<string, any>,
-  { default: {} }
+  { default: Record<string, never> }
 > {}

@@ -18,5 +18,5 @@ export type ToolbarProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class Toolbar extends SvelteComponentTyped<
   ToolbarProps,
   Record<string, any>,
-  { default: {} }
+  { default: Record<string, never> }
 > {}

@@ -187,5 +187,5 @@ export default class MultiSelect extends SvelteComponentTyped<
     blur: WindowEventMap["blur"];
     select: CustomEvent<any>;
   },
-  {}
+  Record<string, never>
 > {}

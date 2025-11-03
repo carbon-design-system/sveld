@@ -9,4 +9,4 @@ type $Props = {
 
 export type SvgPropsProps = Omit<$RestProps, keyof $Props> & $Props;
 
-export default class SvgProps extends SvelteComponentTyped<SvgPropsProps, Record<string, any>, {}> {}
+export default class SvgProps extends SvelteComponentTyped<SvgPropsProps, Record<string, any>, Record<string, never>> {}

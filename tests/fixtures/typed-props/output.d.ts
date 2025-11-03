@@ -26,4 +26,8 @@ export type TypedPropsProps = {
   prop4?: "red" | "blue";
 };
 
-export default class TypedProps extends SvelteComponentTyped<TypedPropsProps, Record<string, any>, {}> {}
+export default class TypedProps extends SvelteComponentTyped<
+  TypedPropsProps,
+  Record<string, any>,
+  Record<string, never>
+> {}

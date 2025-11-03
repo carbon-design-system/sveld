@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export type DispatchedEventsTypedProps = {};
+export type DispatchedEventsTypedProps = Record<string, never>;
 
 export default class DispatchedEventsTyped extends SvelteComponentTyped<
   DispatchedEventsTypedProps,
@@ -8,5 +8,5 @@ export default class DispatchedEventsTyped extends SvelteComponentTyped<
     /** Fired on mouseover. */ hover: CustomEvent<{ h1: boolean }>;
     destroy: CustomEvent<null>;
   },
-  { default: {} }
+  { default: Record<string, never> }
 > {}

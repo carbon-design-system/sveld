@@ -63,5 +63,5 @@ export default class ComposedModal extends SvelteComponentTyped<
     close: CustomEvent<null>;
     open: CustomEvent<null>;
   },
-  { default: {} }
+  { default: Record<string, never> }
 > {}

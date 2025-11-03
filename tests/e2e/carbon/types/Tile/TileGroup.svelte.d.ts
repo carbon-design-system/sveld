@@ -30,5 +30,5 @@ export type TileGroupProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class TileGroup extends SvelteComponentTyped<
   TileGroupProps,
   { select: CustomEvent<any> },
-  { default: {} }
+  { default: Record<string, never> }
 > {}

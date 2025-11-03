@@ -7,4 +7,8 @@ export type BindThisProps = {
   ref: null | HTMLButtonElement;
 };
 
-export default class BindThis extends SvelteComponentTyped<BindThisProps, Record<string, any>, { default: {} }> {}
+export default class BindThis extends SvelteComponentTyped<
+  BindThisProps,
+  Record<string, any>,
+  { default: Record<string, never> }
+> {}

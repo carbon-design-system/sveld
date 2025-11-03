@@ -29,5 +29,5 @@ export type SelectItemProps = {
 export default class SelectItem extends SvelteComponentTyped<
   SelectItemProps,
   Record<string, any>,
-  {}
+  Record<string, never>
 > {}
