@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add isAccessor field to API
 - update Markdown writer to generate a separate table for accessors -->
 
+## [0.22.3](https://github.com/carbon-design-system/sveld/releases/tag/v0.22.3) - 2025-11-03
+
+**Fixes**
+
+- filter TypeScript directives when parsing JSDoc comments
+- forwarded events should use `@event` tags
+
 ## [0.22.2](https://github.com/carbon-design-system/sveld/releases/tag/v0.22.2) - 2025-11-02
 
 **Fixes**
