@@ -10,5 +10,5 @@ export type SlotsNamedProps = {
 export default class SlotsNamed extends SvelteComponentTyped<
   SlotsNamedProps,
   Record<string, any>,
-  { default: {}; ["bold heading"]: { text: string }; subheading: { text: string }; text: { text: string } }
+  { default: {}; "bold heading": { text: string }; subheading: { text: string }; text: { text: string } }
 > {}

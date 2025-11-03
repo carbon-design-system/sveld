@@ -1404,7 +1404,7 @@ export type SlotsNamedProps = {
 export default class SlotsNamed extends SvelteComponentTyped<
   SlotsNamedProps,
   Record<string, any>,
-  { default: {}; ["bold heading"]: { text: string }; subheading: { text: string }; text: { text: string } }
+  { default: {}; "bold heading": { text: string }; subheading: { text: string }; text: { text: string } }
 > {}
 "
 `;
@@ -1512,7 +1512,7 @@ export type MixedEventsProps = {};
 
 export default class MixedEvents extends SvelteComponentTyped<
   MixedEventsProps,
-  { ["custom-focus"]: CustomEvent<FocusEvent | number>; blur: FocusEvent | CustomEvent<FocusEvent> },
+  { "custom-focus": CustomEvent<FocusEvent | number>; blur: FocusEvent | CustomEvent<FocusEvent> },
   {}
 > {}
 "
@@ -1615,8 +1615,8 @@ export default class DispatchedEvents extends SvelteComponentTyped<
   {
     hover: CustomEvent<any>;
     destroy: CustomEvent<null>;
-    ["destroy--component"]: CustomEvent<null>;
-    ["destroy:component"]: CustomEvent<null>;
+    "destroy--component": CustomEvent<null>;
+    "destroy:component": CustomEvent<null>;
   },
   { default: {} }
 > {}
