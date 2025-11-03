@@ -154,7 +154,7 @@ function genEventDef(def: Pick<ComponentDocApi, "events">) {
   const events_map = def.events
     .map((event) => {
       let description = "";
-      if (event.type === "dispatched" && event.description) {
+      if (event.description) {
         description = `/** ${event.description} */\n`;
       }
       return `${description}${clampKey(event.name)}: ${
