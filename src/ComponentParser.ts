@@ -189,7 +189,6 @@ export default class ComponentParser {
 
     if (this.props.has(prop_name)) {
       const existing_slot = this.props.get(prop_name);
-      if (!existing_slot) return;
 
       this.props.set(prop_name, {
         ...existing_slot,
@@ -205,7 +204,6 @@ export default class ComponentParser {
 
     if (this.moduleExports.has(prop_name)) {
       const existing_slot = this.moduleExports.get(prop_name);
-      if (!existing_slot) return;
 
       this.moduleExports.set(prop_name, {
         ...existing_slot,
@@ -240,7 +238,6 @@ export default class ComponentParser {
 
     if (this.slots.has(name)) {
       const existing_slot = this.slots.get(name);
-      if (!existing_slot) return;
 
       this.slots.set(name, {
         ...existing_slot,
@@ -646,7 +643,7 @@ export default class ComponentParser {
                 replace: false,
               };
 
-              if (value === undefined) return slot_props;
+              if (value === undefined) return {};
 
               if (value[0]) {
                 const { type, expression, raw, start, end } = value[0];
@@ -724,7 +721,6 @@ export default class ComponentParser {
 
           if (this.bindings.has(prop_name)) {
             const existing_bindings = this.bindings.get(prop_name);
-            if (!existing_bindings) return;
 
             if (!existing_bindings.elements.includes(element_name)) {
               this.bindings.set(prop_name, {
