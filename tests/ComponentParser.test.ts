@@ -66,6 +66,77 @@ describe("ComponentParser", () => {
     expect(disabledProp?.description).toBe("Controls the disabled state");
   });
 
+  test("preserves JSDoc when @ts-ignore is present", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /**
+         * Provide a writable store to maintain list selection.
+         * @type {any}
+         */
+        // @ts-ignore
+        export let selected = undefined;
+
+        /**
+         * Controls the disabled state
+         * @type {boolean}
+         */
+        // @ts-expect-error - testing purposes
+        export let disabled = false;
+
+        /** This prop should work fine without ts-ignore */
+        export let normal = true;
+      </script>
+
+      <div>{selected}</div>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.props).toHaveLength(3);
+
+    const selectedProp = result.props.find((p) => p.name === "selected");
+    expect(selectedProp?.description).toBe("Provide a writable store to maintain list selection.");
+    expect(selectedProp?.type).toBe("any");
+
+    const disabledProp = result.props.find((p) => p.name === "disabled");
+    expect(disabledProp?.description).toBe("Controls the disabled state");
+    expect(disabledProp?.type).toBe("boolean");
+
+    const normalProp = result.props.find((p) => p.name === "normal");
+    expect(normalProp?.description).toBe("This prop should work fine without ts-ignore");
+  });
+
+  test("preserves JSDoc for module exports with @ts-ignore", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script context="module">
+        /**
+         * A utility function that does something
+         * @type {() => void}
+         */
+        // @ts-ignore
+        export const utilityFunction = () => {};
+
+        /**
+         * A constant value
+         */
+        // @ts-ignore
+        export const CONSTANT = 42;
+      </script>
+
+      <div>Test</div>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.moduleExports).toHaveLength(2);
+
+    const funcExport = result.moduleExports.find((e) => e.name === "utilityFunction");
+    expect(funcExport?.description).toBe("A utility function that does something");
+
+    const constExport = result.moduleExports.find((e) => e.name === "CONSTANT");
+    expect(constExport?.description).toBe("A constant value");
+  });
+
   test("handles slots and slot props", () => {
     const parser = new ComponentParser();
     const source = `
