@@ -166,13 +166,15 @@ export default class ComponentParser {
   /**
    * Finds the last JSDoc block comment from an array of leading comments.
    * Filters out single-line comments and TypeScript directives.
+   * JSDoc comments start with /** (not /*), so the comment value starts with *.
    */
   private static findJSDocComment(leadingComments: unknown[]): unknown {
     // Search from end to find the last JSDoc block comment
     for (let i = leadingComments.length - 1; i >= 0; i--) {
       const comment = leadingComments[i];
-      // JSDoc comments are block comments (/* */) where the value starts with *
-      if (comment.type === "Block" && comment.value.trimStart().startsWith("*")) {
+      // JSDoc comments are block comments that start with /** (value starts with *)
+      // Regular block comments start with /* (value does NOT start with *)
+      if (comment.type === "Block" && comment.value.startsWith("*")) {
         return comment;
       }
     }

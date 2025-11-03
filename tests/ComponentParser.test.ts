@@ -137,6 +137,41 @@ describe("ComponentParser", () => {
     expect(constExport?.description).toBe("A constant value");
   });
 
+  test("ignores regular block comments (not JSDoc)", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /*
+         * This is a regular block comment, NOT JSDoc
+         * It starts with /* not /**
+         * @type {string}
+         */
+        export let prop1 = "test";
+
+        /**
+         * This IS a JSDoc comment
+         * @type {number}
+         */
+        export let prop2 = 42;
+      </script>
+
+      <div>{prop1} {prop2}</div>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.props).toHaveLength(2);
+
+    // Regular block comment should NOT be parsed as JSDoc
+    const prop1 = result.props.find((p) => p.name === "prop1");
+    expect(prop1?.description).toBeUndefined();
+    expect(prop1?.type).toBe("string"); // Should have default type inference
+
+    // Actual JSDoc should be parsed
+    const prop2 = result.props.find((p) => p.name === "prop2");
+    expect(prop2?.description).toBe("This IS a JSDoc comment");
+    expect(prop2?.type).toBe("number");
+  });
+
   test("handles slots and slot props", () => {
     const parser = new ComponentParser();
     const source = `
