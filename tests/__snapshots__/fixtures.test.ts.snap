@@ -1,4 +1,4 @@
-// Bun Snapshot v1, https://goo.gl/fbAQLP
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
 exports[`fixtures (JSON) "svg-props/input.svelte" 1`] = `
 "{
@@ -390,6 +390,35 @@ exports[`fixtures (JSON) "typed-slots/input.svelte" 1`] = `
     }
   ],
   "events": [],
+  "typedefs": [],
+  "generics": null
+}"
+`;
+
+exports[`fixtures (JSON) "forwarded-events-typed/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "forwarded",
+      "name": "click",
+      "element": "button",
+      "description": "Fired when the button is clicked"
+    },
+    {
+      "type": "forwarded",
+      "name": "focus",
+      "element": "button",
+      "description": "Fired when the button receives focus"
+    },
+    {
+      "type": "forwarded",
+      "name": "blur",
+      "element": "button"
+    }
+  ],
   "typedefs": [],
   "generics": null
 }"
@@ -1530,6 +1559,24 @@ export default class TypedSlots extends SvelteComponentTyped<
     /** description */
     description: { props: { class?: string } };
   }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "forwarded-events-typed/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export type ForwardedEventsTypedProps = {};
+
+export default class ForwardedEventsTyped extends SvelteComponentTyped<
+  ForwardedEventsTypedProps,
+  {
+    /** Fired when the button is clicked */ click: WindowEventMap["click"];
+    /** Fired when the button receives focus */
+    focus: WindowEventMap["focus"];
+    blur: WindowEventMap["blur"];
+  },
+  {}
 > {}
 "
 `;

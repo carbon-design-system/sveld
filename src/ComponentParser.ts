@@ -61,6 +61,7 @@ interface ForwardedEvent {
   type: "forwarded";
   name: string;
   element: ComponentInlineElement | ComponentElement;
+  description?: string;
 }
 
 interface DispatchedEvent {
@@ -130,6 +131,8 @@ export default class ComponentParser {
   private readonly moduleExports: Map<ComponentPropName, ComponentProp> = new Map();
   private readonly slots: Map<ComponentSlotName, ComponentSlot> = new Map();
   private readonly events: Map<ComponentEventName, ComponentEvent> = new Map();
+  private readonly eventDescriptions: Map<ComponentEventName, string | undefined> = new Map();
+  private readonly forwardedEvents: Map<ComponentEventName, ComponentInlineElement | ComponentElement> = new Map();
   private readonly typedefs: Map<TypeDefName, TypeDef> = new Map();
   private readonly generics: ComponentGenerics = null;
   private readonly bindings: Map<ComponentPropName, ComponentPropBindings> = new Map();
@@ -305,6 +308,10 @@ export default class ComponentParser {
             });
             break;
           case "event":
+            // Store event metadata (description and detail) from JSDoc
+            // This will be used later when we determine if the event is forwarded or dispatched
+            this.eventDescriptions.set(name, description ? description : undefined);
+            // For dispatched events, also store the detail type
             this.addDispatchedEvent({
               name,
               detail: type,
@@ -340,6 +347,8 @@ export default class ComponentParser {
     this.moduleExports.clear();
     this.slots.clear();
     this.events.clear();
+    this.eventDescriptions.clear();
+    this.forwardedEvents.clear();
     this.typedefs.clear();
     this.generics = null;
     this.bindings.clear();
@@ -652,12 +661,33 @@ export default class ComponentParser {
         }
 
         if (node.type === "EventHandler" && node.expression == null) {
-          if (!this.events.has(node.name) && parent !== undefined) {
-            this.events.set(node.name, {
-              type: "forwarded",
-              name: node.name,
-              element: parent.name,
-            });
+          if (parent !== undefined) {
+            // Track that this event is forwarded (we'll use this info later)
+            this.forwardedEvents.set(node.name, parent.name);
+
+            const existing_event = this.events.get(node.name);
+
+            // Check if this event has a JSDoc description
+            const description = this.eventDescriptions.get(node.name);
+            const event_description = description?.split("-").pop()?.trim();
+
+            if (!existing_event) {
+              // Add new forwarded event
+              this.events.set(node.name, {
+                type: "forwarded",
+                name: node.name,
+                element: parent.name,
+                description: event_description,
+              });
+            } else if (existing_event.type === "forwarded" && event_description && !existing_event.description) {
+              // Event is already forwarded, just add the description
+              this.events.set(node.name, {
+                ...existing_event,
+                description: event_description,
+              });
+            }
+            // Note: if event is dispatched, we don't overwrite it here
+            // We'll handle @event JSDoc on forwarded events after the walk completes
           }
         }
 
@@ -699,6 +729,32 @@ export default class ComponentParser {
         }
       });
     }
+
+    // Post-process events: convert dispatched events from @event JSDoc to forwarded events
+    // if they are actually forwarded and not dispatched via createEventDispatcher
+    const actuallyDispatchedEvents = new Set<string>();
+    if (dispatcher_name !== undefined) {
+      callees.forEach((callee) => {
+        if (callee.name === dispatcher_name) {
+          actuallyDispatchedEvents.add(callee.arguments[0]?.value);
+        }
+      });
+    }
+
+    this.forwardedEvents.forEach((element, eventName) => {
+      const event = this.events.get(eventName);
+      // If event is marked as dispatched but is NOT actually dispatched, convert it to forwarded
+      if (event && event.type === "dispatched" && !actuallyDispatchedEvents.has(eventName)) {
+        const description = this.eventDescriptions.get(eventName);
+        const event_description = description?.split("-").pop()?.trim();
+        this.events.set(eventName, {
+          type: "forwarded",
+          name: eventName,
+          element: element,
+          description: event_description,
+        });
+      }
+    });
 
     return {
       props: ComponentParser.mapToArray(this.props).map((prop) => {
