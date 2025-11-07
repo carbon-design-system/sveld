@@ -157,9 +157,24 @@ function genEventDef(def: Pick<ComponentDocApi, "events">) {
       if (event.description) {
         description = `/** ${event.description} */\n`;
       }
-      return `${description}${clampKey(event.name)}: ${
-        event.type === "dispatched" ? createDispatchedEvent(event.detail) : `${mapEvent()}["${event.name}"]`
-      };\n`;
+
+      let eventType: string;
+      if (event.type === "dispatched") {
+        eventType = createDispatchedEvent(event.detail);
+      } else {
+        // For forwarded events, check if it's from a native HTML element or a component
+        // If element starts with uppercase, it's a component, so treat as CustomEvent
+        // Also check if the forwarded event has detail type information preserved
+        const elementName = typeof event.element === "string" ? event.element : event.element.name;
+        const isComponent = elementName && /^[A-Z]/.test(elementName);
+        if (isComponent || event.detail) {
+          eventType = createDispatchedEvent(event.detail);
+        } else {
+          eventType = `${mapEvent()}["${event.name}"]`;
+        }
+      }
+
+      return `${description}${clampKey(event.name)}: ${eventType};\n`;
     })
     .join("");
 
