@@ -1090,6 +1090,30 @@ exports[`fixtures (JSON) "bind-this-multiple/input.svelte" 1`] = `
 }"
 `;
 
+exports[`fixtures (JSON) "forwarded-custom-events/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "forwarded",
+      "name": "clear",
+      "element": "ListBoxSelection",
+      "description": "Fired when clear button is clicked",
+      "detail": "KeyboardEvent | MouseEvent"
+    },
+    {
+      "type": "forwarded",
+      "name": "click",
+      "element": "ListBoxSelection"
+    }
+  ],
+  "typedefs": [],
+  "generics": null
+}"
+`;
+
 exports[`fixtures (JSON) "typedef/input.svelte" 1`] = `
 "{
   "props": [
@@ -1933,6 +1957,22 @@ export default class BindThisMultiple extends SvelteComponentTyped<
   BindThisMultipleProps,
   Record<string, any>,
   { default: {} }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "forwarded-custom-events/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export type ForwardedCustomEventsProps = {};
+
+export default class ForwardedCustomEvents extends SvelteComponentTyped<
+  ForwardedCustomEventsProps,
+  {
+    /** Fired when clear button is clicked */ clear: CustomEvent<KeyboardEvent | MouseEvent>;
+    click: CustomEvent<any>;
+  },
+  {}
 > {}
 "
 `;

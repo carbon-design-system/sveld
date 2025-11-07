@@ -62,6 +62,7 @@ interface ForwardedEvent {
   name: string;
   element: ComponentInlineElement | ComponentElement;
   description?: string;
+  detail?: string;
 }
 
 interface DispatchedEvent {
@@ -770,12 +771,18 @@ export default class ComponentParser {
       if (event && event.type === "dispatched" && !actuallyDispatchedEvents.has(eventName)) {
         const description = this.eventDescriptions.get(eventName);
         const event_description = description?.split("-").pop()?.trim();
-        this.events.set(eventName, {
+        const forwardedEvent: ForwardedEvent = {
           type: "forwarded",
           name: eventName,
           element: element,
           description: event_description,
-        });
+        };
+        // Only preserve detail if it was explicitly set and is not "null"
+        // (null means no detail was specified in @event tag)
+        if (event.detail !== undefined && event.detail !== "null") {
+          forwardedEvent.detail = event.detail;
+        }
+        this.events.set(eventName, forwardedEvent);
       }
     });
 

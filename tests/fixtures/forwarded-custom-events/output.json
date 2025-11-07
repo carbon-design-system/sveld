@@ -1,0 +1,21 @@
+{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "forwarded",
+      "name": "clear",
+      "element": "ListBoxSelection",
+      "description": "Fired when clear button is clicked",
+      "detail": "KeyboardEvent | MouseEvent"
+    },
+    {
+      "type": "forwarded",
+      "name": "click",
+      "element": "ListBoxSelection"
+    }
+  ],
+  "typedefs": [],
+  "generics": null
+}
