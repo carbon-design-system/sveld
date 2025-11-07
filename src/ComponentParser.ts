@@ -777,9 +777,10 @@ export default class ComponentParser {
           element: element,
           description: event_description,
         };
-        // Only preserve detail if it was explicitly set and is not "null"
-        // (null means no detail was specified in @event tag)
-        if (event.detail !== undefined && event.detail !== "null") {
+        // Preserve detail type if it was explicitly set in @event tag
+        // Note: "null" is a valid explicit type (e.g., @event {null} eventname)
+        // Only skip if detail is truly undefined or the string "undefined"
+        if (event.detail !== undefined && event.detail !== "undefined") {
           forwardedEvent.detail = event.detail;
         }
         this.events.set(eventName, forwardedEvent);

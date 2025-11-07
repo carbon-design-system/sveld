@@ -1,0 +1,23 @@
+{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "forwarded",
+      "name": "clear",
+      "element": "CustomComponent",
+      "description": "Clear button clicked with no data",
+      "detail": "null"
+    },
+    {
+      "type": "forwarded",
+      "name": "search",
+      "element": "CustomComponent",
+      "description": "Search query changed",
+      "detail": "string"
+    }
+  ],
+  "typedefs": [],
+  "generics": null
+}

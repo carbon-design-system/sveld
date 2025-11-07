@@ -122,6 +122,41 @@ exports[`fixtures (JSON) "generics-multiple/input.svelte" 1`] = `
 }"
 `;
 
+exports[`fixtures (JSON) "mixed-event-types/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "forwarded",
+      "name": "input",
+      "element": "input",
+      "description": "Input value changed (native forwarded event)",
+      "detail": "string"
+    },
+    {
+      "type": "forwarded",
+      "name": "customEvent",
+      "element": "CustomComponent",
+      "description": "Custom event from component (component forwarded event)",
+      "detail": "number"
+    },
+    {
+      "type": "forwarded",
+      "name": "change",
+      "element": "input"
+    },
+    {
+      "type": "dispatched",
+      "name": "submit"
+    }
+  ],
+  "typedefs": [],
+  "generics": null
+}"
+`;
+
 exports[`fixtures (JSON) "dispatched-events-dynamic/input.svelte" 1`] = `
 "{
   "props": [],
@@ -405,13 +440,15 @@ exports[`fixtures (JSON) "forwarded-events-typed/input.svelte" 1`] = `
       "type": "forwarded",
       "name": "click",
       "element": "button",
-      "description": "Fired when the button is clicked"
+      "description": "Fired when the button is clicked",
+      "detail": "null"
     },
     {
       "type": "forwarded",
       "name": "focus",
       "element": "button",
-      "description": "Fired when the button receives focus"
+      "description": "Fired when the button receives focus",
+      "detail": "null"
     },
     {
       "type": "forwarded",
@@ -774,6 +811,45 @@ exports[`fixtures (JSON) "prop-comments/input.svelte" 1`] = `
 }"
 `;
 
+exports[`fixtures (JSON) "forwarded-events-native-with-jsdoc/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "slot_props": "{}"
+    }
+  ],
+  "events": [
+    {
+      "type": "forwarded",
+      "name": "click",
+      "element": "button",
+      "description": "Fired when the button is clicked",
+      "detail": "null"
+    },
+    {
+      "type": "forwarded",
+      "name": "focus",
+      "element": "button",
+      "description": "Fired when the button receives focus",
+      "detail": "null"
+    },
+    {
+      "type": "forwarded",
+      "name": "blur",
+      "element": "button",
+      "description": "Fired when the button loses focus",
+      "detail": "null"
+    }
+  ],
+  "typedefs": [],
+  "generics": null
+}"
+`;
+
 exports[`fixtures (JSON) "renamed-props/input.svelte" 1`] = `
 "{
   "props": [
@@ -877,6 +953,25 @@ exports[`fixtures (JSON) "infer-with-types/input.svelte" 1`] = `
     }
   ],
   "events": [],
+  "typedefs": [],
+  "generics": null
+}"
+`;
+
+exports[`fixtures (JSON) "forwarded-native-with-detail/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "forwarded",
+      "name": "change",
+      "element": "input",
+      "description": "The input value when changed",
+      "detail": "string"
+    }
+  ],
   "typedefs": [],
   "generics": null
 }"
@@ -1012,12 +1107,125 @@ exports[`fixtures (JSON) "rest-props-multiple/input.svelte" 1`] = `
 }"
 `;
 
+exports[`fixtures (JSON) "forwarded-from-component-to-native/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "expand",
+      "detail": "null"
+    },
+    {
+      "type": "dispatched",
+      "name": "collapse",
+      "detail": "null"
+    },
+    {
+      "type": "forwarded",
+      "name": "click",
+      "element": "ChildComponent"
+    },
+    {
+      "type": "forwarded",
+      "name": "mouseover",
+      "element": "ChildComponent"
+    },
+    {
+      "type": "forwarded",
+      "name": "mouseenter",
+      "element": "ChildComponent"
+    },
+    {
+      "type": "forwarded",
+      "name": "mouseleave",
+      "element": "ChildComponent"
+    }
+  ],
+  "typedefs": [],
+  "generics": null
+}"
+`;
+
 exports[`fixtures (JSON) "no-props/input.svelte" 1`] = `
 "{
   "props": [],
   "moduleExports": [],
   "slots": [],
   "events": [],
+  "typedefs": [],
+  "generics": null
+}"
+`;
+
+exports[`fixtures (JSON) "event-explicit-null/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "clear",
+      "detail": "null"
+    },
+    {
+      "type": "forwarded",
+      "name": "change",
+      "element": "input"
+    },
+    {
+      "type": "forwarded",
+      "name": "input",
+      "element": "input"
+    }
+  ],
+  "typedefs": [],
+  "generics": null,
+  "rest_props": {
+    "type": "Element",
+    "name": "input"
+  }
+}"
+`;
+
+exports[`fixtures (JSON) "forwarded-standard-event-custom-detail/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "files",
+      "kind": "let",
+      "type": "[]",
+      "value": "[]",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "add",
+      "detail": "ReadonlyArray<File>"
+    },
+    {
+      "type": "dispatched",
+      "name": "remove",
+      "detail": "ReadonlyArray<File>"
+    },
+    {
+      "type": "forwarded",
+      "name": "change",
+      "element": "FileUploaderButton",
+      "detail": "ReadonlyArray<File>"
+    }
+  ],
   "typedefs": [],
   "generics": null
 }"
@@ -1214,6 +1422,32 @@ exports[`fixtures (JSON) "component-comment-multi/input.svelte" 1`] = `
 }"
 `;
 
+exports[`fixtures (JSON) "forwarded-custom-event-null/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "forwarded",
+      "name": "clear",
+      "element": "CustomComponent",
+      "description": "Clear button clicked with no data",
+      "detail": "null"
+    },
+    {
+      "type": "forwarded",
+      "name": "search",
+      "element": "CustomComponent",
+      "description": "Search query changed",
+      "detail": "string"
+    }
+  ],
+  "typedefs": [],
+  "generics": null
+}"
+`;
+
 exports[`fixtures (JSON) "slots-spread/input.svelte" 1`] = `
 "{
   "props": [],
@@ -1232,6 +1466,23 @@ exports[`fixtures (JSON) "slots-spread/input.svelte" 1`] = `
     }
   ],
   "events": [],
+  "typedefs": [],
+  "generics": null
+}"
+`;
+
+exports[`fixtures (JSON) "forwarded-and-dispatched-events/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "forwarded",
+      "name": "change",
+      "element": "input"
+    }
+  ],
   "typedefs": [],
   "generics": null
 }"
@@ -1443,6 +1694,25 @@ export default class GenericsMultiple<
   GenericsMultipleProps<Row, Header>,
   Record<string, any>,
   { default: { headers: ReadonlyArray<DataTableHeader<Row, Header>>; rows: ReadonlyArray<Row> } }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "mixed-event-types/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export type MixedEventTypesProps = {};
+
+export default class MixedEventTypes extends SvelteComponentTyped<
+  MixedEventTypesProps,
+  {
+    /** Input value changed (native forwarded event) */ input: CustomEvent<string>;
+    /** Custom event from component (component forwarded event) */
+    customEvent: CustomEvent<number>;
+    change: WindowEventMap["change"];
+    submit: CustomEvent<any>;
+  },
+  {}
 > {}
 "
 `;
@@ -1806,6 +2076,25 @@ export default class PropComments extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "forwarded-events-native-with-jsdoc/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export type ForwardedEventsNativeWithJsdocProps = {};
+
+export default class ForwardedEventsNativeWithJsdoc extends SvelteComponentTyped<
+  ForwardedEventsNativeWithJsdocProps,
+  {
+    /** Fired when the button is clicked */ click: WindowEventMap["click"];
+    /** Fired when the button receives focus */
+    focus: WindowEventMap["focus"];
+    /** Fired when the button loses focus */
+    blur: WindowEventMap["blur"];
+  },
+  { default: {} }
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "renamed-props/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
@@ -1855,6 +2144,21 @@ export default class InferWithTypes extends SvelteComponentTyped<
 
   fn: () => any;
 }
+"
+`;
+
+exports[`fixtures (TypeScript) "forwarded-native-with-detail/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export type ForwardedNativeWithDetailProps = {};
+
+export default class ForwardedNativeWithDetail extends SvelteComponentTyped<
+  ForwardedNativeWithDetailProps,
+  {
+    /** The input value when changed */ change: CustomEvent<string>;
+  },
+  {}
+> {}
 "
 `;
 
@@ -1910,12 +2214,74 @@ export default class RestPropsMultiple extends SvelteComponentTyped<RestPropsMul
 "
 `;
 
+exports[`fixtures (TypeScript) "forwarded-from-component-to-native/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export type ForwardedFromComponentToNativeProps = {};
+
+export default class ForwardedFromComponentToNative extends SvelteComponentTyped<
+  ForwardedFromComponentToNativeProps,
+  {
+    expand: CustomEvent<null>;
+    collapse: CustomEvent<null>;
+    click: WindowEventMap["click"];
+    mouseover: WindowEventMap["mouseover"];
+    mouseenter: WindowEventMap["mouseenter"];
+    mouseleave: WindowEventMap["mouseleave"];
+  },
+  {}
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "no-props/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
 export type NoPropsProps = {};
 
 export default class NoProps extends SvelteComponentTyped<NoPropsProps, Record<string, any>, {}> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "event-explicit-null/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+type $RestProps = SvelteHTMLElements["input"];
+
+type $Props = {
+  [key: \`data-\${string}\`]: any;
+};
+
+export type EventExplicitNullProps = Omit<$RestProps, keyof $Props> & $Props;
+
+export default class EventExplicitNull extends SvelteComponentTyped<
+  EventExplicitNullProps,
+  { clear: CustomEvent<null>; change: WindowEventMap["change"]; input: WindowEventMap["input"] },
+  {}
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "forwarded-standard-event-custom-detail/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export type ForwardedStandardEventCustomDetailProps = {
+  /**
+   * @default []
+   */
+  files?: [];
+};
+
+export default class ForwardedStandardEventCustomDetail extends SvelteComponentTyped<
+  ForwardedStandardEventCustomDetailProps,
+  {
+    add: CustomEvent<ReadonlyArray<File>>;
+    remove: CustomEvent<ReadonlyArray<File>>;
+    change: CustomEvent<ReadonlyArray<File>>;
+  },
+  {}
+> {}
 "
 `;
 
@@ -1970,7 +2336,7 @@ export default class ForwardedCustomEvents extends SvelteComponentTyped<
   ForwardedCustomEventsProps,
   {
     /** Fired when clear button is clicked */ clear: CustomEvent<KeyboardEvent | MouseEvent>;
-    click: CustomEvent<any>;
+    click: WindowEventMap["click"];
   },
   {}
 > {}
@@ -2055,6 +2421,23 @@ export default class ComponentCommentMulti extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "forwarded-custom-event-null/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export type ForwardedCustomEventNullProps = {};
+
+export default class ForwardedCustomEventNull extends SvelteComponentTyped<
+  ForwardedCustomEventNullProps,
+  {
+    /** Clear button clicked with no data */ clear: CustomEvent<null>;
+    /** Search query changed */
+    search: CustomEvent<string>;
+  },
+  {}
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "slots-spread/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
@@ -2064,6 +2447,19 @@ export default class SlotsSpread extends SvelteComponentTyped<
   SlotsSpreadProps,
   Record<string, any>,
   { default: {}; text: {} }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "forwarded-and-dispatched-events/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export type ForwardedAndDispatchedEventsProps = {};
+
+export default class ForwardedAndDispatchedEvents extends SvelteComponentTyped<
+  ForwardedAndDispatchedEventsProps,
+  { change: WindowEventMap["change"] },
+  {}
 > {}
 "
 `;
@@ -2145,61 +2541,6 @@ export default class Generics<Row extends DataTableRow = DataTableRow> extends S
   GenericsProps<Row>,
   Record<string, any>,
   { default: { headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> } }
-> {}
-"
-`;
-
-exports[`fixtures (JSON) "forwarded-events-native-with-jsdoc/input.svelte" 1`] = `
-"{
-  "props": [],
-  "moduleExports": [],
-  "slots": [
-    {
-      "name": "__default__",
-      "default": true,
-      "slot_props": "{}"
-    }
-  ],
-  "events": [
-    {
-      "type": "forwarded",
-      "name": "click",
-      "element": "button",
-      "description": "Fired when the button is clicked"
-    },
-    {
-      "type": "forwarded",
-      "name": "focus",
-      "element": "button",
-      "description": "Fired when the button receives focus"
-    },
-    {
-      "type": "forwarded",
-      "name": "blur",
-      "element": "button",
-      "description": "Fired when the button loses focus"
-    }
-  ],
-  "typedefs": [],
-  "generics": null
-}"
-`;
-
-exports[`fixtures (TypeScript) "forwarded-events-native-with-jsdoc/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
-
-export type ForwardedEventsNativeWithJsdocProps = {};
-
-export default class ForwardedEventsNativeWithJsdoc extends SvelteComponentTyped<
-  ForwardedEventsNativeWithJsdocProps,
-  {
-    /** Fired when the button is clicked */ click: WindowEventMap["click"];
-    /** Fired when the button receives focus */
-    focus: WindowEventMap["focus"];
-    /** Fired when the button loses focus */
-    blur: WindowEventMap["blur"];
-  },
-  { default: {} }
 > {}
 "
 `;

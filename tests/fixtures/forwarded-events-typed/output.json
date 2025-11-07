@@ -7,13 +7,15 @@
       "type": "forwarded",
       "name": "click",
       "element": "button",
-      "description": "Fired when the button is clicked"
+      "description": "Fired when the button is clicked",
+      "detail": "null"
     },
     {
       "type": "forwarded",
       "name": "focus",
       "element": "button",
-      "description": "Fired when the button receives focus"
+      "description": "Fired when the button receives focus",
+      "detail": "null"
     },
     {
       "type": "forwarded",
