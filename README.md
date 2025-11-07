@@ -417,7 +417,8 @@ Signature:
 
 ```js
 /**
- * @event {EventDetail} eventname [event description]
+ * Optional event description
+ * @event {EventDetail} eventname [inline description]
  */
 ```
 
@@ -447,6 +448,64 @@ export default class Component extends SvelteComponentTyped<
   {
     "button:key": CustomEvent<{ key: string }>;
     /** Fired when `key` changes. */ key: CustomEvent<null>;
+  },
+  {}
+> {}
+```
+
+#### Using `@property` for complex event details
+
+For events with complex object payloads, use the `@property` tag to document individual properties. The main comment description will be used as the event description.
+
+Signature:
+
+```js
+/**
+ * Event description
+ * @event eventname
+ * @type {object}
+ * @property {Type} propertyName - Property description
+ */
+```
+
+Example:
+
+```js
+/**
+ * Fired when the user submits the form
+ *
+ * @event submit
+ * @type {object}
+ * @property {string} name - The user's name
+ * @property {string} email - The user's email address
+ * @property {boolean} newsletter - Whether the user opted into the newsletter
+ */
+
+import { createEventDispatcher } from "svelte";
+
+const dispatch = createEventDispatcher();
+
+function handleSubmit() {
+  dispatch("submit", {
+    name: "Jane Doe",
+    email: "jane@example.com",
+    newsletter: true
+  });
+}
+```
+
+Output:
+
+```ts
+export default class Component extends SvelteComponentTyped<
+  ComponentProps,
+  {
+    /** Fired when the user submits the form */
+    submit: CustomEvent<{
+      /** The user's name */ name: string;
+      /** The user's email address */ email: string;
+      /** Whether the user opted into the newsletter */ newsletter: boolean;
+    }>;
   },
   {}
 > {}

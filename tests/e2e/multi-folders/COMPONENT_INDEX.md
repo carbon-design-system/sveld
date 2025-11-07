@@ -29,9 +29,9 @@
 
 ### Events
 
-| Event name | Type      | Detail |
-| :--------- | :-------- | :----- |
-| click      | forwarded | --     |
+| Event name | Type      | Detail | Description |
+| :--------- | :-------- | :----- | :---------- |
+| click      | forwarded | --     | --          |
 
 ## `Card`
 
@@ -79,9 +79,9 @@ None.
 
 ### Events
 
-| Event name | Type      | Detail |
-| :--------- | :-------- | :----- |
-| click      | forwarded | --     |
+| Event name | Type      | Detail | Description |
+| :--------- | :-------- | :----- | :---------- |
+| click      | forwarded | --     | --          |
 
 ## `Quote`
 
