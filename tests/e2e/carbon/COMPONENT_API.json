@@ -55,11 +55,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         {
@@ -148,16 +144,12 @@
       "moduleExports": [],
       "slots": [
         {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        },
-        {
           "name": "title",
           "default": false,
           "fallback": "{title}",
           "slot_props": "Record<string, never>"
-        }
+        },
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "animationend", "element": "li" },
@@ -255,11 +247,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [],
       "typedefs": [],
@@ -297,11 +285,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         {
@@ -364,7 +348,7 @@
       "moduleExports": [],
       "slots": [
         {
-          "name": "__default__",
+          "name": null,
           "default": true,
           "slot_props": "{props?: { [\"aria-current\"]?: string; class: \"bx--link\"; }}"
         }
@@ -593,7 +577,7 @@
       "moduleExports": [],
       "slots": [
         {
-          "name": "__default__",
+          "name": null,
           "default": true,
           "slot_props": "{ props: { role: \"button\"; type?: string; tabindex: any; disabled: boolean; href?: string; class: string; [key: string]: any; } }"
         }
@@ -643,11 +627,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [],
       "typedefs": [],
@@ -937,11 +917,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "a" },
@@ -1163,7 +1139,7 @@
       "moduleExports": [],
       "slots": [
         {
-          "name": "__default__",
+          "name": null,
           "default": true,
           "fallback": "{code}",
           "slot_props": "Record<string, never>"
@@ -1359,7 +1335,7 @@
       "moduleExports": [],
       "slots": [
         {
-          "name": "__default__",
+          "name": null,
           "default": true,
           "slot_props": "{props: { class: string; [key: string]: any; }}"
         }
@@ -1729,11 +1705,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "div" },
@@ -1768,11 +1740,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [],
       "typedefs": [],
@@ -1821,11 +1789,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         {
@@ -1887,7 +1851,7 @@
       "moduleExports": [],
       "slots": [
         {
-          "name": "__default__",
+          "name": null,
           "default": true,
           "fallback": "{#if animation}{feedback || $$restProps[\"aria-label\"]}{/if}",
           "slot_props": "Record<string, never>"
@@ -2203,11 +2167,6 @@
       "moduleExports": [],
       "slots": [
         {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        },
-        {
           "name": "cell",
           "default": false,
           "fallback": "{cell.display ? cell.display(cell.value, row) : cell.value}",
@@ -2235,7 +2194,8 @@
           "default": false,
           "fallback": "{title}",
           "slot_props": "Record<string, never>"
-        }
+        },
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         {
@@ -2552,11 +2512,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "div" },
@@ -3859,11 +3815,7 @@
       "props": [],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [{ "type": "forwarded", "name": "submit", "element": "Form" }],
       "typedefs": [],
@@ -3876,11 +3828,7 @@
       "props": [],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "form" },
@@ -3948,11 +3896,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "fieldset" },
@@ -3970,11 +3914,7 @@
       "props": [],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "div" },
@@ -4005,11 +3945,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "label" },
@@ -4125,7 +4061,7 @@
       "moduleExports": [],
       "slots": [
         {
-          "name": "__default__",
+          "name": null,
           "default": true,
           "slot_props": "{ props: { class: string; [key: string]: any; } }"
         }
@@ -4236,11 +4172,6 @@
       "moduleExports": [],
       "slots": [
         {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        },
-        {
           "name": "platform",
           "default": false,
           "fallback": "{platformName}",
@@ -4250,7 +4181,8 @@
           "name": "skip-to-content",
           "default": false,
           "slot_props": "Record<string, never>"
-        }
+        },
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [{ "type": "forwarded", "name": "click", "element": "a" }],
       "typedefs": [],
@@ -4323,16 +4255,12 @@
       "moduleExports": [],
       "slots": [
         {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        },
-        {
           "name": "text",
           "default": false,
           "fallback": "{#if text}<span>{text}</span>{/if}",
           "slot_props": "Record<string, never>"
-        }
+        },
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "button" },
@@ -4484,7 +4412,7 @@
       "moduleExports": [],
       "slots": [
         {
-          "name": "__default__",
+          "name": null,
           "default": true,
           "fallback": "<svelte:component this={icon} />",
           "slot_props": "Record<string, never>"
@@ -4513,11 +4441,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [],
       "typedefs": [],
@@ -4645,11 +4569,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "keydown", "element": "a" },
@@ -4671,11 +4591,7 @@
       "props": [],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [],
       "typedefs": [],
@@ -4711,11 +4627,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [{ "type": "forwarded", "name": "click", "element": "a" }],
       "typedefs": [],
@@ -4728,11 +4640,7 @@
       "props": [],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [],
       "typedefs": [],
@@ -4806,7 +4714,7 @@
       "moduleExports": [],
       "slots": [
         {
-          "name": "__default__",
+          "name": null,
           "default": true,
           "fallback": "{result.text}\n              {#if result.description}<span>– {result.description}</span>{/if}",
           "slot_props": "{ result: HeaderSearchResult; index: number }"
@@ -4843,11 +4751,7 @@
       "props": [],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [],
       "typedefs": [],
@@ -5098,7 +5002,7 @@
       "moduleExports": [],
       "slots": [
         {
-          "name": "__default__",
+          "name": null,
           "default": true,
           "slot_props": "Record<string, never>"
         },
@@ -5200,11 +5104,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "p" },
@@ -5330,11 +5230,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "keydown", "element": "div" },
@@ -5435,11 +5331,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "div" },
@@ -5490,11 +5382,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [{ "type": "forwarded", "name": "scroll", "element": "div" }],
       "typedefs": [],
@@ -5586,11 +5474,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "div" },
@@ -5684,11 +5568,7 @@
       "props": [],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "li" },
@@ -6004,11 +5884,6 @@
       "moduleExports": [],
       "slots": [
         {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        },
-        {
           "name": "heading",
           "default": false,
           "fallback": "{modalHeading}",
@@ -6019,7 +5894,8 @@
           "default": false,
           "fallback": "{modalLabel}",
           "slot_props": "Record<string, never>"
-        }
+        },
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "keydown", "element": "div" },
@@ -6071,11 +5947,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [],
       "typedefs": [],
@@ -6159,11 +6031,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [],
       "typedefs": [],
@@ -6261,11 +6129,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [{ "type": "forwarded", "name": "click", "element": "button" }],
       "typedefs": [],
@@ -6621,11 +6485,7 @@
       "props": [],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "Button" },
@@ -6802,11 +6662,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [],
       "typedefs": [],
@@ -7176,11 +7032,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "ol" },
@@ -7198,11 +7050,7 @@
       "props": [],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "Link" },
@@ -7363,16 +7211,12 @@
       "moduleExports": [],
       "slots": [
         {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        },
-        {
           "name": "menu",
           "default": false,
           "fallback": "<svelte:component\n      this={icon}\n      aria-label={iconDescription}\n      title={iconDescription}\n      class=\"bx--overflow-menu__icon {iconClass}\"\n    />",
           "slot_props": "Record<string, never>"
-        }
+        },
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         {
@@ -7506,7 +7350,7 @@
       "moduleExports": [],
       "slots": [
         {
-          "name": "__default__",
+          "name": null,
           "default": true,
           "fallback": "<div class:bx--overflow-menu-options__option-content={true}>\n          {text}\n        </div>",
           "slot_props": "Record<string, never>"
@@ -8137,11 +7981,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "dispatched", "name": "change", "detail": "number" },
@@ -8299,7 +8139,7 @@
       "moduleExports": [],
       "slots": [
         {
-          "name": "__default__",
+          "name": null,
           "default": true,
           "fallback": "<p class:bx--progress-label={true}>{label}</p>",
           "slot_props": "{ props: { class: \"bx--progress-label\" } }"
@@ -8501,11 +8341,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "div" },
@@ -8625,11 +8461,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "change", "element": "input" },
@@ -8735,7 +8567,7 @@
       "moduleExports": [],
       "slots": [
         {
-          "name": "__default__",
+          "name": null,
           "default": true,
           "slot_props": "{ props: { class: string; [key: string]: any; } }"
         }
@@ -9161,11 +8993,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "dispatched", "name": "change", "detail": "string" },
@@ -9265,11 +9093,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [],
       "typedefs": [],
@@ -9420,11 +9244,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "label" },
@@ -9479,11 +9299,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [],
       "typedefs": [],
@@ -9496,11 +9312,7 @@
       "props": [],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [],
       "typedefs": [],
@@ -9628,11 +9440,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [{ "type": "forwarded", "name": "click", "element": "button" }],
       "typedefs": [],
@@ -9809,7 +9617,7 @@
       "moduleExports": [],
       "slots": [
         {
-          "name": "__default__",
+          "name": null,
           "default": true,
           "fallback": "Skip to main content",
           "slot_props": "Record<string, never>"
@@ -10113,11 +9921,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "div" },
@@ -10136,11 +9940,7 @@
       "props": [],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "div" },
@@ -10183,11 +9983,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "div" },
@@ -10205,11 +10001,7 @@
       "props": [],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "div" },
@@ -10348,11 +10140,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "label" },
@@ -10474,7 +10262,7 @@
       "moduleExports": [],
       "slots": [
         {
-          "name": "__default__",
+          "name": null,
           "default": true,
           "fallback": "{text}",
           "slot_props": "Record<string, never>"
@@ -10571,7 +10359,7 @@
       "moduleExports": [],
       "slots": [
         {
-          "name": "__default__",
+          "name": null,
           "default": true,
           "fallback": "{label}",
           "slot_props": "Record<string, never>"
@@ -10606,11 +10394,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [],
       "typedefs": [],
@@ -10695,11 +10479,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [],
       "typedefs": [],
@@ -10712,11 +10492,7 @@
       "props": [],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [],
       "typedefs": [],
@@ -10729,11 +10505,7 @@
       "props": [],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "td" },
@@ -10788,11 +10560,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [],
       "typedefs": [],
@@ -10805,11 +10573,7 @@
       "props": [],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "thead" },
@@ -10864,11 +10628,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "mouseover", "element": "th" },
@@ -10886,11 +10646,7 @@
       "props": [],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "tr" },
@@ -10958,7 +10714,7 @@
       "moduleExports": [],
       "slots": [
         {
-          "name": "__default__",
+          "name": null,
           "default": true,
           "slot_props": "Record<string, never>"
         },
@@ -11096,7 +10852,7 @@
       "moduleExports": [],
       "slots": [
         {
-          "name": "__default__",
+          "name": null,
           "default": true,
           "slot_props": "{ props: { class: \"bx--tag__label\" } }"
         }
@@ -11629,11 +11385,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "div" },
@@ -11687,11 +11439,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [{ "type": "dispatched", "name": "select" }],
       "typedefs": [],
@@ -11883,11 +11631,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "div" },
@@ -12005,11 +11749,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "div" },
@@ -12136,11 +11876,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         {
@@ -12495,11 +12231,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [],
       "typedefs": [],
@@ -12525,11 +12257,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [],
       "typedefs": [],
@@ -12542,11 +12270,7 @@
       "props": [],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [],
       "typedefs": [],
@@ -12558,11 +12282,7 @@
       "props": [],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [],
       "typedefs": [],
@@ -12579,11 +12299,7 @@
       "props": [],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "OverflowMenuItem" },
@@ -12853,11 +12569,6 @@
       "moduleExports": [],
       "slots": [
         {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        },
-        {
           "name": "icon",
           "default": false,
           "fallback": "<svelte:component this={icon} name={iconName} />",
@@ -12868,7 +12579,8 @@
           "default": false,
           "fallback": "{triggerText}",
           "slot_props": "Record<string, never>"
-        }
+        },
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "div" },
@@ -12946,7 +12658,7 @@
       "moduleExports": [],
       "slots": [
         {
-          "name": "__default__",
+          "name": null,
           "default": true,
           "slot_props": "Record<string, never>"
         },
@@ -13036,16 +12748,12 @@
       "moduleExports": [],
       "slots": [
         {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        },
-        {
           "name": "text",
           "default": false,
           "fallback": "{tooltipText}",
           "slot_props": "Record<string, never>"
-        }
+        },
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "button" },
@@ -13077,11 +12785,7 @@
       ],
       "moduleExports": [],
       "slots": [
-        {
-          "name": "__default__",
-          "default": true,
-          "slot_props": "Record<string, never>"
-        }
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "ul" },

@@ -143,7 +143,7 @@ function genSlotDef(def: Pick<ComponentDocApi, "slots">) {
 
   const slotDefs = def.slots
     .map(({ name, slot_props, ...rest }) => {
-      const key = rest.default ? "default" : clampKey(name ?? "");
+      const key = rest.default || name === null ? "default" : clampKey(name ?? "");
       const description = rest.description ? `/** ${rest.description} */\n` : "";
       return `${description}${clampKey(key)}: ${formatTsProps(slot_props)};`;
     })

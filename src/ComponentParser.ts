@@ -36,12 +36,12 @@ interface ComponentProp {
   reactive: boolean;
 }
 
-const DEFAULT_SLOT_NAME = "__default__";
+const DEFAULT_SLOT_NAME = null;
 
 type ComponentSlotName = typeof DEFAULT_SLOT_NAME | string;
 
 interface ComponentSlot {
-  name?: string;
+  name?: string | null;
   default: boolean;
   fallback?: string;
   slot_props?: string;

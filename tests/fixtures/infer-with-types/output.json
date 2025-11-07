@@ -69,7 +69,7 @@
   "moduleExports": [],
   "slots": [
     {
-      "name": "__default__",
+      "name": null,
       "default": true,
       "fallback": "{name}",
       "slot_props": "Record<string, never>"

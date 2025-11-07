@@ -31,7 +31,7 @@
       "moduleExports": [],
       "slots": [
         {
-          "name": "__default__",
+          "name": null,
           "default": true,
           "fallback": "Click me",
           "slot_props": "Record<string, never>"

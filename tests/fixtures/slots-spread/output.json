@@ -3,7 +3,7 @@
   "moduleExports": [],
   "slots": [
     {
-      "name": "__default__",
+      "name": null,
       "default": true,
       "fallback": "Default text",
       "slot_props": "Record<string, never>"

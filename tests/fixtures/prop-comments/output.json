@@ -40,7 +40,7 @@
   "moduleExports": [],
   "slots": [
     {
-      "name": "__default__",
+      "name": null,
       "default": true,
       "slot_props": "{ prop: boolean | string, prop1: boolean, prop2: boolean | string }"
     }
