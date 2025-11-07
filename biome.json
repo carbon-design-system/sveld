@@ -10,12 +10,12 @@
   "files": {
     "includes": [
       "**",
-      "!!**/./**/*",
-      "!!**/lib",
-      "!!**/dist",
-      "!!**/.svelte-kit",
-      "!!**/tests/e2e",
-      "!!**/tests/fixtures"
+      "!!**/.*/**/*",
+      "!!**/lib/**/*",
+      "!!**/dist/**/*",
+      "!!**/.svelte-kit/**/*",
+      "!!**/tests/e2e/**/*",
+      "!!**/tests/fixtures/**/*"
     ]
   },
   "formatter": {
