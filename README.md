@@ -366,6 +366,55 @@ export let author = {};
 export let authors = [];
 ```
 
+#### Using `@property` for complex typedefs
+
+For complex object types, use the `@property` tag to document individual properties. This provides better documentation and IDE support with per-property tooltips.
+
+Signature:
+
+```js
+/**
+ * Type description
+ * @typedef {object} TypeName
+ * @property {Type} propertyName - Property description
+ */
+```
+
+Example:
+
+```js
+/**
+ * Represents a user in the system
+ * @typedef {object} User
+ * @property {string} name - The user's full name
+ * @property {string} email - The user's email address
+ * @property {number} age - The user's age in years
+ */
+
+/** @type {User} */
+export let user = { name: "John", email: "john@example.com", age: 30 };
+```
+
+Output:
+
+```ts
+export type User = {
+  /** The user's full name */ name: string;
+  /** The user's email address */ email: string;
+  /** The user's age in years */ age: number;
+};
+
+export type ComponentProps = {
+  /**
+   * Represents a user in the system
+   * @default { name: "John", email: "john@example.com", age: 30 }
+   */
+  user?: User;
+};
+```
+
+> **Note:** The inline syntax `@typedef {{ name: string }} User` continues to work for backwards compatibility.
+
 ### `@slot`
 
 Use the `@slot` tag for typing component slots. Note that `@slot` is a non-standard JSDoc tag.

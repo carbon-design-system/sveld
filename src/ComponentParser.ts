@@ -314,6 +314,11 @@ export default class ComponentParser {
       let currentEventDescription: string | undefined;
       const eventProperties: Array<{ name: string; type: string; description?: string }> = [];
 
+      let currentTypedefName: string | undefined;
+      let currentTypedefType: string | undefined;
+      let currentTypedefDescription: string | undefined;
+      const typedefProperties: Array<{ name: string; type: string; description?: string }> = [];
+
       const finalizeEvent = () => {
         if (currentEventName !== undefined) {
           let detailType: string;
@@ -334,6 +339,41 @@ export default class ComponentParser {
           currentEventName = undefined;
           currentEventType = undefined;
           currentEventDescription = undefined;
+        }
+      };
+
+      const finalizeTypedef = () => {
+        if (currentTypedefName !== undefined) {
+          let typedefType: string;
+          let typedefTs: string;
+
+          if (typedefProperties.length > 0) {
+            // Build type alias with property descriptions
+            typedefType = this.buildEventDetailFromProperties(typedefProperties);
+            typedefTs = `type ${currentTypedefName} = ${typedefType}`;
+          } else if (currentTypedefType) {
+            // Use inline type definition (existing behavior)
+            typedefType = currentTypedefType;
+            typedefTs = /(\}|\};)$/.test(typedefType)
+              ? `interface ${currentTypedefName} ${typedefType}`
+              : `type ${currentTypedefName} = ${typedefType}`;
+          } else {
+            // No type or properties specified, default to empty object
+            typedefType = "{}";
+            typedefTs = `type ${currentTypedefName} = ${typedefType}`;
+          }
+
+          this.typedefs.set(currentTypedefName, {
+            type: typedefType,
+            name: currentTypedefName,
+            description: ComponentParser.assignValue(currentTypedefDescription),
+            ts: typedefTs,
+          });
+
+          typedefProperties.length = 0;
+          currentTypedefName = undefined;
+          currentTypedefType = undefined;
+          currentTypedefDescription = undefined;
         }
       };
 
@@ -377,31 +417,43 @@ export default class ComponentParser {
             }
             break;
           case "property":
-            // Collect properties for the current event
+            // Collect properties for the current event or typedef
             if (currentEventName !== undefined) {
               eventProperties.push({
                 name,
                 type,
                 description: description?.replace(/^-\s*/, "").trim(),
               });
+            } else if (currentTypedefName !== undefined) {
+              typedefProperties.push({
+                name,
+                type,
+                description: description?.replace(/^-\s*/, "").trim(),
+              });
             }
             break;
-          case "typedef":
-            this.typedefs.set(name, {
-              type,
-              name,
-              description: ComponentParser.assignValue(description),
-              ts: /(\}|\};)$/.test(type) ? `interface ${name} ${type}` : `type ${name} = ${type}`,
-            });
+          case "typedef": {
+            // Finalize any previous typedef being built
+            finalizeTypedef();
+
+            // Start tracking new typedef
+            currentTypedefName = name;
+            currentTypedefType = type;
+            // Use inline description if present, otherwise use comment description
+            const trimmedCommentDesc = commentDescription?.trim();
+            currentTypedefDescription =
+              description || (trimmedCommentDesc && trimmedCommentDesc !== "}" ? trimmedCommentDesc : undefined);
             break;
+          }
           case "generics":
             this.generics = [name, type];
             break;
         }
       });
 
-      // Finalize any remaining event
+      // Finalize any remaining event or typedef
       finalizeEvent();
+      finalizeTypedef();
     });
   }
 

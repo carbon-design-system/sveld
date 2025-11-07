@@ -1,0 +1,65 @@
+{
+  "props": [
+    {
+      "name": "user",
+      "kind": "let",
+      "description": "Represents a user in the system.",
+      "type": "User",
+      "value": "{ name: \"John\", email: \"john@example.com\", age: 30 }",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "config",
+      "kind": "let",
+      "description": "Configuration options for the component.",
+      "type": "ComponentConfig",
+      "value": "{ enabled: true, theme: \"dark\" }",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "simple",
+      "kind": "let",
+      "description": "Simple typedef without properties (backwards compatibility test).",
+      "type": "SimpleType",
+      "value": "{ id: 1, label: \"Test\" }",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{ /** The user's full name. */ name: string; /** The user's email address. */ email: string; /** The user's age in years. */ age: number; }",
+      "name": "User",
+      "description": "Represents a user in the system.",
+      "ts": "type User = { /** The user's full name. */ name: string; /** The user's email address. */ email: string; /** The user's age in years. */ age: number; }"
+    },
+    {
+      "type": "{ /** Whether the component is enabled. */ enabled: boolean; /** The component theme. */ theme: string; }",
+      "name": "ComponentConfig",
+      "description": "Configuration options for the component.",
+      "ts": "type ComponentConfig = { /** Whether the component is enabled. */ enabled: boolean; /** The component theme. */ theme: string; }"
+    },
+    {
+      "type": "{ id: number; label: string; }",
+      "name": "SimpleType",
+      "description": "Simple typedef without properties (backwards compatibility test).",
+      "ts": "interface SimpleType { id: number; label: string; }"
+    }
+  ],
+  "generics": null,
+  "contexts": []
+}
