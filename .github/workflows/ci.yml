@@ -38,7 +38,7 @@ jobs:
       - name: Deploy docs
         # Only trigger deploy if previous steps pass on main branch.
         # Only fire once per branch push.
-        if: matrix.os == 'macos-latest' && github.ref == 'refs/heads/main'
+        if: matrix.os == 'macos-15' && github.ref == 'refs/heads/main'
         env:
           deploy_url: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
         run: curl "$deploy_url"
