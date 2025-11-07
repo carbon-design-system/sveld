@@ -52,5 +52,6 @@
   "generics": [
     "Row",
     "Row extends DataTableRow = DataTableRow"
-  ]
+  ],
+  "contexts": []
 }

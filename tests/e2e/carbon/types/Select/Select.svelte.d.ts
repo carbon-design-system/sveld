@@ -1,6 +1,10 @@
 import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
+export type SelectContext = {
+  selectedValue: any;
+};
+
 type $RestProps = SvelteHTMLElements["div"];
 
 type $Props = {

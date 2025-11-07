@@ -1,6 +1,10 @@
 import type { SvelteComponentTyped } from "svelte";
 import type { AccordionSkeletonProps } from "./AccordionSkeleton.svelte";
 
+export type AccordionContext = {
+  disableItems: any;
+};
+
 export type AccordionProps = AccordionSkeletonProps & {
   /**
    * Specify alignment of accordion item chevron icon

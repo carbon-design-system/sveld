@@ -23,6 +23,26 @@ export function getTypeDefs(def: Pick<ComponentDocApi, "typedefs">) {
   return def.typedefs.map((typedef) => `export ${typedef.ts}`).join("\n\n");
 }
 
+export function getContextDefs(def: Pick<ComponentDocApi, "contexts">) {
+  if (!def.contexts || def.contexts.length === 0) return EMPTY_STR;
+
+  return def.contexts
+    .map((context) => {
+      const props = context.properties
+        .map((prop) => {
+          const comment = prop.description ? `/** ${prop.description} */\n  ` : "";
+          const optional = prop.optional ? "?" : "";
+          return `${comment}${prop.name}${optional}: ${prop.type};`;
+        })
+        .join("\n  ");
+
+      const contextComment = context.description ? `/**\n * ${context.description}\n */\n` : "";
+
+      return `${contextComment}export type ${context.typeName} = {\n  ${props}\n};`;
+    })
+    .join("\n\n");
+}
+
 function clampKey(key: string) {
   if (/(-|\s+|:)/.test(key)) {
     return /("|')/.test(key) ? key : `"${key}"`;
@@ -371,6 +391,7 @@ export function writeTsDefinition(component: ComponentDocApi) {
     rest_props,
     extends: _extends,
     componentComment,
+    contexts,
   } = component;
   const { props_name, prop_def } = genPropDef({
     moduleName,
@@ -390,6 +411,7 @@ export function writeTsDefinition(component: ComponentDocApi) {
   ${genImports({ extends: _extends })}
   ${genModuleExports({ moduleExports })}
   ${getTypeDefs({ typedefs })}
+  ${getContextDefs({ contexts })}
   ${prop_def}
   ${genComponentComment({ componentComment })}
   export default class ${moduleName === "default" ? "" : moduleName}${generic} extends SvelteComponentTyped<

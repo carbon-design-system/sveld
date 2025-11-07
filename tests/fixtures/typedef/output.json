@@ -39,5 +39,6 @@
       "ts": "interface MyTypedef { [key: string]: boolean; }"
     }
   ],
-  "generics": null
+  "generics": null,
+  "contexts": []
 }

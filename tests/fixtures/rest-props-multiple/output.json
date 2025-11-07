@@ -20,5 +20,6 @@
   "rest_props": {
     "type": "Element",
     "name": "ul | ol"
-  }
+  },
+  "contexts": []
 }

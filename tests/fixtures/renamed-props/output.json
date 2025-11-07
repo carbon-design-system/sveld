@@ -17,5 +17,6 @@
   "slots": [],
   "events": [],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
 }

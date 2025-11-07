@@ -8,5 +8,6 @@
   "rest_props": {
     "type": "Element",
     "name": "svg"
-  }
+  },
+  "contexts": []
 }

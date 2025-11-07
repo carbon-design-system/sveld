@@ -86,7 +86,16 @@
         "interface": "AccordionSkeletonProps",
         "import": "\"./AccordionSkeleton.svelte\""
       },
-      "componentComment": "\n@example\n<Accordion>\n  <AccordionItem>...</AccordionItem>\n</Accordion>"
+      "componentComment": "\n@example\n<Accordion>\n  <AccordionItem>...</AccordionItem>\n</Accordion>",
+      "contexts": [
+        {
+          "key": "Accordion",
+          "typeName": "AccordionContext",
+          "properties": [
+            { "name": "disableItems", "type": "any", "optional": false }
+          ]
+        }
+      ]
     },
     {
       "moduleName": "AccordionItem",
@@ -162,7 +171,8 @@
       "typedefs": [],
       "generics": null,
       "rest_props": { "type": "Element", "name": "li" },
-      "componentComment": " `AccordionItem` is slottable"
+      "componentComment": " `AccordionItem` is slottable",
+      "contexts": []
     },
     {
       "moduleName": "AccordionSkeleton",
@@ -226,7 +236,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "ul" }
+      "rest_props": { "type": "Element", "name": "ul" },
+      "contexts": []
     },
     {
       "moduleName": "AspectRatio",
@@ -252,7 +263,8 @@
       "events": [],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "Breadcrumb",
@@ -315,7 +327,8 @@
       "extends": {
         "interface": "BreadcrumbSkeletonProps",
         "import": "\"./BreadcrumbSkeleton.svelte\""
-      }
+      },
+      "contexts": []
     },
     {
       "moduleName": "BreadcrumbItem",
@@ -361,7 +374,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "li" }
+      "rest_props": { "type": "Element", "name": "li" },
+      "contexts": []
     },
     {
       "moduleName": "BreadcrumbSkeleton",
@@ -402,7 +416,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "Button",
@@ -606,7 +621,8 @@
       "extends": {
         "interface": "ButtonSkeletonProps",
         "import": "\"./ButtonSkeleton.svelte\""
-      }
+      },
+      "contexts": []
     },
     {
       "moduleName": "ButtonSet",
@@ -632,7 +648,8 @@
       "events": [],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "ButtonSkeleton",
@@ -684,7 +701,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "a" }
+      "rest_props": { "type": "Element", "name": "a" },
+      "contexts": []
     },
     {
       "moduleName": "Checkbox",
@@ -857,7 +875,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "InlineComponent", "name": "CheckboxSkeleton" }
+      "rest_props": { "type": "InlineComponent", "name": "CheckboxSkeleton" },
+      "contexts": []
     },
     {
       "moduleName": "CheckboxSkeleton",
@@ -873,7 +892,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "ClickableTile",
@@ -928,7 +948,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "a" }
+      "rest_props": { "type": "Element", "name": "a" },
+      "contexts": []
     },
     {
       "moduleName": "CodeSnippet",
@@ -1170,7 +1191,11 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "InlineComponent", "name": "CodeSnippetSkeleton" }
+      "rest_props": {
+        "type": "InlineComponent",
+        "name": "CodeSnippetSkeleton"
+      },
+      "contexts": []
     },
     {
       "moduleName": "CodeSnippetSkeleton",
@@ -1199,7 +1224,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "Column",
@@ -1359,7 +1385,8 @@
         }
       ],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "ComboBox",
@@ -1613,7 +1640,8 @@
         }
       ],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "ComposedModal",
@@ -1719,7 +1747,18 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": [
+        {
+          "key": "ComposedModal",
+          "typeName": "ComposedModalContext",
+          "properties": [
+            { "name": "closeModal", "type": "() => any", "optional": false },
+            { "name": "submit", "type": "() => any", "optional": false },
+            { "name": "declareRef", "type": "(ref) => any", "optional": false }
+          ]
+        }
+      ]
     },
     {
       "moduleName": "Content",
@@ -1745,7 +1784,8 @@
       "events": [],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "main" }
+      "rest_props": { "type": "Element", "name": "main" },
+      "contexts": []
     },
     {
       "moduleName": "ContentSwitcher",
@@ -1805,7 +1845,23 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": [
+        {
+          "key": "ContentSwitcher",
+          "typeName": "ContentSwitcherContext",
+          "properties": [
+            { "name": "currentId", "type": "any", "optional": false },
+            { "name": "add", "type": "(arg) => any", "optional": false },
+            { "name": "update", "type": "(id) => any", "optional": false },
+            {
+              "name": "change",
+              "type": "(direction) => any",
+              "optional": false
+            }
+          ]
+        }
+      ]
     },
     {
       "moduleName": "Copy",
@@ -1863,7 +1919,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "button" }
+      "rest_props": { "type": "Element", "name": "button" },
+      "contexts": []
     },
     {
       "moduleName": "CopyButton",
@@ -1894,7 +1951,8 @@
       "extends": {
         "interface": "CopyProps",
         "import": "\"../Copy/Copy.svelte\""
-      }
+      },
+      "contexts": []
     },
     {
       "moduleName": "DataTable",
@@ -2280,7 +2338,22 @@
         }
       ],
       "generics": ["Row", "Row extends DataTableRow = DataTableRow"],
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": [
+        {
+          "key": "DataTable",
+          "typeName": "DataTableContext",
+          "properties": [
+            { "name": "batchSelectedIds", "type": "any", "optional": false },
+            { "name": "tableRows", "type": "any", "optional": false },
+            {
+              "name": "resetSelectedRowIds",
+              "type": "() => any",
+              "optional": false
+            }
+          ]
+        }
+      ]
     },
     {
       "moduleName": "DataTableSkeleton",
@@ -2384,7 +2457,8 @@
       "extends": {
         "interface": "DataTableHeader",
         "import": "\"../DataTable/DataTable.svelte\""
-      }
+      },
+      "contexts": []
     },
     {
       "moduleName": "DatePicker",
@@ -2523,7 +2597,32 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": [
+        {
+          "key": "DatePicker",
+          "typeName": "DatePickerContext",
+          "properties": [
+            { "name": "range", "type": "any", "optional": false },
+            { "name": "inputValue", "type": "any", "optional": false },
+            { "name": "hasCalendar", "type": "any", "optional": false },
+            { "name": "add", "type": "(data) => any", "optional": false },
+            { "name": "declareRef", "type": "(arg) => any", "optional": false },
+            {
+              "name": "updateValue",
+              "type": "(arg) => any",
+              "optional": false
+            },
+            {
+              "name": "blurInput",
+              "type": "(relatedTarget) => any",
+              "optional": false
+            },
+            { "name": "openCalendar", "type": "() => any", "optional": false },
+            { "name": "focusCalendar", "type": "() => any", "optional": false }
+          ]
+        }
+      ]
     },
     {
       "moduleName": "DatePickerInput",
@@ -2693,7 +2792,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "DatePickerSkeleton",
@@ -2734,7 +2834,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "Dropdown",
@@ -3004,7 +3105,8 @@
         }
       ],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "DropdownSkeleton",
@@ -3033,7 +3135,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "ExpandableTile",
@@ -3194,7 +3297,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "button" }
+      "rest_props": { "type": "Element", "name": "button" },
+      "contexts": []
     },
     {
       "moduleName": "FileUploader",
@@ -3351,7 +3455,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "FileUploaderButton",
@@ -3499,7 +3604,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "input" }
+      "rest_props": { "type": "Element", "name": "input" },
+      "contexts": []
     },
     {
       "moduleName": "FileUploaderDropContainer",
@@ -3639,7 +3745,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "FileUploaderItem",
@@ -3740,7 +3847,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "span" }
+      "rest_props": { "type": "Element", "name": "span" },
+      "contexts": []
     },
     {
       "moduleName": "FileUploaderSkeleton",
@@ -3756,7 +3864,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "Filename",
@@ -3807,7 +3916,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "InlineComponent", "name": "Loading" }
+      "rest_props": { "type": "InlineComponent", "name": "Loading" },
+      "contexts": []
     },
     {
       "moduleName": "FluidForm",
@@ -3820,7 +3930,16 @@
       "events": [{ "type": "forwarded", "name": "submit", "element": "Form" }],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "InlineComponent", "name": "Form" }
+      "rest_props": { "type": "InlineComponent", "name": "Form" },
+      "contexts": [
+        {
+          "key": "Form",
+          "typeName": "FormContext",
+          "properties": [
+            { "name": "isFluid", "type": "boolean", "optional": false }
+          ]
+        }
+      ]
     },
     {
       "moduleName": "Form",
@@ -3839,7 +3958,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "form" }
+      "rest_props": { "type": "Element", "name": "form" },
+      "contexts": []
     },
     {
       "moduleName": "FormGroup",
@@ -3906,7 +4026,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "fieldset" }
+      "rest_props": { "type": "Element", "name": "fieldset" },
+      "contexts": []
     },
     {
       "moduleName": "FormItem",
@@ -3924,7 +4045,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "FormLabel",
@@ -3955,7 +4077,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "label" }
+      "rest_props": { "type": "Element", "name": "label" },
+      "contexts": []
     },
     {
       "moduleName": "Grid",
@@ -4069,7 +4192,8 @@
       "events": [],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "Header",
@@ -4187,7 +4311,8 @@
       "events": [{ "type": "forwarded", "name": "click", "element": "a" }],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "a" }
+      "rest_props": { "type": "Element", "name": "a" },
+      "contexts": []
     },
     {
       "moduleName": "HeaderAction",
@@ -4274,7 +4399,8 @@
         }
       ],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "button" }
+      "rest_props": { "type": "Element", "name": "button" },
+      "contexts": []
     },
     {
       "moduleName": "HeaderActionLink",
@@ -4332,7 +4458,8 @@
       "events": [],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "a" }
+      "rest_props": { "type": "Element", "name": "a" },
+      "contexts": []
     },
     {
       "moduleName": "HeaderActionSearch",
@@ -4367,7 +4494,8 @@
         }
       ],
       "typedefs": [],
-      "generics": null
+      "generics": null,
+      "contexts": []
     },
     {
       "moduleName": "HeaderGlobalAction",
@@ -4421,7 +4549,8 @@
       "events": [{ "type": "forwarded", "name": "click", "element": "button" }],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "button" }
+      "rest_props": { "type": "Element", "name": "button" },
+      "contexts": []
     },
     {
       "moduleName": "HeaderNav",
@@ -4446,7 +4575,8 @@
       "events": [],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "nav" }
+      "rest_props": { "type": "Element", "name": "nav" },
+      "contexts": []
     },
     {
       "moduleName": "HeaderNavItem",
@@ -4501,7 +4631,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "a" }
+      "rest_props": { "type": "Element", "name": "a" },
+      "contexts": []
     },
     {
       "moduleName": "HeaderNavMenu",
@@ -4583,7 +4714,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "a" }
+      "rest_props": { "type": "Element", "name": "a" },
+      "contexts": []
     },
     {
       "moduleName": "HeaderPanelDivider",
@@ -4595,7 +4727,8 @@
       ],
       "events": [],
       "typedefs": [],
-      "generics": null
+      "generics": null,
+      "contexts": []
     },
     {
       "moduleName": "HeaderPanelLink",
@@ -4632,7 +4765,8 @@
       "events": [{ "type": "forwarded", "name": "click", "element": "a" }],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "a" }
+      "rest_props": { "type": "Element", "name": "a" },
+      "contexts": []
     },
     {
       "moduleName": "HeaderPanelLinks",
@@ -4644,7 +4778,8 @@
       ],
       "events": [],
       "typedefs": [],
-      "generics": null
+      "generics": null,
+      "contexts": []
     },
     {
       "moduleName": "HeaderSearch",
@@ -4743,7 +4878,8 @@
         }
       ],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "input" }
+      "rest_props": { "type": "Element", "name": "input" },
+      "contexts": []
     },
     {
       "moduleName": "HeaderUtilities",
@@ -4755,7 +4891,8 @@
       ],
       "events": [],
       "typedefs": [],
-      "generics": null
+      "generics": null,
+      "contexts": []
     },
     {
       "moduleName": "Icon",
@@ -4803,7 +4940,8 @@
       "extends": {
         "interface": "IconSkeletonProps",
         "import": "\"./IconSkeleton.svelte\""
-      }
+      },
+      "contexts": []
     },
     {
       "moduleName": "IconSkeleton",
@@ -4832,7 +4970,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "InlineLoading",
@@ -4896,7 +5035,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "InlineNotification",
@@ -5025,7 +5165,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "Link",
@@ -5114,7 +5255,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "a | p" }
+      "rest_props": { "type": "Element", "name": "a | p" },
+      "contexts": []
     },
     {
       "moduleName": "ListBox",
@@ -5238,7 +5380,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "ListBoxField",
@@ -5349,7 +5492,8 @@
         }
       ],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "ListBoxMenu",
@@ -5387,7 +5531,8 @@
       "events": [{ "type": "forwarded", "name": "scroll", "element": "div" }],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "ListBoxMenuIcon",
@@ -5441,7 +5586,8 @@
         }
       ],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "ListBoxMenuItem",
@@ -5483,7 +5629,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "ListBoxSelection",
@@ -5560,7 +5707,8 @@
         }
       ],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "ListItem",
@@ -5578,7 +5726,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "li" }
+      "rest_props": { "type": "Element", "name": "li" },
+      "contexts": []
     },
     {
       "moduleName": "Loading",
@@ -5650,7 +5799,8 @@
       "events": [],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "Modal",
@@ -5914,7 +6064,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "ModalBody",
@@ -5952,7 +6103,8 @@
       "events": [],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "ModalFooter",
@@ -6036,7 +6188,8 @@
       "events": [],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "ModalHeader",
@@ -6134,7 +6287,8 @@
       "events": [{ "type": "forwarded", "name": "click", "element": "button" }],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "MultiSelect",
@@ -6477,7 +6631,16 @@
         }
       ],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": [
+        {
+          "key": "MultiSelect",
+          "typeName": "MultiSelectContext",
+          "properties": [
+            { "name": "declareRef", "type": "(arg) => any", "optional": false }
+          ]
+        }
+      ]
     },
     {
       "moduleName": "NotificationActionButton",
@@ -6495,7 +6658,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "InlineComponent", "name": "Button" }
+      "rest_props": { "type": "InlineComponent", "name": "Button" },
+      "contexts": []
     },
     {
       "moduleName": "NotificationButton",
@@ -6558,7 +6722,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "button" }
+      "rest_props": { "type": "Element", "name": "button" },
+      "contexts": []
     },
     {
       "moduleName": "NotificationIcon",
@@ -6605,7 +6770,8 @@
       "slots": [],
       "events": [],
       "typedefs": [],
-      "generics": null
+      "generics": null,
+      "contexts": []
     },
     {
       "moduleName": "NotificationTextDetails",
@@ -6666,7 +6832,8 @@
       ],
       "events": [],
       "typedefs": [],
-      "generics": null
+      "generics": null,
+      "contexts": []
     },
     {
       "moduleName": "NumberInput",
@@ -6970,7 +7137,8 @@
         }
       ],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "NumberInputSkeleton",
@@ -6999,7 +7167,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "OrderedList",
@@ -7042,7 +7211,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "ol" }
+      "rest_props": { "type": "Element", "name": "ol" },
+      "contexts": []
     },
     {
       "moduleName": "OutboundLink",
@@ -7061,7 +7231,8 @@
       "typedefs": [],
       "generics": null,
       "rest_props": { "type": "InlineComponent", "name": "Link" },
-      "extends": { "interface": "LinkProps", "import": "\"./Link.svelte\"" }
+      "extends": { "interface": "LinkProps", "import": "\"./Link.svelte\"" },
+      "contexts": []
     },
     {
       "moduleName": "OverflowMenu",
@@ -7232,7 +7403,23 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "button" }
+      "rest_props": { "type": "Element", "name": "button" },
+      "contexts": [
+        {
+          "key": "OverflowMenu",
+          "typeName": "OverflowMenuContext",
+          "properties": [
+            { "name": "focusedId", "type": "any", "optional": false },
+            { "name": "add", "type": "(arg) => any", "optional": false },
+            { "name": "update", "type": "(id) => any", "optional": false },
+            {
+              "name": "change",
+              "type": "(direction) => any",
+              "optional": false
+            }
+          ]
+        }
+      ]
     },
     {
       "moduleName": "OverflowMenuItem",
@@ -7362,7 +7549,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "li" }
+      "rest_props": { "type": "Element", "name": "li" },
+      "contexts": []
     },
     {
       "moduleName": "Pagination",
@@ -7572,7 +7760,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "PaginationNav",
@@ -7672,7 +7861,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "nav" }
+      "rest_props": { "type": "Element", "name": "nav" },
+      "contexts": []
     },
     {
       "moduleName": "PaginationSkeleton",
@@ -7688,7 +7878,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "PasswordInput",
@@ -7924,7 +8115,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "input" }
+      "rest_props": { "type": "Element", "name": "input" },
+      "contexts": []
     },
     {
       "moduleName": "ProgressIndicator",
@@ -7992,7 +8184,19 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "ul" }
+      "rest_props": { "type": "Element", "name": "ul" },
+      "contexts": [
+        {
+          "key": "ProgressIndicator",
+          "typeName": "ProgressIndicatorContext",
+          "properties": [
+            { "name": "steps", "type": "any", "optional": false },
+            { "name": "stepsById", "type": "any", "optional": false },
+            { "name": "add", "type": "(step) => any", "optional": false },
+            { "name": "change", "type": "(index) => any", "optional": false }
+          ]
+        }
+      ]
     },
     {
       "moduleName": "ProgressIndicatorSkeleton",
@@ -8033,7 +8237,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "ul" }
+      "rest_props": { "type": "Element", "name": "ul" },
+      "contexts": []
     },
     {
       "moduleName": "ProgressStep",
@@ -8154,7 +8359,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "li" }
+      "rest_props": { "type": "Element", "name": "li" },
+      "contexts": []
     },
     {
       "moduleName": "RadioButton",
@@ -8274,7 +8480,8 @@
       "events": [{ "type": "forwarded", "name": "change", "element": "input" }],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "RadioButtonGroup",
@@ -8352,7 +8559,18 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": [
+        {
+          "key": "RadioButtonGroup",
+          "typeName": "RadioButtonGroupContext",
+          "properties": [
+            { "name": "selectedValue", "type": "any", "optional": false },
+            { "name": "add", "type": "(arg) => any", "optional": false },
+            { "name": "update", "type": "(value) => any", "optional": false }
+          ]
+        }
+      ]
     },
     {
       "moduleName": "RadioButtonSkeleton",
@@ -8368,7 +8586,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "RadioTile",
@@ -8473,7 +8692,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "label" }
+      "rest_props": { "type": "Element", "name": "label" },
+      "contexts": []
     },
     {
       "moduleName": "Row",
@@ -8575,7 +8795,8 @@
       "events": [],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "Search",
@@ -8778,7 +8999,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "InlineComponent", "name": "SearchSkeleton" }
+      "rest_props": { "type": "InlineComponent", "name": "SearchSkeleton" },
+      "contexts": []
     },
     {
       "moduleName": "SearchSkeleton",
@@ -8819,7 +9041,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "Select",
@@ -9001,7 +9224,16 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": [
+        {
+          "key": "Select",
+          "typeName": "SelectContext",
+          "properties": [
+            { "name": "selectedValue", "type": "any", "optional": false }
+          ]
+        }
+      ]
     },
     {
       "moduleName": "SelectItem",
@@ -9060,7 +9292,8 @@
       "slots": [],
       "events": [],
       "typedefs": [],
-      "generics": null
+      "generics": null,
+      "contexts": []
     },
     {
       "moduleName": "SelectItemGroup",
@@ -9098,7 +9331,8 @@
       "events": [],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "optgroup" }
+      "rest_props": { "type": "Element", "name": "optgroup" },
+      "contexts": []
     },
     {
       "moduleName": "SelectSkeleton",
@@ -9127,7 +9361,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "SelectableTile",
@@ -9255,7 +9490,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "label" }
+      "rest_props": { "type": "Element", "name": "label" },
+      "contexts": []
     },
     {
       "moduleName": "SideNav",
@@ -9304,7 +9540,8 @@
       "events": [],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "nav" }
+      "rest_props": { "type": "Element", "name": "nav" },
+      "contexts": []
     },
     {
       "moduleName": "SideNavItems",
@@ -9316,7 +9553,8 @@
       ],
       "events": [],
       "typedefs": [],
-      "generics": null
+      "generics": null,
+      "contexts": []
     },
     {
       "moduleName": "SideNavLink",
@@ -9385,7 +9623,8 @@
       "events": [{ "type": "forwarded", "name": "click", "element": "a" }],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "a" }
+      "rest_props": { "type": "Element", "name": "a" },
+      "contexts": []
     },
     {
       "moduleName": "SideNavMenu",
@@ -9445,7 +9684,8 @@
       "events": [{ "type": "forwarded", "name": "click", "element": "button" }],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "button" }
+      "rest_props": { "type": "Element", "name": "button" },
+      "contexts": []
     },
     {
       "moduleName": "SideNavMenuItem",
@@ -9502,7 +9742,8 @@
       "events": [{ "type": "forwarded", "name": "click", "element": "a" }],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "a" }
+      "rest_props": { "type": "Element", "name": "a" },
+      "contexts": []
     },
     {
       "moduleName": "SkeletonPlaceholder",
@@ -9518,7 +9759,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "SkeletonText",
@@ -9583,7 +9825,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "SkipToContent",
@@ -9626,7 +9869,8 @@
       "events": [{ "type": "forwarded", "name": "click", "element": "a" }],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "a" }
+      "rest_props": { "type": "Element", "name": "a" },
+      "contexts": []
     },
     {
       "moduleName": "Slider",
@@ -9848,7 +10092,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "SliderSkeleton",
@@ -9877,7 +10122,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "StructuredList",
@@ -9932,7 +10178,17 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": [
+        {
+          "key": "StructuredListWrapper",
+          "typeName": "StructuredListWrapperContext",
+          "properties": [
+            { "name": "selectedValue", "type": "any", "optional": false },
+            { "name": "update", "type": "(value) => any", "optional": false }
+          ]
+        }
+      ]
     },
     {
       "moduleName": "StructuredListBody",
@@ -9950,7 +10206,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "StructuredListCell",
@@ -9993,7 +10250,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "StructuredListHead",
@@ -10011,7 +10269,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "StructuredListInput",
@@ -10095,7 +10354,8 @@
       "events": [],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "input" }
+      "rest_props": { "type": "Element", "name": "input" },
+      "contexts": []
     },
     {
       "moduleName": "StructuredListRow",
@@ -10151,7 +10411,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "label" }
+      "rest_props": { "type": "Element", "name": "label" },
+      "contexts": []
     },
     {
       "moduleName": "StructuredListSkeleton",
@@ -10192,7 +10453,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "Switch",
@@ -10277,7 +10539,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "button" }
+      "rest_props": { "type": "Element", "name": "button" },
+      "contexts": []
     },
     {
       "moduleName": "Tab",
@@ -10373,7 +10636,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "li" }
+      "rest_props": { "type": "Element", "name": "li" },
+      "contexts": []
     },
     {
       "moduleName": "TabContent",
@@ -10399,7 +10663,8 @@
       "events": [],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "Table",
@@ -10484,7 +10749,8 @@
       "events": [],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "section" }
+      "rest_props": { "type": "Element", "name": "section" },
+      "contexts": []
     },
     {
       "moduleName": "TableBody",
@@ -10497,7 +10763,8 @@
       "events": [],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "tbody" }
+      "rest_props": { "type": "Element", "name": "tbody" },
+      "contexts": []
     },
     {
       "moduleName": "TableCell",
@@ -10515,7 +10782,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "td" }
+      "rest_props": { "type": "Element", "name": "td" },
+      "contexts": []
     },
     {
       "moduleName": "TableContainer",
@@ -10565,7 +10833,8 @@
       "events": [],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "TableHead",
@@ -10583,7 +10852,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "thead" }
+      "rest_props": { "type": "Element", "name": "thead" },
+      "contexts": []
     },
     {
       "moduleName": "TableHeader",
@@ -10638,7 +10908,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "th" }
+      "rest_props": { "type": "Element", "name": "th" },
+      "contexts": []
     },
     {
       "moduleName": "TableRow",
@@ -10656,7 +10927,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "tr" }
+      "rest_props": { "type": "Element", "name": "tr" },
+      "contexts": []
     },
     {
       "moduleName": "Tabs",
@@ -10731,7 +11003,31 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": [
+        {
+          "key": "Tabs",
+          "typeName": "TabsContext",
+          "properties": [
+            { "name": "tabs", "type": "any", "optional": false },
+            { "name": "contentById", "type": "any", "optional": false },
+            { "name": "selectedTab", "type": "any", "optional": false },
+            { "name": "selectedContent", "type": "any", "optional": false },
+            { "name": "add", "type": "(data) => any", "optional": false },
+            {
+              "name": "addContent",
+              "type": "(data) => any",
+              "optional": false
+            },
+            { "name": "update", "type": "(id) => any", "optional": false },
+            {
+              "name": "change",
+              "type": "(direction) => any",
+              "optional": false
+            }
+          ]
+        }
+      ]
     },
     {
       "moduleName": "TabsSkeleton",
@@ -10760,7 +11056,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "Tag",
@@ -10866,7 +11163,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div | span" }
+      "rest_props": { "type": "Element", "name": "div | span" },
+      "contexts": []
     },
     {
       "moduleName": "TagSkeleton",
@@ -10882,7 +11180,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "span" }
+      "rest_props": { "type": "Element", "name": "span" },
+      "contexts": []
     },
     {
       "moduleName": "TextArea",
@@ -11070,7 +11369,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "textarea" }
+      "rest_props": { "type": "Element", "name": "textarea" },
+      "contexts": []
     },
     {
       "moduleName": "TextAreaSkeleton",
@@ -11099,7 +11399,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "TextInput",
@@ -11335,7 +11636,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "input" }
+      "rest_props": { "type": "Element", "name": "input" },
+      "contexts": []
     },
     {
       "moduleName": "TextInputSkeleton",
@@ -11364,7 +11666,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "Tile",
@@ -11395,7 +11698,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "TileGroup",
@@ -11444,7 +11748,18 @@
       "events": [{ "type": "dispatched", "name": "select" }],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "fieldset" }
+      "rest_props": { "type": "Element", "name": "fieldset" },
+      "contexts": [
+        {
+          "key": "TileGroup",
+          "typeName": "TileGroupContext",
+          "properties": [
+            { "name": "selectedValue", "type": "any", "optional": false },
+            { "name": "add", "type": "(arg) => any", "optional": false },
+            { "name": "update", "type": "(value) => any", "optional": false }
+          ]
+        }
+      ]
     },
     {
       "moduleName": "TimePicker",
@@ -11645,7 +11960,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "TimePickerSelect",
@@ -11759,7 +12075,16 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": [
+        {
+          "key": "TimePickerSelect",
+          "typeName": "TimePickerSelectContext",
+          "properties": [
+            { "name": "selectedValue", "type": "any", "optional": false }
+          ]
+        }
+      ]
     },
     {
       "moduleName": "ToastNotification",
@@ -11891,7 +12216,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "Toggle",
@@ -12012,7 +12338,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "ToggleSkeleton",
@@ -12065,7 +12392,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "ToggleSmall",
@@ -12169,7 +12497,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "ToggleSmallSkeleton",
@@ -12210,7 +12539,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "Toolbar",
@@ -12236,7 +12566,21 @@
       "events": [],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "section" }
+      "rest_props": { "type": "Element", "name": "section" },
+      "contexts": [
+        {
+          "key": "Toolbar",
+          "typeName": "ToolbarContext",
+          "properties": [
+            { "name": "overflowVisible", "type": "any", "optional": false },
+            {
+              "name": "setOverflowVisible",
+              "type": "(visible) => any",
+              "optional": false
+            }
+          ]
+        }
+      ]
     },
     {
       "moduleName": "ToolbarBatchActions",
@@ -12262,7 +12606,8 @@
       "events": [],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "ToolbarContent",
@@ -12274,7 +12619,8 @@
       ],
       "events": [],
       "typedefs": [],
-      "generics": null
+      "generics": null,
+      "contexts": []
     },
     {
       "moduleName": "ToolbarMenu",
@@ -12291,7 +12637,8 @@
       "extends": {
         "interface": "OverflowMenuProps",
         "import": "\"../OverflowMenu/OverflowMenu.svelte\""
-      }
+      },
+      "contexts": []
     },
     {
       "moduleName": "ToolbarMenuItem",
@@ -12315,7 +12662,8 @@
       "extends": {
         "interface": "OverflowMenuItemProps",
         "import": "\"../OverflowMenu/OverflowMenuItem.svelte\""
-      }
+      },
+      "contexts": []
     },
     {
       "moduleName": "ToolbarSearch",
@@ -12392,7 +12740,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "InlineComponent", "name": "Search" }
+      "rest_props": { "type": "InlineComponent", "name": "Search" },
+      "contexts": []
     },
     {
       "moduleName": "Tooltip",
@@ -12588,7 +12937,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "TooltipDefinition",
@@ -12678,7 +13028,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "div" }
+      "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
     },
     {
       "moduleName": "TooltipIcon",
@@ -12764,7 +13115,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "button" }
+      "rest_props": { "type": "Element", "name": "button" },
+      "contexts": []
     },
     {
       "moduleName": "UnorderedList",
@@ -12795,7 +13147,8 @@
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "ul" }
+      "rest_props": { "type": "Element", "name": "ul" },
+      "contexts": []
     }
   ]
 }

@@ -1,0 +1,34 @@
+{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>"
+    }
+  ],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "object",
+      "name": "ModalAPI",
+      "ts": "type ModalAPI = object"
+    }
+  ],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "modal",
+      "typeName": "ModalContext",
+      "properties": [
+        {
+          "name": "modalAPI",
+          "type": "ModalAPI",
+          "description": "Modal API object",
+          "optional": false
+        }
+      ]
+    }
+  ]
+}

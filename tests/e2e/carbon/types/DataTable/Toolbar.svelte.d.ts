@@ -1,6 +1,11 @@
 import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
+export type ToolbarContext = {
+  overflowVisible: any;
+  setOverflowVisible: (visible) => any;
+};
+
 type $RestProps = SvelteHTMLElements["section"];
 
 type $Props = {

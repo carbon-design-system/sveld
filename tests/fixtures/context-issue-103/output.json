@@ -1,0 +1,28 @@
+{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "my-logger",
+      "typeName": "MyLoggerContext",
+      "properties": [
+        {
+          "name": "log",
+          "type": "(message: string) => void",
+          "description": "Log a message to the console",
+          "optional": false
+        }
+      ]
+    }
+  ]
+}

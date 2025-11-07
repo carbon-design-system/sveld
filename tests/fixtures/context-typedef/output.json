@@ -1,0 +1,40 @@
+{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>"
+    }
+  ],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "object",
+      "name": "TabData",
+      "ts": "type TabData = object"
+    }
+  ],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "tabs",
+      "typeName": "TabsContext",
+      "properties": [
+        {
+          "name": "addTab",
+          "type": "(tab: TabData) => void",
+          "description": "Register a new tab",
+          "optional": false
+        },
+        {
+          "name": "removeTab",
+          "type": "(id: string) => void",
+          "description": "Remove a tab by ID",
+          "optional": false
+        }
+      ]
+    }
+  ]
+}

@@ -106,6 +106,22 @@ interface ComponentPropBindings {
   elements: string[];
 }
 
+type ComponentContextName = string;
+
+interface ComponentContextProp {
+  name: string;
+  type: string;
+  description?: string;
+  optional: boolean;
+}
+
+interface ComponentContext {
+  key: string;
+  typeName: string;
+  description?: string;
+  properties: ComponentContextProp[];
+}
+
 export interface ParsedComponent {
   props: ComponentProp[];
   moduleExports: ComponentProp[];
@@ -116,6 +132,7 @@ export interface ParsedComponent {
   rest_props: RestProps;
   extends?: Extends;
   componentComment?: string;
+  contexts?: ComponentContext[];
 }
 
 export default class ComponentParser {
@@ -137,6 +154,7 @@ export default class ComponentParser {
   private readonly typedefs: Map<TypeDefName, TypeDef> = new Map();
   private readonly generics: ComponentGenerics = null;
   private readonly bindings: Map<ComponentPropName, ComponentPropBindings> = new Map();
+  private readonly contexts: Map<ComponentContextName, ComponentContext> = new Map();
 
   constructor(options?: ComponentParserOptions) {
     this.options = options;
@@ -405,6 +423,194 @@ export default class ComponentParser {
     return `{ ${props} }`;
   }
 
+  private generateContextTypeName(key: string): string {
+    // Convert "simple-modal" -> "SimpleModalContext"
+    // Convert "Tabs" -> "TabsContext"
+    const parts = key.split(/[-_\s]+/);
+    const capitalized = parts.map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join("");
+    return `${capitalized}Context`;
+  }
+
+  private findVariableTypeAndDescription(varName: string): { type: string; description?: string } | null {
+    // Search through the source code directly for JSDoc comments
+    if (!this.source) return null;
+
+    // Build a map of variable names to their types by looking at the source
+    const lines = this.source.split("\n");
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+
+      // Check if this line declares our variable
+      // Match patterns like: const varName = ..., let varName = ..., function varName
+      const constMatch = line.match(new RegExp(`const\\s+${varName}\\s*=`));
+      const letMatch = line.match(new RegExp(`let\\s+${varName}\\s*=`));
+      const funcMatch = line.match(new RegExp(`function\\s+${varName}\\s*\\(`));
+
+      if (constMatch || letMatch || funcMatch) {
+        // Look backwards for JSDoc comment
+        for (let j = i - 1; j >= 0; j--) {
+          const prevLine = lines[j].trim();
+
+          // Stop if we hit a non-comment, non-empty line
+          if (prevLine && !prevLine.startsWith("*") && !prevLine.startsWith("/*") && !prevLine.startsWith("//")) {
+            break;
+          }
+
+          // Found start of JSDoc comment
+          if (prevLine.startsWith("/**")) {
+            // Extract the JSDoc comment block
+            const commentLines: string[] = [];
+            for (let k = j; k < i; k++) {
+              commentLines.push(lines[k]);
+            }
+            const commentBlock = commentLines.join("\n");
+
+            // Parse the JSDoc
+            const parsed = commentParser.parse(commentBlock, { spacing: "preserve" });
+            if (parsed[0]?.tags) {
+              const typeTag = parsed[0].tags.find((t) => t.tag === "type");
+              if (typeTag) {
+                return {
+                  type: this.aliasType(typeTag.type),
+                  description: parsed[0].description || typeTag.description,
+                };
+              }
+            }
+            break;
+          }
+        }
+      }
+    }
+
+    return null;
+  }
+
+  private parseContextValue(node: Node, key: string): ComponentContext | null {
+    if (node.type === "ObjectExpression") {
+      // Parse object literal: { open, close }
+      const properties: ComponentContextProp[] = [];
+
+      for (const prop of node.properties) {
+        if (prop.type === "Property" || prop.type === "ObjectProperty") {
+          const propName = prop.key.name || prop.key.value;
+
+          // Try to find the variable definition to get its JSDoc type
+          let propType = "any";
+          let propDescription: string | undefined;
+
+          if (prop.value.type === "Identifier") {
+            const varName = prop.value.name;
+            const varInfo = this.findVariableTypeAndDescription(varName);
+            if (varInfo) {
+              propType = varInfo.type;
+              propDescription = varInfo.description;
+            } else if (this.options?.verbose) {
+              console.warn(`Warning: Context "${key}" property "${propName}" has no type annotation. Using "any".`);
+            }
+          } else if (prop.value.type === "ArrowFunctionExpression" || prop.value.type === "FunctionExpression") {
+            // Inline function
+            const params = prop.value.params.map((p) => `${p.name || "arg"}: any`).join(", ");
+            propType = `(${params}) => any`;
+          } else if (prop.value.type === "Literal") {
+            // Literal value
+            propType = typeof prop.value.value;
+          }
+
+          properties.push({
+            name: propName,
+            type: propType,
+            description: propDescription,
+            optional: false,
+          });
+        }
+      }
+
+      return {
+        key,
+        typeName: this.generateContextTypeName(key),
+        properties,
+        description: undefined,
+      };
+    } else if (node.type === "Identifier") {
+      // setContext('key', someVariable)
+      const varName = node.name;
+      const varInfo = this.findVariableTypeAndDescription(varName);
+
+      if (varInfo) {
+        return {
+          key,
+          typeName: this.generateContextTypeName(key),
+          properties: [
+            {
+              name: varName,
+              type: varInfo.type,
+              description: varInfo.description,
+              optional: false,
+            },
+          ],
+        };
+      } else if (this.options?.verbose) {
+        console.warn(`Warning: Context "${key}" variable "${varName}" has no type annotation. Using "any".`);
+      }
+
+      // Still create context with 'any' type
+      return {
+        key,
+        typeName: this.generateContextTypeName(key),
+        properties: [
+          {
+            name: varName,
+            type: "any",
+            description: undefined,
+            optional: false,
+          },
+        ],
+      };
+    }
+
+    return null;
+  }
+
+  private parseSetContextCall(node: Node) {
+    // Extract context key (first argument)
+    const keyArg = node.arguments[0];
+    if (!keyArg) return;
+
+    let contextKey: string | null = null;
+    if (keyArg.type === "Literal") {
+      contextKey = keyArg.value;
+    } else if (keyArg.type === "TemplateLiteral") {
+      // Handle simple template literals
+      if (keyArg.quasis?.length === 1) {
+        contextKey = keyArg.quasis[0].value.cooked;
+      } else if (this.options?.verbose) {
+        console.warn("Warning: Skipping setContext with dynamic template literal key");
+      }
+    } else if (this.options?.verbose) {
+      console.warn(`Warning: Skipping setContext with non-literal key (type: ${keyArg.type})`);
+    }
+
+    if (!contextKey) return;
+
+    // Extract context value (second argument)
+    const valueArg = node.arguments[1];
+    if (!valueArg) return;
+
+    // Parse the context object
+    const contextInfo = this.parseContextValue(valueArg, contextKey);
+    if (contextInfo) {
+      // Check if context with same key already exists
+      if (this.contexts.has(contextKey)) {
+        if (this.options?.verbose) {
+          console.warn(`Warning: Multiple setContext calls with key "${contextKey}". Using first occurrence.`);
+        }
+      } else {
+        this.contexts.set(contextKey, contextInfo);
+      }
+    }
+  }
+
   public cleanup() {
     this.source = undefined;
     this.compiled = undefined;
@@ -422,6 +628,7 @@ export default class ComponentParser {
     this.typedefs.clear();
     this.generics = null;
     this.bindings.clear();
+    this.contexts.clear();
   }
 
   /**
@@ -545,6 +752,10 @@ export default class ComponentParser {
         if (node.type === "CallExpression") {
           if (node.callee.name === "createEventDispatcher") {
             dispatcher_name = parent?.id.name;
+          }
+
+          if (node.callee.name === "setContext") {
+            this.parseSetContextCall(node, parent);
           }
 
           callees.push({
@@ -902,6 +1113,7 @@ export default class ComponentParser {
       rest_props: this.rest_props,
       extends: this.extends,
       componentComment: this.componentComment,
+      contexts: ComponentParser.mapToArray(this.contexts),
     };
   }
 }

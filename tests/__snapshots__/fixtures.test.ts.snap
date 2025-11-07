@@ -11,7 +11,8 @@ exports[`fixtures (JSON) "svg-props/input.svelte" 1`] = `
   "rest_props": {
     "type": "Element",
     "name": "svg"
-  }
+  },
+  "contexts": []
 }"
 `;
 
@@ -59,7 +60,8 @@ exports[`fixtures (JSON) "slots-named/input.svelte" 1`] = `
   ],
   "events": [],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
 }"
 `;
 
@@ -118,7 +120,8 @@ exports[`fixtures (JSON) "generics-multiple/input.svelte" 1`] = `
   "generics": [
     "Row,Header",
     "Row extends DataTableRow = DataTableRow, Header extends DataTableRow = DataTableRow"
-  ]
+  ],
+  "contexts": []
 }"
 `;
 
@@ -153,7 +156,8 @@ exports[`fixtures (JSON) "mixed-event-types/input.svelte" 1`] = `
     }
   ],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
 }"
 `;
 
@@ -170,7 +174,39 @@ exports[`fixtures (JSON) "dispatched-events-dynamic/input.svelte" 1`] = `
     }
   ],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
+}"
+`;
+
+exports[`fixtures (JSON) "context-issue-103/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "my-logger",
+      "typeName": "MyLoggerContext",
+      "properties": [
+        {
+          "name": "log",
+          "type": "(message: string) => void",
+          "description": "Log a message to the console",
+          "optional": false
+        }
+      ]
+    }
+  ]
 }"
 `;
 
@@ -227,7 +263,8 @@ exports[`fixtures (JSON) "function-declaration/input.svelte" 1`] = `
   "slots": [],
   "events": [],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
 }"
 `;
 
@@ -265,7 +302,8 @@ exports[`fixtures (JSON) "forwarded-events/input.svelte" 1`] = `
     }
   ],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
 }"
 `;
 
@@ -287,7 +325,8 @@ exports[`fixtures (JSON) "mixed-events/input.svelte" 1`] = `
     }
   ],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
 }"
 `;
 
@@ -380,7 +419,8 @@ exports[`fixtures (JSON) "infer-basic/input.svelte" 1`] = `
   ],
   "events": [],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
 }"
 `;
 
@@ -391,7 +431,8 @@ exports[`fixtures (JSON) "empty-export/input.svelte" 1`] = `
   "slots": [],
   "events": [],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
 }"
 `;
 
@@ -426,7 +467,51 @@ exports[`fixtures (JSON) "typed-slots/input.svelte" 1`] = `
   ],
   "events": [],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
+}"
+`;
+
+exports[`fixtures (JSON) "context-typedef/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>"
+    }
+  ],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "object",
+      "name": "TabData",
+      "ts": "type TabData = object"
+    }
+  ],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "tabs",
+      "typeName": "TabsContext",
+      "properties": [
+        {
+          "name": "addTab",
+          "type": "(tab: TabData) => void",
+          "description": "Register a new tab",
+          "optional": false
+        },
+        {
+          "name": "removeTab",
+          "type": "(id: string) => void",
+          "description": "Remove a tab by ID",
+          "optional": false
+        }
+      ]
+    }
+  ]
 }"
 `;
 
@@ -457,7 +542,8 @@ exports[`fixtures (JSON) "forwarded-events-typed/input.svelte" 1`] = `
     }
   ],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
 }"
 `;
 
@@ -494,7 +580,8 @@ exports[`fixtures (JSON) "dispatched-events/input.svelte" 1`] = `
     }
   ],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
 }"
 `;
 
@@ -545,7 +632,8 @@ exports[`fixtures (JSON) "typedefs/input.svelte" 1`] = `
       "ts": "type MyTypedefArray = MyTypedef[]"
     }
   ],
-  "generics": null
+  "generics": null,
+  "contexts": []
 }"
 `;
 
@@ -608,7 +696,8 @@ exports[`fixtures (JSON) "generics-with-rest-props/input.svelte" 1`] = `
   "rest_props": {
     "type": "Element",
     "name": "div"
-  }
+  },
+  "contexts": []
 }"
 `;
 
@@ -636,7 +725,8 @@ exports[`fixtures (JSON) "bind-this/input.svelte" 1`] = `
   ],
   "events": [],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
 }"
 `;
 
@@ -665,7 +755,8 @@ exports[`fixtures (JSON) "dispatched-events-typed/input.svelte" 1`] = `
     }
   ],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
 }"
 `;
 
@@ -692,7 +783,8 @@ exports[`fixtures (JSON) "input-events/input.svelte" 1`] = `
     }
   ],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
 }"
 `;
 
@@ -753,7 +845,45 @@ exports[`fixtures (JSON) "required/input.svelte" 1`] = `
   ],
   "events": [],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
+}"
+`;
+
+exports[`fixtures (JSON) "context-imported-type/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>"
+    }
+  ],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "object",
+      "name": "ModalAPI",
+      "ts": "type ModalAPI = object"
+    }
+  ],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "modal",
+      "typeName": "ModalContext",
+      "properties": [
+        {
+          "name": "modalAPI",
+          "type": "ModalAPI",
+          "description": "Modal API object",
+          "optional": false
+        }
+      ]
+    }
+  ]
 }"
 `;
 
@@ -807,7 +937,8 @@ exports[`fixtures (JSON) "prop-comments/input.svelte" 1`] = `
   ],
   "events": [],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
 }"
 `;
 
@@ -846,7 +977,45 @@ exports[`fixtures (JSON) "forwarded-events-native-with-jsdoc/input.svelte" 1`] =
     }
   ],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
+}"
+`;
+
+exports[`fixtures (JSON) "context-simple/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "simple-modal",
+      "typeName": "SimpleModalContext",
+      "properties": [
+        {
+          "name": "open",
+          "type": "(component: any, props?: any) => void",
+          "description": "Open the modal with content",
+          "optional": false
+        },
+        {
+          "name": "close",
+          "type": "() => void",
+          "description": "Close the modal",
+          "optional": false
+        }
+      ]
+    }
+  ]
 }"
 `;
 
@@ -870,7 +1039,8 @@ exports[`fixtures (JSON) "renamed-props/input.svelte" 1`] = `
   "slots": [],
   "events": [],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
 }"
 `;
 
@@ -954,7 +1124,8 @@ exports[`fixtures (JSON) "infer-with-types/input.svelte" 1`] = `
   ],
   "events": [],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
 }"
 `;
 
@@ -973,7 +1144,8 @@ exports[`fixtures (JSON) "forwarded-native-with-detail/input.svelte" 1`] = `
     }
   ],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
 }"
 `;
 
@@ -1076,7 +1248,8 @@ exports[`fixtures (JSON) "context-module/input.svelte" 1`] = `
   "slots": [],
   "events": [],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
 }"
 `;
 
@@ -1103,7 +1276,8 @@ exports[`fixtures (JSON) "rest-props-multiple/input.svelte" 1`] = `
   "rest_props": {
     "type": "Element",
     "name": "ul | ol"
-  }
+  },
+  "contexts": []
 }"
 `;
 
@@ -1145,7 +1319,8 @@ exports[`fixtures (JSON) "forwarded-from-component-to-native/input.svelte" 1`] =
     }
   ],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
 }"
 `;
 
@@ -1156,7 +1331,8 @@ exports[`fixtures (JSON) "no-props/input.svelte" 1`] = `
   "slots": [],
   "events": [],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
 }"
 `;
 
@@ -1187,7 +1363,8 @@ exports[`fixtures (JSON) "event-explicit-null/input.svelte" 1`] = `
   "rest_props": {
     "type": "Element",
     "name": "input"
-  }
+  },
+  "contexts": []
 }"
 `;
 
@@ -1227,7 +1404,8 @@ exports[`fixtures (JSON) "forwarded-standard-event-custom-detail/input.svelte" 1
     }
   ],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
 }"
 `;
 
@@ -1245,7 +1423,8 @@ exports[`fixtures (JSON) "component-comment-single/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "componentComment": " Component comment"
+  "componentComment": " Component comment",
+  "contexts": []
 }"
 `;
 
@@ -1294,7 +1473,8 @@ exports[`fixtures (JSON) "bind-this-multiple/input.svelte" 1`] = `
   ],
   "events": [],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
 }"
 `;
 
@@ -1318,7 +1498,8 @@ exports[`fixtures (JSON) "forwarded-custom-events/input.svelte" 1`] = `
     }
   ],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
 }"
 `;
 
@@ -1364,7 +1545,8 @@ exports[`fixtures (JSON) "typedef/input.svelte" 1`] = `
       "ts": "interface MyTypedef { [key: string]: boolean; }"
     }
   ],
-  "generics": null
+  "generics": null,
+  "contexts": []
 }"
 `;
 
@@ -1379,7 +1561,8 @@ exports[`fixtures (JSON) "rest-props-simple/input.svelte" 1`] = `
   "rest_props": {
     "type": "Element",
     "name": "h1"
-  }
+  },
+  "contexts": []
 }"
 `;
 
@@ -1400,7 +1583,8 @@ exports[`fixtures (JSON) "anchor-props/input.svelte" 1`] = `
   "rest_props": {
     "type": "Element",
     "name": "a"
-  }
+  },
+  "contexts": []
 }"
 `;
 
@@ -1418,7 +1602,8 @@ exports[`fixtures (JSON) "component-comment-multi/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "componentComment": "\\n@example\\n<div>\\n  Component comment\\n</div>"
+  "componentComment": "\\n@example\\n<div>\\n  Component comment\\n</div>",
+  "contexts": []
 }"
 `;
 
@@ -1444,7 +1629,8 @@ exports[`fixtures (JSON) "forwarded-custom-event-null/input.svelte" 1`] = `
     }
   ],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
 }"
 `;
 
@@ -1474,7 +1660,8 @@ exports[`fixtures (JSON) "dispatched-events-jsdoc-properties/input.svelte" 1`] =
     }
   ],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
 }"
 `;
 
@@ -1497,7 +1684,8 @@ exports[`fixtures (JSON) "slots-spread/input.svelte" 1`] = `
   ],
   "events": [],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
 }"
 `;
 
@@ -1514,7 +1702,8 @@ exports[`fixtures (JSON) "forwarded-and-dispatched-events/input.svelte" 1`] = `
     }
   ],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
 }"
 `;
 
@@ -1537,7 +1726,43 @@ exports[`fixtures (JSON) "slots-spread-typed/input.svelte" 1`] = `
   ],
   "events": [],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
+}"
+`;
+
+exports[`fixtures (JSON) "context-inline-functions/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "modal",
+      "typeName": "ModalContext",
+      "properties": [
+        {
+          "name": "open",
+          "type": "(component: any, props: any) => any",
+          "optional": false
+        },
+        {
+          "name": "close",
+          "type": "() => any",
+          "optional": false
+        }
+      ]
+    }
+  ]
 }"
 `;
 
@@ -1593,7 +1818,8 @@ exports[`fixtures (JSON) "typed-props/input.svelte" 1`] = `
   "slots": [],
   "events": [],
   "typedefs": [],
-  "generics": null
+  "generics": null,
+  "contexts": []
 }"
 `;
 
@@ -1652,7 +1878,8 @@ exports[`fixtures (JSON) "generics/input.svelte" 1`] = `
   "generics": [
     "Row",
     "Row extends DataTableRow = DataTableRow"
-  ]
+  ],
+  "contexts": []
 }"
 `;
 
@@ -1761,6 +1988,24 @@ export default class DispatchedEventsDynamic extends SvelteComponentTyped<
   DispatchedEventsDynamicProps,
   { KEY: CustomEvent<{ key: string }> },
   Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "context-issue-103/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export type MyLoggerContext = {
+  /** Log a message to the console */
+  log: (message: string) => void;
+};
+
+export type ContextIssue103Props = Record<string, never>;
+
+export default class ContextIssue103 extends SvelteComponentTyped<
+  ContextIssue103Props,
+  Record<string, any>,
+  { default: Record<string, never> }
 > {}
 "
 `;
@@ -1896,6 +2141,27 @@ export default class TypedSlots extends SvelteComponentTyped<
     /** description */
     description: { props: { class?: string } };
   }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "context-typedef/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export type TabData = object;
+export type TabsContext = {
+  /** Register a new tab */
+  addTab: (tab: TabData) => void;
+  /** Remove a tab by ID */
+  removeTab: (id: string) => void;
+};
+
+export type ContextTypedefProps = Record<string, never>;
+
+export default class ContextTypedef extends SvelteComponentTyped<
+  ContextTypedefProps,
+  Record<string, any>,
+  { default: Record<string, never> }
 > {}
 "
 `;
@@ -2090,6 +2356,25 @@ export default class Required extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "context-imported-type/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export type ModalAPI = object;
+export type ModalContext = {
+  /** Modal API object */
+  modalAPI: ModalAPI;
+};
+
+export type ContextImportedTypeProps = Record<string, never>;
+
+export default class ContextImportedType extends SvelteComponentTyped<
+  ContextImportedTypeProps,
+  Record<string, any>,
+  { default: Record<string, never> }
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "prop-comments/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
@@ -2137,6 +2422,26 @@ export default class ForwardedEventsNativeWithJsdoc extends SvelteComponentTyped
     /** Fired when the button loses focus */
     blur: WindowEventMap["blur"];
   },
+  { default: Record<string, never> }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "context-simple/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export type SimpleModalContext = {
+  /** Open the modal with content */
+  open: (component: any, props?: any) => void;
+  /** Close the modal */
+  close: () => void;
+};
+
+export type ContextSimpleProps = Record<string, never>;
+
+export default class ContextSimple extends SvelteComponentTyped<
+  ContextSimpleProps,
+  Record<string, any>,
   { default: Record<string, never> }
 > {}
 "
@@ -2563,6 +2868,24 @@ export default class SlotsSpreadTyped extends SvelteComponentTyped<
   SlotsSpreadTypedProps,
   Record<string, any>,
   { default: { a: number }; text: { a: number } }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "context-inline-functions/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export type ModalContext = {
+  open: (component: any, props: any) => any;
+  close: () => any;
+};
+
+export type ContextInlineFunctionsProps = Record<string, never>;
+
+export default class ContextInlineFunctions extends SvelteComponentTyped<
+  ContextInlineFunctionsProps,
+  Record<string, any>,
+  { default: Record<string, never> }
 > {}
 "
 `;

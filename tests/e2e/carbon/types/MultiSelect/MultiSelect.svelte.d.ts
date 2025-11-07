@@ -9,6 +9,9 @@ export interface MultiSelectItem {
   id: MultiSelectItemId;
   text: MultiSelectItemText;
 }
+export type MultiSelectContext = {
+  declareRef: (arg) => any;
+};
 
 type $RestProps = SvelteHTMLElements["div"];
 

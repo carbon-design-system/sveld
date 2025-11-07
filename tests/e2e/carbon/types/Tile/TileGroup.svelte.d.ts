@@ -1,6 +1,12 @@
 import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
+export type TileGroupContext = {
+  selectedValue: any;
+  add: (arg) => any;
+  update: (value) => any;
+};
+
 type $RestProps = SvelteHTMLElements["fieldset"];
 
 type $Props = {
