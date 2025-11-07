@@ -62,7 +62,7 @@ export type ButtonProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class Button extends SvelteComponentTyped<
   ButtonProps,
   { click: WindowEventMap["click"] },
-  { default: {} }
+  { default: Record<string, never> }
 > {}
 ```
 
@@ -105,7 +105,7 @@ export type ButtonProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class Button extends SvelteComponentTyped<
   ButtonProps,
   { click: WindowEventMap["click"] },
-  { default: {} }
+  { default: Record<string, never> }
 > {}
 ```
 
@@ -451,7 +451,7 @@ export default class Component extends SvelteComponentTyped<
     "button:key": CustomEvent<{ key: string }>;
     /** Fired when `key` changes. */ key: CustomEvent<null>;
   },
-  {}
+  Record<string, never>
 > {}
 ```
 
@@ -509,7 +509,7 @@ export default class Component extends SvelteComponentTyped<
       /** Whether the user opted into the newsletter */ newsletter: boolean;
     }>;
   },
-  {}
+  Record<string, never>
 > {}
 ```
 
@@ -573,7 +573,7 @@ export type ModalProps = {};
 export default class Modal extends SvelteComponentTyped<
   ModalProps,
   Record<string, any>,
-  { default: {} }
+  { default: Record<string, never> }
 > {}
 ```
 
@@ -816,7 +816,11 @@ Output:
  *   Text
  * </Button>
  */
-export default class Button extends SvelteComponentTyped<ButtonProps, {}, { default: {} }> {}
+export default class Button extends SvelteComponentTyped<
+  ButtonProps,
+  Record<string, any>,
+  { default: Record<string, never> }
+> {}
 ```
 
 ## Contributing
