@@ -1,0 +1,33 @@
+{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "__default__",
+      "default": true,
+      "slot_props": "{}"
+    }
+  ],
+  "events": [
+    {
+      "type": "forwarded",
+      "name": "click",
+      "element": "button",
+      "description": "Fired when the button is clicked"
+    },
+    {
+      "type": "forwarded",
+      "name": "focus",
+      "element": "button",
+      "description": "Fired when the button receives focus"
+    },
+    {
+      "type": "forwarded",
+      "name": "blur",
+      "element": "button",
+      "description": "Fired when the button loses focus"
+    }
+  ],
+  "typedefs": [],
+  "generics": null
+}

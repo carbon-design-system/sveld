@@ -167,7 +167,8 @@ function genEventDef(def: Pick<ComponentDocApi, "events">) {
         // Also check if the forwarded event has detail type information preserved
         const elementName = typeof event.element === "string" ? event.element : event.element.name;
         const isComponent = elementName && /^[A-Z]/.test(elementName);
-        if (isComponent || event.detail) {
+        const hasDetail = event.detail && event.detail !== "undefined" && event.detail !== "null";
+        if (isComponent || hasDetail) {
           eventType = createDispatchedEvent(event.detail);
         } else {
           eventType = `${mapEvent()}["${event.name}"]`;
