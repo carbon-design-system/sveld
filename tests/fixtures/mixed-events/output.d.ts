@@ -4,6 +4,6 @@ export type MixedEventsProps = {};
 
 export default class MixedEvents extends SvelteComponentTyped<
   MixedEventsProps,
-  { ["custom-focus"]: CustomEvent<FocusEvent | number>; blur: FocusEvent | CustomEvent<FocusEvent> },
+  { "custom-focus": CustomEvent<FocusEvent | number>; blur: FocusEvent | CustomEvent<FocusEvent> },
   {}
 > {}

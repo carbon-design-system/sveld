@@ -22,7 +22,7 @@ export function getTypeDefs(def: Pick<ComponentDocApi, "typedefs">) {
 
 function clampKey(key: string) {
   if (/(-|\s+|:)/.test(key)) {
-    return /("|')/.test(key) ? key : `["${key}"]`;
+    return /("|')/.test(key) ? key : `"${key}"`;
   }
 
   return key;
