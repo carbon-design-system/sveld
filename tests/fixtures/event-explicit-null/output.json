@@ -1,0 +1,28 @@
+{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "clear",
+      "detail": "null"
+    },
+    {
+      "type": "forwarded",
+      "name": "change",
+      "element": "input"
+    },
+    {
+      "type": "forwarded",
+      "name": "input",
+      "element": "input"
+    }
+  ],
+  "typedefs": [],
+  "generics": null,
+  "rest_props": {
+    "type": "Element",
+    "name": "input"
+  }
+}

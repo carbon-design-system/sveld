@@ -1,0 +1,39 @@
+{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "expand",
+      "detail": "null"
+    },
+    {
+      "type": "dispatched",
+      "name": "collapse",
+      "detail": "null"
+    },
+    {
+      "type": "forwarded",
+      "name": "click",
+      "element": "ChildComponent"
+    },
+    {
+      "type": "forwarded",
+      "name": "mouseover",
+      "element": "ChildComponent"
+    },
+    {
+      "type": "forwarded",
+      "name": "mouseenter",
+      "element": "ChildComponent"
+    },
+    {
+      "type": "forwarded",
+      "name": "mouseleave",
+      "element": "ChildComponent"
+    }
+  ],
+  "typedefs": [],
+  "generics": null
+}

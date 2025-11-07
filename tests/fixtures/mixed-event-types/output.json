@@ -1,0 +1,32 @@
+{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "forwarded",
+      "name": "input",
+      "element": "input",
+      "description": "Input value changed (native forwarded event)",
+      "detail": "string"
+    },
+    {
+      "type": "forwarded",
+      "name": "customEvent",
+      "element": "CustomComponent",
+      "description": "Custom event from component (component forwarded event)",
+      "detail": "number"
+    },
+    {
+      "type": "forwarded",
+      "name": "change",
+      "element": "input"
+    },
+    {
+      "type": "dispatched",
+      "name": "submit"
+    }
+  ],
+  "typedefs": [],
+  "generics": null
+}

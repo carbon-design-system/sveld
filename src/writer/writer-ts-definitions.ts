@@ -149,6 +149,109 @@ function genEventDef(def: Pick<ComponentDocApi, "events">) {
     return `CustomEvent<${detail}>`;
   };
 
+  // Check if an event name is a standard DOM event that exists in WindowEventMap
+  const isStandardDomEvent = (eventName: string): boolean => {
+    // Standard DOM events that should use WindowEventMap
+    const standardEvents = new Set([
+      // Mouse events
+      "click",
+      "dblclick",
+      "mousedown",
+      "mouseup",
+      "mousemove",
+      "mouseover",
+      "mouseout",
+      "mouseenter",
+      "mouseleave",
+      "contextmenu",
+      "wheel",
+      // Keyboard events
+      "keydown",
+      "keyup",
+      "keypress",
+      // Form events
+      "submit",
+      "change",
+      "input",
+      "focus",
+      "blur",
+      "focusin",
+      "focusout",
+      "reset",
+      "select",
+      // Touch events
+      "touchstart",
+      "touchend",
+      "touchmove",
+      "touchcancel",
+      // Drag events
+      "drag",
+      "dragstart",
+      "dragend",
+      "dragover",
+      "dragenter",
+      "dragleave",
+      "drop",
+      // Pointer events
+      "pointerdown",
+      "pointerup",
+      "pointermove",
+      "pointerover",
+      "pointerout",
+      "pointerenter",
+      "pointerleave",
+      "pointercancel",
+      "gotpointercapture",
+      "lostpointercapture",
+      // Media events
+      "play",
+      "pause",
+      "ended",
+      "volumechange",
+      "timeupdate",
+      "loadeddata",
+      "loadedmetadata",
+      "canplay",
+      "canplaythrough",
+      "seeking",
+      "seeked",
+      "playing",
+      "waiting",
+      "stalled",
+      "suspend",
+      "abort",
+      "error",
+      "emptied",
+      "ratechange",
+      "durationchange",
+      "loadstart",
+      "progress",
+      "loadend",
+      // Animation/Transition events
+      "animationstart",
+      "animationend",
+      "animationiteration",
+      "animationcancel",
+      "transitionstart",
+      "transitionend",
+      "transitionrun",
+      "transitioncancel",
+      // Other events
+      "scroll",
+      "resize",
+      "load",
+      "unload",
+      "beforeunload",
+      "cut",
+      "copy",
+      "paste",
+      "compositionstart",
+      "compositionupdate",
+      "compositionend",
+    ]);
+    return standardEvents.has(eventName);
+  };
+
   if (def.events.length === 0) return EMPTY_EVENTS;
 
   const events_map = def.events
@@ -162,16 +265,26 @@ function genEventDef(def: Pick<ComponentDocApi, "events">) {
       if (event.type === "dispatched") {
         eventType = createDispatchedEvent(event.detail);
       } else {
-        // For forwarded events, check if it's from a native HTML element or a component
-        // If element starts with uppercase, it's a component, so treat as CustomEvent
-        // Also check if the forwarded event has detail type information preserved
+        // For forwarded events, determine the type based on @event JSDoc and element/event type
         const elementName = typeof event.element === "string" ? event.element : event.element.name;
         const isComponent = elementName && /^[A-Z]/.test(elementName);
-        const hasDetail = event.detail && event.detail !== "undefined" && event.detail !== "null";
-        if (isComponent || hasDetail) {
+        const isStandardEvent = !isComponent || isStandardDomEvent(event.name);
+
+        // Check if there's an explicit non-null detail type from @event JSDoc
+        // Note: detail="null" on standard DOM events is treated as "not explicitly typed"
+        // because @event click (without {type}) defaults to null but shouldn't override WindowEventMap
+        const hasExplicitNonNullDetail =
+          event.detail !== undefined && event.detail !== "undefined" && !(event.detail === "null" && isStandardEvent);
+
+        if (hasExplicitNonNullDetail) {
+          // If @event tag explicitly provides a non-null detail type, always use it (highest priority)
           eventType = createDispatchedEvent(event.detail);
-        } else {
+        } else if (isStandardEvent) {
+          // Standard DOM event (native element or standard event name) without explicit type
           eventType = `${mapEvent()}["${event.name}"]`;
+        } else {
+          // Custom event from component with no explicit type or explicit null
+          eventType = event.detail === "null" ? createDispatchedEvent("null") : createDispatchedEvent();
         }
       }
 
