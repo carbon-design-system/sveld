@@ -41,7 +41,8 @@
       "events": [{ "type": "forwarded", "name": "click", "element": "button" }],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "button" }
+      "rest_props": { "type": "Element", "name": "button" },
+      "contexts": []
     },
     {
       "moduleName": "Card",
@@ -53,7 +54,8 @@
       ],
       "events": [],
       "typedefs": [],
-      "generics": null
+      "generics": null,
+      "contexts": []
     },
     {
       "moduleName": "Header",
@@ -65,7 +67,8 @@
       ],
       "events": [],
       "typedefs": [],
-      "generics": null
+      "generics": null,
+      "contexts": []
     },
     {
       "moduleName": "Link",
@@ -83,7 +86,8 @@
       "events": [{ "type": "forwarded", "name": "click", "element": "a" }],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "a" }
+      "rest_props": { "type": "Element", "name": "a" },
+      "contexts": []
     },
     {
       "moduleName": "Quote",
@@ -126,7 +130,8 @@
         { "type": "string", "name": "Author", "ts": "type Author = string" }
       ],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "blockquote" }
+      "rest_props": { "type": "Element", "name": "blockquote" },
+      "contexts": []
     }
   ]
 }

@@ -44,5 +44,6 @@
       "ts": "type MyTypedefArray = MyTypedef[]"
     }
   ],
-  "generics": null
+  "generics": null,
+  "contexts": []
 }

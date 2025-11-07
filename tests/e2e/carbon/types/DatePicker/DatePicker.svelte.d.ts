@@ -1,6 +1,18 @@
 import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
+export type DatePickerContext = {
+  range: any;
+  inputValue: any;
+  hasCalendar: any;
+  add: (data) => any;
+  declareRef: (arg) => any;
+  updateValue: (arg) => any;
+  blurInput: (relatedTarget) => any;
+  openCalendar: () => any;
+  focusCalendar: () => any;
+};
+
 type $RestProps = SvelteHTMLElements["div"];
 
 type $Props = {

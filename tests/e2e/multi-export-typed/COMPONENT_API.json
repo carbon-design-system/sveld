@@ -41,7 +41,8 @@
       "events": [{ "type": "forwarded", "name": "click", "element": "button" }],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "button" }
+      "rest_props": { "type": "Element", "name": "button" },
+      "contexts": []
     },
     {
       "moduleName": "Link",
@@ -59,7 +60,8 @@
       "events": [{ "type": "forwarded", "name": "click", "element": "a" }],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "a" }
+      "rest_props": { "type": "Element", "name": "a" },
+      "contexts": []
     },
     {
       "moduleName": "Quote",
@@ -100,7 +102,8 @@
       "events": [],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "blockquote" }
+      "rest_props": { "type": "Element", "name": "blockquote" },
+      "contexts": []
     },
     {
       "moduleName": "SecondaryButton",
@@ -131,7 +134,11 @@
       "typedefs": [],
       "generics": null,
       "rest_props": { "type": "InlineComponent", "name": "Button" },
-      "extends": { "interface": "ButtonProps", "import": "\"./Button.svelte\"" }
+      "extends": {
+        "interface": "ButtonProps",
+        "import": "\"./Button.svelte\""
+      },
+      "contexts": []
     }
   ]
 }

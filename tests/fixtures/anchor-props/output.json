@@ -14,5 +14,6 @@
   "rest_props": {
     "type": "Element",
     "name": "a"
-  }
+  },
+  "contexts": []
 }

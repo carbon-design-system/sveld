@@ -1,0 +1,32 @@
+{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "modal",
+      "typeName": "ModalContext",
+      "properties": [
+        {
+          "name": "open",
+          "type": "(component: any, props: any) => any",
+          "optional": false
+        },
+        {
+          "name": "close",
+          "type": "() => any",
+          "optional": false
+        }
+      ]
+    }
+  ]
+}

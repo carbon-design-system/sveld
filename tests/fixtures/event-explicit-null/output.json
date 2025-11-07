@@ -24,5 +24,6 @@
   "rest_props": {
     "type": "Element",
     "name": "input"
-  }
+  },
+  "contexts": []
 }

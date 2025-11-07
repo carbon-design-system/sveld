@@ -7,6 +7,7 @@ exports[`writerTsDefinition writeTsDefinition 1`] = `
   
   
   
+  
     export type ModuleNameProps =  {
       
       /**
@@ -51,6 +52,7 @@ exports[`writerTsDefinition writeTsDefinition 1`] = `
 exports[`writerTsDefinition "default" module name 1`] = `
 "
   import type { SvelteComponentTyped } from "svelte";
+  
   
   
   

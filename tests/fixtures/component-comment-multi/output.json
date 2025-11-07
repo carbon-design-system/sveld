@@ -11,5 +11,6 @@
   "events": [],
   "typedefs": [],
   "generics": null,
-  "componentComment": "\n@example\n<div>\n  Component comment\n</div>"
+  "componentComment": "\n@example\n<div>\n  Component comment\n</div>",
+  "contexts": []
 }

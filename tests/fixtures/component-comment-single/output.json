@@ -11,5 +11,6 @@
   "events": [],
   "typedefs": [],
   "generics": null,
-  "componentComment": " Component comment"
+  "componentComment": " Component comment",
+  "contexts": []
 }

@@ -1,6 +1,17 @@
 import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
+export type TabsContext = {
+  tabs: any;
+  contentById: any;
+  selectedTab: any;
+  selectedContent: any;
+  add: (data) => any;
+  addContent: (data) => any;
+  update: (id) => any;
+  change: (direction) => any;
+};
+
 type $RestProps = SvelteHTMLElements["div"];
 
 type $Props = {

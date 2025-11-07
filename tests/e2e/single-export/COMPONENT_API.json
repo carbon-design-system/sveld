@@ -40,7 +40,8 @@
       "events": [{ "type": "forwarded", "name": "click", "element": "button" }],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "button" }
+      "rest_props": { "type": "Element", "name": "button" },
+      "contexts": []
     }
   ]
 }

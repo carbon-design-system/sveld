@@ -126,6 +126,7 @@ export default class Button extends SvelteComponentTyped<
   - [@typedef](#typedef)
   - [@slot](#slot)
   - [@event](#event)
+  - [Context API](#context-api)
   - [@restProps](#restprops)
   - [@extends](#extends)
   - [@generics](#generics)
@@ -143,6 +144,7 @@ Extracted metadata include:
 - slots
 - forwarded events
 - dispatched events
+- context (setContext/getContext)
 - `$$restProps`
 
 This library adopts a progressively enhanced approach. Any property type that cannot be inferred (e.g., "hello" is a string) falls back to "any" to minimize incorrectly typed properties or signatures. To mitigate this, the library author can add JSDoc annotations to specify types that cannot be reliably inferred. This represents a progressively enhanced approach because JSDocs are comments that can be ignored by the compiler.
@@ -510,6 +512,168 @@ export default class Component extends SvelteComponentTyped<
   {}
 > {}
 ```
+
+### Context API
+
+`sveld` automatically generates TypeScript definitions for Svelte's `setContext`/`getContext` API by extracting types from JSDoc annotations on the context values.
+
+#### How it works
+
+When you use `setContext` in a component, `sveld` will:
+
+1. Detect the `setContext` call
+2. Extract the context key (must be a string literal)
+3. Find JSDoc `@type` annotations on the variables being passed
+4. Generate a TypeScript type export for the context
+
+#### Example
+
+**Modal.svelte**
+
+```svelte
+<script>
+  import { setContext } from 'svelte';
+
+  /**
+   * Close the modal
+   * @type {() => void}
+   */
+  const close = () => {
+    // Close logic
+  };
+
+  /**
+   * Open the modal with content
+   * @type {(component: any, props?: any) => void}
+   */
+  const open = (component, props) => {
+    // Open logic
+  };
+
+  setContext('simple-modal', { open, close });
+</script>
+
+<div class="modal">
+  <slot />
+</div>
+```
+
+**Generated TypeScript definition:**
+
+```ts
+export type SimpleModalContext = {
+  /** Open the modal with content */
+  open: (component: any, props?: any) => void;
+  /** Close the modal */
+  close: () => void;
+};
+
+export type ModalProps = {};
+
+export default class Modal extends SvelteComponentTyped<
+  ModalProps,
+  Record<string, any>,
+  { default: {} }
+> {}
+```
+
+**Consumer usage:**
+
+```svelte
+<script>
+  import { getContext } from 'svelte';
+  import type { SimpleModalContext } from 'modal-library/Modal.svelte';
+
+  // Fully typed with autocomplete!
+  const { close, open } = getContext<SimpleModalContext>('simple-modal');
+</script>
+
+<button on:click={close}>Close</button>
+```
+
+#### Explicitly typing contexts
+
+There are several ways to provide type information for contexts:
+
+**Option 1: Inline JSDoc on variables (recommended)**
+
+```svelte
+<script>
+  import { setContext } from 'svelte';
+
+  /**
+   * @type {() => void}
+   */
+  const close = () => {};
+
+  setContext('modal', { close });
+</script>
+```
+
+**Option 2: Using @typedef for complex types**
+
+```svelte
+<script>
+  import { setContext } from 'svelte';
+
+  /**
+   * @typedef {object} TabData
+   * @property {string} id
+   * @property {string} label
+   * @property {boolean} [disabled]
+   */
+
+  /**
+   * @type {(tab: TabData) => void}
+   */
+  const addTab = (tab) => {};
+
+  setContext('tabs', { addTab });
+</script>
+```
+
+**Option 3: Referencing imported types**
+
+```svelte
+<script>
+  import { setContext } from 'svelte';
+
+  /**
+   * @type {typeof import("./types").ModalAPI}
+   */
+  const modalAPI = {
+    open: () => {},
+    close: () => {}
+  };
+
+  setContext('modal', modalAPI);
+</script>
+```
+
+**Option 4: Direct object literal with inline functions**
+
+```svelte
+<script>
+  import { setContext } from 'svelte';
+
+  // sveld infers basic function signatures
+  setContext('modal', {
+    open: (component, props) => {}, // Inferred as (arg, arg) => any
+    close: () => {}                 // Inferred as () => any
+  });
+</script>
+```
+
+> **Note:** For best results, use explicit JSDoc `@type` annotations. Inline functions without annotations will be inferred with generic signatures.
+
+#### Notes
+
+- Context keys must be string literals (dynamic keys are not supported)
+- Variables passed to `setContext` should have JSDoc `@type` annotations for accurate types
+- The generated type name follows the pattern: `{PascalCase}Context`
+  - `"simple-modal"` → `SimpleModalContext`
+  - `"Tabs"` → `TabsContext`
+- If no type annotation is found, the type defaults to `any` with a warning
 
 ### `@restProps`
 
