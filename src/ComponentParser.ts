@@ -644,7 +644,7 @@ export default class ComponentParser {
                 replace: false,
               };
 
-              if (value === undefined) return {};
+              if (value === undefined) return slot_props;
 
               if (value[0]) {
                 const { type, expression, raw, start, end } = value[0];
@@ -816,16 +816,8 @@ export default class ComponentParser {
                 slot_props[key].value = this.props.get(slot_props[key].value)?.type;
               }
 
-              let propValue = slot_props[key].value;
-              if (propValue === undefined) {
-                propValue = "any";
-              } else if (typeof propValue === "string" && propValue.startsWith("{")) {
-                // If the value starts with {, it's a complex expression
-                // Use 'any' to avoid invalid TypeScript syntax
-                propValue = "any";
-              }
-
-              new_props.push(`${key}: ${propValue}`);
+              if (slot_props[key].value === undefined) slot_props[key].value = "any";
+              new_props.push(`${key}: ${slot_props[key].value}`);
             });
 
             const formatted_slot_props = new_props.length === 0 ? "{}" : `{ ${new_props.join(", ")} }`;
