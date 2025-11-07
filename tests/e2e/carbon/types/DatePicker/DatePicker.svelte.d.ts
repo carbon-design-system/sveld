@@ -5,10 +5,10 @@ export type DatePickerContext = {
   range: any;
   inputValue: any;
   hasCalendar: any;
-  add: (data) => any;
-  declareRef: (arg) => any;
-  updateValue: (arg) => any;
-  blurInput: (relatedTarget) => any;
+  add: (data: any) => any;
+  declareRef: (arg: any) => any;
+  updateValue: (arg: any) => any;
+  blurInput: (relatedTarget: any) => any;
   openCalendar: () => any;
   focusCalendar: () => any;
 };

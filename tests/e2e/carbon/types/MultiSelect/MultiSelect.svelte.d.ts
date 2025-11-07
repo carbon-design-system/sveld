@@ -10,7 +10,7 @@ export interface MultiSelectItem {
   text: MultiSelectItemText;
 }
 export type MultiSelectContext = {
-  declareRef: (arg) => any;
+  declareRef: (arg: any) => any;
 };
 
 type $RestProps = SvelteHTMLElements["div"];

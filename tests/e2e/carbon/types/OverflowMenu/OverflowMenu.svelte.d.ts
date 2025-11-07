@@ -3,9 +3,9 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 export type OverflowMenuContext = {
   focusedId: any;
-  add: (arg) => any;
-  update: (id) => any;
-  change: (direction) => any;
+  add: (arg: any) => any;
+  update: (id: any) => any;
+  change: (direction: any) => any;
 };
 
 type $RestProps = SvelteHTMLElements["button"];

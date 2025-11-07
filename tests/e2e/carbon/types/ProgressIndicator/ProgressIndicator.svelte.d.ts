@@ -4,8 +4,8 @@ import type { SvelteHTMLElements } from "svelte/elements";
 export type ProgressIndicatorContext = {
   steps: any;
   stepsById: any;
-  add: (step) => any;
-  change: (index) => any;
+  add: (step: any) => any;
+  change: (index: any) => any;
 };
 
 type $RestProps = SvelteHTMLElements["ul"];

@@ -1755,7 +1755,11 @@
           "properties": [
             { "name": "closeModal", "type": "() => any", "optional": false },
             { "name": "submit", "type": "() => any", "optional": false },
-            { "name": "declareRef", "type": "(ref) => any", "optional": false }
+            {
+              "name": "declareRef",
+              "type": "(ref: any) => any",
+              "optional": false
+            }
           ]
         }
       ]
@@ -1852,11 +1856,11 @@
           "typeName": "ContentSwitcherContext",
           "properties": [
             { "name": "currentId", "type": "any", "optional": false },
-            { "name": "add", "type": "(arg) => any", "optional": false },
-            { "name": "update", "type": "(id) => any", "optional": false },
+            { "name": "add", "type": "(arg: any) => any", "optional": false },
+            { "name": "update", "type": "(id: any) => any", "optional": false },
             {
               "name": "change",
-              "type": "(direction) => any",
+              "type": "(direction: any) => any",
               "optional": false
             }
           ]
@@ -2606,16 +2610,20 @@
             { "name": "range", "type": "any", "optional": false },
             { "name": "inputValue", "type": "any", "optional": false },
             { "name": "hasCalendar", "type": "any", "optional": false },
-            { "name": "add", "type": "(data) => any", "optional": false },
-            { "name": "declareRef", "type": "(arg) => any", "optional": false },
+            { "name": "add", "type": "(data: any) => any", "optional": false },
+            {
+              "name": "declareRef",
+              "type": "(arg: any) => any",
+              "optional": false
+            },
             {
               "name": "updateValue",
-              "type": "(arg) => any",
+              "type": "(arg: any) => any",
               "optional": false
             },
             {
               "name": "blurInput",
-              "type": "(relatedTarget) => any",
+              "type": "(relatedTarget: any) => any",
               "optional": false
             },
             { "name": "openCalendar", "type": "() => any", "optional": false },
@@ -6637,7 +6645,11 @@
           "key": "MultiSelect",
           "typeName": "MultiSelectContext",
           "properties": [
-            { "name": "declareRef", "type": "(arg) => any", "optional": false }
+            {
+              "name": "declareRef",
+              "type": "(arg: any) => any",
+              "optional": false
+            }
           ]
         }
       ]
@@ -7410,11 +7422,11 @@
           "typeName": "OverflowMenuContext",
           "properties": [
             { "name": "focusedId", "type": "any", "optional": false },
-            { "name": "add", "type": "(arg) => any", "optional": false },
-            { "name": "update", "type": "(id) => any", "optional": false },
+            { "name": "add", "type": "(arg: any) => any", "optional": false },
+            { "name": "update", "type": "(id: any) => any", "optional": false },
             {
               "name": "change",
-              "type": "(direction) => any",
+              "type": "(direction: any) => any",
               "optional": false
             }
           ]
@@ -8192,8 +8204,12 @@
           "properties": [
             { "name": "steps", "type": "any", "optional": false },
             { "name": "stepsById", "type": "any", "optional": false },
-            { "name": "add", "type": "(step) => any", "optional": false },
-            { "name": "change", "type": "(index) => any", "optional": false }
+            { "name": "add", "type": "(step: any) => any", "optional": false },
+            {
+              "name": "change",
+              "type": "(index: any) => any",
+              "optional": false
+            }
           ]
         }
       ]
@@ -8566,8 +8582,12 @@
           "typeName": "RadioButtonGroupContext",
           "properties": [
             { "name": "selectedValue", "type": "any", "optional": false },
-            { "name": "add", "type": "(arg) => any", "optional": false },
-            { "name": "update", "type": "(value) => any", "optional": false }
+            { "name": "add", "type": "(arg: any) => any", "optional": false },
+            {
+              "name": "update",
+              "type": "(value: any) => any",
+              "optional": false
+            }
           ]
         }
       ]
@@ -10185,7 +10205,11 @@
           "typeName": "StructuredListWrapperContext",
           "properties": [
             { "name": "selectedValue", "type": "any", "optional": false },
-            { "name": "update", "type": "(value) => any", "optional": false }
+            {
+              "name": "update",
+              "type": "(value: any) => any",
+              "optional": false
+            }
           ]
         }
       ]
@@ -11013,16 +11037,16 @@
             { "name": "contentById", "type": "any", "optional": false },
             { "name": "selectedTab", "type": "any", "optional": false },
             { "name": "selectedContent", "type": "any", "optional": false },
-            { "name": "add", "type": "(data) => any", "optional": false },
+            { "name": "add", "type": "(data: any) => any", "optional": false },
             {
               "name": "addContent",
-              "type": "(data) => any",
+              "type": "(data: any) => any",
               "optional": false
             },
-            { "name": "update", "type": "(id) => any", "optional": false },
+            { "name": "update", "type": "(id: any) => any", "optional": false },
             {
               "name": "change",
-              "type": "(direction) => any",
+              "type": "(direction: any) => any",
               "optional": false
             }
           ]
@@ -11755,8 +11779,12 @@
           "typeName": "TileGroupContext",
           "properties": [
             { "name": "selectedValue", "type": "any", "optional": false },
-            { "name": "add", "type": "(arg) => any", "optional": false },
-            { "name": "update", "type": "(value) => any", "optional": false }
+            { "name": "add", "type": "(arg: any) => any", "optional": false },
+            {
+              "name": "update",
+              "type": "(value: any) => any",
+              "optional": false
+            }
           ]
         }
       ]
@@ -12575,7 +12603,7 @@
             { "name": "overflowVisible", "type": "any", "optional": false },
             {
               "name": "setOverflowVisible",
-              "type": "(visible) => any",
+              "type": "(visible: any) => any",
               "optional": false
             }
           ]

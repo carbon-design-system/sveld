@@ -3,8 +3,8 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 export type RadioButtonGroupContext = {
   selectedValue: any;
-  add: (arg) => any;
-  update: (value) => any;
+  add: (arg: any) => any;
+  update: (value: any) => any;
 };
 
 type $RestProps = SvelteHTMLElements["div"];

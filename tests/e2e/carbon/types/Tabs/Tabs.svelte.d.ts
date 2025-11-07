@@ -6,10 +6,10 @@ export type TabsContext = {
   contentById: any;
   selectedTab: any;
   selectedContent: any;
-  add: (data) => any;
-  addContent: (data) => any;
-  update: (id) => any;
-  change: (direction) => any;
+  add: (data: any) => any;
+  addContent: (data: any) => any;
+  update: (id: any) => any;
+  change: (direction: any) => any;
 };
 
 type $RestProps = SvelteHTMLElements["div"];
