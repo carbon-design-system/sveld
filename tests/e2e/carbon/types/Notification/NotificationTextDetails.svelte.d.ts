@@ -29,5 +29,5 @@ export type NotificationTextDetailsProps = {
 export default class NotificationTextDetails extends SvelteComponentTyped<
   NotificationTextDetailsProps,
   Record<string, any>,
-  { default: {} }
+  { default: Record<string, never> }
 > {}

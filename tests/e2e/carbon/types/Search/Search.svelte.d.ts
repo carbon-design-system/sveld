@@ -101,5 +101,5 @@ export default class Search extends SvelteComponentTyped<
     keydown: WindowEventMap["keydown"];
     clear: CustomEvent<null>;
   },
-  {}
+  Record<string, never>
 > {}

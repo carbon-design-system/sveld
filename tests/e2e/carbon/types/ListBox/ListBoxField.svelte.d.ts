@@ -57,7 +57,7 @@ export default class ListBoxField extends SvelteComponentTyped<
     keydown: WindowEventMap["keydown"];
     blur: WindowEventMap["blur"];
   },
-  { default: {} }
+  { default: Record<string, never> }
 > {
   /**
    * Default translation ids

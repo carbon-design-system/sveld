@@ -66,5 +66,5 @@ export type RadioButtonProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class RadioButton extends SvelteComponentTyped<
   RadioButtonProps,
   { change: WindowEventMap["change"] },
-  {}
+  Record<string, never>
 > {}

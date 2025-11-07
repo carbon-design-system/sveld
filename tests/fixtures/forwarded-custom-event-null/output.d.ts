@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export type ForwardedCustomEventNullProps = {};
+export type ForwardedCustomEventNullProps = Record<string, never>;
 
 export default class ForwardedCustomEventNull extends SvelteComponentTyped<
   ForwardedCustomEventNullProps,
@@ -9,5 +9,5 @@ export default class ForwardedCustomEventNull extends SvelteComponentTyped<
     /** Search query changed */
     search: CustomEvent<string>;
   },
-  {}
+  Record<string, never>
 > {}

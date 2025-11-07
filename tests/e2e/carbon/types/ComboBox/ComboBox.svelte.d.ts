@@ -142,5 +142,5 @@ export default class ComboBox extends SvelteComponentTyped<
     clear: CustomEvent<any>;
     scroll: WindowEventMap["scroll"];
   },
-  {}
+  Record<string, never>
 > {}

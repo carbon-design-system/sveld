@@ -36,7 +36,7 @@ exports[`fixtures (JSON) "slots-named/input.svelte" 1`] = `
       "name": "__default__",
       "default": true,
       "fallback": "Default text",
-      "slot_props": "{}"
+      "slot_props": "Record<string, never>"
     },
     {
       "name": "bold heading",
@@ -239,7 +239,7 @@ exports[`fixtures (JSON) "forwarded-events/input.svelte" 1`] = `
     {
       "name": "__default__",
       "default": true,
-      "slot_props": "{}"
+      "slot_props": "Record<string, never>"
     }
   ],
   "events": [
@@ -375,7 +375,7 @@ exports[`fixtures (JSON) "infer-basic/input.svelte" 1`] = `
       "name": "__default__",
       "default": true,
       "fallback": "{name}",
-      "slot_props": "{}"
+      "slot_props": "Record<string, never>"
     }
   ],
   "events": [],
@@ -469,7 +469,7 @@ exports[`fixtures (JSON) "dispatched-events/input.svelte" 1`] = `
     {
       "name": "__default__",
       "default": true,
-      "slot_props": "{}"
+      "slot_props": "Record<string, never>"
     }
   ],
   "events": [
@@ -631,7 +631,7 @@ exports[`fixtures (JSON) "bind-this/input.svelte" 1`] = `
     {
       "name": "__default__",
       "default": true,
-      "slot_props": "{}"
+      "slot_props": "Record<string, never>"
     }
   ],
   "events": [],
@@ -648,7 +648,7 @@ exports[`fixtures (JSON) "dispatched-events-typed/input.svelte" 1`] = `
     {
       "name": "__default__",
       "default": true,
-      "slot_props": "{}"
+      "slot_props": "Record<string, never>"
     }
   ],
   "events": [
@@ -819,7 +819,7 @@ exports[`fixtures (JSON) "forwarded-events-native-with-jsdoc/input.svelte" 1`] =
     {
       "name": "__default__",
       "default": true,
-      "slot_props": "{}"
+      "slot_props": "Record<string, never>"
     }
   ],
   "events": [
@@ -949,7 +949,7 @@ exports[`fixtures (JSON) "infer-with-types/input.svelte" 1`] = `
       "name": "__default__",
       "default": true,
       "fallback": "{name}",
-      "slot_props": "{}"
+      "slot_props": "Record<string, never>"
     }
   ],
   "events": [],
@@ -1239,7 +1239,7 @@ exports[`fixtures (JSON) "component-comment-single/input.svelte" 1`] = `
     {
       "name": "__default__",
       "default": true,
-      "slot_props": "{}"
+      "slot_props": "Record<string, never>"
     }
   ],
   "events": [],
@@ -1289,7 +1289,7 @@ exports[`fixtures (JSON) "bind-this-multiple/input.svelte" 1`] = `
     {
       "name": "__default__",
       "default": true,
-      "slot_props": "{}"
+      "slot_props": "Record<string, never>"
     }
   ],
   "events": [],
@@ -1391,7 +1391,7 @@ exports[`fixtures (JSON) "anchor-props/input.svelte" 1`] = `
     {
       "name": "__default__",
       "default": true,
-      "slot_props": "{}"
+      "slot_props": "Record<string, never>"
     }
   ],
   "events": [],
@@ -1412,7 +1412,7 @@ exports[`fixtures (JSON) "component-comment-multi/input.svelte" 1`] = `
     {
       "name": "__default__",
       "default": true,
-      "slot_props": "{}"
+      "slot_props": "Record<string, never>"
     }
   ],
   "events": [],
@@ -1457,12 +1457,12 @@ exports[`fixtures (JSON) "slots-spread/input.svelte" 1`] = `
       "name": "__default__",
       "default": true,
       "fallback": "Default text",
-      "slot_props": "{}"
+      "slot_props": "Record<string, never>"
     },
     {
       "name": "text",
       "default": false,
-      "slot_props": "{}"
+      "slot_props": "Record<string, never>"
     }
   ],
   "events": [],
@@ -1638,7 +1638,7 @@ type $Props = {
 
 export type SvgPropsProps = Omit<$RestProps, keyof $Props> & $Props;
 
-export default class SvgProps extends SvelteComponentTyped<SvgPropsProps, Record<string, any>, {}> {}
+export default class SvgProps extends SvelteComponentTyped<SvgPropsProps, Record<string, any>, Record<string, never>> {}
 "
 `;
 
@@ -1655,7 +1655,12 @@ export type SlotsNamedProps = {
 export default class SlotsNamed extends SvelteComponentTyped<
   SlotsNamedProps,
   Record<string, any>,
-  { default: {}; "bold heading": { text: string }; subheading: { text: string }; text: { text: string } }
+  {
+    default: Record<string, never>;
+    "bold heading": { text: string };
+    subheading: { text: string };
+    text: { text: string };
+  }
 > {}
 "
 `;
@@ -1701,7 +1706,7 @@ export default class GenericsMultiple<
 exports[`fixtures (TypeScript) "mixed-event-types/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export type MixedEventTypesProps = {};
+export type MixedEventTypesProps = Record<string, never>;
 
 export default class MixedEventTypes extends SvelteComponentTyped<
   MixedEventTypesProps,
@@ -1712,7 +1717,7 @@ export default class MixedEventTypes extends SvelteComponentTyped<
     change: WindowEventMap["change"];
     submit: CustomEvent<any>;
   },
-  {}
+  Record<string, never>
 > {}
 "
 `;
@@ -1720,12 +1725,12 @@ export default class MixedEventTypes extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "dispatched-events-dynamic/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export type DispatchedEventsDynamicProps = {};
+export type DispatchedEventsDynamicProps = Record<string, never>;
 
 export default class DispatchedEventsDynamic extends SvelteComponentTyped<
   DispatchedEventsDynamicProps,
   { KEY: CustomEvent<{ key: string }> },
-  {}
+  Record<string, never>
 > {}
 "
 `;
@@ -1743,7 +1748,7 @@ export type FunctionDeclarationProps = {
 export default class FunctionDeclaration extends SvelteComponentTyped<
   FunctionDeclarationProps,
   Record<string, any>,
-  {}
+  Record<string, never>
 > {
   fnB: () => {};
 
@@ -1760,7 +1765,7 @@ export default class FunctionDeclaration extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "forwarded-events/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export type ForwardedEventsProps = {};
+export type ForwardedEventsProps = Record<string, never>;
 
 export default class ForwardedEvents extends SvelteComponentTyped<
   ForwardedEventsProps,
@@ -1770,7 +1775,7 @@ export default class ForwardedEvents extends SvelteComponentTyped<
     blur: WindowEventMap["blur"];
     mouseover: WindowEventMap["mouseover"];
   },
-  { default: {} }
+  { default: Record<string, never> }
 > {}
 "
 `;
@@ -1778,12 +1783,12 @@ export default class ForwardedEvents extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "mixed-events/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export type MixedEventsProps = {};
+export type MixedEventsProps = Record<string, never>;
 
 export default class MixedEvents extends SvelteComponentTyped<
   MixedEventsProps,
   { "custom-focus": CustomEvent<FocusEvent | number>; blur: FocusEvent | CustomEvent<FocusEvent> },
-  {}
+  Record<string, never>
 > {}
 "
 `;
@@ -1818,7 +1823,11 @@ export type InferBasicProps = {
   id?: string;
 };
 
-export default class InferBasic extends SvelteComponentTyped<InferBasicProps, Record<string, any>, { default: {} }> {
+export default class InferBasic extends SvelteComponentTyped<
+  InferBasicProps,
+  Record<string, any>,
+  { default: Record<string, never> }
+> {
   propConst: { ["1"]: true };
 
   fn: () => any;
@@ -1829,9 +1838,13 @@ export default class InferBasic extends SvelteComponentTyped<InferBasicProps, Re
 exports[`fixtures (TypeScript) "empty-export/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export type EmptyExportProps = {};
+export type EmptyExportProps = Record<string, never>;
 
-export default class EmptyExport extends SvelteComponentTyped<EmptyExportProps, Record<string, any>, {}> {}
+export default class EmptyExport extends SvelteComponentTyped<
+  EmptyExportProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
 "
 `;
 
@@ -1860,7 +1873,7 @@ export default class TypedSlots extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "forwarded-events-typed/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export type ForwardedEventsTypedProps = {};
+export type ForwardedEventsTypedProps = Record<string, never>;
 
 export default class ForwardedEventsTyped extends SvelteComponentTyped<
   ForwardedEventsTypedProps,
@@ -1870,7 +1883,7 @@ export default class ForwardedEventsTyped extends SvelteComponentTyped<
     focus: WindowEventMap["focus"];
     blur: WindowEventMap["blur"];
   },
-  {}
+  Record<string, never>
 > {}
 "
 `;
@@ -1878,7 +1891,7 @@ export default class ForwardedEventsTyped extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "dispatched-events/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export type DispatchedEventsProps = {};
+export type DispatchedEventsProps = Record<string, never>;
 
 export default class DispatchedEvents extends SvelteComponentTyped<
   DispatchedEventsProps,
@@ -1888,7 +1901,7 @@ export default class DispatchedEvents extends SvelteComponentTyped<
     "destroy--component": CustomEvent<null>;
     "destroy:component": CustomEvent<null>;
   },
-  { default: {} }
+  { default: Record<string, never> }
 > {}
 "
 `;
@@ -1974,14 +1987,18 @@ export type BindThisProps = {
   ref: null | HTMLButtonElement;
 };
 
-export default class BindThis extends SvelteComponentTyped<BindThisProps, Record<string, any>, { default: {} }> {}
+export default class BindThis extends SvelteComponentTyped<
+  BindThisProps,
+  Record<string, any>,
+  { default: Record<string, never> }
+> {}
 "
 `;
 
 exports[`fixtures (TypeScript) "dispatched-events-typed/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export type DispatchedEventsTypedProps = {};
+export type DispatchedEventsTypedProps = Record<string, never>;
 
 export default class DispatchedEventsTyped extends SvelteComponentTyped<
   DispatchedEventsTypedProps,
@@ -1989,7 +2006,7 @@ export default class DispatchedEventsTyped extends SvelteComponentTyped<
     /** Fired on mouseover. */ hover: CustomEvent<{ h1: boolean }>;
     destroy: CustomEvent<null>;
   },
-  { default: {} }
+  { default: Record<string, never> }
 > {}
 "
 `;
@@ -1997,12 +2014,12 @@ export default class DispatchedEventsTyped extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "input-events/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export type InputEventsProps = {};
+export type InputEventsProps = Record<string, never>;
 
 export default class InputEvents extends SvelteComponentTyped<
   InputEventsProps,
   { input: WindowEventMap["input"]; change: WindowEventMap["change"]; paste: WindowEventMap["paste"] },
-  {}
+  Record<string, never>
 > {}
 "
 `;
@@ -2079,7 +2096,7 @@ export default class PropComments extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "forwarded-events-native-with-jsdoc/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export type ForwardedEventsNativeWithJsdocProps = {};
+export type ForwardedEventsNativeWithJsdocProps = Record<string, never>;
 
 export default class ForwardedEventsNativeWithJsdoc extends SvelteComponentTyped<
   ForwardedEventsNativeWithJsdocProps,
@@ -2090,7 +2107,7 @@ export default class ForwardedEventsNativeWithJsdoc extends SvelteComponentTyped
     /** Fired when the button loses focus */
     blur: WindowEventMap["blur"];
   },
-  { default: {} }
+  { default: Record<string, never> }
 > {}
 "
 `;
@@ -2106,7 +2123,11 @@ export type RenamedPropsProps = {
   class?: string | null;
 };
 
-export default class RenamedProps extends SvelteComponentTyped<RenamedPropsProps, Record<string, any>, {}> {}
+export default class RenamedProps extends SvelteComponentTyped<
+  RenamedPropsProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
 "
 `;
 
@@ -2138,7 +2159,7 @@ export type InferWithTypesProps = {
 export default class InferWithTypes extends SvelteComponentTyped<
   InferWithTypesProps,
   Record<string, any>,
-  { default: {} }
+  { default: Record<string, never> }
 > {
   propConst: { [key: string]: boolean };
 
@@ -2150,14 +2171,14 @@ export default class InferWithTypes extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "forwarded-native-with-detail/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export type ForwardedNativeWithDetailProps = {};
+export type ForwardedNativeWithDetailProps = Record<string, never>;
 
 export default class ForwardedNativeWithDetail extends SvelteComponentTyped<
   ForwardedNativeWithDetailProps,
   {
     /** The input value when changed */ change: CustomEvent<string>;
   },
-  {}
+  Record<string, never>
 > {}
 "
 `;
@@ -2185,9 +2206,13 @@ export declare function b2(): () => {};
 
 export declare function b3(): () => false;
 
-export type ContextModuleProps = {};
+export type ContextModuleProps = Record<string, never>;
 
-export default class ContextModule extends SvelteComponentTyped<ContextModuleProps, Record<string, any>, {}> {
+export default class ContextModule extends SvelteComponentTyped<
+  ContextModuleProps,
+  Record<string, any>,
+  Record<string, never>
+> {
   a: string;
 }
 "
@@ -2210,14 +2235,18 @@ type $Props = {
 
 export type RestPropsMultipleProps = Omit<$RestProps, keyof $Props> & $Props;
 
-export default class RestPropsMultiple extends SvelteComponentTyped<RestPropsMultipleProps, Record<string, any>, {}> {}
+export default class RestPropsMultiple extends SvelteComponentTyped<
+  RestPropsMultipleProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
 "
 `;
 
 exports[`fixtures (TypeScript) "forwarded-from-component-to-native/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export type ForwardedFromComponentToNativeProps = {};
+export type ForwardedFromComponentToNativeProps = Record<string, never>;
 
 export default class ForwardedFromComponentToNative extends SvelteComponentTyped<
   ForwardedFromComponentToNativeProps,
@@ -2229,7 +2258,7 @@ export default class ForwardedFromComponentToNative extends SvelteComponentTyped
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
   },
-  {}
+  Record<string, never>
 > {}
 "
 `;
@@ -2237,9 +2266,9 @@ export default class ForwardedFromComponentToNative extends SvelteComponentTyped
 exports[`fixtures (TypeScript) "no-props/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export type NoPropsProps = {};
+export type NoPropsProps = Record<string, never>;
 
-export default class NoProps extends SvelteComponentTyped<NoPropsProps, Record<string, any>, {}> {}
+export default class NoProps extends SvelteComponentTyped<NoPropsProps, Record<string, any>, Record<string, never>> {}
 "
 `;
 
@@ -2258,7 +2287,7 @@ export type EventExplicitNullProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class EventExplicitNull extends SvelteComponentTyped<
   EventExplicitNullProps,
   { clear: CustomEvent<null>; change: WindowEventMap["change"]; input: WindowEventMap["input"] },
-  {}
+  Record<string, never>
 > {}
 "
 `;
@@ -2280,7 +2309,7 @@ export default class ForwardedStandardEventCustomDetail extends SvelteComponentT
     remove: CustomEvent<ReadonlyArray<File>>;
     change: CustomEvent<ReadonlyArray<File>>;
   },
-  {}
+  Record<string, never>
 > {}
 "
 `;
@@ -2288,13 +2317,13 @@ export default class ForwardedStandardEventCustomDetail extends SvelteComponentT
 exports[`fixtures (TypeScript) "component-comment-single/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export type ComponentCommentSingleProps = {};
+export type ComponentCommentSingleProps = Record<string, never>;
 
 /** Component comment */
 export default class ComponentCommentSingle extends SvelteComponentTyped<
   ComponentCommentSingleProps,
   Record<string, any>,
-  { default: {} }
+  { default: Record<string, never> }
 > {}
 "
 `;
@@ -2322,7 +2351,7 @@ export type BindThisMultipleProps = {
 export default class BindThisMultiple extends SvelteComponentTyped<
   BindThisMultipleProps,
   Record<string, any>,
-  { default: {} }
+  { default: Record<string, never> }
 > {}
 "
 `;
@@ -2330,7 +2359,7 @@ export default class BindThisMultiple extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "forwarded-custom-events/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export type ForwardedCustomEventsProps = {};
+export type ForwardedCustomEventsProps = Record<string, never>;
 
 export default class ForwardedCustomEvents extends SvelteComponentTyped<
   ForwardedCustomEventsProps,
@@ -2338,7 +2367,7 @@ export default class ForwardedCustomEvents extends SvelteComponentTyped<
     /** Fired when clear button is clicked */ clear: CustomEvent<KeyboardEvent | MouseEvent>;
     click: WindowEventMap["click"];
   },
-  {}
+  Record<string, never>
 > {}
 "
 `;
@@ -2382,7 +2411,11 @@ type $Props = {
 
 export type RestPropsSimpleProps = Omit<$RestProps, keyof $Props> & $Props;
 
-export default class RestPropsSimple extends SvelteComponentTyped<RestPropsSimpleProps, Record<string, any>, {}> {}
+export default class RestPropsSimple extends SvelteComponentTyped<
+  RestPropsSimpleProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
 "
 `;
 
@@ -2398,14 +2431,18 @@ type $Props = {
 
 export type AnchorPropsProps = Omit<$RestProps, keyof $Props> & $Props;
 
-export default class AnchorProps extends SvelteComponentTyped<AnchorPropsProps, Record<string, any>, { default: {} }> {}
+export default class AnchorProps extends SvelteComponentTyped<
+  AnchorPropsProps,
+  Record<string, any>,
+  { default: Record<string, never> }
+> {}
 "
 `;
 
 exports[`fixtures (TypeScript) "component-comment-multi/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export type ComponentCommentMultiProps = {};
+export type ComponentCommentMultiProps = Record<string, never>;
 
 /**
  * @example
@@ -2416,7 +2453,7 @@ export type ComponentCommentMultiProps = {};
 export default class ComponentCommentMulti extends SvelteComponentTyped<
   ComponentCommentMultiProps,
   Record<string, any>,
-  { default: {} }
+  { default: Record<string, never> }
 > {}
 "
 `;
@@ -2424,7 +2461,7 @@ export default class ComponentCommentMulti extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "forwarded-custom-event-null/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export type ForwardedCustomEventNullProps = {};
+export type ForwardedCustomEventNullProps = Record<string, never>;
 
 export default class ForwardedCustomEventNull extends SvelteComponentTyped<
   ForwardedCustomEventNullProps,
@@ -2433,7 +2470,7 @@ export default class ForwardedCustomEventNull extends SvelteComponentTyped<
     /** Search query changed */
     search: CustomEvent<string>;
   },
-  {}
+  Record<string, never>
 > {}
 "
 `;
@@ -2441,12 +2478,12 @@ export default class ForwardedCustomEventNull extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "slots-spread/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export type SlotsSpreadProps = {};
+export type SlotsSpreadProps = Record<string, never>;
 
 export default class SlotsSpread extends SvelteComponentTyped<
   SlotsSpreadProps,
   Record<string, any>,
-  { default: {}; text: {} }
+  { default: Record<string, never>; text: Record<string, never> }
 > {}
 "
 `;
@@ -2454,12 +2491,12 @@ export default class SlotsSpread extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "forwarded-and-dispatched-events/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export type ForwardedAndDispatchedEventsProps = {};
+export type ForwardedAndDispatchedEventsProps = Record<string, never>;
 
 export default class ForwardedAndDispatchedEvents extends SvelteComponentTyped<
   ForwardedAndDispatchedEventsProps,
   { change: WindowEventMap["change"] },
-  {}
+  Record<string, never>
 > {}
 "
 `;
@@ -2467,7 +2504,7 @@ export default class ForwardedAndDispatchedEvents extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "slots-spread-typed/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export type SlotsSpreadTypedProps = {};
+export type SlotsSpreadTypedProps = Record<string, never>;
 
 export default class SlotsSpreadTyped extends SvelteComponentTyped<
   SlotsSpreadTypedProps,
@@ -2506,7 +2543,11 @@ export type TypedPropsProps = {
   prop4?: "red" | "blue";
 };
 
-export default class TypedProps extends SvelteComponentTyped<TypedPropsProps, Record<string, any>, {}> {}
+export default class TypedProps extends SvelteComponentTyped<
+  TypedPropsProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
 "
 `;
 

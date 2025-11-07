@@ -1,10 +1,10 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export type ComponentCommentSingleProps = {};
+export type ComponentCommentSingleProps = Record<string, never>;
 
 /** Component comment */
 export default class ComponentCommentSingle extends SvelteComponentTyped<
   ComponentCommentSingleProps,
   Record<string, any>,
-  { default: {} }
+  { default: Record<string, never> }
 > {}

@@ -1,9 +1,9 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export type FluidFormProps = {};
+export type FluidFormProps = Record<string, never>;
 
 export default class FluidForm extends SvelteComponentTyped<
   FluidFormProps,
   { submit: WindowEventMap["submit"] },
-  { default: {} }
+  { default: Record<string, never> }
 > {}

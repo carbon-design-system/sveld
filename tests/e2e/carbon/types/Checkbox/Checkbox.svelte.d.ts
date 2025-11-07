@@ -80,5 +80,5 @@ export default class Checkbox extends SvelteComponentTyped<
     mouseleave: WindowEventMap["mouseleave"];
     change: WindowEventMap["change"];
   },
-  {}
+  Record<string, never>
 > {}

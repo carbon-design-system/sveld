@@ -30,5 +30,5 @@ export type SideNavProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class SideNav extends SvelteComponentTyped<
   SideNavProps,
   Record<string, any>,
-  { default: {} }
+  { default: Record<string, never> }
 > {}

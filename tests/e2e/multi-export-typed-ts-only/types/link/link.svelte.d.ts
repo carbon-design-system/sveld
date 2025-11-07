@@ -12,5 +12,5 @@ export type LinkProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class Link extends SvelteComponentTyped<
   LinkProps,
   { click: WindowEventMap["click"] },
-  { default: {} }
+  { default: Record<string, never> }
 > {}

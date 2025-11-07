@@ -6,12 +6,12 @@
       "name": "__default__",
       "default": true,
       "fallback": "Default text",
-      "slot_props": "{}"
+      "slot_props": "Record<string, never>"
     },
     {
       "name": "text",
       "default": false,
-      "slot_props": "{}"
+      "slot_props": "Record<string, never>"
     }
   ],
   "events": [],

@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export type ForwardedFromComponentToNativeProps = {};
+export type ForwardedFromComponentToNativeProps = Record<string, never>;
 
 export default class ForwardedFromComponentToNative extends SvelteComponentTyped<
   ForwardedFromComponentToNativeProps,
@@ -12,5 +12,5 @@ export default class ForwardedFromComponentToNative extends SvelteComponentTyped
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
   },
-  {}
+  Record<string, never>
 > {}

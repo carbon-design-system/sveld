@@ -33,5 +33,5 @@ export default class Copy extends SvelteComponentTyped<
     click: WindowEventMap["click"];
     animationend: WindowEventMap["animationend"];
   },
-  { default: {} }
+  { default: Record<string, never> }
 > {}

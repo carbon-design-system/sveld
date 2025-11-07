@@ -48,5 +48,5 @@ export default class RadioButtonGroup extends SvelteComponentTyped<
     mouseleave: WindowEventMap["mouseleave"];
     change: CustomEvent<any>;
   },
-  { default: {} }
+  { default: Record<string, never> }
 > {}

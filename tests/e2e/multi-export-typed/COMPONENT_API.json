@@ -35,7 +35,7 @@
           "name": "__default__",
           "default": true,
           "fallback": "Click me",
-          "slot_props": "{}"
+          "slot_props": "Record<string, never>"
         }
       ],
       "events": [{ "type": "forwarded", "name": "click", "element": "button" }],
@@ -53,7 +53,7 @@
           "name": "__default__",
           "default": true,
           "fallback": "Link text",
-          "slot_props": "{}"
+          "slot_props": "Record<string, never>"
         }
       ],
       "events": [{ "type": "forwarded", "name": "click", "element": "a" }],
@@ -94,7 +94,7 @@
           "name": "__default__",
           "default": true,
           "fallback": "{quote}",
-          "slot_props": "{}"
+          "slot_props": "Record<string, never>"
         }
       ],
       "events": [],
@@ -124,7 +124,7 @@
           "name": "__default__",
           "default": true,
           "fallback": "Click me",
-          "slot_props": "{}"
+          "slot_props": "Record<string, never>"
         }
       ],
       "events": [{ "type": "forwarded", "name": "click", "element": "Button" }],

@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export type DispatchedEventsProps = {};
+export type DispatchedEventsProps = Record<string, never>;
 
 export default class DispatchedEvents extends SvelteComponentTyped<
   DispatchedEventsProps,
@@ -10,5 +10,5 @@ export default class DispatchedEvents extends SvelteComponentTyped<
     "destroy--component": CustomEvent<null>;
     "destroy:component": CustomEvent<null>;
   },
-  { default: {} }
+  { default: Record<string, never> }
 > {}

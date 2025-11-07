@@ -30,5 +30,5 @@ export type HeaderGlobalActionProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class HeaderGlobalAction extends SvelteComponentTyped<
   HeaderGlobalActionProps,
   { click: WindowEventMap["click"] },
-  { default: {} }
+  { default: Record<string, never> }
 > {}

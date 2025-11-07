@@ -19,9 +19,9 @@
 
 ### Slots
 
-| Slot name | Default | Props | Fallback              |
-| :-------- | :------ | :---- | :-------------------- |
-| --        | Yes     | --    | <code>Click me</code> |
+| Slot name | Default | Props                               | Fallback              |
+| :-------- | :------ | :---------------------------------- | :-------------------- |
+| --        | Yes     | <code>Record<string, never> </code> | <code>Click me</code> |
 
 ### Events
 

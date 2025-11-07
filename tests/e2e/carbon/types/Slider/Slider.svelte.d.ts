@@ -120,5 +120,5 @@ export default class Slider extends SvelteComponentTyped<
     mouseleave: WindowEventMap["mouseleave"];
     change: CustomEvent<any>;
   },
-  {}
+  Record<string, never>
 > {}

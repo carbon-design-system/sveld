@@ -820,7 +820,8 @@ export default class ComponentParser {
               new_props.push(`${key}: ${slot_props[key].value}`);
             });
 
-            const formatted_slot_props = new_props.length === 0 ? "{}" : `{ ${new_props.join(", ")} }`;
+            const formatted_slot_props =
+              new_props.length === 0 ? "Record<string, never>" : `{ ${new_props.join(", ")} }`;
 
             return { ...slot, slot_props: formatted_slot_props };
           } catch (_e) {

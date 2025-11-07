@@ -10,7 +10,7 @@ export type FunctionDeclarationProps = {
 export default class FunctionDeclaration extends SvelteComponentTyped<
   FunctionDeclarationProps,
   Record<string, any>,
-  {}
+  Record<string, never>
 > {
   fnB: () => {};
 

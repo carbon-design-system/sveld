@@ -30,5 +30,5 @@ export type TableContainerProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class TableContainer extends SvelteComponentTyped<
   TableContainerProps,
   Record<string, any>,
-  { default: {} }
+  { default: Record<string, never> }
 > {}

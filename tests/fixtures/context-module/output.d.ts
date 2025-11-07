@@ -20,8 +20,12 @@ export declare function b2(): () => {};
 
 export declare function b3(): () => false;
 
-export type ContextModuleProps = {};
+export type ContextModuleProps = Record<string, never>;
 
-export default class ContextModule extends SvelteComponentTyped<ContextModuleProps, Record<string, any>, {}> {
+export default class ContextModule extends SvelteComponentTyped<
+  ContextModuleProps,
+  Record<string, any>,
+  Record<string, never>
+> {
   a: string;
 }

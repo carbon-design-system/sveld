@@ -48,5 +48,5 @@ export type ModalFooterProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class ModalFooter extends SvelteComponentTyped<
   ModalFooterProps,
   Record<string, any>,
-  { default: {} }
+  { default: Record<string, never> }
 > {}

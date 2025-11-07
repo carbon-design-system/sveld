@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export type NotificationActionButtonProps = {};
+export type NotificationActionButtonProps = Record<string, never>;
 
 export default class NotificationActionButton extends SvelteComponentTyped<
   NotificationActionButtonProps,
@@ -10,5 +10,5 @@ export default class NotificationActionButton extends SvelteComponentTyped<
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
   },
-  { default: {} }
+  { default: Record<string, never> }
 > {}

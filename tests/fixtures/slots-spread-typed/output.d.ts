@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export type SlotsSpreadTypedProps = {};
+export type SlotsSpreadTypedProps = Record<string, never>;
 
 export default class SlotsSpreadTyped extends SvelteComponentTyped<
   SlotsSpreadTypedProps,

@@ -108,5 +108,5 @@ export type PaginationProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class Pagination extends SvelteComponentTyped<
   PaginationProps,
   { update: CustomEvent<{ pageSize: number; page: number }> },
-  {}
+  Record<string, never>
 > {}

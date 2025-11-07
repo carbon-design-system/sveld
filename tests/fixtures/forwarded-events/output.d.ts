@@ -1,6 +1,6 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export type ForwardedEventsProps = {};
+export type ForwardedEventsProps = Record<string, never>;
 
 export default class ForwardedEvents extends SvelteComponentTyped<
   ForwardedEventsProps,
@@ -10,5 +10,5 @@ export default class ForwardedEvents extends SvelteComponentTyped<
     blur: WindowEventMap["blur"];
     mouseover: WindowEventMap["mouseover"];
   },
-  { default: {} }
+  { default: Record<string, never> }
 > {}

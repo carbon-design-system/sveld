@@ -23,5 +23,5 @@ export type FilenameProps = {
 export default class Filename extends SvelteComponentTyped<
   FilenameProps,
   { click: WindowEventMap["click"]; keydown: WindowEventMap["keydown"] },
-  {}
+  Record<string, never>
 > {}
