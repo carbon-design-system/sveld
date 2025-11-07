@@ -10,6 +10,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add isAccessor field to API
 - update Markdown writer to generate a separate table for accessors -->
 
+## [0.23.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.23.0) - 2025-11-07
+
+**Breaking Changes**
+
+- change default slot name from "__default__" to `null`
+- replace `{}` type with `Record<string, never>` in TypeScript definitions for empty props and slots. This may cause type errors if you intersect or extend these types, as `Record<string, never>` disallows any properties while `{}` was more permissive
+
+**Features**
+
+- support `@property` tags for `@typedef`
+- support `setContext` API
+- support `@event` descriptions and `@property` notation
+
+**Fixes**
+
+- use literal keys instead of bracket notation in TypeScript definitions
+
 ## [0.22.5](https://github.com/carbon-design-system/sveld/releases/tag/v0.22.5) - 2025-11-07
 
 **Fixes**
