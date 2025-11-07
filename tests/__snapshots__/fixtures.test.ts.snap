@@ -125,6 +125,74 @@ exports[`fixtures (JSON) "generics-multiple/input.svelte" 1`] = `
 }"
 `;
 
+exports[`fixtures (JSON) "typedef-jsdoc-properties/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "user",
+      "kind": "let",
+      "description": "Represents a user in the system.",
+      "type": "User",
+      "value": "{ name: \\"John\\", email: \\"john@example.com\\", age: 30 }",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "config",
+      "kind": "let",
+      "description": "Configuration options for the component.",
+      "type": "ComponentConfig",
+      "value": "{ enabled: true, theme: \\"dark\\" }",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "simple",
+      "kind": "let",
+      "description": "Simple typedef without properties (backwards compatibility test).",
+      "type": "SimpleType",
+      "value": "{ id: 1, label: \\"Test\\" }",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{ /** The user's full name. */ name: string; /** The user's email address. */ email: string; /** The user's age in years. */ age: number; }",
+      "name": "User",
+      "description": "Represents a user in the system.",
+      "ts": "type User = { /** The user's full name. */ name: string; /** The user's email address. */ email: string; /** The user's age in years. */ age: number; }"
+    },
+    {
+      "type": "{ /** Whether the component is enabled. */ enabled: boolean; /** The component theme. */ theme: string; }",
+      "name": "ComponentConfig",
+      "description": "Configuration options for the component.",
+      "ts": "type ComponentConfig = { /** Whether the component is enabled. */ enabled: boolean; /** The component theme. */ theme: string; }"
+    },
+    {
+      "type": "{ id: number; label: string; }",
+      "name": "SimpleType",
+      "description": "Simple typedef without properties (backwards compatibility test).",
+      "ts": "interface SimpleType { id: number; label: string; }"
+    }
+  ],
+  "generics": null,
+  "contexts": []
+}"
+`;
+
 exports[`fixtures (JSON) "mixed-event-types/input.svelte" 1`] = `
 "{
   "props": [],
@@ -486,9 +554,9 @@ exports[`fixtures (JSON) "context-typedef/input.svelte" 1`] = `
   "events": [],
   "typedefs": [
     {
-      "type": "object",
+      "type": "{ id: string; label: string; disabled: boolean; }",
       "name": "TabData",
-      "ts": "type TabData = object"
+      "ts": "type TabData = { id: string; label: string; disabled: boolean; }"
     }
   ],
   "generics": null,
@@ -864,9 +932,9 @@ exports[`fixtures (JSON) "context-imported-type/input.svelte" 1`] = `
   "events": [],
   "typedefs": [
     {
-      "type": "object",
+      "type": "{ open: () => void; close: () => void; }",
       "name": "ModalAPI",
-      "ts": "type ModalAPI = object"
+      "ts": "type ModalAPI = { open: () => void; close: () => void; }"
     }
   ],
   "generics": null,
@@ -1960,6 +2028,53 @@ export default class GenericsMultiple<
 "
 `;
 
+exports[`fixtures (TypeScript) "typedef-jsdoc-properties/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export type User = {
+  /** The user's full name. */ name: string;
+  /** The user's email address. */ email: string;
+  /** The user's age in years. */ age: number;
+};
+
+export type ComponentConfig = {
+  /** Whether the component is enabled. */ enabled: boolean;
+  /** The component theme. */ theme: string;
+};
+
+export interface SimpleType {
+  id: number;
+  label: string;
+}
+
+export type TypedefJsdocPropertiesProps = {
+  /**
+   * Represents a user in the system.
+   * @default { name: "John", email: "john@example.com", age: 30 }
+   */
+  user?: User;
+
+  /**
+   * Configuration options for the component.
+   * @default { enabled: true, theme: "dark" }
+   */
+  config?: ComponentConfig;
+
+  /**
+   * Simple typedef without properties (backwards compatibility test).
+   * @default { id: 1, label: "Test" }
+   */
+  simple?: SimpleType;
+};
+
+export default class TypedefJsdocProperties extends SvelteComponentTyped<
+  TypedefJsdocPropertiesProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "mixed-event-types/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
@@ -2148,7 +2263,7 @@ export default class TypedSlots extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "context-typedef/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export type TabData = object;
+export type TabData = { id: string; label: string; disabled: boolean };
 export type TabsContext = {
   /** Register a new tab */
   addTab: (tab: TabData) => void;
@@ -2359,7 +2474,7 @@ export default class Required extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "context-imported-type/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export type ModalAPI = object;
+export type ModalAPI = { open: () => void; close: () => void };
 export type ModalContext = {
   /** Modal API object */
   modalAPI: ModalAPI;
