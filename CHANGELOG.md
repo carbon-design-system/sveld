@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add isAccessor field to API
 - update Markdown writer to generate a separate table for accessors -->
 
+## [0.22.5](https://github.com/carbon-design-system/sveld/releases/tag/v0.22.5) - 2025-11-07
+
+**Fixes**
+
+- restore slot props type inference
+- prioritize explicit `@event` detail types over defaults
+
 ## [0.22.4](https://github.com/carbon-design-system/sveld/releases/tag/v0.22.4) - 2025-11-07
 
 **Fixes**
