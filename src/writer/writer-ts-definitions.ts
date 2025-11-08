@@ -38,6 +38,11 @@ export function getContextDefs(def: Pick<ComponentDocApi, "contexts">) {
 
       const contextComment = context.description ? `/**\n * ${context.description}\n */\n` : "";
 
+      // Use Record<string, never> for empty context objects instead of {}
+      if (context.properties.length === 0) {
+        return `${contextComment}export type ${context.typeName} = Record<string, never>;`;
+      }
+
       return `${contextComment}export type ${context.typeName} = {\n  ${props}\n};`;
     })
     .join("\n\n");
