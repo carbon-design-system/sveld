@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add isAccessor field to API
 - update Markdown writer to generate a separate table for accessors -->
 
+## [0.23.2](https://github.com/carbon-design-system/sveld/releases/tag/v0.23.2) - 2025-11-08
+
+**Fixes**
+
+- support optional properties in `@property` tags for typedefs and `@event` tags
+
 ## [0.23.1](https://github.com/carbon-design-system/sveld/releases/tag/v0.23.1) - 2025-11-07
 
 **Fixes**
