@@ -1,6 +1,6 @@
 import type { ParsedComponent } from "../src/ComponentParser";
 import type { ComponentDocApi } from "../src/rollup-plugin";
-import { formatTsProps, getTypeDefs, writeTsDefinition } from "../src/writer/writer-ts-definitions";
+import { formatTsProps, getContextDefs, getTypeDefs, writeTsDefinition } from "../src/writer/writer-ts-definitions";
 
 describe("writerTsDefinition", () => {
   test("writeTsDefinition", () => {
@@ -125,5 +125,49 @@ describe("writerTsDefinition", () => {
     };
 
     expect(writeTsDefinition(component_api)).toMatchSnapshot();
+  });
+
+  test("getContextDefs with empty context", () => {
+    // Empty context object should use Record<string, never> instead of {}
+    expect(
+      getContextDefs({
+        contexts: [
+          {
+            key: "BreadcrumbItem",
+            typeName: "BreadcrumbItemContext",
+            properties: [],
+          },
+        ],
+      }),
+    ).toEqual("export type BreadcrumbItemContext = Record<string, never>;");
+  });
+
+  test("getContextDefs with properties", () => {
+    // Context with properties should still use object literal syntax
+    expect(
+      getContextDefs({
+        contexts: [
+          {
+            key: "simple-modal",
+            typeName: "SimpleModalContext",
+            properties: [
+              {
+                name: "open",
+                type: "(component: any, props?: any) => void",
+                description: "Open the modal",
+                optional: false,
+              },
+              {
+                name: "close",
+                type: "() => void",
+                optional: false,
+              },
+            ],
+          },
+        ],
+      }),
+    ).toEqual(
+      "export type SimpleModalContext = {\n  /** Open the modal */\n  open: (component: any, props?: any) => void;\n  close: () => void;\n};",
+    );
   });
 });

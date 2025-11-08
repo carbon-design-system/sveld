@@ -1,0 +1,15 @@
+{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "BreadcrumbItem",
+      "typeName": "BreadcrumbItemContext",
+      "properties": []
+    }
+  ]
+}
