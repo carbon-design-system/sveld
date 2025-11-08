@@ -6,6 +6,8 @@
    * @property {string} name - The user's full name.
    * @property {string} email - The user's email address.
    * @property {number} age - The user's age in years.
+   * @property {string} [nickname] - Optional nickname.
+   * @property {string} [phone=555-0000] - Optional phone with default.
    */
 
   /**
@@ -13,6 +15,7 @@
    * @typedef {object} ComponentConfig
    * @property {boolean} enabled - Whether the component is enabled.
    * @property {string} theme - The component theme.
+   * @property {number} [timeout=5000] - Optional timeout in milliseconds.
    */
 
   /**

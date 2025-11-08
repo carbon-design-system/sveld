@@ -9,6 +9,8 @@ export default class DispatchedEventsJsdocProperties extends SvelteComponentType
     snowball: CustomEvent<{
       /** Indicates whether the snowball is tightly packed. */ isPacked: boolean;
       /** The speed of the snowball in mph. */ speed: number;
+      /** Optional color of the snowball. */ color?: string;
+      /** Optional density with default value. @default 0.9 */ density?: number;
     }>;
     /** Will be fired if value has been changed */
     change: CustomEvent<null>;

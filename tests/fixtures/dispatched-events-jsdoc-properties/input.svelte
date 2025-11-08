@@ -6,6 +6,8 @@
    * @type {object}
    * @property {boolean} isPacked - Indicates whether the snowball is tightly packed.
    * @property {number} speed - The speed of the snowball in mph.
+   * @property {string} [color] - Optional color of the snowball.
+   * @property {number} [density=0.9] - Optional density with default value.
    */
 
   /**

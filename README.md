@@ -413,6 +413,55 @@ export type ComponentProps = {
 };
 ```
 
+#### Optional properties and default values
+
+Following JSDoc standards, use square brackets to mark properties as optional. You can also specify default values using the `[propertyName=defaultValue]` syntax.
+
+Signature:
+
+```js
+/**
+ * @typedef {object} TypeName
+ * @property {Type} [optionalProperty] - Optional property description
+ * @property {Type} [propertyWithDefault=defaultValue] - Property with default value
+ */
+```
+
+Example:
+
+```js
+/**
+ * Configuration options for the component
+ * @typedef {object} ComponentConfig
+ * @property {boolean} enabled - Whether the component is enabled
+ * @property {string} theme - The component theme
+ * @property {number} [timeout=5000] - Optional timeout in milliseconds
+ * @property {boolean} [debug] - Optional debug mode flag
+ */
+
+/** @type {ComponentConfig} */
+export let config = { enabled: true, theme: "dark" };
+```
+
+Output:
+
+```ts
+export type ComponentConfig = {
+  /** Whether the component is enabled */ enabled: boolean;
+  /** The component theme */ theme: string;
+  /** Optional timeout in milliseconds @default 5000 */ timeout?: number;
+  /** Optional debug mode flag */ debug?: boolean;
+};
+
+export type ComponentProps = {
+  /**
+   * Configuration options for the component
+   * @default { enabled: true, theme: "dark" }
+   */
+  config?: ComponentConfig;
+};
+```
+
 > **Note:** The inline syntax `@typedef {{ name: string }} User` continues to work for backwards compatibility.
 
 ### `@slot`
@@ -556,6 +605,54 @@ export default class Component extends SvelteComponentTyped<
       /** The user's name */ name: string;
       /** The user's email address */ email: string;
       /** Whether the user opted into the newsletter */ newsletter: boolean;
+    }>;
+  },
+  Record<string, never>
+> {}
+```
+
+#### Optional properties in event details
+
+Just like with typedefs, you can mark event detail properties as optional using square brackets. This is useful when some properties may not always be included in the event payload.
+
+Example:
+
+```js
+/**
+ * Snowball event fired when throwing a snowball
+ *
+ * @event snowball
+ * @type {object}
+ * @property {boolean} isPacked - Indicates whether the snowball is tightly packed
+ * @property {number} speed - The speed of the snowball in mph
+ * @property {string} [color] - Optional color of the snowball
+ * @property {number} [density=0.9] - Optional density with default value
+ */
+
+import { createEventDispatcher } from "svelte";
+
+const dispatch = createEventDispatcher();
+
+function throwSnowball() {
+  dispatch("snowball", {
+    isPacked: true,
+    speed: 50
+  });
+}
+```
+
+Output:
+
+```ts
+export default class Component extends SvelteComponentTyped<
+  ComponentProps,
+  {
+    /** Snowball event fired when throwing a snowball */
+    snowball: CustomEvent<{
+      /** Indicates whether the snowball is tightly packed */ isPacked: boolean;
+      /** The speed of the snowball in mph */ speed: number;
+      /** Optional color of the snowball */ color?: string;
+      /** Optional density with default value @default 0.9 */ density?: number;
     }>;
   },
   Record<string, never>
