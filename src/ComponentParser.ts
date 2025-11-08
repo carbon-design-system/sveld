@@ -312,12 +312,24 @@ export default class ComponentParser {
       let currentEventName: string | undefined;
       let currentEventType: string | undefined;
       let currentEventDescription: string | undefined;
-      const eventProperties: Array<{ name: string; type: string; description?: string }> = [];
+      const eventProperties: Array<{
+        name: string;
+        type: string;
+        description?: string;
+        optional?: boolean;
+        default?: string;
+      }> = [];
 
       let currentTypedefName: string | undefined;
       let currentTypedefType: string | undefined;
       let currentTypedefDescription: string | undefined;
-      const typedefProperties: Array<{ name: string; type: string; description?: string }> = [];
+      const typedefProperties: Array<{
+        name: string;
+        type: string;
+        description?: string;
+        optional?: boolean;
+        default?: string;
+      }> = [];
 
       const finalizeEvent = () => {
         if (currentEventName !== undefined) {
@@ -377,7 +389,7 @@ export default class ComponentParser {
         }
       };
 
-      tags.forEach(({ tag, type: tagType, name, description }) => {
+      tags.forEach(({ tag, type: tagType, name, description, optional, default: defaultValue }) => {
         const type = this.aliasType(tagType);
 
         switch (tag) {
@@ -416,22 +428,23 @@ export default class ComponentParser {
               currentEventType = type;
             }
             break;
-          case "property":
+          case "property": {
             // Collect properties for the current event or typedef
+            const propertyData = {
+              name,
+              type,
+              description: description?.replace(/^-\s*/, "").trim(),
+              optional: optional || false,
+              default: defaultValue,
+            };
+
             if (currentEventName !== undefined) {
-              eventProperties.push({
-                name,
-                type,
-                description: description?.replace(/^-\s*/, "").trim(),
-              });
+              eventProperties.push(propertyData);
             } else if (currentTypedefName !== undefined) {
-              typedefProperties.push({
-                name,
-                type,
-                description: description?.replace(/^-\s*/, "").trim(),
-              });
+              typedefProperties.push(propertyData);
             }
             break;
+          }
           case "typedef": {
             // Finalize any previous typedef being built
             finalizeTypedef();
@@ -458,17 +471,27 @@ export default class ComponentParser {
   }
 
   private buildEventDetailFromProperties(
-    properties: Array<{ name: string; type: string; description?: string }>,
+    properties: Array<{ name: string; type: string; description?: string; optional?: boolean; default?: string }>,
   ): string {
     if (properties.length === 0) return "null";
 
     // Build inline object type with property descriptions as JSDoc comments
     const props = properties
-      .map(({ name, type, description }) => {
-        if (description) {
-          return `/** ${description} */ ${name}: ${type};`;
+      .map(({ name, type, description, optional, default: defaultValue }) => {
+        const optionalMarker = optional ? "?" : "";
+        let comment = description || "";
+
+        // Add default value to description if present
+        if (defaultValue && comment) {
+          comment = `${comment} @default ${defaultValue}`;
+        } else if (defaultValue) {
+          comment = `@default ${defaultValue}`;
         }
-        return `${name}: ${type};`;
+
+        if (comment) {
+          return `/** ${comment} */ ${name}${optionalMarker}: ${type};`;
+        }
+        return `${name}${optionalMarker}: ${type};`;
       })
       .join(" ");
 

@@ -125,6 +125,24 @@ exports[`fixtures (JSON) "generics-multiple/input.svelte" 1`] = `
 }"
 `;
 
+exports[`fixtures (JSON) "context-empty/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "BreadcrumbItem",
+      "typeName": "BreadcrumbItemContext",
+      "properties": []
+    }
+  ]
+}"
+`;
+
 exports[`fixtures (JSON) "typedef-jsdoc-properties/input.svelte" 1`] = `
 "{
   "props": [
@@ -170,16 +188,16 @@ exports[`fixtures (JSON) "typedef-jsdoc-properties/input.svelte" 1`] = `
   "events": [],
   "typedefs": [
     {
-      "type": "{ /** The user's full name. */ name: string; /** The user's email address. */ email: string; /** The user's age in years. */ age: number; }",
+      "type": "{ /** The user's full name. */ name: string; /** The user's email address. */ email: string; /** The user's age in years. */ age: number; /** Optional nickname. */ nickname?: string; /** Optional phone with default. @default 555-0000 */ phone?: string; }",
       "name": "User",
       "description": "Represents a user in the system.",
-      "ts": "type User = { /** The user's full name. */ name: string; /** The user's email address. */ email: string; /** The user's age in years. */ age: number; }"
+      "ts": "type User = { /** The user's full name. */ name: string; /** The user's email address. */ email: string; /** The user's age in years. */ age: number; /** Optional nickname. */ nickname?: string; /** Optional phone with default. @default 555-0000 */ phone?: string; }"
     },
     {
-      "type": "{ /** Whether the component is enabled. */ enabled: boolean; /** The component theme. */ theme: string; }",
+      "type": "{ /** Whether the component is enabled. */ enabled: boolean; /** The component theme. */ theme: string; /** Optional timeout in milliseconds. @default 5000 */ timeout?: number; }",
       "name": "ComponentConfig",
       "description": "Configuration options for the component.",
-      "ts": "type ComponentConfig = { /** Whether the component is enabled. */ enabled: boolean; /** The component theme. */ theme: string; }"
+      "ts": "type ComponentConfig = { /** Whether the component is enabled. */ enabled: boolean; /** The component theme. */ theme: string; /** Optional timeout in milliseconds. @default 5000 */ timeout?: number; }"
     },
     {
       "type": "{ id: number; label: string; }",
@@ -554,9 +572,9 @@ exports[`fixtures (JSON) "context-typedef/input.svelte" 1`] = `
   "events": [],
   "typedefs": [
     {
-      "type": "{ id: string; label: string; disabled: boolean; }",
+      "type": "{ id: string; label: string; disabled?: boolean; }",
       "name": "TabData",
-      "ts": "type TabData = { id: string; label: string; disabled: boolean; }"
+      "ts": "type TabData = { id: string; label: string; disabled?: boolean; }"
     }
   ],
   "generics": null,
@@ -1711,7 +1729,7 @@ exports[`fixtures (JSON) "dispatched-events-jsdoc-properties/input.svelte" 1`] =
     {
       "type": "dispatched",
       "name": "snowball",
-      "detail": "{ /** Indicates whether the snowball is tightly packed. */ isPacked: boolean; /** The speed of the snowball in mph. */ speed: number; }",
+      "detail": "{ /** Indicates whether the snowball is tightly packed. */ isPacked: boolean; /** The speed of the snowball in mph. */ speed: number; /** Optional color of the snowball. */ color?: string; /** Optional density with default value. @default 0.9 */ density?: number; }",
       "description": "Snowball event fired when throwing a snowball."
     },
     {
@@ -2028,6 +2046,21 @@ export default class GenericsMultiple<
 "
 `;
 
+exports[`fixtures (TypeScript) "context-empty/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export type BreadcrumbItemContext = Record<string, never>;
+
+export type ContextEmptyProps = Record<string, never>;
+
+export default class ContextEmpty extends SvelteComponentTyped<
+  ContextEmptyProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "typedef-jsdoc-properties/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
@@ -2035,11 +2068,14 @@ export type User = {
   /** The user's full name. */ name: string;
   /** The user's email address. */ email: string;
   /** The user's age in years. */ age: number;
+  /** Optional nickname. */ nickname?: string;
+  /** Optional phone with default. @default 555-0000 */ phone?: string;
 };
 
 export type ComponentConfig = {
   /** Whether the component is enabled. */ enabled: boolean;
   /** The component theme. */ theme: string;
+  /** Optional timeout in milliseconds. @default 5000 */ timeout?: number;
 };
 
 export interface SimpleType {
@@ -2263,7 +2299,7 @@ export default class TypedSlots extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "context-typedef/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export type TabData = { id: string; label: string; disabled: boolean };
+export type TabData = { id: string; label: string; disabled?: boolean };
 export type TabsContext = {
   /** Register a new tab */
   addTab: (tab: TabData) => void;
@@ -2937,6 +2973,8 @@ export default class DispatchedEventsJsdocProperties extends SvelteComponentType
     snowball: CustomEvent<{
       /** Indicates whether the snowball is tightly packed. */ isPacked: boolean;
       /** The speed of the snowball in mph. */ speed: number;
+      /** Optional color of the snowball. */ color?: string;
+      /** Optional density with default value. @default 0.9 */ density?: number;
     }>;
     /** Will be fired if value has been changed */
     change: CustomEvent<null>;
@@ -3073,39 +3111,6 @@ export default class Generics<Row extends DataTableRow = DataTableRow> extends S
   GenericsProps<Row>,
   Record<string, any>,
   { default: { headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> } }
-> {}
-"
-`;
-
-exports[`fixtures (JSON) "context-empty/input.svelte" 1`] = `
-"{
-  "props": [],
-  "moduleExports": [],
-  "slots": [],
-  "events": [],
-  "typedefs": [],
-  "generics": null,
-  "contexts": [
-    {
-      "key": "BreadcrumbItem",
-      "typeName": "BreadcrumbItemContext",
-      "properties": []
-    }
-  ]
-}"
-`;
-
-exports[`fixtures (TypeScript) "context-empty/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
-
-export type BreadcrumbItemContext = Record<string, never>;
-
-export type ContextEmptyProps = Record<string, never>;
-
-export default class ContextEmpty extends SvelteComponentTyped<
-  ContextEmptyProps,
-  Record<string, any>,
-  Record<string, never>
 > {}
 "
 `;
