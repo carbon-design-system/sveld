@@ -824,7 +824,6 @@ export default class ComponentParser {
               type: declaration_type,
               id,
               init,
-              body,
             } = node.declaration?.declarations ? node.declaration.declarations[0] : node.declaration;
 
             const prop_name = id.name;
@@ -853,10 +852,10 @@ export default class ComponentParser {
                 }
 
                 // For arrow functions, use a generic function type instead of the implementation
-                // The implementation is kept in `value` for JSDoc @default comments
-                // Users can override with @type JSDoc annotation for proper typing
+                // Don't store the implementation in value - it clutters documentation
                 if (init.type === "ArrowFunctionExpression") {
                   type = "(...args: any[]) => any";
+                  value = undefined;
                 }
               } else {
                 if (init.type === "UnaryExpression") {
@@ -874,7 +873,9 @@ export default class ComponentParser {
             }
 
             if (declaration_type === "FunctionDeclaration") {
-              value = `() => ${this.sourceAtPos(body.start, body.end)?.replace(NEWLINE_CR_REGEX, " ")}`;
+              // Don't store function body in value - it clutters documentation
+              // The type signature is what matters for API docs
+              value = undefined;
               type = "() => any";
               kind = "function";
               isFunction = true;
@@ -980,7 +981,6 @@ export default class ComponentParser {
             type: declaration_type,
             id,
             init,
-            body,
           } = node.declaration.declarations ? node.declaration.declarations[0] : node.declaration;
 
           prop_name ??= id.name;
@@ -1011,10 +1011,10 @@ export default class ComponentParser {
               }
 
               // For arrow functions, use a generic function type instead of the implementation
-              // The implementation is kept in `value` for JSDoc @default comments
-              // Users can override with @type JSDoc annotation for proper typing
+              // Don't store the implementation in value - it clutters documentation
               if (init.type === "ArrowFunctionExpression") {
                 type = "(...args: any[]) => any";
+                value = undefined;
               }
             } else {
               if (init.type === "UnaryExpression") {
@@ -1032,7 +1032,9 @@ export default class ComponentParser {
           }
 
           if (declaration_type === "FunctionDeclaration") {
-            value = `() => ${this.sourceAtPos(body.start, body.end)?.replace(NEWLINE_CR_REGEX, " ")}`;
+            // Don't store function body in value - it clutters documentation
+            // The type signature is what matters for API docs
+            value = undefined;
             type = "() => any";
             kind = "function";
             isFunction = true;

@@ -25,7 +25,7 @@ function escapeHtml(text: string) {
 }
 
 function formatPropValue(value: string | undefined) {
-  if (value === undefined) return `<code>${value}</code>`;
+  if (value === undefined) return MD_TYPE_UNDEFINED;
   return `<code>${value.replace(BACKTICK_REGEX, "\\`").replace(PIPE_REGEX, "&#124;")}</code>`;
 }
 

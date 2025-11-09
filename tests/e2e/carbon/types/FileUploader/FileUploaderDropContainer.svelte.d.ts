@@ -19,7 +19,6 @@ type $Props = {
   /**
    * Override the default behavior of validating uploaded files
    * The default behavior does not validate files
-   * @default (files) => files
    */
   validateFiles?: (files: FileList) => FileList;
 

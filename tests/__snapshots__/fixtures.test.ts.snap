@@ -1,108 +1,5 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`fixtures (JSON) "non-literal-defaults/input.svelte" 1`] = `
-"{
-  "props": [
-    {
-      "name": "position",
-      "kind": "let",
-      "description": "Position of the element",
-      "type": "Position",
-      "value": "TOP_LEFT",
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false
-    },
-    {
-      "name": "theme",
-      "kind": "let",
-      "description": "Theme mode",
-      "value": "POSITION_DEFAULT",
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false
-    },
-    {
-      "name": "maxValue",
-      "kind": "let",
-      "description": "Numeric constant with Infinity",
-      "value": "Infinity",
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false
-    },
-    {
-      "name": "handler",
-      "kind": "let",
-      "description": "Optional handler with undefined",
-      "value": "undefined",
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false
-    }
-  ],
-  "moduleExports": [],
-  "slots": [],
-  "events": [],
-  "typedefs": [
-    {
-      "type": "\\"top-left\\" | \\"top-right\\" | \\"bottom-left\\" | \\"bottom-right\\"",
-      "name": "Position",
-      "ts": "type Position = \\"top-left\\" | \\"top-right\\" | \\"bottom-left\\" | \\"bottom-right\\""
-    }
-  ],
-  "generics": null,
-  "contexts": []
-}"
-`;
-
-exports[`fixtures (TypeScript) "non-literal-defaults/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
-
-export type Position = "top-left" | "top-right" | "bottom-left" | "bottom-right";
-
-export type NonLiteralDefaultsProps = {
-  /**
-   * Position of the element
-   * @default TOP_LEFT
-   */
-  position?: Position;
-
-  /**
-   * Theme mode
-   * @default POSITION_DEFAULT
-   */
-  theme?: undefined;
-
-  /**
-   * Numeric constant with Infinity
-   * @default Infinity
-   */
-  maxValue?: undefined;
-
-  /**
-   * Optional handler with undefined
-   * @default undefined
-   */
-  handler?: undefined;
-};
-
-export default class NonLiteralDefaults extends SvelteComponentTyped<
-  NonLiteralDefaultsProps,
-  Record<string, any>,
-  Record<string, never>
-> {}
-"
-`;
-
 exports[`fixtures (JSON) "svg-props/input.svelte" 1`] = `
 "{
   "props": [],
@@ -199,7 +96,6 @@ exports[`fixtures (JSON) "module-reexport-mixed/input.svelte" 1`] = `
       "kind": "const",
       "description": "A local utility function for formatting",
       "type": "(value: any) => string",
-      "value": "(value) => String(value)",
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -223,7 +119,6 @@ exports[`fixtures (JSON) "module-reexport-mixed/input.svelte" 1`] = `
       "kind": "function",
       "description": "Logger function",
       "type": "(msg: string) => void",
-      "value": "() => {     console.log(msg);   }",
       "isFunction": true,
       "isFunctionDeclaration": true,
       "isRequired": false,
@@ -519,7 +414,6 @@ exports[`fixtures (JSON) "function-declaration/input.svelte" 1`] = `
       "name": "fnA",
       "kind": "let",
       "type": "(...args: any[]) => any",
-      "value": "() => {}",
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -530,7 +424,6 @@ exports[`fixtures (JSON) "function-declaration/input.svelte" 1`] = `
       "name": "fnB",
       "kind": "const",
       "type": "(...args: any[]) => any",
-      "value": "() => {}",
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -541,7 +434,6 @@ exports[`fixtures (JSON) "function-declaration/input.svelte" 1`] = `
       "name": "add",
       "kind": "function",
       "type": "() => any",
-      "value": "() => {     return a + b;   }",
       "isFunction": true,
       "isFunctionDeclaration": true,
       "isRequired": false,
@@ -553,7 +445,6 @@ exports[`fixtures (JSON) "function-declaration/input.svelte" 1`] = `
       "kind": "function",
       "description": "Multiplies two numbers",
       "type": "(a: number, b: number) => number",
-      "value": "() => {     return a * b;   }",
       "isFunction": true,
       "isFunctionDeclaration": true,
       "isRequired": false,
@@ -702,7 +593,6 @@ exports[`fixtures (JSON) "infer-basic/input.svelte" 1`] = `
       "name": "fn",
       "kind": "function",
       "type": "() => any",
-      "value": "() => {     localBool = !localBool;   }",
       "isFunction": true,
       "isFunctionDeclaration": true,
       "isRequired": false,
@@ -1533,7 +1423,6 @@ exports[`fixtures (JSON) "infer-with-types/input.svelte" 1`] = `
       "name": "fn",
       "kind": "function",
       "type": "() => any",
-      "value": "() => {     localBool = !localBool;   }",
       "isFunction": true,
       "isFunctionDeclaration": true,
       "isRequired": false,
@@ -1552,6 +1441,70 @@ exports[`fixtures (JSON) "infer-with-types/input.svelte" 1`] = `
   ],
   "events": [],
   "typedefs": [],
+  "generics": null,
+  "contexts": []
+}"
+`;
+
+exports[`fixtures (JSON) "non-literal-defaults/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "position",
+      "kind": "let",
+      "description": "Position of the element",
+      "type": "Position",
+      "value": "TOP_LEFT",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "theme",
+      "kind": "let",
+      "description": "Theme mode",
+      "value": "POSITION_DEFAULT",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "maxValue",
+      "kind": "let",
+      "description": "Numeric constant with Infinity",
+      "value": "Infinity",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "handler",
+      "kind": "let",
+      "description": "Optional handler with undefined",
+      "value": "undefined",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "\\"top-left\\" | \\"top-right\\" | \\"bottom-left\\" | \\"bottom-right\\"",
+      "name": "Position",
+      "ts": "type Position = \\"top-left\\" | \\"top-right\\" | \\"bottom-left\\" | \\"bottom-right\\""
+    }
+  ],
   "generics": null,
   "contexts": []
 }"
@@ -1632,7 +1585,6 @@ exports[`fixtures (JSON) "context-module/input.svelte" 1`] = `
       "kind": "function",
       "description": "Log something",
       "type": "(message: string) => void",
-      "value": "() => {     console.log(message);   }",
       "isFunction": true,
       "isFunctionDeclaration": true,
       "isRequired": false,
@@ -1643,7 +1595,6 @@ exports[`fixtures (JSON) "context-module/input.svelte" 1`] = `
       "name": "b",
       "kind": "const",
       "type": "(...args: any[]) => any",
-      "value": "() => {}",
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -1654,7 +1605,6 @@ exports[`fixtures (JSON) "context-module/input.svelte" 1`] = `
       "name": "b2",
       "kind": "const",
       "type": "(...args: any[]) => any",
-      "value": "() => () => {}",
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -1665,7 +1615,6 @@ exports[`fixtures (JSON) "context-module/input.svelte" 1`] = `
       "name": "b3",
       "kind": "const",
       "type": "() => () => false",
-      "value": "() => () => false",
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -1673,6 +1622,30 @@ exports[`fixtures (JSON) "context-module/input.svelte" 1`] = `
       "reactive": false
     }
   ],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}"
+`;
+
+exports[`fixtures (JSON) "html-in-template-string/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "message",
+      "kind": "let",
+      "type": "string",
+      "value": "\\"test\\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
   "slots": [],
   "events": [],
   "typedefs": [],
@@ -2572,9 +2545,6 @@ exports[`fixtures (TypeScript) "function-declaration/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
 export type FunctionDeclarationProps = {
-  /**
-   * @default () => {}
-   */
   fnA?: (...args: any[]) => any;
 };
 
@@ -3136,6 +3106,45 @@ export default class InferWithTypes extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "non-literal-defaults/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export type Position = "top-left" | "top-right" | "bottom-left" | "bottom-right";
+
+export type NonLiteralDefaultsProps = {
+  /**
+   * Position of the element
+   * @default TOP_LEFT
+   */
+  position?: Position;
+
+  /**
+   * Theme mode
+   * @default POSITION_DEFAULT
+   */
+  theme?: undefined;
+
+  /**
+   * Numeric constant with Infinity
+   * @default Infinity
+   */
+  maxValue?: undefined;
+
+  /**
+   * Optional handler with undefined
+   * @default undefined
+   */
+  handler?: undefined;
+};
+
+export default class NonLiteralDefaults extends SvelteComponentTyped<
+  NonLiteralDefaultsProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "forwarded-native-with-detail/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
@@ -3183,6 +3192,24 @@ export default class ContextModule extends SvelteComponentTyped<
 > {
   a: string;
 }
+"
+`;
+
+exports[`fixtures (TypeScript) "html-in-template-string/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export type HtmlInTemplateStringProps = {
+  /**
+   * @default "test"
+   */
+  message?: string;
+};
+
+export default class HtmlInTemplateString extends SvelteComponentTyped<
+  HtmlInTemplateStringProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
 "
 `;
 
@@ -3593,48 +3620,6 @@ export default class Generics<Row extends DataTableRow = DataTableRow> extends S
   GenericsProps<Row>,
   Record<string, any>,
   { default: { headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> } }
-> {}
-"
-`;
-
-exports[`fixtures (JSON) "html-in-template-string/input.svelte" 1`] = `
-"{
-  "props": [
-    {
-      "name": "message",
-      "kind": "let",
-      "type": "string",
-      "value": "\\"test\\"",
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false
-    }
-  ],
-  "moduleExports": [],
-  "slots": [],
-  "events": [],
-  "typedefs": [],
-  "generics": null,
-  "contexts": []
-}"
-`;
-
-exports[`fixtures (TypeScript) "html-in-template-string/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
-
-export type HtmlInTemplateStringProps = {
-  /**
-   * @default "test"
-   */
-  message?: string;
-};
-
-export default class HtmlInTemplateString extends SvelteComponentTyped<
-  HtmlInTemplateStringProps,
-  Record<string, any>,
-  Record<string, never>
 > {}
 "
 `;

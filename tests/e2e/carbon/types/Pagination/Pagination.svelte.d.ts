@@ -42,13 +42,11 @@ type $Props = {
 
   /**
    * Override the item text
-   * @default (min, max) => `${min}–${max} items`
    */
   itemText?: (min: number, max: number) => string;
 
   /**
    * Override the item range text
-   * @default (min, max, total) => `${min}–${max} of ${total} items`
    */
   itemRangeText?: (min: number, max: number, total: number) => string;
 
@@ -84,13 +82,11 @@ type $Props = {
 
   /**
    * Override the page text
-   * @default (page) => `page ${page}`
    */
   pageText?: (page: number) => string;
 
   /**
    * Override the page range text
-   * @default (current, total) => `of ${total} page${total === 1 ? "" : "s"}`
    */
   pageRangeText?: (current: number, total: number) => string;
 

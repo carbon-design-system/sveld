@@ -31,7 +31,6 @@
           "name": "print",
           "kind": "function",
           "type": "() => any",
-          "value": "() => {     console.log(0);   }",
           "isFunction": true,
           "isFunctionDeclaration": true,
           "isRequired": false,

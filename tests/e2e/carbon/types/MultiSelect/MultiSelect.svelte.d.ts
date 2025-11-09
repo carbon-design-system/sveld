@@ -24,7 +24,6 @@ type $Props = {
 
   /**
    * Override the display of a multiselect item
-   * @default (item) => item.text || item.id
    */
   itemToString?: (item: MultiSelectItem) => string;
 
@@ -73,7 +72,6 @@ type $Props = {
   /**
    * Override the filtering logic
    * The default filtering is an exact string comparison
-   * @default (item, value) => item.text.toLowerCase().includes(value.toLowerCase())
    */
   filterItem?: (item: MultiSelectItem, value: string) => string;
 
@@ -104,7 +102,6 @@ type $Props = {
   /**
    * Override the sorting logic
    * The default sorting compare the item text value
-   * @default (a, b) => a.text.localeCompare(b.text, locale, { numeric: true })
    */
   sortItem?:
     | ((a: MultiSelectItem, b: MultiSelectItem) => MultiSelectItem)
