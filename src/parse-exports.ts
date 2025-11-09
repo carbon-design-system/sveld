@@ -2,6 +2,7 @@ import { lstatSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { type Node, parse } from "acorn";
 import { normalizeSeparators } from "./path";
+import { resolvePathAlias, resolvePathAliasAbsolute } from "./resolve-alias";
 
 interface NodeImportDeclaration extends Node {
   type: "ImportDeclaration";
@@ -63,7 +64,8 @@ export function parseExports(source: string, dir: string) {
     } else if (node.type === "ExportAllDeclaration") {
       if (!node.source) continue;
 
-      let file_path = resolve(dir, node.source.value);
+      const resolvedSource = resolvePathAliasAbsolute(node.source.value, dir);
+      let file_path = resolve(dir, resolvedSource);
 
       if (!lstatSync(file_path).isFile()) {
         const files = readdirSync(file_path);
@@ -96,11 +98,11 @@ export function parseExports(source: string, dir: string) {
           }
 
           if (!exports_by_identifier[id].source) {
-            exports_by_identifier[id].source = node.source?.value ?? "";
+            exports_by_identifier[id].source = resolvePathAlias(node.source?.value ?? "", dir);
           }
         } else {
           exports_by_identifier[id] = {
-            source: node.source?.value ?? "",
+            source: resolvePathAlias(node.source?.value ?? "", dir),
             default: id === "default",
           };
         }
@@ -110,11 +112,11 @@ export function parseExports(source: string, dir: string) {
 
       if (id in exports_by_identifier) {
         if (!exports_by_identifier[id].source) {
-          exports_by_identifier[id].source = node.source?.value ?? "";
+          exports_by_identifier[id].source = resolvePathAlias(node.source?.value ?? "", dir);
         }
       } else {
         exports_by_identifier[id] = {
-          source: node.source?.value ?? "",
+          source: resolvePathAlias(node.source?.value ?? "", dir),
           default: id === "default",
         };
       }

@@ -1,0 +1,6 @@
+{
+  "name": "path-aliases-test",
+  "version": "1.0.0",
+  "svelte": "src/index.js",
+  "type": "module"
+}
