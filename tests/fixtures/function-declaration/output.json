@@ -3,7 +3,7 @@
     {
       "name": "fnA",
       "kind": "let",
-      "type": "() => {}",
+      "type": "(...args: any[]) => any",
       "value": "() => {}",
       "isFunction": true,
       "isFunctionDeclaration": false,
@@ -14,7 +14,7 @@
     {
       "name": "fnB",
       "kind": "const",
-      "type": "() => {}",
+      "type": "(...args: any[]) => any",
       "value": "() => {}",
       "isFunction": true,
       "isFunctionDeclaration": false,

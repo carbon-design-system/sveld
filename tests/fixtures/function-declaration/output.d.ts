@@ -4,7 +4,7 @@ export type FunctionDeclarationProps = {
   /**
    * @default () => {}
    */
-  fnA?: () => {};
+  fnA?: (...args: any[]) => any;
 };
 
 export default class FunctionDeclaration extends SvelteComponentTyped<
@@ -12,7 +12,7 @@ export default class FunctionDeclaration extends SvelteComponentTyped<
   Record<string, any>,
   Record<string, never>
 > {
-  fnB: () => {};
+  fnB: (...args: any[]) => any;
 
   add: () => any;
 

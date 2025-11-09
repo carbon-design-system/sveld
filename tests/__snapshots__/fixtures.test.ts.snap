@@ -518,7 +518,7 @@ exports[`fixtures (JSON) "function-declaration/input.svelte" 1`] = `
     {
       "name": "fnA",
       "kind": "let",
-      "type": "() => {}",
+      "type": "(...args: any[]) => any",
       "value": "() => {}",
       "isFunction": true,
       "isFunctionDeclaration": false,
@@ -529,7 +529,7 @@ exports[`fixtures (JSON) "function-declaration/input.svelte" 1`] = `
     {
       "name": "fnB",
       "kind": "const",
-      "type": "() => {}",
+      "type": "(...args: any[]) => any",
       "value": "() => {}",
       "isFunction": true,
       "isFunctionDeclaration": false,
@@ -1642,7 +1642,7 @@ exports[`fixtures (JSON) "context-module/input.svelte" 1`] = `
     {
       "name": "b",
       "kind": "const",
-      "type": "() => {}",
+      "type": "(...args: any[]) => any",
       "value": "() => {}",
       "isFunction": true,
       "isFunctionDeclaration": false,
@@ -1653,7 +1653,7 @@ exports[`fixtures (JSON) "context-module/input.svelte" 1`] = `
     {
       "name": "b2",
       "kind": "const",
-      "type": "() => () => {}",
+      "type": "(...args: any[]) => any",
       "value": "() => () => {}",
       "isFunction": true,
       "isFunctionDeclaration": false,
@@ -2575,7 +2575,7 @@ export type FunctionDeclarationProps = {
   /**
    * @default () => {}
    */
-  fnA?: () => {};
+  fnA?: (...args: any[]) => any;
 };
 
 export default class FunctionDeclaration extends SvelteComponentTyped<
@@ -2583,7 +2583,7 @@ export default class FunctionDeclaration extends SvelteComponentTyped<
   Record<string, any>,
   Record<string, never>
 > {
-  fnB: () => {};
+  fnB: (...args: any[]) => any;
 
   add: () => any;
 
@@ -3168,9 +3168,9 @@ export type e = { [key: string]: any };
  */
 export declare function log(message: string): void;
 
-export declare function b(): {};
+export declare function b(...args: any[]): any;
 
-export declare function b2(): () => {};
+export declare function b2(...args: any[]): any;
 
 export declare function b3(): () => false;
 

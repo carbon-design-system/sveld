@@ -62,7 +62,7 @@
     {
       "name": "b",
       "kind": "const",
-      "type": "() => {}",
+      "type": "(...args: any[]) => any",
       "value": "() => {}",
       "isFunction": true,
       "isFunctionDeclaration": false,
@@ -73,7 +73,7 @@
     {
       "name": "b2",
       "kind": "const",
-      "type": "() => () => {}",
+      "type": "(...args: any[]) => any",
       "value": "() => () => {}",
       "isFunction": true,
       "isFunctionDeclaration": false,
