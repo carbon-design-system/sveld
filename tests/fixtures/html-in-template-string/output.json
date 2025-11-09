@@ -1,0 +1,21 @@
+{
+  "props": [
+    {
+      "name": "message",
+      "kind": "let",
+      "type": "string",
+      "value": "\"test\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
