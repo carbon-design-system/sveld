@@ -1,0 +1,41 @@
+{
+  "props": [
+    {
+      "name": "showNode",
+      "kind": "function",
+      "description": "Programmatically show a node by `id`.\nBy default, the matching node will be expanded, selected, and focused.\nUse the options parameter to customize this behavior.\n@example \n// Show node with all default behaviors (expand, select, focus)\ntreeView.showNode(\"node-1\");\n\n// Expand node without selecting it\ntreeView.showNode(\"node-2\", { select: false });\n\n// Select node without expanding or focusing\ntreeView.showNode(\"node-3\", { expand: false, focus: false });",
+      "type": "(id: TreeNodeId, options?: { expand?: boolean; select?: boolean; focus?: boolean }) => void",
+      "params": [
+        {
+          "name": "id",
+          "type": "TreeNodeId",
+          "description": "The id of the node to show",
+          "optional": false
+        },
+        {
+          "name": "options",
+          "type": "object",
+          "description": "Optional configuration",
+          "optional": true
+        }
+      ],
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "string",
+      "name": "TreeNodeId",
+      "ts": "type TreeNodeId = string"
+    }
+  ],
+  "generics": null,
+  "contexts": []
+}
