@@ -5,7 +5,7 @@
   import pluginEstree from "prettier/plugins/estree";
   import pluginTypeScript from "prettier/plugins/typescript";
   import { format } from "prettier/standalone";
-  import { writeTsDefinition } from "../../src/writer/writer-ts-definitions";
+  import { writeTsDefinition } from "../../src/writer/writer-ts-definitions-core";
   import CodeHighlighter from "./CodeHighlighter.svelte";
   import TabContentOverlay from "./TabContentOverlay.svelte";
 
