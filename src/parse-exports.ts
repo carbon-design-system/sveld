@@ -31,11 +31,18 @@ type BodyNode =
 
 export type ParsedExports = Record<string, { source: string; default: boolean; mixed?: boolean }>;
 
+const astCache = new Map<string, acorn.Node>();
+
 export function parseExports(source: string, dir: string) {
-  const ast = acorn.parse(source, {
-    ecmaVersion: "latest",
-    sourceType: "module",
-  });
+  let ast = astCache.get(source);
+
+  if (!ast) {
+    ast = acorn.parse(source, {
+      ecmaVersion: "latest",
+      sourceType: "module",
+    });
+    astCache.set(source, ast);
+  }
 
   const exports_by_identifier: ParsedExports = {};
 
