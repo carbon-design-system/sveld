@@ -13,6 +13,11 @@ import writeMarkdown, { type WriteMarkdownOptions } from "./writer/writer-markdo
 import writeTsDefinitions, { type WriteTsDefinitionsOptions } from "./writer/writer-ts-definitions";
 
 export interface PluginSveldOptions {
+  /**
+   * Specify the entry point to uncompiled Svelte source.
+   * If not provided, sveld will use the "svelte" field from package.json.
+   */
+  entry?: string;
   glob?: boolean;
   types?: boolean;
   typesOptions?: Partial<Omit<WriteTsDefinitionsOptions, "inputDir">>;
@@ -38,7 +43,7 @@ export default function pluginSveld(opts?: PluginSveldOptions) {
   return {
     name: "plugin-sveld",
     buildStart() {
-      input = getSvelteEntry();
+      input = getSvelteEntry(opts?.entry);
     },
     async generateBundle() {
       if (input != null) {
