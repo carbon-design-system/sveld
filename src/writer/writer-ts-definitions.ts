@@ -19,6 +19,8 @@ const CUSTOM_EVENT_REGEX = /CustomEvent/;
 const COMPONENT_NAME_REGEX = /^[A-Z]/;
 const NEWLINE_REGEX = /\n/;
 const FUNCTION_TYPE_REGEX = /=>/;
+const NEWLINE_TO_COMMENT_REGEX = /\n/g;
+const WHITESPACE_REGEX = /\s+/g;
 
 export function formatTsProps(props?: string) {
   if (props === undefined) return ANY_TYPE;
@@ -75,7 +77,7 @@ function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleN
       let defaultValue = prop.value;
 
       if (typeof prop.value === "string") {
-        defaultValue = prop.value.replace(/\s+/g, " ");
+        defaultValue = prop.value.replace(WHITESPACE_REGEX, " ");
       }
 
       if (prop.value === undefined) {
@@ -83,7 +85,7 @@ function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleN
       }
 
       const prop_comments = [
-        addCommentLine(prop.description?.replace(/\n/g, "\n* ")),
+        addCommentLine(prop.description?.replace(NEWLINE_TO_COMMENT_REGEX, "\n* ")),
         addCommentLine(prop.constant, "@constant"),
         `* @default ${defaultValue}\n`,
       ]
@@ -346,7 +348,9 @@ function genAccessors(def: Pick<ComponentDocApi, "props">) {
   return def.props
     .filter((prop) => prop.isFunctionDeclaration || prop.kind === "const")
     .map((prop) => {
-      const prop_comments = [addCommentLine(prop.description?.replace(/\n/g, "\n* "))].filter(Boolean).join("");
+      const prop_comments = [addCommentLine(prop.description?.replace(NEWLINE_TO_COMMENT_REGEX, "\n* "))]
+        .filter(Boolean)
+        .join("");
 
       return `
     ${prop_comments.length > 0 ? `/**\n${prop_comments}*/` : EMPTY_STR}
@@ -372,7 +376,9 @@ function genComponentComment(def: Pick<ComponentDocApi, "componentComment">) {
 function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">) {
   return def.moduleExports
     .map((prop) => {
-      const prop_comments = [addCommentLine(prop.description?.replace(/\n/g, "\n* "))].filter(Boolean).join("");
+      const prop_comments = [addCommentLine(prop.description?.replace(NEWLINE_TO_COMMENT_REGEX, "\n* "))]
+        .filter(Boolean)
+        .join("");
 
       let type_def = `export type ${prop.name} = ${prop.type || ANY_TYPE};`;
 

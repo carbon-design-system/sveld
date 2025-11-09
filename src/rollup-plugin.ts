@@ -36,6 +36,9 @@ export interface ComponentDocApi extends ParsedComponent {
 
 export type ComponentDocs = Map<ComponentModuleName, ComponentDocApi>;
 
+const STYLE_TAG_REGEX = /<style.+?<\/style>/gims;
+const HYPHEN_REGEX = /-/g;
+
 export default function pluginSveld(opts?: PluginSveldOptions) {
   let result: GenerateBundleResult;
   let input: string | null;
@@ -68,7 +71,7 @@ export async function generateBundle(input: string, glob: boolean) {
 
   if (glob) {
     for (const file of globSync([`${dir}/**/*.svelte`])) {
-      const moduleName = parse(file).name.replace(/-/g, "");
+      const moduleName = parse(file).name.replace(HYPHEN_REGEX, "");
       const source = normalizeSeparators(`./${relative(dir, file)}`);
 
       if (exports[moduleName]) {
@@ -92,7 +95,7 @@ export async function generateBundle(input: string, glob: boolean) {
 
     if (ext === ".svelte") {
       const source = await readFile(resolve(dir, filePath), "utf-8");
-      const { code: processed } = await preprocess(source, [typescript(), replace([[/<style.+?<\/style>/gims, ""]])], {
+      const { code: processed } = await preprocess(source, [typescript(), replace([[STYLE_TAG_REGEX, ""]])], {
         filename: basename(filePath),
       });
 

@@ -1,5 +1,8 @@
 import Writer from "./Writer";
 
+const BACKTICK_REGEX = /`/g;
+const WHITESPACE_REGEX = /\s+/g;
+
 type OnAppend = (type: AppendType, document: WriterMarkdown) => void;
 
 interface MarkdownOptions {
@@ -82,7 +85,7 @@ export default class WriterMarkdown extends Writer {
       "<!-- __TOC__ -->",
       this.toc
         .map(({ array, raw }) => {
-          return `${array.join(" ")} - [${raw}](#${raw.toLowerCase().replace(/`/g, "").replace(/\s+/g, "-")})`;
+          return `${array.join(" ")} - [${raw}](#${raw.toLowerCase().replace(BACKTICK_REGEX, "").replace(WHITESPACE_REGEX, "-")})`;
         })
         .join("\n"),
     );

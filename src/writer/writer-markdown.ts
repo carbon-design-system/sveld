@@ -9,38 +9,44 @@ const SLOT_TABLE_HEADER = "| Slot name | Default | Props | Fallback |\n| :- | :-
 const EVENT_TABLE_HEADER = "| Event name | Type | Detail | Description |\n| :- | :- | :- | :- |\n";
 const MD_TYPE_UNDEFINED = "--";
 
+const PIPE_REGEX = /\|/g;
+const LT_REGEX = /</g;
+const GT_REGEX = />/g;
+const BACKTICK_REGEX = /`/g;
+const NEWLINE_REGEX = /\n/g;
+
 function formatPropType(type?: string) {
   if (type === undefined) return MD_TYPE_UNDEFINED;
-  return `<code>${type.replace(/\|/g, "&#124;")}</code>`;
+  return `<code>${type.replace(PIPE_REGEX, "&#124;")}</code>`;
 }
 
 function escapeHtml(text: string) {
-  return text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return text.replace(LT_REGEX, "&lt;").replace(GT_REGEX, "&gt;");
 }
 
 function formatPropValue(value: string | undefined) {
   if (value === undefined) return `<code>${value}</code>`;
-  return `<code>${value.replace(/`/g, "\\`").replace(/\|/g, "&#124;")}</code>`;
+  return `<code>${value.replace(BACKTICK_REGEX, "\\`").replace(PIPE_REGEX, "&#124;")}</code>`;
 }
 
 function formatPropDescription(description: string | undefined) {
   if (description === undefined || description.trim().length === 0) return MD_TYPE_UNDEFINED;
-  return escapeHtml(description).replace(/\n/g, "<br />");
+  return escapeHtml(description).replace(NEWLINE_REGEX, "<br />");
 }
 
 function formatSlotProps(props?: string) {
   if (props === undefined || props === "{}") return MD_TYPE_UNDEFINED;
-  return formatPropType(formatTsProps(props).replace(/\n/g, " "));
+  return formatPropType(formatTsProps(props).replace(NEWLINE_REGEX, " "));
 }
 
 function formatSlotFallback(fallback?: string) {
   if (fallback === undefined) return MD_TYPE_UNDEFINED;
-  return formatPropType(escapeHtml(fallback).replace(/\n/g, "<br />"));
+  return formatPropType(escapeHtml(fallback).replace(NEWLINE_REGEX, "<br />"));
 }
 
 function formatEventDetail(detail?: string) {
   if (detail === undefined) return MD_TYPE_UNDEFINED;
-  return formatPropType(detail.replace(/\n/g, " "));
+  return formatPropType(detail.replace(NEWLINE_REGEX, " "));
 }
 
 export interface WriteMarkdownOptions {
