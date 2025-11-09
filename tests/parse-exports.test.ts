@@ -31,7 +31,7 @@ describe("parseExports", () => {
     expect(parseExports(source, "")).toEqual({
       Component: {
         source: "./Component.svelte",
-        default: false,
+        default: true,
       },
     });
   });
@@ -42,8 +42,8 @@ describe("parseExports", () => {
     export { default as Component2 } from "./Component2.svelte";`;
 
     expect(parseExports(source, "")).toEqual({
-      Component: { source: "./Component.svelte", default: false },
-      Component2: { source: "./Component2.svelte", default: false },
+      Component: { source: "./Component.svelte", default: true },
+      Component2: { source: "./Component2.svelte", default: true },
     });
   });
 
@@ -54,8 +54,8 @@ describe("parseExports", () => {
     export { default } from "./Component2.svelte";`;
 
     expect(parseExports(source, "")).toEqual({
-      Component: { source: "./Component.svelte", default: false },
-      Component2: { source: "./Component2.svelte", default: false },
+      Component: { source: "./Component.svelte", default: true },
+      Component2: { source: "./Component2.svelte", default: true },
       default: { source: "./Component2.svelte", default: true },
     });
   });
@@ -69,8 +69,8 @@ describe("parseExports", () => {
     export default Component3;`;
 
     expect(parseExports(source, "")).toEqual({
-      Component: { source: "./Component.svelte", default: false },
-      Component2: { source: "./Component2.svelte", default: false },
+      Component: { source: "./Component.svelte", default: true },
+      Component2: { source: "./Component2.svelte", default: true },
       Component3: { source: "./Component3.svelte", default: true },
     });
   });
