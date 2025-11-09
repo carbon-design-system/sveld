@@ -10,6 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add isAccessor field to API
 - update Markdown writer to generate a separate table for accessors -->
 
+## [0.23.3](https://github.com/carbon-design-system/sveld/releases/tag/v0.23.3) - 2025-11-09
+
+**Fixes**
+
+- generate valid TypeScript for arrow function exports (#194)
+- handle re-exports in both module and instance scripts (#193)
+- capture non-literal default values in prop parsing (#192)
+
 ## [0.23.2](https://github.com/carbon-design-system/sveld/releases/tag/v0.23.2) - 2025-11-08
 
 **Fixes**
