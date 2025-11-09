@@ -1,4 +1,6 @@
+// biome-ignore lint/performance/noNamespaceImport: needed for jest.spyOn
 import * as fs from "node:fs";
+// biome-ignore lint/performance/noNamespaceImport: needed for jest.spyOn
 import * as path from "node:path";
 import { getSvelteEntry } from "../src/get-svelte-entry";
 
