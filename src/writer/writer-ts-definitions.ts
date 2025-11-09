@@ -453,7 +453,7 @@ export interface WriteTsDefinitionsOptions {
 export default async function writeTsDefinitions(components: ComponentDocs, options: WriteTsDefinitionsOptions) {
   const ts_base_path = join(process.cwd(), options.outDir, "index.d.ts");
   const writer = new Writer({ parser: "typescript", printWidth: 80 });
-  const indexDTs = options.preamble + createExports(options.exports, components);
+  const indexDTs = options.preamble + createExports(options.exports);
 
   const writePromises = Array.from(components).map(async ([_moduleName, component]) => {
     const ts_filepath = convertSvelteExt(join(options.outDir, component.filePath));

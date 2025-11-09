@@ -10,7 +10,7 @@ describe("createExports", () => {
   test("single default export (declaration)", () => {
     const source = { Component: { source: "./Component.svelte", default: true } };
 
-    expect(createExports(source, new Map())).toEqual('export { default } from "./Component.svelte";');
+    expect(createExports(source, new Map())).toEqual('export { default as Component } from "./Component.svelte";');
   });
 
   test("single named export", () => {
@@ -50,7 +50,7 @@ export { default } from "./Component2.svelte";`);
 
     expect(createExports(source, new Map())).toEqual(`export { default as Component } from "./Component.svelte";
 export { default as Component2 } from "./Component2.svelte";
-export { default } from "./Component3.svelte";`);
+export { default as Component3 } from "./Component3.svelte";`);
   });
 
   test("mixed exports", () => {

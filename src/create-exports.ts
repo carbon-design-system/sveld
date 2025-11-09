@@ -1,31 +1,28 @@
 import type { ParsedExports } from "./parse-exports";
-import type { ComponentDocs } from "./rollup-plugin";
 
 const SVELTE_EXT_REGEX = /\.svelte$/;
 
-export function createExports(parsed_exports: ParsedExports, components: ComponentDocs): string {
+export function createExports(parsed_exports: ParsedExports): string {
   const source = Object.entries(parsed_exports).map(([id, exportee]) => {
-    let module_exports: string[] = [];
-    if (components.has(id)) {
-      module_exports =
-        components.get(id)?.moduleExports.map((moduleExport) => {
-          return moduleExport.name;
-        }) ?? [];
+    // Check if the source is a .svelte file (Svelte components are always default exports)
+    const isSvelteFile = SVELTE_EXT_REGEX.test(exportee.source);
+
+    // If id is "default", always export as default
+    if (id === "default") {
+      return `export { default } from "${exportee.source}";`;
     }
 
-    let named_exports = "";
-
-    if (module_exports.length > 0) named_exports = `, ${module_exports.join(", ")}`;
-
-    if (id === "default" || exportee.default) {
+    // If exportee.default is true, OR if it's a Svelte component, we're re-exporting a default export with a new name
+    if (exportee.default || isSvelteFile) {
       if (exportee.mixed) {
-        return `export { default as ${id}${named_exports} } from "${exportee.source}";\nexport { default } from "${exportee.source}";`;
+        return `export { default as ${id} } from "${exportee.source}";\nexport { default } from "${exportee.source}";`;
       }
 
-      return `export { default${named_exports} } from "${exportee.source}";`;
+      return `export { default as ${id} } from "${exportee.source}";`;
     }
 
-    return `export { default as ${id}${named_exports} } from "${exportee.source}";`;
+    // Otherwise, it's a named export
+    return `export { ${id} } from "${exportee.source}";`;
   });
 
   return source.join("\n");

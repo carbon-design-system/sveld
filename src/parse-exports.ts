@@ -90,7 +90,8 @@ export function parseExports(source: string, dir: string) {
     } else if (node.type === "ExportNamedDeclaration") {
       for (const specifier of node.specifiers) {
         const exported_name = specifier.exported.name;
-        const id = exported_name || specifier.local.name;
+        const local_name = specifier.local.name;
+        const id = exported_name || local_name;
 
         if (id in exports_by_identifier) {
           if (node.type === "ExportNamedDeclaration") {
@@ -103,7 +104,7 @@ export function parseExports(source: string, dir: string) {
         } else {
           exports_by_identifier[id] = {
             source: resolvePathAlias(node.source?.value ?? "", dir),
-            default: id === "default",
+            default: local_name === "default",
           };
         }
       }
