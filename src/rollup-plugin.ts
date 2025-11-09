@@ -62,6 +62,7 @@ export default function pluginSveld(opts?: PluginSveldOptions) {
 interface GenerateBundleResult {
   exports: ParsedExports;
   components: ComponentDocs;
+  allComponentsForTypes: ComponentDocs;
 }
 
 export async function generateBundle(input: string, glob: boolean) {
@@ -75,6 +76,8 @@ export async function generateBundle(input: string, glob: boolean) {
     exports = parseExports(entry, dir);
   }
 
+  const allComponents: ParsedExports = { ...exports };
+
   if (glob) {
     for (const file of globSync([`${dir}/**/*.svelte`])) {
       const moduleName = parse(file).name.replace(HYPHEN_REGEX, "");
@@ -82,16 +85,22 @@ export async function generateBundle(input: string, glob: boolean) {
 
       if (exports[moduleName]) {
         exports[moduleName].source = source;
+      }
+
+      if (allComponents[moduleName]) {
+        allComponents[moduleName].source = source;
       } else {
-        // When glob is true and no export mapping exists, create one
-        exports[moduleName] = { source, default: false };
+        allComponents[moduleName] = { source, default: false };
       }
     }
   }
 
   const components: ComponentDocs = new Map();
+  const allComponentsForTypes: ComponentDocs = new Map();
   const exportEntries = Object.entries(exports);
+  const allComponentEntries = Object.entries(allComponents);
 
+  // Process exported components (for metadata/JSON/Markdown)
   const componentPromises = exportEntries.map(async ([exportName, entry]) => {
     const filePath = entry.source;
     const { ext, name } = parse(filePath);
@@ -124,7 +133,40 @@ export async function generateBundle(input: string, glob: boolean) {
     return null;
   });
 
-  const results = await Promise.all(componentPromises);
+  // Process all components (for .d.ts generation)
+  const allComponentPromises = allComponentEntries.map(async ([exportName, entry]) => {
+    const filePath = entry.source;
+    const { ext, name } = parse(filePath);
+
+    let moduleName = exportName;
+
+    if (allComponentEntries.length === 1 && exportName === "default") {
+      moduleName = name;
+    }
+
+    if (ext === ".svelte") {
+      const source = await readFile(resolve(dir, filePath), "utf-8");
+      const { code: processed } = await preprocess(source, [typescript(), replace([[STYLE_TAG_REGEX, ""]])], {
+        filename: basename(filePath),
+      });
+
+      const parser = new ComponentParser();
+      const parsed = parser.parseSvelteComponent(processed, {
+        moduleName,
+        filePath,
+      });
+
+      return {
+        moduleName,
+        filePath,
+        ...parsed,
+      };
+    }
+
+    return null;
+  });
+
+  const [results, allResults] = await Promise.all([Promise.all(componentPromises), Promise.all(allComponentPromises)]);
 
   for (const result of results) {
     if (result) {
@@ -132,9 +174,16 @@ export async function generateBundle(input: string, glob: boolean) {
     }
   }
 
+  for (const result of allResults) {
+    if (result) {
+      allComponentsForTypes.set(result.moduleName, result);
+    }
+  }
+
   return {
     exports,
     components,
+    allComponentsForTypes,
   };
 }
 
@@ -142,7 +191,8 @@ export function writeOutput(result: GenerateBundleResult, opts: PluginSveldOptio
   const inputDir = dirname(input);
 
   if (opts?.types !== false) {
-    writeTsDefinitions(result.components, {
+    // Use allComponentsForTypes to generate .d.ts for all discovered components
+    writeTsDefinitions(result.allComponentsForTypes, {
       outDir: "types",
       preamble: "",
       ...opts?.typesOptions,
@@ -152,6 +202,7 @@ export function writeOutput(result: GenerateBundleResult, opts: PluginSveldOptio
   }
 
   if (opts?.json) {
+    // Use components (exported only) for JSON metadata
     writeJson(result.components, {
       outFile: "COMPONENT_API.json",
       ...opts?.jsonOptions,
@@ -161,6 +212,7 @@ export function writeOutput(result: GenerateBundleResult, opts: PluginSveldOptio
   }
 
   if (opts?.markdown) {
+    // Use components (exported only) for Markdown documentation
     writeMarkdown(result.components, {
       outFile: "COMPONENT_INDEX.md",
       ...opts?.markdownOptions,
