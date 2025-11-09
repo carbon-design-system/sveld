@@ -47,6 +47,7 @@ const PROPERTY_DESCRIPTION_REGEX = /^-\s*/;
 const CONTEXT_KEY_SPLIT_REGEX = /[-_\s]+/;
 const COMPONENT_COMMENT_REGEX = /^@component/;
 const CARRIAGE_RETURN_REGEX = /\r/g;
+const NEWLINE_CR_REGEX = /[\r\n]+/g;
 
 interface ComponentSlot {
   name?: string | null;
@@ -841,7 +842,7 @@ export default class ComponentParser {
                 init.type === "ArrayExpression" ||
                 init.type === "ArrowFunctionExpression"
               ) {
-                value = this.sourceAtPos(init.start, init.end)?.replace(/[\r\n]+/g, " ");
+                value = this.sourceAtPos(init.start, init.end)?.replace(NEWLINE_CR_REGEX, " ");
                 type = value;
                 isFunction = init.type === "ArrowFunctionExpression";
 
@@ -873,7 +874,7 @@ export default class ComponentParser {
             }
 
             if (declaration_type === "FunctionDeclaration") {
-              value = `() => ${this.sourceAtPos(body.start, body.end)?.replace(/[\r\n]+/g, " ")}`;
+              value = `() => ${this.sourceAtPos(body.start, body.end)?.replace(NEWLINE_CR_REGEX, " ")}`;
               type = "() => any";
               kind = "function";
               isFunction = true;
@@ -999,7 +1000,7 @@ export default class ComponentParser {
               init.type === "ArrayExpression" ||
               init.type === "ArrowFunctionExpression"
             ) {
-              value = this.sourceAtPos(init.start, init.end)?.replace(/[\r\n]+/g, " ");
+              value = this.sourceAtPos(init.start, init.end)?.replace(NEWLINE_CR_REGEX, " ");
               type = value;
               isFunction = init.type === "ArrowFunctionExpression";
 
@@ -1031,7 +1032,7 @@ export default class ComponentParser {
           }
 
           if (declaration_type === "FunctionDeclaration") {
-            value = `() => ${this.sourceAtPos(body.start, body.end)?.replace(/[\r\n]+/g, " ")}`;
+            value = `() => ${this.sourceAtPos(body.start, body.end)?.replace(NEWLINE_CR_REGEX, " ")}`;
             type = "() => any";
             kind = "function";
             isFunction = true;
