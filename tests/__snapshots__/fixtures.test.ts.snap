@@ -3596,3 +3596,45 @@ export default class Generics<Row extends DataTableRow = DataTableRow> extends S
 > {}
 "
 `;
+
+exports[`fixtures (JSON) "html-in-template-string/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "message",
+      "kind": "let",
+      "type": "string",
+      "value": "\\"test\\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}"
+`;
+
+exports[`fixtures (TypeScript) "html-in-template-string/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export type HtmlInTemplateStringProps = {
+  /**
+   * @default "test"
+   */
+  message?: string;
+};
+
+export default class HtmlInTemplateString extends SvelteComponentTyped<
+  HtmlInTemplateStringProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;

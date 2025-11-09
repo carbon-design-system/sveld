@@ -87,7 +87,7 @@ export async function generateBundle(input: string, glob: boolean) {
 
     if (ext === ".svelte") {
       const source = await readFile(resolve(dir, filePath), "utf-8");
-      const { code: processed } = await preprocess(source, [typescript(), replace([[/<style.+<\/style>/gims, ""]])], {
+      const { code: processed } = await preprocess(source, [typescript(), replace([[/<style.+?<\/style>/gims, ""]])], {
         filename: basename(filePath),
       });
 
