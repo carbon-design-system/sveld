@@ -189,6 +189,14 @@ export default {
 };
 ```
 
+By default, `sveld` will use the `"svelte"` field from your `package.json` to determine the entry point. You can override this by specifying an explicit `entry` option:
+
+```js
+sveld({
+  entry: "src/index.js",
+})
+```
+
 When building the library, TypeScript definitions are emitted to the `types` folder by default.
 
 Customize the output folder using the `typesOptions.outDir` option.
@@ -289,6 +297,17 @@ TypeScript definitions are outputted to the `types` folder by default. Don't for
 ```
 
 ## Available Options
+
+### Rollup Plugin Options
+
+- **`entry`** (string, optional): Specify the entry point to uncompiled Svelte source. If not provided, sveld will use the `"svelte"` field from `package.json`.
+- **`glob`** (boolean, optional): Enable glob mode to analyze all `*.svelte` files.
+- **`types`** (boolean, optional, default: `true`): Generate TypeScript definitions.
+- **`typesOptions`** (object, optional): Options for TypeScript definition generation.
+- **`json`** (boolean, optional): Generate component documentation in JSON format.
+- **`jsonOptions`** (object, optional): Options for JSON output.
+- **`markdown`** (boolean, optional): Generate component documentation in Markdown format.
+- **`markdownOptions`** (object, optional): Options for Markdown output.
 
 By default, only TypeScript definitions are generated.
 
