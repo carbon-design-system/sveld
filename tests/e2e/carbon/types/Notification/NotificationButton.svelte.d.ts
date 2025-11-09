@@ -12,7 +12,7 @@ type $Props = {
 
   /**
    * Specify the icon from `carbon-icons-svelte` to render
-   * @default undefined
+   * @default Close20
    */
   icon?: typeof import("carbon-icons-svelte").CarbonIcon;
 

@@ -771,6 +771,10 @@ export default class ComponentParser {
                 if (init.type === "UnaryExpression") {
                   value = this.sourceAtPos(init.start, init.end);
                   type = typeof init.argument?.value;
+                } else if (init.type === "Identifier") {
+                  // Handle non-literal defaults like variable references and global identifiers.
+                  // Don't infer type, just preserve existing type annotation.
+                  value = this.sourceAtPos(init.start, init.end);
                 } else {
                   value = init.raw;
                   type = init.value == null ? undefined : typeof init.value;
@@ -913,6 +917,10 @@ export default class ComponentParser {
               if (init.type === "UnaryExpression") {
                 value = this.sourceAtPos(init.start, init.end);
                 type = typeof init.argument?.value;
+              } else if (init.type === "Identifier") {
+                // Handle non-literal defaults like variable references and global identifiers.
+                // Don't infer type, just preserve existing type annotation.
+                value = this.sourceAtPos(init.start, init.end);
               } else {
                 value = init.raw;
                 type = init.value == null ? undefined : typeof init.value;

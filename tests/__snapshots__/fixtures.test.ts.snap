@@ -1,5 +1,108 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
+exports[`fixtures (JSON) "non-literal-defaults/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "position",
+      "kind": "let",
+      "description": "Position of the element",
+      "type": "Position",
+      "value": "TOP_LEFT",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "theme",
+      "kind": "let",
+      "description": "Theme mode",
+      "value": "POSITION_DEFAULT",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "maxValue",
+      "kind": "let",
+      "description": "Numeric constant with Infinity",
+      "value": "Infinity",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "handler",
+      "kind": "let",
+      "description": "Optional handler with undefined",
+      "value": "undefined",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "\\"top-left\\" | \\"top-right\\" | \\"bottom-left\\" | \\"bottom-right\\"",
+      "name": "Position",
+      "ts": "type Position = \\"top-left\\" | \\"top-right\\" | \\"bottom-left\\" | \\"bottom-right\\""
+    }
+  ],
+  "generics": null,
+  "contexts": []
+}"
+`;
+
+exports[`fixtures (TypeScript) "non-literal-defaults/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export type Position = "top-left" | "top-right" | "bottom-left" | "bottom-right";
+
+export type NonLiteralDefaultsProps = {
+  /**
+   * Position of the element
+   * @default TOP_LEFT
+   */
+  position?: Position;
+
+  /**
+   * Theme mode
+   * @default POSITION_DEFAULT
+   */
+  theme?: undefined;
+
+  /**
+   * Numeric constant with Infinity
+   * @default Infinity
+   */
+  maxValue?: undefined;
+
+  /**
+   * Optional handler with undefined
+   * @default undefined
+   */
+  handler?: undefined;
+};
+
+export default class NonLiteralDefaults extends SvelteComponentTyped<
+  NonLiteralDefaultsProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (JSON) "svg-props/input.svelte" 1`] = `
 "{
   "props": [],

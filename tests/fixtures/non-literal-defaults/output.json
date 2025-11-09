@@ -1,0 +1,61 @@
+{
+  "props": [
+    {
+      "name": "position",
+      "kind": "let",
+      "description": "Position of the element",
+      "type": "Position",
+      "value": "TOP_LEFT",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "theme",
+      "kind": "let",
+      "description": "Theme mode",
+      "value": "POSITION_DEFAULT",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "maxValue",
+      "kind": "let",
+      "description": "Numeric constant with Infinity",
+      "value": "Infinity",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "handler",
+      "kind": "let",
+      "description": "Optional handler with undefined",
+      "value": "undefined",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "\"top-left\" | \"top-right\" | \"bottom-left\" | \"bottom-right\"",
+      "name": "Position",
+      "ts": "type Position = \"top-left\" | \"top-right\" | \"bottom-left\" | \"bottom-right\""
+    }
+  ],
+  "generics": null,
+  "contexts": []
+}

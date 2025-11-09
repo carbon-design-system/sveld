@@ -49,7 +49,7 @@ type $Props = {
 
   /**
    * Specify the icon from `carbon-icons-svelte` to render
-   * @default undefined
+   * @default OverflowMenuVertical16
    */
   icon?: typeof import("carbon-icons-svelte").CarbonIcon;
 
