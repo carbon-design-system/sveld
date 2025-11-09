@@ -1,7 +1,99 @@
-import { join } from "node:path";
 import type { ComponentDocs } from "../rollup-plugin";
-import WriterMarkdown, { type AppendType } from "./WriterMarkdown";
 import { formatTsProps, getTypeDefs } from "./writer-ts-definitions-core";
+
+export type AppendType = "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "quote" | "p" | "divider" | "raw";
+
+const BACKTICK_REGEX = /`/g;
+const WHITESPACE_REGEX = /\s+/g;
+
+type OnAppend = (type: AppendType, document: BrowserWriterMarkdown) => void;
+
+interface MarkdownOptions {
+  onAppend?: OnAppend;
+}
+
+interface TocLine {
+  array: number[];
+  raw: string;
+}
+
+// Browser-compatible WriterMarkdown that doesn't extend Writer
+export class BrowserWriterMarkdown {
+  onAppend?: OnAppend;
+  source = "";
+  hasToC = false;
+  toc: TocLine[] = [];
+
+  constructor(options: MarkdownOptions) {
+    this.onAppend = options.onAppend;
+  }
+
+  public appendLineBreaks() {
+    this.source += "\n\n";
+    return this;
+  }
+
+  public append(type: AppendType, raw?: string) {
+    switch (type) {
+      case "h1":
+      case "h2":
+      case "h3":
+      case "h4":
+      case "h5":
+      case "h6": {
+        const length = Number(type.slice(-1));
+
+        this.source += `${Array.from({ length })
+          .map((_) => "#")
+          .join("")} ${raw}`;
+
+        if (this.hasToC && type === "h2") {
+          this.toc.push({
+            array: Array.from({ length: (length - 1) * 2 }),
+            raw: raw ?? "",
+          });
+        }
+        break;
+      }
+      case "quote":
+        this.source += `> ${raw}`;
+        break;
+      case "p":
+        this.source += raw;
+        break;
+      case "divider":
+        this.source += "---";
+        break;
+      case "raw":
+        this.source += raw;
+        break;
+    }
+
+    if (type !== "raw") this.appendLineBreaks();
+    this.onAppend?.call(this, type, this);
+    return this;
+  }
+
+  public tableOfContents() {
+    this.source += "<!-- __TOC__ -->";
+    this.hasToC = true;
+    this.appendLineBreaks();
+    return this;
+  }
+
+  public end() {
+    this.source = this.source.replace(
+      "<!-- __TOC__ -->",
+      this.toc
+        .map(({ array, raw }) => {
+          return `${array.join(" ")} - [${raw}](#${raw.toLowerCase().replace(BACKTICK_REGEX, "").replace(WHITESPACE_REGEX, "-")})`;
+        })
+        .join("\n"),
+    );
+
+    return this.source;
+  }
+}
 
 const PROP_TABLE_HEADER =
   "| Prop name | Required | Kind | Reactive | Type | Default value | Description |\n| :- | :- | :- | :- |\n";
@@ -12,7 +104,6 @@ const MD_TYPE_UNDEFINED = "--";
 const PIPE_REGEX = /\|/g;
 const LT_REGEX = /</g;
 const GT_REGEX = />/g;
-const BACKTICK_REGEX = /`/g;
 const NEWLINE_REGEX = /\n/g;
 
 function formatPropType(type?: string) {
@@ -49,17 +140,14 @@ function formatEventDetail(detail?: string) {
   return formatPropType(detail.replace(NEWLINE_REGEX, " "));
 }
 
-export interface WriteMarkdownOptions {
-  write?: boolean;
-  outFile: string;
-  onAppend?: (type: AppendType, document: WriterMarkdown, components: ComponentDocs) => void;
+export interface WriteMarkdownCoreOptions {
+  onAppend?: (type: AppendType, document: BrowserWriterMarkdown, components: ComponentDocs) => void;
 }
 
-export default async function writeMarkdown(components: ComponentDocs, options: WriteMarkdownOptions) {
-  const write = options?.write !== false;
-  const document = new WriterMarkdown({
+export function writeMarkdownCore(components: ComponentDocs, options?: WriteMarkdownCoreOptions): string {
+  const document = new BrowserWriterMarkdown({
     onAppend: (type, document) => {
-      options.onAppend?.call(null, type, document, components);
+      options?.onAppend?.call(null, type, document, components);
     },
   });
 
@@ -136,12 +224,6 @@ export default async function writeMarkdown(components: ComponentDocs, options: 
     } else {
       document.append("p", "None.");
     }
-  }
-
-  if (write) {
-    const outFile = join(process.cwd(), options.outFile);
-    await document.write(outFile, document.end());
-    console.log(`created "${options.outFile}".`);
   }
 
   return document.end();

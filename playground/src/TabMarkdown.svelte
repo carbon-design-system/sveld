@@ -4,20 +4,21 @@
 
   import pluginMarkdown from "prettier/plugins/markdown";
   import { format } from "prettier/standalone";
-  import writeMarkdown from "../../src/writer/writer-markdown";
+  import { writeMarkdownCore as writeMarkdown } from "../../src/writer/writer-markdown-core";
   import CodeHighlighter from "./CodeHighlighter.svelte";
 
   let markdown = "";
   let code = "";
 
-  $: components = new Map([[moduleName, { ...parsed_component, moduleName }]]);
-  $: writeMarkdown(components, { write: false })
-    .then((result) => {
-      markdown = result;
-    })
-    .catch((error) => {
+  $: {
+    try {
+      const components = new Map([[moduleName, { ...parsed_component, moduleName }]]);
+      markdown = writeMarkdown(components);
+    } catch (error) {
       console.log(error);
-    });
+      markdown = "";
+    }
+  }
   $: {
     format(markdown, {
       parser: "markdown",
