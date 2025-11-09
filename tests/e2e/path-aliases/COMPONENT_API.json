@@ -1,0 +1,77 @@
+{
+  "total": 2,
+  "components": [
+    {
+      "moduleName": "Button",
+      "filePath": "src/lib/components/Button.svelte",
+      "props": [
+        {
+          "name": "text",
+          "kind": "let",
+          "description": "Button text",
+          "type": "string",
+          "value": "\"Click me\"",
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": false,
+          "constant": false,
+          "reactive": false
+        },
+        {
+          "name": "size",
+          "kind": "let",
+          "description": "Button size",
+          "type": "string",
+          "value": "\"medium\"",
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": false,
+          "constant": false,
+          "reactive": false
+        }
+      ],
+      "moduleExports": [],
+      "slots": [],
+      "events": [],
+      "typedefs": [],
+      "generics": null,
+      "contexts": []
+    },
+    {
+      "moduleName": "Input",
+      "filePath": "src/lib/components/Input.svelte",
+      "props": [
+        {
+          "name": "placeholder",
+          "kind": "let",
+          "description": "Input placeholder",
+          "type": "string",
+          "value": "\"\"",
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": false,
+          "constant": false,
+          "reactive": false
+        },
+        {
+          "name": "value",
+          "kind": "let",
+          "description": "Input value",
+          "type": "string",
+          "value": "\"\"",
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": false,
+          "constant": false,
+          "reactive": true
+        }
+      ],
+      "moduleExports": [],
+      "slots": [],
+      "events": [],
+      "typedefs": [],
+      "generics": null,
+      "contexts": []
+    }
+  ]
+}
