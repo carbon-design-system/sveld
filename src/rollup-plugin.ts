@@ -1,6 +1,6 @@
-import * as fs from "node:fs";
-import * as fsp from "node:fs/promises";
-import * as path from "node:path";
+import { lstatSync, readFileSync } from "node:fs";
+import { readFile } from "node:fs/promises";
+import { basename, dirname, parse, relative, resolve } from "node:path";
 import { preprocess } from "svelte/compiler";
 import { replace, typescript } from "svelte-preprocess";
 import { globSync } from "tinyglobby";
@@ -57,19 +57,19 @@ interface GenerateBundleResult {
 }
 
 export async function generateBundle(input: string, glob: boolean) {
-  const dir = fs.lstatSync(input).isFile() ? path.dirname(input) : input;
-  const entry = fs.readFileSync(input, "utf-8");
+  const dir = lstatSync(input).isFile() ? dirname(input) : input;
+  const entry = readFileSync(input, "utf-8");
   const exports = parseExports(entry, dir);
 
   if (glob) {
-    globSync([`${dir}/**/*.svelte`]).forEach((file) => {
-      const moduleName = path.parse(file).name.replace(/-/g, "");
-      const source = normalizeSeparators(`./${path.relative(dir, file)}`);
+    for (const file of globSync([`${dir}/**/*.svelte`])) {
+      const moduleName = parse(file).name.replace(/-/g, "");
+      const source = normalizeSeparators(`./${relative(dir, file)}`);
 
       if (exports[moduleName]) {
         exports[moduleName].source = source;
       }
-    });
+    }
   }
 
   const components: ComponentDocs = new Map();
@@ -77,7 +77,7 @@ export async function generateBundle(input: string, glob: boolean) {
 
   const componentPromises = exportEntries.map(async ([exportName, entry]) => {
     const filePath = entry.source;
-    const { ext, name } = path.parse(filePath);
+    const { ext, name } = parse(filePath);
 
     let moduleName = exportName;
 
@@ -86,9 +86,9 @@ export async function generateBundle(input: string, glob: boolean) {
     }
 
     if (ext === ".svelte") {
-      const source = await fsp.readFile(path.resolve(dir, filePath), "utf-8");
+      const source = await readFile(resolve(dir, filePath), "utf-8");
       const { code: processed } = await preprocess(source, [typescript(), replace([[/<style.+<\/style>/gims, ""]])], {
-        filename: path.basename(filePath),
+        filename: basename(filePath),
       });
 
       const parser = new ComponentParser();
@@ -122,7 +122,7 @@ export async function generateBundle(input: string, glob: boolean) {
 }
 
 export function writeOutput(result: GenerateBundleResult, opts: PluginSveldOptions, input: string) {
-  const inputDir = path.dirname(input);
+  const inputDir = dirname(input);
 
   if (opts?.types !== false) {
     writeTsDefinitions(result.components, {

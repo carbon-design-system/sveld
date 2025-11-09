@@ -1,6 +1,8 @@
 import type { ParsedExports } from "./parse-exports";
 import type { ComponentDocs } from "./rollup-plugin";
 
+const SVELTE_EXT_REGEX = /\.svelte$/;
+
 export function createExports(parsed_exports: ParsedExports, components: ComponentDocs): string {
   const source = Object.entries(parsed_exports).map(([id, exportee]) => {
     let module_exports: string[] = [];
@@ -30,9 +32,9 @@ export function createExports(parsed_exports: ParsedExports, components: Compone
 }
 
 export function removeSvelteExt(filePath: string): string {
-  return filePath.replace(/\.svelte$/, "");
+  return filePath.replace(SVELTE_EXT_REGEX, "");
 }
 
 export function convertSvelteExt(filePath: string): string {
-  return filePath.replace(/\.svelte$/, ".svelte.d.ts");
+  return filePath.replace(SVELTE_EXT_REGEX, ".svelte.d.ts");
 }

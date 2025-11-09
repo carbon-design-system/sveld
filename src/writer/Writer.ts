@@ -1,8 +1,8 @@
-import * as fsp from "node:fs/promises";
-import * as path from "node:path";
-import * as prettier from "prettier";
+import { mkdir, writeFile } from "node:fs/promises";
+import { parse } from "node:path";
+import { format, type ParserOptions } from "prettier";
 
-interface WriterOptions extends Pick<prettier.ParserOptions, "parser" | "printWidth"> {}
+interface WriterOptions extends Pick<ParserOptions, "parser" | "printWidth"> {}
 
 export default class Writer {
   options: WriterOptions;
@@ -13,7 +13,7 @@ export default class Writer {
 
   public async format(raw: string) {
     try {
-      const result = await prettier.format(raw, this.options);
+      const result = await format(raw, this.options);
       return result;
     } catch (error) {
       console.error(error);
@@ -22,7 +22,7 @@ export default class Writer {
   }
 
   public async write(filePath: string, raw: string) {
-    await fsp.mkdir(path.parse(filePath).dir, { recursive: true });
-    await fsp.writeFile(filePath, await this.format(raw));
+    await mkdir(parse(filePath).dir, { recursive: true });
+    await writeFile(filePath, await this.format(raw));
   }
 }

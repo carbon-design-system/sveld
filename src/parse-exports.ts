@@ -1,25 +1,25 @@
-import * as fs from "node:fs";
-import path from "node:path";
-import * as acorn from "acorn";
+import { lstatSync, readdirSync, readFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+import { type Node, parse } from "acorn";
 import { normalizeSeparators } from "./path";
 
-interface NodeImportDeclaration extends acorn.Node {
+interface NodeImportDeclaration extends Node {
   type: "ImportDeclaration";
   specifiers: { local: { name: string } }[];
   source: null | { value: string };
 }
 
-interface NodeExportNamedDeclaration extends acorn.Node, Pick<NodeImportDeclaration, "source"> {
+interface NodeExportNamedDeclaration extends Node, Pick<NodeImportDeclaration, "source"> {
   type: "ExportNamedDeclaration";
   specifiers: { local: { name: string }; exported: { name: string } }[];
 }
 
-interface NodeExportDefaultDeclaration extends acorn.Node {
+interface NodeExportDefaultDeclaration extends Node {
   type: "ExportDefaultDeclaration";
   declaration: { name: string };
 }
 
-interface NodeExportAllDeclaration extends acorn.Node, Pick<NodeImportDeclaration, "source"> {
+interface NodeExportAllDeclaration extends Node, Pick<NodeImportDeclaration, "source"> {
   type: "ExportAllDeclaration";
 }
 
@@ -31,23 +31,27 @@ type BodyNode =
 
 export type ParsedExports = Record<string, { source: string; default: boolean; mixed?: boolean }>;
 
-const astCache = new Map<string, acorn.Node>();
+interface ProgramNode extends Node {
+  type: "Program";
+  body: BodyNode[];
+}
+
+const astCache = new Map<string, ProgramNode>();
 
 export function parseExports(source: string, dir: string) {
   let ast = astCache.get(source);
 
   if (!ast) {
-    ast = acorn.parse(source, {
+    ast = parse(source, {
       ecmaVersion: "latest",
       sourceType: "module",
-    });
+    }) as ProgramNode;
     astCache.set(source, ast);
   }
 
   const exports_by_identifier: ParsedExports = {};
 
-  // @ts-expect-error
-  ast.body.forEach((node: BodyNode) => {
+  for (const node of ast.body) {
     if (node.type === "ExportDefaultDeclaration") {
       const id = node.declaration.name;
 
@@ -57,32 +61,32 @@ export function parseExports(source: string, dir: string) {
         exports_by_identifier[id] = { source: "", default: true };
       }
     } else if (node.type === "ExportAllDeclaration") {
-      if (!node.source) return;
+      if (!node.source) continue;
 
-      let file_path = path.resolve(dir, node.source.value);
+      let file_path = resolve(dir, node.source.value);
 
-      if (!fs.lstatSync(file_path).isFile()) {
-        const files = fs.readdirSync(file_path);
+      if (!lstatSync(file_path).isFile()) {
+        const files = readdirSync(file_path);
 
         for (const file of files)
           if (file.includes("index")) {
-            file_path = path.join(file_path, file);
+            file_path = join(file_path, file);
             break;
           }
       }
 
-      const export_file = fs.readFileSync(file_path, "utf-8");
-      const exports = parseExports(export_file, path.dirname(file_path));
+      const export_file = readFileSync(file_path, "utf-8");
+      const exports = parseExports(export_file, dirname(file_path));
 
       for (const [key, value] of Object.entries(exports)) {
-        const source = normalizeSeparators(`./${path.join(node.source.value, value.source)}`);
+        const source = normalizeSeparators(`./${join(node.source.value, value.source)}`);
         exports_by_identifier[key] = {
           ...value,
           source,
         };
       }
     } else if (node.type === "ExportNamedDeclaration") {
-      node.specifiers.forEach((specifier) => {
+      for (const specifier of node.specifiers) {
         const exported_name = specifier.exported.name;
         const id = exported_name || specifier.local.name;
 
@@ -100,7 +104,7 @@ export function parseExports(source: string, dir: string) {
             default: id === "default",
           };
         }
-      });
+      }
     } else if (node.type === "ImportDeclaration") {
       const id = node.specifiers[0].local.name;
 
@@ -115,7 +119,7 @@ export function parseExports(source: string, dir: string) {
         };
       }
     }
-  });
+  }
 
   return exports_by_identifier;
 }

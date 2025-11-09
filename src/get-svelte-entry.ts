@@ -1,5 +1,5 @@
-import * as fs from "node:fs";
-import * as path from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 
 export type SvelteEntryPoint = string;
 
@@ -9,9 +9,9 @@ export type SvelteEntryPoint = string;
  */
 export function getSvelteEntry(entryPoint?: SvelteEntryPoint): SvelteEntryPoint | null {
   if (entryPoint) {
-    const entry_path = path.join(process.cwd(), entryPoint);
+    const entry_path = join(process.cwd(), entryPoint);
 
-    if (fs.existsSync(entry_path)) {
+    if (existsSync(entry_path)) {
       return entryPoint;
     } else {
       console.log(`Invalid entry point: ${entry_path}.`);
@@ -19,15 +19,15 @@ export function getSvelteEntry(entryPoint?: SvelteEntryPoint): SvelteEntryPoint 
     }
   }
 
-  const pkg_path = path.join(process.cwd(), "package.json");
+  const pkg_path = join(process.cwd(), "package.json");
 
-  if (!fs.existsSync(pkg_path)) {
+  if (!existsSync(pkg_path)) {
     console.log("Could not locate a package.json file.\n");
     return null;
   }
 
   try {
-    const pkg: { svelte?: SvelteEntryPoint } = JSON.parse(fs.readFileSync(pkg_path, "utf-8"));
+    const pkg: { svelte?: SvelteEntryPoint } = JSON.parse(readFileSync(pkg_path, "utf-8"));
 
     if (typeof pkg.svelte === "string" && pkg.svelte.trim()) {
       return pkg.svelte;
