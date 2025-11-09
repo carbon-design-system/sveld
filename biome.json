@@ -32,7 +32,38 @@
     "enabled": true,
     "rules": {
       "recommended": true,
+      "performance": {
+        "noAccumulatingSpread": "error",
+        "noAwaitInLoops": "error",
+        "noDelete": "error",
+        "noDynamicNamespaceImportAccess": "error",
+        "noNamespaceImport": "error",
+        "noReExportAll": "error",
+        "useTopLevelRegex": "error"
+      },
+      "complexity": {
+        "noCommaOperator": "error",
+        "noForEach": "error",
+        "noUselessConstructor": "error",
+        "noUselessEmptyExport": "error",
+        "noUselessFragments": "error",
+        "noUselessLabel": "error",
+        "noUselessLoneBlockStatements": "error",
+        "noUselessRename": "error",
+        "noUselessSwitchCase": "error",
+        "noUselessTypeConstraint": "error",
+        "useArrowFunction": "error",
+        "useLiteralKeys": "error",
+        "noImportantStyles": "error"
+      },
+      "suspicious": {
+        "noExplicitAny": "error"
+      },
       "style": {
+        "noImplicitBoolean": "error",
+        "noNegationElse": "error",
+        "noParameterAssign": "error",
+        "noRestrictedGlobals": "error",
         "noRestrictedImports": {
           "level": "error",
           "options": {
@@ -42,7 +73,14 @@
               }
             }
           }
-        }
+        },
+        "noUnusedTemplateLiteral": "error",
+        "useDefaultParameterLast": "error",
+        "useExponentiationOperator": "error",
+        "useNodejsImportProtocol": "error",
+        "useNumberNamespace": "error",
+        "useSingleVarDeclarator": "error",
+        "noCommonJs": "error"
       }
     }
   },
@@ -53,11 +91,30 @@
         "rules": {
           "correctness": {
             "noUnusedImports": "off",
-            "noUnusedVariables": "off"
+            "noUnusedVariables": "off",
+            "noSelfAssign": "off"
+          },
+          "complexity": {
+            "noUselessUndefinedInitialization": "off"
+          },
+          "suspicious": {
+            "noAssignInExpressions": "off",
+            "noGlobalAssign": "off"
           },
           "style": {
             "useConst": "off",
-            "useImportType": "off"
+            "useImportType": "off",
+            "useTemplate": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["cli.js"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noCommonJs": "off"
           }
         }
       }
