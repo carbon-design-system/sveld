@@ -1,6 +1,6 @@
 # Component Index
 
-> 160 components exported from carbon@0.0.1.
+> 156 components exported from carbon@0.0.1.
 
 ## Components
 
@@ -46,7 +46,6 @@
 - [`FormItem`](#formitem)
 - [`FormLabel`](#formlabel)
 - [`Grid`](#grid)
-- [`HamburgerMenu`](#hamburgermenu)
 - [`Header`](#header)
 - [`HeaderAction`](#headeraction)
 - [`HeaderActionLink`](#headeractionlink)
@@ -62,7 +61,6 @@
 - [`HeaderUtilities`](#headerutilities)
 - [`Icon`](#icon)
 - [`IconSkeleton`](#iconskeleton)
-- [`InlineCheckbox`](#inlinecheckbox)
 - [`InlineLoading`](#inlineloading)
 - [`InlineNotification`](#inlinenotification)
 - [`Link`](#link)
@@ -90,9 +88,7 @@
 - [`OverflowMenu`](#overflowmenu)
 - [`OverflowMenuItem`](#overflowmenuitem)
 - [`Pagination`](#pagination)
-- [`PaginationItem`](#paginationitem)
 - [`PaginationNav`](#paginationnav)
-- [`PaginationOverflow`](#paginationoverflow)
 - [`PaginationSkeleton`](#paginationskeleton)
 - [`PasswordInput`](#passwordinput)
 - [`ProgressIndicator`](#progressindicator)
@@ -1381,26 +1377,6 @@ None.
 
 None.
 
-## `HamburgerMenu`
-
-### Props
-
-| Prop name | Required | Kind             | Reactive | Type                                       | Default value          | Description                                   |
-| :-------- | :------- | :--------------- | :------- | ------------------------------------------ | ---------------------- | --------------------------------------------- |
-| ref       | No       | <code>let</code> | Yes      | <code>null &#124; HTMLButtonElement</code> | <code>null</code>      | Obtain a reference to the HTML button element |
-| isOpen    | No       | <code>let</code> | Yes      | <code>boolean</code>                       | <code>false</code>     | Set to `true` to toggle the open state        |
-| ariaLabel | No       | <code>let</code> | No       | <code>string</code>                        | <code>undefined</code> | Specify the ARIA label for the button         |
-
-### Slots
-
-None.
-
-### Events
-
-| Event name | Type      | Detail | Description |
-| :--------- | :-------- | :----- | :---------- |
-| click      | forwarded | --     | --          |
-
 ## `Header`
 
 ### Props
@@ -1756,28 +1732,6 @@ None.
 | mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
-
-## `InlineCheckbox`
-
-### Props
-
-| Prop name     | Required | Kind             | Reactive | Type                                      | Default value                                    | Description                                       |
-| :------------ | :------- | :--------------- | :------- | ----------------------------------------- | ------------------------------------------------ | ------------------------------------------------- |
-| ref           | No       | <code>let</code> | Yes      | <code>null &#124; HTMLInputElement</code> | <code>null</code>                                | Obtain a reference to the input HTML element      |
-| checked       | No       | <code>let</code> | No       | <code>boolean</code>                      | <code>false</code>                               | Specify whether the checkbox is checked           |
-| indeterminate | No       | <code>let</code> | No       | <code>boolean</code>                      | <code>false</code>                               | Specify whether the checkbox is indeterminate     |
-| title         | No       | <code>let</code> | No       | <code>string</code>                       | <code>undefined</code>                           | Specify the title attribute for the label element |
-| id            | No       | <code>let</code> | No       | <code>string</code>                       | <code>"ccs-" + Math.random().toString(36)</code> | Set an id for the input label                     |
-
-### Slots
-
-None.
-
-### Events
-
-| Event name | Type      | Detail | Description |
-| :--------- | :-------- | :----- | :---------- |
-| change     | forwarded | --     | --          |
 
 ## `InlineLoading`
 
@@ -2547,27 +2501,6 @@ None.
 | :--------- | :--------- | :----------------------------------------------- | :---------- |
 | update     | dispatched | <code>{ pageSize: number; page: number; }</code> | --          |
 
-## `PaginationItem`
-
-### Props
-
-| Prop name | Required | Kind             | Reactive | Type                 | Default value      | Description                           |
-| :-------- | :------- | :--------------- | :------- | -------------------- | ------------------ | ------------------------------------- |
-| page      | No       | <code>let</code> | No       | <code>number</code>  | <code>0</code>     | Specify the current page index        |
-| active    | No       | <code>let</code> | No       | <code>boolean</code> | <code>false</code> | Set to `true` to use the active state |
-
-### Slots
-
-| Slot name | Default | Props                               | Fallback |
-| :-------- | :------ | :---------------------------------- | :------- |
-| --        | Yes     | <code>Record<string, never> </code> | --       |
-
-### Events
-
-| Event name | Type      | Detail | Description |
-| :--------- | :-------- | :----- | :---------- |
-| click      | forwarded | --     | --          |
-
 ## `PaginationNav`
 
 ### Props
@@ -2592,25 +2525,6 @@ None.
 | change                 | dispatched | <code>{ page: number; }</code> | --          |
 | click:button--previous | dispatched | <code>{ page: number; }</code> | --          |
 | click:button--next     | dispatched | <code>{ page: number; }</code> | --          |
-
-## `PaginationOverflow`
-
-### Props
-
-| Prop name | Required | Kind             | Reactive | Type                | Default value  | Description                   |
-| :-------- | :------- | :--------------- | :------- | ------------------- | -------------- | ----------------------------- |
-| fromIndex | No       | <code>let</code> | No       | <code>number</code> | <code>0</code> | Specify the pivot start index |
-| count     | No       | <code>let</code> | No       | <code>number</code> | <code>0</code> | Specify the pivot end index   |
-
-### Slots
-
-None.
-
-### Events
-
-| Event name | Type       | Detail                          | Description |
-| :--------- | :--------- | :------------------------------ | :---------- |
-| select     | dispatched | <code>{ index: number; }</code> | --          |
 
 ## `PaginationSkeleton`
 
