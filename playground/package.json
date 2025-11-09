@@ -16,6 +16,6 @@
     "svelte": "^4.2.20",
     "svelte-highlight": "^7.9.0",
     "typescript": "^5.9.3",
-    "vite": "^7.2.2"
+    "vite": "^5.4.21"
   }
 }
