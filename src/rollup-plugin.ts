@@ -73,10 +73,9 @@ export async function generateBundle(input: string, glob: boolean) {
   }
 
   const components: ComponentDocs = new Map();
-  const parser = new ComponentParser();
   const exportEntries = Object.entries(exports);
 
-  for (const [exportName, entry] of exportEntries) {
+  const componentPromises = exportEntries.map(async ([exportName, entry]) => {
     const filePath = entry.source;
     const { ext, name } = path.parse(filePath);
 
@@ -92,14 +91,27 @@ export async function generateBundle(input: string, glob: boolean) {
         filename: path.basename(filePath),
       });
 
-      components.set(moduleName, {
+      const parser = new ComponentParser();
+      const parsed = parser.parseSvelteComponent(processed, {
         moduleName,
         filePath,
-        ...parser.parseSvelteComponent(processed, {
-          moduleName,
-          filePath,
-        }),
       });
+
+      return {
+        moduleName,
+        filePath,
+        ...parsed,
+      };
+    }
+
+    return null;
+  });
+
+  const results = await Promise.all(componentPromises);
+
+  for (const result of results) {
+    if (result) {
+      components.set(result.moduleName, result);
     }
   }
 
