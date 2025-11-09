@@ -25,6 +25,13 @@ interface ComponentParserOptions {
 
 type ComponentPropName = string;
 
+interface ComponentPropParam {
+  name: string;
+  type: string;
+  description?: string;
+  optional?: boolean;
+}
+
 interface ComponentProp {
   name: string;
   kind: "let" | "const" | "function";
@@ -32,6 +39,7 @@ interface ComponentProp {
   type?: string;
   value?: string;
   description?: string;
+  params?: ComponentPropParam[];
   isFunction: boolean;
   isFunctionDeclaration: boolean;
   isRequired: boolean;
@@ -882,15 +890,47 @@ export default class ComponentParser {
               isFunctionDeclaration = true;
             }
 
+            let params: ComponentPropParam[] | undefined;
+
             if (node.leadingComments) {
               const jsdoc_comment = ComponentParser.findJSDocComment(node.leadingComments);
               if (jsdoc_comment) {
                 const comment = parseComment(ComponentParser.formatComment(jsdoc_comment.value), {
                   spacing: "preserve",
                 });
-                const tag = comment[0]?.tags[comment[0]?.tags.length - 1];
-                if (tag?.tag === "type") type = this.aliasType(tag.type);
-                description = ComponentParser.assignValue(comment[0]?.description?.trim());
+
+                // Extract @type tag
+                const typeTag = comment[0]?.tags.find((t) => t.tag === "type");
+                if (typeTag) type = this.aliasType(typeTag.type);
+
+                // Extract @param tags
+                const paramTags = comment[0]?.tags.filter((t) => t.tag === "param") ?? [];
+                if (paramTags.length > 0) {
+                  params = paramTags
+                    .filter((tag) => !tag.name.includes(".")) // Exclude nested params like "options.expand"
+                    .map((tag) => ({
+                      name: tag.name,
+                      type: this.aliasType(tag.type),
+                      description: tag.description?.replace(PROPERTY_DESCRIPTION_REGEX, "").trim(),
+                      optional: tag.optional || false,
+                    }));
+                }
+
+                // Build description from comment description and non-param/non-type tags
+                const commentDescription = ComponentParser.assignValue(comment[0]?.description?.trim());
+                const additionalTags =
+                  comment[0]?.tags.filter(
+                    (tag) => !["type", "param", "extends", "restProps", "slot", "event", "typedef"].includes(tag.tag),
+                  ) ?? [];
+
+                if (commentDescription || additionalTags.length > 0) {
+                  description = commentDescription || "";
+                  for (const tag of additionalTags) {
+                    description += `${description ? "\n" : ""}@${tag.tag}${tag.name ? ` ${tag.name}` : ""}${
+                      tag.description ? ` ${tag.description}` : ""
+                    }`;
+                  }
+                }
               }
             }
 
@@ -904,6 +944,7 @@ export default class ComponentParser {
               description,
               type,
               value,
+              params,
               isFunction,
               isFunctionDeclaration,
               isRequired: false,
@@ -1041,6 +1082,8 @@ export default class ComponentParser {
             isFunctionDeclaration = true;
           }
 
+          let params: ComponentPropParam[] | undefined;
+
           if (node.leadingComments) {
             const jsdoc_comment = ComponentParser.findJSDocComment(node.leadingComments);
             if (jsdoc_comment) {
@@ -1048,23 +1091,37 @@ export default class ComponentParser {
                 spacing: "preserve",
               });
 
-              const tag = comment[0]?.tags[comment[0]?.tags.length - 1];
-              if (tag?.tag === "type") type = this.aliasType(tag.type);
-              description = ComponentParser.assignValue(comment[0]?.description?.trim());
+              // Extract @type tag
+              const typeTag = comment[0]?.tags.find((t) => t.tag === "type");
+              if (typeTag) type = this.aliasType(typeTag.type);
 
-              const additional_tags =
-                comment[0]?.tags.filter(
-                  (tag) => !["type", "extends", "restProps", "slot", "event", "typedef"].includes(tag.tag),
-                ) ?? [];
-
-              if (additional_tags.length > 0 && description === undefined) {
-                description = "";
+              // Extract @param tags
+              const paramTags = comment[0]?.tags.filter((t) => t.tag === "param") ?? [];
+              if (paramTags.length > 0) {
+                params = paramTags
+                  .filter((tag) => !tag.name.includes(".")) // Exclude nested params like "options.expand"
+                  .map((tag) => ({
+                    name: tag.name,
+                    type: this.aliasType(tag.type),
+                    description: tag.description?.replace(PROPERTY_DESCRIPTION_REGEX, "").trim(),
+                    optional: tag.optional || false,
+                  }));
               }
 
-              for (const tag of additional_tags) {
-                description += `${description ? "\n" : ""}@${tag.tag} ${tag.name}${
-                  tag.description ? ` ${tag.description}` : ""
-                }`;
+              // Build description from comment description and non-param/non-type tags
+              const commentDescription = ComponentParser.assignValue(comment[0]?.description?.trim());
+              const additional_tags =
+                comment[0]?.tags.filter(
+                  (tag) => !["type", "param", "extends", "restProps", "slot", "event", "typedef"].includes(tag.tag),
+                ) ?? [];
+
+              if (commentDescription || additional_tags.length > 0) {
+                description = commentDescription || "";
+                for (const tag of additional_tags) {
+                  description += `${description ? "\n" : ""}@${tag.tag}${tag.name ? ` ${tag.name}` : ""}${
+                    tag.description ? ` ${tag.description}` : ""
+                  }`;
+                }
               }
             }
           }
@@ -1079,6 +1136,7 @@ export default class ComponentParser {
             description,
             type,
             value,
+            params,
             isFunction,
             isFunctionDeclaration,
             isRequired,

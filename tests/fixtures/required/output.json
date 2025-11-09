@@ -3,7 +3,7 @@
     {
       "name": "prop",
       "kind": "let",
-      "description": "@required ",
+      "description": "@required",
       "type": "boolean",
       "value": "true",
       "isFunction": false,
@@ -15,7 +15,7 @@
     {
       "name": "prop1",
       "kind": "let",
-      "description": "This is a comment.\n@required ",
+      "description": "This is a comment.\n@required",
       "type": "boolean | string",
       "value": "true",
       "isFunction": false,
