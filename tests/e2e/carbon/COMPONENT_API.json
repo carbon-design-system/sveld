@@ -1,5 +1,5 @@
 {
-  "total": 156,
+  "total": 160,
   "components": [
     {
       "moduleName": "Accordion",
@@ -4235,6 +4235,55 @@
       "contexts": []
     },
     {
+      "moduleName": "HamburgerMenu",
+      "filePath": "src/UIShell/SideNav/HamburgerMenu.svelte",
+      "props": [
+        {
+          "name": "ariaLabel",
+          "kind": "let",
+          "description": "Specify the ARIA label for the button",
+          "type": "string",
+          "value": "undefined",
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": false,
+          "constant": false,
+          "reactive": false
+        },
+        {
+          "name": "isOpen",
+          "kind": "let",
+          "description": "Set to `true` to toggle the open state",
+          "type": "boolean",
+          "value": "false",
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": false,
+          "constant": false,
+          "reactive": true
+        },
+        {
+          "name": "ref",
+          "kind": "let",
+          "description": "Obtain a reference to the HTML button element",
+          "type": "null | HTMLButtonElement",
+          "value": "null",
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": false,
+          "constant": false,
+          "reactive": true
+        }
+      ],
+      "moduleExports": [],
+      "slots": [],
+      "events": [{ "type": "forwarded", "name": "click", "element": "button" }],
+      "typedefs": [],
+      "generics": null,
+      "rest_props": { "type": "Element", "name": "button" },
+      "contexts": []
+    },
+    {
       "moduleName": "Header",
       "filePath": "src/UIShell/GlobalHeader/Header.svelte",
       "props": [
@@ -5024,6 +5073,79 @@
       "typedefs": [],
       "generics": null,
       "rest_props": { "type": "Element", "name": "div" },
+      "contexts": []
+    },
+    {
+      "moduleName": "InlineCheckbox",
+      "filePath": "src/Checkbox/InlineCheckbox.svelte",
+      "props": [
+        {
+          "name": "checked",
+          "kind": "let",
+          "description": "Specify whether the checkbox is checked",
+          "type": "boolean",
+          "value": "false",
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": false,
+          "constant": false,
+          "reactive": false
+        },
+        {
+          "name": "indeterminate",
+          "kind": "let",
+          "description": "Specify whether the checkbox is indeterminate",
+          "type": "boolean",
+          "value": "false",
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": false,
+          "constant": false,
+          "reactive": false
+        },
+        {
+          "name": "title",
+          "kind": "let",
+          "description": "Specify the title attribute for the label element",
+          "type": "string",
+          "value": "undefined",
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": false,
+          "constant": false,
+          "reactive": false
+        },
+        {
+          "name": "id",
+          "kind": "let",
+          "description": "Set an id for the input label",
+          "type": "string",
+          "value": "\"ccs-\" + Math.random().toString(36)",
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": false,
+          "constant": false,
+          "reactive": false
+        },
+        {
+          "name": "ref",
+          "kind": "let",
+          "description": "Obtain a reference to the input HTML element",
+          "type": "null | HTMLInputElement",
+          "value": "null",
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": false,
+          "constant": false,
+          "reactive": true
+        }
+      ],
+      "moduleExports": [],
+      "slots": [],
+      "events": [{ "type": "forwarded", "name": "change", "element": "input" }],
+      "typedefs": [],
+      "generics": null,
+      "rest_props": { "type": "Element", "name": "input" },
       "contexts": []
     },
     {
@@ -7846,6 +7968,44 @@
       "contexts": []
     },
     {
+      "moduleName": "PaginationItem",
+      "filePath": "src/PaginationNav/PaginationItem.svelte",
+      "props": [
+        {
+          "name": "page",
+          "kind": "let",
+          "description": "Specify the current page index",
+          "type": "number",
+          "value": "0",
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": false,
+          "constant": false,
+          "reactive": false
+        },
+        {
+          "name": "active",
+          "kind": "let",
+          "description": "Set to `true` to use the active state",
+          "type": "boolean",
+          "value": "false",
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": false,
+          "constant": false,
+          "reactive": false
+        }
+      ],
+      "moduleExports": [],
+      "slots": [
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
+      ],
+      "events": [{ "type": "forwarded", "name": "click", "element": "button" }],
+      "typedefs": [],
+      "generics": null,
+      "contexts": []
+    },
+    {
       "moduleName": "PaginationNav",
       "filePath": "src/PaginationNav/PaginationNav.svelte",
       "props": [
@@ -7944,6 +8104,48 @@
       "typedefs": [],
       "generics": null,
       "rest_props": { "type": "Element", "name": "nav" },
+      "contexts": []
+    },
+    {
+      "moduleName": "PaginationOverflow",
+      "filePath": "src/PaginationNav/PaginationOverflow.svelte",
+      "props": [
+        {
+          "name": "fromIndex",
+          "kind": "let",
+          "description": "Specify the pivot start index",
+          "type": "number",
+          "value": "0",
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": false,
+          "constant": false,
+          "reactive": false
+        },
+        {
+          "name": "count",
+          "kind": "let",
+          "description": "Specify the pivot end index",
+          "type": "number",
+          "value": "0",
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": false,
+          "constant": false,
+          "reactive": false
+        }
+      ],
+      "moduleExports": [],
+      "slots": [],
+      "events": [
+        {
+          "type": "dispatched",
+          "name": "select",
+          "detail": "{ index: number; }"
+        }
+      ],
+      "typedefs": [],
+      "generics": null,
       "contexts": []
     },
     {

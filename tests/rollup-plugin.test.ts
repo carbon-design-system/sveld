@@ -2,7 +2,7 @@
 import * as fs from "node:fs";
 // biome-ignore lint/performance/noNamespaceImport: needed for jest.spyOn
 import * as path from "node:path";
-import pluginSveld from "../src/rollup-plugin";
+import pluginSveld, { generateBundle } from "../src/rollup-plugin";
 
 describe("pluginSveld", () => {
   const mockCwd = "/mock/project";
@@ -49,5 +49,40 @@ describe("pluginSveld", () => {
 
     expect(fs.existsSync).toHaveBeenCalledWith(`${mockCwd}/src/Override.svelte`);
     expect(fs.readFileSync).not.toHaveBeenCalled();
+  });
+});
+
+describe("generateBundle", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test("handles directory input without crashing (issue #94)", async () => {
+    const mockInput = "/mock/fixtures/src";
+
+    jest.spyOn(fs, "lstatSync").mockReturnValue({ isFile: () => false } as fs.Stats);
+    const readFileSyncSpy = jest.spyOn(fs, "readFileSync");
+
+    const result = await generateBundle(mockInput, false);
+
+    // Should NOT attempt to read directory as file
+    expect(readFileSyncSpy).not.toHaveBeenCalledWith(mockInput, "utf-8");
+    expect(result.exports).toEqual({});
+  });
+
+  test("handles directory input with glob option", async () => {
+    const mockInput = "/mock/fixtures/src";
+
+    jest.spyOn(fs, "lstatSync").mockReturnValue({ isFile: () => false } as fs.Stats);
+
+    const result = await generateBundle(mockInput, true);
+
+    // Should not crash and should populate exports from glob-discovered components
+    expect(result.exports).toBeDefined();
+    expect(result.components).toBeDefined();
   });
 });

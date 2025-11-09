@@ -62,9 +62,15 @@ interface GenerateBundleResult {
 }
 
 export async function generateBundle(input: string, glob: boolean) {
-  const dir = lstatSync(input).isFile() ? dirname(input) : input;
-  const entry = readFileSync(input, "utf-8");
-  const exports = parseExports(entry, dir);
+  const isFile = lstatSync(input).isFile();
+  const dir = isFile ? dirname(input) : input;
+
+  // Only parse exports if input is a file
+  let exports: ParsedExports = {};
+  if (isFile) {
+    const entry = readFileSync(input, "utf-8");
+    exports = parseExports(entry, dir);
+  }
 
   if (glob) {
     for (const file of globSync([`${dir}/**/*.svelte`])) {
@@ -73,6 +79,9 @@ export async function generateBundle(input: string, glob: boolean) {
 
       if (exports[moduleName]) {
         exports[moduleName].source = source;
+      } else {
+        // When glob is true and no export mapping exists, create one
+        exports[moduleName] = { source, default: false };
       }
     }
   }
