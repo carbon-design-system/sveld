@@ -259,4 +259,44 @@ describe("ComponentParser", () => {
 
     expect(() => parser.parseSvelteComponent(invalidSource, diagnostics)).toThrow();
   });
+
+  test("handles re-exported imports from context=module (issue #104)", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script context="module" lang="ts">
+        import { LayerCake, Svg, Html } from 'layercake';
+        export { Svg, Html };
+      </script>
+
+      <script lang="ts">
+        export let data;
+      </script>
+
+      <div>
+        <slot />
+      </div>
+    `;
+
+    // This should not throw "Cannot read properties of null (reading 'type')"
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.props).toHaveLength(1);
+    expect(result.props[0].name).toBe("data");
+  });
+
+  test("handles re-exports in instance script (issue #104)", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        import { helper } from './utils';
+        export { helper };
+        export let data = [];
+      </script>
+
+      <div>{data.length}</div>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.props).toHaveLength(1);
+    expect(result.props[0].name).toBe("data");
+  });
 });

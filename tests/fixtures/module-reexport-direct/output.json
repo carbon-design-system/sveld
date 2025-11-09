@@ -1,0 +1,43 @@
+{
+  "props": [
+    {
+      "name": "config",
+      "kind": "let",
+      "description": "Configuration settings",
+      "type": "{ enabled: true }",
+      "value": "{ enabled: true }",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "onReady",
+      "kind": "let",
+      "description": "Optional callback function",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "header",
+      "default": false,
+      "slot_props": "Record<string, never>"
+    },
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}

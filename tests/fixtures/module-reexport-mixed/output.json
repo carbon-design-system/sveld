@@ -1,0 +1,68 @@
+{
+  "props": [
+    {
+      "name": "name",
+      "kind": "let",
+      "description": "Item name to display",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "value",
+      "kind": "let",
+      "description": "Optional item value",
+      "value": "null",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [
+    {
+      "name": "formatValue",
+      "kind": "const",
+      "description": "A local utility function for formatting",
+      "type": "(value: any) => string",
+      "value": "(value) => String(value)",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false
+    },
+    {
+      "name": "VERSION",
+      "kind": "const",
+      "description": "Application version number",
+      "type": "string",
+      "value": "'1.0.0'",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false
+    },
+    {
+      "name": "log",
+      "kind": "function",
+      "description": "Logger function",
+      "type": "(msg: string) => void",
+      "value": "() => {     console.log(msg);   }",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}

@@ -736,6 +736,11 @@ export default class ComponentParser {
       walk(this.parsed?.module as unknown as Node, {
         enter: (node) => {
           if (node.type === "ExportNamedDeclaration") {
+            // Skip re-exports (e.g., export { A, B } from 'library').
+            if (node.declaration == null) {
+              return;
+            }
+
             const {
               type: declaration_type,
               id,
@@ -878,6 +883,11 @@ export default class ComponentParser {
             });
             node.declaration = declaration;
             prop_name = exportedName;
+          }
+
+          // Skip re-exports (e.g., export { A, B } from 'library').
+          if (node.declaration == null) {
+            return;
           }
 
           const {
