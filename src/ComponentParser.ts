@@ -155,6 +155,7 @@ export default class ComponentParser {
   private readonly generics: ComponentGenerics = null;
   private readonly bindings: Map<ComponentPropName, ComponentPropBindings> = new Map();
   private readonly contexts: Map<ComponentContextName, ComponentContext> = new Map();
+  private variableInfoCache: Map<string, { type: string; description?: string }> = new Map();
 
   constructor(options?: ComponentParserOptions) {
     this.options = options;
@@ -506,7 +507,61 @@ export default class ComponentParser {
     return `${capitalized}Context`;
   }
 
+  private buildVariableInfoCache() {
+    if (!this.source) return;
+
+    const lines = this.source.split("\n");
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+
+      // Match variable declarations
+      const varMatch = line.match(/(?:const|let|function)\s+(\w+)\s*[=(]/);
+      if (varMatch) {
+        const varName = varMatch[1];
+
+        // Look backwards for JSDoc comment
+        for (let j = i - 1; j >= 0; j--) {
+          const prevLine = lines[j].trim();
+
+          // Stop if we hit a non-comment, non-empty line
+          if (prevLine && !prevLine.startsWith("*") && !prevLine.startsWith("/*") && !prevLine.startsWith("//")) {
+            break;
+          }
+
+          // Found start of JSDoc comment
+          if (prevLine.startsWith("/**")) {
+            // Extract the JSDoc comment block
+            const commentLines: string[] = [];
+            for (let k = j; k < i; k++) {
+              commentLines.push(lines[k]);
+            }
+            const commentBlock = commentLines.join("\n");
+
+            // Parse the JSDoc
+            const parsed = commentParser.parse(commentBlock, { spacing: "preserve" });
+            if (parsed[0]?.tags) {
+              const typeTag = parsed[0].tags.find((t) => t.tag === "type");
+              if (typeTag) {
+                this.variableInfoCache.set(varName, {
+                  type: this.aliasType(typeTag.type),
+                  description: parsed[0].description || typeTag.description,
+                });
+              }
+            }
+            break;
+          }
+        }
+      }
+    }
+  }
+
   private findVariableTypeAndDescription(varName: string): { type: string; description?: string } | null {
+    const cached = this.variableInfoCache.get(varName);
+    if (cached) {
+      return cached;
+    }
+
     // Search through the source code directly for JSDoc comments
     if (!this.source) return null;
 
@@ -704,16 +759,24 @@ export default class ComponentParser {
     this.generics = null;
     this.bindings.clear();
     this.contexts.clear();
+    this.variableInfoCache.clear();
   }
+
+  // Pre-compiled regexes for better performance
+  private static readonly SCRIPT_BLOCK_REGEX = /(<script[^>]*>)([\s\S]*?)(<\/script>)/gi;
+  private static readonly TS_DIRECTIVE_REGEX = /\/\/\s*@ts-[^\n\r]*/g;
 
   /**
    * Strips TypeScript directive comments from script blocks only.
    */
   private static stripTypeScriptDirectivesFromScripts(source: string): string {
     // Find all script blocks and strip directives only from within them
-    return source.replace(/(<script[^>]*>)([\s\S]*?)(<\/script>)/gi, (_match, openTag, scriptContent, closeTag) => {
+    // Note: Need to reset lastIndex for global regex
+    ComponentParser.SCRIPT_BLOCK_REGEX.lastIndex = 0;
+    return source.replace(ComponentParser.SCRIPT_BLOCK_REGEX, (_match, openTag, scriptContent, closeTag) => {
       // Remove TypeScript directives from script content only
-      const cleanedContent = scriptContent.replace(/\/\/\s*@ts-[^\n\r]*/g, "");
+      ComponentParser.TS_DIRECTIVE_REGEX.lastIndex = 0;
+      const cleanedContent = scriptContent.replace(ComponentParser.TS_DIRECTIVE_REGEX, "");
       return openTag + cleanedContent + closeTag;
     });
   }
@@ -727,9 +790,17 @@ export default class ComponentParser {
     // Strip TypeScript directives from script blocks only to prevent interference with JSDoc
     const cleanedSource = ComponentParser.stripTypeScriptDirectivesFromScripts(source);
     this.source = cleanedSource;
-    this.compiled = compile(cleanedSource);
-    this.parsed = parse(cleanedSource);
+
+    // Parse once - compile() internally calls parse(), so we can extract the AST from it
+    const compiled = compile(cleanedSource);
+    this.compiled = compiled;
+
+    // Reuse the AST from compilation instead of parsing again
+    // The compile result includes the parsed AST
+    this.parsed = compiled.ast || parse(cleanedSource);
+
     this.collectReactiveVars();
+    this.buildVariableInfoCache();
     this.parseCustomTypes();
 
     if (this.parsed?.module) {
