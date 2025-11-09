@@ -65,6 +65,77 @@ exports[`fixtures (JSON) "slots-named/input.svelte" 1`] = `
 }"
 `;
 
+exports[`fixtures (JSON) "module-reexport-mixed/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "name",
+      "kind": "let",
+      "description": "Item name to display",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "value",
+      "kind": "let",
+      "description": "Optional item value",
+      "value": "null",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [
+    {
+      "name": "formatValue",
+      "kind": "const",
+      "description": "A local utility function for formatting",
+      "type": "(value: any) => string",
+      "value": "(value) => String(value)",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false
+    },
+    {
+      "name": "VERSION",
+      "kind": "const",
+      "description": "Application version number",
+      "type": "string",
+      "value": "'1.0.0'",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false
+    },
+    {
+      "name": "log",
+      "kind": "function",
+      "description": "Logger function",
+      "type": "(msg: string) => void",
+      "value": "() => {     console.log(msg);   }",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}"
+`;
+
 exports[`fixtures (JSON) "generics-multiple/input.svelte" 1`] = `
 "{
   "props": [
@@ -140,6 +211,48 @@ exports[`fixtures (JSON) "context-empty/input.svelte" 1`] = `
       "properties": []
     }
   ]
+}"
+`;
+
+exports[`fixtures (JSON) "module-reexport/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "data",
+      "kind": "let",
+      "description": "Chart data to display",
+      "value": "null",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "title",
+      "kind": "let",
+      "description": "Chart title",
+      "type": "string",
+      "value": "'Chart'",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
 }"
 `;
 
@@ -522,6 +635,52 @@ exports[`fixtures (JSON) "empty-export/input.svelte" 1`] = `
 }"
 `;
 
+exports[`fixtures (JSON) "module-reexport-direct/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "config",
+      "kind": "let",
+      "description": "Configuration settings",
+      "type": "{ enabled: true }",
+      "value": "{ enabled: true }",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "onReady",
+      "kind": "let",
+      "description": "Optional callback function",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "header",
+      "default": false,
+      "slot_props": "Record<string, never>"
+    },
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}"
+`;
+
 exports[`fixtures (JSON) "typed-slots/input.svelte" 1`] = `
 "{
   "props": [
@@ -671,6 +830,49 @@ exports[`fixtures (JSON) "dispatched-events/input.svelte" 1`] = `
 }"
 `;
 
+exports[`fixtures (JSON) "module-reexport-renamed/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "visible",
+      "kind": "let",
+      "description": "Controls visibility",
+      "type": "boolean",
+      "value": "true",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "config",
+      "kind": "let",
+      "description": "Configuration object",
+      "type": "{}",
+      "value": "{}",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}"
+`;
+
 exports[`fixtures (JSON) "typedefs/input.svelte" 1`] = `
 "{
   "props": [
@@ -809,6 +1011,43 @@ exports[`fixtures (JSON) "bind-this/input.svelte" 1`] = `
       "slot_props": "Record<string, never>"
     }
   ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}"
+`;
+
+exports[`fixtures (JSON) "instance-reexport/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "data",
+      "kind": "let",
+      "description": "Array of data items",
+      "type": "[]",
+      "value": "[]",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "showDetails",
+      "kind": "let",
+      "description": "Whether to show details",
+      "type": "boolean",
+      "value": "false",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
   "events": [],
   "typedefs": [],
   "generics": null,
@@ -2008,6 +2247,46 @@ export default class SlotsNamed extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "module-reexport-mixed/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+/**
+ * A local utility function for formatting
+ */
+export declare function formatValue(value: any): string;
+
+/**
+ * Application version number
+ */
+export type VERSION = string;
+
+/**
+ * Logger function
+ */
+export declare function log(msg: string): void;
+
+export type ModuleReexportMixedProps = {
+  /**
+   * Item name to display
+   * @default undefined
+   */
+  name: undefined;
+
+  /**
+   * Optional item value
+   * @default null
+   */
+  value?: undefined;
+};
+
+export default class ModuleReexportMixed extends SvelteComponentTyped<
+  ModuleReexportMixedProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "generics-multiple/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
@@ -2057,6 +2336,31 @@ export default class ContextEmpty extends SvelteComponentTyped<
   ContextEmptyProps,
   Record<string, any>,
   Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "module-reexport/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export type ModuleReexportProps = {
+  /**
+   * Chart data to display
+   * @default null
+   */
+  data?: undefined;
+
+  /**
+   * Chart title
+   * @default 'Chart'
+   */
+  title?: string;
+};
+
+export default class ModuleReexport extends SvelteComponentTyped<
+  ModuleReexportProps,
+  Record<string, any>,
+  { default: Record<string, never> }
 > {}
 "
 `;
@@ -2274,6 +2578,31 @@ export default class EmptyExport extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "module-reexport-direct/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export type ModuleReexportDirectProps = {
+  /**
+   * Configuration settings
+   * @default { enabled: true }
+   */
+  config?: { enabled: true };
+
+  /**
+   * Optional callback function
+   * @default undefined
+   */
+  onReady: undefined;
+};
+
+export default class ModuleReexportDirect extends SvelteComponentTyped<
+  ModuleReexportDirectProps,
+  Record<string, any>,
+  { header: Record<string, never>; default: Record<string, never> }
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "typed-slots/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
@@ -2348,6 +2677,31 @@ export default class DispatchedEvents extends SvelteComponentTyped<
     "destroy--component": CustomEvent<null>;
     "destroy:component": CustomEvent<null>;
   },
+  { default: Record<string, never> }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "module-reexport-renamed/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export type ModuleReexportRenamedProps = {
+  /**
+   * Controls visibility
+   * @default true
+   */
+  visible?: boolean;
+
+  /**
+   * Configuration object
+   * @default {}
+   */
+  config?: {};
+};
+
+export default class ModuleReexportRenamed extends SvelteComponentTyped<
+  ModuleReexportRenamedProps,
+  Record<string, any>,
   { default: Record<string, never> }
 > {}
 "
@@ -2438,6 +2792,31 @@ export default class BindThis extends SvelteComponentTyped<
   BindThisProps,
   Record<string, any>,
   { default: Record<string, never> }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "instance-reexport/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export type InstanceReexportProps = {
+  /**
+   * Array of data items
+   * @default []
+   */
+  data?: [];
+
+  /**
+   * Whether to show details
+   * @default false
+   */
+  showDetails?: boolean;
+};
+
+export default class InstanceReexport extends SvelteComponentTyped<
+  InstanceReexportProps,
+  Record<string, any>,
+  Record<string, never>
 > {}
 "
 `;
