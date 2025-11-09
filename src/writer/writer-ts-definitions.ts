@@ -182,6 +182,105 @@ const mapEvent = () => {
   return "WindowEventMap";
 };
 
+// Standard DOM events that should use WindowEventMap
+const STANDARD_DOM_EVENTS = new Set([
+  // Mouse events
+  "click",
+  "dblclick",
+  "mousedown",
+  "mouseup",
+  "mousemove",
+  "mouseover",
+  "mouseout",
+  "mouseenter",
+  "mouseleave",
+  "contextmenu",
+  "wheel",
+  // Keyboard events
+  "keydown",
+  "keyup",
+  "keypress",
+  // Form events
+  "submit",
+  "change",
+  "input",
+  "focus",
+  "blur",
+  "focusin",
+  "focusout",
+  "reset",
+  "select",
+  // Touch events
+  "touchstart",
+  "touchend",
+  "touchmove",
+  "touchcancel",
+  // Drag events
+  "drag",
+  "dragstart",
+  "dragend",
+  "dragover",
+  "dragenter",
+  "dragleave",
+  "drop",
+  // Pointer events
+  "pointerdown",
+  "pointerup",
+  "pointermove",
+  "pointerover",
+  "pointerout",
+  "pointerenter",
+  "pointerleave",
+  "pointercancel",
+  "gotpointercapture",
+  "lostpointercapture",
+  // Media events
+  "play",
+  "pause",
+  "ended",
+  "volumechange",
+  "timeupdate",
+  "loadeddata",
+  "loadedmetadata",
+  "canplay",
+  "canplaythrough",
+  "seeking",
+  "seeked",
+  "playing",
+  "waiting",
+  "stalled",
+  "suspend",
+  "abort",
+  "error",
+  "emptied",
+  "ratechange",
+  "durationchange",
+  "loadstart",
+  "progress",
+  "loadend",
+  // Animation/Transition events
+  "animationstart",
+  "animationend",
+  "animationiteration",
+  "animationcancel",
+  "transitionstart",
+  "transitionend",
+  "transitionrun",
+  "transitioncancel",
+  // Other events
+  "scroll",
+  "resize",
+  "load",
+  "unload",
+  "beforeunload",
+  "cut",
+  "copy",
+  "paste",
+  "compositionstart",
+  "compositionupdate",
+  "compositionend",
+]);
+
 function genEventDef(def: Pick<ComponentDocApi, "events">) {
   const createDispatchedEvent = (detail: string = ANY_TYPE) => {
     if (/CustomEvent/.test(detail)) return detail;
@@ -190,105 +289,7 @@ function genEventDef(def: Pick<ComponentDocApi, "events">) {
 
   // Check if an event name is a standard DOM event that exists in WindowEventMap
   const isStandardDomEvent = (eventName: string): boolean => {
-    // Standard DOM events that should use WindowEventMap
-    const standardEvents = new Set([
-      // Mouse events
-      "click",
-      "dblclick",
-      "mousedown",
-      "mouseup",
-      "mousemove",
-      "mouseover",
-      "mouseout",
-      "mouseenter",
-      "mouseleave",
-      "contextmenu",
-      "wheel",
-      // Keyboard events
-      "keydown",
-      "keyup",
-      "keypress",
-      // Form events
-      "submit",
-      "change",
-      "input",
-      "focus",
-      "blur",
-      "focusin",
-      "focusout",
-      "reset",
-      "select",
-      // Touch events
-      "touchstart",
-      "touchend",
-      "touchmove",
-      "touchcancel",
-      // Drag events
-      "drag",
-      "dragstart",
-      "dragend",
-      "dragover",
-      "dragenter",
-      "dragleave",
-      "drop",
-      // Pointer events
-      "pointerdown",
-      "pointerup",
-      "pointermove",
-      "pointerover",
-      "pointerout",
-      "pointerenter",
-      "pointerleave",
-      "pointercancel",
-      "gotpointercapture",
-      "lostpointercapture",
-      // Media events
-      "play",
-      "pause",
-      "ended",
-      "volumechange",
-      "timeupdate",
-      "loadeddata",
-      "loadedmetadata",
-      "canplay",
-      "canplaythrough",
-      "seeking",
-      "seeked",
-      "playing",
-      "waiting",
-      "stalled",
-      "suspend",
-      "abort",
-      "error",
-      "emptied",
-      "ratechange",
-      "durationchange",
-      "loadstart",
-      "progress",
-      "loadend",
-      // Animation/Transition events
-      "animationstart",
-      "animationend",
-      "animationiteration",
-      "animationcancel",
-      "transitionstart",
-      "transitionend",
-      "transitionrun",
-      "transitioncancel",
-      // Other events
-      "scroll",
-      "resize",
-      "load",
-      "unload",
-      "beforeunload",
-      "cut",
-      "copy",
-      "paste",
-      "compositionstart",
-      "compositionupdate",
-      "compositionend",
-    ]);
-    return standardEvents.has(eventName);
+    return STANDARD_DOM_EVENTS.has(eventName);
   };
 
   if (def.events.length === 0) return EMPTY_EVENTS;
@@ -440,12 +441,12 @@ export default async function writeTsDefinitions(components: ComponentDocs, opti
   const writer = new Writer({ parser: "typescript", printWidth: 80 });
   const indexDTs = options.preamble + createExports(options.exports, components);
 
-  for await (const [_moduleName, component] of components) {
+  const writePromises = Array.from(components).map(async ([_moduleName, component]) => {
     const ts_filepath = convertSvelteExt(path.join(options.outDir, component.filePath));
     await writer.write(ts_filepath, writeTsDefinition(component));
-  }
+  });
 
-  await writer.write(ts_base_path, indexDTs);
+  await Promise.all([...writePromises, writer.write(ts_base_path, indexDTs)]);
 
   console.log(`created TypeScript definitions.`);
 }
