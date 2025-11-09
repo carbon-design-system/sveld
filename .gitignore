@@ -1,6 +1,6 @@
 .DS_Store
 .idea
-lib
+/lib
 build
 dist
 node_modules
