@@ -767,6 +767,13 @@ export default class ComponentParser {
                     type = "string";
                   }
                 }
+
+                // For arrow functions, use a generic function type instead of the implementation
+                // The implementation is kept in `value` for JSDoc @default comments
+                // Users can override with @type JSDoc annotation for proper typing
+                if (init.type === "ArrowFunctionExpression") {
+                  type = "(...args: any[]) => any";
+                }
               } else {
                 if (init.type === "UnaryExpression") {
                   value = this.sourceAtPos(init.start, init.end);
@@ -908,6 +915,13 @@ export default class ComponentParser {
                 if (init?.left.type === "Literal" && typeof init?.left.value === "string") {
                   type = "string";
                 }
+              }
+
+              // For arrow functions, use a generic function type instead of the implementation
+              // The implementation is kept in `value` for JSDoc @default comments
+              // Users can override with @type JSDoc annotation for proper typing
+              if (init.type === "ArrowFunctionExpression") {
+                type = "(...args: any[]) => any";
               }
             } else {
               if (init.type === "UnaryExpression") {
