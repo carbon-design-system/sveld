@@ -9,9 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Fixes**
 
-- generate valid TypeScript for arrow function exports (#194)
-- handle re-exports in both module and instance scripts (#193)
-- capture non-literal default values in prop parsing (#192)
+- generate valid TypeScript for arrow function exports
+- handle re-exports in both module and instance scripts
+- capture non-literal default values in prop parsing
 
 ## [0.23.2](https://github.com/carbon-design-system/sveld/releases/tag/v0.23.2) - 2025-11-08
 
