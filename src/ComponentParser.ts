@@ -1,11 +1,13 @@
 // TODO: upgrading to Svelte 4 shows a lot of TS errors. Ignore for now but resolve.
 // @ts-nocheck
-import * as commentParser from "comment-parser";
+import { parse as parseComment } from "comment-parser";
 import type { VariableDeclaration } from "estree";
 import type { Node } from "estree-walker";
 import { compile, parse, walk } from "svelte/compiler";
 import type { Ast, TemplateNode, Var } from "svelte/types/compiler/interfaces";
 import { getElementByTag } from "./element-tag-map";
+
+const VAR_DECLARATION_REGEX = /(?:const|let|function)\s+(\w+)\s*[=(]/;
 
 interface CompiledSvelteCode {
   vars: Var[];
@@ -39,6 +41,12 @@ interface ComponentProp {
 const DEFAULT_SLOT_NAME = null;
 
 type ComponentSlotName = typeof DEFAULT_SLOT_NAME | string;
+
+const TYPEDEF_END_REGEX = /(\}|\};)$/;
+const PROPERTY_DESCRIPTION_REGEX = /^-\s*/;
+const CONTEXT_KEY_SPLIT_REGEX = /[-_\s]+/;
+const COMPONENT_COMMENT_REGEX = /^@component/;
+const CARRIAGE_RETURN_REGEX = /\r/g;
 
 interface ComponentSlot {
   name?: string | null;
@@ -197,11 +205,10 @@ export default class ComponentParser {
   }
 
   private collectReactiveVars() {
-    this.compiled?.vars
-      .filter(({ reassigned, writable }) => reassigned && writable)
-      .forEach(({ name }) => {
-        this.reactive_vars.add(name);
-      });
+    const reactiveVars = this.compiled?.vars.filter(({ reassigned, writable }) => reassigned && writable) ?? [];
+    for (const { name } of reactiveVars) {
+      this.reactive_vars.add(name);
+    }
   }
 
   private addProp(prop_name: string, data: ComponentProp) {
@@ -309,7 +316,7 @@ export default class ComponentParser {
   }
 
   private parseCustomTypes() {
-    commentParser.parse(this.source, { spacing: "preserve" }).forEach(({ tags, description: commentDescription }) => {
+    for (const { tags, description: commentDescription } of parseComment(this.source, { spacing: "preserve" })) {
       let currentEventName: string | undefined;
       let currentEventType: string | undefined;
       let currentEventDescription: string | undefined;
@@ -367,7 +374,7 @@ export default class ComponentParser {
           } else if (currentTypedefType) {
             // Use inline type definition (existing behavior)
             typedefType = currentTypedefType;
-            typedefTs = /(\}|\};)$/.test(typedefType)
+            typedefTs = TYPEDEF_END_REGEX.test(typedefType)
               ? `interface ${currentTypedefName} ${typedefType}`
               : `type ${currentTypedefName} = ${typedefType}`;
           } else {
@@ -390,7 +397,7 @@ export default class ComponentParser {
         }
       };
 
-      tags.forEach(({ tag, type: tagType, name, description, optional, default: defaultValue }) => {
+      for (const { tag, type: tagType, name, description, optional, default: defaultValue } of tags) {
         const type = this.aliasType(tagType);
 
         switch (tag) {
@@ -434,7 +441,7 @@ export default class ComponentParser {
             const propertyData = {
               name,
               type,
-              description: description?.replace(/^-\s*/, "").trim(),
+              description: description?.replace(PROPERTY_DESCRIPTION_REGEX, "").trim(),
               optional: optional || false,
               default: defaultValue,
             };
@@ -463,12 +470,12 @@ export default class ComponentParser {
             this.generics = [name, type];
             break;
         }
-      });
+      }
 
       // Finalize any remaining event or typedef
       finalizeEvent();
       finalizeTypedef();
-    });
+    }
   }
 
   private buildEventDetailFromProperties(
@@ -502,7 +509,7 @@ export default class ComponentParser {
   private generateContextTypeName(key: string): string {
     // Convert "simple-modal" -> "SimpleModalContext"
     // Convert "Tabs" -> "TabsContext"
-    const parts = key.split(/[-_\s]+/);
+    const parts = key.split(CONTEXT_KEY_SPLIT_REGEX);
     const capitalized = parts.map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join("");
     return `${capitalized}Context`;
   }
@@ -516,7 +523,7 @@ export default class ComponentParser {
       const line = lines[i].trim();
 
       // Match variable declarations
-      const varMatch = line.match(/(?:const|let|function)\s+(\w+)\s*[=(]/);
+      const varMatch = line.match(VAR_DECLARATION_REGEX);
       if (varMatch) {
         const varName = varMatch[1];
 
@@ -539,7 +546,7 @@ export default class ComponentParser {
             const commentBlock = commentLines.join("\n");
 
             // Parse the JSDoc
-            const parsed = commentParser.parse(commentBlock, { spacing: "preserve" });
+            const parsed = parseComment(commentBlock, { spacing: "preserve" });
             if (parsed[0]?.tags) {
               const typeTag = parsed[0].tags.find((t) => t.tag === "type");
               if (typeTag) {
@@ -597,7 +604,7 @@ export default class ComponentParser {
             const commentBlock = commentLines.join("\n");
 
             // Parse the JSDoc
-            const parsed = commentParser.parse(commentBlock, { spacing: "preserve" });
+            const parsed = parseComment(commentBlock, { spacing: "preserve" });
             if (parsed[0]?.tags) {
               const typeTag = parsed[0].tags.find((t) => t.tag === "type");
               if (typeTag) {
@@ -876,7 +883,7 @@ export default class ComponentParser {
             if (node.leadingComments) {
               const jsdoc_comment = ComponentParser.findJSDocComment(node.leadingComments);
               if (jsdoc_comment) {
-                const comment = commentParser.parse(ComponentParser.formatComment(jsdoc_comment.value), {
+                const comment = parseComment(ComponentParser.formatComment(jsdoc_comment.value), {
                   spacing: "preserve",
                 });
                 const tag = comment[0]?.tags[comment[0]?.tags.length - 1];
@@ -949,16 +956,16 @@ export default class ComponentParser {
           let prop_name: string;
           if (node.declaration == null && node.specifiers[0]?.type === "ExportSpecifier") {
             const specifier = node.specifiers[0];
-            const localName = specifier.local.name,
-              exportedName = specifier.exported.name;
+            const localName = specifier.local.name;
+            const exportedName = specifier.exported.name;
             let declaration: VariableDeclaration;
             // Search through all variable declarations for this variable
             //  Limitation: the variable must have been declared before the export
-            this.vars.forEach((varDecl) => {
+            for (const varDecl of this.vars) {
               if (varDecl.declarations.some((decl) => decl.id.type === "Identifier" && decl.id.name === localName)) {
                 declaration = varDecl;
               }
-            });
+            }
             node.declaration = declaration;
             prop_name = exportedName;
           }
@@ -1034,7 +1041,7 @@ export default class ComponentParser {
           if (node.leadingComments) {
             const jsdoc_comment = ComponentParser.findJSDocComment(node.leadingComments);
             if (jsdoc_comment) {
-              const comment = commentParser.parse(ComponentParser.formatComment(jsdoc_comment.value), {
+              const comment = parseComment(ComponentParser.formatComment(jsdoc_comment.value), {
                 spacing: "preserve",
               });
 
@@ -1051,11 +1058,11 @@ export default class ComponentParser {
                 description = "";
               }
 
-              additional_tags.forEach((tag) => {
+              for (const tag of additional_tags) {
                 description += `${description ? "\n" : ""}@${tag.tag} ${tag.name}${
                   tag.description ? ` ${tag.description}` : ""
                 }`;
-              });
+              }
             }
           }
 
@@ -1080,8 +1087,8 @@ export default class ComponentParser {
         if (node.type === "Comment") {
           const data: string = node?.data?.trim() ?? "";
 
-          if (/^@component/.test(data)) {
-            this.componentComment = data.replace(/^@component/, "").replace(/\r/g, "");
+          if (COMPONENT_COMMENT_REGEX.test(data)) {
+            this.componentComment = data.replace(COMPONENT_COMMENT_REGEX, "").replace(CARRIAGE_RETURN_REGEX, "");
           }
         }
 
@@ -1191,7 +1198,7 @@ export default class ComponentParser {
     });
 
     if (dispatcher_name !== undefined) {
-      callees.forEach((callee) => {
+      for (const callee of callees) {
         if (callee.name === dispatcher_name) {
           const event_name = callee.arguments[0]?.value;
           const event_argument = callee.arguments[1];
@@ -1203,18 +1210,18 @@ export default class ComponentParser {
             has_argument: Boolean(event_argument),
           });
         }
-      });
+      }
     }
 
     // Post-process events: convert dispatched events from @event JSDoc to forwarded events
     // if they are actually forwarded and not dispatched via createEventDispatcher
     const actuallyDispatchedEvents = new Set<string>();
     if (dispatcher_name !== undefined) {
-      callees.forEach((callee) => {
+      for (const callee of callees) {
         if (callee.name === dispatcher_name) {
           actuallyDispatchedEvents.add(callee.arguments[0]?.value);
         }
-      });
+      }
     }
 
     this.forwardedEvents.forEach((element, eventName) => {
@@ -1263,14 +1270,14 @@ export default class ComponentParser {
             const slot_props: SlotProps = JSON.parse(slot.slot_props);
             const new_props: string[] = [];
 
-            Object.keys(slot_props).forEach((key) => {
+            for (const key of Object.keys(slot_props)) {
               if (slot_props[key].replace && slot_props[key].value !== undefined) {
                 slot_props[key].value = this.props.get(slot_props[key].value)?.type;
               }
 
               if (slot_props[key].value === undefined) slot_props[key].value = "any";
               new_props.push(`${key}: ${slot_props[key].value}`);
-            });
+            }
 
             const formatted_slot_props =
               new_props.length === 0 ? "Record<string, never>" : `{ ${new_props.join(", ")} }`;

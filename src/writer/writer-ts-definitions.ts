@@ -1,4 +1,4 @@
-import * as path from "node:path";
+import { join } from "node:path";
 import { convertSvelteExt, createExports } from "../create-exports";
 import type { ParsedExports } from "../parse-exports";
 import type { ComponentDocApi, ComponentDocs } from "../rollup-plugin";
@@ -12,6 +12,13 @@ const EMPTY_EVENTS = "Record<string, any>";
 
 // Avoid `{}` type per Biome linter rule noBannedTypes
 const EMPTY_OBJECT = "Record<string, never>";
+
+const CLAMP_KEY_REGEX = /(-|\s+|:)/;
+const QUOTE_REGEX = /("|')/;
+const CUSTOM_EVENT_REGEX = /CustomEvent/;
+const COMPONENT_NAME_REGEX = /^[A-Z]/;
+const NEWLINE_REGEX = /\n/;
+const FUNCTION_TYPE_REGEX = /=>/;
 
 export function formatTsProps(props?: string) {
   if (props === undefined) return ANY_TYPE;
@@ -49,8 +56,8 @@ export function getContextDefs(def: Pick<ComponentDocApi, "contexts">) {
 }
 
 function clampKey(key: string) {
-  if (/(-|\s+|:)/.test(key)) {
-    return /("|')/.test(key) ? key : `"${key}"`;
+  if (CLAMP_KEY_REGEX.test(key)) {
+    return QUOTE_REGEX.test(key) ? key : `"${key}"`;
   }
 
   return key;
@@ -283,7 +290,7 @@ const STANDARD_DOM_EVENTS = new Set([
 
 function genEventDef(def: Pick<ComponentDocApi, "events">) {
   const createDispatchedEvent = (detail: string = ANY_TYPE) => {
-    if (/CustomEvent/.test(detail)) return detail;
+    if (CUSTOM_EVENT_REGEX.test(detail)) return detail;
     return `CustomEvent<${detail}>`;
   };
 
@@ -307,7 +314,7 @@ function genEventDef(def: Pick<ComponentDocApi, "events">) {
       } else {
         // For forwarded events, determine the type based on @event JSDoc and element/event type
         const elementName = typeof event.element === "string" ? event.element : event.element.name;
-        const isComponent = elementName && /^[A-Z]/.test(elementName);
+        const isComponent = elementName && COMPONENT_NAME_REGEX.test(elementName);
         const isStandardEvent = !isComponent || isStandardDomEvent(event.name);
 
         // Check if there's an explicit non-null detail type from @event JSDoc
@@ -355,7 +362,7 @@ function genImports(def: Pick<ComponentDocApi, "extends">) {
 
 function genComponentComment(def: Pick<ComponentDocApi, "componentComment">) {
   if (!def.componentComment) return "";
-  if (!/\n/.test(def.componentComment)) return `/** ${def.componentComment.trim()} */`;
+  if (!NEWLINE_REGEX.test(def.componentComment)) return `/** ${def.componentComment.trim()} */`;
   return `/*${def.componentComment
     .split("\n")
     .map((line) => `* ${line}`)
@@ -369,7 +376,7 @@ function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">) {
 
       let type_def = `export type ${prop.name} = ${prop.type || ANY_TYPE};`;
 
-      const is_function = prop.type && /=>/.test(prop.type);
+      const is_function = prop.type && FUNCTION_TYPE_REGEX.test(prop.type);
 
       if (is_function && prop.type) {
         const [first, second, ...rest] = prop.type.split("=>");
@@ -437,16 +444,16 @@ export interface WriteTsDefinitionsOptions {
 }
 
 export default async function writeTsDefinitions(components: ComponentDocs, options: WriteTsDefinitionsOptions) {
-  const ts_base_path = path.join(process.cwd(), options.outDir, "index.d.ts");
+  const ts_base_path = join(process.cwd(), options.outDir, "index.d.ts");
   const writer = new Writer({ parser: "typescript", printWidth: 80 });
   const indexDTs = options.preamble + createExports(options.exports, components);
 
   const writePromises = Array.from(components).map(async ([_moduleName, component]) => {
-    const ts_filepath = convertSvelteExt(path.join(options.outDir, component.filePath));
+    const ts_filepath = convertSvelteExt(join(options.outDir, component.filePath));
     await writer.write(ts_filepath, writeTsDefinition(component));
   });
 
   await Promise.all([...writePromises, writer.write(ts_base_path, indexDTs)]);
 
-  console.log(`created TypeScript definitions.`);
+  console.log("created TypeScript definitions.");
 }
