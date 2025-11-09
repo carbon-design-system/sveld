@@ -58,7 +58,6 @@
       "name": "fn",
       "kind": "function",
       "type": "() => any",
-      "value": "() => {     localBool = !localBool;   }",
       "isFunction": true,
       "isFunctionDeclaration": true,
       "isRequired": false,

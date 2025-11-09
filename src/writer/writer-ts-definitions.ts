@@ -87,7 +87,8 @@ function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleN
       const prop_comments = [
         addCommentLine(prop.description?.replace(NEWLINE_TO_COMMENT_REGEX, "\n* ")),
         addCommentLine(prop.constant, "@constant"),
-        `* @default ${defaultValue}\n`,
+        // Don't add @default for functions - they don't have meaningful default values
+        prop.isFunction ? null : `* @default ${defaultValue}\n`,
       ]
         .filter(Boolean)
         .join("");

@@ -17,7 +17,6 @@ type $Props = {
 
   /**
    * Override the display of a combobox item
-   * @default (item) => item.text || item.id
    */
   itemToString?: (item: ComboBoxItem) => string;
 
@@ -89,7 +88,6 @@ type $Props = {
 
   /**
    * Determine if an item should be filtered given the current combobox value
-   * @default () => true
    */
   shouldFilterItem?: (item: ComboBoxItem, value: string) => boolean;
 
