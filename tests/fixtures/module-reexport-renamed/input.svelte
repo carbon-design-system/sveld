@@ -1,5 +1,5 @@
 <script context="module" lang="ts">
-  import { Component as Original, Helper } from 'library';
+  import { Helper, Component as Original } from "library";
   export { Original as Renamed, Helper };
 </script>
 

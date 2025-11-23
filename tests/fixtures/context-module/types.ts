@@ -1,4 +1,4 @@
-import { a, e, log, b2, b3 } from "./output";
+import { a, b2, b3, type e, log } from "./output";
 
 log("");
 

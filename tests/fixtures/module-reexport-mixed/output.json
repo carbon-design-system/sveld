@@ -39,7 +39,7 @@
       "kind": "const",
       "description": "Application version number",
       "type": "string",
-      "value": "'1.0.0'",
+      "value": "\"1.0.0\"",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

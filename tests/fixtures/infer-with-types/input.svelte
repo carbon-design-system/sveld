@@ -8,7 +8,7 @@
   export let id = "" + Math.random().toString(36);
 
   /** @type {{ [key: string]: boolean; }} */
-  export const propConst = { ["1"]: true };
+  export const propConst = { 1: true };
   export function fn() {
     localBool = !localBool;
   }

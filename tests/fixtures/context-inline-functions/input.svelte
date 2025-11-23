@@ -1,14 +1,14 @@
 <script>
-  import { setContext } from 'svelte';
+  import { setContext } from "svelte";
 
   // Direct object literal with inline functions (no explicit types)
-  setContext('modal', {
+  setContext("modal", {
     open: (component, props) => {
-      console.log('Opening', component, props);
+      console.log("Opening", component, props);
     },
     close: () => {
-      console.log('Closing');
-    }
+      console.log("Closing");
+    },
   });
 </script>
 

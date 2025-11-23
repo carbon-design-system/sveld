@@ -1,6 +1,6 @@
 <script>
-  import { createEventDispatcher } from 'svelte';
-  import FileUploaderButton from './FileUploaderButton.svelte';
+  import { createEventDispatcher } from "svelte";
+  import FileUploaderButton from "./FileUploaderButton.svelte";
 
   /**
    * @event {ReadonlyArray<File>} add
@@ -13,11 +13,11 @@
   export let files = [];
 
   function handleAdd() {
-    dispatch('add', files);
+    dispatch("add", files);
   }
 
   function handleRemove() {
-    dispatch('remove', files);
+    dispatch("remove", files);
   }
 </script>
 

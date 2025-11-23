@@ -8,7 +8,7 @@ export type MyTypedefArray = MyTypedef[];
 
 export type TypedefsProps = {
   /**
-   * @default { ["1"]: true }
+   * @default { 1: true }
    */
   prop1?: MyTypedef;
 

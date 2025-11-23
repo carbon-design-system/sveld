@@ -27,7 +27,6 @@
       "name": "maxValue",
       "kind": "let",
       "description": "Numeric constant with Infinity",
-      "value": "Infinity",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

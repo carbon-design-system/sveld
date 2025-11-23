@@ -11,7 +11,7 @@ export type TypedefProps = {
   id?: string;
 
   /**
-   * @default { ["1"]: true }
+   * @default { 1: true }
    */
   prop1?: MyTypedef;
 };

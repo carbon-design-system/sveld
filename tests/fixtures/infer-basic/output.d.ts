@@ -32,7 +32,7 @@ export default class InferBasic extends SvelteComponentTyped<
   Record<string, any>,
   { default: Record<string, never> }
 > {
-  propConst: { ["1"]: true };
+  propConst: { 1: true };
 
   fn: () => any;
 }

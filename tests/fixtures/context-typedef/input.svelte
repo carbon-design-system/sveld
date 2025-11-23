@@ -1,5 +1,5 @@
 <script>
-  import { setContext } from 'svelte';
+  import { setContext } from "svelte";
 
   /**
    * @typedef {object} TabData
@@ -13,7 +13,7 @@
    * @type {(tab: TabData) => void}
    */
   const addTab = (tab) => {
-    console.log('Adding tab', tab);
+    console.log("Adding tab", tab);
   };
 
   /**
@@ -21,10 +21,10 @@
    * @type {(id: string) => void}
    */
   const removeTab = (id) => {
-    console.log('Removing tab', id);
+    console.log("Removing tab", id);
   };
 
-  setContext('tabs', { addTab, removeTab });
+  setContext("tabs", { addTab, removeTab });
 </script>
 
 <div class="tabs">

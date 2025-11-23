@@ -1,5 +1,5 @@
 <script context="module" lang="ts">
-  export { Component, Helper, utils } from 'external-lib';
+  export { Component, Helper, utils } from "external-lib";
 </script>
 
 <script>
