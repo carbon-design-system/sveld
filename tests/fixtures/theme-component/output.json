@@ -1,0 +1,88 @@
+{
+  "props": [
+    {
+      "name": "theme",
+      "kind": "let",
+      "description": "Set the current Carbon theme",
+      "type": "CarbonTheme",
+      "value": "\"white\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "tokens",
+      "kind": "let",
+      "description": "Customize a theme with your own tokens\n@see https://carbondesignsystem.com/guidelines/themes/overview#customizing-a-theme",
+      "type": "{ [token: string]: any; }",
+      "value": "{}",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "persist",
+      "kind": "let",
+      "description": "Set to `true` to persist the theme using window.localStorage",
+      "type": "boolean",
+      "value": "false",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "persistKey",
+      "kind": "let",
+      "description": "Specify the local storage key",
+      "type": "string",
+      "value": "\"theme\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [
+    {
+      "name": "themes",
+      "kind": "const",
+      "type": "Record<CarbonTheme, string>",
+      "value": "{     white: \"White\",     g10: \"Gray 10\",     g80: \"Gray 80\",     g90: \"Gray 90\",     g100: \"Gray 100\",   }",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false
+    }
+  ],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{ theme: CarbonTheme; }"
+    }
+  ],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "update",
+      "detail": "{ theme: CarbonTheme; }"
+    }
+  ],
+  "typedefs": [
+    {
+      "type": "\"white\" | \"g10\" | \"g80\" | \"g90\" | \"g100\"",
+      "name": "CarbonTheme",
+      "ts": "type CarbonTheme = \"white\" | \"g10\" | \"g80\" | \"g90\" | \"g100\""
+    }
+  ],
+  "generics": null,
+  "contexts": []
+}

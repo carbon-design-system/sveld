@@ -388,7 +388,7 @@ function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">) {
         type_def = `export declare function ${prop.name}${first}:${second}${rest_type};`;
       } else if (prop.kind === "const") {
         // For const exports from script context="module", use declare const instead of type
-        type_def = `export declare const ${prop.name}: ${prop.type || ANY_TYPE};`;
+        type_def = `export declare const ${prop.name}: ${prop.type || ANY_TYPE};\n`;
       }
 
       return `
