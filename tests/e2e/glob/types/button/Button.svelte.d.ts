@@ -1,7 +1,7 @@
 import type { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
-export type tree = boolean;
+export declare const tree: boolean;
 
 export declare function computeTreeLeafDepth(): any;
 

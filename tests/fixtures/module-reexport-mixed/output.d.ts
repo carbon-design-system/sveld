@@ -8,7 +8,7 @@ export declare function formatValue(value: any): string;
 /**
  * Application version number
  */
-export type VERSION = string;
+export declare const VERSION: string;
 
 /**
  * Logger function

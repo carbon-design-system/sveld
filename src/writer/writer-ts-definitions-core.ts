@@ -386,6 +386,9 @@ function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">) {
         const rest_type = rest.map((item) => `=>${item}`).join("");
 
         type_def = `export declare function ${prop.name}${first}:${second}${rest_type};`;
+      } else if (prop.kind === "const") {
+        // For const exports from script context="module", use declare const instead of type
+        type_def = `export declare const ${prop.name}: ${prop.type || ANY_TYPE};`;
       }
 
       return `
