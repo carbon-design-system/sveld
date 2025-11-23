@@ -14,8 +14,7 @@
       "!!**/lib/**/*",
       "!!**/dist/**/*",
       "!!**/.svelte-kit/**/*",
-      "!!**/tests/e2e/**/*",
-      "!!**/tests/fixtures/**/*"
+      "!!**/tests/e2e/**/*"
     ]
   },
   "formatter": {
@@ -104,7 +103,8 @@
           "style": {
             "useConst": "off",
             "useImportType": "off",
-            "useTemplate": "off"
+            "useTemplate": "off",
+            "noUnusedTemplateLiteral": "off"
           }
         }
       }
@@ -117,6 +117,33 @@
             "noCommonJs": "off"
           }
         }
+      }
+    },
+    {
+      "includes": ["**/tests/fixtures/**/*"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUnusedFunctionParameters": "off",
+            "noUnusedVariables": "off"
+          },
+          "complexity": {
+            "noBannedTypes": "off"
+          },
+          "suspicious": {
+            "noExplicitAny": "off"
+          },
+          "style": {
+            "noUnusedTemplateLiteral": "off",
+            "useTemplate": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/tests/fixtures/**/*.json"],
+      "formatter": {
+        "enabled": false
       }
     }
   ]
