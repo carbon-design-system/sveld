@@ -1555,6 +1555,92 @@ exports[`fixtures (JSON) "non-literal-defaults/input.svelte" 1`] = `
       "name": "maxValue",
       "kind": "let",
       "description": "Numeric constant with Infinity",
+      "type": "number",
+      "value": "Number.POSITIVE_INFINITY",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "minValue",
+      "kind": "let",
+      "description": "Negative infinity constant",
+      "type": "number",
+      "value": "Number.NEGATIVE_INFINITY",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "maxSafeInt",
+      "kind": "let",
+      "description": "Maximum safe integer",
+      "type": "number",
+      "value": "Number.MAX_SAFE_INTEGER",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "minSafeInt",
+      "kind": "let",
+      "description": "Minimum safe integer",
+      "type": "number",
+      "value": "Number.MIN_SAFE_INTEGER",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "maxNumber",
+      "kind": "let",
+      "description": "Maximum numeric value",
+      "type": "number",
+      "value": "Number.MAX_VALUE",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "minNumber",
+      "kind": "let",
+      "description": "Minimum numeric value",
+      "type": "number",
+      "value": "Number.MIN_VALUE",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "pi",
+      "kind": "let",
+      "description": "Math constant PI",
+      "type": "number",
+      "value": "Math.PI",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "e",
+      "kind": "let",
+      "description": "Math constant E",
+      "type": "number",
+      "value": "Math.E",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -1566,6 +1652,18 @@ exports[`fixtures (JSON) "non-literal-defaults/input.svelte" 1`] = `
       "kind": "let",
       "description": "Optional handler with undefined",
       "value": "undefined",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "appendTo",
+      "kind": "let",
+      "description": "Append to element",
+      "type": "HTMLElement",
+      "value": "document.body",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -3259,15 +3357,63 @@ export type NonLiteralDefaultsProps = {
 
   /**
    * Numeric constant with Infinity
-   * @default undefined
+   * @default Number.POSITIVE_INFINITY
    */
-  maxValue?: undefined;
+  maxValue?: number;
+
+  /**
+   * Negative infinity constant
+   * @default Number.NEGATIVE_INFINITY
+   */
+  minValue?: number;
+
+  /**
+   * Maximum safe integer
+   * @default Number.MAX_SAFE_INTEGER
+   */
+  maxSafeInt?: number;
+
+  /**
+   * Minimum safe integer
+   * @default Number.MIN_SAFE_INTEGER
+   */
+  minSafeInt?: number;
+
+  /**
+   * Maximum numeric value
+   * @default Number.MAX_VALUE
+   */
+  maxNumber?: number;
+
+  /**
+   * Minimum numeric value
+   * @default Number.MIN_VALUE
+   */
+  minNumber?: number;
+
+  /**
+   * Math constant PI
+   * @default Math.PI
+   */
+  pi?: number;
+
+  /**
+   * Math constant E
+   * @default Math.E
+   */
+  e?: number;
 
   /**
    * Optional handler with undefined
    * @default undefined
    */
   handler?: undefined;
+
+  /**
+   * Append to element
+   * @default document.body
+   */
+  appendTo?: HTMLElement;
 };
 
 export default class NonLiteralDefaults extends SvelteComponentTyped<

@@ -2520,6 +2520,7 @@
           "kind": "let",
           "description": "Specify the element to append the calendar to",
           "type": "HTMLElement",
+          "value": "document.body",
           "isFunction": false,
           "isFunctionDeclaration": false,
           "isRequired": false,

@@ -892,7 +892,7 @@ None.
 | :------------- | :------- | :--------------- | :------- | ---------------------------------------------------- | ------------------------------------------------ | --------------------------------------------- |
 | value          | No       | <code>let</code> | Yes      | <code>number &#124; string</code>                    | <code>""</code>                                  | Specify the date picker input value           |
 | datePickerType | No       | <code>let</code> | No       | <code>"simple" &#124; "single" &#124; "range"</code> | <code>"simple"</code>                            | Specify the date picker type                  |
-| appendTo       | No       | <code>let</code> | No       | <code>HTMLElement</code>                             | --                                               | Specify the element to append the calendar to |
+| appendTo       | No       | <code>let</code> | No       | <code>HTMLElement</code>                             | <code>document.body</code>                       | Specify the element to append the calendar to |
 | dateFormat     | No       | <code>let</code> | No       | <code>string</code>                                  | <code>"m/d/Y"</code>                             | Specify the date format                       |
 | maxDate        | No       | <code>let</code> | No       | <code>null &#124; string &#124; Date</code>          | <code>null</code>                                | Specify the maximum date                      |
 | minDate        | No       | <code>let</code> | No       | <code>null &#124; string &#124; Date</code>          | <code>null</code>                                | Specify the minimum date                      |

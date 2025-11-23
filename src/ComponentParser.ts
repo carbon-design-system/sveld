@@ -209,6 +209,38 @@ export default class ComponentParser {
     return leadingComments[leadingComments.length - 1];
   }
 
+  /**
+   * Check if a MemberExpression represents a well-known numeric constant.
+   * (e.g., Number.POSITIVE_INFINITY, Math.PI, etc.)
+   */
+  private isNumericConstant(memberExpr: unknown): boolean {
+    if (memberExpr.type !== "MemberExpression") return false;
+
+    const objectName = memberExpr.object?.name;
+    const propertyName = memberExpr.property?.name;
+
+    if (!objectName || !propertyName) return false;
+
+    if (objectName === "Number") {
+      return [
+        "POSITIVE_INFINITY",
+        "NEGATIVE_INFINITY",
+        "MAX_VALUE",
+        "MIN_VALUE",
+        "MAX_SAFE_INTEGER",
+        "MIN_SAFE_INTEGER",
+        "EPSILON",
+        "NaN",
+      ].includes(propertyName);
+    }
+
+    if (objectName === "Math") {
+      return ["PI", "E", "LN2", "LN10", "LOG2E", "LOG10E", "SQRT2", "SQRT1_2"].includes(propertyName);
+    }
+
+    return false;
+  }
+
   private sourceAtPos(start: number, end: number) {
     return this.source?.slice(start, end);
   }
@@ -873,6 +905,14 @@ export default class ComponentParser {
                   // Handle non-literal defaults like variable references and global identifiers.
                   // Don't infer type, just preserve existing type annotation.
                   value = this.sourceAtPos(init.start, init.end);
+                } else if (init.type === "MemberExpression") {
+                  // Handle member expressions like Number.POSITIVE_INFINITY, Math.PI, etc.
+                  value = this.sourceAtPos(init.start, init.end);
+                  // Infer type as "number" for well-known numeric constants
+                  if (this.isNumericConstant(init)) {
+                    type = "number";
+                  }
+                  // Otherwise, don't infer type, just preserve existing type annotation.
                 } else {
                   value = init.raw;
                   type = init.value == null ? undefined : typeof init.value;
@@ -1065,6 +1105,14 @@ export default class ComponentParser {
                 // Handle non-literal defaults like variable references and global identifiers.
                 // Don't infer type, just preserve existing type annotation.
                 value = this.sourceAtPos(init.start, init.end);
+              } else if (init.type === "MemberExpression") {
+                // Handle member expressions like Number.POSITIVE_INFINITY, Math.PI, etc.
+                value = this.sourceAtPos(init.start, init.end);
+                // Infer type as "number" for well-known numeric constants
+                if (this.isNumericConstant(init)) {
+                  type = "number";
+                }
+                // Otherwise, don't infer type, just preserve existing type annotation.
               } else {
                 value = init.raw;
                 type = init.value == null ? undefined : typeof init.value;
