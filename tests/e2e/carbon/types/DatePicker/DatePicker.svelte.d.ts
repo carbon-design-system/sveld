@@ -30,7 +30,7 @@ type $Props = {
 
   /**
    * Specify the element to append the calendar to
-   * @default undefined
+   * @default document.body
    */
   appendTo?: HTMLElement;
 
