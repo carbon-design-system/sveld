@@ -3,7 +3,7 @@
    * @event {{ h1: boolean; }} hover - Fired on mouseover.
    */
 
-  import { onDestroy, createEventDispatcher } from "svelte";
+  import { createEventDispatcher, onDestroy } from "svelte";
 
   const dispatcher = createEventDispatcher();
 

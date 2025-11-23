@@ -1,5 +1,5 @@
 <script>
-  import { setContext } from 'svelte';
+  import { setContext } from "svelte";
 
   /**
    * @typedef {object} ModalAPI
@@ -13,14 +13,14 @@
    */
   const modalAPI = {
     open: () => {
-      console.log('Opening modal');
+      console.log("Opening modal");
     },
     close: () => {
-      console.log('Closing modal');
-    }
+      console.log("Closing modal");
+    },
   };
 
-  setContext('modal', modalAPI);
+  setContext("modal", modalAPI);
 </script>
 
 <div class="modal-wrapper">

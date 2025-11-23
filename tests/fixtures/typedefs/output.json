@@ -4,7 +4,7 @@
       "name": "prop1",
       "kind": "let",
       "type": "MyTypedef",
-      "value": "{ [\"1\"]: true }",
+      "value": "{ 1: true }",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

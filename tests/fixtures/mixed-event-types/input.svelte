@@ -1,6 +1,6 @@
 <script>
-  import { createEventDispatcher } from 'svelte';
-  import CustomComponent from './CustomComponent.svelte';
+  import { createEventDispatcher } from "svelte";
+  import CustomComponent from "./CustomComponent.svelte";
 
   /**
    * @event {string} input - Input value changed (native forwarded event)
@@ -10,7 +10,7 @@
   const dispatch = createEventDispatcher();
 
   function handleSubmit() {
-    dispatch('submit', { data: 'test' });
+    dispatch("submit", { data: "test" });
   }
 </script>
 

@@ -1,5 +1,5 @@
 <script context="module">
-  import { External } from 'lib';
+  import { External } from "lib";
 
   /**
    * A local utility function for formatting
@@ -11,7 +11,7 @@
   export { External };
 
   /** Application version number */
-  export const VERSION = '1.0.0';
+  export const VERSION = "1.0.0";
 
   /**
    * Logger function

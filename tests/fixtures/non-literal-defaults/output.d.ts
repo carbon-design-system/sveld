@@ -17,7 +17,7 @@ export type NonLiteralDefaultsProps = {
 
   /**
    * Numeric constant with Infinity
-   * @default Infinity
+   * @default undefined
    */
   maxValue?: undefined;
 

@@ -55,8 +55,8 @@
     {
       "name": "propConst",
       "kind": "const",
-      "type": "{ [\"1\"]: true }",
-      "value": "{ [\"1\"]: true }",
+      "type": "{ 1: true }",
+      "value": "{ 1: true }",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

@@ -1,5 +1,5 @@
 <script>
-  import CustomComponent from './CustomComponent.svelte';
+  import CustomComponent from "./CustomComponent.svelte";
 
   /**
    * @event {null} clear - Clear button clicked with no data

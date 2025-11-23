@@ -1,5 +1,5 @@
 <script>
-  import { setContext } from 'svelte';
+  import { setContext } from "svelte";
 
   /**
    * Log a message to the console
@@ -9,7 +9,7 @@
     console.log(message);
   };
 
-  setContext('my-logger', log);
+  setContext("my-logger", log);
 </script>
 
 <div>

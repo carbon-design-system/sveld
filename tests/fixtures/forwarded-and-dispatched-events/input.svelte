@@ -1,11 +1,11 @@
 <script>
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher } from "svelte";
 
   const dispatch = createEventDispatcher();
 
   // Component dispatches a 'change' event with custom payload
   function handleChange() {
-    dispatch('change', { value: 'custom' });
+    dispatch("change", { value: "custom" });
   }
 </script>
 

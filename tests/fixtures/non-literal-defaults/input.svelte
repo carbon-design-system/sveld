@@ -21,7 +21,7 @@
   /**
    * Numeric constant with Infinity
    */
-  export let maxValue = Infinity;
+  export let maxValue = Number.POSITIVE_INFINITY;
 
   /**
    * Optional handler with undefined
@@ -30,5 +30,5 @@
 </script>
 
 <div class="component" data-position={position} data-theme={theme}>
-  Content
+  Content {maxValue} {handler}
 </div>

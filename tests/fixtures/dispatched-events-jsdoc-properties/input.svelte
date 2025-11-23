@@ -26,7 +26,7 @@
   function throwSnowball() {
     dispatcher("snowball", {
       isPacked: true,
-      speed: 50
+      speed: 50,
     });
   }
 

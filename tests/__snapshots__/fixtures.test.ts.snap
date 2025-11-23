@@ -13,7 +13,8 @@ exports[`fixtures (JSON) "svg-props/input.svelte" 1`] = `
     "name": "svg"
   },
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "slots-named/input.svelte" 1`] = `
@@ -62,7 +63,8 @@ exports[`fixtures (JSON) "slots-named/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "module-reexport-mixed/input.svelte" 1`] = `
@@ -107,7 +109,7 @@ exports[`fixtures (JSON) "module-reexport-mixed/input.svelte" 1`] = `
       "kind": "const",
       "description": "Application version number",
       "type": "string",
-      "value": "'1.0.0'",
+      "value": "\\"1.0.0\\"",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -131,7 +133,8 @@ exports[`fixtures (JSON) "module-reexport-mixed/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "generics-multiple/input.svelte" 1`] = `
@@ -191,7 +194,8 @@ exports[`fixtures (JSON) "generics-multiple/input.svelte" 1`] = `
     "Row extends DataTableRow = DataTableRow, Header extends DataTableRow = DataTableRow"
   ],
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "context-empty/input.svelte" 1`] = `
@@ -209,7 +213,8 @@ exports[`fixtures (JSON) "context-empty/input.svelte" 1`] = `
       "properties": []
     }
   ]
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "module-reexport/input.svelte" 1`] = `
@@ -251,7 +256,8 @@ exports[`fixtures (JSON) "module-reexport/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "typedef-jsdoc-properties/input.svelte" 1`] = `
@@ -319,7 +325,8 @@ exports[`fixtures (JSON) "typedef-jsdoc-properties/input.svelte" 1`] = `
   ],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "mixed-event-types/input.svelte" 1`] = `
@@ -355,7 +362,8 @@ exports[`fixtures (JSON) "mixed-event-types/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "dispatched-events-dynamic/input.svelte" 1`] = `
@@ -373,7 +381,8 @@ exports[`fixtures (JSON) "dispatched-events-dynamic/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "context-issue-103/input.svelte" 1`] = `
@@ -404,7 +413,8 @@ exports[`fixtures (JSON) "context-issue-103/input.svelte" 1`] = `
       ]
     }
   ]
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "jsdoc-type-params/input.svelte" 1`] = `
@@ -448,7 +458,8 @@ exports[`fixtures (JSON) "jsdoc-type-params/input.svelte" 1`] = `
   ],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "function-declaration/input.svelte" 1`] = `
@@ -502,7 +513,8 @@ exports[`fixtures (JSON) "function-declaration/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "forwarded-events/input.svelte" 1`] = `
@@ -541,7 +553,8 @@ exports[`fixtures (JSON) "forwarded-events/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "mixed-events/input.svelte" 1`] = `
@@ -564,7 +577,8 @@ exports[`fixtures (JSON) "mixed-events/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "infer-basic/input.svelte" 1`] = `
@@ -625,8 +639,8 @@ exports[`fixtures (JSON) "infer-basic/input.svelte" 1`] = `
     {
       "name": "propConst",
       "kind": "const",
-      "type": "{ [\\"1\\"]: true }",
-      "value": "{ [\\"1\\"]: true }",
+      "type": "{ 1: true }",
+      "value": "{ 1: true }",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -657,7 +671,8 @@ exports[`fixtures (JSON) "infer-basic/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "empty-export/input.svelte" 1`] = `
@@ -669,7 +684,8 @@ exports[`fixtures (JSON) "empty-export/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "module-reexport-direct/input.svelte" 1`] = `
@@ -715,7 +731,8 @@ exports[`fixtures (JSON) "module-reexport-direct/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "typed-slots/input.svelte" 1`] = `
@@ -751,7 +768,8 @@ exports[`fixtures (JSON) "typed-slots/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "context-typedef/input.svelte" 1`] = `
@@ -794,7 +812,8 @@ exports[`fixtures (JSON) "context-typedef/input.svelte" 1`] = `
       ]
     }
   ]
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "forwarded-events-typed/input.svelte" 1`] = `
@@ -826,7 +845,8 @@ exports[`fixtures (JSON) "forwarded-events-typed/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "dispatched-events/input.svelte" 1`] = `
@@ -864,7 +884,8 @@ exports[`fixtures (JSON) "dispatched-events/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "module-reexport-renamed/input.svelte" 1`] = `
@@ -907,7 +928,8 @@ exports[`fixtures (JSON) "module-reexport-renamed/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "typedefs/input.svelte" 1`] = `
@@ -917,7 +939,7 @@ exports[`fixtures (JSON) "typedefs/input.svelte" 1`] = `
       "name": "prop1",
       "kind": "let",
       "type": "MyTypedef",
-      "value": "{ [\\"1\\"]: true }",
+      "value": "{ 1: true }",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -959,7 +981,8 @@ exports[`fixtures (JSON) "typedefs/input.svelte" 1`] = `
   ],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "generics-with-rest-props/input.svelte" 1`] = `
@@ -1023,7 +1046,8 @@ exports[`fixtures (JSON) "generics-with-rest-props/input.svelte" 1`] = `
     "name": "div"
   },
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "bind-this/input.svelte" 1`] = `
@@ -1052,7 +1076,8 @@ exports[`fixtures (JSON) "bind-this/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "instance-reexport/input.svelte" 1`] = `
@@ -1089,7 +1114,8 @@ exports[`fixtures (JSON) "instance-reexport/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "dispatched-events-typed/input.svelte" 1`] = `
@@ -1119,7 +1145,8 @@ exports[`fixtures (JSON) "dispatched-events-typed/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "input-events/input.svelte" 1`] = `
@@ -1147,7 +1174,8 @@ exports[`fixtures (JSON) "input-events/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "required/input.svelte" 1`] = `
@@ -1209,7 +1237,8 @@ exports[`fixtures (JSON) "required/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "context-imported-type/input.svelte" 1`] = `
@@ -1246,7 +1275,8 @@ exports[`fixtures (JSON) "context-imported-type/input.svelte" 1`] = `
       ]
     }
   ]
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "prop-comments/input.svelte" 1`] = `
@@ -1301,7 +1331,8 @@ exports[`fixtures (JSON) "prop-comments/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "forwarded-events-native-with-jsdoc/input.svelte" 1`] = `
@@ -1341,7 +1372,8 @@ exports[`fixtures (JSON) "forwarded-events-native-with-jsdoc/input.svelte" 1`] =
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "context-simple/input.svelte" 1`] = `
@@ -1378,7 +1410,8 @@ exports[`fixtures (JSON) "context-simple/input.svelte" 1`] = `
       ]
     }
   ]
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "renamed-props/input.svelte" 1`] = `
@@ -1403,7 +1436,8 @@ exports[`fixtures (JSON) "renamed-props/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "infer-with-types/input.svelte" 1`] = `
@@ -1456,7 +1490,7 @@ exports[`fixtures (JSON) "infer-with-types/input.svelte" 1`] = `
       "name": "propConst",
       "kind": "const",
       "type": "{ [key: string]: boolean; }",
-      "value": "{ [\\"1\\"]: true }",
+      "value": "{ 1: true }",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -1487,7 +1521,8 @@ exports[`fixtures (JSON) "infer-with-types/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "non-literal-defaults/input.svelte" 1`] = `
@@ -1520,7 +1555,6 @@ exports[`fixtures (JSON) "non-literal-defaults/input.svelte" 1`] = `
       "name": "maxValue",
       "kind": "let",
       "description": "Numeric constant with Infinity",
-      "value": "Infinity",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -1551,7 +1585,8 @@ exports[`fixtures (JSON) "non-literal-defaults/input.svelte" 1`] = `
   ],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "forwarded-native-with-detail/input.svelte" 1`] = `
@@ -1571,7 +1606,8 @@ exports[`fixtures (JSON) "forwarded-native-with-detail/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "context-module/input.svelte" 1`] = `
@@ -1671,7 +1707,8 @@ exports[`fixtures (JSON) "context-module/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "html-in-template-string/input.svelte" 1`] = `
@@ -1695,7 +1732,8 @@ exports[`fixtures (JSON) "html-in-template-string/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "rest-props-multiple/input.svelte" 1`] = `
@@ -1723,7 +1761,8 @@ exports[`fixtures (JSON) "rest-props-multiple/input.svelte" 1`] = `
     "name": "ul | ol"
   },
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "forwarded-from-component-to-native/input.svelte" 1`] = `
@@ -1766,7 +1805,8 @@ exports[`fixtures (JSON) "forwarded-from-component-to-native/input.svelte" 1`] =
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "no-props/input.svelte" 1`] = `
@@ -1778,7 +1818,8 @@ exports[`fixtures (JSON) "no-props/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "event-explicit-null/input.svelte" 1`] = `
@@ -1810,7 +1851,8 @@ exports[`fixtures (JSON) "event-explicit-null/input.svelte" 1`] = `
     "name": "input"
   },
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "forwarded-standard-event-custom-detail/input.svelte" 1`] = `
@@ -1851,7 +1893,8 @@ exports[`fixtures (JSON) "forwarded-standard-event-custom-detail/input.svelte" 1
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "component-comment-single/input.svelte" 1`] = `
@@ -1870,7 +1913,8 @@ exports[`fixtures (JSON) "component-comment-single/input.svelte" 1`] = `
   "generics": null,
   "componentComment": " Component comment",
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "bind-this-multiple/input.svelte" 1`] = `
@@ -1920,7 +1964,8 @@ exports[`fixtures (JSON) "bind-this-multiple/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "forwarded-custom-events/input.svelte" 1`] = `
@@ -1945,7 +1990,8 @@ exports[`fixtures (JSON) "forwarded-custom-events/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "typedef/input.svelte" 1`] = `
@@ -1966,7 +2012,7 @@ exports[`fixtures (JSON) "typedef/input.svelte" 1`] = `
       "name": "prop1",
       "kind": "let",
       "type": "MyTypedef",
-      "value": "{ [\\"1\\"]: true }",
+      "value": "{ 1: true }",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -1992,7 +2038,8 @@ exports[`fixtures (JSON) "typedef/input.svelte" 1`] = `
   ],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "rest-props-simple/input.svelte" 1`] = `
@@ -2008,7 +2055,8 @@ exports[`fixtures (JSON) "rest-props-simple/input.svelte" 1`] = `
     "name": "h1"
   },
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "anchor-props/input.svelte" 1`] = `
@@ -2030,7 +2078,8 @@ exports[`fixtures (JSON) "anchor-props/input.svelte" 1`] = `
     "name": "a"
   },
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "component-comment-multi/input.svelte" 1`] = `
@@ -2049,7 +2098,8 @@ exports[`fixtures (JSON) "component-comment-multi/input.svelte" 1`] = `
   "generics": null,
   "componentComment": "\\n@example\\n<div>\\n  Component comment\\n</div>",
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "forwarded-custom-event-null/input.svelte" 1`] = `
@@ -2076,7 +2126,8 @@ exports[`fixtures (JSON) "forwarded-custom-event-null/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "dispatched-events-jsdoc-properties/input.svelte" 1`] = `
@@ -2107,7 +2158,8 @@ exports[`fixtures (JSON) "dispatched-events-jsdoc-properties/input.svelte" 1`] =
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "slots-spread/input.svelte" 1`] = `
@@ -2131,7 +2183,8 @@ exports[`fixtures (JSON) "slots-spread/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "forwarded-and-dispatched-events/input.svelte" 1`] = `
@@ -2149,7 +2202,8 @@ exports[`fixtures (JSON) "forwarded-and-dispatched-events/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "slots-spread-typed/input.svelte" 1`] = `
@@ -2173,7 +2227,8 @@ exports[`fixtures (JSON) "slots-spread-typed/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "context-inline-functions/input.svelte" 1`] = `
@@ -2208,7 +2263,8 @@ exports[`fixtures (JSON) "context-inline-functions/input.svelte" 1`] = `
       ]
     }
   ]
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "typed-props/input.svelte" 1`] = `
@@ -2265,7 +2321,8 @@ exports[`fixtures (JSON) "typed-props/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (JSON) "generics/input.svelte" 1`] = `
@@ -2325,7 +2382,8 @@ exports[`fixtures (JSON) "generics/input.svelte" 1`] = `
     "Row extends DataTableRow = DataTableRow"
   ],
   "contexts": []
-}"
+}
+"
 `;
 
 exports[`fixtures (TypeScript) "svg-props/input.svelte" 1`] = `
@@ -2706,7 +2764,7 @@ export default class InferBasic extends SvelteComponentTyped<
   Record<string, any>,
   { default: Record<string, never> }
 > {
-  propConst: { ["1"]: true };
+  propConst: { 1: true };
 
   fn: () => any;
 }
@@ -2866,7 +2924,7 @@ export type MyTypedefArray = MyTypedef[];
 
 export type TypedefsProps = {
   /**
-   * @default { ["1"]: true }
+   * @default { 1: true }
    */
   prop1?: MyTypedef;
 
@@ -3201,7 +3259,7 @@ export type NonLiteralDefaultsProps = {
 
   /**
    * Numeric constant with Infinity
-   * @default Infinity
+   * @default undefined
    */
   maxValue?: undefined;
 
@@ -3456,7 +3514,7 @@ export type TypedefProps = {
   id?: string;
 
   /**
-   * @default { ["1"]: true }
+   * @default { 1: true }
    */
   prop1?: MyTypedef;
 };

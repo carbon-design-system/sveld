@@ -41,7 +41,7 @@ describe("fixtures (JSON)", async () => {
       throw new Error(`Source not found for: ${filePath}`);
     }
     const { dir, parsed_component } = getMetadata({ filePath, source });
-    const api_json = JSON.stringify(parsed_component, null, 2);
+    const api_json = `${JSON.stringify(parsed_component, null, 2)}\n`;
 
     // Snapshot the output; if the test fails, output has changed.
     expect(api_json).toMatchSnapshot();

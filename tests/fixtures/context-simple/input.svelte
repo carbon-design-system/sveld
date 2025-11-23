@@ -1,5 +1,5 @@
 <script>
-  import { setContext } from 'svelte';
+  import { setContext } from "svelte";
 
   /**
    * Close the modal
@@ -13,7 +13,7 @@
    */
   const open = (component, props) => {};
 
-  setContext('simple-modal', { open, close });
+  setContext("simple-modal", { open, close });
 </script>
 
 <div class="modal">

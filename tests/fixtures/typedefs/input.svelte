@@ -5,7 +5,7 @@
    */
 
   /** @type {MyTypedef} */
-  export let prop1 = { ["1"]: true };
+  export let prop1 = { 1: true };
 
   /** @type {MyTypedefArray} */
   export let prop2 = [];

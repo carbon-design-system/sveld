@@ -6,7 +6,7 @@
   export let id = "id-" + Math.random().toString(36);
 
   /** @type {MyTypedef} */
-  export let prop1 = { ["1"]: true };
+  export let prop1 = { 1: true };
 </script>
 
 <div {id}>

@@ -1,5 +1,5 @@
 <script context="module" lang="ts">
-  import { tokTypes } from 'acorn';
+  import { tokTypes } from "acorn";
   export { tokTypes };
 </script>
 

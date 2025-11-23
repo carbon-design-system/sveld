@@ -1,5 +1,5 @@
 <script>
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher } from "svelte";
 
   /**
    * @restProps {input}
@@ -9,7 +9,7 @@
   const dispatch = createEventDispatcher();
 
   function handleClear() {
-    dispatch('clear');
+    dispatch("clear");
   }
 </script>
 

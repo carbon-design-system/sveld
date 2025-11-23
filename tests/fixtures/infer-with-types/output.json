@@ -47,7 +47,7 @@
       "name": "propConst",
       "kind": "const",
       "type": "{ [key: string]: boolean; }",
-      "value": "{ [\"1\"]: true }",
+      "value": "{ 1: true }",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

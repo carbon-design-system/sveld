@@ -4,7 +4,7 @@
   export let propString = "";
   export let name;
   export let id = "" + Math.random().toString(36);
-  export const propConst = { ["1"]: true };
+  export const propConst = { 1: true };
   export function fn() {
     localBool = !localBool;
   }

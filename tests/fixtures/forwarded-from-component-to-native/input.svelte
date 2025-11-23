@@ -1,6 +1,6 @@
 <script>
-  import { createEventDispatcher } from 'svelte';
-  import ChildComponent from './ChildComponent.svelte';
+  import { createEventDispatcher } from "svelte";
+  import ChildComponent from "./ChildComponent.svelte";
 
   const dispatch = createEventDispatcher();
 

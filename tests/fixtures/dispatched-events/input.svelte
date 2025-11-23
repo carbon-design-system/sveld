@@ -1,5 +1,5 @@
 <script>
-  import { onDestroy, createEventDispatcher } from "svelte";
+  import { createEventDispatcher, onDestroy } from "svelte";
 
   const dispatcher = createEventDispatcher();
 
