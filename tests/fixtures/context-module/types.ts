@@ -8,11 +8,13 @@ const function_b3: typeof b3 = () => () => false;
 
 const result = b3()();
 
-const a: typeof log = () => {};
+a.b;
+
+const a_fn: typeof log = () => {};
 
 // @ts-expect-error
-a(4);
+a_fn(4);
 
-a(4 + "");
+a_fn(4 + "");
 
-const e_value: e = {};
+const e_value: typeof e = {};

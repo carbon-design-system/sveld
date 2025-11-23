@@ -1,13 +1,13 @@
 import type { SvelteComponentTyped } from "svelte";
 
-export type bool = string;
+export declare const bool: string;
 
-export type a = { b: 4 };
+export declare const a: { b: 4 };
 
 /**
  * Description for e
  */
-export type e = { [key: string]: any };
+export declare const e: { [key: string]: any };
 
 /**
  * Log something

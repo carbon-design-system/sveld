@@ -2378,7 +2378,7 @@ export declare function formatValue(value: any): string;
 /**
  * Application version number
  */
-export type VERSION = string;
+export declare const VERSION: string;
 
 /**
  * Logger function
@@ -3238,14 +3238,14 @@ export default class ForwardedNativeWithDetail extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "context-module/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
-export type bool = string;
+export declare const bool: string;
 
-export type a = { b: 4 };
+export declare const a: { b: 4 };
 
 /**
  * Description for e
  */
-export type e = { [key: string]: any };
+export declare const e: { [key: string]: any };
 
 /**
  * Log something
