@@ -7,12 +7,12 @@
   "types": "./lib/index.d.ts",
   "scripts": {
     "test": "bun test",
-    "test:fixtures-types": "bun tsgo --project tsconfig.fixtures.json",
+    "test:fixtures-types": "tsgo --project tsconfig.fixtures.json",
     "test:e2e": "bun tests/test-e2e.ts",
     "format": "biome format --write .",
     "lint": "biome lint .",
     "lint:fix": "biome check --write --unsafe .",
-    "build": "bun tsgo"
+    "build": "tsgo"
   },
   "dependencies": {
     "@rollup/plugin-node-resolve": "^13.3.0",
