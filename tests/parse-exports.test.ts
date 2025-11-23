@@ -99,4 +99,13 @@ describe("parseExports", () => {
       Component2: { source: "./component", default: false },
     });
   });
+
+  test("mixed default and named export from same source", () => {
+    const source = `export { default as Theme, themes } from "./Theme/Theme.svelte";`;
+
+    expect(parseExports(source, "")).toEqual({
+      Theme: { source: "./Theme/Theme.svelte", default: true },
+      themes: { source: "./Theme/Theme.svelte", default: false },
+    });
+  });
 });

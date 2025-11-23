@@ -97,6 +97,15 @@ export { normalizeTree } from "./utils/normalizeTree";`);
 export { helperA, helperB, helperC } from "./utils/helpers";`);
   });
 
+  test("default and named export from same Svelte file (module context)", () => {
+    const source = {
+      Theme: { source: "./Theme/Theme.svelte", default: true },
+      themes: { source: "./Theme/Theme.svelte", default: false },
+    };
+
+    expect(createExports(source)).toEqual('export { default as Theme, themes } from "./Theme/Theme.svelte";');
+  });
+
   test("removeSvelteExt", () => {
     expect(removeSvelteExt("input.svelte")).toEqual("input");
     expect(removeSvelteExt("ComponentName.svelte")).toEqual("ComponentName");
