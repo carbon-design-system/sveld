@@ -299,4 +299,149 @@ describe("ComponentParser", () => {
     expect(result.props).toHaveLength(1);
     expect(result.props[0].name).toBe("data");
   });
+
+  test("parses @returns tag for function declarations", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /**
+         * Add a notification to the queue.
+         * @param {string} notification
+         * @returns {string} The notification id
+         */
+        export function add(notification) {
+          return "id";
+        }
+
+        /**
+         * Remove a notification by id.
+         * @param {string} id
+         * @returns {boolean} True if the notification was found and removed
+         */
+        export function remove(id) {
+          return true;
+        }
+
+        /**
+         * Get notification count.
+         * @returns {number} The number of notifications
+         */
+        export function getCount() {
+          return 0;
+        }
+      </script>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.props).toHaveLength(3);
+
+    const addProp = result.props.find((p) => p.name === "add");
+    expect(addProp?.returnType).toBe("string");
+    expect(addProp?.params).toHaveLength(1);
+    expect(addProp?.params?.[0].name).toBe("notification");
+    expect(addProp?.params?.[0].type).toBe("string");
+
+    const removeProp = result.props.find((p) => p.name === "remove");
+    expect(removeProp?.returnType).toBe("boolean");
+    expect(removeProp?.params).toHaveLength(1);
+    expect(removeProp?.params?.[0].name).toBe("id");
+    expect(removeProp?.params?.[0].type).toBe("string");
+
+    const getCountProp = result.props.find((p) => p.name === "getCount");
+    expect(getCountProp?.returnType).toBe("number");
+    expect(getCountProp?.params).toBeUndefined();
+  });
+
+  test("parses @return tag (alternative to @returns)", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /**
+         * Get user by id.
+         * @param {string} id
+         * @return {object} The user object
+         */
+        export function getUser(id) {
+          return {};
+        }
+      </script>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.props).toHaveLength(1);
+
+    const getUserProp = result.props.find((p) => p.name === "getUser");
+    expect(getUserProp?.returnType).toBe("object");
+    expect(getUserProp?.params).toHaveLength(1);
+  });
+
+  test("parses @returns for module exports", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script context="module">
+        /**
+         * Utility function that processes data.
+         * @param {string} data
+         * @returns {number} The processed result
+         */
+        export function process(data) {
+          return 42;
+        }
+      </script>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.moduleExports).toHaveLength(1);
+
+    const processExport = result.moduleExports.find((e) => e.name === "process");
+    expect(processExport?.returnType).toBe("number");
+    expect(processExport?.params).toHaveLength(1);
+    expect(processExport?.params?.[0].name).toBe("data");
+    expect(processExport?.params?.[0].type).toBe("string");
+  });
+
+  test("handles function with @param but no @returns (defaults to any)", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /**
+         * Log a message.
+         * @param {string} message
+         */
+        export function log(message) {
+          console.log(message);
+        }
+      </script>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.props).toHaveLength(1);
+
+    const logProp = result.props.find((p) => p.name === "log");
+    expect(logProp?.returnType).toBeUndefined();
+    expect(logProp?.params).toHaveLength(1);
+    expect(logProp?.params?.[0].name).toBe("message");
+  });
+
+  test("handles function with @returns but no @param", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /**
+         * Get the current count.
+         * @returns {number} The current count
+         */
+        export function getCount() {
+          return 0;
+        }
+      </script>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.props).toHaveLength(1);
+
+    const getCountProp = result.props.find((p) => p.name === "getCount");
+    expect(getCountProp?.returnType).toBe("number");
+    expect(getCountProp?.params).toBeUndefined();
+  });
 });

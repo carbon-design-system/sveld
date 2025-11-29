@@ -260,6 +260,135 @@ exports[`fixtures (JSON) "module-reexport/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "accessor-param-returns/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "add",
+      "kind": "function",
+      "description": "Add a notification to the queue.\\nIf a notification with the same id exists, the call is ignored.",
+      "type": "() => any",
+      "params": [
+        {
+          "name": "notification",
+          "type": "NotificationData",
+          "description": "",
+          "optional": false
+        }
+      ],
+      "returnType": "string",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "remove",
+      "kind": "function",
+      "description": "Remove a notification by id.",
+      "type": "() => any",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "",
+          "optional": false
+        }
+      ],
+      "returnType": "boolean",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "clear",
+      "kind": "function",
+      "description": "Clear all notifications.",
+      "type": "() => any",
+      "returnType": "void",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "getCount",
+      "kind": "function",
+      "description": "Get notification count.",
+      "type": "() => any",
+      "returnType": "number",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "update",
+      "kind": "function",
+      "description": "Update a notification.",
+      "type": "() => any",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "The notification id",
+          "optional": false
+        },
+        {
+          "name": "data",
+          "type": "NotificationData",
+          "description": "The updated notification data",
+          "optional": false
+        }
+      ],
+      "returnType": "boolean",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "log",
+      "kind": "function",
+      "description": "Function with only @param, no @returns (should default to any)",
+      "type": "() => any",
+      "params": [
+        {
+          "name": "message",
+          "type": "string",
+          "description": "",
+          "optional": false
+        }
+      ],
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{ /** Optional id for deduplication */ id?: string; kind?: \\"error\\" | \\"info\\" | \\"success\\"; title?: string; }",
+      "name": "NotificationData",
+      "ts": "type NotificationData = { /** Optional id for deduplication */ id?: string; kind?: \\"error\\" | \\"info\\" | \\"success\\"; title?: string; }"
+    }
+  ],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "typedef-jsdoc-properties/input.svelte" 1`] = `
 "{
   "props": [
@@ -2730,6 +2859,56 @@ export default class ModuleReexport extends SvelteComponentTyped<
   Record<string, any>,
   { default: Record<string, never> }
 > {}
+"
+`;
+
+exports[`fixtures (TypeScript) "accessor-param-returns/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+
+export type NotificationData = {
+  /** Optional id for deduplication */ id?: string;
+  kind?: "error" | "info" | "success";
+  title?: string;
+};
+
+export type AccessorParamReturnsProps = Record<string, never>;
+
+export default class AccessorParamReturns extends SvelteComponentTyped<
+  AccessorParamReturnsProps,
+  Record<string, any>,
+  Record<string, never>
+> {
+  /**
+   * Add a notification to the queue.
+   * If a notification with the same id exists, the call is ignored.
+   */
+  add: (notification: NotificationData) => string;
+
+  /**
+   * Remove a notification by id.
+   */
+  remove: (id: string) => boolean;
+
+  /**
+   * Clear all notifications.
+   */
+  clear: () => void;
+
+  /**
+   * Get notification count.
+   */
+  getCount: () => number;
+
+  /**
+   * Update a notification.
+   */
+  update: (id: string, data: NotificationData) => boolean;
+
+  /**
+   * Function with only @param, no @returns (should default to any)
+   */
+  log: (message: string) => any;
+}
 "
 `;
 
