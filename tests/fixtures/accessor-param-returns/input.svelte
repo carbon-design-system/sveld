@@ -57,5 +57,26 @@
   export function log(message) {
     console.log(message);
   }
+
+  /**
+   * Computes the depth of a tree leaf node relative to <ul role="tree" />
+   * @param {HTMLLIElement} node - The list item element representing the tree node
+   * @returns {number} The depth of the node (0-based, where 0 is the root level)
+   * @example
+   * ```js
+   * let nodeElement;
+   * $: depth = computeTreeLeafDepth(nodeElement);
+   * ```
+   */
+  export function computeTreeLeafDepth(node) {
+    let depth = 0;
+    if (node == null) return depth;
+    let parentNode = node.parentNode;
+    while (parentNode != null && parentNode.getAttribute("role") !== "tree") {
+      parentNode = parentNode.parentNode;
+      if (parentNode.tagName === "LI") depth++;
+    }
+    return depth;
+  }
 </script>
 

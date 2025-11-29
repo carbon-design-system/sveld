@@ -43,4 +43,14 @@ export default class AccessorParamReturns extends SvelteComponentTyped<
    * Function with only @param, no @returns (should default to any)
    */
   log: (message: string) => any;
+
+  /**
+   * Computes the depth of a tree leaf node relative to <ul role="tree" />
+   * @example
+   * ```js
+   * let nodeElement;
+   * $: depth = computeTreeLeafDepth(nodeElement);
+   * ```
+   */
+  computeTreeLeafDepth: (node: HTMLLIElement) => number;
 }

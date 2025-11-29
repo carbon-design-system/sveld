@@ -304,4 +304,50 @@ describe("writerTsDefinition", () => {
     expect(output).toContain("multiply: (a: number, b: number) => number;");
     expect(output).not.toContain("multiply: (x: number) => string;");
   });
+
+  test("generates module export function signatures from @param and @returns with @example", () => {
+    const component_api: ComponentDocApi = {
+      moduleName: "TestComponent",
+      filePath: "./src/TestComponent.svelte",
+      props: [],
+      moduleExports: [
+        {
+          name: "computeTreeLeafDepth",
+          kind: "function",
+          type: "() => any", // Default type
+          isFunction: true,
+          isFunctionDeclaration: true,
+          isRequired: false,
+          constant: false,
+          reactive: false,
+          params: [
+            {
+              name: "node",
+              type: "HTMLLIElement",
+              description: "The list item element representing the tree node",
+              optional: false,
+            },
+          ],
+          returnType: "number",
+          description:
+            "Computes the depth of a tree leaf node relative to <ul role=\"tree\" />\n@example\n```svelte\nimport { computeTreeLeafDepth } from 'carbon-components-svelte/TreeView/TreeViewNode.svelte';\nlet nodeElement;\n$: depth = computeTreeLeafDepth(nodeElement);\n<li bind:this={nodeElement}>Node at depth {depth}</li>\n```",
+        },
+      ],
+      slots: [],
+      events: [],
+      typedefs: [],
+      generics: null,
+      rest_props: undefined,
+    };
+
+    const output = writeTsDefinition(component_api);
+
+    // Verify function signature is built from @param and @returns
+    expect(output).toContain("export declare function computeTreeLeafDepth(node: HTMLLIElement): number;");
+
+    // Verify description with @example is preserved
+    expect(output).toContain('Computes the depth of a tree leaf node relative to <ul role="tree" />');
+    expect(output).toContain("@example");
+    expect(output).toContain("```svelte");
+  });
 });

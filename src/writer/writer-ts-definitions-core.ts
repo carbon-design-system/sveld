@@ -406,8 +406,28 @@ function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">) {
       let type_def = `export type ${prop.name} = ${prop.type || ANY_TYPE};`;
 
       const is_function = prop.type && FUNCTION_TYPE_REGEX.test(prop.type);
+      const isDefaultFunctionType = prop.type === "() => any";
 
-      if (is_function && prop.type) {
+      if (is_function && prop.type && !isDefaultFunctionType) {
+        // @type tag provides a custom function signature (highest priority)
+        const [first, second, ...rest] = prop.type.split("=>");
+        const rest_type = rest.map((item) => `=>${item}`).join("");
+
+        type_def = `export declare function ${prop.name}${first}:${second}${rest_type};`;
+      } else if (prop.params && prop.params.length > 0) {
+        // Build signature from @param tags
+        const paramStrings = prop.params.map((param) => {
+          const optional = param.optional ? "?" : "";
+          return `${param.name}${optional}: ${param.type}`;
+        });
+        const paramsString = paramStrings.join(", ");
+        const returnType = prop.returnType || ANY_TYPE;
+        type_def = `export declare function ${prop.name}(${paramsString}): ${returnType};`;
+      } else if (prop.returnType) {
+        // Only @returns is present without @param
+        type_def = `export declare function ${prop.name}(): ${prop.returnType};`;
+      } else if (is_function && prop.type) {
+        // Fall back to existing function type handling
         const [first, second, ...rest] = prop.type.split("=>");
         const rest_type = rest.map((item) => `=>${item}`).join("");
 
