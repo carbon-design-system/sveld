@@ -33,15 +33,20 @@ describe("Writer", () => {
     const writer = new Writer({ parser: "markdown", printWidth: 80 });
 
     expect(await writer.format("## text")).toEqual("## text\n");
+    // @ts-expect-error
     expect(await writer.format({ a: null })).toEqual({ a: null });
   });
 
   test("format handles non-string inputs", async () => {
     const writer = new Writer({ parser: "json", printWidth: 80 });
 
+    // @ts-expect-error
     expect(await writer.format({ complex: "object" })).toEqual({ complex: "object" });
+    // @ts-expect-error
     expect(await writer.format(123)).toEqual(123);
+    // @ts-expect-error
     expect(await writer.format(null)).toEqual(null);
+    // @ts-expect-error
     expect(await writer.format(undefined)).toEqual(undefined);
   });
 });
