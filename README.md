@@ -131,6 +131,7 @@ export default class Button extends SvelteComponentTyped<
   - [@extends](#extends)
   - [@generics](#generics)
   - [@component comments](#component-comments)
+  - [Accessor Props](#accessor-props)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -987,6 +988,96 @@ export default class Button extends SvelteComponentTyped<
   { default: Record<string, never> }
 > {}
 ```
+
+### Accessor Props
+
+Exported functions and consts become accessor props in generated TypeScript definitions. Use `@type` to document function signatures, or use `@param` and `@returns` (or `@return`) JSDoc tags for richer documentation.
+
+Note that `@type` tag annotations take precedence over `@param`/`@returns` tags.
+
+Signature:
+
+```js
+/**
+ * Function description
+ * @param {Type} paramName - Parameter description
+ * @param {Type} [optionalParam] - Optional parameter
+ * @returns {ReturnType} Return value description
+ */
+```
+
+Example:
+
+```svelte
+<script>
+  /**
+   * @typedef {object} NotificationData
+   * @property {string} [id] - Optional id for deduplication
+   * @property {"error" | "info" | "success"} [kind]
+   */
+
+  /**
+   * Add a notification to the queue.
+   * @param {NotificationData} notification
+   * @returns {string} The notification id
+   */
+  export function add(notification) {
+    const id = notification.id ?? "id";
+    return id;
+  }
+
+  /**
+   * Remove a notification by id.
+   * @param {string} id
+   * @returns {boolean} True if the notification was found and removed
+   */
+  export function remove(id) {
+    return true;
+  }
+
+  /**
+   * Get notification count.
+   * @returns {number} The number of notifications
+   */
+  export function getCount() {
+    return 0;
+  }
+</script>
+```
+
+Output:
+
+```ts
+export type NotificationData = {
+  /** Optional id for deduplication */ id?: string;
+  kind?: "error" | "info" | "success";
+};
+
+export type ComponentProps = Record<string, never>;
+
+export default class Component extends SvelteComponentTyped<
+  ComponentProps,
+  Record<string, any>,
+  Record<string, never>
+> {
+  /**
+   * Add a notification to the queue.
+   */
+  add: (notification: NotificationData) => string;
+
+  /**
+   * Remove a notification by id.
+   */
+  remove: (id: string) => boolean;
+
+  /**
+   * Get notification count.
+   */
+  getCount: () => number;
+}
+```
+
+When only `@param` tags are present without `@returns`, the return type defaults to `any`. When only `@returns` is present without `@param`, the function signature is `() => returnType`.
 
 ## Contributing
 

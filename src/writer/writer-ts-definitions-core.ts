@@ -349,9 +349,35 @@ function genAccessors(def: Pick<ComponentDocApi, "props">) {
         .filter(Boolean)
         .join("");
 
+      // Determine the function signature
+      let functionType: string;
+
+      // Check if this is the default function type (would be overridden by @type or params/returns)
+      const isDefaultFunctionType = prop.type === "() => any";
+
+      // If @type tag provides a custom function signature (contains => and is not the default), use it (highest priority)
+      if (prop.type && FUNCTION_TYPE_REGEX.test(prop.type) && !isDefaultFunctionType) {
+        functionType = prop.type;
+      } else if (prop.params && prop.params.length > 0) {
+        // Build signature from @param tags
+        const paramStrings = prop.params.map((param) => {
+          const optional = param.optional ? "?" : "";
+          return `${param.name}${optional}: ${param.type}`;
+        });
+        const paramsString = paramStrings.join(", ");
+        const returnType = prop.returnType || ANY_TYPE;
+        functionType = `(${paramsString}) => ${returnType}`;
+      } else if (prop.returnType) {
+        // Only @returns is present without @param
+        functionType = `() => ${prop.returnType}`;
+      } else {
+        // Fall back to current prop.type
+        functionType = prop.type || ANY_TYPE;
+      }
+
       return `
     ${prop_comments.length > 0 ? `/**\n${prop_comments}*/` : EMPTY_STR}
-    ${prop.name}: ${prop.type};`;
+    ${prop.name}: ${functionType};`;
     })
     .join("\n");
 }

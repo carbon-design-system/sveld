@@ -170,4 +170,138 @@ describe("writerTsDefinition", () => {
       "export type SimpleModalContext = {\n  /** Open the modal */\n  open: (component: any, props?: any) => void;\n  close: () => void;\n};",
     );
   });
+
+  test("generates function signatures from @param and @returns", () => {
+    const component_api: ComponentDocApi = {
+      moduleName: "TestComponent",
+      filePath: "./src/TestComponent.svelte",
+      props: [
+        {
+          name: "add",
+          kind: "function",
+          type: "() => any", // Default type
+          isFunction: true,
+          isFunctionDeclaration: true,
+          isRequired: false,
+          constant: false,
+          reactive: false,
+          params: [
+            {
+              name: "notification",
+              type: "NotificationData",
+              optional: false,
+            },
+          ],
+          returnType: "string",
+        },
+        {
+          name: "remove",
+          kind: "function",
+          type: "() => any", // Default type
+          isFunction: true,
+          isFunctionDeclaration: true,
+          isRequired: false,
+          constant: false,
+          reactive: false,
+          params: [
+            {
+              name: "id",
+              type: "string",
+              optional: false,
+            },
+          ],
+          returnType: "boolean",
+        },
+        {
+          name: "getCount",
+          kind: "function",
+          type: "() => any", // Default type
+          isFunction: true,
+          isFunctionDeclaration: true,
+          isRequired: false,
+          constant: false,
+          reactive: false,
+          returnType: "number", // Only @returns, no @param
+        },
+        {
+          name: "log",
+          kind: "function",
+          type: "() => any", // Default type
+          isFunction: true,
+          isFunctionDeclaration: true,
+          isRequired: false,
+          constant: false,
+          reactive: false,
+          params: [
+            {
+              name: "message",
+              type: "string",
+              optional: false,
+            },
+          ],
+          // No @returns, should default to any
+        },
+        {
+          name: "update",
+          kind: "function",
+          type: "() => any", // Default type
+          isFunction: true,
+          isFunctionDeclaration: true,
+          isRequired: false,
+          constant: false,
+          reactive: false,
+          params: [
+            {
+              name: "id",
+              type: "string",
+              optional: false,
+            },
+            {
+              name: "data",
+              type: "NotificationData",
+              optional: true, // Optional parameter
+            },
+          ],
+          returnType: "boolean",
+        },
+        {
+          name: "multiply",
+          kind: "function",
+          type: "(a: number, b: number) => number", // Custom @type, should take priority
+          isFunction: true,
+          isFunctionDeclaration: true,
+          isRequired: false,
+          constant: false,
+          reactive: false,
+          params: [
+            {
+              name: "x",
+              type: "number",
+              optional: false,
+            },
+          ],
+          returnType: "string", // Should be ignored in favor of @type
+        },
+      ],
+      moduleExports: [],
+      slots: [],
+      events: [],
+      typedefs: [],
+      generics: null,
+      rest_props: undefined,
+    };
+
+    const output = writeTsDefinition(component_api);
+
+    // Verify function signatures are built from @param and @returns
+    expect(output).toContain("add: (notification: NotificationData) => string;");
+    expect(output).toContain("remove: (id: string) => boolean;");
+    expect(output).toContain("getCount: () => number;");
+    expect(output).toContain("log: (message: string) => any;");
+    expect(output).toContain("update: (id: string, data?: NotificationData) => boolean;");
+
+    // Verify @type takes priority over @param/@returns
+    expect(output).toContain("multiply: (a: number, b: number) => number;");
+    expect(output).not.toContain("multiply: (x: number) => string;");
+  });
 });

@@ -40,6 +40,7 @@ interface ComponentProp {
   value?: string;
   description?: string;
   params?: ComponentPropParam[];
+  returnType?: string;
   isFunction: boolean;
   isFunctionDeclaration: boolean;
   isRequired: boolean;
@@ -931,6 +932,7 @@ export default class ComponentParser {
             }
 
             let params: ComponentPropParam[] | undefined;
+            let returnType: string | undefined;
 
             if (node.leadingComments) {
               const jsdoc_comment = ComponentParser.findJSDocComment(node.leadingComments);
@@ -956,11 +958,26 @@ export default class ComponentParser {
                     }));
                 }
 
+                // Extract @returns/@return tag
+                const returnsTag = comment[0]?.tags.find((t) => t.tag === "returns" || t.tag === "return");
+                if (returnsTag) returnType = this.aliasType(returnsTag.type);
+
                 // Build description from comment description and non-param/non-type tags
                 const commentDescription = ComponentParser.assignValue(comment[0]?.description?.trim());
                 const additionalTags =
                   comment[0]?.tags.filter(
-                    (tag) => !["type", "param", "extends", "restProps", "slot", "event", "typedef"].includes(tag.tag),
+                    (tag) =>
+                      ![
+                        "type",
+                        "param",
+                        "returns",
+                        "return",
+                        "extends",
+                        "restProps",
+                        "slot",
+                        "event",
+                        "typedef",
+                      ].includes(tag.tag),
                   ) ?? [];
 
                 if (commentDescription || additionalTags.length > 0) {
@@ -985,6 +1002,7 @@ export default class ComponentParser {
               type,
               value,
               params,
+              returnType,
               isFunction,
               isFunctionDeclaration,
               isRequired: false,
@@ -1131,6 +1149,7 @@ export default class ComponentParser {
           }
 
           let params: ComponentPropParam[] | undefined;
+          let returnType: string | undefined;
 
           if (node.leadingComments) {
             const jsdoc_comment = ComponentParser.findJSDocComment(node.leadingComments);
@@ -1156,11 +1175,26 @@ export default class ComponentParser {
                   }));
               }
 
+              // Extract @returns/@return tag
+              const returnsTag = comment[0]?.tags.find((t) => t.tag === "returns" || t.tag === "return");
+              if (returnsTag) returnType = this.aliasType(returnsTag.type);
+
               // Build description from comment description and non-param/non-type tags
               const commentDescription = ComponentParser.assignValue(comment[0]?.description?.trim());
               const additional_tags =
                 comment[0]?.tags.filter(
-                  (tag) => !["type", "param", "extends", "restProps", "slot", "event", "typedef"].includes(tag.tag),
+                  (tag) =>
+                    ![
+                      "type",
+                      "param",
+                      "returns",
+                      "return",
+                      "extends",
+                      "restProps",
+                      "slot",
+                      "event",
+                      "typedef",
+                    ].includes(tag.tag),
                 ) ?? [];
 
               if (commentDescription || additional_tags.length > 0) {
@@ -1185,6 +1219,7 @@ export default class ComponentParser {
             type,
             value,
             params,
+            returnType,
             isFunction,
             isFunctionDeclaration,
             isRequired,
