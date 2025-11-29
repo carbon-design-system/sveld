@@ -371,6 +371,26 @@ exports[`fixtures (JSON) "accessor-param-returns/input.svelte" 1`] = `
       "isRequired": false,
       "constant": false,
       "reactive": false
+    },
+    {
+      "name": "computeTreeLeafDepth",
+      "kind": "function",
+      "description": "Computes the depth of a tree leaf node relative to <ul role=\\"tree\\" />\\n@example \\n\`\`\`js\\nlet nodeElement;\\n$: depth = computeTreeLeafDepth(nodeElement);\\n\`\`\`",
+      "type": "() => any",
+      "params": [
+        {
+          "name": "node",
+          "type": "HTMLLIElement",
+          "description": "The list item element representing the tree node",
+          "optional": false
+        }
+      ],
+      "returnType": "number",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -2908,6 +2928,16 @@ export default class AccessorParamReturns extends SvelteComponentTyped<
    * Function with only @param, no @returns (should default to any)
    */
   log: (message: string) => any;
+
+  /**
+   * Computes the depth of a tree leaf node relative to <ul role="tree" />
+   * @example
+   * \`\`\`js
+   * let nodeElement;
+   * $: depth = computeTreeLeafDepth(nodeElement);
+   * \`\`\`
+   */
+  computeTreeLeafDepth: (node: HTMLLIElement) => number;
 }
 "
 `;
