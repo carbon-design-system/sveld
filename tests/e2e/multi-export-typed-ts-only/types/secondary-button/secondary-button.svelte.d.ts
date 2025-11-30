@@ -1,4 +1,4 @@
-import type { SvelteComponentTyped } from "svelte";
+import { SvelteComponentTyped } from "svelte";
 import type { ButtonProps } from "../button/button.svelte";
 
 export type SecondaryButtonProps = ButtonProps & {};
