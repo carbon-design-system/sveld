@@ -1,0 +1,14 @@
+{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "rest_props": {
+    "type": "Element",
+    "name": "svelte:element",
+    "thisValue": "button"
+  },
+  "contexts": []
+}

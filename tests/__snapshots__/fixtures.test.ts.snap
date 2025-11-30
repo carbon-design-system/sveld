@@ -2194,6 +2194,24 @@ exports[`fixtures (JSON) "event-explicit-null/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "svelte-element-hardcoded-button/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "rest_props": {
+    "type": "Element",
+    "name": "svelte:element",
+    "thisValue": "button"
+  },
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "forwarded-standard-event-custom-detail/input.svelte" 1`] = `
 "{
   "props": [
@@ -2496,6 +2514,53 @@ exports[`fixtures (JSON) "dispatched-events-jsdoc-properties/input.svelte" 1`] =
   ],
   "typedefs": [],
   "generics": null,
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "svelte-element-hardcoded-div/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "rest_props": {
+    "type": "Element",
+    "name": "svelte:element",
+    "thisValue": "div"
+  },
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "svelte-element-dynamic/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "tag",
+      "kind": "let",
+      "type": "string",
+      "value": "\\"div\\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "rest_props": {
+    "type": "Element",
+    "name": "svelte:element"
+  },
   "contexts": []
 }
 "
@@ -3909,6 +3974,26 @@ export default class EventExplicitNull extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "svelte-element-hardcoded-button/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+type $RestProps = SvelteHTMLElements["button"];
+
+type $Props = {
+  [key: \`data-\${string}\`]: any;
+};
+
+export type SvelteElementHardcodedButtonProps = Omit<$RestProps, keyof $Props> & $Props;
+
+export default class SvelteElementHardcodedButton extends SvelteComponentTyped<
+  SvelteElementHardcodedButtonProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "forwarded-standard-event-custom-detail/input.svelte" 1`] = `
 "import type { SvelteComponentTyped } from "svelte";
 
@@ -4112,6 +4197,51 @@ export default class DispatchedEventsJsdocProperties extends SvelteComponentType
     /** Form submission with value */
     submit: CustomEvent<{ value: string }>;
   },
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "svelte-element-hardcoded-div/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+type $RestProps = SvelteHTMLElements["div"];
+
+type $Props = {
+  [key: \`data-\${string}\`]: any;
+};
+
+export type SvelteElementHardcodedDivProps = Omit<$RestProps, keyof $Props> & $Props;
+
+export default class SvelteElementHardcodedDiv extends SvelteComponentTyped<
+  SvelteElementHardcodedDivProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "svelte-element-dynamic/input.svelte" 1`] = `
+"import type { SvelteComponentTyped } from "svelte";
+import type { HTMLAttributes } from "svelte/elements";
+
+type $RestProps = HTMLAttributes<HTMLElement>;
+
+type $Props = {
+  /**
+   * @default "div"
+   */
+  tag?: string;
+
+  [key: \`data-\${string}\`]: any;
+};
+
+export type SvelteElementDynamicProps = Omit<$RestProps, keyof $Props> & $Props;
+
+export default class SvelteElementDynamic extends SvelteComponentTyped<
+  SvelteElementDynamicProps,
+  Record<string, any>,
   Record<string, never>
 > {}
 "

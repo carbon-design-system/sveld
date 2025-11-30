@@ -1,0 +1,25 @@
+{
+  "props": [
+    {
+      "name": "tag",
+      "kind": "let",
+      "type": "string",
+      "value": "\"div\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "rest_props": {
+    "type": "Element",
+    "name": "svelte:element"
+  },
+  "contexts": []
+}
