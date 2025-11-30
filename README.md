@@ -38,7 +38,7 @@ The generated definition extends the official `SvelteComponentTyped` interface e
 **Button.svelte.d.ts**
 
 ```ts
-import type { SvelteComponentTyped } from "svelte";
+import { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
 type $RestProps = SvelteHTMLElements["button"];

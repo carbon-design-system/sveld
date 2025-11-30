@@ -2791,7 +2791,7 @@ exports[`fixtures (JSON) "generics/input.svelte" 1`] = `
 `;
 
 exports[`fixtures (TypeScript) "svg-props/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
 type $RestProps = SvelteHTMLElements["svg"];
@@ -2807,7 +2807,7 @@ export default class SvgProps extends SvelteComponentTyped<SvgPropsProps, Record
 `;
 
 exports[`fixtures (TypeScript) "slots-named/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type SlotsNamedProps = {
   /**
@@ -2830,7 +2830,7 @@ export default class SlotsNamed extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "module-reexport-mixed/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 /**
  * A local utility function for formatting
@@ -2870,7 +2870,7 @@ export default class ModuleReexportMixed extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "generics-multiple/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export interface DataTableRow {
   id: string | number;
@@ -2908,7 +2908,7 @@ export default class GenericsMultiple<
 `;
 
 exports[`fixtures (TypeScript) "context-empty/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type BreadcrumbItemContext = Record<string, never>;
 
@@ -2923,7 +2923,7 @@ export default class ContextEmpty extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "module-reexport/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type ModuleReexportProps = {
   /**
@@ -2948,7 +2948,7 @@ export default class ModuleReexport extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "accessor-param-returns/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type NotificationData = {
   /** Optional id for deduplication */ id?: string;
@@ -3008,7 +3008,7 @@ export default class AccessorParamReturns extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "typedef-jsdoc-properties/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type User = {
   /** The user's full name. */ name: string;
@@ -3058,7 +3058,7 @@ export default class TypedefJsdocProperties extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "mixed-event-types/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type MixedEventTypesProps = Record<string, never>;
 
@@ -3077,7 +3077,7 @@ export default class MixedEventTypes extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "dispatched-events-dynamic/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type DispatchedEventsDynamicProps = Record<string, never>;
 
@@ -3090,7 +3090,7 @@ export default class DispatchedEventsDynamic extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "context-issue-103/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type MyLoggerContext = {
   /** Log a message to the console */
@@ -3108,7 +3108,7 @@ export default class ContextIssue103 extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "jsdoc-type-params/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type TreeNodeId = string;
 
@@ -3139,7 +3139,7 @@ export default class JsdocTypeParams extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "function-declaration/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type FunctionDeclarationProps = {
   fnA?: (...args: any[]) => any;
@@ -3163,7 +3163,7 @@ export default class FunctionDeclaration extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "forwarded-events/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type ForwardedEventsProps = Record<string, never>;
 
@@ -3181,7 +3181,7 @@ export default class ForwardedEvents extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "theme-component/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export declare const themes: Record<CarbonTheme, string>;
 
@@ -3223,7 +3223,7 @@ export default class ThemeComponent extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "mixed-events/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type MixedEventsProps = Record<string, never>;
 
@@ -3236,7 +3236,7 @@ export default class MixedEvents extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "infer-basic/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type InferBasicProps = {
   /**
@@ -3278,7 +3278,7 @@ export default class InferBasic extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "empty-export/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type EmptyExportProps = Record<string, never>;
 
@@ -3291,7 +3291,7 @@ export default class EmptyExport extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "module-reexport-direct/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type ModuleReexportDirectProps = {
   /**
@@ -3316,7 +3316,7 @@ export default class ModuleReexportDirect extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "typed-slots/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type TypedSlotsProps = {
   /**
@@ -3338,7 +3338,7 @@ export default class TypedSlots extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "context-typedef/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type TabData = { id: string; label: string; disabled?: boolean };
 export type TabsContext = {
@@ -3359,7 +3359,7 @@ export default class ContextTypedef extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "forwarded-events-typed/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type ForwardedEventsTypedProps = Record<string, never>;
 
@@ -3377,7 +3377,7 @@ export default class ForwardedEventsTyped extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "dispatched-events/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type DispatchedEventsProps = Record<string, never>;
 
@@ -3395,7 +3395,7 @@ export default class DispatchedEvents extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "module-reexport-renamed/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type ModuleReexportRenamedProps = {
   /**
@@ -3420,7 +3420,7 @@ export default class ModuleReexportRenamed extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "typedefs/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export interface MyTypedef {
   [key: string]: boolean;
@@ -3449,7 +3449,7 @@ export default class Typedefs extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "generics-with-rest-props/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
 export interface DataTableRow {
@@ -3491,7 +3491,7 @@ export default class GenericsWithRestProps<Row extends DataTableRow = DataTableR
 `;
 
 exports[`fixtures (TypeScript) "bind-this/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type BindThisProps = {
   /**
@@ -3509,7 +3509,7 @@ export default class BindThis extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "instance-reexport/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type InstanceReexportProps = {
   /**
@@ -3534,7 +3534,7 @@ export default class InstanceReexport extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "dispatched-events-typed/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type DispatchedEventsTypedProps = Record<string, never>;
 
@@ -3550,7 +3550,7 @@ export default class DispatchedEventsTyped extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "input-events/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type InputEventsProps = Record<string, never>;
 
@@ -3563,7 +3563,7 @@ export default class InputEvents extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "required/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type RequiredProps = {
   /**
@@ -3599,7 +3599,7 @@ export default class Required extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "context-imported-type/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type ModalAPI = { open: () => void; close: () => void };
 export type ModalContext = {
@@ -3618,7 +3618,7 @@ export default class ContextImportedType extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "prop-comments/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type PropCommentsProps = {
   /**
@@ -3651,7 +3651,7 @@ export default class PropComments extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "forwarded-events-native-with-jsdoc/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type ForwardedEventsNativeWithJsdocProps = Record<string, never>;
 
@@ -3670,7 +3670,7 @@ export default class ForwardedEventsNativeWithJsdoc extends SvelteComponentTyped
 `;
 
 exports[`fixtures (TypeScript) "context-simple/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type SimpleModalContext = {
   /** Open the modal with content */
@@ -3690,7 +3690,7 @@ export default class ContextSimple extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "renamed-props/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type RenamedPropsProps = {
   /**
@@ -3709,7 +3709,7 @@ export default class RenamedProps extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "infer-with-types/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type InferWithTypesProps = {
   /**
@@ -3746,7 +3746,7 @@ export default class InferWithTypes extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "non-literal-defaults/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type Position = "top-left" | "top-right" | "bottom-left" | "bottom-right";
 
@@ -3833,7 +3833,7 @@ export default class NonLiteralDefaults extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "forwarded-native-with-detail/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type ForwardedNativeWithDetailProps = Record<string, never>;
 
@@ -3848,7 +3848,7 @@ export default class ForwardedNativeWithDetail extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "context-module/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export declare const bool: string;
 
@@ -3883,7 +3883,7 @@ export default class ContextModule extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "html-in-template-string/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type HtmlInTemplateStringProps = {
   /**
@@ -3901,7 +3901,7 @@ export default class HtmlInTemplateString extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "rest-props-multiple/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
 type $RestProps = SvelteHTMLElements["ul"] & SvelteHTMLElements["ol"];
@@ -3926,7 +3926,7 @@ export default class RestPropsMultiple extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "forwarded-from-component-to-native/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type ForwardedFromComponentToNativeProps = Record<string, never>;
 
@@ -3946,7 +3946,7 @@ export default class ForwardedFromComponentToNative extends SvelteComponentTyped
 `;
 
 exports[`fixtures (TypeScript) "no-props/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type NoPropsProps = Record<string, never>;
 
@@ -3955,7 +3955,7 @@ export default class NoProps extends SvelteComponentTyped<NoPropsProps, Record<s
 `;
 
 exports[`fixtures (TypeScript) "event-explicit-null/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
 type $RestProps = SvelteHTMLElements["input"];
@@ -3975,7 +3975,7 @@ export default class EventExplicitNull extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "svelte-element-hardcoded-button/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
 type $RestProps = SvelteHTMLElements["button"];
@@ -3995,7 +3995,7 @@ export default class SvelteElementHardcodedButton extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "forwarded-standard-event-custom-detail/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type ForwardedStandardEventCustomDetailProps = {
   /**
@@ -4017,7 +4017,7 @@ export default class ForwardedStandardEventCustomDetail extends SvelteComponentT
 `;
 
 exports[`fixtures (TypeScript) "component-comment-single/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type ComponentCommentSingleProps = Record<string, never>;
 
@@ -4031,7 +4031,7 @@ export default class ComponentCommentSingle extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "bind-this-multiple/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type BindThisMultipleProps = {
   /**
@@ -4059,7 +4059,7 @@ export default class BindThisMultiple extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "forwarded-custom-events/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type ForwardedCustomEventsProps = Record<string, never>;
 
@@ -4075,7 +4075,7 @@ export default class ForwardedCustomEvents extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "typedef/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export interface MyTypedef {
   [key: string]: boolean;
@@ -4102,7 +4102,7 @@ export default class Typedef extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "rest-props-simple/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
 type $RestProps = SvelteHTMLElements["h1"];
@@ -4122,7 +4122,7 @@ export default class RestPropsSimple extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "anchor-props/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
 type $RestProps = SvelteHTMLElements["a"];
@@ -4142,7 +4142,7 @@ export default class AnchorProps extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "component-comment-multi/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type ComponentCommentMultiProps = Record<string, never>;
 
@@ -4161,7 +4161,7 @@ export default class ComponentCommentMulti extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "forwarded-custom-event-null/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type ForwardedCustomEventNullProps = Record<string, never>;
 
@@ -4178,7 +4178,7 @@ export default class ForwardedCustomEventNull extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "dispatched-events-jsdoc-properties/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type DispatchedEventsJsdocPropertiesProps = Record<string, never>;
 
@@ -4203,7 +4203,7 @@ export default class DispatchedEventsJsdocProperties extends SvelteComponentType
 `;
 
 exports[`fixtures (TypeScript) "svelte-element-hardcoded-div/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
 type $RestProps = SvelteHTMLElements["div"];
@@ -4223,7 +4223,7 @@ export default class SvelteElementHardcodedDiv extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "svelte-element-dynamic/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 import type { HTMLAttributes } from "svelte/elements";
 
 type $RestProps = HTMLAttributes<HTMLElement>;
@@ -4248,7 +4248,7 @@ export default class SvelteElementDynamic extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "slots-spread/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type SlotsSpreadProps = Record<string, never>;
 
@@ -4261,7 +4261,7 @@ export default class SlotsSpread extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "forwarded-and-dispatched-events/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type ForwardedAndDispatchedEventsProps = Record<string, never>;
 
@@ -4274,7 +4274,7 @@ export default class ForwardedAndDispatchedEvents extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "slots-spread-typed/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type SlotsSpreadTypedProps = Record<string, never>;
 
@@ -4287,7 +4287,7 @@ export default class SlotsSpreadTyped extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "context-inline-functions/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type ModalContext = {
   open: (component: any, props: any) => any;
@@ -4305,7 +4305,7 @@ export default class ContextInlineFunctions extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "typed-props/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export type TypedPropsProps = {
   /**
@@ -4342,7 +4342,7 @@ export default class TypedProps extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "generics/input.svelte" 1`] = `
-"import type { SvelteComponentTyped } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
 
 export interface DataTableRow {
   id: string | number;

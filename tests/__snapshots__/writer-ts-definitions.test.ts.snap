@@ -2,7 +2,7 @@
 
 exports[`writerTsDefinition writeTsDefinition 1`] = `
 "
-  import type { SvelteComponentTyped } from "svelte";
+  import { SvelteComponentTyped } from "svelte";
   
   
   
@@ -49,7 +49,7 @@ exports[`writerTsDefinition writeTsDefinition 1`] = `
 
 exports[`writerTsDefinition "default" module name 1`] = `
 "
-  import type { SvelteComponentTyped } from "svelte";
+  import { SvelteComponentTyped } from "svelte";
   
   
   

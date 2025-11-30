@@ -1,4 +1,4 @@
-import type { SvelteComponentTyped } from "svelte";
+import { SvelteComponentTyped } from "svelte";
 
 export type TabData = { id: string; label: string; disabled?: boolean };
 export type TabsContext = {
