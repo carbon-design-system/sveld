@@ -111,6 +111,7 @@ interface ComponentInlineElement {
 interface ComponentElement {
   type: "Element";
   name: string;
+  thisValue?: string; // For svelte:element, stores the hardcoded element tag if this is a literal string
 }
 
 type RestProps = undefined | ComponentInlineElement | ComponentElement;
@@ -1036,10 +1037,22 @@ export default class ComponentParser {
 
         if (node.type === "Spread" && node?.expression.name === "$$restProps") {
           if (this.rest_props === undefined && (parent?.type === "InlineComponent" || parent?.type === "Element")) {
-            this.rest_props = {
+            const restProps: RestProps = {
               type: parent.type,
               name: parent.name,
             };
+
+            // Handle svelte:element - check if this attribute is hardcoded
+            if (parent.type === "Element" && parent.name === "svelte:element") {
+              // The 'this' value is stored in the 'tag' property of the Element node
+              // If tag is a string, it's hardcoded; if undefined/null, it's dynamic
+              if (typeof parent.tag === "string") {
+                restProps.thisValue = parent.tag;
+              }
+              // If tag is undefined or not a string, thisValue remains undefined (dynamic)
+            }
+
+            this.rest_props = restProps;
           }
         }
 

@@ -105,14 +105,28 @@ function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleN
   const genericsName = def.generics ? `<${def.generics[0]}>` : "";
 
   if (def.rest_props?.type === "Element") {
-    const extend_tag_map = def.rest_props.name
-      .split("|")
-      .map((name) => {
-        const element = name.trim();
+    let extend_tag_map: string;
 
-        return `SvelteHTMLElements["${element}"]`;
-      })
-      .join("&");
+    // Handle svelte:element specially
+    if (def.rest_props.name === "svelte:element") {
+      // If thisValue is provided (hardcoded element tag), use that element type
+      // Otherwise, fallback to HTMLElement for dynamic this attribute
+      if (def.rest_props.thisValue) {
+        extend_tag_map = `SvelteHTMLElements["${def.rest_props.thisValue}"]`;
+      } else {
+        // Dynamic this attribute - use generic HTMLElement
+        extend_tag_map = "HTMLAttributes<HTMLElement>";
+      }
+    } else {
+      // Regular element - use existing logic
+      extend_tag_map = def.rest_props.name
+        .split("|")
+        .map((name) => {
+          const element = name.trim();
+          return `SvelteHTMLElements["${element}"]`;
+        })
+        .join("&");
+    }
 
     /**
      * Components that extend HTML elements should allow for `data-*` attributes.
@@ -469,10 +483,17 @@ export function writeTsDefinition(component: ComponentDocApi) {
   const generic = generics ? `<${generics[1]}>` : "";
   const genericProps = generics ? `${props_name}<${generics[0]}>` : props_name;
 
+  // Determine imports needed for rest_props
+  const needsSvelteHTMLElements =
+    rest_props?.type === "Element" &&
+    (rest_props.name !== "svelte:element" || (rest_props.name === "svelte:element" && rest_props.thisValue));
+  const needsHTMLAttributes =
+    rest_props?.type === "Element" && rest_props.name === "svelte:element" && !rest_props.thisValue;
+
   return `
   import type { SvelteComponentTyped } from "svelte";${
-    rest_props?.type === "Element" ? `import type { SvelteHTMLElements } from "svelte/elements";\n` : ""
-  }
+    needsSvelteHTMLElements ? `import type { SvelteHTMLElements } from "svelte/elements";\n` : ""
+  }${needsHTMLAttributes ? `import type { HTMLAttributes } from "svelte/elements";\n` : ""}
   ${genImports({ extends: _extends })}
   ${genModuleExports({ moduleExports })}
   ${getTypeDefs({ typedefs })}
