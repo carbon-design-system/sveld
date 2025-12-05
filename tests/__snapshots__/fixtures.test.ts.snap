@@ -3065,7 +3065,8 @@ export type MixedEventTypesProps = Record<string, never>;
 export default class MixedEventTypes extends SvelteComponentTyped<
   MixedEventTypesProps,
   {
-    /** Input value changed (native forwarded event) */ input: CustomEvent<string>;
+    /** Input value changed (native forwarded event) */
+    input: CustomEvent<string>;
     /** Custom event from component (component forwarded event) */
     customEvent: CustomEvent<number>;
     change: WindowEventMap["change"];
@@ -3366,7 +3367,8 @@ export type ForwardedEventsTypedProps = Record<string, never>;
 export default class ForwardedEventsTyped extends SvelteComponentTyped<
   ForwardedEventsTypedProps,
   {
-    /** Fired when the button is clicked */ click: WindowEventMap["click"];
+    /** Fired when the button is clicked */
+    click: WindowEventMap["click"];
     /** Fired when the button receives focus */
     focus: WindowEventMap["focus"];
     blur: WindowEventMap["blur"];
@@ -3541,7 +3543,8 @@ export type DispatchedEventsTypedProps = Record<string, never>;
 export default class DispatchedEventsTyped extends SvelteComponentTyped<
   DispatchedEventsTypedProps,
   {
-    /** Fired on mouseover. */ hover: CustomEvent<{ h1: boolean }>;
+    /** Fired on mouseover. */
+    hover: CustomEvent<{ h1: boolean }>;
     destroy: CustomEvent<null>;
   },
   { default: Record<string, never> }
@@ -3658,7 +3661,8 @@ export type ForwardedEventsNativeWithJsdocProps = Record<string, never>;
 export default class ForwardedEventsNativeWithJsdoc extends SvelteComponentTyped<
   ForwardedEventsNativeWithJsdocProps,
   {
-    /** Fired when the button is clicked */ click: WindowEventMap["click"];
+    /** Fired when the button is clicked */
+    click: WindowEventMap["click"];
     /** Fired when the button receives focus */
     focus: WindowEventMap["focus"];
     /** Fired when the button loses focus */
@@ -3840,7 +3844,8 @@ export type ForwardedNativeWithDetailProps = Record<string, never>;
 export default class ForwardedNativeWithDetail extends SvelteComponentTyped<
   ForwardedNativeWithDetailProps,
   {
-    /** The input value when changed */ change: CustomEvent<string>;
+    /** The input value when changed */
+    change: CustomEvent<string>;
   },
   Record<string, never>
 > {}
@@ -4066,7 +4071,8 @@ export type ForwardedCustomEventsProps = Record<string, never>;
 export default class ForwardedCustomEvents extends SvelteComponentTyped<
   ForwardedCustomEventsProps,
   {
-    /** Fired when clear button is clicked */ clear: CustomEvent<KeyboardEvent | MouseEvent>;
+    /** Fired when clear button is clicked */
+    clear: CustomEvent<KeyboardEvent | MouseEvent>;
     click: WindowEventMap["click"];
   },
   Record<string, never>
@@ -4168,7 +4174,8 @@ export type ForwardedCustomEventNullProps = Record<string, never>;
 export default class ForwardedCustomEventNull extends SvelteComponentTyped<
   ForwardedCustomEventNullProps,
   {
-    /** Clear button clicked with no data */ clear: CustomEvent<null>;
+    /** Clear button clicked with no data */
+    clear: CustomEvent<null>;
     /** Search query changed */
     search: CustomEvent<string>;
   },
