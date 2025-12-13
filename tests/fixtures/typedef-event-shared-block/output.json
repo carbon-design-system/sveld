@@ -1,0 +1,98 @@
+{
+  "props": [
+    {
+      "name": "size",
+      "kind": "let",
+      "description": "Determine the current breakpoint size.",
+      "type": "BreakpointSize",
+      "value": "undefined",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "sizes",
+      "kind": "let",
+      "description": "Sizes as an object.",
+      "type": "Record<BreakpointSize, boolean>",
+      "value": "{     sm: false,     md: false,     lg: false,     xlg: false,     max: false,   }",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{ size: BreakpointSize; sizes: Record<BreakpointSize, boolean>; }"
+    },
+    {
+      "name": "break",
+      "default": false,
+      "slot_props": "Record<string, never>"
+    },
+    {
+      "name": "breakpoint-sizes",
+      "default": false,
+      "slot_props": "{ sizes: Record<BreakpointSize, boolean>; }",
+      "description": "Slot for rendering breakpoint sizes"
+    },
+    {
+      "name": "inline-slot",
+      "default": false,
+      "slot_props": "{ a: 4 }",
+      "description": "description"
+    }
+  ],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "change",
+      "detail": "{ size: BreakpointSize; breakpointValue: BreakpointValue; }"
+    },
+    {
+      "type": "dispatched",
+      "name": "resize",
+      "detail": "null",
+      "description": "Event fired when size changes"
+    },
+    {
+      "type": "dispatched",
+      "name": "scroll",
+      "detail": "null"
+    },
+    {
+      "type": "dispatched",
+      "name": "queue",
+      "detail": "null",
+      "description": "Event fired when item is dequeued from the queue"
+    },
+    {
+      "type": "dispatched",
+      "name": "dequeue",
+      "detail": "null",
+      "description": "Slot for rendering breakpoint sizes"
+    }
+  ],
+  "typedefs": [
+    {
+      "type": "\"sm\" | \"md\" | \"lg\" | \"xlg\" | \"max\"",
+      "name": "BreakpointSize",
+      "description": "Breakpoint size names",
+      "ts": "type BreakpointSize = \"sm\" | \"md\" | \"lg\" | \"xlg\" | \"max\""
+    },
+    {
+      "type": "320 | 672 | 1056 | 1312 | 1584",
+      "name": "BreakpointValue",
+      "ts": "type BreakpointValue = 320 | 672 | 1056 | 1312 | 1584"
+    }
+  ],
+  "generics": null,
+  "contexts": []
+}

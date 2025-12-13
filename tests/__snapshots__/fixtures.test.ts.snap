@@ -750,6 +750,108 @@ exports[`fixtures (JSON) "forwarded-events/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "typedef-event-shared-block/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "size",
+      "kind": "let",
+      "description": "Determine the current breakpoint size.",
+      "type": "BreakpointSize",
+      "value": "undefined",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "sizes",
+      "kind": "let",
+      "description": "Sizes as an object.",
+      "type": "Record<BreakpointSize, boolean>",
+      "value": "{     sm: false,     md: false,     lg: false,     xlg: false,     max: false,   }",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{ size: BreakpointSize; sizes: Record<BreakpointSize, boolean>; }"
+    },
+    {
+      "name": "break",
+      "default": false,
+      "slot_props": "Record<string, never>"
+    },
+    {
+      "name": "breakpoint-sizes",
+      "default": false,
+      "slot_props": "{ sizes: Record<BreakpointSize, boolean>; }",
+      "description": "Slot for rendering breakpoint sizes"
+    },
+    {
+      "name": "inline-slot",
+      "default": false,
+      "slot_props": "{ a: 4 }",
+      "description": "description"
+    }
+  ],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "change",
+      "detail": "{ size: BreakpointSize; breakpointValue: BreakpointValue; }"
+    },
+    {
+      "type": "dispatched",
+      "name": "resize",
+      "detail": "null",
+      "description": "Event fired when size changes"
+    },
+    {
+      "type": "dispatched",
+      "name": "scroll",
+      "detail": "null"
+    },
+    {
+      "type": "dispatched",
+      "name": "queue",
+      "detail": "null",
+      "description": "Event fired when item is dequeued from the queue"
+    },
+    {
+      "type": "dispatched",
+      "name": "dequeue",
+      "detail": "null",
+      "description": "Slot for rendering breakpoint sizes"
+    }
+  ],
+  "typedefs": [
+    {
+      "type": "\\"sm\\" | \\"md\\" | \\"lg\\" | \\"xlg\\" | \\"max\\"",
+      "name": "BreakpointSize",
+      "description": "Breakpoint size names",
+      "ts": "type BreakpointSize = \\"sm\\" | \\"md\\" | \\"lg\\" | \\"xlg\\" | \\"max\\""
+    },
+    {
+      "type": "320 | 672 | 1056 | 1312 | 1584",
+      "name": "BreakpointValue",
+      "ts": "type BreakpointValue = 320 | 672 | 1056 | 1312 | 1584"
+    }
+  ],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "theme-component/input.svelte" 1`] = `
 "{
   "props": [
@@ -3274,6 +3376,54 @@ export default class ForwardedEvents extends SvelteComponentTyped<
     mouseover: WindowEventMap["mouseover"];
   },
   { default: Record<string, never> }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "typedef-event-shared-block/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+/**
+ * Breakpoint size names
+ */
+export type BreakpointSize = "sm" | "md" | "lg" | "xlg" | "max";
+
+export type BreakpointValue = 320 | 672 | 1056 | 1312 | 1584;
+
+export type TypedefEventSharedBlockProps = {
+  /**
+   * Determine the current breakpoint size.
+   * @default undefined
+   */
+  size?: BreakpointSize;
+
+  /**
+   * Sizes as an object.
+   * @default { sm: false, md: false, lg: false, xlg: false, max: false, }
+   */
+  sizes?: Record<BreakpointSize, boolean>;
+};
+
+export default class TypedefEventSharedBlock extends SvelteComponentTyped<
+  TypedefEventSharedBlockProps,
+  {
+    change: CustomEvent<{ size: BreakpointSize; breakpointValue: BreakpointValue }>;
+    /** Event fired when size changes */
+    resize: CustomEvent<null>;
+    scroll: CustomEvent<null>;
+    /** Event fired when item is dequeued from the queue */
+    queue: CustomEvent<null>;
+    /** Slot for rendering breakpoint sizes */
+    dequeue: CustomEvent<null>;
+  },
+  {
+    default: { size: BreakpointSize; sizes: Record<BreakpointSize, boolean> };
+    break: Record<string, never>;
+    /** Slot for rendering breakpoint sizes */
+    "breakpoint-sizes": { sizes: Record<BreakpointSize, boolean> };
+    /** description */
+    "inline-slot": { a: 4 };
+  }
 > {}
 "
 `;
