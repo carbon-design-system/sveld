@@ -7,6 +7,7 @@ import { compile, parse, walk } from "svelte/compiler";
 import type { Ast, TemplateNode, Var } from "svelte/types/compiler/interfaces";
 import { getElementByTag } from "./element-tag-map";
 
+const COMMENT_BLOCK_DESCRIPTION_REGEX = /^-\s*/;
 const VAR_DECLARATION_REGEX = /(?:const|let|function)\s+(\w+)\s*[=(]/;
 
 interface CompiledSvelteCode {
@@ -359,7 +360,9 @@ export default class ComponentParser {
   }
 
   private parseCustomTypes() {
-    for (const { tags, description: commentDescription } of parseComment(this.source, { spacing: "preserve" })) {
+    for (const { tags, description: commentDescription, source: blockSource } of parseComment(this.source, {
+      spacing: "preserve",
+    })) {
       let currentEventName: string | undefined;
       let currentEventType: string | undefined;
       let currentEventDescription: string | undefined;
@@ -374,7 +377,6 @@ export default class ComponentParser {
       let currentTypedefName: string | undefined;
       let currentTypedefType: string | undefined;
       let currentTypedefDescription: string | undefined;
-      let commentDescriptionUsed = false;
       const typedefProperties: Array<{
         name: string;
         type: string;
@@ -382,6 +384,69 @@ export default class ComponentParser {
         optional?: boolean;
         default?: string;
       }> = [];
+
+      // Track if we've used the comment block description for any tag in this block
+      // Only the first tag (that needs a description) should use the comment block description
+      let commentDescriptionUsed = false;
+      let isFirstTag = true;
+
+      // Build a map of line numbers to their description content (for lines without tags)
+      const lineDescriptions = new Map<number, string>();
+      // Track line numbers that contain tags
+      const tagLineNumbers = new Set<number>();
+      for (const tagInfo of tags) {
+        if (tagInfo.source && tagInfo.source.length > 0) {
+          tagLineNumbers.add(tagInfo.source[0].number);
+        }
+      }
+      for (const line of blockSource) {
+        // Only track lines that have a description but no tag
+        // Also filter out lines that are just "}" (artifact from some comment formats)
+        if (!line.tokens.tag && line.tokens.description && line.tokens.description.trim() !== "}") {
+          lineDescriptions.set(line.number, line.tokens.description);
+        }
+      }
+
+      // Helper to get the description from lines preceding a tag
+      // Look backwards from the tag until we hit another tag, collecting description lines
+      // Stop after finding the first contiguous block of description lines
+      const getPrecedingDescription = (tagSource: typeof blockSource): string | undefined => {
+        if (!tagSource || tagSource.length === 0) return undefined;
+        const tagLineNumber = tagSource[0].number;
+
+        // Look backwards from the tag line to find the immediately preceding description
+        const descLines: string[] = [];
+        let foundDescriptionBlock = false;
+
+        for (let lineNum = tagLineNumber - 1; lineNum >= 1; lineNum--) {
+          // Stop if we hit a tag line
+          if (tagLineNumbers.has(lineNum)) {
+            break;
+          }
+
+          // Check if this line has a description
+          const desc = lineDescriptions.get(lineNum);
+          if (desc) {
+            descLines.unshift(desc); // Add to beginning to maintain order
+            foundDescriptionBlock = true;
+          } else if (foundDescriptionBlock) {
+            // We've already found description lines and now hit a non-description line
+            // Check if it's blank - if so, continue; if not, stop
+            const sourceLine = blockSource.find((l) => l.number === lineNum);
+            const isBlank =
+              !sourceLine ||
+              (!sourceLine.tokens.tag &&
+                (!sourceLine.tokens.description || sourceLine.tokens.description.trim() === ""));
+            if (!isBlank) {
+              // Non-blank non-description line - stop here
+              break;
+            }
+            // Blank line - continue (blank lines can separate descriptions from tags)
+          }
+          // If we haven't found any description yet, continue looking backwards
+        }
+        return descLines.length > 0 ? descLines.join("\n").trim() : undefined;
+      };
 
       const finalizeEvent = () => {
         if (currentEventName !== undefined) {
@@ -441,8 +506,18 @@ export default class ComponentParser {
         }
       };
 
-      for (const { tag, type: tagType, name, description, optional, default: defaultValue } of tags) {
+      for (const {
+        tag,
+        type: tagType,
+        name,
+        description,
+        optional,
+        default: defaultValue,
+        source: tagSource,
+      } of tags) {
         const type = this.aliasType(tagType);
+        // Get the description from the line immediately before this tag
+        const precedingDescription = getPrecedingDescription(tagSource);
 
         switch (tag) {
           case "extends":
@@ -450,30 +525,50 @@ export default class ComponentParser {
               interface: name,
               import: type,
             };
+            if (isFirstTag) isFirstTag = false;
             break;
           case "restProps":
             this.rest_props = {
               type: "Element",
               name: type,
             };
+            if (isFirstTag) isFirstTag = false;
             break;
-          case "slot":
+          case "slot": {
+            // Prefer inline description, fall back to preceding line description,
+            // then fall back to the comment block description (only for first tag if not already used)
+            const inlineSlotDesc = description?.replace(COMMENT_BLOCK_DESCRIPTION_REGEX, "").trim();
+            let slotDesc = inlineSlotDesc || precedingDescription;
+            if (!slotDesc && isFirstTag && !commentDescriptionUsed && commentDescription) {
+              slotDesc = commentDescription;
+              commentDescriptionUsed = true;
+            }
+            if (isFirstTag) isFirstTag = false;
             this.addSlot({
               slot_name: name,
               slot_props: type,
-              slot_description: description ? description : undefined,
+              slot_description: slotDesc || undefined,
             });
             break;
-          case "event":
+          }
+          case "event": {
             // Finalize any previous event being built
             finalizeEvent();
 
             // Start tracking new event
             currentEventName = name;
             currentEventType = type;
-            // Use the main comment description if available, otherwise use inline description
-            currentEventDescription = commentDescription?.trim() || description || undefined;
+            // Prefer inline description (e.g., "@event {type} name - description"),
+            // fall back to preceding line, then fall back to comment block description (only for first tag if not already used)
+            const inlineEventDesc = description?.replace(COMMENT_BLOCK_DESCRIPTION_REGEX, "").trim();
+            currentEventDescription = inlineEventDesc || precedingDescription;
+            if (!currentEventDescription && isFirstTag && !commentDescriptionUsed && commentDescription) {
+              currentEventDescription = commentDescription;
+              commentDescriptionUsed = true;
+            }
+            if (isFirstTag) isFirstTag = false;
             break;
+          }
           case "type":
             // Track the @type tag for the current event
             if (currentEventName !== undefined) {
@@ -504,20 +599,20 @@ export default class ComponentParser {
             // Start tracking new typedef
             currentTypedefName = name;
             currentTypedefType = type;
-            // Use inline description if present, otherwise use comment description only if not already used
-            const trimmedCommentDesc = commentDescription?.trim();
-            if (description) {
-              currentTypedefDescription = description;
-            } else if (!commentDescriptionUsed && trimmedCommentDesc && trimmedCommentDesc !== "}") {
-              currentTypedefDescription = trimmedCommentDesc;
+            // Prefer inline description, fall back to preceding line description,
+            // then fall back to comment block description (only for first tag if not already used)
+            const inlineTypedefDesc = description?.replace(COMMENT_BLOCK_DESCRIPTION_REGEX, "").trim();
+            currentTypedefDescription = inlineTypedefDesc || precedingDescription;
+            if (!currentTypedefDescription && isFirstTag && !commentDescriptionUsed && commentDescription) {
+              currentTypedefDescription = commentDescription;
               commentDescriptionUsed = true;
-            } else {
-              currentTypedefDescription = undefined;
             }
+            if (isFirstTag) isFirstTag = false;
             break;
           }
           case "generics":
             this.generics = [name, type];
+            if (isFirstTag) isFirstTag = false;
             break;
         }
       }
