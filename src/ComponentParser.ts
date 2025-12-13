@@ -374,6 +374,7 @@ export default class ComponentParser {
       let currentTypedefName: string | undefined;
       let currentTypedefType: string | undefined;
       let currentTypedefDescription: string | undefined;
+      let commentDescriptionUsed = false;
       const typedefProperties: Array<{
         name: string;
         type: string;
@@ -503,10 +504,16 @@ export default class ComponentParser {
             // Start tracking new typedef
             currentTypedefName = name;
             currentTypedefType = type;
-            // Use inline description if present, otherwise use comment description
+            // Use inline description if present, otherwise use comment description only if not already used
             const trimmedCommentDesc = commentDescription?.trim();
-            currentTypedefDescription =
-              description || (trimmedCommentDesc && trimmedCommentDesc !== "}" ? trimmedCommentDesc : undefined);
+            if (description) {
+              currentTypedefDescription = description;
+            } else if (!commentDescriptionUsed && trimmedCommentDesc && trimmedCommentDesc !== "}") {
+              currentTypedefDescription = trimmedCommentDesc;
+              commentDescriptionUsed = true;
+            } else {
+              currentTypedefDescription = undefined;
+            }
             break;
           }
           case "generics":
