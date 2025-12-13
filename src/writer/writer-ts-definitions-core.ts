@@ -25,7 +25,14 @@ export function formatTsProps(props?: string) {
 
 export function getTypeDefs(def: Pick<ComponentDocApi, "typedefs">) {
   if (def.typedefs.length === 0) return EMPTY_STR;
-  return def.typedefs.map((typedef) => `export ${typedef.ts}`).join("\n\n");
+  return def.typedefs
+    .map((typedef) => {
+      const typedefComment = typedef.description
+        ? `/**\n * ${typedef.description.replace(NEWLINE_TO_COMMENT_REGEX, "\n * ")}\n */\n`
+        : "";
+      return `${typedefComment}export ${typedef.ts}`;
+    })
+    .join("\n\n");
 }
 
 export function getContextDefs(def: Pick<ComponentDocApi, "contexts">) {

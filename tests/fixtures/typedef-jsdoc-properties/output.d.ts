@@ -1,5 +1,8 @@
 import { SvelteComponentTyped } from "svelte";
 
+/**
+ * Represents a user in the system.
+ */
 export type User = {
   /** The user's full name. */ name: string;
   /** The user's email address. */ email: string;
@@ -8,12 +11,18 @@ export type User = {
   /** Optional phone with default. @default 555-0000 */ phone?: string;
 };
 
+/**
+ * Configuration options for the component.
+ */
 export type ComponentConfig = {
   /** Whether the component is enabled. */ enabled: boolean;
   /** The component theme. */ theme: string;
   /** Optional timeout in milliseconds. @default 5000 */ timeout?: number;
 };
 
+/**
+ * Simple typedef without properties (backwards compatibility test).
+ */
 export interface SimpleType {
   id: number;
   label: string;
