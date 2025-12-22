@@ -11,6 +11,7 @@ interface TSConfig {
 }
 
 const configCache = new Map<string, TSConfig | null>();
+const pathPatternRegexCache = new Map<string, RegExp>();
 
 const COMMENT_PATTERN = /\/\*[\s\S]*?\*\/|\/\/.*/g;
 const REGEX_SPECIAL_CHARS = /[.+?^${}()|[\]\\]/g;
@@ -103,13 +104,18 @@ export function resolvePathAliasAbsolute(importPath: string, fromDir: string): s
     // e.g., "$lib" -> /^\$lib$/
     // e.g., "@components/*" -> /^@components\/(.*)$/
 
-    // Escape special regex chars but keep * for replacement
-    const escapedPattern = pattern
-      .split("*")
-      .map((part) => part.replace(REGEX_SPECIAL_CHARS, "\\$&"))
-      .join("(.*)");
+    let regex = pathPatternRegexCache.get(pattern);
+    if (!regex) {
+      // Escape special regex chars but keep * for replacement
+      const escapedPattern = pattern
+        .split("*")
+        .map((part) => part.replace(REGEX_SPECIAL_CHARS, "\\$&"))
+        .join("(.*)");
 
-    const regex = new RegExp(`^${escapedPattern}$`);
+      regex = new RegExp(`^${escapedPattern}$`);
+      pathPatternRegexCache.set(pattern, regex);
+    }
+
     const match = importPath.match(regex);
 
     if (match) {
