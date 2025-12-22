@@ -176,6 +176,7 @@ export default class ComponentParser {
   private readonly bindings: Map<ComponentPropName, ComponentPropBindings> = new Map();
   private readonly contexts: Map<ComponentContextName, ComponentContext> = new Map();
   private variableInfoCache: Map<string, { type: string; description?: string }> = new Map();
+  private sourceLinesCache?: string[];
 
   constructor(options?: ComponentParserOptions) {
     this.options = options;
@@ -305,7 +306,9 @@ export default class ComponentParser {
     const name: ComponentSlotName = default_slot ? DEFAULT_SLOT_NAME : (slot_name ?? "");
     const fallback = ComponentParser.assignValue(slot_fallback);
     const props = ComponentParser.assignValue(slot_props);
-    const description = slot_description?.split("-").pop()?.trim();
+    const description = slot_description
+      ? slot_description.substring(slot_description.lastIndexOf("-") + 1).trim()
+      : undefined;
 
     if (this.slots.has(name)) {
       const existing_slot = this.slots.get(name);
@@ -341,7 +344,7 @@ export default class ComponentParser {
      * `@event` is not specified.
      */
     const default_detail = !has_argument && !detail ? "null" : ComponentParser.assignValue(detail);
-    const event_description = description?.split("-").pop()?.trim();
+    const event_description = description ? description.substring(description.lastIndexOf("-") + 1).trim() : undefined;
     if (this.events.has(name)) {
       const existing_event = this.events.get(name) as DispatchedEvent;
       this.events.set(name, {
@@ -662,7 +665,10 @@ export default class ComponentParser {
   private buildVariableInfoCache() {
     if (!this.source) return;
 
-    const lines = this.source.split("\n");
+    if (!this.sourceLinesCache) {
+      this.sourceLinesCache = this.source.split("\n");
+    }
+    const lines = this.sourceLinesCache;
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
@@ -708,6 +714,22 @@ export default class ComponentParser {
     }
   }
 
+  private static readonly VAR_NAME_REGEX_CACHE = new Map<string, [RegExp, RegExp, RegExp]>();
+
+  private static getVarNameRegexes(varName: string): [RegExp, RegExp, RegExp] {
+    let cached = ComponentParser.VAR_NAME_REGEX_CACHE.get(varName);
+    if (!cached) {
+      const escaped = varName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      cached = [
+        new RegExp(`const\\s+${escaped}\\s*=`),
+        new RegExp(`let\\s+${escaped}\\s*=`),
+        new RegExp(`function\\s+${escaped}\\s*\\(`),
+      ];
+      ComponentParser.VAR_NAME_REGEX_CACHE.set(varName, cached);
+    }
+    return cached;
+  }
+
   private findVariableTypeAndDescription(varName: string): { type: string; description?: string } | null {
     const cached = this.variableInfoCache.get(varName);
     if (cached) {
@@ -717,17 +739,21 @@ export default class ComponentParser {
     // Search through the source code directly for JSDoc comments
     if (!this.source) return null;
 
-    // Build a map of variable names to their types by looking at the source
-    const lines = this.source.split("\n");
+    if (!this.sourceLinesCache) {
+      this.sourceLinesCache = this.source.split("\n");
+    }
+    const lines = this.sourceLinesCache;
+
+    const [constRegex, letRegex, funcRegex] = ComponentParser.getVarNameRegexes(varName);
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
 
       // Check if this line declares our variable
       // Match patterns like: const varName = ..., let varName = ..., function varName
-      const constMatch = line.match(new RegExp(`const\\s+${varName}\\s*=`));
-      const letMatch = line.match(new RegExp(`let\\s+${varName}\\s*=`));
-      const funcMatch = line.match(new RegExp(`function\\s+${varName}\\s*\\(`));
+      const constMatch = line.match(constRegex);
+      const letMatch = line.match(letRegex);
+      const funcMatch = line.match(funcRegex);
 
       if (constMatch || letMatch || funcMatch) {
         // Look backwards for JSDoc comment
@@ -912,6 +938,7 @@ export default class ComponentParser {
     this.bindings.clear();
     this.contexts.clear();
     this.variableInfoCache.clear();
+    this.sourceLinesCache = undefined;
   }
 
   // Pre-compiled regexes for better performance
@@ -952,6 +979,7 @@ export default class ComponentParser {
     this.parsed = compiled.ast || parse(cleanedSource);
 
     this.collectReactiveVars();
+    this.sourceLinesCache = this.source.split("\n");
     this.buildVariableInfoCache();
     this.parseCustomTypes();
 
@@ -1412,7 +1440,9 @@ export default class ComponentParser {
 
             // Check if this event has a JSDoc description
             const description = this.eventDescriptions.get(node.name);
-            const event_description = description?.split("-").pop()?.trim();
+            const event_description = description
+              ? description.substring(description.lastIndexOf("-") + 1).trim()
+              : undefined;
 
             if (!existing_event) {
               // Add new forwarded event
@@ -1488,7 +1518,9 @@ export default class ComponentParser {
       // If event is marked as dispatched but is NOT actually dispatched, convert it to forwarded
       if (event && event.type === "dispatched" && !actuallyDispatchedEvents.has(eventName)) {
         const description = this.eventDescriptions.get(eventName);
-        const event_description = description?.split("-").pop()?.trim();
+        const event_description = description
+          ? description.substring(description.lastIndexOf("-") + 1).trim()
+          : undefined;
         const forwardedEvent: ForwardedEvent = {
           type: "forwarded",
           name: eventName,

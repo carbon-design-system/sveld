@@ -100,14 +100,17 @@ export async function generateBundle(input: string, glob: boolean) {
   const exportEntries = Object.entries(exports);
   const allComponentEntries = Object.entries(allComponents);
 
-  // Process exported components (for metadata/JSON/Markdown)
-  const componentPromises = exportEntries.map(async ([exportName, entry]) => {
+  // Helper function to process a single component
+  const processComponent = async (
+    [exportName, entry]: [string, ParsedExports[string]],
+    entries: Array<[string, ParsedExports[string]]>,
+  ) => {
     const filePath = entry.source;
     const { ext, name } = parse(filePath);
 
     let moduleName = exportName;
 
-    if (exportEntries.length === 1 && exportName === "default") {
+    if (entries.length === 1 && exportName === "default") {
       moduleName = name;
     }
 
@@ -131,40 +134,13 @@ export async function generateBundle(input: string, glob: boolean) {
     }
 
     return null;
-  });
+  };
+
+  // Process exported components (for metadata/JSON/Markdown)
+  const componentPromises = exportEntries.map((entry) => processComponent(entry, exportEntries));
 
   // Process all components (for .d.ts generation)
-  const allComponentPromises = allComponentEntries.map(async ([exportName, entry]) => {
-    const filePath = entry.source;
-    const { ext, name } = parse(filePath);
-
-    let moduleName = exportName;
-
-    if (allComponentEntries.length === 1 && exportName === "default") {
-      moduleName = name;
-    }
-
-    if (ext === ".svelte") {
-      const source = await readFile(resolve(dir, filePath), "utf-8");
-      const { code: processed } = await preprocess(source, [typescript(), replace([[STYLE_TAG_REGEX, ""]])], {
-        filename: basename(filePath),
-      });
-
-      const parser = new ComponentParser();
-      const parsed = parser.parseSvelteComponent(processed, {
-        moduleName,
-        filePath,
-      });
-
-      return {
-        moduleName,
-        filePath,
-        ...parsed,
-      };
-    }
-
-    return null;
-  });
+  const allComponentPromises = allComponentEntries.map((entry) => processComponent(entry, allComponentEntries));
 
   const [results, allResults] = await Promise.all([Promise.all(componentPromises), Promise.all(allComponentPromises)]);
 
