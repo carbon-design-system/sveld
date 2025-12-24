@@ -1505,59 +1505,67 @@ export default class ComponentParser {
       }
     });
 
-    return {
-      props: ComponentParser.mapToArray(this.props).map((prop) => {
-        if (this.bindings.has(prop.name)) {
-          return {
-            ...prop,
-            type:
-              "null | " +
-              this.bindings
-                .get(prop.name)
-                ?.elements.sort()
-                .map((element) => getElementByTag(element))
-                .join(" | "),
-          };
-        }
+    const processedProps = ComponentParser.mapToArray(this.props).map((prop) => {
+      if (this.bindings.has(prop.name)) {
+        return {
+          ...prop,
+          type:
+            "null | " +
+            this.bindings
+              .get(prop.name)
+              ?.elements.sort()
+              .map((element) => getElementByTag(element))
+              .join(" | "),
+        };
+      }
 
-        return prop;
-      }),
-      moduleExports: ComponentParser.mapToArray(this.moduleExports),
-      slots: ComponentParser.mapToArray(this.slots)
-        .map((slot) => {
-          try {
-            const slot_props: SlotProps = JSON.parse(slot.slot_props);
-            const new_props: string[] = [];
+      return prop;
+    });
 
-            for (const key of Object.keys(slot_props)) {
-              if (slot_props[key].replace && slot_props[key].value !== undefined) {
-                slot_props[key].value = this.props.get(slot_props[key].value)?.type;
-              }
+    const processedSlots = ComponentParser.mapToArray(this.slots)
+      .map((slot) => {
+        try {
+          const slot_props: SlotProps = JSON.parse(slot.slot_props);
+          const new_props: string[] = [];
 
-              if (slot_props[key].value === undefined) slot_props[key].value = "any";
-              new_props.push(`${key}: ${slot_props[key].value}`);
+          for (const key of Object.keys(slot_props)) {
+            if (slot_props[key].replace && slot_props[key].value !== undefined) {
+              slot_props[key].value = this.props.get(slot_props[key].value)?.type;
             }
 
-            const formatted_slot_props =
-              new_props.length === 0 ? "Record<string, never>" : `{ ${new_props.join(", ")} }`;
-
-            return { ...slot, slot_props: formatted_slot_props };
-          } catch (_e) {
-            return slot;
+            if (slot_props[key].value === undefined) slot_props[key].value = "any";
+            new_props.push(`${key}: ${slot_props[key].value}`);
           }
-        })
-        .sort((a, b) => {
-          if (a.name < b.name) return -1;
-          if (a.name > b.name) return 1;
-          return 0;
-        }),
-      events: ComponentParser.mapToArray(this.events),
-      typedefs: ComponentParser.mapToArray(this.typedefs),
+
+          const formatted_slot_props = new_props.length === 0 ? "Record<string, never>" : `{ ${new_props.join(", ")} }`;
+
+          return { ...slot, slot_props: formatted_slot_props };
+        } catch (_e) {
+          return slot;
+        }
+      })
+      .sort((a, b) => {
+        if (a.name < b.name) return -1;
+        if (a.name > b.name) return 1;
+        return 0;
+      });
+
+    const moduleExportsArray = ComponentParser.mapToArray(this.moduleExports);
+    const eventsArray = ComponentParser.mapToArray(this.events);
+    const typedefsArray = ComponentParser.mapToArray(this.typedefs);
+    const contextsArray = ComponentParser.mapToArray(this.contexts);
+
+    return {
+      props: processedProps,
+      moduleExports: moduleExportsArray,
+      slots: processedSlots,
+      events: eventsArray,
+      typedefs: typedefsArray,
       generics: this.generics,
       rest_props: this.rest_props,
       extends: this.extends,
       componentComment: this.componentComment,
-      contexts: ComponentParser.mapToArray(this.contexts),
+      contexts: contextsArray,
     };
   }
 }
