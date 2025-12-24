@@ -919,6 +919,230 @@ export default class ComponentParser {
     }
   }
 
+  private getNodeContext(node: Node): "module" | "instance" | "html" | null {
+    if (!this.parsed || !node.start || !node.end) {
+      return null;
+    }
+
+    // Check if node falls within module script range
+    if (this.parsed.module) {
+      const moduleNode = this.parsed.module as unknown as Node;
+      if (moduleNode.start && moduleNode.end && node.start >= moduleNode.start && node.end <= moduleNode.end) {
+        return "module";
+      }
+    }
+
+    // Check if node falls within instance script range
+    if (this.parsed.instance) {
+      const instanceNode = this.parsed.instance as unknown as Node;
+      if (instanceNode.start && instanceNode.end && node.start >= instanceNode.start && node.end <= instanceNode.end) {
+        return "instance";
+      }
+    }
+
+    // Check if node falls within HTML/template range
+    if (this.parsed.html) {
+      const htmlNode = this.parsed.html as unknown as Node;
+      if (htmlNode.start && htmlNode.end && node.start >= htmlNode.start && node.end <= htmlNode.end) {
+        return "html";
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Processes an ExportNamedDeclaration node, extracting prop information.
+   * Used for both module and instance script exports.
+   */
+  private processExportNamedDeclaration(
+    node: Node & { declaration?: Record<string, unknown>; specifiers?: Array<Record<string, unknown>> },
+    context: "module" | "instance",
+  ): void {
+    // Handle instance script renamed exports (e.g., export { localName as exportedName })
+    let prop_name: string;
+    if (context === "instance" && node.declaration == null && node.specifiers[0]?.type === "ExportSpecifier") {
+      const specifier = node.specifiers[0];
+      const localName = specifier.local.name;
+      prop_name = specifier.exported.name;
+      let declaration: VariableDeclaration;
+      // Search through all variable declarations for this variable
+      //  Limitation: the variable must have been declared before the export
+      for (const varDecl of this.vars) {
+        if (varDecl.declarations.some((decl) => decl.id.type === "Identifier" && decl.id.name === localName)) {
+          declaration = varDecl;
+        }
+      }
+      node.declaration = declaration;
+    }
+
+    // Skip re-exports (e.g., export { A, B } from 'library').
+    if (node.declaration == null) {
+      return;
+    }
+
+    const {
+      type: declaration_type,
+      id,
+      init,
+    } = node.declaration?.declarations ? node.declaration.declarations[0] : node.declaration;
+
+    prop_name ??= id.name;
+    let value: string | undefined;
+    let type: string | undefined;
+    let kind = node.declaration.kind;
+    let description: string | undefined;
+    let isFunction = false;
+    let isFunctionDeclaration = false;
+
+    if (init != null) {
+      if (
+        init.type === "ObjectExpression" ||
+        init.type === "BinaryExpression" ||
+        init.type === "ArrayExpression" ||
+        init.type === "ArrowFunctionExpression"
+      ) {
+        value = this.sourceAtPos(init.start, init.end)?.replace(NEWLINE_CR_REGEX, " ");
+        type = value;
+        isFunction = init.type === "ArrowFunctionExpression";
+
+        if (init.type === "BinaryExpression") {
+          if (init?.left.type === "Literal" && typeof init?.left.value === "string") {
+            type = "string";
+          }
+        }
+
+        // For arrow functions, use a generic function type instead of the implementation
+        // Don't store the implementation in value - it clutters documentation
+        if (init.type === "ArrowFunctionExpression") {
+          type = "(...args: any[]) => any";
+          value = undefined;
+        }
+      } else {
+        if (init.type === "UnaryExpression") {
+          value = this.sourceAtPos(init.start, init.end);
+          type = typeof init.argument?.value;
+        } else if (init.type === "Identifier") {
+          // Handle non-literal defaults like variable references and global identifiers.
+          // Don't infer type, just preserve existing type annotation.
+          value = this.sourceAtPos(init.start, init.end);
+        } else if (init.type === "MemberExpression") {
+          // Handle member expressions like Number.POSITIVE_INFINITY, Math.PI, etc.
+          value = this.sourceAtPos(init.start, init.end);
+          // Infer type as "number" for well-known numeric constants
+          if (this.isNumericConstant(init)) {
+            type = "number";
+          }
+          // Otherwise, don't infer type, just preserve existing type annotation.
+        } else {
+          value = init.raw;
+          type = init.value == null ? undefined : typeof init.value;
+        }
+      }
+    }
+
+    if (declaration_type === "FunctionDeclaration") {
+      // Don't store function body in value - it clutters documentation
+      // The type signature is what matters for API docs
+      value = undefined;
+      type = "() => any";
+      kind = "function";
+      isFunction = true;
+      isFunctionDeclaration = true;
+    }
+
+    let params: ComponentPropParam[] | undefined;
+    let returnType: string | undefined;
+
+    if (node.leadingComments) {
+      const jsdoc_comment = ComponentParser.findJSDocComment(node.leadingComments);
+      if (jsdoc_comment) {
+        const comment = parseComment(ComponentParser.formatComment(jsdoc_comment.value), {
+          spacing: "preserve",
+        });
+
+        // Extract @type tag
+        const typeTag = comment[0]?.tags.find((t) => t.tag === "type");
+        if (typeTag) type = this.aliasType(typeTag.type);
+
+        // Extract @param tags
+        const paramTags = comment[0]?.tags.filter((t) => t.tag === "param") ?? [];
+        if (paramTags.length > 0) {
+          params = paramTags
+            .filter((tag) => !tag.name.includes(".")) // Exclude nested params like "options.expand"
+            .map((tag) => ({
+              name: tag.name,
+              type: this.aliasType(tag.type),
+              description: tag.description?.replace(PROPERTY_DESCRIPTION_REGEX, "").trim(),
+              optional: tag.optional || false,
+            }));
+        }
+
+        // Extract @returns/@return tag
+        const returnsTag = comment[0]?.tags.find((t) => t.tag === "returns" || t.tag === "return");
+        if (returnsTag) returnType = this.aliasType(returnsTag.type);
+
+        // Build description from comment description and non-param/non-type tags
+        const commentDescription = ComponentParser.assignValue(comment[0]?.description?.trim());
+        const additionalTags =
+          comment[0]?.tags.filter(
+            (tag) =>
+              !["type", "param", "returns", "return", "extends", "restProps", "slot", "event", "typedef"].includes(
+                tag.tag,
+              ),
+          ) ?? [];
+
+        if (commentDescription || additionalTags.length > 0) {
+          description = commentDescription || "";
+          for (const tag of additionalTags) {
+            description += `${description ? "\n" : ""}@${tag.tag}${tag.name ? ` ${tag.name}` : ""}${
+              tag.description ? ` ${tag.description}` : ""
+            }`;
+          }
+        }
+      }
+    }
+
+    if (!description && this.typedefs.has(type)) {
+      description = this.typedefs.get(type)?.description;
+    }
+
+    if (context === "module") {
+      this.addModuleExport(prop_name, {
+        name: prop_name,
+        kind,
+        description,
+        type,
+        value,
+        params,
+        returnType,
+        isFunction,
+        isFunctionDeclaration,
+        isRequired: false,
+        constant: kind === "const",
+        reactive: false,
+      });
+    } else {
+      // Instance context
+      const isRequired = kind === "let" && init == null;
+
+      this.addProp(prop_name, {
+        name: prop_name,
+        kind,
+        description,
+        type,
+        value,
+        params,
+        returnType,
+        isFunction,
+        isFunctionDeclaration,
+        isRequired,
+        constant: kind === "const",
+        reactive: this.reactive_vars.has(prop_name),
+      });
+    }
+  }
+
   public cleanup() {
     this.source = undefined;
     this.compiled = undefined;
@@ -983,508 +1207,187 @@ export default class ComponentParser {
     this.buildVariableInfoCache();
     this.parseCustomTypes();
 
-    if (this.parsed?.module) {
-      walk(this.parsed?.module as unknown as Node, {
-        enter: (node) => {
-          if (node.type === "ExportNamedDeclaration") {
-            // Skip re-exports (e.g., export { A, B } from 'library').
-            if (node.declaration == null) {
-              return;
-            }
-
-            const {
-              type: declaration_type,
-              id,
-              init,
-            } = node.declaration?.declarations ? node.declaration.declarations[0] : node.declaration;
-
-            const prop_name = id.name;
-            let value: string | undefined;
-            let type: string | undefined;
-            let kind = node.declaration.kind;
-            let description: string | undefined;
-            let isFunction = false;
-            let isFunctionDeclaration = false;
-
-            if (init != null) {
-              if (
-                init.type === "ObjectExpression" ||
-                init.type === "BinaryExpression" ||
-                init.type === "ArrayExpression" ||
-                init.type === "ArrowFunctionExpression"
-              ) {
-                value = this.sourceAtPos(init.start, init.end)?.replace(NEWLINE_CR_REGEX, " ");
-                type = value;
-                isFunction = init.type === "ArrowFunctionExpression";
-
-                if (init.type === "BinaryExpression") {
-                  if (init?.left.type === "Literal" && typeof init?.left.value === "string") {
-                    type = "string";
-                  }
-                }
-
-                // For arrow functions, use a generic function type instead of the implementation
-                // Don't store the implementation in value - it clutters documentation
-                if (init.type === "ArrowFunctionExpression") {
-                  type = "(...args: any[]) => any";
-                  value = undefined;
-                }
-              } else {
-                if (init.type === "UnaryExpression") {
-                  value = this.sourceAtPos(init.start, init.end);
-                  type = typeof init.argument?.value;
-                } else if (init.type === "Identifier") {
-                  // Handle non-literal defaults like variable references and global identifiers.
-                  // Don't infer type, just preserve existing type annotation.
-                  value = this.sourceAtPos(init.start, init.end);
-                } else if (init.type === "MemberExpression") {
-                  // Handle member expressions like Number.POSITIVE_INFINITY, Math.PI, etc.
-                  value = this.sourceAtPos(init.start, init.end);
-                  // Infer type as "number" for well-known numeric constants
-                  if (this.isNumericConstant(init)) {
-                    type = "number";
-                  }
-                  // Otherwise, don't infer type, just preserve existing type annotation.
-                } else {
-                  value = init.raw;
-                  type = init.value == null ? undefined : typeof init.value;
-                }
-              }
-            }
-
-            if (declaration_type === "FunctionDeclaration") {
-              // Don't store function body in value - it clutters documentation
-              // The type signature is what matters for API docs
-              value = undefined;
-              type = "() => any";
-              kind = "function";
-              isFunction = true;
-              isFunctionDeclaration = true;
-            }
-
-            let params: ComponentPropParam[] | undefined;
-            let returnType: string | undefined;
-
-            if (node.leadingComments) {
-              const jsdoc_comment = ComponentParser.findJSDocComment(node.leadingComments);
-              if (jsdoc_comment) {
-                const comment = parseComment(ComponentParser.formatComment(jsdoc_comment.value), {
-                  spacing: "preserve",
-                });
-
-                // Extract @type tag
-                const typeTag = comment[0]?.tags.find((t) => t.tag === "type");
-                if (typeTag) type = this.aliasType(typeTag.type);
-
-                // Extract @param tags
-                const paramTags = comment[0]?.tags.filter((t) => t.tag === "param") ?? [];
-                if (paramTags.length > 0) {
-                  params = paramTags
-                    .filter((tag) => !tag.name.includes(".")) // Exclude nested params like "options.expand"
-                    .map((tag) => ({
-                      name: tag.name,
-                      type: this.aliasType(tag.type),
-                      description: tag.description?.replace(PROPERTY_DESCRIPTION_REGEX, "").trim(),
-                      optional: tag.optional || false,
-                    }));
-                }
-
-                // Extract @returns/@return tag
-                const returnsTag = comment[0]?.tags.find((t) => t.tag === "returns" || t.tag === "return");
-                if (returnsTag) returnType = this.aliasType(returnsTag.type);
-
-                // Build description from comment description and non-param/non-type tags
-                const commentDescription = ComponentParser.assignValue(comment[0]?.description?.trim());
-                const additionalTags =
-                  comment[0]?.tags.filter(
-                    (tag) =>
-                      ![
-                        "type",
-                        "param",
-                        "returns",
-                        "return",
-                        "extends",
-                        "restProps",
-                        "slot",
-                        "event",
-                        "typedef",
-                      ].includes(tag.tag),
-                  ) ?? [];
-
-                if (commentDescription || additionalTags.length > 0) {
-                  description = commentDescription || "";
-                  for (const tag of additionalTags) {
-                    description += `${description ? "\n" : ""}@${tag.tag}${tag.name ? ` ${tag.name}` : ""}${
-                      tag.description ? ` ${tag.description}` : ""
-                    }`;
-                  }
-                }
-              }
-            }
-
-            if (!description && this.typedefs.has(type)) {
-              description = this.typedefs.get(type)?.description;
-            }
-
-            this.addModuleExport(prop_name, {
-              name: prop_name,
-              kind,
-              description,
-              type,
-              value,
-              params,
-              returnType,
-              isFunction,
-              isFunctionDeclaration,
-              isRequired: false,
-              constant: kind === "const",
-              reactive: false,
-            });
-          }
-        },
-      });
-    }
-
     let dispatcher_name: undefined | string;
     const callees: { name: string; arguments: Expression[] }[] = [];
 
-    walk({ html: this.parsed.html, instance: this.parsed.instance } as unknown as Node, {
-      enter: (node, parent, _prop) => {
-        if (node.type === "CallExpression") {
-          if (node.callee.name === "createEventDispatcher") {
-            dispatcher_name = parent?.id.name;
-          }
-
-          if (node.callee.name === "setContext") {
-            this.parseSetContextCall(node, parent);
-          }
-
-          callees.push({
-            name: node.callee.name,
-            arguments: node.arguments,
-          });
-        }
-
-        if (node.type === "Spread" && node?.expression.name === "$$restProps") {
-          if (this.rest_props === undefined && (parent?.type === "InlineComponent" || parent?.type === "Element")) {
-            const restProps: RestProps = {
-              type: parent.type,
-              name: parent.name,
-            };
-
-            // Handle svelte:element - check if this attribute is hardcoded
-            if (parent.type === "Element" && parent.name === "svelte:element") {
-              // The 'this' value is stored in the 'tag' property of the Element node
-              // If tag is a string, it's hardcoded; if undefined/null, it's dynamic
-              if (typeof parent.tag === "string") {
-                restProps.thisValue = parent.tag;
-              }
-              // If tag is undefined or not a string, thisValue remains undefined (dynamic)
+    // Combined AST walk for module, instance, and HTML - single pass instead of two separate walks
+    walk(
+      {
+        module: this.parsed?.module,
+        html: this.parsed.html,
+        instance: this.parsed.instance,
+      } as unknown as Node,
+      {
+        enter: (node, parent, _prop) => {
+          if (node.type === "CallExpression") {
+            if (node.callee.name === "createEventDispatcher") {
+              dispatcher_name = parent?.id.name;
             }
 
-            this.rest_props = restProps;
-          }
-        }
-
-        if (node.type === "VariableDeclaration") {
-          this.vars.add(node as unknown as VariableDeclaration);
-        }
-
-        if (node.type === "ExportNamedDeclaration") {
-          // Handle export {}
-          if (node.declaration == null && node.specifiers.length === 0) {
-            return;
-          }
-
-          // Handle renamed exports
-          let prop_name: string;
-          if (node.declaration == null && node.specifiers[0]?.type === "ExportSpecifier") {
-            const specifier = node.specifiers[0];
-            const localName = specifier.local.name;
-            const exportedName = specifier.exported.name;
-            let declaration: VariableDeclaration;
-            // Search through all variable declarations for this variable
-            //  Limitation: the variable must have been declared before the export
-            for (const varDecl of this.vars) {
-              if (varDecl.declarations.some((decl) => decl.id.type === "Identifier" && decl.id.name === localName)) {
-                declaration = varDecl;
-              }
+            if (node.callee.name === "setContext") {
+              this.parseSetContextCall(node, parent);
             }
-            node.declaration = declaration;
-            prop_name = exportedName;
+
+            callees.push({
+              name: node.callee.name,
+              arguments: node.arguments,
+            });
           }
 
-          // Skip re-exports (e.g., export { A, B } from 'library').
-          if (node.declaration == null) {
-            return;
-          }
-
-          const {
-            type: declaration_type,
-            id,
-            init,
-          } = node.declaration.declarations ? node.declaration.declarations[0] : node.declaration;
-
-          prop_name ??= id.name;
-
-          let value: string | undefined;
-          let type: string | undefined;
-          let kind = node.declaration.kind;
-          let description: undefined | string;
-          let isFunction = false;
-          let isFunctionDeclaration = false;
-          const isRequired = kind === "let" && init == null;
-
-          if (init != null) {
-            if (
-              init.type === "ObjectExpression" ||
-              init.type === "BinaryExpression" ||
-              init.type === "ArrayExpression" ||
-              init.type === "ArrowFunctionExpression"
-            ) {
-              value = this.sourceAtPos(init.start, init.end)?.replace(NEWLINE_CR_REGEX, " ");
-              type = value;
-              isFunction = init.type === "ArrowFunctionExpression";
-
-              if (init.type === "BinaryExpression") {
-                if (init?.left.type === "Literal" && typeof init?.left.value === "string") {
-                  type = "string";
-                }
-              }
-
-              // For arrow functions, use a generic function type instead of the implementation
-              // Don't store the implementation in value - it clutters documentation
-              if (init.type === "ArrowFunctionExpression") {
-                type = "(...args: any[]) => any";
-                value = undefined;
-              }
-            } else {
-              if (init.type === "UnaryExpression") {
-                value = this.sourceAtPos(init.start, init.end);
-                type = typeof init.argument?.value;
-              } else if (init.type === "Identifier") {
-                // Handle non-literal defaults like variable references and global identifiers.
-                // Don't infer type, just preserve existing type annotation.
-                value = this.sourceAtPos(init.start, init.end);
-              } else if (init.type === "MemberExpression") {
-                // Handle member expressions like Number.POSITIVE_INFINITY, Math.PI, etc.
-                value = this.sourceAtPos(init.start, init.end);
-                // Infer type as "number" for well-known numeric constants
-                if (this.isNumericConstant(init)) {
-                  type = "number";
-                }
-                // Otherwise, don't infer type, just preserve existing type annotation.
-              } else {
-                value = init.raw;
-                type = init.value == null ? undefined : typeof init.value;
-              }
-            }
-          }
-
-          if (declaration_type === "FunctionDeclaration") {
-            // Don't store function body in value - it clutters documentation
-            // The type signature is what matters for API docs
-            value = undefined;
-            type = "() => any";
-            kind = "function";
-            isFunction = true;
-            isFunctionDeclaration = true;
-          }
-
-          let params: ComponentPropParam[] | undefined;
-          let returnType: string | undefined;
-
-          if (node.leadingComments) {
-            const jsdoc_comment = ComponentParser.findJSDocComment(node.leadingComments);
-            if (jsdoc_comment) {
-              const comment = parseComment(ComponentParser.formatComment(jsdoc_comment.value), {
-                spacing: "preserve",
-              });
-
-              // Extract @type tag
-              const typeTag = comment[0]?.tags.find((t) => t.tag === "type");
-              if (typeTag) type = this.aliasType(typeTag.type);
-
-              // Extract @param tags
-              const paramTags = comment[0]?.tags.filter((t) => t.tag === "param") ?? [];
-              if (paramTags.length > 0) {
-                params = paramTags
-                  .filter((tag) => !tag.name.includes(".")) // Exclude nested params like "options.expand"
-                  .map((tag) => ({
-                    name: tag.name,
-                    type: this.aliasType(tag.type),
-                    description: tag.description?.replace(PROPERTY_DESCRIPTION_REGEX, "").trim(),
-                    optional: tag.optional || false,
-                  }));
-              }
-
-              // Extract @returns/@return tag
-              const returnsTag = comment[0]?.tags.find((t) => t.tag === "returns" || t.tag === "return");
-              if (returnsTag) returnType = this.aliasType(returnsTag.type);
-
-              // Build description from comment description and non-param/non-type tags
-              const commentDescription = ComponentParser.assignValue(comment[0]?.description?.trim());
-              const additional_tags =
-                comment[0]?.tags.filter(
-                  (tag) =>
-                    ![
-                      "type",
-                      "param",
-                      "returns",
-                      "return",
-                      "extends",
-                      "restProps",
-                      "slot",
-                      "event",
-                      "typedef",
-                    ].includes(tag.tag),
-                ) ?? [];
-
-              if (commentDescription || additional_tags.length > 0) {
-                description = commentDescription || "";
-                for (const tag of additional_tags) {
-                  description += `${description ? "\n" : ""}@${tag.tag}${tag.name ? ` ${tag.name}` : ""}${
-                    tag.description ? ` ${tag.description}` : ""
-                  }`;
-                }
-              }
-            }
-          }
-
-          if (!description && this.typedefs.has(type)) {
-            description = this.typedefs.get(type)?.description;
-          }
-
-          this.addProp(prop_name, {
-            name: prop_name,
-            kind,
-            description,
-            type,
-            value,
-            params,
-            returnType,
-            isFunction,
-            isFunctionDeclaration,
-            isRequired,
-            constant: kind === "const",
-            reactive: this.reactive_vars.has(prop_name),
-          });
-        }
-
-        if (node.type === "Comment") {
-          const data: string = node?.data?.trim() ?? "";
-
-          if (COMPONENT_COMMENT_REGEX.test(data)) {
-            this.componentComment = data.replace(COMPONENT_COMMENT_REGEX, "").replace(CARRIAGE_RETURN_REGEX, "");
-          }
-        }
-
-        if (node.type === "Slot") {
-          const slot_name = node.attributes.find((attr: { name?: string }) => attr.name === "name")?.value[0].data;
-
-          const slot_props = node.attributes
-            .filter((attr: { name?: string }) => attr.name !== "name")
-            .reduce((slot_props: SlotProps, { name, value }: { name: string; value?: Expression[] }) => {
-              const slot_prop_value: SlotPropValue = {
-                value: undefined,
-                replace: false,
+          if (node.type === "Spread" && node?.expression.name === "$$restProps") {
+            if (this.rest_props === undefined && (parent?.type === "InlineComponent" || parent?.type === "Element")) {
+              const restProps: RestProps = {
+                type: parent.type,
+                name: parent.name,
               };
 
-              if (value === undefined) return slot_props;
-
-              if (value[0]) {
-                const { type, expression, raw, start, end } = value[0];
-
-                if (type === "Text") {
-                  slot_prop_value.value = raw;
-                } else if (type === "AttributeShorthand") {
-                  slot_prop_value.value = expression.name;
-                  slot_prop_value.replace = true;
+              // Handle svelte:element - check if this attribute is hardcoded
+              if (parent.type === "Element" && parent.name === "svelte:element") {
+                // The 'this' value is stored in the 'tag' property of the Element node
+                // If tag is a string, it's hardcoded; if undefined/null, it's dynamic
+                if (typeof parent.tag === "string") {
+                  restProps.thisValue = parent.tag;
                 }
+                // If tag is undefined or not a string, thisValue remains undefined (dynamic)
+              }
 
-                if (expression) {
-                  if (expression.type === "Literal") {
-                    slot_prop_value.value = expression.value;
-                  } else if (expression.type !== "Identifier") {
-                    if (expression.type === "ObjectExpression" || expression.type === "TemplateLiteral") {
-                      slot_prop_value.value = this.sourceAtPos(start + 1, end - 1);
-                    } else {
-                      slot_prop_value.value = this.sourceAtPos(start, end);
+              this.rest_props = restProps;
+            }
+          }
+
+          if (node.type === "VariableDeclaration") {
+            this.vars.add(node as unknown as VariableDeclaration);
+          }
+
+          if (node.type === "ExportNamedDeclaration") {
+            // Handle export {}
+            if (node.declaration == null && node.specifiers.length === 0) {
+              return;
+            }
+
+            // Determine context (module or instance) to route to appropriate handler
+            const context = this.getNodeContext(node);
+            if (context === "module" || context === "instance") {
+              this.processExportNamedDeclaration(node, context);
+            }
+            // Note: HTML context exports are not supported in Svelte
+          }
+
+          if (node.type === "Comment") {
+            const data: string = node?.data?.trim() ?? "";
+
+            if (COMPONENT_COMMENT_REGEX.test(data)) {
+              this.componentComment = data.replace(COMPONENT_COMMENT_REGEX, "").replace(CARRIAGE_RETURN_REGEX, "");
+            }
+          }
+
+          if (node.type === "Slot") {
+            const slot_name = node.attributes.find((attr: { name?: string }) => attr.name === "name")?.value[0].data;
+
+            const slot_props = node.attributes
+              .filter((attr: { name?: string }) => attr.name !== "name")
+              .reduce((slot_props: SlotProps, { name, value }: { name: string; value?: Expression[] }) => {
+                const slot_prop_value: SlotPropValue = {
+                  value: undefined,
+                  replace: false,
+                };
+
+                if (value === undefined) return slot_props;
+
+                if (value[0]) {
+                  const { type, expression, raw, start, end } = value[0];
+
+                  if (type === "Text") {
+                    slot_prop_value.value = raw;
+                  } else if (type === "AttributeShorthand") {
+                    slot_prop_value.value = expression.name;
+                    slot_prop_value.replace = true;
+                  }
+
+                  if (expression) {
+                    if (expression.type === "Literal") {
+                      slot_prop_value.value = expression.value;
+                    } else if (expression.type !== "Identifier") {
+                      if (expression.type === "ObjectExpression" || expression.type === "TemplateLiteral") {
+                        slot_prop_value.value = this.sourceAtPos(start + 1, end - 1);
+                      } else {
+                        slot_prop_value.value = this.sourceAtPos(start, end);
+                      }
                     }
                   }
                 }
-              }
 
-              slot_props[name] = slot_prop_value;
-              return slot_props;
-            }, {});
+                slot_props[name] = slot_prop_value;
+                return slot_props;
+              }, {});
 
-          const fallback = (node.children as TemplateNode[])
-            ?.map(({ start, end }) => this.sourceAtPos(start, end))
-            .join("")
-            .trim();
+            const fallback = (node.children as TemplateNode[])
+              ?.map(({ start, end }) => this.sourceAtPos(start, end))
+              .join("")
+              .trim();
 
-          this.addSlot({
-            slot_name,
-            slot_props: JSON.stringify(slot_props, null, 2),
-            slot_fallback: fallback,
-          });
-        }
-
-        if (node.type === "EventHandler" && node.expression == null) {
-          if (parent !== undefined) {
-            // Track that this event is forwarded (we'll use this info later)
-            this.forwardedEvents.set(node.name, parent.name);
-
-            const existing_event = this.events.get(node.name);
-
-            // Check if this event has a JSDoc description
-            const description = this.eventDescriptions.get(node.name);
-            const event_description = description
-              ? description.substring(description.lastIndexOf("-") + 1).trim()
-              : undefined;
-
-            if (!existing_event) {
-              // Add new forwarded event
-              this.events.set(node.name, {
-                type: "forwarded",
-                name: node.name,
-                element: parent.name,
-                description: event_description,
-              });
-            } else if (existing_event.type === "forwarded" && event_description && !existing_event.description) {
-              // Event is already forwarded, just add the description
-              this.events.set(node.name, {
-                ...existing_event,
-                description: event_description,
-              });
-            }
-            // Note: if event is dispatched, we don't overwrite it here
-            // We'll handle @event JSDoc on forwarded events after the walk completes
-          }
-        }
-
-        if (parent?.type === "Element" && node.type === "Binding" && node.name === "this") {
-          const prop_name = node.expression.name;
-          const element_name = parent.name;
-
-          if (this.bindings.has(prop_name)) {
-            const existing_bindings = this.bindings.get(prop_name);
-
-            if (!existing_bindings.elements.includes(element_name)) {
-              this.bindings.set(prop_name, {
-                ...existing_bindings,
-                elements: [...existing_bindings.elements, element_name],
-              });
-            }
-          } else {
-            this.bindings.set(prop_name, {
-              elements: [element_name],
+            this.addSlot({
+              slot_name,
+              slot_props: JSON.stringify(slot_props, null, 2),
+              slot_fallback: fallback,
             });
           }
-        }
+
+          if (node.type === "EventHandler" && node.expression == null) {
+            if (parent !== undefined) {
+              // Track that this event is forwarded (we'll use this info later)
+              this.forwardedEvents.set(node.name, parent.name);
+
+              const existing_event = this.events.get(node.name);
+
+              // Check if this event has a JSDoc description
+              const description = this.eventDescriptions.get(node.name);
+              const event_description = description
+                ? description.substring(description.lastIndexOf("-") + 1).trim()
+                : undefined;
+
+              if (!existing_event) {
+                // Add new forwarded event
+                this.events.set(node.name, {
+                  type: "forwarded",
+                  name: node.name,
+                  element: parent.name,
+                  description: event_description,
+                });
+              } else if (existing_event.type === "forwarded" && event_description && !existing_event.description) {
+                // Event is already forwarded, just add the description
+                this.events.set(node.name, {
+                  ...existing_event,
+                  description: event_description,
+                });
+              }
+              // Note: if event is dispatched, we don't overwrite it here
+              // We'll handle @event JSDoc on forwarded events after the walk completes
+            }
+          }
+
+          if (parent?.type === "Element" && node.type === "Binding" && node.name === "this") {
+            const prop_name = node.expression.name;
+            const element_name = parent.name;
+
+            if (this.bindings.has(prop_name)) {
+              const existing_bindings = this.bindings.get(prop_name);
+
+              if (!existing_bindings.elements.includes(element_name)) {
+                this.bindings.set(prop_name, {
+                  ...existing_bindings,
+                  elements: [...existing_bindings.elements, element_name],
+                });
+              }
+            } else {
+              this.bindings.set(prop_name, {
+                elements: [element_name],
+              });
+            }
+          }
+        },
       },
-    });
+    );
 
     if (dispatcher_name !== undefined) {
       for (const callee of callees) {
