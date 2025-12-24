@@ -204,6 +204,46 @@ export default class ComponentParser {
     return formatted_comment;
   }
 
+  private getCommentTags(parsed: ReturnType<typeof parseComment>) {
+    const tags = parsed[0]?.tags ?? [];
+    const excludedTags = new Set([
+      "type",
+      "param",
+      "returns",
+      "return",
+      "extends",
+      "restProps",
+      "slot",
+      "event",
+      "typedef",
+    ]);
+
+    let typeTag: (typeof tags)[number] | undefined;
+    const paramTags: typeof tags = [];
+    let returnsTag: (typeof tags)[number] | undefined;
+    const additionalTags: typeof tags = [];
+
+    for (const tag of tags) {
+      if (tag.tag === "type") {
+        typeTag = tag;
+      } else if (tag.tag === "param") {
+        paramTags.push(tag);
+      } else if (tag.tag === "returns" || tag.tag === "return") {
+        returnsTag = tag;
+      } else if (!excludedTags.has(tag.tag)) {
+        additionalTags.push(tag);
+      }
+    }
+
+    return {
+      type: typeTag,
+      param: paramTags,
+      returns: returnsTag,
+      additional: additionalTags,
+      description: parsed[0]?.description,
+    };
+  }
+
   /**
    * Finds the last comment from an array of leading comments.
    * TypeScript directives are stripped before parsing, so we can safely take the last comment.
@@ -698,14 +738,12 @@ export default class ComponentParser {
 
             // Parse the JSDoc
             const parsed = parseComment(commentBlock, { spacing: "preserve" });
-            if (parsed[0]?.tags) {
-              const typeTag = parsed[0].tags.find((t) => t.tag === "type");
-              if (typeTag) {
-                this.variableInfoCache.set(varName, {
-                  type: this.aliasType(typeTag.type),
-                  description: parsed[0].description || typeTag.description,
-                });
-              }
+            const { type: typeTag, description } = this.getCommentTags(parsed);
+            if (typeTag) {
+              this.variableInfoCache.set(varName, {
+                type: this.aliasType(typeTag.type),
+                description: description || typeTag.description,
+              });
             }
             break;
           }
@@ -776,14 +814,12 @@ export default class ComponentParser {
 
             // Parse the JSDoc
             const parsed = parseComment(commentBlock, { spacing: "preserve" });
-            if (parsed[0]?.tags) {
-              const typeTag = parsed[0].tags.find((t) => t.tag === "type");
-              if (typeTag) {
-                return {
-                  type: this.aliasType(typeTag.type),
-                  description: parsed[0].description || typeTag.description,
-                };
-              }
+            const { type: typeTag, description } = this.getCommentTags(parsed);
+            if (typeTag) {
+              return {
+                type: this.aliasType(typeTag.type),
+                description: description || typeTag.description,
+              };
             }
             break;
           }
@@ -1072,12 +1108,18 @@ export default class ComponentParser {
                   spacing: "preserve",
                 });
 
+                const {
+                  type: typeTag,
+                  param: paramTags,
+                  returns: returnsTag,
+                  additional: additionalTags,
+                  description: commentDescription,
+                } = this.getCommentTags(comment);
+
                 // Extract @type tag
-                const typeTag = comment[0]?.tags.find((t) => t.tag === "type");
                 if (typeTag) type = this.aliasType(typeTag.type);
 
                 // Extract @param tags
-                const paramTags = comment[0]?.tags.filter((t) => t.tag === "param") ?? [];
                 if (paramTags.length > 0) {
                   params = paramTags
                     .filter((tag) => !tag.name.includes(".")) // Exclude nested params like "options.expand"
@@ -1090,29 +1132,12 @@ export default class ComponentParser {
                 }
 
                 // Extract @returns/@return tag
-                const returnsTag = comment[0]?.tags.find((t) => t.tag === "returns" || t.tag === "return");
                 if (returnsTag) returnType = this.aliasType(returnsTag.type);
 
                 // Build description from comment description and non-param/non-type tags
-                const commentDescription = ComponentParser.assignValue(comment[0]?.description?.trim());
-                const additionalTags =
-                  comment[0]?.tags.filter(
-                    (tag) =>
-                      ![
-                        "type",
-                        "param",
-                        "returns",
-                        "return",
-                        "extends",
-                        "restProps",
-                        "slot",
-                        "event",
-                        "typedef",
-                      ].includes(tag.tag),
-                  ) ?? [];
-
-                if (commentDescription || additionalTags.length > 0) {
-                  description = commentDescription || "";
+                const formattedDescription = ComponentParser.assignValue(commentDescription?.trim());
+                if (formattedDescription || additionalTags.length > 0) {
+                  description = formattedDescription || "";
                   for (const tag of additionalTags) {
                     description += `${description ? "\n" : ""}@${tag.tag}${tag.name ? ` ${tag.name}` : ""}${
                       tag.description ? ` ${tag.description}` : ""
@@ -1301,12 +1326,18 @@ export default class ComponentParser {
                 spacing: "preserve",
               });
 
+              const {
+                type: typeTag,
+                param: paramTags,
+                returns: returnsTag,
+                additional: additional_tags,
+                description: commentDescription,
+              } = this.getCommentTags(comment);
+
               // Extract @type tag
-              const typeTag = comment[0]?.tags.find((t) => t.tag === "type");
               if (typeTag) type = this.aliasType(typeTag.type);
 
               // Extract @param tags
-              const paramTags = comment[0]?.tags.filter((t) => t.tag === "param") ?? [];
               if (paramTags.length > 0) {
                 params = paramTags
                   .filter((tag) => !tag.name.includes(".")) // Exclude nested params like "options.expand"
@@ -1319,29 +1350,12 @@ export default class ComponentParser {
               }
 
               // Extract @returns/@return tag
-              const returnsTag = comment[0]?.tags.find((t) => t.tag === "returns" || t.tag === "return");
               if (returnsTag) returnType = this.aliasType(returnsTag.type);
 
               // Build description from comment description and non-param/non-type tags
-              const commentDescription = ComponentParser.assignValue(comment[0]?.description?.trim());
-              const additional_tags =
-                comment[0]?.tags.filter(
-                  (tag) =>
-                    ![
-                      "type",
-                      "param",
-                      "returns",
-                      "return",
-                      "extends",
-                      "restProps",
-                      "slot",
-                      "event",
-                      "typedef",
-                    ].includes(tag.tag),
-                ) ?? [];
-
-              if (commentDescription || additional_tags.length > 0) {
-                description = commentDescription || "";
+              const formattedDescription = ComponentParser.assignValue(commentDescription?.trim());
+              if (formattedDescription || additional_tags.length > 0) {
+                description = formattedDescription || "";
                 for (const tag of additional_tags) {
                   description += `${description ? "\n" : ""}@${tag.tag}${tag.name ? ` ${tag.name}` : ""}${
                     tag.description ? ` ${tag.description}` : ""
