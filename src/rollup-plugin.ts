@@ -100,10 +100,41 @@ export async function generateBundle(input: string, glob: boolean) {
   const exportEntries = Object.entries(exports);
   const allComponentEntries = Object.entries(allComponents);
 
+  const uniqueFilePaths = new Set<string>();
+  for (const [, entry] of exportEntries) {
+    const filePath = entry.source;
+    const { ext } = parse(filePath);
+    if (ext === ".svelte") {
+      uniqueFilePaths.add(resolve(dir, filePath));
+    }
+  }
+  for (const [, entry] of allComponentEntries) {
+    const filePath = entry.source;
+    const { ext } = parse(filePath);
+    if (ext === ".svelte") {
+      uniqueFilePaths.add(resolve(dir, filePath));
+    }
+  }
+
+  const fileContents = await Promise.all(
+    Array.from(uniqueFilePaths).map(async (filePath) => {
+      try {
+        const content = await readFile(filePath, "utf-8");
+        return { path: filePath, content };
+      } catch (error) {
+        console.warn(`Warning: Failed to read file ${filePath}:`, error);
+        return { path: filePath, content: null };
+      }
+    }),
+  );
+
+  const fileMap = new Map<string, string | null>(fileContents.map(({ path, content }) => [path, content]));
+
   // Helper function to process a single component
   const processComponent = async (
     [exportName, entry]: [string, ParsedExports[string]],
     entries: Array<[string, ParsedExports[string]]>,
+    fileMap: Map<string, string | null>,
   ) => {
     const filePath = entry.source;
     const { ext, name } = parse(filePath);
@@ -115,7 +146,14 @@ export async function generateBundle(input: string, glob: boolean) {
     }
 
     if (ext === ".svelte") {
-      const source = await readFile(resolve(dir, filePath), "utf-8");
+      const resolvedPath = resolve(dir, filePath);
+      const source = fileMap.get(resolvedPath);
+
+      if (source === null || source === undefined) {
+        // File was not found or failed to read, skip this component
+        return null;
+      }
+
       const { code: processed } = await preprocess(source, [typescript(), replace([[STYLE_TAG_REGEX, ""]])], {
         filename: basename(filePath),
       });
@@ -137,10 +175,12 @@ export async function generateBundle(input: string, glob: boolean) {
   };
 
   // Process exported components (for metadata/JSON/Markdown)
-  const componentPromises = exportEntries.map((entry) => processComponent(entry, exportEntries));
+  const componentPromises = exportEntries.map((entry) => processComponent(entry, exportEntries, fileMap));
 
   // Process all components (for .d.ts generation)
-  const allComponentPromises = allComponentEntries.map((entry) => processComponent(entry, allComponentEntries));
+  const allComponentPromises = allComponentEntries.map((entry) =>
+    processComponent(entry, allComponentEntries, fileMap),
+  );
 
   const [results, allResults] = await Promise.all([Promise.all(componentPromises), Promise.all(allComponentPromises)]);
 
