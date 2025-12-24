@@ -18,7 +18,7 @@ interface TocLine {
 
 export default class WriterMarkdown extends Writer {
   onAppend?: OnAppend;
-  source = "";
+  private sourceParts: string[] = [];
   hasToC = false;
   toc: TocLine[] = [];
 
@@ -27,8 +27,12 @@ export default class WriterMarkdown extends Writer {
     this.onAppend = options.onAppend;
   }
 
+  public get source(): string {
+    return this.sourceParts.join("");
+  }
+
   public appendLineBreaks() {
-    this.source += "\n\n";
+    this.sourceParts.push("\n\n");
     return this;
   }
 
@@ -42,9 +46,7 @@ export default class WriterMarkdown extends Writer {
       case "h6": {
         const length = Number(type.slice(-1));
 
-        this.source += `${Array.from({ length })
-          .map((_) => "#")
-          .join("")} ${raw}`;
+        this.sourceParts.push(`${"#".repeat(length)} ${raw}`);
 
         if (this.hasToC && type === "h2") {
           this.toc.push({
@@ -55,16 +57,16 @@ export default class WriterMarkdown extends Writer {
         break;
       }
       case "quote":
-        this.source += `> ${raw}`;
+        this.sourceParts.push(`> ${raw}`);
         break;
       case "p":
-        this.source += raw;
+        this.sourceParts.push(raw ?? "");
         break;
       case "divider":
-        this.source += "---";
+        this.sourceParts.push("---");
         break;
       case "raw":
-        this.source += raw;
+        this.sourceParts.push(raw ?? "");
         break;
     }
 
@@ -74,14 +76,15 @@ export default class WriterMarkdown extends Writer {
   }
 
   public tableOfContents() {
-    this.source += "<!-- __TOC__ -->";
+    this.sourceParts.push("<!-- __TOC__ -->");
     this.hasToC = true;
     this.appendLineBreaks();
     return this;
   }
 
   public end() {
-    this.source = this.source.replace(
+    const source = this.sourceParts.join("");
+    return source.replace(
       "<!-- __TOC__ -->",
       this.toc
         .map(({ array, raw }) => {
@@ -89,7 +92,5 @@ export default class WriterMarkdown extends Writer {
         })
         .join("\n"),
     );
-
-    return this.source;
   }
 }
