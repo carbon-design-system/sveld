@@ -1137,12 +1137,17 @@ export default class ComponentParser {
                 // Build description from comment description and non-param/non-type tags
                 const formattedDescription = ComponentParser.assignValue(commentDescription?.trim());
                 if (formattedDescription || additionalTags.length > 0) {
-                  description = formattedDescription || "";
+                  const descriptionParts: string[] = [];
+                  if (formattedDescription) {
+                    descriptionParts.push(formattedDescription);
+                  }
                   for (const tag of additionalTags) {
-                    description += `${description ? "\n" : ""}@${tag.tag}${tag.name ? ` ${tag.name}` : ""}${
+                    const tagStr = `@${tag.tag}${tag.name ? ` ${tag.name}` : ""}${
                       tag.description ? ` ${tag.description}` : ""
                     }`;
+                    descriptionParts.push(tagStr);
                   }
+                  description = descriptionParts.join("\n");
                 }
               }
             }
@@ -1355,12 +1360,17 @@ export default class ComponentParser {
               // Build description from comment description and non-param/non-type tags
               const formattedDescription = ComponentParser.assignValue(commentDescription?.trim());
               if (formattedDescription || additional_tags.length > 0) {
-                description = formattedDescription || "";
+                const descriptionParts: string[] = [];
+                if (formattedDescription) {
+                  descriptionParts.push(formattedDescription);
+                }
                 for (const tag of additional_tags) {
-                  description += `${description ? "\n" : ""}@${tag.tag}${tag.name ? ` ${tag.name}` : ""}${
+                  const tagStr = `@${tag.tag}${tag.name ? ` ${tag.name}` : ""}${
                     tag.description ? ` ${tag.description}` : ""
                   }`;
+                  descriptionParts.push(tagStr);
                 }
+                description = descriptionParts.join("\n");
               }
             }
           }
@@ -1553,15 +1563,14 @@ export default class ComponentParser {
 
     const processedProps = ComponentParser.mapToArray(this.props).map((prop) => {
       if (this.bindings.has(prop.name)) {
+        const elementTypes = this.bindings
+          .get(prop.name)
+          ?.elements.sort()
+          .map((element) => getElementByTag(element))
+          .join(" | ");
         return {
           ...prop,
-          type:
-            "null | " +
-            this.bindings
-              .get(prop.name)
-              ?.elements.sort()
-              .map((element) => getElementByTag(element))
-              .join(" | "),
+          type: `null | ${elementTypes}`,
         };
       }
 

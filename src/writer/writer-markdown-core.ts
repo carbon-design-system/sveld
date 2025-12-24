@@ -20,7 +20,7 @@ interface TocLine {
 // Browser-compatible WriterMarkdown that doesn't extend Writer
 export class BrowserWriterMarkdown {
   onAppend?: OnAppend;
-  source = "";
+  private sourceParts: string[] = [];
   hasToC = false;
   toc: TocLine[] = [];
 
@@ -28,8 +28,12 @@ export class BrowserWriterMarkdown {
     this.onAppend = options.onAppend;
   }
 
+  public get source(): string {
+    return this.sourceParts.join("");
+  }
+
   public appendLineBreaks() {
-    this.source += "\n\n";
+    this.sourceParts.push("\n\n");
     return this;
   }
 
@@ -43,9 +47,7 @@ export class BrowserWriterMarkdown {
       case "h6": {
         const length = Number(type.slice(-1));
 
-        this.source += `${Array.from({ length })
-          .map((_) => "#")
-          .join("")} ${raw}`;
+        this.sourceParts.push(`${"#".repeat(length)} ${raw}`);
 
         if (this.hasToC && type === "h2") {
           this.toc.push({
@@ -56,16 +58,16 @@ export class BrowserWriterMarkdown {
         break;
       }
       case "quote":
-        this.source += `> ${raw}`;
+        this.sourceParts.push(`> ${raw}`);
         break;
       case "p":
-        this.source += raw;
+        this.sourceParts.push(raw ?? "");
         break;
       case "divider":
-        this.source += "---";
+        this.sourceParts.push("---");
         break;
       case "raw":
-        this.source += raw;
+        this.sourceParts.push(raw ?? "");
         break;
     }
 
@@ -75,14 +77,15 @@ export class BrowserWriterMarkdown {
   }
 
   public tableOfContents() {
-    this.source += "<!-- __TOC__ -->";
+    this.sourceParts.push("<!-- __TOC__ -->");
     this.hasToC = true;
     this.appendLineBreaks();
     return this;
   }
 
   public end() {
-    this.source = this.source.replace(
+    const source = this.sourceParts.join("");
+    return source.replace(
       "<!-- __TOC__ -->",
       this.toc
         .map(({ array, raw }) => {
@@ -90,8 +93,6 @@ export class BrowserWriterMarkdown {
         })
         .join("\n"),
     );
-
-    return this.source;
   }
 }
 
