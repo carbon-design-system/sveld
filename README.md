@@ -332,20 +332,12 @@ export let kind = "primary";
 // inferred type: "string"
 ```
 
-For template literal default values, `sveld` automatically infers [template literal types](https://www.typescriptlang.org/docs/handbook/2/template-literal-types.html) when possible:
+For template literal default values, `sveld` infers the type as `string`:
 
 ```js
 export let id = `ccs-${Math.random().toString(36)}`;
-// inferred type: `ccs-${string}` & {}
-
-export let prefix = `prefix-`;
-// inferred type: `prefix-` & {}
-
-export let suffix = `-suffix`;
-// inferred type: `-suffix` & {}
+// inferred type: "string"
 ```
-
-The `& {}` intersection type makes the template literal type more permissive, allowing regular strings to be assigned while preserving the template literal type for better autocomplete and type hints. This provides more precise type checking than a generic `string` type while remaining flexible. For complex expressions in template literals, the type defaults to `string` for safety.
 
 Use the `@type` tag to explicitly document the type. In the following example, the `kind` property has an enumerated (enum) type.
 
