@@ -2294,6 +2294,67 @@ exports[`fixtures (JSON) "forwarded-from-component-to-native/input.svelte" 1`] =
 "
 `;
 
+exports[`fixtures (JSON) "template-literal-default/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "id",
+      "kind": "let",
+      "description": "Template literal with call expression",
+      "type": "(\`ccs-\${string}\` & {})",
+      "value": "\`ccs-\${Math.random().toString(36)}\`",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "prefix",
+      "kind": "let",
+      "description": "Static template literals",
+      "type": "(\`prefix-\` & {})",
+      "value": "\`prefix-\`",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "suffix",
+      "kind": "let",
+      "type": "(\`-suffix\` & {})",
+      "value": "\`-suffix\`",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "message",
+      "kind": "let",
+      "description": "Template literal with multiple expressions",
+      "type": "(\`Hello, \${\\"world\\"}! Count: \${42}\` & {})",
+      "value": "\`Hello, \${\\"world\\"}! Count: \${42}\`",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "no-props/input.svelte" 1`] = `
 "{
   "props": [],
@@ -4192,6 +4253,42 @@ export default class ForwardedFromComponentToNative extends SvelteComponentTyped
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
   },
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "template-literal-default/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type TemplateLiteralDefaultProps = {
+  /**
+   * Template literal with call expression
+   * @default \`ccs-\${Math.random().toString(36)}\`
+   */
+  id?: \`ccs-\${string}\` & {};
+
+  /**
+   * Static template literals
+   * @default \`prefix-\`
+   */
+  prefix?: \`prefix-\` & {};
+
+  /**
+   * @default \`-suffix\`
+   */
+  suffix?: \`-suffix\` & {};
+
+  /**
+   * Template literal with multiple expressions
+   * @default \`Hello, \${"world"}! Count: \${42}\`
+   */
+  message?: \`Hello, \${"world"}! Count: \${42}\` & {};
+};
+
+export default class TemplateLiteralDefault extends SvelteComponentTyped<
+  TemplateLiteralDefaultProps,
+  Record<string, any>,
   Record<string, never>
 > {}
 "

@@ -1,0 +1,57 @@
+{
+  "props": [
+    {
+      "name": "id",
+      "kind": "let",
+      "description": "Template literal with call expression",
+      "type": "(`ccs-${string}` & {})",
+      "value": "`ccs-${Math.random().toString(36)}`",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "prefix",
+      "kind": "let",
+      "description": "Static template literals",
+      "type": "(`prefix-` & {})",
+      "value": "`prefix-`",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "suffix",
+      "kind": "let",
+      "type": "(`-suffix` & {})",
+      "value": "`-suffix`",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "message",
+      "kind": "let",
+      "description": "Template literal with multiple expressions",
+      "type": "(`Hello, ${\"world\"}! Count: ${42}` & {})",
+      "value": "`Hello, ${\"world\"}! Count: ${42}`",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}

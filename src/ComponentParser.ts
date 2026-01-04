@@ -285,6 +285,136 @@ export default class ComponentParser {
     return false;
   }
 
+  /**
+   * Infers the TypeScript type for an expression in a template literal.
+   * Returns a type string that can be used in a template literal type.
+   */
+  private inferExpressionType(expr: unknown): string {
+    if (!expr || typeof expr !== "object" || !("type" in expr)) {
+      return "string";
+    }
+
+    /**
+     * @example `"hello"` → `"hello"`
+     * @example `42` → `42`
+     * @example `true` → `true`
+     */
+    if (expr.type === "Literal") {
+      if (typeof expr.value === "string") {
+        return `"${expr.value}"`;
+      }
+      if (typeof expr.value === "number") {
+        return `${expr.value}`;
+      }
+      if (typeof expr.value === "boolean") {
+        return `${expr.value}`;
+      }
+      return "string";
+    }
+
+    /**
+     * @example `someVar` → `string`
+     */
+    if (expr.type === "Identifier") {
+      // For variables, we can't know the exact type, so default to string
+      // Users can add explicit @type annotations if they need more precision
+      return "string";
+    }
+
+    /**
+     * @example `Math.PI` → `number`
+     * @example `Number.MAX_VALUE` → `number`
+     * @example `Math.random().toString` → `string`
+     */
+    if (expr.type === "MemberExpression") {
+      // Check if it's a well-known numeric constant
+      if (this.isNumericConstant(expr)) {
+        return "number";
+      }
+      // For other member expressions, default to string
+      // Common cases like Math.random().toString(36) will be string
+      return "string";
+    }
+
+    /**
+     * @example `Math.random().toString(36)` → `string`
+     * @example `someFunction()` → `string`
+     */
+    if (expr.type === "CallExpression") {
+      // Most call expressions in template literals return strings or numbers
+      // Default to string for safety
+      return "string";
+    }
+
+    /**
+     * @example `a + b` → `string`
+     * @example `x * y` → `string`
+     */
+    if (expr.type === "BinaryExpression") {
+      // For string concatenation or arithmetic, default to string
+      return "string";
+    }
+
+    return "string";
+  }
+
+  /**
+   * Infers a template literal type from a TemplateLiteral AST node.
+   * Returns a TypeScript template literal type string like `prefix-${string}`.
+   */
+  private inferTemplateLiteralType(templateLiteral: unknown): string {
+    if (!templateLiteral || typeof templateLiteral !== "object" || templateLiteral.type !== "TemplateLiteral") {
+      return "string";
+    }
+
+    const quasis = templateLiteral.quasis || [];
+    const expressions = templateLiteral.expressions || [];
+
+    // If there are no expressions, it's a static string
+    if (expressions.length === 0) {
+      if (quasis.length === 1) {
+        const staticValue = quasis[0].value?.cooked || quasis[0].value?.raw || "";
+        // Escape backticks and backslashes in the static string
+        const escaped = staticValue.replace(/\\/g, "\\\\").replace(/`/g, "\\`");
+        const templateLiteralType = `\`${escaped}\``;
+        // Use the (template-literal & {}) trick to make the type more permissive
+        return `(${templateLiteralType} & {})`;
+      }
+      return "string";
+    }
+
+    // Build the template literal type
+    const parts: string[] = [];
+
+    for (let i = 0; i < quasis.length; i++) {
+      const quasi = quasis[i];
+      const staticValue = quasi.value?.cooked || quasi.value?.raw || "";
+
+      // Escape backticks and backslashes in static parts
+      const escaped = staticValue.replace(/\\/g, "\\\\").replace(/`/g, "\\`");
+      if (escaped) {
+        parts.push(escaped);
+      }
+
+      // Add the expression type if there's a corresponding expression
+      if (i < expressions.length) {
+        const exprType = this.inferExpressionType(expressions[i]);
+        parts.push(`\${${exprType}}`);
+      }
+    }
+
+    // If we couldn't build a meaningful template literal type, fall back to string
+    if (parts.length === 0) {
+      return "string";
+    }
+
+    const templateLiteralType = `\`${parts.join("")}\``;
+
+    // Use the (template-literal & {}) trick to make the type more permissive
+    // This allows regular strings to be assigned while preserving template literal type for autocomplete
+    return `(${templateLiteralType} & {})`;
+  }
+
   private sourceAtPos(start: number, end: number) {
     return this.source?.slice(start, end);
   }
@@ -1081,6 +1211,10 @@ export default class ComponentParser {
                     type = "number";
                   }
                   // Otherwise, don't infer type, just preserve existing type annotation.
+                } else if (init.type === "TemplateLiteral") {
+                  // Handle template literals - infer template literal type when possible
+                  value = this.sourceAtPos(init.start, init.end);
+                  type = this.inferTemplateLiteralType(init);
                 } else {
                   value = init.raw;
                   type = init.value == null ? undefined : typeof init.value;
@@ -1304,6 +1438,10 @@ export default class ComponentParser {
                   type = "number";
                 }
                 // Otherwise, don't infer type, just preserve existing type annotation.
+              } else if (init.type === "TemplateLiteral") {
+                // Handle template literals - infer template literal type when possible
+                value = this.sourceAtPos(init.start, init.end);
+                type = this.inferTemplateLiteralType(init);
               } else {
                 value = init.raw;
                 type = init.value == null ? undefined : typeof init.value;
