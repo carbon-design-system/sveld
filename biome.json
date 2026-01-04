@@ -96,21 +96,10 @@
         "rules": {
           "correctness": {
             "noUnusedImports": "off",
-            "noUnusedVariables": "off",
-            "noSelfAssign": "off"
-          },
-          "complexity": {
-            "noUselessUndefinedInitialization": "off"
-          },
-          "suspicious": {
-            "noAssignInExpressions": "off",
-            "noGlobalAssign": "off"
+            "noUnusedVariables": "off"
           },
           "style": {
-            "useConst": "off",
-            "useImportType": "off",
-            "useTemplate": "off",
-            "noUnusedTemplateLiteral": "off"
+            "useConst": "off"
           }
         }
       }

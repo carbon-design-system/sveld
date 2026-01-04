@@ -10,7 +10,7 @@
     TabContent,
     Tabs,
   } from "carbon-components-svelte";
-  import { onMount, SvelteComponent, tick } from "svelte";
+  import { onMount, type SvelteComponent, tick } from "svelte";
   import ComponentParser from "../../src/ComponentParser";
   import CodeEditor from "./CodeEditor.svelte";
   import data from "./data";
