@@ -1,6 +1,6 @@
 {
   "name": "sveld",
-  "version": "0.25.2",
+  "version": "0.25.3",
   "license": "Apache-2.0",
   "description": "Generate TypeScript definitions for your Svelte components.",
   "main": "./lib/index.js",
