@@ -23,8 +23,14 @@
     "lineWidth": 120
   },
   "html": {
+    "experimentalFullSupportEnabled": true,
     "formatter": {
       "indentScriptAndStyle": true
+    }
+  },
+  "css": {
+    "parser": {
+      "cssModules": true
     }
   },
   "linter": {

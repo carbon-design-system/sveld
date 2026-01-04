@@ -8,7 +8,7 @@
   export let code = "";
   export let codemirror: CodeMirror.Editor | null = null;
 
-  import { onMount, createEventDispatcher } from "svelte";
+  import { createEventDispatcher, onMount } from "svelte";
 
   const dispatch = createEventDispatcher();
 
@@ -157,8 +157,6 @@
   :global(.CodeMirror-gutter-wrapper) {
     position: absolute;
     z-index: 4;
-    background: none !important;
-    border: none !important;
   }
 
   :global(.CodeMirror-gutter-background) {
