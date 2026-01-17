@@ -558,7 +558,7 @@ export function writeTsDefinition(component: ComponentDocApi) {
   ${genImports({ extends: _extends })}
   ${genModuleExports({ moduleExports })}
   ${getTypeDefs({ typedefs })}
-  ${getContextDefs({ contexts, generics })}
+  ${contexts && contexts.length > 0 ? "\n" : ""}${getContextDefs({ contexts, generics })}
   ${prop_def}
   ${genComponentComment({ componentComment })}
   export default class ${moduleName === "default" ? "" : moduleName}${generic} extends SvelteComponentTyped<

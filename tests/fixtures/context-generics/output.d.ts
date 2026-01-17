@@ -6,6 +6,7 @@ export interface DataTableRow {
 }
 
 export type DataTableRowId = any;
+
 export type DataTableContext<Row extends DataTableRow = DataTableRow> = {
   batchSelectedIds: import("svelte/store").Writable<ReadonlyArray<DataTableRowId>>;
   tableRows: import("svelte/store").Writable<ReadonlyArray<Row>>;

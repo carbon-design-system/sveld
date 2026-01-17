@@ -2401,6 +2401,83 @@ exports[`fixtures (JSON) "event-explicit-null/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "context-generics/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "rows",
+      "kind": "let",
+      "description": "Specify the rows the data table should render.",
+      "type": "ReadonlyArray<Row>",
+      "value": "[]",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>"
+    }
+  ],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{ id: any; [key: string]: any; }",
+      "name": "DataTableRow",
+      "ts": "interface DataTableRow { id: any; [key: string]: any; }"
+    },
+    {
+      "type": "any",
+      "name": "DataTableRowId",
+      "ts": "type DataTableRowId = any"
+    }
+  ],
+  "generics": [
+    "Row",
+    "Row extends DataTableRow = DataTableRow"
+  ],
+  "contexts": [
+    {
+      "key": "DataTable",
+      "typeName": "DataTableContext",
+      "properties": [
+        {
+          "name": "batchSelectedIds",
+          "type": "import(\\"svelte/store\\").Writable<ReadonlyArray<DataTableRowId>>",
+          "description": "",
+          "optional": false
+        },
+        {
+          "name": "tableRows",
+          "type": "import(\\"svelte/store\\").Writable<ReadonlyArray<Row>>",
+          "description": "",
+          "optional": false
+        },
+        {
+          "name": "resetSelectedRowIds",
+          "type": "() => void",
+          "description": "Reset selected row ids",
+          "optional": false
+        },
+        {
+          "name": "filterRows",
+          "type": "(searchValue: string, customFilter?: (row: Row, value: string) => boolean) => ReadonlyArray<DataTableRowId>",
+          "description": "Filter rows by search value",
+          "optional": false
+        }
+      ]
+    }
+  ]
+}
+"
+`;
+
 exports[`fixtures (JSON) "svelte-element-hardcoded-button/input.svelte" 1`] = `
 "{
   "props": [],
@@ -3736,6 +3813,7 @@ exports[`fixtures (TypeScript) "context-typedef/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
 export type TabData = { id: string; label: string; disabled?: boolean };
+
 export type TabsContext = {
   /** Register a new tab */
   addTab: (tab: TabData) => void;
@@ -4018,6 +4096,7 @@ exports[`fixtures (TypeScript) "context-imported-type/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
 export type ModalAPI = { open: () => void; close: () => void };
+
 export type ModalContext = {
   /** Modal API object */
   modalAPI: ModalAPI;
@@ -4434,6 +4513,46 @@ export default class EventExplicitNull extends SvelteComponentTyped<
   EventExplicitNullProps,
   { clear: CustomEvent<null>; change: WindowEventMap["change"]; input: WindowEventMap["input"] },
   Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "context-generics/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export interface DataTableRow {
+  id: any;
+  [key: string]: any;
+}
+
+export type DataTableRowId = any;
+
+export type DataTableContext<Row extends DataTableRow = DataTableRow> = {
+  batchSelectedIds: import("svelte/store").Writable<ReadonlyArray<DataTableRowId>>;
+  tableRows: import("svelte/store").Writable<ReadonlyArray<Row>>;
+  /** Reset selected row ids */
+  resetSelectedRowIds: () => void;
+  /** Filter rows by search value */
+  filterRows: (
+    searchValue: string,
+    customFilter?: (row: Row, value: string) => boolean,
+  ) => ReadonlyArray<DataTableRowId>;
+};
+
+export type ContextGenericsProps<Row> = {
+  /**
+   * Specify the rows the data table should render.
+   * @default []
+   */
+  rows?: ReadonlyArray<Row>;
+
+  children?: (this: void) => void;
+};
+
+export default class ContextGenerics<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
+  ContextGenericsProps<Row>,
+  Record<string, any>,
+  { default: Record<string, never> }
 > {}
 "
 `;
@@ -4904,122 +5023,6 @@ export default class Generics<Row extends DataTableRow = DataTableRow> extends S
   GenericsProps<Row>,
   Record<string, any>,
   { default: { headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> } }
-> {}
-"
-`;
-
-exports[`fixtures (JSON) "context-generics/input.svelte" 1`] = `
-"{
-  "props": [
-    {
-      "name": "rows",
-      "kind": "let",
-      "description": "Specify the rows the data table should render.",
-      "type": "ReadonlyArray<Row>",
-      "value": "[]",
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false
-    }
-  ],
-  "moduleExports": [],
-  "slots": [
-    {
-      "name": null,
-      "default": true,
-      "slot_props": "Record<string, never>"
-    }
-  ],
-  "events": [],
-  "typedefs": [
-    {
-      "type": "{ id: any; [key: string]: any; }",
-      "name": "DataTableRow",
-      "ts": "interface DataTableRow { id: any; [key: string]: any; }"
-    },
-    {
-      "type": "any",
-      "name": "DataTableRowId",
-      "ts": "type DataTableRowId = any"
-    }
-  ],
-  "generics": [
-    "Row",
-    "Row extends DataTableRow = DataTableRow"
-  ],
-  "contexts": [
-    {
-      "key": "DataTable",
-      "typeName": "DataTableContext",
-      "properties": [
-        {
-          "name": "batchSelectedIds",
-          "type": "import(\\"svelte/store\\").Writable<ReadonlyArray<DataTableRowId>>",
-          "description": "",
-          "optional": false
-        },
-        {
-          "name": "tableRows",
-          "type": "import(\\"svelte/store\\").Writable<ReadonlyArray<Row>>",
-          "description": "",
-          "optional": false
-        },
-        {
-          "name": "resetSelectedRowIds",
-          "type": "() => void",
-          "description": "Reset selected row ids",
-          "optional": false
-        },
-        {
-          "name": "filterRows",
-          "type": "(searchValue: string, customFilter?: (row: Row, value: string) => boolean) => ReadonlyArray<DataTableRowId>",
-          "description": "Filter rows by search value",
-          "optional": false
-        }
-      ]
-    }
-  ]
-}
-"
-`;
-
-exports[`fixtures (TypeScript) "context-generics/input.svelte" 1`] = `
-"import { SvelteComponentTyped } from "svelte";
-
-export interface DataTableRow {
-  id: any;
-  [key: string]: any;
-}
-
-export type DataTableRowId = any;
-export type DataTableContext<Row extends DataTableRow = DataTableRow> = {
-  batchSelectedIds: import("svelte/store").Writable<ReadonlyArray<DataTableRowId>>;
-  tableRows: import("svelte/store").Writable<ReadonlyArray<Row>>;
-  /** Reset selected row ids */
-  resetSelectedRowIds: () => void;
-  /** Filter rows by search value */
-  filterRows: (
-    searchValue: string,
-    customFilter?: (row: Row, value: string) => boolean,
-  ) => ReadonlyArray<DataTableRowId>;
-};
-
-export type ContextGenericsProps<Row> = {
-  /**
-   * Specify the rows the data table should render.
-   * @default []
-   */
-  rows?: ReadonlyArray<Row>;
-
-  children?: (this: void) => void;
-};
-
-export default class ContextGenerics<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
-  ContextGenericsProps<Row>,
-  Record<string, any>,
-  { default: Record<string, never> }
 > {}
 "
 `;
