@@ -9,7 +9,7 @@ type $RestProps = SvelteHTMLElements["button"] &
 
 type $Props = {
   /**
-   * Specify the kind of button
+   * Specify the kind of button.
    * @default "primary"
    */
   kind?:
@@ -22,46 +22,72 @@ type $Props = {
     | "danger-ghost";
 
   /**
-   * Specify the size of button
+   * Specify the size of button.
    * @default "default"
    */
-  size?: "default" | "field" | "small";
+  size?: "default" | "field" | "small" | "lg" | "xl";
 
   /**
-   * Set to `true` for the icon-only variant
-   * @deprecated inferred using the $$slots API
+   * Set to `true` to use Carbon's expressive typesetting
    * @default false
    */
-  hasIconOnly?: boolean;
+  expressive?: boolean;
 
   /**
-   * Specify the icon from `carbon-icons-svelte` to render
+   * Set to `true` to enable the selected state for an icon-only, ghost button.
+   * @default false
+   */
+  isSelected?: boolean;
+
+  /**
+   * Specify the icon to render.
+   * Alternatively, use the named slot "icon".
+   * @example
+   * ```svelte
+   * <Button>
+   *   <Icon slot="icon" size={20} />
+   * </Button>
+   * ```
    * @default undefined
    */
-  icon?: typeof import("carbon-icons-svelte").CarbonIcon;
+  icon?: any;
 
   /**
-   * Specify the ARIA label for the button icon
+   * Specify the ARIA label for the button icon.
    * @default undefined
    */
   iconDescription?: string;
 
   /**
-   * Set the alignment of the tooltip relative to the icon
-   * `hasIconOnly` must be set to `true`
+   * Set the alignment of the tooltip relative to the icon.
+   * Only applies to icon-only buttons.
    * @default "center"
    */
   tooltipAlignment?: "start" | "center" | "end";
 
   /**
-   * Set the position of the tooltip relative to the icon
+   * Set the position of the tooltip relative to the icon.
    * @default "bottom"
    */
   tooltipPosition?: "top" | "right" | "bottom" | "left";
 
   /**
-   * Set to `true` to render a custom HTML element
-   * Props are destructured as `props` in the default slot (e.g., <Button let:props><div {...props}>...</div></Button>)
+   * Set to `true` to hide the tooltip while maintaining accessibility.
+   * Only applies to icon-only buttons.
+   * When `true`, the tooltip is visually hidden but the `iconDescription` remains accessible to screen readers.
+   * @default false
+   */
+  hideTooltip?: boolean;
+
+  /**
+   * Set to `true` to render a custom HTML element.
+   * Props are destructured as `props` in the default slot.
+   * @example
+   * ```svelte
+   * <Button let:props>
+   *   <div {...props}>Custom Element</div>
+   * </Button>
+   * ```
    * @default false
    */
   as?: boolean;
@@ -79,7 +105,7 @@ type $Props = {
   disabled?: boolean;
 
   /**
-   * Set the `href` to use an anchor link
+   * Set the `href` to use an anchor link.
    * @default undefined
    */
   href?: string;
@@ -133,6 +159,8 @@ export default class Button extends SvelteComponentTyped<
   ButtonProps,
   {
     click: WindowEventMap["click"];
+    focus: WindowEventMap["focus"];
+    blur: WindowEventMap["blur"];
     mouseover: WindowEventMap["mouseover"];
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
@@ -149,5 +177,6 @@ export default class Button extends SvelteComponentTyped<
         [key: string]: any;
       };
     };
+    icon: { style: undefined | string };
   }
 > {}
