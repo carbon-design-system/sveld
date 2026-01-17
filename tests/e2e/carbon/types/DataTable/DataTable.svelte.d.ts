@@ -41,6 +41,7 @@ export interface DataTableCell {
   value: DataTableValue;
   display?: (item: Value, row: DataTableRow) => DataTableValue;
 }
+
 export type DataTableContext = {
   batchSelectedIds: any;
   tableRows: any;

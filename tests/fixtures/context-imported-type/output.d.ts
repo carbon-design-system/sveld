@@ -1,6 +1,7 @@
 import { SvelteComponentTyped } from "svelte";
 
 export type ModalAPI = { open: () => void; close: () => void };
+
 export type ModalContext = {
   /** Modal API object */
   modalAPI: ModalAPI;
