@@ -3022,9 +3022,9 @@ export type SlotsNamedProps = {
    */
   text?: string;
 
-  "bold heading"?: () => void;
+  "bold heading"?: (props: { text: string }) => void;
 
-  subheading?: () => void;
+  subheading?: (props: { text: string }) => void;
 };
 
 export default class SlotsNamed extends SvelteComponentTyped<
@@ -3471,10 +3471,10 @@ export type TypedefEventSharedBlockProps = {
   break?: () => void;
 
   /** Slot for rendering breakpoint sizes */
-  "breakpoint-sizes"?: () => void;
+  "breakpoint-sizes"?: (props: { sizes: Record<BreakpointSize, boolean> }) => void;
 
   /** description */
-  "inline-slot"?: () => void;
+  "inline-slot"?: (props: { a: 4 }) => void;
 };
 
 export default class TypedefEventSharedBlock extends SvelteComponentTyped<
@@ -3648,7 +3648,7 @@ export type TypedSlotsProps = {
   prop?: number;
 
   /** description */
-  description?: () => void;
+  description?: (props: { props: { class?: string } }) => void;
 };
 
 export default class TypedSlots extends SvelteComponentTyped<
@@ -4647,7 +4647,7 @@ exports[`fixtures (TypeScript) "slots-spread-typed/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
 export type SlotsSpreadTypedProps = {
-  text?: () => void;
+  text?: (props: { a: number }) => void;
 };
 
 export default class SlotsSpreadTyped extends SvelteComponentTyped<

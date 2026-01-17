@@ -185,11 +185,16 @@ type $Props<Row> = {
    */
   page?: number;
 
-  cell?: () => void;
+  cell?: (props: {
+    row: Row;
+    cell: DataTableCell<Row>;
+    rowIndex: number;
+    cellIndex: number;
+  }) => void;
 
-  "cell-header"?: () => void;
+  "cell-header"?: (props: { header: DataTableNonEmptyHeader }) => void;
 
-  "expanded-row"?: () => void;
+  "expanded-row"?: (props: { row: Row }) => void;
 
   [key: `data-${string}`]: any;
 };
