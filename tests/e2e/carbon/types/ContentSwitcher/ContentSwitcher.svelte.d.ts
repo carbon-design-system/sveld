@@ -29,6 +29,8 @@ type $Props = {
    */
   size?: "sm" | "xl";
 
+  children?: (this: void) => void;
+
   [key: `data-${string}`]: any;
 };
 

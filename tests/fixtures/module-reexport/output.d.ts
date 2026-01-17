@@ -12,6 +12,8 @@ export type ModuleReexportProps = {
    * @default 'Chart'
    */
   title?: string;
+
+  children?: (this: void) => void;
 };
 
 export default class ModuleReexport extends SvelteComponentTyped<

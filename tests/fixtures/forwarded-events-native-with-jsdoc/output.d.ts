@@ -1,6 +1,8 @@
 import { SvelteComponentTyped } from "svelte";
 
-export type ForwardedEventsNativeWithJsdocProps = Record<string, never>;
+export type ForwardedEventsNativeWithJsdocProps = {
+  children?: (this: void) => void;
+};
 
 export default class ForwardedEventsNativeWithJsdoc extends SvelteComponentTyped<
   ForwardedEventsNativeWithJsdocProps,

@@ -7,7 +7,9 @@ export type SimpleModalContext = {
   close: () => void;
 };
 
-export type ContextSimpleProps = Record<string, never>;
+export type ContextSimpleProps = {
+  children?: (this: void) => void;
+};
 
 export default class ContextSimple extends SvelteComponentTyped<
   ContextSimpleProps,

@@ -22,6 +22,11 @@ export type GenericsMultipleProps<Row, Header> = {
    * @default []
    */
   rows?: ReadonlyArray<Row>;
+
+  children?: (
+    this: void,
+    ...args: [{ headers: ReadonlyArray<DataTableHeader<Row, Header>>; rows: ReadonlyArray<Row> }]
+  ) => void;
 };
 
 export default class GenericsMultiple<

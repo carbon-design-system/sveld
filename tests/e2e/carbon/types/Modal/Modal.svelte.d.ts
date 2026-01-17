@@ -122,6 +122,8 @@ type $Props = {
 
   label?: (this: void) => void;
 
+  children?: (this: void) => void;
+
   [key: `data-${string}`]: any;
 };
 

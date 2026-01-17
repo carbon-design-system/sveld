@@ -1,6 +1,8 @@
 import { SvelteComponentTyped } from "svelte";
 
-export type NotificationActionButtonProps = Record<string, never>;
+export type NotificationActionButtonProps = {
+  children?: (this: void) => void;
+};
 
 export default class NotificationActionButton extends SvelteComponentTyped<
   NotificationActionButtonProps,

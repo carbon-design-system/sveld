@@ -14,6 +14,8 @@ export type TypedefProps = {
    * @default { 1: true }
    */
   prop1?: MyTypedef;
+
+  children?: (this: void, ...args: [{ prop1: MyTypedef }]) => void;
 };
 
 export default class Typedef extends SvelteComponentTyped<

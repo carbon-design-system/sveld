@@ -1,6 +1,8 @@
 import { SvelteComponentTyped } from "svelte";
 
-export type ComponentCommentMultiProps = Record<string, never>;
+export type ComponentCommentMultiProps = {
+  children?: (this: void) => void;
+};
 
 /**
  * @example

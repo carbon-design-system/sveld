@@ -26,6 +26,11 @@ type $Props<Row> = {
    */
   rows?: ReadonlyArray<Row>;
 
+  children?: (
+    this: void,
+    ...args: [{ headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> }]
+  ) => void;
+
   [key: `data-${string}`]: any;
 };
 

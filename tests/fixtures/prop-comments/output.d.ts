@@ -20,6 +20,8 @@ export type PropCommentsProps = {
    * @default true
    */
   prop2?: boolean | string;
+
+  children?: (this: void, ...args: [{ prop: boolean | string; prop1: boolean; prop2: boolean | string }]) => void;
 };
 
 export default class PropComments extends SvelteComponentTyped<

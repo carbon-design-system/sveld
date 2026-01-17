@@ -1,6 +1,8 @@
 import { SvelteComponentTyped } from "svelte";
 
-export type ComponentCommentSingleProps = Record<string, never>;
+export type ComponentCommentSingleProps = {
+  children?: (this: void) => void;
+};
 
 /** Component comment */
 export default class ComponentCommentSingle extends SvelteComponentTyped<

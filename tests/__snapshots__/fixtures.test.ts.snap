@@ -3025,6 +3025,8 @@ export type SlotsNamedProps = {
   "bold heading"?: (this: void, ...args: [{ text: string }]) => void;
 
   subheading?: (this: void, ...args: [{ text: string }]) => void;
+
+  children?: (this: void) => void;
 };
 
 export default class SlotsNamed extends SvelteComponentTyped<
@@ -3105,6 +3107,11 @@ export type GenericsMultipleProps<Row, Header> = {
    * @default []
    */
   rows?: ReadonlyArray<Row>;
+
+  children?: (
+    this: void,
+    ...args: [{ headers: ReadonlyArray<DataTableHeader<Row, Header>>; rows: ReadonlyArray<Row> }]
+  ) => void;
 };
 
 export default class GenericsMultiple<
@@ -3148,6 +3155,8 @@ export type ModuleReexportProps = {
    * @default 'Chart'
    */
   title?: string;
+
+  children?: (this: void) => void;
 };
 
 export default class ModuleReexport extends SvelteComponentTyped<
@@ -3252,6 +3261,8 @@ export type TypedefDescriptionProps = {
    * @default 1
    */
   gap?: StackScaleOrString;
+
+  children?: (this: void) => void;
 };
 
 export default class TypedefDescription extends SvelteComponentTyped<
@@ -3362,7 +3373,9 @@ export type MyLoggerContext = {
   log: (message: string) => void;
 };
 
-export type ContextIssue103Props = Record<string, never>;
+export type ContextIssue103Props = {
+  children?: (this: void) => void;
+};
 
 export default class ContextIssue103 extends SvelteComponentTyped<
   ContextIssue103Props,
@@ -3430,7 +3443,9 @@ export default class FunctionDeclaration extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "forwarded-events/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
-export type ForwardedEventsProps = Record<string, never>;
+export type ForwardedEventsProps = {
+  children?: (this: void) => void;
+};
 
 export default class ForwardedEvents extends SvelteComponentTyped<
   ForwardedEventsProps,
@@ -3475,6 +3490,8 @@ export type TypedefEventSharedBlockProps = {
 
   /** description */
   "inline-slot"?: (this: void, ...args: [{ a: 4 }]) => void;
+
+  children?: (this: void, ...args: [{ size: BreakpointSize; sizes: Record<BreakpointSize, boolean> }]) => void;
 };
 
 export default class TypedefEventSharedBlock extends SvelteComponentTyped<
@@ -3533,6 +3550,8 @@ export type ThemeComponentProps = {
    * @default "theme"
    */
   persistKey?: string;
+
+  children?: (this: void, ...args: [{ theme: CarbonTheme }]) => void;
 };
 
 export default class ThemeComponent extends SvelteComponentTyped<
@@ -3584,6 +3603,8 @@ export type InferBasicProps = {
    * @default "" + Math.random().toString(36)
    */
   id?: string;
+
+  children?: (this: void) => void;
 };
 
 export default class InferBasic extends SvelteComponentTyped<
@@ -3628,6 +3649,8 @@ export type ModuleReexportDirectProps = {
   onReady: undefined;
 
   header?: (this: void) => void;
+
+  children?: (this: void) => void;
 };
 
 export default class ModuleReexportDirect extends SvelteComponentTyped<
@@ -3649,6 +3672,8 @@ export type TypedSlotsProps = {
 
   /** description */
   description?: (this: void, ...args: [{ props: { class?: string } }]) => void;
+
+  children?: (this: void, ...args: [{ prop: number; doubled: number }]) => void;
 };
 
 export default class TypedSlots extends SvelteComponentTyped<
@@ -3674,7 +3699,9 @@ export type TabsContext = {
   removeTab: (id: string) => void;
 };
 
-export type ContextTypedefProps = Record<string, never>;
+export type ContextTypedefProps = {
+  children?: (this: void) => void;
+};
 
 export default class ContextTypedef extends SvelteComponentTyped<
   ContextTypedefProps,
@@ -3706,7 +3733,9 @@ export default class ForwardedEventsTyped extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "dispatched-events/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
-export type DispatchedEventsProps = Record<string, never>;
+export type DispatchedEventsProps = {
+  children?: (this: void) => void;
+};
 
 export default class DispatchedEvents extends SvelteComponentTyped<
   DispatchedEventsProps,
@@ -3736,6 +3765,8 @@ export type ModuleReexportRenamedProps = {
    * @default {}
    */
   config?: {};
+
+  children?: (this: void) => void;
 };
 
 export default class ModuleReexportRenamed extends SvelteComponentTyped<
@@ -3765,6 +3796,8 @@ export type TypedefsProps = {
    * @default []
    */
   prop2?: MyTypedefArray;
+
+  children?: (this: void, ...args: [{ prop1: MyTypedef; prop2: MyTypedefArray }]) => void;
 };
 
 export default class Typedefs extends SvelteComponentTyped<
@@ -3804,6 +3837,11 @@ type $Props<Row> = {
    */
   rows?: ReadonlyArray<Row>;
 
+  children?: (
+    this: void,
+    ...args: [{ headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> }]
+  ) => void;
+
   [key: \`data-\${string}\`]: any;
 };
 
@@ -3825,6 +3863,8 @@ export type BindThisProps = {
    * @default undefined
    */
   ref: null | HTMLButtonElement;
+
+  children?: (this: void) => void;
 };
 
 export default class BindThis extends SvelteComponentTyped<
@@ -3863,7 +3903,9 @@ export default class InstanceReexport extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "dispatched-events-typed/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
-export type DispatchedEventsTypedProps = Record<string, never>;
+export type DispatchedEventsTypedProps = {
+  children?: (this: void) => void;
+};
 
 export default class DispatchedEventsTyped extends SvelteComponentTyped<
   DispatchedEventsTypedProps,
@@ -3916,6 +3958,8 @@ export type RequiredProps = {
    * @default undefined
    */
   prop3: boolean;
+
+  children?: (this: void, ...args: [{ prop: boolean; prop1: boolean | string; prop2: any; prop3: boolean }]) => void;
 };
 
 export default class Required extends SvelteComponentTyped<
@@ -3935,7 +3979,9 @@ export type ModalContext = {
   modalAPI: ModalAPI;
 };
 
-export type ContextImportedTypeProps = Record<string, never>;
+export type ContextImportedTypeProps = {
+  children?: (this: void) => void;
+};
 
 export default class ContextImportedType extends SvelteComponentTyped<
   ContextImportedTypeProps,
@@ -3968,6 +4014,8 @@ export type PropCommentsProps = {
    * @default true
    */
   prop2?: boolean | string;
+
+  children?: (this: void, ...args: [{ prop: boolean | string; prop1: boolean; prop2: boolean | string }]) => void;
 };
 
 export default class PropComments extends SvelteComponentTyped<
@@ -3981,7 +4029,9 @@ export default class PropComments extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "forwarded-events-native-with-jsdoc/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
-export type ForwardedEventsNativeWithJsdocProps = Record<string, never>;
+export type ForwardedEventsNativeWithJsdocProps = {
+  children?: (this: void) => void;
+};
 
 export default class ForwardedEventsNativeWithJsdoc extends SvelteComponentTyped<
   ForwardedEventsNativeWithJsdocProps,
@@ -4008,7 +4058,9 @@ export type SimpleModalContext = {
   close: () => void;
 };
 
-export type ContextSimpleProps = Record<string, never>;
+export type ContextSimpleProps = {
+  children?: (this: void) => void;
+};
 
 export default class ContextSimple extends SvelteComponentTyped<
   ContextSimpleProps,
@@ -4060,6 +4112,8 @@ export type InferWithTypesProps = {
    * @default "" + Math.random().toString(36)
    */
   id?: string;
+
+  children?: (this: void) => void;
 };
 
 export default class InferWithTypes extends SvelteComponentTyped<
@@ -4385,7 +4439,9 @@ export default class ForwardedStandardEventCustomDetail extends SvelteComponentT
 exports[`fixtures (TypeScript) "component-comment-single/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
-export type ComponentCommentSingleProps = Record<string, never>;
+export type ComponentCommentSingleProps = {
+  children?: (this: void) => void;
+};
 
 /** Component comment */
 export default class ComponentCommentSingle extends SvelteComponentTyped<
@@ -4414,6 +4470,8 @@ export type BindThisMultipleProps = {
    * @default false
    */
   propBool?: boolean;
+
+  children?: (this: void) => void;
 };
 
 export default class BindThisMultiple extends SvelteComponentTyped<
@@ -4458,6 +4516,8 @@ export type TypedefProps = {
    * @default { 1: true }
    */
   prop1?: MyTypedef;
+
+  children?: (this: void, ...args: [{ prop1: MyTypedef }]) => void;
 };
 
 export default class Typedef extends SvelteComponentTyped<
@@ -4495,6 +4555,8 @@ import type { SvelteHTMLElements } from "svelte/elements";
 type $RestProps = SvelteHTMLElements["a"];
 
 type $Props = {
+  children?: (this: void) => void;
+
   [key: \`data-\${string}\`]: any;
 };
 
@@ -4511,7 +4573,9 @@ export default class AnchorProps extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "component-comment-multi/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
-export type ComponentCommentMultiProps = Record<string, never>;
+export type ComponentCommentMultiProps = {
+  children?: (this: void) => void;
+};
 
 /**
  * @example
@@ -4620,6 +4684,8 @@ exports[`fixtures (TypeScript) "slots-spread/input.svelte" 1`] = `
 
 export type SlotsSpreadProps = {
   text?: (this: void) => void;
+
+  children?: (this: void) => void;
 };
 
 export default class SlotsSpread extends SvelteComponentTyped<
@@ -4648,6 +4714,8 @@ exports[`fixtures (TypeScript) "slots-spread-typed/input.svelte" 1`] = `
 
 export type SlotsSpreadTypedProps = {
   text?: (this: void, ...args: [{ a: number }]) => void;
+
+  children?: (this: void, ...args: [{ a: number }]) => void;
 };
 
 export default class SlotsSpreadTyped extends SvelteComponentTyped<
@@ -4666,7 +4734,9 @@ export type ModalContext = {
   close: () => any;
 };
 
-export type ContextInlineFunctionsProps = Record<string, never>;
+export type ContextInlineFunctionsProps = {
+  children?: (this: void) => void;
+};
 
 export default class ContextInlineFunctions extends SvelteComponentTyped<
   ContextInlineFunctionsProps,
@@ -4738,6 +4808,11 @@ export type GenericsProps<Row> = {
    * @default []
    */
   rows?: ReadonlyArray<Row>;
+
+  children?: (
+    this: void,
+    ...args: [{ headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> }]
+  ) => void;
 };
 
 export default class Generics<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<

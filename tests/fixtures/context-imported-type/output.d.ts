@@ -6,7 +6,9 @@ export type ModalContext = {
   modalAPI: ModalAPI;
 };
 
-export type ContextImportedTypeProps = Record<string, never>;
+export type ContextImportedTypeProps = {
+  children?: (this: void) => void;
+};
 
 export default class ContextImportedType extends SvelteComponentTyped<
   ContextImportedTypeProps,

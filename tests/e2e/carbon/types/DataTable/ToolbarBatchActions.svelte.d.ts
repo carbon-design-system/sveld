@@ -9,6 +9,8 @@ type $Props = {
    */
   formatTotalSelected?: (totalSelected: number) => string;
 
+  children?: (this: void) => void;
+
   [key: `data-${string}`]: any;
 };
 

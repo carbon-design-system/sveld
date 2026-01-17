@@ -40,6 +40,8 @@ type $Props = {
    */
   ref?: null | HTMLAnchorElement | HTMLParagraphElement;
 
+  children?: (this: void) => void;
+
   [key: `data-${string}`]: any;
 };
 

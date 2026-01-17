@@ -57,6 +57,11 @@ type $Props = {
    */
   id?: string;
 
+  children?: (
+    this: void,
+    ...args: [{ props: { class: "bx--tag__label" } }]
+  ) => void;
+
   [key: `data-${string}`]: any;
 };
 

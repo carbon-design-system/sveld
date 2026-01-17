@@ -1,6 +1,8 @@
 import { SvelteComponentTyped } from "svelte";
 
-export type ForwardedEventsProps = Record<string, never>;
+export type ForwardedEventsProps = {
+  children?: (this: void) => void;
+};
 
 export default class ForwardedEvents extends SvelteComponentTyped<
   ForwardedEventsProps,

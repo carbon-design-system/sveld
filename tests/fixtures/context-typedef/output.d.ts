@@ -8,7 +8,9 @@ export type TabsContext = {
   removeTab: (id: string) => void;
 };
 
-export type ContextTypedefProps = Record<string, never>;
+export type ContextTypedefProps = {
+  children?: (this: void) => void;
+};
 
 export default class ContextTypedef extends SvelteComponentTyped<
   ContextTypedefProps,

@@ -31,6 +31,8 @@ export type TypedefDescriptionProps = {
    * @default 1
    */
   gap?: StackScaleOrString;
+
+  children?: (this: void) => void;
 };
 
 export default class TypedefDescription extends SvelteComponentTyped<

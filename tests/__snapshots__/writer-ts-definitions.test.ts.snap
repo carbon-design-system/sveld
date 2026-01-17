@@ -32,6 +32,8 @@ exports[`writerTsDefinition writeTsDefinition 1`] = `
 
       
       fn?: () => {     localBool = !localBool;   };
+
+      children?: (this: void, ...args: [{}]) => void;
     }
   
   

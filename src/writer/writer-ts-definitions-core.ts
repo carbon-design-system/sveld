@@ -112,7 +112,7 @@ function genPropDef(
 
   // Generate snippet props for named slots (Svelte 5 compatibility)
   // Skip default slots and slots that conflict with existing prop names
-  const snippet_props = (def.slots || [])
+  const named_snippet_props = (def.slots || [])
     .filter(
       (slot): slot is typeof slot & { name: string } =>
         !slot.default && slot.name != null && !existingPropNames.has(slot.name),
@@ -128,6 +128,22 @@ function genPropDef(
       return `
       ${description}${key}?: ${snippetType};`;
     });
+
+  // Generate children snippet prop for default slot (Svelte 5 compatibility)
+  const default_slot = (def.slots || []).find((slot) => slot.default || slot.name === null);
+  const children_snippet_prop = default_slot
+    ? (() => {
+        const description = default_slot.description ? `/** ${default_slot.description} */\n      ` : "";
+        const hasSlotProps = default_slot.slot_props && default_slot.slot_props !== "Record<string, never>";
+        const snippetType = hasSlotProps
+          ? `(this: void, ...args: [${default_slot.slot_props}]) => void`
+          : "(this: void) => void";
+        return `
+      ${description}children?: ${snippetType};`;
+      })()
+    : "";
+
+  const snippet_props = [...named_snippet_props, children_snippet_prop].filter(Boolean);
 
   const props = [...initial_props, ...snippet_props].join("\n");
 

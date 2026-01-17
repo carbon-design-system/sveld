@@ -29,6 +29,8 @@ export type ThemeComponentProps = {
    * @default "theme"
    */
   persistKey?: string;
+
+  children?: (this: void, ...args: [{ theme: CarbonTheme }]) => void;
 };
 
 export default class ThemeComponent extends SvelteComponentTyped<

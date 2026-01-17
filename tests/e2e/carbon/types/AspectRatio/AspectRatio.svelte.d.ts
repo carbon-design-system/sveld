@@ -10,6 +10,8 @@ type $Props = {
    */
   ratio?: "2x1" | "16x9" | "4x3" | "1x1" | "3x4" | "9x16" | "1x2";
 
+  children?: (this: void) => void;
+
   [key: `data-${string}`]: any;
 };
 
