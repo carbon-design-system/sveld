@@ -34,6 +34,8 @@ type $Props = {
    */
   ref?: null | HTMLButtonElement;
 
+  tooltip?: () => void;
+
   [key: `data-${string}`]: any;
 };
 

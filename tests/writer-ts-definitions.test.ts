@@ -2,6 +2,8 @@ import type { ParsedComponent } from "../src/ComponentParser";
 import type { ComponentDocApi } from "../src/rollup-plugin";
 import { formatTsProps, getContextDefs, getTypeDefs, writeTsDefinition } from "../src/writer/writer-ts-definitions";
 
+const DEFAULT_SLOT_SNIPPET_PROP_REGEX = /default\?\s*:\s*\(\)\s*=>\s*void/;
+
 describe("writerTsDefinition", () => {
   test("writeTsDefinition", () => {
     expect(formatTsProps(undefined)).toEqual("any");
@@ -349,5 +351,113 @@ describe("writerTsDefinition", () => {
     expect(output).toContain('Computes the depth of a tree leaf node relative to <ul role="tree" />');
     expect(output).toContain("@example");
     expect(output).toContain("```svelte");
+  });
+
+  test("generates snippet props for named slots (Svelte 5 compatibility)", () => {
+    const component_api: ComponentDocApi = {
+      moduleName: "CardComponent",
+      filePath: "./src/CardComponent.svelte",
+      props: [
+        {
+          name: "title",
+          kind: "let",
+          type: "string",
+          value: '""',
+          isFunction: false,
+          isFunctionDeclaration: false,
+          isRequired: false,
+          constant: false,
+          reactive: false,
+        },
+      ],
+      moduleExports: [],
+      slots: [
+        {
+          name: null,
+          default: true,
+          fallback: "Default content",
+          slot_props: "Record<string, never>",
+        },
+        {
+          name: "header",
+          default: false,
+          slot_props: "{ title: string }",
+          description: "Header slot for custom header content",
+        },
+        {
+          name: "footer",
+          default: false,
+          slot_props: "Record<string, never>",
+        },
+        {
+          name: "bold heading",
+          default: false,
+          slot_props: "Record<string, never>",
+          description: "Slot with space in name",
+        },
+        {
+          // This slot has the same name as a prop - should NOT generate a snippet prop
+          name: "title",
+          default: false,
+          slot_props: "{ text: string }",
+        },
+      ],
+      events: [],
+      typedefs: [],
+      generics: null,
+      rest_props: undefined,
+    };
+
+    const output = writeTsDefinition(component_api);
+
+    // Named slots should generate optional snippet props with () => void type
+    expect(output).toContain("header?: () => void;");
+    expect(output).toContain("footer?: () => void;");
+
+    // Slot names with special characters should be quoted
+    expect(output).toContain('"bold heading"?: () => void;');
+
+    // Default slot should NOT generate a snippet prop
+    expect(output).not.toMatch(DEFAULT_SLOT_SNIPPET_PROP_REGEX);
+
+    // Slots with same name as existing props should NOT generate duplicate props
+    // The prop 'title' already exists as string, so no snippet prop should be added
+    expect(output).toContain("title?: string;");
+    expect(output).not.toContain("title?: () => void;");
+
+    // Slot descriptions should be included as JSDoc comments
+    expect(output).toContain("/** Header slot for custom header content */");
+    expect(output).toContain("/** Slot with space in name */");
+
+    // Slots should still be in the Slots generic parameter
+    expect(output).toContain("header: { title: string }");
+    expect(output).toContain("footer: Record<string, never>");
+  });
+
+  test("snippet props with no regular props", () => {
+    const component_api: ComponentDocApi = {
+      moduleName: "SlotOnlyComponent",
+      filePath: "./src/SlotOnlyComponent.svelte",
+      props: [],
+      moduleExports: [],
+      slots: [
+        {
+          name: "content",
+          default: false,
+          slot_props: "Record<string, never>",
+        },
+      ],
+      events: [],
+      typedefs: [],
+      generics: null,
+      rest_props: undefined,
+    };
+
+    const output = writeTsDefinition(component_api);
+
+    // Should generate snippet prop even when there are no regular props
+    expect(output).toContain("content?: () => void;");
+    // Props type should not be Record<string, never> since we have snippet props
+    expect(output).not.toContain("SlotOnlyComponentProps = Record<string, never>");
   });
 });

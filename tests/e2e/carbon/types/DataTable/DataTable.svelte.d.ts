@@ -185,6 +185,12 @@ type $Props<Row> = {
    */
   page?: number;
 
+  cell?: () => void;
+
+  "cell-header"?: () => void;
+
+  "expanded-row"?: () => void;
+
   [key: `data-${string}`]: any;
 };
 
