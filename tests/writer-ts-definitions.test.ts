@@ -140,6 +140,7 @@ describe("writerTsDefinition", () => {
             properties: [],
           },
         ],
+        generics: null,
       }),
     ).toEqual("export type BreadcrumbItemContext = Record<string, never>;");
   });
@@ -167,10 +168,72 @@ describe("writerTsDefinition", () => {
             ],
           },
         ],
+        generics: null,
       }),
     ).toEqual(
       "export type SimpleModalContext = {\n  /** Open the modal */\n  open: (component: any, props?: any) => void;\n  close: () => void;\n};",
     );
+  });
+
+  test("getContextDefs with generics", () => {
+    // Context that references generic types should include the generic parameter
+    expect(
+      getContextDefs({
+        contexts: [
+          {
+            key: "DataTable",
+            typeName: "DataTableContext",
+            properties: [
+              {
+                name: "batchSelectedIds",
+                type: 'import("svelte/store").Writable<ReadonlyArray<DataTableRowId>>',
+                optional: false,
+              },
+              {
+                name: "tableRows",
+                type: 'import("svelte/store").Writable<ReadonlyArray<Row>>',
+                optional: false,
+              },
+              {
+                name: "resetSelectedRowIds",
+                type: "() => void",
+                optional: false,
+              },
+              {
+                name: "filterRows",
+                type: "(searchValue: string, customFilter?: (row: Row, value: string) => boolean) => ReadonlyArray<DataTableRowId>",
+                optional: false,
+              },
+            ],
+          },
+        ],
+        generics: ["Row", "Row extends DataTableRow = DataTableRow"],
+      }),
+    ).toEqual(
+      'export type DataTableContext<Row extends DataTableRow = DataTableRow> = {\n  batchSelectedIds: import("svelte/store").Writable<ReadonlyArray<DataTableRowId>>;\n  tableRows: import("svelte/store").Writable<ReadonlyArray<Row>>;\n  resetSelectedRowIds: () => void;\n  filterRows: (searchValue: string, customFilter?: (row: Row, value: string) => boolean) => ReadonlyArray<DataTableRowId>;\n};',
+    );
+  });
+
+  test("getContextDefs without generics reference", () => {
+    // Context that doesn't reference generic types should NOT include the generic parameter
+    expect(
+      getContextDefs({
+        contexts: [
+          {
+            key: "simple-context",
+            typeName: "SimpleContext",
+            properties: [
+              {
+                name: "count",
+                type: "number",
+                optional: false,
+              },
+            ],
+          },
+        ],
+        generics: ["Row", "Row extends DataTableRow = DataTableRow"],
+      }),
+    ).toEqual("export type SimpleContext = {\n  count: number;\n};");
   });
 
   test("generates function signatures from @param and @returns", () => {

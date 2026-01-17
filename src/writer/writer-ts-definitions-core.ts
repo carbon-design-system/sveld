@@ -35,8 +35,13 @@ export function getTypeDefs(def: Pick<ComponentDocApi, "typedefs">) {
     .join("\n\n");
 }
 
-export function getContextDefs(def: Pick<ComponentDocApi, "contexts">) {
+export function getContextDefs(def: Pick<ComponentDocApi, "contexts" | "generics">) {
   if (!def.contexts || def.contexts.length === 0) return EMPTY_STR;
+
+  // Extract generic parameter for context types if generics are defined
+  // and the context properties reference the generic type
+  const genericsName = def.generics ? def.generics[0] : null;
+  const genericsType = def.generics ? def.generics[1] : null;
 
   return def.contexts
     .map((context) => {
@@ -50,12 +55,18 @@ export function getContextDefs(def: Pick<ComponentDocApi, "contexts">) {
 
       const contextComment = context.description ? `/**\n * ${context.description}\n */\n` : "";
 
+      // Check if any context property types reference the generic type name
+      const referencesGeneric = genericsName && context.properties.some((prop) => prop.type.includes(genericsName));
+
+      // Build the generic suffix for the context type if it references generics
+      const genericSuffix = referencesGeneric && genericsType ? `<${genericsType}>` : "";
+
       // Use Record<string, never> for empty context objects instead of {}
       if (context.properties.length === 0) {
         return `${contextComment}export type ${context.typeName} = Record<string, never>;`;
       }
 
-      return `${contextComment}export type ${context.typeName} = {\n  ${props}\n};`;
+      return `${contextComment}export type ${context.typeName}${genericSuffix} = {\n  ${props}\n};`;
     })
     .join("\n\n");
 }
@@ -547,7 +558,7 @@ export function writeTsDefinition(component: ComponentDocApi) {
   ${genImports({ extends: _extends })}
   ${genModuleExports({ moduleExports })}
   ${getTypeDefs({ typedefs })}
-  ${getContextDefs({ contexts })}
+  ${getContextDefs({ contexts, generics })}
   ${prop_def}
   ${genComponentComment({ componentComment })}
   export default class ${moduleName === "default" ? "" : moduleName}${generic} extends SvelteComponentTyped<

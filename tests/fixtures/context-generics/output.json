@@ -1,0 +1,73 @@
+{
+  "props": [
+    {
+      "name": "rows",
+      "kind": "let",
+      "description": "Specify the rows the data table should render.",
+      "type": "ReadonlyArray<Row>",
+      "value": "[]",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>"
+    }
+  ],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{ id: any; [key: string]: any; }",
+      "name": "DataTableRow",
+      "ts": "interface DataTableRow { id: any; [key: string]: any; }"
+    },
+    {
+      "type": "any",
+      "name": "DataTableRowId",
+      "ts": "type DataTableRowId = any"
+    }
+  ],
+  "generics": [
+    "Row",
+    "Row extends DataTableRow = DataTableRow"
+  ],
+  "contexts": [
+    {
+      "key": "DataTable",
+      "typeName": "DataTableContext",
+      "properties": [
+        {
+          "name": "batchSelectedIds",
+          "type": "import(\"svelte/store\").Writable<ReadonlyArray<DataTableRowId>>",
+          "description": "",
+          "optional": false
+        },
+        {
+          "name": "tableRows",
+          "type": "import(\"svelte/store\").Writable<ReadonlyArray<Row>>",
+          "description": "",
+          "optional": false
+        },
+        {
+          "name": "resetSelectedRowIds",
+          "type": "() => void",
+          "description": "Reset selected row ids",
+          "optional": false
+        },
+        {
+          "name": "filterRows",
+          "type": "(searchValue: string, customFilter?: (row: Row, value: string) => boolean) => ReadonlyArray<DataTableRowId>",
+          "description": "Filter rows by search value",
+          "optional": false
+        }
+      ]
+    }
+  ]
+}
