@@ -2773,6 +2773,50 @@ exports[`fixtures (JSON) "svelte-element-dynamic/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "prop-comment-complex/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "text",
+      "kind": "let",
+      "description": "Specify the switch text.\\nAlternatively, use the default slot.\\n@example \\n\`\`\`svelte\\n<Switch>\\n  <span>Custom Text</span>\\n</Switch>\\n\`\`\`",
+      "type": "string",
+      "value": "\\"\\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "icon",
+      "kind": "let",
+      "description": "Specify the icon to render.\\nAlternatively, use the named slot \\"icon\\".\\n@example \\n\`\`\`svelte\\n<Button>\\n  <Icon slot=\\"icon\\" size={20} />\\n</Button>\\n\`\`\`",
+      "type": "any",
+      "value": "undefined",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{ text: string, icon: any }"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "slots-spread/input.svelte" 1`] = `
 "{
   "props": [],
@@ -4675,6 +4719,47 @@ export default class SvelteElementDynamic extends SvelteComponentTyped<
   SvelteElementDynamicProps,
   Record<string, any>,
   Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "prop-comment-complex/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type PropCommentComplexProps = {
+  /**
+   * Specify the switch text.
+   * Alternatively, use the default slot.
+   * @example
+   * \`\`\`svelte
+   * <Switch>
+   *   <span>Custom Text</span>
+   * </Switch>
+   * \`\`\`
+   * @default ""
+   */
+  text?: string;
+
+  /**
+   * Specify the icon to render.
+   * Alternatively, use the named slot "icon".
+   * @example
+   * \`\`\`svelte
+   * <Button>
+   *   <Icon slot="icon" size={20} />
+   * </Button>
+   * \`\`\`
+   * @default undefined
+   */
+  icon?: any;
+
+  children?: (this: void, ...args: [{ text: string; icon: any }]) => void;
+};
+
+export default class PropCommentComplex extends SvelteComponentTyped<
+  PropCommentComplexProps,
+  Record<string, any>,
+  { default: { text: string; icon: any } }
 > {}
 "
 `;
