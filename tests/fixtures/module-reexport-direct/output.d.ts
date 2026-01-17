@@ -12,6 +12,8 @@ export type ModuleReexportDirectProps = {
    * @default undefined
    */
   onReady: undefined;
+
+  header?: () => void;
 };
 
 export default class ModuleReexportDirect extends SvelteComponentTyped<

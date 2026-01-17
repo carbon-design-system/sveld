@@ -5,6 +5,10 @@ export type SlotsNamedProps = {
    * @default ""
    */
   text?: string;
+
+  "bold heading"?: () => void;
+
+  subheading?: () => void;
 };
 
 export default class SlotsNamed extends SvelteComponentTyped<

@@ -3021,6 +3021,10 @@ export type SlotsNamedProps = {
    * @default ""
    */
   text?: string;
+
+  "bold heading"?: () => void;
+
+  subheading?: () => void;
 };
 
 export default class SlotsNamed extends SvelteComponentTyped<
@@ -3463,6 +3467,14 @@ export type TypedefEventSharedBlockProps = {
    * @default { sm: false, md: false, lg: false, xlg: false, max: false, }
    */
   sizes?: Record<BreakpointSize, boolean>;
+
+  break?: () => void;
+
+  /** Slot for rendering breakpoint sizes */
+  "breakpoint-sizes"?: () => void;
+
+  /** description */
+  "inline-slot"?: () => void;
 };
 
 export default class TypedefEventSharedBlock extends SvelteComponentTyped<
@@ -3614,6 +3626,8 @@ export type ModuleReexportDirectProps = {
    * @default undefined
    */
   onReady: undefined;
+
+  header?: () => void;
 };
 
 export default class ModuleReexportDirect extends SvelteComponentTyped<
@@ -3632,6 +3646,9 @@ export type TypedSlotsProps = {
    * @default 0
    */
   prop?: number;
+
+  /** description */
+  description?: () => void;
 };
 
 export default class TypedSlots extends SvelteComponentTyped<
@@ -4601,7 +4618,9 @@ export default class SvelteElementDynamic extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "slots-spread/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
-export type SlotsSpreadProps = Record<string, never>;
+export type SlotsSpreadProps = {
+  text?: () => void;
+};
 
 export default class SlotsSpread extends SvelteComponentTyped<
   SlotsSpreadProps,
@@ -4627,7 +4646,9 @@ export default class ForwardedAndDispatchedEvents extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "slots-spread-typed/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
-export type SlotsSpreadTypedProps = Record<string, never>;
+export type SlotsSpreadTypedProps = {
+  text?: () => void;
+};
 
 export default class SlotsSpreadTyped extends SvelteComponentTyped<
   SlotsSpreadTypedProps,

@@ -73,7 +73,14 @@ function addCommentLine(value: string | boolean | undefined, returnValue?: strin
   return `* ${returnValue || value}\n`;
 }
 
-function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleName" | "extends" | "generics">) {
+function genPropDef(
+  def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleName" | "extends" | "generics" | "slots">,
+) {
+  // Collect existing prop names to avoid conflicts with snippet props
+  const existingPropNames = new Set(
+    def.props.filter((prop) => !prop.isFunctionDeclaration && prop.kind !== "const").map((prop) => prop.name),
+  );
+
   const initial_props = def.props
     .filter((prop) => !prop.isFunctionDeclaration && prop.kind !== "const")
     .map((prop) => {
@@ -103,7 +110,22 @@ function genPropDef(def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleN
       ${prop.name}${prop.isRequired ? "" : "?"}: ${prop_value};`;
     });
 
-  const props = initial_props.join("\n");
+  // Generate snippet props for named slots (Svelte 5 compatibility)
+  // Skip default slots and slots that conflict with existing prop names
+  const snippet_props = (def.slots || [])
+    .filter(
+      (slot): slot is typeof slot & { name: string } =>
+        !slot.default && slot.name != null && !existingPropNames.has(slot.name),
+    )
+    .map((slot) => {
+      const slotName = slot.name;
+      const key = clampKey(slotName);
+      const description = slot.description ? `/** ${slot.description} */\n      ` : "";
+      return `
+      ${description}${key}?: () => void;`;
+    });
+
+  const props = [...initial_props, ...snippet_props].join("\n");
 
   const props_name = `${def.moduleName}Props`;
 
@@ -485,6 +507,7 @@ export function writeTsDefinition(component: ComponentDocApi) {
     rest_props,
     extends: _extends,
     generics,
+    slots,
   });
 
   const generic = generics ? `<${generics[1]}>` : "";
