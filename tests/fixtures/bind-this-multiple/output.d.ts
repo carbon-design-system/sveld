@@ -15,6 +15,8 @@ export type BindThisMultipleProps = {
    * @default false
    */
   propBool?: boolean;
+
+  children?: (this: void) => void;
 };
 
 export default class BindThisMultiple extends SvelteComponentTyped<

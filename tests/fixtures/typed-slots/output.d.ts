@@ -8,6 +8,8 @@ export type TypedSlotsProps = {
 
   /** description */
   description?: (this: void, ...args: [{ props: { class?: string } }]) => void;
+
+  children?: (this: void, ...args: [{ prop: number; doubled: number }]) => void;
 };
 
 export default class TypedSlots extends SvelteComponentTyped<

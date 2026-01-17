@@ -5,6 +5,8 @@ export type BindThisProps = {
    * @default undefined
    */
   ref: null | HTMLButtonElement;
+
+  children?: (this: void) => void;
 };
 
 export default class BindThis extends SvelteComponentTyped<

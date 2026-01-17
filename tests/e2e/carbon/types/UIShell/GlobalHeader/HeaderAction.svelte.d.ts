@@ -42,6 +42,8 @@ type $Props = {
    */
   transition?: false | HeaderActionSlideTransition;
 
+  children?: (this: void) => void;
+
   [key: `data-${string}`]: any;
 };
 

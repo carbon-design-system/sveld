@@ -1,6 +1,8 @@
 import { SvelteComponentTyped } from "svelte";
 
-export type DispatchedEventsProps = Record<string, never>;
+export type DispatchedEventsProps = {
+  children?: (this: void) => void;
+};
 
 export default class DispatchedEvents extends SvelteComponentTyped<
   DispatchedEventsProps,

@@ -12,6 +12,8 @@ export type ModuleReexportRenamedProps = {
    * @default {}
    */
   config?: {};
+
+  children?: (this: void) => void;
 };
 
 export default class ModuleReexportRenamed extends SvelteComponentTyped<

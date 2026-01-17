@@ -4,7 +4,9 @@ export type FormContext = {
   isFluid: boolean;
 };
 
-export type FluidFormProps = Record<string, never>;
+export type FluidFormProps = {
+  children?: (this: void) => void;
+};
 
 export default class FluidForm extends SvelteComponentTyped<
   FluidFormProps,

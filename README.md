@@ -537,7 +537,7 @@ Example:
 
 #### Svelte 5 Snippet Compatibility
 
-For Svelte 5 compatibility, `sveld` automatically generates optional snippet props for named slots. This allows consumers to use either the traditional slot syntax or Svelte 5's `{#snippet}` syntax.
+For Svelte 5 compatibility, `sveld` automatically generates optional snippet props for all slots. This allows consumers to use either the traditional slot syntax or Svelte 5's `{#snippet}` syntax.
 
 For slots with props (e.g., `let:prop`), the generated type uses a Snippet-compatible signature:
 
@@ -556,7 +556,32 @@ slotName?: (this: void) => void;
 - **`this: void`** – Ensures the snippet cannot be called with a `this` context, matching Svelte's internal enforcement that snippets are pure render functions
 - **`...args: [Props]`** – Uses tuple spread for type-safe parameters. This accepts fixed-length tuples (like `[{ row: Row }]`) while rejecting array types (like `Props[]`), matching how Svelte's `Snippet<T>` type works
 
-**Example usage with Svelte 5 snippets:**
+**Default slot (`children` prop):**
+
+The default slot generates an optional `children` snippet prop:
+
+```svelte
+<!-- Component with default slot that passes props -->
+<Dropdown {items} selectedId="1">
+  {#snippet children({ item, index })}
+    <span>{item.text} (#{index})</span>
+  {/snippet}
+</Dropdown>
+```
+
+Generated types:
+
+```ts
+type DropdownProps = {
+  items: Item[];
+  selectedId?: string;
+
+  // Default slot as children snippet prop
+  children?: (this: void, ...args: [{ item: Item; index: number }]) => void;
+};
+```
+
+**Named slots:**
 
 ```svelte
 <!-- Using the generated types with Svelte 5 syntax -->
@@ -582,6 +607,9 @@ type DataTableProps<Row> = {
     this: void,
     ...args: [{ row: Row; cell: DataTableCell<Row>; rowIndex: number; cellIndex: number }]
   ) => void;
+
+  // Default slot as children prop
+  children?: (this: void) => void;
 };
 
 export default class DataTable<Row> extends SvelteComponentTyped<
@@ -589,12 +617,11 @@ export default class DataTable<Row> extends SvelteComponentTyped<
   { /* events */ },
   {
     // Traditional slot definition (Svelte 3/4)
+    default: Record<string, never>;
     cell: { row: Row; cell: DataTableCell<Row>; rowIndex: number; cellIndex: number };
   }
 > {}
 ```
-
-> **Note:** Snippet props are only generated for named slots. The default slot does not generate a snippet prop to avoid conflicts with the `children` prop pattern.
 
 ### `@event`
 

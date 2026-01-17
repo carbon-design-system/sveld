@@ -1,7 +1,9 @@
 import { SvelteComponentTyped } from "svelte";
 import type { ButtonProps } from "./Button.svelte";
 
-export type SecondaryButtonProps = ButtonProps & {};
+export type SecondaryButtonProps = ButtonProps & {
+  children?: (this: void) => void;
+};
 
 export default class SecondaryButton extends SvelteComponentTyped<
   SecondaryButtonProps,

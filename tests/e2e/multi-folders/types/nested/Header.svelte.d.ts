@@ -1,6 +1,8 @@
 import { SvelteComponentTyped } from "svelte";
 
-export type HeaderProps = Record<string, never>;
+export type HeaderProps = {
+  children?: (this: void) => void;
+};
 
 export default class Header extends SvelteComponentTyped<
   HeaderProps,

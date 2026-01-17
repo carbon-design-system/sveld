@@ -22,6 +22,11 @@ export type GenericsProps<Row> = {
    * @default []
    */
   rows?: ReadonlyArray<Row>;
+
+  children?: (
+    this: void,
+    ...args: [{ headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> }]
+  ) => void;
 };
 
 export default class Generics<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<

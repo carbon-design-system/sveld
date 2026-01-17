@@ -27,6 +27,8 @@ type $Props = {
    */
   selection?: boolean;
 
+  children?: (this: void) => void;
+
   [key: `data-${string}`]: any;
 };
 

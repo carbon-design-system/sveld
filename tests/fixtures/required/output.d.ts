@@ -23,6 +23,8 @@ export type RequiredProps = {
    * @default undefined
    */
   prop3: boolean;
+
+  children?: (this: void, ...args: [{ prop: boolean; prop1: boolean | string; prop2: any; prop3: boolean }]) => void;
 };
 
 export default class Required extends SvelteComponentTyped<

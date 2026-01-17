@@ -5,7 +5,9 @@ export type MyLoggerContext = {
   log: (message: string) => void;
 };
 
-export type ContextIssue103Props = Record<string, never>;
+export type ContextIssue103Props = {
+  children?: (this: void) => void;
+};
 
 export default class ContextIssue103 extends SvelteComponentTyped<
   ContextIssue103Props,

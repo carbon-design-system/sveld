@@ -20,6 +20,8 @@ export type InferWithTypesProps = {
    * @default "" + Math.random().toString(36)
    */
   id?: string;
+
+  children?: (this: void) => void;
 };
 
 export default class InferWithTypes extends SvelteComponentTyped<

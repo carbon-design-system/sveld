@@ -5,7 +5,9 @@ export type ModalContext = {
   close: () => any;
 };
 
-export type ContextInlineFunctionsProps = Record<string, never>;
+export type ContextInlineFunctionsProps = {
+  children?: (this: void) => void;
+};
 
 export default class ContextInlineFunctions extends SvelteComponentTyped<
   ContextInlineFunctionsProps,

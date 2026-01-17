@@ -24,6 +24,8 @@ export type NotificationTextDetailsProps = {
    * @default "Caption"
    */
   caption?: string;
+
+  children?: (this: void) => void;
 };
 
 export default class NotificationTextDetails extends SvelteComponentTyped<

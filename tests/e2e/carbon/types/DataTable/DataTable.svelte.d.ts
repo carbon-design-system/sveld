@@ -204,6 +204,8 @@ type $Props<Row> = {
 
   "expanded-row"?: (this: void, ...args: [{ row: Row }]) => void;
 
+  children?: (this: void) => void;
+
   [key: `data-${string}`]: any;
 };
 

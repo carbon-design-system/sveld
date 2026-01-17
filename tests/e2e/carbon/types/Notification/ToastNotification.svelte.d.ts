@@ -64,6 +64,8 @@ type $Props = {
    */
   hideCloseButton?: boolean;
 
+  children?: (this: void) => void;
+
   [key: `data-${string}`]: any;
 };
 
