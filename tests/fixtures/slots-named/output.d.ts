@@ -6,9 +6,9 @@ export type SlotsNamedProps = {
    */
   text?: string;
 
-  "bold heading"?: () => void;
+  "bold heading"?: (props: { text: string }) => void;
 
-  subheading?: () => void;
+  subheading?: (props: { text: string }) => void;
 };
 
 export default class SlotsNamed extends SvelteComponentTyped<

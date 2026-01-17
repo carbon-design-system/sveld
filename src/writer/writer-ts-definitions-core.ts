@@ -121,8 +121,11 @@ function genPropDef(
       const slotName = slot.name;
       const key = clampKey(slotName);
       const description = slot.description ? `/** ${slot.description} */\n      ` : "";
+      // Use slot_props for typed callback, fallback to () => void for slots without props
+      const hasSlotProps = slot.slot_props && slot.slot_props !== "Record<string, never>";
+      const snippetType = hasSlotProps ? `(props: ${slot.slot_props}) => void` : "() => void";
       return `
-      ${description}${key}?: () => void;`;
+      ${description}${key}?: ${snippetType};`;
     });
 
   const props = [...initial_props, ...snippet_props].join("\n");

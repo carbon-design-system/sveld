@@ -410,8 +410,9 @@ describe("writerTsDefinition", () => {
 
     const output = writeTsDefinition(component_api);
 
-    // Named slots should generate optional snippet props with () => void type
-    expect(output).toContain("header?: () => void;");
+    // Named slots with slot_props should generate typed callback props
+    expect(output).toContain("header?: (props: { title: string }) => void;");
+    // Named slots without slot_props (Record<string, never>) should use () => void
     expect(output).toContain("footer?: () => void;");
 
     // Slot names with special characters should be quoted
@@ -424,6 +425,7 @@ describe("writerTsDefinition", () => {
     // The prop 'title' already exists as string, so no snippet prop should be added
     expect(output).toContain("title?: string;");
     expect(output).not.toContain("title?: () => void;");
+    expect(output).not.toContain("title?: (props:");
 
     // Slot descriptions should be included as JSDoc comments
     expect(output).toContain("/** Header slot for custom header content */");
