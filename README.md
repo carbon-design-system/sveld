@@ -14,7 +14,7 @@ The purpose of this project is to make third party Svelte component libraries co
 - [Component Index](https://github.com/IBM/carbon-components-svelte/blob/master/COMPONENT_INDEX.md): Markdown file documenting component props, slots, and events
 - [Component API](https://github.com/IBM/carbon-components-svelte/blob/master/docs/src/COMPONENT_API.json): Component API metadata in JSON format
 
-**Please note** that the generated TypeScript definitions require Svelte version 3.55 or greater. The generated types also include Svelte 5-compatible snippet props for named slots.
+**Note:** `sveld` supports Svelte 3, 4, and 5, but does not support Svelte 5-specific syntax or runes-only usage. Components must use traditional Svelte syntax (e.g., `export let` for props, not `$props()`).
 
 ---
 
