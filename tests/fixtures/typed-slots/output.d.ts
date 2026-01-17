@@ -7,7 +7,7 @@ export type TypedSlotsProps = {
   prop?: number;
 
   /** description */
-  description?: (props: { props: { class?: string } }) => void;
+  description?: (this: void, ...args: [{ props: { class?: string } }]) => void;
 };
 
 export default class TypedSlots extends SvelteComponentTyped<

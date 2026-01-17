@@ -1,7 +1,7 @@
 import { SvelteComponentTyped } from "svelte";
 
 export type SlotsSpreadProps = {
-  text?: () => void;
+  text?: (this: void) => void;
 };
 
 export default class SlotsSpread extends SvelteComponentTyped<

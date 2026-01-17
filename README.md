@@ -14,7 +14,7 @@ The purpose of this project is to make third party Svelte component libraries co
 - [Component Index](https://github.com/IBM/carbon-components-svelte/blob/master/COMPONENT_INDEX.md): Markdown file documenting component props, slots, and events
 - [Component API](https://github.com/IBM/carbon-components-svelte/blob/master/docs/src/COMPONENT_API.json): Component API metadata in JSON format
 
-**Please note** that the generated TypeScript definitions require Svelte version 3.55 or greater.
+**Please note** that the generated TypeScript definitions require Svelte version 3.55 or greater. The generated types also include Svelte 5-compatible snippet props for named slots.
 
 ---
 
@@ -125,6 +125,7 @@ export default class Button extends SvelteComponentTyped<
   - [@type](#type)
   - [@typedef](#typedef)
   - [@slot](#slot)
+    - [Svelte 5 Snippet Compatibility](#svelte-5-snippet-compatibility)
   - [@event](#event)
   - [Context API](#context-api)
   - [@restProps](#restprops)
@@ -533,6 +534,67 @@ Example:
   <slot name="body" {prop} />
 </p>
 ```
+
+#### Svelte 5 Snippet Compatibility
+
+For Svelte 5 compatibility, `sveld` automatically generates optional snippet props for named slots. This allows consumers to use either the traditional slot syntax or Svelte 5's `{#snippet}` syntax.
+
+For slots with props (e.g., `let:prop`), the generated type uses a Snippet-compatible signature:
+
+```ts
+slotName?: (this: void, ...args: [{ prop: PropType }]) => void;
+```
+
+For slots without props:
+
+```ts
+slotName?: (this: void) => void;
+```
+
+**Why this signature?**
+
+- **`this: void`** – Ensures the snippet cannot be called with a `this` context, matching Svelte's internal enforcement that snippets are pure render functions
+- **`...args: [Props]`** – Uses tuple spread for type-safe parameters. This accepts fixed-length tuples (like `[{ row: Row }]`) while rejecting array types (like `Props[]`), matching how Svelte's `Snippet<T>` type works
+
+**Example usage with Svelte 5 snippets:**
+
+```svelte
+<!-- Using the generated types with Svelte 5 syntax -->
+<DataTable headers={headers} rows={rows}>
+  {#snippet cell({ cell, row })}
+    {#if cell.key === 'actions'}
+      <Button on:click={() => handleAction(row)}>Edit</Button>
+    {:else}
+      {cell.value}
+    {/if}
+  {/snippet}
+</DataTable>
+```
+
+The generated TypeScript definition includes both the snippet prop and the traditional slot definition:
+
+```ts
+type DataTableProps<Row> = {
+  // ... other props
+
+  // Snippet prop for Svelte 5 compatibility
+  cell?: (
+    this: void,
+    ...args: [{ row: Row; cell: DataTableCell<Row>; rowIndex: number; cellIndex: number }]
+  ) => void;
+};
+
+export default class DataTable<Row> extends SvelteComponentTyped<
+  DataTableProps<Row>,
+  { /* events */ },
+  {
+    // Traditional slot definition (Svelte 3/4)
+    cell: { row: Row; cell: DataTableCell<Row>; rowIndex: number; cellIndex: number };
+  }
+> {}
+```
+
+> **Note:** Snippet props are only generated for named slots. The default slot does not generate a snippet prop to avoid conflicts with the `children` prop pattern.
 
 ### `@event`
 

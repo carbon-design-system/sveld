@@ -58,7 +58,7 @@ type $Props = {
    */
   iconDescription?: string;
 
-  actions?: () => void;
+  actions?: (this: void) => void;
 
   [key: `data-${string}`]: any;
 };

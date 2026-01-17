@@ -3022,9 +3022,9 @@ export type SlotsNamedProps = {
    */
   text?: string;
 
-  "bold heading"?: (props: { text: string }) => void;
+  "bold heading"?: (this: void, ...args: [{ text: string }]) => void;
 
-  subheading?: (props: { text: string }) => void;
+  subheading?: (this: void, ...args: [{ text: string }]) => void;
 };
 
 export default class SlotsNamed extends SvelteComponentTyped<
@@ -3468,13 +3468,13 @@ export type TypedefEventSharedBlockProps = {
    */
   sizes?: Record<BreakpointSize, boolean>;
 
-  break?: () => void;
+  break?: (this: void) => void;
 
   /** Slot for rendering breakpoint sizes */
-  "breakpoint-sizes"?: (props: { sizes: Record<BreakpointSize, boolean> }) => void;
+  "breakpoint-sizes"?: (this: void, ...args: [{ sizes: Record<BreakpointSize, boolean> }]) => void;
 
   /** description */
-  "inline-slot"?: (props: { a: 4 }) => void;
+  "inline-slot"?: (this: void, ...args: [{ a: 4 }]) => void;
 };
 
 export default class TypedefEventSharedBlock extends SvelteComponentTyped<
@@ -3627,7 +3627,7 @@ export type ModuleReexportDirectProps = {
    */
   onReady: undefined;
 
-  header?: () => void;
+  header?: (this: void) => void;
 };
 
 export default class ModuleReexportDirect extends SvelteComponentTyped<
@@ -3648,7 +3648,7 @@ export type TypedSlotsProps = {
   prop?: number;
 
   /** description */
-  description?: (props: { props: { class?: string } }) => void;
+  description?: (this: void, ...args: [{ props: { class?: string } }]) => void;
 };
 
 export default class TypedSlots extends SvelteComponentTyped<
@@ -4619,7 +4619,7 @@ exports[`fixtures (TypeScript) "slots-spread/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
 export type SlotsSpreadProps = {
-  text?: () => void;
+  text?: (this: void) => void;
 };
 
 export default class SlotsSpread extends SvelteComponentTyped<
@@ -4647,7 +4647,7 @@ exports[`fixtures (TypeScript) "slots-spread-typed/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
 export type SlotsSpreadTypedProps = {
-  text?: (props: { a: number }) => void;
+  text?: (this: void, ...args: [{ a: number }]) => void;
 };
 
 export default class SlotsSpreadTyped extends SvelteComponentTyped<
