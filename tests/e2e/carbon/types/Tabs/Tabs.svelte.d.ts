@@ -39,7 +39,7 @@ type $Props = {
    */
   triggerHref?: string;
 
-  content?: () => void;
+  content?: (this: void) => void;
 
   [key: `data-${string}`]: any;
 };

@@ -20,13 +20,13 @@ export type TypedefEventSharedBlockProps = {
    */
   sizes?: Record<BreakpointSize, boolean>;
 
-  break?: () => void;
+  break?: (this: void) => void;
 
   /** Slot for rendering breakpoint sizes */
-  "breakpoint-sizes"?: (props: { sizes: Record<BreakpointSize, boolean> }) => void;
+  "breakpoint-sizes"?: (this: void, ...args: [{ sizes: Record<BreakpointSize, boolean> }]) => void;
 
   /** description */
-  "inline-slot"?: (props: { a: 4 }) => void;
+  "inline-slot"?: (this: void, ...args: [{ a: 4 }]) => void;
 };
 
 export default class TypedefEventSharedBlock extends SvelteComponentTyped<

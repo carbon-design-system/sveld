@@ -53,9 +53,9 @@ type $Props = {
    */
   ref?: null | HTMLAnchorElement;
 
-  platform?: () => void;
+  platform?: (this: void) => void;
 
-  "skip-to-content"?: () => void;
+  "skip-to-content"?: (this: void) => void;
 
   [key: `data-${string}`]: any;
 };

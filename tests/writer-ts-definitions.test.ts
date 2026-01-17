@@ -410,13 +410,13 @@ describe("writerTsDefinition", () => {
 
     const output = writeTsDefinition(component_api);
 
-    // Named slots with slot_props should generate typed callback props
-    expect(output).toContain("header?: (props: { title: string }) => void;");
-    // Named slots without slot_props (Record<string, never>) should use () => void
-    expect(output).toContain("footer?: () => void;");
+    // Named slots with slot_props should generate Snippet-compatible typed callback props
+    expect(output).toContain("header?: (this: void, ...args: [{ title: string }]) => void;");
+    // Named slots without slot_props (Record<string, never>) should use (this: void) => void
+    expect(output).toContain("footer?: (this: void) => void;");
 
     // Slot names with special characters should be quoted
-    expect(output).toContain('"bold heading"?: () => void;');
+    expect(output).toContain('"bold heading"?: (this: void) => void;');
 
     // Default slot should NOT generate a snippet prop
     expect(output).not.toMatch(DEFAULT_SLOT_SNIPPET_PROP_REGEX);
@@ -424,8 +424,8 @@ describe("writerTsDefinition", () => {
     // Slots with same name as existing props should NOT generate duplicate props
     // The prop 'title' already exists as string, so no snippet prop should be added
     expect(output).toContain("title?: string;");
-    expect(output).not.toContain("title?: () => void;");
-    expect(output).not.toContain("title?: (props:");
+    expect(output).not.toContain("title?: (this: void) => void;");
+    expect(output).not.toContain("title?: (this: void, ...args:");
 
     // Slot descriptions should be included as JSDoc comments
     expect(output).toContain("/** Header slot for custom header content */");
@@ -458,7 +458,7 @@ describe("writerTsDefinition", () => {
     const output = writeTsDefinition(component_api);
 
     // Should generate snippet prop even when there are no regular props
-    expect(output).toContain("content?: () => void;");
+    expect(output).toContain("content?: (this: void) => void;");
     // Props type should not be Record<string, never> since we have snippet props
     expect(output).not.toContain("SlotOnlyComponentProps = Record<string, never>");
   });
