@@ -10,6 +10,12 @@ import { getElementByTag } from "./element-tag-map";
 const COMMENT_BLOCK_DESCRIPTION_REGEX = /^-\s*/;
 const VAR_DECLARATION_REGEX = /(?:const|let|function)\s+(\w+)\s*[=(]/;
 
+function extractDescriptionAfterDash(description: string | undefined): string | undefined {
+  if (!description) return undefined;
+  const dashIndex = description.lastIndexOf("-");
+  return dashIndex >= 0 ? description.substring(dashIndex + 1).trim() : description.trim();
+}
+
 interface CompiledSvelteCode {
   vars: Var[];
   ast: Ast;
@@ -392,9 +398,7 @@ export default class ComponentParser {
     const name: ComponentSlotName = default_slot ? DEFAULT_SLOT_NAME : (slot_name ?? "");
     const fallback = ComponentParser.assignValue(slot_fallback);
     const props = ComponentParser.assignValue(slot_props);
-    const description = slot_description
-      ? slot_description.substring(slot_description.lastIndexOf("-") + 1).trim()
-      : undefined;
+    const description = extractDescriptionAfterDash(slot_description);
 
     if (this.slots.has(name)) {
       const existing_slot = this.slots.get(name);
@@ -430,7 +434,7 @@ export default class ComponentParser {
      * `@event` is not specified.
      */
     const default_detail = !has_argument && !detail ? "null" : ComponentParser.assignValue(detail);
-    const event_description = description ? description.substring(description.lastIndexOf("-") + 1).trim() : undefined;
+    const event_description = extractDescriptionAfterDash(description);
     if (this.events.has(name)) {
       const existing_event = this.events.get(name) as DispatchedEvent;
       this.events.set(name, {
@@ -1414,9 +1418,7 @@ export default class ComponentParser {
 
             // Check if this event has a JSDoc description
             const description = this.eventDescriptions.get(node.name);
-            const event_description = description
-              ? description.substring(description.lastIndexOf("-") + 1).trim()
-              : undefined;
+            const event_description = extractDescriptionAfterDash(description);
 
             if (!existing_event) {
               // Add new forwarded event
@@ -1492,9 +1494,7 @@ export default class ComponentParser {
       // If event is marked as dispatched but is NOT actually dispatched, convert it to forwarded
       if (event && event.type === "dispatched" && !actuallyDispatchedEvents.has(eventName)) {
         const description = this.eventDescriptions.get(eventName);
-        const event_description = description
-          ? description.substring(description.lastIndexOf("-") + 1).trim()
-          : undefined;
+        const event_description = extractDescriptionAfterDash(description);
         const forwardedEvent: ForwardedEvent = {
           type: "forwarded",
           name: eventName,
