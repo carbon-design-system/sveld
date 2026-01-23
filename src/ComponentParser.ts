@@ -289,6 +289,52 @@ export default class ComponentParser {
     return this.source?.slice(start, end);
   }
 
+  private processInitializer(init: unknown): { value?: string; type?: string; isFunction: boolean } {
+    let value: string | undefined;
+    let type: string | undefined;
+    let isFunction = false;
+
+    if (
+      init.type === "ObjectExpression" ||
+      init.type === "BinaryExpression" ||
+      init.type === "ArrayExpression" ||
+      init.type === "ArrowFunctionExpression"
+    ) {
+      value = this.sourceAtPos(init.start, init.end)?.replace(NEWLINE_CR_REGEX, " ");
+      type = value;
+      isFunction = init.type === "ArrowFunctionExpression";
+
+      if (init.type === "BinaryExpression") {
+        if (init?.left.type === "Literal" && typeof init?.left.value === "string") {
+          type = "string";
+        }
+      }
+
+      if (init.type === "ArrowFunctionExpression") {
+        type = "(...args: any[]) => any";
+        value = undefined;
+      }
+    } else if (init.type === "UnaryExpression") {
+      value = this.sourceAtPos(init.start, init.end);
+      type = typeof init.argument?.value;
+    } else if (init.type === "Identifier") {
+      value = this.sourceAtPos(init.start, init.end);
+    } else if (init.type === "MemberExpression") {
+      value = this.sourceAtPos(init.start, init.end);
+      if (this.isNumericConstant(init)) {
+        type = "number";
+      }
+    } else if (init.type === "TemplateLiteral") {
+      value = this.sourceAtPos(init.start, init.end);
+      type = "string";
+    } else {
+      value = init.raw;
+      type = init.value == null ? undefined : typeof init.value;
+    }
+
+    return { value, type, isFunction };
+  }
+
   private collectReactiveVars() {
     const reactiveVars = this.compiled?.vars.filter(({ reassigned, writable }) => reassigned && writable) ?? [];
     for (const { name } of reactiveVars) {
@@ -1035,66 +1081,14 @@ export default class ComponentParser {
             } = node.declaration?.declarations ? node.declaration.declarations[0] : node.declaration;
 
             const prop_name = id.name;
-            let value: string | undefined;
-            let type: string | undefined;
             let kind = node.declaration.kind;
             let description: string | undefined;
-            let isFunction = false;
             let isFunctionDeclaration = false;
 
-            if (init != null) {
-              if (
-                init.type === "ObjectExpression" ||
-                init.type === "BinaryExpression" ||
-                init.type === "ArrayExpression" ||
-                init.type === "ArrowFunctionExpression"
-              ) {
-                value = this.sourceAtPos(init.start, init.end)?.replace(NEWLINE_CR_REGEX, " ");
-                type = value;
-                isFunction = init.type === "ArrowFunctionExpression";
-
-                if (init.type === "BinaryExpression") {
-                  if (init?.left.type === "Literal" && typeof init?.left.value === "string") {
-                    type = "string";
-                  }
-                }
-
-                // For arrow functions, use a generic function type instead of the implementation
-                // Don't store the implementation in value - it clutters documentation
-                if (init.type === "ArrowFunctionExpression") {
-                  type = "(...args: any[]) => any";
-                  value = undefined;
-                }
-              } else {
-                if (init.type === "UnaryExpression") {
-                  value = this.sourceAtPos(init.start, init.end);
-                  type = typeof init.argument?.value;
-                } else if (init.type === "Identifier") {
-                  // Handle non-literal defaults like variable references and global identifiers.
-                  // Don't infer type, just preserve existing type annotation.
-                  value = this.sourceAtPos(init.start, init.end);
-                } else if (init.type === "MemberExpression") {
-                  // Handle member expressions like Number.POSITIVE_INFINITY, Math.PI, etc.
-                  value = this.sourceAtPos(init.start, init.end);
-                  // Infer type as "number" for well-known numeric constants
-                  if (this.isNumericConstant(init)) {
-                    type = "number";
-                  }
-                  // Otherwise, don't infer type, just preserve existing type annotation.
-                } else if (init.type === "TemplateLiteral") {
-                  // Handle template literals - they always evaluate to strings
-                  value = this.sourceAtPos(init.start, init.end);
-                  type = "string";
-                } else {
-                  value = init.raw;
-                  type = init.value == null ? undefined : typeof init.value;
-                }
-              }
-            }
+            const initResult = init != null ? this.processInitializer(init) : { isFunction: false };
+            let { value, type, isFunction } = initResult;
 
             if (declaration_type === "FunctionDeclaration") {
-              // Don't store function body in value - it clutters documentation
-              // The type signature is what matters for API docs
               value = undefined;
               type = "() => any";
               kind = "function";
@@ -1261,67 +1255,15 @@ export default class ComponentParser {
 
           prop_name ??= id.name;
 
-          let value: string | undefined;
-          let type: string | undefined;
           let kind = node.declaration.kind;
           let description: undefined | string;
-          let isFunction = false;
           let isFunctionDeclaration = false;
           const isRequired = kind === "let" && init == null;
 
-          if (init != null) {
-            if (
-              init.type === "ObjectExpression" ||
-              init.type === "BinaryExpression" ||
-              init.type === "ArrayExpression" ||
-              init.type === "ArrowFunctionExpression"
-            ) {
-              value = this.sourceAtPos(init.start, init.end)?.replace(NEWLINE_CR_REGEX, " ");
-              type = value;
-              isFunction = init.type === "ArrowFunctionExpression";
-
-              if (init.type === "BinaryExpression") {
-                if (init?.left.type === "Literal" && typeof init?.left.value === "string") {
-                  type = "string";
-                }
-              }
-
-              // For arrow functions, use a generic function type instead of the implementation
-              // Don't store the implementation in value - it clutters documentation
-              if (init.type === "ArrowFunctionExpression") {
-                type = "(...args: any[]) => any";
-                value = undefined;
-              }
-            } else {
-              if (init.type === "UnaryExpression") {
-                value = this.sourceAtPos(init.start, init.end);
-                type = typeof init.argument?.value;
-              } else if (init.type === "Identifier") {
-                // Handle non-literal defaults like variable references and global identifiers.
-                // Don't infer type, just preserve existing type annotation.
-                value = this.sourceAtPos(init.start, init.end);
-              } else if (init.type === "MemberExpression") {
-                // Handle member expressions like Number.POSITIVE_INFINITY, Math.PI, etc.
-                value = this.sourceAtPos(init.start, init.end);
-                // Infer type as "number" for well-known numeric constants
-                if (this.isNumericConstant(init)) {
-                  type = "number";
-                }
-                // Otherwise, don't infer type, just preserve existing type annotation.
-              } else if (init.type === "TemplateLiteral") {
-                // Handle template literals - they always evaluate to strings
-                value = this.sourceAtPos(init.start, init.end);
-                type = "string";
-              } else {
-                value = init.raw;
-                type = init.value == null ? undefined : typeof init.value;
-              }
-            }
-          }
+          const initResult = init != null ? this.processInitializer(init) : { isFunction: false };
+          let { value, type, isFunction } = initResult;
 
           if (declaration_type === "FunctionDeclaration") {
-            // Don't store function body in value - it clutters documentation
-            // The type signature is what matters for API docs
             value = undefined;
             type = "() => any";
             kind = "function";
