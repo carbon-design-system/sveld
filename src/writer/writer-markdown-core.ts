@@ -1,5 +1,17 @@
 import type { ComponentDocs } from "../rollup-plugin";
-import { formatTsProps, getTypeDefs } from "./writer-ts-definitions-core";
+import {
+  EVENT_TABLE_HEADER,
+  formatEventDetail,
+  formatPropDescription,
+  formatPropType,
+  formatPropValue,
+  formatSlotFallback,
+  formatSlotProps,
+  MD_TYPE_UNDEFINED,
+  PROP_TABLE_HEADER,
+  SLOT_TABLE_HEADER,
+} from "./markdown-format-utils";
+import { getTypeDefs } from "./writer-ts-definitions-core";
 
 export type AppendType = "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "quote" | "p" | "divider" | "raw";
 
@@ -94,51 +106,6 @@ export class BrowserWriterMarkdown {
         .join("\n"),
     );
   }
-}
-
-const PROP_TABLE_HEADER =
-  "| Prop name | Required | Kind | Reactive | Type | Default value | Description |\n| :- | :- | :- | :- |\n";
-const SLOT_TABLE_HEADER = "| Slot name | Default | Props | Fallback |\n| :- | :- | :- | :- |\n";
-const EVENT_TABLE_HEADER = "| Event name | Type | Detail | Description |\n| :- | :- | :- | :- |\n";
-const MD_TYPE_UNDEFINED = "--";
-
-const PIPE_REGEX = /\|/g;
-const LT_REGEX = /</g;
-const GT_REGEX = />/g;
-const NEWLINE_REGEX = /\n/g;
-
-function formatPropType(type?: string) {
-  if (type === undefined) return MD_TYPE_UNDEFINED;
-  return `<code>${type.replace(PIPE_REGEX, "&#124;")}</code>`;
-}
-
-function escapeHtml(text: string) {
-  return text.replace(LT_REGEX, "&lt;").replace(GT_REGEX, "&gt;");
-}
-
-function formatPropValue(value: string | undefined) {
-  if (value === undefined) return MD_TYPE_UNDEFINED;
-  return `<code>${value.replace(BACKTICK_REGEX, "\\`").replace(PIPE_REGEX, "&#124;")}</code>`;
-}
-
-function formatPropDescription(description: string | undefined) {
-  if (description === undefined || description.trim().length === 0) return MD_TYPE_UNDEFINED;
-  return escapeHtml(description).replace(NEWLINE_REGEX, "<br />");
-}
-
-function formatSlotProps(props?: string) {
-  if (props === undefined || props === "{}") return MD_TYPE_UNDEFINED;
-  return formatPropType(formatTsProps(props).replace(NEWLINE_REGEX, " "));
-}
-
-function formatSlotFallback(fallback?: string) {
-  if (fallback === undefined) return MD_TYPE_UNDEFINED;
-  return formatPropType(escapeHtml(fallback).replace(NEWLINE_REGEX, "<br />"));
-}
-
-function formatEventDetail(detail?: string) {
-  if (detail === undefined) return MD_TYPE_UNDEFINED;
-  return formatPropType(detail.replace(NEWLINE_REGEX, " "));
 }
 
 export interface WriteMarkdownCoreOptions {
