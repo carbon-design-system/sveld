@@ -15,35 +15,30 @@ interface JsonOutput {
   components: ComponentDocApi[];
 }
 
-async function writeJsonComponents(components: ComponentDocs, options: WriteJsonOptions) {
-  const output = Array.from(components, ([_moduleName, component]) => ({
+function transformAndSortComponents(components: ComponentDocs, inputDir: string): ComponentDocApi[] {
+  return Array.from(components, ([_moduleName, component]) => ({
     ...component,
-    filePath: normalizeSeparators(path.join(options.inputDir, path.normalize(component.filePath))),
-  })).sort((a, b) => {
-    if (a.moduleName < b.moduleName) return -1;
-    if (a.moduleName > b.moduleName) return 1;
-    return 0;
-  });
+    filePath: normalizeSeparators(path.join(inputDir, path.normalize(component.filePath))),
+  })).sort((a, b) => a.moduleName.localeCompare(b.moduleName));
+}
 
-  output.map((c) => {
-    const outFile = path.resolve(path.join(options.outDir || "", `${c.moduleName}.api.json`));
-    const writer = new Writer({ parser: "json", printWidth: 80 });
-    console.log(`created ${outFile}"\n`);
-    return writer.write(outFile, JSON.stringify(c));
-  });
+async function writeJsonComponents(components: ComponentDocs, options: WriteJsonOptions) {
+  const output = transformAndSortComponents(components, options.inputDir);
+
+  await Promise.all(
+    output.map((c) => {
+      const outFile = path.resolve(path.join(options.outDir || "", `${c.moduleName}.api.json`));
+      const writer = new Writer({ parser: "json", printWidth: 80 });
+      console.log(`created ${outFile}"\n`);
+      return writer.write(outFile, JSON.stringify(c));
+    }),
+  );
 }
 
 async function writeJsonLocal(components: ComponentDocs, options: WriteJsonOptions) {
   const output: JsonOutput = {
     total: components.size,
-    components: Array.from(components, ([_moduleName, component]) => ({
-      ...component,
-      filePath: normalizeSeparators(path.join(options.inputDir, path.normalize(component.filePath))),
-    })).sort((a, b) => {
-      if (a.moduleName < b.moduleName) return -1;
-      if (a.moduleName > b.moduleName) return 1;
-      return 0;
-    }),
+    components: transformAndSortComponents(components, options.inputDir),
   };
 
   const output_path = path.join(process.cwd(), options.outFile);
