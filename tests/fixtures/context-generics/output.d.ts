@@ -19,7 +19,7 @@ export type DataTableContext<Row extends DataTableRow = DataTableRow> = {
   ) => ReadonlyArray<DataTableRowId>;
 };
 
-export type ContextGenericsProps<Row> = {
+export type ContextGenericsProps<Row extends DataTableRow = DataTableRow> = {
   /**
    * Specify the rows the data table should render.
    * @default []

@@ -50,7 +50,7 @@ export type DataTableContext = {
 
 type $RestProps = SvelteHTMLElements["div"];
 
-type $Props<Row> = {
+type $Props<Row extends DataTableRow = DataTableRow> = {
   /**
    * Specify the data table headers
    * @default []
@@ -210,7 +210,10 @@ type $Props<Row> = {
   [key: `data-${string}`]: any;
 };
 
-export type DataTableProps<Row> = Omit<$RestProps, keyof $Props<Row>> &
+export type DataTableProps<Row extends DataTableRow = DataTableRow> = Omit<
+  $RestProps,
+  keyof $Props<Row>
+> &
   $Props<Row>;
 
 export default class DataTable<

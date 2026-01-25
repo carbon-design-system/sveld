@@ -162,7 +162,10 @@ function genPropDef(
 
   let prop_def = EMPTY_STR;
 
-  const genericsName = def.generics ? `<${def.generics[0]}>` : "";
+  // Full constraints for type definitions (e.g., `type $Props<T extends Foo = Bar>`)
+  const genericsName = def.generics ? `<${def.generics[1]}>` : "";
+  // Names only for type references (e.g., `keyof $Props<T>`)
+  const genericsNameRef = def.generics ? `<${def.generics[0]}>` : "";
 
   if (def.rest_props?.type === "Element") {
     let extend_tag_map: string;
@@ -208,7 +211,7 @@ function genPropDef(
       ${dataAttributes}
     };
 
-    export type ${props_name}${genericsName} = Omit<$RestProps, keyof ($Props${genericsName} & ${def.extends.interface})> & $Props${genericsName} & ${def.extends.interface};
+    export type ${props_name}${genericsName} = Omit<$RestProps, keyof ($Props${genericsNameRef} & ${def.extends.interface})> & $Props${genericsNameRef} & ${def.extends.interface};
   `;
     } else {
       prop_def = `
@@ -219,7 +222,7 @@ function genPropDef(
       ${dataAttributes}
     };
 
-    export type ${props_name}${genericsName} = Omit<$RestProps, keyof $Props${genericsName}> & $Props${genericsName};
+    export type ${props_name}${genericsName} = Omit<$RestProps, keyof $Props${genericsNameRef}> & $Props${genericsNameRef};
   `;
     }
   } else {
