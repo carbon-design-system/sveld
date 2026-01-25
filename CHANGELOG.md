@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.25.10](https://github.com/carbon-design-system/sveld/releases/tag/v0.25.10) - 2026-01-25
+
+**Fixes**
+
+- include generic constraints in `$Props` type
+
 ## [0.25.9](https://github.com/carbon-design-system/sveld/releases/tag/v0.25.9) - 2026-01-23
 
 **Fixes**
