@@ -196,7 +196,7 @@ By default, `sveld` will use the `"svelte"` field from your `package.json` to de
 ```js
 sveld({
   entry: "src/index.js",
-})
+});
 ```
 
 When building the library, TypeScript definitions are emitted to the `types` folder by default.
@@ -254,7 +254,10 @@ sveld({
   markdownOptions: {
     onAppend: (type, document, components) => {
       if (type === "h1")
-        document.append("quote", `${components.size} components exported from ${pkg.name}@${pkg.version}.`);
+        document.append(
+          "quote",
+          `${components.size} components exported from ${pkg.name}@${pkg.version}.`,
+        );
     },
   },
   json: true,
@@ -605,7 +608,14 @@ type DataTableProps<Row> = {
   // Snippet prop for Svelte 5 compatibility
   cell?: (
     this: void,
-    ...args: [{ row: Row; cell: DataTableCell<Row>; rowIndex: number; cellIndex: number }]
+    ...args: [
+      {
+        row: Row;
+        cell: DataTableCell<Row>;
+        rowIndex: number;
+        cellIndex: number;
+      },
+    ]
   ) => void;
 
   // Default slot as children prop
@@ -614,11 +624,18 @@ type DataTableProps<Row> = {
 
 export default class DataTable<Row> extends SvelteComponentTyped<
   DataTableProps<Row>,
-  { /* events */ },
+  {
+    /* events */
+  },
   {
     // Traditional slot definition (Svelte 3/4)
     default: Record<string, never>;
-    cell: { row: Row; cell: DataTableCell<Row>; rowIndex: number; cellIndex: number };
+    cell: {
+      row: Row;
+      cell: DataTableCell<Row>;
+      rowIndex: number;
+      cellIndex: number;
+    };
   }
 > {}
 ```
@@ -705,7 +722,7 @@ function handleSubmit() {
   dispatch("submit", {
     name: "Jane Doe",
     email: "jane@example.com",
-    newsletter: true
+    newsletter: true,
   });
 }
 ```
@@ -752,7 +769,7 @@ const dispatch = createEventDispatcher();
 function throwSnowball() {
   dispatch("snowball", {
     isPacked: true,
-    speed: 50
+    speed: 50,
   });
 }
 ```
@@ -1026,7 +1043,9 @@ Example
 The generated TypeScript definition will resemble the following:
 
 ```ts
-export default class Component<Row extends DataTableRow = any> extends SvelteComponentTyped<
+export default class Component<
+  Row extends DataTableRow = any,
+> extends SvelteComponentTyped<
   ComponentProps<Row>,
   Record<string, any>,
   Record<string, any>
