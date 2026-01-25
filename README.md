@@ -1043,6 +1043,11 @@ Example
 The generated TypeScript definition will resemble the following:
 
 ```ts
+// Props type includes the full constraint, enabling indexed access types like Row["id"]
+export type ComponentProps<Row extends DataTableRow = any> = {
+  rows?: ReadonlyArray<Row>;
+};
+
 export default class Component<
   Row extends DataTableRow = any,
 > extends SvelteComponentTyped<
@@ -1061,6 +1066,8 @@ For a parameter list, the name should be comma-separated but not include spaces.
 ```
 
 ```ts
+export type ComponentProps<Param1, Param2> = { ... };
+
 export default class Component<Param1, Param2> extends SvelteComponentTyped<
   ComponentProps<Name1, Name2>,
   Record<string, any>,

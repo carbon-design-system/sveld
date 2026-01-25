@@ -12,7 +12,10 @@ export interface DataTableHeader<Row = DataTableRow, Header = DataTableRow> {
   value: Header;
 }
 
-export type GenericsMultipleProps<Row, Header> = {
+export type GenericsMultipleProps<
+  Row extends DataTableRow = DataTableRow,
+  Header extends DataTableRow = DataTableRow,
+> = {
   /**
    * @default []
    */

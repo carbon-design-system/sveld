@@ -12,7 +12,7 @@ export interface DataTableHeader<Row = DataTableRow> {
   value: string;
 }
 
-export type GenericsProps<Row> = {
+export type GenericsProps<Row extends DataTableRow = DataTableRow> = {
   /**
    * @default []
    */
