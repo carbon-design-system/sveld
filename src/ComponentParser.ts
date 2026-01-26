@@ -260,6 +260,75 @@ export default class ComponentParser {
   }
 
   /**
+   * Processes JSDoc comments from leadingComments and extracts structured information.
+   * Returns undefined if no JSDoc comment is found.
+   */
+  private processJSDocComment(leadingComments: unknown[]):
+    | {
+        type?: string;
+        params?: ComponentPropParam[];
+        returnType?: string;
+        description?: string;
+      }
+    | undefined {
+    if (!leadingComments) return undefined;
+
+    const jsdoc_comment = ComponentParser.findJSDocComment(leadingComments);
+    if (!jsdoc_comment) return undefined;
+
+    const comment = parseComment(ComponentParser.formatComment(jsdoc_comment.value), {
+      spacing: "preserve",
+    });
+
+    const {
+      type: typeTag,
+      param: paramTags,
+      returns: returnsTag,
+      additional: additionalTags,
+      description: commentDescription,
+    } = this.getCommentTags(comment);
+
+    let type: string | undefined;
+    let params: ComponentPropParam[] | undefined;
+    let returnType: string | undefined;
+    let description: string | undefined;
+
+    // Extract @type tag
+    if (typeTag) type = this.aliasType(typeTag.type);
+
+    // Extract @param tags
+    if (paramTags.length > 0) {
+      params = paramTags
+        .filter((tag) => !tag.name.includes(".")) // Exclude nested params like "options.expand"
+        .map((tag) => ({
+          name: tag.name,
+          type: this.aliasType(tag.type),
+          description: tag.description?.replace(PROPERTY_DESCRIPTION_REGEX, "").trim(),
+          optional: tag.optional || false,
+        }));
+    }
+
+    // Extract @returns/@return tag
+    if (returnsTag) returnType = this.aliasType(returnsTag.type);
+
+    // Build description from comment description and non-param/non-type tags
+    const formattedDescription = ComponentParser.assignValue(commentDescription?.trim());
+    if (formattedDescription || additionalTags.length > 0) {
+      const descriptionParts: string[] = [];
+      if (formattedDescription) {
+        descriptionParts.push(formattedDescription);
+      }
+      for (const tag of additionalTags) {
+        const tagStr = `@${tag.tag}${tag.name ? ` ${tag.name}` : ""}${tag.description ? ` ${tag.description}` : ""}`;
+        descriptionParts.push(tagStr);
+      }
+      description = descriptionParts.join("\n");
+    }
+
+    return { type, params, returnType, description };
+  }
+
+  /**
    * Check if a MemberExpression represents a well-known numeric constant.
    * (e.g., Number.POSITIVE_INFINITY, Math.PI, etc.)
    */
@@ -1104,53 +1173,12 @@ export default class ComponentParser {
             let returnType: string | undefined;
 
             if (node.leadingComments) {
-              const jsdoc_comment = ComponentParser.findJSDocComment(node.leadingComments);
-              if (jsdoc_comment) {
-                const comment = parseComment(ComponentParser.formatComment(jsdoc_comment.value), {
-                  spacing: "preserve",
-                });
-
-                const {
-                  type: typeTag,
-                  param: paramTags,
-                  returns: returnsTag,
-                  additional: additionalTags,
-                  description: commentDescription,
-                } = this.getCommentTags(comment);
-
-                // Extract @type tag
-                if (typeTag) type = this.aliasType(typeTag.type);
-
-                // Extract @param tags
-                if (paramTags.length > 0) {
-                  params = paramTags
-                    .filter((tag) => !tag.name.includes(".")) // Exclude nested params like "options.expand"
-                    .map((tag) => ({
-                      name: tag.name,
-                      type: this.aliasType(tag.type),
-                      description: tag.description?.replace(PROPERTY_DESCRIPTION_REGEX, "").trim(),
-                      optional: tag.optional || false,
-                    }));
-                }
-
-                // Extract @returns/@return tag
-                if (returnsTag) returnType = this.aliasType(returnsTag.type);
-
-                // Build description from comment description and non-param/non-type tags
-                const formattedDescription = ComponentParser.assignValue(commentDescription?.trim());
-                if (formattedDescription || additionalTags.length > 0) {
-                  const descriptionParts: string[] = [];
-                  if (formattedDescription) {
-                    descriptionParts.push(formattedDescription);
-                  }
-                  for (const tag of additionalTags) {
-                    const tagStr = `@${tag.tag}${tag.name ? ` ${tag.name}` : ""}${
-                      tag.description ? ` ${tag.description}` : ""
-                    }`;
-                    descriptionParts.push(tagStr);
-                  }
-                  description = descriptionParts.join("\n");
-                }
+              const jsdocInfo = this.processJSDocComment(node.leadingComments);
+              if (jsdocInfo) {
+                if (jsdocInfo.type) type = jsdocInfo.type;
+                params = jsdocInfo.params;
+                returnType = jsdocInfo.returnType;
+                if (jsdocInfo.description) description = jsdocInfo.description;
               }
             }
 
@@ -1279,53 +1307,12 @@ export default class ComponentParser {
           let returnType: string | undefined;
 
           if (node.leadingComments) {
-            const jsdoc_comment = ComponentParser.findJSDocComment(node.leadingComments);
-            if (jsdoc_comment) {
-              const comment = parseComment(ComponentParser.formatComment(jsdoc_comment.value), {
-                spacing: "preserve",
-              });
-
-              const {
-                type: typeTag,
-                param: paramTags,
-                returns: returnsTag,
-                additional: additional_tags,
-                description: commentDescription,
-              } = this.getCommentTags(comment);
-
-              // Extract @type tag
-              if (typeTag) type = this.aliasType(typeTag.type);
-
-              // Extract @param tags
-              if (paramTags.length > 0) {
-                params = paramTags
-                  .filter((tag) => !tag.name.includes(".")) // Exclude nested params like "options.expand"
-                  .map((tag) => ({
-                    name: tag.name,
-                    type: this.aliasType(tag.type),
-                    description: tag.description?.replace(PROPERTY_DESCRIPTION_REGEX, "").trim(),
-                    optional: tag.optional || false,
-                  }));
-              }
-
-              // Extract @returns/@return tag
-              if (returnsTag) returnType = this.aliasType(returnsTag.type);
-
-              // Build description from comment description and non-param/non-type tags
-              const formattedDescription = ComponentParser.assignValue(commentDescription?.trim());
-              if (formattedDescription || additional_tags.length > 0) {
-                const descriptionParts: string[] = [];
-                if (formattedDescription) {
-                  descriptionParts.push(formattedDescription);
-                }
-                for (const tag of additional_tags) {
-                  const tagStr = `@${tag.tag}${tag.name ? ` ${tag.name}` : ""}${
-                    tag.description ? ` ${tag.description}` : ""
-                  }`;
-                  descriptionParts.push(tagStr);
-                }
-                description = descriptionParts.join("\n");
-              }
+            const jsdocInfo = this.processJSDocComment(node.leadingComments);
+            if (jsdocInfo) {
+              if (jsdocInfo.type) type = jsdocInfo.type;
+              params = jsdocInfo.params;
+              returnType = jsdocInfo.returnType;
+              if (jsdocInfo.description) description = jsdocInfo.description;
             }
           }
 
