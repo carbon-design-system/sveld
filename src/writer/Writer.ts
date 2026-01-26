@@ -26,3 +26,14 @@ export default class Writer {
     await writeFile(filePath, await this.format(raw));
   }
 }
+
+/**
+ * Factory functions for creating Writer instances with common configurations.
+ */
+export function createJsonWriter(): Writer {
+  return new Writer({ parser: "json", printWidth: 80 });
+}
+
+export function createTypeScriptWriter(): Writer {
+  return new Writer({ parser: "typescript", printWidth: 80 });
+}

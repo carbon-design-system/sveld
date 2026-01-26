@@ -1,7 +1,7 @@
 import path from "node:path";
 import { normalizeSeparators } from "../path";
 import type { ComponentDocApi, ComponentDocs } from "../rollup-plugin";
-import Writer from "./Writer";
+import { createJsonWriter } from "./Writer";
 
 export interface WriteJsonOptions {
   input: string;
@@ -28,7 +28,7 @@ async function writeJsonComponents(components: ComponentDocs, options: WriteJson
   await Promise.all(
     output.map((c) => {
       const outFile = path.resolve(path.join(options.outDir || "", `${c.moduleName}.api.json`));
-      const writer = new Writer({ parser: "json", printWidth: 80 });
+      const writer = createJsonWriter();
       console.log(`created ${outFile}"\n`);
       return writer.write(outFile, JSON.stringify(c));
     }),
@@ -42,7 +42,7 @@ async function writeJsonLocal(components: ComponentDocs, options: WriteJsonOptio
   };
 
   const output_path = path.join(process.cwd(), options.outFile);
-  const writer = new Writer({ parser: "json", printWidth: 80 });
+  const writer = createJsonWriter();
   await writer.write(output_path, JSON.stringify(output));
 
   console.log(`created "${options.outFile}".\n`);
