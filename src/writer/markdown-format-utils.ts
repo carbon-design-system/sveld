@@ -1,5 +1,8 @@
 import { formatTsProps } from "./writer-ts-definitions-core";
 
+export const BACKTICK_REGEX = /`/g;
+export const WHITESPACE_REGEX = /\s+/g;
+
 export const MD_TYPE_UNDEFINED = "--";
 
 export const PROP_TABLE_HEADER =
@@ -10,7 +13,6 @@ export const EVENT_TABLE_HEADER = "| Event name | Type | Detail | Description |\
 const PIPE_REGEX = /\|/g;
 const LT_REGEX = /</g;
 const GT_REGEX = />/g;
-const BACKTICK_REGEX = /`/g;
 const NEWLINE_REGEX = /\n/g;
 
 export function formatPropType(type?: string) {
