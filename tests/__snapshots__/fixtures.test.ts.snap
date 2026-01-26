@@ -1104,13 +1104,13 @@ exports[`fixtures (JSON) "module-reexport-direct/input.svelte" 1`] = `
   "moduleExports": [],
   "slots": [
     {
-      "name": "header",
-      "default": false,
+      "name": null,
+      "default": true,
       "slot_props": "Record<string, never>"
     },
     {
-      "name": null,
-      "default": true,
+      "name": "header",
+      "default": false,
       "slot_props": "Record<string, never>"
     }
   ],
@@ -2227,7 +2227,7 @@ exports[`fixtures (JSON) "rest-props-multiple/input.svelte" 1`] = `
     {
       "name": "type",
       "kind": "let",
-      "type": " \\"ordered\\" | \\"unordered\\" ",
+      "type": "\\"ordered\\" | \\"unordered\\"",
       "value": "\\"ordered\\"",
       "isFunction": false,
       "isFunctionDeclaration": false,
@@ -3780,7 +3780,7 @@ export type ModuleReexportDirectProps = {
 export default class ModuleReexportDirect extends SvelteComponentTyped<
   ModuleReexportDirectProps,
   Record<string, any>,
-  { header: Record<string, never>; default: Record<string, never> }
+  { default: Record<string, never>; header: Record<string, never> }
 > {}
 "
 `;

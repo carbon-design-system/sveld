@@ -3,7 +3,7 @@
     {
       "name": "type",
       "kind": "let",
-      "type": " \"ordered\" | \"unordered\" ",
+      "type": "\"ordered\" | \"unordered\"",
       "value": "\"ordered\"",
       "isFunction": false,
       "isFunctionDeclaration": false,

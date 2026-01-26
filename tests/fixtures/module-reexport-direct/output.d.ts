@@ -21,5 +21,5 @@ export type ModuleReexportDirectProps = {
 export default class ModuleReexportDirect extends SvelteComponentTyped<
   ModuleReexportDirectProps,
   Record<string, any>,
-  { header: Record<string, never>; default: Record<string, never> }
+  { default: Record<string, never>; header: Record<string, never> }
 > {}

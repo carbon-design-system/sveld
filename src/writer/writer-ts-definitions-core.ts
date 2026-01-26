@@ -432,25 +432,28 @@ function genEventDef(def: Pick<ComponentDocApi, "events">) {
         eventType = createDispatchedEvent(event.detail);
       } else {
         // For forwarded events, determine the type based on @event JSDoc and element/event type
+        // Handle both serialized (string) and object formats
         const elementName = typeof event.element === "string" ? event.element : event.element.name;
         const isComponent = elementName && COMPONENT_NAME_REGEX.test(elementName);
         const isStandardEvent = !isComponent || isStandardDomEvent(event.name);
 
-        // Check if there's an explicit non-null detail type from @event JSDoc
+        // Check if there's an explicit detail type from @event JSDoc (including null)
         // Note: detail="null" on standard DOM events is treated as "not explicitly typed"
         // because @event click (without {type}) defaults to null but shouldn't override WindowEventMap
-        const hasExplicitNonNullDetail =
+        // However, for custom component events, explicit null should be respected
+        const hasExplicitDetail =
           event.detail !== undefined && event.detail !== "undefined" && !(event.detail === "null" && isStandardEvent);
+        const hasExplicitNullForCustomComponent = event.detail === "null" && !isStandardEvent;
 
-        if (hasExplicitNonNullDetail) {
-          // If @event tag explicitly provides a non-null detail type, always use it (highest priority)
+        if (hasExplicitDetail || hasExplicitNullForCustomComponent) {
+          // If @event tag explicitly provides a detail type (including null for custom components), always use it (highest priority)
           eventType = createDispatchedEvent(event.detail);
         } else if (isStandardEvent) {
           // Standard DOM event (native element or standard event name) without explicit type
           eventType = `${mapEvent()}["${event.name}"]`;
         } else {
-          // Custom event from component with no explicit type or explicit null
-          eventType = event.detail === "null" ? createDispatchedEvent("null") : createDispatchedEvent();
+          // Custom event from component with no explicit type
+          eventType = createDispatchedEvent();
         }
       }
 

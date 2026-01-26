@@ -1,7 +1,21 @@
-// TODO: upgrading to Svelte 4 shows a lot of TS errors. Ignore for now but resolve.
-// @ts-nocheck
 import { parse as parseComment } from "comment-parser";
-import type { VariableDeclaration } from "estree";
+import type {
+  ArrayExpression,
+  ArrowFunctionExpression,
+  BinaryExpression,
+  CallExpression,
+  Expression,
+  FunctionExpression,
+  Identifier,
+  Literal,
+  MemberExpression,
+  ObjectExpression,
+  Property,
+  TemplateLiteral,
+  UnaryExpression,
+  VariableDeclaration,
+  VariableDeclarator,
+} from "estree";
 import type { Node } from "estree-walker";
 import { compile, parse, walk } from "svelte/compiler";
 import type { Ast, TemplateNode, Var } from "svelte/types/compiler/interfaces";
@@ -114,6 +128,17 @@ interface DispatchedEvent {
 
 type ComponentEvent = ForwardedEvent | DispatchedEvent;
 
+// Serialized version for JSON output (backward compatibility)
+interface SerializedForwardedEvent {
+  type: "forwarded";
+  name: string;
+  element: string; // Serialized as string for JSON backward compatibility
+  description?: string;
+  detail?: string;
+}
+
+type SerializedComponentEvent = SerializedForwardedEvent | DispatchedEvent;
+
 type TypeDefName = string;
 
 interface TypeDef {
@@ -123,7 +148,7 @@ interface TypeDef {
   ts: string;
 }
 
-type ComponentGenerics = [name: string, type: string];
+type ComponentGenerics = [name: string, type: string] | null;
 
 interface ComponentInlineElement {
   type: "InlineComponent";
@@ -193,7 +218,7 @@ export default class ComponentParser {
   private readonly eventDescriptions: Map<ComponentEventName, string | undefined> = new Map();
   private readonly forwardedEvents: Map<ComponentEventName, ComponentInlineElement | ComponentElement> = new Map();
   private readonly typedefs: Map<TypeDefName, TypeDef> = new Map();
-  private readonly generics: ComponentGenerics = null;
+  private generics: ComponentGenerics = null;
   private readonly bindings: Map<ComponentPropName, ComponentPropBindings> = new Map();
   private readonly contexts: Map<ComponentContextName, ComponentContext> = new Map();
   private variableInfoCache: Map<string, { type: string; description?: string }> = new Map();
@@ -203,7 +228,7 @@ export default class ComponentParser {
     this.options = options;
   }
 
-  private static mapToArray<T>(map: Map<string, T>) {
+  private static mapToArray<T>(map: Map<string, T> | Map<ComponentSlotName, T>) {
     return Array.from(map, ([_key, value]) => value);
   }
 
@@ -269,9 +294,10 @@ export default class ComponentParser {
    * Finds the last comment from an array of leading comments.
    * TypeScript directives are stripped before parsing, so we can safely take the last comment.
    */
-  private static findJSDocComment(leadingComments: unknown[]): unknown {
+  private static findJSDocComment(leadingComments: unknown[]): { value: string } | undefined {
     if (!leadingComments || leadingComments.length === 0) return undefined;
-    return leadingComments[leadingComments.length - 1];
+    const comment = leadingComments[leadingComments.length - 1];
+    return comment && typeof comment === "object" && "value" in comment ? (comment as { value: string }) : undefined;
   }
 
   /**
@@ -314,8 +340,8 @@ export default class ComponentParser {
     // Extract @param tags
     if (paramTags.length > 0) {
       params = paramTags
-        .filter((tag) => !tag.name.includes(".")) // Exclude nested params like "options.expand"
-        .map((tag) => ({
+        .filter((tag: { name: string }) => !tag.name.includes(".")) // Exclude nested params like "options.expand"
+        .map((tag: { name: string; type: string; description?: string; optional?: boolean }) => ({
           name: tag.name,
           type: this.aliasType(tag.type),
           description: cleanDescription(tag.description),
@@ -348,10 +374,12 @@ export default class ComponentParser {
    * (e.g., Number.POSITIVE_INFINITY, Math.PI, etc.)
    */
   private isNumericConstant(memberExpr: unknown): boolean {
+    if (!memberExpr || typeof memberExpr !== "object" || !("type" in memberExpr)) return false;
     if (memberExpr.type !== "MemberExpression") return false;
 
-    const objectName = memberExpr.object?.name;
-    const propertyName = memberExpr.property?.name;
+    const expr = memberExpr as MemberExpression;
+    const objectName = expr.object && "name" in expr.object ? (expr.object as Identifier).name : undefined;
+    const propertyName = expr.property && "name" in expr.property ? (expr.property as Identifier).name : undefined;
 
     if (!objectName || !propertyName) return false;
 
@@ -384,18 +412,33 @@ export default class ComponentParser {
     let type: string | undefined;
     let isFunction = false;
 
+    if (!init || typeof init !== "object" || !("type" in init)) {
+      return { value, type, isFunction };
+    }
+
     if (
       init.type === "ObjectExpression" ||
       init.type === "BinaryExpression" ||
       init.type === "ArrayExpression" ||
       init.type === "ArrowFunctionExpression"
     ) {
-      value = this.sourceAtPos(init.start, init.end)?.replace(NEWLINE_CR_REGEX, " ");
+      const expr = init as ObjectExpression | BinaryExpression | ArrayExpression | ArrowFunctionExpression;
+      if ("start" in expr && "end" in expr && typeof expr.start === "number" && typeof expr.end === "number") {
+        value = this.sourceAtPos(expr.start, expr.end)?.replace(NEWLINE_CR_REGEX, " ");
+      }
       type = value;
       isFunction = init.type === "ArrowFunctionExpression";
 
       if (init.type === "BinaryExpression") {
-        if (init?.left.type === "Literal" && typeof init?.left.value === "string") {
+        const binExpr = init as BinaryExpression;
+        if (
+          binExpr.left &&
+          typeof binExpr.left === "object" &&
+          "type" in binExpr.left &&
+          binExpr.left.type === "Literal" &&
+          "value" in binExpr.left &&
+          typeof binExpr.left.value === "string"
+        ) {
           type = "string";
         }
       }
@@ -405,21 +448,52 @@ export default class ComponentParser {
         value = undefined;
       }
     } else if (init.type === "UnaryExpression") {
-      value = this.sourceAtPos(init.start, init.end);
-      type = typeof init.argument?.value;
+      const unaryExpr = init as UnaryExpression;
+      if (
+        "start" in unaryExpr &&
+        "end" in unaryExpr &&
+        typeof unaryExpr.start === "number" &&
+        typeof unaryExpr.end === "number"
+      ) {
+        value = this.sourceAtPos(unaryExpr.start, unaryExpr.end);
+      }
+      if (unaryExpr.argument && typeof unaryExpr.argument === "object" && "value" in unaryExpr.argument) {
+        type = typeof (unaryExpr.argument as Literal).value;
+      }
     } else if (init.type === "Identifier") {
-      value = this.sourceAtPos(init.start, init.end);
+      const ident = init as Identifier;
+      if ("start" in ident && "end" in ident && typeof ident.start === "number" && typeof ident.end === "number") {
+        value = this.sourceAtPos(ident.start, ident.end);
+      }
     } else if (init.type === "MemberExpression") {
-      value = this.sourceAtPos(init.start, init.end);
+      const memberExpr = init as MemberExpression;
+      if (
+        "start" in memberExpr &&
+        "end" in memberExpr &&
+        typeof memberExpr.start === "number" &&
+        typeof memberExpr.end === "number"
+      ) {
+        value = this.sourceAtPos(memberExpr.start, memberExpr.end);
+      }
       if (this.isNumericConstant(init)) {
         type = "number";
       }
     } else if (init.type === "TemplateLiteral") {
-      value = this.sourceAtPos(init.start, init.end);
+      const template = init as TemplateLiteral;
+      if (
+        "start" in template &&
+        "end" in template &&
+        typeof template.start === "number" &&
+        typeof template.end === "number"
+      ) {
+        value = this.sourceAtPos(template.start, template.end);
+      }
       type = "string";
-    } else {
+    } else if ("raw" in init && typeof init.raw === "string") {
       value = init.raw;
-      type = init.value == null ? undefined : typeof init.value;
+      if ("value" in init) {
+        type = init.value == null ? undefined : typeof init.value;
+      }
     }
 
     return { value, type, isFunction };
@@ -464,7 +538,7 @@ export default class ComponentParser {
 
   private aliasType(type: string) {
     if (type === "*") return "any";
-    return type;
+    return type.trim();
   }
 
   private addSlot({
@@ -486,13 +560,15 @@ export default class ComponentParser {
 
     if (this.slots.has(name)) {
       const existing_slot = this.slots.get(name);
-
-      this.slots.set(name, {
-        ...existing_slot,
-        fallback,
-        slot_props: existing_slot.slot_props === undefined ? props : existing_slot.slot_props,
-        description: existing_slot.description || description,
-      });
+      if (existing_slot) {
+        this.slots.set(name, {
+          ...existing_slot,
+          default: existing_slot.default ?? default_slot,
+          fallback,
+          slot_props: existing_slot.slot_props === undefined ? props : existing_slot.slot_props,
+          description: existing_slot.description || description,
+        });
+      }
     } else {
       this.slots.set(name, {
         name,
@@ -537,6 +613,7 @@ export default class ComponentParser {
   }
 
   private parseCustomTypes() {
+    if (!this.source) return;
     for (const { tags, description: commentDescription, source: blockSource } of parseComment(this.source, {
       spacing: "preserve",
     })) {
@@ -609,7 +686,7 @@ export default class ComponentParser {
           } else if (foundDescriptionBlock) {
             // We've already found description lines and now hit a non-description line
             // Check if it's blank - if so, continue; if not, stop
-            const sourceLine = blockSource.find((l) => l.number === lineNum);
+            const sourceLine = blockSource.find((l: { number: number }) => l.number === lineNum);
             const isBlank =
               !sourceLine ||
               (!sourceLine.tokens.tag &&
@@ -802,6 +879,7 @@ export default class ComponentParser {
 
   private buildEventDetailFromProperties(
     properties: Array<{ name: string; type: string; description?: string; optional?: boolean; default?: string }>,
+    _eventName?: string,
   ): string {
     if (properties.length === 0) return "null";
 
@@ -965,34 +1043,59 @@ export default class ComponentParser {
   }
 
   private parseContextValue(node: Node, key: string): ComponentContext | null {
+    if (!node || typeof node !== "object" || !("type" in node)) return null;
+
     if (node.type === "ObjectExpression") {
       // Parse object literal: { open, close }
       const properties: ComponentContextProp[] = [];
+      const objExpr = node as ObjectExpression;
 
-      for (const prop of node.properties) {
-        if (prop.type === "Property" || prop.type === "ObjectProperty") {
-          const propName = prop.key.name || prop.key.value;
+      for (const prop of objExpr.properties) {
+        if (prop.type === "Property") {
+          const propObj = prop as Property;
+          const propName =
+            propObj.key && "name" in propObj.key
+              ? (propObj.key as Identifier).name
+              : propObj.key && "value" in propObj.key
+                ? String((propObj.key as Literal).value)
+                : undefined;
+          if (!propName) continue;
 
           // Try to find the variable definition to get its JSDoc type
           let propType = "any";
           let propDescription: string | undefined;
 
-          if (prop.value.type === "Identifier") {
-            const varName = prop.value.name;
-            const varInfo = this.findVariableTypeAndDescription(varName);
-            if (varInfo) {
-              propType = varInfo.type;
-              propDescription = varInfo.description;
-            } else if (this.options?.verbose) {
-              console.warn(`Warning: Context "${key}" property "${propName}" has no type annotation. Using "any".`);
+          if (propObj.value && typeof propObj.value === "object" && "type" in propObj.value) {
+            if (propObj.value.type === "Identifier") {
+              const varName = (propObj.value as Identifier).name;
+              const varInfo = this.findVariableTypeAndDescription(varName);
+              if (varInfo) {
+                propType = varInfo.type;
+                propDescription = varInfo.description;
+              } else if (this.options?.verbose) {
+                console.warn(`Warning: Context "${key}" property "${propName}" has no type annotation. Using "any".`);
+              }
+            } else if (
+              propObj.value.type === "ArrowFunctionExpression" ||
+              propObj.value.type === "FunctionExpression"
+            ) {
+              // Inline function
+              const funcExpr = propObj.value as ArrowFunctionExpression | FunctionExpression;
+              const params =
+                funcExpr.params
+                  ?.map((p) => {
+                    if (p && typeof p === "object" && "name" in p) {
+                      return `${(p as Identifier).name || "arg"}: any`;
+                    }
+                    return "arg: any";
+                  })
+                  .join(", ") || "";
+              propType = `(${params}) => any`;
+            } else if (propObj.value.type === "Literal") {
+              // Literal value
+              const literal = propObj.value as Literal;
+              propType = literal.value == null ? "null" : typeof literal.value;
             }
-          } else if (prop.value.type === "ArrowFunctionExpression" || prop.value.type === "FunctionExpression") {
-            // Inline function
-            const params = prop.value.params.map((p) => `${p.name || "arg"}: any`).join(", ");
-            propType = `(${params}) => any`;
-          } else if (prop.value.type === "Literal") {
-            // Literal value
-            propType = typeof prop.value.value;
           }
 
           properties.push({
@@ -1012,7 +1115,8 @@ export default class ComponentParser {
       };
     } else if (node.type === "Identifier") {
       // setContext('key', someVariable)
-      const varName = node.name;
+      const ident = node as Identifier;
+      const varName = ident.name;
       const varInfo = this.findVariableTypeAndDescription(varName);
 
       if (varInfo) {
@@ -1050,18 +1154,24 @@ export default class ComponentParser {
     return null;
   }
 
-  private parseSetContextCall(node: Node) {
+  private parseSetContextCall(node: Node, _parent?: Node) {
     // Extract context key (first argument)
-    const keyArg = node.arguments[0];
+    if (!node || typeof node !== "object" || !("type" in node) || node.type !== "CallExpression") {
+      return;
+    }
+    const callExpr = node as CallExpression;
+    const keyArg = callExpr.arguments[0];
     if (!keyArg) return;
 
     let contextKey: string | null = null;
     if (keyArg.type === "Literal") {
-      contextKey = keyArg.value;
+      const literal = keyArg as Literal;
+      contextKey = typeof literal.value === "string" ? literal.value : String(literal.value);
     } else if (keyArg.type === "TemplateLiteral") {
       // Handle simple template literals
       if (keyArg.quasis?.length === 1) {
-        contextKey = keyArg.quasis[0].value.cooked;
+        const cooked = keyArg.quasis[0].value.cooked;
+        contextKey = cooked != null ? cooked : null;
       } else if (this.options?.verbose) {
         console.warn("Warning: Skipping setContext with dynamic template literal key");
       }
@@ -1072,7 +1182,7 @@ export default class ComponentParser {
     if (!contextKey) return;
 
     // Extract context value (second argument)
-    const valueArg = node.arguments[1];
+    const valueArg = callExpr.arguments[1];
     if (!valueArg) return;
 
     // Parse the context object
@@ -1162,30 +1272,52 @@ export default class ComponentParser {
               return;
             }
 
-            const {
-              type: declaration_type,
-              id,
-              init,
-            } = node.declaration?.declarations ? node.declaration.declarations[0] : node.declaration;
-
-            const prop_name = id.name;
-            let kind = node.declaration.kind;
-            let description: string | undefined;
-            let isFunctionDeclaration = false;
-
-            const initResult = init != null ? this.processInitializer(init) : { isFunction: false };
-            let { value, type, isFunction } = initResult;
-
-            if (declaration_type === "FunctionDeclaration") {
-              value = undefined;
-              type = "() => any";
-              kind = "function";
-              isFunction = true;
-              isFunctionDeclaration = true;
+            // Handle both VariableDeclaration and FunctionDeclaration
+            if (!node.declaration || typeof node.declaration !== "object" || !("type" in node.declaration)) {
+              return;
             }
 
+            let prop_name: string;
+            let kind: "let" | "const" | "function";
+            let description: string | undefined;
+            let isFunctionDeclaration = false;
+            let value: string | undefined;
+            let type: string | undefined;
+            let isFunction = false;
             let params: ComponentPropParam[] | undefined;
             let returnType: string | undefined;
+
+            if (node.declaration.type === "FunctionDeclaration") {
+              const funcDecl = node.declaration as { id?: { name?: string } };
+              if (!funcDecl.id || !funcDecl.id.name) return;
+              prop_name = funcDecl.id.name;
+              kind = "function";
+              value = undefined;
+              type = "() => any";
+              isFunction = true;
+              isFunctionDeclaration = true;
+            } else if (node.declaration.type === "VariableDeclaration") {
+              const varDecl = node.declaration as VariableDeclaration;
+              const firstDeclarator = varDecl.declarations[0];
+              if (!firstDeclarator || typeof firstDeclarator !== "object" || !("id" in firstDeclarator)) {
+                return;
+              }
+
+              const { id, init } = firstDeclarator as VariableDeclarator;
+
+              if (!id || typeof id !== "object" || !("name" in id)) {
+                return;
+              }
+
+              prop_name = (id as Identifier).name;
+              // VariableDeclaration.kind can be "var" | "let" | "const", but ComponentProp.kind is "let" | "const" | "function"
+              // Convert "var" to "let" for compatibility
+              kind = varDecl.kind === "var" ? "let" : varDecl.kind;
+              const initResult = init != null ? this.processInitializer(init) : { isFunction: false };
+              ({ value, type, isFunction } = initResult);
+            } else {
+              return;
+            }
 
             if (node.leadingComments) {
               const jsdocInfo = this.processJSDocComment(node.leadingComments);
@@ -1197,7 +1329,7 @@ export default class ComponentParser {
               }
             }
 
-            if (!description && this.typedefs.has(type)) {
+            if (!description && type && this.typedefs.has(type)) {
               description = this.typedefs.get(type)?.description;
             }
 
@@ -1221,43 +1353,85 @@ export default class ComponentParser {
     }
 
     let dispatcher_name: undefined | string;
-    const callees: { name: string; arguments: Expression[] }[] = [];
+    const callees: { name: string; arguments: Array<Expression | unknown> }[] = [];
 
     walk({ html: this.parsed.html, instance: this.parsed.instance } as unknown as Node, {
       enter: (node, parent, _prop) => {
         if (node.type === "CallExpression") {
-          if (node.callee.name === "createEventDispatcher") {
-            dispatcher_name = parent?.id.name;
+          const callExpr = node as CallExpression;
+          const calleeName =
+            callExpr.callee && typeof callExpr.callee === "object" && "name" in callExpr.callee
+              ? (callExpr.callee as Identifier).name
+              : undefined;
+
+          if (calleeName === "createEventDispatcher") {
+            if (
+              parent &&
+              typeof parent === "object" &&
+              "id" in parent &&
+              parent.id &&
+              typeof parent.id === "object" &&
+              "name" in parent.id
+            ) {
+              dispatcher_name = (parent.id as Identifier).name;
+            }
           }
 
-          if (node.callee.name === "setContext") {
-            this.parseSetContextCall(node, parent);
+          if (calleeName === "setContext") {
+            this.parseSetContextCall(node, parent ?? undefined);
           }
 
-          callees.push({
-            name: node.callee.name,
-            arguments: node.arguments,
-          });
+          if (calleeName) {
+            callees.push({
+              name: calleeName,
+              arguments: callExpr.arguments,
+            });
+          }
         }
 
-        if (node.type === "Spread" && node?.expression.name === "$$restProps") {
-          if (this.rest_props === undefined && (parent?.type === "InlineComponent" || parent?.type === "Element")) {
-            const restProps: RestProps = {
-              type: parent.type,
-              name: parent.name,
-            };
+        // Check for Spread node (Svelte-specific AST node type)
+        // Note: Spread is a Svelte-specific type not in estree, so we check the string value
+        if (node && typeof node === "object" && "type" in node && String(node.type) === "Spread") {
+          const spreadNode = node as { type: string; expression?: { name?: string } };
+          if (spreadNode.expression?.name === "$$restProps") {
+            // Check if parent is InlineComponent or Element (Svelte-specific types)
+            if (
+              parent &&
+              typeof parent === "object" &&
+              "type" in parent &&
+              ((parent.type as string) === "InlineComponent" || (parent.type as string) === "Element")
+            ) {
+              const parentType = parent.type as string;
+              const parentName = "name" in parent && typeof parent.name === "string" ? parent.name : undefined;
+              if (parentName) {
+                const restProps: RestProps =
+                  parentType === "InlineComponent"
+                    ? {
+                        type: "InlineComponent",
+                        name: parentName,
+                      }
+                    : {
+                        type: "Element",
+                        name: parentName,
+                      };
 
-            // Handle svelte:element - check if this attribute is hardcoded
-            if (parent.type === "Element" && parent.name === "svelte:element") {
-              // The 'this' value is stored in the 'tag' property of the Element node
-              // If tag is a string, it's hardcoded; if undefined/null, it's dynamic
-              if (typeof parent.tag === "string") {
-                restProps.thisValue = parent.tag;
+                // Handle svelte:element - check if this attribute is hardcoded
+                if (parentType === "Element" && parentName === "svelte:element") {
+                  // The 'this' value is stored in the 'tag' property of the Element node
+                  // If tag is a string, it's hardcoded; if undefined/null, it's dynamic
+                  if ("tag" in parent && typeof parent.tag === "string") {
+                    (restProps as ComponentElement).thisValue = parent.tag;
+                  }
+                  // If tag is undefined or not a string, thisValue remains undefined (dynamic)
+                }
+
+                // Only set rest_props from AST if not already set by @restProps annotation
+                // The annotation takes precedence as it can specify union types like "ul | ol"
+                if (this.rest_props === undefined) {
+                  this.rest_props = restProps;
+                }
               }
-              // If tag is undefined or not a string, thisValue remains undefined (dynamic)
             }
-
-            this.rest_props = restProps;
           }
         }
 
@@ -1275,14 +1449,31 @@ export default class ComponentParser {
           let prop_name: string;
           if (node.declaration == null && node.specifiers[0]?.type === "ExportSpecifier") {
             const specifier = node.specifiers[0];
-            const localName = specifier.local.name;
-            const exportedName = specifier.exported.name;
-            let declaration: VariableDeclaration;
+            const localName =
+              specifier.local && typeof specifier.local === "object" && "name" in specifier.local
+                ? (specifier.local as Identifier).name
+                : undefined;
+            const exportedName =
+              specifier.exported && typeof specifier.exported === "object" && "name" in specifier.exported
+                ? (specifier.exported as Identifier).name
+                : undefined;
+            if (!localName || !exportedName) return;
+            let declaration: VariableDeclaration | undefined;
             // Search through all variable declarations for this variable
             //  Limitation: the variable must have been declared before the export
-            for (const varDecl of this.vars) {
-              if (varDecl.declarations.some((decl) => decl.id.type === "Identifier" && decl.id.name === localName)) {
+            for (const varDecl of Array.from(this.vars)) {
+              if (
+                varDecl.declarations.some(
+                  (decl) =>
+                    decl.id &&
+                    typeof decl.id === "object" &&
+                    "type" in decl.id &&
+                    decl.id.type === "Identifier" &&
+                    (decl.id as Identifier).name === localName,
+                )
+              ) {
                 declaration = varDecl;
+                break;
               }
             }
             node.declaration = declaration;
@@ -1294,32 +1485,55 @@ export default class ComponentParser {
             return;
           }
 
-          const {
-            type: declaration_type,
-            id,
-            init,
-          } = node.declaration.declarations ? node.declaration.declarations[0] : node.declaration;
-
-          prop_name ??= id.name;
-
-          let kind = node.declaration.kind;
-          let description: undefined | string;
-          let isFunctionDeclaration = false;
-          const isRequired = kind === "let" && init == null;
-
-          const initResult = init != null ? this.processInitializer(init) : { isFunction: false };
-          let { value, type, isFunction } = initResult;
-
-          if (declaration_type === "FunctionDeclaration") {
-            value = undefined;
-            type = "() => any";
-            kind = "function";
-            isFunction = true;
-            isFunctionDeclaration = true;
+          // Handle both VariableDeclaration and FunctionDeclaration
+          if (!node.declaration || typeof node.declaration !== "object" || !("type" in node.declaration)) {
+            return;
           }
 
+          let kind: "let" | "const" | "function";
+          let description: undefined | string;
+          let isFunctionDeclaration = false;
+          let value: string | undefined;
+          let type: string | undefined;
+          let isFunction = false;
           let params: ComponentPropParam[] | undefined;
           let returnType: string | undefined;
+          let isRequired = false;
+
+          if (node.declaration.type === "FunctionDeclaration") {
+            const funcDecl = node.declaration as { id?: { name?: string } };
+            if (!funcDecl.id || !funcDecl.id.name) return;
+            prop_name ??= funcDecl.id.name;
+            kind = "function";
+            value = undefined;
+            type = "() => any";
+            isFunction = true;
+            isFunctionDeclaration = true;
+            isRequired = false;
+          } else if (node.declaration.type === "VariableDeclaration") {
+            const varDecl = node.declaration as VariableDeclaration;
+            const firstDeclarator = varDecl.declarations[0];
+            if (!firstDeclarator || typeof firstDeclarator !== "object" || !("id" in firstDeclarator)) {
+              return;
+            }
+
+            const { id, init } = firstDeclarator as VariableDeclarator;
+
+            if (id && typeof id === "object" && "name" in id) {
+              prop_name ??= (id as Identifier).name;
+            } else {
+              return;
+            }
+
+            // VariableDeclaration.kind can be "var" | "let" | "const", but ComponentProp.kind is "let" | "const" | "function"
+            // Convert "var" to "let" for compatibility
+            kind = varDecl.kind === "var" ? "let" : varDecl.kind;
+            isRequired = kind === "let" && init == null;
+            const initResult = init != null ? this.processInitializer(init) : { isFunction: false };
+            ({ value, type, isFunction } = initResult);
+          } else {
+            return;
+          }
 
           if (node.leadingComments) {
             const jsdocInfo = this.processJSDocComment(node.leadingComments);
@@ -1331,7 +1545,7 @@ export default class ComponentParser {
             }
           }
 
-          if (!description && this.typedefs.has(type)) {
+          if (!description && type && this.typedefs.has(type)) {
             description = this.typedefs.get(type)?.description;
           }
 
@@ -1351,55 +1565,83 @@ export default class ComponentParser {
           });
         }
 
-        if (node.type === "Comment") {
-          const data: string = node?.data?.trim() ?? "";
+        // Check for Comment node (Svelte-specific AST node type)
+        if (node && typeof node === "object" && "type" in node && String(node.type) === "Comment") {
+          const commentNode = node as { data?: string };
+          const data: string = commentNode?.data?.trim() ?? "";
 
           if (COMPONENT_COMMENT_REGEX.test(data)) {
             this.componentComment = data.replace(COMPONENT_COMMENT_REGEX, "").replace(CARRIAGE_RETURN_REGEX, "");
           }
         }
 
-        if (node.type === "Slot") {
-          const slot_name = node.attributes.find((attr: { name?: string }) => attr.name === "name")?.value[0].data;
+        // Check for Slot node (Svelte-specific AST node type)
+        if (node && typeof node === "object" && "type" in node && String(node.type) === "Slot") {
+          const slotNode = node as {
+            attributes?: Array<{
+              name?: string;
+              value?: Array<{
+                type?: string;
+                expression?: unknown;
+                raw?: string;
+                start?: number;
+                end?: number;
+                data?: string;
+              }>;
+            }>;
+            children?: Array<{ start?: number; end?: number }>;
+          };
+          const slot_name = slotNode.attributes?.find((attr) => attr.name === "name")?.value?.[0]?.data;
 
-          const slot_props = node.attributes
-            .filter((attr: { name?: string }) => attr.name !== "name")
-            .reduce((slot_props: SlotProps, { name, value }: { name: string; value?: Expression[] }) => {
+          const slot_props = (slotNode.attributes || [])
+            .filter((attr) => attr.name !== "name")
+            .reduce((slot_props: SlotProps, attr) => {
               const slot_prop_value: SlotPropValue = {
                 value: undefined,
                 replace: false,
               };
 
+              const value = attr.value;
               if (value === undefined) return slot_props;
 
               if (value[0]) {
-                const { type, expression, raw, start, end } = value[0];
+                const firstValue = value[0];
+                const { type, expression, raw, start, end } = firstValue;
 
-                if (type === "Text") {
+                if (type === "Text" && raw !== undefined) {
                   slot_prop_value.value = raw;
-                } else if (type === "AttributeShorthand") {
-                  slot_prop_value.value = expression.name;
+                } else if (
+                  type === "AttributeShorthand" &&
+                  expression &&
+                  typeof expression === "object" &&
+                  "name" in expression
+                ) {
+                  slot_prop_value.value = (expression as Identifier).name;
                   slot_prop_value.replace = true;
                 }
 
-                if (expression) {
-                  if (expression.type === "Literal") {
-                    slot_prop_value.value = expression.value;
+                if (expression && typeof expression === "object" && "type" in expression) {
+                  if (expression.type === "Literal" && "value" in expression) {
+                    slot_prop_value.value = String((expression as Literal).value);
                   } else if (expression.type !== "Identifier") {
-                    if (expression.type === "ObjectExpression" || expression.type === "TemplateLiteral") {
-                      slot_prop_value.value = this.sourceAtPos(start + 1, end - 1);
-                    } else {
-                      slot_prop_value.value = this.sourceAtPos(start, end);
+                    if (start !== undefined && end !== undefined) {
+                      if (expression.type === "ObjectExpression" || expression.type === "TemplateLiteral") {
+                        slot_prop_value.value = this.sourceAtPos(start + 1, end - 1);
+                      } else {
+                        slot_prop_value.value = this.sourceAtPos(start, end);
+                      }
                     }
                   }
                 }
               }
 
-              slot_props[name] = slot_prop_value;
+              if (attr.name) {
+                slot_props[attr.name] = slot_prop_value;
+              }
               return slot_props;
             }, {});
 
-          const fallback = (node.children as TemplateNode[])
+          const fallback = (slotNode.children as TemplateNode[] | undefined)
             ?.map(({ start, end }) => this.sourceAtPos(start, end))
             .join("")
             .trim();
@@ -1411,54 +1653,82 @@ export default class ComponentParser {
           });
         }
 
-        if (node.type === "EventHandler" && node.expression == null) {
-          if (parent !== undefined) {
-            // Track that this event is forwarded (we'll use this info later)
-            this.forwardedEvents.set(node.name, parent.name);
+        // Check for EventHandler node (Svelte-specific AST node type)
+        if (node && typeof node === "object" && "type" in node && String(node.type) === "EventHandler") {
+          const eventHandlerNode = node as { expression?: unknown; name?: string };
+          if (eventHandlerNode.expression == null && eventHandlerNode.name) {
+            if (parent != null && typeof parent === "object" && "name" in parent) {
+              const parentName = typeof parent.name === "string" ? parent.name : undefined;
+              const parentType = "type" in parent ? String(parent.type) : undefined;
+              if (parentName && parentType) {
+                // Determine if parent is InlineComponent or Element
+                const element: ComponentInlineElement | ComponentElement =
+                  parentType === "InlineComponent"
+                    ? { type: "InlineComponent", name: parentName }
+                    : { type: "Element", name: parentName };
 
-            const existing_event = this.events.get(node.name);
+                // Track that this event is forwarded (we'll use this info later)
+                this.forwardedEvents.set(eventHandlerNode.name, element);
 
-            // Check if this event has a JSDoc description
-            const description = this.eventDescriptions.get(node.name);
-            const event_description = extractDescriptionAfterDash(description);
+                const existing_event = this.events.get(eventHandlerNode.name);
 
-            if (!existing_event) {
-              // Add new forwarded event
-              this.events.set(node.name, {
-                type: "forwarded",
-                name: node.name,
-                element: parent.name,
-                description: event_description,
-              });
-            } else if (existing_event.type === "forwarded" && event_description && !existing_event.description) {
-              // Event is already forwarded, just add the description
-              this.events.set(node.name, {
-                ...existing_event,
-                description: event_description,
-              });
+                // Check if this event has a JSDoc description
+                const description = this.eventDescriptions.get(eventHandlerNode.name);
+                const event_description = extractDescriptionAfterDash(description);
+
+                if (!existing_event) {
+                  // Add new forwarded event
+                  this.events.set(eventHandlerNode.name, {
+                    type: "forwarded",
+                    name: eventHandlerNode.name,
+                    element: element,
+                    description: event_description,
+                  });
+                } else if (existing_event.type === "forwarded" && event_description && !existing_event.description) {
+                  // Event is already forwarded, just add the description
+                  this.events.set(eventHandlerNode.name, {
+                    ...existing_event,
+                    description: event_description,
+                  });
+                }
+                // Note: if event is dispatched, we don't overwrite it here
+                // We'll handle @event JSDoc on forwarded events after the walk completes
+              }
             }
-            // Note: if event is dispatched, we don't overwrite it here
-            // We'll handle @event JSDoc on forwarded events after the walk completes
           }
         }
 
-        if (parent?.type === "Element" && node.type === "Binding" && node.name === "this") {
-          const prop_name = node.expression.name;
-          const element_name = parent.name;
+        // Check for Binding node (Svelte-specific AST node type)
+        if (
+          parent &&
+          typeof parent === "object" &&
+          "type" in parent &&
+          String(parent.type) === "Element" &&
+          node &&
+          typeof node === "object" &&
+          "type" in node &&
+          String(node.type) === "Binding"
+        ) {
+          const bindingNode = node as { name?: string; expression?: { name?: string } };
+          const parentElement = parent as { name?: string };
+          if (bindingNode.name === "this" && bindingNode.expression?.name && parentElement.name) {
+            const prop_name = bindingNode.expression.name;
+            const element_name = parentElement.name;
 
-          if (this.bindings.has(prop_name)) {
-            const existing_bindings = this.bindings.get(prop_name);
+            if (this.bindings.has(prop_name)) {
+              const existing_bindings = this.bindings.get(prop_name);
 
-            if (!existing_bindings.elements.includes(element_name)) {
+              if (existing_bindings && !existing_bindings.elements.includes(element_name)) {
+                this.bindings.set(prop_name, {
+                  ...existing_bindings,
+                  elements: [...existing_bindings.elements, element_name],
+                });
+              }
+            } else {
               this.bindings.set(prop_name, {
-                ...existing_bindings,
-                elements: [...existing_bindings.elements, element_name],
+                elements: [element_name],
               });
             }
-          } else {
-            this.bindings.set(prop_name, {
-              elements: [element_name],
-            });
           }
         }
       },
@@ -1467,15 +1737,22 @@ export default class ComponentParser {
     if (dispatcher_name !== undefined) {
       for (const callee of callees) {
         if (callee.name === dispatcher_name) {
-          const event_name = callee.arguments[0]?.value;
+          const firstArg = callee.arguments[0];
+          const event_name =
+            firstArg && typeof firstArg === "object" && "value" in firstArg ? (firstArg as Literal).value : undefined;
           const event_argument = callee.arguments[1];
-          const event_detail = event_argument?.value;
+          const event_detail =
+            event_argument && typeof event_argument === "object" && "value" in event_argument
+              ? (event_argument as Literal).value
+              : undefined;
 
-          this.addDispatchedEvent({
-            name: event_name,
-            detail: event_detail,
-            has_argument: Boolean(event_argument),
-          });
+          if (event_name != null) {
+            this.addDispatchedEvent({
+              name: String(event_name),
+              detail: event_detail != null ? String(event_detail) : "",
+              has_argument: Boolean(event_argument),
+            });
+          }
         }
       }
     }
@@ -1486,7 +1763,12 @@ export default class ComponentParser {
     if (dispatcher_name !== undefined) {
       for (const callee of callees) {
         if (callee.name === dispatcher_name) {
-          actuallyDispatchedEvents.add(callee.arguments[0]?.value);
+          const firstArg = callee.arguments[0];
+          const eventName =
+            firstArg && typeof firstArg === "object" && "value" in firstArg ? (firstArg as Literal).value : undefined;
+          if (eventName != null) {
+            actuallyDispatchedEvents.add(String(eventName));
+          }
         }
       }
     }
@@ -1532,6 +1814,9 @@ export default class ComponentParser {
     const processedSlots = ComponentParser.mapToArray(this.slots)
       .map((slot) => {
         try {
+          if (!slot.slot_props) {
+            return slot;
+          }
           const slot_props: SlotProps = JSON.parse(slot.slot_props);
           const new_props: string[] = [];
 
@@ -1552,13 +1837,24 @@ export default class ComponentParser {
         }
       })
       .sort((a, b) => {
-        if (a.name < b.name) return -1;
-        if (a.name > b.name) return 1;
+        const aName = a.name ?? "";
+        const bName = b.name ?? "";
+        if (aName < bName) return -1;
+        if (aName > bName) return 1;
         return 0;
       });
 
     const moduleExportsArray = ComponentParser.mapToArray(this.moduleExports);
-    const eventsArray = ComponentParser.mapToArray(this.events);
+    // Transform events for JSON serialization: convert element object to string for backward compatibility
+    const eventsArray = ComponentParser.mapToArray(this.events).map((event): SerializedComponentEvent => {
+      if (event.type === "forwarded") {
+        return {
+          ...event,
+          element: event.element.name,
+        };
+      }
+      return event;
+    });
     const typedefsArray = ComponentParser.mapToArray(this.typedefs);
     const contextsArray = ComponentParser.mapToArray(this.contexts);
 
@@ -1566,7 +1862,7 @@ export default class ComponentParser {
       props: processedProps,
       moduleExports: moduleExportsArray,
       slots: processedSlots,
-      events: eventsArray,
+      events: eventsArray as ComponentEvent[], // Type assertion: serialized format for JSON, but typed as ComponentEvent for API
       typedefs: typedefsArray,
       generics: this.generics,
       rest_props: this.rest_props,
