@@ -154,12 +154,16 @@
       "moduleExports": [],
       "slots": [
         {
+          "name": null,
+          "default": true,
+          "slot_props": "Record<string, never>"
+        },
+        {
           "name": "title",
           "default": false,
           "fallback": "{title}",
           "slot_props": "Record<string, never>"
-        },
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
+        }
       ],
       "events": [
         { "type": "forwarded", "name": "animationend", "element": "li" },
@@ -2282,6 +2286,11 @@
       "moduleExports": [],
       "slots": [
         {
+          "name": null,
+          "default": true,
+          "slot_props": "Record<string, never>"
+        },
+        {
           "name": "cell",
           "default": false,
           "fallback": "{cell.display ? cell.display(cell.value, row) : cell.value}",
@@ -2309,8 +2318,7 @@
           "default": false,
           "fallback": "{title}",
           "slot_props": "Record<string, never>"
-        },
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
+        }
       ],
       "events": [
         {
@@ -4365,6 +4373,11 @@
       "moduleExports": [],
       "slots": [
         {
+          "name": null,
+          "default": true,
+          "slot_props": "Record<string, never>"
+        },
+        {
           "name": "platform",
           "default": false,
           "fallback": "{platformName}",
@@ -4374,8 +4387,7 @@
           "name": "skip-to-content",
           "default": false,
           "slot_props": "Record<string, never>"
-        },
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
+        }
       ],
       "events": [{ "type": "forwarded", "name": "click", "element": "a" }],
       "typedefs": [],
@@ -4451,12 +4463,16 @@
       "moduleExports": [],
       "slots": [
         {
+          "name": null,
+          "default": true,
+          "slot_props": "Record<string, never>"
+        },
+        {
           "name": "text",
           "default": false,
           "fallback": "{#if text}<span>{text}</span>{/if}",
           "slot_props": "Record<string, never>"
-        },
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
+        }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "button" },
@@ -6121,6 +6137,11 @@
       "moduleExports": [],
       "slots": [
         {
+          "name": null,
+          "default": true,
+          "slot_props": "Record<string, never>"
+        },
+        {
           "name": "heading",
           "default": false,
           "fallback": "{modalHeading}",
@@ -6131,8 +6152,7 @@
           "default": false,
           "fallback": "{modalLabel}",
           "slot_props": "Record<string, never>"
-        },
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
+        }
       ],
       "events": [
         { "type": "forwarded", "name": "keydown", "element": "div" },
@@ -7484,12 +7504,16 @@
       "moduleExports": [],
       "slots": [
         {
+          "name": null,
+          "default": true,
+          "slot_props": "Record<string, never>"
+        },
+        {
           "name": "menu",
           "default": false,
           "fallback": "<svelte:component\n      this={icon}\n      aria-label={iconDescription}\n      title={iconDescription}\n      class=\"bx--overflow-menu__icon {iconClass}\"\n    />",
           "slot_props": "Record<string, never>"
-        },
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
+        }
       ],
       "events": [
         {
@@ -13060,6 +13084,11 @@
       "moduleExports": [],
       "slots": [
         {
+          "name": null,
+          "default": true,
+          "slot_props": "Record<string, never>"
+        },
+        {
           "name": "icon",
           "default": false,
           "fallback": "<svelte:component this={icon} name={iconName} />",
@@ -13070,8 +13099,7 @@
           "default": false,
           "fallback": "{triggerText}",
           "slot_props": "Record<string, never>"
-        },
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
+        }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "div" },
@@ -13241,12 +13269,16 @@
       "moduleExports": [],
       "slots": [
         {
+          "name": null,
+          "default": true,
+          "slot_props": "Record<string, never>"
+        },
+        {
           "name": "text",
           "default": false,
           "fallback": "{tooltipText}",
           "slot_props": "Record<string, never>"
-        },
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
+        }
       ],
       "events": [
         { "type": "forwarded", "name": "click", "element": "button" },

@@ -26,13 +26,13 @@
   "moduleExports": [],
   "slots": [
     {
-      "name": "header",
-      "default": false,
+      "name": null,
+      "default": true,
       "slot_props": "Record<string, never>"
     },
     {
-      "name": null,
-      "default": true,
+      "name": "header",
+      "default": false,
       "slot_props": "Record<string, never>"
     }
   ],

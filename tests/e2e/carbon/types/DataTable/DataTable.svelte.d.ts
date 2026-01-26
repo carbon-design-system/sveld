@@ -243,6 +243,7 @@ export default class DataTable<
     "click:cell": CustomEvent<DataTableCell<Row>>;
   },
   {
+    default: Record<string, never>;
     cell: {
       row: Row;
       cell: DataTableCell<Row>;
@@ -253,6 +254,5 @@ export default class DataTable<
     description: Record<string, never>;
     "expanded-row": { row: Row };
     title: Record<string, never>;
-    default: Record<string, never>;
   }
 > {}
