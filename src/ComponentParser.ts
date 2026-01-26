@@ -7,13 +7,29 @@ import { compile, parse, walk } from "svelte/compiler";
 import type { Ast, TemplateNode, Var } from "svelte/types/compiler/interfaces";
 import { getElementByTag } from "./element-tag-map";
 
-const COMMENT_BLOCK_DESCRIPTION_REGEX = /^-\s*/;
 const VAR_DECLARATION_REGEX = /(?:const|let|function)\s+(\w+)\s*[=(]/;
 
+// Regex for removing leading dash and whitespace from descriptions
+const DESCRIPTION_DASH_PREFIX_REGEX = /^-\s*/;
+
+/**
+ * Extracts description text after the last dash (for JSDoc comments like "@event click - description")
+ */
 function extractDescriptionAfterDash(description: string | undefined): string | undefined {
   if (!description) return undefined;
   const dashIndex = description.lastIndexOf("-");
   return dashIndex >= 0 ? description.substring(dashIndex + 1).trim() : description.trim();
+}
+
+/**
+ * Removes leading dash and whitespace from a description string.
+ * Used for cleaning up inline descriptions in JSDoc tags.
+ * Returns empty string if description becomes empty after cleaning, undefined if input was undefined.
+ */
+function cleanDescription(description: string | undefined): string | undefined {
+  if (description === undefined) return undefined;
+  const cleaned = description.replace(DESCRIPTION_DASH_PREFIX_REGEX, "").trim();
+  return cleaned === "" ? "" : cleaned;
 }
 
 interface CompiledSvelteCode {
@@ -59,7 +75,6 @@ const DEFAULT_SLOT_NAME = null;
 type ComponentSlotName = typeof DEFAULT_SLOT_NAME | string;
 
 const TYPEDEF_END_REGEX = /(\}|\};)$/;
-const PROPERTY_DESCRIPTION_REGEX = /^-\s*/;
 const CONTEXT_KEY_SPLIT_REGEX = /[-_\s]+/;
 const COMPONENT_COMMENT_REGEX = /^@component/;
 const CARRIAGE_RETURN_REGEX = /\r/g;
@@ -303,7 +318,7 @@ export default class ComponentParser {
         .map((tag) => ({
           name: tag.name,
           type: this.aliasType(tag.type),
-          description: tag.description?.replace(PROPERTY_DESCRIPTION_REGEX, "").trim(),
+          description: cleanDescription(tag.description),
           optional: tag.optional || false,
         }));
     }
@@ -699,7 +714,7 @@ export default class ComponentParser {
           case "slot": {
             // Prefer inline description, fall back to preceding line description,
             // then fall back to the comment block description (only for first tag if not already used)
-            const inlineSlotDesc = description?.replace(COMMENT_BLOCK_DESCRIPTION_REGEX, "").trim();
+            const inlineSlotDesc = cleanDescription(description);
             let slotDesc = inlineSlotDesc || precedingDescription;
             if (!slotDesc && isFirstTag && !commentDescriptionUsed && commentDescription) {
               slotDesc = commentDescription;
@@ -722,7 +737,7 @@ export default class ComponentParser {
             currentEventType = type;
             // Prefer inline description (e.g., "@event {type} name - description"),
             // fall back to preceding line, then fall back to comment block description (only for first tag if not already used)
-            const inlineEventDesc = description?.replace(COMMENT_BLOCK_DESCRIPTION_REGEX, "").trim();
+            const inlineEventDesc = cleanDescription(description);
             currentEventDescription = inlineEventDesc || precedingDescription;
             if (!currentEventDescription && isFirstTag && !commentDescriptionUsed && commentDescription) {
               currentEventDescription = commentDescription;
@@ -742,7 +757,7 @@ export default class ComponentParser {
             const propertyData = {
               name,
               type,
-              description: description?.replace(PROPERTY_DESCRIPTION_REGEX, "").trim(),
+              description: cleanDescription(description),
               optional: optional || false,
               default: defaultValue,
             };
@@ -763,7 +778,7 @@ export default class ComponentParser {
             currentTypedefType = type;
             // Prefer inline description, fall back to preceding line description,
             // then fall back to comment block description (only for first tag if not already used)
-            const inlineTypedefDesc = description?.replace(COMMENT_BLOCK_DESCRIPTION_REGEX, "").trim();
+            const inlineTypedefDesc = cleanDescription(description);
             currentTypedefDescription = inlineTypedefDesc || precedingDescription;
             if (!currentTypedefDescription && isFirstTag && !commentDescriptionUsed && commentDescription) {
               currentTypedefDescription = commentDescription;
