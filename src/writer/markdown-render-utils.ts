@@ -43,6 +43,22 @@ export function renderComponentsToMarkdown(document: MarkdownDocument, component
 }
 
 /**
+ * Renders a section conditionally - if items exist, calls renderFn, otherwise renders "None."
+ */
+function renderSectionIfNotEmpty<TItem>(
+  document: MarkdownDocument,
+  items: TItem[],
+  renderFn: () => void,
+  emptyMessage?: string,
+) {
+  if (items.length > 0) {
+    renderFn();
+  } else {
+    document.append("p", emptyMessage ?? "None.");
+  }
+}
+
+/**
  * Renders a single component's documentation to the markdown document.
  */
 function renderComponent(document: MarkdownDocument, component: ComponentDocApi) {
@@ -60,7 +76,7 @@ function renderComponent(document: MarkdownDocument, component: ComponentDocApi)
 
   // Render props
   document.append("h3", "Props");
-  if (component.props.length > 0) {
+  renderSectionIfNotEmpty(document, component.props, () => {
     document.append("raw", PROP_TABLE_HEADER);
     const sortedProps = [...component.props].sort((a) => {
       if (a.reactive) return -1;
@@ -77,13 +93,11 @@ function renderComponent(document: MarkdownDocument, component: ComponentDocApi)
         )} |\n`,
       );
     }
-  } else {
-    document.append("p", "None.");
-  }
+  });
 
   // Render slots
   document.append("h3", "Slots");
-  if (component.slots.length > 0) {
+  renderSectionIfNotEmpty(document, component.slots, () => {
     document.append("raw", SLOT_TABLE_HEADER);
     for (const slot of component.slots) {
       document.append(
@@ -93,13 +107,11 @@ function renderComponent(document: MarkdownDocument, component: ComponentDocApi)
         )} | ${formatSlotFallback(slot.fallback)} |\n`,
       );
     }
-  } else {
-    document.append("p", "None.");
-  }
+  });
 
   // Render events
   document.append("h3", "Events");
-  if (component.events.length > 0) {
+  renderSectionIfNotEmpty(document, component.events, () => {
     document.append("raw", EVENT_TABLE_HEADER);
     for (const event of component.events) {
       document.append(
@@ -109,7 +121,5 @@ function renderComponent(document: MarkdownDocument, component: ComponentDocApi)
         } | ${formatPropDescription(event.description)} |\n`,
       );
     }
-  } else {
-    document.append("p", "None.");
-  }
+  });
 }
