@@ -18,6 +18,33 @@ const FUNCTION_TYPE_REGEX = /=>/;
 const NEWLINE_TO_COMMENT_REGEX = /\n/g;
 const WHITESPACE_REGEX = /\s+/g;
 
+/**
+ * Formats a description for use in multi-line comment blocks.
+ * Replaces newlines with comment-formatted newlines.
+ */
+function formatDescriptionForComment(description: string | undefined): string | undefined {
+  if (!description) return undefined;
+  return description.replace(NEWLINE_TO_COMMENT_REGEX, "\n* ");
+}
+
+/**
+ * Formats a single-line JSDoc comment.
+ * Returns empty string if description is empty/undefined.
+ */
+function formatSingleLineComment(description: string | undefined): string {
+  if (!description) return "";
+  return `/** ${description} */`;
+}
+
+/**
+ * Formats a multi-line JSDoc comment with proper newline handling.
+ * Returns empty string if description is empty/undefined.
+ */
+function formatMultiLineComment(description: string | undefined): string {
+  if (!description) return "";
+  return `/**\n * ${description.replace(NEWLINE_TO_COMMENT_REGEX, "\n * ")}\n */`;
+}
+
 export function formatTsProps(props?: string) {
   if (props === undefined) return ANY_TYPE;
   return `${props}\n`;
@@ -27,9 +54,7 @@ export function getTypeDefs(def: Pick<ComponentDocApi, "typedefs">) {
   if (def.typedefs.length === 0) return EMPTY_STR;
   return def.typedefs
     .map((typedef) => {
-      const typedefComment = typedef.description
-        ? `/**\n * ${typedef.description.replace(NEWLINE_TO_COMMENT_REGEX, "\n * ")}\n */\n`
-        : "";
+      const typedefComment = typedef.description ? `${formatMultiLineComment(typedef.description)}\n` : "";
       return `${typedefComment}export ${typedef.ts}`;
     })
     .join("\n\n");
@@ -47,13 +72,13 @@ export function getContextDefs(def: Pick<ComponentDocApi, "contexts" | "generics
     .map((context) => {
       const props = context.properties
         .map((prop) => {
-          const comment = prop.description ? `/** ${prop.description} */\n  ` : "";
+          const comment = prop.description ? `${formatSingleLineComment(prop.description)}\n  ` : "";
           const optional = prop.optional ? "?" : "";
           return `${comment}${prop.name}${optional}: ${prop.type};`;
         })
         .join("\n  ");
 
-      const contextComment = context.description ? `/**\n * ${context.description}\n */\n` : "";
+      const contextComment = context.description ? `${formatMultiLineComment(context.description)}\n` : "";
 
       // Check if any context property types reference the generic type name
       const referencesGeneric = genericsName && context.properties.some((prop) => prop.type.includes(genericsName));
@@ -106,7 +131,7 @@ function genPropDef(
       }
 
       const prop_comments = [
-        addCommentLine(prop.description?.replace(NEWLINE_TO_COMMENT_REGEX, "\n* ")),
+        addCommentLine(formatDescriptionForComment(prop.description)),
         addCommentLine(prop.constant, "@constant"),
         // Don't add @default for functions - they don't have meaningful default values
         prop.isFunction ? null : `* @default ${defaultValue}\n`,
@@ -131,7 +156,7 @@ function genPropDef(
     .map((slot) => {
       const slotName = slot.name;
       const key = clampKey(slotName);
-      const description = slot.description ? `/** ${slot.description} */\n      ` : "";
+      const description = slot.description ? `${formatSingleLineComment(slot.description)}\n      ` : "";
       // Use Snippet-compatible type: (this: void, ...args: [Props]) => void for slots with props
       // or (this: void) => void for slots without props
       const hasSlotProps = slot.slot_props && slot.slot_props !== "Record<string, never>";
@@ -144,7 +169,9 @@ function genPropDef(
   const default_slot = (def.slots || []).find((slot) => slot.default || slot.name === null);
   const children_snippet_prop = default_slot
     ? (() => {
-        const description = default_slot.description ? `/** ${default_slot.description} */\n      ` : "";
+        const description = default_slot.description
+          ? `${formatSingleLineComment(default_slot.description)}\n      `
+          : "";
         const hasSlotProps = default_slot.slot_props && default_slot.slot_props !== "Record<string, never>";
         const snippetType = hasSlotProps
           ? `(this: void, ...args: [${default_slot.slot_props}]) => void`
@@ -252,7 +279,7 @@ function genSlotDef(def: Pick<ComponentDocApi, "slots">) {
   const slotDefs = def.slots
     .map(({ name, slot_props, ...rest }) => {
       const key = rest.default || name === null ? "default" : clampKey(name ?? "");
-      const description = rest.description ? `/** ${rest.description} */\n` : "";
+      const description = rest.description ? `${formatSingleLineComment(rest.description)}\n` : "";
       return `${description}${clampKey(key)}: ${formatTsProps(slot_props)};`;
     })
     .join("\n");
@@ -381,7 +408,7 @@ function genEventDef(def: Pick<ComponentDocApi, "events">) {
     .map((event) => {
       let description = "";
       if (event.description) {
-        description = `/** ${event.description} */\n`;
+        description = `${formatSingleLineComment(event.description)}\n`;
       }
 
       let eventType: string;
@@ -455,9 +482,7 @@ function genAccessors(def: Pick<ComponentDocApi, "props">) {
   return def.props
     .filter((prop) => prop.isFunctionDeclaration || prop.kind === "const")
     .map((prop) => {
-      const prop_comments = [addCommentLine(prop.description?.replace(NEWLINE_TO_COMMENT_REGEX, "\n* "))]
-        .filter(Boolean)
-        .join("");
+      const prop_comments = [addCommentLine(formatDescriptionForComment(prop.description))].filter(Boolean).join("");
 
       const functionType = generateFunctionType(prop);
 
@@ -475,7 +500,9 @@ function genImports(def: Pick<ComponentDocApi, "extends">) {
 
 function genComponentComment(def: Pick<ComponentDocApi, "componentComment">) {
   if (!def.componentComment) return "";
-  if (!NEWLINE_REGEX.test(def.componentComment)) return `/** ${def.componentComment.trim()} */`;
+  if (!NEWLINE_REGEX.test(def.componentComment)) {
+    return formatSingleLineComment(def.componentComment.trim());
+  }
   return `/*${def.componentComment
     .split("\n")
     .map((line) => `* ${line}`)
@@ -485,9 +512,7 @@ function genComponentComment(def: Pick<ComponentDocApi, "componentComment">) {
 function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">) {
   return def.moduleExports
     .map((prop) => {
-      const prop_comments = [addCommentLine(prop.description?.replace(NEWLINE_TO_COMMENT_REGEX, "\n* "))]
-        .filter(Boolean)
-        .join("");
+      const prop_comments = [addCommentLine(formatDescriptionForComment(prop.description))].filter(Boolean).join("");
 
       let type_def: string;
 
