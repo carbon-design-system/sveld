@@ -418,6 +418,39 @@ function genEventDef(def: Pick<ComponentDocApi, "events">) {
   return `{${events_map}}`;
 }
 
+/**
+ * Generates a function type string from a prop's type, params, and returnType.
+ * Priority: @type tag > @param/@returns tags > fallback to prop.type
+ */
+function generateFunctionType(prop: {
+  type?: string;
+  params?: Array<{ name: string; type: string; optional?: boolean }>;
+  returnType?: string;
+}): string {
+  // Check if this is the default function type (would be overridden by @type or params/returns)
+  const isDefaultFunctionType = prop.type === "() => any";
+
+  // If @type tag provides a custom function signature (contains => and is not the default), use it (highest priority)
+  if (prop.type && FUNCTION_TYPE_REGEX.test(prop.type) && !isDefaultFunctionType) {
+    return prop.type;
+  } else if (prop.params && prop.params.length > 0) {
+    // Build signature from @param tags
+    const paramStrings = prop.params.map((param) => {
+      const optional = param.optional ? "?" : "";
+      return `${param.name}${optional}: ${param.type}`;
+    });
+    const paramsString = paramStrings.join(", ");
+    const returnType = prop.returnType || ANY_TYPE;
+    return `(${paramsString}) => ${returnType}`;
+  } else if (prop.returnType) {
+    // Only @returns is present without @param
+    return `() => ${prop.returnType}`;
+  } else {
+    // Fall back to current prop.type
+    return prop.type || ANY_TYPE;
+  }
+}
+
 function genAccessors(def: Pick<ComponentDocApi, "props">) {
   return def.props
     .filter((prop) => prop.isFunctionDeclaration || prop.kind === "const")
@@ -426,31 +459,7 @@ function genAccessors(def: Pick<ComponentDocApi, "props">) {
         .filter(Boolean)
         .join("");
 
-      // Determine the function signature
-      let functionType: string;
-
-      // Check if this is the default function type (would be overridden by @type or params/returns)
-      const isDefaultFunctionType = prop.type === "() => any";
-
-      // If @type tag provides a custom function signature (contains => and is not the default), use it (highest priority)
-      if (prop.type && FUNCTION_TYPE_REGEX.test(prop.type) && !isDefaultFunctionType) {
-        functionType = prop.type;
-      } else if (prop.params && prop.params.length > 0) {
-        // Build signature from @param tags
-        const paramStrings = prop.params.map((param) => {
-          const optional = param.optional ? "?" : "";
-          return `${param.name}${optional}: ${param.type}`;
-        });
-        const paramsString = paramStrings.join(", ");
-        const returnType = prop.returnType || ANY_TYPE;
-        functionType = `(${paramsString}) => ${returnType}`;
-      } else if (prop.returnType) {
-        // Only @returns is present without @param
-        functionType = `() => ${prop.returnType}`;
-      } else {
-        // Fall back to current prop.type
-        functionType = prop.type || ANY_TYPE;
-      }
+      const functionType = generateFunctionType(prop);
 
       return `
     ${prop_comments.length > 0 ? `/**\n${prop_comments}*/` : EMPTY_STR}
@@ -480,19 +489,17 @@ function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">) {
         .filter(Boolean)
         .join("");
 
-      let type_def = `export type ${prop.name} = ${prop.type || ANY_TYPE};`;
+      let type_def: string;
 
       const is_function = prop.type && FUNCTION_TYPE_REGEX.test(prop.type);
       const isDefaultFunctionType = prop.type === "() => any";
 
-      if (is_function && prop.type && !isDefaultFunctionType) {
-        // @type tag provides a custom function signature (highest priority)
-        const [first, second, ...rest] = prop.type.split("=>");
-        const rest_type = rest.map((item) => `=>${item}`).join("");
-
-        type_def = `export declare function ${prop.name}${first}:${second}${rest_type};`;
+      // Check for const exports first (but only if not a function)
+      if (prop.kind === "const" && !is_function) {
+        // For const exports from script context="module", use declare const instead of type
+        type_def = `export declare const ${prop.name}: ${prop.type || ANY_TYPE};\n`;
       } else if (prop.params && prop.params.length > 0) {
-        // Build signature from @param tags
+        // Build signature from @param tags (highest priority for functions)
         const paramStrings = prop.params.map((param) => {
           const optional = param.optional ? "?" : "";
           return `${param.name}${optional}: ${param.type}`;
@@ -503,15 +510,23 @@ function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">) {
       } else if (prop.returnType) {
         // Only @returns is present without @param
         type_def = `export declare function ${prop.name}(): ${prop.returnType};`;
-      } else if (is_function && prop.type) {
-        // Fall back to existing function type handling
+      } else if (is_function && prop.type && !isDefaultFunctionType) {
+        // @type tag provides a custom function signature
+        // Convert function type to function declaration format
         const [first, second, ...rest] = prop.type.split("=>");
         const rest_type = rest.map((item) => `=>${item}`).join("");
-
+        type_def = `export declare function ${prop.name}${first}:${second}${rest_type};`;
+      } else if (is_function && prop.type) {
+        // Fall back to existing function type handling (including default function type)
+        const [first, second, ...rest] = prop.type.split("=>");
+        const rest_type = rest.map((item) => `=>${item}`).join("");
         type_def = `export declare function ${prop.name}${first}:${second}${rest_type};`;
       } else if (prop.kind === "const") {
-        // For const exports from script context="module", use declare const instead of type
+        // Const exports that are functions (shouldn't happen, but handle gracefully)
         type_def = `export declare const ${prop.name}: ${prop.type || ANY_TYPE};\n`;
+      } else {
+        // Default: export as type
+        type_def = `export type ${prop.name} = ${prop.type || ANY_TYPE};`;
       }
 
       return `
