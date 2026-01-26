@@ -2,7 +2,7 @@ import { join } from "node:path";
 import { convertSvelteExt, createExports } from "../create-exports";
 import type { ParsedExports } from "../parse-exports";
 import type { ComponentDocs } from "../rollup-plugin";
-import Writer from "./Writer";
+import { createTypeScriptWriter } from "./Writer";
 import { writeTsDefinition } from "./writer-ts-definitions-core";
 
 // Re-export browser-compatible functions from core
@@ -22,7 +22,7 @@ export interface WriteTsDefinitionsOptions {
 
 export default async function writeTsDefinitions(components: ComponentDocs, options: WriteTsDefinitionsOptions) {
   const ts_base_path = join(process.cwd(), options.outDir, "index.d.ts");
-  const writer = new Writer({ parser: "typescript", printWidth: 80 });
+  const writer = createTypeScriptWriter();
   const indexDTs = options.preamble + createExports(options.exports);
 
   const writePromises = Array.from(components).map(async ([_moduleName, component]) => {
