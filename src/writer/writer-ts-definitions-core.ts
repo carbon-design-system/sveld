@@ -109,6 +109,22 @@ function addCommentLine(value: string | boolean | undefined, returnValue?: strin
   return `* ${returnValue || value}\n`;
 }
 
+/**
+ * Creates a prop comment string from a description.
+ * Returns empty string if no description.
+ */
+function createPropComment(description: string | undefined): string {
+  return [addCommentLine(formatDescriptionForComment(description))].filter(Boolean).join("");
+}
+
+/**
+ * Wraps comment lines in JSDoc format if comments exist.
+ * Returns formatted JSDoc comment or empty string.
+ */
+function wrapCommentInJSDoc(commentLines: string): string {
+  return commentLines.length > 0 ? `/**\n${commentLines}*/` : EMPTY_STR;
+}
+
 function genPropDef(
   def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleName" | "extends" | "generics" | "slots">,
 ) {
@@ -142,7 +158,7 @@ function genPropDef(
       const prop_value = prop.constant && !prop.isFunction ? prop.value : prop.type;
 
       return `
-      ${prop_comments.length > 0 ? `/**\n${prop_comments}*/` : EMPTY_STR}
+      ${wrapCommentInJSDoc(prop_comments)}
       ${prop.name}${prop.isRequired ? "" : "?"}: ${prop_value};`;
     });
 
@@ -482,12 +498,12 @@ function genAccessors(def: Pick<ComponentDocApi, "props">) {
   return def.props
     .filter((prop) => prop.isFunctionDeclaration || prop.kind === "const")
     .map((prop) => {
-      const prop_comments = [addCommentLine(formatDescriptionForComment(prop.description))].filter(Boolean).join("");
+      const prop_comments = createPropComment(prop.description);
 
       const functionType = generateFunctionType(prop);
 
       return `
-    ${prop_comments.length > 0 ? `/**\n${prop_comments}*/` : EMPTY_STR}
+    ${wrapCommentInJSDoc(prop_comments)}
     ${prop.name}: ${functionType};`;
     })
     .join("\n");
@@ -512,7 +528,7 @@ function genComponentComment(def: Pick<ComponentDocApi, "componentComment">) {
 function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">) {
   return def.moduleExports
     .map((prop) => {
-      const prop_comments = [addCommentLine(formatDescriptionForComment(prop.description))].filter(Boolean).join("");
+      const prop_comments = createPropComment(prop.description);
 
       let type_def: string;
 
@@ -555,7 +571,7 @@ function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">) {
       }
 
       return `
-      ${prop_comments.length > 0 ? `/**\n${prop_comments}*/` : EMPTY_STR}
+      ${wrapCommentInJSDoc(prop_comments)}
       ${type_def}`;
     })
     .join("\n");
