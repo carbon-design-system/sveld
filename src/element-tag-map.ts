@@ -1,5 +1,18 @@
-// Element tag map adapted from TypeScript (`lib.dom.d.ts`)
-// https://github.com/microsoft/TypeScript/blob/master/lib/lib.dom.d.ts#L19263
+/**
+ * Element tag map adapted from TypeScript's `lib.dom.d.ts`.
+ *
+ * Maps HTML element tag names to their corresponding TypeScript element types.
+ * Used for generating proper TypeScript types for element bindings and rest props.
+ *
+ * @see {@link https://github.com/microsoft/TypeScript/blob/master/lib/lib.dom.d.ts#L19263 | TypeScript lib.dom.d.ts}
+ *
+ * @example
+ * ```ts
+ * tag_map["button"] // "HTMLButtonElement"
+ * tag_map["div"]    // "HTMLDivElement"
+ * tag_map["input"]  // "HTMLInputElement"
+ * ```
+ */
 const tag_map = {
   a: "HTMLAnchorElement",
   applet: "HTMLAppletElement",
@@ -86,6 +99,22 @@ const tag_map = {
 
 type ElementTag = keyof typeof tag_map;
 
+/**
+ * Gets the TypeScript element type for a given HTML tag name.
+ *
+ * Returns the specific element type (e.g., `HTMLButtonElement`) if the tag
+ * is in the map, otherwise returns the generic `HTMLElement` type.
+ *
+ * @param element - The HTML tag name (e.g., "button", "div", "input")
+ * @returns The corresponding TypeScript element type name
+ *
+ * @example
+ * ```ts
+ * getElementByTag("button")  // Returns: "HTMLButtonElement"
+ * getElementByTag("div")     // Returns: "HTMLDivElement"
+ * getElementByTag("custom")  // Returns: "HTMLElement" (fallback)
+ * ```
+ */
 export function getElementByTag(element: ElementTag | string) {
   return element in tag_map ? tag_map[element as ElementTag] : "HTMLElement";
 }
