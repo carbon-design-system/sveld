@@ -1,5 +1,179 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
+exports[`fixtures (JSON) "element-tag-map-table-cells/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "cellType",
+      "kind": "let",
+      "type": "\\"td\\" | \\"th\\"",
+      "value": "\\"td\\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "rest_props": {
+    "type": "Element",
+    "name": "td | th"
+  },
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "element-tag-map-new/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "semanticTag",
+      "kind": "let",
+      "type": "\\"article\\" | \\"section\\" | \\"nav\\" | \\"main\\" | \\"header\\" | \\"footer\\"",
+      "value": "\\"article\\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "rest_props": {
+    "type": "Element",
+    "name": "article | section | nav | main | header | footer"
+  },
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "element-tag-map-text-elements/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "textElement",
+      "kind": "let",
+      "type": "\\"abbr\\" | \\"code\\" | \\"em\\" | \\"strong\\" | \\"mark\\" | \\"kbd\\" | \\"samp\\" | \\"var\\"",
+      "value": "\\"code\\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "rest_props": {
+    "type": "Element",
+    "name": "abbr | code | em | strong | mark | kbd | samp | var"
+  },
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (TypeScript) "element-tag-map-table-cells/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+type $RestProps = SvelteHTMLElements["td"] & SvelteHTMLElements["th"];
+
+type $Props = {
+  /**
+   * @default "td"
+   */
+  cellType?: "td" | "th";
+
+  [key: \`data-\${string}\`]: any;
+};
+
+export type ElementTagMapTableCellsProps = Omit<$RestProps, keyof $Props> & $Props;
+
+export default class ElementTagMapTableCells extends SvelteComponentTyped<
+  ElementTagMapTableCellsProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "element-tag-map-new/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+type $RestProps = SvelteHTMLElements["article"] &
+  SvelteHTMLElements["section"] &
+  SvelteHTMLElements["nav"] &
+  SvelteHTMLElements["main"] &
+  SvelteHTMLElements["header"] &
+  SvelteHTMLElements["footer"];
+
+type $Props = {
+  /**
+   * @default "article"
+   */
+  semanticTag?: "article" | "section" | "nav" | "main" | "header" | "footer";
+
+  [key: \`data-\${string}\`]: any;
+};
+
+export type ElementTagMapNewProps = Omit<$RestProps, keyof $Props> & $Props;
+
+export default class ElementTagMapNew extends SvelteComponentTyped<
+  ElementTagMapNewProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "element-tag-map-text-elements/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+type $RestProps = SvelteHTMLElements["abbr"] &
+  SvelteHTMLElements["code"] &
+  SvelteHTMLElements["em"] &
+  SvelteHTMLElements["strong"] &
+  SvelteHTMLElements["mark"] &
+  SvelteHTMLElements["kbd"] &
+  SvelteHTMLElements["samp"] &
+  SvelteHTMLElements["var"];
+
+type $Props = {
+  /**
+   * @default "code"
+   */
+  textElement?: "abbr" | "code" | "em" | "strong" | "mark" | "kbd" | "samp" | "var";
+
+  [key: \`data-\${string}\`]: any;
+};
+
+export type ElementTagMapTextElementsProps = Omit<$RestProps, keyof $Props> & $Props;
+
+export default class ElementTagMapTextElements extends SvelteComponentTyped<
+  ElementTagMapTextElementsProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (JSON) "svg-props/input.svelte" 1`] = `
 "{
   "props": [],

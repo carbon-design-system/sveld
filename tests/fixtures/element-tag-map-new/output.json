@@ -1,0 +1,25 @@
+{
+  "props": [
+    {
+      "name": "semanticTag",
+      "kind": "let",
+      "type": "\"article\" | \"section\" | \"nav\" | \"main\" | \"header\" | \"footer\"",
+      "value": "\"article\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "rest_props": {
+    "type": "Element",
+    "name": "article | section | nav | main | header | footer"
+  },
+  "contexts": []
+}

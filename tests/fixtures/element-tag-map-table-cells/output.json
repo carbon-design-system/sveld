@@ -1,0 +1,25 @@
+{
+  "props": [
+    {
+      "name": "cellType",
+      "kind": "let",
+      "type": "\"td\" | \"th\"",
+      "value": "\"td\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "rest_props": {
+    "type": "Element",
+    "name": "td | th"
+  },
+  "contexts": []
+}
