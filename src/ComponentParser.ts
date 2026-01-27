@@ -783,8 +783,8 @@ export default class ComponentParser {
      */
     if (paramTags.length > 0) {
       params = paramTags
-        .filter((tag: { name: string }) => !tag.name.includes("."))
-        .map((tag: { name: string; type: string; description?: string; optional?: boolean }) => ({
+        .filter((tag) => !tag.name.includes("."))
+        .map((tag) => ({
           name: tag.name,
           type: this.aliasType(tag.type),
           description: cleanDescription(tag.description),
@@ -1382,7 +1382,7 @@ export default class ComponentParser {
              * Check if it's blank - if so, continue (blank lines can separate descriptions
              * from tags); if not, stop here as we've reached the end of the description block.
              */
-            const sourceLine = blockSource.find((l: { number: number }) => l.number === lineNum);
+            const sourceLine = blockSource.find((l) => l.number === lineNum);
             const isBlank =
               !sourceLine ||
               (!sourceLine.tokens.tag &&
@@ -2745,7 +2745,7 @@ export default class ComponentParser {
 
           const slot_props = (slotNode.attributes || [])
             .filter((attr) => attr.name !== "name")
-            .reduce((slot_props: SlotProps, attr) => {
+            .reduce<SlotProps>((slot_props, attr) => {
               const slot_prop_value: SlotPropValue = {
                 value: undefined,
                 replace: false,
