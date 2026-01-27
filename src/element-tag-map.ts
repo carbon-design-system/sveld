@@ -3,8 +3,7 @@
  *
  * Maps HTML element tag names to their corresponding TypeScript element types.
  * Used for generating proper TypeScript types for element bindings and rest props.
- *
- * @see {@link https://github.com/microsoft/TypeScript/blob/master/lib/lib.dom.d.ts#L19263 | TypeScript lib.dom.d.ts}
+ * See the TypeScript lib.dom.d.ts for the original source.
  *
  * @example
  * ```ts
