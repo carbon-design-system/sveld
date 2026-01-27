@@ -65,11 +65,34 @@ interface GenerateBundleResult {
   allComponentsForTypes: ComponentDocs;
 }
 
+/**
+ * Generates component documentation bundle from Svelte source files.
+ *
+ * Parses exports, discovers components (optionally via glob), and processes
+ * all Svelte files to extract component metadata. Returns both exported
+ * components (for JSON/Markdown) and all components (for TypeScript definitions).
+ *
+ * @param input - Entry point file or directory containing Svelte components
+ * @param glob - Whether to glob for all .svelte files in the directory
+ * @returns Bundle result containing exports, components, and allComponentsForTypes
+ *
+ * @example
+ * ```ts
+ * // Generate from single file:
+ * const result = await generateBundle("./src/App.svelte", false);
+ *
+ * // Generate from directory with glob:
+ * const result = await generateBundle("./src", true);
+ * ```
+ */
 export async function generateBundle(input: string, glob: boolean) {
   const isFile = lstatSync(input).isFile();
   const dir = isFile ? dirname(input) : input;
 
-  // Only parse exports if input is a file
+  /**
+   * Only parse exports if input is a file.
+   * Directory inputs don't have a single entry point to parse exports from.
+   */
   let exports: ParsedExports = {};
   if (isFile) {
     const entry = readFileSync(input, "utf-8");
@@ -130,7 +153,27 @@ export async function generateBundle(input: string, glob: boolean) {
 
   const fileMap = new Map<string, string | null>(fileContents.map(({ path, content }) => [path, content]));
 
-  // Helper function to process a single component
+  /**
+   * Helper function to process a single component.
+   *
+   * Reads the component file, preprocesses it (removes styles, processes TypeScript),
+   * and parses it to extract component metadata. Handles file read errors gracefully.
+   *
+   * @param entry - Export entry tuple [exportName, exportInfo]
+   * @param entries - All export entries for context
+   * @param fileMap - Map of file paths to their contents
+   * @returns Component documentation or null if processing failed
+   *
+   * @example
+   * ```ts
+   * const result = await processComponent(
+   *   ["Button", { source: "./Button.svelte", default: true }],
+   *   allEntries,
+   *   fileMap
+   * );
+   * // Returns: { moduleName: "Button", filePath: "./Button.svelte", props: [...], ... }
+   * ```
+   */
   const processComponent = async (
     [exportName, entry]: [string, ParsedExports[string]],
     entries: Array<[string, ParsedExports[string]]>,
@@ -150,7 +193,11 @@ export async function generateBundle(input: string, glob: boolean) {
       const source = fileMap.get(resolvedPath);
 
       if (source === null || source === undefined) {
-        // File was not found or failed to read, skip this component
+        /**
+         * File was not found or failed to read, skip this component.
+         * This can happen if the file doesn't exist or if there was an error
+         * reading it (already logged as a warning).
+         */
         return null;
       }
 
@@ -174,10 +221,19 @@ export async function generateBundle(input: string, glob: boolean) {
     return null;
   };
 
-  // Process exported components (for metadata/JSON/Markdown)
+  /**
+   * Process exported components (for metadata/JSON/Markdown).
+   * Only components that are explicitly exported are included in the
+   * components map for JSON and Markdown output.
+   */
   const componentPromises = exportEntries.map((entry) => processComponent(entry, exportEntries, fileMap));
 
-  // Process all components (for .d.ts generation)
+  /**
+   * Process all components (for .d.ts generation).
+   * All discovered components are included in allComponentsForTypes
+   * to ensure TypeScript definitions are generated for all components,
+   * even if they're not explicitly exported.
+   */
   const allComponentPromises = allComponentEntries.map((entry) =>
     processComponent(entry, allComponentEntries, fileMap),
   );
@@ -203,11 +259,36 @@ export async function generateBundle(input: string, glob: boolean) {
   };
 }
 
+/**
+ * Writes output files based on plugin options.
+ *
+ * Generates TypeScript definitions, JSON metadata, and/or Markdown documentation
+ * based on the options provided. Uses different component sets for different
+ * output types to match expected behavior.
+ *
+ * @param result - Bundle result containing exports and component documentation
+ * @param opts - Plugin options determining what outputs to generate
+ * @param input - Input file path for determining input directory
+ *
+ * @example
+ * ```ts
+ * writeOutput(result, {
+ *   types: true,
+ *   json: true,
+ *   markdown: true
+ * }, "./src/App.svelte");
+ * // Generates: types/*.d.ts, COMPONENT_API.json, COMPONENT_INDEX.md
+ * ```
+ */
 export function writeOutput(result: GenerateBundleResult, opts: PluginSveldOptions, input: string) {
   const inputDir = dirname(input);
 
   if (opts?.types !== false) {
-    // Use allComponentsForTypes to generate .d.ts for all discovered components
+    /**
+     * Use allComponentsForTypes to generate .d.ts for all discovered components.
+     * This ensures TypeScript definitions are available for all components,
+     * not just exported ones, which is useful for type checking.
+     */
     writeTsDefinitions(result.allComponentsForTypes, {
       outDir: "types",
       preamble: "",
@@ -218,7 +299,11 @@ export function writeOutput(result: GenerateBundleResult, opts: PluginSveldOptio
   }
 
   if (opts?.json) {
-    // Use components (exported only) for JSON metadata
+    /**
+     * Use components (exported only) for JSON metadata.
+     * JSON output should only include components that are actually exported,
+     * matching the public API surface.
+     */
     writeJson(result.components, {
       outFile: "COMPONENT_API.json",
       ...opts?.jsonOptions,
@@ -228,7 +313,11 @@ export function writeOutput(result: GenerateBundleResult, opts: PluginSveldOptio
   }
 
   if (opts?.markdown) {
-    // Use components (exported only) for Markdown documentation
+    /**
+     * Use components (exported only) for Markdown documentation.
+     * Documentation should only include exported components that are
+     * part of the public API.
+     */
     writeMarkdown(result.components, {
       outFile: "COMPONENT_INDEX.md",
       ...opts?.markdownOptions,

@@ -60,11 +60,16 @@ function renderSectionIfNotEmpty<TItem>(
 
 /**
  * Renders a single component's documentation to the markdown document.
+ *
+ * @param document - The markdown document to append to
+ * @param component - The component documentation to render
  */
 function renderComponent(document: MarkdownDocument, component: ComponentDocApi) {
   document.append("h2", `\`${component.moduleName}\``);
 
-  // Render typedefs
+  /**
+   * Render typedefs section if the component has any type definitions.
+   */
   if (component.typedefs.length > 0) {
     document.append("h3", "Types").append(
       "raw",
@@ -74,7 +79,10 @@ function renderComponent(document: MarkdownDocument, component: ComponentDocApi)
     );
   }
 
-  // Render props
+  /**
+   * Render props section with a table of all component props.
+   * Props are sorted with reactive props first, then constants last.
+   */
   document.append("h3", "Props");
   renderSectionIfNotEmpty(document, component.props, () => {
     document.append("raw", PROP_TABLE_HEADER);
@@ -95,7 +103,10 @@ function renderComponent(document: MarkdownDocument, component: ComponentDocApi)
     }
   });
 
-  // Render slots
+  /**
+   * Render slots section with a table of all component slots.
+   * Includes slot name, default status, props, and fallback content.
+   */
   document.append("h3", "Slots");
   renderSectionIfNotEmpty(document, component.slots, () => {
     document.append("raw", SLOT_TABLE_HEADER);
@@ -109,7 +120,10 @@ function renderComponent(document: MarkdownDocument, component: ComponentDocApi)
     }
   });
 
-  // Render events
+  /**
+   * Render events section with a table of all component events.
+   * Includes event name, type (dispatched/forwarded), detail type, and description.
+   */
   document.append("h3", "Events");
   renderSectionIfNotEmpty(document, component.events, () => {
     document.append("raw", EVENT_TABLE_HEADER);
