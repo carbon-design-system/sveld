@@ -11,9 +11,9 @@
   "events": [],
   "typedefs": [
     {
-      "type": "{ id: string; label: string; disabled?: boolean; }",
+      "type": "{\n  id: string;\n  label: string;\n  disabled?: boolean;\n}",
       "name": "TabData",
-      "ts": "type TabData = { id: string; label: string; disabled?: boolean; }"
+      "ts": "type TabData = {\n  id: string;\n  label: string;\n  disabled?: boolean;\n}"
     }
   ],
   "generics": null,

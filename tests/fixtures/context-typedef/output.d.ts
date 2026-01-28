@@ -1,6 +1,10 @@
 import { SvelteComponentTyped } from "svelte";
 
-export type TabData = { id: string; label: string; disabled?: boolean };
+export type TabData = {
+  id: string;
+  label: string;
+  disabled?: boolean;
+};
 
 export type TabsContext = {
   /** Register a new tab */

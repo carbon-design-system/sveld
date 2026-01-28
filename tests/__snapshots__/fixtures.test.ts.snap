@@ -398,9 +398,9 @@ exports[`fixtures (JSON) "accessor-param-returns/input.svelte" 1`] = `
   "events": [],
   "typedefs": [
     {
-      "type": "{ /** Optional id for deduplication */ id?: string; kind?: \\"error\\" | \\"info\\" | \\"success\\"; title?: string; }",
+      "type": "{\\n  /** Optional id for deduplication */\\n  id?: string;\\n  kind?: \\"error\\" | \\"info\\" | \\"success\\";\\n  title?: string;\\n}",
       "name": "NotificationData",
-      "ts": "type NotificationData = { /** Optional id for deduplication */ id?: string; kind?: \\"error\\" | \\"info\\" | \\"success\\"; title?: string; }"
+      "ts": "type NotificationData = {\\n  /** Optional id for deduplication */\\n  id?: string;\\n  kind?: \\"error\\" | \\"info\\" | \\"success\\";\\n  title?: string;\\n}"
     }
   ],
   "generics": null,
@@ -498,16 +498,16 @@ exports[`fixtures (JSON) "typedef-jsdoc-properties/input.svelte" 1`] = `
   "events": [],
   "typedefs": [
     {
-      "type": "{ /** The user's full name. */ name: string; /** The user's email address. */ email: string; /** The user's age in years. */ age: number; /** Optional nickname. */ nickname?: string; /** Optional phone with default. @default 555-0000 */ phone?: string; }",
+      "type": "{\\n  /** The user's full name. */\\n  name: string;\\n  /** The user's email address. */\\n  email: string;\\n  /** The user's age in years. */\\n  age: number;\\n  /** Optional nickname. */\\n  nickname?: string;\\n  /** Optional phone with default. @default 555-0000 */\\n  phone?: string;\\n}",
       "name": "User",
       "description": "Represents a user in the system.",
-      "ts": "type User = { /** The user's full name. */ name: string; /** The user's email address. */ email: string; /** The user's age in years. */ age: number; /** Optional nickname. */ nickname?: string; /** Optional phone with default. @default 555-0000 */ phone?: string; }"
+      "ts": "type User = {\\n  /** The user's full name. */\\n  name: string;\\n  /** The user's email address. */\\n  email: string;\\n  /** The user's age in years. */\\n  age: number;\\n  /** Optional nickname. */\\n  nickname?: string;\\n  /** Optional phone with default. @default 555-0000 */\\n  phone?: string;\\n}"
     },
     {
-      "type": "{ /** Whether the component is enabled. */ enabled: boolean; /** The component theme. */ theme: string; /** Optional timeout in milliseconds. @default 5000 */ timeout?: number; }",
+      "type": "{\\n  /** Whether the component is enabled. */\\n  enabled: boolean;\\n  /** The component theme. */\\n  theme: string;\\n  /** Optional timeout in milliseconds. @default 5000 */\\n  timeout?: number;\\n}",
       "name": "ComponentConfig",
       "description": "Configuration options for the component.",
-      "ts": "type ComponentConfig = { /** Whether the component is enabled. */ enabled: boolean; /** The component theme. */ theme: string; /** Optional timeout in milliseconds. @default 5000 */ timeout?: number; }"
+      "ts": "type ComponentConfig = {\\n  /** Whether the component is enabled. */\\n  enabled: boolean;\\n  /** The component theme. */\\n  theme: string;\\n  /** Optional timeout in milliseconds. @default 5000 */\\n  timeout?: number;\\n}"
     },
     {
       "type": "{ id: number; label: string; }",
@@ -967,7 +967,7 @@ exports[`fixtures (JSON) "typedef-event-shared-block/input.svelte" 1`] = `
     {
       "type": "dispatched",
       "name": "change",
-      "detail": "{ size: BreakpointSize; breakpointValue: BreakpointValue; }"
+      "detail": "{\\n  size: BreakpointSize;\\n  breakpointValue: BreakpointValue;\\n}"
     },
     {
       "type": "dispatched",
@@ -1088,7 +1088,7 @@ exports[`fixtures (JSON) "theme-component/input.svelte" 1`] = `
     {
       "type": "dispatched",
       "name": "update",
-      "detail": "{ theme: CarbonTheme; }"
+      "detail": "{\\n  theme: CarbonTheme;\\n}"
     }
   ],
   "typedefs": [
@@ -1613,9 +1613,9 @@ exports[`fixtures (JSON) "context-typedef/input.svelte" 1`] = `
   "events": [],
   "typedefs": [
     {
-      "type": "{ id: string; label: string; disabled?: boolean; }",
+      "type": "{\\n  id: string;\\n  label: string;\\n  disabled?: boolean;\\n}",
       "name": "TabData",
-      "ts": "type TabData = { id: string; label: string; disabled?: boolean; }"
+      "ts": "type TabData = {\\n  id: string;\\n  label: string;\\n  disabled?: boolean;\\n}"
     }
   ],
   "generics": null,
@@ -2082,9 +2082,9 @@ exports[`fixtures (JSON) "context-imported-type/input.svelte" 1`] = `
   "events": [],
   "typedefs": [
     {
-      "type": "{ open: () => void; close: () => void; }",
+      "type": "{\\n  open: () => void;\\n  close: () => void;\\n}",
       "name": "ModalAPI",
-      "ts": "type ModalAPI = { open: () => void; close: () => void; }"
+      "ts": "type ModalAPI = {\\n  open: () => void;\\n  close: () => void;\\n}"
     }
   ],
   "generics": null,
@@ -2664,14 +2664,14 @@ exports[`fixtures (JSON) "multiple-typedef-same-property/input.svelte" 1`] = `
   "events": [],
   "typedefs": [
     {
-      "type": "{ /** User identifier */ id: string; /** User display name */ name: string; }",
+      "type": "{\\n  /** User identifier */\\n  id: string;\\n  /** User display name */\\n  name: string;\\n}",
       "name": "UserConfig",
-      "ts": "type UserConfig = { /** User identifier */ id: string; /** User display name */ name: string; }"
+      "ts": "type UserConfig = {\\n  /** User identifier */\\n  id: string;\\n  /** User display name */\\n  name: string;\\n}"
     },
     {
-      "type": "{ /** Theme identifier */ id: string; /** Theme display name */ name: string; }",
+      "type": "{\\n  /** Theme identifier */\\n  id: string;\\n  /** Theme display name */\\n  name: string;\\n}",
       "name": "ThemeConfig",
-      "ts": "type ThemeConfig = { /** Theme identifier */ id: string; /** Theme display name */ name: string; }"
+      "ts": "type ThemeConfig = {\\n  /** Theme identifier */\\n  id: string;\\n  /** Theme display name */\\n  name: string;\\n}"
     }
   ],
   "generics": null,
@@ -3452,7 +3452,7 @@ exports[`fixtures (JSON) "dispatched-events-jsdoc-properties/input.svelte" 1`] =
     {
       "type": "dispatched",
       "name": "snowball",
-      "detail": "{ /** Indicates whether the snowball is tightly packed. */ isPacked: boolean; /** The speed of the snowball in mph. */ speed: number; /** Optional color of the snowball. */ color?: string; /** Optional density with default value. @default 0.9 */ density?: number; }",
+      "detail": "{\\n  /** Indicates whether the snowball is tightly packed. */\\n  isPacked: boolean;\\n  /** The speed of the snowball in mph. */\\n  speed: number;\\n  /** Optional color of the snowball. */\\n  color?: string;\\n  /** Optional density with default value. @default 0.9 */\\n  density?: number;\\n}",
       "description": "Snowball event fired when throwing a snowball."
     },
     {
@@ -4033,7 +4033,8 @@ exports[`fixtures (TypeScript) "accessor-param-returns/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
 export type NotificationData = {
-  /** Optional id for deduplication */ id?: string;
+  /** Optional id for deduplication */
+  id?: string;
   kind?: "error" | "info" | "success";
   title?: string;
 };
@@ -4142,20 +4143,28 @@ exports[`fixtures (TypeScript) "typedef-jsdoc-properties/input.svelte" 1`] = `
  * Represents a user in the system.
  */
 export type User = {
-  /** The user's full name. */ name: string;
-  /** The user's email address. */ email: string;
-  /** The user's age in years. */ age: number;
-  /** Optional nickname. */ nickname?: string;
-  /** Optional phone with default. @default 555-0000 */ phone?: string;
+  /** The user's full name. */
+  name: string;
+  /** The user's email address. */
+  email: string;
+  /** The user's age in years. */
+  age: number;
+  /** Optional nickname. */
+  nickname?: string;
+  /** Optional phone with default. @default 555-0000 */
+  phone?: string;
 };
 
 /**
  * Configuration options for the component.
  */
 export type ComponentConfig = {
-  /** Whether the component is enabled. */ enabled: boolean;
-  /** The component theme. */ theme: string;
-  /** Optional timeout in milliseconds. @default 5000 */ timeout?: number;
+  /** Whether the component is enabled. */
+  enabled: boolean;
+  /** The component theme. */
+  theme: string;
+  /** Optional timeout in milliseconds. @default 5000 */
+  timeout?: number;
 };
 
 /**
@@ -4445,7 +4454,10 @@ export type TypedefEventSharedBlockProps = {
 export default class TypedefEventSharedBlock extends SvelteComponentTyped<
   TypedefEventSharedBlockProps,
   {
-    change: CustomEvent<{ size: BreakpointSize; breakpointValue: BreakpointValue }>;
+    change: CustomEvent<{
+      size: BreakpointSize;
+      breakpointValue: BreakpointValue;
+    }>;
     /** Event fired when size changes */
     resize: CustomEvent<null>;
     scroll: CustomEvent<null>;
@@ -4504,7 +4516,11 @@ export type ThemeComponentProps = {
 
 export default class ThemeComponent extends SvelteComponentTyped<
   ThemeComponentProps,
-  { update: CustomEvent<{ theme: CarbonTheme }> },
+  {
+    update: CustomEvent<{
+      theme: CarbonTheme;
+    }>;
+  },
   { default: { theme: CarbonTheme } }
 > {}
 "
@@ -4799,7 +4815,11 @@ export default class ElementTagMapTableCells extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "context-typedef/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
-export type TabData = { id: string; label: string; disabled?: boolean };
+export type TabData = {
+  id: string;
+  label: string;
+  disabled?: boolean;
+};
 
 export type TabsContext = {
   /** Register a new tab */
@@ -5083,7 +5103,10 @@ export default class Required extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "context-imported-type/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
-export type ModalAPI = { open: () => void; close: () => void };
+export type ModalAPI = {
+  open: () => void;
+  close: () => void;
+};
 
 export type ModalContext = {
   /** Modal API object */
@@ -5383,9 +5406,19 @@ export default class ForwardedNativeWithDetail extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "multiple-typedef-same-property/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
-export type UserConfig = { /** User identifier */ id: string; /** User display name */ name: string };
+export type UserConfig = {
+  /** User identifier */
+  id: string;
+  /** User display name */
+  name: string;
+};
 
-export type ThemeConfig = { /** Theme identifier */ id: string; /** Theme display name */ name: string };
+export type ThemeConfig = {
+  /** Theme identifier */
+  id: string;
+  /** Theme display name */
+  name: string;
+};
 
 export type MultipleTypedefSamePropertyProps = {
   /**
@@ -5898,10 +5931,14 @@ export default class DispatchedEventsJsdocProperties extends SvelteComponentType
   {
     /** Snowball event fired when throwing a snowball. */
     snowball: CustomEvent<{
-      /** Indicates whether the snowball is tightly packed. */ isPacked: boolean;
-      /** The speed of the snowball in mph. */ speed: number;
-      /** Optional color of the snowball. */ color?: string;
-      /** Optional density with default value. @default 0.9 */ density?: number;
+      /** Indicates whether the snowball is tightly packed. */
+      isPacked: boolean;
+      /** The speed of the snowball in mph. */
+      speed: number;
+      /** Optional color of the snowball. */
+      color?: string;
+      /** Optional density with default value. @default 0.9 */
+      density?: number;
     }>;
     /** Will be fired if value has been changed */
     change: CustomEvent<null>;

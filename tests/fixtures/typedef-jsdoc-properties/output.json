@@ -42,16 +42,16 @@
   "events": [],
   "typedefs": [
     {
-      "type": "{ /** The user's full name. */ name: string; /** The user's email address. */ email: string; /** The user's age in years. */ age: number; /** Optional nickname. */ nickname?: string; /** Optional phone with default. @default 555-0000 */ phone?: string; }",
+      "type": "{\n  /** The user's full name. */\n  name: string;\n  /** The user's email address. */\n  email: string;\n  /** The user's age in years. */\n  age: number;\n  /** Optional nickname. */\n  nickname?: string;\n  /** Optional phone with default. @default 555-0000 */\n  phone?: string;\n}",
       "name": "User",
       "description": "Represents a user in the system.",
-      "ts": "type User = { /** The user's full name. */ name: string; /** The user's email address. */ email: string; /** The user's age in years. */ age: number; /** Optional nickname. */ nickname?: string; /** Optional phone with default. @default 555-0000 */ phone?: string; }"
+      "ts": "type User = {\n  /** The user's full name. */\n  name: string;\n  /** The user's email address. */\n  email: string;\n  /** The user's age in years. */\n  age: number;\n  /** Optional nickname. */\n  nickname?: string;\n  /** Optional phone with default. @default 555-0000 */\n  phone?: string;\n}"
     },
     {
-      "type": "{ /** Whether the component is enabled. */ enabled: boolean; /** The component theme. */ theme: string; /** Optional timeout in milliseconds. @default 5000 */ timeout?: number; }",
+      "type": "{\n  /** Whether the component is enabled. */\n  enabled: boolean;\n  /** The component theme. */\n  theme: string;\n  /** Optional timeout in milliseconds. @default 5000 */\n  timeout?: number;\n}",
       "name": "ComponentConfig",
       "description": "Configuration options for the component.",
-      "ts": "type ComponentConfig = { /** Whether the component is enabled. */ enabled: boolean; /** The component theme. */ theme: string; /** Optional timeout in milliseconds. @default 5000 */ timeout?: number; }"
+      "ts": "type ComponentConfig = {\n  /** Whether the component is enabled. */\n  enabled: boolean;\n  /** The component theme. */\n  theme: string;\n  /** Optional timeout in milliseconds. @default 5000 */\n  timeout?: number;\n}"
     },
     {
       "type": "{ id: number; label: string; }",

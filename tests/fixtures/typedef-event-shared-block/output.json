@@ -54,7 +54,7 @@
     {
       "type": "dispatched",
       "name": "change",
-      "detail": "{ size: BreakpointSize; breakpointValue: BreakpointValue; }"
+      "detail": "{\n  size: BreakpointSize;\n  breakpointValue: BreakpointValue;\n}"
     },
     {
       "type": "dispatched",

@@ -34,7 +34,10 @@ export type TypedefEventSharedBlockProps = {
 export default class TypedefEventSharedBlock extends SvelteComponentTyped<
   TypedefEventSharedBlockProps,
   {
-    change: CustomEvent<{ size: BreakpointSize; breakpointValue: BreakpointValue }>;
+    change: CustomEvent<{
+      size: BreakpointSize;
+      breakpointValue: BreakpointValue;
+    }>;
     /** Event fired when size changes */
     resize: CustomEvent<null>;
     scroll: CustomEvent<null>;
