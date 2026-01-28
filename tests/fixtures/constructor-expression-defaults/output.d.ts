@@ -2,29 +2,64 @@ import { SvelteComponentTyped } from "svelte";
 
 export type ConstructorExpressionDefaultsProps = {
   /**
-   * @default undefined
+   * @default new Map()
    */
   cache?: Map<string, number>;
 
   /**
-   * @default undefined
+   * @default new Set()
    */
   selected?: Set<string>;
 
   /**
-   * @default undefined
+   * @default new Date()
    */
-  createdAt?: undefined;
+  createdAt?: Date;
 
   /**
-   * @default undefined
+   * @default new WeakMap()
    */
   metadata?: WeakMap<object, any>;
 
   /**
-   * @default undefined
+   * @default new Array(10)
    */
   buffer?: number[];
+
+  /**
+   * @default new Map()
+   */
+  items?: Map<any, any>;
+
+  /**
+   * @default new Set()
+   */
+  tags?: Set<any>;
+
+  /**
+   * @default new WeakMap()
+   */
+  weakData?: WeakMap<object, any>;
+
+  /**
+   * @default new WeakSet()
+   */
+  weakRefs?: WeakSet<object>;
+
+  /**
+   * @default new Array()
+   */
+  itemsArray?: any[];
+
+  /**
+   * @default new RegExp("test")
+   */
+  pattern?: RegExp;
+
+  /**
+   * @default new Error("message")
+   */
+  customError?: Error;
 };
 
 export default class ConstructorExpressionDefaults extends SvelteComponentTyped<
