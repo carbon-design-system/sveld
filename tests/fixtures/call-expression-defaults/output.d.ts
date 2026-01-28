@@ -2,22 +2,22 @@ import { SvelteComponentTyped } from "svelte";
 
 export type CallExpressionDefaultsProps = {
   /**
-   * @default undefined
+   * @default generateId()
    */
   id?: string;
 
   /**
-   * @default undefined
+   * @default Date.now()
    */
   timestamp?: number;
 
   /**
-   * @default undefined
+   * @default JSON.parse('{"version": 1}')
    */
   config?: { version: number };
 
   /**
-   * @default undefined
+   * @default "hello".toUpperCase()
    */
   uppercased?: string;
 };
