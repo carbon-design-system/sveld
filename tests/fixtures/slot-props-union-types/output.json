@@ -1,0 +1,33 @@
+{
+  "props": [
+    {
+      "name": "items",
+      "kind": "let",
+      "type": "Array<{ value: string | number; status: \"pending\" | \"complete\" | \"error\" }>",
+      "value": "[]",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{ item: string | number; status: \"pending\" | \"complete\" | \"error\"; error: Error | null; }"
+    },
+    {
+      "name": "header",
+      "default": false,
+      "slot_props": "{ active: boolean }",
+      "description": "Header slot"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}

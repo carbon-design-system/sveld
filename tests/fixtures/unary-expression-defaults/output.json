@@ -1,0 +1,68 @@
+{
+  "props": [
+    {
+      "name": "offset",
+      "kind": "let",
+      "description": "Negative number constant",
+      "type": "number",
+      "value": "-1",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "threshold",
+      "kind": "let",
+      "description": "Negative decimal",
+      "type": "number",
+      "value": "-0.5",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "inverted",
+      "kind": "let",
+      "type": "boolean",
+      "value": "!false",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "bitmask",
+      "kind": "let",
+      "description": "Bitwise NOT",
+      "type": "number",
+      "value": "~0",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "absolute",
+      "kind": "let",
+      "description": "Double negation",
+      "value": "-(-5)",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}

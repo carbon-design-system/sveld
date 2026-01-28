@@ -1,0 +1,40 @@
+{
+  "props": [
+    {
+      "name": "transform",
+      "kind": "let",
+      "type": "(value: string, options?: { uppercase?: boolean }) => string",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "processItems",
+      "kind": "let",
+      "type": "(items: string[], callback: (item: string, index: number) => void) => Promise<void>",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "createRecord",
+      "kind": "let",
+      "type": "(id: string) => { id: string; created: Date }",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
