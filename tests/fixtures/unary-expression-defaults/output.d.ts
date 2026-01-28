@@ -28,7 +28,7 @@ export type UnaryExpressionDefaultsProps = {
    * Double negation
    * @default -(-5)
    */
-  absolute?: undefined;
+  absolute?: number;
 };
 
 export default class UnaryExpressionDefaults extends SvelteComponentTyped<

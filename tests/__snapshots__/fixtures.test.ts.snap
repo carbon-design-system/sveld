@@ -1276,6 +1276,7 @@ exports[`fixtures (JSON) "unary-expression-defaults/input.svelte" 1`] = `
       "name": "absolute",
       "kind": "let",
       "description": "Double negation",
+      "type": "number",
       "value": "-(-5)",
       "isFunction": false,
       "isFunctionDeclaration": false,
@@ -4510,7 +4511,7 @@ export type UnaryExpressionDefaultsProps = {
    * Double negation
    * @default -(-5)
    */
-  absolute?: undefined;
+  absolute?: number;
 };
 
 export default class UnaryExpressionDefaults extends SvelteComponentTyped<

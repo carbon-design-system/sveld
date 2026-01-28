@@ -51,6 +51,7 @@
       "name": "absolute",
       "kind": "let",
       "description": "Double negation",
+      "type": "number",
       "value": "-(-5)",
       "isFunction": false,
       "isFunctionDeclaration": false,

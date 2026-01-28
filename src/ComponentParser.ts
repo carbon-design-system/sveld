@@ -957,8 +957,69 @@ export default class ComponentParser {
       ) {
         value = this.sourceAtPos(unaryExpr.start, unaryExpr.end);
       }
-      if (unaryExpr.argument && typeof unaryExpr.argument === "object" && "value" in unaryExpr.argument) {
-        type = typeof (unaryExpr.argument as Literal).value;
+      if (unaryExpr.argument) {
+        // If the argument is another UnaryExpression, recursively resolve the type
+        if (
+          typeof unaryExpr.argument === "object" &&
+          "type" in unaryExpr.argument &&
+          unaryExpr.argument.type === "UnaryExpression"
+        ) {
+          const nestedResult = this.processInitializer(unaryExpr.argument);
+          type = nestedResult.type;
+        } else if (typeof unaryExpr.argument === "object" && "value" in unaryExpr.argument) {
+          // Direct literal argument
+          type = typeof (unaryExpr.argument as Literal).value;
+        }
+      }
+    } else if (init.type === "NewExpression") {
+      const newExpr = init as NewExpression;
+      if (
+        "start" in newExpr &&
+        "end" in newExpr &&
+        typeof newExpr.start === "number" &&
+        typeof newExpr.end === "number"
+      ) {
+        value = this.sourceAtPos(newExpr.start, newExpr.end);
+      }
+      // Infer type from callee if it's an Identifier (e.g., new Date() -> Date)
+      if (
+        newExpr.callee &&
+        typeof newExpr.callee === "object" &&
+        "type" in newExpr.callee &&
+        newExpr.callee.type === "Identifier"
+      ) {
+        const calleeName = (newExpr.callee as Identifier).name;
+        // Common built-in constructors
+        if (calleeName === "Date") {
+          type = "Date";
+        } else if (calleeName === "Map") {
+          type = "Map<any, any>";
+        } else if (calleeName === "Set") {
+          type = "Set<any>";
+        } else if (calleeName === "WeakMap") {
+          type = "WeakMap<object, any>";
+        } else if (calleeName === "WeakSet") {
+          type = "WeakSet<object>";
+        } else if (calleeName === "Array") {
+          type = "any[]";
+        } else if (calleeName === "RegExp" || calleeName === "Regexp") {
+          type = "RegExp";
+        } else if (calleeName === "Error") {
+          type = "Error";
+        } else {
+          // For other constructors, use the constructor name as the type
+          type = calleeName;
+        }
+      }
+    } else if (init.type === "CallExpression") {
+      const callExpr = init as CallExpression;
+      if (
+        "start" in callExpr &&
+        "end" in callExpr &&
+        typeof callExpr.start === "number" &&
+        typeof callExpr.end === "number"
+      ) {
+        value = this.sourceAtPos(callExpr.start, callExpr.end);
       }
     } else if (init.type === "Identifier") {
       const ident = init as Identifier;
