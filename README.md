@@ -430,9 +430,12 @@ Output:
 
 ```ts
 export type User = {
-  /** The user's full name */ name: string;
-  /** The user's email address */ email: string;
-  /** The user's age in years */ age: number;
+  /** The user's full name */
+  name: string;
+  /** The user's email address */
+  email: string;
+  /** The user's age in years */
+  age: number;
 };
 
 export type ComponentProps = {
@@ -478,10 +481,14 @@ Output:
 
 ```ts
 export type ComponentConfig = {
-  /** Whether the component is enabled */ enabled: boolean;
-  /** The component theme */ theme: string;
-  /** Optional timeout in milliseconds @default 5000 */ timeout?: number;
-  /** Optional debug mode flag */ debug?: boolean;
+  /** Whether the component is enabled */
+  enabled: boolean;
+  /** The component theme */
+  theme: string;
+  /** Optional timeout in milliseconds @default 5000 */
+  timeout?: number;
+  /** Optional debug mode flag */
+  debug?: boolean;
 };
 
 export type ComponentProps = {
@@ -735,9 +742,12 @@ export default class Component extends SvelteComponentTyped<
   {
     /** Fired when the user submits the form */
     submit: CustomEvent<{
-      /** The user's name */ name: string;
-      /** The user's email address */ email: string;
-      /** Whether the user opted into the newsletter */ newsletter: boolean;
+      /** The user's name */
+      name: string;
+      /** The user's email address */
+      email: string;
+      /** Whether the user opted into the newsletter */
+      newsletter: boolean;
     }>;
   },
   Record<string, never>
@@ -782,10 +792,14 @@ export default class Component extends SvelteComponentTyped<
   {
     /** Snowball event fired when throwing a snowball */
     snowball: CustomEvent<{
-      /** Indicates whether the snowball is tightly packed */ isPacked: boolean;
-      /** The speed of the snowball in mph */ speed: number;
-      /** Optional color of the snowball */ color?: string;
-      /** Optional density with default value @default 0.9 */ density?: number;
+      /** Indicates whether the snowball is tightly packed */
+      isPacked: boolean;
+      /** The speed of the snowball in mph */
+      speed: number;
+      /** Optional color of the snowball */
+      color?: string;
+      /** Optional density with default value @default 0.9 */
+      density?: number;
     }>;
   },
   Record<string, never>
@@ -1171,7 +1185,8 @@ Output:
 
 ```ts
 export type NotificationData = {
-  /** Optional id for deduplication */ id?: string;
+  /** Optional id for deduplication */
+  id?: string;
   kind?: "error" | "info" | "success";
 };
 

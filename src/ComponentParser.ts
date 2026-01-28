@@ -1490,7 +1490,7 @@ export default class ComponentParser {
         if (currentEventName !== undefined) {
           let detailType: string;
           if (eventProperties.length > 0) {
-            detailType = this.buildEventDetailFromProperties(eventProperties, currentEventName);
+            detailType = this.buildEventDetailFromProperties(eventProperties, currentEventName, true);
           } else {
             detailType = currentEventType || "";
           }
@@ -1542,8 +1542,9 @@ export default class ComponentParser {
           if (typedefProperties.length > 0) {
             /**
              * Build type alias with property descriptions from `@property` tags.
+             * Use multiline formatting for better readability.
              */
-            typedefType = this.buildEventDetailFromProperties(typedefProperties);
+            typedefType = this.buildEventDetailFromProperties(typedefProperties, undefined, true);
             typedefTs = `type ${currentTypedefName} = ${typedefType}`;
           } else if (currentTypedefType) {
             /**
@@ -1744,6 +1745,7 @@ export default class ComponentParser {
   private buildEventDetailFromProperties(
     properties: Array<{ name: string; type: string; description?: string; optional?: boolean; default?: string }>,
     _eventName?: string,
+    multiline = false,
   ): string {
     if (properties.length === 0) return "null";
 
@@ -1767,13 +1769,16 @@ export default class ComponentParser {
         }
 
         if (comment) {
+          if (multiline) {
+            return `/** ${comment} */\n  ${name}${optionalMarker}: ${type};`;
+          }
           return `/** ${comment} */ ${name}${optionalMarker}: ${type};`;
         }
         return `${name}${optionalMarker}: ${type};`;
       })
-      .join(" ");
+      .join(multiline ? "\n  " : " ");
 
-    return `{ ${props} }`;
+    return multiline ? `{\n  ${props}\n}` : `{ ${props} }`;
   }
 
   /**

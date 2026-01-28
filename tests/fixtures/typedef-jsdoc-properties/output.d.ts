@@ -4,20 +4,28 @@ import { SvelteComponentTyped } from "svelte";
  * Represents a user in the system.
  */
 export type User = {
-  /** The user's full name. */ name: string;
-  /** The user's email address. */ email: string;
-  /** The user's age in years. */ age: number;
-  /** Optional nickname. */ nickname?: string;
-  /** Optional phone with default. @default 555-0000 */ phone?: string;
+  /** The user's full name. */
+  name: string;
+  /** The user's email address. */
+  email: string;
+  /** The user's age in years. */
+  age: number;
+  /** Optional nickname. */
+  nickname?: string;
+  /** Optional phone with default. @default 555-0000 */
+  phone?: string;
 };
 
 /**
  * Configuration options for the component.
  */
 export type ComponentConfig = {
-  /** Whether the component is enabled. */ enabled: boolean;
-  /** The component theme. */ theme: string;
-  /** Optional timeout in milliseconds. @default 5000 */ timeout?: number;
+  /** Whether the component is enabled. */
+  enabled: boolean;
+  /** The component theme. */
+  theme: string;
+  /** Optional timeout in milliseconds. @default 5000 */
+  timeout?: number;
 };
 
 /**

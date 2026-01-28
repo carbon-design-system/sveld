@@ -73,7 +73,7 @@
     {
       "type": "dispatched",
       "name": "update",
-      "detail": "{ theme: CarbonTheme; }"
+      "detail": "{\n  theme: CarbonTheme;\n}"
     }
   ],
   "typedefs": [

@@ -11,9 +11,9 @@
   "events": [],
   "typedefs": [
     {
-      "type": "{ open: () => void; close: () => void; }",
+      "type": "{\n  open: () => void;\n  close: () => void;\n}",
       "name": "ModalAPI",
-      "ts": "type ModalAPI = { open: () => void; close: () => void; }"
+      "ts": "type ModalAPI = {\n  open: () => void;\n  close: () => void;\n}"
     }
   ],
   "generics": null,

@@ -135,9 +135,9 @@
   "events": [],
   "typedefs": [
     {
-      "type": "{ /** Optional id for deduplication */ id?: string; kind?: \"error\" | \"info\" | \"success\"; title?: string; }",
+      "type": "{\n  /** Optional id for deduplication */\n  id?: string;\n  kind?: \"error\" | \"info\" | \"success\";\n  title?: string;\n}",
       "name": "NotificationData",
-      "ts": "type NotificationData = { /** Optional id for deduplication */ id?: string; kind?: \"error\" | \"info\" | \"success\"; title?: string; }"
+      "ts": "type NotificationData = {\n  /** Optional id for deduplication */\n  id?: string;\n  kind?: \"error\" | \"info\" | \"success\";\n  title?: string;\n}"
     }
   ],
   "generics": null,
