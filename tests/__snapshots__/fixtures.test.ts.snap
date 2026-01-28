@@ -2915,6 +2915,7 @@ exports[`fixtures (JSON) "call-expression-defaults/input.svelte" 1`] = `
       "name": "id",
       "kind": "let",
       "type": "string",
+      "value": "generateId()",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -2925,6 +2926,7 @@ exports[`fixtures (JSON) "call-expression-defaults/input.svelte" 1`] = `
       "name": "timestamp",
       "kind": "let",
       "type": "number",
+      "value": "Date.now()",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -2935,6 +2937,7 @@ exports[`fixtures (JSON) "call-expression-defaults/input.svelte" 1`] = `
       "name": "config",
       "kind": "let",
       "type": "{ version: number }",
+      "value": "JSON.parse('{\\"version\\": 1}')",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -2945,6 +2948,7 @@ exports[`fixtures (JSON) "call-expression-defaults/input.svelte" 1`] = `
       "name": "uppercased",
       "kind": "let",
       "type": "string",
+      "value": "\\"hello\\".toUpperCase()",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -5536,22 +5540,22 @@ exports[`fixtures (TypeScript) "call-expression-defaults/input.svelte" 1`] = `
 
 export type CallExpressionDefaultsProps = {
   /**
-   * @default undefined
+   * @default generateId()
    */
   id?: string;
 
   /**
-   * @default undefined
+   * @default Date.now()
    */
   timestamp?: number;
 
   /**
-   * @default undefined
+   * @default JSON.parse('{"version": 1}')
    */
   config?: { version: number };
 
   /**
-   * @default undefined
+   * @default "hello".toUpperCase()
    */
   uppercased?: string;
 };
