@@ -3,7 +3,7 @@
     {
       "name": "initialize",
       "kind": "function",
-      "type": "() => any",
+      "type": "() => Promise<void>",
       "returnType": "Promise<void>",
       "isFunction": true,
       "isFunctionDeclaration": true,
@@ -14,7 +14,7 @@
     {
       "name": "fetchData",
       "kind": "function",
-      "type": "() => any",
+      "type": "(url: string) => Promise<Response>",
       "params": [
         {
           "name": "url",

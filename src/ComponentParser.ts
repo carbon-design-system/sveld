@@ -2504,6 +2504,20 @@ export default class ComponentParser {
               }
             }
 
+            // Merge returnType into type for function declarations if not overridden by @type
+            if (isFunctionDeclaration && type === "() => any" && returnType) {
+              if (params && params.length > 0) {
+                const paramStrings = params.map((param) => {
+                  const optional = param.optional ? "?" : "";
+                  return `${param.name}${optional}: ${param.type}`;
+                });
+                const paramsString = paramStrings.join(", ");
+                type = `(${paramsString}) => ${returnType}`;
+              } else {
+                type = `() => ${returnType}`;
+              }
+            }
+
             if (!description && type && this.typedefs.has(type)) {
               description = this.typedefs.get(type)?.description;
             }
@@ -2747,6 +2761,20 @@ export default class ComponentParser {
               params = jsdocInfo.params;
               returnType = jsdocInfo.returnType;
               if (jsdocInfo.description) description = jsdocInfo.description;
+            }
+          }
+
+          // Merge returnType into type for function declarations if not overridden by @type
+          if (isFunctionDeclaration && type === "() => any" && returnType) {
+            if (params && params.length > 0) {
+              const paramStrings = params.map((param) => {
+                const optional = param.optional ? "?" : "";
+                return `${param.name}${optional}: ${param.type}`;
+              });
+              const paramsString = paramStrings.join(", ");
+              type = `(${paramsString}) => ${returnType}`;
+            } else {
+              type = `() => ${returnType}`;
             }
           }
 
