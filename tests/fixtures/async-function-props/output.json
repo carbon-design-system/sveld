@@ -1,0 +1,50 @@
+{
+  "props": [
+    {
+      "name": "initialize",
+      "kind": "function",
+      "type": "() => any",
+      "returnType": "Promise<void>",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "fetchData",
+      "kind": "function",
+      "type": "() => any",
+      "params": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "",
+          "optional": false
+        }
+      ],
+      "returnType": "Promise<Response>",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "validate",
+      "kind": "let",
+      "type": "(id: number) => Promise<boolean>",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}

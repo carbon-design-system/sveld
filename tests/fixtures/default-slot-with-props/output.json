@@ -1,0 +1,28 @@
+{
+  "props": [
+    {
+      "name": "items",
+      "kind": "let",
+      "type": "string[]",
+      "value": "[]",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "fallback": "<span>{item}</span>",
+      "slot_props": "{ item: string; index: number; isFirst: boolean; isLast: boolean; }"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}

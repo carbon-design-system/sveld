@@ -1,0 +1,50 @@
+{
+  "props": [
+    {
+      "name": "id",
+      "kind": "let",
+      "type": "string",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "timestamp",
+      "kind": "let",
+      "type": "number",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "config",
+      "kind": "let",
+      "type": "{ version: number }",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "uppercased",
+      "kind": "let",
+      "type": "string",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}

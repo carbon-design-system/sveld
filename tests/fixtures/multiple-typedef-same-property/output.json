@@ -1,0 +1,43 @@
+{
+  "props": [
+    {
+      "name": "user",
+      "kind": "let",
+      "type": "UserConfig",
+      "value": "{ id: \"1\", name: \"Admin\" }",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "theme",
+      "kind": "let",
+      "type": "ThemeConfig",
+      "value": "{ id: \"default\", name: \"Default\" }",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{ /** User identifier */ id: string; /** User display name */ name: string; }",
+      "name": "UserConfig",
+      "ts": "type UserConfig = { /** User identifier */ id: string; /** User display name */ name: string; }"
+    },
+    {
+      "type": "{ /** Theme identifier */ id: string; /** Theme display name */ name: string; }",
+      "name": "ThemeConfig",
+      "ts": "type ThemeConfig = { /** Theme identifier */ id: string; /** Theme display name */ name: string; }"
+    }
+  ],
+  "generics": null,
+  "contexts": []
+}
