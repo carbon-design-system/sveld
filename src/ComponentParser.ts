@@ -9,6 +9,7 @@ import type {
   Identifier,
   Literal,
   MemberExpression,
+  NewExpression,
   ObjectExpression,
   Property,
   TemplateLiteral,

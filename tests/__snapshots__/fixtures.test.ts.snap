@@ -1399,6 +1399,7 @@ exports[`fixtures (JSON) "constructor-expression-defaults/input.svelte" 1`] = `
       "name": "cache",
       "kind": "let",
       "type": "Map<string, number>",
+      "value": "new Map()",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -1409,6 +1410,7 @@ exports[`fixtures (JSON) "constructor-expression-defaults/input.svelte" 1`] = `
       "name": "selected",
       "kind": "let",
       "type": "Set<string>",
+      "value": "new Set()",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -1418,6 +1420,8 @@ exports[`fixtures (JSON) "constructor-expression-defaults/input.svelte" 1`] = `
     {
       "name": "createdAt",
       "kind": "let",
+      "type": "Date",
+      "value": "new Date()",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -1428,6 +1432,7 @@ exports[`fixtures (JSON) "constructor-expression-defaults/input.svelte" 1`] = `
       "name": "metadata",
       "kind": "let",
       "type": "WeakMap<object, any>",
+      "value": "new WeakMap()",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -1438,6 +1443,84 @@ exports[`fixtures (JSON) "constructor-expression-defaults/input.svelte" 1`] = `
       "name": "buffer",
       "kind": "let",
       "type": "number[]",
+      "value": "new Array(10)",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "items",
+      "kind": "let",
+      "type": "Map<any, any>",
+      "value": "new Map()",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "tags",
+      "kind": "let",
+      "type": "Set<any>",
+      "value": "new Set()",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "weakData",
+      "kind": "let",
+      "type": "WeakMap<object, any>",
+      "value": "new WeakMap()",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "weakRefs",
+      "kind": "let",
+      "type": "WeakSet<object>",
+      "value": "new WeakSet()",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "itemsArray",
+      "kind": "let",
+      "type": "any[]",
+      "value": "new Array()",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "pattern",
+      "kind": "let",
+      "type": "RegExp",
+      "value": "new RegExp(\\"test\\")",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "customError",
+      "kind": "let",
+      "type": "Error",
+      "value": "new Error(\\"message\\")",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -4596,29 +4679,64 @@ exports[`fixtures (TypeScript) "constructor-expression-defaults/input.svelte" 1`
 
 export type ConstructorExpressionDefaultsProps = {
   /**
-   * @default undefined
+   * @default new Map()
    */
   cache?: Map<string, number>;
 
   /**
-   * @default undefined
+   * @default new Set()
    */
   selected?: Set<string>;
 
   /**
-   * @default undefined
+   * @default new Date()
    */
-  createdAt?: undefined;
+  createdAt?: Date;
 
   /**
-   * @default undefined
+   * @default new WeakMap()
    */
   metadata?: WeakMap<object, any>;
 
   /**
-   * @default undefined
+   * @default new Array(10)
    */
   buffer?: number[];
+
+  /**
+   * @default new Map()
+   */
+  items?: Map<any, any>;
+
+  /**
+   * @default new Set()
+   */
+  tags?: Set<any>;
+
+  /**
+   * @default new WeakMap()
+   */
+  weakData?: WeakMap<object, any>;
+
+  /**
+   * @default new WeakSet()
+   */
+  weakRefs?: WeakSet<object>;
+
+  /**
+   * @default new Array()
+   */
+  itemsArray?: any[];
+
+  /**
+   * @default new RegExp("test")
+   */
+  pattern?: RegExp;
+
+  /**
+   * @default new Error("message")
+   */
+  customError?: Error;
 };
 
 export default class ConstructorExpressionDefaults extends SvelteComponentTyped<
