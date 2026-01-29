@@ -431,6 +431,8 @@ interface ComponentElement {
    * ```
    */
   thisValue?: string;
+  /** Inline or block description from the `@restProps` JSDoc tag */
+  description?: string;
 }
 
 type RestProps = undefined | ComponentInlineElement | ComponentElement;
@@ -1602,13 +1604,30 @@ export default class ComponentParser {
             };
             if (isFirstTag) isFirstTag = false;
             break;
-          case "restProps":
+          case "restProps": {
+            /**
+             * Prefer inline description (e.g., "@restProps {type} description" or "@restProps {type} - description"),
+             * fall back to preceding line description, then fall back to the
+             * comment block description (only for first tag if not already used).
+             *
+             * Note: comment-parser treats the first word after the type as "name" and the rest as "description",
+             * so we combine them to form the full inline description for @restProps.
+             */
+            const rawInlineDesc = name ? (description ? `${name} ${description}` : name) : description;
+            const inlineRestPropsDesc = cleanDescription(rawInlineDesc);
+            let restPropsDesc = inlineRestPropsDesc || precedingDescription;
+            if (!restPropsDesc && isFirstTag && !commentDescriptionUsed && commentDescription) {
+              restPropsDesc = commentDescription;
+              commentDescriptionUsed = true;
+            }
             this.rest_props = {
               type: "Element",
               name: type,
+              description: restPropsDesc || undefined,
             };
             if (isFirstTag) isFirstTag = false;
             break;
+          }
           case "slot": {
             /**
              * Prefer inline description (e.g., "@slot name - description"),
