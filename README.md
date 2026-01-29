@@ -8,11 +8,7 @@
 
 The purpose of this project is to make third party Svelte component libraries compatible with the Svelte Language Server and TypeScript with minimal effort required by the author. For example, TypeScript definitions may be used during development via intelligent code completion in Integrated Development Environments (IDE) like VSCode.
 
-[Carbon Components Svelte](https://github.com/carbon-design-system/carbon-components-svelte) uses this library to auto-generate component types and API metadata:
-
-- [TypeScript definitions](https://github.com/carbon-design-system/carbon-components-svelte/blob/master/types): Component TypeScript definitions
-- [Component Index](https://github.com/carbon-design-system/carbon-components-svelte/blob/master/COMPONENT_INDEX.md): Markdown file documenting component props, slots, and events
-- [Component API](https://github.com/carbon-design-system/carbon-components-svelte/blob/master/docs/src/COMPONENT_API.json): Component API metadata in JSON format
+[Carbon Components Svelte](https://github.com/carbon-design-system/carbon-components-svelte) uses this library to auto-generate component types and API metadata.
 
 **Note:** `sveld` supports Svelte 3, 4, and 5, but does not support Svelte 5-specific syntax or runes-only usage. Components must use traditional Svelte syntax (e.g., `export let` for props, not `$props()`).
 
