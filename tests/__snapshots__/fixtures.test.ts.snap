@@ -1222,6 +1222,36 @@ exports[`fixtures (JSON) "infer-basic/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "rest-props-description-multiline/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "variant",
+      "kind": "let",
+      "type": "\\"inline\\" | \\"single\\" | \\"multi\\"",
+      "value": "\\"single\\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "rest_props": {
+    "type": "Element",
+    "name": "button | span",
+    "description": "Rest props are spread to the span (inline variant)\\nor the copy button (single/multi)."
+  },
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "unary-expression-defaults/input.svelte" 1`] = `
 "{
   "props": [
@@ -3657,6 +3687,36 @@ exports[`fixtures (JSON) "slots-spread/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "rest-props-description/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "variant",
+      "kind": "let",
+      "type": "\\"inline\\" | \\"single\\" | \\"multi\\"",
+      "value": "\\"single\\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "rest_props": {
+    "type": "Element",
+    "name": "button | span",
+    "description": "Spread to the span (inline variant) or the copy button (single/multi)."
+  },
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "forwarded-and-dispatched-events/input.svelte" 1`] = `
 "{
   "props": [],
@@ -4580,6 +4640,35 @@ export default class InferBasic extends SvelteComponentTyped<
 
   fn: () => any;
 }
+"
+`;
+
+exports[`fixtures (TypeScript) "rest-props-description-multiline/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+/**
+ * Rest props are spread to the span (inline variant)
+ * or the copy button (single/multi).
+ */
+type $RestProps = SvelteHTMLElements["button"] & SvelteHTMLElements["span"];
+
+type $Props = {
+  /**
+   * @default "single"
+   */
+  variant?: "inline" | "single" | "multi";
+
+  [key: \`data-\${string}\`]: any;
+};
+
+export type RestPropsDescriptionMultilineProps = Omit<$RestProps, keyof $Props> & $Props;
+
+export default class RestPropsDescriptionMultiline extends SvelteComponentTyped<
+  RestPropsDescriptionMultilineProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
 "
 `;
 
@@ -6111,6 +6200,32 @@ export default class SlotsSpread extends SvelteComponentTyped<
   SlotsSpreadProps,
   Record<string, any>,
   { default: Record<string, never>; text: Record<string, never> }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "rest-props-description/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+/** Spread to the span (inline variant) or the copy button (single/multi). */
+type $RestProps = SvelteHTMLElements["button"] & SvelteHTMLElements["span"];
+
+type $Props = {
+  /**
+   * @default "single"
+   */
+  variant?: "inline" | "single" | "multi";
+
+  [key: \`data-\${string}\`]: any;
+};
+
+export type RestPropsDescriptionProps = Omit<$RestProps, keyof $Props> & $Props;
+
+export default class RestPropsDescription extends SvelteComponentTyped<
+  RestPropsDescriptionProps,
+  Record<string, any>,
+  Record<string, never>
 > {}
 "
 `;

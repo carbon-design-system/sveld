@@ -1,0 +1,26 @@
+{
+  "props": [
+    {
+      "name": "variant",
+      "kind": "let",
+      "type": "\"inline\" | \"single\" | \"multi\"",
+      "value": "\"single\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "rest_props": {
+    "type": "Element",
+    "name": "button | span",
+    "description": "Spread to the span (inline variant) or the copy button (single/multi)."
+  },
+  "contexts": []
+}

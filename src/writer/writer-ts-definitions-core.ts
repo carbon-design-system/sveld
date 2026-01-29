@@ -336,6 +336,16 @@ function genPropDef(
     const dataAttributes = "[key: `data-${string}`]: any;";
 
     /**
+     * Generate JSDoc comment for $RestProps if description is provided.
+     * Use multiline format when description contains newlines.
+     */
+    const restPropsComment = def.rest_props.description
+      ? def.rest_props.description.includes("\n")
+        ? `${formatMultiLineComment(def.rest_props.description)}\n    `
+        : `${formatSingleLineComment(def.rest_props.description)}\n    `
+      : "";
+
+    /**
      * When both `@extends` and `@restProps` are present, merge all three type sources:
      * 1. Rest props from element types (SvelteHTMLElements)
      * 2. Component props ($Props)
@@ -343,7 +353,7 @@ function genPropDef(
      */
     if (def.extends !== undefined) {
       prop_def = `
-    ${extend_tag_map ? `type $RestProps = ${extend_tag_map};\n` : ""}
+    ${restPropsComment}${extend_tag_map ? `type $RestProps = ${extend_tag_map};\n` : ""}
     type $Props${genericsName} = {
       ${props}
 
@@ -354,7 +364,7 @@ function genPropDef(
   `;
     } else {
       prop_def = `
-    ${extend_tag_map ? `type $RestProps = ${extend_tag_map};\n` : ""}
+    ${restPropsComment}${extend_tag_map ? `type $RestProps = ${extend_tag_map};\n` : ""}
     type $Props${genericsName} = {
       ${props}
 
