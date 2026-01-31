@@ -9,7 +9,7 @@
 </svelte:head>
 
 <Header aria-label="Navigation" href="/">
-  <SkipToContent slot="skip-to-content" />
+  <SkipToContent slot="skipToContent" />
   <span slot="platform">
     {pkg.name}
     <code title="Version {pkg.version}">v{pkg.version}</code>
