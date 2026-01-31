@@ -125,7 +125,7 @@ export default class Button extends SvelteComponentTyped<
   - [@event](#event)
   - [Context API](#context-api)
   - [@restProps](#restprops)
-  - [@extends](#extends)
+  - [@extendProps](#extendprops)
   - [@generics](#generics)
   - [@component comments](#component-comments)
   - [Accessor Props](#accessor-props)
@@ -999,22 +999,24 @@ Example:
 {/if}
 ```
 
-### `@extends`
+### `@extendProps`
 
-In some cases, a component may be based on another component. The `@extends` tag can be used to extend generated component props.
+In some cases, a component may be based on another component. The `@extendProps` tag can be used to extend generated component props.
+
+> **Note:** `@extends` is supported as an alias but `@extendProps` is preferred to avoid conflicts with standard JSDoc `@extends` (used for class inheritance).
 
 Signature:
 
 ```js
 /**
- * @extends {<relative path to component>} ComponentProps
+ * @extendProps {<relative path to component>} ComponentProps
  */
 ```
 
 Example:
 
 ```js
-/** @extends {"./Button.svelte"} ButtonProps */
+/** @extendProps {"./Button.svelte"} ButtonProps */
 
 export const secondary = true;
 

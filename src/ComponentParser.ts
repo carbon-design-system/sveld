@@ -657,6 +657,7 @@ export default class ComponentParser {
       "returns",
       "return",
       "extends",
+      "extendProps",
       "restProps",
       "slot",
       "event",
@@ -1598,6 +1599,7 @@ export default class ComponentParser {
 
         switch (tag) {
           case "extends":
+          case "extendProps":
             this.extends = {
               interface: name,
               import: type,

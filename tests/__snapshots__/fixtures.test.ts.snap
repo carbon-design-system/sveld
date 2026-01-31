@@ -3717,6 +3717,45 @@ exports[`fixtures (JSON) "rest-props-description/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "extend-props/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "secondary",
+      "kind": "let",
+      "type": "boolean",
+      "value": "false",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "rest_props": {
+    "type": "Element",
+    "name": "button"
+  },
+  "extends": {
+    "interface": "ButtonProps",
+    "import": "\\"./Button.svelte\\""
+  },
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "forwarded-and-dispatched-events/input.svelte" 1`] = `
 "{
   "props": [],
@@ -6226,6 +6265,35 @@ export default class RestPropsDescription extends SvelteComponentTyped<
   RestPropsDescriptionProps,
   Record<string, any>,
   Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "extend-props/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+import type { ButtonProps } from "./Button.svelte";
+
+type $RestProps = SvelteHTMLElements["button"];
+
+type $Props = {
+  /**
+   * @default false
+   */
+  secondary?: boolean;
+
+  children?: (this: void) => void;
+
+  [key: \`data-\${string}\`]: any;
+};
+
+export type ExtendPropsProps = Omit<$RestProps, keyof ($Props & ButtonProps)> & $Props & ButtonProps;
+
+export default class ExtendProps extends SvelteComponentTyped<
+  ExtendPropsProps,
+  Record<string, any>,
+  { default: Record<string, never> }
 > {}
 "
 `;
