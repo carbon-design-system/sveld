@@ -6,8 +6,8 @@
       "devDependencies": {
         "@sveltejs/vite-plugin-svelte": "^3.1.2",
         "@types/codemirror": "^5.60.17",
-        "carbon-components-svelte": "^0.99.1",
-        "carbon-preprocess-svelte": "^0.11.24",
+        "carbon-components-svelte": "^0.99.3",
+        "carbon-preprocess-svelte": "^0.11.25",
         "codemirror": "^5.65.20",
         "prettier": "^3.7.4",
         "svelte": "^4.2.20",
@@ -138,9 +138,9 @@
 
     "axobject-query": ["axobject-query@4.1.0", "", {}, "sha512-qIj0G9wZbMGNLjLmg1PT6v2mE9AH2zlnADJD/2tC6E00hgmhUOfEB6greHPAfLRSufHqROIUTkw6E+M3lH0PTQ=="],
 
-    "carbon-components-svelte": ["carbon-components-svelte@0.99.1", "", { "dependencies": { "@ibm/telemetry-js": "^1.5.0", "flatpickr": "4.6.9" } }, "sha512-LojHTmHhq2Vyq3mU9yfgbYfKYu8FoG4NnhDETdGdMOaKuNSuxdiDOWx6bjoyok6DH3N6hJssNnqK1cqc/qB7Mg=="],
+    "carbon-components-svelte": ["carbon-components-svelte@0.99.3", "", { "dependencies": { "@ibm/telemetry-js": "^1.5.0", "flatpickr": "4.6.9" } }, "sha512-AnaA4kJKQ7iDTet2BLJoMWoA6BVGwlYC/ZBdCOeNwBY3YzAoi0bHt6oH6sSesl64nV5oR8lZmKLTra21mMjD2Q=="],
 
-    "carbon-preprocess-svelte": ["carbon-preprocess-svelte@0.11.24", "", {}, "sha512-4ytz9ByWl4JDimrwWhczGBUSsmbkZg/CrF/mFfigh7cHwsJ5MGGAXSsc/8b9ZiFFPRjW4KMrlKhC5TFhqvBmyw=="],
+    "carbon-preprocess-svelte": ["carbon-preprocess-svelte@0.11.25", "", {}, "sha512-bpHx/mofwg3pYLVvoCynzrm89bZ8IdyiB3GgmO785xS0ERk07NrT0wVhvTaM6maexJrIx4rMz/j592jdMPG6sQ=="],
 
     "code-red": ["code-red@1.0.4", "", { "dependencies": { "@jridgewell/sourcemap-codec": "^1.4.15", "@types/estree": "^1.0.1", "acorn": "^8.10.0", "estree-walker": "^3.0.3", "periscopic": "^3.1.0" } }, "sha512-7qJWqItLA8/VPVlKJlFXU+NBlo/qyfs39aJcuMT/2ere32ZqvF5OSxgdM5xOfJJ7O429gg2HM47y8v9P+9wrNw=="],
 
