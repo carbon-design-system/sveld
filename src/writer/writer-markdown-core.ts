@@ -1,4 +1,4 @@
-import type { ComponentDocs } from "../rollup-plugin";
+import type { ComponentDocs } from "../plugin";
 import { type AppendType, MarkdownWriterBaseImpl } from "./MarkdownWriterBase";
 import { renderComponentsToMarkdown } from "./markdown-render-utils";
 

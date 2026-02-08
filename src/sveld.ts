@@ -1,5 +1,5 @@
 import { getSvelteEntry } from "./get-svelte-entry";
-import { generateBundle, type PluginSveldOptions, writeOutput } from "./rollup-plugin";
+import { generateBundle, type PluginSveldOptions, writeOutput } from "./plugin";
 
 interface SveldOptions extends PluginSveldOptions {
   /**

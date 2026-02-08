@@ -52,7 +52,9 @@
     "docgen",
     "typescript",
     "definitions",
-    "JSDocs"
+    "JSDocs",
+    "vite",
+    "vite-plugin"
   ],
   "maintainers": [
     "Eric Liu (https://github.com/metonym)"

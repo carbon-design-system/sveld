@@ -39,12 +39,23 @@ export type ComponentDocs = Map<ComponentModuleName, ComponentDocApi>;
 const STYLE_TAG_REGEX = /<style.+?<\/style>/gims;
 const HYPHEN_REGEX = /-/g;
 
-export default function pluginSveld(opts?: PluginSveldOptions) {
+interface SveldPlugin {
+  name: string;
+  apply?: "build" | "serve";
+  enforce?: "pre" | "post";
+  buildStart(): void;
+  generateBundle(): Promise<void>;
+  writeBundle(): void;
+}
+
+export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
   let result: GenerateBundleResult;
   let input: string | null;
 
   return {
-    name: "plugin-sveld",
+    name: "vite-plugin-sveld",
+    apply: "build",
+    enforce: "post",
     buildStart() {
       input = getSvelteEntry(opts?.entry);
     },

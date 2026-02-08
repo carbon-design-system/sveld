@@ -2,7 +2,7 @@ import resolve from "@rollup/plugin-node-resolve";
 import { rollup } from "rollup";
 import svelte from "rollup-plugin-svelte";
 import { getSvelteEntry } from "./get-svelte-entry";
-import { generateBundle, type PluginSveldOptions, writeOutput } from "./rollup-plugin";
+import { generateBundle, type PluginSveldOptions, writeOutput } from "./plugin";
 
 /**
  * Command-line interface for sveld.
