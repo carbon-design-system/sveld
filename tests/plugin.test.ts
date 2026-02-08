@@ -2,7 +2,7 @@
 import * as fs from "node:fs";
 // biome-ignore lint/performance/noNamespaceImport: needed for jest.spyOn
 import * as path from "node:path";
-import pluginSveld, { generateBundle } from "../src/rollup-plugin";
+import pluginSveld, { generateBundle } from "../src/plugin";
 
 describe("pluginSveld", () => {
   const mockCwd = "/mock/project";

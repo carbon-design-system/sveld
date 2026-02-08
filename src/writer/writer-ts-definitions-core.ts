@@ -1,4 +1,4 @@
-import type { ComponentDocApi } from "../rollup-plugin";
+import type { ComponentDocApi } from "../plugin";
 
 const ANY_TYPE = "any";
 const EMPTY_STR = "";

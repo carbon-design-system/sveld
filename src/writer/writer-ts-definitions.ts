@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { convertSvelteExt, createExports } from "../create-exports";
 import type { ParsedExports } from "../parse-exports";
-import type { ComponentDocs } from "../rollup-plugin";
+import type { ComponentDocs } from "../plugin";
 import { createTypeScriptWriter } from "./Writer";
 import { writeTsDefinition } from "./writer-ts-definitions-core";
 

@@ -112,7 +112,7 @@ export default class Button extends SvelteComponentTyped<
 - [Approach](#approach)
 - [Usage](#usage)
   - [Installation](#installation)
-  - [Rollup](#rollup)
+  - [Vite](#vite)
   - [Node.js](#nodejs)
   - [CLI](#cli)
   - [Publishing to NPM](#publishing-to-npm)
@@ -167,25 +167,22 @@ bun i -D sveld
 yarn add -D sveld
 ```
 
-### Rollup
+### Vite
 
-Import and add `sveld` as a plugin to your `rollup.config.js`.
+Import and add `sveld` as a plugin to your `vite.config.ts`. The plugin only runs during `vite build` (not the dev server).
 
-```js
-// rollup.config.js
-import svelte from "rollup-plugin-svelte";
-import resolve from "@rollup/plugin-node-resolve";
+```ts
+// vite.config.ts
+import { svelte } from "@sveltejs/vite-plugin-svelte";
 import sveld from "sveld";
+import { defineConfig } from "vite";
 
-export default {
-  input: "src/index.js",
-  output: {
-    format: "es",
-    file: "lib/index.mjs",
-  },
-  plugins: [svelte(), resolve(), sveld()],
-};
+export default defineConfig({
+  plugins: [svelte(), sveld()],
+});
 ```
+
+Since Vite uses Rollup for production builds, `sveld` also works in Rollup configurations.
 
 By default, `sveld` will use the `"svelte"` field from your `package.json` to determine the entry point. You can override this by specifying an explicit `entry` option:
 
@@ -208,16 +205,6 @@ sveld({
 +  }
 })
 ```
-
-The [tests/e2e](tests/e2e) folder contains example set-ups:
-
-- [single-export](tests/e2e/single-export): library that exports one component
-- [single-export-default-only](tests/e2e/single-export-default-only): library that exports one component using the concise `export { default } ...` syntax
-- [multi-export](tests/e2e/multi-export): multi-component library without JSDoc annotations (types are inferred)
-- [multi-export-typed](tests/e2e/multi-export-typed): multi-component library with JSDoc annotations
-- [multi-export-typed-ts-only](tests/e2e/multi-export-typed-ts-only): multi-component library that only generates TS definitions
-- [glob](tests/e2e/glob): library that uses the glob strategy to collect/analyze \*.svelte files
-- [carbon](tests/e2e/carbon): full `carbon-components-svelte` example
 
 ### CLI
 
@@ -299,7 +286,7 @@ TypeScript definitions are outputted to the `types` folder by default. Don't for
 
 ## Available Options
 
-### Rollup Plugin Options
+### Plugin Options
 
 - **`entry`** (string, optional): Specify the entry point to uncompiled Svelte source. If not provided, sveld will use the `"svelte"` field from `package.json`.
 - **`glob`** (boolean, optional): Enable glob mode to analyze all `*.svelte` files.

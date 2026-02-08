@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import type { ComponentDocs } from "../rollup-plugin";
+import type { ComponentDocs } from "../plugin";
 import { renderComponentsToMarkdown } from "./markdown-render-utils";
 import WriterMarkdown, { type AppendType } from "./WriterMarkdown";
 

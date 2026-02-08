@@ -1,5 +1,5 @@
 import type { ParsedComponent } from "../src/ComponentParser";
-import type { ComponentDocApi } from "../src/rollup-plugin";
+import type { ComponentDocApi } from "../src/plugin";
 import { formatTsProps, getContextDefs, getTypeDefs, writeTsDefinition } from "../src/writer/writer-ts-definitions";
 
 const DEFAULT_SLOT_SNIPPET_PROP_REGEX = /default\?\s*:\s*\(\)\s*=>\s*void/;

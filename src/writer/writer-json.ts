@@ -1,6 +1,6 @@
 import path from "node:path";
 import { normalizeSeparators } from "../path";
-import type { ComponentDocApi, ComponentDocs } from "../rollup-plugin";
+import type { ComponentDocApi, ComponentDocs } from "../plugin";
 import { createJsonWriter } from "./Writer";
 
 export interface WriteJsonOptions {
