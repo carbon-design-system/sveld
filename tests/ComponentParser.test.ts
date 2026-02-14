@@ -205,6 +205,187 @@ describe("ComponentParser", () => {
 
     const footerSlot = result.slots.find((s) => s.name === "footer");
     expect(footerSlot?.slot_props).toContain("count");
+    expect(footerSlot?.slot_props).toContain("count: any");
+  });
+
+  test("resolves dotted access slot prop type from @type annotation", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /** @type {{ value: string }} */
+        let obj = { value: "hello" };
+      </script>
+
+      <slot prop={obj.value} />
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    const slot = result.slots.find((s) => s.default);
+    expect(slot?.slot_props).toBe("{ prop: string }");
+  });
+
+  test("resolves dotted access slot prop type from exported prop", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /** @type {{ x: number; y: number }} */
+        export let point = { x: 0, y: 0 };
+      </script>
+
+      <slot coords={point.x} />
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    const slot = result.slots.find((s) => s.default);
+    expect(slot?.slot_props).toBe("{ coords: number }");
+  });
+
+  test("resolves dotted access with union types", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /** @type {{ status: "pending" | "done" | "error" }} */
+        let state = { status: "pending" };
+      </script>
+
+      <slot current={state.status} />
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    const slot = result.slots.find((s) => s.default);
+    expect(slot?.slot_props).toBe('{ current: "pending" | "done" | "error" }');
+  });
+
+  test("resolves dotted access with nested object type", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /** @type {{ inner: { deep: number } }} */
+        let nested = { inner: { deep: 42 } };
+      </script>
+
+      <slot data={nested.inner} />
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    const slot = result.slots.find((s) => s.default);
+    expect(slot?.slot_props).toBe("{ data: { deep: number } }");
+  });
+
+  test("resolves dotted access with optional property", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /** @type {{ label?: string }} */
+        let config = {};
+      </script>
+
+      <slot text={config.label} />
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    const slot = result.slots.find((s) => s.default);
+    expect(slot?.slot_props).toBe("{ text: string }");
+  });
+
+  test("resolves dotted access with generic type", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /** @type {{ items: Array<string> }} */
+        let data = { items: [] };
+      </script>
+
+      <slot list={data.items} />
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    const slot = result.slots.find((s) => s.default);
+    expect(slot?.slot_props).toBe("{ list: Array<string> }");
+  });
+
+  test("falls back to any for dotted access without type annotation", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        let obj = { value: "hello" };
+      </script>
+
+      <slot prop={obj.value} />
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    const slot = result.slots.find((s) => s.default);
+    expect(slot?.slot_props).toBe("{ prop: any }");
+  });
+
+  test("falls back to any for computed member access", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /** @type {{ value: string }} */
+        let obj = { value: "hello" };
+        let key = "value";
+      </script>
+
+      <slot prop={obj[key]} />
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    const slot = result.slots.find((s) => s.default);
+    expect(slot?.slot_props).toBe("{ prop: any }");
+  });
+
+  test("falls back to any for chained dotted access", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /** @type {{ a: { b: string } }} */
+        let obj = { a: { b: "hello" } };
+      </script>
+
+      <slot prop={obj.a.b} />
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    const slot = result.slots.find((s) => s.default);
+    expect(slot?.slot_props).toBe("{ prop: any }");
+  });
+
+  test("resolves multiple dotted access slot props", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /** @type {{ name: string; count: number }} */
+        let data = { name: "", count: 0 };
+      </script>
+
+      <slot a={data.name} b={data.count} />
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    const slot = result.slots.find((s) => s.default);
+    expect(slot?.slot_props).toBe("{ a: string, b: number }");
+  });
+
+  test("dotted access does not override @slot JSDoc types", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /**
+         * @slot {{ item: CustomType }}
+         */
+
+        /** @type {{ value: string }} */
+        let obj = { value: "hello" };
+      </script>
+
+      <slot item={obj.value} />
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    const slot = result.slots.find((s) => s.default);
+    expect(slot?.slot_props).toBe("{ item: CustomType }");
   });
 
   test("handles dispatched events", () => {

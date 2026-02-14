@@ -1385,6 +1385,37 @@ exports[`fixtures (JSON) "module-reexport-direct/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "slot-prop-dotted-access/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "point",
+      "kind": "let",
+      "type": "{ x: number; y: number }",
+      "value": "{ x: 0, y: 0 }",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{ a: string, b: string, c: number, d: string, e: \\"pending\\" | \\"done\\" | \\"error\\", f: { deep: number }, g: Array<string>, h: any, i: number }"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "typed-slots/input.svelte" 1`] = `
 "{
   "props": [
@@ -4791,6 +4822,53 @@ export default class ModuleReexportDirect extends SvelteComponentTyped<
   ModuleReexportDirectProps,
   Record<string, any>,
   { default: Record<string, never>; header: Record<string, never> }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "slot-prop-dotted-access/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type SlotPropDottedAccessProps = {
+  /**
+   * @default { x: 0, y: 0 }
+   */
+  point?: { x: number; y: number };
+
+  children?: (
+    this: void,
+    ...args: [
+      {
+        a: string;
+        b: string;
+        c: number;
+        d: string;
+        e: "pending" | "done" | "error";
+        f: { deep: number };
+        g: Array<string>;
+        h: any;
+        i: number;
+      },
+    ]
+  ) => void;
+};
+
+export default class SlotPropDottedAccess extends SvelteComponentTyped<
+  SlotPropDottedAccessProps,
+  Record<string, any>,
+  {
+    default: {
+      a: string;
+      b: string;
+      c: number;
+      d: string;
+      e: "pending" | "done" | "error";
+      f: { deep: number };
+      g: Array<string>;
+      h: any;
+      i: number;
+    };
+  }
 > {}
 "
 `;
