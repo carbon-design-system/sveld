@@ -53,6 +53,9 @@ const VAR_DECLARATION_REGEX = /(?:const|let|function)\s+(\w+)\s*[=(]/;
  */
 const DESCRIPTION_DASH_PREFIX_REGEX = /^-\s*/;
 
+/** Matches a single word character (letter, digit, or underscore). Used for dotted prop access validation. */
+const WORD_CHAR_REGEX = /\w/;
+
 /**
  * Extracts description text after the last dash from JSDoc comments.
  *
@@ -1167,6 +1170,81 @@ export default class ComponentParser {
   private aliasType(type: string) {
     if (type === "*") return "any";
     return type.trim();
+  }
+
+  /**
+   * Extracts a property's type from an object type string.
+   *
+   * Parses type strings like `{ value: string; other: number }` and returns
+   * the type for the requested property name. Handles nested braces, generics,
+   * and optional properties.
+   *
+   * @returns The property type string, or undefined if not found
+   */
+  private extractPropertyType(typeStr: string, propName: string): string | undefined {
+    const trimmed = typeStr.trim();
+    if (!trimmed.startsWith("{") || !trimmed.endsWith("}")) return undefined;
+
+    const inner = trimmed.slice(1, -1);
+    const segments: string[] = [];
+    let depth = 0;
+    let current = "";
+
+    for (const char of inner) {
+      if (char === "{" || char === "<" || char === "(" || char === "[") {
+        depth++;
+        current += char;
+      } else if (char === "}" || char === ">" || char === ")" || char === "]") {
+        depth--;
+        current += char;
+      } else if ((char === ";" || char === ",") && depth === 0) {
+        segments.push(current.trim());
+        current = "";
+      } else {
+        current += char;
+      }
+    }
+    if (current.trim()) segments.push(current.trim());
+
+    for (const segment of segments) {
+      if (!segment.startsWith(propName)) continue;
+      const afterName = segment.slice(propName.length);
+      if (afterName.length > 0 && WORD_CHAR_REGEX.test(afterName[0])) continue;
+      let rest = afterName.trimStart();
+      if (rest.startsWith("?")) rest = rest.slice(1).trimStart();
+      if (rest.startsWith(":")) {
+        return rest.slice(1).trim();
+      }
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Resolves the type of a MemberExpression (e.g., `obj.value`) by looking up
+   * the object's type annotation and extracting the property type.
+   *
+   * @returns The resolved type string, or undefined if it cannot be resolved
+   */
+  private resolveMemberExpressionType(expr: unknown): string | undefined {
+    const memberExpr = expr as {
+      object?: { type?: string; name?: string };
+      property?: { type?: string; name?: string };
+      computed?: boolean;
+    };
+
+    if (memberExpr.computed || memberExpr.object?.type !== "Identifier" || memberExpr.property?.type !== "Identifier") {
+      return undefined;
+    }
+
+    const objName = memberExpr.object.name;
+    const propName = memberExpr.property.name;
+    if (!objName || !propName) return undefined;
+
+    const objType = this.props.get(objName)?.type ?? this.findVariableTypeAndDescription(objName)?.type;
+    if (!objType) return undefined;
+
+    return this.extractPropertyType(objType, propName);
   }
 
   /**
@@ -2889,12 +2967,12 @@ export default class ComponentParser {
                 if (expression && typeof expression === "object" && "type" in expression) {
                   if (expression.type === "Literal" && "value" in expression) {
                     slot_prop_value.value = String((expression as Literal).value);
+                  } else if (expression.type === "MemberExpression") {
+                    slot_prop_value.value = this.resolveMemberExpressionType(expression);
                   } else if (expression.type !== "Identifier") {
                     if (start !== undefined && end !== undefined) {
                       if (expression.type === "ObjectExpression" || expression.type === "TemplateLiteral") {
                         slot_prop_value.value = this.sourceAtPos(start + 1, end - 1);
-                      } else {
-                        slot_prop_value.value = this.sourceAtPos(start, end);
                       }
                     }
                   }
