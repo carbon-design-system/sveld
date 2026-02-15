@@ -6,6 +6,7 @@
   width="20"
   height="20"
   preserveAspectRatio="xMidYMid meet"
+  aria-hidden="true"
 >
   <path
     fill-rule="evenodd"

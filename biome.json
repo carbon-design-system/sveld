@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.3.13/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.4.0/schema.json",
   "files": {
     "includes": [
       "**",
@@ -89,10 +89,7 @@
         "rules": {
           "correctness": {
             "noUnusedImports": "off",
-            "noUnusedVariables": "off"
-          },
-          "style": {
-            "useConst": "off"
+            "noUnknownPseudoElement": "off"
           }
         }
       }
@@ -124,6 +121,11 @@
           "style": {
             "noUnusedTemplateLiteral": "off",
             "useTemplate": "off"
+          },
+          "a11y": {
+            "noSvgWithoutTitle": "off",
+            "useAnchorContent": "off",
+            "useButtonType": "off"
           }
         }
       }
