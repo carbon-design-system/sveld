@@ -1768,6 +1768,38 @@ exports[`fixtures (JSON) "context-typedef/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "context-colon/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "Carbon:Modal",
+      "typeName": "CarbonModalContext",
+      "properties": [
+        {
+          "name": "open",
+          "type": "() => void",
+          "description": "Open the modal",
+          "optional": false
+        },
+        {
+          "name": "close",
+          "type": "() => void",
+          "description": "Close the modal",
+          "optional": false
+        }
+      ]
+    }
+  ]
+}
+"
+`;
+
 exports[`fixtures (JSON) "forwarded-events-typed/input.svelte" 1`] = `
 "{
   "props": [],
@@ -5204,6 +5236,26 @@ export default class ContextTypedef extends SvelteComponentTyped<
   ContextTypedefProps,
   Record<string, any>,
   { default: Record<string, never> }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "context-colon/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type CarbonModalContext = {
+  /** Open the modal */
+  open: () => void;
+  /** Close the modal */
+  close: () => void;
+};
+
+export type ContextColonProps = Record<string, never>;
+
+export default class ContextColon extends SvelteComponentTyped<
+  ContextColonProps,
+  Record<string, any>,
+  Record<string, never>
 > {}
 "
 `;
