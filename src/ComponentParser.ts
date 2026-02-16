@@ -232,7 +232,7 @@ const TYPEDEF_END_REGEX = /(\}|\};)$/;
  * // "my context"     -> ["my", "context"]
  * ```
  */
-const CONTEXT_KEY_SPLIT_REGEX = /[-_\s]+/;
+const CONTEXT_KEY_SPLIT_REGEX = /[-_.\s]+/;
 
 /**
  * Regular expression for matching component comment markers.

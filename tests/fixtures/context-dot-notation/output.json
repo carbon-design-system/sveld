@@ -1,0 +1,28 @@
+{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "Carbon.Modal",
+      "typeName": "CarbonModalContext",
+      "properties": [
+        {
+          "name": "open",
+          "type": "() => void",
+          "description": "Open the modal",
+          "optional": false
+        },
+        {
+          "name": "close",
+          "type": "() => void",
+          "description": "Close the modal",
+          "optional": false
+        }
+      ]
+    }
+  ]
+}
