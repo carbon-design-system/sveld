@@ -1,0 +1,28 @@
+{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "user_settings",
+      "typeName": "UserSettingsContext",
+      "properties": [
+        {
+          "name": "select",
+          "type": "(id: string) => void",
+          "description": "Select an item",
+          "optional": false
+        },
+        {
+          "name": "clear",
+          "type": "() => void",
+          "description": "Clear the selection",
+          "optional": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "My Context",
+      "typeName": "MyContextContext",
+      "properties": [
+        {
+          "name": "toggle",
+          "type": "() => void",
+          "description": "Toggle visibility",
+          "optional": false
+        }
+      ]
+    }
+  ]
+}

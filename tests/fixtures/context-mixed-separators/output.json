@@ -1,0 +1,28 @@
+{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "App.data-table_v2",
+      "typeName": "AppDataTableV2Context",
+      "properties": [
+        {
+          "name": "refresh",
+          "type": "() => void",
+          "description": "Refresh the data",
+          "optional": false
+        },
+        {
+          "name": "reset",
+          "type": "() => void",
+          "description": "Reset the state",
+          "optional": false
+        }
+      ]
+    }
+  ]
+}

@@ -610,6 +610,38 @@ exports[`fixtures (JSON) "context-issue-103/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "context-mixed-separators/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "App.data-table_v2",
+      "typeName": "AppDataTableV2Context",
+      "properties": [
+        {
+          "name": "refresh",
+          "type": "() => void",
+          "description": "Refresh the data",
+          "optional": false
+        },
+        {
+          "name": "reset",
+          "type": "() => void",
+          "description": "Reset the state",
+          "optional": false
+        }
+      ]
+    }
+  ]
+}
+"
+`;
+
 exports[`fixtures (JSON) "jsdoc-type-params/input.svelte" 1`] = `
 "{
   "props": [
@@ -1218,6 +1250,38 @@ exports[`fixtures (JSON) "infer-basic/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "context-underscore/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "user_settings",
+      "typeName": "UserSettingsContext",
+      "properties": [
+        {
+          "name": "select",
+          "type": "(id: string) => void",
+          "description": "Select an item",
+          "optional": false
+        },
+        {
+          "name": "clear",
+          "type": "() => void",
+          "description": "Clear the selection",
+          "optional": false
+        }
+      ]
+    }
+  ]
 }
 "
 `;
@@ -3748,6 +3812,32 @@ exports[`fixtures (JSON) "rest-props-description/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "context-space/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "My Context",
+      "typeName": "MyContextContext",
+      "properties": [
+        {
+          "name": "toggle",
+          "type": "() => void",
+          "description": "Toggle visibility",
+          "optional": false
+        }
+      ]
+    }
+  ]
+}
+"
+`;
+
 exports[`fixtures (JSON) "extend-props/input.svelte" 1`] = `
 "{
   "props": [
@@ -3982,6 +4072,38 @@ exports[`fixtures (JSON) "generics/input.svelte" 1`] = `
     "Row extends DataTableRow = DataTableRow"
   ],
   "contexts": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "context-dot-notation/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "Carbon.Modal",
+      "typeName": "CarbonModalContext",
+      "properties": [
+        {
+          "name": "open",
+          "type": "() => void",
+          "description": "Open the modal",
+          "optional": false
+        },
+        {
+          "name": "close",
+          "type": "() => void",
+          "description": "Close the modal",
+          "optional": false
+        }
+      ]
+    }
+  ]
 }
 "
 `;
@@ -4386,6 +4508,26 @@ export default class ContextIssue103 extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "context-mixed-separators/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type AppDataTableV2Context = {
+  /** Refresh the data */
+  refresh: () => void;
+  /** Reset the state */
+  reset: () => void;
+};
+
+export type ContextMixedSeparatorsProps = Record<string, never>;
+
+export default class ContextMixedSeparators extends SvelteComponentTyped<
+  ContextMixedSeparatorsProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "jsdoc-type-params/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -4710,6 +4852,26 @@ export default class InferBasic extends SvelteComponentTyped<
 
   fn: () => any;
 }
+"
+`;
+
+exports[`fixtures (TypeScript) "context-underscore/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type UserSettingsContext = {
+  /** Select an item */
+  select: (id: string) => void;
+  /** Clear the selection */
+  clear: () => void;
+};
+
+export type ContextUnderscoreProps = Record<string, never>;
+
+export default class ContextUnderscore extends SvelteComponentTyped<
+  ContextUnderscoreProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
 "
 `;
 
@@ -6347,6 +6509,24 @@ export default class RestPropsDescription extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "context-space/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type MyContextContext = {
+  /** Toggle visibility */
+  toggle: () => void;
+};
+
+export type ContextSpaceProps = Record<string, never>;
+
+export default class ContextSpace extends SvelteComponentTyped<
+  ContextSpaceProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "extend-props/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
@@ -6499,6 +6679,26 @@ export default class Generics<Row extends DataTableRow = DataTableRow> extends S
   GenericsProps<Row>,
   Record<string, any>,
   { default: { headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> } }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "context-dot-notation/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type CarbonModalContext = {
+  /** Open the modal */
+  open: () => void;
+  /** Close the modal */
+  close: () => void;
+};
+
+export type ContextDotNotationProps = Record<string, never>;
+
+export default class ContextDotNotation extends SvelteComponentTyped<
+  ContextDotNotationProps,
+  Record<string, any>,
+  Record<string, never>
 > {}
 "
 `;
