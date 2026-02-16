@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.26.2](https://github.com/carbon-design-system/sveld/releases/tag/v0.26.2) - 2026-02-16
+
+**Fixes**
+
+- split context keys on colons and slashes for valid type names (e.g., `"Carbon:Modal"` or `"app/modal"` no longer produce invalid TS type names)
+
 ## [0.26.1](https://github.com/carbon-design-system/sveld/releases/tag/v0.26.1) - 2026-02-16
 
 **Fixes**
