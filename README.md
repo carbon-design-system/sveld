@@ -946,9 +946,16 @@ There are several ways to provide type information for contexts:
 
 - Context keys must be string literals (dynamic keys are not supported)
 - Variables passed to `setContext` should have JSDoc `@type` annotations for accurate types
-- The generated type name follows the pattern: `{PascalCase}Context`
-  - `"simple-modal"` → `SimpleModalContext`
-  - `"Tabs"` → `TabsContext`
+- The generated type name follows the pattern: `{PascalCase}Context`. Separators (hyphens, underscores, dots, colons, slashes, spaces) are stripped and each segment is capitalized:
+  | Context Key | Generated Type Name |
+  | --- | --- |
+  | `"simple-modal"` | `SimpleModalContext` |
+  | `"user_settings"` | `UserSettingsContext` |
+  | `"Carbon.Modal"` | `CarbonModalContext` |
+  | `"Carbon:Modal"` | `CarbonModalContext` |
+  | `"app/modal"` | `AppModalContext` |
+  | `"My Context"` | `MyContextContext` |
+  | `"Tabs"` | `TabsContext` |
 - If no type annotation is found, the type defaults to `any` with a warning
 
 ### `@restProps`
