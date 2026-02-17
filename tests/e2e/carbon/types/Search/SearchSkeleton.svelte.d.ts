@@ -17,7 +17,7 @@ type $Props = {
    */
   size?: "sm" | "lg" | "xl";
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type SearchSkeletonProps = Omit<$RestProps, keyof $Props> & $Props;

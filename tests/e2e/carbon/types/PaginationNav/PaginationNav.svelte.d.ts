@@ -40,7 +40,7 @@ type $Props = {
    */
   backwardText?: string;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type PaginationNavProps = Omit<$RestProps, keyof $Props> & $Props;

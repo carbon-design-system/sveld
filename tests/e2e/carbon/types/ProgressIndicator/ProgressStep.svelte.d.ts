@@ -57,7 +57,7 @@ type $Props = {
     ...args: [{ props: { class: "bx--progress-label" } }]
   ) => void;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type ProgressStepProps = Omit<$RestProps, keyof $Props> & $Props;

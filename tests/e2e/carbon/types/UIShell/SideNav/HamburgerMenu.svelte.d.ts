@@ -22,7 +22,7 @@ type $Props = {
    */
   ref?: null | HTMLButtonElement;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type HamburgerMenuProps = Omit<$RestProps, keyof $Props> & $Props;

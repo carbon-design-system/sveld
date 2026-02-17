@@ -207,7 +207,7 @@ type $Props<Row extends DataTableRow = DataTableRow> = {
 
   children?: (this: void) => void;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type DataTableProps<Row extends DataTableRow = DataTableRow> = Omit<

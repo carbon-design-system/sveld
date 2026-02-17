@@ -10,7 +10,7 @@ type $Props = {
    */
   type?: "single" | "multi";
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type CodeSnippetSkeletonProps = Omit<$RestProps, keyof $Props> & $Props;

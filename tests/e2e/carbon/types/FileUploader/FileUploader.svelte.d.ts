@@ -64,7 +64,7 @@ type $Props = {
    */
   name?: string;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type FileUploaderProps = Omit<$RestProps, keyof $Props> & $Props;

@@ -28,7 +28,7 @@ type $Props = {
    */
   successDelay?: number;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type InlineLoadingProps = Omit<$RestProps, keyof $Props> & $Props;

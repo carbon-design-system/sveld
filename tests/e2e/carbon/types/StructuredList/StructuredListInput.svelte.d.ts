@@ -40,7 +40,7 @@ type $Props = {
    */
   ref?: null | HTMLInputElement;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type StructuredListInputProps = Omit<$RestProps, keyof $Props> & $Props;

@@ -31,7 +31,7 @@ type $Props<Row extends DataTableRow = DataTableRow> = {
     ...args: [{ headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> }]
   ) => void;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type GenericsWithRestPropsProps<Row extends DataTableRow = DataTableRow> = Omit<$RestProps, keyof $Props<Row>> &

@@ -106,7 +106,7 @@ type $Props = {
    */
   ref?: null | HTMLDivElement;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type SliderProps = Omit<$RestProps, keyof $Props> & $Props;

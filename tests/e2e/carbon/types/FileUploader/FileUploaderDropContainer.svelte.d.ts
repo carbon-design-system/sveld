@@ -64,7 +64,7 @@ type $Props = {
    */
   ref?: null | HTMLInputElement;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type FileUploaderDropContainerProps = Omit<$RestProps, keyof $Props> &

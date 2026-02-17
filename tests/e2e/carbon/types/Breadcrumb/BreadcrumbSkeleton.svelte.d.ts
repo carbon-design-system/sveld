@@ -16,7 +16,7 @@ type $Props = {
    */
   count?: number;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type BreadcrumbSkeletonProps = Omit<$RestProps, keyof $Props> & $Props;

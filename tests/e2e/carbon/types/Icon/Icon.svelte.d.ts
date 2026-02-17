@@ -18,7 +18,7 @@ type $Props = {
    */
   skeleton?: boolean;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type IconProps = Omit<$RestProps, keyof ($Props & IconSkeletonProps)> &

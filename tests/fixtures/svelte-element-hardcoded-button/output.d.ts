@@ -4,7 +4,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 type $RestProps = SvelteHTMLElements["button"];
 
 type $Props = {
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type SvelteElementHardcodedButtonProps = Omit<$RestProps, keyof $Props> & $Props;

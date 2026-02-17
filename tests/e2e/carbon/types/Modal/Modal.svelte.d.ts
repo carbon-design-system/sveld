@@ -124,7 +124,7 @@ type $Props = {
 
   children?: (this: void) => void;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type ModalProps = Omit<$RestProps, keyof $Props> & $Props;

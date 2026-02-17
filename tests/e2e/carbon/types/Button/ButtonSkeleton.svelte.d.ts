@@ -23,7 +23,7 @@ type $Props = {
    */
   small?: boolean;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type ButtonSkeletonProps = Omit<$RestProps, keyof $Props> & $Props;

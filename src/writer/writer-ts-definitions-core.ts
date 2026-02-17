@@ -333,7 +333,7 @@ function genPropDef(
      * biome-ignore lint/suspicious/noTemplateCurlyInString: type generation
      * Template literal is required for TypeScript's template literal type syntax.
      */
-    const dataAttributes = "[key: `data-${string}`]: any;";
+    const dataAttributes = "[key: `data-${string}`]: unknown;";
 
     /**
      * Generate JSDoc comment for $RestProps if description is provided.

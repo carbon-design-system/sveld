@@ -10,7 +10,7 @@ type $Props = {
    */
   size?: number;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type IconSkeletonProps = Omit<$RestProps, keyof $Props> & $Props;

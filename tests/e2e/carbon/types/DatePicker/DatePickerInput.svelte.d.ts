@@ -82,7 +82,7 @@ type $Props = {
    */
   ref?: null | HTMLInputElement;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type DatePickerInputProps = Omit<$RestProps, keyof $Props> & $Props;

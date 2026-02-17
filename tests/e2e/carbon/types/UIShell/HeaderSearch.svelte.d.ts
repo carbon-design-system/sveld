@@ -45,7 +45,7 @@ type $Props = {
     ...args: [{ result: HeaderSearchResult; index: number }]
   ) => void;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type HeaderSearchProps = Omit<$RestProps, keyof $Props> & $Props;

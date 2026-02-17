@@ -28,7 +28,7 @@ type $Props = {
    */
   open?: boolean;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type AccordionSkeletonProps = Omit<$RestProps, keyof $Props> & $Props;

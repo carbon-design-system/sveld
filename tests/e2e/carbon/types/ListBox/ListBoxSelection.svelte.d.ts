@@ -29,7 +29,7 @@ type $Props = {
    */
   ref?: null | HTMLDivElement;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type ListBoxSelectionProps = Omit<$RestProps, keyof $Props> & $Props;
