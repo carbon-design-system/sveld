@@ -4,7 +4,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 type $RestProps = SvelteHTMLElements["input"];
 
 type $Props = {
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type EventExplicitNullProps = Omit<$RestProps, keyof $Props> & $Props;

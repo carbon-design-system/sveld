@@ -6,7 +6,7 @@ type $RestProps = SvelteHTMLElements["td"];
 type $Props = {
   children?: (this: void) => void;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type TableCellProps = Omit<$RestProps, keyof $Props> & $Props;

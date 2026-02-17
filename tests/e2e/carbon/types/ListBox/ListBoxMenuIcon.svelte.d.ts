@@ -17,7 +17,7 @@ type $Props = {
    */
   translateWithId?: (id: ListBoxMenuIconTranslationId) => string;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type ListBoxMenuIconProps = Omit<$RestProps, keyof $Props> & $Props;

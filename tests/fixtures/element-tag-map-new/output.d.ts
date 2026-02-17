@@ -14,7 +14,7 @@ type $Props = {
    */
   semanticTag?: "article" | "section" | "nav" | "main" | "header" | "footer";
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type ElementTagMapNewProps = Omit<$RestProps, keyof $Props> & $Props;

@@ -21,7 +21,7 @@ type $Props = {
     ...args: [{ props?: { ["aria-current"]?: string; class: "bx--link" } }]
   ) => void;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type BreadcrumbItemProps = Omit<$RestProps, keyof $Props> & $Props;

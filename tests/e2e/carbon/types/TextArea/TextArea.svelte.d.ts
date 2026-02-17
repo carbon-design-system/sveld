@@ -88,7 +88,7 @@ type $Props = {
    */
   ref?: null | HTMLTextAreaElement;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type TextAreaProps = Omit<$RestProps, keyof $Props> & $Props;

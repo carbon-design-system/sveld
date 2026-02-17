@@ -6,7 +6,7 @@ type $RestProps = SvelteHTMLElements["div"];
 type $Props = {
   children?: (this: void) => void;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type StructuredListHeadProps = Omit<$RestProps, keyof $Props> & $Props;

@@ -16,7 +16,7 @@ type $Props = {
    */
   border?: boolean;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type StructuredListSkeletonProps = Omit<$RestProps, keyof $Props> &

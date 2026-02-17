@@ -22,7 +22,7 @@ type $Props = {
    */
   id?: string;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type ToggleSkeletonProps = Omit<$RestProps, keyof $Props> & $Props;

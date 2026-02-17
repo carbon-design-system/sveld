@@ -34,7 +34,7 @@ type $Props = {
    */
   ref?: null | HTMLAnchorElement;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type SideNavLinkProps = Omit<$RestProps, keyof $Props> & $Props;

@@ -70,7 +70,7 @@ type $Props = {
    */
   ref?: null | HTMLInputElement;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type FileUploaderButtonProps = Omit<$RestProps, keyof $Props> & $Props;

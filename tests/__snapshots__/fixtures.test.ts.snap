@@ -4147,7 +4147,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 type $RestProps = SvelteHTMLElements["svg"];
 
 type $Props = {
-  [key: \`data-\${string}\`]: any;
+  [key: \`data-${string}\`]: unknown;
 };
 
 export type SvgPropsProps = Omit<$RestProps, keyof $Props> & $Props;
@@ -4923,7 +4923,7 @@ type $Props = {
    */
   variant?: "inline" | "single" | "multi";
 
-  [key: \`data-\${string}\`]: any;
+  [key: \`data-${string}\`]: unknown;
 };
 
 export type RestPropsDescriptionMultilineProps = Omit<$RestProps, keyof $Props> & $Props;
@@ -5199,7 +5199,7 @@ type $Props = {
    */
   cellType?: "td" | "th";
 
-  [key: \`data-\${string}\`]: any;
+  [key: \`data-${string}\`]: unknown;
 };
 
 export type ElementTagMapTableCellsProps = Omit<$RestProps, keyof $Props> & $Props;
@@ -5391,7 +5391,7 @@ type $Props<Row extends DataTableRow = DataTableRow> = {
     ...args: [{ headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> }]
   ) => void;
 
-  [key: \`data-\${string}\`]: any;
+  [key: \`data-${string}\`]: unknown;
 };
 
 export type GenericsWithRestPropsProps<Row extends DataTableRow = DataTableRow> = Omit<$RestProps, keyof $Props<Row>> &
@@ -5912,7 +5912,7 @@ type $Props = {
    */
   semanticTag?: "article" | "section" | "nav" | "main" | "header" | "footer";
 
-  [key: \`data-\${string}\`]: any;
+  [key: \`data-${string}\`]: unknown;
 };
 
 export type ElementTagMapNewProps = Omit<$RestProps, keyof $Props> & $Props;
@@ -5955,7 +5955,7 @@ type $Props = {
    */
   type?: "ordered" | "unordered";
 
-  [key: \`data-\${string}\`]: any;
+  [key: \`data-${string}\`]: unknown;
 };
 
 export type RestPropsMultipleProps = Omit<$RestProps, keyof $Props> & $Props;
@@ -6073,7 +6073,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 type $RestProps = SvelteHTMLElements["input"];
 
 type $Props = {
-  [key: \`data-\${string}\`]: any;
+  [key: \`data-${string}\`]: unknown;
 };
 
 export type EventExplicitNullProps = Omit<$RestProps, keyof $Props> & $Props;
@@ -6133,7 +6133,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 type $RestProps = SvelteHTMLElements["button"];
 
 type $Props = {
-  [key: \`data-\${string}\`]: any;
+  [key: \`data-${string}\`]: unknown;
 };
 
 export type SvelteElementHardcodedButtonProps = Omit<$RestProps, keyof $Props> & $Props;
@@ -6267,7 +6267,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 type $RestProps = SvelteHTMLElements["h1"];
 
 type $Props = {
-  [key: \`data-\${string}\`]: any;
+  [key: \`data-${string}\`]: unknown;
 };
 
 export type RestPropsSimpleProps = Omit<$RestProps, keyof $Props> & $Props;
@@ -6289,7 +6289,7 @@ type $RestProps = SvelteHTMLElements["a"];
 type $Props = {
   children?: (this: void) => void;
 
-  [key: \`data-\${string}\`]: any;
+  [key: \`data-${string}\`]: unknown;
 };
 
 export type AnchorPropsProps = Omit<$RestProps, keyof $Props> & $Props;
@@ -6407,7 +6407,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 type $RestProps = SvelteHTMLElements["div"];
 
 type $Props = {
-  [key: \`data-\${string}\`]: any;
+  [key: \`data-${string}\`]: unknown;
 };
 
 export type SvelteElementHardcodedDivProps = Omit<$RestProps, keyof $Props> & $Props;
@@ -6432,7 +6432,7 @@ type $Props = {
    */
   tag?: string;
 
-  [key: \`data-\${string}\`]: any;
+  [key: \`data-${string}\`]: unknown;
 };
 
 export type SvelteElementDynamicProps = Omit<$RestProps, keyof $Props> & $Props;
@@ -6505,7 +6505,7 @@ type $Props = {
    */
   textElement?: "abbr" | "code" | "em" | "strong" | "mark" | "kbd" | "samp" | "var";
 
-  [key: \`data-\${string}\`]: any;
+  [key: \`data-${string}\`]: unknown;
 };
 
 export type ElementTagMapTextElementsProps = Omit<$RestProps, keyof $Props> & $Props;
@@ -6548,7 +6548,7 @@ type $Props = {
    */
   variant?: "inline" | "single" | "multi";
 
-  [key: \`data-\${string}\`]: any;
+  [key: \`data-${string}\`]: unknown;
 };
 
 export type RestPropsDescriptionProps = Omit<$RestProps, keyof $Props> & $Props;
@@ -6595,7 +6595,7 @@ type $Props = {
 
   children?: (this: void) => void;
 
-  [key: \`data-\${string}\`]: any;
+  [key: \`data-${string}\`]: unknown;
 };
 
 export type ExtendPropsProps = Omit<$RestProps, keyof ($Props & ButtonProps)> & $Props & ButtonProps;
@@ -6751,6 +6751,393 @@ export default class ContextDotNotation extends SvelteComponentTyped<
   ContextDotNotationProps,
   Record<string, any>,
   Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "svg-props/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+type $RestProps = SvelteHTMLElements["svg"];
+
+type $Props = {
+  [key: \`data-\${string}\`]: unknown;
+};
+
+export type SvgPropsProps = Omit<$RestProps, keyof $Props> & $Props;
+
+export default class SvgProps extends SvelteComponentTyped<SvgPropsProps, Record<string, any>, Record<string, never>> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "rest-props-description-multiline/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+/**
+ * Rest props are spread to the span (inline variant)
+ * or the copy button (single/multi).
+ */
+type $RestProps = SvelteHTMLElements["button"] & SvelteHTMLElements["span"];
+
+type $Props = {
+  /**
+   * @default "single"
+   */
+  variant?: "inline" | "single" | "multi";
+
+  [key: \`data-\${string}\`]: unknown;
+};
+
+export type RestPropsDescriptionMultilineProps = Omit<$RestProps, keyof $Props> & $Props;
+
+export default class RestPropsDescriptionMultiline extends SvelteComponentTyped<
+  RestPropsDescriptionMultilineProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "element-tag-map-table-cells/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+type $RestProps = SvelteHTMLElements["td"] & SvelteHTMLElements["th"];
+
+type $Props = {
+  /**
+   * @default "td"
+   */
+  cellType?: "td" | "th";
+
+  [key: \`data-\${string}\`]: unknown;
+};
+
+export type ElementTagMapTableCellsProps = Omit<$RestProps, keyof $Props> & $Props;
+
+export default class ElementTagMapTableCells extends SvelteComponentTyped<
+  ElementTagMapTableCellsProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "generics-with-rest-props/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+export interface DataTableRow {
+  id: string | number;
+  [key: string]: any;
+}
+
+export type DataTableKey<Row> = Exclude<keyof Row, "id">;
+
+export interface DataTableHeader<Row = DataTableRow> {
+  key: DataTableKey<Row>;
+  value: string;
+}
+
+type $RestProps = SvelteHTMLElements["div"];
+
+type $Props<Row extends DataTableRow = DataTableRow> = {
+  /**
+   * @default []
+   */
+  headers?: ReadonlyArray<DataTableHeader<Row>>;
+
+  /**
+   * @default []
+   */
+  rows?: ReadonlyArray<Row>;
+
+  children?: (
+    this: void,
+    ...args: [{ headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> }]
+  ) => void;
+
+  [key: \`data-\${string}\`]: unknown;
+};
+
+export type GenericsWithRestPropsProps<Row extends DataTableRow = DataTableRow> = Omit<$RestProps, keyof $Props<Row>> &
+  $Props<Row>;
+
+export default class GenericsWithRestProps<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
+  GenericsWithRestPropsProps<Row>,
+  Record<string, any>,
+  { default: { headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> } }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "element-tag-map-new/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+type $RestProps = SvelteHTMLElements["article"] &
+  SvelteHTMLElements["section"] &
+  SvelteHTMLElements["nav"] &
+  SvelteHTMLElements["main"] &
+  SvelteHTMLElements["header"] &
+  SvelteHTMLElements["footer"];
+
+type $Props = {
+  /**
+   * @default "article"
+   */
+  semanticTag?: "article" | "section" | "nav" | "main" | "header" | "footer";
+
+  [key: \`data-\${string}\`]: unknown;
+};
+
+export type ElementTagMapNewProps = Omit<$RestProps, keyof $Props> & $Props;
+
+export default class ElementTagMapNew extends SvelteComponentTyped<
+  ElementTagMapNewProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "rest-props-multiple/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+type $RestProps = SvelteHTMLElements["ul"] & SvelteHTMLElements["ol"];
+
+type $Props = {
+  /**
+   * @default "ordered"
+   */
+  type?: "ordered" | "unordered";
+
+  [key: \`data-\${string}\`]: unknown;
+};
+
+export type RestPropsMultipleProps = Omit<$RestProps, keyof $Props> & $Props;
+
+export default class RestPropsMultiple extends SvelteComponentTyped<
+  RestPropsMultipleProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "event-explicit-null/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+type $RestProps = SvelteHTMLElements["input"];
+
+type $Props = {
+  [key: \`data-\${string}\`]: unknown;
+};
+
+export type EventExplicitNullProps = Omit<$RestProps, keyof $Props> & $Props;
+
+export default class EventExplicitNull extends SvelteComponentTyped<
+  EventExplicitNullProps,
+  { clear: CustomEvent<null>; change: WindowEventMap["change"]; input: WindowEventMap["input"] },
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "svelte-element-hardcoded-button/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+type $RestProps = SvelteHTMLElements["button"];
+
+type $Props = {
+  [key: \`data-\${string}\`]: unknown;
+};
+
+export type SvelteElementHardcodedButtonProps = Omit<$RestProps, keyof $Props> & $Props;
+
+export default class SvelteElementHardcodedButton extends SvelteComponentTyped<
+  SvelteElementHardcodedButtonProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "rest-props-simple/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+type $RestProps = SvelteHTMLElements["h1"];
+
+type $Props = {
+  [key: \`data-\${string}\`]: unknown;
+};
+
+export type RestPropsSimpleProps = Omit<$RestProps, keyof $Props> & $Props;
+
+export default class RestPropsSimple extends SvelteComponentTyped<
+  RestPropsSimpleProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "anchor-props/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+type $RestProps = SvelteHTMLElements["a"];
+
+type $Props = {
+  children?: (this: void) => void;
+
+  [key: \`data-\${string}\`]: unknown;
+};
+
+export type AnchorPropsProps = Omit<$RestProps, keyof $Props> & $Props;
+
+export default class AnchorProps extends SvelteComponentTyped<
+  AnchorPropsProps,
+  Record<string, any>,
+  { default: Record<string, never> }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "svelte-element-hardcoded-div/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+type $RestProps = SvelteHTMLElements["div"];
+
+type $Props = {
+  [key: \`data-\${string}\`]: unknown;
+};
+
+export type SvelteElementHardcodedDivProps = Omit<$RestProps, keyof $Props> & $Props;
+
+export default class SvelteElementHardcodedDiv extends SvelteComponentTyped<
+  SvelteElementHardcodedDivProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "svelte-element-dynamic/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { HTMLAttributes } from "svelte/elements";
+
+type $RestProps = HTMLAttributes<HTMLElement>;
+
+type $Props = {
+  /**
+   * @default "div"
+   */
+  tag?: string;
+
+  [key: \`data-\${string}\`]: unknown;
+};
+
+export type SvelteElementDynamicProps = Omit<$RestProps, keyof $Props> & $Props;
+
+export default class SvelteElementDynamic extends SvelteComponentTyped<
+  SvelteElementDynamicProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "element-tag-map-text-elements/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+type $RestProps = SvelteHTMLElements["abbr"] &
+  SvelteHTMLElements["code"] &
+  SvelteHTMLElements["em"] &
+  SvelteHTMLElements["strong"] &
+  SvelteHTMLElements["mark"] &
+  SvelteHTMLElements["kbd"] &
+  SvelteHTMLElements["samp"] &
+  SvelteHTMLElements["var"];
+
+type $Props = {
+  /**
+   * @default "code"
+   */
+  textElement?: "abbr" | "code" | "em" | "strong" | "mark" | "kbd" | "samp" | "var";
+
+  [key: \`data-\${string}\`]: unknown;
+};
+
+export type ElementTagMapTextElementsProps = Omit<$RestProps, keyof $Props> & $Props;
+
+export default class ElementTagMapTextElements extends SvelteComponentTyped<
+  ElementTagMapTextElementsProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "rest-props-description/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+/** Spread to the span (inline variant) or the copy button (single/multi). */
+type $RestProps = SvelteHTMLElements["button"] & SvelteHTMLElements["span"];
+
+type $Props = {
+  /**
+   * @default "single"
+   */
+  variant?: "inline" | "single" | "multi";
+
+  [key: \`data-\${string}\`]: unknown;
+};
+
+export type RestPropsDescriptionProps = Omit<$RestProps, keyof $Props> & $Props;
+
+export default class RestPropsDescription extends SvelteComponentTyped<
+  RestPropsDescriptionProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "extend-props/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+import type { ButtonProps } from "./Button.svelte";
+
+type $RestProps = SvelteHTMLElements["button"];
+
+type $Props = {
+  /**
+   * @default false
+   */
+  secondary?: boolean;
+
+  children?: (this: void) => void;
+
+  [key: \`data-\${string}\`]: unknown;
+};
+
+export type ExtendPropsProps = Omit<$RestProps, keyof ($Props & ButtonProps)> & $Props & ButtonProps;
+
+export default class ExtendProps extends SvelteComponentTyped<
+  ExtendPropsProps,
+  Record<string, any>,
+  { default: Record<string, never> }
 > {}
 "
 `;

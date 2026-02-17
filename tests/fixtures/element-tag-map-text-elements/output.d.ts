@@ -16,7 +16,7 @@ type $Props = {
    */
   textElement?: "abbr" | "code" | "em" | "strong" | "mark" | "kbd" | "samp" | "var";
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type ElementTagMapTextElementsProps = Omit<$RestProps, keyof $Props> & $Props;

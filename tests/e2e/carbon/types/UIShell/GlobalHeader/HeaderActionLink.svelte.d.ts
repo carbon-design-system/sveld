@@ -28,7 +28,7 @@ type $Props = {
    */
   ref?: null | HTMLAnchorElement;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type HeaderActionLinkProps = Omit<$RestProps, keyof $Props> & $Props;

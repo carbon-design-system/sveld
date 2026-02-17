@@ -9,7 +9,7 @@ type $Props = {
    */
   type?: "ordered" | "unordered";
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type RestPropsMultipleProps = Omit<$RestProps, keyof $Props> & $Props;

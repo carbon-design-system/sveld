@@ -10,7 +10,7 @@ type $Props = {
    */
   count?: number;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type TabsSkeletonProps = Omit<$RestProps, keyof $Props> & $Props;

@@ -9,7 +9,7 @@ type $Props = {
    */
   cellType?: "td" | "th";
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type ElementTagMapTableCellsProps = Omit<$RestProps, keyof $Props> & $Props;

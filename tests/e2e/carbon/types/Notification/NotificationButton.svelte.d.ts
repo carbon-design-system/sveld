@@ -28,7 +28,7 @@ type $Props = {
    */
   iconDescription?: string;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type NotificationButtonProps = Omit<$RestProps, keyof $Props> & $Props;

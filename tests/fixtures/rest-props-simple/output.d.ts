@@ -4,7 +4,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 type $RestProps = SvelteHTMLElements["h1"];
 
 type $Props = {
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type RestPropsSimpleProps = Omit<$RestProps, keyof $Props> & $Props;

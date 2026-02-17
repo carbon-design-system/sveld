@@ -10,7 +10,7 @@ type $Props = {
    */
   variant?: "inline" | "single" | "multi";
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type RestPropsDescriptionProps = Omit<$RestProps, keyof $Props> & $Props;

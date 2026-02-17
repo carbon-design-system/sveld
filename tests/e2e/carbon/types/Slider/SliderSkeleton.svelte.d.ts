@@ -10,7 +10,7 @@ type $Props = {
    */
   hideLabel?: boolean;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type SliderSkeletonProps = Omit<$RestProps, keyof $Props> & $Props;

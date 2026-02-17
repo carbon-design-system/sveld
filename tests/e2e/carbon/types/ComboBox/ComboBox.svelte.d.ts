@@ -121,7 +121,7 @@ type $Props = {
    */
   listRef?: null | HTMLDivElement;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type ComboBoxProps = Omit<$RestProps, keyof $Props> & $Props;

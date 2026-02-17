@@ -62,7 +62,7 @@ type $Props = {
     ...args: [{ props: { class: "bx--tag__label" } }]
   ) => void;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type TagProps = Omit<$RestProps, keyof $Props> & $Props;

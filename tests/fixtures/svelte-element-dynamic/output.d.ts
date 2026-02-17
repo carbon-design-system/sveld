@@ -9,7 +9,7 @@ type $Props = {
    */
   tag?: string;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type SvelteElementDynamicProps = Omit<$RestProps, keyof $Props> & $Props;

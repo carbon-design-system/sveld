@@ -28,7 +28,7 @@ type $Props = {
    */
   width?: string;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type SkeletonTextProps = Omit<$RestProps, keyof $Props> & $Props;

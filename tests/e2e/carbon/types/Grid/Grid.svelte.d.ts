@@ -58,7 +58,7 @@ type $Props = {
     ...args: [{ props: { class: string; [key: string]: any } }]
   ) => void;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type GridProps = Omit<$RestProps, keyof $Props> & $Props;

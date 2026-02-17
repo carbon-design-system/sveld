@@ -112,7 +112,7 @@ type $Props = {
    */
   ref?: null | HTMLInputElement;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type PasswordInputProps = Omit<$RestProps, keyof $Props> & $Props;

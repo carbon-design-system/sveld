@@ -112,7 +112,7 @@ type $Props = {
    */
   inline?: boolean;
 
-  [key: `data-${string}`]: any;
+  [key: `data-${string}`]: unknown;
 };
 
 export type TextInputProps = Omit<$RestProps, keyof $Props> & $Props;
