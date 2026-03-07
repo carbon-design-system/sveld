@@ -1,4 +1,4 @@
 export { cli, default as ComponentParser, sveld } from "./lib/index.js";
 
 import mod from "./lib/index.js";
-export default mod.default;
+export default typeof mod === "function" ? mod : mod.default;

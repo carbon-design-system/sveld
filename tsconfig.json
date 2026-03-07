@@ -2,10 +2,7 @@
   "compilerOptions": {
     "erasableSyntaxOnly": true,
     "target": "ESNext",
-    "declaration": true,
-    "module": "CommonJS",
     "moduleResolution": "node",
-    "outDir": "lib",
     "skipLibCheck": true,
     "strict": true,
     "esModuleInterop": true
