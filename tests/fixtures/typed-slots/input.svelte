@@ -8,9 +8,15 @@
 </script>
 
 <h1>
-  <slot {prop} doubled={prop * 2} />
+  <slot
+    {prop}
+    doubled={prop * 2}
+  />
 </h1>
 
 <p>
-  <slot name="description" props={{ class: $$props.class }} />
+  <slot
+    name="description"
+    props={{ class: $$props.class }}
+  />
 </p>

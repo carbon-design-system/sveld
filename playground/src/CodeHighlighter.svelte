@@ -1,4 +1,7 @@
-<script lang="ts" context="module">
+<script
+  lang="ts"
+  context="module"
+>
   import json from "svelte-highlight/languages/json";
   import markdown from "svelte-highlight/languages/markdown";
   import typescript from "svelte-highlight/languages/typescript";
@@ -20,11 +23,15 @@
   import "svelte-highlight/styles/zenburn.css";
 </script>
 
-<div class="code-highlighter" class:noWrap>
-  <div>
-    <CopyButton text={code} />
-  </div>
-  <Highlight language={LANG[language]} {code} />
+<div
+  class="code-highlighter"
+  class:noWrap
+>
+  <div><CopyButton text={code} /></div>
+  <Highlight
+    language={LANG[language]}
+    {code}
+  />
 </div>
 
 <style>

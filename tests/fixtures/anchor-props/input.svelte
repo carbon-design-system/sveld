@@ -1,1 +1,5 @@
-<a href="/" {...$$restProps}><slot /></a>
+<a
+  href="/"
+  {...$$restProps}
+  ><slot /></a
+>

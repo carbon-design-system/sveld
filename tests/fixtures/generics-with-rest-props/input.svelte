@@ -15,5 +15,8 @@
 </script>
 
 <div {...$$restProps}>
-  <slot {headers} {rows} />
+  <slot
+    {headers}
+    {rows}
+  />
 </div>

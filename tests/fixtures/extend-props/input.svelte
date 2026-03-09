@@ -4,6 +4,4 @@
   export let secondary = false;
 </script>
 
-<button {...$$restProps}>
-  <slot />
-</button>
+<button {...$$restProps}><slot /></button>

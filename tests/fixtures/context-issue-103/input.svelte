@@ -12,6 +12,4 @@
   setContext("my-logger", log);
 </script>
 
-<div>
-  <slot />
-</div>
+<div><slot /></div>

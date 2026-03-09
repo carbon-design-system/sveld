@@ -31,8 +31,14 @@
 </script>
 
 {#if prettier_error}
-  <TabContentOverlay title="TypeScript formatting error" kind="warning">
+  <TabContentOverlay
+    title="TypeScript formatting error"
+    kind="warning"
+  >
     {prettier_error}
   </TabContentOverlay>
 {/if}
-<CodeHighlighter language="typescript" {code} />
+<CodeHighlighter
+  language="typescript"
+  {code}
+/>

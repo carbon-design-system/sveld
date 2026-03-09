@@ -9,4 +9,4 @@
 </script>
 
 <!-- Forwarding the native 'change' event from input -->
-<input on:change />
+<input on:change>

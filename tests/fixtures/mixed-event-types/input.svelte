@@ -15,7 +15,10 @@
 </script>
 
 <!-- Native element: should use WindowEventMap even with @event detail -->
-<input on:input on:change />
+<input
+  on:input
+  on:change
+>
 
 <!-- Component: should use CustomEvent with detail type -->
 <CustomComponent on:customEvent />

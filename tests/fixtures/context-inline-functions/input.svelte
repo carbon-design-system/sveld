@@ -12,6 +12,4 @@
   });
 </script>
 
-<div class="modal">
-  <slot />
-</div>
+<div class="modal"><slot /></div>

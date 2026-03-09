@@ -7,9 +7,7 @@
 {#if propBool}
   <button bind:this={ref}><slot /></button>
 {:else}
-  <h1 bind:this={ref}>
-    <slot />
-  </h1>
+  <h1 bind:this={ref}><slot /></h1>
 {/if}
 
 <div bind:this={ref2} />

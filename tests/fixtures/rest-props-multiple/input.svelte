@@ -5,7 +5,13 @@
 </script>
 
 {#if type === "ordered"}
-  <ol {...$$restProps} {type} />
+  <ol
+    {...$$restProps}
+    {type}
+  />
 {:else if type === "unordered"}
-  <ul {...$$restProps} {type} />
+  <ul
+    {...$$restProps}
+    {type}
+  />
 {/if}

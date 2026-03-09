@@ -12,5 +12,8 @@
 </script>
 
 <div>
-  <slot {prop1} {prop2} />
+  <slot
+    {prop1}
+    {prop2}
+  />
 </div>

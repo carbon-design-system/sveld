@@ -14,4 +14,7 @@
   export let rows = [];
 </script>
 
-<slot {headers} {rows} />
+<slot
+  {headers}
+  {rows}
+/>

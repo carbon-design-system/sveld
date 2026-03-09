@@ -1,2 +1,4 @@
-<svelte:element this="div" {...$$restProps} />
-
+<svelte:element
+  this="div"
+  {...$$restProps}
+/>

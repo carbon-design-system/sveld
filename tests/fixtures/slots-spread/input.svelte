@@ -5,4 +5,7 @@
 </script>
 
 <slot {...props}>Default text</slot>
-<slot name="text" {...props} />
+<slot
+  name="text"
+  {...props}
+/>

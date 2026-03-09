@@ -13,5 +13,8 @@
   }
 </script>
 
-<input on:change on:input />
+<input
+  on:change
+  on:input
+>
 <button on:click={handleClear}>Clear</button>

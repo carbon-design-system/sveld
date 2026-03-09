@@ -26,4 +26,7 @@
   export let icon = undefined;
 </script>
 
-<slot {text} {icon} />
+<slot
+  {text}
+  {icon}
+/>

@@ -5,7 +5,12 @@
 </script>
 
 {#each items as item, index}
-  <slot {item} {index} isFirst={index === 0} isLast={index === items.length - 1}>
+  <slot
+    {item}
+    {index}
+    isFirst={index === 0}
+    isLast={index === items.length - 1}
+  >
     <span>{item}</span>
   </slot>
 {/each}

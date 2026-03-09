@@ -27,6 +27,4 @@
   setContext("tabs", { addTab, removeTab });
 </script>
 
-<div class="tabs">
-  <slot />
-</div>
+<div class="tabs"><slot /></div>

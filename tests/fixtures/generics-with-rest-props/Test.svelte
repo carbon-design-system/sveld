@@ -19,7 +19,11 @@
   ] as const;
 </script>
 
-<Generics {headers} {rows} let:rows>
+<Generics
+  {headers}
+  {rows}
+  let:rows
+>
   {#each rows as row}
     {row.name}
     {row.port}

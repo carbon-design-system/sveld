@@ -17,4 +17,8 @@
   export let prop2 = true;
 </script>
 
-<slot {prop} {prop1} {prop2} />
+<slot
+  {prop}
+  {prop1}
+  {prop2}
+/>

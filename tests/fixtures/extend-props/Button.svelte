@@ -3,6 +3,9 @@
   export let type = "button";
 </script>
 
-<button {type} {...$$restProps}>
+<button
+  {type}
+  {...$$restProps}
+>
   <slot />
 </button>

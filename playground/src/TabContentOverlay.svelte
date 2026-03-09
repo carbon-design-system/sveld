@@ -5,11 +5,13 @@
   export let kind = "error";
 </script>
 
-<div class="tab-content-overlay" class:error={kind === "error"} class:warning={kind === "warning"}>
+<div
+  class="tab-content-overlay"
+  class:error={kind === "error"}
+  class:warning={kind === "warning"}
+>
   <h5>{title}</h5>
-  <p>
-    <slot />
-  </p>
+  <p><slot /></p>
 </div>
 
 <style>
