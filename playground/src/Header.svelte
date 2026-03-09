@@ -4,24 +4,27 @@
   import LogoGithub20 from "./LogoGithub20.svelte";
 </script>
 
-<svelte:head>
-  <title>{pkg.name}</title>
-</svelte:head>
+<svelte:head> <title>{pkg.name}</title> </svelte:head>
 
-<Header aria-label="Navigation" href="/">
+<Header
+  aria-label="Navigation"
+  href="/"
+>
   <SkipToContent slot="skipToContent" />
   <span slot="platform">
     {pkg.name}
     <code title="Version {pkg.version}">v{pkg.version}</code>
   </span>
   <HeaderUtilities>
-    <HeaderActionLink icon={LogoGithub20} href={pkg.homepage} target="_blank" />
+    <HeaderActionLink
+      icon={LogoGithub20}
+      href={pkg.homepage}
+      target="_blank"
+    />
   </HeaderUtilities>
 </Header>
 
-<Content>
-  <slot />
-</Content>
+<Content> <slot /> </Content>
 
 <style>
   :global(.bx--content) {

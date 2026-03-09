@@ -52,5 +52,11 @@
   $: if (size !== undefined) dispatch("change", { size, breakpointValue: 320 });
 </script>
 
-<slot {size} {sizes} />
-<slot name="breakpoint-sizes" {sizes} />
+<slot
+  {size}
+  {sizes}
+/>
+<slot
+  name="breakpoint-sizes"
+  {sizes}
+/>

@@ -70,6 +70,10 @@
   export let appendTo = document.body;
 </script>
 
-<div class="component" data-position={position} data-theme={theme}>
+<div
+  class="component"
+  data-position={position}
+  data-theme={theme}
+>
   Content {maxValue} {minValue} {maxSafeInt} {minSafeInt} {maxNumber} {minNumber} {pi} {e} {handler} {appendTo}
 </div>

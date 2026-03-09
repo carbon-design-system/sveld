@@ -9,7 +9,7 @@ export type ModuleReexportProps = {
 
   /**
    * Chart title
-   * @default 'Chart'
+   * @default "Chart"
    */
   title?: string;
 

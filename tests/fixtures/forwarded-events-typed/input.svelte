@@ -5,4 +5,9 @@
    */
 </script>
 
-<button type="button" on:click on:focus on:blur />
+<button
+  type="button"
+  on:click
+  on:focus
+  on:blur
+/>

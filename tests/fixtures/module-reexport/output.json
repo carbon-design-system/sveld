@@ -16,7 +16,7 @@
       "kind": "let",
       "description": "Chart title",
       "type": "string",
-      "value": "'Chart'",
+      "value": "\"Chart\"",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

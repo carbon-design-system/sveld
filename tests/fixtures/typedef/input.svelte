@@ -9,6 +9,4 @@
   export let prop1 = { 1: true };
 </script>
 
-<div {id}>
-  <slot {prop1} />
-</div>
+<div {id}><slot {prop1} /></div>

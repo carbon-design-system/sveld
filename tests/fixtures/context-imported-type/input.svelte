@@ -23,6 +23,4 @@
   setContext("modal", modalAPI);
 </script>
 
-<div class="modal-wrapper">
-  <slot />
-</div>
+<div class="modal-wrapper"><slot /></div>

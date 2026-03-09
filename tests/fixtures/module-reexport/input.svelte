@@ -1,4 +1,7 @@
-<script context="module" lang="ts">
+<script
+  context="module"
+  lang="ts"
+>
   import { tokTypes } from "acorn";
   export { tokTypes };
 </script>
@@ -8,7 +11,7 @@
   export let data = null;
 
   /** Chart title */
-  export let title = 'Chart';
+  export let title = "Chart";
 </script>
 
 <div class="chart">

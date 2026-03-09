@@ -13,4 +13,9 @@
   export let uppercased = "hello".toUpperCase();
 </script>
 
-<div id={id} data-timestamp={timestamp}>{uppercased}</div>
+<div
+  {id}
+  data-timestamp={timestamp}
+>
+  {uppercased}
+</div>

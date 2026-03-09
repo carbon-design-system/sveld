@@ -30,6 +30,4 @@
   export let value = null;
 </script>
 
-<span class="item">
-  {name}: {value}
-</span>
+<span class="item"> {name}: {value} </span>

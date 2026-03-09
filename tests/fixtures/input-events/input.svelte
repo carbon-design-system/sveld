@@ -1,1 +1,5 @@
-<input on:input on:change on:paste />
+<input
+  on:input
+  on:change
+  on:paste
+>

@@ -6,6 +6,10 @@
    */
 </script>
 
-<button on:click on:focus on:blur>
+<button
+  on:click
+  on:focus
+  on:blur
+>
   <slot />
 </button>

@@ -8,4 +8,7 @@
 </script>
 
 <!-- Forwarding custom events from a component -->
-<CustomComponent on:clear on:search />
+<CustomComponent
+  on:clear
+  on:search
+/>

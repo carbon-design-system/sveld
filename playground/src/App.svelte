@@ -68,9 +68,16 @@
 </script>
 
 <Header>
-  <Grid noGutter padding>
+  <Grid
+    noGutter
+    padding
+  >
     <Row>
-      <Column xlg={7} lg={6} sm={8}>
+      <Column
+        xlg={7}
+        lg={6}
+        sm={8}
+      >
         <Dropdown
           size="xl"
           labelText="Svelte code"
@@ -97,35 +104,52 @@
           }}
         />
       </Column>
-      <Column xlg={9} lg={10} sm={8}>
+      <Column
+        xlg={9}
+        lg={10}
+        sm={8}
+      >
         <FormLabel id="output">Sveld output</FormLabel>
-        <Tabs type="container" id="output">
+        <Tabs
+          type="container"
+          id="output"
+        >
           <Tab label="TypeScript" />
           <Tab label="JSON" />
           <Tab label="Markdown" />
           <div slot="content">
             {#if parse_error}
-              <TabContentOverlay title="Parse error">
-                {parse_error}
-              </TabContentOverlay>
+              <TabContentOverlay title="Parse error"> {parse_error} </TabContentOverlay>
             {/if}
             <TabContent>
               {#if tabTypeScript}
-                <svelte:component this={tabTypeScript} {parsed_component} {moduleName} />
+                <svelte:component
+                  this={tabTypeScript}
+                  {parsed_component}
+                  {moduleName}
+                />
               {:else}
                 <InlineLoading style="margin: var(--cds-spacing-05)" />
               {/if}
             </TabContent>
             <TabContent>
               {#if tabJson}
-                <svelte:component this={tabJson} {parsed_component} {moduleName} />
+                <svelte:component
+                  this={tabJson}
+                  {parsed_component}
+                  {moduleName}
+                />
               {:else}
                 <InlineLoading style="margin: var(--cds-spacing-05)" />
               {/if}
             </TabContent>
             <TabContent>
               {#if tabMarkdown}
-                <svelte:component this={tabMarkdown} {parsed_component} {moduleName} />
+                <svelte:component
+                  this={tabMarkdown}
+                  {parsed_component}
+                  {moduleName}
+                />
               {:else}
                 <InlineLoading style="margin: var(--cds-spacing-05)" />
               {/if}

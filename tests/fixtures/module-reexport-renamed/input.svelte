@@ -1,4 +1,7 @@
-<script context="module" lang="ts">
+<script
+  context="module"
+  lang="ts"
+>
   import { Helper, Component as Original } from "library";
   export { Original as Renamed, Helper };
 </script>
@@ -11,6 +14,4 @@
   export let config = {};
 </script>
 
-<div class:visible>
-  <slot />
-</div>
+<div class:visible><slot /></div>

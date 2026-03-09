@@ -1,4 +1,7 @@
-<script context="module" lang="ts">
+<script
+  context="module"
+  lang="ts"
+>
   export { Component, Helper, utils } from "external-lib";
 </script>
 

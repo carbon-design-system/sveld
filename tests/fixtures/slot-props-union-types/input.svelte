@@ -8,9 +8,16 @@
 </script>
 
 <header>
-  <slot name="header" active={items.length > 0} />
+  <slot
+    name="header"
+    active={items.length > 0}
+  />
 </header>
 
 {#each items as item}
-  <slot item={item.value} status={item.status} error={null} />
+  <slot
+    item={item.value}
+    status={item.status}
+    error={null}
+  />
 {/each}

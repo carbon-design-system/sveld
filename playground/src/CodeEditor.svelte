@@ -1,4 +1,7 @@
-<script lang="ts" context="module">
+<script
+  lang="ts"
+  context="module"
+>
   import CodeMirror from "codemirror";
   import "codemirror/mode/htmlmixed/htmlmixed";
   import "codemirror/theme/zenburn.css";
@@ -37,9 +40,9 @@
 
 <style>
   /**
-    * Styles adapted from @joshnuss/svelte-codemirror
-    * @see https://github.com/joshnuss/svelte-codemirror/blob/e456dbf4377efe2d4f84162dd001b20428f71583/src/Component.svelte
-    */
+   * Styles adapted from @joshnuss/svelte-codemirror
+   * @see https://github.com/joshnuss/svelte-codemirror/blob/e456dbf4377efe2d4f84162dd001b20428f71583/src/Component.svelte
+   */
 
   :global(.CodeMirror) {
     font-family: var(--cds-code-02-font-family);
