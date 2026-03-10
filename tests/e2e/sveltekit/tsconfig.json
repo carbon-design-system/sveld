@@ -1,3 +1,9 @@
 {
-  "extends": "@tsconfig/svelte"
+  "extends": "@tsconfig/svelte",
+  "compilerOptions": {
+    "paths": {
+      "$lib": ["./src/lib"],
+      "$lib/*": ["./src/lib/*"]
+    }
+  }
 }
