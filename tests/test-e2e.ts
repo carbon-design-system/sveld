@@ -26,3 +26,5 @@ for await (const dir of $`find tests/e2e -maxdepth 1`.lines()) {
 if (hasError) {
   process.exit(1);
 }
+
+await $`bun run lint:fix`;
