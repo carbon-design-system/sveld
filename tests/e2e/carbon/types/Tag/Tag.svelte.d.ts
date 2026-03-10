@@ -53,11 +53,14 @@ type $Props = {
 
   /**
    * Set an id for the filterable tag
-   * @default "ccs-" + Math.random().toString(36)
+   * @default `ccs-${Math.random().toString(36)}`
    */
   id?: string;
 
-  children?: (this: void, ...args: [{ props: { class: "bx--tag__label" } }]) => void;
+  children?: (
+    this: void,
+    ...args: [{ props: { class: "bx--tag__label" } }]
+  ) => void;
 
   [key: `data-${string}`]: unknown;
 };

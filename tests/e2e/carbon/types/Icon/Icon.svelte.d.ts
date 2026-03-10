@@ -21,7 +21,9 @@ type $Props = {
   [key: `data-${string}`]: unknown;
 };
 
-export type IconProps = Omit<$RestProps, keyof ($Props & IconSkeletonProps)> & $Props & IconSkeletonProps;
+export type IconProps = Omit<$RestProps, keyof ($Props & IconSkeletonProps)> &
+  $Props &
+  IconSkeletonProps;
 
 export default class Icon extends SvelteComponentTyped<
   IconProps,

@@ -48,7 +48,7 @@ type $Props = {
 
   /**
    * Set an id for the input element
-   * @default "ccs-" + Math.random().toString(36)
+   * @default `ccs-${Math.random().toString(36)}`
    */
   id?: string;
 
@@ -67,7 +67,8 @@ type $Props = {
   [key: `data-${string}`]: unknown;
 };
 
-export type FileUploaderDropContainerProps = Omit<$RestProps, keyof $Props> & $Props;
+export type FileUploaderDropContainerProps = Omit<$RestProps, keyof $Props> &
+  $Props;
 
 export default class FileUploaderDropContainer extends SvelteComponentTyped<
   FileUploaderDropContainerProps,

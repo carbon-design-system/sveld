@@ -5,7 +5,13 @@ export type NotificationIconProps = {
    * Specify the kind of notification icon
    * @default "error"
    */
-  kind?: "error" | "info" | "info-square" | "success" | "warning" | "warning-alt";
+  kind?:
+    | "error"
+    | "info"
+    | "info-square"
+    | "success"
+    | "warning"
+    | "warning-alt";
 
   /**
    * Set the type of notification

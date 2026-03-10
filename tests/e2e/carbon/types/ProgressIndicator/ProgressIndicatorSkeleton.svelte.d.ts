@@ -19,7 +19,8 @@ type $Props = {
   [key: `data-${string}`]: unknown;
 };
 
-export type ProgressIndicatorSkeletonProps = Omit<$RestProps, keyof $Props> & $Props;
+export type ProgressIndicatorSkeletonProps = Omit<$RestProps, keyof $Props> &
+  $Props;
 
 export default class ProgressIndicatorSkeleton extends SvelteComponentTyped<
   ProgressIndicatorSkeletonProps,

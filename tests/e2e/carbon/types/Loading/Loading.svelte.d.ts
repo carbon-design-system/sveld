@@ -30,7 +30,7 @@ type $Props = {
 
   /**
    * Set an id for the label element
-   * @default "ccs-" + Math.random().toString(36)
+   * @default `ccs-${Math.random().toString(36)}`
    */
   id?: string;
 
@@ -39,4 +39,8 @@ type $Props = {
 
 export type LoadingProps = Omit<$RestProps, keyof $Props> & $Props;
 
-export default class Loading extends SvelteComponentTyped<LoadingProps, Record<string, any>, Record<string, never>> {}
+export default class Loading extends SvelteComponentTyped<
+  LoadingProps,
+  Record<string, any>,
+  Record<string, never>
+> {}

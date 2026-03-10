@@ -48,11 +48,14 @@ type $Props = {
 
   /**
    * Set an id for the top-level element
-   * @default "ccs-" + Math.random().toString(36)
+   * @default `ccs-${Math.random().toString(36)}`
    */
   id?: string;
 
-  children?: (this: void, ...args: [{ props: { class: "bx--progress-label" } }]) => void;
+  children?: (
+    this: void,
+    ...args: [{ props: { class: "bx--progress-label" } }]
+  ) => void;
 
   [key: `data-${string}`]: unknown;
 };

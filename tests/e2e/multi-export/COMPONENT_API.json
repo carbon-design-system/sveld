@@ -58,7 +58,9 @@
       "filePath": "src/nested/Header.svelte",
       "props": [],
       "moduleExports": [],
-      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
+      "slots": [
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
+      ],
       "events": [],
       "typedefs": [],
       "generics": null,
@@ -120,7 +122,9 @@
         }
       ],
       "events": [],
-      "typedefs": [{ "type": "string", "name": "Author", "ts": "type Author = string" }],
+      "typedefs": [
+        { "type": "string", "name": "Author", "ts": "type Author = string" }
+      ],
       "generics": null,
       "rest_props": { "type": "Element", "name": "blockquote" },
       "contexts": []
