@@ -6,8 +6,8 @@
   style="color: red"
   primary={false}
   on:click={(e) => {
-		console.log(e);
-	}}
+    console.log(e);
+  }}
 >
   Text
 </Button>
@@ -16,8 +16,8 @@
   style="color: red"
   primary={false}
   on:click={(e) => {
-		console.log(e);
-	}}
+    console.log(e);
+  }}
 >
   Text
 </Button2>
