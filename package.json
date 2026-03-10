@@ -5,6 +5,13 @@
   "description": "Generate TypeScript definitions for your Svelte components.",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./index.mjs",
+      "require": "./lib/index.js",
+      "types": "./lib/index.d.ts"
+    }
+  },
   "scripts": {
     "test": "bun test",
     "test:fixtures-types": "tsc --project tsconfig.fixtures.json",
@@ -37,7 +44,8 @@
   },
   "files": [
     "lib",
-    "cli.js"
+    "cli.js",
+    "index.mjs"
   ],
   "repository": {
     "type": "git",
