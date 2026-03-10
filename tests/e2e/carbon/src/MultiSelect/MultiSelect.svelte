@@ -101,7 +101,7 @@
   export let label = "";
 
   /** Set an id for the list box component */
-  export let id = "ccs-" + Math.random().toString(36);
+  export let id = `ccs-${Math.random().toString(36)}`;
 
   /**
    * Specify a name attribute for the select
@@ -115,9 +115,9 @@
    * @typedef {{ id: MultiSelectItemId; text: MultiSelectItemText; }} MultiSelectItem
    */
 
-  import { afterUpdate, createEventDispatcher, setContext } from "svelte";
-  import WarningFilled16 from "carbon-icons-svelte/lib/WarningFilled16/WarningFilled16.svelte";
   import WarningAltFilled16 from "carbon-icons-svelte/lib/WarningAltFilled16/WarningAltFilled16.svelte";
+  import WarningFilled16 from "carbon-icons-svelte/lib/WarningFilled16/WarningFilled16.svelte";
+  import { afterUpdate, createEventDispatcher, setContext } from "svelte";
   import Checkbox from "../Checkbox/Checkbox.svelte";
   import { ListBox, ListBoxField, ListBoxMenu, ListBoxMenuIcon, ListBoxMenuItem, ListBoxSelection } from "../ListBox";
 
@@ -145,7 +145,7 @@
     },
   });
 
-  function change(direction) {
+  function _change(direction) {
     let index = highlightedIndex + direction;
 
     if (index < 0) {
@@ -207,7 +207,8 @@
     if (open && multiSelectRef && !multiSelectRef.contains(target)) {
       open = false;
     }
-  }} />
+  }}
+/>
 
 <div
   bind:this={multiSelectRef}
@@ -219,7 +220,11 @@
   {...$$restProps}
 >
   {#if titleText}
-    <label for={id} class:bx--label={true} class:bx--label--disabled={disabled}>
+    <label
+      for={id}
+      class:bx--label={true}
+      class:bx--label--disabled={disabled}
+    >
       {titleText}
     </label>
   {/if}
@@ -349,7 +354,7 @@
           {id}
           {name}
           value={inputValue}
-        />
+        >
         {#if invalid}
           <WarningFilled16 class="bx--list-box__invalid-icon" />
         {/if}
@@ -375,11 +380,17 @@
       {/if}
       {#if !filterable}
         <span class="bx--list-box__label">{label}</span>
-        <ListBoxMenuIcon {open} {translateWithId} />
+        <ListBoxMenuIcon
+          {open}
+          {translateWithId}
+        />
       {/if}
     </ListBoxField>
     {#if open}
-      <ListBoxMenu aria-label={ariaLabel} {id}>
+      <ListBoxMenu
+        aria-label={ariaLabel}
+        {id}
+      >
         {#each filterable ? filteredItems : sortedItems as item, i (item.id)}
           <ListBoxMenuItem
             id={item.id}
@@ -409,7 +420,10 @@
     {/if}
   </ListBox>
   {#if !inline && !invalid && !warn && helperText}
-    <div class:bx--form__helper-text={true} class:bx--form__helper-text--disabled={disabled}>
+    <div
+      class:bx--form__helper-text={true}
+      class:bx--form__helper-text--disabled={disabled}
+    >
       {helperText}
     </div>
   {/if}

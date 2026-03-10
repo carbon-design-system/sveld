@@ -28,5 +28,8 @@
   on:click
   on:click={() => (isOpen = !isOpen)}
 >
-  <Icon title={isOpen ? "Close" : "Open Menu"} render={isOpen ? Close20 : Menu20} />
+  <Icon
+    title={isOpen ? "Close" : "Open Menu"}
+    render={isOpen ? Close20 : Menu20}
+  />
 </button>

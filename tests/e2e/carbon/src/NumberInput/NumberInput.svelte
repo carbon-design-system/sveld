@@ -86,7 +86,7 @@
   };
 
   /** Set an id for the input element */
-  export let id = "ccs-" + Math.random().toString(36);
+  export let id = `ccs-${Math.random().toString(36)}`;
 
   /**
    * Specify a name attribute for the input
@@ -97,11 +97,11 @@
   /** Obtain a reference to the input HTML element */
   export let ref = null;
 
-  import { createEventDispatcher, afterUpdate } from "svelte";
   import CaretDownGlyph from "carbon-icons-svelte/lib/CaretDownGlyph/CaretDownGlyph.svelte";
   import CaretUpGlyph from "carbon-icons-svelte/lib/CaretUpGlyph/CaretUpGlyph.svelte";
-  import WarningFilled16 from "carbon-icons-svelte/lib/WarningFilled16/WarningFilled16.svelte";
   import WarningAltFilled16 from "carbon-icons-svelte/lib/WarningAltFilled16/WarningAltFilled16.svelte";
+  import WarningFilled16 from "carbon-icons-svelte/lib/WarningFilled16/WarningFilled16.svelte";
+  import { afterUpdate, createEventDispatcher } from "svelte";
 
   const defaultTranslations = {
     [translationIds.increment]: "Increment number",
@@ -110,7 +110,7 @@
 
   const dispatch = createEventDispatcher();
 
-  function updateValue(direction) {
+  function _updateValue(direction) {
     const nextValue = (value += direction * step);
 
     if (nextValue < min) {
@@ -136,7 +136,14 @@
   $: ariaLabel = $$props["aria-label"] || "Numeric input field with increment and decrement buttons";
 </script>
 
-<div class:bx--form-item={true} {...$$restProps} on:click on:mouseover on:mouseenter on:mouseleave>
+<div
+  class:bx--form-item={true}
+  {...$$restProps}
+  on:click
+  on:mouseover
+  on:mouseenter
+  on:mouseleave
+>
   <div
     data-invalid={error || undefined}
     class:bx--number={true}
@@ -158,7 +165,10 @@
           <slot name="label">{label}</slot>
         </label>
       {/if}
-      <div class:bx--number__input-wrapper={true} class:bx--number__input-wrapper--warning={!invalid && warn}>
+      <div
+        class:bx--number__input-wrapper={true}
+        class:bx--number__input-wrapper--warning={!invalid && warn}
+      >
         <button
           type="button"
           aria-live="polite"
@@ -191,7 +201,7 @@
           {step}
           {value}
           {readonly}
-        />
+        >
         <button
           type="button"
           aria-live="polite"
@@ -219,7 +229,10 @@
           <slot name="label">{label}</slot>
         </label>
       {/if}
-      <div class:bx--number__input-wrapper={true} class:bx--number__input-wrapper--warning={!invalid && warn}>
+      <div
+        class:bx--number__input-wrapper={true}
+        class:bx--number__input-wrapper--warning={!invalid && warn}
+      >
         <input
           bind:this={ref}
           type="number"
@@ -239,7 +252,7 @@
           {step}
           {value}
           {readonly}
-        />
+        >
         {#if invalid}
           <WarningFilled16 class="bx--number__invalid" />
         {/if}
@@ -281,17 +294,28 @@
       </div>
     {/if}
     {#if !error && !warn && helperText}
-      <div class:bx--form__helper-text={true} class:bx--form__helper-text--disabled={disabled}>
+      <div
+        class:bx--form__helper-text={true}
+        class:bx--form__helper-text--disabled={disabled}
+      >
         {helperText}
       </div>
     {/if}
     {#if error}
-      <div id={errorId} class:bx--form-requirement={true}>
+      <div
+        id={errorId}
+        class:bx--form-requirement={true}
+      >
         {invalidText}
       </div>
     {/if}
     {#if !error && warn}
-      <div id={errorId} class:bx--form-requirement={true}>{warnText}</div>
+      <div
+        id={errorId}
+        class:bx--form-requirement={true}
+      >
+        {warnText}
+      </div>
     {/if}
   </div>
 </div>

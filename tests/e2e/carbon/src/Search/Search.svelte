@@ -64,22 +64,30 @@
   export let labelText = "";
 
   /** Set an id for the input element */
-  export let id = "ccs-" + Math.random().toString(36);
+  export let id = `ccs-${Math.random().toString(36)}`;
 
   /** Obtain a reference to the input HTML element */
   export let ref = null;
 
-  import { createEventDispatcher } from "svelte";
   import Close16 from "carbon-icons-svelte/lib/Close16/Close16.svelte";
   import Close20 from "carbon-icons-svelte/lib/Close20/Close20.svelte";
   import Search16 from "carbon-icons-svelte/lib/Search16/Search16.svelte";
+  import { createEventDispatcher } from "svelte";
   import SearchSkeleton from "./SearchSkeleton.svelte";
 
   const dispatch = createEventDispatcher();
 </script>
 
 {#if skeleton}
-  <SearchSkeleton {small} {size} {...$$restProps} on:click on:mouseover on:mouseenter on:mouseleave />
+  <SearchSkeleton
+    {small}
+    {size}
+    {...$$restProps}
+    on:click
+    on:mouseover
+    on:mouseenter
+    on:mouseleave
+  />
 {:else}
   <div
     class:bx--search={true}
@@ -91,7 +99,11 @@
     {...$$restProps}
   >
     <Search16 class="bx--search-magnifier" />
-    <label for={id} class:bx--label={true}>{labelText}</label>
+    <label
+      for={id}
+      class:bx--label={true}
+      >{labelText}</label
+    >
     <!-- svelte-ignore a11y-autofocus -->
     <input
       bind:this={ref}
@@ -119,7 +131,7 @@
           dispatch("clear");
         }
       }}
-    />
+    >
     <button
       type="button"
       aria-label={closeButtonLabelText}

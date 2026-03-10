@@ -9,11 +9,11 @@
   export let translateWithId = () => "";
 
   /** Set an id for the top-level element */
-  export let id = "ccs-" + Math.random().toString(36);
+  export let id = `ccs-${Math.random().toString(36)}`;
 
-  import { getContext } from "svelte";
-  import ArrowUp20 from "carbon-icons-svelte/lib/ArrowUp20";
   import ArrowsVertical20 from "carbon-icons-svelte/lib/ArrowsVertical20";
+  import ArrowUp20 from "carbon-icons-svelte/lib/ArrowUp20";
+  import { getContext } from "svelte";
 
   const { sortHeader, tableSortable, add } = getContext("DataTable");
 
@@ -40,17 +40,27 @@
       class:bx--table-sort--ascending={active && $sortHeader.sortDirection === "descending"}
       on:click
     >
-      <div class:bx--table-header-label={true}>
-        <slot />
-      </div>
-      <ArrowUp20 aria-label={ariaLabel} class="bx--table-sort__icon" />
-      <ArrowsVertical20 aria-label={ariaLabel} class="bx--table-sort__icon-unsorted" />
+      <div class:bx--table-header-label={true}><slot /></div>
+      <ArrowUp20
+        aria-label={ariaLabel}
+        class="bx--table-sort__icon"
+      />
+      <ArrowsVertical20
+        aria-label={ariaLabel}
+        class="bx--table-sort__icon-unsorted"
+      />
     </button>
   </th>
 {:else}
-  <th {scope} {id} {...$$restProps} on:click on:mouseover on:mouseenter on:mouseleave>
-    <div class:bx--table-header-label={true}>
-      <slot />
-    </div>
+  <th
+    {scope}
+    {id}
+    {...$$restProps}
+    on:click
+    on:mouseover
+    on:mouseenter
+    on:mouseleave
+  >
+    <div class:bx--table-header-label={true}><slot /></div>
   </th>
 {/if}

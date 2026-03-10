@@ -3,23 +3,14 @@ import type { SvelteHTMLElements } from "svelte/elements";
 
 import type { ButtonSkeletonProps } from "./ButtonSkeleton.svelte";
 
-type $RestProps = SvelteHTMLElements["button"] &
-  SvelteHTMLElements["a"] &
-  SvelteHTMLElements["div"];
+type $RestProps = SvelteHTMLElements["button"] & SvelteHTMLElements["a"] & SvelteHTMLElements["div"];
 
 type $Props = {
   /**
    * Specify the kind of button.
    * @default "primary"
    */
-  kind?:
-    | "primary"
-    | "secondary"
-    | "tertiary"
-    | "ghost"
-    | "danger"
-    | "danger-tertiary"
-    | "danger-ghost";
+  kind?: "primary" | "secondary" | "tertiary" | "ghost" | "danger" | "danger-tertiary" | "danger-ghost";
 
   /**
    * Specify the size of button.
@@ -148,12 +139,7 @@ type $Props = {
   [key: `data-${string}`]: unknown;
 };
 
-export type ButtonProps = Omit<
-  $RestProps,
-  keyof ($Props & ButtonSkeletonProps)
-> &
-  $Props &
-  ButtonSkeletonProps;
+export type ButtonProps = Omit<$RestProps, keyof ($Props & ButtonSkeletonProps)> & $Props & ButtonSkeletonProps;
 
 export default class Button extends SvelteComponentTyped<
   ButtonProps,

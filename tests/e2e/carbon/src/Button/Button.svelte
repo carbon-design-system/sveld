@@ -118,18 +118,14 @@
     tabindex,
     disabled: disabled === true ? true : undefined,
     href,
-    "aria-pressed":
-      hasIconOnly && kind === "ghost" && !href ? isSelected : undefined,
+    "aria-pressed": hasIconOnly && kind === "ghost" && !href ? isSelected : undefined,
     ...$$restProps,
     class: [
       "bx--btn",
       expressive && "bx--btn--expressive",
-      ((size === "small" && !expressive) ||
-        (size === "sm" && !expressive) ||
-        (size === "small" && !expressive)) &&
+      ((size === "small" && !expressive) || (size === "sm" && !expressive) || (size === "small" && !expressive)) &&
         "bx--btn--sm",
-      (size === "field" && !expressive) ||
-        (size === "md" && !expressive && "bx--btn--md"),
+      (size === "field" && !expressive) || (size === "md" && !expressive && "bx--btn--md"),
       size === "field" && "bx--btn--field",
       size === "small" && "bx--btn--sm",
       size === "lg" && "bx--btn--lg",
@@ -139,14 +135,8 @@
       hasIconOnly && "bx--btn--icon-only",
       hasIconOnly && !hideTooltip && "bx--tooltip__trigger",
       hasIconOnly && !hideTooltip && "bx--tooltip--a11y",
-      hasIconOnly &&
-        !hideTooltip &&
-        tooltipPosition &&
-        `bx--btn--icon-only--${tooltipPosition}`,
-      hasIconOnly &&
-        !hideTooltip &&
-        tooltipAlignment &&
-        `bx--tooltip--align-${tooltipAlignment}`,
+      hasIconOnly && !hideTooltip && tooltipPosition && `bx--btn--icon-only--${tooltipPosition}`,
+      hasIconOnly && !hideTooltip && tooltipAlignment && `bx--tooltip--align-${tooltipAlignment}`,
       hasIconOnly && isSelected && kind === "ghost" && "bx--btn--selected",
       $$restProps.class,
     ]

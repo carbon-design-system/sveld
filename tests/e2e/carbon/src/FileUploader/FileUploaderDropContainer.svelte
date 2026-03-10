@@ -32,7 +32,7 @@
   export let tabindex = "0";
 
   /** Set an id for the input element */
-  export let id = "ccs-" + Math.random().toString(36);
+  export let id = `ccs-${Math.random().toString(36)}`;
 
   /** Specify a name attribute for the input */
   export let name = "";
@@ -84,7 +84,11 @@
       }
     }}
   >
-    <div {role} class:bx--file__drop-container={true} class:bx--file__drop-container--drag-over={over}>
+    <div
+      {role}
+      class:bx--file__drop-container={true}
+      class:bx--file__drop-container--drag-over={over}
+    >
       {labelText}
       <input
         bind:this={ref}
@@ -104,7 +108,7 @@
         on:click={({ target }) => {
           target.value = null;
         }}
-      />
+      >
     </div>
   </label>
 </div>

@@ -36,7 +36,11 @@
   $: cols = Array.from({ length: headers.length > 0 ? headers.length : columns }, (_, i) => i);
 </script>
 
-<div class:bx--skeleton={true} class:bx--data-table-container={true} {...$$restProps}>
+<div
+  class:bx--skeleton={true}
+  class:bx--data-table-container={true}
+  {...$$restProps}
+>
   {#if showHeader}
     <div class:bx--data-table-header={true}>
       <div class:bx--data-table-header__title={true} />
@@ -44,9 +48,16 @@
     </div>
   {/if}
   {#if showToolbar}
-    <section aria-label="data table toolbar" class:bx--table-toolbar={true}>
+    <section
+      aria-label="data table toolbar"
+      class:bx--table-toolbar={true}
+    >
       <div class:bx--toolbar-content={true}>
-        <span class:bx--skeleton={true} class:bx--btn={true} class:bx--btn--sm={true} />
+        <span
+          class:bx--skeleton={true}
+          class:bx--btn={true}
+          class:bx--btn--sm={true}
+        />
       </div>
     </section>
   {/if}

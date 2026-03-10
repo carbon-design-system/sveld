@@ -18,8 +18,8 @@
   import ErrorFilled20 from "carbon-icons-svelte/lib/ErrorFilled20/ErrorFilled20.svelte";
   import InformationFilled20 from "carbon-icons-svelte/lib/InformationFilled20/InformationFilled20.svelte";
   import InformationSquareFilled20 from "carbon-icons-svelte/lib/InformationSquareFilled20/InformationSquareFilled20.svelte";
-  import WarningFilled20 from "carbon-icons-svelte/lib/WarningFilled20/WarningFilled20.svelte";
   import WarningAltFilled20 from "carbon-icons-svelte/lib/WarningAltFilled20/WarningAltFilled20.svelte";
+  import WarningFilled20 from "carbon-icons-svelte/lib/WarningFilled20/WarningFilled20.svelte";
 
   const icons = {
     error: ErrorFilled20,
@@ -31,4 +31,8 @@
   };
 </script>
 
-<svelte:component this={icons[kind]} title={iconDescription} class="bx--{notificationType}-notification__icon" />
+<svelte:component
+  this={icons[kind]}
+  title={iconDescription}
+  class="bx--{notificationType}-notification__icon"
+/>

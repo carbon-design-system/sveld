@@ -13,7 +13,11 @@
   Text
 </Button>
 
-<Link style="color: red" href="#">Text</Link>
+<Link
+  style="color: red"
+  href="#"
+  >Text</Link
+>
 
 <Quote author={"author"} />
 

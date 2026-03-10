@@ -6,6 +6,9 @@
   import Button from "./Button.svelte";
 </script>
 
-<Button {...$$restProps} on:click>
+<Button
+  {...$$restProps}
+  on:click
+>
   <slot>Click me</slot>
 </Button>

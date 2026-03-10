@@ -21,11 +21,11 @@
   export let secondaryLabel = "";
 
   /** Set an id for the top-level element */
-  export let id = "ccs-" + Math.random().toString(36);
+  export let id = `ccs-${Math.random().toString(36)}`;
 
-  import { onMount, getContext } from "svelte";
   import CheckmarkOutline16 from "carbon-icons-svelte/lib/CheckmarkOutline16/CheckmarkOutline16.svelte";
   import Warning16 from "carbon-icons-svelte/lib/Warning16/Warning16.svelte";
+  import { getContext, onMount } from "svelte";
 
   let step = {};
 
@@ -97,9 +97,7 @@
         />
       </svg>
     {/if}
-    <slot props={{ class: "bx--progress-label" }}>
-      <p class:bx--progress-label={true}>{label}</p>
-    </slot>
+    <slot props={{ class: "bx--progress-label" }}> <p class:bx--progress-label={true}>{label}</p> </slot>
     {#if secondaryLabel}
       <p class:bx--progress-optional={true}>{secondaryLabel}</p>
     {/if}

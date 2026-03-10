@@ -77,7 +77,7 @@
   export let translateWithId = undefined;
 
   /** Set an id for the list box component */
-  export let id = "ccs-" + Math.random().toString(36);
+  export let id = `ccs-${Math.random().toString(36)}`;
 
   /**
    * Specify a name attribute for the list box
@@ -88,17 +88,17 @@
   /** Obtain a reference to the button HTML element */
   export let ref = null;
 
-  import { createEventDispatcher } from "svelte";
-  import WarningFilled16 from "carbon-icons-svelte/lib/WarningFilled16/WarningFilled16.svelte";
   import WarningAltFilled16 from "carbon-icons-svelte/lib/WarningAltFilled16/WarningAltFilled16.svelte";
+  import WarningFilled16 from "carbon-icons-svelte/lib/WarningFilled16/WarningFilled16.svelte";
+  import { createEventDispatcher } from "svelte";
   import { ListBox, ListBoxMenu, ListBoxMenuIcon, ListBoxMenuItem } from "../ListBox";
 
   const dispatch = createEventDispatcher();
 
-  let selectedId = undefined;
+  let selectedId;
   let highlightedIndex = -1;
 
-  function change(direction) {
+  function _change(direction) {
     let index = highlightedIndex + direction;
 
     if (index < 0) {
@@ -137,7 +137,11 @@
   {...$$restProps}
 >
   {#if titleText}
-    <label for={id} class:bx--label={true} class:bx--label--disabled={disabled}>
+    <label
+      for={id}
+      class:bx--label={true}
+      class:bx--label--disabled={disabled}
+    >
       {titleText}
     </label>
   {/if}
@@ -198,12 +202,22 @@
       {id}
     >
       <span class="bx--list-box__label">
-        {#if selectedItem}{itemToString(selectedItem)}{:else}{label}{/if}
+        {#if selectedItem}
+          {itemToString(selectedItem)}
+        {:else}
+          {label}
+        {/if}
       </span>
-      <ListBoxMenuIcon {open} {translateWithId} />
+      <ListBoxMenuIcon
+        {open}
+        {translateWithId}
+      />
     </button>
     {#if open}
-      <ListBoxMenu aria-labelledby={id} {id}>
+      <ListBoxMenu
+        aria-labelledby={id}
+        {id}
+      >
         {#each items as item, i (item.id)}
           <ListBoxMenuItem
             id={item.id}
@@ -225,7 +239,10 @@
     {/if}
   </ListBox>
   {#if !inline && !invalid && !warn && helperText}
-    <div class:bx--form__helper-text={true} class:bx--form__helper-text--disabled={disabled}>
+    <div
+      class:bx--form__helper-text={true}
+      class:bx--form__helper-text--disabled={disabled}
+    >
       {helperText}
     </div>
   {/if}

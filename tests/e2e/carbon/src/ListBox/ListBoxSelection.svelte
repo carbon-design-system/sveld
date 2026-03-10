@@ -27,8 +27,8 @@
   /** Obtain a reference to the top-level HTML element */
   export let ref = null;
 
-  import { createEventDispatcher, getContext } from "svelte";
   import Close16 from "carbon-icons-svelte/lib/Close16";
+  import { createEventDispatcher, getContext } from "svelte";
 
   const defaultTranslations = {
     [translationIds.clearAll]: "Clear all selected items",
@@ -65,6 +65,8 @@
     }
   }}
 >
-  {#if selectionCount}{selectionCount}{/if}
+  {#if selectionCount}
+    {selectionCount}
+  {/if}
   <Close16 />
 </div>

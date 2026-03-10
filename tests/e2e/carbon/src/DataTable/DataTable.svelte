@@ -1,277 +1,253 @@
 <script>
   /**
-   * @generics {Row extends DataTableRow = DataTableRow} Row
-   * @template {DataTableRow} Row
-   * @typedef {Exclude<keyof Row, "id">} DataTableKey<Row>
-   * @typedef {any} DataTableValue
-   * @typedef {{ key: DataTableKey<Row>; empty: boolean; display?: (item: Value, row: Row) => DataTableValue; sort?: false | ((a: DataTableValue, b: DataTableValue) => number); columnMenu?: boolean; width?: string; minWidth?: string; }} DataTableEmptyHeader<Row>
-   * @typedef {{ key: DataTableKey<Row>; value: DataTableValue; display?: (item: Value, row: Row) => DataTableValue; sort?: false | ((a: DataTableValue, b: DataTableValue) => number); columnMenu?: boolean; width?: string; minWidth?: string; }} DataTableNonEmptyHeader<Row>
-   * @typedef {DataTableNonEmptyHeader<Row> | DataTableEmptyHeader<Row>} DataTableHeader<Row>
-   * @typedef {{ id: any; [key: string]: DataTableValue; }} DataTableRow
-   * @typedef {any} DataTableRowId
-   * @typedef {{ key: DataTableKey<Row>; value: DataTableValue; display?: (item: Value, row: DataTableRow) => DataTableValue; }} DataTableCell
-   * @slot {{ row: Row; }} expanded-row
-   * @slot {{ header: DataTableNonEmptyHeader; }} cell-header
-   * @slot {{ row: Row; cell: DataTableCell<Row>; rowIndex: number; cellIndex: number; }} cell
-   * @event {{ header?: DataTableHeader<Row>; row?: Row; cell?: DataTableCell<Row>; }} click
-   * @event {{ expanded: boolean; }} click:header--expand
-   * @event {{ header: DataTableHeader<Row>; sortDirection?: "ascending" | "descending" | "none" }} click:header
-   * @event {{ indeterminate: boolean; selected: boolean; }} click:header--select
-   * @event {Row} click:row
-   * @event {Row} mouseenter:row
-   * @event {Row} mouseleave:row
-   * @event {{ expanded: boolean; row: Row; }} click:row--expand
-   * @event {{ selected: boolean; row: Row; }} click:row--select
-   * @event {DataTableCell<Row>} click:cell
-   * @restProps {div}
-   */
+ * @generics {Row extends DataTableRow = DataTableRow} Row
+ * @template {DataTableRow} Row
+ * @typedef {Exclude<keyof Row, "id">} DataTableKey<Row>
+ * @typedef {any} DataTableValue
+ * @typedef {{ key: DataTableKey<Row>; empty: boolean; display?: (item: Value, row: Row) => DataTableValue; sort?: false | ((a: DataTableValue, b: DataTableValue) => number); columnMenu?: boolean; width?: string; minWidth?: string; }} DataTableEmptyHeader<Row>
+ * @typedef {{ key: DataTableKey<Row>; value: DataTableValue; display?: (item: Value, row: Row) => DataTableValue; sort?: false | ((a: DataTableValue, b: DataTableValue) => number); columnMenu?: boolean; width?: string; minWidth?: string; }} DataTableNonEmptyHeader<Row>
+ * @typedef {DataTableNonEmptyHeader<Row> | DataTableEmptyHeader<Row>} DataTableHeader<Row>
+ * @typedef {{ id: any; [key: string]: DataTableValue; }} DataTableRow
+ * @typedef {any} DataTableRowId
+ * @typedef {{ key: DataTableKey<Row>; value: DataTableValue; display?: (item: Value, row: DataTableRow) => DataTableValue; }} DataTableCell
+ * @slot {{ row: Row; }} expanded-row
+ * @slot {{ header: DataTableNonEmptyHeader; }} cell-header
+ * @slot {{ row: Row; cell: DataTableCell<Row>; rowIndex: number; cellIndex: number; }} cell
+ * @event {{ header?: DataTableHeader<Row>; row?: Row; cell?: DataTableCell<Row>; }} click
+ * @event {{ expanded: boolean; }} click:header--expand
+ * @event {{ header: DataTableHeader<Row>; sortDirection?: "ascending" | "descending" | "none" }} click:header
+ * @event {{ indeterminate: boolean; selected: boolean; }} click:header--select
+ * @event {Row} click:row
+ * @event {Row} mouseenter:row
+ * @event {Row} mouseleave:row
+ * @event {{ expanded: boolean; row: Row; }} click:row--expand
+ * @event {{ selected: boolean; row: Row; }} click:row--select
+ * @event {DataTableCell<Row>} click:cell
+ * @restProps {div}
+ */
 
-  /**
-   * Specify the data table headers
-   * @type {ReadonlyArray<DataTableHeader<Row>>}
-   */
-  export let headers = [];
+/**
+ * Specify the data table headers
+ * @type {ReadonlyArray<DataTableHeader<Row>>}
+ */
+export let headers = [];
 
-  /**
-   * Specify the rows the data table should render
-   * keys defined in `headers` are used for the row ids
-   * @type {ReadonlyArray<Row>}
-   */
-  export let rows = [];
+/**
+ * Specify the rows the data table should render
+ * keys defined in `headers` are used for the row ids
+ * @type {ReadonlyArray<Row>}
+ */
+export let rows = [];
 
-  /**
-   * Set the size of the data table
-   * @type {"compact" | "short" | "medium" | "tall"}
-   */
-  export let size = undefined;
+/**
+ * Set the size of the data table
+ * @type {"compact" | "short" | "medium" | "tall"}
+ */
+export let size = undefined;
 
-  /** Specify the title of the data table */
-  export let title = "";
+/** Specify the title of the data table */
+export let title = "";
 
-  /** Specify the description of the data table */
-  export let description = "";
+/** Specify the description of the data table */
+export let description = "";
 
-  /** Set to `true` to use zebra styles */
-  export let zebra = false;
+/** Set to `true` to use zebra styles */
+export let zebra = false;
 
-  /** Set to `true` for the sortable variant */
-  export let sortable = false;
+/** Set to `true` for the sortable variant */
+export let sortable = false;
 
-  /**
-   * Specify the header key to sort by
-   * @type {DataTableKey}
-   */
-  export let sortKey = null;
+/**
+ * Specify the header key to sort by
+ * @type {DataTableKey}
+ */
+export let sortKey = null;
 
-  /**
-   * Specify the sort direction
-   * @type {"none" | "ascending" | "descending"}
-   */
-  export let sortDirection = "none";
+/**
+ * Specify the sort direction
+ * @type {"none" | "ascending" | "descending"}
+ */
+export let sortDirection = "none";
 
-  /**
-   * Set to `true` for the expandable variant
-   * Automatically set to `true` if `batchExpansion` is `true`
-   */
-  export let expandable = false;
+/**
+ * Set to `true` for the expandable variant
+ * Automatically set to `true` if `batchExpansion` is `true`
+ */
+export let expandable = false;
 
-  /**
-   * Set to `true` to enable batch expansion
-   */
-  export let batchExpansion = false;
+/**
+ * Set to `true` to enable batch expansion
+ */
+export let batchExpansion = false;
 
-  /**
-   * Specify the row ids to be expanded
-   * @type {ReadonlyArray<DataTableRowId>}
-   */
-  export let expandedRowIds = [];
+/**
+ * Specify the row ids to be expanded
+ * @type {ReadonlyArray<DataTableRowId>}
+ */
+export let expandedRowIds = [];
 
-  /**
-   * Specify the ids for rows that should not be expandable
-   * @type {ReadonlyArray<DataTableRowId>}
-   */
-  export let nonExpandableRowIds = [];
+/**
+ * Specify the ids for rows that should not be expandable
+ * @type {ReadonlyArray<DataTableRowId>}
+ */
+export let nonExpandableRowIds = [];
 
-  /** Set to `true` for the radio selection variant */
-  export let radio = false;
+/** Set to `true` for the radio selection variant */
+export let radio = false;
 
-  /**
-   * Set to `true` for the selectable variant
-   * Automatically set to `true` if `radio` or `batchSelection` are `true`
-   */
-  export let selectable = false;
+/**
+ * Set to `true` for the selectable variant
+ * Automatically set to `true` if `radio` or `batchSelection` are `true`
+ */
+export let selectable = false;
 
-  /** Set to `true` to enable batch selection */
-  export let batchSelection = false;
+/** Set to `true` to enable batch selection */
+export let batchSelection = false;
 
-  /**
-   * Specify the row ids to be selected
-   * @type {ReadonlyArray<DataTableRowId>}
-   */
-  export let selectedRowIds = [];
+/**
+ * Specify the row ids to be selected
+ * @type {ReadonlyArray<DataTableRowId>}
+ */
+export let selectedRowIds = [];
 
-  /**
-   * Specify the ids of rows that should not be selectable
-   * @type {ReadonlyArray<DataTableRowId>}
-   */
-  export let nonSelectableRowIds = [];
+/**
+ * Specify the ids of rows that should not be selectable
+ * @type {ReadonlyArray<DataTableRowId>}
+ */
+export let nonSelectableRowIds = [];
 
-  /** Set to `true` to enable a sticky header */
-  export let stickyHeader = false;
+/** Set to `true` to enable a sticky header */
+export let stickyHeader = false;
 
-  /** Set to `true` to use static width */
-  export let useStaticWidth = false;
+/** Set to `true` to use static width */
+export let useStaticWidth = false;
 
-  /** Specify the number of items to display in a page */
-  export let pageSize = 0;
+/** Specify the number of items to display in a page */
+export let pageSize = 0;
 
-  /** Set to `number` to set current page */
-  export let page = 0;
+/** Set to `number` to set current page */
+export let page = 0;
 
-  import { createEventDispatcher, setContext } from "svelte";
-  import { writable } from "svelte/store";
-  import ChevronRight16 from "carbon-icons-svelte/lib/ChevronRight16";
-  import InlineCheckbox from "../Checkbox/InlineCheckbox.svelte";
-  import RadioButton from "../RadioButton/RadioButton.svelte";
-  import Table from "./Table.svelte";
-  import TableBody from "./TableBody.svelte";
-  import TableCell from "./TableCell.svelte";
-  import TableContainer from "./TableContainer.svelte";
-  import TableHead from "./TableHead.svelte";
-  import TableHeader from "./TableHeader.svelte";
-  import TableRow from "./TableRow.svelte";
+import ChevronRight16 from "carbon-icons-svelte/lib/ChevronRight16";
+import { createEventDispatcher, setContext } from "svelte";
+import { writable } from "svelte/store";
+import InlineCheckbox from "../Checkbox/InlineCheckbox.svelte";
+import RadioButton from "../RadioButton/RadioButton.svelte";
+import Table from "./Table.svelte";
+import TableBody from "./TableBody.svelte";
+import TableCell from "./TableCell.svelte";
+import TableContainer from "./TableContainer.svelte";
+import TableHead from "./TableHead.svelte";
+import TableHeader from "./TableHeader.svelte";
+import TableRow from "./TableRow.svelte";
 
-  const sortDirectionMap = {
-    none: "ascending",
-    ascending: "descending",
-    descending: "none",
-  };
-  const dispatch = createEventDispatcher();
-  const batchSelectedIds = writable(false);
-  const tableRows = writable(rows);
-  $: thKeys = headers.reduce((a, c) => ({ ...a, [c.key]: c.key }), {});
-  const resolvePath = (object, path) => {
-    if (path in object) return object[path];
-    return path
-      .split(/[\.\[\]\'\"]/)
-      .filter((p) => p)
-      .reduce((o, p) => (o && typeof o === "object" ? o[p] : o), object);
-  };
+const sortDirectionMap = {
+  none: "ascending",
+  ascending: "descending",
+  descending: "none",
+};
+const dispatch = createEventDispatcher();
+const batchSelectedIds = writable(false);
+const tableRows = writable(rows);
+$: thKeys = headers.reduce((a, c) => ({ ...a, [c.key]: c.key }), {});
+const resolvePath = (object, path) => {
+  if (path in object) return object[path];
+  return path
+    .split(/[.[\]'"]/)
+    .filter((p) => p)
+    .reduce((o, p) => (o && typeof o === "object" ? o[p] : o), object);
+};
 
-  setContext("DataTable", {
-    batchSelectedIds,
-    tableRows,
-    resetSelectedRowIds: () => {
-      selectAll = false;
-      selectedRowIds = [];
-      if (refSelectAll) refSelectAll.checked = false;
-    },
-  });
+setContext("DataTable", {
+  batchSelectedIds,
+  tableRows,
+  resetSelectedRowIds: () => {
+    selectAll = false;
+    selectedRowIds = [];
+    if (refSelectAll) refSelectAll.checked = false;
+  },
+});
 
-  let expanded = false;
-  let parentRowId = null;
+let expanded = false;
+let parentRowId = null;
 
-  $: expandedRows = expandedRowIds.reduce(
-    (a, id) => ({ ...a, [id]: true }),
-    {}
-  );
+$: expandedRows = expandedRowIds.reduce((a, id) => ({ ...a, [id]: true }), {});
 
-  let refSelectAll = null;
+let refSelectAll = null;
 
-  $: batchSelectedIds.set(selectedRowIds);
-  $: rowIds = $tableRows.map((row) => row.id);
-  $: expandableRowIds = rowIds.filter(
-    (id) => !nonExpandableRowIds.includes(id)
-  );
-  $: selectableRowIds = rowIds.filter(
-    (id) => !nonSelectableRowIds.includes(id)
-  );
-  $: selectAll =
-    selectableRowIds.length > 0 &&
-    selectedRowIds.length === selectableRowIds.length;
-  $: indeterminate =
-    selectedRowIds.length > 0 &&
-    selectedRowIds.length < selectableRowIds.length;
-  $: if (batchExpansion) {
-    expandable = true;
-    expanded = expandedRowIds.length === expandableRowIds.length;
+$: batchSelectedIds.set(selectedRowIds);
+$: rowIds = $tableRows.map((row) => row.id);
+$: expandableRowIds = rowIds.filter((id) => !nonExpandableRowIds.includes(id));
+$: selectableRowIds = rowIds.filter((id) => !nonSelectableRowIds.includes(id));
+$: selectAll = selectableRowIds.length > 0 && selectedRowIds.length === selectableRowIds.length;
+$: indeterminate = selectedRowIds.length > 0 && selectedRowIds.length < selectableRowIds.length;
+$: if (batchExpansion) {
+  expandable = true;
+  expanded = expandedRowIds.length === expandableRowIds.length;
+}
+$: if (radio || batchSelection) selectable = true;
+$: headerKeys = headers.map(({ key }) => key);
+$: tableCellsByRowId = rows.reduce((rows, row) => {
+  rows[row.id] = headerKeys.map((key, index) => ({
+    key,
+    value: resolvePath(row, key),
+    display: headers[index].display,
+  }));
+  return rows;
+}, {});
+$: $tableRows = rows;
+$: sortedRows = [...$tableRows];
+$: ascending = sortDirection === "ascending";
+$: sorting = sortable && sortKey != null;
+$: sortingHeader = headers.find((header) => header.key === sortKey);
+$: if (sorting) {
+  if (sortDirection === "none") {
+    sortedRows = $tableRows;
+  } else {
+    sortedRows = [...$tableRows].sort((a, b) => {
+      const itemA = ascending ? resolvePath(a, sortKey) : resolvePath(b, sortKey);
+      const itemB = ascending ? resolvePath(b, sortKey) : resolvePath(a, sortKey);
+
+      if (sortingHeader?.sort) return sortingHeader.sort(itemA, itemB);
+
+      if (typeof itemA === "number" && typeof itemB === "number") return itemA - itemB;
+
+      if ([itemA, itemB].every((item) => !item && item !== 0)) return 0;
+      if (!itemA && itemA !== 0) return ascending ? 1 : -1;
+      if (!itemB && itemB !== 0) return ascending ? -1 : 1;
+
+      return itemA.toString().localeCompare(itemB.toString(), "en", { numeric: true });
+    });
   }
-  $: if (radio || batchSelection) selectable = true;
-  $: headerKeys = headers.map(({ key }) => key);
-  $: tableCellsByRowId = rows.reduce((rows, row) => {
-    rows[row.id] = headerKeys.map((key, index) => ({
-      key,
-      value: resolvePath(row, key),
-      display: headers[index].display,
-    }));
-    return rows;
-  }, {});
-  $: $tableRows = rows;
-  $: sortedRows = [...$tableRows];
-  $: ascending = sortDirection === "ascending";
-  $: sorting = sortable && sortKey != null;
-  $: sortingHeader = headers.find((header) => header.key === sortKey);
-  $: if (sorting) {
-    if (sortDirection === "none") {
-      sortedRows = $tableRows;
-    } else {
-      sortedRows = [...$tableRows].sort((a, b) => {
-        const itemA = ascending
-          ? resolvePath(a, sortKey)
-          : resolvePath(b, sortKey);
-        const itemB = ascending
-          ? resolvePath(b, sortKey)
-          : resolvePath(a, sortKey);
+}
+const getDisplayedRows = (rows, page, pageSize) =>
+  page && pageSize ? rows.slice((page - 1) * pageSize, page * pageSize) : rows;
+$: displayedRows = getDisplayedRows($tableRows, page, pageSize);
+$: displayedSortedRows = getDisplayedRows(sortedRows, page, pageSize);
 
-        if (sortingHeader?.sort) return sortingHeader.sort(itemA, itemB);
+$: hasCustomHeaderWidth = headers.some((header) => header.width || header.minWidth);
 
-        if (typeof itemA === "number" && typeof itemB === "number")
-          return itemA - itemB;
-
-        if ([itemA, itemB].every((item) => !item && item !== 0)) return 0;
-        if (!itemA && itemA !== 0) return ascending ? 1 : -1;
-        if (!itemB && itemB !== 0) return ascending ? -1 : 1;
-
-        return itemA
-          .toString()
-          .localeCompare(itemB.toString(), "en", { numeric: true });
-      });
-    }
-  }
-  const getDisplayedRows = (rows, page, pageSize) =>
-    page && pageSize
-      ? rows.slice((page - 1) * pageSize, page * pageSize)
-      : rows;
-  $: displayedRows = getDisplayedRows($tableRows, page, pageSize);
-  $: displayedSortedRows = getDisplayedRows(sortedRows, page, pageSize);
-
-  $: hasCustomHeaderWidth = headers.some(
-    (header) => header.width || header.minWidth
+/** @type {(header: DataTableHeader) => undefined | string} */
+const formatHeaderWidth = (header) => {
+  const styles = [header.width && `width: ${header.width}`, header.minWidth && `min-width: ${header.minWidth}`].filter(
+    Boolean,
   );
-
-  /** @type {(header: DataTableHeader) => undefined | string} */
-  const formatHeaderWidth = (header) => {
-    const styles = [
-      header.width && `width: ${header.width}`,
-      header.minWidth && `min-width: ${header.minWidth}`,
-    ].filter(Boolean);
-    if (styles.length === 0) return undefined;
-    return styles.join(";");
-  };
+  if (styles.length === 0) return undefined;
+  return styles.join(";");
+};
 </script>
 
-<TableContainer useStaticWidth="{useStaticWidth}" {...$$restProps}>
+<TableContainer
+  useStaticWidth="{useStaticWidth}"
+  {...$$restProps}
+>
   {#if title || $$slots.title || description || $$slots.description}
     <div class:bx--data-table-header="{true}">
       {#if title || $$slots.title}
-        <h4 class:bx--data-table-header__title="{true}">
-          <slot name="title">{title}</slot>
-        </h4>
+        <h4 class:bx--data-table-header__title="{true}"><slot name="title">{title}</slot></h4>
       {/if}
       {#if description || $$slots.description}
-        <p class:bx--data-table-header__description="{true}">
-          <slot name="description">{description}</slot>
-        </p>
+        <p class:bx--data-table-header__description="{true}"><slot name="description">{description}</slot></p>
       {/if}
     </div>
   {/if}
@@ -312,7 +288,10 @@
           <th scope="col"></th>
         {/if}
         {#if batchSelection && !radio}
-          <th scope="col" class:bx--table-column-checkbox="{true}">
+          <th
+            scope="col"
+            class:bx--table-column-checkbox="{true}"
+          >
             <InlineCheckbox
               bind:ref="{refSelectAll}"
               aria-label="Select all rows"
@@ -342,7 +321,10 @@
         {/if}
         {#each headers as header (header.key)}
           {#if header.empty}
-            <th scope="col" style="{formatHeaderWidth(header)}"></th>
+            <th
+              scope="col"
+              style="{formatHeaderWidth(header)}"
+            ></th>
           {:else}
             <TableHeader
               id="{header.key}"
@@ -365,7 +347,11 @@
                 }
               }}"
             >
-              <slot name="cell-header" header="{header}">{header.value}</slot>
+              <slot
+                name="cell-header"
+                header="{header}"
+                >{header.value}</slot
+              >
             </TableHeader>
           {/if}
         {/each}
@@ -520,11 +506,12 @@
             }}"
           >
             {#if expandedRows[row.id] && !nonExpandableRowIds.includes(row.id)}
-              <TableCell
-                colspan="{selectable ? headers.length + 2 : headers.length + 1}"
-              >
+              <TableCell colspan="{selectable ? headers.length + 2 : headers.length + 1}">
                 <div class:bx--child-row-inner-container="{true}">
-                  <slot name="expanded-row" row="{row}" />
+                  <slot
+                    name="expanded-row"
+                    row="{row}"
+                  />
                 </div>
               </TableCell>
             {/if}

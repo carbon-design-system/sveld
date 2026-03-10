@@ -46,10 +46,10 @@
   export let light = false;
 
   /** Set an id for the date picker element */
-  export let id = "ccs-" + Math.random().toString(36);
+  export let id = `ccs-${Math.random().toString(36)}`;
 
-  import { createEventDispatcher, setContext, afterUpdate, onDestroy } from "svelte";
-  import { writable, derived } from "svelte/store";
+  import { afterUpdate, createEventDispatcher, onDestroy, setContext } from "svelte";
+  import { derived, writable } from "svelte/store";
   import { createCalendar } from "./createCalendar";
 
   const dispatch = createEventDispatcher();
@@ -61,10 +61,10 @@
   const range = derived(mode, (_) => _ === "range");
   const hasCalendar = derived(mode, (_) => _ === "single" || _ === "range");
 
-  let calendar = undefined;
-  let datePickerRef = undefined;
-  let inputRef = undefined;
-  let inputRefTo = undefined;
+  let calendar;
+  let datePickerRef;
+  let inputRef;
+  let inputRefTo;
 
   setContext("DatePicker", {
     range,
@@ -164,9 +164,17 @@
     if (!calendar.calendarContainer.contains(target)) {
       calendar.close();
     }
-  }} />
+  }}
+/>
 
-<div class:bx--form-item={true} {...$$restProps} on:click on:mouseover on:mouseenter on:mouseleave>
+<div
+  class:bx--form-item={true}
+  {...$$restProps}
+  on:click
+  on:mouseover
+  on:mouseenter
+  on:mouseleave
+>
   <div
     bind:this={datePickerRef}
     {id}

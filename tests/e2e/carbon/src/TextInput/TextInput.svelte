@@ -27,7 +27,7 @@
   export let helperText = "";
 
   /** Set an id for the input element */
-  export let id = "ccs-" + Math.random().toString(36);
+  export let id = `ccs-${Math.random().toString(36)}`;
 
   /**
    * Specify a name attribute for the input
@@ -62,9 +62,9 @@
   /** Set to `true` to use inline version */
   export let inline = false;
 
-  import { getContext } from "svelte";
-  import WarningFilled16 from "carbon-icons-svelte/lib/WarningFilled16/WarningFilled16.svelte";
   import WarningAltFilled16 from "carbon-icons-svelte/lib/WarningAltFilled16/WarningAltFilled16.svelte";
+  import WarningFilled16 from "carbon-icons-svelte/lib/WarningFilled16/WarningFilled16.svelte";
+  import { getContext } from "svelte";
 
   const ctx = getContext("Form");
 
@@ -119,7 +119,10 @@
       {labelText}
     </label>
   {/if}
-  <div class:bx--text-input__field-outer-wrapper={true} class:bx--text-input__field-outer-wrapper--inline={inline}>
+  <div
+    class:bx--text-input__field-outer-wrapper={true}
+    class:bx--text-input__field-outer-wrapper--inline={inline}
+  >
     <div
       data-invalid={invalid || undefined}
       data-warn={warn || undefined}
@@ -162,17 +165,25 @@
         on:keydown
         on:focus
         on:blur
-      />
+      >
       {#if isFluid}
-        <hr class:bx--text-input__divider={true} />
+        <hr class:bx--text-input__divider={true}>
       {/if}
       {#if isFluid && !inline && invalid}
-        <div class:bx--form-requirement={true} id={errorId}>
+        <div
+          class:bx--form-requirement={true}
+          id={errorId}
+        >
           {invalidText}
         </div>
       {/if}
       {#if isFluid && !inline && warn}
-        <div class:bx--form-requirement={true} id={warnId}>{warnText}</div>
+        <div
+          class:bx--form-requirement={true}
+          id={warnId}
+        >
+          {warnText}
+        </div>
       {/if}
     </div>
     {#if !invalid && !warn && !isFluid && !inline && helperText}
@@ -185,12 +196,20 @@
       </div>
     {/if}
     {#if !isFluid && invalid}
-      <div class:bx--form-requirement={true} id={errorId}>
+      <div
+        class:bx--form-requirement={true}
+        id={errorId}
+      >
         {invalidText}
       </div>
     {/if}
     {#if !isFluid && !invalid && warn}
-      <div class:bx--form-requirement={true} id={warnId}>{warnText}</div>
+      <div
+        class:bx--form-requirement={true}
+        id={warnId}
+      >
+        {warnText}
+      </div>
     {/if}
   </div>
 </div>

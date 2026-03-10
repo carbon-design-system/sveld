@@ -18,7 +18,7 @@
   export let iconDescription = "Tile checkmark";
 
   /** Set an id for the input element */
-  export let id = "ccs-" + Math.random().toString(36);
+  export let id = `ccs-${Math.random().toString(36)}`;
 
   /**
    * Specify a name attribute for the input
@@ -29,8 +29,8 @@
   /** Obtain a reference to the input HTML element */
   export let ref = null;
 
-  import { createEventDispatcher } from "svelte";
   import CheckmarkFilled16 from "carbon-icons-svelte/lib/CheckmarkFilled16";
+  import { createEventDispatcher } from "svelte";
 
   const dispatch = createEventDispatcher();
 
@@ -47,7 +47,7 @@
   {value}
   {name}
   {title}
-/>
+>
 <label
   for={id}
   {tabindex}
@@ -72,9 +72,10 @@
   }}
 >
   <span class:bx--tile__checkmark={true}>
-    <CheckmarkFilled16 aria-label={iconDescription} title={iconDescription} />
+    <CheckmarkFilled16
+      aria-label={iconDescription}
+      title={iconDescription}
+    />
   </span>
-  <span class:bx--tile-content={true}>
-    <slot />
-  </span>
+  <span class:bx--tile-content={true}> <slot /> </span>
 </label>

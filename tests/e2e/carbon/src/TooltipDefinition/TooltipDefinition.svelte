@@ -15,18 +15,18 @@
   export let direction = "bottom";
 
   /** Set an id for the tooltip div element */
-  export let id = "ccs-" + Math.random().toString(36);
+  export let id = `ccs-${Math.random().toString(36)}`;
 
   /** Obtain a reference to the button HTML element */
   export let ref = null;
 
   let visible = false;
 
-  function hide() {
+  function _hide() {
     visible = false;
   }
 
-  function show() {
+  function _show() {
     visible = true;
   }
 </script>
@@ -34,7 +34,8 @@
 <svelte:body
   on:keydown={({ key }) => {
     if (key === "Escape") hide();
-  }} />
+  }}
+/>
 
 <div
   class:bx--tooltip--definition={true}
@@ -66,7 +67,11 @@
   >
     <slot />
   </button>
-  <div role="tooltip" {id} class:bx--assistive-text={true}>
+  <div
+    role="tooltip"
+    {id}
+    class:bx--assistive-text={true}
+  >
     <slot name="tooltip">{tooltipText}</slot>
   </div>
 </div>

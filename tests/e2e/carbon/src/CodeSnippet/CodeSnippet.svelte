@@ -70,13 +70,13 @@
   export let showMoreLess = false;
 
   /** Set an id for the code element */
-  export let id = "ccs-" + Math.random().toString(36);
+  export let id = `ccs-${Math.random().toString(36)}`;
 
   /** Obtain a reference to the pre HTML element */
   export let ref = null;
 
-  import { tick } from "svelte";
   import ChevronDown16 from "carbon-icons-svelte/lib/ChevronDown16/ChevronDown16.svelte";
+  import { tick } from "svelte";
   import Button from "../Button/Button.svelte";
   import Copy from "../Copy/Copy.svelte";
   import CopyButton from "../CopyButton/CopyButton.svelte";
@@ -95,7 +95,14 @@
 </script>
 
 {#if skeleton}
-  <CodeSnippetSkeleton {type} {...$$restProps} on:click on:mouseover on:mouseenter on:mouseleave />
+  <CodeSnippetSkeleton
+    {type}
+    {...$$restProps}
+    on:click
+    on:mouseover
+    on:mouseenter
+    on:mouseleave
+  />
 {:else if type === "inline"}
   {#if hideCopyButton}
     <span
@@ -109,9 +116,7 @@
       class:bx--snippet--multi={type === "multi"}
       {...$$restProps}
     >
-      <code {id}>
-        <slot>{code}</slot>
-      </code>
+      <code {id}> <slot>{code}</slot> </code>
     </span>
   {:else}
     <Copy
@@ -131,9 +136,7 @@
       on:mouseenter
       on:mouseleave
     >
-      <code {id}>
-        <slot>{code}</slot>
-      </code>
+      <code {id}> <slot>{code}</slot> </code>
     </Copy>
   {/if}
 {:else}
@@ -153,7 +156,6 @@
     on:mouseleave
   >
     <div
-      role={type === "single" ? "textbox" : undefined}
       tabindex={type === "single" && !disabled ? "0" : undefined}
       aria-label={$$restProps["aria-label"] || copyLabel || "code-snippet"}
       class:bx--snippet-container={true}
@@ -185,7 +187,10 @@
         }}
       >
         <span class:bx--snippet-btn--text={true}>{expandText}</span>
-        <ChevronDown16 class="bx--icon-chevron--down bx--snippet__icon" aria-label={expandText} />
+        <ChevronDown16
+          class="bx--icon-chevron--down bx--snippet__icon"
+          aria-label={expandText}
+        />
       </Button>
     {/if}
   </div>

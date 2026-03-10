@@ -26,18 +26,23 @@
   export let icon = undefined;
 
   /** Set an id for the filterable tag */
-  export let id = "ccs-" + Math.random().toString(36);
+  export let id = `ccs-${Math.random().toString(36)}`;
 
   import Close16 from "carbon-icons-svelte/lib/Close16/Close16.svelte";
-  import TagSkeleton from "./TagSkeleton.svelte";
-
   import { createEventDispatcher } from "svelte";
+  import TagSkeleton from "./TagSkeleton.svelte";
 
   const dispatch = createEventDispatcher();
 </script>
 
 {#if skeleton}
-  <TagSkeleton {...$$restProps} on:click on:mouseover on:mouseenter on:mouseleave />
+  <TagSkeleton
+    {...$$restProps}
+    on:click
+    on:mouseover
+    on:mouseenter
+    on:mouseleave
+  />
 {:else if filter}
   <div
     aria-label={title}
@@ -58,9 +63,7 @@
     class:bx--tag--high-contrast={type === "high-contrast"}
     {...$$restProps}
   >
-    <slot props={{ class: "bx--tag__label" }}>
-      <span class:bx--tag__label={true}>{type}</span>
-    </slot>
+    <slot props={{ class: "bx--tag__label" }}> <span class:bx--tag__label={true}>{type}</span> </slot>
     <button
       aria-labelledby={id}
       class:bx--tag__close-icon={true}
@@ -100,12 +103,8 @@
     on:mouseleave
   >
     {#if icon}
-      <div class:bx--tag__custom-icon={true}>
-        <svelte:component this={icon} />
-      </div>
+      <div class:bx--tag__custom-icon={true}><svelte:component this={icon} /></div>
     {/if}
-    <span>
-      <slot />
-    </span>
+    <span> <slot /> </span>
   </div>
 {/if}

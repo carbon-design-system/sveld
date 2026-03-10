@@ -21,7 +21,7 @@
   export let iconDescription = "";
 
   /** Set an id for the input element */
-  export let id = "ccs-" + Math.random().toString(36);
+  export let id = `ccs-${Math.random().toString(36)}`;
 
   /** Specify the label text */
   export let labelText = "";
@@ -44,8 +44,8 @@
   /** Obtain a reference to the input HTML element */
   export let ref = null;
 
-  import { getContext, onMount } from "svelte";
   import Calendar16 from "carbon-icons-svelte/lib/Calendar16";
+  import { getContext, onMount } from "svelte";
 
   const { range, add, hasCalendar, declareRef, updateValue, blurInput, openCalendar, focusCalendar, inputValue } =
     getContext("DatePicker");
@@ -57,9 +57,18 @@
   });
 </script>
 
-<div class:bx--date-picker-container={true} class:bx--date-picker--nolabel={!labelText} {...$$restProps}>
+<div
+  class:bx--date-picker-container={true}
+  class:bx--date-picker--nolabel={!labelText}
+  {...$$restProps}
+>
   {#if labelText}
-    <label for={id} class:bx--label={true} class:bx--visually-hidden={hideLabel} class:bx--label--disabled={disabled}>
+    <label
+      for={id}
+      class:bx--label={true}
+      class:bx--visually-hidden={hideLabel}
+      class:bx--label--disabled={disabled}
+    >
       {labelText}
     </label>
   {/if}
@@ -93,7 +102,7 @@
       on:blur={({ relatedTarget }) => {
         blurInput(relatedTarget);
       }}
-    />
+    >
     {#if $hasCalendar}
       <Calendar16
         role="img"

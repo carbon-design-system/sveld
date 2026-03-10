@@ -20,20 +20,31 @@
   /** Specify the ARIA label for the close icon */
   export let iconDescription = "Close";
 
-  import { getContext } from "svelte";
   import Close20 from "carbon-icons-svelte/lib/Close20/Close20.svelte";
+  import { getContext } from "svelte";
 
   const { closeModal } = getContext("ComposedModal");
 </script>
 
-<div class:bx--modal-header={true} {...$$restProps}>
+<div
+  class:bx--modal-header={true}
+  {...$$restProps}
+>
   {#if label}
-    <p class:bx--modal-header__label={true} class:bx--type-delta={true} class={labelClass}>
+    <p
+      class:bx--modal-header__label={true}
+      class:bx--type-delta={true}
+      class={labelClass}
+    >
       {label}
     </p>
   {/if}
   {#if title}
-    <p class:bx--modal-header__heading={true} class:bx--type-beta={true} class={titleClass}>
+    <p
+      class:bx--modal-header__heading={true}
+      class:bx--type-beta={true}
+      class={titleClass}
+    >
       {title}
     </p>
   {/if}

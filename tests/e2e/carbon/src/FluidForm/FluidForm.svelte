@@ -5,6 +5,10 @@
   setContext("Form", { isFluid: true });
 </script>
 
-<Form {...$$restProps} class="bx--form--fluid {$$restProps.class}" on:submit>
+<Form
+  {...$$restProps}
+  class="bx--form--fluid {$$restProps.class}"
+  on:submit
+>
   <slot />
 </Form>

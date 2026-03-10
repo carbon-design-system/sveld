@@ -19,8 +19,7 @@ type $Props = {
   [key: `data-${string}`]: unknown;
 };
 
-export type StructuredListSkeletonProps = Omit<$RestProps, keyof $Props> &
-  $Props;
+export type StructuredListSkeletonProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class StructuredListSkeleton extends SvelteComponentTyped<
   StructuredListSkeletonProps,

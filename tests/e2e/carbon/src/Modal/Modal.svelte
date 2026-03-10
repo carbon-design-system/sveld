@@ -63,13 +63,13 @@
   export let preventCloseOnClickOutside = false;
 
   /** Set an id for the top-level element */
-  export let id = "ccs-" + Math.random().toString(36);
+  export let id = `ccs-${Math.random().toString(36)}`;
 
   /** Obtain a reference to the top-level HTML element */
   export let ref = null;
 
-  import { createEventDispatcher, onMount, afterUpdate } from "svelte";
   import Close20 from "carbon-icons-svelte/lib/Close20/Close20.svelte";
+  import { afterUpdate, createEventDispatcher, onMount } from "svelte";
   import Button from "../Button/Button.svelte";
 
   const dispatch = createEventDispatcher();
@@ -177,15 +177,24 @@
             open = false;
           }}
         >
-          <Close20 aria-label={iconDescription} class="bx--modal-close__icon" />
+          <Close20
+            aria-label={iconDescription}
+            class="bx--modal-close__icon"
+          />
         </button>
       {/if}
       {#if modalLabel}
-        <h2 id={modalLabelId} class:bx--modal-header__label={true}>
+        <h2
+          id={modalLabelId}
+          class:bx--modal-header__label={true}
+        >
           <slot name="label">{modalLabel}</slot>
         </h2>
       {/if}
-      <h3 id={modalHeadingId} class:bx--modal-header__heading={true}>
+      <h3
+        id={modalHeadingId}
+        class:bx--modal-header__heading={true}
+      >
         <slot name="heading">{modalHeading}</slot>
       </h3>
       {#if !passiveModal}
@@ -199,7 +208,10 @@
             open = false;
           }}
         >
-          <Close20 aria-label={iconDescription} class="bx--modal-close__icon" />
+          <Close20
+            aria-label={iconDescription}
+            class="bx--modal-close__icon"
+          />
         </button>
       {/if}
     </div>
@@ -209,7 +221,6 @@
       class:bx--modal-content--with-form={hasForm}
       class:bx--modal-scroll-content={hasScrollingContent}
       tabindex={hasScrollingContent ? "0" : undefined}
-      role={hasScrollingContent ? "region" : undefined}
       aria-label={hasScrollingContent ? ariaLabel : undefined}
       aria-labelledby={modalLabel ? modalLabelId : modalHeadingId}
     >

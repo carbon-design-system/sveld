@@ -15,13 +15,13 @@
   export let iconDescription = "Tile checkmark";
 
   /** Set an id for the input element */
-  export let id = "ccs-" + Math.random().toString(36);
+  export let id = `ccs-${Math.random().toString(36)}`;
 
   /** Specify a name attribute for the input */
   export let name = "";
 
-  import { getContext } from "svelte";
   import CheckmarkFilled16 from "carbon-icons-svelte/lib/CheckmarkFilled16";
+  import { getContext } from "svelte";
 
   const { add, update, selectedValue } = getContext("TileGroup");
 
@@ -49,7 +49,7 @@
       update(value);
     }
   }}
-/>
+>
 <label
   for={id}
   class:bx--tile={true}
@@ -63,9 +63,10 @@
   on:mouseleave
 >
   <span class:bx--tile__checkmark={true}>
-    <CheckmarkFilled16 aria-label={iconDescription} title={iconDescription} />
+    <CheckmarkFilled16
+      aria-label={iconDescription}
+      title={iconDescription}
+    />
   </span>
-  <span class:bx--tile-content={true}>
-    <slot />
-  </span>
+  <span class:bx--tile-content={true}> <slot /> </span>
 </label>

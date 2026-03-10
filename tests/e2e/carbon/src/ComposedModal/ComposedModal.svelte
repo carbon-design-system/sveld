@@ -26,7 +26,7 @@
   /** Obtain a reference to the top-level HTML element */
   export let ref = null;
 
-  import { createEventDispatcher, tick, setContext, onMount, afterUpdate, onDestroy } from "svelte";
+  import { afterUpdate, createEventDispatcher, onDestroy, onMount, setContext, tick } from "svelte";
 
   const dispatch = createEventDispatcher();
 

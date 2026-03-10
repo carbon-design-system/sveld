@@ -21,7 +21,7 @@
   export let hideLabel = false;
 
   /** Set an id for the input element */
-  export let id = "ccs-" + Math.random().toString(36);
+  export let id = `ccs-${Math.random().toString(36)}`;
 
   /** Specify a name attribute for the checkbox input */
   export let name = "";
@@ -62,8 +62,11 @@
         ctx.update(value);
       }
     }}
-  />
-  <label class:bx--radio-button__label={true} for={id}>
+  >
+  <label
+    class:bx--radio-button__label={true}
+    for={id}
+  >
     <span class:bx--radio-button__appearance={true} />
     <span class:bx--visually-hidden={hideLabel}>{labelText}</span>
   </label>

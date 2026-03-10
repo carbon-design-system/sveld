@@ -12,9 +12,9 @@
   /** Set to `true` to focus the search */
   export let searchIsActive = false;
 
-  import { createEventDispatcher } from "svelte";
   import Close20 from "carbon-icons-svelte/lib/Close20";
   import Search20 from "carbon-icons-svelte/lib/Search20";
+  import { createEventDispatcher } from "svelte";
   import { Icon } from "../../Icon";
   import searchStore from "../searchStore";
 
@@ -22,11 +22,11 @@
 
   let searchTabIndex = "0";
   let closeTabIndex = "-1";
-  let elInput = undefined;
-  let elTypeSearch = undefined;
+  let elInput;
+  let elTypeSearch;
   let isSearchFocus = false;
 
-  function dispatchInputs(event) {
+  function _dispatchInputs(event) {
     const params = {
       action: "search",
       textInput: event.target.value,
@@ -51,7 +51,7 @@
   $: if (isSearchFocus) {
     elInput.focus();
   }
-  $: showResults = $searchStore ? true : false;
+  $: showResults = !!$searchStore;
 </script>
 
 <svelte:window
@@ -72,7 +72,12 @@
   class:search-wrapper-hidden={!searchIsActive}
   class:search-focus={isSearchFocus || searchIsActive}
 >
-  <div id="right-panel-action-search" class="search-wrapper-2" role="combobox" aria-expanded={searchIsActive}>
+  <div
+    id="right-panel-action-search"
+    class="search-wrapper-2"
+    role="combobox"
+    aria-expanded={searchIsActive}
+  >
     <button
       tabindex={searchTabIndex}
       aria-label="Search"
@@ -91,7 +96,11 @@
         }
       }}
     >
-      <Icon title="Search" tabindex="0" render={Search20} />
+      <Icon
+        title="Search"
+        tabindex="0"
+        render={Search20}
+      />
     </button>
     <input
       bind:this={elInput}
@@ -105,7 +114,7 @@
       on:focus={() => dispatch("focusInputSearch")}
       on:focusout={() => dispatch("focusOutInputSearch")}
       on:input={dispatchInputs}
-    />
+    >
     <button
       id="right-panel-close-search"
       tabindex={closeTabIndex}
@@ -125,7 +134,11 @@
         }
       }}
     >
-      <Icon title="Close" tabindex="0" render={Close20} />
+      <Icon
+        title="Close"
+        tabindex="0"
+        render={Close20}
+      />
     </button>
   </div>
 </div>
@@ -140,7 +153,9 @@
     height: 3rem;
     background-color: #393939;
     color: #fff;
-    transition: max-width 0.11s cubic-bezier(0.2, 0, 0.38, 0.9), background 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
+    transition:
+      max-width 0.11s cubic-bezier(0.2, 0, 0.38, 0.9),
+      background 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
   }
 
   .search-wrapper-hidden {
@@ -165,7 +180,9 @@
     padding: 0;
     flex-shrink: 0;
     opacity: 1;
-    transition: background-color 0.11s cubic-bezier(0.2, 0, 0.38, 0.9), opacity 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
+    transition:
+      background-color 0.11s cubic-bezier(0.2, 0, 0.38, 0.9),
+      opacity 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
   }
 
   .btn-search-disabled {
@@ -201,7 +218,9 @@
     flex-shrink: 0;
     opacity: 1;
     display: block;
-    transition: background-color 0.11s cubic-bezier(0.2, 0, 0.38, 0.9), opacity 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
+    transition:
+      background-color 0.11s cubic-bezier(0.2, 0, 0.38, 0.9),
+      opacity 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
   }
 
   .btn-clear:hover {

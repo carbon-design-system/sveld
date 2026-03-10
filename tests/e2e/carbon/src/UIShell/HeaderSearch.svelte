@@ -26,9 +26,9 @@
   /** Specify the selected result index */
   export let selectedResultIndex = 0;
 
-  import { createEventDispatcher, tick } from "svelte";
   import Close20 from "carbon-icons-svelte/lib/Close20/Close20.svelte";
   import Search20 from "carbon-icons-svelte/lib/Search20/Search20.svelte";
+  import { createEventDispatcher, tick } from "svelte";
 
   const dispatch = createEventDispatcher();
 
@@ -40,7 +40,7 @@
     selectedResultIndex = 0;
   }
 
-  function selectResult() {
+  function _selectResult() {
     dispatch("select", { value, selectedResultIndex, selectedResult });
     reset();
   }
@@ -57,9 +57,20 @@
   }}
 />
 
-<div bind:this={refSearch} role="search" class:active>
-  <label for="search-input" id="search-label">Search</label>
-  <div role="combobox" aria-expanded={active}>
+<div
+  bind:this={refSearch}
+  role="search"
+  class:active
+>
+  <label
+    for="search-input"
+    id="search-label"
+    >Search</label
+  >
+  <div
+    role="combobox"
+    aria-expanded={active}
+  >
     <button
       type="button"
       aria-label="Search"
@@ -111,7 +122,7 @@
             break;
         }
       }}
-    />
+    >
     <button
       type="button"
       aria-label="Clear search"
@@ -128,7 +139,11 @@
   </div>
 
   {#if active && results.length > 0}
-    <ul aria-labelledby="search-label" role="menu" id="search-menu">
+    <ul
+      aria-labelledby="search-label"
+      role="menu"
+      id="search-menu"
+    >
       {#each results as result, i}
         <li>
           <a
@@ -143,9 +158,14 @@
               selectResult();
             }}
           >
-            <slot {result} index={i}>
+            <slot
+              {result}
+              index={i}
+            >
               {result.text}
-              {#if result.description}<span>– {result.description}</span>{/if}
+              {#if result.description}
+                <span>– {result.description}</span>
+              {/if}
             </slot>
           </a>
         </li>
@@ -177,7 +197,9 @@
     height: 3rem;
     background-color: #393939;
     color: #fff;
-    transition: max-width 0.11s cubic-bezier(0.2, 0, 0.38, 0.9), background 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
+    transition:
+      max-width 0.11s cubic-bezier(0.2, 0, 0.38, 0.9),
+      background 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
   }
 
   [role="search"]:not(.active) {
@@ -223,7 +245,9 @@
     padding: 0;
     flex-shrink: 0;
     opacity: 1;
-    transition: background-color 0.11s cubic-bezier(0.2, 0, 0.38, 0.9), opacity 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
+    transition:
+      background-color 0.11s cubic-bezier(0.2, 0, 0.38, 0.9),
+      opacity 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
   }
 
   .disabled {

@@ -33,7 +33,7 @@ const store = {
   subscribe: globalStore.subscribe,
   search: (searchString) => {
     if (searchString.length > 1) {
-      let resultSearch = [];
+      const resultSearch = [];
 
       data.forEach((item) => {
         if (item.title.toLowerCase().includes(searchString.toLowerCase())) {

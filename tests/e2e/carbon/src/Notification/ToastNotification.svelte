@@ -41,7 +41,7 @@
   const dispatch = createEventDispatcher();
 
   let open = true;
-  let timeoutId = undefined;
+  let timeoutId;
 
   function close(closeFromTimeout) {
     open = false;
@@ -77,12 +77,22 @@
     on:mouseenter
     on:mouseleave
   >
-    <NotificationIcon {kind} {iconDescription} />
-    <NotificationTextDetails {title} {subtitle} {caption}>
+    <NotificationIcon
+      {kind}
+      {iconDescription}
+    />
+    <NotificationTextDetails
+      {title}
+      {subtitle}
+      {caption}
+    >
       <slot />
     </NotificationTextDetails>
     {#if !hideCloseButton}
-      <NotificationButton {iconDescription} on:click={close} />
+      <NotificationButton
+        {iconDescription}
+        on:click={close}
+      />
     {/if}
   </div>
 {/if}

@@ -35,7 +35,7 @@
   export let title = undefined;
 
   /** Set an id for the input label */
-  export let id = "ccs-" + Math.random().toString(36);
+  export let id = `ccs-${Math.random().toString(36)}`;
 
   /** Obtain a reference to the input HTML element */
   export let ref = null;
@@ -49,7 +49,13 @@
 </script>
 
 {#if skeleton}
-  <CheckboxSkeleton {...$$restProps} on:click on:mouseover on:mouseenter on:mouseleave />
+  <CheckboxSkeleton
+    {...$$restProps}
+    on:click
+    on:mouseover
+    on:mouseenter
+    on:mouseleave
+  />
 {:else}
   <div
     class:bx--form-item={true}
@@ -74,9 +80,16 @@
       on:change={() => {
         checked = !checked;
       }}
-    />
-    <label for={id} {title} class:bx--checkbox-label={true}>
-      <span class:bx--checkbox-label-text={true} class:bx--visually-hidden={hideLabel}>
+    >
+    <label
+      for={id}
+      {title}
+      class:bx--checkbox-label={true}
+    >
+      <span
+        class:bx--checkbox-label-text={true}
+        class:bx--visually-hidden={hideLabel}
+      >
         {labelText}
       </span>
     </label>
