@@ -7,7 +7,7 @@
       "!!**/lib/**/*",
       "!!**/dist/**/*",
       "!!**/.svelte-kit/**/*",
-      "!!**/tests/e2e/**/*"
+      "!!**/tests/e2e/**/*.svelte"
     ]
   },
   "formatter": {
@@ -130,6 +130,22 @@
       "includes": ["**/tests/fixtures/**/*.json"],
       "formatter": {
         "enabled": false
+      }
+    },
+    {
+      "includes": ["**/tests/e2e/**/*"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noForEach": "off"
+          },
+          "performance": {
+            "noReExportAll": "off"
+          },
+          "suspicious": {
+            "noExplicitAny": "off"
+          }
+        }
       }
     }
   ]
