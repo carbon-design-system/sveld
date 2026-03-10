@@ -20,14 +20,14 @@
   /** Specify the timeout delay (ms) after `status` is set to "success" */
   export let successDelay = 1500;
 
-  import { createEventDispatcher, afterUpdate, onMount } from "svelte";
   import CheckmarkFilled16 from "carbon-icons-svelte/lib/CheckmarkFilled16/CheckmarkFilled16.svelte";
   import Error20 from "carbon-icons-svelte/lib/Error20/Error20.svelte";
+  import { afterUpdate, createEventDispatcher, onMount } from "svelte";
   import Loading from "../Loading/Loading.svelte";
 
   const dispatch = createEventDispatcher();
 
-  let timeout = undefined;
+  let timeout;
 
   onMount(() => {
     return () => {
@@ -59,7 +59,12 @@
     {:else if status === "finished"}
       <CheckmarkFilled16 class="bx--inline-loading__checkmark-container" />
     {:else if status === "inactive" || status === "active"}
-      <Loading small description={iconDescription} withOverlay={false} active={status === "active"} />
+      <Loading
+        small
+        description={iconDescription}
+        withOverlay={false}
+        active={status === "active"}
+      />
     {/if}
   </div>
   {#if description}

@@ -4,8 +4,8 @@
   /** Set the title and ARIA label for the copy button */
   export let iconDescription = "Copy to clipboard";
 
-  import { Copy } from "../Copy";
   import Copy16 from "carbon-icons-svelte/lib/Copy16";
+  import { Copy } from "../Copy";
 </script>
 
 <Copy

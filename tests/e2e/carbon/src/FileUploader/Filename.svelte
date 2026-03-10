@@ -11,14 +11,19 @@
   /** Set to `true` to indicate an invalid state */
   export let invalid = false;
 
-  import Close16 from "carbon-icons-svelte/lib/Close16";
   import CheckmarkFilled16 from "carbon-icons-svelte/lib/CheckmarkFilled16";
+  import Close16 from "carbon-icons-svelte/lib/Close16";
   import WarningFilled16 from "carbon-icons-svelte/lib/WarningFilled16";
   import { Loading } from "../Loading";
 </script>
 
 {#if status === "uploading"}
-  <Loading description={iconDescription} {...$$restProps} small withOverlay={false} />
+  <Loading
+    description={iconDescription}
+    {...$$restProps}
+    small
+    withOverlay={false}
+  />
 {/if}
 
 {#if status === "edit"}
@@ -36,5 +41,10 @@
 {/if}
 
 {#if status === "complete"}
-  <CheckmarkFilled16 aria-label={iconDescription} title={iconDescription} class="bx--file-complete" {...$$restProps} />
+  <CheckmarkFilled16
+    aria-label={iconDescription}
+    title={iconDescription}
+    class="bx--file-complete"
+    {...$$restProps}
+  />
 {/if}

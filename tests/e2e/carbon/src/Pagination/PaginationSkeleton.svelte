@@ -16,7 +16,10 @@
     <SkeletonText width="35px" />
     <SkeletonText width="105px" />
   </div>
-  <div class:bx--pagination__right={true} class:bx--pagination--inline={true}>
+  <div
+    class:bx--pagination__right={true}
+    class:bx--pagination--inline={true}
+  >
     <SkeletonText width="70px" />
   </div>
 </div>

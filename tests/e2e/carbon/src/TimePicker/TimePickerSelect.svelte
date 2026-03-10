@@ -21,7 +21,7 @@
   export let hideLabel = true;
 
   /** Set an id for the select element */
-  export let id = "ccs-" + Math.random().toString(36);
+  export let id = `ccs-${Math.random().toString(36)}`;
 
   /**
    * Specify a name attribute for the select element
@@ -32,9 +32,9 @@
   /** Obtain a reference to the select HTML element */
   export let ref = null;
 
+  import ChevronDownGlyph from "carbon-icons-svelte/lib/ChevronDownGlyph";
   import { setContext } from "svelte";
   import { writable } from "svelte/store";
-  import ChevronDownGlyph from "carbon-icons-svelte/lib/ChevronDownGlyph";
 
   const selectedValue = writable(value);
 
@@ -54,7 +54,11 @@
   on:mouseleave
 >
   {#if labelText}
-    <label for={id} class:bx--label={true} class:bx--visually-hidden={hideLabel}>
+    <label
+      for={id}
+      class:bx--label={true}
+      class:bx--visually-hidden={hideLabel}
+    >
       <!-- TODO: set to always be `true` after `hideLabel` is deprecated -->
       {labelText}
     </label>
@@ -73,5 +77,9 @@
   >
     <slot />
   </select>
-  <ChevronDownGlyph aria-label={iconDescription} title={iconDescription} class="bx--select__arrow" />
+  <ChevronDownGlyph
+    aria-label={iconDescription}
+    title={iconDescription}
+    class="bx--select__arrow"
+  />
 </div>

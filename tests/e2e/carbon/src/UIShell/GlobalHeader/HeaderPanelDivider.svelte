@@ -1,7 +1,5 @@
 <li class="subject-divider">
-  <span>
-    <slot />
-  </span>
+  <span> <slot /> </span>
 </li>
 
 <style>

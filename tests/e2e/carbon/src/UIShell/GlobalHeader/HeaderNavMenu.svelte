@@ -32,7 +32,10 @@
   }}
 />
 
-<li class:bx--header__submenu={true} title={iconDescription}>
+<li
+  class:bx--header__submenu={true}
+  title={iconDescription}
+>
   <a
     bind:this={ref}
     role="menuitem"
@@ -59,9 +62,16 @@
     on:blur
   >
     {text}
-    <ChevronDown16 aria-label={iconDescription} class="bx--header__menu-arrow" />
+    <ChevronDown16
+      aria-label={iconDescription}
+      class="bx--header__menu-arrow"
+    />
   </a>
-  <ul role="menu" aria-label={text} class:bx--header__menu={true}>
+  <ul
+    role="menu"
+    aria-label={text}
+    class:bx--header__menu={true}
+  >
     <slot />
   </ul>
 </li>

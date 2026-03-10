@@ -12,7 +12,7 @@
   export let preventChangeOnClick = false;
 
   import { createEventDispatcher, setContext } from "svelte";
-  import { writable, derived } from "svelte/store";
+  import { derived, writable } from "svelte/store";
 
   const dispatch = createEventDispatcher();
   const steps = writable([]);
@@ -54,7 +54,7 @@
     _.map((step, i) => ({
       ...step,
       current: i === currentIndex,
-    }))
+    })),
   );
 </script>
 

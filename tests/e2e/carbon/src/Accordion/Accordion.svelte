@@ -37,7 +37,15 @@
 </Accordion>
 -->
 {#if skeleton}
-  <AccordionSkeleton {...$$restProps} {align} {size} on:click on:mouseover on:mouseenter on:mouseleave />
+  <AccordionSkeleton
+    {...$$restProps}
+    {align}
+    {size}
+    on:click
+    on:mouseover
+    on:mouseenter
+    on:mouseleave
+  />
 {:else}
   <ul
     class:bx--accordion={true}

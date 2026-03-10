@@ -15,7 +15,10 @@
   on:mouseenter
   on:mouseleave
 >
-  <div role="button" class:bx--list-box__field={true}>
+  <div
+    role="button"
+    class:bx--list-box__field={true}
+  >
     <span class:bx--list-box__label={true} />
   </div>
 </div>

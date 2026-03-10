@@ -40,10 +40,7 @@ type $Props = {
    */
   selectedResultIndex?: number;
 
-  children?: (
-    this: void,
-    ...args: [{ result: HeaderSearchResult; index: number }]
-  ) => void;
+  children?: (this: void, ...args: [{ result: HeaderSearchResult; index: number }]) => void;
 
   [key: `data-${string}`]: unknown;
 };

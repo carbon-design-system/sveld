@@ -23,7 +23,7 @@
   import { tick } from "svelte";
   import { Search } from "../Search";
 
-  async function expandSearch() {
+  async function _expandSearch() {
     if (persistent || expanded) return;
     expanded = true;
     await tick();

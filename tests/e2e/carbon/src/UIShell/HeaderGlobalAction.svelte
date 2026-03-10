@@ -20,7 +20,5 @@
   {...$$restProps}
   on:click
 >
-  <slot>
-    <svelte:component this={icon} />
-  </slot>
+  <slot> <svelte:component this={icon} /> </slot>
 </button>

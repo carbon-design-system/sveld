@@ -36,7 +36,7 @@
   export let hideTextInput = false;
 
   /** Set an id for the slider div element */
-  export let id = "ccs-" + Math.random().toString(36);
+  export let id = `ccs-${Math.random().toString(36)}`;
 
   /** Set to `true` to indicate an invalid state */
   export let invalid = false;
@@ -62,16 +62,16 @@
     dragging = true;
   }
 
-  function startHolding() {
+  function _startHolding() {
     holding = true;
   }
 
-  function stopHolding() {
+  function _stopHolding() {
     holding = false;
     dragging = false;
   }
 
-  function move() {
+  function _move() {
     if (holding) {
       startDragging();
     }
@@ -119,10 +119,23 @@
   on:touchmove={move}
   on:mouseup={stopHolding}
   on:touchend={stopHolding}
-  on:touchcancel={stopHolding} />
+  on:touchcancel={stopHolding}
+/>
 
-<div class:bx--form-item={true} {...$$restProps} on:click on:mouseover on:mouseenter on:mouseleave>
-  <label for={id} id={labelId} class:bx--label={true} class:bx--label--disabled={disabled}>
+<div
+  class:bx--form-item={true}
+  {...$$restProps}
+  on:click
+  on:mouseover
+  on:mouseenter
+  on:mouseleave
+>
+  <label
+    for={id}
+    id={labelId}
+    class:bx--label={true}
+    class:bx--label--disabled={disabled}
+  >
     {labelText}
   </label>
   <div class:bx--slider-container={true}>
@@ -159,9 +172,24 @@
         aria-valuenow={value}
         {id}
       />
-      <div bind:this={trackRef} class:bx--slider__track={true} />
-      <div class:bx--slider__filled-track={true} style="transform: translate(0, -50%) scaleX({left / 100})" />
-      <input type="hidden" class:bx--slider__input={true} {name} {value} {required} {min} {max} {step} />
+      <div
+        bind:this={trackRef}
+        class:bx--slider__track={true}
+      />
+      <div
+        class:bx--slider__filled-track={true}
+        style="transform: translate(0, -50%) scaleX({left / 100})"
+      />
+      <input
+        type="hidden"
+        class:bx--slider__input={true}
+        {name}
+        {value}
+        {required}
+        {min}
+        {max}
+        {step}
+      >
     </div>
     <span class:bx--slider__range-label={true}>{maxLabel || max}</span>
     {#if !hideTextInput}
@@ -178,7 +206,7 @@
         }}
         {disabled}
         {value}
-      />
+      >
     {/if}
   </div>
 </div>

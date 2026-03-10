@@ -17,9 +17,9 @@
   /** Specify the tab trigger href attribute */
   export let triggerHref = "#";
 
-  import { createEventDispatcher, afterUpdate, setContext } from "svelte";
-  import { writable, derived } from "svelte/store";
   import ChevronDownGlyph from "carbon-icons-svelte/lib/ChevronDownGlyph";
+  import { afterUpdate, createEventDispatcher, setContext } from "svelte";
+  import { derived, writable } from "svelte/store";
 
   const dispatch = createEventDispatcher();
 
@@ -97,7 +97,12 @@
   }
 </script>
 
-<div role="navigation" class:bx--tabs={true} class:bx--tabs--container={type === "container"} {...$$restProps}>
+<div
+  role="navigation"
+  class:bx--tabs={true}
+  class:bx--tabs--container={type === "container"}
+  {...$$restProps}
+>
   <div
     role="listbox"
     tabindex="0"
@@ -120,11 +125,20 @@
         dropdownHidden = !dropdownHidden;
       }}
     >
-      {#if currentTab}{currentTab.label}{/if}
+      {#if currentTab}
+        {currentTab.label}
+      {/if}
     </a>
-    <ChevronDownGlyph aria-hidden="true" title={iconDescription} />
+    <ChevronDownGlyph
+      aria-hidden="true"
+      title={iconDescription}
+    />
   </div>
-  <ul role="tablist" class:bx--tabs__nav={true} class:bx--tabs__nav--hidden={dropdownHidden}>
+  <ul
+    role="tablist"
+    class:bx--tabs__nav={true}
+    class:bx--tabs__nav--hidden={dropdownHidden}
+  >
     <slot />
   </ul>
 </div>

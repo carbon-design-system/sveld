@@ -54,7 +54,7 @@
   /** Specify a name attribute for the file button uploader input */
   export let name = "";
 
-  import { createEventDispatcher, afterUpdate } from "svelte";
+  import { afterUpdate, createEventDispatcher } from "svelte";
   import Filename from "./Filename.svelte";
   import FileUploaderButton from "./FileUploaderButton.svelte";
 
@@ -68,7 +68,7 @@
     } else {
       dispatch(
         "remove",
-        prevFiles.filter((_) => !files.includes(_))
+        prevFiles.filter((_) => !files.includes(_)),
       );
     }
 
@@ -76,7 +76,14 @@
   });
 </script>
 
-<div class:bx--form-item={true} {...$$restProps} on:click on:mouseover on:mouseenter on:mouseleave>
+<div
+  class:bx--form-item={true}
+  {...$$restProps}
+  on:click
+  on:mouseover
+  on:mouseenter
+  on:mouseleave
+>
   <strong class:bx--file--label={true}>{labelTitle}</strong>
   <p class:bx--label-description={true}>{labelDescription}</p>
   <FileUploaderButton

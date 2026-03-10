@@ -55,9 +55,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         {
           "type": "forwarded",
@@ -92,9 +90,7 @@
         {
           "key": "Accordion",
           "typeName": "AccordionContext",
-          "properties": [
-            { "name": "disableItems", "type": "any", "optional": false }
-          ]
+          "properties": [{ "name": "disableItems", "type": "any", "optional": false }]
         }
       ]
     },
@@ -263,9 +259,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [],
       "typedefs": [],
       "generics": null,
@@ -302,9 +296,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         {
           "type": "forwarded",
@@ -683,9 +675,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [],
       "typedefs": [],
       "generics": null,
@@ -980,9 +970,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "click", "element": "a" },
         { "type": "forwarded", "name": "keydown", "element": "a" },
@@ -1787,9 +1775,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "click", "element": "div" },
         { "type": "forwarded", "name": "mouseover", "element": "div" },
@@ -1837,9 +1823,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [],
       "typedefs": [],
       "generics": null,
@@ -1888,9 +1872,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         {
           "type": "dispatched",
@@ -2652,9 +2634,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "click", "element": "div" },
         { "type": "forwarded", "name": "mouseover", "element": "div" },
@@ -3998,9 +3978,7 @@
       "filePath": "src/FluidForm/FluidForm.svelte",
       "props": [],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [{ "type": "forwarded", "name": "submit", "element": "Form" }],
       "typedefs": [],
       "generics": null,
@@ -4009,9 +3987,7 @@
         {
           "key": "Form",
           "typeName": "FormContext",
-          "properties": [
-            { "name": "isFluid", "type": "boolean", "optional": false }
-          ]
+          "properties": [{ "name": "isFluid", "type": "boolean", "optional": false }]
         }
       ]
     },
@@ -4020,9 +3996,7 @@
       "filePath": "src/Form/Form.svelte",
       "props": [],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "click", "element": "form" },
         { "type": "forwarded", "name": "mouseover", "element": "form" },
@@ -4089,9 +4063,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "click", "element": "fieldset" },
         { "type": "forwarded", "name": "mouseover", "element": "fieldset" },
@@ -4108,9 +4080,7 @@
       "filePath": "src/FormItem/FormItem.svelte",
       "props": [],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "click", "element": "div" },
         { "type": "forwarded", "name": "mouseover", "element": "div" },
@@ -4140,9 +4110,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "click", "element": "label" },
         { "type": "forwarded", "name": "mouseover", "element": "label" },
@@ -4660,9 +4628,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [],
       "typedefs": [],
       "generics": null,
@@ -4793,9 +4759,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "keydown", "element": "a" },
         { "type": "forwarded", "name": "click", "element": "a" },
@@ -4816,9 +4780,7 @@
       "filePath": "src/UIShell/GlobalHeader/HeaderPanelDivider.svelte",
       "props": [],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [],
       "typedefs": [],
       "generics": null,
@@ -4854,9 +4816,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [{ "type": "forwarded", "name": "click", "element": "a" }],
       "typedefs": [],
       "generics": null,
@@ -4868,9 +4828,7 @@
       "filePath": "src/UIShell/GlobalHeader/HeaderPanelLinks.svelte",
       "props": [],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [],
       "typedefs": [],
       "generics": null,
@@ -4981,9 +4939,7 @@
       "filePath": "src/UIShell/GlobalHeader/HeaderUtilities.svelte",
       "props": [],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [],
       "typedefs": [],
       "generics": null,
@@ -5344,9 +5300,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "click", "element": "p" },
         { "type": "forwarded", "name": "mouseover", "element": "p" },
@@ -5472,9 +5426,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "keydown", "element": "div" },
         { "type": "forwarded", "name": "click", "element": "div" }
@@ -5573,9 +5525,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "click", "element": "div" },
         { "type": "forwarded", "name": "mouseover", "element": "div" },
@@ -5625,9 +5575,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [{ "type": "forwarded", "name": "scroll", "element": "div" }],
       "typedefs": [],
       "generics": null,
@@ -5718,9 +5666,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "click", "element": "div" },
         { "type": "forwarded", "name": "mouseenter", "element": "div" },
@@ -5814,9 +5760,7 @@
       "filePath": "src/ListItem/ListItem.svelte",
       "props": [],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "click", "element": "li" },
         { "type": "forwarded", "name": "mouseover", "element": "li" },
@@ -6204,9 +6148,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [],
       "typedefs": [],
       "generics": null,
@@ -6291,9 +6233,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [],
       "typedefs": [],
       "generics": null,
@@ -6390,9 +6330,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [{ "type": "forwarded", "name": "click", "element": "button" }],
       "typedefs": [],
       "generics": null,
@@ -6760,9 +6698,7 @@
       "filePath": "src/Notification/NotificationActionButton.svelte",
       "props": [],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "click", "element": "Button" },
         { "type": "forwarded", "name": "mouseover", "element": "Button" },
@@ -6942,9 +6878,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [],
       "typedefs": [],
       "generics": null,
@@ -7318,9 +7252,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "click", "element": "ol" },
         { "type": "forwarded", "name": "mouseover", "element": "ol" },
@@ -7337,9 +7269,7 @@
       "filePath": "src/Link/OutboundLink.svelte",
       "props": [],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "click", "element": "Link" },
         { "type": "forwarded", "name": "mouseover", "element": "Link" },
@@ -8296,9 +8226,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "dispatched", "name": "change", "detail": "number" },
         { "type": "forwarded", "name": "click", "element": "ul" },
@@ -8677,9 +8605,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "click", "element": "div" },
         { "type": "forwarded", "name": "mouseover", "element": "div" },
@@ -8813,9 +8739,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "change", "element": "input" },
         { "type": "forwarded", "name": "keydown", "element": "input" },
@@ -9352,9 +9276,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "dispatched", "name": "change", "detail": "string" },
         { "type": "forwarded", "name": "blur", "element": "select" }
@@ -9366,9 +9288,7 @@
         {
           "key": "Select",
           "typeName": "SelectContext",
-          "properties": [
-            { "name": "selectedValue", "type": "any", "optional": false }
-          ]
+          "properties": [{ "name": "selectedValue", "type": "any", "optional": false }]
         }
       ]
     },
@@ -9486,9 +9406,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "click", "element": "label" },
         { "type": "forwarded", "name": "mouseover", "element": "label" },
@@ -9591,9 +9509,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [],
       "typedefs": [],
       "generics": null,
@@ -9672,9 +9588,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [],
       "typedefs": [],
       "generics": null,
@@ -9686,9 +9600,7 @@
       "filePath": "src/UIShell/SideNav/SideNavItems.svelte",
       "props": [],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [],
       "typedefs": [],
       "generics": null,
@@ -9821,9 +9733,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [{ "type": "forwarded", "name": "click", "element": "button" }],
       "typedefs": [],
       "generics": null,
@@ -10313,9 +10223,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "click", "element": "div" },
         { "type": "forwarded", "name": "mouseover", "element": "div" },
@@ -10346,9 +10254,7 @@
       "filePath": "src/StructuredList/StructuredListBody.svelte",
       "props": [],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "click", "element": "div" },
         { "type": "forwarded", "name": "mouseover", "element": "div" },
@@ -10390,9 +10296,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "click", "element": "div" },
         { "type": "forwarded", "name": "mouseover", "element": "div" },
@@ -10409,9 +10313,7 @@
       "filePath": "src/StructuredList/StructuredListHead.svelte",
       "props": [],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "click", "element": "div" },
         { "type": "forwarded", "name": "mouseover", "element": "div" },
@@ -10550,9 +10452,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "click", "element": "label" },
         { "type": "forwarded", "name": "mouseover", "element": "label" },
@@ -10808,9 +10708,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [],
       "typedefs": [],
       "generics": null,
@@ -10895,9 +10793,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [],
       "typedefs": [],
       "generics": null,
@@ -10909,9 +10805,7 @@
       "filePath": "src/DataTable/TableBody.svelte",
       "props": [],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [],
       "typedefs": [],
       "generics": null,
@@ -10923,9 +10817,7 @@
       "filePath": "src/DataTable/TableCell.svelte",
       "props": [],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "click", "element": "td" },
         { "type": "forwarded", "name": "mouseover", "element": "td" },
@@ -10979,9 +10871,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [],
       "typedefs": [],
       "generics": null,
@@ -10993,9 +10883,7 @@
       "filePath": "src/DataTable/TableHead.svelte",
       "props": [],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "click", "element": "thead" },
         { "type": "forwarded", "name": "mouseover", "element": "thead" },
@@ -11048,9 +10936,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "mouseover", "element": "th" },
         { "type": "forwarded", "name": "mouseenter", "element": "th" },
@@ -11067,9 +10953,7 @@
       "filePath": "src/DataTable/TableRow.svelte",
       "props": [],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "click", "element": "tr" },
         { "type": "forwarded", "name": "mouseover", "element": "tr" },
@@ -11843,9 +11727,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "click", "element": "div" },
         { "type": "forwarded", "name": "mouseover", "element": "div" },
@@ -11899,9 +11781,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [{ "type": "dispatched", "name": "select" }],
       "typedefs": [],
       "generics": null,
@@ -12108,9 +11988,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "click", "element": "div" },
         { "type": "forwarded", "name": "mouseover", "element": "div" },
@@ -12228,9 +12106,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "click", "element": "div" },
         { "type": "forwarded", "name": "mouseover", "element": "div" },
@@ -12244,9 +12120,7 @@
         {
           "key": "TimePickerSelect",
           "typeName": "TimePickerSelectContext",
-          "properties": [
-            { "name": "selectedValue", "type": "any", "optional": false }
-          ]
+          "properties": [{ "name": "selectedValue", "type": "any", "optional": false }]
         }
       ]
     },
@@ -12364,9 +12238,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         {
           "type": "dispatched",
@@ -12726,9 +12598,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [],
       "typedefs": [],
       "generics": null,
@@ -12765,9 +12635,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [],
       "typedefs": [],
       "generics": null,
@@ -12779,9 +12647,7 @@
       "filePath": "src/DataTable/ToolbarContent.svelte",
       "props": [],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [],
       "typedefs": [],
       "generics": null,
@@ -12792,9 +12658,7 @@
       "filePath": "src/DataTable/ToolbarMenu.svelte",
       "props": [],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [],
       "typedefs": [],
       "generics": null,
@@ -12810,9 +12674,7 @@
       "filePath": "src/DataTable/ToolbarMenuItem.svelte",
       "props": [],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "click", "element": "OverflowMenuItem" },
         {
@@ -13310,9 +13172,7 @@
         }
       ],
       "moduleExports": [],
-      "slots": [
-        { "name": null, "default": true, "slot_props": "Record<string, never>" }
-      ],
+      "slots": [{ "name": null, "default": true, "slot_props": "Record<string, never>" }],
       "events": [
         { "type": "forwarded", "name": "click", "element": "ul" },
         { "type": "forwarded", "name": "mouseover", "element": "ul" },

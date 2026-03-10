@@ -31,5 +31,8 @@
   {...$$restProps}
   on:click|preventDefault
 >
-  <ChevronDown16 aria-label={description} title={description} />
+  <ChevronDown16
+    aria-label={description}
+    title={description}
+  />
 </div>

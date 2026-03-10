@@ -10,8 +10,8 @@
 
   import { onMount } from "svelte";
 
-  let animation = undefined;
-  let timeout = undefined;
+  let animation;
+  let timeout;
 
   onMount(() => {
     return () => {
@@ -45,9 +45,15 @@
   }}
 >
   <slot>
-    {#if animation}{feedback || $$restProps["aria-label"]}{/if}
+    {#if animation}
+      {feedback || $$restProps["aria-label"]}
+    {/if}
   </slot>
-  <span aria-hidden="true" class:bx--assistive-text={true} class:bx--copy-btn__feedback={true}>
+  <span
+    aria-hidden="true"
+    class:bx--assistive-text={true}
+    class:bx--copy-btn__feedback={true}
+  >
     {feedback}
   </span>
 </button>

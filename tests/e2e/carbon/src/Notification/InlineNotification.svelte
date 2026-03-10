@@ -31,14 +31,14 @@
   export let iconDescription = "Closes notification";
 
   import { createEventDispatcher, onMount } from "svelte";
+  import NotificationButton from "./NotificationButton.svelte";
   import NotificationIcon from "./NotificationIcon.svelte";
   import NotificationTextDetails from "./NotificationTextDetails.svelte";
-  import NotificationButton from "./NotificationButton.svelte";
 
   const dispatch = createEventDispatcher();
 
   let open = true;
-  let timeoutId = undefined;
+  let timeoutId;
 
   function close(closeFromTimeout) {
     open = false;
@@ -76,14 +76,26 @@
     on:mouseleave
   >
     <div class:bx--inline-notification__details={true}>
-      <NotificationIcon notificationType="inline" {kind} {iconDescription} />
-      <NotificationTextDetails {title} {subtitle} notificationType="inline">
+      <NotificationIcon
+        notificationType="inline"
+        {kind}
+        {iconDescription}
+      />
+      <NotificationTextDetails
+        {title}
+        {subtitle}
+        notificationType="inline"
+      >
         <slot />
       </NotificationTextDetails>
     </div>
     <slot name="actions" />
     {#if !hideCloseButton}
-      <NotificationButton {iconDescription} notificationType="inline" on:click={close} />
+      <NotificationButton
+        {iconDescription}
+        notificationType="inline"
+        on:click={close}
+      />
     {/if}
   </div>
 {/if}

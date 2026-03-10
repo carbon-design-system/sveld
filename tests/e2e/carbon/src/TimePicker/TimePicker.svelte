@@ -45,7 +45,7 @@
   export let invalidText = "";
 
   /** Set an id for the input element */
-  export let id = "ccs-" + Math.random().toString(36);
+  export let id = `ccs-${Math.random().toString(36)}`;
 
   /**
    * Specify a name attribute for the input
@@ -57,7 +57,14 @@
   export let ref = null;
 </script>
 
-<div class:bx--form-item={true} {...$$restProps} on:click on:mouseover on:mouseenter on:mouseleave>
+<div
+  class:bx--form-item={true}
+  {...$$restProps}
+  on:click
+  on:mouseover
+  on:mouseenter
+  on:mouseleave
+>
   <div
     class:bx--time-picker={true}
     class:bx--time-picker--light={light}
@@ -98,7 +105,7 @@
         }}
         on:focus
         on:blur
-      />
+      >
     </div>
     <slot />
   </div>

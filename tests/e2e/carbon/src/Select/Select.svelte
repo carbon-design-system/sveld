@@ -25,7 +25,7 @@
   export let disabled = false;
 
   /** Set an id for the select element */
-  export let id = "ccs-" + Math.random().toString(36);
+  export let id = `ccs-${Math.random().toString(36)}`;
 
   /**
    * Specify a name attribute for the select element
@@ -54,10 +54,10 @@
   /** Obtain a reference to the select HTML element */
   export let ref = null;
 
-  import { createEventDispatcher, setContext, afterUpdate } from "svelte";
-  import { writable } from "svelte/store";
   import ChevronDown16 from "carbon-icons-svelte/lib/ChevronDown16/ChevronDown16.svelte";
   import WarningFilled16 from "carbon-icons-svelte/lib/WarningFilled16/WarningFilled16.svelte";
+  import { afterUpdate, createEventDispatcher, setContext } from "svelte";
+  import { writable } from "svelte/store";
 
   const dispatch = createEventDispatcher();
   const selectedValue = writable(selected);
@@ -73,7 +73,10 @@
   $: selectedValue.set(selected);
 </script>
 
-<div class:bx--form-item={true} {...$$restProps}>
+<div
+  class:bx--form-item={true}
+  {...$$restProps}
+>
   <div
     class:bx--select={true}
     class:bx--select--inline={inline}
@@ -82,13 +85,21 @@
     class:bx--select--disabled={disabled}
   >
     {#if !noLabel}
-      <label for={id} class:bx--label={true} class:bx--visually-hidden={hideLabel} class:bx--label--disabled={disabled}>
+      <label
+        for={id}
+        class:bx--label={true}
+        class:bx--visually-hidden={hideLabel}
+        class:bx--label--disabled={disabled}
+      >
         {labelText}
       </label>
     {/if}
     {#if inline}
       <div class:bx--select-input--inline__wrapper={true}>
-        <div class:bx--select-input__wrapper={true} data-invalid={invalid || undefined}>
+        <div
+          class:bx--select-input__wrapper={true}
+          data-invalid={invalid || undefined}
+        >
           <select
             bind:this={ref}
             aria-describedby={invalid ? errorId : undefined}
@@ -111,19 +122,28 @@
           {/if}
         </div>
         {#if invalid}
-          <div class:bx--form-requirement={true} id={errorId}>
+          <div
+            class:bx--form-requirement={true}
+            id={errorId}
+          >
             {invalidText}
           </div>
         {/if}
       </div>
       {#if helperText}
-        <div class:bx--form__helper-text={true} class:bx--form__helper-text--disabled={disabled}>
+        <div
+          class:bx--form__helper-text={true}
+          class:bx--form__helper-text--disabled={disabled}
+        >
           {helperText}
         </div>
       {/if}
     {/if}
     {#if !inline}
-      <div class:bx--select-input__wrapper={true} data-invalid={invalid || undefined}>
+      <div
+        class:bx--select-input__wrapper={true}
+        data-invalid={invalid || undefined}
+      >
         <select
           bind:this={ref}
           {id}
@@ -146,12 +166,18 @@
         {/if}
       </div>
       {#if !invalid && helperText}
-        <div class:bx--form__helper-text={true} class:bx--form__helper-text--disabled={disabled}>
+        <div
+          class:bx--form__helper-text={true}
+          class:bx--form__helper-text--disabled={disabled}
+        >
           {helperText}
         </div>
       {/if}
       {#if invalid}
-        <div id={errorId} class:bx--form-requirement={true}>
+        <div
+          id={errorId}
+          class:bx--form-requirement={true}
+        >
           {invalidText}
         </div>
       {/if}

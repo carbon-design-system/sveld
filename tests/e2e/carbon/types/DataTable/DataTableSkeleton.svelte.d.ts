@@ -53,12 +53,7 @@ type $Props = {
   [key: `data-${string}`]: unknown;
 };
 
-export type DataTableSkeletonProps = Omit<
-  $RestProps,
-  keyof ($Props & DataTableHeader)
-> &
-  $Props &
-  DataTableHeader;
+export type DataTableSkeletonProps = Omit<$RestProps, keyof ($Props & DataTableHeader)> & $Props & DataTableHeader;
 
 export default class DataTableSkeleton extends SvelteComponentTyped<
   DataTableSkeletonProps,

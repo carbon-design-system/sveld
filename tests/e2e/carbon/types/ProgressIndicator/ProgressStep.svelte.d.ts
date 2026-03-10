@@ -52,10 +52,7 @@ type $Props = {
    */
   id?: string;
 
-  children?: (
-    this: void,
-    ...args: [{ props: { class: "bx--progress-label" } }]
-  ) => void;
+  children?: (this: void, ...args: [{ props: { class: "bx--progress-label" } }]) => void;
 
   [key: `data-${string}`]: unknown;
 };

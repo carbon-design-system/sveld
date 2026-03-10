@@ -46,7 +46,7 @@
   export let iconDescription = "Open and close list of options";
 
   /** Set an id for the button element */
-  export let id = "ccs-" + Math.random().toString(36);
+  export let id = `ccs-${Math.random().toString(36)}`;
 
   /** Obtain a reference to the trigger button element */
   export let buttonRef = null;
@@ -54,9 +54,9 @@
   /** Obtain a reference to the overflow menu element */
   export let menuRef = null;
 
-  import { createEventDispatcher, setContext, afterUpdate } from "svelte";
-  import { writable } from "svelte/store";
   import OverflowMenuVertical16 from "carbon-icons-svelte/lib/OverflowMenuVertical16/OverflowMenuVertical16.svelte";
+  import { afterUpdate, createEventDispatcher, setContext } from "svelte";
+  import { writable } from "svelte/store";
   import { formatStyle } from "./formatStyle";
 
   const dispatch = createEventDispatcher();
@@ -65,7 +65,7 @@
   const focusedId = writable(undefined);
   const currentIndex = writable(-1);
 
-  let buttonWidth = undefined;
+  let buttonWidth;
   let onMountAfterUpdate = true;
 
   setContext("OverflowMenu", {
@@ -119,9 +119,9 @@
 
       if (direction === "top") {
         menuRef.style.top = "auto";
-        menuRef.style.bottom = height + "px";
+        menuRef.style.bottom = `${height}px`;
       } else if (direction === "bottom") {
-        menuRef.style.top = height + "px";
+        menuRef.style.top = `${height}px`;
       }
     }
 
@@ -139,14 +139,12 @@
     focusedId.set($items[$currentIndex].id);
   }
   $: dynamicPseudoWidth = `#${id} .bx--overflow-menu-options.bx--overflow-menu-options:after {
-      width: ${buttonWidth ? buttonWidth + "px" : "2rem"};
+      width: ${buttonWidth ? `${buttonWidth}px` : "2rem"};
     }`;
   $: styles = formatStyle(dynamicPseudoWidth);
 </script>
 
-<svelte:head>
-  {@html styles}
-</svelte:head>
+<svelte:head> {@html styles} </svelte:head>
 
 <svelte:body
   on:click={({ target }) => {
@@ -154,7 +152,8 @@
     if (menuRef && !menuRef.contains(target)) {
       open = false;
     }
-  }} />
+  }}
+/>
 
 <button
   bind:this={buttonRef}

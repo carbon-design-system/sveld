@@ -8,5 +8,8 @@
   on:mouseenter
   on:mouseleave
 >
-  <span class:bx--checkbox-label-text={true} class:bx--skeleton={true} />
+  <span
+    class:bx--checkbox-label-text={true}
+    class:bx--skeleton={true}
+  />
 </div>

@@ -27,13 +27,13 @@
   export let tabindex = "0";
 
   /** Set an id for the top-level div element */
-  export let id = "ccs-" + Math.random().toString(36);
+  export let id = `ccs-${Math.random().toString(36)}`;
 
   /** Obtain a reference to the top-level element */
   export let ref = null;
 
-  import { afterUpdate } from "svelte";
   import ChevronDown16 from "carbon-icons-svelte/lib/ChevronDown16/ChevronDown16.svelte";
+  import { afterUpdate } from "svelte";
 
   let refContent = null;
   let refAbove = null;
@@ -46,7 +46,8 @@
     const style = getComputedStyle(ref);
 
     tilePadding =
-      parseInt(style.getPropertyValue("padding-top"), 10) + parseInt(style.getPropertyValue("padding-bottom"), 10);
+      Number.parseInt(style.getPropertyValue("padding-top"), 10) +
+      Number.parseInt(style.getPropertyValue("padding-bottom"), 10);
   });
 </script>
 
@@ -73,19 +74,18 @@
   on:mouseleave
 >
   <div bind:this={refContent}>
-    <div bind:this={refAbove} class:bx--tile-content={true}>
-      <span class:bx--tile-content__above-the-fold={true}>
-        <slot name="above" />
-      </span>
+    <div
+      bind:this={refAbove}
+      class:bx--tile-content={true}
+    >
+      <span class:bx--tile-content__above-the-fold={true}> <slot name="above" /> </span>
     </div>
     <div class:bx--tile__chevron={true}>
       <span>{expanded ? tileExpandedLabel : tileCollapsedLabel}</span>
       <ChevronDown16 />
     </div>
     <div class:bx--tile-content={true}>
-      <span class:bx--tile-content__below-the-fold={true}>
-        <slot name="below" />
-      </span>
+      <span class:bx--tile-content__below-the-fold={true}> <slot name="below" /> </span>
     </div>
   </div>
 </button>

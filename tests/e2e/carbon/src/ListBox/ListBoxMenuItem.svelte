@@ -15,7 +15,5 @@
   on:mouseenter
   on:mouseleave
 >
-  <div class:bx--list-box__menu-item__option={true}>
-    <slot />
-  </div>
+  <div class:bx--list-box__menu-item__option={true}><slot /></div>
 </div>

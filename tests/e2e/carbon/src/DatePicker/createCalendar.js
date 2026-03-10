@@ -4,18 +4,10 @@ import rangePlugin from "flatpickr/dist/esm/plugins/rangePlugin";
 let l10n;
 
 function updateClasses(instance) {
-  const {
-    calendarContainer,
-    days,
-    daysContainer,
-    weekdayContainer,
-    selectedDates,
-  } = instance;
+  const { calendarContainer, days, daysContainer, weekdayContainer, selectedDates } = instance;
 
   calendarContainer.classList.add("bx--date-picker__calendar");
-  calendarContainer
-    .querySelector(".flatpickr-month")
-    .classList.add("bx--date-picker__month");
+  calendarContainer.querySelector(".flatpickr-month").classList.add("bx--date-picker__month");
 
   weekdayContainer.classList.add("bx--date-picker__weekdays");
   weekdayContainer.querySelectorAll(".flatpickr-weekday").forEach((node) => {
@@ -54,8 +46,7 @@ function createCalendar({ options, base, input, dispatch }) {
   if (options.locale === "en" && l10n && l10n.en) {
     l10n.en.weekdays.shorthand.forEach((_, index) => {
       const shorthand = _.slice(0, 2);
-      l10n.en.weekdays.shorthand[index] =
-        shorthand === "Th" ? "Th" : shorthand.charAt(0);
+      l10n.en.weekdays.shorthand[index] = shorthand === "Th" ? "Th" : shorthand.charAt(0);
     });
 
     locale = l10n.en;
@@ -67,9 +58,7 @@ function createCalendar({ options, base, input, dispatch }) {
     disableMobile: true,
     clickOpens: true,
     locale,
-    plugins: [
-      options.mode === "range" && new rangePlugin({ position: "left", input }),
-    ].filter(Boolean),
+    plugins: [options.mode === "range" && new rangePlugin({ position: "left", input })].filter(Boolean),
     nextArrow:
       '<svg width="16px" height="16px" viewBox="0 0 16 16"><polygon points="11,8 6,13 5.3,12.3 9.6,8 5.3,3.7 6,3 "/><rect width="16" height="16" style="fill: none" /></svg>',
     prevArrow:
@@ -80,10 +69,10 @@ function createCalendar({ options, base, input, dispatch }) {
     onClose: () => {
       dispatch("close");
     },
-    onMonthChange: (s, d, instance) => {
+    onMonthChange: (_s, _d, instance) => {
       updateMonthNode(instance);
     },
-    onOpen: (s, d, instance) => {
+    onOpen: (_s, _d, instance) => {
       dispatch("open");
       updateClasses(instance);
       updateMonthNode(instance);

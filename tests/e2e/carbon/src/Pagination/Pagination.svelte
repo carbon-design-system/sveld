@@ -61,14 +61,14 @@
    * Override the page range text
    * @type {(current: number, total: number) => string}
    */
-  export let pageRangeText = (current, total) => `of ${total} page${total === 1 ? "" : "s"}`;
+  export let pageRangeText = (_current, total) => `of ${total} page${total === 1 ? "" : "s"}`;
 
   /** Set an id for the top-level element */
-  export let id = "ccs-" + Math.random().toString(36);
+  export let id = `ccs-${Math.random().toString(36)}`;
 
-  import { createEventDispatcher } from "svelte";
   import CaretLeft16 from "carbon-icons-svelte/lib/CaretLeft16/CaretLeft16.svelte";
   import CaretRight16 from "carbon-icons-svelte/lib/CaretRight16/CaretRight16.svelte";
+  import { createEventDispatcher } from "svelte";
   import Button from "../Button/Button.svelte";
   import Select from "../Select/Select.svelte";
   import SelectItem from "../Select/SelectItem.svelte";
@@ -92,7 +92,11 @@
   $: forwardButtonDisabled = disabled || page === totalPages;
 </script>
 
-<div {id} class:bx--pagination={true} {...$$restProps}>
+<div
+  {id}
+  class:bx--pagination={true}
+  {...$$restProps}
+>
   <div class:bx--pagination__left={true}>
     {#if !pageSizeInputDisabled}
       <label
@@ -111,7 +115,10 @@
         bind:selected={pageSize}
       >
         {#each pageSizes as size, i (size)}
-          <SelectItem value={size} text={size.toString()} />
+          <SelectItem
+            value={size}
+            text={size.toString()}
+          />
         {/each}
       </Select>
     {/if}
@@ -138,13 +145,18 @@
         bind:selected={page}
       >
         {#each selectItems as size, i (size)}
-          <SelectItem value={size + 1} text={(size + 1).toString()} />
+          <SelectItem
+            value={size + 1}
+            text={(size + 1).toString()}
+          />
         {/each}
       </Select>
       <span class:bx--pagination__text={true}>
         {#if pagesUnknown}
           {pageText(page)}
-        {:else}{pageRangeText(page, totalPages)}{/if}
+        {:else}
+          {pageRangeText(page, totalPages)}
+        {/if}
       </span>
     {/if}
     <Button

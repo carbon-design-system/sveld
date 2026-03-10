@@ -25,9 +25,7 @@ export interface DataTableNonEmptyHeader<Row> {
   minWidth?: string;
 }
 
-export type DataTableHeader<Row> =
-  | DataTableNonEmptyHeader<Row>
-  | DataTableEmptyHeader<Row>;
+export type DataTableHeader<Row> = DataTableNonEmptyHeader<Row> | DataTableEmptyHeader<Row>;
 
 export interface DataTableRow {
   id: any;
@@ -198,10 +196,7 @@ type $Props<Row extends DataTableRow = DataTableRow> = {
     ]
   ) => void;
 
-  "cell-header"?: (
-    this: void,
-    ...args: [{ header: DataTableNonEmptyHeader }]
-  ) => void;
+  "cell-header"?: (this: void, ...args: [{ header: DataTableNonEmptyHeader }]) => void;
 
   "expanded-row"?: (this: void, ...args: [{ row: Row }]) => void;
 
@@ -210,15 +205,9 @@ type $Props<Row extends DataTableRow = DataTableRow> = {
   [key: `data-${string}`]: unknown;
 };
 
-export type DataTableProps<Row extends DataTableRow = DataTableRow> = Omit<
-  $RestProps,
-  keyof $Props<Row>
-> &
-  $Props<Row>;
+export type DataTableProps<Row extends DataTableRow = DataTableRow> = Omit<$RestProps, keyof $Props<Row>> & $Props<Row>;
 
-export default class DataTable<
-  Row extends DataTableRow = DataTableRow,
-> extends SvelteComponentTyped<
+export default class DataTable<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
   DataTableProps<Row>,
   {
     click: CustomEvent<{

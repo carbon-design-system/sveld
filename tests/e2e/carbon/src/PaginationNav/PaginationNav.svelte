@@ -23,12 +23,12 @@
   /** Specify the backward button text */
   export let backwardText = "Previous page";
 
-  import { afterUpdate, createEventDispatcher } from "svelte";
   import CaretLeft16 from "carbon-icons-svelte/lib/CaretLeft16/CaretLeft16.svelte";
   import CaretRight16 from "carbon-icons-svelte/lib/CaretRight16/CaretRight16.svelte";
+  import { afterUpdate, createEventDispatcher } from "svelte";
+  import Button from "../Button/Button.svelte";
   import PaginationItem from "./PaginationItem.svelte";
   import PaginationOverflow from "./PaginationOverflow.svelte";
-  import Button from "../Button/Button.svelte";
 
   const dispatch = createEventDispatcher();
   const MIN = 4;
@@ -63,11 +63,15 @@
     }
   }
   $: items = Array.from({ length: total })
-    .map((e, i) => i)
+    .map((_e, i) => i)
     .slice(startOffset + front, (back + 1) * -1);
 </script>
 
-<nav aria-label="pagination" class:bx--pagination-nav={true} {...$$restProps}>
+<nav
+  aria-label="pagination"
+  class:bx--pagination-nav={true}
+  {...$$restProps}
+>
   <ul class:bx--pagination-nav__list={true}>
     <li class:bx--pagination-nav__list-item={true}>
       <Button
@@ -89,13 +93,25 @@
       />
     </li>
     {#if fit > MIN || (fit <= MIN && page <= 1)}
-      <PaginationItem page={1} active={page === 0} on:click={() => (page = 0)}>
+      <PaginationItem
+        page={1}
+        active={page === 0}
+        on:click={() => (page = 0)}
+      >
         {page === 0 ? "Active, Page" : "Page"}
       </PaginationItem>
     {/if}
-    <PaginationOverflow fromIndex={startOffset} count={front} on:select={({ detail }) => (page = detail.index)} />
+    <PaginationOverflow
+      fromIndex={startOffset}
+      count={front}
+      on:select={({ detail }) => (page = detail.index)}
+    />
     {#each items as item}
-      <PaginationItem page={item + 1} active={page === item} on:click={() => (page = item)}>
+      <PaginationItem
+        page={item + 1}
+        active={page === item}
+        on:click={() => (page = item)}
+      >
         {page === item ? "Active, Page" : "Page"}
       </PaginationItem>
     {/each}
@@ -107,7 +123,11 @@
       }}
     />
     {#if total > 1}
-      <PaginationItem page={total} active={page === total - 1} on:click={() => (page = total - 1)}>
+      <PaginationItem
+        page={total}
+        active={page === total - 1}
+        on:click={() => (page = total - 1)}
+      >
         {page === total - 1 ? "Active, Page" : "Page"}
       </PaginationItem>
     {/if}
@@ -131,7 +151,11 @@
       />
     </li>
   </ul>
-  <div aria-live="polite" aria-atomic="true" class:bx--pagination-nav__accessibility-label={true}>
+  <div
+    aria-live="polite"
+    aria-atomic="true"
+    class:bx--pagination-nav__accessibility-label={true}
+  >
     Page
     {page + 1}
     of

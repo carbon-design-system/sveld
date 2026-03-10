@@ -8,13 +8,7 @@ type $Props = {
    * Specify the kind of notification
    * @default "error"
    */
-  kind?:
-    | "error"
-    | "info"
-    | "info-square"
-    | "success"
-    | "warning"
-    | "warning-alt";
+  kind?: "error" | "info" | "info-square" | "success" | "warning" | "warning-alt";
 
   /**
    * Set to `true` to use the low contrast variant

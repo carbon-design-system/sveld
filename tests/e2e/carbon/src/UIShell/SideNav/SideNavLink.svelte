@@ -38,7 +38,10 @@
     on:click
   >
     {#if icon}
-      <div class:bx--side-nav__icon={true} class:bx--side-nav__icon--small={true}>
+      <div
+        class:bx--side-nav__icon={true}
+        class:bx--side-nav__icon--small={true}
+      >
         <Icon render={icon} />
       </div>
     {/if}

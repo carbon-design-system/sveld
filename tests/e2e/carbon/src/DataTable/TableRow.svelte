@@ -1,3 +1,9 @@
-<tr {...$$restProps} on:click on:mouseover on:mouseenter on:mouseleave>
+<tr
+  {...$$restProps}
+  on:click
+  on:mouseover
+  on:mouseenter
+  on:mouseleave
+>
   <slot />
 </tr>

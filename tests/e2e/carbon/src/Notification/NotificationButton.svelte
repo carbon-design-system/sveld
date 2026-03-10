@@ -35,5 +35,9 @@
   on:mouseenter
   on:mouseleave
 >
-  <svelte:component this={icon} {title} class="bx--{notificationType}-notification__close-icon" />
+  <svelte:component
+    this={icon}
+    {title}
+    class="bx--{notificationType}-notification__close-icon"
+  />
 </button>

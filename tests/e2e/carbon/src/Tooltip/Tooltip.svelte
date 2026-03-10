@@ -43,13 +43,13 @@
    * Set an id for the tooltip
    * @type {string}
    */
-  export let tooltipId = "ccs-" + Math.random().toString(36);
+  export let tooltipId = `ccs-${Math.random().toString(36)}`;
 
   /**
    * Set an id for the tooltip button
    * @type {string}
    */
-  export let triggerId = "ccs-" + Math.random().toString(36);
+  export let triggerId = `ccs-${Math.random().toString(36)}`;
 
   /** Set the tooltip button text */
   export let triggerText = "";
@@ -63,12 +63,12 @@
   /** Obtain a reference to the icon HTML element */
   export let refIcon = null;
 
-  import { createEventDispatcher, afterUpdate } from "svelte";
   import Information16 from "carbon-icons-svelte/lib/Information16/Information16.svelte";
+  import { afterUpdate, createEventDispatcher } from "svelte";
 
   const dispatch = createEventDispatcher();
 
-  function onKeydown(e) {
+  function _onKeydown(e) {
     if (e.key === "Escape") {
       e.stopPropagation();
       open = false;
@@ -79,13 +79,13 @@
     }
   }
 
-  function onBlur({ relatedTarget }) {
+  function _onBlur({ relatedTarget }) {
     if (refTooltip && !refTooltip.contains(relatedTarget)) {
       open = false;
     }
   }
 
-  function openMenu() {
+  function _openMenu() {
     open = true;
   }
 
@@ -137,8 +137,8 @@
           break;
       }
 
-      refTooltip.style.left = offsetX + "px";
-      refTooltip.style.marginTop = offsetY + "px";
+      refTooltip.style.left = `${offsetX}px`;
+      refTooltip.style.marginTop = `${offsetY}px`;
     }
   });
 
@@ -168,11 +168,19 @@
 
       open = false;
     }
-  }} />
+  }}
+/>
 
-<div {...$$restProps} style="{$$restProps.style}; position: relative;">
+<div
+  {...$$restProps}
+  style="{$$restProps.style}; position: relative;"
+>
   {#if !hideIcon}
-    <div bind:this={ref} id={triggerId} class:bx--tooltip__label={true}>
+    <div
+      bind:this={ref}
+      id={triggerId}
+      class:bx--tooltip__label={true}
+    >
       <slot name="triggerText">{triggerText}</slot>
       <div
         bind:this={refIcon}
@@ -183,7 +191,10 @@
         on:keydown={onKeydown}
       >
         <slot name="icon">
-          <svelte:component this={icon} name={iconName} />
+          <svelte:component
+            this={icon}
+            name={iconName}
+          />
         </slot>
       </div>
     </div>

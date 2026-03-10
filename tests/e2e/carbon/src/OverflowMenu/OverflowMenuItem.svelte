@@ -24,12 +24,12 @@
   export let requireTitle = true;
 
   /** Set an id for the top-level element */
-  export let id = "ccs-" + Math.random().toString(36);
+  export let id = `ccs-${Math.random().toString(36)}`;
 
   /** Obtain a reference to the HTML element */
   export let ref = null;
 
-  import { getContext, afterUpdate } from "svelte";
+  import { afterUpdate, getContext } from "svelte";
 
   const { focusedId, add, update, change } = getContext("OverflowMenu");
 
@@ -78,11 +78,7 @@
         }
       }}
     >
-      <slot>
-        <div class:bx--overflow-menu-options__option-content={true}>
-          {text}
-        </div>
-      </slot>
+      <slot> <div class:bx--overflow-menu-options__option-content={true}>{text}</div> </slot>
     </a>
   {:else}
     <button
@@ -101,11 +97,7 @@
         }
       }}
     >
-      <slot>
-        <div class:bx--overflow-menu-options__option-content={true}>
-          {text}
-        </div>
-      </slot>
+      <slot> <div class:bx--overflow-menu-options__option-content={true}>{text}</div> </slot>
     </button>
   {/if}
 </li>

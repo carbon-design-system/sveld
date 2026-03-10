@@ -9,8 +9,8 @@
   /** Specify the pivot end index */
   export let count = 0;
 
-  import { createEventDispatcher } from "svelte";
   import OverflowMenuHorizontal16 from "carbon-icons-svelte/lib/OverflowMenuHorizontal16/OverflowMenuHorizontal16.svelte";
+  import { createEventDispatcher } from "svelte";
   import PaginationItem from "./PaginationItem.svelte";
 
   const dispatch = createEventDispatcher();
@@ -32,9 +32,15 @@
           dispatch("select", { index: Number(target.value) });
         }}
       >
-        <option value="" hidden />
+        <option
+          value=""
+          hidden
+        />
         {#each Array.from({ length: count }, (_, i) => i) as i}
-          <option value={fromIndex + i} data-page={fromIndex + i + 1}>
+          <option
+            value={fromIndex + i}
+            data-page={fromIndex + i + 1}
+          >
             {fromIndex + i + 1}
           </option>
         {/each}

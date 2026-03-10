@@ -11,7 +11,7 @@
     }
     return depth;
   }
-  
+
   /**
    * Finds the nearest parent tree node
    * @type {(node: HTMLElement) => null | HTMLElement}
@@ -27,9 +27,14 @@
   export let type = "button" as const;
   export let primary = false;
 
-  $: findParentTreeNode(null)
+  $: findParentTreeNode(null);
 </script>
 
-<button {...$$restProps} {type} class:primary on:click>
+<button
+  {...$$restProps}
+  {type}
+  class:primary
+  on:click
+>
   <slot>Click me</slot>
 </button>

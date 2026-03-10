@@ -60,7 +60,7 @@
   export let invalidText = "";
 
   /** Set an id for the input element */
-  export let id = "ccs-" + Math.random().toString(36);
+  export let id = `ccs-${Math.random().toString(36)}`;
 
   /**
    * Specify a name attribute for the input
@@ -71,10 +71,10 @@
   /** Obtain a reference to the input HTML element */
   export let ref = null;
 
-  import { getContext } from "svelte";
-  import WarningFilled16 from "carbon-icons-svelte/lib/WarningFilled16/WarningFilled16.svelte";
   import View16 from "carbon-icons-svelte/lib/View16/View16.svelte";
   import ViewOff16 from "carbon-icons-svelte/lib/ViewOff16/ViewOff16.svelte";
+  import WarningFilled16 from "carbon-icons-svelte/lib/WarningFilled16/WarningFilled16.svelte";
+  import { getContext } from "svelte";
 
   const ctx = getContext("Form");
 
@@ -92,11 +92,19 @@
   on:mouseleave
 >
   {#if labelText}
-    <label for={id} class:bx--label={true} class:bx--visually-hidden={hideLabel} class:bx--label--disabled={disabled}>
+    <label
+      for={id}
+      class:bx--label={true}
+      class:bx--visually-hidden={hideLabel}
+      class:bx--label--disabled={disabled}
+    >
       {labelText}
     </label>
   {/if}
-  <div class:bx--text-input__field-wrapper={true} data-invalid={invalid || undefined}>
+  <div
+    class:bx--text-input__field-wrapper={true}
+    data-invalid={invalid || undefined}
+  >
     {#if invalid}
       <WarningFilled16 class="bx--text-input__invalid-icon" />
     {/if}
@@ -125,7 +133,7 @@
       on:keydown
       on:focus
       on:blur
-    />
+    >
     <button
       type="button"
       {disabled}
@@ -145,7 +153,9 @@
         <span class:bx--assistive-text={true}>
           {#if type === "text"}
             {hidePasswordLabel}
-          {:else}{showPasswordLabel}{/if}
+          {:else}
+            {showPasswordLabel}
+          {/if}
         </span>
       {/if}
       {#if type === "text"}
@@ -156,11 +166,19 @@
     </button>
   </div>
   {#if !invalid && helperText}
-    <div class:bx--form__helper-text={true} class:bx--form__helper-text--disabled={disabled}>
+    <div
+      class:bx--form__helper-text={true}
+      class:bx--form__helper-text--disabled={disabled}
+    >
       {helperText}
     </div>
   {/if}
   {#if invalid}
-    <div class:bx--form-requirement={true} id={errorId}>{invalidText}</div>
+    <div
+      class:bx--form-requirement={true}
+      id={errorId}
+    >
+      {invalidText}
+    </div>
   {/if}
 </div>

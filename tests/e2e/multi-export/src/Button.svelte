@@ -6,6 +6,11 @@
   }
 </script>
 
-<button {...$$restProps} {type} class:primary on:click>
+<button
+  {...$$restProps}
+  {type}
+  class:primary
+  on:click
+>
   <slot>Click me</slot>
 </button>

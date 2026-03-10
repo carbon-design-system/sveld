@@ -58,7 +58,15 @@
   });
 </script>
 
-<div {id} class:bx--form-item={true} {...$$restProps} on:click on:mouseover on:mouseenter on:mouseleave>
+<div
+  {id}
+  class:bx--form-item={true}
+  {...$$restProps}
+  on:click
+  on:mouseover
+  on:mouseenter
+  on:mouseleave
+>
   <div
     class:bx--radio-button-group={true}
     class:bx--radio-button-group--vertical={orientation === "vertical"}
