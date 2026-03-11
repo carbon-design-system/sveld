@@ -15,7 +15,7 @@
         "@types/bun": "^1.3.3",
         "acorn": "^8.14.1",
         "comment-parser": "^1.4.1",
-        "culls": "^0.1.2",
+        "culls": "^0.2.0",
         "rollup": "^2.79.2",
         "rollup-plugin-svelte": "^7.2.2",
         "tinyglobby": "^0.2.15",
@@ -82,7 +82,7 @@
 
     "css-tree": ["css-tree@2.3.1", "", { "dependencies": { "mdn-data": "2.0.30", "source-map-js": "^1.0.1" } }, "sha512-6Fv1DV/TYw//QF5IzQdqsNDjx/wc8TrMBZsqjL9eW01tWb7R7k/mq+/VXfJCl7SoD5emsJop9cOByJZfs8hYIw=="],
 
-    "culls": ["culls@0.1.2", "", { "bin": { "culls": "dist/index.js" } }, "sha512-1HuHy0QoX3yZou7dZhoXuKAL5/xGI6esE9n2qGxnUmSrkAywDh1CWDuUXAS9q9sXpGKAoPmH5lR8mojkkgo9RA=="],
+    "culls": ["culls@0.2.0", "", { "bin": { "culls": "dist/index.js" } }, "sha512-SXout6aJuwBKzA9HuACs1Z9Yn51UwpgKPwEwMm9NU0bLoZUTIJer0M+qN+yY3Vki6Pt9QxKRpcjRetSisQOFAw=="],
 
     "deepmerge": ["deepmerge@4.3.1", "", {}, "sha512-3sUqbMEc77XqpdNO7FRyRog+eW3ph+GYCbj+rK+uYyRMuwsVy0rMiVtPn+QJlKFvWP/1PYpapqYn0Me2knFn+A=="],
 
