@@ -3,13 +3,14 @@
   "version": "0.26.2",
   "license": "Apache-2.0",
   "description": "Generate TypeScript definitions for your Svelte components.",
+  "type": "module",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "exports": {
     ".": {
-      "import": "./index.mjs",
-      "require": "./lib/index.js",
-      "types": "./lib/index.d.ts"
+      "types": "./lib/index.d.ts",
+      "import": "./lib/index.js",
+      "default": "./lib/index.js"
     }
   },
   "scripts": {
@@ -44,8 +45,7 @@
   },
   "files": [
     "lib",
-    "cli.js",
-    "index.mjs"
+    "cli.js"
   ],
   "repository": {
     "type": "git",

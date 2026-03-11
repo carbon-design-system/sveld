@@ -221,13 +221,13 @@ npx sveld --json --markdown
 
 ### Node.js
 
-You can also use `sveld` programmatically in Node.js.
+You can also use `sveld` programmatically in Node.js. The package is **ESM-only**; `require("sveld")` is not supported. Use `import` or dynamic `import()`.
 
 If no `input` is specified, `sveld` will infer the entry point based on the `package.json#svelte` field.
 
 ```js
-const { sveld } = require("sveld");
-const pkg = require("./package.json");
+import { sveld } from "sveld";
+import pkg from "./package.json" with { type: "json" };
 
 sveld({
   input: "./src/index.js",
