@@ -9,11 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Breaking Changes**
 
-- Set `type: "module"` in `package.json` for ESM support
+- set `type: "module"` in `package.json` for ESM support
 
 **Fixes**
 
-- Add `exports` map to `package.json`
+- add `exports` map to `package.json`
 - use `unknown` instead of `any` for `data-*` attribute index
 
 ## [0.26.2](https://github.com/carbon-design-system/sveld/releases/tag/v0.26.2) - 2026-02-16
