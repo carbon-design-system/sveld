@@ -3,7 +3,8 @@
   lang="ts"
 >
   import { Helper, Component as Original } from "library";
-  export { Original as Renamed, Helper };
+
+  export { Helper, Original as Renamed };
 </script>
 
 <script>

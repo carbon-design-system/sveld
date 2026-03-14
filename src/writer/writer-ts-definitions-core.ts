@@ -351,7 +351,7 @@ function genPropDef(
      * 2. Component props ($Props)
      * 3. Extended interface (`@extends`)
      */
-    if (def.extends !== undefined) {
+    if (def.extends === undefined) {
       prop_def = `
     ${restPropsComment}${extend_tag_map ? `type $RestProps = ${extend_tag_map};\n` : ""}
     type $Props${genericsName} = {
@@ -360,7 +360,7 @@ function genPropDef(
       ${dataAttributes}
     };
 
-    export type ${props_name}${genericsName} = Omit<$RestProps, keyof ($Props${genericsNameRef} & ${def.extends.interface})> & $Props${genericsNameRef} & ${def.extends.interface};
+    export type ${props_name}${genericsName} = Omit<$RestProps, keyof $Props${genericsNameRef}> & $Props${genericsNameRef};
   `;
     } else {
       prop_def = `
@@ -371,7 +371,7 @@ function genPropDef(
       ${dataAttributes}
     };
 
-    export type ${props_name}${genericsName} = Omit<$RestProps, keyof $Props${genericsNameRef}> & $Props${genericsNameRef};
+    export type ${props_name}${genericsName} = Omit<$RestProps, keyof ($Props${genericsNameRef} & ${def.extends.interface})> & $Props${genericsNameRef} & ${def.extends.interface};
   `;
     }
   } else {
@@ -386,7 +386,7 @@ function genPropDef(
   `;
     } else {
       prop_def = `
-    export type ${props_name}${genericsName} = ${def.extends !== undefined ? `${def.extends.interface} & ` : ""} {
+    export type ${props_name}${genericsName} = ${def.extends === undefined ? "" : `${def.extends.interface} & `} {
       ${props}
     }
   `;

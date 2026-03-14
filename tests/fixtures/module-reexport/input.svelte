@@ -3,6 +3,7 @@
   lang="ts"
 >
   import { tokTypes } from "acorn";
+
   export { tokTypes };
 </script>
 

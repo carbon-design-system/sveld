@@ -2328,7 +2328,7 @@ export default class ComponentParser {
        */
       if (keyArg.quasis?.length === 1) {
         const cooked = keyArg.quasis[0].value.cooked;
-        contextKey = cooked != null ? cooked : null;
+        contextKey = cooked == null ? null : cooked;
       } else if (this.options?.verbose) {
         console.warn("Warning: Skipping setContext with dynamic template literal key");
       }
@@ -2592,7 +2592,7 @@ export default class ComponentParser {
                * since "var" is not a valid prop kind in Svelte components.
                */
               kind = varDecl.kind === "var" ? "let" : varDecl.kind;
-              const initResult = init != null ? this.processInitializer(init) : { isFunction: false };
+              const initResult = init == null ? { isFunction: false } : this.processInitializer(init);
               ({ value, type, isFunction } = initResult);
             } else {
               return;
@@ -2852,7 +2852,7 @@ export default class ComponentParser {
              */
             kind = varDecl.kind === "var" ? "let" : varDecl.kind;
             isRequired = kind === "let" && init == null;
-            const initResult = init != null ? this.processInitializer(init) : { isFunction: false };
+            const initResult = init == null ? { isFunction: false } : this.processInitializer(init);
             ({ value, type, isFunction } = initResult);
           } else {
             return;
@@ -3116,7 +3116,7 @@ export default class ComponentParser {
           if (event_name != null) {
             this.addDispatchedEvent({
               name: String(event_name),
-              detail: event_detail != null ? String(event_detail) : "",
+              detail: event_detail == null ? "" : String(event_detail),
               has_argument: Boolean(event_argument),
             });
           }
