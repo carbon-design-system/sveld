@@ -139,6 +139,7 @@ export default class Button extends SvelteComponentTyped<
   - [Context API](#context-api)
   - [@restProps](#restprops)
   - [@extendProps](#extendprops)
+  - [@template](#template)
   - [@generics](#generics)
   - [@component comments](#component-comments)
   - [Accessor Props](#accessor-props)
@@ -1544,24 +1545,22 @@ export const secondary = true;
 import Button from "./Button.svelte";
 ```
 
-### `@generics`
+### `@template`
 
-Currently, to define generics for a Svelte component, you must use [`generics` attribute](https://github.com/dummdidumm/rfcs/blob/bfb14dc56a70ec6ddafebf2242b8e1500e06a032/text/ts-typing-props-slots-events.md#generics) on the script tag. Note that this feature is [experimental](https://svelte.dev/docs/typescript#experimental-advanced-typings) and may change in the future.
-
-However, the `generics` attribute only works if using `lang="ts"`; the language server will produce an error if `generics` is used without specifying `lang="ts"`.
+Svelte supports defining generics via the [`generics` attribute](https://svelte.dev/docs/svelte/typescript) on the script tag, but this requires `lang="ts"`.
 
 ```svelte
-<!-- This causes an error because `lang="ts"` must be used. -->
-<script generics="Row extends DataTableRow = any"></script>
+<!-- Requires lang="ts" -->
+<script lang="ts" generics="Row extends DataTableRow = any"></script>
 ```
 
-Because `sveld` is designed to support JavaScript-only usage as a baseline, the API design to specify generics uses a custom JSDoc tag `@generics`.
+Because `sveld` is designed to support JavaScript-only usage as a baseline, the API design to specify generics uses the standard JSDoc `@template` tag. The `@generics` tag is also supported as an alias.
 
-**Signature:**
+**Signature:** Uses standard [JSDoc `@template` syntax](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html#template):
 
 ```js
 /**
- * @generics {GenericParameter} GenericName
+ * @template {Constraint} [Name=Default]
  */
 ```
 
@@ -1569,7 +1568,7 @@ Because `sveld` is designed to support JavaScript-only usage as a baseline, the 
 
 ```js
 /**
- * @generics {Row extends DataTableRow = any} Row
+ * @template {DataTableRow} [Row=DataTableRow]
  */
 ```
 
@@ -1624,13 +1623,12 @@ Because `sveld` is designed to support JavaScript-only usage as a baseline, the 
 The generated TypeScript definition will resemble the following:
 
 ```ts
-// Props type includes the full constraint, enabling indexed access types like Row["id"]
-export type ComponentProps<Row extends DataTableRow = any> = {
+export type ComponentProps<Row extends DataTableRow = DataTableRow> = {
   rows?: ReadonlyArray<Row>;
 };
 
 export default class Component<
-  Row extends DataTableRow = any,
+  Row extends DataTableRow = DataTableRow,
 > extends SvelteComponentTyped<
   ComponentProps<Row>,
   Record<string, any>,
@@ -1638,22 +1636,55 @@ export default class Component<
 > {}
 ```
 
-For a parameter list, the name should be comma-separated but not include spaces.
+For multiple generics, use separate `@template` tags:
 
 ```js
 /**
- * @generics {Param1, Param2} Name1,Name2
+ * @template {DataTableRow} [Row=DataTableRow]
+ * @template {DataTableRow} [Header=DataTableRow]
  */
 ```
 
 ```ts
-export type ComponentProps<Param1, Param2> = { ... };
+export type ComponentProps<
+  Row extends DataTableRow = DataTableRow,
+  Header extends DataTableRow = DataTableRow,
+> = { ... };
 
-export default class Component<Param1, Param2> extends SvelteComponentTyped<
-  ComponentProps<Name1, Name2>,
+export default class Component<
+  Row extends DataTableRow = DataTableRow,
+  Header extends DataTableRow = DataTableRow,
+> extends SvelteComponentTyped<
+  ComponentProps<Row, Header>,
   Record<string, any>,
   Record<string, any>
 > {}
+```
+
+### `@generics`
+
+As an alternative to `@template`, sveld also supports a custom `@generics` tag. Unlike `@template`, which is [officially supported by JSDoc/TypeScript](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html#template), `@generics` is sveld-specific. However, its syntax can be more readable since the full constraint is written inline:
+
+```js
+/**
+ * @generics {Row extends DataTableRow = DataTableRow} Row
+ */
+```
+
+This is equivalent to:
+
+```js
+/**
+ * @template {DataTableRow} [Row=DataTableRow]
+ */
+```
+
+For multiple generics, use a single `@generics` tag with comma-separated names:
+
+```js
+/**
+ * @generics {Row extends DataTableRow = DataTableRow, Header extends DataTableRow = DataTableRow} Row,Header
+ */
 ```
 
 ### `@component` comments

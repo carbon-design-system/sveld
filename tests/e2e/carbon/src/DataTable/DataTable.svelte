@@ -1,7 +1,6 @@
 <script>
   /**
  * @generics {Row extends DataTableRow = DataTableRow} Row
- * @template {DataTableRow} Row
  * @typedef {Exclude<keyof Row, "id">} DataTableKey<Row>
  * @typedef {any} DataTableValue
  * @typedef {{ key: DataTableKey<Row>; empty: boolean; display?: (item: Value, row: Row) => DataTableValue; sort?: false | ((a: DataTableValue, b: DataTableValue) => number); columnMenu?: boolean; width?: string; minWidth?: string; }} DataTableEmptyHeader<Row>

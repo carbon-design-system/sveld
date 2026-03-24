@@ -701,6 +701,67 @@ exports[`fixtures (JSON) "legacy-bind-component-selected/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "template-tag-multiple/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "headers",
+      "kind": "let",
+      "type": "ReadonlyArray<DataTableHeader<Row, Header>>",
+      "value": "[]",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "rows",
+      "kind": "let",
+      "type": "ReadonlyArray<Row>",
+      "value": "[]",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{ headers: ReadonlyArray<DataTableHeader<Row, Header>>, rows: ReadonlyArray<Row> }"
+    }
+  ],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{ id: string | number; [key: string]: any; }",
+      "name": "DataTableRow",
+      "ts": "interface DataTableRow { id: string | number; [key: string]: any; }"
+    },
+    {
+      "type": "Exclude<keyof Row, \\"id\\">",
+      "name": "DataTableKey<Row>",
+      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \\"id\\">"
+    },
+    {
+      "type": "{ key: DataTableKey<Row>; value: Header; }",
+      "name": "DataTableHeader<Row=DataTableRow,Header=DataTableRow>",
+      "ts": "interface DataTableHeader<Row=DataTableRow,Header=DataTableRow> { key: DataTableKey<Row>; value: Header; }"
+    }
+  ],
+  "generics": [
+    "Row,Header",
+    "Row extends DataTableRow = DataTableRow, Header extends DataTableRow = DataTableRow"
+  ],
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "runes-props-intersection/input.svelte" 1`] = `
 "{
   "props": [
@@ -2000,6 +2061,67 @@ exports[`fixtures (JSON) "slot-prop-dotted-access/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "template-tag/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "headers",
+      "kind": "let",
+      "type": "ReadonlyArray<DataTableHeader<Row>>",
+      "value": "[]",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "rows",
+      "kind": "let",
+      "type": "ReadonlyArray<Row>",
+      "value": "[]",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{ headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> }"
+    }
+  ],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{ id: string | number; [key: string]: any; }",
+      "name": "DataTableRow",
+      "ts": "interface DataTableRow { id: string | number; [key: string]: any; }"
+    },
+    {
+      "type": "Exclude<keyof Row, \\"id\\">",
+      "name": "DataTableKey<Row>",
+      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \\"id\\">"
+    },
+    {
+      "type": "{ key: DataTableKey<Row>; value: string; }",
+      "name": "DataTableHeader<Row=DataTableRow>",
+      "ts": "interface DataTableHeader<Row=DataTableRow> { key: DataTableKey<Row>; value: string; }"
+    }
+  ],
+  "generics": [
+    "Row",
+    "Row extends DataTableRow = DataTableRow"
+  ],
   "contexts": []
 }
 "
@@ -4652,6 +4774,83 @@ exports[`fixtures (JSON) "bind-this-multiple/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "context-template-tag/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "rows",
+      "kind": "let",
+      "description": "Specify the rows the data table should render.",
+      "type": "ReadonlyArray<Row>",
+      "value": "[]",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>"
+    }
+  ],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{ id: any; [key: string]: any; }",
+      "name": "DataTableRow",
+      "ts": "interface DataTableRow { id: any; [key: string]: any; }"
+    },
+    {
+      "type": "any",
+      "name": "DataTableRowId",
+      "ts": "type DataTableRowId = any"
+    }
+  ],
+  "generics": [
+    "Row",
+    "Row extends DataTableRow = DataTableRow"
+  ],
+  "contexts": [
+    {
+      "key": "DataTable",
+      "typeName": "DataTableContext",
+      "properties": [
+        {
+          "name": "batchSelectedIds",
+          "type": "import(\\"svelte/store\\").Writable<ReadonlyArray<DataTableRowId>>",
+          "description": "",
+          "optional": false
+        },
+        {
+          "name": "tableRows",
+          "type": "import(\\"svelte/store\\").Writable<ReadonlyArray<Row>>",
+          "description": "",
+          "optional": false
+        },
+        {
+          "name": "resetSelectedRowIds",
+          "type": "() => void",
+          "description": "Reset selected row ids",
+          "optional": false
+        },
+        {
+          "name": "filterRows",
+          "type": "(searchValue: string, customFilter?: (row: Row, value: string) => boolean) => ReadonlyArray<DataTableRowId>",
+          "description": "Filter rows by search value",
+          "optional": false
+        }
+      ]
+    }
+  ]
+}
+"
+`;
+
 exports[`fixtures (JSON) "runes-whole-props-imported/input.svelte" 1`] = `
 "{
   "props": [],
@@ -5270,6 +5469,71 @@ exports[`fixtures (JSON) "extend-props/input.svelte" 1`] = `
   "extends": {
     "interface": "ButtonProps",
     "import": "\\"./Button.svelte\\""
+  },
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "template-tag-with-rest-props/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "headers",
+      "kind": "let",
+      "type": "ReadonlyArray<DataTableHeader<Row>>",
+      "value": "[]",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "rows",
+      "kind": "let",
+      "type": "ReadonlyArray<Row>",
+      "value": "[]",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{ headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> }"
+    }
+  ],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{ id: string | number; [key: string]: any; }",
+      "name": "DataTableRow",
+      "ts": "interface DataTableRow { id: string | number; [key: string]: any; }"
+    },
+    {
+      "type": "Exclude<keyof Row, \\"id\\">",
+      "name": "DataTableKey<Row>",
+      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \\"id\\">"
+    },
+    {
+      "type": "{ key: DataTableKey<Row>; value: string; }",
+      "name": "DataTableHeader<Row=DataTableRow>",
+      "ts": "interface DataTableHeader<Row=DataTableRow> { key: DataTableKey<Row>; value: string; }"
+    }
+  ],
+  "generics": [
+    "Row",
+    "Row extends DataTableRow = DataTableRow"
+  ],
+  "rest_props": {
+    "type": "Element",
+    "name": "div"
   },
   "contexts": []
 }
@@ -6123,6 +6387,52 @@ export default class LegacyBindComponentSelected extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "template-tag-multiple/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export interface DataTableRow {
+  id: string | number;
+  [key: string]: any;
+}
+
+export type DataTableKey<Row> = Exclude<keyof Row, "id">;
+
+export interface DataTableHeader<Row = DataTableRow, Header = DataTableRow> {
+  key: DataTableKey<Row>;
+  value: Header;
+}
+
+export type TemplateTagMultipleProps<
+  Row extends DataTableRow = DataTableRow,
+  Header extends DataTableRow = DataTableRow,
+> = {
+  /**
+   * @default []
+   */
+  headers?: ReadonlyArray<DataTableHeader<Row, Header>>;
+
+  /**
+   * @default []
+   */
+  rows?: ReadonlyArray<Row>;
+
+  children?: (
+    this: void,
+    ...args: [{ headers: ReadonlyArray<DataTableHeader<Row, Header>>; rows: ReadonlyArray<Row> }]
+  ) => void;
+};
+
+export default class TemplateTagMultiple<
+  Row extends DataTableRow = DataTableRow,
+  Header extends DataTableRow = DataTableRow,
+> extends SvelteComponentTyped<
+  TemplateTagMultipleProps<Row, Header>,
+  Record<string, any>,
+  { default: { headers: ReadonlyArray<DataTableHeader<Row, Header>>; rows: ReadonlyArray<Row> } }
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "runes-props-intersection/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -6938,6 +7248,46 @@ export default class SlotPropDottedAccess extends SvelteComponentTyped<
       i: number;
     };
   }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "template-tag/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export interface DataTableRow {
+  id: string | number;
+  [key: string]: any;
+}
+
+export type DataTableKey<Row> = Exclude<keyof Row, "id">;
+
+export interface DataTableHeader<Row = DataTableRow> {
+  key: DataTableKey<Row>;
+  value: string;
+}
+
+export type TemplateTagProps<Row extends DataTableRow = DataTableRow> = {
+  /**
+   * @default []
+   */
+  headers?: ReadonlyArray<DataTableHeader<Row>>;
+
+  /**
+   * @default []
+   */
+  rows?: ReadonlyArray<Row>;
+
+  children?: (
+    this: void,
+    ...args: [{ headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> }]
+  ) => void;
+};
+
+export default class TemplateTag<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
+  TemplateTagProps<Row>,
+  Record<string, any>,
+  { default: { headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> } }
 > {}
 "
 `;
@@ -8591,6 +8941,46 @@ export default class BindThisMultiple extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "context-template-tag/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export interface DataTableRow {
+  id: any;
+  [key: string]: any;
+}
+
+export type DataTableRowId = any;
+
+export type DataTableContext<Row extends DataTableRow = DataTableRow> = {
+  batchSelectedIds: import("svelte/store").Writable<ReadonlyArray<DataTableRowId>>;
+  tableRows: import("svelte/store").Writable<ReadonlyArray<Row>>;
+  /** Reset selected row ids */
+  resetSelectedRowIds: () => void;
+  /** Filter rows by search value */
+  filterRows: (
+    searchValue: string,
+    customFilter?: (row: Row, value: string) => boolean,
+  ) => ReadonlyArray<DataTableRowId>;
+};
+
+export type ContextTemplateTagProps<Row extends DataTableRow = DataTableRow> = {
+  /**
+   * Specify the rows the data table should render.
+   * @default []
+   */
+  rows?: ReadonlyArray<Row>;
+
+  children?: (this: void) => void;
+};
+
+export default class ContextTemplateTag<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
+  ContextTemplateTagProps<Row>,
+  Record<string, any>,
+  { default: Record<string, never> }
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "runes-whole-props-imported/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 import type { Props } from "./types";
@@ -9115,6 +9505,57 @@ export default class ExtendProps extends SvelteComponentTyped<
   ExtendPropsProps,
   Record<string, any>,
   { default: Record<string, never> }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "template-tag-with-rest-props/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+export interface DataTableRow {
+  id: string | number;
+  [key: string]: any;
+}
+
+export type DataTableKey<Row> = Exclude<keyof Row, "id">;
+
+export interface DataTableHeader<Row = DataTableRow> {
+  key: DataTableKey<Row>;
+  value: string;
+}
+
+type $RestProps = SvelteHTMLElements["div"];
+
+type $Props<Row extends DataTableRow = DataTableRow> = {
+  /**
+   * @default []
+   */
+  headers?: ReadonlyArray<DataTableHeader<Row>>;
+
+  /**
+   * @default []
+   */
+  rows?: ReadonlyArray<Row>;
+
+  children?: (
+    this: void,
+    ...args: [{ headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> }]
+  ) => void;
+
+  [key: \`data-\${string}\`]: unknown;
+};
+
+export type TemplateTagWithRestPropsProps<Row extends DataTableRow = DataTableRow> = Omit<
+  $RestProps,
+  keyof $Props<Row>
+> &
+  $Props<Row>;
+
+export default class TemplateTagWithRestProps<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
+  TemplateTagWithRestPropsProps<Row>,
+  Record<string, any>,
+  { default: { headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> } }
 > {}
 "
 `;
