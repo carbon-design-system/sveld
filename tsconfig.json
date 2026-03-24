@@ -2,7 +2,7 @@
   "compilerOptions": {
     "erasableSyntaxOnly": true,
     "target": "ESNext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "skipLibCheck": true,
     "strict": true,
     "esModuleInterop": true
