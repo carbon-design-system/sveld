@@ -5,7 +5,7 @@
     "isolatedModules": true,
     "target": "ESNext",
     "module": "ESNext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "strict": true
   },
   "include": ["src", "test"]
