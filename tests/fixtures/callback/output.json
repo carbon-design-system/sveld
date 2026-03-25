@@ -1,0 +1,60 @@
+{
+  "props": [
+    {
+      "name": "onChange",
+      "kind": "let",
+      "description": "Callback fired when the value changes.",
+      "type": "OnChange",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "comparator",
+      "kind": "let",
+      "type": "Comparator",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "onClose",
+      "kind": "let",
+      "description": "No-arg callback.",
+      "type": "OnClose",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "(value: string, index: number) => void",
+      "name": "OnChange",
+      "description": "Callback fired when the value changes.",
+      "ts": "type OnChange = (value: string, index: number) => void"
+    },
+    {
+      "type": "(a: any, b: any) => number",
+      "name": "Comparator",
+      "ts": "type Comparator = (a: any, b: any) => number"
+    },
+    {
+      "type": "() => void",
+      "name": "OnClose",
+      "description": "No-arg callback.",
+      "ts": "type OnClose = () => void"
+    }
+  ],
+  "generics": null,
+  "contexts": []
+}

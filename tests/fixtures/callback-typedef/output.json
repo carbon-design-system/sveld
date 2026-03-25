@@ -1,0 +1,42 @@
+{
+  "props": [
+    {
+      "name": "direction",
+      "kind": "let",
+      "type": "SortDirection",
+      "value": "\"asc\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "sort",
+      "kind": "let",
+      "type": "SortFn",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "\"asc\" | \"desc\"",
+      "name": "SortDirection",
+      "ts": "type SortDirection = \"asc\" | \"desc\""
+    },
+    {
+      "type": "(a: any, b: any, direction: SortDirection) => number",
+      "name": "SortFn",
+      "ts": "type SortFn = (a: any, b: any, direction: SortDirection) => number"
+    }
+  ],
+  "generics": null,
+  "contexts": []
+}
