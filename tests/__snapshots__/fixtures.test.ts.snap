@@ -6754,3 +6754,170 @@ export default class ContextDotNotation extends SvelteComponentTyped<
 > {}
 "
 `;
+
+exports[`fixtures (JSON) "callback/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "onChange",
+      "kind": "let",
+      "description": "Callback fired when the value changes.",
+      "type": "OnChange",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "comparator",
+      "kind": "let",
+      "type": "Comparator",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "onClose",
+      "kind": "let",
+      "description": "No-arg callback.",
+      "type": "OnClose",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "(value: string, index: number) => void",
+      "name": "OnChange",
+      "description": "Callback fired when the value changes.",
+      "ts": "type OnChange = (value: string, index: number) => void"
+    },
+    {
+      "type": "(a: any, b: any) => number",
+      "name": "Comparator",
+      "ts": "type Comparator = (a: any, b: any) => number"
+    },
+    {
+      "type": "() => void",
+      "name": "OnClose",
+      "description": "No-arg callback.",
+      "ts": "type OnClose = () => void"
+    }
+  ],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (TypeScript) "callback/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+/**
+ * Callback fired when the value changes.
+ */
+export type OnChange = (value: string, index: number) => void;
+
+export type Comparator = (a: any, b: any) => number;
+
+/**
+ * No-arg callback.
+ */
+export type OnClose = () => void;
+
+export type CallbackProps = {
+  /**
+   * Callback fired when the value changes.
+   */
+  onChange?: OnChange;
+
+  comparator?: Comparator;
+
+  /**
+   * No-arg callback.
+   */
+  onClose?: OnClose;
+};
+
+export default class Callback extends SvelteComponentTyped<CallbackProps, Record<string, any>, Record<string, never>> {}
+"
+`;
+
+exports[`fixtures (JSON) "callback-typedef/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "direction",
+      "kind": "let",
+      "type": "SortDirection",
+      "value": "\\"asc\\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "sort",
+      "kind": "let",
+      "type": "SortFn",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "\\"asc\\" | \\"desc\\"",
+      "name": "SortDirection",
+      "ts": "type SortDirection = \\"asc\\" | \\"desc\\""
+    },
+    {
+      "type": "(a: any, b: any, direction: SortDirection) => number",
+      "name": "SortFn",
+      "ts": "type SortFn = (a: any, b: any, direction: SortDirection) => number"
+    }
+  ],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (TypeScript) "callback-typedef/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type SortDirection = "asc" | "desc";
+
+export type SortFn = (a: any, b: any, direction: SortDirection) => number;
+
+export type CallbackTypedefProps = {
+  /**
+   * @default "asc"
+   */
+  direction?: SortDirection;
+
+  sort?: SortFn;
+};
+
+export default class CallbackTypedef extends SvelteComponentTyped<
+  CallbackTypedefProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;

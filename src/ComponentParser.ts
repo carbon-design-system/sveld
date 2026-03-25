@@ -665,6 +665,7 @@ export default class ComponentParser {
       "slot",
       "event",
       "typedef",
+      "callback",
     ]);
 
     let typeTag: (typeof tags)[number] | undefined;
@@ -1388,7 +1389,7 @@ export default class ComponentParser {
    * Parses custom types, events, slots, and other JSDoc annotations from component comments.
    *
    * Scans the entire source for JSDoc comment blocks and extracts structured information
-   * about events, typedefs, slots, extends, restProps, and generics. Handles complex
+   * about events, typedefs, callbacks, slots, extends, restProps, and generics. Handles complex
    * description extraction logic that supports both inline descriptions and preceding
    * line descriptions.
    *
@@ -1434,6 +1435,15 @@ export default class ComponentParser {
         optional?: boolean;
         default?: string;
       }> = [];
+
+      let currentCallbackName: string | undefined;
+      let currentCallbackDescription: string | undefined;
+      const callbackParams: Array<{
+        name: string;
+        type: string;
+        optional?: boolean;
+      }> = [];
+      let callbackReturnType: string | undefined;
 
       /**
        * Track if we've used the comment block description for any tag in this block.
@@ -1659,6 +1669,46 @@ export default class ComponentParser {
         }
       };
 
+      /**
+       * Finalizes the current callback being built and adds it to the typedefs map.
+       *
+       * Builds a function type from accumulated `@param` and `@returns` tags.
+       *
+       * @example
+       * ```ts
+       * // @callback OnChange
+       * // @param {string} value
+       * // @param {number} index
+       * // @returns {void}
+       * // Result: type OnChange = (value: string, index: number) => void
+       * ```
+       */
+      const finalizeCallback = () => {
+        if (currentCallbackName !== undefined) {
+          const params = callbackParams
+            .map(({ name, type, optional }) => {
+              const optionalMarker = optional ? "?" : "";
+              return `${name}${optionalMarker}: ${type}`;
+            })
+            .join(", ");
+          const returnType = callbackReturnType || "void";
+          const callbackType = `(${params}) => ${returnType}`;
+          const callbackTs = `type ${currentCallbackName} = ${callbackType}`;
+
+          this.typedefs.set(currentCallbackName, {
+            type: callbackType,
+            name: currentCallbackName,
+            description: ComponentParser.assignValue(currentCallbackDescription),
+            ts: callbackTs,
+          });
+
+          callbackParams.length = 0;
+          callbackReturnType = undefined;
+          currentCallbackName = undefined;
+          currentCallbackDescription = undefined;
+        }
+      };
+
       for (const {
         tag,
         type: tagType,
@@ -1760,6 +1810,23 @@ export default class ComponentParser {
               currentEventType = type;
             }
             break;
+          case "param":
+            /**
+             * Accumulate parameters for the current callback being built.
+             */
+            if (currentCallbackName !== undefined) {
+              callbackParams.push({ name, type, optional: optional || false });
+            }
+            break;
+          case "returns":
+          case "return":
+            /**
+             * Track the return type for the current callback being built.
+             */
+            if (currentCallbackName !== undefined) {
+              callbackReturnType = type;
+            }
+            break;
           case "property": {
             /**
              * Collect properties for the current event or typedef.
@@ -1802,6 +1869,26 @@ export default class ComponentParser {
             if (isFirstTag) isFirstTag = false;
             break;
           }
+          case "callback": {
+            /**
+             * Finalize any previous callback being built before starting a new one.
+             */
+            finalizeCallback();
+
+            /**
+             * Start tracking new callback with its name.
+             * Subsequent @param and @returns tags will be accumulated for this callback.
+             */
+            currentCallbackName = name;
+            const inlineCallbackDesc = cleanDescription(description);
+            currentCallbackDescription = inlineCallbackDesc || precedingDescription;
+            if (!currentCallbackDescription && isFirstTag && !commentDescriptionUsed && commentDescription) {
+              currentCallbackDescription = commentDescription;
+              commentDescriptionUsed = true;
+            }
+            if (isFirstTag) isFirstTag = false;
+            break;
+          }
           case "generics":
             this.generics = [name, type];
             if (isFirstTag) isFirstTag = false;
@@ -1810,11 +1897,12 @@ export default class ComponentParser {
       }
 
       /**
-       * Finalize any remaining event or typedef that wasn't closed by a new tag.
-       * This handles cases where the comment block ends without starting a new event/typedef.
+       * Finalize any remaining event, typedef, or callback that wasn't closed by a new tag.
+       * This handles cases where the comment block ends without starting a new tag.
        */
       finalizeEvent();
       finalizeTypedef();
+      finalizeCallback();
     }
   }
 

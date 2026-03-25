@@ -119,6 +119,7 @@ export default class Button extends SvelteComponentTyped<
 - [API Reference](#api-reference)
   - [@type](#type)
   - [@typedef](#typedef)
+  - [@callback](#callback)
   - [@slot](#slot)
     - [Svelte 5 Snippet Compatibility](#svelte-5-snippet-compatibility)
   - [@event](#event)
@@ -483,6 +484,69 @@ export type ComponentProps = {
 ```
 
 > **Note:** The inline syntax `@typedef {{ name: string }} User` continues to work for backwards compatibility.
+
+### `@callback`
+
+The `@callback` tag defines a function type using `@param` and `@returns` tags, following the [TypeScript JSDoc `@callback` specification](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html#callback). Like `@typedef`, callbacks are exported from the generated TypeScript definition file.
+
+This is useful for typing callback props without using inline function type syntax.
+
+Signature:
+
+```js
+/**
+ * Optional description
+ * @callback CallbackName
+ * @param {Type} paramName - Parameter description
+ * @returns {ReturnType}
+ */
+```
+
+Example:
+
+```js
+/**
+ * Callback fired when the value changes
+ * @callback OnChange
+ * @param {string} value - The new value
+ * @param {number} index - The index of the changed item
+ * @returns {void}
+ */
+
+/** @type {OnChange} */
+export let onChange = (value, index) => {};
+```
+
+Output:
+
+```ts
+/**
+ * Callback fired when the value changes
+ */
+export type OnChange = (value: string, index: number) => void;
+
+export type ComponentProps = {
+  /**
+   * Callback fired when the value changes
+   */
+  onChange?: OnChange;
+};
+```
+
+Callbacks can be combined with `@typedef` in the same comment block:
+
+```js
+/**
+ * @typedef {"asc" | "desc"} SortDirection
+ * @callback SortFn
+ * @param {any} a
+ * @param {any} b
+ * @param {SortDirection} direction
+ * @returns {number}
+ */
+```
+
+When `@returns` is omitted, the return type defaults to `void`. When no `@param` tags are present, the callback is typed as a no-argument function.
 
 ### `@slot`
 
