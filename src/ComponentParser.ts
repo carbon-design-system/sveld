@@ -2653,7 +2653,7 @@ export default class ComponentParser {
 
             if (node.declaration.type === "FunctionDeclaration") {
               const funcDecl = node.declaration as { id?: { name?: string } };
-              if (!funcDecl.id || !funcDecl.id.name) return;
+              if (!funcDecl.id?.name) return;
               prop_name = funcDecl.id.name;
               kind = "function";
               value = undefined;
@@ -2910,7 +2910,7 @@ export default class ComponentParser {
 
           if (node.declaration.type === "FunctionDeclaration") {
             const funcDecl = node.declaration as { id?: { name?: string } };
-            if (!funcDecl.id || !funcDecl.id.name) return;
+            if (!funcDecl.id?.name) return;
             prop_name ??= funcDecl.id.name;
             kind = "function";
             value = undefined;
