@@ -8,7 +8,13 @@ const buttonRunes: Example = {
   name: "Button",
   moduleName: "ButtonRunes",
   code: `<script>
-  let { type = "button", primary = false, children, onclick, ...restProps } = $props();
+  let {
+    type = "button",
+    primary = false,
+    children,
+    onclick,
+    ...restProps
+  } = $props();
 </script>
 
 <button
@@ -81,14 +87,19 @@ const dispatchedEventsAnnotatedRunes: Example = {
 
   import { createEventDispatcher } from "svelte";
 
-  let { value = $bindable(""), minLength = 3 } = $props();
+  let {
+    value = $bindable(""),
+    minLength = 3,
+  } = $props();
 
   const dispatch = createEventDispatcher();
 
   function validate(val) {
     const errors = [];
     if (val.length < minLength) {
-      errors.push(\`Must be at least \${minLength} characters\`);
+      errors.push(
+        \`Must be at least \${minLength} characters\`,
+      );
     }
     return errors;
   }
@@ -125,7 +136,13 @@ const forwardedEventsRunes: Example = {
   name: "Forwarded events",
   moduleName: "ForwardedEventsRunes",
   code: `<script>
-  let { onclick, onfocus, onblur, onmouseover, children } = $props();
+  let {
+    onclick,
+    onfocus,
+    onblur,
+    onmouseover,
+    children,
+  } = $props();
 </script>
 
 <button
@@ -153,10 +170,17 @@ const genericsRunes: Example = {
    */
 
   /** @type {ReadonlyArray<DataTableHeader<Row>>} */
-  let { headers = [], rows = [], children } = $props();
+  let {
+    headers = [],
+    rows = [],
+    children,
+  } = $props();
 </script>
 
-{@render children?.({ headers, rows })}
+{@render children?.({
+  headers,
+  rows,
+})}
 `,
 };
 
@@ -185,11 +209,19 @@ const namedSlotsRunes: Example = {
    * @slot {{ prop: number }} body - Customize the paragraph text.
    */
 
-  let { prop = 0, children, title, body } = $props();
+  let {
+    prop = 0,
+    children,
+    title,
+    body,
+  } = $props();
 </script>
 
 <h1>
-  {@render children?.({ prop, doubled: prop * 2 })}
+  {@render children?.({
+    prop,
+    doubled: prop * 2,
+  })}
   {@render title?.()}
 </h1>
 
@@ -208,7 +240,10 @@ const restPropsRunes: Example = {
    * @restProps {div | p}
    */
 
-  let { toggle = false, ...restProps } = $props();
+  let {
+    toggle = false,
+    ...restProps
+  } = $props();
 </script>
 
 {#if toggle}
@@ -270,7 +305,11 @@ const functionWithParamsRunes: Example = {
    * showNode(123, { select: false, focus: false });
    */
   export function showNode(id, options = {}) {
-    const { expand = true, select = true, focus = true } = options;
+    const {
+      expand = true,
+      select = true,
+      focus = true,
+    } = options;
     // Implementation here
   }
 
