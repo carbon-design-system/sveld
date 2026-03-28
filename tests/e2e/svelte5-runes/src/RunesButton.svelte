@@ -1,16 +1,12 @@
 <script>
-  import { createEventDispatcher } from "svelte";
-
-  let { label, onclick, children, value = $bindable("ready"), ...rest } = $props();
-
-  const dispatch = createEventDispatcher();
+  let { label, onclick, children, value = $bindable("ready"), onpress, ...rest } = $props();
 </script>
 
 <button
   {...rest}
   onclick={(event) => {
     onclick?.(event);
-    dispatch("press", value);
+    onpress?.(value);
   }}
 >
   {label}

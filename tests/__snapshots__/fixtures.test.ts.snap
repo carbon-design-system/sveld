@@ -228,16 +228,20 @@ exports[`fixtures (JSON) "runes-dispatched-events/input.svelte" 1`] = `
       "isRequired": true,
       "constant": false,
       "reactive": false
+    },
+    {
+      "name": "onchange",
+      "kind": "let",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
     }
   ],
   "moduleExports": [],
   "slots": [],
-  "events": [
-    {
-      "type": "dispatched",
-      "name": "change"
-    }
-  ],
+  "events": [],
   "typedefs": [],
   "generics": null,
   "contexts": []
@@ -4922,11 +4926,16 @@ export type RunesDispatchedEventsProps = {
    * @default undefined
    */
   value: undefined;
+
+  /**
+   * @default undefined
+   */
+  onchange: undefined;
 };
 
 export default class RunesDispatchedEvents extends SvelteComponentTyped<
   RunesDispatchedEventsProps,
-  { change: CustomEvent<any> },
+  Record<string, any>,
   Record<string, never>
 > {}
 "
