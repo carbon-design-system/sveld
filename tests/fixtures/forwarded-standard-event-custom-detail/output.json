@@ -21,14 +21,14 @@
       "detail": "ReadonlyArray<File>"
     },
     {
-      "type": "dispatched",
-      "name": "remove",
-      "detail": "ReadonlyArray<File>"
-    },
-    {
       "type": "forwarded",
       "name": "change",
       "element": "FileUploaderButton",
+      "detail": "ReadonlyArray<File>"
+    },
+    {
+      "type": "dispatched",
+      "name": "remove",
       "detail": "ReadonlyArray<File>"
     }
   ],

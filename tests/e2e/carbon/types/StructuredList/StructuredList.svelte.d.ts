@@ -37,11 +37,11 @@ export type StructuredListProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class StructuredList extends SvelteComponentTyped<
   StructuredListProps,
   {
+    change: CustomEvent<any>;
     click: WindowEventMap["click"];
-    mouseover: WindowEventMap["mouseover"];
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
-    change: CustomEvent<any>;
+    mouseover: WindowEventMap["mouseover"];
   },
   { default: Record<string, never> }
 > {}

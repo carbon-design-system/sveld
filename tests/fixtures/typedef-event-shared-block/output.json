@@ -58,14 +58,9 @@
     },
     {
       "type": "dispatched",
-      "name": "resize",
+      "name": "dequeue",
       "detail": "null",
-      "description": "Event fired when size changes"
-    },
-    {
-      "type": "dispatched",
-      "name": "scroll",
-      "detail": "null"
+      "description": "Slot for rendering breakpoint sizes"
     },
     {
       "type": "dispatched",
@@ -75,9 +70,14 @@
     },
     {
       "type": "dispatched",
-      "name": "dequeue",
+      "name": "resize",
       "detail": "null",
-      "description": "Slot for rendering breakpoint sizes"
+      "description": "Event fired when size changes"
+    },
+    {
+      "type": "dispatched",
+      "name": "scroll",
+      "detail": "null"
     }
   ],
   "typedefs": [

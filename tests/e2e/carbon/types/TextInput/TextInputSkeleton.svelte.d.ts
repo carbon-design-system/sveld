@@ -19,9 +19,9 @@ export default class TextInputSkeleton extends SvelteComponentTyped<
   TextInputSkeletonProps,
   {
     click: WindowEventMap["click"];
-    mouseover: WindowEventMap["mouseover"];
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
+    mouseover: WindowEventMap["mouseover"];
   },
   Record<string, never>
 > {}

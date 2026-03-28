@@ -57,11 +57,11 @@ export default class RadioTile extends SvelteComponentTyped<
   RadioTileProps,
   {
     change: WindowEventMap["change"];
-    keydown: WindowEventMap["keydown"];
     click: WindowEventMap["click"];
-    mouseover: WindowEventMap["mouseover"];
+    keydown: WindowEventMap["keydown"];
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
+    mouseover: WindowEventMap["mouseover"];
   },
   { default: Record<string, never> }
 > {}

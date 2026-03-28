@@ -11,17 +11,17 @@
   "events": [
     {
       "type": "forwarded",
+      "name": "blur",
+      "element": "button"
+    },
+    {
+      "type": "forwarded",
       "name": "click",
       "element": "button"
     },
     {
       "type": "forwarded",
       "name": "focus",
-      "element": "button"
-    },
-    {
-      "type": "forwarded",
-      "name": "blur",
       "element": "button"
     },
     {

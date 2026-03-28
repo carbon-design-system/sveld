@@ -7,9 +7,9 @@ export type ForwardedEventsProps = {
 export default class ForwardedEvents extends SvelteComponentTyped<
   ForwardedEventsProps,
   {
+    blur: WindowEventMap["blur"];
     click: WindowEventMap["click"];
     focus: WindowEventMap["focus"];
-    blur: WindowEventMap["blur"];
     mouseover: WindowEventMap["mouseover"];
   },
   { default: Record<string, never> }

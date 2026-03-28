@@ -34,9 +34,9 @@ export default class ClickableTile extends SvelteComponentTyped<
   {
     click: WindowEventMap["click"];
     keydown: WindowEventMap["keydown"];
-    mouseover: WindowEventMap["mouseover"];
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
+    mouseover: WindowEventMap["mouseover"];
   },
   { default: Record<string, never> }
 > {}

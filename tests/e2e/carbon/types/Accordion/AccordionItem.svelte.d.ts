@@ -42,10 +42,10 @@ export default class AccordionItem extends SvelteComponentTyped<
   {
     animationend: WindowEventMap["animationend"];
     click: WindowEventMap["click"];
-    mouseover: WindowEventMap["mouseover"];
+    keydown: WindowEventMap["keydown"];
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
-    keydown: WindowEventMap["keydown"];
+    mouseover: WindowEventMap["mouseover"];
   },
   { default: Record<string, never>; title: Record<string, never> }
 > {}

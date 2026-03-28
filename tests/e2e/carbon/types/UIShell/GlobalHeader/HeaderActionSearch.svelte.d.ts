@@ -11,9 +11,9 @@ export type HeaderActionSearchProps = {
 export default class HeaderActionSearch extends SvelteComponentTyped<
   HeaderActionSearchProps,
   {
-    inputSearch: CustomEvent<{ action: "search"; textInput: string }>;
     focusInputSearch: CustomEvent<null>;
     focusOutInputSearch: CustomEvent<null>;
+    inputSearch: CustomEvent<{ action: "search"; textInput: string }>;
   },
   Record<string, never>
 > {}

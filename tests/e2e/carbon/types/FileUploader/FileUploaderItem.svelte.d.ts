@@ -55,9 +55,9 @@ export default class FileUploaderItem extends SvelteComponentTyped<
   FileUploaderItemProps,
   {
     delete: CustomEvent<string>;
-    mouseover: WindowEventMap["mouseover"];
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
+    mouseover: WindowEventMap["mouseover"];
   },
   Record<string, never>
 > {}

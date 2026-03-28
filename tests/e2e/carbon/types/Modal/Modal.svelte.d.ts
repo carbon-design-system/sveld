@@ -132,15 +132,15 @@ export type ModalProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class Modal extends SvelteComponentTyped<
   ModalProps,
   {
-    keydown: WindowEventMap["keydown"];
     click: WindowEventMap["click"];
-    mouseover: WindowEventMap["mouseover"];
-    mouseenter: WindowEventMap["mouseenter"];
-    mouseleave: WindowEventMap["mouseleave"];
-    submit: CustomEvent<null>;
     "click:button--secondary": CustomEvent<null>;
     close: CustomEvent<null>;
+    keydown: WindowEventMap["keydown"];
+    mouseenter: WindowEventMap["mouseenter"];
+    mouseleave: WindowEventMap["mouseleave"];
+    mouseover: WindowEventMap["mouseover"];
     open: CustomEvent<null>;
+    submit: CustomEvent<null>;
   },
   {
     default: Record<string, never>;

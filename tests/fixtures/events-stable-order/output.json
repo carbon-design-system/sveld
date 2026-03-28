@@ -4,19 +4,24 @@
   "slots": [],
   "events": [
     {
+      "type": "dispatched",
+      "name": "alpha",
+      "detail": "null"
+    },
+    {
       "type": "forwarded",
-      "name": "change",
+      "name": "blur",
       "element": "input"
     },
     {
       "type": "forwarded",
-      "name": "input",
-      "element": "input"
+      "name": "click",
+      "element": "button"
     },
     {
-      "type": "forwarded",
-      "name": "paste",
-      "element": "input"
+      "type": "dispatched",
+      "name": "zeta",
+      "detail": "null"
     }
   ],
   "typedefs": [],

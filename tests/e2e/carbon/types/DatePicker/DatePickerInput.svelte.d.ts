@@ -90,9 +90,9 @@ export type DatePickerInputProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class DatePickerInput extends SvelteComponentTyped<
   DatePickerInputProps,
   {
+    blur: WindowEventMap["blur"];
     input: WindowEventMap["input"];
     keydown: WindowEventMap["keydown"];
-    blur: WindowEventMap["blur"];
   },
   Record<string, never>
 > {}

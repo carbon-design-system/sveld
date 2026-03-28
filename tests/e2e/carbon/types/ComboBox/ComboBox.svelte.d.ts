@@ -129,16 +129,16 @@ export type ComboBoxProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class ComboBox extends SvelteComponentTyped<
   ComboBoxProps,
   {
+    blur: WindowEventMap["blur"];
+    clear: CustomEvent<any>;
+    focus: WindowEventMap["focus"];
+    keydown: WindowEventMap["keydown"];
+    scroll: WindowEventMap["scroll"];
     select: CustomEvent<{
       selectedId: string;
       selectedIndex: number;
       selectedItem: ComboBoxItem;
     }>;
-    keydown: WindowEventMap["keydown"];
-    focus: WindowEventMap["focus"];
-    blur: WindowEventMap["blur"];
-    clear: CustomEvent<any>;
-    scroll: WindowEventMap["scroll"];
   },
   Record<string, never>
 > {}

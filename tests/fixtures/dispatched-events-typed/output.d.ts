@@ -7,9 +7,9 @@ export type DispatchedEventsTypedProps = {
 export default class DispatchedEventsTyped extends SvelteComponentTyped<
   DispatchedEventsTypedProps,
   {
+    destroy: CustomEvent<null>;
     /** Fired on mouseover. */
     hover: CustomEvent<{ h1: boolean }>;
-    destroy: CustomEvent<null>;
   },
   { default: Record<string, never> }
 > {}

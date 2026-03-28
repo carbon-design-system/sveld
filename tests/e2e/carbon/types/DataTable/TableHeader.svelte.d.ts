@@ -31,10 +31,10 @@ export type TableHeaderProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class TableHeader extends SvelteComponentTyped<
   TableHeaderProps,
   {
-    mouseover: WindowEventMap["mouseover"];
+    click: WindowEventMap["click"];
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
-    click: WindowEventMap["click"];
+    mouseover: WindowEventMap["mouseover"];
   },
   { default: Record<string, never> }
 > {}

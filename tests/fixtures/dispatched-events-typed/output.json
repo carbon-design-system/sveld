@@ -11,14 +11,14 @@
   "events": [
     {
       "type": "dispatched",
-      "name": "hover",
-      "detail": "{ h1: boolean; }",
-      "description": "Fired on mouseover."
+      "name": "destroy",
+      "detail": "null"
     },
     {
       "type": "dispatched",
-      "name": "destroy",
-      "detail": "null"
+      "name": "hover",
+      "detail": "{ h1: boolean; }",
+      "description": "Fired on mouseover."
     }
   ],
   "typedefs": [],

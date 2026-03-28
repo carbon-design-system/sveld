@@ -13,9 +13,9 @@ export default class TagSkeleton extends SvelteComponentTyped<
   TagSkeletonProps,
   {
     click: WindowEventMap["click"];
-    mouseover: WindowEventMap["mouseover"];
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
+    mouseover: WindowEventMap["mouseover"];
   },
   Record<string, never>
 > {}

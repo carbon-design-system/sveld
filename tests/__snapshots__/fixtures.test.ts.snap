@@ -530,10 +530,8 @@ exports[`fixtures (JSON) "mixed-event-types/input.svelte" 1`] = `
   "events": [
     {
       "type": "forwarded",
-      "name": "input",
-      "element": "input",
-      "description": "Input value changed (native forwarded event)",
-      "detail": "string"
+      "name": "change",
+      "element": "input"
     },
     {
       "type": "forwarded",
@@ -544,8 +542,10 @@ exports[`fixtures (JSON) "mixed-event-types/input.svelte" 1`] = `
     },
     {
       "type": "forwarded",
-      "name": "change",
-      "element": "input"
+      "name": "input",
+      "element": "input",
+      "description": "Input value changed (native forwarded event)",
+      "detail": "string"
     },
     {
       "type": "dispatched",
@@ -825,17 +825,17 @@ exports[`fixtures (JSON) "forwarded-events/input.svelte" 1`] = `
   "events": [
     {
       "type": "forwarded",
+      "name": "blur",
+      "element": "button"
+    },
+    {
+      "type": "forwarded",
       "name": "click",
       "element": "button"
     },
     {
       "type": "forwarded",
       "name": "focus",
-      "element": "button"
-    },
-    {
-      "type": "forwarded",
-      "name": "blur",
       "element": "button"
     },
     {
@@ -1003,14 +1003,9 @@ exports[`fixtures (JSON) "typedef-event-shared-block/input.svelte" 1`] = `
     },
     {
       "type": "dispatched",
-      "name": "resize",
+      "name": "dequeue",
       "detail": "null",
-      "description": "Event fired when size changes"
-    },
-    {
-      "type": "dispatched",
-      "name": "scroll",
-      "detail": "null"
+      "description": "Slot for rendering breakpoint sizes"
     },
     {
       "type": "dispatched",
@@ -1020,9 +1015,14 @@ exports[`fixtures (JSON) "typedef-event-shared-block/input.svelte" 1`] = `
     },
     {
       "type": "dispatched",
-      "name": "dequeue",
+      "name": "resize",
       "detail": "null",
-      "description": "Slot for rendering breakpoint sizes"
+      "description": "Event fired when size changes"
+    },
+    {
+      "type": "dispatched",
+      "name": "scroll",
+      "detail": "null"
     }
   ],
   "typedefs": [
@@ -1136,6 +1136,104 @@ exports[`fixtures (JSON) "theme-component/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "callback/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "onChange",
+      "kind": "let",
+      "description": "Callback fired when the value changes.",
+      "type": "OnChange",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "comparator",
+      "kind": "let",
+      "type": "Comparator",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "onClose",
+      "kind": "let",
+      "description": "No-arg callback.",
+      "type": "OnClose",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "(value: string, index: number) => void",
+      "name": "OnChange",
+      "description": "Callback fired when the value changes.",
+      "ts": "type OnChange = (value: string, index: number) => void"
+    },
+    {
+      "type": "(a: any, b: any) => number",
+      "name": "Comparator",
+      "ts": "type Comparator = (a: any, b: any) => number"
+    },
+    {
+      "type": "() => void",
+      "name": "OnClose",
+      "description": "No-arg callback.",
+      "ts": "type OnClose = () => void"
+    }
+  ],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "events-stable-order/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "alpha",
+      "detail": "null"
+    },
+    {
+      "type": "forwarded",
+      "name": "blur",
+      "element": "input"
+    },
+    {
+      "type": "forwarded",
+      "name": "click",
+      "element": "button"
+    },
+    {
+      "type": "dispatched",
+      "name": "zeta",
+      "detail": "null"
+    }
+  ],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "mixed-events/input.svelte" 1`] = `
 "{
   "props": [],
@@ -1144,13 +1242,13 @@ exports[`fixtures (JSON) "mixed-events/input.svelte" 1`] = `
   "events": [
     {
       "type": "dispatched",
-      "name": "custom-focus",
-      "detail": "FocusEvent | number"
+      "name": "blur",
+      "detail": "FocusEvent | CustomEvent<FocusEvent>"
     },
     {
       "type": "dispatched",
-      "name": "blur",
-      "detail": "FocusEvent | CustomEvent<FocusEvent>"
+      "name": "custom-focus",
+      "detail": "FocusEvent | number"
     }
   ],
   "typedefs": [],
@@ -1808,6 +1906,11 @@ exports[`fixtures (JSON) "forwarded-events-typed/input.svelte" 1`] = `
   "events": [
     {
       "type": "forwarded",
+      "name": "blur",
+      "element": "button"
+    },
+    {
+      "type": "forwarded",
       "name": "click",
       "element": "button",
       "description": "Fired when the button is clicked",
@@ -1819,11 +1922,6 @@ exports[`fixtures (JSON) "forwarded-events-typed/input.svelte" 1`] = `
       "element": "button",
       "description": "Fired when the button receives focus",
       "detail": "null"
-    },
-    {
-      "type": "forwarded",
-      "name": "blur",
-      "element": "button"
     }
   ],
   "typedefs": [],
@@ -1847,10 +1945,6 @@ exports[`fixtures (JSON) "dispatched-events/input.svelte" 1`] = `
   "events": [
     {
       "type": "dispatched",
-      "name": "hover"
-    },
-    {
-      "type": "dispatched",
       "name": "destroy",
       "detail": "null"
     },
@@ -1863,6 +1957,10 @@ exports[`fixtures (JSON) "dispatched-events/input.svelte" 1`] = `
       "type": "dispatched",
       "name": "destroy:component",
       "detail": "null"
+    },
+    {
+      "type": "dispatched",
+      "name": "hover"
     }
   ],
   "typedefs": [],
@@ -2116,14 +2214,14 @@ exports[`fixtures (JSON) "dispatched-events-typed/input.svelte" 1`] = `
   "events": [
     {
       "type": "dispatched",
-      "name": "hover",
-      "detail": "{ h1: boolean; }",
-      "description": "Fired on mouseover."
+      "name": "destroy",
+      "detail": "null"
     },
     {
       "type": "dispatched",
-      "name": "destroy",
-      "detail": "null"
+      "name": "hover",
+      "detail": "{ h1: boolean; }",
+      "description": "Fired on mouseover."
     }
   ],
   "typedefs": [],
@@ -2141,12 +2239,12 @@ exports[`fixtures (JSON) "input-events/input.svelte" 1`] = `
   "events": [
     {
       "type": "forwarded",
-      "name": "input",
+      "name": "change",
       "element": "input"
     },
     {
       "type": "forwarded",
-      "name": "change",
+      "name": "input",
       "element": "input"
     },
     {
@@ -2263,6 +2361,52 @@ exports[`fixtures (JSON) "context-imported-type/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "callback-typedef/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "direction",
+      "kind": "let",
+      "type": "SortDirection",
+      "value": "\\"asc\\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "sort",
+      "kind": "let",
+      "type": "SortFn",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "\\"asc\\" | \\"desc\\"",
+      "name": "SortDirection",
+      "ts": "type SortDirection = \\"asc\\" | \\"desc\\""
+    },
+    {
+      "type": "(a: any, b: any, direction: SortDirection) => number",
+      "name": "SortFn",
+      "ts": "type SortFn = (a: any, b: any, direction: SortDirection) => number"
+    }
+  ],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "prop-comments/input.svelte" 1`] = `
 "{
   "props": [
@@ -2333,6 +2477,13 @@ exports[`fixtures (JSON) "forwarded-events-native-with-jsdoc/input.svelte" 1`] =
   "events": [
     {
       "type": "forwarded",
+      "name": "blur",
+      "element": "button",
+      "description": "Fired when the button loses focus",
+      "detail": "null"
+    },
+    {
+      "type": "forwarded",
       "name": "click",
       "element": "button",
       "description": "Fired when the button is clicked",
@@ -2343,13 +2494,6 @@ exports[`fixtures (JSON) "forwarded-events-native-with-jsdoc/input.svelte" 1`] =
       "name": "focus",
       "element": "button",
       "description": "Fired when the button receives focus",
-      "detail": "null"
-    },
-    {
-      "type": "forwarded",
-      "name": "blur",
-      "element": "button",
-      "description": "Fired when the button loses focus",
       "detail": "null"
     }
   ],
@@ -3028,9 +3172,9 @@ exports[`fixtures (JSON) "forwarded-from-component-to-native/input.svelte" 1`] =
   "slots": [],
   "events": [
     {
-      "type": "dispatched",
-      "name": "expand",
-      "detail": "null"
+      "type": "forwarded",
+      "name": "click",
+      "element": "ChildComponent"
     },
     {
       "type": "dispatched",
@@ -3038,14 +3182,9 @@ exports[`fixtures (JSON) "forwarded-from-component-to-native/input.svelte" 1`] =
       "detail": "null"
     },
     {
-      "type": "forwarded",
-      "name": "click",
-      "element": "ChildComponent"
-    },
-    {
-      "type": "forwarded",
-      "name": "mouseover",
-      "element": "ChildComponent"
+      "type": "dispatched",
+      "name": "expand",
+      "detail": "null"
     },
     {
       "type": "forwarded",
@@ -3055,6 +3194,11 @@ exports[`fixtures (JSON) "forwarded-from-component-to-native/input.svelte" 1`] =
     {
       "type": "forwarded",
       "name": "mouseleave",
+      "element": "ChildComponent"
+    },
+    {
+      "type": "forwarded",
+      "name": "mouseover",
       "element": "ChildComponent"
     }
   ],
@@ -3204,14 +3348,14 @@ exports[`fixtures (JSON) "event-explicit-null/input.svelte" 1`] = `
   "slots": [],
   "events": [
     {
-      "type": "dispatched",
-      "name": "clear",
-      "detail": "null"
-    },
-    {
       "type": "forwarded",
       "name": "change",
       "element": "input"
+    },
+    {
+      "type": "dispatched",
+      "name": "clear",
+      "detail": "null"
     },
     {
       "type": "forwarded",
@@ -3349,14 +3493,14 @@ exports[`fixtures (JSON) "forwarded-standard-event-custom-detail/input.svelte" 1
       "detail": "ReadonlyArray<File>"
     },
     {
-      "type": "dispatched",
-      "name": "remove",
-      "detail": "ReadonlyArray<File>"
-    },
-    {
       "type": "forwarded",
       "name": "change",
       "element": "FileUploaderButton",
+      "detail": "ReadonlyArray<File>"
+    },
+    {
+      "type": "dispatched",
+      "name": "remove",
       "detail": "ReadonlyArray<File>"
     }
   ],
@@ -3608,15 +3752,15 @@ exports[`fixtures (JSON) "dispatched-events-jsdoc-properties/input.svelte" 1`] =
   "events": [
     {
       "type": "dispatched",
-      "name": "snowball",
-      "detail": "{\\n  /** Indicates whether the snowball is tightly packed. */\\n  isPacked: boolean;\\n  /** The speed of the snowball in mph. */\\n  speed: number;\\n  /** Optional color of the snowball. */\\n  color?: string;\\n  /** Optional density with default value. @default 0.9 */\\n  density?: number;\\n}",
-      "description": "Snowball event fired when throwing a snowball."
-    },
-    {
-      "type": "dispatched",
       "name": "change",
       "detail": "null",
       "description": "Will be fired if value has been changed"
+    },
+    {
+      "type": "dispatched",
+      "name": "snowball",
+      "detail": "{\\n  /** Indicates whether the snowball is tightly packed. */\\n  isPacked: boolean;\\n  /** The speed of the snowball in mph. */\\n  speed: number;\\n  /** Optional color of the snowball. */\\n  color?: string;\\n  /** Optional density with default value. @default 0.9 */\\n  density?: number;\\n}",
+      "description": "Snowball event fired when throwing a snowball."
     },
     {
       "type": "dispatched",
@@ -4495,11 +4639,11 @@ export type MixedEventTypesProps = Record<string, never>;
 export default class MixedEventTypes extends SvelteComponentTyped<
   MixedEventTypesProps,
   {
-    /** Input value changed (native forwarded event) */
-    input: CustomEvent<string>;
+    change: WindowEventMap["change"];
     /** Custom event from component (component forwarded event) */
     customEvent: CustomEvent<number>;
-    change: WindowEventMap["change"];
+    /** Input value changed (native forwarded event) */
+    input: CustomEvent<string>;
     submit: CustomEvent<any>;
   },
   Record<string, never>
@@ -4663,9 +4807,9 @@ export type ForwardedEventsProps = {
 export default class ForwardedEvents extends SvelteComponentTyped<
   ForwardedEventsProps,
   {
+    blur: WindowEventMap["blur"];
     click: WindowEventMap["click"];
     focus: WindowEventMap["focus"];
-    blur: WindowEventMap["blur"];
     mouseover: WindowEventMap["mouseover"];
   },
   { default: Record<string, never> }
@@ -4762,13 +4906,13 @@ export default class TypedefEventSharedBlock extends SvelteComponentTyped<
       size: BreakpointSize;
       breakpointValue: BreakpointValue;
     }>;
+    /** Slot for rendering breakpoint sizes */
+    dequeue: CustomEvent<null>;
+    /** Event fired when item is dequeued from the queue */
+    queue: CustomEvent<null>;
     /** Event fired when size changes */
     resize: CustomEvent<null>;
     scroll: CustomEvent<null>;
-    /** Event fired when item is dequeued from the queue */
-    queue: CustomEvent<null>;
-    /** Slot for rendering breakpoint sizes */
-    dequeue: CustomEvent<null>;
   },
   {
     default: { size: BreakpointSize; sizes: Record<BreakpointSize, boolean> };
@@ -4830,6 +4974,52 @@ export default class ThemeComponent extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "callback/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+/**
+ * Callback fired when the value changes.
+ */
+export type OnChange = (value: string, index: number) => void;
+
+export type Comparator = (a: any, b: any) => number;
+
+/**
+ * No-arg callback.
+ */
+export type OnClose = () => void;
+
+export type CallbackProps = {
+  /**
+   * Callback fired when the value changes.
+   */
+  onChange?: OnChange;
+
+  comparator?: Comparator;
+
+  /**
+   * No-arg callback.
+   */
+  onClose?: OnClose;
+};
+
+export default class Callback extends SvelteComponentTyped<CallbackProps, Record<string, any>, Record<string, never>> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "events-stable-order/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type EventsStableOrderProps = Record<string, never>;
+
+export default class EventsStableOrder extends SvelteComponentTyped<
+  EventsStableOrderProps,
+  { alpha: CustomEvent<null>; blur: WindowEventMap["blur"]; click: WindowEventMap["click"]; zeta: CustomEvent<null> },
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "mixed-events/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -4837,7 +5027,7 @@ export type MixedEventsProps = Record<string, never>;
 
 export default class MixedEvents extends SvelteComponentTyped<
   MixedEventsProps,
-  { "custom-focus": CustomEvent<FocusEvent | number>; blur: FocusEvent | CustomEvent<FocusEvent> },
+  { blur: FocusEvent | CustomEvent<FocusEvent>; "custom-focus": CustomEvent<FocusEvent | number> },
   Record<string, never>
 > {}
 "
@@ -5268,11 +5458,11 @@ export type ForwardedEventsTypedProps = Record<string, never>;
 export default class ForwardedEventsTyped extends SvelteComponentTyped<
   ForwardedEventsTypedProps,
   {
+    blur: WindowEventMap["blur"];
     /** Fired when the button is clicked */
     click: WindowEventMap["click"];
     /** Fired when the button receives focus */
     focus: WindowEventMap["focus"];
-    blur: WindowEventMap["blur"];
   },
   Record<string, never>
 > {}
@@ -5289,10 +5479,10 @@ export type DispatchedEventsProps = {
 export default class DispatchedEvents extends SvelteComponentTyped<
   DispatchedEventsProps,
   {
-    hover: CustomEvent<any>;
     destroy: CustomEvent<null>;
     "destroy--component": CustomEvent<null>;
     "destroy:component": CustomEvent<null>;
+    hover: CustomEvent<any>;
   },
   { default: Record<string, never> }
 > {}
@@ -5460,9 +5650,9 @@ export type DispatchedEventsTypedProps = {
 export default class DispatchedEventsTyped extends SvelteComponentTyped<
   DispatchedEventsTypedProps,
   {
+    destroy: CustomEvent<null>;
     /** Fired on mouseover. */
     hover: CustomEvent<{ h1: boolean }>;
-    destroy: CustomEvent<null>;
   },
   { default: Record<string, never> }
 > {}
@@ -5476,7 +5666,7 @@ export type InputEventsProps = Record<string, never>;
 
 export default class InputEvents extends SvelteComponentTyped<
   InputEventsProps,
-  { input: WindowEventMap["input"]; change: WindowEventMap["change"]; paste: WindowEventMap["paste"] },
+  { change: WindowEventMap["change"]; input: WindowEventMap["input"]; paste: WindowEventMap["paste"] },
   Record<string, never>
 > {}
 "
@@ -5545,6 +5735,30 @@ export default class ContextImportedType extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "callback-typedef/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type SortDirection = "asc" | "desc";
+
+export type SortFn = (a: any, b: any, direction: SortDirection) => number;
+
+export type CallbackTypedefProps = {
+  /**
+   * @default "asc"
+   */
+  direction?: SortDirection;
+
+  sort?: SortFn;
+};
+
+export default class CallbackTypedef extends SvelteComponentTyped<
+  CallbackTypedefProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "prop-comments/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -5590,12 +5804,12 @@ export type ForwardedEventsNativeWithJsdocProps = {
 export default class ForwardedEventsNativeWithJsdoc extends SvelteComponentTyped<
   ForwardedEventsNativeWithJsdocProps,
   {
+    /** Fired when the button loses focus */
+    blur: WindowEventMap["blur"];
     /** Fired when the button is clicked */
     click: WindowEventMap["click"];
     /** Fired when the button receives focus */
     focus: WindowEventMap["focus"];
-    /** Fired when the button loses focus */
-    blur: WindowEventMap["blur"];
   },
   { default: Record<string, never> }
 > {}
@@ -5976,12 +6190,12 @@ export type ForwardedFromComponentToNativeProps = Record<string, never>;
 export default class ForwardedFromComponentToNative extends SvelteComponentTyped<
   ForwardedFromComponentToNativeProps,
   {
-    expand: CustomEvent<null>;
-    collapse: CustomEvent<null>;
     click: WindowEventMap["click"];
-    mouseover: WindowEventMap["mouseover"];
+    collapse: CustomEvent<null>;
+    expand: CustomEvent<null>;
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
+    mouseover: WindowEventMap["mouseover"];
   },
   Record<string, never>
 > {}
@@ -6080,7 +6294,7 @@ export type EventExplicitNullProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class EventExplicitNull extends SvelteComponentTyped<
   EventExplicitNullProps,
-  { clear: CustomEvent<null>; change: WindowEventMap["change"]; input: WindowEventMap["input"] },
+  { change: WindowEventMap["change"]; clear: CustomEvent<null>; input: WindowEventMap["input"] },
   Record<string, never>
 > {}
 "
@@ -6160,8 +6374,8 @@ export default class ForwardedStandardEventCustomDetail extends SvelteComponentT
   ForwardedStandardEventCustomDetailProps,
   {
     add: CustomEvent<ReadonlyArray<File>>;
-    remove: CustomEvent<ReadonlyArray<File>>;
     change: CustomEvent<ReadonlyArray<File>>;
+    remove: CustomEvent<ReadonlyArray<File>>;
   },
   Record<string, never>
 > {}
@@ -6349,6 +6563,8 @@ export type DispatchedEventsJsdocPropertiesProps = Record<string, never>;
 export default class DispatchedEventsJsdocProperties extends SvelteComponentTyped<
   DispatchedEventsJsdocPropertiesProps,
   {
+    /** Will be fired if value has been changed */
+    change: CustomEvent<null>;
     /** Snowball event fired when throwing a snowball. */
     snowball: CustomEvent<{
       /** Indicates whether the snowball is tightly packed. */
@@ -6360,8 +6576,6 @@ export default class DispatchedEventsJsdocProperties extends SvelteComponentType
       /** Optional density with default value. @default 0.9 */
       density?: number;
     }>;
-    /** Will be fired if value has been changed */
-    change: CustomEvent<null>;
     /** Form submission with value */
     submit: CustomEvent<{ value: string }>;
   },
@@ -6749,173 +6963,6 @@ export type ContextDotNotationProps = Record<string, never>;
 
 export default class ContextDotNotation extends SvelteComponentTyped<
   ContextDotNotationProps,
-  Record<string, any>,
-  Record<string, never>
-> {}
-"
-`;
-
-exports[`fixtures (JSON) "callback/input.svelte" 1`] = `
-"{
-  "props": [
-    {
-      "name": "onChange",
-      "kind": "let",
-      "description": "Callback fired when the value changes.",
-      "type": "OnChange",
-      "isFunction": true,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false
-    },
-    {
-      "name": "comparator",
-      "kind": "let",
-      "type": "Comparator",
-      "isFunction": true,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false
-    },
-    {
-      "name": "onClose",
-      "kind": "let",
-      "description": "No-arg callback.",
-      "type": "OnClose",
-      "isFunction": true,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false
-    }
-  ],
-  "moduleExports": [],
-  "slots": [],
-  "events": [],
-  "typedefs": [
-    {
-      "type": "(value: string, index: number) => void",
-      "name": "OnChange",
-      "description": "Callback fired when the value changes.",
-      "ts": "type OnChange = (value: string, index: number) => void"
-    },
-    {
-      "type": "(a: any, b: any) => number",
-      "name": "Comparator",
-      "ts": "type Comparator = (a: any, b: any) => number"
-    },
-    {
-      "type": "() => void",
-      "name": "OnClose",
-      "description": "No-arg callback.",
-      "ts": "type OnClose = () => void"
-    }
-  ],
-  "generics": null,
-  "contexts": []
-}
-"
-`;
-
-exports[`fixtures (TypeScript) "callback/input.svelte" 1`] = `
-"import { SvelteComponentTyped } from "svelte";
-
-/**
- * Callback fired when the value changes.
- */
-export type OnChange = (value: string, index: number) => void;
-
-export type Comparator = (a: any, b: any) => number;
-
-/**
- * No-arg callback.
- */
-export type OnClose = () => void;
-
-export type CallbackProps = {
-  /**
-   * Callback fired when the value changes.
-   */
-  onChange?: OnChange;
-
-  comparator?: Comparator;
-
-  /**
-   * No-arg callback.
-   */
-  onClose?: OnClose;
-};
-
-export default class Callback extends SvelteComponentTyped<CallbackProps, Record<string, any>, Record<string, never>> {}
-"
-`;
-
-exports[`fixtures (JSON) "callback-typedef/input.svelte" 1`] = `
-"{
-  "props": [
-    {
-      "name": "direction",
-      "kind": "let",
-      "type": "SortDirection",
-      "value": "\\"asc\\"",
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false
-    },
-    {
-      "name": "sort",
-      "kind": "let",
-      "type": "SortFn",
-      "isFunction": true,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false
-    }
-  ],
-  "moduleExports": [],
-  "slots": [],
-  "events": [],
-  "typedefs": [
-    {
-      "type": "\\"asc\\" | \\"desc\\"",
-      "name": "SortDirection",
-      "ts": "type SortDirection = \\"asc\\" | \\"desc\\""
-    },
-    {
-      "type": "(a: any, b: any, direction: SortDirection) => number",
-      "name": "SortFn",
-      "ts": "type SortFn = (a: any, b: any, direction: SortDirection) => number"
-    }
-  ],
-  "generics": null,
-  "contexts": []
-}
-"
-`;
-
-exports[`fixtures (TypeScript) "callback-typedef/input.svelte" 1`] = `
-"import { SvelteComponentTyped } from "svelte";
-
-export type SortDirection = "asc" | "desc";
-
-export type SortFn = (a: any, b: any, direction: SortDirection) => number;
-
-export type CallbackTypedefProps = {
-  /**
-   * @default "asc"
-   */
-  direction?: SortDirection;
-
-  sort?: SortFn;
-};
-
-export default class CallbackTypedef extends SvelteComponentTyped<
-  CallbackTypedefProps,
   Record<string, any>,
   Record<string, never>
 > {}

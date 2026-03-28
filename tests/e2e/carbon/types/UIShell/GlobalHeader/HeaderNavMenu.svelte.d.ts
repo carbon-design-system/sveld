@@ -44,14 +44,14 @@ export type HeaderNavMenuProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class HeaderNavMenu extends SvelteComponentTyped<
   HeaderNavMenuProps,
   {
-    keydown: WindowEventMap["keydown"];
+    blur: WindowEventMap["blur"];
     click: WindowEventMap["click"];
-    mouseover: WindowEventMap["mouseover"];
+    focus: WindowEventMap["focus"];
+    keydown: WindowEventMap["keydown"];
+    keyup: WindowEventMap["keyup"];
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
-    keyup: WindowEventMap["keyup"];
-    focus: WindowEventMap["focus"];
-    blur: WindowEventMap["blur"];
+    mouseover: WindowEventMap["mouseover"];
   },
   { default: Record<string, never> }
 > {}

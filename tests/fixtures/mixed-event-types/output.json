@@ -5,10 +5,8 @@
   "events": [
     {
       "type": "forwarded",
-      "name": "input",
-      "element": "input",
-      "description": "Input value changed (native forwarded event)",
-      "detail": "string"
+      "name": "change",
+      "element": "input"
     },
     {
       "type": "forwarded",
@@ -19,8 +17,10 @@
     },
     {
       "type": "forwarded",
-      "name": "change",
-      "element": "input"
+      "name": "input",
+      "element": "input",
+      "description": "Input value changed (native forwarded event)",
+      "detail": "string"
     },
     {
       "type": "dispatched",

@@ -3316,15 +3316,30 @@ export default class ComponentParser {
      * The internal representation uses element objects, but JSON output uses strings for compatibility
      * with older versions of sveld and external tools.
      */
-    const eventsArray = ComponentParser.mapToArray(this.events).map((event): SerializedComponentEvent => {
-      if (event.type === "forwarded") {
-        return {
-          ...event,
-          element: event.element.name,
-        };
-      }
-      return event;
-    });
+    const eventsArray = ComponentParser.mapToArray(this.events)
+      .map((event): SerializedComponentEvent => {
+        if (event.type === "forwarded") {
+          return {
+            ...event,
+            element: event.element.name,
+          };
+        }
+        return event;
+      })
+      .sort((a, b) => {
+        const nameCompare = a.name.localeCompare(b.name);
+        if (nameCompare !== 0) return nameCompare;
+
+        const typeCompare = a.type.localeCompare(b.type);
+        if (typeCompare !== 0) return typeCompare;
+
+        if (a.type === "forwarded" && b.type === "forwarded") {
+          const elementCompare = a.element.localeCompare(b.element);
+          if (elementCompare !== 0) return elementCompare;
+        }
+
+        return (a.detail ?? "").localeCompare(b.detail ?? "");
+      });
     const typedefsArray = ComponentParser.mapToArray(this.typedefs);
     const contextsArray = ComponentParser.mapToArray(this.contexts);
 

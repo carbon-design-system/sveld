@@ -35,10 +35,10 @@ export type ToolbarSearchProps = {
 export default class ToolbarSearch extends SvelteComponentTyped<
   ToolbarSearchProps,
   {
-    change: WindowEventMap["change"];
-    input: WindowEventMap["input"];
-    focus: WindowEventMap["focus"];
     blur: WindowEventMap["blur"];
+    change: WindowEventMap["change"];
+    focus: WindowEventMap["focus"];
+    input: WindowEventMap["input"];
   },
   Record<string, never>
 > {}

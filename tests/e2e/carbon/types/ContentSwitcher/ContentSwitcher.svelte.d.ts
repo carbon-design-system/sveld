@@ -42,9 +42,9 @@ export default class ContentSwitcher extends SvelteComponentTyped<
     /** Fired when the `selectedIndex` is updated. */
     change: CustomEvent<number>;
     click: WindowEventMap["click"];
-    mouseover: WindowEventMap["mouseover"];
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
+    mouseover: WindowEventMap["mouseover"];
   },
   { default: Record<string, never> }
 > {}

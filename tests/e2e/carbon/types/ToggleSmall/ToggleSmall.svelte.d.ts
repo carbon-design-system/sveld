@@ -54,14 +54,14 @@ export type ToggleSmallProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class ToggleSmall extends SvelteComponentTyped<
   ToggleSmallProps,
   {
+    blur: WindowEventMap["blur"];
+    change: WindowEventMap["change"];
     click: WindowEventMap["click"];
-    mouseover: WindowEventMap["mouseover"];
+    focus: WindowEventMap["focus"];
+    keyup: WindowEventMap["keyup"];
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
-    change: WindowEventMap["change"];
-    keyup: WindowEventMap["keyup"];
-    focus: WindowEventMap["focus"];
-    blur: WindowEventMap["blur"];
+    mouseover: WindowEventMap["mouseover"];
   },
   Record<string, never>
 > {}

@@ -25,9 +25,9 @@ export default class DatePickerSkeleton extends SvelteComponentTyped<
   DatePickerSkeletonProps,
   {
     click: WindowEventMap["click"];
-    mouseover: WindowEventMap["mouseover"];
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
+    mouseover: WindowEventMap["mouseover"];
   },
   Record<string, never>
 > {}

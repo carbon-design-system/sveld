@@ -66,10 +66,10 @@ export default class ProgressStep extends SvelteComponentTyped<
   ProgressStepProps,
   {
     click: WindowEventMap["click"];
-    mouseover: WindowEventMap["mouseover"];
+    keydown: WindowEventMap["keydown"];
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
-    keydown: WindowEventMap["keydown"];
+    mouseover: WindowEventMap["mouseover"];
   },
   { default: { props: { class: "bx--progress-label" } } }
 > {}
