@@ -10,7 +10,7 @@
     TabContent,
     Tabs,
   } from "carbon-components-svelte";
-  import { onMount, type SvelteComponent, tick } from "svelte";
+  import { type Component, onMount, tick } from "svelte";
   import ComponentParser from "../../src/ComponentParser";
   import CodeEditor from "./CodeEditor.svelte";
   import data from "./data";
@@ -25,9 +25,9 @@
   };
 
   let selectedId = data[0].moduleName;
-  let tabTypeScript: typeof SvelteComponent<TabProps>;
-  let tabJson: typeof SvelteComponent<TabProps>;
-  let tabMarkdown: typeof SvelteComponent<TabProps>;
+  let tabTypeScript: Component<TabProps> | undefined;
+  let tabJson: Component<TabProps> | undefined;
+  let tabMarkdown: Component<TabProps> | undefined;
 
   onMount(() => {
     import("./TabTypeScript.svelte").then((importee) => {

@@ -1,6 +1,6 @@
 <script
   lang="ts"
-  context="module"
+  module
 >
   import json from "svelte-highlight/languages/json";
   import markdown from "svelte-highlight/languages/markdown";

@@ -1,6 +1,6 @@
 <script
   lang="ts"
-  context="module"
+  module
 >
   import CodeMirror from "codemirror";
   import "codemirror/mode/htmlmixed/htmlmixed";
