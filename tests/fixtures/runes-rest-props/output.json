@@ -1,0 +1,23 @@
+{
+  "props": [
+    {
+      "name": "variant",
+      "kind": "let",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "rest_props": {
+    "type": "Element",
+    "name": "button"
+  },
+  "contexts": []
+}

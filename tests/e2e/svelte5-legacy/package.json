@@ -1,0 +1,16 @@
+{
+  "name": "svelte5-legacy",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "svelte": "./src/index.js",
+  "types": "./types/index.d.ts",
+  "scripts": {
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^7.0.0",
+    "svelte": "^5.55.0",
+    "vite": "^8.0.3"
+  }
+}

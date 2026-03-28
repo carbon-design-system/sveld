@@ -1,0 +1,21 @@
+{
+  "props": [
+    {
+      "name": "pageSize",
+      "kind": "let",
+      "type": "number",
+      "value": "10",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}

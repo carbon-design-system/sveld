@@ -1,0 +1,41 @@
+{
+  "total": 1,
+  "components": [
+    {
+      "moduleName": "LegacyButton",
+      "filePath": "src/LegacyButton.svelte",
+      "props": [
+        {
+          "name": "label",
+          "kind": "let",
+          "description": "Label text",
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": true,
+          "constant": false,
+          "reactive": false
+        },
+        {
+          "name": "disabled",
+          "kind": "let",
+          "description": "Whether the button is disabled",
+          "type": "boolean",
+          "value": "false",
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": false,
+          "constant": false,
+          "reactive": false
+        }
+      ],
+      "moduleExports": [],
+      "slots": [
+        { "name": null, "default": true, "slot_props": "Record<string, never>" }
+      ],
+      "events": [],
+      "typedefs": [],
+      "generics": null,
+      "contexts": []
+    }
+  ]
+}

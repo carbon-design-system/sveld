@@ -257,19 +257,20 @@ function genPropDef(
    * The default slot is accessed via the `children` prop in Svelte 5's snippet API.
    */
   const default_slot = (def.slots || []).find((slot) => slot.default || slot.name === null);
-  const children_snippet_prop = default_slot
-    ? (() => {
-        const description = default_slot.description
-          ? `${formatSingleLineComment(default_slot.description)}\n      `
-          : "";
-        const hasSlotProps = default_slot.slot_props && default_slot.slot_props !== "Record<string, never>";
-        const snippetType = hasSlotProps
-          ? `(this: void, ...args: [${default_slot.slot_props}]) => void`
-          : "(this: void) => void";
-        return `
+  const children_snippet_prop =
+    default_slot && !existingPropNames.has("children")
+      ? (() => {
+          const description = default_slot.description
+            ? `${formatSingleLineComment(default_slot.description)}\n      `
+            : "";
+          const hasSlotProps = default_slot.slot_props && default_slot.slot_props !== "Record<string, never>";
+          const snippetType = hasSlotProps
+            ? `(this: void, ...args: [${default_slot.slot_props}]) => void`
+            : "(this: void) => void";
+          return `
       ${description}children?: ${snippetType};`;
-      })()
-    : "";
+        })()
+      : "";
 
   const snippet_props = [...named_snippet_props, children_snippet_prop].filter(Boolean);
 
