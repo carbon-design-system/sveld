@@ -217,6 +217,34 @@ exports[`fixtures (JSON) "context-empty/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "runes-dispatched-events/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "value",
+      "kind": "let",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "change"
+    }
+  ],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "module-reexport/input.svelte" 1`] = `
 "{
   "props": [
@@ -522,6 +550,31 @@ exports[`fixtures (JSON) "typedef-jsdoc-properties/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "legacy-bind-component-selected/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "pageSize",
+      "kind": "let",
+      "type": "number",
+      "value": "10",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "mixed-event-types/input.svelte" 1`] = `
 "{
   "props": [],
@@ -552,6 +605,30 @@ exports[`fixtures (JSON) "mixed-event-types/input.svelte" 1`] = `
       "name": "submit"
     }
   ],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "legacy-bind-component-ref-forward/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "listRef",
+      "kind": "let",
+      "value": "null",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
   "typedefs": [],
   "generics": null,
   "contexts": []
@@ -681,6 +758,31 @@ exports[`fixtures (JSON) "jsdoc-type-params/input.svelte" 1`] = `
       "ts": "type TreeNodeId = string"
     }
   ],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "reactive-shadowed-local-reassignment/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "disabled",
+      "kind": "let",
+      "type": "boolean",
+      "value": "false",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
   "generics": null,
   "contexts": []
 }
@@ -925,6 +1027,31 @@ exports[`fixtures (JSON) "binary-expression-numeric/input.svelte" 1`] = `
       "kind": "let",
       "type": "number",
       "value": "1 | 2 | 4",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "reactive-shadowed-callback-param/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "disabled",
+      "kind": "let",
+      "type": "boolean",
+      "value": "false",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -1200,6 +1327,31 @@ exports[`fixtures (JSON) "callback/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "runes-bindable/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "value",
+      "kind": "let",
+      "type": "number",
+      "value": "0",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "events-stable-order/input.svelte" 1`] = `
 "{
   "props": [],
@@ -1414,6 +1566,40 @@ exports[`fixtures (JSON) "rest-props-description-multiline/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "runes-props-basic/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "title",
+      "kind": "let",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "count",
+      "kind": "let",
+      "type": "number",
+      "value": "0",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "unary-expression-defaults/input.svelte" 1`] = `
 "{
   "props": [
@@ -1568,6 +1754,44 @@ exports[`fixtures (JSON) "slot-prop-dotted-access/input.svelte" 1`] = `
       "name": null,
       "default": true,
       "slot_props": "{ a: string, b: string, c: number, d: string, e: \\"pending\\" | \\"done\\" | \\"error\\", f: { deep: number }, g: Array<string>, h: any, i: number }"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "runes-snippets-named/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "item",
+      "kind": "let",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "header",
+      "kind": "let",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "header",
+      "default": false,
+      "slot_props": "{ title: any }"
     }
   ],
   "events": [],
@@ -2361,6 +2585,56 @@ exports[`fixtures (JSON) "context-imported-type/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "reactive-shadowed-each-binding/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "value",
+      "kind": "let",
+      "type": "string",
+      "value": "\\"\\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "legacy-bind-component-value/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "value",
+      "kind": "let",
+      "type": "string",
+      "value": "\\"\\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "callback-typedef/input.svelte" 1`] = `
 "{
   "props": [
@@ -2401,6 +2675,31 @@ exports[`fixtures (JSON) "callback-typedef/input.svelte" 1`] = `
       "ts": "type SortFn = (a: any, b: any, direction: SortDirection) => number"
     }
   ],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "legacy-pass-through-nonreactive/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "disabled",
+      "kind": "let",
+      "type": "boolean",
+      "value": "false",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
   "generics": null,
   "contexts": []
 }
@@ -2707,6 +3006,29 @@ exports[`fixtures (JSON) "infer-with-types/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "runes-callback-props/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "onclick",
+      "kind": "let",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "arrow-function-with-jsdoc/input.svelte" 1`] = `
 "{
   "props": [
@@ -2934,6 +3256,29 @@ exports[`fixtures (JSON) "forwarded-native-with-detail/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "runes-props-renamed/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "class",
+      "kind": "let",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "multiple-typedef-same-property/input.svelte" 1`] = `
 "{
   "props": [
@@ -2975,6 +3320,44 @@ exports[`fixtures (JSON) "multiple-typedef-same-property/input.svelte" 1`] = `
       "ts": "type ThemeConfig = {\\n  /** Theme identifier */\\n  id: string;\\n  /** Theme display name */\\n  name: string;\\n}"
     }
   ],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "runes-snippets-default/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "item",
+      "kind": "let",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "children",
+      "kind": "let",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{ item: any }"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
   "generics": null,
   "contexts": []
 }
@@ -3608,6 +3991,31 @@ exports[`fixtures (JSON) "forwarded-custom-events/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "reactive-direct-mutation-still-true/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "disabled",
+      "kind": "let",
+      "type": "boolean",
+      "value": "false",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "typedef/input.svelte" 1`] = `
 "{
   "props": [
@@ -3711,6 +4119,33 @@ exports[`fixtures (JSON) "component-comment-multi/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "componentComment": "\\n@example\\n<div>\\n  Component comment\\n</div>",
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "runes-rest-props/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "variant",
+      "kind": "let",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "rest_props": {
+    "type": "Element",
+    "name": "button"
+  },
   "contexts": []
 }
 "
@@ -3826,6 +4261,30 @@ exports[`fixtures (JSON) "svelte-element-hardcoded-div/input.svelte" 1`] = `
     "name": "svelte:element",
     "thisValue": "div"
   },
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "legacy-bind-component-ref/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "ref",
+      "kind": "let",
+      "value": "null",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
   "contexts": []
 }
 "
@@ -4191,6 +4650,31 @@ exports[`fixtures (JSON) "typed-props/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "reactive-shadowed-local-assignment/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "disabled",
+      "kind": "let",
+      "type": "boolean",
+      "value": "false",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "generics/input.svelte" 1`] = `
 "{
   "props": [
@@ -4430,6 +4914,24 @@ export default class ContextEmpty extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "runes-dispatched-events/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type RunesDispatchedEventsProps = {
+  /**
+   * @default undefined
+   */
+  value: undefined;
+};
+
+export default class RunesDispatchedEvents extends SvelteComponentTyped<
+  RunesDispatchedEventsProps,
+  { change: CustomEvent<any> },
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "module-reexport/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -4631,6 +5133,24 @@ export default class TypedefJsdocProperties extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "legacy-bind-component-selected/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type LegacyBindComponentSelectedProps = {
+  /**
+   * @default 10
+   */
+  pageSize?: number;
+};
+
+export default class LegacyBindComponentSelected extends SvelteComponentTyped<
+  LegacyBindComponentSelectedProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "mixed-event-types/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -4646,6 +5166,24 @@ export default class MixedEventTypes extends SvelteComponentTyped<
     input: CustomEvent<string>;
     submit: CustomEvent<any>;
   },
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "legacy-bind-component-ref-forward/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type LegacyBindComponentRefForwardProps = {
+  /**
+   * @default null
+   */
+  listRef?: undefined;
+};
+
+export default class LegacyBindComponentRefForward extends SvelteComponentTyped<
+  LegacyBindComponentRefForwardProps,
+  Record<string, any>,
   Record<string, never>
 > {}
 "
@@ -4732,6 +5270,24 @@ export default class JsdocTypeParams extends SvelteComponentTyped<
    */
   showNode: (id: TreeNodeId, options?: { expand?: boolean; select?: boolean; focus?: boolean }) => void;
 }
+"
+`;
+
+exports[`fixtures (TypeScript) "reactive-shadowed-local-reassignment/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type ReactiveShadowedLocalReassignmentProps = {
+  /**
+   * @default false
+   */
+  disabled?: boolean;
+};
+
+export default class ReactiveShadowedLocalReassignment extends SvelteComponentTyped<
+  ReactiveShadowedLocalReassignmentProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
 "
 `;
 
@@ -4859,6 +5415,24 @@ export type BinaryExpressionNumericProps = {
 
 export default class BinaryExpressionNumeric extends SvelteComponentTyped<
   BinaryExpressionNumericProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "reactive-shadowed-callback-param/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type ReactiveShadowedCallbackParamProps = {
+  /**
+   * @default false
+   */
+  disabled?: boolean;
+};
+
+export default class ReactiveShadowedCallbackParam extends SvelteComponentTyped<
+  ReactiveShadowedCallbackParamProps,
   Record<string, any>,
   Record<string, never>
 > {}
@@ -5007,6 +5581,24 @@ export default class Callback extends SvelteComponentTyped<CallbackProps, Record
 "
 `;
 
+exports[`fixtures (TypeScript) "runes-bindable/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type RunesBindableProps = {
+  /**
+   * @default 0
+   */
+  value?: number;
+};
+
+export default class RunesBindable extends SvelteComponentTyped<
+  RunesBindableProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "events-stable-order/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -5120,6 +5712,29 @@ export type RestPropsDescriptionMultilineProps = Omit<$RestProps, keyof $Props> 
 
 export default class RestPropsDescriptionMultiline extends SvelteComponentTyped<
   RestPropsDescriptionMultilineProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "runes-props-basic/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type RunesPropsBasicProps = {
+  /**
+   * @default undefined
+   */
+  title: undefined;
+
+  /**
+   * @default 0
+   */
+  count?: number;
+};
+
+export default class RunesPropsBasic extends SvelteComponentTyped<
+  RunesPropsBasicProps,
   Record<string, any>,
   Record<string, never>
 > {}
@@ -5253,6 +5868,29 @@ export default class SlotPropDottedAccess extends SvelteComponentTyped<
       i: number;
     };
   }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "runes-snippets-named/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type RunesSnippetsNamedProps = {
+  /**
+   * @default undefined
+   */
+  item: undefined;
+
+  /**
+   * @default undefined
+   */
+  header: undefined;
+};
+
+export default class RunesSnippetsNamed extends SvelteComponentTyped<
+  RunesSnippetsNamedProps,
+  Record<string, any>,
+  { header: { title: any } }
 > {}
 "
 `;
@@ -5735,6 +6373,42 @@ export default class ContextImportedType extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "reactive-shadowed-each-binding/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type ReactiveShadowedEachBindingProps = {
+  /**
+   * @default ""
+   */
+  value?: string;
+};
+
+export default class ReactiveShadowedEachBinding extends SvelteComponentTyped<
+  ReactiveShadowedEachBindingProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "legacy-bind-component-value/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type LegacyBindComponentValueProps = {
+  /**
+   * @default ""
+   */
+  value?: string;
+};
+
+export default class LegacyBindComponentValue extends SvelteComponentTyped<
+  LegacyBindComponentValueProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "callback-typedef/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -5753,6 +6427,24 @@ export type CallbackTypedefProps = {
 
 export default class CallbackTypedef extends SvelteComponentTyped<
   CallbackTypedefProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "legacy-pass-through-nonreactive/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type LegacyPassThroughNonreactiveProps = {
+  /**
+   * @default false
+   */
+  disabled?: boolean;
+};
+
+export default class LegacyPassThroughNonreactive extends SvelteComponentTyped<
+  LegacyPassThroughNonreactiveProps,
   Record<string, any>,
   Record<string, never>
 > {}
@@ -5915,6 +6607,24 @@ export default class InferWithTypes extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "runes-callback-props/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type RunesCallbackPropsProps = {
+  /**
+   * @default undefined
+   */
+  onclick: undefined;
+};
+
+export default class RunesCallbackProps extends SvelteComponentTyped<
+  RunesCallbackPropsProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "arrow-function-with-jsdoc/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -6037,6 +6747,24 @@ export default class ForwardedNativeWithDetail extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "runes-props-renamed/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type RunesPropsRenamedProps = {
+  /**
+   * @default undefined
+   */
+  class: undefined;
+};
+
+export default class RunesPropsRenamed extends SvelteComponentTyped<
+  RunesPropsRenamedProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "multiple-typedef-same-property/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -6070,6 +6798,29 @@ export default class MultipleTypedefSameProperty extends SvelteComponentTyped<
   MultipleTypedefSamePropertyProps,
   Record<string, any>,
   Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "runes-snippets-default/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type RunesSnippetsDefaultProps = {
+  /**
+   * @default undefined
+   */
+  item: undefined;
+
+  /**
+   * @default undefined
+   */
+  children: undefined;
+};
+
+export default class RunesSnippetsDefault extends SvelteComponentTyped<
+  RunesSnippetsDefaultProps,
+  Record<string, any>,
+  { default: { item: any } }
 > {}
 "
 `;
@@ -6445,6 +7196,24 @@ export default class ForwardedCustomEvents extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "reactive-direct-mutation-still-true/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type ReactiveDirectMutationStillTrueProps = {
+  /**
+   * @default false
+   */
+  disabled?: boolean;
+};
+
+export default class ReactiveDirectMutationStillTrue extends SvelteComponentTyped<
+  ReactiveDirectMutationStillTrueProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "typedef/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -6533,6 +7302,31 @@ export default class ComponentCommentMulti extends SvelteComponentTyped<
   ComponentCommentMultiProps,
   Record<string, any>,
   { default: Record<string, never> }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "runes-rest-props/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+type $RestProps = SvelteHTMLElements["button"];
+
+type $Props = {
+  /**
+   * @default undefined
+   */
+  variant: undefined;
+
+  [key: \`data-\${string}\`]: unknown;
+};
+
+export type RunesRestPropsProps = Omit<$RestProps, keyof $Props> & $Props;
+
+export default class RunesRestProps extends SvelteComponentTyped<
+  RunesRestPropsProps,
+  Record<string, any>,
+  Record<string, never>
 > {}
 "
 `;
@@ -6628,6 +7422,24 @@ export type SvelteElementHardcodedDivProps = Omit<$RestProps, keyof $Props> & $P
 
 export default class SvelteElementHardcodedDiv extends SvelteComponentTyped<
   SvelteElementHardcodedDivProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "legacy-bind-component-ref/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type LegacyBindComponentRefProps = {
+  /**
+   * @default null
+   */
+  ref?: undefined;
+};
+
+export default class LegacyBindComponentRef extends SvelteComponentTyped<
+  LegacyBindComponentRefProps,
   Record<string, any>,
   Record<string, never>
 > {}
@@ -6903,6 +7715,24 @@ export type TypedPropsProps = {
 
 export default class TypedProps extends SvelteComponentTyped<
   TypedPropsProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "reactive-shadowed-local-assignment/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type ReactiveShadowedLocalAssignmentProps = {
+  /**
+   * @default false
+   */
+  disabled?: boolean;
+};
+
+export default class ReactiveShadowedLocalAssignment extends SvelteComponentTyped<
+  ReactiveShadowedLocalAssignmentProps,
   Record<string, any>,
   Record<string, never>
 > {}

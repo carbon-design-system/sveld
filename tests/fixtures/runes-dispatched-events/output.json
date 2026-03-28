@@ -1,0 +1,24 @@
+{
+  "props": [
+    {
+      "name": "value",
+      "kind": "let",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "change"
+    }
+  ],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}

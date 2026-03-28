@@ -2,24 +2,28 @@ import { parse as parseComment } from "comment-parser";
 import type {
   ArrayExpression,
   ArrowFunctionExpression,
+  AssignmentExpression,
   BinaryExpression,
   CallExpression,
   Expression,
+  FunctionDeclaration,
   FunctionExpression,
   Identifier,
   Literal,
   MemberExpression,
   NewExpression,
   ObjectExpression,
+  Pattern,
   Property,
   TemplateLiteral,
   UnaryExpression,
+  UpdateExpression,
   VariableDeclaration,
   VariableDeclarator,
 } from "estree";
 import type { Node } from "estree-walker";
-import { compile, parse, walk } from "svelte/compiler";
-import type { Ast, TemplateNode, Var } from "svelte/types/compiler/interfaces";
+import { walk } from "estree-walker";
+import { compile, parse } from "svelte/compiler";
 import { getElementByTag } from "./element-tag-map";
 
 /**
@@ -55,6 +59,9 @@ const DESCRIPTION_DASH_PREFIX_REGEX = /^-\s*/;
 
 /** Matches a single word character (letter, digit, or underscore). Used for dotted prop access validation. */
 const WORD_CHAR_REGEX = /\w/;
+
+/** True when a slice between an AST comment end and a node start is only whitespace. */
+const ONLY_WHITESPACE_REGEX = /^\s*$/;
 
 /**
  * Extracts description text after the last dash from JSDoc comments.
@@ -113,10 +120,29 @@ function cleanDescription(description: string | undefined): string | undefined {
   return cleaned === "" ? "" : cleaned;
 }
 
-interface CompiledSvelteCode {
-  vars: Var[];
-  ast: Ast;
+/**
+ * Maps ESTree `VariableDeclaration.kind` to `ComponentProp.kind`.
+ * `var` becomes `let` for Svelte-oriented output; `using` / `await using`
+ * map to `const` (single binding, not a valid Svelte prop keyword).
+ */
+function variableDeclarationKindToComponentPropKind(kind: VariableDeclaration["kind"]): "let" | "const" {
+  if (kind === "var") return "let";
+  if (kind === "using" || kind === "await using") return "const";
+  return kind;
 }
+
+interface LegacyAstRoot {
+  module?: Node;
+  html?: Node;
+  instance?: Node;
+}
+
+type TemplateNode = { start?: number; end?: number };
+
+type SyntaxMode = "legacy" | "runes";
+type ScopeBindingKind = "prop" | "local";
+type ScopeBinding = { kind: ScopeBindingKind; publicPropName?: string };
+type LexicalScope = Map<string, ScopeBinding>;
 
 /**
  * Diagnostic information for component parsing.
@@ -542,14 +568,17 @@ export default class ComponentParser {
   /** Parser configuration options (e.g., verbose logging) */
   private options?: ComponentParserOptions;
 
+  /** Whether the component uses legacy or runes syntax according to compiler metadata */
+  private syntaxMode: SyntaxMode = "legacy";
+
   /** Raw source code of the Svelte component being parsed */
   private source?: string;
 
   /** Compiled Svelte code containing extracted variables and AST */
-  private compiled?: CompiledSvelteCode;
+  private compiled?: ReturnType<typeof compile>;
 
   /** Parsed abstract syntax tree from the Svelte compiler */
-  private parsed?: Ast;
+  private parsed?: LegacyAstRoot;
 
   /** Rest props configuration (e.g., `$$restProps`) if present in component */
   private rest_props?: RestProps;
@@ -599,6 +628,24 @@ export default class ComponentParser {
   /** Cache for variable type and description information to avoid redundant lookups */
   private variableInfoCache: Map<string, { type: string; description?: string }> = new Map();
 
+  /** Maps local binding names back to their public prop names */
+  private readonly propLocalToPublicName: Map<string, string> = new Map();
+
+  /** Tracks `$props()` bindings that are used as spread/rest props */
+  private readonly restPropLocals: Set<string> = new Set();
+
+  /** Tracks prop locals that are used as snippet/render props */
+  private readonly snippetPropLocals: Set<string> = new Set();
+
+  /** Component-level lexical scope shared by instance script and template */
+  private readonly componentScope: LexicalScope = new Map();
+
+  /** Precomputed lexical scopes for nested AST nodes */
+  private scopeDeclarations: WeakMap<object, LexicalScope> = new WeakMap();
+
+  /** Active lexical scopes while walking the component AST */
+  private readonly activeScopes: LexicalScope[] = [];
+
   /** Cached array of source code lines split by newline for efficient line-based operations */
   private sourceLinesCache?: string[];
 
@@ -612,6 +659,465 @@ export default class ComponentParser {
 
   private static assignValue(value?: "" | string) {
     return value === undefined || value === "" ? undefined : value;
+  }
+
+  private resolvePublicPropName(name: string) {
+    return this.propLocalToPublicName.get(name) ?? name;
+  }
+
+  private trackPropLocalName(propName: string, localName = propName) {
+    this.propLocalToPublicName.set(localName, propName);
+  }
+
+  private getPropByLocalOrPublic(name: string) {
+    return this.props.get(this.resolvePublicPropName(name));
+  }
+
+  private getPropTypeByLocalOrPublic(name: string) {
+    return this.getPropByLocalOrPublic(name)?.type;
+  }
+
+  private declareScopeBinding(scope: LexicalScope, name: string, binding: ScopeBinding) {
+    if (ComponentParser.assignValue(name) === undefined || scope.has(name)) return;
+    scope.set(name, binding);
+  }
+
+  private resolveIdentifierToReactiveProp(name: string) {
+    for (let i = this.activeScopes.length - 1; i >= 0; i -= 1) {
+      const binding = this.activeScopes[i]?.get(name);
+      if (!binding) continue;
+      return binding.kind === "prop" ? binding.publicPropName : undefined;
+    }
+
+    return undefined;
+  }
+
+  private collectPatternIdentifiers(target: Pattern | Expression | null | undefined, names: Set<string> = new Set()) {
+    if (!target || typeof target !== "object" || !("type" in target)) return names;
+
+    switch (target.type) {
+      case "Identifier":
+        names.add(target.name);
+        break;
+      case "AssignmentPattern":
+        this.collectPatternIdentifiers(target.left, names);
+        break;
+      case "ArrayPattern":
+        for (const element of target.elements) {
+          this.collectPatternIdentifiers(element ?? undefined, names);
+        }
+        break;
+      case "ObjectPattern":
+        for (const property of target.properties) {
+          if (property.type === "Property") {
+            this.collectPatternIdentifiers(property.value as Pattern, names);
+          } else if (property.type === "RestElement") {
+            this.collectPatternIdentifiers(property.argument, names);
+          }
+        }
+        break;
+      case "RestElement":
+        this.collectPatternIdentifiers(target.argument, names);
+        break;
+    }
+
+    return names;
+  }
+
+  private markReactivePropsFromMutationTarget(target: Pattern | Expression | null | undefined) {
+    const identifiers = this.collectPatternIdentifiers(target);
+
+    if (!identifiers) return;
+
+    for (const identifier of identifiers) {
+      const publicPropName = this.resolveIdentifierToReactiveProp(identifier);
+      if (publicPropName) {
+        this.reactive_vars.add(publicPropName);
+      }
+    }
+  }
+
+  private isScopeOwner(node: unknown) {
+    if (!node || typeof node !== "object" || !("type" in node)) return false;
+
+    switch (String(node.type)) {
+      case "BlockStatement":
+      case "FunctionDeclaration":
+      case "FunctionExpression":
+      case "ArrowFunctionExpression":
+      case "CatchClause":
+      case "EachBlock":
+      case "ThenBlock":
+      case "CatchBlock":
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  private isFunctionScopeOwner(node: unknown) {
+    if (!node || typeof node !== "object" || !("type" in node)) return false;
+    const type = String(node.type);
+    return type === "FunctionDeclaration" || type === "FunctionExpression" || type === "ArrowFunctionExpression";
+  }
+
+  private getOrCreateScope(node: object) {
+    let scope = this.scopeDeclarations.get(node);
+    if (!scope) {
+      scope = new Map();
+      this.scopeDeclarations.set(node, scope);
+    }
+    return scope;
+  }
+
+  private declareVariableDeclaration(
+    declaration: unknown,
+    lexicalScope: LexicalScope,
+    varScope: LexicalScope,
+    options?: { allowRunesProps?: boolean; forceProp?: boolean },
+  ) {
+    if (
+      !declaration ||
+      typeof declaration !== "object" ||
+      !("type" in declaration) ||
+      declaration.type !== "VariableDeclaration"
+    ) {
+      return;
+    }
+
+    const allowRunesProps = options?.allowRunesProps ?? false;
+    const forceProp = options?.forceProp ?? false;
+    const variableDeclaration = declaration as VariableDeclaration;
+
+    for (const declarator of variableDeclaration.declarations) {
+      if (allowRunesProps && this.isCallExpressionNamed(declarator.init, "$props")) {
+        for (const binding of this.extractRunesScopeBindings(variableDeclaration, declarator)) {
+          this.declareScopeBinding(
+            binding.kind === "prop" ? lexicalScope : varScope,
+            binding.name,
+            binding.kind === "prop" ? { kind: "prop", publicPropName: binding.publicPropName } : { kind: "local" },
+          );
+        }
+        continue;
+      }
+
+      const targetScope = variableDeclaration.kind === "var" ? varScope : lexicalScope;
+      const bindingKind: ScopeBindingKind = forceProp ? "prop" : "local";
+
+      for (const identifier of this.collectPatternIdentifiers(declarator.id)) {
+        this.declareScopeBinding(
+          targetScope,
+          identifier,
+          bindingKind === "prop" ? { kind: "prop", publicPropName: identifier } : { kind: "local" },
+        );
+      }
+    }
+  }
+
+  private declareFunctionLikeScopeBindings(
+    node: FunctionExpression | ArrowFunctionExpression | FunctionDeclaration,
+    scope: LexicalScope,
+  ) {
+    if (
+      "id" in node &&
+      node.id &&
+      typeof node.id === "object" &&
+      "name" in node.id &&
+      typeof node.id.name === "string"
+    ) {
+      this.declareScopeBinding(scope, node.id.name, { kind: "local" });
+    }
+
+    for (const param of node.params) {
+      for (const identifier of this.collectPatternIdentifiers(param)) {
+        this.declareScopeBinding(scope, identifier, { kind: "local" });
+      }
+    }
+  }
+
+  private collectDirectBlockDeclarations(body: unknown, lexicalScope: LexicalScope, varScope: LexicalScope) {
+    if (!Array.isArray(body)) return;
+
+    for (const statement of body) {
+      if (!statement || typeof statement !== "object" || !("type" in statement)) continue;
+
+      switch (statement.type) {
+        case "VariableDeclaration":
+          this.declareVariableDeclaration(statement, lexicalScope, varScope);
+          break;
+        case "FunctionDeclaration":
+          if (statement.id?.name) {
+            this.declareScopeBinding(lexicalScope, statement.id.name, { kind: "local" });
+          }
+          break;
+        case "ClassDeclaration":
+          if (statement.id?.name) {
+            this.declareScopeBinding(lexicalScope, statement.id.name, { kind: "local" });
+          }
+          break;
+      }
+    }
+  }
+
+  private extractRunesScopeBindings(_node: VariableDeclaration, declarator: VariableDeclarator) {
+    const bindings: Array<{ kind: ScopeBindingKind; name: string; publicPropName?: string }> = [];
+
+    if (declarator.id.type === "Identifier") {
+      bindings.push({ kind: "local", name: declarator.id.name });
+      return bindings;
+    }
+
+    if (declarator.id.type !== "ObjectPattern") {
+      return bindings;
+    }
+
+    for (const property of declarator.id.properties) {
+      if (property.type === "RestElement") {
+        if (property.argument.type === "Identifier") {
+          bindings.push({ kind: "local", name: property.argument.name });
+        }
+        continue;
+      }
+
+      if (property.computed) continue;
+
+      const propName = this.getPropertyName(property.key);
+      if (!propName) continue;
+
+      let localName: string | undefined;
+
+      if (property.value.type === "Identifier") {
+        localName = property.value.name;
+      } else if (property.value.type === "AssignmentPattern" && property.value.left.type === "Identifier") {
+        localName = property.value.left.name;
+      }
+
+      if (!localName) continue;
+
+      bindings.push({ kind: "prop", name: localName, publicPropName: propName });
+    }
+
+    return bindings;
+  }
+
+  private collectComponentScopeDeclarations(instance: unknown) {
+    if (!instance || typeof instance !== "object") return;
+
+    const program =
+      "content" in instance &&
+      instance.content &&
+      typeof instance.content === "object" &&
+      "body" in instance.content &&
+      Array.isArray(instance.content.body)
+        ? instance.content
+        : "body" in instance && Array.isArray(instance.body)
+          ? instance
+          : undefined;
+
+    if (!program || !("body" in program) || !Array.isArray(program.body)) return;
+
+    for (const statement of program.body) {
+      if (!statement || typeof statement !== "object" || !("type" in statement)) continue;
+
+      switch (statement.type) {
+        case "ImportDeclaration":
+          for (const specifier of statement.specifiers ?? []) {
+            if (specifier.local?.name) {
+              this.declareScopeBinding(this.componentScope, specifier.local.name, { kind: "local" });
+            }
+          }
+          break;
+        case "VariableDeclaration":
+          this.declareVariableDeclaration(statement, this.componentScope, this.componentScope, {
+            allowRunesProps: true,
+          });
+          break;
+        case "FunctionDeclaration":
+          if (statement.id?.name) {
+            this.declareScopeBinding(this.componentScope, statement.id.name, { kind: "local" });
+          }
+          break;
+        case "ClassDeclaration":
+          if (statement.id?.name) {
+            this.declareScopeBinding(this.componentScope, statement.id.name, { kind: "local" });
+          }
+          break;
+        case "ExportNamedDeclaration":
+          if (
+            !statement.declaration ||
+            typeof statement.declaration !== "object" ||
+            !("type" in statement.declaration)
+          ) {
+            break;
+          }
+
+          if (statement.declaration.type === "VariableDeclaration") {
+            this.declareVariableDeclaration(statement.declaration, this.componentScope, this.componentScope, {
+              forceProp: true,
+            });
+          } else if (statement.declaration.type === "FunctionDeclaration" && statement.declaration.id?.name) {
+            this.declareScopeBinding(this.componentScope, statement.declaration.id.name, {
+              kind: "prop",
+              publicPropName: statement.declaration.id.name,
+            });
+          }
+          break;
+      }
+    }
+  }
+
+  private collectNestedScopeDeclarations(componentRoot: Node) {
+    const varScopeStack: LexicalScope[] = [this.componentScope];
+
+    walk(componentRoot, {
+      enter: (node) => {
+        if (!this.isScopeOwner(node)) return;
+
+        const scope = this.getOrCreateScope(node as unknown as object);
+        const currentVarScope = varScopeStack[varScopeStack.length - 1] ?? this.componentScope;
+        const nodeType = String(node.type);
+
+        switch (nodeType) {
+          case "FunctionDeclaration":
+          case "FunctionExpression":
+          case "ArrowFunctionExpression":
+            this.declareFunctionLikeScopeBindings(
+              node as FunctionExpression | ArrowFunctionExpression | FunctionDeclaration,
+              scope,
+            );
+            break;
+          case "BlockStatement":
+            this.collectDirectBlockDeclarations((node as { body?: unknown }).body, scope, currentVarScope);
+            break;
+          case "CatchClause":
+            if ("param" in node) {
+              for (const identifier of this.collectPatternIdentifiers((node as { param?: Pattern }).param)) {
+                this.declareScopeBinding(scope, identifier, { kind: "local" });
+              }
+            }
+            break;
+          case "EachBlock": {
+            const eachBlock = node as { context?: Pattern; index?: Identifier | string };
+            for (const identifier of this.collectPatternIdentifiers(eachBlock.context)) {
+              this.declareScopeBinding(scope, identifier, { kind: "local" });
+            }
+            if (typeof eachBlock.index === "string") {
+              this.declareScopeBinding(scope, eachBlock.index, { kind: "local" });
+            } else if (eachBlock.index && "name" in eachBlock.index) {
+              this.declareScopeBinding(scope, eachBlock.index.name, { kind: "local" });
+            }
+            break;
+          }
+          case "ThenBlock":
+            if ("value" in node) {
+              for (const identifier of this.collectPatternIdentifiers((node as { value?: Pattern }).value)) {
+                this.declareScopeBinding(scope, identifier, { kind: "local" });
+              }
+            }
+            break;
+          case "CatchBlock":
+            if ("error" in node) {
+              for (const identifier of this.collectPatternIdentifiers((node as { error?: Pattern }).error)) {
+                this.declareScopeBinding(scope, identifier, { kind: "local" });
+              }
+            }
+            break;
+        }
+
+        if (this.isFunctionScopeOwner(node)) {
+          varScopeStack.push(scope);
+        }
+      },
+      leave: (node) => {
+        if (this.isFunctionScopeOwner(node)) {
+          varScopeStack.pop();
+        }
+      },
+    });
+  }
+
+  private buildScopeDeclarations(componentRoot: Node) {
+    this.componentScope.clear();
+    this.scopeDeclarations = new WeakMap();
+    this.activeScopes.length = 0;
+
+    this.collectComponentScopeDeclarations(this.parsed?.instance);
+    this.collectNestedScopeDeclarations(componentRoot);
+  }
+
+  private createRestPropsFromParent(parent: unknown): RestProps {
+    if (!parent || typeof parent !== "object" || !("type" in parent)) return undefined;
+
+    const parentType = String(parent.type);
+    if (parentType !== "InlineComponent" && parentType !== "Element") return undefined;
+
+    const parentName = "name" in parent && typeof parent.name === "string" ? parent.name : undefined;
+    if (!parentName) return undefined;
+
+    const restProps: RestProps =
+      parentType === "InlineComponent"
+        ? {
+            type: "InlineComponent",
+            name: parentName,
+          }
+        : {
+            type: "Element",
+            name: parentName,
+          };
+
+    if (
+      parentType === "Element" &&
+      parentName === "svelte:element" &&
+      "tag" in parent &&
+      typeof parent.tag === "string"
+    ) {
+      (restProps as ComponentElement).thisValue = parent.tag;
+    }
+
+    return restProps;
+  }
+
+  private maybeSetRestProps(parent: unknown) {
+    if (this.rest_props !== undefined) return;
+
+    const restProps = this.createRestPropsFromParent(parent);
+    if (restProps) {
+      this.rest_props = restProps;
+    }
+  }
+
+  private isCallExpressionNamed(node: unknown, calleeName: string): node is CallExpression {
+    if (!node || typeof node !== "object" || !("type" in node) || node.type !== "CallExpression") {
+      return false;
+    }
+
+    const callExpr = node as CallExpression;
+    return (
+      !!callExpr.callee &&
+      typeof callExpr.callee === "object" &&
+      "name" in callExpr.callee &&
+      callExpr.callee.name === calleeName
+    );
+  }
+
+  private getPropertyName(node: Property["key"]): string | undefined {
+    if (!node || typeof node !== "object" || !("type" in node)) return undefined;
+
+    if (node.type === "Identifier") {
+      return node.name;
+    }
+
+    if (node.type === "Literal") {
+      return node.value == null ? undefined : String(node.value);
+    }
+
+    return undefined;
+  }
+
+  private logUnsupportedRunesPattern(message: string) {
+    if (this.options?.verbose && this.syntaxMode === "runes") {
+      console.warn(`Warning: ${message}`);
+    }
   }
 
   private static formatComment(comment: string) {
@@ -717,6 +1223,43 @@ export default class ComponentParser {
     if (!leadingComments || leadingComments.length === 0) return undefined;
     const comment = leadingComments[leadingComments.length - 1];
     return comment && typeof comment === "object" && "value" in comment ? (comment as { value: string }) : undefined;
+  }
+
+  private findAdjacentJSDocComment(
+    leadingComments: unknown[] | undefined,
+    nodeStart: number | undefined,
+  ): { value: string } | undefined {
+    if (!leadingComments || leadingComments.length === 0 || nodeStart === undefined || !this.source) return undefined;
+
+    for (let index = leadingComments.length - 1; index >= 0; index--) {
+      const comment = leadingComments[index];
+      if (!comment || typeof comment !== "object" || !("value" in comment) || !("end" in comment)) continue;
+      if (typeof comment.end !== "number") continue;
+
+      const between = this.source.slice(comment.end, nodeStart);
+      if (ONLY_WHITESPACE_REGEX.test(between)) {
+        return comment as { value: string };
+      }
+    }
+
+    return undefined;
+  }
+
+  private processNodeJSDoc(
+    node:
+      | {
+          leadingComments?: unknown[];
+          start?: number;
+        }
+      | null
+      | undefined,
+  ) {
+    if (!node?.leadingComments) return undefined;
+
+    const jsdoc_comment = this.findAdjacentJSDocComment(node.leadingComments, node.start);
+    if (!jsdoc_comment) return undefined;
+
+    return this.processJSDocComment([jsdoc_comment]);
   }
 
   /**
@@ -1069,16 +1612,195 @@ export default class ComponentParser {
   }
 
   /**
-   * Collects reactive variables from the compiled Svelte component.
-   *
-   * Reactive variables are those that are both reassigned and writable,
-   * indicating they can change and trigger reactivity in Svelte.
+   * Unwraps `$bindable(...)` calls so defaults are documented as their underlying values.
    */
-  private collectReactiveVars() {
-    const reactiveVars = this.compiled?.vars.filter(({ reassigned, writable }) => reassigned && writable) ?? [];
-    for (const { name } of reactiveVars) {
-      this.reactive_vars.add(name);
+  private unwrapBindableInitializer(init: unknown): { init?: unknown; bindable: boolean } {
+    if (this.isCallExpressionNamed(init, "$bindable")) {
+      return {
+        init: init.arguments[0],
+        bindable: true,
+      };
     }
+
+    return {
+      init,
+      bindable: false,
+    };
+  }
+
+  /**
+   * Extracts component props from top-level `$props()` declarations in runes components.
+   */
+  private parseRunesPropsDeclaration(node: VariableDeclaration) {
+    for (const declarator of node.declarations) {
+      if (!this.isCallExpressionNamed(declarator.init, "$props")) continue;
+
+      const jsdocInfo = this.processNodeJSDoc(node);
+
+      if (declarator.id.type === "Identifier") {
+        this.restPropLocals.add(declarator.id.name);
+        continue;
+      }
+
+      if (declarator.id.type !== "ObjectPattern") {
+        this.logUnsupportedRunesPattern("Skipping unsupported $props() declaration pattern.");
+        continue;
+      }
+
+      for (const property of declarator.id.properties) {
+        if (property.type === "RestElement") {
+          if (property.argument.type === "Identifier") {
+            this.restPropLocals.add(property.argument.name);
+          } else {
+            this.logUnsupportedRunesPattern("Skipping unsupported rest element in $props() destructuring.");
+          }
+          continue;
+        }
+
+        if (property.computed) {
+          this.logUnsupportedRunesPattern("Skipping computed property in $props() destructuring.");
+          continue;
+        }
+
+        const propName = this.getPropertyName(property.key);
+        if (!propName) {
+          this.logUnsupportedRunesPattern("Skipping unsupported property name in $props() destructuring.");
+          continue;
+        }
+
+        let localName: string | undefined;
+        let init: unknown;
+
+        if (property.value.type === "Identifier") {
+          localName = property.value.name;
+        } else if (property.value.type === "AssignmentPattern") {
+          if (property.value.left.type !== "Identifier") {
+            this.logUnsupportedRunesPattern(
+              `Skipping nested pattern for prop "${propName}" in $props() destructuring.`,
+            );
+            continue;
+          }
+
+          localName = property.value.left.name;
+          init = property.value.right;
+        } else {
+          this.logUnsupportedRunesPattern(`Skipping nested pattern for prop "${propName}" in $props() destructuring.`);
+          continue;
+        }
+
+        if (!localName) continue;
+
+        this.trackPropLocalName(propName, localName);
+        if (propName === "children") {
+          this.snippetPropLocals.add(localName);
+        }
+
+        const { init: unwrappedInit, bindable } = this.unwrapBindableInitializer(init);
+        const initResult = unwrappedInit == null ? { isFunction: false } : this.processInitializer(unwrappedInit);
+        const { value, type: inferredType, isFunction } = initResult;
+        const type = jsdocInfo?.type ?? inferredType;
+
+        if (bindable) {
+          this.reactive_vars.add(propName);
+        }
+
+        this.addProp(propName, {
+          name: propName,
+          kind: "let",
+          description: jsdocInfo?.description,
+          type,
+          value,
+          params: jsdocInfo?.params,
+          returnType: jsdocInfo?.returnType,
+          isFunction,
+          isFunctionDeclaration: false,
+          isRequired: unwrappedInit == null,
+          constant: false,
+          reactive: bindable,
+        });
+      }
+    }
+  }
+
+  private inferSlotPropValueFromExpression(expression: unknown): SlotPropValue {
+    const slot_prop_value: SlotPropValue = {
+      value: undefined,
+      replace: false,
+    };
+
+    if (!expression || typeof expression !== "object" || !("type" in expression)) {
+      return slot_prop_value;
+    }
+
+    if (expression.type === "Identifier") {
+      slot_prop_value.value = (expression as Identifier).name;
+      slot_prop_value.replace = true;
+    } else if (expression.type === "Literal") {
+      slot_prop_value.value = String((expression as Literal).value);
+    } else if (expression.type === "MemberExpression") {
+      slot_prop_value.value = this.resolveMemberExpressionType(expression);
+    } else if (
+      (expression.type === "ObjectExpression" || expression.type === "TemplateLiteral") &&
+      "start" in expression &&
+      "end" in expression &&
+      typeof expression.start === "number" &&
+      typeof expression.end === "number"
+    ) {
+      slot_prop_value.value = this.sourceAtPos(expression.start, expression.end);
+    }
+
+    return slot_prop_value;
+  }
+
+  private buildSlotPropsFromObjectExpression(expression: ObjectExpression): SlotProps {
+    const slot_props: SlotProps = {};
+
+    for (const property of expression.properties) {
+      if (property.type !== "Property" || property.computed) continue;
+
+      const propName = this.getPropertyName(property.key);
+      if (!propName) continue;
+      slot_props[propName] = this.inferSlotPropValueFromExpression(property.value);
+    }
+
+    return slot_props;
+  }
+
+  private extractRenderTagInfo(expression: unknown): { localName: string; argument?: Expression | unknown } | null {
+    let callExpression = expression;
+
+    if (
+      callExpression &&
+      typeof callExpression === "object" &&
+      "type" in callExpression &&
+      callExpression.type === "ChainExpression"
+    ) {
+      callExpression = (callExpression as { expression?: unknown }).expression;
+    }
+
+    if (
+      !callExpression ||
+      typeof callExpression !== "object" ||
+      !("type" in callExpression) ||
+      callExpression.type !== "CallExpression"
+    ) {
+      return null;
+    }
+
+    const callExpr = callExpression as CallExpression;
+
+    if (!callExpr.callee || typeof callExpr.callee !== "object" || !("type" in callExpr.callee)) {
+      return null;
+    }
+
+    if (callExpr.callee.type !== "Identifier") {
+      return null;
+    }
+
+    return {
+      localName: callExpr.callee.name,
+      argument: callExpr.arguments[0],
+    };
   }
 
   /**
@@ -1103,6 +1825,7 @@ export default class ComponentParser {
    */
   private addProp(prop_name: string, data: ComponentProp) {
     if (ComponentParser.assignValue(prop_name) === undefined) return;
+    this.trackPropLocalName(prop_name);
 
     if (this.props.has(prop_name)) {
       const existing_slot = this.props.get(prop_name);
@@ -1242,7 +1965,7 @@ export default class ComponentParser {
     const propName = memberExpr.property.name;
     if (!objName || !propName) return undefined;
 
-    const objType = this.props.get(objName)?.type ?? this.findVariableTypeAndDescription(objName)?.type;
+    const objType = this.getPropTypeByLocalOrPublic(objName) ?? this.findVariableTypeAndDescription(objName)?.type;
     if (!objType) return undefined;
 
     return this.extractPropertyType(objType, propName);
@@ -2147,6 +2870,14 @@ export default class ComponentParser {
    * ```
    */
   private findVariableTypeAndDescription(varName: string): { type: string; description?: string } | null {
+    const prop = this.getPropByLocalOrPublic(varName);
+    if (prop?.type) {
+      return {
+        type: prop.type,
+        description: prop.description,
+      };
+    }
+
     const cached = this.variableInfoCache.get(varName);
     if (cached) {
       return cached;
@@ -2467,6 +3198,7 @@ export default class ComponentParser {
    * ```
    */
   public cleanup() {
+    this.syntaxMode = "legacy";
     this.source = undefined;
     this.compiled = undefined;
     this.parsed = undefined;
@@ -2485,6 +3217,12 @@ export default class ComponentParser {
     this.bindings.clear();
     this.contexts.clear();
     this.variableInfoCache.clear();
+    this.propLocalToPublicName.clear();
+    this.restPropLocals.clear();
+    this.snippetPropLocals.clear();
+    this.componentScope.clear();
+    this.scopeDeclarations = new WeakMap();
+    this.activeScopes.length = 0;
     this.sourceLinesCache = undefined;
   }
 
@@ -2606,17 +3344,21 @@ export default class ComponentParser {
      * Parse once - compile() internally calls parse(), so we can extract the AST from it.
      * This avoids parsing the source twice for better performance.
      */
-    const compiled = compile(cleanedSource);
+    const compiled = compile(cleanedSource, {
+      generate: false,
+      modernAst: false,
+    });
     this.compiled = compiled;
+    this.syntaxMode = compiled.metadata.runes ? "runes" : "legacy";
 
     /**
      * Reuse the AST from compilation instead of parsing again.
      * The compile result includes the parsed AST, so we use that if available,
      * otherwise fall back to parsing directly.
      */
-    this.parsed = compiled.ast || parse(cleanedSource);
+    this.parsed =
+      (compiled.ast as LegacyAstRoot | undefined) || (parse(cleanedSource, { modern: false }) as LegacyAstRoot);
 
-    this.collectReactiveVars();
     this.sourceLinesCache = this.source.split("\n");
     this.buildVariableInfoCache();
     this.parseCustomTypes();
@@ -2674,26 +3416,19 @@ export default class ComponentParser {
               }
 
               prop_name = (id as Identifier).name;
-              /**
-               * VariableDeclaration.kind can be "var" | "let" | "const", but ComponentProp.kind
-               * is "let" | "const" | "function". Convert "var" to "let" for compatibility
-               * since "var" is not a valid prop kind in Svelte components.
-               */
-              kind = varDecl.kind === "var" ? "let" : varDecl.kind;
+              kind = variableDeclarationKindToComponentPropKind(varDecl.kind);
               const initResult = init == null ? { isFunction: false } : this.processInitializer(init);
               ({ value, type, isFunction } = initResult);
             } else {
               return;
             }
 
-            if (node.leadingComments) {
-              const jsdocInfo = this.processJSDocComment(node.leadingComments);
-              if (jsdocInfo) {
-                if (jsdocInfo.type) type = jsdocInfo.type;
-                params = jsdocInfo.params;
-                returnType = jsdocInfo.returnType;
-                if (jsdocInfo.description) description = jsdocInfo.description;
-              }
+            const jsdocInfo = this.processNodeJSDoc(node);
+            if (jsdocInfo) {
+              if (jsdocInfo.type) type = jsdocInfo.type;
+              params = jsdocInfo.params;
+              returnType = jsdocInfo.returnType;
+              if (jsdocInfo.description) description = jsdocInfo.description;
             }
 
             // Merge returnType into type for function declarations if not overridden by @type
@@ -2735,9 +3470,30 @@ export default class ComponentParser {
 
     let dispatcher_name: undefined | string;
     const callees: { name: string; arguments: Array<Expression | unknown> }[] = [];
+    const componentRoot = {
+      type: "ComponentRoot",
+      instance: this.parsed.instance,
+      html: this.parsed.html,
+    } as unknown as Node;
 
-    walk({ html: this.parsed.html, instance: this.parsed.instance } as unknown as Node, {
+    this.buildScopeDeclarations(componentRoot);
+    this.activeScopes.push(this.componentScope);
+
+    walk(componentRoot, {
       enter: (node, parent, _prop) => {
+        const nodeScope = this.scopeDeclarations.get(node as unknown as object);
+        if (nodeScope) {
+          this.activeScopes.push(nodeScope);
+        }
+
+        if (node.type === "AssignmentExpression") {
+          this.markReactivePropsFromMutationTarget((node as AssignmentExpression).left);
+        }
+
+        if (node.type === "UpdateExpression") {
+          this.markReactivePropsFromMutationTarget((node as UpdateExpression).argument);
+        }
+
         if (node.type === "CallExpression") {
           const callExpr = node as CallExpression;
           const calleeName =
@@ -2777,60 +3533,27 @@ export default class ComponentParser {
          */
         if (node && typeof node === "object" && "type" in node && String(node.type) === "Spread") {
           const spreadNode = node as { type: string; expression?: { name?: string } };
-          if (spreadNode.expression?.name === "$$restProps") {
-            /**
-             * Check if parent is InlineComponent or Element (Svelte-specific types).
-             * Rest props can only be spread on components or elements.
-             */
-            if (
-              parent &&
-              typeof parent === "object" &&
-              "type" in parent &&
-              ((parent.type as string) === "InlineComponent" || (parent.type as string) === "Element")
-            ) {
-              const parentType = parent.type as string;
-              const parentName = "name" in parent && typeof parent.name === "string" ? parent.name : undefined;
-              if (parentName) {
-                const restProps: RestProps =
-                  parentType === "InlineComponent"
-                    ? {
-                        type: "InlineComponent",
-                        name: parentName,
-                      }
-                    : {
-                        type: "Element",
-                        name: parentName,
-                      };
-
-                /**
-                 * Handle svelte:element - check if this attribute is hardcoded.
-                 * The 'this' value is stored in the 'tag' property of the Element node.
-                 * If tag is a string, it's hardcoded; if undefined/null, it's dynamic.
-                 */
-                if (parentType === "Element" && parentName === "svelte:element") {
-                  if ("tag" in parent && typeof parent.tag === "string") {
-                    (restProps as ComponentElement).thisValue = parent.tag;
-                  }
-                  /**
-                   * If tag is undefined or not a string, thisValue remains undefined (dynamic).
-                   */
-                }
-
-                /**
-                 * Only set rest_props from AST if not already set by `@restProps` annotation.
-                 * The annotation takes precedence as it can specify union types like "ul | ol"
-                 * which can't be inferred from the AST alone.
-                 */
-                if (this.rest_props === undefined) {
-                  this.rest_props = restProps;
-                }
-              }
-            }
+          if (
+            spreadNode.expression?.name === "$$restProps" ||
+            this.restPropLocals.has(spreadNode.expression?.name ?? "")
+          ) {
+            this.maybeSetRestProps(parent);
           }
         }
 
         if (node.type === "VariableDeclaration") {
           this.vars.add(node as unknown as VariableDeclaration);
+          if (
+            parent &&
+            typeof parent === "object" &&
+            "type" in parent &&
+            parent.type === "Program" &&
+            (node as VariableDeclaration).declarations.some((declarator) =>
+              this.isCallExpressionNamed(declarator.init, "$props"),
+            )
+          ) {
+            this.parseRunesPropsDeclaration(node as VariableDeclaration);
+          }
         }
 
         if (node.type === "ExportNamedDeclaration") {
@@ -2933,12 +3656,7 @@ export default class ComponentParser {
               return;
             }
 
-            /**
-             * VariableDeclaration.kind can be "var" | "let" | "const", but ComponentProp.kind
-             * is "let" | "const" | "function". Convert "var" to "let" for compatibility
-             * since "var" is not a valid prop kind in Svelte components.
-             */
-            kind = varDecl.kind === "var" ? "let" : varDecl.kind;
+            kind = variableDeclarationKindToComponentPropKind(varDecl.kind);
             isRequired = kind === "let" && init == null;
             const initResult = init == null ? { isFunction: false } : this.processInitializer(init);
             ({ value, type, isFunction } = initResult);
@@ -2946,14 +3664,12 @@ export default class ComponentParser {
             return;
           }
 
-          if (node.leadingComments) {
-            const jsdocInfo = this.processJSDocComment(node.leadingComments);
-            if (jsdocInfo) {
-              if (jsdocInfo.type) type = jsdocInfo.type;
-              params = jsdocInfo.params;
-              returnType = jsdocInfo.returnType;
-              if (jsdocInfo.description) description = jsdocInfo.description;
-            }
+          const jsdocInfo = this.processNodeJSDoc(node);
+          if (jsdocInfo) {
+            if (jsdocInfo.type) type = jsdocInfo.type;
+            params = jsdocInfo.params;
+            returnType = jsdocInfo.returnType;
+            if (jsdocInfo.description) description = jsdocInfo.description;
           }
 
           // Merge returnType into type for function declarations if not overridden by @type
@@ -3074,7 +3790,10 @@ export default class ComponentParser {
             }, {});
 
           const fallback = (slotNode.children as TemplateNode[] | undefined)
-            ?.map(({ start, end }) => this.sourceAtPos(start, end))
+            ?.map(({ start, end }) => {
+              if (start === undefined || end === undefined) return "";
+              return this.sourceAtPos(start, end) ?? "";
+            })
             .join("")
             .trim();
 
@@ -3083,6 +3802,41 @@ export default class ComponentParser {
             slot_props: JSON.stringify(slot_props, null, 2),
             slot_fallback: fallback,
           });
+        }
+
+        if (node && typeof node === "object" && "type" in node && String(node.type) === "RenderTag") {
+          const renderTag = node as { expression?: unknown };
+          const renderInfo = this.extractRenderTagInfo(renderTag.expression);
+          if (renderInfo) {
+            const publicName = this.propLocalToPublicName.get(renderInfo.localName);
+            if (publicName) {
+              this.snippetPropLocals.add(renderInfo.localName);
+
+              let slot_props: string | undefined;
+              if (renderInfo.argument == null) {
+                slot_props = JSON.stringify({}, null, 2);
+              } else if (
+                typeof renderInfo.argument === "object" &&
+                "type" in renderInfo.argument &&
+                renderInfo.argument.type === "ObjectExpression"
+              ) {
+                slot_props = JSON.stringify(
+                  this.buildSlotPropsFromObjectExpression(renderInfo.argument as ObjectExpression),
+                  null,
+                  2,
+                );
+              } else {
+                this.logUnsupportedRunesPattern(
+                  `Skipping unsupported {@render ...} argument for snippet prop "${publicName}".`,
+                );
+              }
+
+              this.addSlot({
+                slot_name: publicName === "children" ? undefined : publicName,
+                slot_props,
+              });
+            }
+          }
         }
 
         /**
@@ -3151,24 +3905,40 @@ export default class ComponentParser {
 
         /**
          * Check for Binding node (Svelte-specific AST node type).
-         * Handles element bindings like `bind:this={elementRef}` which change the
-         * prop type to include the element type (e.g., `HTMLButtonElement | null`).
+         * Any prop used in a legacy `bind:*` expression should be treated as reactive.
+         * `bind:this` on HTML elements additionally changes the prop type to include
+         * the bound element type.
          */
         if (
           parent &&
           typeof parent === "object" &&
           "type" in parent &&
-          String(parent.type) === "Element" &&
+          (String(parent.type) === "Element" || String(parent.type) === "InlineComponent") &&
           node &&
           typeof node === "object" &&
           "type" in node &&
           String(node.type) === "Binding"
         ) {
           const bindingNode = node as { name?: string; expression?: { name?: string } };
-          const parentElement = parent as { name?: string };
-          if (bindingNode.name === "this" && bindingNode.expression?.name && parentElement.name) {
-            const prop_name = bindingNode.expression.name;
-            const element_name = parentElement.name;
+          if (bindingNode.expression?.name) {
+            const prop_name = this.resolveIdentifierToReactiveProp(bindingNode.expression.name);
+            if (prop_name) {
+              this.reactive_vars.add(prop_name);
+            }
+          }
+
+          if (
+            String(parent.type) === "Element" &&
+            bindingNode.name === "this" &&
+            bindingNode.expression?.name &&
+            "name" in parent &&
+            typeof parent.name === "string"
+          ) {
+            const prop_name = this.resolveIdentifierToReactiveProp(bindingNode.expression.name);
+            if (!prop_name) {
+              return;
+            }
+            const element_name = parent.name;
 
             if (this.bindings.has(prop_name)) {
               const existing_bindings = this.bindings.get(prop_name);
@@ -3185,6 +3955,11 @@ export default class ComponentParser {
               });
             }
           }
+        }
+      },
+      leave: (node) => {
+        if (this.scopeDeclarations.has(node as unknown as object)) {
+          this.activeScopes.pop();
         }
       },
     });
@@ -3271,11 +4046,17 @@ export default class ComponentParser {
         return {
           ...prop,
           type: `null | ${elementTypes}`,
+          reactive: prop.reactive || this.reactive_vars.has(prop.name),
         };
       }
 
-      return prop;
+      return {
+        ...prop,
+        reactive: prop.reactive || this.reactive_vars.has(prop.name),
+      };
     });
+
+    this.activeScopes.length = 0;
 
     const processedSlots = ComponentParser.mapToArray(this.slots)
       .map((slot) => {
@@ -3288,7 +4069,7 @@ export default class ComponentParser {
 
           for (const key of Object.keys(slot_props)) {
             if (slot_props[key].replace && slot_props[key].value !== undefined) {
-              slot_props[key].value = this.props.get(slot_props[key].value)?.type;
+              slot_props[key].value = this.getPropTypeByLocalOrPublic(slot_props[key].value);
             }
 
             if (slot_props[key].value === undefined) slot_props[key].value = "any";

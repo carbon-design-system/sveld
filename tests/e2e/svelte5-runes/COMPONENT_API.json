@@ -1,0 +1,58 @@
+{
+  "total": 1,
+  "components": [
+    {
+      "moduleName": "RunesButton",
+      "filePath": "src/RunesButton.svelte",
+      "props": [
+        {
+          "name": "label",
+          "kind": "let",
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": true,
+          "constant": false,
+          "reactive": false
+        },
+        {
+          "name": "onclick",
+          "kind": "let",
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": true,
+          "constant": false,
+          "reactive": false
+        },
+        {
+          "name": "children",
+          "kind": "let",
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": true,
+          "constant": false,
+          "reactive": false
+        },
+        {
+          "name": "value",
+          "kind": "let",
+          "type": "string",
+          "value": "\"ready\"",
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": false,
+          "constant": false,
+          "reactive": true
+        }
+      ],
+      "moduleExports": [],
+      "slots": [
+        { "name": null, "default": true, "slot_props": "{ value: string }" }
+      ],
+      "events": [{ "type": "dispatched", "name": "press" }],
+      "typedefs": [],
+      "generics": null,
+      "rest_props": { "type": "Element", "name": "button" },
+      "contexts": []
+    }
+  ]
+}

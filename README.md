@@ -3,13 +3,22 @@
 [![NPM][npm]][npm-url]
 ![npm downloads to date](https://img.shields.io/npm/dt/sveld?color=262626&style=for-the-badge)
 
-`sveld` is a TypeScript definition generator for Svelte components. It analyzes props, events, slots, and other component features through static analysis. Types and signatures can be defined using [JSDoc notation](https://jsdoc.app/). The tool can also generate component documentation in Markdown and JSON formats.
+`sveld` generates TypeScript definitions and component documentation (Markdown/JSON) for Svelte components. It analyzes props, events, slots, and other component features through static analysis. Types and signatures can be defined using [JSDoc notation](https://jsdoc.app/).
 
-The purpose of this project is to make third party Svelte component libraries compatible with the Svelte Language Server and TypeScript with minimal effort required by the author. For example, TypeScript definitions may be used during development via intelligent code completion in Integrated Development Environments (IDE) like VSCode.
+The purpose of this project is to make third party Svelte component libraries compatible with the Svelte Language Server and TypeScript with minimal effort required by the author. For example, TypeScript definitions may be used during development via intelligent code completion in Integrated Development Environments (IDEs) like VSCode.
 
 [Carbon Components Svelte](https://github.com/carbon-design-system/carbon-components-svelte) uses this library to auto-generate component types and API metadata.
 
-**Note:** `sveld` supports Svelte 3, 4, and 5, but does not support Svelte 5-specific syntax or runes-only usage. Components must use traditional Svelte syntax (e.g., `export let` for props, not `$props()`).
+`sveld` uses the Svelte 5 compiler to parse `.svelte` files. That single parse path powers docgen and TypeScript output for Svelte 3, Svelte 4, Svelte 5 without runes (`export let`, `<slot>`, `$$restProps`, …), and Svelte 5 Runes (`$props()`, `$bindable()`, `{@render ...}`, callback props such as `onclick`, …).
+
+| Syntax mode          | Supported |
+| :------------------- | :-------: |
+| Svelte 3             |     ✓     |
+| Svelte 4             |     ✓     |
+| Svelte 5 (non-Runes) |     ✓     |
+| Svelte 5 Runes       |     ✓     |
+
+**Note** that generated `.d.ts` files extend `SvelteComponentTyped` from `svelte`, so TypeScript and the Svelte Language Server work whether consumers use Svelte 3, Svelte 4, or Svelte 5.
 
 ---
 
@@ -28,7 +37,7 @@ Given a Svelte component, `sveld` can infer basic prop types to generate TypeScr
 </button>
 ```
 
-The generated definition extends the official `SvelteComponentTyped` interface exported from Svelte.
+The following generated `.d.ts` extends `SvelteComponentTyped`:
 
 **Button.svelte.d.ts**
 
@@ -310,6 +319,23 @@ sveld({
 
 ## API Reference
 
+### `reactive`
+
+The `reactive` field in generated JSON is heuristic metadata. It is not a complete statement of whether a parent may use `bind:prop` in Svelte.
+
+`sveld` marks `reactive: true` when it finds internal evidence that a prop is writable, including:
+
+- the prop is assigned or mutated inside the component
+- the prop is marked bindable in runes mode with `$bindable(...)`
+- the prop is used as the target of `bind:*` on an element or child component
+- wrapper-forwarded bindings such as `bind:value`, `bind:selected`, and `bind:ref`
+
+Local variables or parameters that shadow a prop name do not count as writes to the exported prop.
+
+`reactive: false` means `sveld` found no such evidence. It does not imply that parent-side `bind:` usage is impossible.
+
+For stable output, generated `events` arrays are emitted in deterministic sorted order.
+
 ### `@type`
 
 Without a `@type` annotation, `sveld` will infer the primitive type for a prop:
@@ -328,7 +354,7 @@ export let id = `ccs-${Math.random().toString(36)}`;
 
 Use the `@type` tag to explicitly document the type. In the following example, the `kind` property has an enumerated (enum) type.
 
-Signature:
+**Signature:**
 
 ```js
 /**
@@ -337,27 +363,47 @@ Signature:
  */
 ```
 
-Example:
+**Example:**
 
-```js
-/**
- * Specify the kind of button
- * @type {"primary" | "secondary" | "tertiary"}
- */
-export let kind = "primary";
+**Svelte 5 Runes:**
 
-/**
- * Specify the Carbon icon to render
- * @type {typeof import("carbon-icons-svelte").CarbonIcon}
- */
-export let renderIcon = Close20;
+```svelte
+<script>
+  /**
+   * Specify the kind of button
+   * @type {"primary" | "secondary" | "tertiary"}
+   */
+  /**
+   * Specify the Carbon icon to render
+   * @type {typeof import("carbon-icons-svelte").CarbonIcon}
+   */
+  let { kind = "primary", renderIcon = Close20 } = $props();
+</script>
+```
+
+**Svelte 3, 4, 5 (non-Runes):**
+
+```svelte
+<script>
+  /**
+   * Specify the kind of button
+   * @type {"primary" | "secondary" | "tertiary"}
+   */
+  export let kind = "primary";
+
+  /**
+   * Specify the Carbon icon to render
+   * @type {typeof import("carbon-icons-svelte").CarbonIcon}
+   */
+  export let renderIcon = Close20;
+</script>
 ```
 
 ### `@typedef`
 
 The `@typedef` tag can be used to define a common type that is used multiple times within a component. All typedefs defined in a component will be exported from the generated TypeScript definition file.
 
-Signature:
+**Signature:**
 
 ```js
 /**
@@ -365,26 +411,48 @@ Signature:
  */
 ```
 
-Example:
+**Example:**
 
-```js
-/**
- * @typedef {string} AuthorName
- * @typedef {{ name?: AuthorName; dob?: string; }} Author
- */
+**Svelte 5 Runes:**
 
-/** @type {Author} */
-export let author = {};
+```svelte
+<script>
+  /**
+   * @typedef {string} AuthorName
+   * @typedef {{ name?: AuthorName; dob?: string; }} Author
+   */
 
-/** @type {Author[]} */
-export let authors = [];
+  let {
+    /** @type {Author} */
+    author = {},
+    /** @type {Author[]} */
+    authors = [],
+  } = $props();
+</script>
+```
+
+**Svelte 3, 4, 5 (non-Runes):**
+
+```svelte
+<script>
+  /**
+   * @typedef {string} AuthorName
+   * @typedef {{ name?: AuthorName; dob?: string; }} Author
+   */
+
+  /** @type {Author} */
+  export let author = {};
+
+  /** @type {Author[]} */
+  export let authors = [];
+</script>
 ```
 
 #### Using `@property` for complex typedefs
 
 For complex object types, use the `@property` tag to document individual properties. This provides better documentation and IDE support with per-property tooltips.
 
-Signature:
+**Signature:**
 
 ```js
 /**
@@ -394,19 +462,40 @@ Signature:
  */
 ```
 
-Example:
+**Example:**
 
-```js
-/**
- * Represents a user in the system
- * @typedef {object} User
- * @property {string} name - The user's full name
- * @property {string} email - The user's email address
- * @property {number} age - The user's age in years
- */
+**Svelte 5 Runes:**
 
-/** @type {User} */
-export let user = { name: "John", email: "john@example.com", age: 30 };
+```svelte
+<script>
+  /**
+   * Represents a user in the system
+   * @typedef {object} User
+   * @property {string} name - The user's full name
+   * @property {string} email - The user's email address
+   * @property {number} age - The user's age in years
+   */
+
+  /** @type {User} */
+  let { user = { name: "John", email: "john@example.com", age: 30 } } = $props();
+</script>
+```
+
+**Svelte 3, 4, 5 (non-Runes):**
+
+```svelte
+<script>
+  /**
+   * Represents a user in the system
+   * @typedef {object} User
+   * @property {string} name - The user's full name
+   * @property {string} email - The user's email address
+   * @property {number} age - The user's age in years
+   */
+
+  /** @type {User} */
+  export let user = { name: "John", email: "john@example.com", age: 30 };
+</script>
 ```
 
 Output:
@@ -434,7 +523,7 @@ export type ComponentProps = {
 
 Following JSDoc standards, use square brackets to mark properties as optional. You can also specify default values using the `[propertyName=defaultValue]` syntax.
 
-Signature:
+**Signature:**
 
 ```js
 /**
@@ -444,20 +533,42 @@ Signature:
  */
 ```
 
-Example:
+**Example:**
 
-```js
-/**
- * Configuration options for the component
- * @typedef {object} ComponentConfig
- * @property {boolean} enabled - Whether the component is enabled
- * @property {string} theme - The component theme
- * @property {number} [timeout=5000] - Optional timeout in milliseconds
- * @property {boolean} [debug] - Optional debug mode flag
- */
+**Svelte 5 Runes:**
 
-/** @type {ComponentConfig} */
-export let config = { enabled: true, theme: "dark" };
+```svelte
+<script>
+  /**
+   * Configuration options for the component
+   * @typedef {object} ComponentConfig
+   * @property {boolean} enabled - Whether the component is enabled
+   * @property {string} theme - The component theme
+   * @property {number} [timeout=5000] - Optional timeout in milliseconds
+   * @property {boolean} [debug] - Optional debug mode flag
+   */
+
+  /** @type {ComponentConfig} */
+  let { config = { enabled: true, theme: "dark" } } = $props();
+</script>
+```
+
+**Svelte 3, 4, 5 (non-Runes):**
+
+```svelte
+<script>
+  /**
+   * Configuration options for the component
+   * @typedef {object} ComponentConfig
+   * @property {boolean} enabled - Whether the component is enabled
+   * @property {string} theme - The component theme
+   * @property {number} [timeout=5000] - Optional timeout in milliseconds
+   * @property {boolean} [debug] - Optional debug mode flag
+   */
+
+  /** @type {ComponentConfig} */
+  export let config = { enabled: true, theme: "dark" };
+</script>
 ```
 
 Output:
@@ -491,7 +602,7 @@ The `@callback` tag defines a function type using `@param` and `@returns` tags, 
 
 This is useful for typing callback props without using inline function type syntax.
 
-Signature:
+**Signature:**
 
 ```js
 /**
@@ -502,19 +613,40 @@ Signature:
  */
 ```
 
-Example:
+**Example:**
 
-```js
-/**
- * Callback fired when the value changes
- * @callback OnChange
- * @param {string} value - The new value
- * @param {number} index - The index of the changed item
- * @returns {void}
- */
+**Svelte 5 Runes:**
 
-/** @type {OnChange} */
-export let onChange = (value, index) => {};
+```svelte
+<script>
+  /**
+   * Callback fired when the value changes
+   * @callback OnChange
+   * @param {string} value - The new value
+   * @param {number} index - The index of the changed item
+   * @returns {void}
+   */
+
+  /** @type {OnChange} */
+  let { onChange = (value, index) => {} } = $props();
+</script>
+```
+
+**Svelte 3, 4, 5 (non-Runes):**
+
+```svelte
+<script>
+  /**
+   * Callback fired when the value changes
+   * @callback OnChange
+   * @param {string} value - The new value
+   * @param {number} index - The index of the changed item
+   * @returns {void}
+   */
+
+  /** @type {OnChange} */
+  export let onChange = (value, index) => {};
+</script>
 ```
 
 Output:
@@ -554,7 +686,7 @@ Use the `@slot` tag for typing component slots. Note that `@slot` is a non-stand
 
 Descriptions are optional for named slots. Currently, the default slot cannot have a description.
 
-Signature:
+**Signature:**
 
 ```js
 /**
@@ -568,7 +700,32 @@ Omit the `slot-name` to type the default slot.
  */
 ```
 
-Example:
+**Example:**
+
+**Svelte 5 Runes:**
+
+```svelte
+<script>
+  /**
+   * @slot {{ prop: number; doubled: number; }}
+   * @slot {{}} title
+   * @slot {{ prop: number }} body - Customize the paragraph text.
+   */
+
+  let { prop = 0, children, title, body } = $props();
+</script>
+
+<h1>
+  {@render children?.({ prop, doubled: prop * 2 })}
+  {@render title?.()}
+</h1>
+
+<p>
+  {@render body?.({ prop })}
+</p>
+```
+
+**Svelte 3, 4, 5 (non-Runes):**
 
 ```svelte
 <script>
@@ -594,6 +751,8 @@ Example:
 #### Svelte 5 Snippet Compatibility
 
 For Svelte 5 compatibility, `sveld` automatically generates optional snippet props for all slots. This allows consumers to use either the traditional slot syntax or Svelte 5's `{#snippet}` syntax.
+
+When parsing runes components, `sveld` also maps `{@render ...}` calls back into the same slot metadata used for traditional `<slot>` declarations.
 
 For slots with props (e.g., `let:prop`), the generated type uses a Snippet-compatible signature:
 
@@ -697,9 +856,11 @@ export default class DataTable<Row> extends SvelteComponentTyped<
 
 Use the `@event` tag to type dispatched events. An event name is required and a description optional.
 
+In Svelte 5 runes components, callback props such as `onclick` are treated as component props, not events. The `events` output remains reserved for dispatched events and legacy forwarded events.
+
 Use `null` as the value if no event detail is provided.
 
-Signature:
+**Signature:**
 
 ```js
 /**
@@ -708,22 +869,48 @@ Signature:
  */
 ```
 
-Example:
+**Example:**
 
-```js
-/**
- * @event {{ key: string }} button:key
- * @event {null} key – Fired when `key` changes.
- */
+**Svelte 5 Runes:**
 
-export let key = "";
+```svelte
+<script>
+  /**
+   * @event {{ key: string }} button:key
+   * @event {null} key - Fired when `key` changes.
+   */
 
-import { createEventDispatcher } from "svelte";
+  let { key = "" } = $props();
 
-const dispatch = createEventDispatcher();
+  import { createEventDispatcher } from "svelte";
 
-$: dispatch("button:key", { key });
-$: if (key) dispatch("key");
+  const dispatch = createEventDispatcher();
+
+  $effect(() => {
+    dispatch("button:key", { key });
+    if (key) dispatch("key");
+  });
+</script>
+```
+
+**Svelte 3, 4, 5 (non-Runes):**
+
+```svelte
+<script>
+  /**
+   * @event {{ key: string }} button:key
+   * @event {null} key - Fired when `key` changes.
+   */
+
+  export let key = "";
+
+  import { createEventDispatcher } from "svelte";
+
+  const dispatch = createEventDispatcher();
+
+  $: dispatch("button:key", { key });
+  $: if (key) dispatch("key");
+</script>
 ```
 
 Output:
@@ -743,7 +930,7 @@ export default class Component extends SvelteComponentTyped<
 
 For events with complex object payloads, use the `@property` tag to document individual properties. The main comment description will be used as the event description.
 
-Signature:
+**Signature:**
 
 ```js
 /**
@@ -754,30 +941,64 @@ Signature:
  */
 ```
 
-Example:
+**Example:**
 
-```js
-/**
- * Fired when the user submits the form
- *
- * @event submit
- * @type {object}
- * @property {string} name - The user's name
- * @property {string} email - The user's email address
- * @property {boolean} newsletter - Whether the user opted into the newsletter
- */
+**Svelte 5 Runes:**
 
-import { createEventDispatcher } from "svelte";
+```svelte
+<script>
+  /**
+   * Fired when the user submits the form
+   *
+   * @event submit
+   * @type {object}
+   * @property {string} name - The user's name
+   * @property {string} email - The user's email address
+   * @property {boolean} newsletter - Whether the user opted into the newsletter
+   */
 
-const dispatch = createEventDispatcher();
+  let { name = "Jane Doe", email = "jane@example.com", newsletter = true } = $props();
 
-function handleSubmit() {
-  dispatch("submit", {
-    name: "Jane Doe",
-    email: "jane@example.com",
-    newsletter: true,
-  });
-}
+  import { createEventDispatcher } from "svelte";
+
+  const dispatch = createEventDispatcher();
+
+  function handleSubmit() {
+    dispatch("submit", { name, email, newsletter });
+  }
+</script>
+
+<button type="button" onclick={handleSubmit}>Submit</button>
+```
+
+**Svelte 3, 4, 5 (non-Runes):**
+
+```svelte
+<script>
+  /**
+   * Fired when the user submits the form
+   *
+   * @event submit
+   * @type {object}
+   * @property {string} name - The user's name
+   * @property {string} email - The user's email address
+   * @property {boolean} newsletter - Whether the user opted into the newsletter
+   */
+
+  export let name = "Jane Doe";
+  export let email = "jane@example.com";
+  export let newsletter = true;
+
+  import { createEventDispatcher } from "svelte";
+
+  const dispatch = createEventDispatcher();
+
+  function handleSubmit() {
+    dispatch("submit", { name, email, newsletter });
+  }
+</script>
+
+<button type="button" on:click={handleSubmit}>Submit</button>
 ```
 
 Output:
@@ -804,30 +1025,70 @@ export default class Component extends SvelteComponentTyped<
 
 Just like with typedefs, you can mark event detail properties as optional using square brackets. This is useful when some properties may not always be included in the event payload.
 
-Example:
+**Example:**
 
-```js
-/**
- * Snowball event fired when throwing a snowball
- *
- * @event snowball
- * @type {object}
- * @property {boolean} isPacked - Indicates whether the snowball is tightly packed
- * @property {number} speed - The speed of the snowball in mph
- * @property {string} [color] - Optional color of the snowball
- * @property {number} [density=0.9] - Optional density with default value
- */
+**Svelte 5 Runes:**
 
-import { createEventDispatcher } from "svelte";
+```svelte
+<script>
+  /**
+   * Snowball event fired when throwing a snowball
+   *
+   * @event snowball
+   * @type {object}
+   * @property {boolean} isPacked - Indicates whether the snowball is tightly packed
+   * @property {number} speed - The speed of the snowball in mph
+   * @property {string} [color] - Optional color of the snowball
+   * @property {number} [density=0.9] - Optional density with default value
+   */
 
-const dispatch = createEventDispatcher();
+  let { speed = 50 } = $props();
 
-function throwSnowball() {
-  dispatch("snowball", {
-    isPacked: true,
-    speed: 50,
-  });
-}
+  import { createEventDispatcher } from "svelte";
+
+  const dispatch = createEventDispatcher();
+
+  function throwSnowball() {
+    dispatch("snowball", {
+      isPacked: true,
+      speed,
+    });
+  }
+</script>
+
+<button type="button" onclick={throwSnowball}>Throw</button>
+```
+
+**Svelte 3, 4, 5 (non-Runes):**
+
+```svelte
+<script>
+  /**
+   * Snowball event fired when throwing a snowball
+   *
+   * @event snowball
+   * @type {object}
+   * @property {boolean} isPacked - Indicates whether the snowball is tightly packed
+   * @property {number} speed - The speed of the snowball in mph
+   * @property {string} [color] - Optional color of the snowball
+   * @property {number} [density=0.9] - Optional density with default value
+   */
+
+  export let speed = 50;
+
+  import { createEventDispatcher } from "svelte";
+
+  const dispatch = createEventDispatcher();
+
+  function throwSnowball() {
+    dispatch("snowball", {
+      isPacked: true,
+      speed,
+    });
+  }
+</script>
+
+<button type="button" on:click={throwSnowball}>Throw</button>
 ```
 
 Output:
@@ -869,9 +1130,11 @@ When you use `setContext` in a component, `sveld` will:
 
 **Modal.svelte**
 
+**Svelte 5 Runes:**
+
 ```svelte
 <script>
-  import { setContext } from 'svelte';
+  import { setContext } from "svelte";
 
   /**
    * Close the modal
@@ -889,7 +1152,39 @@ When you use `setContext` in a component, `sveld` will:
     // Open logic
   };
 
-  setContext('simple-modal', { open, close });
+  setContext("simple-modal", { open, close });
+
+  let { children } = $props();
+</script>
+
+<div class="modal">
+  {@render children?.()}
+</div>
+```
+
+**Svelte 3, 4, 5 (non-Runes):**
+
+```svelte
+<script>
+  import { setContext } from "svelte";
+
+  /**
+   * Close the modal
+   * @type {() => void}
+   */
+  const close = () => {
+    // Close logic
+  };
+
+  /**
+   * Open the modal with content
+   * @type {(component: any, props?: any) => void}
+   */
+  const open = (component, props) => {
+    // Open logic
+  };
+
+  setContext("simple-modal", { open, close });
 </script>
 
 <div class="modal">
@@ -1027,7 +1322,7 @@ There are several ways to provide type information for contexts:
 
 You can use the `@restProps` tag to specify the element tags that `$$restProps` is forwarded to.
 
-Signature:
+**Signature:**
 
 ```js
 /**
@@ -1039,14 +1334,35 @@ Signature:
  */
 ```
 
-Example:
+**Example:**
+
+**Svelte 5 Runes:**
+
+```svelte
+<script>
+  import Button from "./Button.svelte";
+
+  /** @restProps {h1 | button} */
+  let { edit = false, children, ...restProps } = $props();
+</script>
+
+{#if edit}
+  <Button {...restProps} />
+{:else}
+  <h1 {...restProps}>
+    {@render children?.()}
+  </h1>
+{/if}
+```
+
+**Svelte 3, 4, 5 (non-Runes):**
 
 ```svelte
 <script>
   /** @restProps {h1 | button} */
   export let edit = false;
 
-  import Button from "../";
+  import Button from "./Button.svelte";
 </script>
 
 {#if edit}
@@ -1062,7 +1378,7 @@ In some cases, a component may be based on another component. The `@extendProps`
 
 > **Note:** `@extends` is supported as an alias but `@extendProps` is preferred to avoid conflicts with standard JSDoc `@extends` (used for class inheritance).
 
-Signature:
+**Signature:**
 
 ```js
 /**
@@ -1070,7 +1386,7 @@ Signature:
  */
 ```
 
-Example:
+**Example:**
 
 ```js
 /** @extendProps {"./Button.svelte"} ButtonProps */
@@ -1093,7 +1409,7 @@ However, the `generics` attribute only works if using `lang="ts"`; the language 
 
 Because `sveld` is designed to support JavaScript-only usage as a baseline, the API design to specify generics uses a custom JSDoc tag `@generics`.
 
-Signature:
+**Signature:**
 
 ```js
 /**
@@ -1101,12 +1417,55 @@ Signature:
  */
 ```
 
-Example
+**Example:**
 
 ```js
 /**
  * @generics {Row extends DataTableRow = any} Row
  */
+```
+
+**Component example:**
+
+**Svelte 5 Runes:**
+
+```svelte
+<script>
+  /**
+   * @typedef {{ id: string | number; [key: string]: any; }} DataTableRow
+   * @typedef {Exclude<keyof Row, "id">} DataTableKey<Row>
+   * @typedef {{ key: DataTableKey<Row>; value: string; }} DataTableHeader<Row=DataTableRow>
+   * @template {DataTableRow} <Row extends DataTableRow = DataTableRow>
+   * @generics {Row extends DataTableRow = DataTableRow} Row
+   */
+
+  /** @type {ReadonlyArray<DataTableHeader<Row>>} */
+  let { headers = [], rows = [], children } = $props();
+</script>
+
+{@render children?.({ headers, rows })}
+```
+
+**Svelte 3, 4, 5 (non-Runes):**
+
+```svelte
+<script>
+  /**
+   * @typedef {{ id: string | number; [key: string]: any; }} DataTableRow
+   * @typedef {Exclude<keyof Row, "id">} DataTableKey<Row>
+   * @typedef {{ key: DataTableKey<Row>; value: string; }} DataTableHeader<Row=DataTableRow>
+   * @template {DataTableRow} <Row extends DataTableRow = DataTableRow>
+   * @generics {Row extends DataTableRow = DataTableRow} Row
+   */
+
+  /** @type {ReadonlyArray<DataTableHeader<Row>>} */
+  export let headers = [];
+
+  /** @type {ReadonlyArray<Row>} */
+  export let rows = [];
+</script>
+
+<slot {headers} {rows} />
 ```
 
 The generated TypeScript definition will resemble the following:
@@ -1150,7 +1509,27 @@ The Svelte Language Server supports component-level comments through the followi
 
 `sveld` will copy these over to the exported default component in the TypeScript definition.
 
-Example:
+**Example:**
+
+**Svelte 5 Runes:**
+
+```svelte
+<!-- @component
+@example
+<Button>
+  Text
+</Button>
+-->
+<script>
+  let { children } = $props();
+</script>
+
+<button>
+  {@render children?.()}
+</button>
+```
+
+**Svelte 3, 4, 5 (non-Runes):**
 
 ```svelte
 <!-- @component
@@ -1186,7 +1565,7 @@ Exported functions and consts become accessor props in generated TypeScript defi
 
 Note that `@type` tag annotations take precedence over `@param`/`@returns` tags.
 
-Signature:
+**Signature:**
 
 ```js
 /**
@@ -1197,7 +1576,54 @@ Signature:
  */
 ```
 
-Example:
+**Example:**
+
+**Svelte 5 Runes:**
+
+```svelte
+<script>
+  /**
+   * @typedef {object} NotificationData
+   * @property {string} [id] - Optional id for deduplication
+   * @property {"error" | "info" | "success"} [kind]
+   */
+
+  let { children } = $props();
+
+  /**
+   * Add a notification to the queue.
+   * @param {NotificationData} notification
+   * @returns {string} The notification id
+   */
+  export function add(notification) {
+    const id = notification.id ?? "id";
+    return id;
+  }
+
+  /**
+   * Remove a notification by id.
+   * @param {string} id
+   * @returns {boolean} True if the notification was found and removed
+   */
+  export function remove(id) {
+    return true;
+  }
+
+  /**
+   * Get notification count.
+   * @returns {number} The number of notifications
+   */
+  export function getCount() {
+    return 0;
+  }
+</script>
+
+<div>
+  {@render children?.()}
+</div>
+```
+
+**Svelte 3, 4, 5 (non-Runes):**
 
 ```svelte
 <script>

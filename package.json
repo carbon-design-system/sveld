@@ -2,7 +2,7 @@
   "name": "sveld",
   "version": "0.28.0",
   "license": "Apache-2.0",
-  "description": "Generate TypeScript definitions for your Svelte components.",
+  "description": "Generate TypeScript definitions and component documentation for your Svelte components.",
   "type": "module",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
@@ -24,8 +24,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "estree-walker": "^3.0.3",
     "prettier": "^3.8.0",
-    "svelte": "^4.2.20",
+    "svelte": "^5.55.0",
     "svelte-preprocess": "^6.0.3"
   },
   "devDependencies": {

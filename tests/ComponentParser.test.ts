@@ -626,6 +626,226 @@ describe("ComponentParser", () => {
     expect(getCountProp?.params).toBeUndefined();
   });
 
+  test("treats legacy bind:value props as reactive", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        export let value = "";
+      </script>
+
+      <input bind:value />
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    const valueProp = result.props.find((p) => p.name === "value");
+    expect(valueProp?.reactive).toBe(true);
+    expect(valueProp?.type).toBe("string");
+  });
+
+  test("treats legacy child component bind:value props as reactive", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        export let value = "";
+      </script>
+
+      <Search bind:value />
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    const valueProp = result.props.find((p) => p.name === "value");
+    expect(valueProp?.reactive).toBe(true);
+    expect(valueProp?.type).toBe("string");
+  });
+
+  test("treats legacy child component bind:selected props as reactive", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        export let pageSize = 10;
+      </script>
+
+      <Select bind:selected={pageSize} />
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    const pageSizeProp = result.props.find((p) => p.name === "pageSize");
+    expect(pageSizeProp?.reactive).toBe(true);
+    expect(pageSizeProp?.type).toBe("number");
+  });
+
+  test("treats legacy child component bind:ref props as reactive without changing type", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        export let ref = null;
+      </script>
+
+      <Search bind:ref />
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    const refProp = result.props.find((p) => p.name === "ref");
+    expect(refProp?.reactive).toBe(true);
+    expect(refProp?.type).toBeUndefined();
+  });
+
+  test("treats legacy child component bind:ref forwarding targets as reactive", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        export let listRef = null;
+      </script>
+
+      <ListBoxMenu bind:ref={listRef} />
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    const listRefProp = result.props.find((p) => p.name === "listRef");
+    expect(listRefProp?.reactive).toBe(true);
+    expect(listRefProp?.type).toBeUndefined();
+  });
+
+  test("does not mark plain child prop pass-through as reactive", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        export let disabled = false;
+      </script>
+
+      <ListBox {disabled} />
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    const disabledProp = result.props.find((p) => p.name === "disabled");
+    expect(disabledProp?.reactive).toBe(false);
+    expect(disabledProp?.type).toBe("boolean");
+  });
+
+  test("does not mark shadowed function-local assignment as reactive", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        export let disabled = false;
+        const items = [{ disabled: true }];
+
+        function update(index) {
+          let disabled = items[index].disabled;
+          return disabled;
+        }
+      </script>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.props.find((p) => p.name === "disabled")?.reactive).toBe(false);
+  });
+
+  test("does not mark shadowed function-local reassignment as reactive", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        export let disabled = false;
+
+        function update() {
+          let disabled = false;
+          disabled = true;
+        }
+      </script>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.props.find((p) => p.name === "disabled")?.reactive).toBe(false);
+  });
+
+  test("does not mark shadowed callback parameters as reactive", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        export let disabled = false;
+        const items = [true, false];
+
+        for (const item of items) {
+          ((disabled) => {
+            let current = disabled;
+            current = !current;
+          })(item);
+        }
+      </script>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.props.find((p) => p.name === "disabled")?.reactive).toBe(false);
+  });
+
+  test("does not mark shadowed block locals in event handlers as reactive", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        export let disabled = false;
+      </script>
+
+      <button
+        on:click={() => {
+          let disabled = false;
+          disabled = true;
+        }}
+      />
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.props.find((p) => p.name === "disabled")?.reactive).toBe(false);
+  });
+
+  test("does not mark shadowed each block context names as reactive", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        export let disabled = false;
+        const items = [true, false];
+      </script>
+
+      {#each items as disabled}
+        <button on:click={() => disabled = !disabled}>toggle</button>
+      {/each}
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.props.find((p) => p.name === "disabled")?.reactive).toBe(false);
+  });
+
+  test("marks real prop mutations as reactive", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        export let disabled = false;
+
+        function update() {
+          disabled = true;
+        }
+      </script>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.props.find((p) => p.name === "disabled")?.reactive).toBe(true);
+  });
+
+  test("does not mark shadowed binding expressions as reactive", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        export let value = "";
+        const items = ["a", "b"];
+      </script>
+
+      {#each items as value}
+        <Child bind:value={value} />
+      {/each}
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.props.find((p) => p.name === "value")?.reactive).toBe(false);
+  });
+
   test("sorts events deterministically by name", () => {
     const parser = new ComponentParser();
     const source = `
@@ -646,5 +866,101 @@ describe("ComponentParser", () => {
 
     const result = parser.parseSvelteComponent(source, diagnostics);
     expect(result.events.map((event) => event.name)).toEqual(["alpha", "blur", "click", "zeta"]);
+  });
+
+  test("parses props from $props destructuring", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        let { title, count = 0 } = $props();
+      </script>
+
+      <div>{title} {count}</div>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.props).toHaveLength(2);
+    expect(result.props.find((p) => p.name === "title")?.isRequired).toBe(true);
+    expect(result.props.find((p) => p.name === "count")?.value).toBe("0");
+  });
+
+  test("preserves public prop names for renamed $props bindings", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        let { class: klass } = $props();
+      </script>
+
+      <button class={klass}>click</button>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.props).toHaveLength(1);
+    expect(result.props[0]?.name).toBe("class");
+  });
+
+  test("treats $bindable defaults as optional reactive props", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        let { value = $bindable(0) } = $props();
+      </script>
+
+      <input bind:value />
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    const valueProp = result.props.find((p) => p.name === "value");
+    expect(valueProp?.isRequired).toBe(false);
+    expect(valueProp?.reactive).toBe(true);
+    expect(valueProp?.value).toBe("0");
+  });
+
+  test("keeps callback props in props and out of events", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        let { onclick } = $props();
+      </script>
+
+      <button onclick={onclick}>click</button>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.props.find((p) => p.name === "onclick")).toBeTruthy();
+    expect(result.events).toHaveLength(0);
+  });
+
+  test("maps render tags to slots", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        let { item, children, header } = $props();
+      </script>
+
+      <section>
+        {@render header?.({ title: item })}
+        {@render children?.({ item })}
+      </section>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.slots).toHaveLength(2);
+    expect(result.slots.find((slot) => slot.default)?.slot_props).toBe("{ item: any }");
+    expect(result.slots.find((slot) => slot.name === "header")?.slot_props).toBe("{ title: any }");
+  });
+
+  test("does not invent props from whole-object $props captures", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        let props = $props();
+      </script>
+
+      <div>{props.value}</div>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.props).toHaveLength(0);
   });
 });
