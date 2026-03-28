@@ -7,15 +7,15 @@
     "preview": "bun --bun vite preview"
   },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^3.1.2",
+    "@sveltejs/vite-plugin-svelte": "^7.0.0",
     "@types/codemirror": "^5.60.17",
-    "carbon-components-svelte": "^0.103.0",
-    "carbon-preprocess-svelte": "^0.11.27",
+    "carbon-components-svelte": "^0.105.0",
+    "carbon-preprocess-svelte": "^0.11.28",
     "codemirror": "^5.65.20",
-    "prettier": "^3.7.4",
-    "svelte": "^4.2.20",
+    "prettier": "^3.8.1",
+    "svelte": "^5.55.0",
     "svelte-highlight": "^7.9.0",
-    "typescript": "^5.9.3",
-    "vite": "^5.4.21"
+    "typescript": "^6.0.2",
+    "vite": "^8.0.3"
   }
 }
