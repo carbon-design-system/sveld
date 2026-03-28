@@ -16,6 +16,7 @@
 | label     | Yes      | <code>let</code> | No       | --                  | --                   | --          |
 | onclick   | Yes      | <code>let</code> | No       | --                  | --                   | --          |
 | children  | Yes      | <code>let</code> | No       | --                  | --                   | --          |
+| onpress   | Yes      | <code>let</code> | No       | --                  | --                   | --          |
 
 ### Slots
 
@@ -25,6 +26,4 @@
 
 ### Events
 
-| Event name | Type       | Detail | Description |
-| :--------- | :--------- | :----- | :---------- |
-| press      | dispatched | --     | --          |
+None.

@@ -24,6 +24,11 @@ type $Props = {
    */
   value?: string;
 
+  /**
+   * @default undefined
+   */
+  onpress: undefined;
+
   [key: `data-${string}`]: unknown;
 };
 
@@ -31,6 +36,6 @@ export type RunesButtonProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class RunesButton extends SvelteComponentTyped<
   RunesButtonProps,
-  { press: CustomEvent<any> },
+  Record<string, any>,
   { default: { value: string } }
 > {}

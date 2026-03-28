@@ -1,9 +1,5 @@
 <script>
-  import { createEventDispatcher } from "svelte";
-
-  let { value } = $props();
-
-  const dispatch = createEventDispatcher();
+  let { value, onchange } = $props();
 </script>
 
-<button onclick={() => dispatch("change", value)}>click</button>
+<button onclick={() => onchange?.(value)}>click</button>

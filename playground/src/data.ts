@@ -32,23 +32,19 @@ const buttonRunes: Example = {
 };
 
 const dispatchedEventsRunes: Example = {
-  name: "Dispatched events",
-  moduleName: "DispatchedEventsRunes",
+  name: "Callback events",
+  moduleName: "CallbackEventsRunes",
   code: `<script>
-  import { onDestroy, createEventDispatcher } from "svelte";
+  import { onDestroy } from "svelte";
 
-  let { children } = $props();
-
-  const dispatcher = createEventDispatcher();
+  let { children, ondestroy, onhover } = $props();
 
   onDestroy(() => {
-    dispatcher("destroy");
-    dispatcher("destroy--component");
-    dispatcher("destroy:component");
+    ondestroy?.();
   });
 
   function handleMouseOver() {
-    dispatcher("hover", { h1: true });
+    onhover?.({ h1: true });
   }
 </script>
 
@@ -60,8 +56,8 @@ const dispatchedEventsRunes: Example = {
 };
 
 const dispatchedEventsAnnotatedRunes: Example = {
-  name: "Dispatched events (annotated)",
-  moduleName: "DispatchedEventsAnnotatedRunes",
+  name: "Callback events (annotated)",
+  moduleName: "CallbackEventsAnnotatedRunes",
   code: `<script>
   /**
    * Form value structure
@@ -70,29 +66,16 @@ const dispatchedEventsAnnotatedRunes: Example = {
    * @property {boolean} [valid] - Whether the value passes validation
    */
 
-  /**
-   * Fired when the input value changes
-   * @event {FormValues} change
-   */
-
-  /**
-   * Fired when the form is submitted
-   * @event {FormValues} submit
-   */
-
-  /**
-   * Fired when validation fails
-   * @event {{ errors: string[]; value: string }} error
-   */
-
-  import { createEventDispatcher } from "svelte";
-
   let {
     value = $bindable(""),
     minLength = 3,
+    /** @type {(detail: FormValues) => void} Fired when the input value changes */
+    onchange,
+    /** @type {(detail: FormValues) => void} Fired when the form is submitted */
+    onsubmit,
+    /** @type {(detail: { errors: string[]; value: string }) => void} Fired when validation fails */
+    onerror,
   } = $props();
-
-  const dispatch = createEventDispatcher();
 
   function validate(val) {
     const errors = [];
@@ -107,9 +90,9 @@ const dispatchedEventsAnnotatedRunes: Example = {
   function handleInput() {
     const errors = validate(value);
     if (errors.length > 0) {
-      dispatch("error", { errors, value });
+      onerror?.({ errors, value });
     } else {
-      dispatch("change", { value, valid: true });
+      onchange?.({ value, valid: true });
     }
   }
 
@@ -117,7 +100,7 @@ const dispatchedEventsAnnotatedRunes: Example = {
     event.preventDefault();
     const errors = validate(value);
     if (errors.length === 0) {
-      dispatch("submit", { value, valid: true });
+      onsubmit?.({ value, valid: true });
     }
   }
 </script>

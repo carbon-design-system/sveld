@@ -5,10 +5,15 @@ export type RunesDispatchedEventsProps = {
    * @default undefined
    */
   value: undefined;
+
+  /**
+   * @default undefined
+   */
+  onchange: undefined;
 };
 
 export default class RunesDispatchedEvents extends SvelteComponentTyped<
   RunesDispatchedEventsProps,
-  { change: CustomEvent<any> },
+  Record<string, any>,
   Record<string, never>
 > {}

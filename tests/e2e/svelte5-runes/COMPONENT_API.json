@@ -42,13 +42,22 @@
           "isRequired": false,
           "constant": false,
           "reactive": true
+        },
+        {
+          "name": "onpress",
+          "kind": "let",
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": true,
+          "constant": false,
+          "reactive": false
         }
       ],
       "moduleExports": [],
       "slots": [
         { "name": null, "default": true, "slot_props": "{ value: string }" }
       ],
-      "events": [{ "type": "dispatched", "name": "press" }],
+      "events": [],
       "typedefs": [],
       "generics": null,
       "rest_props": { "type": "Element", "name": "button" },
