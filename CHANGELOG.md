@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.28.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.28.0) - 2026-03-28
+
+**Features**
+
+- sort dispatched and forwarded events deterministically in generated output
+- support `@callback` JSDoc tag for documenting callback types in generated output
+
 ## [0.27.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.27.0) - 2026-03-11
 
 **Breaking Changes**
