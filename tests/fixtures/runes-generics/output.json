@@ -1,0 +1,67 @@
+{
+  "props": [
+    {
+      "name": "headers",
+      "kind": "let",
+      "type": "ReadonlyArray<DataTableHeader<Row>>",
+      "value": "[]",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "rows",
+      "kind": "let",
+      "type": "ReadonlyArray<DataTableHeader<Row>>",
+      "value": "[]",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "children",
+      "kind": "let",
+      "type": "ReadonlyArray<DataTableHeader<Row>>",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{ headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<DataTableHeader<Row>> }"
+    }
+  ],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{ id: string | number; [key: string]: any; }",
+      "name": "DataTableRow",
+      "ts": "interface DataTableRow { id: string | number; [key: string]: any; }"
+    },
+    {
+      "type": "Exclude<keyof Row, \"id\">",
+      "name": "DataTableKey<Row>",
+      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \"id\">"
+    },
+    {
+      "type": "{ key: DataTableKey<Row>; value: string; }",
+      "name": "DataTableHeader<Row=DataTableRow>",
+      "ts": "interface DataTableHeader<Row=DataTableRow> { key: DataTableKey<Row>; value: string; }"
+    }
+  ],
+  "generics": [
+    "Row",
+    "Row extends DataTableRow = DataTableRow"
+  ],
+  "contexts": []
+}
