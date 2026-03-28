@@ -71,15 +71,15 @@ export type CheckboxProps = {
 export default class Checkbox extends SvelteComponentTyped<
   CheckboxProps,
   {
+    change: WindowEventMap["change"];
     /** Fired when checking the input. */
     check: CustomEvent<boolean>;
-    /** Fired when unchecking the input. */
-    uncheck: CustomEvent<boolean>;
     click: WindowEventMap["click"];
-    mouseover: WindowEventMap["mouseover"];
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
-    change: WindowEventMap["change"];
+    mouseover: WindowEventMap["mouseover"];
+    /** Fired when unchecking the input. */
+    uncheck: CustomEvent<boolean>;
   },
   Record<string, never>
 > {}

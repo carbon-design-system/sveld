@@ -4,9 +4,9 @@
   "slots": [],
   "events": [
     {
-      "type": "dispatched",
-      "name": "expand",
-      "detail": "null"
+      "type": "forwarded",
+      "name": "click",
+      "element": "ChildComponent"
     },
     {
       "type": "dispatched",
@@ -14,14 +14,9 @@
       "detail": "null"
     },
     {
-      "type": "forwarded",
-      "name": "click",
-      "element": "ChildComponent"
-    },
-    {
-      "type": "forwarded",
-      "name": "mouseover",
-      "element": "ChildComponent"
+      "type": "dispatched",
+      "name": "expand",
+      "detail": "null"
     },
     {
       "type": "forwarded",
@@ -31,6 +26,11 @@
     {
       "type": "forwarded",
       "name": "mouseleave",
+      "element": "ChildComponent"
+    },
+    {
+      "type": "forwarded",
+      "name": "mouseover",
       "element": "ChildComponent"
     }
   ],

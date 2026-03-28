@@ -38,13 +38,13 @@ export default class TypedefEventSharedBlock extends SvelteComponentTyped<
       size: BreakpointSize;
       breakpointValue: BreakpointValue;
     }>;
+    /** Slot for rendering breakpoint sizes */
+    dequeue: CustomEvent<null>;
+    /** Event fired when item is dequeued from the queue */
+    queue: CustomEvent<null>;
     /** Event fired when size changes */
     resize: CustomEvent<null>;
     scroll: CustomEvent<null>;
-    /** Event fired when item is dequeued from the queue */
-    queue: CustomEvent<null>;
-    /** Slot for rendering breakpoint sizes */
-    dequeue: CustomEvent<null>;
   },
   {
     default: { size: BreakpointSize; sizes: Record<BreakpointSize, boolean> };

@@ -60,15 +60,15 @@ export type ToggleProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class Toggle extends SvelteComponentTyped<
   ToggleProps,
   {
-    toggle: CustomEvent<{ toggled: boolean }>;
+    blur: WindowEventMap["blur"];
+    change: WindowEventMap["change"];
     click: WindowEventMap["click"];
-    mouseover: WindowEventMap["mouseover"];
+    focus: WindowEventMap["focus"];
+    keyup: WindowEventMap["keyup"];
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
-    change: WindowEventMap["change"];
-    keyup: WindowEventMap["keyup"];
-    focus: WindowEventMap["focus"];
-    blur: WindowEventMap["blur"];
+    mouseover: WindowEventMap["mouseover"];
+    toggle: CustomEvent<{ toggled: boolean }>;
   },
   Record<string, never>
 > {}

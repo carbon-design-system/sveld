@@ -74,11 +74,11 @@ export type ToastNotificationProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class ToastNotification extends SvelteComponentTyped<
   ToastNotificationProps,
   {
-    close: CustomEvent<{ timeout: boolean }>;
     click: WindowEventMap["click"];
-    mouseover: WindowEventMap["mouseover"];
+    close: CustomEvent<{ timeout: boolean }>;
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
+    mouseover: WindowEventMap["mouseover"];
   },
   { default: Record<string, never> }
 > {}

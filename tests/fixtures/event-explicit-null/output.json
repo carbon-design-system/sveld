@@ -4,14 +4,14 @@
   "slots": [],
   "events": [
     {
-      "type": "dispatched",
-      "name": "clear",
-      "detail": "null"
-    },
-    {
       "type": "forwarded",
       "name": "change",
       "element": "input"
+    },
+    {
+      "type": "dispatched",
+      "name": "clear",
+      "detail": "null"
     },
     {
       "type": "forwarded",

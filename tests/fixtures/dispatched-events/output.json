@@ -11,10 +11,6 @@
   "events": [
     {
       "type": "dispatched",
-      "name": "hover"
-    },
-    {
-      "type": "dispatched",
       "name": "destroy",
       "detail": "null"
     },
@@ -27,6 +23,10 @@
       "type": "dispatched",
       "name": "destroy:component",
       "detail": "null"
+    },
+    {
+      "type": "dispatched",
+      "name": "hover"
     }
   ],
   "typedefs": [],

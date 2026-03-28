@@ -5,6 +5,11 @@
   "events": [
     {
       "type": "forwarded",
+      "name": "blur",
+      "element": "button"
+    },
+    {
+      "type": "forwarded",
       "name": "click",
       "element": "button",
       "description": "Fired when the button is clicked",
@@ -16,11 +21,6 @@
       "element": "button",
       "description": "Fired when the button receives focus",
       "detail": "null"
-    },
-    {
-      "type": "forwarded",
-      "name": "blur",
-      "element": "button"
     }
   ],
   "typedefs": [],

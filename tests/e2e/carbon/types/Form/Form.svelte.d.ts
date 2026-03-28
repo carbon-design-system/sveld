@@ -15,9 +15,9 @@ export default class Form extends SvelteComponentTyped<
   FormProps,
   {
     click: WindowEventMap["click"];
-    mouseover: WindowEventMap["mouseover"];
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
+    mouseover: WindowEventMap["mouseover"];
     submit: WindowEventMap["submit"];
   },
   { default: Record<string, never> }

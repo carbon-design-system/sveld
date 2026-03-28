@@ -114,11 +114,11 @@ export type CodeSnippetProps = {
 export default class CodeSnippet extends SvelteComponentTyped<
   CodeSnippetProps,
   {
+    animationend: WindowEventMap["animationend"];
     click: WindowEventMap["click"];
-    mouseover: WindowEventMap["mouseover"];
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
-    animationend: WindowEventMap["animationend"];
+    mouseover: WindowEventMap["mouseover"];
   },
   { default: Record<string, never> }
 > {}

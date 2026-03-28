@@ -625,4 +625,26 @@ describe("ComponentParser", () => {
     expect(getCountProp?.returnType).toBe("number");
     expect(getCountProp?.params).toBeUndefined();
   });
+
+  test("sorts events deterministically by name", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        import { createEventDispatcher, onDestroy } from "svelte";
+
+        const dispatch = createEventDispatcher();
+
+        onDestroy(() => {
+          dispatch("zeta");
+          dispatch("alpha");
+        });
+      </script>
+
+      <button on:click />
+      <input on:blur />
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.events.map((event) => event.name)).toEqual(["alpha", "blur", "click", "zeta"]);
+  });
 });

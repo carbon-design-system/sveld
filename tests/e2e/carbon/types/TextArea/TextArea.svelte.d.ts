@@ -96,14 +96,14 @@ export type TextAreaProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class TextArea extends SvelteComponentTyped<
   TextAreaProps,
   {
+    blur: WindowEventMap["blur"];
+    change: WindowEventMap["change"];
     click: WindowEventMap["click"];
-    mouseover: WindowEventMap["mouseover"];
+    focus: WindowEventMap["focus"];
+    input: WindowEventMap["input"];
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
-    change: WindowEventMap["change"];
-    input: WindowEventMap["input"];
-    focus: WindowEventMap["focus"];
-    blur: WindowEventMap["blur"];
+    mouseover: WindowEventMap["mouseover"];
   },
   Record<string, never>
 > {}

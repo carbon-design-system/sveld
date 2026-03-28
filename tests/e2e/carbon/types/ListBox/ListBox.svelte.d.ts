@@ -67,6 +67,6 @@ export type ListBoxProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class ListBox extends SvelteComponentTyped<
   ListBoxProps,
-  { keydown: WindowEventMap["keydown"]; click: WindowEventMap["click"] },
+  { click: WindowEventMap["click"]; keydown: WindowEventMap["keydown"] },
   { default: Record<string, never> }
 > {}

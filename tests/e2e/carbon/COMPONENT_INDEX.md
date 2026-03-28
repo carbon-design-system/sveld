@@ -185,9 +185,9 @@
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `AccordionItem`
 
@@ -213,10 +213,10 @@
 | :----------- | :-------- | :----- | :---------- |
 | animationend | forwarded | --     | --          |
 | click        | forwarded | --     | --          |
-| mouseover    | forwarded | --     | --          |
+| keydown      | forwarded | --     | --          |
 | mouseenter   | forwarded | --     | --          |
 | mouseleave   | forwarded | --     | --          |
-| keydown      | forwarded | --     | --          |
+| mouseover    | forwarded | --     | --          |
 
 ## `AccordionSkeleton`
 
@@ -238,9 +238,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `AspectRatio`
 
@@ -280,9 +280,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `BreadcrumbItem`
 
@@ -304,9 +304,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `BreadcrumbSkeleton`
 
@@ -326,9 +326,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `Button`
 
@@ -364,12 +364,12 @@ None.
 
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
+| blur       | forwarded | --     | --          |
 | click      | forwarded | --     | --          |
 | focus      | forwarded | --     | --          |
-| blur       | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `ButtonSet`
 
@@ -408,9 +408,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `Checkbox`
 
@@ -438,13 +438,13 @@ None.
 
 | Event name | Type       | Detail               | Description                      |
 | :--------- | :--------- | :------------------- | :------------------------------- |
+| change     | forwarded  | --                   | --                               |
 | check      | dispatched | <code>boolean</code> | Fired when checking the input.   |
-| uncheck    | dispatched | <code>boolean</code> | Fired when unchecking the input. |
 | click      | forwarded  | --                   | --                               |
-| mouseover  | forwarded  | --                   | --                               |
 | mouseenter | forwarded  | --                   | --                               |
 | mouseleave | forwarded  | --                   | --                               |
-| change     | forwarded  | --                   | --                               |
+| mouseover  | forwarded  | --                   | --                               |
+| uncheck    | dispatched | <code>boolean</code> | Fired when unchecking the input. |
 
 ## `CheckboxSkeleton`
 
@@ -461,9 +461,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `ClickableTile`
 
@@ -487,9 +487,9 @@ None.
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
 | keydown    | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `CodeSnippet`
 
@@ -525,11 +525,11 @@ None.
 
 | Event name   | Type      | Detail | Description |
 | :----------- | :-------- | :----- | :---------- |
+| animationend | forwarded | --     | --          |
 | click        | forwarded | --     | --          |
-| mouseover    | forwarded | --     | --          |
 | mouseenter   | forwarded | --     | --          |
 | mouseleave   | forwarded | --     | --          |
-| animationend | forwarded | --     | --          |
+| mouseover    | forwarded | --     | --          |
 
 ## `CodeSnippetSkeleton`
 
@@ -548,9 +548,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `Column`
 
@@ -636,12 +636,12 @@ None.
 
 | Event name | Type       | Detail                                                                                 | Description |
 | :--------- | :--------- | :------------------------------------------------------------------------------------- | :---------- |
-| select     | dispatched | <code>{ selectedId: string; selectedIndex: number; selectedItem: ComboBoxItem }</code> | --          |
-| keydown    | forwarded  | --                                                                                     | --          |
-| focus      | forwarded  | --                                                                                     | --          |
 | blur       | forwarded  | --                                                                                     | --          |
 | clear      | forwarded  | --                                                                                     | --          |
+| focus      | forwarded  | --                                                                                     | --          |
+| keydown    | forwarded  | --                                                                                     | --          |
 | scroll     | forwarded  | --                                                                                     | --          |
+| select     | dispatched | <code>{ selectedId: string; selectedIndex: number; selectedItem: ComboBoxItem }</code> | --          |
 
 ## `ComposedModal`
 
@@ -668,13 +668,13 @@ None.
 | Event name    | Type       | Detail            | Description |
 | :------------ | :--------- | :---------------- | :---------- |
 | click         | forwarded  | --                | --          |
-| mouseover     | forwarded  | --                | --          |
+| close         | dispatched | <code>null</code> | --          |
 | mouseenter    | forwarded  | --                | --          |
 | mouseleave    | forwarded  | --                | --          |
-| transitionend | forwarded  | --                | --          |
-| submit        | dispatched | <code>null</code> | --          |
-| close         | dispatched | <code>null</code> | --          |
+| mouseover     | forwarded  | --                | --          |
 | open          | dispatched | <code>null</code> | --          |
+| submit        | dispatched | <code>null</code> | --          |
+| transitionend | forwarded  | --                | --          |
 
 ## `Content`
 
@@ -716,9 +716,9 @@ None.
 | :--------- | :--------- | :------------------ | :----------------------------------------- |
 | change     | dispatched | <code>number</code> | Fired when the `selectedIndex` is updated. |
 | click      | forwarded  | --                  | --                                         |
-| mouseover  | forwarded  | --                  | --                                         |
 | mouseenter | forwarded  | --                  | --                                         |
 | mouseleave | forwarded  | --                  | --                                         |
+| mouseover  | forwarded  | --                  | --                                         |
 
 ## `Copy`
 
@@ -740,8 +740,8 @@ None.
 
 | Event name   | Type      | Detail | Description |
 | :----------- | :-------- | :----- | :---------- |
-| click        | forwarded | --     | --          |
 | animationend | forwarded | --     | --          |
+| click        | forwarded | --     | --          |
 
 ## `CopyButton`
 
@@ -759,8 +759,8 @@ None.
 
 | Event name   | Type      | Detail | Description |
 | :----------- | :-------- | :----- | :---------- |
-| click        | forwarded | --     | --          |
 | animationend | forwarded | --     | --          |
+| click        | forwarded | --     | --          |
 
 ## `DataTable`
 
@@ -852,15 +852,15 @@ export interface DataTableCell {
 | Event name           | Type       | Detail                                                                                                       | Description |
 | :------------------- | :--------- | :----------------------------------------------------------------------------------------------------------- | :---------- |
 | click                | dispatched | <code>{ header?: DataTableHeader<Row>; row?: Row; cell?: DataTableCell<Row>; }</code>                        | --          |
-| click:header--expand | dispatched | <code>{ expanded: boolean; }</code>                                                                          | --          |
+| click:cell           | dispatched | <code>DataTableCell<Row></code>                                                                              | --          |
 | click:header         | dispatched | <code>{ header: DataTableHeader<Row>; sortDirection?: "ascending" &#124; "descending" &#124; "none" }</code> | --          |
+| click:header--expand | dispatched | <code>{ expanded: boolean; }</code>                                                                          | --          |
 | click:header--select | dispatched | <code>{ indeterminate: boolean; selected: boolean; }</code>                                                  | --          |
 | click:row            | dispatched | <code>Row</code>                                                                                             | --          |
-| mouseenter:row       | dispatched | <code>Row</code>                                                                                             | --          |
-| mouseleave:row       | dispatched | <code>Row</code>                                                                                             | --          |
 | click:row--expand    | dispatched | <code>{ expanded: boolean; row: Row; }</code>                                                                | --          |
 | click:row--select    | dispatched | <code>{ selected: boolean; row: Row; }</code>                                                                | --          |
-| click:cell           | dispatched | <code>DataTableCell<Row></code>                                                                              | --          |
+| mouseenter:row       | dispatched | <code>Row</code>                                                                                             | --          |
+| mouseleave:row       | dispatched | <code>Row</code>                                                                                             | --          |
 
 ## `DataTableSkeleton`
 
@@ -885,9 +885,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `DatePicker`
 
@@ -916,11 +916,11 @@ None.
 
 | Event name | Type       | Detail | Description |
 | :--------- | :--------- | :----- | :---------- |
+| change     | dispatched | --     | --          |
 | click      | forwarded  | --     | --          |
-| mouseover  | forwarded  | --     | --          |
 | mouseenter | forwarded  | --     | --          |
 | mouseleave | forwarded  | --     | --          |
-| change     | dispatched | --     | --          |
+| mouseover  | forwarded  | --     | --          |
 
 ## `DatePickerInput`
 
@@ -950,9 +950,9 @@ None.
 
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
+| blur       | forwarded | --     | --          |
 | input      | forwarded | --     | --          |
 | keydown    | forwarded | --     | --          |
-| blur       | forwarded | --     | --          |
 
 ## `DatePickerSkeleton`
 
@@ -972,9 +972,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `Dropdown`
 
@@ -1043,9 +1043,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `ExpandableTile`
 
@@ -1078,9 +1078,9 @@ None.
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
 | keypress   | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `FileUploader`
 
@@ -1109,13 +1109,13 @@ None.
 | Event name | Type       | Detail              | Description |
 | :--------- | :--------- | :------------------ | :---------- |
 | add        | dispatched | <code>File[]</code> | --          |
-| remove     | dispatched | <code>File[]</code> | --          |
+| change     | forwarded  | --                  | --          |
 | click      | forwarded  | --                  | --          |
-| mouseover  | forwarded  | --                  | --          |
+| keydown    | forwarded  | --                  | --          |
 | mouseenter | forwarded  | --                  | --          |
 | mouseleave | forwarded  | --                  | --          |
-| change     | forwarded  | --                  | --          |
-| keydown    | forwarded  | --                  | --          |
+| mouseover  | forwarded  | --                  | --          |
+| remove     | dispatched | <code>File[]</code> | --          |
 
 ## `FileUploaderButton`
 
@@ -1143,9 +1143,9 @@ None.
 
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
-| keydown    | forwarded | --     | --          |
 | change     | forwarded | --     | --          |
 | click      | forwarded | --     | --          |
+| keydown    | forwarded | --     | --          |
 
 ## `FileUploaderDropContainer`
 
@@ -1173,12 +1173,12 @@ None.
 | Event name | Type       | Detail                | Description |
 | :--------- | :--------- | :-------------------- | :---------- |
 | add        | dispatched | <code>FileList</code> | --          |
-| dragover   | forwarded  | --                    | --          |
-| dragleave  | forwarded  | --                    | --          |
-| drop       | forwarded  | --                    | --          |
-| keydown    | forwarded  | --                    | --          |
 | change     | forwarded  | --                    | --          |
 | click      | forwarded  | --                    | --          |
+| dragleave  | forwarded  | --                    | --          |
+| dragover   | forwarded  | --                    | --          |
+| drop       | forwarded  | --                    | --          |
+| keydown    | forwarded  | --                    | --          |
 
 ## `FileUploaderItem`
 
@@ -1203,9 +1203,9 @@ None.
 | Event name | Type       | Detail              | Description |
 | :--------- | :--------- | :------------------ | :---------- |
 | delete     | dispatched | <code>string</code> | --          |
-| mouseover  | forwarded  | --                  | --          |
 | mouseenter | forwarded  | --                  | --          |
 | mouseleave | forwarded  | --                  | --          |
+| mouseover  | forwarded  | --                  | --          |
 
 ## `FileUploaderSkeleton`
 
@@ -1222,9 +1222,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `Filename`
 
@@ -1282,9 +1282,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 | submit     | forwarded | --     | --          |
 
 ## `FormGroup`
@@ -1309,9 +1309,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `FormItem`
 
@@ -1330,9 +1330,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `FormLabel`
 
@@ -1353,9 +1353,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `Grid`
 
@@ -1482,9 +1482,9 @@ None.
 
 | Event name          | Type       | Detail                                                | Description |
 | :------------------ | :--------- | :---------------------------------------------------- | :---------- |
-| inputSearch         | dispatched | <code>{ action: "search"; textInput: string; }</code> | --          |
 | focusInputSearch    | dispatched | <code>null</code>                                     | --          |
 | focusOutInputSearch | dispatched | <code>null</code>                                     | --          |
+| inputSearch         | dispatched | <code>{ action: "search"; textInput: string; }</code> | --          |
 
 ## `HeaderGlobalAction`
 
@@ -1544,14 +1544,14 @@ None.
 
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
+| blur       | forwarded | --     | --          |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
+| focus      | forwarded | --     | --          |
+| keydown    | forwarded | --     | --          |
+| keyup      | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
-| keyup      | forwarded | --     | --          |
-| keydown    | forwarded | --     | --          |
-| focus      | forwarded | --     | --          |
-| blur       | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `HeaderNavMenu`
 
@@ -1575,14 +1575,14 @@ None.
 
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
-| keydown    | forwarded | --     | --          |
+| blur       | forwarded | --     | --          |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
+| focus      | forwarded | --     | --          |
+| keydown    | forwarded | --     | --          |
+| keyup      | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
-| keyup      | forwarded | --     | --          |
-| focus      | forwarded | --     | --          |
-| blur       | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `HeaderPanelDivider`
 
@@ -1670,14 +1670,14 @@ export interface HeaderSearchResult {
 | Event name | Type       | Detail                                                                                          | Description |
 | :--------- | :--------- | :---------------------------------------------------------------------------------------------- | :---------- |
 | active     | dispatched | <code>any</code>                                                                                | --          |
-| inactive   | dispatched | <code>any</code>                                                                                | --          |
-| clear      | dispatched | <code>any</code>                                                                                | --          |
-| select     | dispatched | <code>{ value: string; selectedResultIndex: number; selectedResult: HeaderSearchResult }</code> | --          |
-| change     | forwarded  | --                                                                                              | --          |
-| input      | forwarded  | --                                                                                              | --          |
-| focus      | forwarded  | --                                                                                              | --          |
 | blur       | forwarded  | --                                                                                              | --          |
+| change     | forwarded  | --                                                                                              | --          |
+| clear      | dispatched | <code>any</code>                                                                                | --          |
+| focus      | forwarded  | --                                                                                              | --          |
+| inactive   | dispatched | <code>any</code>                                                                                | --          |
+| input      | forwarded  | --                                                                                              | --          |
 | keydown    | forwarded  | --                                                                                              | --          |
+| select     | dispatched | <code>{ value: string; selectedResultIndex: number; selectedResult: HeaderSearchResult }</code> | --          |
 
 ## `HeaderUtilities`
 
@@ -1713,9 +1713,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `IconSkeleton`
 
@@ -1734,9 +1734,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `InlineLoading`
 
@@ -1758,9 +1758,9 @@ None.
 | Event name | Type       | Detail            | Description |
 | :--------- | :--------- | :---------------- | :---------- |
 | click      | forwarded  | --                | --          |
-| mouseover  | forwarded  | --                | --          |
 | mouseenter | forwarded  | --                | --          |
 | mouseleave | forwarded  | --                | --          |
+| mouseover  | forwarded  | --                | --          |
 | success    | dispatched | <code>null</code> | --          |
 
 ## `InlineNotification`
@@ -1789,11 +1789,11 @@ None.
 
 | Event name | Type       | Detail                            | Description |
 | :--------- | :--------- | :-------------------------------- | :---------- |
-| close      | dispatched | <code>{ timeout: boolean }</code> | --          |
 | click      | forwarded  | --                                | --          |
-| mouseover  | forwarded  | --                                | --          |
+| close      | dispatched | <code>{ timeout: boolean }</code> | --          |
 | mouseenter | forwarded  | --                                | --          |
 | mouseleave | forwarded  | --                                | --          |
+| mouseover  | forwarded  | --                                | --          |
 
 ## `Link`
 
@@ -1819,9 +1819,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `ListBox`
 
@@ -1849,8 +1849,8 @@ None.
 
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
-| keydown    | forwarded | --     | --          |
 | click      | forwarded | --     | --          |
+| keydown    | forwarded | --     | --          |
 
 ## `ListBoxField`
 
@@ -1882,12 +1882,12 @@ export type ListBoxFieldTranslationId = "close" | "open";
 
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
+| blur       | forwarded | --     | --          |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
+| keydown    | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
-| keydown    | forwarded | --     | --          |
-| blur       | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `ListBoxMenu`
 
@@ -2004,9 +2004,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `Loading`
 
@@ -2066,15 +2066,15 @@ None.
 
 | Event name              | Type       | Detail            | Description |
 | :---------------------- | :--------- | :---------------- | :---------- |
-| keydown                 | forwarded  | --                | --          |
 | click                   | forwarded  | --                | --          |
-| mouseover               | forwarded  | --                | --          |
-| mouseenter              | forwarded  | --                | --          |
-| mouseleave              | forwarded  | --                | --          |
-| submit                  | dispatched | <code>null</code> | --          |
 | click:button--secondary | dispatched | <code>null</code> | --          |
 | close                   | dispatched | <code>null</code> | --          |
+| keydown                 | forwarded  | --                | --          |
+| mouseenter              | forwarded  | --                | --          |
+| mouseleave              | forwarded  | --                | --          |
+| mouseover               | forwarded  | --                | --          |
 | open                    | dispatched | <code>null</code> | --          |
+| submit                  | dispatched | <code>null</code> | --          |
 
 ## `ModalBody`
 
@@ -2198,10 +2198,10 @@ None.
 
 | Event name | Type       | Detail | Description |
 | :--------- | :--------- | :----- | :---------- |
-| clear      | forwarded  | --     | --          |
-| keydown    | forwarded  | --     | --          |
-| focus      | forwarded  | --     | --          |
 | blur       | forwarded  | --     | --          |
+| clear      | forwarded  | --     | --          |
+| focus      | forwarded  | --     | --          |
+| keydown    | forwarded  | --     | --          |
 | select     | dispatched | --     | --          |
 
 ## `NotificationActionButton`
@@ -2221,9 +2221,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `NotificationButton`
 
@@ -2245,9 +2245,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `NotificationIcon`
 
@@ -2336,10 +2336,10 @@ export type NumberInputTranslationId = "increment" | "decrement";
 | :--------- | :--------- | :------------------ | :---------- |
 | change     | dispatched | <code>number</code> | --          |
 | click      | forwarded  | --                  | --          |
-| mouseover  | forwarded  | --                  | --          |
+| input      | forwarded  | --                  | --          |
 | mouseenter | forwarded  | --                  | --          |
 | mouseleave | forwarded  | --                  | --          |
-| input      | forwarded  | --                  | --          |
+| mouseover  | forwarded  | --                  | --          |
 
 ## `NumberInputSkeleton`
 
@@ -2358,9 +2358,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `OrderedList`
 
@@ -2382,9 +2382,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `OutboundLink`
 
@@ -2403,9 +2403,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `OverflowMenu`
 
@@ -2437,12 +2437,12 @@ None.
 
 | Event name | Type       | Detail                                        | Description |
 | :--------- | :--------- | :-------------------------------------------- | :---------- |
-| close      | dispatched | <code>{ index: number; text: string; }</code> | --          |
 | click      | forwarded  | --                                            | --          |
-| mouseover  | forwarded  | --                                            | --          |
+| close      | dispatched | <code>{ index: number; text: string; }</code> | --          |
+| keydown    | forwarded  | --                                            | --          |
 | mouseenter | forwarded  | --                                            | --          |
 | mouseleave | forwarded  | --                                            | --          |
-| keydown    | forwarded  | --                                            | --          |
+| mouseover  | forwarded  | --                                            | --          |
 
 ## `OverflowMenuItem`
 
@@ -2528,8 +2528,8 @@ None.
 | Event name             | Type       | Detail                         | Description |
 | :--------------------- | :--------- | :----------------------------- | :---------- |
 | change                 | dispatched | <code>{ page: number; }</code> | --          |
-| click:button--previous | dispatched | <code>{ page: number; }</code> | --          |
 | click:button--next     | dispatched | <code>{ page: number; }</code> | --          |
+| click:button--previous | dispatched | <code>{ page: number; }</code> | --          |
 
 ## `PaginationSkeleton`
 
@@ -2546,9 +2546,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `PasswordInput`
 
@@ -2583,15 +2583,15 @@ None.
 
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
-| click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
-| mouseenter | forwarded | --     | --          |
-| mouseleave | forwarded | --     | --          |
+| blur       | forwarded | --     | --          |
 | change     | forwarded | --     | --          |
+| click      | forwarded | --     | --          |
+| focus      | forwarded | --     | --          |
 | input      | forwarded | --     | --          |
 | keydown    | forwarded | --     | --          |
-| focus      | forwarded | --     | --          |
-| blur       | forwarded | --     | --          |
+| mouseenter | forwarded | --     | --          |
+| mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `ProgressIndicator`
 
@@ -2616,9 +2616,9 @@ None.
 | :--------- | :--------- | :------------------ | :---------- |
 | change     | dispatched | <code>number</code> | --          |
 | click      | forwarded  | --                  | --          |
-| mouseover  | forwarded  | --                  | --          |
 | mouseenter | forwarded  | --                  | --          |
 | mouseleave | forwarded  | --                  | --          |
+| mouseover  | forwarded  | --                  | --          |
 
 ## `ProgressIndicatorSkeleton`
 
@@ -2638,9 +2638,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `ProgressStep`
 
@@ -2668,10 +2668,10 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
+| keydown    | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
-| keydown    | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `RadioButton`
 
@@ -2721,11 +2721,11 @@ None.
 
 | Event name | Type       | Detail | Description |
 | :--------- | :--------- | :----- | :---------- |
+| change     | dispatched | --     | --          |
 | click      | forwarded  | --     | --          |
-| mouseover  | forwarded  | --     | --          |
 | mouseenter | forwarded  | --     | --          |
 | mouseleave | forwarded  | --     | --          |
-| change     | dispatched | --     | --          |
+| mouseover  | forwarded  | --     | --          |
 
 ## `RadioButtonSkeleton`
 
@@ -2742,9 +2742,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `RadioTile`
 
@@ -2771,11 +2771,11 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | change     | forwarded | --     | --          |
-| keydown    | forwarded | --     | --          |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
+| keydown    | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `Row`
 
@@ -2830,16 +2830,16 @@ None.
 
 | Event name | Type       | Detail            | Description |
 | :--------- | :--------- | :---------------- | :---------- |
+| blur       | forwarded  | --                | --          |
+| change     | forwarded  | --                | --          |
+| clear      | dispatched | <code>null</code> | --          |
 | click      | forwarded  | --                | --          |
-| mouseover  | forwarded  | --                | --          |
+| focus      | forwarded  | --                | --          |
+| input      | forwarded  | --                | --          |
+| keydown    | forwarded  | --                | --          |
 | mouseenter | forwarded  | --                | --          |
 | mouseleave | forwarded  | --                | --          |
-| change     | forwarded  | --                | --          |
-| input      | forwarded  | --                | --          |
-| focus      | forwarded  | --                | --          |
-| blur       | forwarded  | --                | --          |
-| keydown    | forwarded  | --                | --          |
-| clear      | dispatched | <code>null</code> | --          |
+| mouseover  | forwarded  | --                | --          |
 
 ## `SearchSkeleton`
 
@@ -2859,9 +2859,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `Select`
 
@@ -2894,8 +2894,8 @@ None.
 
 | Event name | Type       | Detail              | Description |
 | :--------- | :--------- | :------------------ | :---------- |
-| change     | dispatched | <code>string</code> | --          |
 | blur       | forwarded  | --                  | --          |
+| change     | dispatched | <code>string</code> | --          |
 
 ## `SelectItem`
 
@@ -2952,9 +2952,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `SelectableTile`
 
@@ -2983,10 +2983,10 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
+| keydown    | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
-| keydown    | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `SideNav`
 
@@ -3105,9 +3105,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `SkeletonText`
 
@@ -3129,9 +3129,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `SkipToContent`
 
@@ -3186,11 +3186,11 @@ None.
 
 | Event name | Type       | Detail | Description |
 | :--------- | :--------- | :----- | :---------- |
+| change     | dispatched | --     | --          |
 | click      | forwarded  | --     | --          |
-| mouseover  | forwarded  | --     | --          |
 | mouseenter | forwarded  | --     | --          |
 | mouseleave | forwarded  | --     | --          |
-| change     | dispatched | --     | --          |
+| mouseover  | forwarded  | --     | --          |
 
 ## `SliderSkeleton`
 
@@ -3209,9 +3209,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `StructuredList`
 
@@ -3233,11 +3233,11 @@ None.
 
 | Event name | Type       | Detail | Description |
 | :--------- | :--------- | :----- | :---------- |
+| change     | dispatched | --     | --          |
 | click      | forwarded  | --     | --          |
-| mouseover  | forwarded  | --     | --          |
 | mouseenter | forwarded  | --     | --          |
 | mouseleave | forwarded  | --     | --          |
-| change     | dispatched | --     | --          |
+| mouseover  | forwarded  | --     | --          |
 
 ## `StructuredListBody`
 
@@ -3256,9 +3256,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `StructuredListCell`
 
@@ -3280,9 +3280,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `StructuredListHead`
 
@@ -3301,9 +3301,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `StructuredListInput`
 
@@ -3347,10 +3347,10 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
+| keydown    | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
-| keydown    | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `StructuredListSkeleton`
 
@@ -3370,9 +3370,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `Switch`
 
@@ -3397,10 +3397,10 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
+| keydown    | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
-| keydown    | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `Tab`
 
@@ -3426,9 +3426,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `TabContent`
 
@@ -3504,9 +3504,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `TableContainer`
 
@@ -3545,9 +3545,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `TableHeader`
 
@@ -3569,10 +3569,10 @@ None.
 
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
-| mouseover  | forwarded | --     | --          |
+| click      | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
-| click      | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `TableRow`
 
@@ -3591,9 +3591,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `Tabs`
 
@@ -3617,9 +3617,9 @@ None.
 
 | Event name | Type       | Detail | Description |
 | :--------- | :--------- | :----- | :---------- |
-| keypress   | forwarded  | --     | --          |
-| click      | forwarded  | --     | --          |
 | change     | dispatched | --     | --          |
+| click      | forwarded  | --     | --          |
+| keypress   | forwarded  | --     | --          |
 
 ## `TabsSkeleton`
 
@@ -3638,9 +3638,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `Tag`
 
@@ -3667,10 +3667,10 @@ None.
 | Event name | Type       | Detail            | Description |
 | :--------- | :--------- | :---------------- | :---------- |
 | click      | forwarded  | --                | --          |
-| mouseover  | forwarded  | --                | --          |
+| close      | dispatched | <code>null</code> | --          |
 | mouseenter | forwarded  | --                | --          |
 | mouseleave | forwarded  | --                | --          |
-| close      | dispatched | <code>null</code> | --          |
+| mouseover  | forwarded  | --                | --          |
 
 ## `TagSkeleton`
 
@@ -3687,9 +3687,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `TextArea`
 
@@ -3720,14 +3720,14 @@ None.
 
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
+| blur       | forwarded | --     | --          |
+| change     | forwarded | --     | --          |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
+| focus      | forwarded | --     | --          |
+| input      | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
-| change     | forwarded | --     | --          |
-| input      | forwarded | --     | --          |
-| focus      | forwarded | --     | --          |
-| blur       | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `TextAreaSkeleton`
 
@@ -3746,9 +3746,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `TextInput`
 
@@ -3783,15 +3783,15 @@ None.
 
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
-| click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
-| mouseenter | forwarded | --     | --          |
-| mouseleave | forwarded | --     | --          |
+| blur       | forwarded | --     | --          |
 | change     | forwarded | --     | --          |
+| click      | forwarded | --     | --          |
+| focus      | forwarded | --     | --          |
 | input      | forwarded | --     | --          |
 | keydown    | forwarded | --     | --          |
-| focus      | forwarded | --     | --          |
-| blur       | forwarded | --     | --          |
+| mouseenter | forwarded | --     | --          |
+| mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `TextInputSkeleton`
 
@@ -3810,9 +3810,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `Tile`
 
@@ -3833,9 +3833,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `TileGroup`
 
@@ -3891,14 +3891,14 @@ None.
 
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
+| blur       | forwarded | --     | --          |
+| change     | forwarded | --     | --          |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
+| focus      | forwarded | --     | --          |
+| input      | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
-| change     | forwarded | --     | --          |
-| input      | forwarded | --     | --          |
-| focus      | forwarded | --     | --          |
-| blur       | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `TimePickerSelect`
 
@@ -3926,9 +3926,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `ToastNotification`
 
@@ -3956,11 +3956,11 @@ None.
 
 | Event name | Type       | Detail                            | Description |
 | :--------- | :--------- | :-------------------------------- | :---------- |
-| close      | dispatched | <code>{ timeout: boolean }</code> | --          |
 | click      | forwarded  | --                                | --          |
-| mouseover  | forwarded  | --                                | --          |
+| close      | dispatched | <code>{ timeout: boolean }</code> | --          |
 | mouseenter | forwarded  | --                                | --          |
 | mouseleave | forwarded  | --                                | --          |
+| mouseover  | forwarded  | --                                | --          |
 
 ## `Toggle`
 
@@ -3985,15 +3985,15 @@ None.
 
 | Event name | Type       | Detail                             | Description |
 | :--------- | :--------- | :--------------------------------- | :---------- |
-| toggle     | dispatched | <code>{ toggled: boolean; }</code> | --          |
+| blur       | forwarded  | --                                 | --          |
+| change     | forwarded  | --                                 | --          |
 | click      | forwarded  | --                                 | --          |
-| mouseover  | forwarded  | --                                 | --          |
+| focus      | forwarded  | --                                 | --          |
+| keyup      | forwarded  | --                                 | --          |
 | mouseenter | forwarded  | --                                 | --          |
 | mouseleave | forwarded  | --                                 | --          |
-| change     | forwarded  | --                                 | --          |
-| keyup      | forwarded  | --                                 | --          |
-| focus      | forwarded  | --                                 | --          |
-| blur       | forwarded  | --                                 | --          |
+| mouseover  | forwarded  | --                                 | --          |
+| toggle     | dispatched | <code>{ toggled: boolean; }</code> | --          |
 
 ## `ToggleSkeleton`
 
@@ -4014,9 +4014,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `ToggleSmall`
 
@@ -4040,14 +4040,14 @@ None.
 
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
+| blur       | forwarded | --     | --          |
+| change     | forwarded | --     | --          |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
+| focus      | forwarded | --     | --          |
+| keyup      | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
-| change     | forwarded | --     | --          |
-| keyup      | forwarded | --     | --          |
-| focus      | forwarded | --     | --          |
-| blur       | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `ToggleSmallSkeleton`
 
@@ -4067,9 +4067,9 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `Toolbar`
 
@@ -4178,10 +4178,10 @@ None.
 
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
-| change     | forwarded | --     | --          |
-| input      | forwarded | --     | --          |
-| focus      | forwarded | --     | --          |
 | blur       | forwarded | --     | --          |
+| change     | forwarded | --     | --          |
+| focus      | forwarded | --     | --          |
+| input      | forwarded | --     | --          |
 
 ## `Tooltip`
 
@@ -4243,10 +4243,10 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
+| focus      | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
-| focus      | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `TooltipIcon`
 
@@ -4272,10 +4272,10 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
+| focus      | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
-| focus      | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |
 
 ## `UnorderedList`
 
@@ -4296,6 +4296,6 @@ None.
 | Event name | Type      | Detail | Description |
 | :--------- | :-------- | :----- | :---------- |
 | click      | forwarded | --     | --          |
-| mouseover  | forwarded | --     | --          |
 | mouseenter | forwarded | --     | --          |
 | mouseleave | forwarded | --     | --          |
+| mouseover  | forwarded | --     | --          |

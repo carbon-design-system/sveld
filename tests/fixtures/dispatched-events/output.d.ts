@@ -7,10 +7,10 @@ export type DispatchedEventsProps = {
 export default class DispatchedEvents extends SvelteComponentTyped<
   DispatchedEventsProps,
   {
-    hover: CustomEvent<any>;
     destroy: CustomEvent<null>;
     "destroy--component": CustomEvent<null>;
     "destroy:component": CustomEvent<null>;
+    hover: CustomEvent<any>;
   },
   { default: Record<string, never> }
 > {}

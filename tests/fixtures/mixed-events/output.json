@@ -5,13 +5,13 @@
   "events": [
     {
       "type": "dispatched",
-      "name": "custom-focus",
-      "detail": "FocusEvent | number"
+      "name": "blur",
+      "detail": "FocusEvent | CustomEvent<FocusEvent>"
     },
     {
       "type": "dispatched",
-      "name": "blur",
-      "detail": "FocusEvent | CustomEvent<FocusEvent>"
+      "name": "custom-focus",
+      "detail": "FocusEvent | number"
     }
   ],
   "typedefs": [],

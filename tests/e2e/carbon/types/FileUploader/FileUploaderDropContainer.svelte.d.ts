@@ -74,12 +74,12 @@ export default class FileUploaderDropContainer extends SvelteComponentTyped<
   FileUploaderDropContainerProps,
   {
     add: CustomEvent<FileList>;
-    dragover: WindowEventMap["dragover"];
-    dragleave: WindowEventMap["dragleave"];
-    drop: WindowEventMap["drop"];
-    keydown: WindowEventMap["keydown"];
     change: WindowEventMap["change"];
     click: WindowEventMap["click"];
+    dragleave: WindowEventMap["dragleave"];
+    dragover: WindowEventMap["dragover"];
+    drop: WindowEventMap["drop"];
+    keydown: WindowEventMap["keydown"];
   },
   Record<string, never>
 > {}

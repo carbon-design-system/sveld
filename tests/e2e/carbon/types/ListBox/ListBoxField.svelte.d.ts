@@ -51,12 +51,12 @@ export type ListBoxFieldProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class ListBoxField extends SvelteComponentTyped<
   ListBoxFieldProps,
   {
+    blur: WindowEventMap["blur"];
     click: WindowEventMap["click"];
-    mouseover: WindowEventMap["mouseover"];
+    keydown: WindowEventMap["keydown"];
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
-    keydown: WindowEventMap["keydown"];
-    blur: WindowEventMap["blur"];
+    mouseover: WindowEventMap["mouseover"];
   },
   { default: Record<string, never> }
 > {

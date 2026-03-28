@@ -114,11 +114,11 @@ export type SliderProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class Slider extends SvelteComponentTyped<
   SliderProps,
   {
+    change: CustomEvent<any>;
     click: WindowEventMap["click"];
-    mouseover: WindowEventMap["mouseover"];
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
-    change: CustomEvent<any>;
+    mouseover: WindowEventMap["mouseover"];
   },
   Record<string, never>
 > {}

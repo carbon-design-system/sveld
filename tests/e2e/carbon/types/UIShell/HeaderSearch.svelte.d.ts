@@ -54,18 +54,18 @@ export default class HeaderSearch extends SvelteComponentTyped<
   HeaderSearchProps,
   {
     active: CustomEvent<any>;
-    inactive: CustomEvent<any>;
+    blur: WindowEventMap["blur"];
+    change: WindowEventMap["change"];
     clear: CustomEvent<any>;
+    focus: WindowEventMap["focus"];
+    inactive: CustomEvent<any>;
+    input: WindowEventMap["input"];
+    keydown: WindowEventMap["keydown"];
     select: CustomEvent<{
       value: string;
       selectedResultIndex: number;
       selectedResult: HeaderSearchResult;
     }>;
-    change: WindowEventMap["change"];
-    input: WindowEventMap["input"];
-    focus: WindowEventMap["focus"];
-    blur: WindowEventMap["blur"];
-    keydown: WindowEventMap["keydown"];
   },
   { default: { result: HeaderSearchResult; index: number } }
 > {}

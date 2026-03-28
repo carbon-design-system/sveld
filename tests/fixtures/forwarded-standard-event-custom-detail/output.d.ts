@@ -11,8 +11,8 @@ export default class ForwardedStandardEventCustomDetail extends SvelteComponentT
   ForwardedStandardEventCustomDetailProps,
   {
     add: CustomEvent<ReadonlyArray<File>>;
-    remove: CustomEvent<ReadonlyArray<File>>;
     change: CustomEvent<ReadonlyArray<File>>;
+    remove: CustomEvent<ReadonlyArray<File>>;
   },
   Record<string, never>
 > {}

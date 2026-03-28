@@ -30,9 +30,9 @@ export default class BreadcrumbItem extends SvelteComponentTyped<
   BreadcrumbItemProps,
   {
     click: WindowEventMap["click"];
-    mouseover: WindowEventMap["mouseover"];
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
+    mouseover: WindowEventMap["mouseover"];
   },
   { default: { props?: { ["aria-current"]?: string; class: "bx--link" } } }
 > {}

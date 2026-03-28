@@ -182,10 +182,10 @@ export type MultiSelectProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class MultiSelect extends SvelteComponentTyped<
   MultiSelectProps,
   {
-    clear: CustomEvent<any>;
-    keydown: WindowEventMap["keydown"];
-    focus: WindowEventMap["focus"];
     blur: WindowEventMap["blur"];
+    clear: CustomEvent<any>;
+    focus: WindowEventMap["focus"];
+    keydown: WindowEventMap["keydown"];
     select: CustomEvent<any>;
   },
   Record<string, never>

@@ -90,16 +90,16 @@ export type SearchProps = {
 export default class Search extends SvelteComponentTyped<
   SearchProps,
   {
+    blur: WindowEventMap["blur"];
+    change: WindowEventMap["change"];
+    clear: CustomEvent<null>;
     click: WindowEventMap["click"];
-    mouseover: WindowEventMap["mouseover"];
+    focus: WindowEventMap["focus"];
+    input: WindowEventMap["input"];
+    keydown: WindowEventMap["keydown"];
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
-    change: WindowEventMap["change"];
-    input: WindowEventMap["input"];
-    focus: WindowEventMap["focus"];
-    blur: WindowEventMap["blur"];
-    keydown: WindowEventMap["keydown"];
-    clear: CustomEvent<null>;
+    mouseover: WindowEventMap["mouseover"];
   },
   Record<string, never>
 > {}

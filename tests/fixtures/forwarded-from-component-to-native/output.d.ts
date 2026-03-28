@@ -5,12 +5,12 @@ export type ForwardedFromComponentToNativeProps = Record<string, never>;
 export default class ForwardedFromComponentToNative extends SvelteComponentTyped<
   ForwardedFromComponentToNativeProps,
   {
-    expand: CustomEvent<null>;
-    collapse: CustomEvent<null>;
     click: WindowEventMap["click"];
-    mouseover: WindowEventMap["mouseover"];
+    collapse: CustomEvent<null>;
+    expand: CustomEvent<null>;
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
+    mouseover: WindowEventMap["mouseover"];
   },
   Record<string, never>
 > {}

@@ -120,15 +120,15 @@ export type TextInputProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class TextInput extends SvelteComponentTyped<
   TextInputProps,
   {
-    click: WindowEventMap["click"];
-    mouseover: WindowEventMap["mouseover"];
-    mouseenter: WindowEventMap["mouseenter"];
-    mouseleave: WindowEventMap["mouseleave"];
+    blur: WindowEventMap["blur"];
     change: WindowEventMap["change"];
+    click: WindowEventMap["click"];
+    focus: WindowEventMap["focus"];
     input: WindowEventMap["input"];
     keydown: WindowEventMap["keydown"];
-    focus: WindowEventMap["focus"];
-    blur: WindowEventMap["blur"];
+    mouseenter: WindowEventMap["mouseenter"];
+    mouseleave: WindowEventMap["mouseleave"];
+    mouseover: WindowEventMap["mouseover"];
   },
   Record<string, never>
 > {}

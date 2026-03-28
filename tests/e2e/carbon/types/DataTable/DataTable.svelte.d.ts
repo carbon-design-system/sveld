@@ -226,21 +226,21 @@ export default class DataTable<
       row?: Row;
       cell?: DataTableCell<Row>;
     }>;
-    "click:header--expand": CustomEvent<{ expanded: boolean }>;
+    "click:cell": CustomEvent<DataTableCell<Row>>;
     "click:header": CustomEvent<{
       header: DataTableHeader<Row>;
       sortDirection?: "ascending" | "descending" | "none";
     }>;
+    "click:header--expand": CustomEvent<{ expanded: boolean }>;
     "click:header--select": CustomEvent<{
       indeterminate: boolean;
       selected: boolean;
     }>;
     "click:row": CustomEvent<Row>;
-    "mouseenter:row": CustomEvent<Row>;
-    "mouseleave:row": CustomEvent<Row>;
     "click:row--expand": CustomEvent<{ expanded: boolean; row: Row }>;
     "click:row--select": CustomEvent<{ selected: boolean; row: Row }>;
-    "click:cell": CustomEvent<DataTableCell<Row>>;
+    "mouseenter:row": CustomEvent<Row>;
+    "mouseleave:row": CustomEvent<Row>;
   },
   {
     default: Record<string, never>;
