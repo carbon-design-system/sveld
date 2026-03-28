@@ -2,10 +2,12 @@
   "compilerOptions": {
     "erasableSyntaxOnly": true,
     "target": "ESNext",
+    "module": "ESNext",
     "moduleResolution": "bundler",
     "skipLibCheck": true,
     "strict": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "types": ["bun", "jest"]
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*", "tests/**/*"]
 }

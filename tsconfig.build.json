@@ -6,5 +6,6 @@
     "outDir": "lib",
     "target": "ESNext",
     "module": "CommonJS"
-  }
+  },
+  "include": ["src/**/*"]
 }
