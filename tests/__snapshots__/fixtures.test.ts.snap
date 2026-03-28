@@ -1,5 +1,65 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
+exports[`fixtures (JSON) "runes-callback-annotated/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "onsnowball",
+      "kind": "let",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "onchange",
+      "kind": "let",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "onsubmit",
+      "kind": "let",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "change",
+      "detail": "null",
+      "description": "Will be fired if value has been changed"
+    },
+    {
+      "type": "dispatched",
+      "name": "snowball",
+      "detail": "{\\n  /** Indicates whether the snowball is tightly packed. */\\n  isPacked: boolean;\\n  /** The speed of the snowball in mph. */\\n  speed: number;\\n  /** Optional color of the snowball. */\\n  color?: string;\\n  /** Optional density with default value. @default 0.9 */\\n  density?: number;\\n}",
+      "description": "Snowball event fired when throwing a snowball."
+    },
+    {
+      "type": "dispatched",
+      "name": "submit",
+      "detail": "{ value: string }",
+      "description": "Form submission with value"
+    }
+  ],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "svg-props/input.svelte" 1`] = `
 "{
   "props": [],
@@ -2021,6 +2081,75 @@ exports[`fixtures (JSON) "default-slot-with-props/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "runes-snippets-annotated/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "prop",
+      "kind": "let",
+      "type": "number",
+      "value": "0",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "children",
+      "kind": "let",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "title",
+      "kind": "let",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "body",
+      "kind": "let",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{ prop: number; doubled: number; }"
+    },
+    {
+      "name": "body",
+      "default": false,
+      "slot_props": "{ prop: number }",
+      "description": "Customize the paragraph text."
+    },
+    {
+      "name": "title",
+      "default": false,
+      "slot_props": "Record<string, never>"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "element-tag-map-table-cells/input.svelte" 1`] = `
 "{
   "props": [
@@ -2802,6 +2931,77 @@ exports[`fixtures (JSON) "forwarded-events-native-with-jsdoc/input.svelte" 1`] =
   ],
   "typedefs": [],
   "generics": null,
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "runes-generics/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "headers",
+      "kind": "let",
+      "type": "ReadonlyArray<DataTableHeader<Row>>",
+      "value": "[]",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "rows",
+      "kind": "let",
+      "type": "ReadonlyArray<DataTableHeader<Row>>",
+      "value": "[]",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "children",
+      "kind": "let",
+      "type": "ReadonlyArray<DataTableHeader<Row>>",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{ headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<DataTableHeader<Row>> }"
+    }
+  ],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{ id: string | number; [key: string]: any; }",
+      "name": "DataTableRow",
+      "ts": "interface DataTableRow { id: string | number; [key: string]: any; }"
+    },
+    {
+      "type": "Exclude<keyof Row, \\"id\\">",
+      "name": "DataTableKey<Row>",
+      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \\"id\\">"
+    },
+    {
+      "type": "{ key: DataTableKey<Row>; value: string; }",
+      "name": "DataTableHeader<Row=DataTableRow>",
+      "ts": "interface DataTableHeader<Row=DataTableRow> { key: DataTableKey<Row>; value: string; }"
+    }
+  ],
+  "generics": [
+    "Row",
+    "Row extends DataTableRow = DataTableRow"
+  ],
   "contexts": []
 }
 "
@@ -4679,6 +4879,56 @@ exports[`fixtures (JSON) "reactive-shadowed-local-assignment/input.svelte" 1`] =
 "
 `;
 
+exports[`fixtures (JSON) "runes-typed-props/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "prop",
+      "kind": "let",
+      "description": "This is a comment.\\n@see https://github.com/\\n@deprecated this prop will be removed in the next major release.",
+      "type": "boolean | string",
+      "value": "true",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "prop1",
+      "kind": "let",
+      "description": "This is a comment.\\n@see https://github.com/\\n@deprecated this prop will be removed in the next major release.",
+      "type": "boolean | string",
+      "value": "true",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "prop2",
+      "kind": "let",
+      "description": "This is a comment.\\n@see https://github.com/\\n@deprecated this prop will be removed in the next major release.",
+      "type": "boolean | string",
+      "value": "true",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "generics/input.svelte" 1`] = `
 "{
   "props": [
@@ -4769,6 +5019,50 @@ exports[`fixtures (JSON) "context-dot-notation/input.svelte" 1`] = `
     }
   ]
 }
+"
+`;
+
+exports[`fixtures (TypeScript) "runes-callback-annotated/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type RunesCallbackAnnotatedProps = {
+  /**
+   * @default undefined
+   */
+  onsnowball: undefined;
+
+  /**
+   * @default undefined
+   */
+  onchange: undefined;
+
+  /**
+   * @default undefined
+   */
+  onsubmit: undefined;
+};
+
+export default class RunesCallbackAnnotated extends SvelteComponentTyped<
+  RunesCallbackAnnotatedProps,
+  {
+    /** Will be fired if value has been changed */
+    change: CustomEvent<null>;
+    /** Snowball event fired when throwing a snowball. */
+    snowball: CustomEvent<{
+      /** Indicates whether the snowball is tightly packed. */
+      isPacked: boolean;
+      /** The speed of the snowball in mph. */
+      speed: number;
+      /** Optional color of the snowball. */
+      color?: string;
+      /** Optional density with default value. @default 0.9 */
+      density?: number;
+    }>;
+    /** Form submission with value */
+    submit: CustomEvent<{ value: string }>;
+  },
+  Record<string, never>
+> {}
 "
 `;
 
@@ -6024,6 +6318,44 @@ export default class DefaultSlotWithProps extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "runes-snippets-annotated/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type RunesSnippetsAnnotatedProps = {
+  /**
+   * @default 0
+   */
+  prop?: number;
+
+  /**
+   * @default undefined
+   */
+  children: undefined;
+
+  /**
+   * @default undefined
+   */
+  title: undefined;
+
+  /**
+   * @default undefined
+   */
+  body: undefined;
+};
+
+export default class RunesSnippetsAnnotated extends SvelteComponentTyped<
+  RunesSnippetsAnnotatedProps,
+  Record<string, any>,
+  {
+    default: { prop: number; doubled: number };
+    /** Customize the paragraph text. */
+    body: { prop: number };
+    title: Record<string, never>;
+  }
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "element-tag-map-table-cells/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
@@ -6513,6 +6845,46 @@ export default class ForwardedEventsNativeWithJsdoc extends SvelteComponentTyped
     focus: WindowEventMap["focus"];
   },
   { default: Record<string, never> }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "runes-generics/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export interface DataTableRow {
+  id: string | number;
+  [key: string]: any;
+}
+
+export type DataTableKey<Row> = Exclude<keyof Row, "id">;
+
+export interface DataTableHeader<Row = DataTableRow> {
+  key: DataTableKey<Row>;
+  value: string;
+}
+
+export type RunesGenericsProps<Row extends DataTableRow = DataTableRow> = {
+  /**
+   * @default []
+   */
+  headers?: ReadonlyArray<DataTableHeader<Row>>;
+
+  /**
+   * @default []
+   */
+  rows?: ReadonlyArray<DataTableHeader<Row>>;
+
+  /**
+   * @default undefined
+   */
+  children: ReadonlyArray<DataTableHeader<Row>>;
+};
+
+export default class RunesGenerics<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
+  RunesGenericsProps<Row>,
+  Record<string, any>,
+  { default: { headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<DataTableHeader<Row>> } }
 > {}
 "
 `;
@@ -7742,6 +8114,43 @@ export type ReactiveShadowedLocalAssignmentProps = {
 
 export default class ReactiveShadowedLocalAssignment extends SvelteComponentTyped<
   ReactiveShadowedLocalAssignmentProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "runes-typed-props/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type RunesTypedPropsProps = {
+  /**
+   * This is a comment.
+   * @see https://github.com/
+   * @deprecated this prop will be removed in the next major release.
+   * @default true
+   */
+  prop?: boolean | string;
+
+  /**
+   * This is a comment.
+   * @see https://github.com/
+   * @deprecated this prop will be removed in the next major release.
+   * @default true
+   */
+  prop1?: boolean | string;
+
+  /**
+   * This is a comment.
+   * @see https://github.com/
+   * @deprecated this prop will be removed in the next major release.
+   * @default true
+   */
+  prop2?: boolean | string;
+};
+
+export default class RunesTypedProps extends SvelteComponentTyped<
+  RunesTypedPropsProps,
   Record<string, any>,
   Record<string, never>
 > {}

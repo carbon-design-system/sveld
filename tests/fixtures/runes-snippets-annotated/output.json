@@ -1,0 +1,65 @@
+{
+  "props": [
+    {
+      "name": "prop",
+      "kind": "let",
+      "type": "number",
+      "value": "0",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "children",
+      "kind": "let",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "title",
+      "kind": "let",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "body",
+      "kind": "let",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{ prop: number; doubled: number; }"
+    },
+    {
+      "name": "body",
+      "default": false,
+      "slot_props": "{ prop: number }",
+      "description": "Customize the paragraph text."
+    },
+    {
+      "name": "title",
+      "default": false,
+      "slot_props": "Record<string, never>"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
