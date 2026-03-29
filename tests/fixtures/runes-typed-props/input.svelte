@@ -1,10 +1,4 @@
 <script>
-  /**
-   * This is a comment.
-   * @see https://github.com/
-   * @deprecated this prop will be removed in the next major release.
-   * @type {boolean | string}
-   */
   let {
     prop = true,
     /** @see https://github.com/ */

@@ -15,11 +15,6 @@ type $Props = {
   onclick: undefined;
 
   /**
-   * @default undefined
-   */
-  children: undefined;
-
-  /**
    * @default "ready"
    */
   value?: string;
@@ -28,6 +23,8 @@ type $Props = {
    * @default undefined
    */
   onpress: undefined;
+
+  children?: (this: void, ...args: [{ value: string }]) => void;
 
   [key: `data-${string}`]: unknown;
 };

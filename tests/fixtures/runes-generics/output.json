@@ -14,21 +14,11 @@
     {
       "name": "rows",
       "kind": "let",
-      "type": "ReadonlyArray<DataTableHeader<Row>>",
+      "type": "ReadonlyArray<Row>",
       "value": "[]",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
-      "constant": false,
-      "reactive": false
-    },
-    {
-      "name": "children",
-      "kind": "let",
-      "type": "ReadonlyArray<DataTableHeader<Row>>",
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": true,
       "constant": false,
       "reactive": false
     }
@@ -38,7 +28,7 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "{ headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<DataTableHeader<Row>> }"
+      "slot_props": "{ headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> }"
     }
   ],
   "events": [],

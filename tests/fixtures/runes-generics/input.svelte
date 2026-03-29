@@ -7,8 +7,8 @@
    * @generics {Row extends DataTableRow = DataTableRow} Row
    */
 
-  /** @type {ReadonlyArray<DataTableHeader<Row>>} */
   let {
+    /** @type {ReadonlyArray<DataTableHeader<Row>>} */
     headers = [],
     /** @type {ReadonlyArray<Row>} */
     rows = [],

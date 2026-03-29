@@ -15,7 +15,6 @@
 | value     | No       | <code>let</code> | Yes      | <code>string</code> | <code>"ready"</code> | --          |
 | label     | Yes      | <code>let</code> | No       | --                  | --                   | --          |
 | onclick   | Yes      | <code>let</code> | No       | --                  | --                   | --          |
-| children  | Yes      | <code>let</code> | No       | --                  | --                   | --          |
 | onpress   | Yes      | <code>let</code> | No       | --                  | --                   | --          |
 
 ### Slots

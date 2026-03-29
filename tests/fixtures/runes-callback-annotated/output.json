@@ -3,7 +3,9 @@
     {
       "name": "onsnowball",
       "kind": "let",
-      "isFunction": false,
+      "description": "Snowball event fired when throwing a snowball.",
+      "type": "(detail: { isPacked: boolean; speed: number; color?: string; density?: number }) => void",
+      "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
@@ -12,7 +14,9 @@
     {
       "name": "onchange",
       "kind": "let",
-      "isFunction": false,
+      "description": "Will be fired if value has been changed",
+      "type": "() => void",
+      "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
@@ -21,7 +25,9 @@
     {
       "name": "onsubmit",
       "kind": "let",
-      "isFunction": false,
+      "description": "Form submission with value",
+      "type": "(detail: { value: string }) => void",
+      "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
@@ -30,26 +36,7 @@
   ],
   "moduleExports": [],
   "slots": [],
-  "events": [
-    {
-      "type": "dispatched",
-      "name": "change",
-      "detail": "null",
-      "description": "Will be fired if value has been changed"
-    },
-    {
-      "type": "dispatched",
-      "name": "snowball",
-      "detail": "{\n  /** Indicates whether the snowball is tightly packed. */\n  isPacked: boolean;\n  /** The speed of the snowball in mph. */\n  speed: number;\n  /** Optional color of the snowball. */\n  color?: string;\n  /** Optional density with default value. @default 0.9 */\n  density?: number;\n}",
-      "description": "Snowball event fired when throwing a snowball."
-    },
-    {
-      "type": "dispatched",
-      "name": "submit",
-      "detail": "{ value: string }",
-      "description": "Form submission with value"
-    }
-  ],
+  "events": [],
   "typedefs": [],
   "generics": null,
   "contexts": []

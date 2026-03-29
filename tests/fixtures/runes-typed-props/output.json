@@ -3,8 +3,7 @@
     {
       "name": "prop",
       "kind": "let",
-      "description": "This is a comment.\n@see https://github.com/\n@deprecated this prop will be removed in the next major release.",
-      "type": "boolean | string",
+      "type": "boolean",
       "value": "true",
       "isFunction": false,
       "isFunctionDeclaration": false,
@@ -15,8 +14,8 @@
     {
       "name": "prop1",
       "kind": "let",
-      "description": "This is a comment.\n@see https://github.com/\n@deprecated this prop will be removed in the next major release.",
-      "type": "boolean | string",
+      "description": "@see https://github.com/",
+      "type": "boolean",
       "value": "true",
       "isFunction": false,
       "isFunctionDeclaration": false,
@@ -27,7 +26,7 @@
     {
       "name": "prop2",
       "kind": "let",
-      "description": "This is a comment.\n@see https://github.com/\n@deprecated this prop will be removed in the next major release.",
+      "description": "This is a comment.",
       "type": "boolean | string",
       "value": "true",
       "isFunction": false,

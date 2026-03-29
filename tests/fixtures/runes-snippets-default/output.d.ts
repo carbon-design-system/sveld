@@ -6,10 +6,7 @@ export type RunesSnippetsDefaultProps = {
    */
   item: undefined;
 
-  /**
-   * @default undefined
-   */
-  children: undefined;
+  children?: (this: void, ...args: [{ item: any }]) => void;
 };
 
 export default class RunesSnippetsDefault extends SvelteComponentTyped<
