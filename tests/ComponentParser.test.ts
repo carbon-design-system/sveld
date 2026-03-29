@@ -388,6 +388,30 @@ describe("ComponentParser", () => {
     expect(slot?.slot_props).toBe("{ item: CustomType }");
   });
 
+  test("treats @snippet as an alias for @slot", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /**
+         * @snippet {{ item: string }}
+         * @snippet {{ active: boolean }} header - Header snippet
+         */
+        let { children, header } = $props();
+      </script>
+
+      {@render children?.({ item: "value" })}
+      {@render header?.({ active: true })}
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    const defaultSlot = result.slots.find((s) => s.default);
+    const headerSlot = result.slots.find((s) => s.name === "header");
+
+    expect(defaultSlot?.slot_props).toBe("{ item: string }");
+    expect(headerSlot?.slot_props).toBe("{ active: boolean }");
+    expect(headerSlot?.description).toBe("Header snippet");
+  });
+
   test("handles dispatched events", () => {
     const parser = new ComponentParser();
     const source = `

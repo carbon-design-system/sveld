@@ -1,8 +1,8 @@
 <script>
   /**
-   * @slot {{ prop: number; doubled: number; }}
-   * @slot {{}} title
-   * @slot {{ prop: number }} body - Customize the paragraph text.
+   * @snippet {{ prop: number; doubled: number; }}
+   * @snippet {{}} title
+   * @snippet {{ prop: number }} body - Customize the paragraph text.
    */
 
   let { prop = 0, children, title, body } = $props();
