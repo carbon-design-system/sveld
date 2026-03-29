@@ -6,7 +6,9 @@ exports[`fixtures (JSON) "runes-callback-annotated/input.svelte" 1`] = `
     {
       "name": "onsnowball",
       "kind": "let",
-      "isFunction": false,
+      "description": "Snowball event fired when throwing a snowball.",
+      "type": "(detail: { isPacked: boolean; speed: number; color?: string; density?: number }) => void",
+      "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
@@ -15,7 +17,9 @@ exports[`fixtures (JSON) "runes-callback-annotated/input.svelte" 1`] = `
     {
       "name": "onchange",
       "kind": "let",
-      "isFunction": false,
+      "description": "Will be fired if value has been changed",
+      "type": "() => void",
+      "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
@@ -24,7 +28,9 @@ exports[`fixtures (JSON) "runes-callback-annotated/input.svelte" 1`] = `
     {
       "name": "onsubmit",
       "kind": "let",
-      "isFunction": false,
+      "description": "Form submission with value",
+      "type": "(detail: { value: string }) => void",
+      "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
@@ -33,26 +39,7 @@ exports[`fixtures (JSON) "runes-callback-annotated/input.svelte" 1`] = `
   ],
   "moduleExports": [],
   "slots": [],
-  "events": [
-    {
-      "type": "dispatched",
-      "name": "change",
-      "detail": "null",
-      "description": "Will be fired if value has been changed"
-    },
-    {
-      "type": "dispatched",
-      "name": "snowball",
-      "detail": "{\\n  /** Indicates whether the snowball is tightly packed. */\\n  isPacked: boolean;\\n  /** The speed of the snowball in mph. */\\n  speed: number;\\n  /** Optional color of the snowball. */\\n  color?: string;\\n  /** Optional density with default value. @default 0.9 */\\n  density?: number;\\n}",
-      "description": "Snowball event fired when throwing a snowball."
-    },
-    {
-      "type": "dispatched",
-      "name": "submit",
-      "detail": "{ value: string }",
-      "description": "Form submission with value"
-    }
-  ],
+  "events": [],
   "typedefs": [],
   "generics": null,
   "contexts": []
@@ -1839,15 +1826,6 @@ exports[`fixtures (JSON) "runes-snippets-named/input.svelte" 1`] = `
       "isRequired": true,
       "constant": false,
       "reactive": false
-    },
-    {
-      "name": "header",
-      "kind": "let",
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": true,
-      "constant": false,
-      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -2092,33 +2070,6 @@ exports[`fixtures (JSON) "runes-snippets-annotated/input.svelte" 1`] = `
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
-      "constant": false,
-      "reactive": false
-    },
-    {
-      "name": "children",
-      "kind": "let",
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": true,
-      "constant": false,
-      "reactive": false
-    },
-    {
-      "name": "title",
-      "kind": "let",
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": true,
-      "constant": false,
-      "reactive": false
-    },
-    {
-      "name": "body",
-      "kind": "let",
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": true,
       "constant": false,
       "reactive": false
     }
@@ -2953,21 +2904,11 @@ exports[`fixtures (JSON) "runes-generics/input.svelte" 1`] = `
     {
       "name": "rows",
       "kind": "let",
-      "type": "ReadonlyArray<DataTableHeader<Row>>",
+      "type": "ReadonlyArray<Row>",
       "value": "[]",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
-      "constant": false,
-      "reactive": false
-    },
-    {
-      "name": "children",
-      "kind": "let",
-      "type": "ReadonlyArray<DataTableHeader<Row>>",
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": true,
       "constant": false,
       "reactive": false
     }
@@ -2977,7 +2918,7 @@ exports[`fixtures (JSON) "runes-generics/input.svelte" 1`] = `
     {
       "name": null,
       "default": true,
-      "slot_props": "{ headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<DataTableHeader<Row>> }"
+      "slot_props": "{ headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> }"
     }
   ],
   "events": [],
@@ -3535,15 +3476,6 @@ exports[`fixtures (JSON) "runes-snippets-default/input.svelte" 1`] = `
   "props": [
     {
       "name": "item",
-      "kind": "let",
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": true,
-      "constant": false,
-      "reactive": false
-    },
-    {
-      "name": "children",
       "kind": "let",
       "isFunction": false,
       "isFunctionDeclaration": false,
@@ -4885,8 +4817,7 @@ exports[`fixtures (JSON) "runes-typed-props/input.svelte" 1`] = `
     {
       "name": "prop",
       "kind": "let",
-      "description": "This is a comment.\\n@see https://github.com/\\n@deprecated this prop will be removed in the next major release.",
-      "type": "boolean | string",
+      "type": "boolean",
       "value": "true",
       "isFunction": false,
       "isFunctionDeclaration": false,
@@ -4897,8 +4828,8 @@ exports[`fixtures (JSON) "runes-typed-props/input.svelte" 1`] = `
     {
       "name": "prop1",
       "kind": "let",
-      "description": "This is a comment.\\n@see https://github.com/\\n@deprecated this prop will be removed in the next major release.",
-      "type": "boolean | string",
+      "description": "@see https://github.com/",
+      "type": "boolean",
       "value": "true",
       "isFunction": false,
       "isFunctionDeclaration": false,
@@ -4909,7 +4840,7 @@ exports[`fixtures (JSON) "runes-typed-props/input.svelte" 1`] = `
     {
       "name": "prop2",
       "kind": "let",
-      "description": "This is a comment.\\n@see https://github.com/\\n@deprecated this prop will be removed in the next major release.",
+      "description": "This is a comment.",
       "type": "boolean | string",
       "value": "true",
       "isFunction": false,
@@ -5027,40 +4958,24 @@ exports[`fixtures (TypeScript) "runes-callback-annotated/input.svelte" 1`] = `
 
 export type RunesCallbackAnnotatedProps = {
   /**
-   * @default undefined
+   * Snowball event fired when throwing a snowball.
    */
-  onsnowball: undefined;
+  onsnowball: (detail: { isPacked: boolean; speed: number; color?: string; density?: number }) => void;
 
   /**
-   * @default undefined
+   * Will be fired if value has been changed
    */
-  onchange: undefined;
+  onchange: () => void;
 
   /**
-   * @default undefined
+   * Form submission with value
    */
-  onsubmit: undefined;
+  onsubmit: (detail: { value: string }) => void;
 };
 
 export default class RunesCallbackAnnotated extends SvelteComponentTyped<
   RunesCallbackAnnotatedProps,
-  {
-    /** Will be fired if value has been changed */
-    change: CustomEvent<null>;
-    /** Snowball event fired when throwing a snowball. */
-    snowball: CustomEvent<{
-      /** Indicates whether the snowball is tightly packed. */
-      isPacked: boolean;
-      /** The speed of the snowball in mph. */
-      speed: number;
-      /** Optional color of the snowball. */
-      color?: string;
-      /** Optional density with default value. @default 0.9 */
-      density?: number;
-    }>;
-    /** Form submission with value */
-    submit: CustomEvent<{ value: string }>;
-  },
+  Record<string, any>,
   Record<string, never>
 > {}
 "
@@ -6184,10 +6099,7 @@ export type RunesSnippetsNamedProps = {
    */
   item: undefined;
 
-  /**
-   * @default undefined
-   */
-  header: undefined;
+  header?: (this: void, ...args: [{ title: any }]) => void;
 };
 
 export default class RunesSnippetsNamed extends SvelteComponentTyped<
@@ -6327,20 +6239,12 @@ export type RunesSnippetsAnnotatedProps = {
    */
   prop?: number;
 
-  /**
-   * @default undefined
-   */
-  children: undefined;
+  /** Customize the paragraph text. */
+  body?: (this: void, ...args: [{ prop: number }]) => void;
 
-  /**
-   * @default undefined
-   */
-  title: undefined;
+  title?: (this: void) => void;
 
-  /**
-   * @default undefined
-   */
-  body: undefined;
+  children?: (this: void, ...args: [{ prop: number; doubled: number }]) => void;
 };
 
 export default class RunesSnippetsAnnotated extends SvelteComponentTyped<
@@ -6873,18 +6777,18 @@ export type RunesGenericsProps<Row extends DataTableRow = DataTableRow> = {
   /**
    * @default []
    */
-  rows?: ReadonlyArray<DataTableHeader<Row>>;
+  rows?: ReadonlyArray<Row>;
 
-  /**
-   * @default undefined
-   */
-  children: ReadonlyArray<DataTableHeader<Row>>;
+  children?: (
+    this: void,
+    ...args: [{ headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> }]
+  ) => void;
 };
 
 export default class RunesGenerics<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
   RunesGenericsProps<Row>,
   Record<string, any>,
-  { default: { headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<DataTableHeader<Row>> } }
+  { default: { headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> } }
 > {}
 "
 `;
@@ -7192,10 +7096,7 @@ export type RunesSnippetsDefaultProps = {
    */
   item: undefined;
 
-  /**
-   * @default undefined
-   */
-  children: undefined;
+  children?: (this: void, ...args: [{ item: any }]) => void;
 };
 
 export default class RunesSnippetsDefault extends SvelteComponentTyped<
@@ -8125,25 +8026,18 @@ exports[`fixtures (TypeScript) "runes-typed-props/input.svelte" 1`] = `
 
 export type RunesTypedPropsProps = {
   /**
-   * This is a comment.
-   * @see https://github.com/
-   * @deprecated this prop will be removed in the next major release.
    * @default true
    */
-  prop?: boolean | string;
+  prop?: boolean;
+
+  /**
+   * @see https://github.com/
+   * @default true
+   */
+  prop1?: boolean;
 
   /**
    * This is a comment.
-   * @see https://github.com/
-   * @deprecated this prop will be removed in the next major release.
-   * @default true
-   */
-  prop1?: boolean | string;
-
-  /**
-   * This is a comment.
-   * @see https://github.com/
-   * @deprecated this prop will be removed in the next major release.
    * @default true
    */
   prop2?: boolean | string;

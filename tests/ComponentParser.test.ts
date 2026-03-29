@@ -410,6 +410,84 @@ describe("ComponentParser", () => {
     expect(defaultSlot?.slot_props).toBe("{ item: string }");
     expect(headerSlot?.slot_props).toBe("{ active: boolean }");
     expect(headerSlot?.description).toBe("Header snippet");
+    expect(result.props.map((prop) => prop.name)).not.toContain("children");
+    expect(result.props.map((prop) => prop.name)).not.toContain("header");
+  });
+
+  test("parses per-property TypeScript annotations for $props destructuring", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script lang="ts">
+        let { foo, class: klass, bar = 1 }: { foo?: string; class: "primary" | "secondary"; bar: number } = $props();
+      </script>
+
+      <button class={klass}>{foo} {bar}</button>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.props.find((prop) => prop.name === "foo")?.type).toBe("string");
+    expect(result.props.find((prop) => prop.name === "foo")?.isRequired).toBe(false);
+    expect(result.props.find((prop) => prop.name === "class")?.type).toBe('"primary" | "secondary"');
+    expect(result.props.find((prop) => prop.name === "class")?.isRequired).toBe(true);
+    expect(result.props.find((prop) => prop.name === "bar")?.type).toBe("number");
+  });
+
+  test("does not bleed declaration JSDoc across multiple $props bindings", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /**
+         * Shared doc should not bleed.
+         * @type {string}
+         */
+        let {
+          first = "",
+          /**
+           * Count prop.
+           * @type {number}
+           */
+          count = 0,
+        } = $props();
+      </script>
+
+      <div>{first} {count}</div>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.props.find((prop) => prop.name === "first")?.description).toBeUndefined();
+    expect(result.props.find((prop) => prop.name === "first")?.type).toBe("string");
+    expect(result.props.find((prop) => prop.name === "count")?.description).toBe("Count prop.");
+    expect(result.props.find((prop) => prop.name === "count")?.type).toBe("number");
+  });
+
+  test("aliases runes @event docs to callback props when no dispatched event exists", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /**
+         * Fired when a value is saved.
+         * @event {{ id: string }} save
+         * @event close
+         */
+        let { onsave, onclose } = $props();
+      </script>
+
+      <button
+        onclick={() => {
+          onsave?.({ id: "1" });
+          onclose?.();
+        }}
+      >
+        Save
+      </button>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.events).toHaveLength(0);
+    expect(result.props.find((prop) => prop.name === "onsave")?.type).toBe("(detail: { id: string }) => void");
+    expect(result.props.find((prop) => prop.name === "onsave")?.description).toBe("Fired when a value is saved.");
+    expect(result.props.find((prop) => prop.name === "onsave")?.isFunction).toBe(true);
+    expect(result.props.find((prop) => prop.name === "onclose")?.type).toBe("() => void");
   });
 
   test("handles dispatched events", () => {
@@ -970,6 +1048,7 @@ describe("ComponentParser", () => {
 
     const result = parser.parseSvelteComponent(source, diagnostics);
     expect(result.slots).toHaveLength(2);
+    expect(result.props.map((prop) => prop.name)).toEqual(["item"]);
     expect(result.slots.find((slot) => slot.default)?.slot_props).toBe("{ item: any }");
     expect(result.slots.find((slot) => slot.name === "header")?.slot_props).toBe("{ title: any }");
   });

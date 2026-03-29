@@ -24,15 +24,6 @@
           "reactive": false
         },
         {
-          "name": "children",
-          "kind": "let",
-          "isFunction": false,
-          "isFunctionDeclaration": false,
-          "isRequired": true,
-          "constant": false,
-          "reactive": false
-        },
-        {
           "name": "value",
           "kind": "let",
           "type": "string",

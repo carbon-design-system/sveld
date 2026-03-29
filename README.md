@@ -369,17 +369,22 @@ Use the `@type` tag to explicitly document the type. In the following example, t
 
 ```svelte
 <script>
-  /**
-   * Specify the kind of button
-   * @type {"primary" | "secondary" | "tertiary"}
-   */
-  /**
-   * Specify the Carbon icon to render
-   * @type {typeof import("carbon-icons-svelte").CarbonIcon}
-   */
-  let { kind = "primary", renderIcon = Close20 } = $props();
+  let {
+    /**
+     * Specify the kind of button
+     * @type {"primary" | "secondary" | "tertiary"}
+     */
+    kind = "primary",
+    /**
+     * Specify the Carbon icon to render
+     * @type {typeof import("carbon-icons-svelte").CarbonIcon}
+     */
+    renderIcon = Close20,
+  } = $props();
 </script>
 ```
+
+For runes components with multiple destructured props, place JSDoc on the individual property you want to document. A declaration-level JSDoc block is only used as a fallback when the destructure exposes a single public prop.
 
 **Svelte 3, 4, 5 (non-Runes):**
 
@@ -754,7 +759,7 @@ Omit the `slot-name` to type the default slot.
 
 For Svelte 5 compatibility, `sveld` automatically generates optional snippet props for all slots. This allows consumers to use either the traditional slot syntax or Svelte 5's `{#snippet}` syntax.
 
-When parsing runes components, `sveld` also maps `{@render ...}` calls back into the same slot metadata used for traditional `<slot>` declarations.
+When parsing runes components, `sveld` maps `{@render ...}` calls back into the same slot metadata used for traditional `<slot>` declarations. Reserved snippet props such as `children`, along with named snippet props discovered from `{@render ...}`, are represented through `slots` metadata and generated snippet prop types rather than duplicated in the `props` output.
 
 For slots with props (e.g., `let:prop`), the generated type uses a Snippet-compatible signature:
 
@@ -858,7 +863,7 @@ export default class DataTable<Row> extends SvelteComponentTyped<
 
 Use the `@event` tag to type dispatched events. An event name is required and a description optional.
 
-In Svelte 5 runes components, callback props such as `onclick` are treated as component props, not events. The `events` output remains reserved for dispatched events and legacy forwarded events.
+In Svelte 5 runes components, callback props such as `onclick` are treated as component props, not events. The `events` output remains reserved for real dispatched events and legacy forwarded events. If a runes component documents `@event foo` and exposes a matching callback prop like `onfoo` without actually dispatching or forwarding `foo`, `sveld` aliases that documentation onto the callback prop instead of synthesizing an emitted event.
 
 Use `null` as the value if no event detail is provided.
 
@@ -874,6 +879,20 @@ Use `null` as the value if no event detail is provided.
 **Example:**
 
 **Svelte 5 Runes:**
+
+```svelte
+<script>
+  /**
+   * Fired when a value is saved.
+   * @event {{ id: string }} save
+   */
+  let { onsave } = $props();
+</script>
+
+<button onclick={() => onsave?.({ id: "1" })}>Save</button>
+```
+
+**Svelte 5 Runes with dispatched events:**
 
 ```svelte
 <script>
@@ -1441,8 +1460,13 @@ Because `sveld` is designed to support JavaScript-only usage as a baseline, the 
    * @generics {Row extends DataTableRow = DataTableRow} Row
    */
 
-  /** @type {ReadonlyArray<DataTableHeader<Row>>} */
-  let { headers = [], rows = [], children } = $props();
+  let {
+    /** @type {ReadonlyArray<DataTableHeader<Row>>} */
+    headers = [],
+    /** @type {ReadonlyArray<Row>} */
+    rows = [],
+    children,
+  } = $props();
 </script>
 
 {@render children?.({ headers, rows })}

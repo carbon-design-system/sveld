@@ -21,16 +21,16 @@ export type RunesGenericsProps<Row extends DataTableRow = DataTableRow> = {
   /**
    * @default []
    */
-  rows?: ReadonlyArray<DataTableHeader<Row>>;
+  rows?: ReadonlyArray<Row>;
 
-  /**
-   * @default undefined
-   */
-  children: ReadonlyArray<DataTableHeader<Row>>;
+  children?: (
+    this: void,
+    ...args: [{ headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> }]
+  ) => void;
 };
 
 export default class RunesGenerics<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
   RunesGenericsProps<Row>,
   Record<string, any>,
-  { default: { headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<DataTableHeader<Row>> } }
+  { default: { headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> } }
 > {}

@@ -764,6 +764,23 @@ function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">) {
     .join("\n");
 }
 
+function genComponentShell(def: {
+  accessors: string;
+  events: string;
+  generic: string;
+  genericProps: string;
+  moduleName: string;
+  slots: string;
+}) {
+  return `export default class ${def.moduleName === "default" ? "" : def.moduleName}${def.generic} extends SvelteComponentTyped<
+      ${def.genericProps},
+      ${def.events},
+      ${def.slots}
+    > {
+      ${def.accessors}
+    }`;
+}
+
 export function writeTsDefinition(component: ComponentDocApi) {
   const {
     moduleName,
@@ -811,11 +828,12 @@ export function writeTsDefinition(component: ComponentDocApi) {
   ${contexts && contexts.length > 0 ? "\n" : ""}${getContextDefs({ contexts, generics })}
   ${prop_def}
   ${genComponentComment({ componentComment })}
-  export default class ${moduleName === "default" ? "" : moduleName}${generic} extends SvelteComponentTyped<
-      ${genericProps},
-      ${genEventDef({ events })},
-      ${genSlotDef({ slots })}
-    > {
-      ${genAccessors({ props })}
-    }`;
+  ${genComponentShell({
+    moduleName,
+    generic,
+    genericProps,
+    events: genEventDef({ events }),
+    slots: genSlotDef({ slots }),
+    accessors: genAccessors({ props }),
+  })}`;
 }

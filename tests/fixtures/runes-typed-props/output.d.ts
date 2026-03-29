@@ -2,25 +2,18 @@ import { SvelteComponentTyped } from "svelte";
 
 export type RunesTypedPropsProps = {
   /**
-   * This is a comment.
-   * @see https://github.com/
-   * @deprecated this prop will be removed in the next major release.
    * @default true
    */
-  prop?: boolean | string;
+  prop?: boolean;
+
+  /**
+   * @see https://github.com/
+   * @default true
+   */
+  prop1?: boolean;
 
   /**
    * This is a comment.
-   * @see https://github.com/
-   * @deprecated this prop will be removed in the next major release.
-   * @default true
-   */
-  prop1?: boolean | string;
-
-  /**
-   * This is a comment.
-   * @see https://github.com/
-   * @deprecated this prop will be removed in the next major release.
    * @default true
    */
   prop2?: boolean | string;

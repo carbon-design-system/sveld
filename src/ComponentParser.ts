@@ -137,6 +137,11 @@ interface LegacyAstRoot {
   instance?: Node;
 }
 
+interface RunesPropTypeMetadata {
+  optional: boolean;
+  type: string;
+}
+
 type TemplateNode = { start?: number; end?: number };
 
 type SyntaxMode = "legacy" | "runes";
@@ -637,6 +642,9 @@ export default class ComponentParser {
   /** Tracks prop locals that are used as snippet/render props */
   private readonly snippetPropLocals: Set<string> = new Set();
 
+  /** Per-declarator type metadata extracted from modern AST `$props()` annotations */
+  private readonly runesPropTypeMetadataByDeclaratorStart: Map<number, Map<string, RunesPropTypeMetadata>> = new Map();
+
   /** Component-level lexical scope shared by instance script and template */
   private readonly componentScope: LexicalScope = new Map();
 
@@ -675,6 +683,11 @@ export default class ComponentParser {
 
   private getPropTypeByLocalOrPublic(name: string) {
     return this.getPropByLocalOrPublic(name)?.type;
+  }
+
+  private getRunesPropTypeMetadata(declaratorStart: number | undefined, propName: string) {
+    if (declaratorStart === undefined) return undefined;
+    return this.runesPropTypeMetadataByDeclaratorStart.get(declaratorStart)?.get(propName);
   }
 
   private declareScopeBinding(scope: LexicalScope, name: string, binding: ScopeBinding) {
@@ -1263,6 +1276,19 @@ export default class ComponentParser {
     return this.processJSDocComment([jsdoc_comment]);
   }
 
+  private processLeadingCommentsJSDoc(
+    node:
+      | {
+          leadingComments?: unknown[];
+          start?: number;
+        }
+      | null
+      | undefined,
+  ) {
+    if (!node?.leadingComments) return undefined;
+    return this.processNodeJSDoc(node);
+  }
+
   /**
    * Processes JSDoc comments from leadingComments and extracts structured information.
    *
@@ -1365,6 +1391,88 @@ export default class ComponentParser {
     }
 
     return { type, params, returnType, description };
+  }
+
+  private buildRunesPropTypeMetadata() {
+    this.runesPropTypeMetadataByDeclaratorStart.clear();
+    if (!this.source) return;
+
+    const modernParsed = parse(this.source, { modern: true }) as {
+      instance?: {
+        content?: {
+          body?: Array<{
+            declarations?: Array<{
+              id?: {
+                type?: string;
+                start?: number;
+                properties?: Array<{
+                  type?: string;
+                  computed?: boolean;
+                  key?: Property["key"];
+                }>;
+                typeAnnotation?: {
+                  type?: string;
+                  typeAnnotation?: {
+                    type?: string;
+                    members?: Array<{
+                      type?: string;
+                      computed?: boolean;
+                      optional?: boolean;
+                      key?: Property["key"];
+                      typeAnnotation?: {
+                        start?: number;
+                        end?: number;
+                      };
+                    }>;
+                  };
+                };
+              };
+              init?: unknown;
+              start?: number;
+            }>;
+          }>;
+        };
+      };
+    };
+
+    const body = modernParsed.instance?.content?.body ?? [];
+
+    for (const statement of body) {
+      if (!statement || typeof statement !== "object" || !("declarations" in statement)) continue;
+
+      for (const declarator of statement.declarations ?? []) {
+        if (!this.isCallExpressionNamed(declarator.init, "$props")) continue;
+        if (declarator.id?.type !== "ObjectPattern") continue;
+
+        const typeLiteral = declarator.id.typeAnnotation?.typeAnnotation;
+        if (!typeLiteral || typeLiteral.type !== "TSTypeLiteral") continue;
+
+        const metadata = new Map<string, RunesPropTypeMetadata>();
+
+        for (const member of typeLiteral.members ?? []) {
+          if (!member || member.type !== "TSPropertySignature" || member.computed) continue;
+          if (!member.key) continue;
+          const propName = this.getPropertyName(member.key as Property["key"]);
+          if (!propName) continue;
+
+          const typeStart = member.typeAnnotation?.start;
+          const typeEnd = member.typeAnnotation?.end;
+          if (typeStart === undefined || typeEnd === undefined) continue;
+
+          const type = this.sourceAtPos(typeStart + 1, typeEnd)?.trim();
+          if (!type) continue;
+
+          metadata.set(propName, {
+            type,
+            optional: member.optional === true,
+          });
+        }
+
+        if (declarator.start !== undefined && metadata.size > 0) {
+          this.runesPropTypeMetadataByDeclaratorStart.set(declarator.start, metadata);
+        }
+      }
+    }
   }
 
   /**
@@ -1636,7 +1744,7 @@ export default class ComponentParser {
     for (const declarator of node.declarations) {
       if (!this.isCallExpressionNamed(declarator.init, "$props")) continue;
 
-      const jsdocInfo = this.processNodeJSDoc(node);
+      const declarationJSDoc = this.processNodeJSDoc(node);
 
       if (declarator.id.type === "Identifier") {
         this.restPropLocals.add(declarator.id.name);
@@ -1647,6 +1755,14 @@ export default class ComponentParser {
         this.logUnsupportedRunesPattern("Skipping unsupported $props() declaration pattern.");
         continue;
       }
+
+      const supportedPublicPropCount = declarator.id.properties.filter((property) => {
+        if (property.type !== "Property" || property.computed) return false;
+        const propName = this.getPropertyName(property.key);
+        if (!propName) return false;
+        if (property.value.type === "Identifier") return true;
+        return property.value.type === "AssignmentPattern" && property.value.left.type === "Identifier";
+      }).length;
 
       for (const property of declarator.id.properties) {
         if (property.type === "RestElement") {
@@ -1696,10 +1812,20 @@ export default class ComponentParser {
           this.snippetPropLocals.add(localName);
         }
 
+        const propertyJSDoc =
+          this.processLeadingCommentsJSDoc(property) ?? (supportedPublicPropCount === 1 ? declarationJSDoc : undefined);
+        const typeMetadata = this.getRunesPropTypeMetadata(
+          (declarator as VariableDeclarator & { start?: number }).start,
+          propName,
+        );
         const { init: unwrappedInit, bindable } = this.unwrapBindableInitializer(init);
         const initResult = unwrappedInit == null ? { isFunction: false } : this.processInitializer(unwrappedInit);
         const { value, type: inferredType, isFunction } = initResult;
-        const type = jsdocInfo?.type ?? inferredType;
+        const isFunctionFromJSDoc =
+          !!propertyJSDoc?.params?.length ||
+          propertyJSDoc?.returnType !== undefined ||
+          propertyJSDoc?.type?.includes("=>");
+        const type = propertyJSDoc?.type ?? typeMetadata?.type ?? inferredType;
 
         if (bindable) {
           this.reactive_vars.add(propName);
@@ -1708,14 +1834,14 @@ export default class ComponentParser {
         this.addProp(propName, {
           name: propName,
           kind: "let",
-          description: jsdocInfo?.description,
+          description: propertyJSDoc?.description,
           type,
           value,
-          params: jsdocInfo?.params,
-          returnType: jsdocInfo?.returnType,
-          isFunction,
+          params: propertyJSDoc?.params,
+          returnType: propertyJSDoc?.returnType,
+          isFunction: Boolean(isFunction || isFunctionFromJSDoc),
           isFunctionDeclaration: false,
-          isRequired: unwrappedInit == null,
+          isRequired: unwrappedInit == null && typeMetadata?.optional !== true,
           constant: false,
           reactive: bindable,
         });
@@ -2106,6 +2232,35 @@ export default class ComponentParser {
         detail: default_detail,
         description: event_description,
       });
+    }
+  }
+
+  private normalizeRunesCallbackProps(actuallyDispatchedEvents: Set<string>) {
+    if (this.syntaxMode !== "runes") return;
+
+    for (const [eventName, event] of Array.from(this.events.entries())) {
+      if (event.type !== "dispatched") continue;
+      if (actuallyDispatchedEvents.has(eventName) || this.forwardedEvents.has(eventName)) continue;
+
+      const callbackPropName = `on${eventName}`;
+      const prop = this.props.get(callbackPropName);
+      if (!prop) continue;
+
+      const hasExplicitPropTyping =
+        prop.type !== undefined || prop.params !== undefined || prop.returnType !== undefined;
+      const callbackType =
+        event.detail === undefined || event.detail === "undefined" || event.detail === "null"
+          ? "() => void"
+          : `(detail: ${event.detail}) => void`;
+
+      this.props.set(callbackPropName, {
+        ...prop,
+        description: prop.description ?? event.description,
+        type: hasExplicitPropTyping ? prop.type : callbackType,
+        isFunction: true,
+      });
+
+      this.events.delete(eventName);
     }
   }
 
@@ -3222,6 +3377,7 @@ export default class ComponentParser {
     this.propLocalToPublicName.clear();
     this.restPropLocals.clear();
     this.snippetPropLocals.clear();
+    this.runesPropTypeMetadataByDeclaratorStart.clear();
     this.componentScope.clear();
     this.scopeDeclarations = new WeakMap();
     this.activeScopes.length = 0;
@@ -3341,6 +3497,7 @@ export default class ComponentParser {
      */
     const cleanedSource = ComponentParser.stripTypeScriptDirectivesFromScripts(source);
     this.source = cleanedSource;
+    this.buildRunesPropTypeMetadata();
 
     /**
      * Parse once - compile() internally calls parse(), so we can extract the AST from it.
@@ -4038,25 +4195,34 @@ export default class ComponentParser {
       }
     });
 
-    const processedProps = ComponentParser.mapToArray(this.props).map((prop) => {
-      if (this.bindings.has(prop.name)) {
-        const elementTypes = this.bindings
-          .get(prop.name)
-          ?.elements.sort()
-          .map((element) => getElementByTag(element))
-          .join(" | ");
+    this.normalizeRunesCallbackProps(actuallyDispatchedEvents);
+
+    const snippetPropNames =
+      this.syntaxMode === "runes"
+        ? new Set(Array.from(this.snippetPropLocals, (localName) => this.resolvePublicPropName(localName)))
+        : new Set<string>();
+
+    const processedProps = ComponentParser.mapToArray(this.props)
+      .filter((prop) => !snippetPropNames.has(prop.name))
+      .map((prop) => {
+        if (this.bindings.has(prop.name)) {
+          const elementTypes = this.bindings
+            .get(prop.name)
+            ?.elements.sort()
+            .map((element) => getElementByTag(element))
+            .join(" | ");
+          return {
+            ...prop,
+            type: `null | ${elementTypes}`,
+            reactive: prop.reactive || this.reactive_vars.has(prop.name),
+          };
+        }
+
         return {
           ...prop,
-          type: `null | ${elementTypes}`,
           reactive: prop.reactive || this.reactive_vars.has(prop.name),
         };
-      }
-
-      return {
-        ...prop,
-        reactive: prop.reactive || this.reactive_vars.has(prop.name),
-      };
-    });
+      });
 
     this.activeScopes.length = 0;
 

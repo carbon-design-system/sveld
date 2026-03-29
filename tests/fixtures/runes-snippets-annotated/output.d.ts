@@ -6,20 +6,12 @@ export type RunesSnippetsAnnotatedProps = {
    */
   prop?: number;
 
-  /**
-   * @default undefined
-   */
-  children: undefined;
+  /** Customize the paragraph text. */
+  body?: (this: void, ...args: [{ prop: number }]) => void;
 
-  /**
-   * @default undefined
-   */
-  title: undefined;
+  title?: (this: void) => void;
 
-  /**
-   * @default undefined
-   */
-  body: undefined;
+  children?: (this: void, ...args: [{ prop: number; doubled: number }]) => void;
 };
 
 export default class RunesSnippetsAnnotated extends SvelteComponentTyped<

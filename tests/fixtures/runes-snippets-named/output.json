@@ -8,15 +8,6 @@
       "isRequired": true,
       "constant": false,
       "reactive": false
-    },
-    {
-      "name": "header",
-      "kind": "let",
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": true,
-      "constant": false,
-      "reactive": false
     }
   ],
   "moduleExports": [],
