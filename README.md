@@ -129,7 +129,7 @@ export default class Button extends SvelteComponentTyped<
   - [@type](#type)
   - [@typedef](#typedef)
   - [@callback](#callback)
-  - [@slot](#slot)
+  - [@slot / @snippet](#slot--snippet)
     - [Svelte 5 Snippet Compatibility](#svelte-5-snippet-compatibility)
   - [@event](#event)
   - [Context API](#context-api)
@@ -680,9 +680,9 @@ Callbacks can be combined with `@typedef` in the same comment block:
 
 When `@returns` is omitted, the return type defaults to `void`. When no `@param` tags are present, the callback is typed as a no-argument function.
 
-### `@slot`
+### `@slot` / `@snippet`
 
-Use the `@slot` tag for typing component slots. Note that `@slot` is a non-standard JSDoc tag.
+Use the `@slot` tag for typing component slots. For Svelte 5 runes components, `@snippet` is also supported as an alias. Both are non-standard JSDoc tags.
 
 Descriptions are optional for named slots. Currently, the default slot cannot have a description.
 
@@ -691,12 +691,14 @@ Descriptions are optional for named slots. Currently, the default slot cannot ha
 ```js
 /**
  * @slot {Type} slot-name [slot description]
+ * @snippet {Type} snippet-name [snippet description]
  */
 
 Omit the `slot-name` to type the default slot.
 
 /**
  * @slot {Type}
+ * @snippet {Type}
  */
 ```
 
@@ -707,9 +709,9 @@ Omit the `slot-name` to type the default slot.
 ```svelte
 <script>
   /**
-   * @slot {{ prop: number; doubled: number; }}
-   * @slot {{}} title
-   * @slot {{ prop: number }} body - Customize the paragraph text.
+   * @snippet {{ prop: number; doubled: number; }}
+   * @snippet {{}} title
+   * @snippet {{ prop: number }} body - Customize the paragraph text.
    */
 
   let { prop = 0, children, title, body } = $props();

@@ -182,14 +182,14 @@ const aliasedPropsRunes: Example = {
 `,
 };
 
-const namedSlotsRunes: Example = {
-  name: "Named slots",
-  moduleName: "NamedSlotsRunes",
+const namedSnippetsRunes: Example = {
+  name: "Named snippets",
+  moduleName: "NamedSnippetsRunes",
   code: `<script>
   /**
-   * @slot {{ prop: number; doubled: number; }}
-   * @slot {{}} title
-   * @slot {{ prop: number }} body - Customize the paragraph text.
+   * @snippet {{ prop: number; doubled: number; }}
+   * @snippet {{}} title
+   * @snippet {{ prop: number }} body - Customize the paragraph text.
    */
 
   let {
@@ -647,7 +647,7 @@ export default [
   genericsRunes,
   aliasedPropsRunes,
   restPropsRunes,
-  namedSlotsRunes,
+  namedSnippetsRunes,
   componentCommentsRunes,
   functionWithParamsRunes,
   buttonLegacy,

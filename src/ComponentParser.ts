@@ -46,7 +46,7 @@ const VAR_DECLARATION_REGEX = /(?:const|let|function)\s+(\w+)\s*[=(]/;
  * Regular expression for removing leading dash and whitespace from descriptions.
  *
  * Used to clean up inline descriptions in JSDoc tags that may be prefixed
- * with a dash (e.g., `@slot name - description`).
+ * with a dash (e.g., `@slot name - description` or `@snippet name - description`).
  *
  * @example
  * ```ts
@@ -94,7 +94,7 @@ function extractDescriptionAfterDash(description: string | undefined): string | 
  * Removes leading dash and whitespace from a description string.
  *
  * Used for cleaning up inline descriptions in JSDoc tags that may have been
- * prefixed with a dash (e.g., `@slot name - description`).
+ * prefixed with a dash (e.g., `@slot name - description` or `@snippet name - description`).
  *
  * @param description - The description string to clean
  * @returns The cleaned description, empty string if result is empty, or undefined if input was undefined
@@ -313,7 +313,7 @@ interface ComponentSlot {
   fallback?: string;
   /** TypeScript type definition for slot props (e.g., "{ title: string }") */
   slot_props?: string;
-  /** Description extracted from JSDoc `@slot` tags */
+  /** Description extracted from JSDoc `@slot` or `@snippet` tags */
   description?: string;
 }
 
@@ -1138,7 +1138,7 @@ export default class ComponentParser {
    * Extracts and categorizes JSDoc tags from a parsed comment.
    *
    * Separates tags into type, param, returns, and additional categories while
-   * excluding tags that are handled separately (extends, restProps, slot, event, typedef).
+   * excluding tags that are handled separately (extends, restProps, slot/snippet, event, typedef).
    *
    * @param parsed - The parsed comment result from comment-parser
    * @returns An object containing categorized tags and the comment description
@@ -1169,6 +1169,7 @@ export default class ComponentParser {
       "extendProps",
       "restProps",
       "slot",
+      "snippet",
       "event",
       "typedef",
       "callback",
@@ -2481,9 +2482,10 @@ export default class ComponentParser {
             if (isFirstTag) isFirstTag = false;
             break;
           }
-          case "slot": {
+          case "slot":
+          case "snippet": {
             /**
-             * Prefer inline description (e.g., "@slot name - description"),
+             * Prefer inline description (e.g., "@slot name - description" or "@snippet name - description"),
              * fall back to preceding line description, then fall back to the
              * comment block description (only for first tag if not already used).
              */
