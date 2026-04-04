@@ -24,9 +24,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "estree-walker": "^3.0.3",
-    "prettier": "^3.8.0",
-    "svelte": "^5.55.0"
+    "prettier": "^3.8.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.10",
@@ -36,8 +34,10 @@
     "acorn": "^8.14.1",
     "comment-parser": "^1.4.1",
     "culls": "^0.2.0",
+    "estree-walker": "^3.0.3",
     "rollup": "^2.79.2",
     "rollup-plugin-svelte": "^7.2.2",
+    "svelte": "^5.55.0",
     "tinyglobby": "^0.2.15",
     "typescript": "^6.0.2"
   },

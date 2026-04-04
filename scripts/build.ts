@@ -48,12 +48,12 @@ async function buildProject() {
     target: "node",
     minify: true,
     sourcemap: false,
+    // Default Bun behavior treats `node_modules` imports as external; bundle
+    // them so `svelte/compiler` (and `estree-walker`) ship inside `lib`.
+    packages: "bundle",
     external: [
-      // Svelte compiler is large (~4MB+ bundled). Externalize; consumers have it.
-      "svelte",
-      // Peer dependency; avoids bundling css-tree/mdn-data which use
+      // Runtime dependency; avoids bundling css-tree/mdn-data which use
       // createRequire with relative paths for JSON data files.
-      // Uses dynamic requires for internal data files that break when bundled.
       "prettier",
       // Native module used by rollup's file watcher (not needed at runtime).
       "fsevents",
