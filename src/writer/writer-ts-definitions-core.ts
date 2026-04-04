@@ -27,6 +27,7 @@ const NEWLINE_REGEX = /\n/;
 const FUNCTION_TYPE_REGEX = /=>/;
 const NEWLINE_TO_COMMENT_REGEX = /\n/g;
 const WHITESPACE_REGEX = /\s+/g;
+const SNIPPET_TYPE_REFERENCE_REGEX = /(^|[^.\w])Snippet(?:\s*<|\b)/;
 
 /**
  * Formats a description for use in multi-line comment blocks.
@@ -806,6 +807,12 @@ export function writeTsDefinition(component: ComponentDocApi) {
 
   const generic = generics ? `<${generics[1]}>` : "";
   const genericProps = generics ? `${props_name}<${generics[0]}>` : props_name;
+  const moduleExportsDef = genModuleExports({ moduleExports });
+  const typeDefs = getTypeDefs({ typedefs });
+  const contextDefs = getContextDefs({ contexts, generics });
+  const snippetImportNeeded = SNIPPET_TYPE_REFERENCE_REGEX.test(
+    `${prop_def}\n${moduleExportsDef}\n${typeDefs}\n${contextDefs}`,
+  );
 
   /**
    * Determine imports needed for rest_props.
@@ -819,13 +826,13 @@ export function writeTsDefinition(component: ComponentDocApi) {
     rest_props?.type === "Element" && rest_props.name === "svelte:element" && !rest_props.thisValue;
 
   return `
-  import { SvelteComponentTyped } from "svelte";${
+  import { SvelteComponentTyped${snippetImportNeeded ? ", type Snippet" : ""} } from "svelte";${
     needsSvelteHTMLElements ? `import type { SvelteHTMLElements } from "svelte/elements";\n` : ""
   }${needsHTMLAttributes ? `import type { HTMLAttributes } from "svelte/elements";\n` : ""}
   ${genImports({ extends: _extends })}
-  ${genModuleExports({ moduleExports })}
-  ${getTypeDefs({ typedefs })}
-  ${contexts && contexts.length > 0 ? "\n" : ""}${getContextDefs({ contexts, generics })}
+  ${moduleExportsDef}
+  ${typeDefs}
+  ${contexts && contexts.length > 0 ? "\n" : ""}${contextDefs}
   ${prop_def}
   ${genComponentComment({ componentComment })}
   ${genComponentShell({

@@ -1,0 +1,20 @@
+{
+  "props": [
+    {
+      "name": "row",
+      "kind": "let",
+      "type": "Snippet<[item: string, index: number]>",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}

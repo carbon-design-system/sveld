@@ -525,4 +525,33 @@ describe("writerTsDefinition", () => {
     // Props type should not be Record<string, never> since we have snippet props
     expect(output).not.toContain("SlotOnlyComponentProps = Record<string, never>");
   });
+
+  test("imports Snippet when prop types reference it directly", () => {
+    const component_api: ComponentDocApi = {
+      moduleName: "RunesTable",
+      filePath: "./src/RunesTable.svelte",
+      props: [
+        {
+          name: "row",
+          kind: "let",
+          type: "Snippet<[item: string, index: number]>",
+          isFunction: false,
+          isFunctionDeclaration: false,
+          isRequired: true,
+          constant: false,
+          reactive: false,
+        },
+      ],
+      moduleExports: [],
+      slots: [],
+      events: [],
+      typedefs: [],
+      generics: null,
+      rest_props: undefined,
+    };
+
+    const output = writeTsDefinition(component_api);
+    expect(output).toContain('import { SvelteComponentTyped, type Snippet } from "svelte";');
+    expect(output).toContain("row: Snippet<[item: string, index: number]>;");
+  });
 });
