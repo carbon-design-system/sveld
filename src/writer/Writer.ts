@@ -2,6 +2,8 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { parse } from "node:path";
 import { format, type ParserOptions } from "prettier";
 
+export const DEFAULT_TYPESCRIPT_PRINT_WIDTH = 80;
+
 /**
  * Options for configuring a Writer instance.
  *
@@ -98,7 +100,8 @@ export function createJsonWriter(): Writer {
 /**
  * Creates a Writer instance configured for TypeScript files.
  *
- * @returns A Writer instance with TypeScript parser and 80 character print width
+ * @param printWidth - Prettier print width for emitted TypeScript files
+ * @returns A Writer instance with TypeScript parser and 80 character print width by default
  *
  * @example
  * ```ts
@@ -106,6 +109,6 @@ export function createJsonWriter(): Writer {
  * await writer.write("index.d.ts", "export type Props={};");
  * ```
  */
-export function createTypeScriptWriter(): Writer {
-  return new Writer({ parser: "typescript", printWidth: 80 });
+export function createTypeScriptWriter(printWidth = DEFAULT_TYPESCRIPT_PRINT_WIDTH): Writer {
+  return new Writer({ parser: "typescript", printWidth });
 }

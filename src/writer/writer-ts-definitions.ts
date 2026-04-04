@@ -44,6 +44,7 @@ export interface WriteTsDefinitionsOptions {
   inputDir: string;
   preamble: string;
   exports: ParsedExports;
+  printWidth?: number;
 }
 
 /**
@@ -79,7 +80,7 @@ export interface WriteTsDefinitionsOptions {
  */
 export default async function writeTsDefinitions(components: ComponentDocs, options: WriteTsDefinitionsOptions) {
   const ts_base_path = join(process.cwd(), options.outDir, "index.d.ts");
-  const writer = createTypeScriptWriter();
+  const writer = createTypeScriptWriter(options.printWidth);
   const indexDTs = options.preamble + createExports(options.exports);
 
   const writePromises = Array.from(components).map(async ([_moduleName, component]) => {

@@ -215,13 +215,15 @@ sveld({
 When building the library, TypeScript definitions are emitted to the `types` folder by default.
 
 Customize the output folder using the `typesOptions.outDir` option.
+Use `typesOptions.printWidth` to control Prettier wrapping for generated `.d.ts` files. The default is `80`.
 
 The following example emits the output to the `dist` folder:
 
 ```diff
 sveld({
 +  typesOptions: {
-+    outDir: 'dist'
++    outDir: 'dist',
++    printWidth: 80
 +  }
 })
 ```
@@ -311,7 +313,7 @@ TypeScript definitions are outputted to the `types` folder by default. Don't for
 - **`entry`** (string, optional): Specify the entry point to uncompiled Svelte source. If not provided, sveld will use the `"svelte"` field from `package.json`.
 - **`glob`** (boolean, optional): Enable glob mode to analyze all `*.svelte` files.
 - **`types`** (boolean, optional, default: `true`): Generate TypeScript definitions.
-- **`typesOptions`** (object, optional): Options for TypeScript definition generation.
+- **`typesOptions`** (object, optional): Options for TypeScript definition generation, including `outDir`, `preamble`, and `printWidth`.
 - **`json`** (boolean, optional): Generate component documentation in JSON format.
 - **`jsonOptions`** (object, optional): Options for JSON output.
 - **`markdown`** (boolean, optional): Generate component documentation in Markdown format.
