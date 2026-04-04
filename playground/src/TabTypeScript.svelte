@@ -5,6 +5,7 @@
   import pluginEstree from "prettier/plugins/estree";
   import pluginTypeScript from "prettier/plugins/typescript";
   import { format } from "prettier/standalone";
+  import typescript from "svelte-highlight/languages/typescript";
   import { writeTsDefinition } from "../../src/writer/writer-ts-definitions-core";
   import CodeHighlighter from "./CodeHighlighter.svelte";
   import TabContentOverlay from "./TabContentOverlay.svelte";
@@ -39,6 +40,6 @@
   </TabContentOverlay>
 {/if}
 <CodeHighlighter
-  language="typescript"
+  language={typescript}
   {code}
 />

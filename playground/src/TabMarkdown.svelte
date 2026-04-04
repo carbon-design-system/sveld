@@ -4,6 +4,7 @@
 
   import pluginMarkdown from "prettier/plugins/markdown";
   import { format } from "prettier/standalone";
+  import markdownLang from "svelte-highlight/languages/markdown";
   import { writeMarkdownCore as writeMarkdown } from "../../src/writer/writer-markdown-core";
   import CodeHighlighter from "./CodeHighlighter.svelte";
 
@@ -35,6 +36,6 @@
 
 <CodeHighlighter
   noWrap
-  language="markdown"
+  language={markdownLang}
   {code}
 />
