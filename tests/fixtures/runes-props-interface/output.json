@@ -1,0 +1,30 @@
+{
+  "props": [
+    {
+      "name": "foo",
+      "kind": "let",
+      "type": "string",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "bar",
+      "kind": "let",
+      "type": "number",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}

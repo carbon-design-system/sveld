@@ -3002,6 +3002,46 @@ exports[`fixtures (JSON) "async-function-props/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "runes-whole-props-typed/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "item",
+      "kind": "let",
+      "type": "string",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "disabled",
+      "kind": "let",
+      "type": "boolean",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{ item: string }"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "context-simple/input.svelte" 1`] = `
 "{
   "props": [],
@@ -4030,6 +4070,40 @@ exports[`fixtures (JSON) "forwarded-standard-event-custom-detail/input.svelte" 1
 "
 `;
 
+exports[`fixtures (JSON) "runes-props-interface/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "foo",
+      "kind": "let",
+      "type": "string",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "bar",
+      "kind": "let",
+      "type": "number",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "component-comment-single/input.svelte" 1`] = `
 "{
   "props": [],
@@ -4397,6 +4471,30 @@ exports[`fixtures (JSON) "svelte-element-hardcoded-div/input.svelte" 1`] = `
     "name": "svelte:element",
     "thisValue": "div"
   },
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "runes-snippet-positional/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "row",
+      "kind": "let",
+      "type": "Snippet<[item: string, index: number]>",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
   "contexts": []
 }
 "
@@ -6812,6 +6910,31 @@ export default class AsyncFunctionProps extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "runes-whole-props-typed/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type RunesWholePropsTypedProps = {
+  /**
+   * @default undefined
+   */
+  item: string;
+
+  /**
+   * @default undefined
+   */
+  disabled?: boolean;
+
+  children?: (this: void, ...args: [{ item: string }]) => void;
+};
+
+export default class RunesWholePropsTyped extends SvelteComponentTyped<
+  RunesWholePropsTypedProps,
+  Record<string, any>,
+  { default: { item: string } }
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "context-simple/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -7415,6 +7538,29 @@ export default class ForwardedStandardEventCustomDetail extends SvelteComponentT
 "
 `;
 
+exports[`fixtures (TypeScript) "runes-props-interface/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type RunesPropsInterfaceProps = {
+  /**
+   * @default undefined
+   */
+  foo: string;
+
+  /**
+   * @default undefined
+   */
+  bar?: number;
+};
+
+export default class RunesPropsInterface extends SvelteComponentTyped<
+  RunesPropsInterfaceProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "component-comment-single/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -7704,6 +7850,24 @@ export type SvelteElementHardcodedDivProps = Omit<$RestProps, keyof $Props> & $P
 
 export default class SvelteElementHardcodedDiv extends SvelteComponentTyped<
   SvelteElementHardcodedDivProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "runes-snippet-positional/input.svelte" 1`] = `
+"import { SvelteComponentTyped, type Snippet } from "svelte";
+
+export type RunesSnippetPositionalProps = {
+  /**
+   * @default undefined
+   */
+  row: Snippet<[item: string, index: number]>;
+};
+
+export default class RunesSnippetPositional extends SvelteComponentTyped<
+  RunesSnippetPositionalProps,
   Record<string, any>,
   Record<string, never>
 > {}

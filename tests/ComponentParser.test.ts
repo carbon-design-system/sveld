@@ -432,6 +432,48 @@ describe("ComponentParser", () => {
     expect(result.props.find((prop) => prop.name === "bar")?.type).toBe("number");
   });
 
+  test("parses named interface annotations for $props destructuring", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script lang="ts">
+        interface Props {
+          foo: string;
+          bar?: number;
+        }
+
+        let { foo, bar }: Props = $props();
+      </script>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.props.find((prop) => prop.name === "foo")?.type).toBe("string");
+    expect(result.props.find((prop) => prop.name === "foo")?.isRequired).toBe(true);
+    expect(result.props.find((prop) => prop.name === "bar")?.type).toBe("number");
+    expect(result.props.find((prop) => prop.name === "bar")?.isRequired).toBe(false);
+  });
+
+  test("parses typed whole-object $props captures", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script lang="ts">
+        type Props = {
+          title: string;
+          disabled?: boolean;
+        };
+
+        let props: Props = $props();
+      </script>
+
+      <button disabled={props.disabled}>{props.title}</button>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.props.find((prop) => prop.name === "title")?.type).toBe("string");
+    expect(result.props.find((prop) => prop.name === "title")?.isRequired).toBe(true);
+    expect(result.props.find((prop) => prop.name === "disabled")?.type).toBe("boolean");
+    expect(result.props.find((prop) => prop.name === "disabled")?.isRequired).toBe(false);
+  });
+
   test("does not bleed declaration JSDoc across multiple $props bindings", () => {
     const parser = new ComponentParser();
     const source = `
@@ -1051,6 +1093,49 @@ describe("ComponentParser", () => {
     expect(result.props.map((prop) => prop.name)).toEqual(["item"]);
     expect(result.slots.find((slot) => slot.default)?.slot_props).toBe("{ item: any }");
     expect(result.slots.find((slot) => slot.name === "header")?.slot_props).toBe("{ title: any }");
+  });
+
+  test("maps render tags through typed whole-object $props captures", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script lang="ts">
+        interface Props {
+          item: string;
+          children?: import("svelte").Snippet<[props: { item: string }]>;
+        }
+
+        let props: Props = $props();
+      </script>
+
+      {@render props.children?.({ item: props.item })}
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.props.map((prop) => prop.name)).toEqual(["item"]);
+    expect(result.slots.find((slot) => slot.default)?.slot_props).toBe("{ item: string }");
+  });
+
+  test("keeps positional snippet props in props when render args are not slot-shaped", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script lang="ts">
+        interface Props {
+          row: import("svelte").Snippet<[item: string, index: number]>;
+        }
+
+        let { row }: Props = $props();
+        let item = "hello";
+        let index = 0;
+      </script>
+
+      {@render row?.(item, index)}
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.props.find((prop) => prop.name === "row")?.type).toBe(
+      'import("svelte").Snippet<[item: string, index: number]>',
+    );
+    expect(result.slots).toHaveLength(0);
   });
 
   test("does not invent props from whole-object $props captures", () => {

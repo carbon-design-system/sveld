@@ -142,6 +142,27 @@ interface RunesPropTypeMetadata {
   type: string;
 }
 
+type ModernRunesTypeNode = {
+  type?: string;
+  id?: { name?: string };
+  body?: { body?: ModernRunesTypeMember[] };
+  typeAnnotation?: ModernRunesTypeNode;
+  typeName?: unknown;
+  types?: ModernRunesTypeNode[];
+  members?: ModernRunesTypeMember[];
+};
+
+type ModernRunesTypeMember = {
+  type?: string;
+  computed?: boolean;
+  optional?: boolean;
+  key?: Property["key"];
+  typeAnnotation?: {
+    start?: number;
+    end?: number;
+  };
+};
+
 type TemplateNode = { start?: number; end?: number };
 
 type SyntaxMode = "legacy" | "runes";
@@ -639,6 +660,9 @@ export default class ComponentParser {
   /** Tracks `$props()` bindings that are used as spread/rest props */
   private readonly restPropLocals: Set<string> = new Set();
 
+  /** Tracks identifier bindings that capture the entire `$props()` object */
+  private readonly wholePropsLocals: Set<string> = new Set();
+
   /** Tracks prop locals that are used as snippet/render props */
   private readonly snippetPropLocals: Set<string> = new Set();
 
@@ -688,6 +712,115 @@ export default class ComponentParser {
   private getRunesPropTypeMetadata(declaratorStart: number | undefined, propName: string) {
     if (declaratorStart === undefined) return undefined;
     return this.runesPropTypeMetadataByDeclaratorStart.get(declaratorStart)?.get(propName);
+  }
+
+  private getTypeReferenceName(typeName: unknown): string | undefined {
+    if (!typeName || typeof typeName !== "object" || !("type" in typeName)) return undefined;
+
+    if (typeName.type === "Identifier" && "name" in typeName && typeof typeName.name === "string") {
+      return typeName.name;
+    }
+
+    if (
+      typeName.type === "TSQualifiedName" &&
+      "right" in typeName &&
+      typeName.right &&
+      typeof typeName.right === "object" &&
+      "name" in typeName.right &&
+      typeof typeName.right.name === "string"
+    ) {
+      return typeName.right.name;
+    }
+
+    return undefined;
+  }
+
+  private buildRunesPropTypeMetadataMap(
+    typeNode: ModernRunesTypeNode | undefined,
+    localTypeDeclarations: Map<string, ModernRunesTypeNode>,
+    visitedTypeNames: Set<string> = new Set(),
+  ): Map<string, RunesPropTypeMetadata> {
+    const metadata = new Map<string, RunesPropTypeMetadata>();
+    if (!typeNode?.type) return metadata;
+
+    const mergeMembers = (members: ModernRunesTypeMember[]) => {
+      for (const member of members) {
+        if (!member || member.type !== "TSPropertySignature" || member.computed) continue;
+        if (!member.key) continue;
+
+        const propName = this.getPropertyName(member.key as Property["key"]);
+        if (!propName) continue;
+
+        const typeStart = member.typeAnnotation?.start;
+        const typeEnd = member.typeAnnotation?.end;
+        if (typeStart === undefined || typeEnd === undefined) continue;
+
+        const type = this.sourceAtPos(typeStart + 1, typeEnd)?.trim();
+        if (!type) continue;
+
+        metadata.set(propName, {
+          type,
+          optional: member.optional === true,
+        });
+      }
+    };
+
+    switch (typeNode.type) {
+      case "TSTypeLiteral":
+        mergeMembers(typeNode.members ?? []);
+        break;
+      case "TSInterfaceDeclaration":
+        mergeMembers(typeNode.body?.body ?? []);
+        break;
+      case "TSTypeAliasDeclaration": {
+        const nestedMetadata = this.buildRunesPropTypeMetadataMap(
+          typeNode.typeAnnotation,
+          localTypeDeclarations,
+          visitedTypeNames,
+        );
+        for (const [propName, memberMetadata] of nestedMetadata) {
+          metadata.set(propName, memberMetadata);
+        }
+        break;
+      }
+      case "TSTypeReference": {
+        const typeName = this.getTypeReferenceName(typeNode.typeName);
+        if (!typeName || visitedTypeNames.has(typeName)) break;
+
+        const declaration = localTypeDeclarations.get(typeName);
+        if (!declaration) break;
+
+        visitedTypeNames.add(typeName);
+        const nestedMetadata = this.buildRunesPropTypeMetadataMap(declaration, localTypeDeclarations, visitedTypeNames);
+        visitedTypeNames.delete(typeName);
+
+        for (const [propName, memberMetadata] of nestedMetadata) {
+          metadata.set(propName, memberMetadata);
+        }
+        break;
+      }
+      case "TSIntersectionType":
+        for (const nestedType of typeNode.types ?? []) {
+          const nestedMetadata = this.buildRunesPropTypeMetadataMap(nestedType, localTypeDeclarations, visitedTypeNames);
+          for (const [propName, memberMetadata] of nestedMetadata) {
+            metadata.set(propName, memberMetadata);
+          }
+        }
+        break;
+      case "TSParenthesizedType": {
+        const nestedMetadata = this.buildRunesPropTypeMetadataMap(
+          typeNode.typeAnnotation,
+          localTypeDeclarations,
+          visitedTypeNames,
+        );
+        for (const [propName, memberMetadata] of nestedMetadata) {
+          metadata.set(propName, memberMetadata);
+        }
+        break;
+      }
+    }
+
+    return metadata;
   }
 
   private declareScopeBinding(scope: LexicalScope, name: string, binding: ScopeBinding) {
@@ -1401,30 +1534,13 @@ export default class ComponentParser {
       instance?: {
         content?: {
           body?: Array<{
+            type?: string;
+            id?: { name?: string };
             declarations?: Array<{
               id?: {
                 type?: string;
-                start?: number;
-                properties?: Array<{
-                  type?: string;
-                  computed?: boolean;
-                  key?: Property["key"];
-                }>;
                 typeAnnotation?: {
-                  type?: string;
-                  typeAnnotation?: {
-                    type?: string;
-                    members?: Array<{
-                      type?: string;
-                      computed?: boolean;
-                      optional?: boolean;
-                      key?: Property["key"];
-                      typeAnnotation?: {
-                        start?: number;
-                        end?: number;
-                      };
-                    }>;
-                  };
+                  typeAnnotation?: ModernRunesTypeNode;
                 };
               };
               init?: unknown;
@@ -1436,37 +1552,24 @@ export default class ComponentParser {
     };
 
     const body = modernParsed.instance?.content?.body ?? [];
+    const localTypeDeclarations = new Map<string, ModernRunesTypeNode>();
+
+    for (const statement of body) {
+      if (!statement?.type) continue;
+      if ((statement.type === "TSInterfaceDeclaration" || statement.type === "TSTypeAliasDeclaration") && statement.id?.name) {
+        localTypeDeclarations.set(statement.id.name, statement as ModernRunesTypeNode);
+      }
+    }
 
     for (const statement of body) {
       if (!statement || typeof statement !== "object" || !("declarations" in statement)) continue;
 
       for (const declarator of statement.declarations ?? []) {
         if (!this.isCallExpressionNamed(declarator.init, "$props")) continue;
-        if (declarator.id?.type !== "ObjectPattern") continue;
-
-        const typeLiteral = declarator.id.typeAnnotation?.typeAnnotation;
-        if (!typeLiteral || typeLiteral.type !== "TSTypeLiteral") continue;
-
-        const metadata = new Map<string, RunesPropTypeMetadata>();
-
-        for (const member of typeLiteral.members ?? []) {
-          if (!member || member.type !== "TSPropertySignature" || member.computed) continue;
-          if (!member.key) continue;
-          const propName = this.getPropertyName(member.key as Property["key"]);
-          if (!propName) continue;
-
-          const typeStart = member.typeAnnotation?.start;
-          const typeEnd = member.typeAnnotation?.end;
-          if (typeStart === undefined || typeEnd === undefined) continue;
-
-          const type = this.sourceAtPos(typeStart + 1, typeEnd)?.trim();
-          if (!type) continue;
-
-          metadata.set(propName, {
-            type,
-            optional: member.optional === true,
-          });
-        }
+        const metadata = this.buildRunesPropTypeMetadataMap(
+          declarator.id?.typeAnnotation?.typeAnnotation,
+          localTypeDeclarations,
+        );
 
         if (declarator.start !== undefined && metadata.size > 0) {
           this.runesPropTypeMetadataByDeclaratorStart.set(declarator.start, metadata);
@@ -1744,10 +1847,27 @@ export default class ComponentParser {
     for (const declarator of node.declarations) {
       if (!this.isCallExpressionNamed(declarator.init, "$props")) continue;
 
-      const declarationJSDoc = this.processNodeJSDoc(node);
-
       if (declarator.id.type === "Identifier") {
+        this.wholePropsLocals.add(declarator.id.name);
         this.restPropLocals.add(declarator.id.name);
+
+        const metadata = this.runesPropTypeMetadataByDeclaratorStart.get(
+          (declarator as VariableDeclarator & { start?: number }).start ?? -1,
+        );
+        if (metadata) {
+          for (const [propName, typeMetadata] of metadata) {
+            this.addProp(propName, {
+              name: propName,
+              kind: "let",
+              type: typeMetadata.type,
+              isFunction: false,
+              isFunctionDeclaration: false,
+              isRequired: !typeMetadata.optional,
+              constant: false,
+              reactive: false,
+            });
+          }
+        }
         continue;
       }
 
@@ -1755,6 +1875,8 @@ export default class ComponentParser {
         this.logUnsupportedRunesPattern("Skipping unsupported $props() declaration pattern.");
         continue;
       }
+
+      const declarationJSDoc = this.processNodeJSDoc(node);
 
       const supportedPublicPropCount = declarator.id.properties.filter((property) => {
         if (property.type !== "Property" || property.computed) return false;
@@ -1893,7 +2015,73 @@ export default class ComponentParser {
     return slot_props;
   }
 
-  private extractRenderTagInfo(expression: unknown): { localName: string; argument?: Expression | unknown } | null {
+  private resolveRenderTagPropReference(callee: unknown): { publicName: string; trackingName: string } | null {
+    if (!callee || typeof callee !== "object" || !("type" in callee)) {
+      return null;
+    }
+
+    if (callee.type === "Identifier") {
+      const identifier = callee as Identifier;
+      const publicName = this.propLocalToPublicName.get(identifier.name);
+      if (!publicName) return null;
+
+      return {
+        publicName,
+        trackingName: identifier.name,
+      };
+    }
+
+    if (callee.type !== "MemberExpression") {
+      return null;
+    }
+
+    const memberExpression = callee as MemberExpression;
+    const objectName =
+      memberExpression.object &&
+      typeof memberExpression.object === "object" &&
+      "type" in memberExpression.object &&
+      memberExpression.object.type === "Identifier"
+        ? memberExpression.object.name
+        : undefined;
+    if (!objectName || !this.wholePropsLocals.has(objectName)) {
+      return null;
+    }
+
+    let publicName: string | undefined;
+    if (
+      !memberExpression.computed &&
+      memberExpression.property &&
+      typeof memberExpression.property === "object" &&
+      "type" in memberExpression.property
+    ) {
+      if (memberExpression.property.type === "Identifier") {
+        publicName = memberExpression.property.name;
+      } else if (memberExpression.property.type === "Literal" && memberExpression.property.value != null) {
+        publicName = String(memberExpression.property.value);
+      }
+    } else if (
+      memberExpression.computed &&
+      memberExpression.property &&
+      typeof memberExpression.property === "object" &&
+      "type" in memberExpression.property &&
+      memberExpression.property.type === "Literal" &&
+      "value" in memberExpression.property &&
+      memberExpression.property.value != null
+    ) {
+      publicName = String(memberExpression.property.value);
+    }
+
+    if (!publicName) return null;
+
+    return {
+      publicName,
+      trackingName: publicName,
+    };
+  }
+
+  private extractRenderTagInfo(
+    expression: unknown,
+  ): { publicName: string; trackingName: string; arguments: Array<Expression | unknown> } | null {
     let callExpression = expression;
 
     if (
@@ -1920,13 +2108,12 @@ export default class ComponentParser {
       return null;
     }
 
-    if (callExpr.callee.type !== "Identifier") {
-      return null;
-    }
+    const propReference = this.resolveRenderTagPropReference(callExpr.callee);
+    if (!propReference) return null;
 
     return {
-      localName: callExpr.callee.name,
-      argument: callExpr.arguments[0],
+      ...propReference,
+      arguments: callExpr.arguments,
     };
   }
 
@@ -2091,6 +2278,10 @@ export default class ComponentParser {
     const objName = memberExpr.object.name;
     const propName = memberExpr.property.name;
     if (!objName || !propName) return undefined;
+
+    if (this.wholePropsLocals.has(objName)) {
+      return this.getPropTypeByLocalOrPublic(propName);
+    }
 
     const objType = this.getPropTypeByLocalOrPublic(objName) ?? this.findVariableTypeAndDescription(objName)?.type;
     if (!objType) return undefined;
@@ -3376,6 +3567,7 @@ export default class ComponentParser {
     this.variableInfoCache.clear();
     this.propLocalToPublicName.clear();
     this.restPropLocals.clear();
+    this.wholePropsLocals.clear();
     this.snippetPropLocals.clear();
     this.runesPropTypeMetadataByDeclaratorStart.clear();
     this.componentScope.clear();
@@ -3967,33 +4159,39 @@ export default class ComponentParser {
           const renderTag = node as { expression?: unknown };
           const renderInfo = this.extractRenderTagInfo(renderTag.expression);
           if (renderInfo) {
-            const publicName = this.propLocalToPublicName.get(renderInfo.localName);
-            if (publicName) {
-              this.snippetPropLocals.add(renderInfo.localName);
+            let slot_props: string | undefined;
+            if (renderInfo.arguments.length === 0) {
+              slot_props = JSON.stringify({}, null, 2);
+            } else if (
+              renderInfo.arguments.length === 1 &&
+              typeof renderInfo.arguments[0] === "object" &&
+              renderInfo.arguments[0] &&
+              "type" in renderInfo.arguments[0] &&
+              renderInfo.arguments[0].type === "ObjectExpression"
+            ) {
+              slot_props = JSON.stringify(
+                this.buildSlotPropsFromObjectExpression(renderInfo.arguments[0] as ObjectExpression),
+                null,
+                2,
+              );
+            } else {
+              this.logUnsupportedRunesPattern(
+                `Skipping unsupported {@render ...} argument for snippet prop "${renderInfo.publicName}".`,
+              );
+            }
 
-              let slot_props: string | undefined;
-              if (renderInfo.argument == null) {
-                slot_props = JSON.stringify({}, null, 2);
-              } else if (
-                typeof renderInfo.argument === "object" &&
-                "type" in renderInfo.argument &&
-                renderInfo.argument.type === "ObjectExpression"
-              ) {
-                slot_props = JSON.stringify(
-                  this.buildSlotPropsFromObjectExpression(renderInfo.argument as ObjectExpression),
-                  null,
-                  2,
-                );
-              } else {
-                this.logUnsupportedRunesPattern(
-                  `Skipping unsupported {@render ...} argument for snippet prop "${publicName}".`,
-                );
-              }
+            const slot_name = renderInfo.publicName === "children" ? undefined : renderInfo.publicName;
+            const slotKey: ComponentSlotName = slot_name === undefined ? DEFAULT_SLOT_NAME : slot_name;
 
+            if (slot_props !== undefined) {
               this.addSlot({
-                slot_name: publicName === "children" ? undefined : publicName,
+                slot_name,
                 slot_props,
               });
+            }
+
+            if (slot_props !== undefined || this.slots.has(slotKey)) {
+              this.snippetPropLocals.add(renderInfo.trackingName);
             }
           }
         }
