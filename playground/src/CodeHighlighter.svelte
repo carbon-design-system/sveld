@@ -1,21 +1,6 @@
-<script
-  lang="ts"
-  module
->
-  import json from "svelte-highlight/languages/json";
-  import markdown from "svelte-highlight/languages/markdown";
-  import typescript from "svelte-highlight/languages/typescript";
-
-  const LANG = {
-    json,
-    typescript,
-    markdown,
-  } as const;
-</script>
-
 <script lang="ts">
   export let code = "";
-  export let language: keyof typeof LANG = "typescript";
+  export let language: import("svelte-highlight").LanguageType;
   export let noWrap = false;
 
   import { CopyButton } from "carbon-components-svelte";
@@ -29,7 +14,7 @@
 >
   <div><CopyButton text={code} /></div>
   <Highlight
-    language={LANG[language]}
+    {language}
     {code}
   />
 </div>

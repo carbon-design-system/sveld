@@ -12,7 +12,6 @@
   } from "carbon-components-svelte";
   import { type Component, onMount, tick } from "svelte";
   import ComponentParser from "../../src/ComponentParser";
-  import CodeEditor from "./CodeEditor.svelte";
   import data from "./data";
   import Header from "./Header.svelte";
   import TabContentOverlay from "./TabContentOverlay.svelte";
@@ -25,11 +24,16 @@
   };
 
   let selectedId = data[0].moduleName;
+  let codeEditor: Component | undefined;
   let tabTypeScript: Component<TabProps> | undefined;
   let tabJson: Component<TabProps> | undefined;
   let tabMarkdown: Component<TabProps> | undefined;
 
   onMount(() => {
+    import("./CodeEditor.svelte").then((importee) => {
+      codeEditor = importee.default;
+    });
+
     import("./TabTypeScript.svelte").then((importee) => {
       tabTypeScript = importee.default;
     });
@@ -96,13 +100,18 @@
             });
           }}
         />
-        <CodeEditor
-          bind:code={value}
-          bind:codemirror
-          on:change={(e) => {
-            value = e.detail;
-          }}
-        />
+        {#if codeEditor}
+          <svelte:component
+            this={codeEditor}
+            bind:code={value}
+            bind:codemirror
+            on:change={(e) => {
+              value = e.detail;
+            }}
+          />
+        {:else}
+          <InlineLoading style="margin: var(--cds-spacing-05)" />
+        {/if}
       </Column>
       <Column
         xlg={9}
