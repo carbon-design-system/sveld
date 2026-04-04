@@ -1,6 +1,5 @@
 import { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
-
 import type { ButtonProps } from "./Button.svelte";
 
 type $RestProps = SvelteHTMLElements["button"];

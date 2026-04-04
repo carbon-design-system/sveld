@@ -626,6 +626,40 @@ exports[`fixtures (JSON) "legacy-bind-component-selected/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "runes-props-intersection/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "label",
+      "kind": "let",
+      "type": "string",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "disabled",
+      "kind": "let",
+      "type": "boolean",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "mixed-event-types/input.svelte" 1`] = `
 "{
   "props": [],
@@ -699,6 +733,41 @@ exports[`fixtures (JSON) "dispatched-events-dynamic/input.svelte" 1`] = `
       "detail": "{key: string;}"
     }
   ],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "legacy-export-typed/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "title",
+      "kind": "let",
+      "type": "string",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "count",
+      "kind": "let",
+      "type": "number",
+      "value": "0",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
   "typedefs": [],
   "generics": null,
   "contexts": []
@@ -4175,6 +4244,19 @@ exports[`fixtures (JSON) "bind-this-multiple/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "runes-whole-props-imported/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "forwarded-custom-events/input.svelte" 1`] = `
 "{
   "props": [],
@@ -5467,6 +5549,31 @@ export default class LegacyBindComponentSelected extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "runes-props-intersection/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+interface BaseProps {
+  label: string;
+}
+
+type ExtraProps = {
+  disabled?: boolean;
+};
+
+type Props = BaseProps & ExtraProps;
+
+type $Props = Props;
+
+export type RunesPropsIntersectionProps = $Props;
+
+export default class RunesPropsIntersection extends SvelteComponentTyped<
+  RunesPropsIntersectionProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "mixed-event-types/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -5513,6 +5620,29 @@ export type DispatchedEventsDynamicProps = Record<string, never>;
 export default class DispatchedEventsDynamic extends SvelteComponentTyped<
   DispatchedEventsDynamicProps,
   { KEY: CustomEvent<{ key: string }> },
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "legacy-export-typed/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type LegacyExportTypedProps = {
+  /**
+   * @default undefined
+   */
+  title: string;
+
+  /**
+   * @default 0
+   */
+  count?: number;
+};
+
+export default class LegacyExportTyped extends SvelteComponentTyped<
+  LegacyExportTypedProps,
+  Record<string, any>,
   Record<string, never>
 > {}
 "
@@ -6913,19 +7043,15 @@ export default class AsyncFunctionProps extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "runes-whole-props-typed/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
-export type RunesWholePropsTypedProps = {
-  /**
-   * @default undefined
-   */
+interface Props {
   item: string;
-
-  /**
-   * @default undefined
-   */
   disabled?: boolean;
+  children?: import("svelte").Snippet<[props: { item: string }]>;
+}
 
-  children?: (this: void, ...args: [{ item: string }]) => void;
-};
+type $Props = Props;
+
+export type RunesWholePropsTypedProps = $Props;
 
 export default class RunesWholePropsTyped extends SvelteComponentTyped<
   RunesWholePropsTypedProps,
@@ -7541,17 +7667,14 @@ export default class ForwardedStandardEventCustomDetail extends SvelteComponentT
 exports[`fixtures (TypeScript) "runes-props-interface/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
-export type RunesPropsInterfaceProps = {
-  /**
-   * @default undefined
-   */
+interface Props {
   foo: string;
-
-  /**
-   * @default undefined
-   */
   bar?: number;
-};
+}
+
+type $Props = Props;
+
+export type RunesPropsInterfaceProps = $Props;
 
 export default class RunesPropsInterface extends SvelteComponentTyped<
   RunesPropsInterfaceProps,
@@ -7603,6 +7726,22 @@ export default class BindThisMultiple extends SvelteComponentTyped<
   BindThisMultipleProps,
   Record<string, any>,
   { default: Record<string, never> }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "runes-whole-props-imported/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { Props } from "./types";
+
+type $Props = Props;
+
+export type RunesWholePropsImportedProps = $Props;
+
+export default class RunesWholePropsImported extends SvelteComponentTyped<
+  RunesWholePropsImportedProps,
+  Record<string, any>,
+  Record<string, never>
 > {}
 "
 `;
@@ -7857,14 +7996,16 @@ export default class SvelteElementHardcodedDiv extends SvelteComponentTyped<
 `;
 
 exports[`fixtures (TypeScript) "runes-snippet-positional/input.svelte" 1`] = `
-"import { SvelteComponentTyped, type Snippet } from "svelte";
+"import { SvelteComponentTyped } from "svelte";
+import type { Snippet } from "svelte";
 
-export type RunesSnippetPositionalProps = {
-  /**
-   * @default undefined
-   */
+interface Props {
   row: Snippet<[item: string, index: number]>;
-};
+}
+
+type $Props = Props;
+
+export type RunesSnippetPositionalProps = $Props;
 
 export default class RunesSnippetPositional extends SvelteComponentTyped<
   RunesSnippetPositionalProps,
@@ -8054,7 +8195,6 @@ export default class ContextSpace extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "extend-props/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
-
 import type { ButtonProps } from "./Button.svelte";
 
 type $RestProps = SvelteHTMLElements["button"];

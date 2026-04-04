@@ -1,18 +1,14 @@
 import { SvelteComponentTyped } from "svelte";
 
-export type RunesWholePropsTypedProps = {
-  /**
-   * @default undefined
-   */
+interface Props {
   item: string;
-
-  /**
-   * @default undefined
-   */
   disabled?: boolean;
+  children?: import("svelte").Snippet<[props: { item: string }]>;
+}
 
-  children?: (this: void, ...args: [{ item: string }]) => void;
-};
+type $Props = Props;
+
+export type RunesWholePropsTypedProps = $Props;
 
 export default class RunesWholePropsTyped extends SvelteComponentTyped<
   RunesWholePropsTypedProps,

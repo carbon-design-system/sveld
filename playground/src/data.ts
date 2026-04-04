@@ -31,6 +31,42 @@ const buttonRunes: Example = {
 </button>`,
 };
 
+const typeScriptPropsRunes: Example = {
+  name: "TypeScript props",
+  moduleName: "TypeScriptPropsRunes",
+  code: `<script lang="ts">
+  interface NoticeProps {
+    message: string;
+    tone?: "info" | "warning";
+  }
+
+  type ActionProps = {
+    onconfirm?: (detail: {
+      message: string;
+      tone: NoticeProps["tone"];
+    }) => void;
+  };
+
+  let {
+    message,
+    tone = "info",
+    onconfirm,
+  }: NoticeProps & ActionProps = $props();
+
+  function handleClick() {
+    onconfirm?.({ message, tone });
+  }
+</script>
+
+<button
+  type="button"
+  class:tone-warning={tone === "warning"}
+  onclick={handleClick}
+>
+  {message}
+</button>`,
+};
+
 const dispatchedEventsRunes: Example = {
   name: "Callback events",
   moduleName: "CallbackEventsRunes",
@@ -351,6 +387,41 @@ const buttonLegacy: Example = {
 </button>`,
 };
 
+const typeScriptPropsLegacy: Example = {
+  name: "TypeScript props (non-Runes)",
+  moduleName: "TypeScriptPropsLegacy",
+  code: `<script lang="ts">
+  type NoticeTone = "info" | "warning";
+
+  interface NoticeMeta {
+    source: "user" | "system";
+    retries?: number;
+  }
+
+  export let message: string;
+  export let tone: NoticeTone = "info";
+  export let meta: NoticeMeta = { source: "user" };
+  export let onconfirm:
+    | ((detail: {
+        message: string;
+        tone: NoticeTone;
+        meta: NoticeMeta;
+      }) => void)
+    | undefined;
+
+  function handleClick() {
+    onconfirm?.({ message, tone, meta });
+  }
+</script>
+
+<button
+  type="button"
+  onclick={handleClick}
+>
+  {message} ({meta.source})
+</button>`,
+};
+
 const dispatchedEventsLegacy: Example = {
   name: "Dispatched events (non-Runes)",
   moduleName: "DispatchedEventsLegacy",
@@ -641,6 +712,7 @@ const functionWithParamsLegacy: Example = {
 
 export default [
   buttonRunes,
+  typeScriptPropsRunes,
   dispatchedEventsRunes,
   dispatchedEventsAnnotatedRunes,
   forwardedEventsRunes,
@@ -651,6 +723,7 @@ export default [
   componentCommentsRunes,
   functionWithParamsRunes,
   buttonLegacy,
+  typeScriptPropsLegacy,
   dispatchedEventsLegacy,
   dispatchedEventsAnnotatedLegacy,
   forwardedEventsLegacy,

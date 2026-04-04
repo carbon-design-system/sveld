@@ -1,4 +1,4 @@
-import ComponentParser from "../src/ComponentParser";
+import ComponentParser, { getParsedComponentTypeScriptMetadata } from "../src/ComponentParser";
 
 describe("ComponentParser", () => {
   const diagnostics = {
@@ -472,6 +472,21 @@ describe("ComponentParser", () => {
     expect(result.props.find((prop) => prop.name === "title")?.isRequired).toBe(true);
     expect(result.props.find((prop) => prop.name === "disabled")?.type).toBe("boolean");
     expect(result.props.find((prop) => prop.name === "disabled")?.isRequired).toBe(false);
+    expect(getParsedComponentTypeScriptMetadata(result)?.canonicalPropsType).toBe("Props");
+  });
+
+  test("preserves explicit TypeScript annotations for legacy export lets", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script lang="ts">
+        export let title: string;
+        export let count: number = 0;
+      </script>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.props.find((prop) => prop.name === "title")?.type).toBe("string");
+    expect(result.props.find((prop) => prop.name === "count")?.type).toBe("number");
   });
 
   test("does not bleed declaration JSDoc across multiple $props bindings", () => {

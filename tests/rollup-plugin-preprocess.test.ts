@@ -1,32 +1,51 @@
-import { preprocess } from "svelte/compiler";
-import { replace, typescript } from "svelte-preprocess";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import { generateBundle } from "../src/plugin";
+import { writeTsDefinition } from "../src/writer/writer-ts-definitions";
 
-describe("rollup-plugin preprocessing", () => {
-  test("should handle HTML tags in template literals (issue #115)", async () => {
-    const source = `<script>
+describe("metadata source preservation", () => {
+  test("preserves TypeScript annotations while stripping only the top-level style block", async () => {
+    const fixtureDir = mkdtempSync(path.join(tmpdir(), "sveld-plugin-"));
+
+    try {
+      const componentDir = path.join(fixtureDir, "src");
+      mkdirSync(componentDir, { recursive: true });
+
+      writeFileSync(
+        path.join(componentDir, "Button.svelte"),
+        `<script lang="ts">
   const css = \`<style>body { color: white; }</style>\`;
-  export let message = "test";
+
+  interface Props {
+    message: string;
+  }
+
+  let { message }: Props = $props();
 </script>
 
-<div>{message}</div>
+<div>{css}{message}</div>
 
 <style>
   div { color: red; }
 </style>
-`;
+`,
+      );
 
-    // This is the exact preprocessing logic from rollup-plugin.ts line 90
-    const { code: processed } = await preprocess(source, [typescript(), replace([[/<style.+?<\/style>/gims, ""]])], {
-      filename: "test.svelte",
-    });
+      const result = await generateBundle(componentDir, true);
+      const component = result.allComponentsForTypes.get("Button");
 
-    // The processed code should:
-    // 1. Still have a complete <script> block
-    // 2. Still have the const css declaration
-    // 3. Should have removed the <style> block (that's expected)
-    expect(processed).toContain("<script>");
-    expect(processed).toContain("</script>");
-    expect(processed).toContain("const css");
-    expect(processed).toContain("export let message");
+      expect(component).toBeDefined();
+      expect(component?.props.find((prop) => prop.name === "message")?.type).toBe("string");
+
+      if (component === undefined) {
+        throw new Error("Expected Button component");
+      }
+      const declaration = writeTsDefinition(component);
+      expect(declaration).toContain("interface Props");
+      expect(declaration).toContain("export type ButtonProps = $Props;");
+    } finally {
+      rmSync(fixtureDir, { recursive: true, force: true });
+    }
   });
 });

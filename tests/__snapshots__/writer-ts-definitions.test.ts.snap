@@ -1,14 +1,9 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
 exports[`writerTsDefinition writeTsDefinition 1`] = `
-"
-  import { SvelteComponentTyped } from "svelte";
-  
-  
-  
-  
-  
-    export type ModuleNameProps =  {
+"import { SvelteComponentTyped } from "svelte";
+
+export type ModuleNameProps =  {
       
       /**
 * @default true
@@ -35,9 +30,8 @@ exports[`writerTsDefinition writeTsDefinition 1`] = `
 
       children?: (this: void, ...args: [{}]) => void;
     }
-  
-  
-  export default class ModuleName extends SvelteComponentTyped<
+
+export default class ModuleName extends SvelteComponentTyped<
       ModuleNameProps,
       Record<string, any>,
       {default: {}
@@ -50,17 +44,11 @@ exports[`writerTsDefinition writeTsDefinition 1`] = `
 `;
 
 exports[`writerTsDefinition "default" module name 1`] = `
-"
-  import { SvelteComponentTyped } from "svelte";
-  
-  
-  
-  
-  
-    export type defaultProps = Record<string, never>;
-  
-  
-  export default class  extends SvelteComponentTyped<
+"import { SvelteComponentTyped } from "svelte";
+
+export type defaultProps = Record<string, never>;
+
+export default class  extends SvelteComponentTyped<
       defaultProps,
       Record<string, any>,
       Record<string, never>

@@ -142,9 +142,18 @@ interface RunesPropTypeMetadata {
   type: string;
 }
 
+interface RunesPropsDeclarationMetadata {
+  canonicalType?: string;
+  props: Map<string, RunesPropTypeMetadata>;
+  referencedImportedTypes: Set<string>;
+  referencedLocalTypes: Set<string>;
+}
+
 type ModernRunesTypeNode = {
   type?: string;
   id?: { name?: string };
+  start?: number;
+  end?: number;
   body?: { body?: ModernRunesTypeMember[] };
   typeAnnotation?: ModernRunesTypeNode;
   typeName?: unknown;
@@ -160,10 +169,39 @@ type ModernRunesTypeMember = {
   typeAnnotation?: {
     start?: number;
     end?: number;
+    typeAnnotation?: ModernRunesTypeNode;
   };
 };
 
 type TemplateNode = { start?: number; end?: number };
+
+interface TypeImportBinding {
+  importedName?: string;
+  localName: string;
+  source: string;
+  specifierType: "default" | "named" | "namespace";
+}
+
+interface LocalTypeDeclaration {
+  code: string;
+  node: ModernRunesTypeNode;
+  start: number;
+}
+
+export interface ParsedComponentTypeScriptMetadata {
+  canonicalPropsType?: string;
+  canonicalPropNames: string[];
+  localTypeDeclarations: string[];
+  typeImportStatements: string[];
+}
+
+export const PARSED_COMPONENT_TYPE_SCRIPT_METADATA = Symbol("sveld.parsedComponentTypeScriptMetadata");
+
+export function getParsedComponentTypeScriptMetadata(component: {
+  [PARSED_COMPONENT_TYPE_SCRIPT_METADATA]?: ParsedComponentTypeScriptMetadata;
+}) {
+  return component[PARSED_COMPONENT_TYPE_SCRIPT_METADATA];
+}
 
 type SyntaxMode = "legacy" | "runes";
 type ScopeBindingKind = "prop" | "local";
@@ -588,6 +626,8 @@ export interface ParsedComponent {
   componentComment?: string;
   /** Contexts created with `setContext` in the component */
   contexts?: ComponentContext[];
+  /** Internal writer-only TypeScript metadata. Not serialized to JSON. */
+  [PARSED_COMPONENT_TYPE_SCRIPT_METADATA]?: ParsedComponentTypeScriptMetadata;
 }
 
 export default class ComponentParser {
@@ -667,7 +707,20 @@ export default class ComponentParser {
   private readonly snippetPropLocals: Set<string> = new Set();
 
   /** Per-declarator type metadata extracted from modern AST `$props()` annotations */
-  private readonly runesPropTypeMetadataByDeclaratorStart: Map<number, Map<string, RunesPropTypeMetadata>> = new Map();
+  private readonly runesPropsDeclarationMetadataByDeclaratorStart: Map<number, RunesPropsDeclarationMetadata> =
+    new Map();
+
+  /** Explicit TypeScript prop annotations for legacy `export let` declarations keyed by local name */
+  private readonly explicitPropTypesByName: Map<string, string> = new Map();
+
+  /** Type-only imports keyed by their local binding names */
+  private readonly typeImportBindingsByLocalName: Map<string, TypeImportBinding> = new Map();
+
+  /** Local interface/type declarations keyed by type name */
+  private readonly localTypeDeclarationsByName: Map<string, LocalTypeDeclaration> = new Map();
+
+  /** Typed `$props()` declarations discovered in source order */
+  private readonly typedRunesPropsDeclarations: RunesPropsDeclarationMetadata[] = [];
 
   /** Component-level lexical scope shared by instance script and template */
   private readonly componentScope: LexicalScope = new Map();
@@ -709,9 +762,17 @@ export default class ComponentParser {
     return this.getPropByLocalOrPublic(name)?.type;
   }
 
-  private getRunesPropTypeMetadata(declaratorStart: number | undefined, propName: string) {
+  private getExplicitPropType(name: string) {
+    return this.explicitPropTypesByName.get(name);
+  }
+
+  private getRunesPropsDeclarationMetadata(declaratorStart: number | undefined) {
     if (declaratorStart === undefined) return undefined;
-    return this.runesPropTypeMetadataByDeclaratorStart.get(declaratorStart)?.get(propName);
+    return this.runesPropsDeclarationMetadataByDeclaratorStart.get(declaratorStart);
+  }
+
+  private getRunesPropTypeMetadata(declaratorStart: number | undefined, propName: string) {
+    return this.getRunesPropsDeclarationMetadata(declaratorStart)?.props.get(propName);
   }
 
   private getTypeReferenceName(typeName: unknown): string | undefined {
@@ -733,6 +794,234 @@ export default class ComponentParser {
     }
 
     return undefined;
+  }
+
+  private getTypeDependencyName(typeName: unknown): string | undefined {
+    if (!typeName || typeof typeName !== "object" || !("type" in typeName)) return undefined;
+
+    if (typeName.type === "Identifier" && "name" in typeName && typeof typeName.name === "string") {
+      return typeName.name;
+    }
+
+    if (
+      typeName.type === "TSQualifiedName" &&
+      "left" in typeName &&
+      typeName.left &&
+      typeof typeName.left === "object"
+    ) {
+      return this.getTypeDependencyName(typeName.left);
+    }
+
+    return undefined;
+  }
+
+  private getTypeAnnotationText(typeAnnotation: { start?: number; end?: number } | undefined) {
+    const start = typeAnnotation?.start;
+    const end = typeAnnotation?.end;
+    if (start === undefined || end === undefined) return undefined;
+    return this.sourceAtPos(start + 1, end)?.trim();
+  }
+
+  private collectReferencedTypeDependencies(
+    typeNode: ModernRunesTypeNode | undefined,
+    referencedImportedTypes: Set<string>,
+    referencedLocalTypes: Set<string>,
+    visitedLocalTypes: Set<string> = new Set(),
+  ) {
+    if (!typeNode?.type) return;
+
+    switch (typeNode.type) {
+      case "TSInterfaceDeclaration":
+        this.collectReferencedTypeDependencies(
+          { type: "TSTypeLiteral", members: typeNode.body?.body },
+          referencedImportedTypes,
+          referencedLocalTypes,
+          visitedLocalTypes,
+        );
+        return;
+      case "TSTypeAliasDeclaration":
+      case "TSParenthesizedType":
+      case "TSTypeAnnotation":
+        this.collectReferencedTypeDependencies(
+          typeNode.typeAnnotation,
+          referencedImportedTypes,
+          referencedLocalTypes,
+          visitedLocalTypes,
+        );
+        return;
+      case "TSIntersectionType":
+      case "TSUnionType":
+        for (const nestedType of typeNode.types ?? []) {
+          this.collectReferencedTypeDependencies(
+            nestedType,
+            referencedImportedTypes,
+            referencedLocalTypes,
+            visitedLocalTypes,
+          );
+        }
+        return;
+      case "TSTypeLiteral":
+        for (const member of typeNode.members ?? []) {
+          if (!member || member.type !== "TSPropertySignature") continue;
+          this.collectReferencedTypeDependencies(
+            member.typeAnnotation?.typeAnnotation,
+            referencedImportedTypes,
+            referencedLocalTypes,
+            visitedLocalTypes,
+          );
+        }
+        return;
+      case "TSTypeReference": {
+        const dependencyName = this.getTypeDependencyName(typeNode.typeName);
+        if (dependencyName) {
+          if (this.typeImportBindingsByLocalName.has(dependencyName)) {
+            referencedImportedTypes.add(dependencyName);
+          }
+
+          const localDeclaration = this.localTypeDeclarationsByName.get(dependencyName);
+          if (localDeclaration && !visitedLocalTypes.has(dependencyName)) {
+            referencedLocalTypes.add(dependencyName);
+            visitedLocalTypes.add(dependencyName);
+            this.collectReferencedTypeDependencies(
+              localDeclaration.node,
+              referencedImportedTypes,
+              referencedLocalTypes,
+              visitedLocalTypes,
+            );
+            visitedLocalTypes.delete(dependencyName);
+          }
+        }
+
+        if ("typeParameters" in typeNode && typeNode.typeParameters && typeof typeNode.typeParameters === "object") {
+          const paramsNode = typeNode.typeParameters as { params?: ModernRunesTypeNode[] };
+          for (const param of paramsNode.params ?? []) {
+            this.collectReferencedTypeDependencies(
+              param,
+              referencedImportedTypes,
+              referencedLocalTypes,
+              visitedLocalTypes,
+            );
+          }
+        }
+        return;
+      }
+      case "TSArrayType":
+      case "TSRestType":
+      case "TSOptionalType":
+      case "TSIndexedAccessType":
+      case "TSTypeOperator":
+      case "TSExpressionWithTypeArguments":
+      case "TSTupleType":
+      case "TSConditionalType":
+      case "TSInferType":
+      case "TSMappedType":
+      case "TSFunctionType":
+      case "TSConstructorType":
+      case "TSTypeQuery":
+      case "TSImportType":
+      case "TSLiteralType":
+      case "TSTypePredicate":
+      case "TSNamedTupleMember":
+        break;
+      default:
+        break;
+    }
+
+    for (const value of Object.values(typeNode)) {
+      if (!value || typeof value !== "object") continue;
+
+      if (Array.isArray(value)) {
+        for (const item of value) {
+          if (!item || typeof item !== "object" || !("type" in item)) continue;
+          this.collectReferencedTypeDependencies(
+            item as ModernRunesTypeNode,
+            referencedImportedTypes,
+            referencedLocalTypes,
+            visitedLocalTypes,
+          );
+        }
+        continue;
+      }
+
+      if ("type" in value) {
+        this.collectReferencedTypeDependencies(
+          value as ModernRunesTypeNode,
+          referencedImportedTypes,
+          referencedLocalTypes,
+          visitedLocalTypes,
+        );
+      }
+    }
+  }
+
+  private buildTypeImportStatements(referencedImportedTypes: Set<string>) {
+    const groupedImports = new Map<
+      string,
+      { default: string[]; named: Array<{ imported?: string; local: string }>; namespace: string[] }
+    >();
+
+    for (const importedType of Array.from(referencedImportedTypes).sort()) {
+      const binding = this.typeImportBindingsByLocalName.get(importedType);
+      if (!binding) continue;
+
+      const group = groupedImports.get(binding.source) ?? { default: [], named: [], namespace: [] };
+
+      if (binding.specifierType === "default") {
+        group.default.push(binding.localName);
+      } else if (binding.specifierType === "namespace") {
+        group.namespace.push(binding.localName);
+      } else {
+        group.named.push({
+          imported: binding.importedName,
+          local: binding.localName,
+        });
+      }
+
+      groupedImports.set(binding.source, group);
+    }
+
+    return Array.from(groupedImports.entries())
+      .sort(([sourceA], [sourceB]) => sourceA.localeCompare(sourceB))
+      .map(([source, group]) => {
+        if (group.namespace.length > 0) {
+          return group.namespace.map((localName) => `import type * as ${localName} from "${source}";`).join("\n");
+        }
+
+        const namedParts = group.named.map(({ imported, local }) => {
+          if (!imported || imported === local) return local;
+          return `${imported} as ${local}`;
+        });
+        const defaultImport = group.default[0];
+        const namedImport = namedParts.length > 0 ? `{ ${namedParts.join(", ")} }` : "";
+
+        if (defaultImport && namedImport) {
+          return `import type ${defaultImport}, ${namedImport} from "${source}";`;
+        }
+        if (defaultImport) {
+          return `import type ${defaultImport} from "${source}";`;
+        }
+        return `import type ${namedImport} from "${source}";`;
+      });
+  }
+
+  private buildTypeScriptMetadata(): ParsedComponentTypeScriptMetadata | undefined {
+    if (this.typedRunesPropsDeclarations.length !== 1) return undefined;
+
+    const [typedDeclaration] = this.typedRunesPropsDeclarations;
+    if (!typedDeclaration.canonicalType) return undefined;
+
+    const localTypeDeclarations = Array.from(typedDeclaration.referencedLocalTypes)
+      .map((typeName) => this.localTypeDeclarationsByName.get(typeName))
+      .filter((declaration): declaration is LocalTypeDeclaration => declaration !== undefined)
+      .sort((a, b) => a.start - b.start)
+      .map((declaration) => declaration.code);
+
+    return {
+      canonicalPropsType: typedDeclaration.canonicalType,
+      canonicalPropNames: Array.from(typedDeclaration.props.keys()).sort(),
+      localTypeDeclarations,
+      typeImportStatements: this.buildTypeImportStatements(typedDeclaration.referencedImportedTypes),
+    };
   }
 
   private buildRunesPropTypeMetadataMap(
@@ -1531,7 +1820,11 @@ export default class ComponentParser {
   }
 
   private buildRunesPropTypeMetadata() {
-    this.runesPropTypeMetadataByDeclaratorStart.clear();
+    this.runesPropsDeclarationMetadataByDeclaratorStart.clear();
+    this.explicitPropTypesByName.clear();
+    this.typeImportBindingsByLocalName.clear();
+    this.localTypeDeclarationsByName.clear();
+    this.typedRunesPropsDeclarations.length = 0;
     if (!this.source) return;
 
     const modernParsed = parse(this.source, { modern: true }) as {
@@ -1539,11 +1832,38 @@ export default class ComponentParser {
         content?: {
           body?: Array<{
             type?: string;
+            start?: number;
+            end?: number;
+            importKind?: string;
+            source?: { value?: string };
+            specifiers?: Array<{
+              type?: string;
+              importKind?: string;
+              local?: { name?: string };
+              imported?: { type?: string; name?: string; value?: string };
+            }>;
             id?: { name?: string };
+            declaration?: {
+              type?: string;
+              declarations?: Array<{
+                id?: {
+                  type?: string;
+                  name?: string;
+                  typeAnnotation?: {
+                    start?: number;
+                    end?: number;
+                    typeAnnotation?: ModernRunesTypeNode;
+                  };
+                };
+              }>;
+            };
             declarations?: Array<{
               id?: {
                 type?: string;
+                name?: string;
                 typeAnnotation?: {
+                  start?: number;
+                  end?: number;
                   typeAnnotation?: ModernRunesTypeNode;
                 };
               };
@@ -1556,15 +1876,64 @@ export default class ComponentParser {
     };
 
     const body = modernParsed.instance?.content?.body ?? [];
-    const localTypeDeclarations = new Map<string, ModernRunesTypeNode>();
 
     for (const statement of body) {
       if (!statement?.type) continue;
+      if (statement.type === "ImportDeclaration" && statement.source?.value) {
+        for (const specifier of statement.specifiers ?? []) {
+          const localName = specifier.local?.name;
+          if (!localName) continue;
+          const isTypeOnly = statement.importKind === "type" || specifier.importKind === "type";
+          if (!isTypeOnly) continue;
+
+          let specifierType: TypeImportBinding["specifierType"] | undefined;
+          let importedName: string | undefined;
+
+          if (specifier.type === "ImportSpecifier") {
+            specifierType = "named";
+            importedName =
+              specifier.imported?.type === "Identifier"
+                ? specifier.imported.name
+                : typeof specifier.imported?.value === "string"
+                  ? specifier.imported.value
+                  : undefined;
+          } else if (specifier.type === "ImportDefaultSpecifier") {
+            specifierType = "default";
+          } else if (specifier.type === "ImportNamespaceSpecifier") {
+            specifierType = "namespace";
+          }
+
+          if (!specifierType) continue;
+
+          this.typeImportBindingsByLocalName.set(localName, {
+            importedName,
+            localName,
+            source: String(statement.source.value),
+            specifierType,
+          });
+        }
+      }
       if (
         (statement.type === "TSInterfaceDeclaration" || statement.type === "TSTypeAliasDeclaration") &&
-        statement.id?.name
+        statement.id?.name &&
+        statement.start !== undefined &&
+        statement.end !== undefined
       ) {
-        localTypeDeclarations.set(statement.id.name, statement as ModernRunesTypeNode);
+        this.localTypeDeclarationsByName.set(statement.id.name, {
+          code: this.sourceAtPos(statement.start, statement.end)?.trim() ?? "",
+          node: statement as ModernRunesTypeNode,
+          start: statement.start,
+        });
+      }
+
+      if (statement.type === "ExportNamedDeclaration" && statement.declaration?.type === "VariableDeclaration") {
+        for (const declarator of statement.declaration.declarations ?? []) {
+          if (declarator.id?.type !== "Identifier" || !declarator.id.name) continue;
+          const explicitType = this.getTypeAnnotationText(declarator.id.typeAnnotation);
+          if (explicitType) {
+            this.explicitPropTypesByName.set(declarator.id.name, explicitType);
+          }
+        }
       }
     }
 
@@ -1573,13 +1942,32 @@ export default class ComponentParser {
 
       for (const declarator of statement.declarations ?? []) {
         if (!this.isCallExpressionNamed(declarator.init, "$props")) continue;
+        const canonicalType = this.getTypeAnnotationText(declarator.id?.typeAnnotation);
         const metadata = this.buildRunesPropTypeMetadataMap(
           declarator.id?.typeAnnotation?.typeAnnotation,
-          localTypeDeclarations,
+          new Map(
+            Array.from(this.localTypeDeclarationsByName.entries(), ([name, declaration]) => [name, declaration.node]),
+          ),
+        );
+        const referencedImportedTypes = new Set<string>();
+        const referencedLocalTypes = new Set<string>();
+        this.collectReferencedTypeDependencies(
+          declarator.id?.typeAnnotation?.typeAnnotation,
+          referencedImportedTypes,
+          referencedLocalTypes,
         );
 
-        if (declarator.start !== undefined && metadata.size > 0) {
-          this.runesPropTypeMetadataByDeclaratorStart.set(declarator.start, metadata);
+        if (declarator.start !== undefined) {
+          const declarationMetadata: RunesPropsDeclarationMetadata = {
+            canonicalType,
+            props: metadata,
+            referencedImportedTypes,
+            referencedLocalTypes,
+          };
+          this.runesPropsDeclarationMetadataByDeclaratorStart.set(declarator.start, declarationMetadata);
+          if (canonicalType) {
+            this.typedRunesPropsDeclarations.push(declarationMetadata);
+          }
         }
       }
     }
@@ -1858,11 +2246,11 @@ export default class ComponentParser {
         this.wholePropsLocals.add(declarator.id.name);
         this.restPropLocals.add(declarator.id.name);
 
-        const metadata = this.runesPropTypeMetadataByDeclaratorStart.get(
-          (declarator as VariableDeclarator & { start?: number }).start ?? -1,
+        const metadata = this.getRunesPropsDeclarationMetadata(
+          (declarator as VariableDeclarator & { start?: number }).start,
         );
         if (metadata) {
-          for (const [propName, typeMetadata] of metadata) {
+          for (const [propName, typeMetadata] of metadata.props) {
             this.addProp(propName, {
               name: propName,
               kind: "let",
@@ -1954,7 +2342,7 @@ export default class ComponentParser {
           !!propertyJSDoc?.params?.length ||
           propertyJSDoc?.returnType !== undefined ||
           propertyJSDoc?.type?.includes("=>");
-        const type = propertyJSDoc?.type ?? typeMetadata?.type ?? inferredType;
+        const type = typeMetadata?.type ?? propertyJSDoc?.type ?? inferredType;
 
         if (bindable) {
           this.reactive_vars.add(propName);
@@ -3576,7 +3964,11 @@ export default class ComponentParser {
     this.restPropLocals.clear();
     this.wholePropsLocals.clear();
     this.snippetPropLocals.clear();
-    this.runesPropTypeMetadataByDeclaratorStart.clear();
+    this.runesPropsDeclarationMetadataByDeclaratorStart.clear();
+    this.explicitPropTypesByName.clear();
+    this.typeImportBindingsByLocalName.clear();
+    this.localTypeDeclarationsByName.clear();
+    this.typedRunesPropsDeclarations.length = 0;
     this.componentScope.clear();
     this.scopeDeclarations = new WeakMap();
     this.activeScopes.length = 0;
@@ -3747,6 +4139,7 @@ export default class ComponentParser {
             let isFunctionDeclaration = false;
             let value: string | undefined;
             let type: string | undefined;
+            let explicitType: string | undefined;
             let isFunction = false;
             let params: ComponentPropParam[] | undefined;
             let returnType: string | undefined;
@@ -3773,17 +4166,20 @@ export default class ComponentParser {
                 return;
               }
 
-              prop_name = (id as Identifier).name;
+              const localPropName = (id as Identifier).name;
+              prop_name = localPropName;
               kind = variableDeclarationKindToComponentPropKind(varDecl.kind);
               const initResult = init == null ? { isFunction: false } : this.processInitializer(init);
               ({ value, type, isFunction } = initResult);
+              explicitType = this.getExplicitPropType(localPropName);
+              type = explicitType ?? type;
             } else {
               return;
             }
 
             const jsdocInfo = this.processNodeJSDoc(node);
             if (jsdocInfo) {
-              if (jsdocInfo.type) type = jsdocInfo.type;
+              if (jsdocInfo.type && explicitType === undefined) type = jsdocInfo.type;
               params = jsdocInfo.params;
               returnType = jsdocInfo.returnType;
               if (jsdocInfo.description) description = jsdocInfo.description;
@@ -3984,6 +4380,7 @@ export default class ComponentParser {
           let isFunctionDeclaration = false;
           let value: string | undefined;
           let type: string | undefined;
+          let explicitType: string | undefined;
           let isFunction = false;
           let params: ComponentPropParam[] | undefined;
           let returnType: string | undefined;
@@ -4009,7 +4406,9 @@ export default class ComponentParser {
             const { id, init } = firstDeclarator as VariableDeclarator;
 
             if (id && typeof id === "object" && "name" in id) {
-              prop_name ??= (id as Identifier).name;
+              const localPropName = (id as Identifier).name;
+              prop_name ??= localPropName;
+              explicitType = this.getExplicitPropType(localPropName);
             } else {
               return;
             }
@@ -4018,13 +4417,14 @@ export default class ComponentParser {
             isRequired = kind === "let" && init == null;
             const initResult = init == null ? { isFunction: false } : this.processInitializer(init);
             ({ value, type, isFunction } = initResult);
+            type = explicitType ?? type;
           } else {
             return;
           }
 
           const jsdocInfo = this.processNodeJSDoc(node);
           if (jsdocInfo) {
-            if (jsdocInfo.type) type = jsdocInfo.type;
+            if (jsdocInfo.type && explicitType === undefined) type = jsdocInfo.type;
             params = jsdocInfo.params;
             returnType = jsdocInfo.returnType;
             if (jsdocInfo.description) description = jsdocInfo.description;
@@ -4497,7 +4897,7 @@ export default class ComponentParser {
     const typedefsArray = ComponentParser.mapToArray(this.typedefs);
     const contextsArray = ComponentParser.mapToArray(this.contexts);
 
-    return {
+    const parsedComponent: ParsedComponent = {
       props: processedProps,
       moduleExports: moduleExportsArray,
       slots: processedSlots,
@@ -4509,5 +4909,12 @@ export default class ComponentParser {
       componentComment: this.componentComment,
       contexts: contextsArray,
     };
+
+    const typeScriptMetadata = this.buildTypeScriptMetadata();
+    if (typeScriptMetadata) {
+      parsedComponent[PARSED_COMPONENT_TYPE_SCRIPT_METADATA] = typeScriptMetadata;
+    }
+
+    return parsedComponent;
   }
 }

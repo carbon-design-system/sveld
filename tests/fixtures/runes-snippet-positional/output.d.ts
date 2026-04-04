@@ -1,11 +1,13 @@
-import { SvelteComponentTyped, type Snippet } from "svelte";
+import { SvelteComponentTyped } from "svelte";
+import type { Snippet } from "svelte";
 
-export type RunesSnippetPositionalProps = {
-  /**
-   * @default undefined
-   */
+interface Props {
   row: Snippet<[item: string, index: number]>;
-};
+}
+
+type $Props = Props;
+
+export type RunesSnippetPositionalProps = $Props;
 
 export default class RunesSnippetPositional extends SvelteComponentTyped<
   RunesSnippetPositionalProps,

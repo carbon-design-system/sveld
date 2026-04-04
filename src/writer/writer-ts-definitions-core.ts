@@ -1,3 +1,4 @@
+import { getParsedComponentTypeScriptMetadata } from "../ComponentParser";
 import type { ComponentDocApi } from "../plugin";
 
 const ANY_TYPE = "any";
@@ -28,6 +29,7 @@ const FUNCTION_TYPE_REGEX = /=>/;
 const NEWLINE_TO_COMMENT_REGEX = /\n/g;
 const WHITESPACE_REGEX = /\s+/g;
 const SNIPPET_TYPE_REFERENCE_REGEX = /(^|[^.\w])Snippet(?:\s*<|\b)/;
+const PRESERVED_SNIPPET_IMPORT_REGEX = /import\s+type\s+[^;]*\bSnippet\b[^;]*from\s+"svelte";/;
 
 /**
  * Formats a description for use in multi-line comment blocks.
@@ -185,16 +187,20 @@ function wrapCommentInJSDoc(commentLines: string): string {
  * ```
  */
 function genPropDef(
-  def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleName" | "extends" | "generics" | "slots">,
+  def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleName" | "extends" | "generics" | "slots"> & {
+    canonicalPropNames?: Set<string>;
+    canonicalPropsType?: string;
+  },
 ) {
   /**
    * Collect existing prop names to avoid conflicts with snippet props.
    * Snippet props are generated for slots, but shouldn't conflict with
    * actual component props.
    */
-  const existingPropNames = new Set(
-    def.props.filter((prop) => !prop.isFunctionDeclaration && prop.kind !== "const").map((prop) => prop.name),
-  );
+  const existingPropNames = new Set([
+    ...def.props.filter((prop) => !prop.isFunctionDeclaration && prop.kind !== "const").map((prop) => prop.name),
+    ...Array.from(def.canonicalPropNames ?? []),
+  ]);
 
   const initial_props = def.props
     .filter((prop) => !prop.isFunctionDeclaration && prop.kind !== "const")
@@ -227,6 +233,13 @@ function genPropDef(
       ${wrapCommentInJSDoc(prop_comments)}
       ${prop.name}${prop.isRequired ? "" : "?"}: ${prop_value};`;
     });
+
+  const extra_initial_props = def.canonicalPropsType
+    ? initial_props.filter((_, index) => {
+        const prop = def.props.filter((item) => !item.isFunctionDeclaration && item.kind !== "const")[index];
+        return prop ? !(def.canonicalPropNames?.has(prop.name) ?? false) : true;
+      })
+    : initial_props;
 
   /**
    * Generate snippet props for named slots (Svelte 5 compatibility).
@@ -275,7 +288,7 @@ function genPropDef(
 
   const snippet_props = [...named_snippet_props, children_snippet_prop].filter(Boolean);
 
-  const props = [...initial_props, ...snippet_props].join("\n");
+  const props = [...extra_initial_props, ...snippet_props].join("\n");
 
   const props_name = `${def.moduleName}Props`;
 
@@ -291,6 +304,21 @@ function genPropDef(
    * Just the generic parameter name without constraints.
    */
   const genericsNameRef = def.generics ? `<${def.generics[0]}>` : "";
+
+  const basePropsDef = def.canonicalPropsType
+    ? `
+    type $Props${genericsName} = ${def.canonicalPropsType}${
+      props.trim() === ""
+        ? ""
+        : ` & {${props}
+    }`
+    };
+  `
+    : `
+    type $Props${genericsName} = {
+      ${props}
+    };
+  `;
 
   if (def.rest_props?.type === "Element") {
     let extend_tag_map: string;
@@ -356,22 +384,36 @@ function genPropDef(
     if (def.extends === undefined) {
       prop_def = `
     ${restPropsComment}${extend_tag_map ? `type $RestProps = ${extend_tag_map};\n` : ""}
-    type $Props${genericsName} = {
+    ${
+      def.canonicalPropsType
+        ? `type $Props${genericsName} = (${def.canonicalPropsType}) & {${props}
+
+      ${dataAttributes}
+    };`
+        : `type $Props${genericsName} = {
       ${props}
 
       ${dataAttributes}
-    };
+    };`
+    }
 
     export type ${props_name}${genericsName} = Omit<$RestProps, keyof $Props${genericsNameRef}> & $Props${genericsNameRef};
   `;
     } else {
       prop_def = `
     ${restPropsComment}${extend_tag_map ? `type $RestProps = ${extend_tag_map};\n` : ""}
-    type $Props${genericsName} = {
+    ${
+      def.canonicalPropsType
+        ? `type $Props${genericsName} = (${def.canonicalPropsType}) & {${props}
+
+      ${dataAttributes}
+    };`
+        : `type $Props${genericsName} = {
       ${props}
 
       ${dataAttributes}
-    };
+    };`
+    }
 
     export type ${props_name}${genericsName} = Omit<$RestProps, keyof ($Props${genericsNameRef} & ${def.extends.interface})> & $Props${genericsNameRef} & ${def.extends.interface};
   `;
@@ -382,9 +424,14 @@ function genPropDef(
      * This ensures we don't generate `{}` which is incompatible with Svelte 4
      * and violates Biome linter rules.
      */
-    if (props.trim() === "" && def.extends === undefined) {
+    if (props.trim() === "" && def.extends === undefined && !def.canonicalPropsType) {
       prop_def = `
     export type ${props_name}${genericsName} = ${EMPTY_OBJECT};
+  `;
+    } else if (def.canonicalPropsType) {
+      prop_def = `
+    ${basePropsDef}
+    export type ${props_name}${genericsName} = ${def.extends === undefined ? "" : `${def.extends.interface} & `}$Props${genericsNameRef};
   `;
     } else {
       prop_def = `
@@ -783,6 +830,7 @@ function genComponentShell(def: {
 }
 
 export function writeTsDefinition(component: ComponentDocApi) {
+  const typeScriptMetadata = getParsedComponentTypeScriptMetadata(component);
   const {
     moduleName,
     typedefs,
@@ -803,6 +851,8 @@ export function writeTsDefinition(component: ComponentDocApi) {
     extends: _extends,
     generics,
     slots,
+    canonicalPropNames: new Set(typeScriptMetadata?.canonicalPropNames ?? []),
+    canonicalPropsType: typeScriptMetadata?.canonicalPropsType,
   });
 
   const generic = generics ? `<${generics[1]}>` : "";
@@ -810,9 +860,13 @@ export function writeTsDefinition(component: ComponentDocApi) {
   const moduleExportsDef = genModuleExports({ moduleExports });
   const typeDefs = getTypeDefs({ typedefs });
   const contextDefs = getContextDefs({ contexts, generics });
-  const snippetImportNeeded = SNIPPET_TYPE_REFERENCE_REGEX.test(
-    `${prop_def}\n${moduleExportsDef}\n${typeDefs}\n${contextDefs}`,
-  );
+  const preservedTypeImports = (typeScriptMetadata?.typeImportStatements ?? []).join("\n");
+  const preservedLocalTypeDeclarations = (typeScriptMetadata?.localTypeDeclarations ?? []).join("\n\n");
+  const snippetImportNeeded =
+    !PRESERVED_SNIPPET_IMPORT_REGEX.test(preservedTypeImports) &&
+    SNIPPET_TYPE_REFERENCE_REGEX.test(
+      `${prop_def}\n${moduleExportsDef}\n${typeDefs}\n${contextDefs}\n${preservedLocalTypeDeclarations}`,
+    );
 
   /**
    * Determine imports needed for rest_props.
@@ -825,22 +879,39 @@ export function writeTsDefinition(component: ComponentDocApi) {
   const needsHTMLAttributes =
     rest_props?.type === "Element" && rest_props.name === "svelte:element" && !rest_props.thisValue;
 
-  return `
-  import { SvelteComponentTyped${snippetImportNeeded ? ", type Snippet" : ""} } from "svelte";${
-    needsSvelteHTMLElements ? `import type { SvelteHTMLElements } from "svelte/elements";\n` : ""
-  }${needsHTMLAttributes ? `import type { HTMLAttributes } from "svelte/elements";\n` : ""}
-  ${genImports({ extends: _extends })}
-  ${moduleExportsDef}
-  ${typeDefs}
-  ${contexts && contexts.length > 0 ? "\n" : ""}${contextDefs}
-  ${prop_def}
-  ${genComponentComment({ componentComment })}
-  ${genComponentShell({
-    moduleName,
-    generic,
-    genericProps,
-    events: genEventDef({ events }),
-    slots: genSlotDef({ slots }),
-    accessors: genAccessors({ props }),
-  })}`;
+  const importSection = [
+    `import { SvelteComponentTyped${snippetImportNeeded ? ", type Snippet" : ""} } from "svelte";`,
+    needsSvelteHTMLElements ? `import type { SvelteHTMLElements } from "svelte/elements";` : "",
+    needsHTMLAttributes ? `import type { HTMLAttributes } from "svelte/elements";` : "",
+    preservedTypeImports,
+    genImports({ extends: _extends }),
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  const bodySection = [
+    moduleExportsDef,
+    typeDefs,
+    preservedLocalTypeDeclarations,
+    contextDefs,
+    prop_def,
+    [
+      genComponentComment({ componentComment }),
+      genComponentShell({
+        moduleName,
+        generic,
+        genericProps,
+        events: genEventDef({ events }),
+        slots: genSlotDef({ slots }),
+        accessors: genAccessors({ props }),
+      }),
+    ]
+      .filter(Boolean)
+      .join("\n"),
+  ]
+    .map((section) => section.trim())
+    .filter(Boolean)
+    .join("\n\n");
+
+  return [importSection, bodySection].filter(Boolean).join("\n\n");
 }
