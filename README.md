@@ -11,6 +11,8 @@ The purpose of this project is to make third party Svelte component libraries co
 
 `sveld` uses the Svelte 5 compiler to parse `.svelte` files. That single parse path powers docgen and TypeScript output for Svelte 3, Svelte 4, Svelte 5 without runes (`export let`, `<slot>`, `$$restProps`, …), and Svelte 5 Runes (`$props()`, `$bindable()`, `{@render ...}`, callback props such as `onclick`, …).
 
+For `lang="ts"` components, `sveld` preserves source-level prop type annotations when possible instead of requiring JSDoc as the primary source of truth. This includes legacy `export let` props, typed `$props()` destructuring, typed whole-object `$props()` captures, local `interface`/`type` declarations, and imported type references in emitted `.d.ts` files.
+
 | Syntax mode          | Supported |
 | :------------------- | :-------: |
 | Svelte 3             |     ✓     |
@@ -155,6 +157,15 @@ Extracted metadata include:
 - `$$restProps`
 
 This library adopts a progressively enhanced approach. Any property type that cannot be inferred (e.g., "hello" is a string) falls back to "any" to minimize incorrectly typed properties or signatures. To mitigate this, the library author can add JSDoc annotations to specify types that cannot be reliably inferred. This represents a progressively enhanced approach because JSDocs are comments that can be ignored by the compiler.
+
+When both TypeScript syntax and JSDoc are present, `sveld` resolves prop types in this order:
+
+1. explicit TypeScript annotation
+2. explicit JSDoc annotation
+3. initializer inference
+4. `any`
+
+`sveld` intentionally stays AST-only. It preserves imported and local type text in generated `.d.ts` output, but it does not perform project-wide semantic resolution with the TypeScript compiler. That means opaque imported whole-object `$props()` types can be preserved in declarations without being fully expanded into JSON metadata.
 
 ## Usage
 
@@ -353,6 +364,8 @@ export let id = `ccs-${Math.random().toString(36)}`;
 ```
 
 Use the `@type` tag to explicitly document the type. In the following example, the `kind` property has an enumerated (enum) type.
+
+For `lang="ts"` components, prefer native TypeScript annotations when they are already present. `@type` remains useful for JavaScript components, for overriding inferred types, and for cases where the AST cannot recover a more precise type.
 
 **Signature:**
 
@@ -760,6 +773,8 @@ Omit the `slot-name` to type the default slot.
 For Svelte 5 compatibility, `sveld` automatically generates optional snippet props for all slots. This allows consumers to use either the traditional slot syntax or Svelte 5's `{#snippet}` syntax.
 
 When parsing runes components, `sveld` maps `{@render ...}` calls back into the same slot metadata used for traditional `<slot>` declarations. Reserved snippet props such as `children`, along with named snippet props discovered from `{@render ...}`, are represented through `slots` metadata and generated snippet prop types rather than duplicated in the `props` output.
+
+Positional snippet calls such as `{@render row?.(item, index)}` are preserved as typed props when the prop itself has an explicit type like `Snippet<[Item, number]>`. They are not converted into synthetic slot metadata.
 
 For slots with props (e.g., `let:prop`), the generated type uses a Snippet-compatible signature:
 

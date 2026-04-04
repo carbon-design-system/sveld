@@ -1,16 +1,13 @@
 import { SvelteComponentTyped } from "svelte";
 
-export type RunesPropsInterfaceProps = {
-  /**
-   * @default undefined
-   */
+interface Props {
   foo: string;
-
-  /**
-   * @default undefined
-   */
   bar?: number;
-};
+}
+
+type $Props = Props;
+
+export type RunesPropsInterfaceProps = $Props;
 
 export default class RunesPropsInterface extends SvelteComponentTyped<
   RunesPropsInterfaceProps,

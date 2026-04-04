@@ -1,6 +1,5 @@
 import { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
-
 import type { IconSkeletonProps } from "./IconSkeleton.svelte";
 
 type $RestProps = SvelteHTMLElements["svg"];

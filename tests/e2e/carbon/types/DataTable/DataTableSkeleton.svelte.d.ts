@@ -1,6 +1,5 @@
 import { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
-
 import type { DataTableHeader } from "../DataTable/DataTable.svelte";
 
 type $RestProps = SvelteHTMLElements["div"];

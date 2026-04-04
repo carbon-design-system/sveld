@@ -1,4 +1,5 @@
 import type { ParsedComponent } from "../src/ComponentParser";
+import { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "../src/ComponentParser";
 import type { ComponentDocApi } from "../src/plugin";
 import { formatTsProps, getContextDefs, getTypeDefs, writeTsDefinition } from "../src/writer/writer-ts-definitions";
 
@@ -553,5 +554,47 @@ describe("writerTsDefinition", () => {
     const output = writeTsDefinition(component_api);
     expect(output).toContain('import { SvelteComponentTyped, type Snippet } from "svelte";');
     expect(output).toContain("row: Snippet<[item: string, index: number]>;");
+  });
+
+  test("preserves canonical props types with local declarations and type-only imports", () => {
+    const component_api: ComponentDocApi = {
+      moduleName: "TypedButton",
+      filePath: "./src/TypedButton.svelte",
+      props: [
+        {
+          name: "disabled",
+          kind: "let",
+          type: "boolean",
+          isFunction: false,
+          isFunctionDeclaration: false,
+          isRequired: false,
+          constant: false,
+          reactive: false,
+        },
+      ],
+      moduleExports: [],
+      slots: [],
+      events: [],
+      typedefs: [],
+      generics: null,
+      rest_props: undefined,
+    };
+
+    component_api[PARSED_COMPONENT_TYPE_SCRIPT_METADATA] = {
+      canonicalPropsType: "HTMLButtonAttributes & Props",
+      canonicalPropNames: ["disabled"],
+      localTypeDeclarations: [
+        `interface Props {
+  disabled?: boolean;
+}`,
+      ],
+      typeImportStatements: ['import type { HTMLButtonAttributes } from "svelte/elements";'],
+    };
+
+    const output = writeTsDefinition(component_api);
+    expect(output).toContain('import type { HTMLButtonAttributes } from "svelte/elements";');
+    expect(output).toContain("interface Props");
+    expect(output).toContain("type $Props = HTMLButtonAttributes & Props;");
+    expect(output).toContain("export type TypedButtonProps = $Props;");
   });
 });

@@ -1,8 +1,7 @@
 import { lstatSync, readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
-import { basename, dirname, parse, relative, resolve } from "node:path";
-import { preprocess } from "svelte/compiler";
-import { replace, typescript } from "svelte-preprocess";
+import { dirname, isAbsolute, parse, relative, resolve } from "node:path";
+import { parse as parseSvelte } from "svelte/compiler";
 import { globSync } from "tinyglobby";
 import ComponentParser, { type ParsedComponent } from "./ComponentParser";
 import { getSvelteEntry } from "./get-svelte-entry";
@@ -38,6 +37,23 @@ export type ComponentDocs = Map<ComponentModuleName, ComponentDocApi>;
 
 const STYLE_TAG_REGEX = /<style.+?<\/style>/gims;
 const HYPHEN_REGEX = /-/g;
+
+function stripTopLevelStyleBlock(source: string) {
+  try {
+    const parsed = parseSvelte(source, { modern: false }) as { css?: { start?: number; end?: number } };
+    const start = parsed.css?.start;
+    const end = parsed.css?.end;
+
+    if (start === undefined || end === undefined) {
+      return source;
+    }
+
+    return `${source.slice(0, start)}${source.slice(end)}`;
+  } catch {
+    // Fall back to the previous regex behavior if the source cannot be parsed.
+    return source.replace(STYLE_TAG_REGEX, "");
+  }
+}
 
 interface SveldPlugin {
   name: string;
@@ -99,6 +115,9 @@ interface GenerateBundleResult {
 export async function generateBundle(input: string, glob: boolean) {
   const isFile = lstatSync(input).isFile();
   const dir = isFile ? dirname(input) : input;
+  const rootDir = resolve(dir);
+  const resolveComponentFilePath = (filePath: string) =>
+    isAbsolute(filePath) ? resolve(filePath) : resolve(rootDir, filePath);
 
   /**
    * Only parse exports if input is a file.
@@ -107,15 +126,16 @@ export async function generateBundle(input: string, glob: boolean) {
   let exports: ParsedExports = {};
   if (isFile) {
     const entry = readFileSync(input, "utf-8");
-    exports = parseExports(entry, dir);
+    exports = parseExports(entry, rootDir);
   }
 
   const allComponents: ParsedExports = { ...exports };
 
   if (glob) {
-    for (const file of globSync([`${dir}/**/*.svelte`])) {
+    for (const matchedFile of globSync(["**/*.svelte"], { cwd: rootDir, absolute: true })) {
+      const file = resolve(matchedFile);
       const moduleName = parse(file).name.replace(HYPHEN_REGEX, "");
-      const source = normalizeSeparators(`./${relative(dir, file)}`);
+      const source = normalizeSeparators(`./${relative(rootDir, file)}`);
 
       if (exports[moduleName]) {
         exports[moduleName].source = source;
@@ -139,14 +159,14 @@ export async function generateBundle(input: string, glob: boolean) {
     const filePath = entry.source;
     const { ext } = parse(filePath);
     if (ext === ".svelte") {
-      uniqueFilePaths.add(resolve(dir, filePath));
+      uniqueFilePaths.add(resolveComponentFilePath(filePath));
     }
   }
   for (const [, entry] of allComponentEntries) {
     const filePath = entry.source;
     const { ext } = parse(filePath);
     if (ext === ".svelte") {
-      uniqueFilePaths.add(resolve(dir, filePath));
+      uniqueFilePaths.add(resolveComponentFilePath(filePath));
     }
   }
 
@@ -167,7 +187,7 @@ export async function generateBundle(input: string, glob: boolean) {
   /**
    * Helper function to process a single component.
    *
-   * Reads the component file, preprocesses it (removes styles, processes TypeScript),
+   * Reads the component file, removes top-level styles for metadata parsing,
    * and parses it to extract component metadata. Handles file read errors gracefully.
    *
    * @param entry - Export entry tuple [exportName, exportInfo]
@@ -200,7 +220,7 @@ export async function generateBundle(input: string, glob: boolean) {
     }
 
     if (ext === ".svelte") {
-      const resolvedPath = resolve(dir, filePath);
+      const resolvedPath = resolveComponentFilePath(filePath);
       const source = fileMap.get(resolvedPath);
 
       if (source === null || source === undefined) {
@@ -212,12 +232,8 @@ export async function generateBundle(input: string, glob: boolean) {
         return null;
       }
 
-      const { code: processed } = await preprocess(source, [typescript(), replace([[STYLE_TAG_REGEX, ""]])], {
-        filename: basename(filePath),
-      });
-
       const parser = new ComponentParser();
-      const parsed = parser.parseSvelteComponent(processed, {
+      const parsed = parser.parseSvelteComponent(stripTopLevelStyleBlock(source), {
         moduleName,
         filePath,
       });
