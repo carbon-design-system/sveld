@@ -2,9 +2,9 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "bun --bun vite",
-    "build": "bun --bun vite build",
-    "preview": "bun --bun vite preview"
+    "dev": "bun vite",
+    "build": "bun vite build",
+    "preview": "bun vite preview"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
