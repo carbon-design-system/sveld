@@ -26,8 +26,7 @@
   "dependencies": {
     "estree-walker": "^3.0.3",
     "prettier": "^3.8.0",
-    "svelte": "^5.55.0",
-    "svelte-preprocess": "^6.0.3"
+    "svelte": "^5.55.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.10",

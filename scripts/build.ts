@@ -51,17 +51,6 @@ async function buildProject() {
     external: [
       // Svelte compiler is large (~4MB+ bundled). Externalize; consumers have it.
       "svelte",
-      "svelte-preprocess",
-      // Optional peer dependencies of svelte-preprocess.
-      "@babel/core",
-      "coffeescript",
-      "less",
-      "postcss",
-      "postcss-load-config",
-      "pug",
-      "sass",
-      "stylus",
-      "sugarss",
       // Peer dependency; avoids bundling css-tree/mdn-data which use
       // createRequire with relative paths for JSON data files.
       // Uses dynamic requires for internal data files that break when bundled.
