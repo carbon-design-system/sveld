@@ -15,6 +15,7 @@ export default {
     production &&
       sveld({
         glob: true,
+
         markdown: true,
         markdownOptions: {
           onAppend: (type, document, components) => {

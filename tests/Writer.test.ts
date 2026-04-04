@@ -1,4 +1,4 @@
-import Writer from "../src/writer/Writer";
+import Writer, { createTypeScriptWriter } from "../src/writer/Writer";
 
 describe("Writer", () => {
   beforeEach(() => {
@@ -15,6 +15,18 @@ describe("Writer", () => {
     // Invalid JSON should emit Prettier parsing error
     expect(await writer.format("a:boolean}")).toEqual("a:boolean}");
     expect(consoleError).toHaveBeenCalledTimes(1);
+  });
+
+  test("TypeScript writer default print width matches generated definitions", async () => {
+    const writer = createTypeScriptWriter();
+
+    expect(
+      await writer.format(
+        "export type Props = { first: string; second: string; third: string; fourth: string; fifth: string };",
+      ),
+    ).toBe(
+      "export type Props = {\n  first: string;\n  second: string;\n  third: string;\n  fourth: string;\n  fifth: string;\n};\n",
+    );
   });
 
   test("JSON", async () => {

@@ -7,6 +7,9 @@ export default defineConfig({
     svelte(),
     sveld({
       types: true,
+      typesOptions: {
+        printWidth: 80,
+      },
       json: true,
       markdown: true,
     }),

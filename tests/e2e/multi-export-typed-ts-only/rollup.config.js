@@ -8,5 +8,5 @@ const production = !process.env.ROLLUP_WATCH;
 export default {
   input: "index.js",
   output: { format: "es", file: pkg.module },
-  plugins: [svelte(), resolve(), production && sveld()],
+  plugins: [svelte(), resolve(), production && sveld({})],
 };
