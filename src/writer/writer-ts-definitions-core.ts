@@ -26,6 +26,7 @@ const CUSTOM_EVENT_REGEX = /CustomEvent/;
 const COMPONENT_NAME_REGEX = /^[A-Z]/;
 const NEWLINE_REGEX = /\n/;
 const FUNCTION_TYPE_REGEX = /=>/;
+const DESCRIPTION_DEFAULT_TAG_REGEX = /(?:^|\n)@default\b/;
 const NEWLINE_TO_COMMENT_REGEX = /\n/g;
 const WHITESPACE_REGEX = /\s+/g;
 const SNIPPET_TYPE_REFERENCE_REGEX = /(^|[^.\w])Snippet(?:\s*<|\b)/;
@@ -215,14 +216,17 @@ function genPropDef(
         defaultValue = "undefined";
       }
 
+      const descriptionHasDefault = DESCRIPTION_DEFAULT_TAG_REGEX.test(prop.description ?? "");
+
       const prop_comments = [
         addCommentLine(formatDescriptionForComment(prop.description)),
         addCommentLine(prop.constant, "@constant"),
         /**
          * Don't add @default for functions - they don't have meaningful default values.
          * Function props are callbacks, not values with defaults.
+         * Also skip if the description already contains an explicit @default annotation.
          */
-        prop.isFunction ? null : `* @default ${defaultValue}\n`,
+        prop.isFunction || descriptionHasDefault ? null : `* @default ${defaultValue}\n`,
       ]
         .filter(Boolean)
         .join("");

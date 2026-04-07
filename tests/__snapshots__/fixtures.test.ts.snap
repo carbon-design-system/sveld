@@ -2577,6 +2577,56 @@ exports[`fixtures (JSON) "instance-reexport/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "explicit-default-no-duplicate/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "shouldFilter",
+      "kind": "let",
+      "description": "Custom filter function.\\n@default () => true",
+      "type": "(item: string, value: string) => boolean",
+      "value": "defaultFilter",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "name",
+      "kind": "let",
+      "description": "Prop with only an inferred default.",
+      "type": "string",
+      "value": "\\"world\\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "disabled",
+      "kind": "let",
+      "description": "Prop with explicit @default matching the initializer.\\n@default false",
+      "type": "boolean",
+      "value": "false",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "dispatched-events-typed/input.svelte" 1`] = `
 "{
   "props": [],
@@ -6745,6 +6795,37 @@ export type InstanceReexportProps = {
 
 export default class InstanceReexport extends SvelteComponentTyped<
   InstanceReexportProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "explicit-default-no-duplicate/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type ExplicitDefaultNoDuplicateProps = {
+  /**
+   * Custom filter function.
+   * @default () => true
+   */
+  shouldFilter?: (item: string, value: string) => boolean;
+
+  /**
+   * Prop with only an inferred default.
+   * @default "world"
+   */
+  name?: string;
+
+  /**
+   * Prop with explicit @default matching the initializer.
+   * @default false
+   */
+  disabled?: boolean;
+};
+
+export default class ExplicitDefaultNoDuplicate extends SvelteComponentTyped<
+  ExplicitDefaultNoDuplicateProps,
   Record<string, any>,
   Record<string, never>
 > {}

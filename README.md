@@ -129,6 +129,7 @@ export default class Button extends SvelteComponentTyped<
 - [Available Options](#available-options)
 - [API Reference](#api-reference)
   - [@type](#type)
+  - [@default](#default)
   - [@typedef](#typedef)
   - [@callback](#callback)
   - [@slot / @snippet](#slot--snippet)
@@ -418,6 +419,48 @@ For runes components with multiple destructured props, place JSDoc on the indivi
   export let renderIcon = Close20;
 </script>
 ```
+
+### `@default`
+
+By default, `sveld` infers the `@default` value from the prop's initializer and includes it in the generated TypeScript definitions:
+
+```svelte
+<script>
+  export let open = false;
+</script>
+```
+
+```ts
+/**
+ * @default false
+ */
+open?: boolean;
+```
+
+Use the `@default` tag to explicitly document the default value. When an explicit `@default` annotation is provided, `sveld` uses it instead of the inferred value, avoiding duplicate `@default` tags in the output.
+
+This is useful when the initializer references a variable or expression that is not meaningful to consumers:
+
+```svelte
+<script>
+  const defaultFilter = () => true;
+
+  /**
+   * @default () => true
+   * @type {(item: string, value: string) => boolean}
+   */
+  export let shouldFilter = defaultFilter;
+</script>
+```
+
+```ts
+/**
+ * @default () => true
+ */
+shouldFilter?: (item: string, value: string) => boolean;
+```
+
+Without the explicit `@default`, the output would show `@default defaultFilter` (the variable name).
 
 ### `@typedef`
 
