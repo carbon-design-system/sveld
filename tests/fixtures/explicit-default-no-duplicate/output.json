@@ -1,0 +1,46 @@
+{
+  "props": [
+    {
+      "name": "shouldFilter",
+      "kind": "let",
+      "description": "Custom filter function.\n@default () => true",
+      "type": "(item: string, value: string) => boolean",
+      "value": "defaultFilter",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "name",
+      "kind": "let",
+      "description": "Prop with only an inferred default.",
+      "type": "string",
+      "value": "\"world\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "disabled",
+      "kind": "let",
+      "description": "Prop with explicit @default matching the initializer.\n@default false",
+      "type": "boolean",
+      "value": "false",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
