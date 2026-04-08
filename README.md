@@ -460,7 +460,47 @@ This is useful when the initializer references a variable or expression that is 
 shouldFilter?: (item: string, value: string) => boolean;
 ```
 
-Without the explicit `@default`, the output would show `@default defaultFilter` (the variable name).
+#### Identifier resolution
+
+When a prop's initializer is a variable reference, `sveld` resolves it to the actual value automatically:
+
+```svelte
+<script>
+  const DEFAULT_SIZE = "md";
+
+  /** @type {"sm" | "md" | "lg"} */
+  export let size = DEFAULT_SIZE;
+</script>
+```
+
+```ts
+/**
+ * @default "md"
+ */
+size?: "sm" | "md" | "lg";
+```
+
+Chained references are also resolved:
+
+```svelte
+<script>
+  const ACTUAL_VALUE = 42;
+  const ALIAS = ACTUAL_VALUE;
+
+  export let count = ALIAS;
+</script>
+```
+
+```ts
+/**
+ * @default 42
+ */
+count?: number;
+```
+
+Resolution follows up to 5 levels of indirection. Beyond that, the last resolved identifier name is used as the default value. If the identifier cannot be resolved (e.g., it is imported from another module), the variable name is used as-is.
+
+When an explicit `@default` annotation is provided, it always takes precedence over the resolved value.
 
 ### `@typedef`
 

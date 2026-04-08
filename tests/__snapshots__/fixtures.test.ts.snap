@@ -339,6 +339,55 @@ exports[`fixtures (JSON) "module-reexport/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "resolve-default-chained/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "chained",
+      "kind": "let",
+      "description": "Two levels deep: ALIAS -> ACTUAL_VALUE -> 42.",
+      "type": "number",
+      "value": "42",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "deep5",
+      "kind": "let",
+      "description": "Five levels deep: E -> D -> C -> B -> A -> \\"hello\\". Resolves within the depth limit.",
+      "type": "string",
+      "value": "\\"hello\\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "deep6",
+      "kind": "let",
+      "description": "Six levels deep: BEYOND -> Z -> Y -> X -> W -> V -> true. Exceeds the depth limit.",
+      "value": "V",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "accessor-param-returns/input.svelte" 1`] = `
 "{
   "props": [
@@ -2585,8 +2634,7 @@ exports[`fixtures (JSON) "explicit-default-no-duplicate/input.svelte" 1`] = `
       "kind": "let",
       "description": "Custom filter function.\\n@default () => true",
       "type": "(item: string, value: string) => boolean",
-      "value": "defaultFilter",
-      "isFunction": false,
+      "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
@@ -2610,6 +2658,77 @@ exports[`fixtures (JSON) "explicit-default-no-duplicate/input.svelte" 1`] = `
       "description": "Prop with explicit @default matching the initializer.\\n@default false",
       "type": "boolean",
       "value": "false",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "size",
+      "kind": "let",
+      "description": "Prop with identifier default, no explicit annotation.\\nShould resolve to the actual value.",
+      "type": "\\"sm\\" | \\"md\\" | \\"lg\\"",
+      "value": "\\"md\\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "count",
+      "kind": "let",
+      "description": "Number of items to display.",
+      "type": "number",
+      "value": "10",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "onClick",
+      "kind": "let",
+      "description": "Click handler.",
+      "type": "(e: MouseEvent) => void",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "config",
+      "kind": "let",
+      "description": "Component configuration.",
+      "type": "{ theme: string; density: string }",
+      "value": "{ theme: \\"dark\\", density: \\"compact\\" }",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "items",
+      "kind": "let",
+      "description": "List of items.",
+      "type": "[\\"a\\", \\"b\\", \\"c\\"]",
+      "value": "[\\"a\\", \\"b\\", \\"c\\"]",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "offset",
+      "kind": "let",
+      "description": "Starting offset.",
+      "type": "number",
+      "value": "-1",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -3385,7 +3504,7 @@ exports[`fixtures (JSON) "non-literal-defaults/input.svelte" 1`] = `
       "kind": "let",
       "description": "Position of the element",
       "type": "Position",
-      "value": "TOP_LEFT",
+      "value": "\\"top-left\\"",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -3396,7 +3515,8 @@ exports[`fixtures (JSON) "non-literal-defaults/input.svelte" 1`] = `
       "name": "theme",
       "kind": "let",
       "description": "Theme mode",
-      "value": "POSITION_DEFAULT",
+      "type": "string",
+      "value": "\\"bottom-right\\"",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -5407,6 +5527,37 @@ export default class ModuleReexport extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "resolve-default-chained/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type ResolveDefaultChainedProps = {
+  /**
+   * Two levels deep: ALIAS -> ACTUAL_VALUE -> 42.
+   * @default 42
+   */
+  chained?: number;
+
+  /**
+   * Five levels deep: E -> D -> C -> B -> A -> "hello". Resolves within the depth limit.
+   * @default "hello"
+   */
+  deep5?: string;
+
+  /**
+   * Six levels deep: BEYOND -> Z -> Y -> X -> W -> V -> true. Exceeds the depth limit.
+   * @default V
+   */
+  deep6?: undefined;
+};
+
+export default class ResolveDefaultChained extends SvelteComponentTyped<
+  ResolveDefaultChainedProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "accessor-param-returns/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -6822,6 +6973,42 @@ export type ExplicitDefaultNoDuplicateProps = {
    * @default false
    */
   disabled?: boolean;
+
+  /**
+   * Prop with identifier default, no explicit annotation.
+   * Should resolve to the actual value.
+   * @default "md"
+   */
+  size?: "sm" | "md" | "lg";
+
+  /**
+   * Number of items to display.
+   * @default 10
+   */
+  count?: number;
+
+  /**
+   * Click handler.
+   */
+  onClick?: (e: MouseEvent) => void;
+
+  /**
+   * Component configuration.
+   * @default { theme: "dark", density: "compact" }
+   */
+  config?: { theme: string; density: string };
+
+  /**
+   * List of items.
+   * @default ["a", "b", "c"]
+   */
+  items?: ["a", "b", "c"];
+
+  /**
+   * Starting offset.
+   * @default -1
+   */
+  offset?: number;
 };
 
 export default class ExplicitDefaultNoDuplicate extends SvelteComponentTyped<
@@ -7267,15 +7454,15 @@ export type Position = "top-left" | "top-right" | "bottom-left" | "bottom-right"
 export type NonLiteralDefaultsProps = {
   /**
    * Position of the element
-   * @default TOP_LEFT
+   * @default "top-left"
    */
   position?: Position;
 
   /**
    * Theme mode
-   * @default POSITION_DEFAULT
+   * @default "bottom-right"
    */
-  theme?: undefined;
+  theme?: string;
 
   /**
    * Numeric constant with Infinity

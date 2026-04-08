@@ -5,15 +5,15 @@ export type Position = "top-left" | "top-right" | "bottom-left" | "bottom-right"
 export type NonLiteralDefaultsProps = {
   /**
    * Position of the element
-   * @default TOP_LEFT
+   * @default "top-left"
    */
   position?: Position;
 
   /**
    * Theme mode
-   * @default POSITION_DEFAULT
+   * @default "bottom-right"
    */
-  theme?: undefined;
+  theme?: string;
 
   /**
    * Numeric constant with Infinity
