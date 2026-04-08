@@ -1,0 +1,45 @@
+{
+  "props": [
+    {
+      "name": "chained",
+      "kind": "let",
+      "description": "Two levels deep: ALIAS -> ACTUAL_VALUE -> 42.",
+      "type": "number",
+      "value": "42",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "deep5",
+      "kind": "let",
+      "description": "Five levels deep: E -> D -> C -> B -> A -> \"hello\". Resolves within the depth limit.",
+      "type": "string",
+      "value": "\"hello\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "deep6",
+      "kind": "let",
+      "description": "Six levels deep: BEYOND -> Z -> Y -> X -> W -> V -> true. Exceeds the depth limit.",
+      "value": "V",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}

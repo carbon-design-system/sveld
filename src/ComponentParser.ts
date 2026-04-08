@@ -2065,7 +2065,7 @@ export default class ComponentParser {
    * // Returns: { value: "Math.PI", type: "number" (if numeric constant), isFunction: false }
    * ```
    */
-  private processInitializer(init: unknown): { value?: string; type?: string; isFunction: boolean } {
+  private processInitializer(init: unknown, depth = 0): { value?: string; type?: string; isFunction: boolean } {
     let value: string | undefined;
     let type: string | undefined;
     let isFunction = false;
@@ -2181,6 +2181,12 @@ export default class ComponentParser {
       }
     } else if (init.type === "Identifier") {
       const ident = init as Identifier;
+      if (depth < 5) {
+        const resolvedInit = this.resolveLocalVarInitializer(ident.name);
+        if (resolvedInit) {
+          return this.processInitializer(resolvedInit, depth + 1);
+        }
+      }
       if ("start" in ident && "end" in ident && typeof ident.start === "number" && typeof ident.end === "number") {
         value = this.sourceAtPos(ident.start, ident.end);
       }
@@ -2216,6 +2222,29 @@ export default class ComponentParser {
     }
 
     return { value, type, isFunction };
+  }
+
+  /**
+   * Look up a local variable's initializer AST node by name.
+   * Returns the init node if found, or undefined.
+   */
+  private resolveLocalVarInitializer(name: string): unknown | undefined {
+    for (const decl of this.vars) {
+      for (const declarator of decl.declarations) {
+        if (
+          declarator.id &&
+          typeof declarator.id === "object" &&
+          "type" in declarator.id &&
+          declarator.id.type === "Identifier" &&
+          "name" in declarator.id &&
+          declarator.id.name === name &&
+          declarator.init
+        ) {
+          return declarator.init;
+        }
+      }
+    }
+    return undefined;
   }
 
   /**
