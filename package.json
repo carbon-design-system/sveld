@@ -14,7 +14,7 @@
     }
   },
   "scripts": {
-    "test": "bun test --parallel=8",
+    "test": "bun test --parallel",
     "test:fixtures-types": "tsc --project tsconfig.fixtures.json",
     "test:e2e": "bun tests/test-e2e.ts",
     "format": "biome format --write .",
