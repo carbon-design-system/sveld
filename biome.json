@@ -84,16 +84,6 @@
   },
   "overrides": [
     {
-      "includes": ["**/*.svelte"],
-      "linter": {
-        "rules": {
-          "correctness": {
-            "noUnusedImports": "off"
-          }
-        }
-      }
-    },
-    {
       "includes": ["cli.js"],
       "linter": {
         "rules": {
