@@ -1,5 +1,5 @@
-import { SvelteComponentTyped } from "svelte";
 import type { Snippet } from "svelte";
+import { SvelteComponentTyped } from "svelte";
 
 interface Props {
   row: Snippet<[item: string, index: number]>;
