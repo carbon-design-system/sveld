@@ -1,8 +1,20 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 import { optimizeCss, optimizeImports } from "carbon-preprocess-svelte";
 import { defineConfig } from "vite";
 
+const playgroundDir = path.dirname(fileURLToPath(import.meta.url));
+
 export default defineConfig({
+  resolve: {
+    alias: {
+      // Imports under `../src/` resolve from repo root; pin deps installed here.
+      "comment-parser": path.join(playgroundDir, "node_modules/comment-parser"),
+      "estree-walker": path.join(playgroundDir, "node_modules/estree-walker"),
+    },
+  },
   plugins: [
     svelte({
       preprocess: [optimizeImports()],

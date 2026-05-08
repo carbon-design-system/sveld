@@ -7,6 +7,8 @@
     "preview": "bun vite preview"
   },
   "devDependencies": {
+    "comment-parser": "^1.4.1",
+    "estree-walker": "^3.0.3",
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
     "@types/codemirror": "^5.60.17",
     "carbon-components-svelte": "^0.105.0",
