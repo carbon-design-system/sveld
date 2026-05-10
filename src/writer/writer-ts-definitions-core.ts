@@ -258,7 +258,9 @@ function genPropDef(
     .map((slot) => {
       const slotName = slot.name;
       const key = clampKey(slotName);
-      const description = slot.description ? `${formatSingleLineComment(slot.description)}\n      ` : "";
+      const description = slot.description
+        ? `${slot.description.includes("\n") ? formatMultiLineComment(slot.description) : formatSingleLineComment(slot.description)}\n      `
+        : "";
       /**
        * Use Snippet-compatible type: (this: void, ...args: [Props]) => void for slots with props
        * or (this: void) => void for slots without props.
@@ -279,7 +281,7 @@ function genPropDef(
     default_slot && !existingPropNames.has("children")
       ? (() => {
           const description = default_slot.description
-            ? `${formatSingleLineComment(default_slot.description)}\n      `
+            ? `${default_slot.description.includes("\n") ? formatMultiLineComment(default_slot.description) : formatSingleLineComment(default_slot.description)}\n      `
             : "";
           const hasSlotProps = default_slot.slot_props && default_slot.slot_props !== "Record<string, never>";
           const snippetType = hasSlotProps
@@ -458,7 +460,9 @@ function genSlotDef(def: Pick<ComponentDocApi, "slots">) {
   const slotDefs = def.slots
     .map(({ name, slot_props, ...rest }) => {
       const key = rest.default || name === null ? "default" : clampKey(name ?? "");
-      const description = rest.description ? `${formatSingleLineComment(rest.description)}\n` : "";
+      const description = rest.description
+        ? `${rest.description.includes("\n") ? formatMultiLineComment(rest.description) : formatSingleLineComment(rest.description)}\n`
+        : "";
       return `${description}${clampKey(key)}: ${formatTsProps(slot_props)};`;
     })
     .join("\n");

@@ -1,0 +1,35 @@
+{
+  "props": [
+    {
+      "name": "row",
+      "kind": "let",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "col",
+      "kind": "let",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{ row: string; col: string }",
+      "description": "First line documents `row-id` binding.\nSecond line: column-id and drag-and-drop targets share one surface."
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}

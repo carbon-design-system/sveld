@@ -2759,7 +2759,7 @@ export default class ComponentParser {
     const name: ComponentSlotName = default_slot ? DEFAULT_SLOT_NAME : (slot_name ?? "");
     const fallback = ComponentParser.assignValue(slot_fallback);
     const props = ComponentParser.assignValue(slot_props);
-    const description = extractDescriptionAfterDash(slot_description);
+    const description = slot_description?.trim() || undefined;
 
     if (this.slots.has(name)) {
       const existing_slot = this.slots.get(name);

@@ -1,0 +1,16 @@
+{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{ row: string; column: string }",
+      "description": "Bind row-id and column-id so drag-and-drop works across multi-pane layouts."
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}

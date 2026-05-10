@@ -1,0 +1,22 @@
+{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "actions",
+      "default": false,
+      "slot_props": "{ compact: boolean }",
+      "description": "Toolbar: icon-only mode uses low-contrast - same as hover-state."
+    },
+    {
+      "name": "status",
+      "default": false,
+      "slot_props": "{ message: string }",
+      "description": "Status text for live regions; prefer `aria-current=\"page\"` on the active link, not `aria-selected`.\nPair with `aria-live=\"polite\"` unless the update is urgent (then use `assertive`)."
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
