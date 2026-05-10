@@ -1,0 +1,16 @@
+{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "item",
+      "default": false,
+      "slot_props": "{ id: string }",
+      "description": "Row id maps to server-side UUID v4 (not v1-v3)."
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}

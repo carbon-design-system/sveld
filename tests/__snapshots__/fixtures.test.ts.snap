@@ -1,5 +1,61 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
+exports[`fixtures (JSON) "slot-description-named-pair/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "actions",
+      "default": false,
+      "slot_props": "{ compact: boolean }",
+      "description": "Toolbar: icon-only mode uses low-contrast - same as hover-state."
+    },
+    {
+      "name": "status",
+      "default": false,
+      "slot_props": "{ message: string }",
+      "description": "Status text for live regions; prefer \`aria-current=\\"page\\"\` on the active link, not \`aria-selected\`.\\nPair with \`aria-live=\\"polite\\"\` unless the update is urgent (then use \`assertive\`)."
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (TypeScript) "slot-description-named-pair/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type SlotDescriptionNamedPairProps = {
+  /** Toolbar: icon-only mode uses low-contrast - same as hover-state. */
+  actions?: (this: void, ...args: [{ compact: boolean }]) => void;
+
+  /**
+   * Status text for live regions; prefer \`aria-current="page"\` on the active link, not \`aria-selected\`.
+   * Pair with \`aria-live="polite"\` unless the update is urgent (then use \`assertive\`).
+   */
+  status?: (this: void, ...args: [{ message: string }]) => void;
+};
+
+export default class SlotDescriptionNamedPair extends SvelteComponentTyped<
+  SlotDescriptionNamedPairProps,
+  Record<string, any>,
+  {
+    /** Toolbar: icon-only mode uses low-contrast - same as hover-state. */
+    actions: { compact: boolean };
+    /**
+     * Status text for live regions; prefer \`aria-current="page"\` on the active link, not \`aria-selected\`.
+     * Pair with \`aria-live="polite"\` unless the update is urgent (then use \`assertive\`).
+     */
+    status: { message: string };
+  }
+> {}
+"
+`;
+
 exports[`fixtures (JSON) "runes-callback-annotated/input.svelte" 1`] = `
 "{
   "props": [
@@ -1496,6 +1552,26 @@ exports[`fixtures (JSON) "callback/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "slot-description-with-dash/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{props?: { \\"aria-current\\"?: string; class: \\"bx--link\\"; }}",
+      "description": "Spread \`props\` onto a custom element to inherit the link class\\nand \`aria-current\` attribute when \`isCurrentPage\` is set."
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "runes-bindable/input.svelte" 1`] = `
 "{
   "props": [
@@ -2209,6 +2285,45 @@ exports[`fixtures (JSON) "runes-snippets-annotated/input.svelte" 1`] = `
       "name": "title",
       "default": false,
       "slot_props": "Record<string, never>"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "runes-snippet-description-hyphens/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "row",
+      "kind": "let",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "col",
+      "kind": "let",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{ row: string; col: string }",
+      "description": "First line documents \`row-id\` binding.\\nSecond line: column-id and drag-and-drop targets share one surface."
     }
   ],
   "events": [],
@@ -4933,6 +5048,26 @@ exports[`fixtures (JSON) "rest-props-description/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "slot-description-hyphens-prose/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{ row: string; column: string }",
+      "description": "Bind row-id and column-id so drag-and-drop works across multi-pane layouts."
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "context-space/input.svelte" 1`] = `
 "{
   "props": [],
@@ -5299,6 +5434,26 @@ exports[`fixtures (JSON) "context-dot-notation/input.svelte" 1`] = `
       ]
     }
   ]
+}
+"
+`;
+
+exports[`fixtures (JSON) "slot-description-hyphens-inline/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "item",
+      "default": false,
+      "slot_props": "{ id: string }",
+      "description": "Row id maps to server-side UUID v4 (not v1-v3)."
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
 }
 "
 `;
@@ -6228,6 +6383,31 @@ export default class Callback extends SvelteComponentTyped<CallbackProps, Record
 "
 `;
 
+exports[`fixtures (TypeScript) "slot-description-with-dash/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type SlotDescriptionWithDashProps = {
+  /**
+   * Spread \`props\` onto a custom element to inherit the link class
+   * and \`aria-current\` attribute when \`isCurrentPage\` is set.
+   */
+  children?: (this: void, ...args: [{ props?: { "aria-current"?: string; class: "bx--link" } }]) => void;
+};
+
+export default class SlotDescriptionWithDash extends SvelteComponentTyped<
+  SlotDescriptionWithDashProps,
+  Record<string, any>,
+  {
+    /**
+     * Spread \`props\` onto a custom element to inherit the link class
+     * and \`aria-current\` attribute when \`isCurrentPage\` is set.
+     */
+    default: { props?: { "aria-current"?: string; class: "bx--link" } };
+  }
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "runes-bindable/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -6684,6 +6864,41 @@ export default class RunesSnippetsAnnotated extends SvelteComponentTyped<
     /** Customize the paragraph text. */
     body: { prop: number };
     title: Record<string, never>;
+  }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "runes-snippet-description-hyphens/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type RunesSnippetDescriptionHyphensProps = {
+  /**
+   * @default undefined
+   */
+  row: undefined;
+
+  /**
+   * @default undefined
+   */
+  col: undefined;
+
+  /**
+   * First line documents \`row-id\` binding.
+   * Second line: column-id and drag-and-drop targets share one surface.
+   */
+  children?: (this: void, ...args: [{ row: string; col: string }]) => void;
+};
+
+export default class RunesSnippetDescriptionHyphens extends SvelteComponentTyped<
+  RunesSnippetDescriptionHyphensProps,
+  Record<string, any>,
+  {
+    /**
+     * First line documents \`row-id\` binding.
+     * Second line: column-id and drag-and-drop targets share one surface.
+     */
+    default: { row: string; col: string };
   }
 > {}
 "
@@ -8442,6 +8657,25 @@ export default class RestPropsDescription extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "slot-description-hyphens-prose/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type SlotDescriptionHyphensProseProps = {
+  /** Bind row-id and column-id so drag-and-drop works across multi-pane layouts. */
+  children?: (this: void, ...args: [{ row: string; column: string }]) => void;
+};
+
+export default class SlotDescriptionHyphensProse extends SvelteComponentTyped<
+  SlotDescriptionHyphensProseProps,
+  Record<string, any>,
+  {
+    /** Bind row-id and column-id so drag-and-drop works across multi-pane layouts. */
+    default: { row: string; column: string };
+  }
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "context-space/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -8679,6 +8913,25 @@ export default class ContextDotNotation extends SvelteComponentTyped<
   ContextDotNotationProps,
   Record<string, any>,
   Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "slot-description-hyphens-inline/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type SlotDescriptionHyphensInlineProps = {
+  /** Row id maps to server-side UUID v4 (not v1-v3). */
+  item?: (this: void, ...args: [{ id: string }]) => void;
+};
+
+export default class SlotDescriptionHyphensInline extends SvelteComponentTyped<
+  SlotDescriptionHyphensInlineProps,
+  Record<string, any>,
+  {
+    /** Row id maps to server-side UUID v4 (not v1-v3). */
+    item: { id: string };
+  }
 > {}
 "
 `;
