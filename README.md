@@ -133,6 +133,7 @@ export default class Button extends SvelteComponentTyped<
   - [@typedef](#typedef)
   - [@callback](#callback)
   - [@slot / @snippet](#slot--snippet)
+    - [Extra JSDoc tags before `@slot`](#extra-jsdoc-tags-before-slot)
     - [Svelte 5 Snippet Compatibility](#svelte-5-snippet-compatibility)
   - [@event](#event)
   - [Context API](#context-api)
@@ -787,7 +788,7 @@ When `@returns` is omitted, the return type defaults to `void`. When no `@param`
 
 Use the `@slot` tag for typing component slots. For Svelte 5 runes components, `@snippet` is also supported as an alias. Both are non-standard JSDoc tags.
 
-Descriptions are optional for named slots. Currently, the default slot cannot have a description.
+Descriptions are optional for every slot, including the default slot: use prose lines in the same `/** */` block above `@slot` / `@snippet`, and/or an inline description on the `@slot` line for named slots.
 
 **Signature:**
 
@@ -852,6 +853,32 @@ Omit the `slot-name` to type the default slot.
   <slot name="body" {prop} />
 </p>
 ```
+
+#### Extra JSDoc tags before `@slot`
+
+Tags such as `@example`, `@deprecated`, `@see`, or `@since` that appear **after** the prose description and **before** the `@slot` / `@snippet` line are carried into generated `.d.ts` files: the emitted JSDoc above each slot’s snippet prop (and the traditional `SlotDefs` shape) contains the description, then those tags in source order. The same entries are available on each slot in JSON output as `tags: [{ "name", "body" }, ...]`.
+
+Put `@slot` / `@snippet` last in the block (`description` → optional extra tags → slot tag). Tags placed after `@slot` / `@snippet` in the same comment are not tied to that slot. Unknown tag names are passed through as-is (no allowlist). Markdown docs do not render slot descriptions or these tags yet; use TypeScript hover or JSON for that metadata.
+
+**Example (default slot with `@example` and `@deprecated`):**
+
+````svelte
+<script>
+  /**
+   * Spread `props` onto a custom element.
+   * @example
+   * ```svelte
+   * <Item let:props>
+   *   <a {...props} href="/">Home</a>
+   * </Item>
+   * ```
+   * @deprecated Prefer the `link` snippet.
+   * @slot {{ props?: { class: string } }}
+   */
+</script>
+
+<slot props={{ class: "bx--link" }} />
+````
 
 #### Svelte 5 Snippet Compatibility
 

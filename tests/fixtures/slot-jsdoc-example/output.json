@@ -1,0 +1,22 @@
+{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{ props?: { \"aria-current\"?: string; class: \"bx--link\" } }",
+      "description": "```svelte\n<BreadcrumbItem let:props>\n<a {...props} href=\"/\">Home</a>\n</BreadcrumbItem>\n```",
+      "tags": [
+        {
+          "name": "example",
+          "body": " ```svelte\n <BreadcrumbItem let:props>\n   <a {...props} href=\"/\">Home</a>\n </BreadcrumbItem>\n ```"
+        }
+      ]
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}

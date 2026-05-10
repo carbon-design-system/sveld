@@ -1,0 +1,34 @@
+{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "actions",
+      "default": false,
+      "slot_props": "{ compact: boolean }",
+      "description": "```svelte\n<Toolbar><Icon /></Toolbar>\n```",
+      "tags": [
+        {
+          "name": "example",
+          "body": " ```svelte\n <Toolbar><Icon /></Toolbar>\n ```"
+        }
+      ]
+    },
+    {
+      "name": "status",
+      "default": false,
+      "slot_props": "{ message: string }",
+      "description": "Status text for live regions; prefer `aria-current=\"page\"` on the active link.",
+      "tags": [
+        {
+          "name": "deprecated",
+          "body": "Use the `live` region pattern instead."
+        }
+      ]
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}

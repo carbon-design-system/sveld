@@ -57,6 +57,29 @@ function formatMultiLineComment(description: string | undefined): string {
   return `/**\n * ${description.replace(NEWLINE_TO_COMMENT_REGEX, "\n * ")}\n */`;
 }
 
+function formatSlotJsDoc(
+  description: string | undefined,
+  tags: Array<{ name: string; body: string }> | undefined,
+): string {
+  const hasTags = tags && tags.length > 0;
+  if (!description && !hasTags) return "";
+  if (!hasTags) {
+    return description?.includes("\n") ? formatMultiLineComment(description) : formatSingleLineComment(description);
+  }
+  const lines: string[] = [];
+  if (description) lines.push(...description.split("\n"));
+  for (const { name, body } of tags ?? []) {
+    if (!body) {
+      lines.push(`@${name}`);
+    } else if (body.includes("\n")) {
+      lines.push(`@${name}`, ...body.split("\n"));
+    } else {
+      lines.push(`@${name} ${body}`);
+    }
+  }
+  return `/**\n * ${lines.join("\n * ")}\n */`;
+}
+
 export function formatTsProps(props?: string) {
   if (props === undefined) return ANY_TYPE;
   return `${props}\n`;
@@ -258,9 +281,8 @@ function genPropDef(
     .map((slot) => {
       const slotName = slot.name;
       const key = clampKey(slotName);
-      const description = slot.description
-        ? `${slot.description.includes("\n") ? formatMultiLineComment(slot.description) : formatSingleLineComment(slot.description)}\n      `
-        : "";
+      const slotComment = formatSlotJsDoc(slot.description, slot.tags);
+      const description = slotComment ? `${slotComment}\n      ` : "";
       /**
        * Use Snippet-compatible type: (this: void, ...args: [Props]) => void for slots with props
        * or (this: void) => void for slots without props.
@@ -280,9 +302,8 @@ function genPropDef(
   const children_snippet_prop =
     default_slot && !existingPropNames.has("children")
       ? (() => {
-          const description = default_slot.description
-            ? `${default_slot.description.includes("\n") ? formatMultiLineComment(default_slot.description) : formatSingleLineComment(default_slot.description)}\n      `
-            : "";
+          const defaultSlotComment = formatSlotJsDoc(default_slot.description, default_slot.tags);
+          const description = defaultSlotComment ? `${defaultSlotComment}\n      ` : "";
           const hasSlotProps = default_slot.slot_props && default_slot.slot_props !== "Record<string, never>";
           const snippetType = hasSlotProps
             ? `(this: void, ...args: [${default_slot.slot_props}]) => void`
@@ -460,9 +481,8 @@ function genSlotDef(def: Pick<ComponentDocApi, "slots">) {
   const slotDefs = def.slots
     .map(({ name, slot_props, ...rest }) => {
       const key = rest.default || name === null ? "default" : clampKey(name ?? "");
-      const description = rest.description
-        ? `${rest.description.includes("\n") ? formatMultiLineComment(rest.description) : formatSingleLineComment(rest.description)}\n`
-        : "";
+      const slotDefComment = formatSlotJsDoc(rest.description, rest.tags);
+      const description = slotDefComment ? `${slotDefComment}\n` : "";
       return `${description}${clampKey(key)}: ${formatTsProps(slot_props)};`;
     })
     .join("\n");

@@ -1,0 +1,16 @@
+{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "item",
+      "default": false,
+      "slot_props": "{ id: string }",
+      "description": "`@enum` shares blocks with typedefs/slots in some codebases; it must not attach to the slot."
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}

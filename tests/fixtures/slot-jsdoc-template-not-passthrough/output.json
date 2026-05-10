@@ -1,0 +1,16 @@
+{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "body",
+      "default": false,
+      "slot_props": "{ n: number }",
+      "description": "Body slot uses a generic from `@template`; that tag must not appear on the slot in output."
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}

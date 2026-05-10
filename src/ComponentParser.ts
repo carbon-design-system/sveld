@@ -379,6 +379,11 @@ interface ComponentSlot {
   slot_props?: string;
   /** Description extracted from JSDoc `@slot` or `@snippet` tags */
   description?: string;
+  /**
+   * JSDoc tags that appeared after the prose description and before `@slot` / `@snippet`
+   * (e.g. `@example`, `@deprecated`), in source order.
+   */
+  tags?: Array<{ name: string; body: string }>;
 }
 
 /**
@@ -2749,11 +2754,13 @@ export default class ComponentParser {
     slot_props,
     slot_fallback,
     slot_description,
+    slot_tags,
   }: {
     slot_name?: string;
     slot_props?: string;
     slot_fallback?: string;
     slot_description?: string;
+    slot_tags?: Array<{ name: string; body: string }>;
   }) {
     const default_slot = slot_name === undefined || slot_name === "";
     const name: ComponentSlotName = default_slot ? DEFAULT_SLOT_NAME : (slot_name ?? "");
@@ -2770,6 +2777,7 @@ export default class ComponentParser {
           fallback,
           slot_props: existing_slot.slot_props === undefined ? props : existing_slot.slot_props,
           description: existing_slot.description || description,
+          tags: existing_slot.tags || slot_tags,
         });
       }
     } else {
@@ -2779,6 +2787,7 @@ export default class ComponentParser {
         fallback,
         slot_props,
         description,
+        tags: slot_tags,
       });
     }
   }
@@ -2946,6 +2955,7 @@ export default class ComponentParser {
        */
       let commentDescriptionUsed = false;
       let isFirstTag = true;
+      const pendingTags: Array<{ name: string; body: string }> = [];
 
       /**
        * Build a map of line numbers to their description content (for lines without tags).
@@ -3052,6 +3062,26 @@ export default class ComponentParser {
            */
         }
         return descLines.length > 0 ? descLines.join("\n").trim() : undefined;
+      };
+
+      /**
+       * Verbatim JSDoc body for a passthrough tag (lines after `@tag` on the tag line, plus
+       * continuation lines until the next tag or end of block).
+       */
+      const getPassthroughTagBody = (tagSource: typeof blockSource): string => {
+        if (!tagSource || tagSource.length === 0) return "";
+        const parts: string[] = [];
+        for (const line of tagSource) {
+          const t = line.tokens;
+          if ((t.end ?? "").trim() === "*/") break;
+          if (t.tag) {
+            const inline = `${t.name}${t.postName}${t.description}`.trimEnd();
+            if (inline) parts.push(inline);
+          } else {
+            parts.push(`${t.postDelimiter}${t.description}`);
+          }
+        }
+        return parts.join("\n");
       };
 
       /**
@@ -3270,7 +3300,9 @@ export default class ComponentParser {
               slot_name: name,
               slot_props: type,
               slot_description: slotDesc || undefined,
+              slot_tags: pendingTags.length > 0 ? [...pendingTags] : undefined,
             });
+            pendingTags.length = 0;
             break;
           }
           case "event": {
@@ -3387,6 +3419,24 @@ export default class ComponentParser {
           case "generics":
             this.generics = [name, type];
             if (isFirstTag) isFirstTag = false;
+            break;
+          case "template":
+          case "enum":
+          case "class":
+          case "implements":
+          case "this":
+          case "namespace":
+          case "memberof":
+          case "module":
+          case "file":
+          case "overview":
+            /**
+             * JSDoc tags often used in the same block must be ignored
+             * as to not break the slot passthrough logic.
+             */
+            break;
+          default:
+            pendingTags.push({ name: tag, body: getPassthroughTagBody(tagSource) });
             break;
         }
       }

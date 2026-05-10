@@ -1,61 +1,5 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`fixtures (JSON) "slot-description-named-pair/input.svelte" 1`] = `
-"{
-  "props": [],
-  "moduleExports": [],
-  "slots": [
-    {
-      "name": "actions",
-      "default": false,
-      "slot_props": "{ compact: boolean }",
-      "description": "Toolbar: icon-only mode uses low-contrast - same as hover-state."
-    },
-    {
-      "name": "status",
-      "default": false,
-      "slot_props": "{ message: string }",
-      "description": "Status text for live regions; prefer \`aria-current=\\"page\\"\` on the active link, not \`aria-selected\`.\\nPair with \`aria-live=\\"polite\\"\` unless the update is urgent (then use \`assertive\`)."
-    }
-  ],
-  "events": [],
-  "typedefs": [],
-  "generics": null,
-  "contexts": []
-}
-"
-`;
-
-exports[`fixtures (TypeScript) "slot-description-named-pair/input.svelte" 1`] = `
-"import { SvelteComponentTyped } from "svelte";
-
-export type SlotDescriptionNamedPairProps = {
-  /** Toolbar: icon-only mode uses low-contrast - same as hover-state. */
-  actions?: (this: void, ...args: [{ compact: boolean }]) => void;
-
-  /**
-   * Status text for live regions; prefer \`aria-current="page"\` on the active link, not \`aria-selected\`.
-   * Pair with \`aria-live="polite"\` unless the update is urgent (then use \`assertive\`).
-   */
-  status?: (this: void, ...args: [{ message: string }]) => void;
-};
-
-export default class SlotDescriptionNamedPair extends SvelteComponentTyped<
-  SlotDescriptionNamedPairProps,
-  Record<string, any>,
-  {
-    /** Toolbar: icon-only mode uses low-contrast - same as hover-state. */
-    actions: { compact: boolean };
-    /**
-     * Status text for live regions; prefer \`aria-current="page"\` on the active link, not \`aria-selected\`.
-     * Pair with \`aria-live="polite"\` unless the update is urgent (then use \`assertive\`).
-     */
-    status: { message: string };
-  }
-> {}
-"
-`;
-
 exports[`fixtures (JSON) "runes-callback-annotated/input.svelte" 1`] = `
 "{
   "props": [
@@ -316,6 +260,32 @@ exports[`fixtures (JSON) "context-empty/input.svelte" 1`] = `
       "properties": []
     }
   ]
+}
+"
+`;
+
+exports[`fixtures (JSON) "slot-jsdoc-example/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{ props?: { \\"aria-current\\"?: string; class: \\"bx--link\\" } }",
+      "description": "\`\`\`svelte\\n<BreadcrumbItem let:props>\\n<a {...props} href=\\"/\\">Home</a>\\n</BreadcrumbItem>\\n\`\`\`",
+      "tags": [
+        {
+          "name": "example",
+          "body": " \`\`\`svelte\\n <BreadcrumbItem let:props>\\n   <a {...props} href=\\"/\\">Home</a>\\n </BreadcrumbItem>\\n \`\`\`"
+        }
+      ]
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
 }
 "
 `;
@@ -1845,6 +1815,32 @@ exports[`fixtures (JSON) "runes-props-basic/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "slot-jsdoc-inheritdoc-before-slot/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "content",
+      "default": false,
+      "slot_props": "Record<string, never>",
+      "description": "Tag with an empty body still emits a lone \`@inheritdoc\` line above the slot.",
+      "tags": [
+        {
+          "name": "inheritdoc",
+          "body": ""
+        }
+      ]
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "unary-expression-defaults/input.svelte" 1`] = `
 "{
   "props": [
@@ -2504,6 +2500,57 @@ exports[`fixtures (JSON) "dispatched-events/input.svelte" 1`] = `
       "name": "hover"
     }
   ],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "slot-jsdoc-two-slots-one-block-order/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "alpha",
+      "default": false,
+      "slot_props": "{ n: number }",
+      "description": "First slot only should get \`@see\`; \`pendingTags\` clears after each \`@slot\`.",
+      "tags": [
+        {
+          "name": "see",
+          "body": "https://example.com/docs"
+        }
+      ]
+    },
+    {
+      "name": "beta",
+      "default": false,
+      "slot_props": "{ s: string }"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "slot-jsdoc-orphan-type-before-slot/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "row",
+      "default": false,
+      "slot_props": "{ flag: boolean }",
+      "description": "\`@type\` without a preceding \`@event\` is ignored for events and must not become a passthrough tag."
+    }
+  ],
+  "events": [],
   "typedefs": [],
   "generics": null,
   "contexts": []
@@ -3611,6 +3658,32 @@ exports[`fixtures (JSON) "arrow-function-with-jsdoc/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "slot-description-named-pair/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "actions",
+      "default": false,
+      "slot_props": "{ compact: boolean }",
+      "description": "Toolbar: icon-only mode uses low-contrast - same as hover-state."
+    },
+    {
+      "name": "status",
+      "default": false,
+      "slot_props": "{ message: string }",
+      "description": "Status text for live regions; prefer \`aria-current=\\"page\\"\` on the active link, not \`aria-selected\`.\\nPair with \`aria-live=\\"polite\\"\` unless the update is urgent (then use \`assertive\`)."
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "non-literal-defaults/input.svelte" 1`] = `
 "{
   "props": [
@@ -4078,6 +4151,36 @@ exports[`fixtures (JSON) "rest-props-multiple/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "slot-jsdoc-multiple-tags/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{ props?: { \\"aria-current\\"?: string; class: \\"bx--link\\" } }",
+      "description": "Spread \`props\` onto a custom element to inherit the link class\\nand \`aria-current\` attribute when \`isCurrentPage\` is set.",
+      "tags": [
+        {
+          "name": "example",
+          "body": " \`\`\`svelte\\n <BreadcrumbItem let:props>\\n   <a {...props} href=\\"/\\">Home</a>\\n </BreadcrumbItem>\\n \`\`\`"
+        },
+        {
+          "name": "deprecated",
+          "body": "Prefer the \`link\` snippet."
+        }
+      ]
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "forwarded-from-component-to-native/input.svelte" 1`] = `
 "{
   "props": [],
@@ -4172,6 +4275,26 @@ exports[`fixtures (JSON) "call-expression-defaults/input.svelte" 1`] = `
   ],
   "moduleExports": [],
   "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "slot-jsdoc-enum-not-passthrough/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "item",
+      "default": false,
+      "slot_props": "{ id: string }",
+      "description": "\`@enum\` shares blocks with typedefs/slots in some codebases; it must not attach to the slot."
+    }
+  ],
   "events": [],
   "typedefs": [],
   "generics": null,
@@ -4891,6 +5014,26 @@ exports[`fixtures (JSON) "legacy-bind-component-ref/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "slot-jsdoc-template-not-passthrough/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "body",
+      "default": false,
+      "slot_props": "{ n: number }",
+      "description": "Body slot uses a generic from \`@template\`; that tag must not appear on the slot in output."
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "svelte-element-dynamic/input.svelte" 1`] = `
 "{
   "props": [
@@ -5209,6 +5352,44 @@ exports[`fixtures (JSON) "context-inline-functions/input.svelte" 1`] = `
       ]
     }
   ]
+}
+"
+`;
+
+exports[`fixtures (JSON) "slot-jsdoc-tags-named-pair/input.svelte" 1`] = `
+"{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "actions",
+      "default": false,
+      "slot_props": "{ compact: boolean }",
+      "description": "\`\`\`svelte\\n<Toolbar><Icon /></Toolbar>\\n\`\`\`",
+      "tags": [
+        {
+          "name": "example",
+          "body": " \`\`\`svelte\\n <Toolbar><Icon /></Toolbar>\\n \`\`\`"
+        }
+      ]
+    },
+    {
+      "name": "status",
+      "default": false,
+      "slot_props": "{ message: string }",
+      "description": "Status text for live regions; prefer \`aria-current=\\"page\\"\` on the active link.",
+      "tags": [
+        {
+          "name": "deprecated",
+          "body": "Use the \`live\` region pattern instead."
+        }
+      ]
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
 }
 "
 `;
@@ -5628,6 +5809,49 @@ export default class ContextEmpty extends SvelteComponentTyped<
   ContextEmptyProps,
   Record<string, any>,
   Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "slot-jsdoc-example/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type SlotJsdocExampleProps = {
+  /**
+   * \`\`\`svelte
+   * <BreadcrumbItem let:props>
+   * <a {...props} href="/">Home</a>
+   * </BreadcrumbItem>
+   * \`\`\`
+   * @example
+   *  \`\`\`svelte
+   *  <BreadcrumbItem let:props>
+   *    <a {...props} href="/">Home</a>
+   *  </BreadcrumbItem>
+   *  \`\`\`
+   */
+  children?: (this: void, ...args: [{ props?: { "aria-current"?: string; class: "bx--link" } }]) => void;
+};
+
+export default class SlotJsdocExample extends SvelteComponentTyped<
+  SlotJsdocExampleProps,
+  Record<string, any>,
+  {
+    /**
+     * \`\`\`svelte
+     * <BreadcrumbItem let:props>
+     * <a {...props} href="/">Home</a>
+     * </BreadcrumbItem>
+     * \`\`\`
+     * @example
+     *  \`\`\`svelte
+     *  <BreadcrumbItem let:props>
+     *    <a {...props} href="/">Home</a>
+     *  </BreadcrumbItem>
+     *  \`\`\`
+     */
+    default: { props?: { "aria-current"?: string; class: "bx--link" } };
+  }
 > {}
 "
 `;
@@ -6568,6 +6792,31 @@ export default class RunesPropsBasic extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "slot-jsdoc-inheritdoc-before-slot/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type SlotJsdocInheritdocBeforeSlotProps = {
+  /**
+   * Tag with an empty body still emits a lone \`@inheritdoc\` line above the slot.
+   * @inheritdoc
+   */
+  content?: (this: void) => void;
+};
+
+export default class SlotJsdocInheritdocBeforeSlot extends SvelteComponentTyped<
+  SlotJsdocInheritdocBeforeSlotProps,
+  Record<string, any>,
+  {
+    /**
+     * Tag with an empty body still emits a lone \`@inheritdoc\` line above the slot.
+     * @inheritdoc
+     */
+    content: Record<string, never>;
+  }
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "unary-expression-defaults/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -7012,6 +7261,53 @@ export default class DispatchedEvents extends SvelteComponentTyped<
     hover: CustomEvent<any>;
   },
   { default: Record<string, never> }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "slot-jsdoc-two-slots-one-block-order/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type SlotJsdocTwoSlotsOneBlockOrderProps = {
+  /**
+   * First slot only should get \`@see\`; \`pendingTags\` clears after each \`@slot\`.
+   * @see https://example.com/docs
+   */
+  alpha?: (this: void, ...args: [{ n: number }]) => void;
+
+  beta?: (this: void, ...args: [{ s: string }]) => void;
+};
+
+export default class SlotJsdocTwoSlotsOneBlockOrder extends SvelteComponentTyped<
+  SlotJsdocTwoSlotsOneBlockOrderProps,
+  Record<string, any>,
+  {
+    /**
+     * First slot only should get \`@see\`; \`pendingTags\` clears after each \`@slot\`.
+     * @see https://example.com/docs
+     */
+    alpha: { n: number };
+    beta: { s: string };
+  }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "slot-jsdoc-orphan-type-before-slot/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type SlotJsdocOrphanTypeBeforeSlotProps = {
+  /** \`@type\` without a preceding \`@event\` is ignored for events and must not become a passthrough tag. */
+  row?: (this: void, ...args: [{ flag: boolean }]) => void;
+};
+
+export default class SlotJsdocOrphanTypeBeforeSlot extends SvelteComponentTyped<
+  SlotJsdocOrphanTypeBeforeSlotProps,
+  Record<string, any>,
+  {
+    /** \`@type\` without a preceding \`@event\` is ignored for events and must not become a passthrough tag. */
+    row: { flag: boolean };
+  }
 > {}
 "
 `;
@@ -7661,6 +7957,36 @@ export default class ArrowFunctionWithJsdoc extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "slot-description-named-pair/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type SlotDescriptionNamedPairProps = {
+  /** Toolbar: icon-only mode uses low-contrast - same as hover-state. */
+  actions?: (this: void, ...args: [{ compact: boolean }]) => void;
+
+  /**
+   * Status text for live regions; prefer \`aria-current="page"\` on the active link, not \`aria-selected\`.
+   * Pair with \`aria-live="polite"\` unless the update is urgent (then use \`assertive\`).
+   */
+  status?: (this: void, ...args: [{ message: string }]) => void;
+};
+
+export default class SlotDescriptionNamedPair extends SvelteComponentTyped<
+  SlotDescriptionNamedPairProps,
+  Record<string, any>,
+  {
+    /** Toolbar: icon-only mode uses low-contrast - same as hover-state. */
+    actions: { compact: boolean };
+    /**
+     * Status text for live regions; prefer \`aria-current="page"\` on the active link, not \`aria-selected\`.
+     * Pair with \`aria-live="polite"\` unless the update is urgent (then use \`assertive\`).
+     */
+    status: { message: string };
+  }
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "non-literal-defaults/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -7947,6 +8273,45 @@ export default class RestPropsMultiple extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "slot-jsdoc-multiple-tags/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type SlotJsdocMultipleTagsProps = {
+  /**
+   * Spread \`props\` onto a custom element to inherit the link class
+   * and \`aria-current\` attribute when \`isCurrentPage\` is set.
+   * @example
+   *  \`\`\`svelte
+   *  <BreadcrumbItem let:props>
+   *    <a {...props} href="/">Home</a>
+   *  </BreadcrumbItem>
+   *  \`\`\`
+   * @deprecated Prefer the \`link\` snippet.
+   */
+  children?: (this: void, ...args: [{ props?: { "aria-current"?: string; class: "bx--link" } }]) => void;
+};
+
+export default class SlotJsdocMultipleTags extends SvelteComponentTyped<
+  SlotJsdocMultipleTagsProps,
+  Record<string, any>,
+  {
+    /**
+     * Spread \`props\` onto a custom element to inherit the link class
+     * and \`aria-current\` attribute when \`isCurrentPage\` is set.
+     * @example
+     *  \`\`\`svelte
+     *  <BreadcrumbItem let:props>
+     *    <a {...props} href="/">Home</a>
+     *  </BreadcrumbItem>
+     *  \`\`\`
+     * @deprecated Prefer the \`link\` snippet.
+     */
+    default: { props?: { "aria-current"?: string; class: "bx--link" } };
+  }
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "forwarded-from-component-to-native/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -7996,6 +8361,25 @@ export default class CallExpressionDefaults extends SvelteComponentTyped<
   CallExpressionDefaultsProps,
   Record<string, any>,
   Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "slot-jsdoc-enum-not-passthrough/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type SlotJsdocEnumNotPassthroughProps = {
+  /** \`@enum\` shares blocks with typedefs/slots in some codebases; it must not attach to the slot. */
+  item?: (this: void, ...args: [{ id: string }]) => void;
+};
+
+export default class SlotJsdocEnumNotPassthrough extends SvelteComponentTyped<
+  SlotJsdocEnumNotPassthroughProps,
+  Record<string, any>,
+  {
+    /** \`@enum\` shares blocks with typedefs/slots in some codebases; it must not attach to the slot. */
+    item: { id: string };
+  }
 > {}
 "
 `;
@@ -8516,6 +8900,25 @@ export default class LegacyBindComponentRef extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "slot-jsdoc-template-not-passthrough/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type SlotJsdocTemplateNotPassthroughProps = {
+  /** Body slot uses a generic from \`@template\`; that tag must not appear on the slot in output. */
+  body?: (this: void, ...args: [{ n: number }]) => void;
+};
+
+export default class SlotJsdocTemplateNotPassthrough extends SvelteComponentTyped<
+  SlotJsdocTemplateNotPassthroughProps,
+  Record<string, any>,
+  {
+    /** Body slot uses a generic from \`@template\`; that tag must not appear on the slot in output. */
+    body: { n: number };
+  }
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "svelte-element-dynamic/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 import type { HTMLAttributes } from "svelte/elements";
@@ -8768,6 +9171,52 @@ export default class ContextInlineFunctions extends SvelteComponentTyped<
   ContextInlineFunctionsProps,
   Record<string, any>,
   { default: Record<string, never> }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "slot-jsdoc-tags-named-pair/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type SlotJsdocTagsNamedPairProps = {
+  /**
+   * \`\`\`svelte
+   * <Toolbar><Icon /></Toolbar>
+   * \`\`\`
+   * @example
+   *  \`\`\`svelte
+   *  <Toolbar><Icon /></Toolbar>
+   *  \`\`\`
+   */
+  actions?: (this: void, ...args: [{ compact: boolean }]) => void;
+
+  /**
+   * Status text for live regions; prefer \`aria-current="page"\` on the active link.
+   * @deprecated Use the \`live\` region pattern instead.
+   */
+  status?: (this: void, ...args: [{ message: string }]) => void;
+};
+
+export default class SlotJsdocTagsNamedPair extends SvelteComponentTyped<
+  SlotJsdocTagsNamedPairProps,
+  Record<string, any>,
+  {
+    /**
+     * \`\`\`svelte
+     * <Toolbar><Icon /></Toolbar>
+     * \`\`\`
+     * @example
+     *  \`\`\`svelte
+     *  <Toolbar><Icon /></Toolbar>
+     *  \`\`\`
+     */
+    actions: { compact: boolean };
+    /**
+     * Status text for live regions; prefer \`aria-current="page"\` on the active link.
+     * @deprecated Use the \`live\` region pattern instead.
+     */
+    status: { message: string };
+  }
 > {}
 "
 `;

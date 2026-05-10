@@ -1,0 +1,22 @@
+{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "content",
+      "default": false,
+      "slot_props": "Record<string, never>",
+      "description": "Tag with an empty body still emits a lone `@inheritdoc` line above the slot.",
+      "tags": [
+        {
+          "name": "inheritdoc",
+          "body": ""
+        }
+      ]
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
