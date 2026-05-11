@@ -1,0 +1,27 @@
+{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "alpha",
+      "default": false,
+      "slot_props": "{ n: number }",
+      "description": "First slot only should get `@see`; `pendingTags` clears after each `@slot`.",
+      "tags": [
+        {
+          "name": "see",
+          "body": "https://example.com/docs"
+        }
+      ]
+    },
+    {
+      "name": "beta",
+      "default": false,
+      "slot_props": "{ s: string }"
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}

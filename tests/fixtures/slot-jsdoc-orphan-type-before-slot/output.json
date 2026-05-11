@@ -1,0 +1,16 @@
+{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "row",
+      "default": false,
+      "slot_props": "{ flag: boolean }",
+      "description": "`@type` without a preceding `@event` is ignored for events and must not become a passthrough tag."
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}

@@ -1,0 +1,26 @@
+{
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{ props?: { \"aria-current\"?: string; class: \"bx--link\" } }",
+      "description": "Spread `props` onto a custom element to inherit the link class\nand `aria-current` attribute when `isCurrentPage` is set.",
+      "tags": [
+        {
+          "name": "example",
+          "body": " ```svelte\n <BreadcrumbItem let:props>\n   <a {...props} href=\"/\">Home</a>\n </BreadcrumbItem>\n ```"
+        },
+        {
+          "name": "deprecated",
+          "body": "Prefer the `link` snippet."
+        }
+      ]
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
