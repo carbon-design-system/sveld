@@ -3286,14 +3286,18 @@ export default class ComponentParser {
           case "snippet": {
             /**
              * Prefer inline description (e.g., "@slot name - description" or "@snippet name - description"),
-             * fall back to preceding line description, then fall back to the
-             * comment block description (only for first tag if not already used).
+             * then comment block prose (when still eligible), then lines immediately above `@slot`
+             * only when no passthrough tags precede `@slot` (avoids treating `@example` fenced code
+             * as the slot description).
              */
             const inlineSlotDesc = cleanDescription(description);
-            let slotDesc = inlineSlotDesc || precedingDescription;
+            let slotDesc = inlineSlotDesc;
             if (!slotDesc && isFirstTag && !commentDescriptionUsed && commentDescription) {
               slotDesc = commentDescription;
               commentDescriptionUsed = true;
+            }
+            if (!slotDesc && pendingTags.length === 0) {
+              slotDesc = precedingDescription;
             }
             if (isFirstTag) isFirstTag = false;
             this.addSlot({

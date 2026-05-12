@@ -6,7 +6,7 @@
       "name": "actions",
       "default": false,
       "slot_props": "{ compact: boolean }",
-      "description": "```svelte\n<Toolbar><Icon /></Toolbar>\n```",
+      "description": "Toolbar: icon-only mode uses low-contrast - same as hover-state.",
       "tags": [
         {
           "name": "example",

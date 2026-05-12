@@ -273,7 +273,7 @@ exports[`fixtures (JSON) "slot-jsdoc-example/input.svelte" 1`] = `
       "name": null,
       "default": true,
       "slot_props": "{ props?: { \\"aria-current\\"?: string; class: \\"bx--link\\" } }",
-      "description": "\`\`\`svelte\\n<BreadcrumbItem let:props>\\n<a {...props} href=\\"/\\">Home</a>\\n</BreadcrumbItem>\\n\`\`\`",
+      "description": "Spread \`props\` onto a custom element to inherit the link class\\nand \`aria-current\` attribute when \`isCurrentPage\` is set.",
       "tags": [
         {
           "name": "example",
@@ -5365,7 +5365,7 @@ exports[`fixtures (JSON) "slot-jsdoc-tags-named-pair/input.svelte" 1`] = `
       "name": "actions",
       "default": false,
       "slot_props": "{ compact: boolean }",
-      "description": "\`\`\`svelte\\n<Toolbar><Icon /></Toolbar>\\n\`\`\`",
+      "description": "Toolbar: icon-only mode uses low-contrast - same as hover-state.",
       "tags": [
         {
           "name": "example",
@@ -5818,11 +5818,8 @@ exports[`fixtures (TypeScript) "slot-jsdoc-example/input.svelte" 1`] = `
 
 export type SlotJsdocExampleProps = {
   /**
-   * \`\`\`svelte
-   * <BreadcrumbItem let:props>
-   * <a {...props} href="/">Home</a>
-   * </BreadcrumbItem>
-   * \`\`\`
+   * Spread \`props\` onto a custom element to inherit the link class
+   * and \`aria-current\` attribute when \`isCurrentPage\` is set.
    * @example
    *  \`\`\`svelte
    *  <BreadcrumbItem let:props>
@@ -5838,11 +5835,8 @@ export default class SlotJsdocExample extends SvelteComponentTyped<
   Record<string, any>,
   {
     /**
-     * \`\`\`svelte
-     * <BreadcrumbItem let:props>
-     * <a {...props} href="/">Home</a>
-     * </BreadcrumbItem>
-     * \`\`\`
+     * Spread \`props\` onto a custom element to inherit the link class
+     * and \`aria-current\` attribute when \`isCurrentPage\` is set.
      * @example
      *  \`\`\`svelte
      *  <BreadcrumbItem let:props>
@@ -9180,9 +9174,7 @@ exports[`fixtures (TypeScript) "slot-jsdoc-tags-named-pair/input.svelte" 1`] = `
 
 export type SlotJsdocTagsNamedPairProps = {
   /**
-   * \`\`\`svelte
-   * <Toolbar><Icon /></Toolbar>
-   * \`\`\`
+   * Toolbar: icon-only mode uses low-contrast - same as hover-state.
    * @example
    *  \`\`\`svelte
    *  <Toolbar><Icon /></Toolbar>
@@ -9202,9 +9194,7 @@ export default class SlotJsdocTagsNamedPair extends SvelteComponentTyped<
   Record<string, any>,
   {
     /**
-     * \`\`\`svelte
-     * <Toolbar><Icon /></Toolbar>
-     * \`\`\`
+     * Toolbar: icon-only mode uses low-contrast - same as hover-state.
      * @example
      *  \`\`\`svelte
      *  <Toolbar><Icon /></Toolbar>

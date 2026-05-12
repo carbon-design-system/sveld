@@ -2,11 +2,8 @@ import { SvelteComponentTyped } from "svelte";
 
 export type SlotJsdocExampleProps = {
   /**
-   * ```svelte
-   * <BreadcrumbItem let:props>
-   * <a {...props} href="/">Home</a>
-   * </BreadcrumbItem>
-   * ```
+   * Spread `props` onto a custom element to inherit the link class
+   * and `aria-current` attribute when `isCurrentPage` is set.
    * @example
    *  ```svelte
    *  <BreadcrumbItem let:props>
@@ -22,11 +19,8 @@ export default class SlotJsdocExample extends SvelteComponentTyped<
   Record<string, any>,
   {
     /**
-     * ```svelte
-     * <BreadcrumbItem let:props>
-     * <a {...props} href="/">Home</a>
-     * </BreadcrumbItem>
-     * ```
+     * Spread `props` onto a custom element to inherit the link class
+     * and `aria-current` attribute when `isCurrentPage` is set.
      * @example
      *  ```svelte
      *  <BreadcrumbItem let:props>
