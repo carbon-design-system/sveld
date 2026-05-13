@@ -3233,6 +3233,13 @@ export default class ComponentParser {
         }
       };
 
+      /**
+       * `@template` in the same block as `@slot` / `@snippet` is slot documentation only
+       * (e.g. describing a generic for prose); it must not set component-level generics or
+       * passthrough to slot output.
+       */
+      const blockHasSlotOrSnippetTag = tags.some((t) => t.tag === "slot" || t.tag === "snippet");
+
       for (const {
         tag,
         type: tagType,
@@ -3424,7 +3431,27 @@ export default class ComponentParser {
             this.generics = [name, type];
             if (isFirstTag) isFirstTag = false;
             break;
-          case "template":
+          case "template": {
+            if (blockHasSlotOrSnippetTag) break;
+
+            // Build constraint from standard JSDoc @template syntax:
+            //   @template T              → type="", name="T", default=undefined
+            //   @template {string} T     → type="string", name="T", default=undefined
+            //   @template [T=string]     → type="", name="T", default="string"
+            //   @template {Foo} [T=Foo]  → type="Foo", name="T", default="Foo"
+            let constraint = name;
+            if (type) constraint = `${name} extends ${type}`;
+            if (defaultValue) constraint += ` = ${defaultValue}`;
+
+            if (this.generics) {
+              // Accumulate multiple @template tags
+              this.generics = [`${this.generics[0]},${name}`, `${this.generics[1]}, ${constraint}`];
+            } else {
+              this.generics = [name, constraint];
+            }
+            if (isFirstTag) isFirstTag = false;
+            break;
+          }
           case "enum":
           case "class":
           case "implements":

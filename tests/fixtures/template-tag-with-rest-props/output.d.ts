@@ -1,0 +1,47 @@
+import { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+
+export interface DataTableRow {
+  id: string | number;
+  [key: string]: any;
+}
+
+export type DataTableKey<Row> = Exclude<keyof Row, "id">;
+
+export interface DataTableHeader<Row = DataTableRow> {
+  key: DataTableKey<Row>;
+  value: string;
+}
+
+type $RestProps = SvelteHTMLElements["div"];
+
+type $Props<Row extends DataTableRow = DataTableRow> = {
+  /**
+   * @default []
+   */
+  headers?: ReadonlyArray<DataTableHeader<Row>>;
+
+  /**
+   * @default []
+   */
+  rows?: ReadonlyArray<Row>;
+
+  children?: (
+    this: void,
+    ...args: [{ headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> }]
+  ) => void;
+
+  [key: `data-${string}`]: unknown;
+};
+
+export type TemplateTagWithRestPropsProps<Row extends DataTableRow = DataTableRow> = Omit<
+  $RestProps,
+  keyof $Props<Row>
+> &
+  $Props<Row>;
+
+export default class TemplateTagWithRestProps<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
+  TemplateTagWithRestPropsProps<Row>,
+  Record<string, any>,
+  { default: { headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> } }
+> {}
