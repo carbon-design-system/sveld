@@ -1,5 +1,5 @@
 import { join } from "node:path";
-import type { ComponentDocs } from "../plugin";
+import type { ComponentDocs } from "../SveldDocumenter";
 import { renderComponentsToMarkdown } from "./markdown-render-utils";
 import WriterMarkdown, { type AppendType } from "./WriterMarkdown";
 

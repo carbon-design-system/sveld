@@ -2,7 +2,8 @@ import resolve from "@rollup/plugin-node-resolve";
 import { rollup } from "rollup";
 import svelte from "rollup-plugin-svelte";
 import { getSvelteEntry } from "./get-svelte-entry";
-import { generateBundle, type PluginSveldOptions, writeOutput } from "./plugin";
+import type { PluginSveldOptions } from "./plugin";
+import { createSveld } from "./SveldDocumenter";
 
 /**
  * Command-line interface for sveld.
@@ -44,7 +45,8 @@ export async function cli(process: NodeJS.Process) {
 
   await rollup_bundle.generate({});
 
-  const result = await generateBundle(input, options?.glob === true);
-
-  writeOutput(result, options, input);
+  await createSveld().write({
+    ...options,
+    entry: input,
+  });
 }

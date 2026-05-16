@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { convertSvelteExt, createExports } from "../create-exports";
 import type { ParsedExports } from "../parse-exports";
-import type { ComponentDocs } from "../plugin";
+import type { ComponentDocs } from "../SveldDocumenter";
 import { createTypeScriptWriter } from "./Writer";
 import { writeTsDefinition } from "./writer-ts-definitions-core";
 
