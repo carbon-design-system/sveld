@@ -1,0 +1,47 @@
+{
+  "props": [
+    {
+      "name": "size",
+      "kind": "let",
+      "description": "Bind to the current value emitted by the component.",
+      "binding": "readonly",
+      "value": "undefined",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "open",
+      "kind": "let",
+      "description": "Bind to state controlled by either the consumer or component.",
+      "binding": "writable",
+      "type": "boolean",
+      "value": "false",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
+    },
+    {
+      "name": "label",
+      "kind": "let",
+      "description": "Regular unannotated prop.",
+      "type": "string",
+      "value": "\"Toggle\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}

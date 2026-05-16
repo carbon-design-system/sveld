@@ -10,12 +10,12 @@
 
 ### Props
 
-| Prop name | Required | Kind             | Reactive | Type                | Default value        | Description |
-| :-------- | :------- | :--------------- | :------- | ------------------- | -------------------- | ----------- |
-| value     | No       | <code>let</code> | Yes      | <code>string</code> | <code>"ready"</code> | --          |
-| label     | Yes      | <code>let</code> | No       | --                  | --                   | --          |
-| onclick   | Yes      | <code>let</code> | No       | --                  | --                   | --          |
-| onpress   | Yes      | <code>let</code> | No       | --                  | --                   | --          |
+| Prop name | Required | Kind             | Reactive | Binding | Type                | Default value        | Description |
+| :-------- | :------- | :--------------- | :------- | :------ | :------------------ | :------------------- | :---------- |
+| value     | No       | <code>let</code> | Yes      | --      | <code>string</code> | <code>"ready"</code> | --          |
+| label     | Yes      | <code>let</code> | No       | --      | --                  | --                   | --          |
+| onclick   | Yes      | <code>let</code> | No       | --      | --                  | --                   | --          |
+| onpress   | Yes      | <code>let</code> | No       | --      | --                  | --                   | --          |
 
 ### Slots
 

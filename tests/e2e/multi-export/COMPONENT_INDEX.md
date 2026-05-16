@@ -15,11 +15,11 @@
 
 ### Props
 
-| Prop name | Required | Kind                  | Reactive | Type                   | Default value         | Description |
-| :-------- | :------- | :-------------------- | :------- | ---------------------- | --------------------- | ----------- |
-| type      | No       | <code>let</code>      | No       | <code>string</code>    | <code>"button"</code> | --          |
-| primary   | No       | <code>let</code>      | No       | <code>boolean</code>   | <code>false</code>    | --          |
-| print     | No       | <code>function</code> | No       | <code>() => any</code> | --                    | --          |
+| Prop name | Required | Kind                  | Reactive | Binding | Type                   | Default value         | Description |
+| :-------- | :------- | :-------------------- | :------- | :------ | :--------------------- | :-------------------- | :---------- |
+| type      | No       | <code>let</code>      | No       | --      | <code>string</code>    | <code>"button"</code> | --          |
+| primary   | No       | <code>let</code>      | No       | --      | <code>boolean</code>   | <code>false</code>    | --          |
+| print     | No       | <code>function</code> | No       | --      | <code>() => any</code> | --                    | --          |
 
 ### Slots
 
@@ -77,10 +77,10 @@ export type Author = string;
 
 ### Props
 
-| Prop name | Required | Kind             | Reactive | Type                | Default value   | Description |
-| :-------- | :------- | :--------------- | :------- | ------------------- | --------------- | ----------- |
-| quote     | No       | <code>let</code> | No       | <code>any</code>    | <code>""</code> | --          |
-| author    | No       | <code>let</code> | No       | <code>Author</code> | <code>""</code> | --          |
+| Prop name | Required | Kind             | Reactive | Binding | Type                | Default value   | Description |
+| :-------- | :------- | :--------------- | :------- | :------ | :------------------ | :-------------- | :---------- |
+| quote     | No       | <code>let</code> | No       | --      | <code>any</code>    | <code>""</code> | --          |
+| author    | No       | <code>let</code> | No       | --      | <code>Author</code> | <code>""</code> | --          |
 
 ### Slots
 
