@@ -96,7 +96,7 @@ function renderComponent(document: MarkdownDocument, component: ComponentDocApi)
         "raw",
         `| ${prop.name} | ${prop.isRequired ? "Yes" : "No"} | ${`<code>${prop.kind}</code>`} | ${
           prop.reactive ? "Yes" : "No"
-        } | ${formatPropType(prop.type)} | ${formatPropValue(prop.value)} | ${formatPropDescription(
+        } | ${prop.binding ?? "--"} | ${formatPropType(prop.type)} | ${formatPropValue(prop.value)} | ${formatPropDescription(
           prop.description,
         )} |\n`,
       );

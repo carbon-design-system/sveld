@@ -230,6 +230,7 @@ interface ComponentParserOptions {
 }
 
 type ComponentPropName = string;
+type ComponentPropBinding = "readonly" | "writable";
 
 /**
  * Parameter information for function props.
@@ -279,6 +280,8 @@ interface ComponentProp {
   isRequired: boolean;
   /** Whether this prop is reactive (can change and trigger reactivity) */
   reactive: boolean;
+  /** Explicit author-documented binding direction from `@bindable` JSDoc */
+  binding?: ComponentPropBinding;
 }
 
 /**
@@ -1564,6 +1567,12 @@ export default class ComponentParser {
     }
   }
 
+  private logParserWarning(message: string) {
+    if (this.options?.verbose) {
+      console.warn(`Warning: ${message}`);
+    }
+  }
+
   private static formatComment(comment: string) {
     let formatted_comment = comment;
 
@@ -1617,11 +1626,13 @@ export default class ComponentParser {
       "event",
       "typedef",
       "callback",
+      "bindable",
     ]);
 
     let typeTag: (typeof tags)[number] | undefined;
     const paramTags: typeof tags = [];
     let returnsTag: (typeof tags)[number] | undefined;
+    let binding: ComponentPropBinding | undefined;
     const additionalTags: typeof tags = [];
 
     for (const tag of tags) {
@@ -1631,6 +1642,18 @@ export default class ComponentParser {
         paramTags.push(tag);
       } else if (tag.tag === "returns" || tag.tag === "return") {
         returnsTag = tag;
+      } else if (tag.tag === "bindable") {
+        if (tag.type) {
+          this.logParserWarning(`Ignoring invalid @bindable value "${tag.type} ${tag.name}".`);
+          continue;
+        }
+
+        const value = `${tag.name}${tag.description ? ` ${tag.description}` : ""}`.trim();
+        if (value === "readonly" || value === "writable") {
+          binding ??= value;
+        } else {
+          this.logParserWarning(`Ignoring invalid @bindable value "${value}".`);
+        }
       } else if (!excludedTags.has(tag.tag)) {
         additionalTags.push(tag);
       }
@@ -1640,6 +1663,7 @@ export default class ComponentParser {
       type: typeTag,
       param: paramTags,
       returns: returnsTag,
+      binding,
       additional: additionalTags,
       description: parsed[0]?.description,
     };
@@ -1758,6 +1782,7 @@ export default class ComponentParser {
         params?: ComponentPropParam[];
         returnType?: string;
         description?: string;
+        binding?: ComponentPropBinding;
       }
     | undefined {
     if (!leadingComments) return undefined;
@@ -1773,6 +1798,7 @@ export default class ComponentParser {
       type: typeTag,
       param: paramTags,
       returns: returnsTag,
+      binding,
       additional: additionalTags,
       description: commentDescription,
     } = this.getCommentTags(comment);
@@ -1821,7 +1847,7 @@ export default class ComponentParser {
       description = descriptionParts.join("\n");
     }
 
-    return { type, params, returnType, description };
+    return { type, params, returnType, description, binding };
   }
 
   private buildRunesPropTypeMetadata() {
@@ -2386,6 +2412,7 @@ export default class ComponentParser {
           name: propName,
           kind: "let",
           description: propertyJSDoc?.description,
+          binding: propertyJSDoc?.binding,
           type,
           value,
           params: propertyJSDoc?.params,
@@ -4562,6 +4589,7 @@ export default class ComponentParser {
             name: prop_name,
             kind,
             description,
+            binding: jsdocInfo?.binding,
             type,
             value,
             params,

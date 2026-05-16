@@ -1,0 +1,30 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`WriterMarkdown props table includes binding metadata 1`] = `
+"# Component Index
+
+## Components
+
+  - [\`Example\`](#example)
+
+---
+
+## \`Example\`
+
+### Props
+
+| Prop name | Required | Kind | Reactive | Binding | Type | Default value | Description |
+| :- | :- | :- | :- | :- | :- | :- | :- |
+| open | No | <code>let</code> | Yes | writable | -- | -- | Shared state. |
+| size | No | <code>let</code> | No | readonly | -- | -- | Current value. |
+| label | No | <code>let</code> | No | -- | -- | -- | Label text. |
+### Slots
+
+None.
+
+### Events
+
+None.
+
+"
+`;

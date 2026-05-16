@@ -350,6 +350,38 @@ Local variables or parameters that shadow a prop name do not count as writes to 
 
 `reactive: false` means `sveld` found no such evidence. It does not imply that parent-side `bind:` usage is impossible.
 
+### `binding`
+
+The optional `binding` field in generated JSON is explicit documentation metadata for a prop's intended `bind:` contract. It is separate from `reactive`, and it is never inferred from internal writes or `$bindable()`.
+
+Use `@bindable readonly` for component-owned or output-style bindings where the consumer binds to the current value emitted by the component:
+
+```svelte
+<script>
+  /**
+   * Bind to the current value emitted by the component.
+   * @bindable readonly
+   */
+  export let size = undefined;
+</script>
+```
+
+Use `@bindable writable` for two-way or shared state bindings where either the consumer or component may control the value:
+
+```svelte
+<script>
+  /**
+   * Bind to state controlled by either the consumer or component.
+   * @bindable writable
+   */
+  export let open = false;
+</script>
+```
+
+Generated JSON includes `"binding": "readonly"` or `"binding": "writable"` for annotated props. Unannotated props omit the field.
+
+This is documentation metadata only. Generated `.svelte.d.ts` prop types are unchanged because TypeScript cannot reliably express Svelte component binding direction.
+
 For stable output, generated `events` arrays are emitted in deterministic sorted order.
 
 ### `@type`

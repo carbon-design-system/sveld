@@ -66,6 +66,37 @@ describe("ComponentParser", () => {
     expect(disabledProp?.description).toBe("Controls the disabled state");
   });
 
+  test("parses @bindable JSDoc metadata and ignores invalid values", () => {
+    const log = jest.spyOn(console, "log").mockImplementation(() => undefined);
+    const warn = jest.spyOn(console, "warn").mockImplementation(() => undefined);
+    const parser = new ComponentParser({ verbose: true });
+    const source = `
+      <script>
+        /**
+         * Current value.
+         * @bindable readonly
+         */
+        export let size = undefined;
+
+        /**
+         * Invalid binding documentation.
+         * @bindable sideways
+         */
+        export let invalid = false;
+      </script>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+
+    expect(result.props.find((p) => p.name === "size")?.binding).toBe("readonly");
+    expect(result.props.find((p) => p.name === "size")?.description).toBe("Current value.");
+    expect(result.props.find((p) => p.name === "invalid")?.binding).toBeUndefined();
+    expect(warn).toHaveBeenCalledWith('Warning: Ignoring invalid @bindable value "sideways".');
+
+    warn.mockRestore();
+    log.mockRestore();
+  });
+
   test("preserves JSDoc when @ts-ignore is present", () => {
     const parser = new ComponentParser();
     const source = `

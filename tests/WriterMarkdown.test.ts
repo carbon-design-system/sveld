@@ -1,5 +1,6 @@
 import type { AppendType } from "../src/writer/WriterMarkdown";
 import WriterMarkdown from "../src/writer/WriterMarkdown";
+import { writeMarkdownCore } from "../src/writer/writer-markdown-core";
 
 describe("WriterMarkdown", () => {
   test("basic functionality", () => {
@@ -71,5 +72,68 @@ describe("WriterMarkdown", () => {
 
     expect(lastType).toBe("h1");
     expect(lastDocument).toBe(document);
+  });
+
+  test("props table includes binding metadata", () => {
+    const output = writeMarkdownCore(
+      new Map([
+        [
+          "Example",
+          {
+            filePath: "Example.svelte",
+            moduleName: "Example",
+            props: [
+              {
+                name: "size",
+                kind: "let",
+                constant: false,
+                description: "Current value.",
+                isFunction: false,
+                isFunctionDeclaration: false,
+                isRequired: false,
+                reactive: false,
+                binding: "readonly",
+              },
+              {
+                name: "open",
+                kind: "let",
+                constant: false,
+                description: "Shared state.",
+                isFunction: false,
+                isFunctionDeclaration: false,
+                isRequired: false,
+                reactive: true,
+                binding: "writable",
+              },
+              {
+                name: "label",
+                kind: "let",
+                constant: false,
+                description: "Label text.",
+                isFunction: false,
+                isFunctionDeclaration: false,
+                isRequired: false,
+                reactive: false,
+              },
+            ],
+            moduleExports: [],
+            slots: [],
+            events: [],
+            typedefs: [],
+            generics: null,
+            rest_props: undefined,
+            contexts: [],
+          },
+        ],
+      ]),
+    );
+
+    expect(output).toMatchSnapshot();
+    expect(output).toContain(
+      "| Prop name | Required | Kind | Reactive | Binding | Type | Default value | Description |",
+    );
+    expect(output).toContain("| open | No | <code>let</code> | Yes | writable | -- | -- | Shared state. |");
+    expect(output).toContain("| size | No | <code>let</code> | No | readonly | -- | -- | Current value. |");
+    expect(output).toContain("| label | No | <code>let</code> | No | -- | -- | -- | Label text. |");
   });
 });

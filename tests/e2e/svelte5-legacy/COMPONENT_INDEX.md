@@ -10,10 +10,10 @@
 
 ### Props
 
-| Prop name | Required | Kind             | Reactive | Type                 | Default value      | Description                    |
-| :-------- | :------- | :--------------- | :------- | -------------------- | ------------------ | ------------------------------ |
-| label     | Yes      | <code>let</code> | No       | --                   | --                 | Label text                     |
-| disabled  | No       | <code>let</code> | No       | <code>boolean</code> | <code>false</code> | Whether the button is disabled |
+| Prop name | Required | Kind             | Reactive | Binding | Type                 | Default value      | Description                    |
+| :-------- | :------- | :--------------- | :------- | :------ | :------------------- | :----------------- | :----------------------------- |
+| label     | Yes      | <code>let</code> | No       | --      | --                   | --                 | Label text                     |
+| disabled  | No       | <code>let</code> | No       | --      | <code>boolean</code> | <code>false</code> | Whether the button is disabled |
 
 ### Slots
 

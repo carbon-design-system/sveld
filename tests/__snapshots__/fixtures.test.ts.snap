@@ -3524,6 +3524,57 @@ exports[`fixtures (JSON) "async-function-props/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "bindable-direction-legacy/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "size",
+      "kind": "let",
+      "description": "Bind to the current value emitted by the component.",
+      "binding": "readonly",
+      "value": "undefined",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "open",
+      "kind": "let",
+      "description": "Bind to state controlled by either the consumer or component.",
+      "binding": "writable",
+      "type": "boolean",
+      "value": "false",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
+    },
+    {
+      "name": "label",
+      "kind": "let",
+      "description": "Regular unannotated prop.",
+      "type": "string",
+      "value": "\\"Toggle\\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "runes-whole-props-typed/input.svelte" 1`] = `
 "{
   "props": [
@@ -4766,6 +4817,57 @@ exports[`fixtures (JSON) "bind-this-multiple/input.svelte" 1`] = `
       "slot_props": "Record<string, never>"
     }
   ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "bindable-direction-runes/input.svelte" 1`] = `
+"{
+  "props": [
+    {
+      "name": "size",
+      "kind": "let",
+      "description": "Bind to the current value emitted by the component.",
+      "binding": "readonly",
+      "value": "undefined",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    },
+    {
+      "name": "open",
+      "kind": "let",
+      "description": "Bind to state controlled by either the consumer or component.",
+      "binding": "writable",
+      "type": "boolean",
+      "value": "false",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true
+    },
+    {
+      "name": "label",
+      "kind": "let",
+      "description": "Regular unannotated prop.",
+      "type": "string",
+      "value": "\\"Toggle\\"",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
   "events": [],
   "typedefs": [],
   "generics": null,
@@ -8163,6 +8265,37 @@ export default class AsyncFunctionProps extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "bindable-direction-legacy/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type BindableDirectionLegacyProps = {
+  /**
+   * Bind to the current value emitted by the component.
+   * @default undefined
+   */
+  size?: undefined;
+
+  /**
+   * Bind to state controlled by either the consumer or component.
+   * @default false
+   */
+  open?: boolean;
+
+  /**
+   * Regular unannotated prop.
+   * @default "Toggle"
+   */
+  label?: string;
+};
+
+export default class BindableDirectionLegacy extends SvelteComponentTyped<
+  BindableDirectionLegacyProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "runes-whole-props-typed/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -8937,6 +9070,37 @@ export default class BindThisMultiple extends SvelteComponentTyped<
   BindThisMultipleProps,
   Record<string, any>,
   { default: Record<string, never> }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "bindable-direction-runes/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type BindableDirectionRunesProps = {
+  /**
+   * Bind to the current value emitted by the component.
+   * @default undefined
+   */
+  size?: undefined;
+
+  /**
+   * Bind to state controlled by either the consumer or component.
+   * @default false
+   */
+  open?: boolean;
+
+  /**
+   * Regular unannotated prop.
+   * @default "Toggle"
+   */
+  label?: string;
+};
+
+export default class BindableDirectionRunes extends SvelteComponentTyped<
+  BindableDirectionRunesProps,
+  Record<string, any>,
+  Record<string, never>
 > {}
 "
 `;
