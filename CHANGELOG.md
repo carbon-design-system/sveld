@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.32.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.32.0) - 2026-05-17
+
+**Features**
+
+- support `@bindable` notation for readonly/writable reactive props
+- emit `schemaVersion` and `generator` metadata in `COMPONENT_API.json`
+- add per-component `syntaxMode` (`legacy` | `runes`) and `scriptLanguage` (`js` | `ts`) to JSON output
+- add optional source location metadata for components, props, slots, and events in JSON output
+- add structured prop metadata to JSON output (`kind`, `typeSource`, `defaultValue`, `bindable`, `localName`, and related fields)
+- ship public JSON Schema at `schema/component-api.schema.json` for validating `COMPONENT_API.json`
+
 ## [0.31.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.31.0) - 2026-05-12
 
 **Features**
