@@ -10,6 +10,8 @@
     {
       "moduleName": "LegacyButton",
       "filePath": "src/LegacyButton.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "label",

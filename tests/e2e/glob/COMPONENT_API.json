@@ -10,6 +10,8 @@
     {
       "moduleName": "Button",
       "filePath": "src/button/Button.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "ts",
       "props": [
         {
           "name": "type",

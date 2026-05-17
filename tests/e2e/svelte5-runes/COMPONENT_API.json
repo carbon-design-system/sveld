@@ -10,6 +10,8 @@
     {
       "moduleName": "RunesButton",
       "filePath": "src/RunesButton.svelte",
+      "syntaxMode": "runes",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "label",

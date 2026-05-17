@@ -1,4 +1,6 @@
 {
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "onclick",

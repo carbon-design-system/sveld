@@ -10,6 +10,8 @@
     {
       "moduleName": "Button",
       "filePath": "src/lib/components/Button.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "text",
@@ -46,6 +48,8 @@
     {
       "moduleName": "Input",
       "filePath": "src/lib/components/Input.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "placeholder",

@@ -2,6 +2,8 @@
 
 exports[`fixtures (JSON) "runes-callback-annotated/input.svelte" 1`] = `
 "{
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "onsnowball",
@@ -49,6 +51,7 @@ exports[`fixtures (JSON) "runes-callback-annotated/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "svg-props/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
   "props": [],
   "moduleExports": [],
   "slots": [],
@@ -66,6 +69,8 @@ exports[`fixtures (JSON) "svg-props/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "slots-named/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "text",
@@ -116,6 +121,8 @@ exports[`fixtures (JSON) "slots-named/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "module-reexport-mixed/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "name",
@@ -186,6 +193,8 @@ exports[`fixtures (JSON) "module-reexport-mixed/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "generics-multiple/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "headers",
@@ -247,6 +256,8 @@ exports[`fixtures (JSON) "generics-multiple/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "context-empty/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [],
@@ -266,6 +277,8 @@ exports[`fixtures (JSON) "context-empty/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "slot-jsdoc-example/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [
@@ -292,6 +305,8 @@ exports[`fixtures (JSON) "slot-jsdoc-example/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "runes-dispatched-events/input.svelte" 1`] = `
 "{
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "value",
@@ -324,6 +339,8 @@ exports[`fixtures (JSON) "runes-dispatched-events/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "module-reexport/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "ts",
   "props": [
     {
       "name": "data",
@@ -367,6 +384,8 @@ exports[`fixtures (JSON) "module-reexport/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "resolve-default-chained/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "chained",
@@ -416,6 +435,8 @@ exports[`fixtures (JSON) "resolve-default-chained/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "accessor-param-returns/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "add",
@@ -565,6 +586,8 @@ exports[`fixtures (JSON) "accessor-param-returns/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "typedef-description/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "gap",
@@ -609,6 +632,8 @@ exports[`fixtures (JSON) "typedef-description/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "typedef-jsdoc-properties/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "user",
@@ -678,6 +703,8 @@ exports[`fixtures (JSON) "typedef-jsdoc-properties/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "legacy-bind-component-selected/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "pageSize",
@@ -703,6 +730,8 @@ exports[`fixtures (JSON) "legacy-bind-component-selected/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "template-tag-multiple/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "headers",
@@ -764,6 +793,8 @@ exports[`fixtures (JSON) "template-tag-multiple/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "runes-props-intersection/input.svelte" 1`] = `
 "{
+  "syntaxMode": "runes",
+  "scriptLanguage": "ts",
   "props": [
     {
       "name": "label",
@@ -798,6 +829,8 @@ exports[`fixtures (JSON) "runes-props-intersection/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "mixed-event-types/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [],
@@ -835,6 +868,8 @@ exports[`fixtures (JSON) "mixed-event-types/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "legacy-bind-component-ref-forward/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "listRef",
@@ -859,6 +894,8 @@ exports[`fixtures (JSON) "legacy-bind-component-ref-forward/input.svelte" 1`] = 
 
 exports[`fixtures (JSON) "dispatched-events-dynamic/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [],
@@ -878,6 +915,8 @@ exports[`fixtures (JSON) "dispatched-events-dynamic/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "legacy-export-typed/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "ts",
   "props": [
     {
       "name": "title",
@@ -913,6 +952,8 @@ exports[`fixtures (JSON) "legacy-export-typed/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "context-issue-103/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [
@@ -945,6 +986,8 @@ exports[`fixtures (JSON) "context-issue-103/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "context-mixed-separators/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [],
@@ -977,6 +1020,8 @@ exports[`fixtures (JSON) "context-mixed-separators/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "jsdoc-type-params/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "showNode",
@@ -1022,6 +1067,8 @@ exports[`fixtures (JSON) "jsdoc-type-params/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "reactive-shadowed-local-reassignment/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "disabled",
@@ -1047,6 +1094,8 @@ exports[`fixtures (JSON) "reactive-shadowed-local-reassignment/input.svelte" 1`]
 
 exports[`fixtures (JSON) "empty-collection-defaults/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "items",
@@ -1116,6 +1165,8 @@ exports[`fixtures (JSON) "empty-collection-defaults/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "function-declaration/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "fnA",
@@ -1171,6 +1222,7 @@ exports[`fixtures (JSON) "function-declaration/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "forwarded-events/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
   "props": [],
   "moduleExports": [],
   "slots": [
@@ -1211,6 +1263,8 @@ exports[`fixtures (JSON) "forwarded-events/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "binary-expression-numeric/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "sum",
@@ -1302,6 +1356,8 @@ exports[`fixtures (JSON) "binary-expression-numeric/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "reactive-shadowed-callback-param/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "disabled",
@@ -1327,6 +1383,8 @@ exports[`fixtures (JSON) "reactive-shadowed-callback-param/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "typedef-event-shared-block/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "size",
@@ -1429,6 +1487,8 @@ exports[`fixtures (JSON) "typedef-event-shared-block/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "theme-component/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "theme",
@@ -1521,6 +1581,8 @@ exports[`fixtures (JSON) "theme-component/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "callback/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "onChange",
@@ -1585,6 +1647,8 @@ exports[`fixtures (JSON) "callback/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "slot-description-with-dash/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [
@@ -1605,6 +1669,8 @@ exports[`fixtures (JSON) "slot-description-with-dash/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "runes-bindable/input.svelte" 1`] = `
 "{
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "value",
@@ -1630,6 +1696,8 @@ exports[`fixtures (JSON) "runes-bindable/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "events-stable-order/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [],
@@ -1664,6 +1732,8 @@ exports[`fixtures (JSON) "events-stable-order/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "mixed-events/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [],
@@ -1688,6 +1758,8 @@ exports[`fixtures (JSON) "mixed-events/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "infer-basic/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "ref",
@@ -1782,6 +1854,8 @@ exports[`fixtures (JSON) "infer-basic/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "context-underscore/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [],
@@ -1814,6 +1888,8 @@ exports[`fixtures (JSON) "context-underscore/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "rest-props-description-multiline/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "variant",
@@ -1844,6 +1920,8 @@ exports[`fixtures (JSON) "rest-props-description-multiline/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "runes-props-basic/input.svelte" 1`] = `
 "{
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "title",
@@ -1878,6 +1956,8 @@ exports[`fixtures (JSON) "runes-props-basic/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "slot-jsdoc-inheritdoc-before-slot/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [
@@ -1904,6 +1984,8 @@ exports[`fixtures (JSON) "slot-jsdoc-inheritdoc-before-slot/input.svelte" 1`] = 
 
 exports[`fixtures (JSON) "unary-expression-defaults/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "offset",
@@ -1977,6 +2059,8 @@ exports[`fixtures (JSON) "unary-expression-defaults/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "empty-export/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [],
@@ -1990,6 +2074,8 @@ exports[`fixtures (JSON) "empty-export/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "module-reexport-direct/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "ts",
   "props": [
     {
       "name": "config",
@@ -2037,6 +2123,8 @@ exports[`fixtures (JSON) "module-reexport-direct/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "slot-prop-dotted-access/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "point",
@@ -2068,6 +2156,8 @@ exports[`fixtures (JSON) "slot-prop-dotted-access/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "template-tag/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "headers",
@@ -2129,6 +2219,8 @@ exports[`fixtures (JSON) "template-tag/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "runes-snippets-named/input.svelte" 1`] = `
 "{
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "item",
@@ -2158,6 +2250,8 @@ exports[`fixtures (JSON) "runes-snippets-named/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "typed-slots/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "prop",
@@ -2195,6 +2289,8 @@ exports[`fixtures (JSON) "typed-slots/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "constructor-expression-defaults/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "cache",
@@ -2341,6 +2437,8 @@ exports[`fixtures (JSON) "constructor-expression-defaults/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "default-slot-with-props/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "items",
@@ -2373,6 +2471,8 @@ exports[`fixtures (JSON) "default-slot-with-props/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "runes-snippets-annotated/input.svelte" 1`] = `
 "{
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "prop",
@@ -2415,6 +2515,8 @@ exports[`fixtures (JSON) "runes-snippets-annotated/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "runes-snippet-description-hyphens/input.svelte" 1`] = `
 "{
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "row",
@@ -2454,6 +2556,8 @@ exports[`fixtures (JSON) "runes-snippet-description-hyphens/input.svelte" 1`] = 
 
 exports[`fixtures (JSON) "element-tag-map-table-cells/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "cellType",
@@ -2483,6 +2587,8 @@ exports[`fixtures (JSON) "element-tag-map-table-cells/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "context-typedef/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [
@@ -2527,6 +2633,8 @@ exports[`fixtures (JSON) "context-typedef/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "context-colon/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [],
@@ -2559,6 +2667,8 @@ exports[`fixtures (JSON) "context-colon/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "forwarded-events-typed/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [],
@@ -2592,6 +2702,8 @@ exports[`fixtures (JSON) "forwarded-events-typed/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "dispatched-events/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [
@@ -2631,6 +2743,8 @@ exports[`fixtures (JSON) "dispatched-events/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "slot-jsdoc-two-slots-one-block-order/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [
@@ -2662,6 +2776,8 @@ exports[`fixtures (JSON) "slot-jsdoc-two-slots-one-block-order/input.svelte" 1`]
 
 exports[`fixtures (JSON) "slot-jsdoc-orphan-type-before-slot/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [
@@ -2682,6 +2798,8 @@ exports[`fixtures (JSON) "slot-jsdoc-orphan-type-before-slot/input.svelte" 1`] =
 
 exports[`fixtures (JSON) "module-reexport-renamed/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "ts",
   "props": [
     {
       "name": "visible",
@@ -2726,6 +2844,8 @@ exports[`fixtures (JSON) "module-reexport-renamed/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "typedefs/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "prop1",
@@ -2779,6 +2899,8 @@ exports[`fixtures (JSON) "typedefs/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "generics-with-rest-props/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "headers",
@@ -2844,6 +2966,8 @@ exports[`fixtures (JSON) "generics-with-rest-props/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "bind-this/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "ref",
@@ -2874,6 +2998,8 @@ exports[`fixtures (JSON) "bind-this/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "instance-reexport/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "data",
@@ -2912,6 +3038,8 @@ exports[`fixtures (JSON) "instance-reexport/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "explicit-default-no-duplicate/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "shouldFilter",
@@ -3032,6 +3160,8 @@ exports[`fixtures (JSON) "explicit-default-no-duplicate/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "dispatched-events-typed/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [
@@ -3063,6 +3193,7 @@ exports[`fixtures (JSON) "dispatched-events-typed/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "input-events/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
   "props": [],
   "moduleExports": [],
   "slots": [],
@@ -3092,6 +3223,8 @@ exports[`fixtures (JSON) "input-events/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "required/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "prop",
@@ -3155,6 +3288,8 @@ exports[`fixtures (JSON) "required/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "context-imported-type/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [
@@ -3193,6 +3328,8 @@ exports[`fixtures (JSON) "context-imported-type/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "reactive-shadowed-each-binding/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "value",
@@ -3218,6 +3355,8 @@ exports[`fixtures (JSON) "reactive-shadowed-each-binding/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "legacy-bind-component-value/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "value",
@@ -3243,6 +3382,8 @@ exports[`fixtures (JSON) "legacy-bind-component-value/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "callback-typedef/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "direction",
@@ -3289,6 +3430,8 @@ exports[`fixtures (JSON) "callback-typedef/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "legacy-pass-through-nonreactive/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "disabled",
@@ -3314,6 +3457,8 @@ exports[`fixtures (JSON) "legacy-pass-through-nonreactive/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "prop-comments/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "prop",
@@ -3370,6 +3515,8 @@ exports[`fixtures (JSON) "prop-comments/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "forwarded-events-native-with-jsdoc/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [
@@ -3411,6 +3558,8 @@ exports[`fixtures (JSON) "forwarded-events-native-with-jsdoc/input.svelte" 1`] =
 
 exports[`fixtures (JSON) "runes-generics/input.svelte" 1`] = `
 "{
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "headers",
@@ -3472,6 +3621,8 @@ exports[`fixtures (JSON) "runes-generics/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "async-function-props/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "initialize",
@@ -3526,6 +3677,8 @@ exports[`fixtures (JSON) "async-function-props/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "bindable-direction-legacy/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "size",
@@ -3577,6 +3730,8 @@ exports[`fixtures (JSON) "bindable-direction-legacy/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "runes-whole-props-typed/input.svelte" 1`] = `
 "{
+  "syntaxMode": "runes",
+  "scriptLanguage": "ts",
   "props": [
     {
       "name": "item",
@@ -3617,6 +3772,8 @@ exports[`fixtures (JSON) "runes-whole-props-typed/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "context-simple/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [
@@ -3655,6 +3812,8 @@ exports[`fixtures (JSON) "context-simple/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "renamed-props/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "class",
@@ -3681,6 +3840,8 @@ exports[`fixtures (JSON) "renamed-props/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "infer-with-types/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "propBool",
@@ -3766,6 +3927,8 @@ exports[`fixtures (JSON) "infer-with-types/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "runes-callback-props/input.svelte" 1`] = `
 "{
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "onclick",
@@ -3789,6 +3952,8 @@ exports[`fixtures (JSON) "runes-callback-props/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "arrow-function-with-jsdoc/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "transform",
@@ -3833,6 +3998,8 @@ exports[`fixtures (JSON) "arrow-function-with-jsdoc/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "slot-description-named-pair/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [
@@ -3859,6 +4026,8 @@ exports[`fixtures (JSON) "slot-description-named-pair/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "non-literal-defaults/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "position",
@@ -4022,6 +4191,8 @@ exports[`fixtures (JSON) "non-literal-defaults/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "forwarded-native-with-detail/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [],
@@ -4043,6 +4214,8 @@ exports[`fixtures (JSON) "forwarded-native-with-detail/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "runes-props-renamed/input.svelte" 1`] = `
 "{
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "class",
@@ -4066,6 +4239,8 @@ exports[`fixtures (JSON) "runes-props-renamed/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "multiple-typedef-same-property/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "user",
@@ -4113,6 +4288,8 @@ exports[`fixtures (JSON) "multiple-typedef-same-property/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "runes-snippets-default/input.svelte" 1`] = `
 "{
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "item",
@@ -4142,6 +4319,8 @@ exports[`fixtures (JSON) "runes-snippets-default/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "context-module/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "a",
@@ -4243,6 +4422,8 @@ exports[`fixtures (JSON) "context-module/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "element-tag-map-new/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "semanticTag",
@@ -4272,6 +4453,8 @@ exports[`fixtures (JSON) "element-tag-map-new/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "html-in-template-string/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "message",
@@ -4297,6 +4480,8 @@ exports[`fixtures (JSON) "html-in-template-string/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "rest-props-multiple/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "type",
@@ -4326,6 +4511,8 @@ exports[`fixtures (JSON) "rest-props-multiple/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "slot-jsdoc-multiple-tags/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [
@@ -4356,6 +4543,8 @@ exports[`fixtures (JSON) "slot-jsdoc-multiple-tags/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "forwarded-from-component-to-native/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [],
@@ -4400,6 +4589,8 @@ exports[`fixtures (JSON) "forwarded-from-component-to-native/input.svelte" 1`] =
 
 exports[`fixtures (JSON) "call-expression-defaults/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "id",
@@ -4458,6 +4649,8 @@ exports[`fixtures (JSON) "call-expression-defaults/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "slot-jsdoc-enum-not-passthrough/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [
@@ -4478,6 +4671,8 @@ exports[`fixtures (JSON) "slot-jsdoc-enum-not-passthrough/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "template-literal-default/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "id",
@@ -4539,6 +4734,7 @@ exports[`fixtures (JSON) "template-literal-default/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "no-props/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
   "props": [],
   "moduleExports": [],
   "slots": [],
@@ -4552,6 +4748,8 @@ exports[`fixtures (JSON) "no-props/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "event-explicit-null/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [],
@@ -4585,6 +4783,8 @@ exports[`fixtures (JSON) "event-explicit-null/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "context-generics/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "rows",
@@ -4662,6 +4862,7 @@ exports[`fixtures (JSON) "context-generics/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "svelte-element-hardcoded-button/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
   "props": [],
   "moduleExports": [],
   "slots": [],
@@ -4680,6 +4881,8 @@ exports[`fixtures (JSON) "svelte-element-hardcoded-button/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "forwarded-standard-event-custom-detail/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "files",
@@ -4722,6 +4925,8 @@ exports[`fixtures (JSON) "forwarded-standard-event-custom-detail/input.svelte" 1
 
 exports[`fixtures (JSON) "runes-props-interface/input.svelte" 1`] = `
 "{
+  "syntaxMode": "runes",
+  "scriptLanguage": "ts",
   "props": [
     {
       "name": "foo",
@@ -4756,6 +4961,7 @@ exports[`fixtures (JSON) "runes-props-interface/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "component-comment-single/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
   "props": [],
   "moduleExports": [],
   "slots": [
@@ -4776,6 +4982,8 @@ exports[`fixtures (JSON) "component-comment-single/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "bind-this-multiple/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "ref",
@@ -4827,6 +5035,8 @@ exports[`fixtures (JSON) "bind-this-multiple/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "bindable-direction-runes/input.svelte" 1`] = `
 "{
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "size",
@@ -4878,6 +5088,8 @@ exports[`fixtures (JSON) "bindable-direction-runes/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "context-template-tag/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "rows",
@@ -4955,6 +5167,8 @@ exports[`fixtures (JSON) "context-template-tag/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "runes-whole-props-imported/input.svelte" 1`] = `
 "{
+  "syntaxMode": "runes",
+  "scriptLanguage": "ts",
   "props": [],
   "moduleExports": [],
   "slots": [],
@@ -4968,6 +5182,8 @@ exports[`fixtures (JSON) "runes-whole-props-imported/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "forwarded-custom-events/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [],
@@ -4994,6 +5210,8 @@ exports[`fixtures (JSON) "forwarded-custom-events/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "reactive-direct-mutation-still-true/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "disabled",
@@ -5019,6 +5237,8 @@ exports[`fixtures (JSON) "reactive-direct-mutation-still-true/input.svelte" 1`] 
 
 exports[`fixtures (JSON) "typedef/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "id",
@@ -5067,6 +5287,7 @@ exports[`fixtures (JSON) "typedef/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "rest-props-simple/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
   "props": [],
   "moduleExports": [],
   "slots": [],
@@ -5084,6 +5305,7 @@ exports[`fixtures (JSON) "rest-props-simple/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "anchor-props/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
   "props": [],
   "moduleExports": [],
   "slots": [
@@ -5107,6 +5329,7 @@ exports[`fixtures (JSON) "anchor-props/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "component-comment-multi/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
   "props": [],
   "moduleExports": [],
   "slots": [
@@ -5127,6 +5350,8 @@ exports[`fixtures (JSON) "component-comment-multi/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "runes-rest-props/input.svelte" 1`] = `
 "{
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "variant",
@@ -5154,6 +5379,8 @@ exports[`fixtures (JSON) "runes-rest-props/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "forwarded-custom-event-null/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [],
@@ -5182,6 +5409,8 @@ exports[`fixtures (JSON) "forwarded-custom-event-null/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "dispatched-events-jsdoc-properties/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [],
@@ -5214,6 +5443,8 @@ exports[`fixtures (JSON) "dispatched-events-jsdoc-properties/input.svelte" 1`] =
 
 exports[`fixtures (JSON) "slot-props-union-types/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "items",
@@ -5251,6 +5482,7 @@ exports[`fixtures (JSON) "slot-props-union-types/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "svelte-element-hardcoded-div/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
   "props": [],
   "moduleExports": [],
   "slots": [],
@@ -5269,6 +5501,8 @@ exports[`fixtures (JSON) "svelte-element-hardcoded-div/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "runes-snippet-positional/input.svelte" 1`] = `
 "{
+  "syntaxMode": "runes",
+  "scriptLanguage": "ts",
   "props": [
     {
       "name": "row",
@@ -5293,6 +5527,8 @@ exports[`fixtures (JSON) "runes-snippet-positional/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "legacy-bind-component-ref/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "ref",
@@ -5317,6 +5553,8 @@ exports[`fixtures (JSON) "legacy-bind-component-ref/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "slot-jsdoc-template-not-passthrough/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [
@@ -5337,6 +5575,8 @@ exports[`fixtures (JSON) "slot-jsdoc-template-not-passthrough/input.svelte" 1`] 
 
 exports[`fixtures (JSON) "svelte-element-dynamic/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "tag",
@@ -5366,6 +5606,8 @@ exports[`fixtures (JSON) "svelte-element-dynamic/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "prop-comment-complex/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "text",
@@ -5410,6 +5652,8 @@ exports[`fixtures (JSON) "prop-comment-complex/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "element-tag-map-text-elements/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "textElement",
@@ -5439,6 +5683,8 @@ exports[`fixtures (JSON) "element-tag-map-text-elements/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "slots-spread/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [
@@ -5464,6 +5710,8 @@ exports[`fixtures (JSON) "slots-spread/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "rest-props-description/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "variant",
@@ -5494,6 +5742,8 @@ exports[`fixtures (JSON) "rest-props-description/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "slot-description-hyphens-prose/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [
@@ -5514,6 +5764,8 @@ exports[`fixtures (JSON) "slot-description-hyphens-prose/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "context-space/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [],
@@ -5540,6 +5792,8 @@ exports[`fixtures (JSON) "context-space/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "extend-props/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "secondary",
@@ -5579,6 +5833,8 @@ exports[`fixtures (JSON) "extend-props/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "template-tag-with-rest-props/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "headers",
@@ -5644,6 +5900,8 @@ exports[`fixtures (JSON) "template-tag-with-rest-props/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "forwarded-and-dispatched-events/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [],
@@ -5663,6 +5921,8 @@ exports[`fixtures (JSON) "forwarded-and-dispatched-events/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "slots-spread-typed/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [
@@ -5688,6 +5948,8 @@ exports[`fixtures (JSON) "slots-spread-typed/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "context-inline-functions/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [
@@ -5724,6 +5986,8 @@ exports[`fixtures (JSON) "context-inline-functions/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "slot-jsdoc-tags-named-pair/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [
@@ -5762,6 +6026,8 @@ exports[`fixtures (JSON) "slot-jsdoc-tags-named-pair/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "typed-props/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "prop1",
@@ -5820,6 +6086,8 @@ exports[`fixtures (JSON) "typed-props/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "reactive-shadowed-local-assignment/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "disabled",
@@ -5845,6 +6113,8 @@ exports[`fixtures (JSON) "reactive-shadowed-local-assignment/input.svelte" 1`] =
 
 exports[`fixtures (JSON) "runes-typed-props/input.svelte" 1`] = `
 "{
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "prop",
@@ -5894,6 +6164,8 @@ exports[`fixtures (JSON) "runes-typed-props/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "generics/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "headers",
@@ -5955,6 +6227,8 @@ exports[`fixtures (JSON) "generics/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "context-dot-notation/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [],
@@ -5987,6 +6261,8 @@ exports[`fixtures (JSON) "context-dot-notation/input.svelte" 1`] = `
 
 exports[`fixtures (JSON) "slot-description-hyphens-inline/input.svelte" 1`] = `
 "{
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
   "slots": [

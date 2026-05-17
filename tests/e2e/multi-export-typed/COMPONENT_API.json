@@ -10,6 +10,8 @@
     {
       "moduleName": "Button",
       "filePath": "src/Button.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "type",
@@ -53,6 +55,7 @@
     {
       "moduleName": "Link",
       "filePath": "src/Link.svelte",
+      "syntaxMode": "legacy",
       "props": [],
       "moduleExports": [],
       "slots": [
@@ -72,6 +75,8 @@
     {
       "moduleName": "Quote",
       "filePath": "src/Quote.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "quote",
@@ -114,6 +119,8 @@
     {
       "moduleName": "SecondaryButton",
       "filePath": "src/SecondaryButton.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "secondary",

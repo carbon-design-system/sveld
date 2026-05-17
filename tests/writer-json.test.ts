@@ -10,6 +10,7 @@ function createComponent(moduleName: string, filePath: string): ComponentDocApi 
   return {
     moduleName,
     filePath,
+    syntaxMode: "legacy",
     props: [],
     moduleExports: [],
     slots: [],
