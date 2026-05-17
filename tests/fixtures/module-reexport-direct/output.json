@@ -1,4 +1,14 @@
 {
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 20,
+      "column": 0
+    }
+  },
   "syntaxMode": "legacy",
   "scriptLanguage": "ts",
   "props": [
@@ -12,7 +22,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 10,
+          "column": 2
+        },
+        "end": {
+          "line": 10,
+          "column": 40
+        }
+      }
     },
     {
       "name": "onReady",
@@ -22,7 +42,17 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 13,
+          "column": 2
+        },
+        "end": {
+          "line": 13,
+          "column": 21
+        }
+      }
     }
   ],
   "moduleExports": [],
@@ -30,12 +60,32 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "Record<string, never>"
+      "slot_props": "Record<string, never>",
+      "source": {
+        "start": {
+          "line": 18,
+          "column": 2
+        },
+        "end": {
+          "line": 18,
+          "column": 10
+        }
+      }
     },
     {
       "name": "header",
       "default": false,
-      "slot_props": "Record<string, never>"
+      "slot_props": "Record<string, never>",
+      "source": {
+        "start": {
+          "line": 17,
+          "column": 2
+        },
+        "end": {
+          "line": 17,
+          "column": 24
+        }
+      }
     }
   ],
   "events": [],

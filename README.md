@@ -127,6 +127,7 @@ export default class Button extends SvelteComponentTyped<
   - [CLI](#cli)
   - [Publishing to NPM](#publishing-to-npm)
 - [Available Options](#available-options)
+- [JSON Output](#json-output)
 - [API Reference](#api-reference)
   - [@type](#type)
   - [@default](#default)
@@ -332,6 +333,102 @@ sveld({
 +  json: true,
 })
 ```
+
+## JSON Output
+
+When `json: true` is enabled, `sveld` emits a `COMPONENT_API.json` file with schema and generator metadata plus the parsed
+component API.
+
+```ts
+interface ComponentApiJson {
+  schemaVersion: 1;
+  generator: {
+    name: string;
+    version: string;
+    svelteVersion: string;
+  };
+  total: number;
+  components: ComponentDocApi[];
+}
+
+interface SourceRange {
+  start: SourcePosition;
+  end: SourcePosition;
+}
+
+interface SourcePosition {
+  line: number;
+  column: number;
+}
+
+interface ComponentDocApi {
+  moduleName: string;
+  filePath: string;
+  source?: SourceRange;
+  syntaxMode: "legacy" | "runes";
+  scriptLanguage?: "js" | "ts";
+  props: ComponentProp[];
+  moduleExports: ComponentProp[];
+  slots: ComponentSlot[];
+  events: ComponentEvent[];
+  typedefs: TypeDef[];
+  generics: null | [name: string, type: string];
+  rest_props?: RestProps;
+  extends?: { interface: string; import: string };
+  componentComment?: string;
+  componentCommentSource?: SourceRange;
+  contexts?: ComponentContext[];
+}
+
+interface ComponentProp {
+  name: string;
+  kind: "let" | "const" | "function";
+  constant: boolean;
+  type?: string;
+  value?: string;
+  description?: string;
+  params?: Array<{ name: string; type: string; description?: string; optional?: boolean }>;
+  returnType?: string;
+  isFunction: boolean;
+  isFunctionDeclaration: boolean;
+  isRequired: boolean;
+  reactive: boolean;
+  binding?: "readonly" | "writable";
+  source?: SourceRange;
+}
+
+interface ComponentSlot {
+  name?: string | null;
+  default: boolean;
+  fallback?: string;
+  slot_props?: string;
+  description?: string;
+  tags?: Array<{ name: string; body: string }>;
+  source?: SourceRange;
+}
+
+type ComponentEvent =
+  | {
+      type: "forwarded";
+      name: string;
+      element: string;
+      description?: string;
+      detail?: string;
+      source?: SourceRange;
+    }
+  | {
+      type: "dispatched";
+      name: string;
+      detail?: string;
+      description?: string;
+      source?: SourceRange;
+    };
+```
+
+`source` fields are optional and are included only when the Svelte or JavaScript AST provides stable positions. They do not
+include source text or raw character offsets.
+
+Note that `SourcePosition.line` is 1-based and `SourcePosition.column` is 0-based.
 
 ## API Reference
 

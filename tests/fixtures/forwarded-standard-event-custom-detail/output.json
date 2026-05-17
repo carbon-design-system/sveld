@@ -1,4 +1,14 @@
 {
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 34,
+      "column": 0
+    }
+  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -11,7 +21,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": true
+      "reactive": true,
+      "source": {
+        "start": {
+          "line": 13,
+          "column": 2
+        },
+        "end": {
+          "line": 13,
+          "column": 24
+        }
+      }
     }
   ],
   "moduleExports": [],
@@ -20,18 +40,48 @@
     {
       "type": "dispatched",
       "name": "add",
-      "detail": "ReadonlyArray<File>"
+      "detail": "ReadonlyArray<File>",
+      "source": {
+        "start": {
+          "line": 16,
+          "column": 4
+        },
+        "end": {
+          "line": 16,
+          "column": 26
+        }
+      }
     },
     {
       "type": "forwarded",
       "name": "change",
       "element": "FileUploaderButton",
+      "source": {
+        "start": {
+          "line": 11,
+          "column": 5
+        },
+        "end": {
+          "line": 11,
+          "column": 40
+        }
+      },
       "detail": "ReadonlyArray<File>"
     },
     {
       "type": "dispatched",
       "name": "remove",
-      "detail": "ReadonlyArray<File>"
+      "detail": "ReadonlyArray<File>",
+      "source": {
+        "start": {
+          "line": 20,
+          "column": 4
+        },
+        "end": {
+          "line": 20,
+          "column": 29
+        }
+      }
     }
   ],
   "typedefs": [],

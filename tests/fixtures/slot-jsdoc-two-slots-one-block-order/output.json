@@ -1,4 +1,14 @@
 {
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 18,
+      "column": 0
+    }
+  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -14,12 +24,32 @@
           "name": "see",
           "body": "https://example.com/docs"
         }
-      ]
+      ],
+      "source": {
+        "start": {
+          "line": 10,
+          "column": 0
+        },
+        "end": {
+          "line": 13,
+          "column": 2
+        }
+      }
     },
     {
       "name": "beta",
       "default": false,
-      "slot_props": "{ s: string }"
+      "slot_props": "{ s: string }",
+      "source": {
+        "start": {
+          "line": 14,
+          "column": 0
+        },
+        "end": {
+          "line": 17,
+          "column": 2
+        }
+      }
     }
   ],
   "events": [],

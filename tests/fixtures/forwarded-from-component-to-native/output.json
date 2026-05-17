@@ -1,4 +1,14 @@
 {
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 24,
+      "column": 0
+    }
+  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -8,32 +18,92 @@
     {
       "type": "forwarded",
       "name": "click",
-      "element": "ChildComponent"
+      "element": "ChildComponent",
+      "source": {
+        "start": {
+          "line": 15,
+          "column": 2
+        },
+        "end": {
+          "line": 15,
+          "column": 10
+        }
+      }
     },
     {
       "type": "dispatched",
       "name": "collapse",
-      "detail": "null"
+      "detail": "null",
+      "source": {
+        "start": {
+          "line": 23,
+          "column": 24
+        },
+        "end": {
+          "line": 23,
+          "column": 44
+        }
+      }
     },
     {
       "type": "dispatched",
       "name": "expand",
-      "detail": "null"
+      "detail": "null",
+      "source": {
+        "start": {
+          "line": 22,
+          "column": 24
+        },
+        "end": {
+          "line": 22,
+          "column": 42
+        }
+      }
     },
     {
       "type": "forwarded",
       "name": "mouseenter",
-      "element": "ChildComponent"
+      "element": "ChildComponent",
+      "source": {
+        "start": {
+          "line": 17,
+          "column": 2
+        },
+        "end": {
+          "line": 17,
+          "column": 15
+        }
+      }
     },
     {
       "type": "forwarded",
       "name": "mouseleave",
-      "element": "ChildComponent"
+      "element": "ChildComponent",
+      "source": {
+        "start": {
+          "line": 18,
+          "column": 2
+        },
+        "end": {
+          "line": 18,
+          "column": 15
+        }
+      }
     },
     {
       "type": "forwarded",
       "name": "mouseover",
-      "element": "ChildComponent"
+      "element": "ChildComponent",
+      "source": {
+        "start": {
+          "line": 16,
+          "column": 2
+        },
+        "end": {
+          "line": 16,
+          "column": 14
+        }
+      }
     }
   ],
   "typedefs": [],

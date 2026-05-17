@@ -675,6 +675,40 @@ describe("ComponentParser", () => {
     expect(result.componentComment).toContain("A button component with customizable styles");
   });
 
+  test("adds source locations for component metadata", () => {
+    const parser = new ComponentParser();
+    const source = `<script>
+  import { createEventDispatcher } from "svelte";
+  /** Button label */
+  export let label = "Save";
+  const dispatch = createEventDispatcher();
+  dispatch("ready");
+</script>
+
+<!-- @component Button docs -->
+<button on:click>
+  <slot name="icon" />
+  {label}
+</button>`;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+
+    expect(result.source).toMatchObject({ start: { line: 1, column: 0 }, end: { line: 13, column: 9 } });
+    expect(result.componentCommentSource).toMatchObject({ start: { line: 9, column: 0 } });
+    expect(result.props.find((prop) => prop.name === "label")?.source).toMatchObject({
+      start: { line: 4, column: 2 },
+    });
+    expect(result.slots.find((slot) => slot.name === "icon")?.source).toMatchObject({
+      start: { line: 11, column: 2 },
+    });
+    expect(result.events.find((event) => event.name === "click")?.source).toMatchObject({
+      start: { line: 10 },
+    });
+    expect(result.events.find((event) => event.name === "ready")?.source).toMatchObject({
+      start: { line: 6, column: 2 },
+    });
+  });
+
   test("throws an error for malformed source code", () => {
     const parser = new ComponentParser();
     const invalidSource = `

@@ -1,4 +1,14 @@
 {
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 13,
+      "column": 0
+    }
+  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -8,7 +18,17 @@
       "name": "body",
       "default": false,
       "slot_props": "{ n: number }",
-      "description": "Body slot uses a generic from `@template`; that tag must not appear on the slot in output."
+      "description": "Body slot uses a generic from `@template`; that tag must not appear on the slot in output.",
+      "source": {
+        "start": {
+          "line": 9,
+          "column": 0
+        },
+        "end": {
+          "line": 12,
+          "column": 2
+        }
+      }
     }
   ],
   "events": [],

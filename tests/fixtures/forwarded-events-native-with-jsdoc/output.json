@@ -1,4 +1,14 @@
 {
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 16,
+      "column": 0
+    }
+  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -7,7 +17,17 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "Record<string, never>"
+      "slot_props": "Record<string, never>",
+      "source": {
+        "start": {
+          "line": 14,
+          "column": 2
+        },
+        "end": {
+          "line": 14,
+          "column": 10
+        }
+      }
     }
   ],
   "events": [
@@ -16,6 +36,16 @@
       "name": "blur",
       "element": "button",
       "description": "Fired when the button loses focus",
+      "source": {
+        "start": {
+          "line": 5,
+          "column": 5
+        },
+        "end": {
+          "line": 5,
+          "column": 52
+        }
+      },
       "detail": "null"
     },
     {
@@ -23,6 +53,16 @@
       "name": "click",
       "element": "button",
       "description": "Fired when the button is clicked",
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 5
+        },
+        "end": {
+          "line": 3,
+          "column": 52
+        }
+      },
       "detail": "null"
     },
     {
@@ -30,6 +70,16 @@
       "name": "focus",
       "element": "button",
       "description": "Fired when the button receives focus",
+      "source": {
+        "start": {
+          "line": 4,
+          "column": 5
+        },
+        "end": {
+          "line": 4,
+          "column": 56
+        }
+      },
       "detail": "null"
     }
   ],

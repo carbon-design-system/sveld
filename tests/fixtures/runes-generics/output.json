@@ -1,4 +1,14 @@
 {
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 20,
+      "column": 0
+    }
+  },
   "syntaxMode": "runes",
   "scriptLanguage": "js",
   "props": [
@@ -11,7 +21,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 12,
+          "column": 4
+        },
+        "end": {
+          "line": 12,
+          "column": 16
+        }
+      }
     },
     {
       "name": "rows",
@@ -22,7 +42,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 14,
+          "column": 4
+        },
+        "end": {
+          "line": 14,
+          "column": 13
+        }
+      }
     }
   ],
   "moduleExports": [],
@@ -30,7 +60,17 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "{ headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> }"
+      "slot_props": "{ headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> }",
+      "source": {
+        "start": {
+          "line": 19,
+          "column": 0
+        },
+        "end": {
+          "line": 19,
+          "column": 39
+        }
+      }
     }
   ],
   "events": [],

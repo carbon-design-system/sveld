@@ -1,4 +1,14 @@
 {
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 15,
+      "column": 0
+    }
+  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -8,7 +18,17 @@
       "name": null,
       "default": true,
       "slot_props": "{props?: { \"aria-current\"?: string; class: \"bx--link\"; }}",
-      "description": "Spread `props` onto a custom element to inherit the link class\nand `aria-current` attribute when `isCurrentPage` is set."
+      "description": "Spread `props` onto a custom element to inherit the link class\nand `aria-current` attribute when `isCurrentPage` is set.",
+      "source": {
+        "start": {
+          "line": 9,
+          "column": 0
+        },
+        "end": {
+          "line": 14,
+          "column": 2
+        }
+      }
     }
   ],
   "events": [],

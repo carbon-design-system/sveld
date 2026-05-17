@@ -1,4 +1,14 @@
 {
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 3,
+      "column": 0
+    }
+  },
   "syntaxMode": "legacy",
   "props": [],
   "moduleExports": [],
@@ -6,12 +16,32 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "Record<string, never>"
+      "slot_props": "Record<string, never>",
+      "source": {
+        "start": {
+          "line": 2,
+          "column": 5
+        },
+        "end": {
+          "line": 2,
+          "column": 13
+        }
+      }
     }
   ],
   "events": [],
   "typedefs": [],
   "generics": null,
   "componentComment": " Component comment",
+  "componentCommentSource": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 1,
+      "column": 37
+    }
+  },
   "contexts": []
 }

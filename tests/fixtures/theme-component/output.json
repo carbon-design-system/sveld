@@ -1,4 +1,14 @@
 {
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 46,
+      "column": 0
+    }
+  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -12,7 +22,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 29,
+          "column": 2
+        },
+        "end": {
+          "line": 29,
+          "column": 29
+        }
+      }
     },
     {
       "name": "tokens",
@@ -24,7 +44,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 36,
+          "column": 2
+        },
+        "end": {
+          "line": 36,
+          "column": 25
+        }
+      }
     },
     {
       "name": "persist",
@@ -36,7 +66,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 39,
+          "column": 2
+        },
+        "end": {
+          "line": 39,
+          "column": 29
+        }
+      }
     },
     {
       "name": "persistKey",
@@ -48,7 +88,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 42,
+          "column": 2
+        },
+        "end": {
+          "line": 42,
+          "column": 34
+        }
+      }
     }
   ],
   "moduleExports": [
@@ -68,14 +118,34 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "{ theme: CarbonTheme; }"
+      "slot_props": "{ theme: CarbonTheme; }",
+      "source": {
+        "start": {
+          "line": 45,
+          "column": 0
+        },
+        "end": {
+          "line": 45,
+          "column": 16
+        }
+      }
     }
   ],
   "events": [
     {
       "type": "dispatched",
       "name": "update",
-      "detail": "{\n  theme: CarbonTheme;\n}"
+      "detail": "{\n  theme: CarbonTheme;\n}",
+      "source": {
+        "start": {
+          "line": 26,
+          "column": 8
+        },
+        "end": {
+          "line": 26,
+          "column": 21
+        }
+      }
     }
   ],
   "typedefs": [

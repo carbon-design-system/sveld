@@ -1,4 +1,14 @@
 {
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 21,
+      "column": 0
+    }
+  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -8,13 +18,33 @@
       "name": "actions",
       "default": false,
       "slot_props": "{ compact: boolean }",
-      "description": "Toolbar: icon-only mode uses low-contrast - same as hover-state."
+      "description": "Toolbar: icon-only mode uses low-contrast - same as hover-state.",
+      "source": {
+        "start": {
+          "line": 13,
+          "column": 0
+        },
+        "end": {
+          "line": 16,
+          "column": 2
+        }
+      }
     },
     {
       "name": "status",
       "default": false,
       "slot_props": "{ message: string }",
-      "description": "Status text for live regions; prefer `aria-current=\"page\"` on the active link, not `aria-selected`.\nPair with `aria-live=\"polite\"` unless the update is urgent (then use `assertive`)."
+      "description": "Status text for live regions; prefer `aria-current=\"page\"` on the active link, not `aria-selected`.\nPair with `aria-live=\"polite\"` unless the update is urgent (then use `assertive`).",
+      "source": {
+        "start": {
+          "line": 17,
+          "column": 0
+        },
+        "end": {
+          "line": 20,
+          "column": 2
+        }
+      }
     }
   ],
   "events": [],

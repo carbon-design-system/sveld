@@ -1,4 +1,14 @@
 {
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 16,
+      "column": 0
+    }
+  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -14,7 +24,17 @@
           "name": "example",
           "body": " ```svelte\n <BreadcrumbItem let:props>\n   <a {...props} href=\"/\">Home</a>\n </BreadcrumbItem>\n ```"
         }
-      ]
+      ],
+      "source": {
+        "start": {
+          "line": 15,
+          "column": 0
+        },
+        "end": {
+          "line": 15,
+          "column": 65
+        }
+      }
     }
   ],
   "events": [],

@@ -10,6 +10,10 @@
     {
       "moduleName": "Button",
       "filePath": "src/lib/components/Button.svelte",
+      "source": {
+        "start": { "line": 1, "column": 0 },
+        "end": { "line": 16, "column": 0 }
+      },
       "syntaxMode": "legacy",
       "scriptLanguage": "js",
       "props": [
@@ -23,7 +27,11 @@
           "isFunctionDeclaration": false,
           "isRequired": false,
           "constant": false,
-          "reactive": false
+          "reactive": false,
+          "source": {
+            "start": { "line": 5, "column": 2 },
+            "end": { "line": 5, "column": 31 }
+          }
         },
         {
           "name": "size",
@@ -35,7 +43,11 @@
           "isFunctionDeclaration": false,
           "isRequired": false,
           "constant": false,
-          "reactive": false
+          "reactive": false,
+          "source": {
+            "start": { "line": 10, "column": 2 },
+            "end": { "line": 10, "column": 29 }
+          }
         }
       ],
       "moduleExports": [],
@@ -48,6 +60,10 @@
     {
       "moduleName": "Input",
       "filePath": "src/lib/components/Input.svelte",
+      "source": {
+        "start": { "line": 1, "column": 0 },
+        "end": { "line": 14, "column": 0 }
+      },
       "syntaxMode": "legacy",
       "scriptLanguage": "js",
       "props": [
@@ -61,7 +77,11 @@
           "isFunctionDeclaration": false,
           "isRequired": false,
           "constant": false,
-          "reactive": false
+          "reactive": false,
+          "source": {
+            "start": { "line": 5, "column": 2 },
+            "end": { "line": 5, "column": 30 }
+          }
         },
         {
           "name": "value",
@@ -73,7 +93,11 @@
           "isFunctionDeclaration": false,
           "isRequired": false,
           "constant": false,
-          "reactive": true
+          "reactive": true,
+          "source": {
+            "start": { "line": 10, "column": 2 },
+            "end": { "line": 10, "column": 24 }
+          }
         }
       ],
       "moduleExports": [],

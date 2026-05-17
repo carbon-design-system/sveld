@@ -1,4 +1,14 @@
 {
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 6,
+      "column": 0
+    }
+  },
   "syntaxMode": "legacy",
   "props": [],
   "moduleExports": [],
@@ -7,17 +17,47 @@
     {
       "type": "forwarded",
       "name": "change",
-      "element": "input"
+      "element": "input",
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 2
+        },
+        "end": {
+          "line": 3,
+          "column": 11
+        }
+      }
     },
     {
       "type": "forwarded",
       "name": "input",
-      "element": "input"
+      "element": "input",
+      "source": {
+        "start": {
+          "line": 2,
+          "column": 2
+        },
+        "end": {
+          "line": 2,
+          "column": 10
+        }
+      }
     },
     {
       "type": "forwarded",
       "name": "paste",
-      "element": "input"
+      "element": "input",
+      "source": {
+        "start": {
+          "line": 4,
+          "column": 2
+        },
+        "end": {
+          "line": 4,
+          "column": 10
+        }
+      }
     }
   ],
   "typedefs": [],
