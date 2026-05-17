@@ -1,4 +1,6 @@
 {
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
   "props": [
     {
       "name": "onChange",

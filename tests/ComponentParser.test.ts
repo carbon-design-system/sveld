@@ -6,6 +6,64 @@ describe("ComponentParser", () => {
     filePath: "/test/TestComponent.svelte",
   };
 
+  test("detects legacy syntax with plain JavaScript script", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        export let label;
+      </script>
+
+      <button>{label}</button>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+
+    expect(result.syntaxMode).toBe("legacy");
+    expect(result.scriptLanguage).toBe("js");
+  });
+
+  test("detects legacy syntax with TypeScript script", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script lang="ts">
+        export let label: string;
+      </script>
+
+      <button>{label}</button>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+
+    expect(result.syntaxMode).toBe("legacy");
+    expect(result.scriptLanguage).toBe("ts");
+  });
+
+  test("detects runes syntax metadata", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script lang="ts">
+        let { label }: { label: string } = $props();
+      </script>
+
+      <button>{label}</button>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+
+    expect(result.syntaxMode).toBe("runes");
+    expect(result.scriptLanguage).toBe("ts");
+  });
+
+  test("omits script language for markup-only components", () => {
+    const parser = new ComponentParser();
+    const source = "<button>Label</button>";
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+
+    expect(result.syntaxMode).toBe("legacy");
+    expect(result).not.toHaveProperty("scriptLanguage");
+  });
+
   test("parses basic component exports", () => {
     const parser = new ComponentParser();
     const source = `  

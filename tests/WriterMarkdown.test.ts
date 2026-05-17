@@ -82,6 +82,7 @@ describe("WriterMarkdown", () => {
           {
             filePath: "Example.svelte",
             moduleName: "Example",
+            syntaxMode: "legacy",
             props: [
               {
                 name: "size",

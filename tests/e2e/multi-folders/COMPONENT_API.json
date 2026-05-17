@@ -10,6 +10,8 @@
     {
       "moduleName": "Button",
       "filePath": "src/components/Button.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "type",
@@ -53,6 +55,7 @@
     {
       "moduleName": "Card",
       "filePath": "src/components/Card.svelte",
+      "syntaxMode": "legacy",
       "props": [],
       "moduleExports": [],
       "slots": [
@@ -66,6 +69,7 @@
     {
       "moduleName": "Header",
       "filePath": "src/nested/Header.svelte",
+      "syntaxMode": "legacy",
       "props": [],
       "moduleExports": [],
       "slots": [
@@ -79,6 +83,7 @@
     {
       "moduleName": "Link",
       "filePath": "src/Link.svelte",
+      "syntaxMode": "legacy",
       "props": [],
       "moduleExports": [],
       "slots": [
@@ -98,6 +103,8 @@
     {
       "moduleName": "Quote",
       "filePath": "src/Quote.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "quote",

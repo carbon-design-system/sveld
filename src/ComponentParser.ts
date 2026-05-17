@@ -204,9 +204,19 @@ export function getParsedComponentTypeScriptMetadata(component: {
 }
 
 type SyntaxMode = "legacy" | "runes";
+type ScriptLanguage = "js" | "ts";
 type ScopeBindingKind = "prop" | "local";
 type ScopeBinding = { kind: ScopeBindingKind; publicPropName?: string };
 type LexicalScope = Map<string, ScopeBinding>;
+
+type ModernScriptAttribute = {
+  name?: string;
+  value?: Array<{ data?: string; raw?: string }> | boolean;
+};
+
+type ModernScriptNode = {
+  attributes?: ModernScriptAttribute[];
+};
 
 /**
  * Diagnostic information for component parsing.
@@ -614,6 +624,10 @@ interface ComponentContext {
  * ```
  */
 export interface ParsedComponent {
+  /** Whether the component uses legacy or runes syntax according to compiler metadata */
+  syntaxMode: SyntaxMode;
+  /** Language used by the instance or module script when it can be determined */
+  scriptLanguage?: ScriptLanguage;
   /** Component props that can be passed to the component */
   props: ComponentProp[];
   /** Exports from `<script context="module">` block */
@@ -644,6 +658,9 @@ export default class ComponentParser {
 
   /** Whether the component uses legacy or runes syntax according to compiler metadata */
   private syntaxMode: SyntaxMode = "legacy";
+
+  /** Language used by the component's instance or module script, when supported */
+  private scriptLanguage?: ScriptLanguage;
 
   /** Raw source code of the Svelte component being parsed */
   private source?: string;
@@ -748,6 +765,40 @@ export default class ComponentParser {
 
   private static mapToArray<T>(map: Map<string, T> | Map<ComponentSlotName, T>) {
     return Array.from(map, ([_key, value]) => value);
+  }
+
+  private static getStaticAttributeValue(attribute: ModernScriptAttribute) {
+    if (!Array.isArray(attribute.value)) return undefined;
+
+    return attribute.value
+      .map((value) => value.data ?? value.raw ?? "")
+      .join("")
+      .trim();
+  }
+
+  private static resolveScriptLanguage(parsed: {
+    instance?: ModernScriptNode;
+    module?: ModernScriptNode;
+  }): ScriptLanguage | undefined {
+    const scripts = [parsed.instance, parsed.module].filter(
+      (script): script is ModernScriptNode => script !== undefined,
+    );
+    let hasPlainScript = false;
+
+    for (const script of scripts) {
+      const langAttribute = script.attributes?.find((attribute) => attribute.name === "lang");
+      if (!langAttribute) {
+        hasPlainScript = true;
+        continue;
+      }
+
+      const language = ComponentParser.getStaticAttributeValue(langAttribute)?.toLowerCase();
+      if (language === "ts") {
+        return "ts";
+      }
+    }
+
+    return hasPlainScript ? "js" : undefined;
   }
 
   private static assignValue(value?: "" | string) {
@@ -1859,7 +1910,7 @@ export default class ComponentParser {
     if (!this.source) return;
 
     const modernParsed = parse(this.source, { modern: true }) as {
-      instance?: {
+      instance?: ModernScriptNode & {
         content?: {
           body?: Array<{
             type?: string;
@@ -1904,8 +1955,10 @@ export default class ComponentParser {
           }>;
         };
       };
+      module?: ModernScriptNode;
     };
 
+    this.scriptLanguage = ComponentParser.resolveScriptLanguage(modernParsed);
     const body = modernParsed.instance?.content?.body ?? [];
 
     for (const statement of body) {
@@ -4079,6 +4132,7 @@ export default class ComponentParser {
    */
   public cleanup() {
     this.syntaxMode = "legacy";
+    this.scriptLanguage = undefined;
     this.source = undefined;
     this.compiled = undefined;
     this.parsed = undefined;
@@ -5036,6 +5090,8 @@ export default class ComponentParser {
     const contextsArray = ComponentParser.mapToArray(this.contexts);
 
     const parsedComponent: ParsedComponent = {
+      syntaxMode: this.syntaxMode,
+      ...(this.scriptLanguage ? { scriptLanguage: this.scriptLanguage } : {}),
       props: processedProps,
       moduleExports: moduleExportsArray,
       slots: processedSlots,

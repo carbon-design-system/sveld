@@ -23,6 +23,7 @@ describe("writerTsDefinition", () => {
     ).toEqual("export interface MyTypedef { [key: string]: boolean; }");
 
     const parsed_output: ParsedComponent = {
+      syntaxMode: "legacy",
       props: [
         {
           name: "propBool",
@@ -118,6 +119,7 @@ describe("writerTsDefinition", () => {
     const component_api: ComponentDocApi = {
       moduleName: "default",
       filePath: "./src/ModuleName.svelte",
+      syntaxMode: "legacy",
       props: [],
       moduleExports: [],
       slots: [],
@@ -241,6 +243,7 @@ describe("writerTsDefinition", () => {
     const component_api: ComponentDocApi = {
       moduleName: "TestComponent",
       filePath: "./src/TestComponent.svelte",
+      syntaxMode: "legacy",
       props: [
         {
           name: "add",
@@ -375,6 +378,7 @@ describe("writerTsDefinition", () => {
     const component_api: ComponentDocApi = {
       moduleName: "TestComponent",
       filePath: "./src/TestComponent.svelte",
+      syntaxMode: "legacy",
       props: [],
       moduleExports: [
         {
@@ -421,6 +425,7 @@ describe("writerTsDefinition", () => {
     const component_api: ComponentDocApi = {
       moduleName: "CardComponent",
       filePath: "./src/CardComponent.svelte",
+      syntaxMode: "legacy",
       props: [
         {
           name: "title",
@@ -504,6 +509,7 @@ describe("writerTsDefinition", () => {
     const component_api: ComponentDocApi = {
       moduleName: "SlotOnlyComponent",
       filePath: "./src/SlotOnlyComponent.svelte",
+      syntaxMode: "legacy",
       props: [],
       moduleExports: [],
       slots: [
@@ -531,6 +537,7 @@ describe("writerTsDefinition", () => {
     const component_api: ComponentDocApi = {
       moduleName: "RunesTable",
       filePath: "./src/RunesTable.svelte",
+      syntaxMode: "legacy",
       props: [
         {
           name: "row",
@@ -560,6 +567,7 @@ describe("writerTsDefinition", () => {
     const component_api: ComponentDocApi = {
       moduleName: "TypedButton",
       filePath: "./src/TypedButton.svelte",
+      syntaxMode: "legacy",
       props: [
         {
           name: "disabled",

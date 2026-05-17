@@ -1,4 +1,6 @@
 {
+  "syntaxMode": "runes",
+  "scriptLanguage": "ts",
   "props": [],
   "moduleExports": [],
   "slots": [],

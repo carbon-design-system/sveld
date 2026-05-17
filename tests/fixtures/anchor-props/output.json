@@ -1,4 +1,5 @@
 {
+  "syntaxMode": "legacy",
   "props": [],
   "moduleExports": [],
   "slots": [

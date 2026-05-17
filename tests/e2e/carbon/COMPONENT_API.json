@@ -10,6 +10,8 @@
     {
       "moduleName": "Accordion",
       "filePath": "src/Accordion/Accordion.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "align",
@@ -107,6 +109,8 @@
     {
       "moduleName": "AccordionItem",
       "filePath": "src/Accordion/AccordionItem.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "title",
@@ -188,6 +192,8 @@
     {
       "moduleName": "AccordionSkeleton",
       "filePath": "src/Accordion/AccordionSkeleton.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "count",
@@ -254,6 +260,8 @@
     {
       "moduleName": "AspectRatio",
       "filePath": "src/AspectRatio/AspectRatio.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "ratio",
@@ -281,6 +289,8 @@
     {
       "moduleName": "Breadcrumb",
       "filePath": "src/Breadcrumb/Breadcrumb.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "noTrailingSlash",
@@ -345,6 +355,8 @@
     {
       "moduleName": "BreadcrumbItem",
       "filePath": "src/Breadcrumb/BreadcrumbItem.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "href",
@@ -393,6 +405,8 @@
     {
       "moduleName": "BreadcrumbSkeleton",
       "filePath": "src/Breadcrumb/BreadcrumbSkeleton.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "noTrailingSlash",
@@ -435,6 +449,8 @@
     {
       "moduleName": "Button",
       "filePath": "src/Button/Button.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "kind",
@@ -674,6 +690,8 @@
     {
       "moduleName": "ButtonSet",
       "filePath": "src/Button/ButtonSet.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "stacked",
@@ -701,6 +719,8 @@
     {
       "moduleName": "ButtonSkeleton",
       "filePath": "src/Button/ButtonSkeleton.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "href",
@@ -755,6 +775,8 @@
     {
       "moduleName": "Checkbox",
       "filePath": "src/Checkbox/Checkbox.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "checked",
@@ -930,6 +952,7 @@
     {
       "moduleName": "CheckboxSkeleton",
       "filePath": "src/Checkbox/CheckboxSkeleton.svelte",
+      "syntaxMode": "legacy",
       "props": [],
       "moduleExports": [],
       "slots": [],
@@ -947,6 +970,8 @@
     {
       "moduleName": "ClickableTile",
       "filePath": "src/Tile/ClickableTile.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "clicked",
@@ -1004,6 +1029,8 @@
     {
       "moduleName": "CodeSnippet",
       "filePath": "src/CodeSnippet/CodeSnippet.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "type",
@@ -1257,6 +1284,8 @@
     {
       "moduleName": "CodeSnippetSkeleton",
       "filePath": "src/CodeSnippet/CodeSnippetSkeleton.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "type",
@@ -1287,6 +1316,8 @@
     {
       "moduleName": "Column",
       "filePath": "src/Grid/Column.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "as",
@@ -1454,6 +1485,8 @@
     {
       "moduleName": "ComboBox",
       "filePath": "src/ComboBox/ComboBox.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "items",
@@ -1710,6 +1743,8 @@
     {
       "moduleName": "ComposedModal",
       "filePath": "src/ComposedModal/ComposedModal.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "size",
@@ -1832,6 +1867,8 @@
     {
       "moduleName": "Content",
       "filePath": "src/UIShell/Content.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "id",
@@ -1859,6 +1896,8 @@
     {
       "moduleName": "ContentSwitcher",
       "filePath": "src/ContentSwitcher/ContentSwitcher.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "selectedIndex",
@@ -1936,6 +1975,8 @@
     {
       "moduleName": "Copy",
       "filePath": "src/Copy/Copy.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "feedback",
@@ -1995,6 +2036,8 @@
     {
       "moduleName": "CopyButton",
       "filePath": "src/CopyButton/CopyButton.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "iconDescription",
@@ -2027,6 +2070,8 @@
     {
       "moduleName": "DataTable",
       "filePath": "src/DataTable/DataTable.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "headers",
@@ -2433,6 +2478,8 @@
     {
       "moduleName": "DataTableSkeleton",
       "filePath": "src/DataTable/DataTableSkeleton.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "columns",
@@ -2539,6 +2586,8 @@
     {
       "moduleName": "DatePicker",
       "filePath": "src/DatePicker/DatePicker.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "datePickerType",
@@ -2708,6 +2757,8 @@
     {
       "moduleName": "DatePickerInput",
       "filePath": "src/DatePicker/DatePickerInput.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "size",
@@ -2881,6 +2932,8 @@
     {
       "moduleName": "DatePickerSkeleton",
       "filePath": "src/DatePicker/DatePickerSkeleton.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "range",
@@ -2923,6 +2976,8 @@
     {
       "moduleName": "Dropdown",
       "filePath": "src/Dropdown/Dropdown.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "items",
@@ -3197,6 +3252,8 @@
     {
       "moduleName": "DropdownSkeleton",
       "filePath": "src/Dropdown/DropdownSkeleton.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "inline",
@@ -3227,6 +3284,8 @@
     {
       "moduleName": "ExpandableTile",
       "filePath": "src/Tile/ExpandableTile.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "expanded",
@@ -3389,6 +3448,8 @@
     {
       "moduleName": "Filename",
       "filePath": "src/FileUploader/Filename.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "status",
@@ -3441,6 +3502,8 @@
     {
       "moduleName": "FileUploader",
       "filePath": "src/FileUploader/FileUploader.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "status",
@@ -3598,6 +3661,8 @@
     {
       "moduleName": "FileUploaderButton",
       "filePath": "src/FileUploader/FileUploaderButton.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "accept",
@@ -3747,6 +3812,8 @@
     {
       "moduleName": "FileUploaderDropContainer",
       "filePath": "src/FileUploader/FileUploaderDropContainer.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "accept",
@@ -3887,6 +3954,8 @@
     {
       "moduleName": "FileUploaderItem",
       "filePath": "src/FileUploader/FileUploaderItem.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "status",
@@ -3989,6 +4058,8 @@
     {
       "moduleName": "FileUploaderSkeleton",
       "filePath": "src/FileUploader/FileUploaderSkeleton.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [],
       "moduleExports": [],
       "slots": [],
@@ -4006,6 +4077,8 @@
     {
       "moduleName": "FluidForm",
       "filePath": "src/FluidForm/FluidForm.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [],
       "moduleExports": [],
       "slots": [
@@ -4028,6 +4101,7 @@
     {
       "moduleName": "Form",
       "filePath": "src/Form/Form.svelte",
+      "syntaxMode": "legacy",
       "props": [],
       "moduleExports": [],
       "slots": [
@@ -4048,6 +4122,8 @@
     {
       "moduleName": "FormGroup",
       "filePath": "src/FormGroup/FormGroup.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "invalid",
@@ -4116,6 +4192,7 @@
     {
       "moduleName": "FormItem",
       "filePath": "src/FormItem/FormItem.svelte",
+      "syntaxMode": "legacy",
       "props": [],
       "moduleExports": [],
       "slots": [
@@ -4135,6 +4212,8 @@
     {
       "moduleName": "FormLabel",
       "filePath": "src/FormLabel/FormLabel.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "id",
@@ -4167,6 +4246,8 @@
     {
       "moduleName": "Grid",
       "filePath": "src/Grid/Grid.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "as",
@@ -4282,6 +4363,8 @@
     {
       "moduleName": "Header",
       "filePath": "src/UIShell/GlobalHeader/Header.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "expandedByDefault",
@@ -4408,6 +4491,8 @@
     {
       "moduleName": "HeaderAction",
       "filePath": "src/UIShell/GlobalHeader/HeaderAction.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "isOpen",
@@ -4502,6 +4587,8 @@
     {
       "moduleName": "HeaderActionLink",
       "filePath": "src/UIShell/GlobalHeader/HeaderActionLink.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "linkIsActive",
@@ -4563,6 +4650,8 @@
     {
       "moduleName": "HeaderActionSearch",
       "filePath": "src/UIShell/GlobalHeader/HeaderActionSearch.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "searchIsActive",
@@ -4599,6 +4688,8 @@
     {
       "moduleName": "HeaderGlobalAction",
       "filePath": "src/UIShell/HeaderGlobalAction.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "isActive",
@@ -4655,6 +4746,8 @@
     {
       "moduleName": "HeaderNav",
       "filePath": "src/UIShell/GlobalHeader/HeaderNav.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "ariaLabel",
@@ -4682,6 +4775,8 @@
     {
       "moduleName": "HeaderNavItem",
       "filePath": "src/UIShell/GlobalHeader/HeaderNavItem.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "href",
@@ -4740,6 +4835,8 @@
     {
       "moduleName": "HeaderNavMenu",
       "filePath": "src/UIShell/GlobalHeader/HeaderNavMenu.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "expanded",
@@ -4824,6 +4921,7 @@
     {
       "moduleName": "HeaderPanelDivider",
       "filePath": "src/UIShell/GlobalHeader/HeaderPanelDivider.svelte",
+      "syntaxMode": "legacy",
       "props": [],
       "moduleExports": [],
       "slots": [
@@ -4837,6 +4935,8 @@
     {
       "moduleName": "HeaderPanelLink",
       "filePath": "src/UIShell/GlobalHeader/HeaderPanelLink.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "href",
@@ -4876,6 +4976,7 @@
     {
       "moduleName": "HeaderPanelLinks",
       "filePath": "src/UIShell/GlobalHeader/HeaderPanelLinks.svelte",
+      "syntaxMode": "legacy",
       "props": [],
       "moduleExports": [],
       "slots": [
@@ -4889,6 +4990,8 @@
     {
       "moduleName": "HeaderSearch",
       "filePath": "src/UIShell/HeaderSearch.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "value",
@@ -4989,6 +5092,7 @@
     {
       "moduleName": "HeaderUtilities",
       "filePath": "src/UIShell/GlobalHeader/HeaderUtilities.svelte",
+      "syntaxMode": "legacy",
       "props": [],
       "moduleExports": [],
       "slots": [
@@ -5002,6 +5106,8 @@
     {
       "moduleName": "Icon",
       "filePath": "src/Icon/Icon.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "render",
@@ -5056,6 +5162,8 @@
     {
       "moduleName": "IconSkeleton",
       "filePath": "src/Icon/IconSkeleton.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "size",
@@ -5086,6 +5194,8 @@
     {
       "moduleName": "InlineLoading",
       "filePath": "src/InlineLoading/InlineLoading.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "status",
@@ -5153,6 +5263,8 @@
     {
       "moduleName": "InlineNotification",
       "filePath": "src/Notification/InlineNotification.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "kind",
@@ -5283,6 +5395,8 @@
     {
       "moduleName": "Link",
       "filePath": "src/Link/Link.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "size",
@@ -5375,6 +5489,8 @@
     {
       "moduleName": "ListBox",
       "filePath": "src/ListBox/ListBox.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "size",
@@ -5501,6 +5617,8 @@
     {
       "moduleName": "ListBoxField",
       "filePath": "src/ListBox/ListBoxField.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "disabled",
@@ -5612,6 +5730,8 @@
     {
       "moduleName": "ListBoxMenu",
       "filePath": "src/ListBox/ListBoxMenu.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "id",
@@ -5651,6 +5771,8 @@
     {
       "moduleName": "ListBoxMenuIcon",
       "filePath": "src/ListBox/ListBoxMenuIcon.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "open",
@@ -5705,6 +5827,8 @@
     {
       "moduleName": "ListBoxMenuItem",
       "filePath": "src/ListBox/ListBoxMenuItem.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "active",
@@ -5748,6 +5872,8 @@
     {
       "moduleName": "ListBoxSelection",
       "filePath": "src/ListBox/ListBoxSelection.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "selectionCount",
@@ -5826,6 +5952,7 @@
     {
       "moduleName": "ListItem",
       "filePath": "src/ListItem/ListItem.svelte",
+      "syntaxMode": "legacy",
       "props": [],
       "moduleExports": [],
       "slots": [
@@ -5845,6 +5972,8 @@
     {
       "moduleName": "Loading",
       "filePath": "src/Loading/Loading.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "small",
@@ -5918,6 +6047,8 @@
     {
       "moduleName": "Modal",
       "filePath": "src/Modal/Modal.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "size",
@@ -6191,6 +6322,8 @@
     {
       "moduleName": "ModalBody",
       "filePath": "src/ComposedModal/ModalBody.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "hasForm",
@@ -6230,6 +6363,8 @@
     {
       "moduleName": "ModalFooter",
       "filePath": "src/ComposedModal/ModalFooter.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "primaryButtonText",
@@ -6317,6 +6452,8 @@
     {
       "moduleName": "ModalHeader",
       "filePath": "src/ComposedModal/ModalHeader.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "title",
@@ -6416,6 +6553,8 @@
     {
       "moduleName": "MultiSelect",
       "filePath": "src/MultiSelect/MultiSelect.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "items",
@@ -6772,6 +6911,8 @@
     {
       "moduleName": "NotificationActionButton",
       "filePath": "src/Notification/NotificationActionButton.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [],
       "moduleExports": [],
       "slots": [
@@ -6791,6 +6932,8 @@
     {
       "moduleName": "NotificationButton",
       "filePath": "src/Notification/NotificationButton.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "notificationType",
@@ -6857,6 +7000,8 @@
     {
       "moduleName": "NotificationIcon",
       "filePath": "src/Notification/NotificationIcon.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "kind",
@@ -6905,6 +7050,8 @@
     {
       "moduleName": "NotificationTextDetails",
       "filePath": "src/Notification/NotificationTextDetails.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "notificationType",
@@ -6967,6 +7114,8 @@
     {
       "moduleName": "NumberInput",
       "filePath": "src/NumberInput/NumberInput.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "size",
@@ -7275,6 +7424,8 @@
     {
       "moduleName": "NumberInputSkeleton",
       "filePath": "src/NumberInput/NumberInputSkeleton.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "hideLabel",
@@ -7305,6 +7456,8 @@
     {
       "moduleName": "OrderedList",
       "filePath": "src/OrderedList/OrderedList.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "nested",
@@ -7349,6 +7502,8 @@
     {
       "moduleName": "OutboundLink",
       "filePath": "src/Link/OutboundLink.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [],
       "moduleExports": [],
       "slots": [
@@ -7369,6 +7524,8 @@
     {
       "moduleName": "OverflowMenu",
       "filePath": "src/OverflowMenu/OverflowMenu.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "size",
@@ -7564,6 +7721,8 @@
     {
       "moduleName": "OverflowMenuItem",
       "filePath": "src/OverflowMenu/OverflowMenuItem.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "text",
@@ -7695,6 +7854,8 @@
     {
       "moduleName": "Pagination",
       "filePath": "src/Pagination/Pagination.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "page",
@@ -7902,6 +8063,8 @@
     {
       "moduleName": "PaginationNav",
       "filePath": "src/PaginationNav/PaginationNav.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "page",
@@ -8003,6 +8166,8 @@
     {
       "moduleName": "PaginationSkeleton",
       "filePath": "src/Pagination/PaginationSkeleton.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [],
       "moduleExports": [],
       "slots": [],
@@ -8020,6 +8185,8 @@
     {
       "moduleName": "PasswordInput",
       "filePath": "src/TextInput/PasswordInput.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "size",
@@ -8259,6 +8426,8 @@
     {
       "moduleName": "ProgressIndicator",
       "filePath": "src/ProgressIndicator/ProgressIndicator.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "currentIndex",
@@ -8343,6 +8512,8 @@
     {
       "moduleName": "ProgressIndicatorSkeleton",
       "filePath": "src/ProgressIndicator/ProgressIndicatorSkeleton.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "vertical",
@@ -8385,6 +8556,8 @@
     {
       "moduleName": "ProgressStep",
       "filePath": "src/ProgressIndicator/ProgressStep.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "complete",
@@ -8507,6 +8680,8 @@
     {
       "moduleName": "RadioButton",
       "filePath": "src/RadioButton/RadioButton.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "value",
@@ -8628,6 +8803,8 @@
     {
       "moduleName": "RadioButtonGroup",
       "filePath": "src/RadioButtonGroup/RadioButtonGroup.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "selected",
@@ -8723,6 +8900,7 @@
     {
       "moduleName": "RadioButtonSkeleton",
       "filePath": "src/RadioButton/RadioButtonSkeleton.svelte",
+      "syntaxMode": "legacy",
       "props": [],
       "moduleExports": [],
       "slots": [],
@@ -8740,6 +8918,8 @@
     {
       "moduleName": "RadioTile",
       "filePath": "src/Tile/RadioTile.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "checked",
@@ -8846,6 +9026,8 @@
     {
       "moduleName": "Row",
       "filePath": "src/Grid/Row.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "as",
@@ -8949,6 +9131,8 @@
     {
       "moduleName": "Search",
       "filePath": "src/Search/Search.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "small",
@@ -9153,6 +9337,8 @@
     {
       "moduleName": "SearchSkeleton",
       "filePath": "src/Search/SearchSkeleton.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "small",
@@ -9195,6 +9381,8 @@
     {
       "moduleName": "Select",
       "filePath": "src/Select/Select.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "selected",
@@ -9389,6 +9577,8 @@
     {
       "moduleName": "SelectableTile",
       "filePath": "src/Tile/SelectableTile.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "selected",
@@ -9518,6 +9708,8 @@
     {
       "moduleName": "SelectItem",
       "filePath": "src/Select/SelectItem.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "value",
@@ -9578,6 +9770,8 @@
     {
       "moduleName": "SelectItemGroup",
       "filePath": "src/Select/SelectItemGroup.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "disabled",
@@ -9617,6 +9811,8 @@
     {
       "moduleName": "SelectSkeleton",
       "filePath": "src/Select/SelectSkeleton.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "hideLabel",
@@ -9647,6 +9843,8 @@
     {
       "moduleName": "SideNav",
       "filePath": "src/UIShell/SideNav/SideNav.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "fixed",
@@ -9698,6 +9896,7 @@
     {
       "moduleName": "SideNavItems",
       "filePath": "src/UIShell/SideNav/SideNavItems.svelte",
+      "syntaxMode": "legacy",
       "props": [],
       "moduleExports": [],
       "slots": [
@@ -9711,6 +9910,8 @@
     {
       "moduleName": "SideNavLink",
       "filePath": "src/UIShell/SideNav/SideNavLink.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "isSelected",
@@ -9784,6 +9985,8 @@
     {
       "moduleName": "SideNavMenu",
       "filePath": "src/UIShell/SideNav/SideNavMenu.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "expanded",
@@ -9847,6 +10050,8 @@
     {
       "moduleName": "SideNavMenuItem",
       "filePath": "src/UIShell/SideNav/SideNavMenuItem.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "isSelected",
@@ -9908,6 +10113,7 @@
     {
       "moduleName": "SkeletonPlaceholder",
       "filePath": "src/SkeletonPlaceholder/SkeletonPlaceholder.svelte",
+      "syntaxMode": "legacy",
       "props": [],
       "moduleExports": [],
       "slots": [],
@@ -9925,6 +10131,8 @@
     {
       "moduleName": "SkeletonText",
       "filePath": "src/SkeletonText/SkeletonText.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "lines",
@@ -9991,6 +10199,8 @@
     {
       "moduleName": "SkipToContent",
       "filePath": "src/UIShell/SkipToContent.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "href",
@@ -10035,6 +10245,8 @@
     {
       "moduleName": "Slider",
       "filePath": "src/Slider/Slider.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "value",
@@ -10258,6 +10470,8 @@
     {
       "moduleName": "SliderSkeleton",
       "filePath": "src/Slider/SliderSkeleton.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "hideLabel",
@@ -10288,6 +10502,8 @@
     {
       "moduleName": "StructuredList",
       "filePath": "src/StructuredList/StructuredList.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "selected",
@@ -10358,6 +10574,7 @@
     {
       "moduleName": "StructuredListBody",
       "filePath": "src/StructuredList/StructuredListBody.svelte",
+      "syntaxMode": "legacy",
       "props": [],
       "moduleExports": [],
       "slots": [
@@ -10377,6 +10594,8 @@
     {
       "moduleName": "StructuredListCell",
       "filePath": "src/StructuredList/StructuredListCell.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "head",
@@ -10421,6 +10640,7 @@
     {
       "moduleName": "StructuredListHead",
       "filePath": "src/StructuredList/StructuredListHead.svelte",
+      "syntaxMode": "legacy",
       "props": [],
       "moduleExports": [],
       "slots": [
@@ -10440,6 +10660,8 @@
     {
       "moduleName": "StructuredListInput",
       "filePath": "src/StructuredList/StructuredListInput.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "checked",
@@ -10525,6 +10747,8 @@
     {
       "moduleName": "StructuredListRow",
       "filePath": "src/StructuredList/StructuredListRow.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "head",
@@ -10582,6 +10806,8 @@
     {
       "moduleName": "StructuredListSkeleton",
       "filePath": "src/StructuredList/StructuredListSkeleton.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "rows",
@@ -10624,6 +10850,8 @@
     {
       "moduleName": "Switch",
       "filePath": "src/ContentSwitcher/Switch.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "text",
@@ -10710,6 +10938,8 @@
     {
       "moduleName": "Tab",
       "filePath": "src/Tabs/Tab.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "label",
@@ -10807,6 +11037,8 @@
     {
       "moduleName": "TabContent",
       "filePath": "src/Tabs/TabContent.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "id",
@@ -10834,6 +11066,8 @@
     {
       "moduleName": "Table",
       "filePath": "src/DataTable/Table.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "size",
@@ -10921,6 +11155,7 @@
     {
       "moduleName": "TableBody",
       "filePath": "src/DataTable/TableBody.svelte",
+      "syntaxMode": "legacy",
       "props": [],
       "moduleExports": [],
       "slots": [
@@ -10935,6 +11170,7 @@
     {
       "moduleName": "TableCell",
       "filePath": "src/DataTable/TableCell.svelte",
+      "syntaxMode": "legacy",
       "props": [],
       "moduleExports": [],
       "slots": [
@@ -10954,6 +11190,8 @@
     {
       "moduleName": "TableContainer",
       "filePath": "src/DataTable/TableContainer.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "title",
@@ -11005,6 +11243,7 @@
     {
       "moduleName": "TableHead",
       "filePath": "src/DataTable/TableHead.svelte",
+      "syntaxMode": "legacy",
       "props": [],
       "moduleExports": [],
       "slots": [
@@ -11024,6 +11263,8 @@
     {
       "moduleName": "TableHeader",
       "filePath": "src/DataTable/TableHeader.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "scope",
@@ -11079,6 +11320,7 @@
     {
       "moduleName": "TableRow",
       "filePath": "src/DataTable/TableRow.svelte",
+      "syntaxMode": "legacy",
       "props": [],
       "moduleExports": [],
       "slots": [
@@ -11098,6 +11340,8 @@
     {
       "moduleName": "Tabs",
       "filePath": "src/Tabs/Tabs.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "selected",
@@ -11197,6 +11441,8 @@
     {
       "moduleName": "TabsSkeleton",
       "filePath": "src/Tabs/TabsSkeleton.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "count",
@@ -11227,6 +11473,8 @@
     {
       "moduleName": "Tag",
       "filePath": "src/Tag/Tag.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "type",
@@ -11336,6 +11584,7 @@
     {
       "moduleName": "TagSkeleton",
       "filePath": "src/Tag/TagSkeleton.svelte",
+      "syntaxMode": "legacy",
       "props": [],
       "moduleExports": [],
       "slots": [],
@@ -11353,6 +11602,8 @@
     {
       "moduleName": "TextArea",
       "filePath": "src/TextArea/TextArea.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "value",
@@ -11543,6 +11794,8 @@
     {
       "moduleName": "TextAreaSkeleton",
       "filePath": "src/TextArea/TextAreaSkeleton.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "hideLabel",
@@ -11573,6 +11826,8 @@
     {
       "moduleName": "TextInput",
       "filePath": "src/TextInput/TextInput.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "size",
@@ -11812,6 +12067,8 @@
     {
       "moduleName": "TextInputSkeleton",
       "filePath": "src/TextInput/TextInputSkeleton.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "hideLabel",
@@ -11842,6 +12099,8 @@
     {
       "moduleName": "Tile",
       "filePath": "src/Tile/Tile.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "light",
@@ -11874,6 +12133,8 @@
     {
       "moduleName": "TileGroup",
       "filePath": "src/Tile/TileGroup.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "selected",
@@ -11939,6 +12200,8 @@
     {
       "moduleName": "TimePicker",
       "filePath": "src/TimePicker/TimePicker.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "size",
@@ -12143,6 +12406,8 @@
     {
       "moduleName": "TimePickerSelect",
       "filePath": "src/TimePicker/TimePickerSelect.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "value",
@@ -12267,6 +12532,8 @@
     {
       "moduleName": "ToastNotification",
       "filePath": "src/Notification/ToastNotification.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "kind",
@@ -12400,6 +12667,8 @@
     {
       "moduleName": "Toggle",
       "filePath": "src/Toggle/Toggle.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "size",
@@ -12523,6 +12792,8 @@
     {
       "moduleName": "ToggleSkeleton",
       "filePath": "src/Toggle/ToggleSkeleton.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "size",
@@ -12577,6 +12848,8 @@
     {
       "moduleName": "ToggleSmall",
       "filePath": "src/ToggleSmall/ToggleSmall.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "toggled",
@@ -12683,6 +12956,8 @@
     {
       "moduleName": "ToggleSmallSkeleton",
       "filePath": "src/ToggleSmall/ToggleSmallSkeleton.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "labelText",
@@ -12725,6 +13000,8 @@
     {
       "moduleName": "Toolbar",
       "filePath": "src/DataTable/Toolbar.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "size",
@@ -12765,6 +13042,8 @@
     {
       "moduleName": "ToolbarBatchActions",
       "filePath": "src/DataTable/ToolbarBatchActions.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "formatTotalSelected",
@@ -12791,6 +13070,7 @@
     {
       "moduleName": "ToolbarContent",
       "filePath": "src/DataTable/ToolbarContent.svelte",
+      "syntaxMode": "legacy",
       "props": [],
       "moduleExports": [],
       "slots": [
@@ -12804,6 +13084,8 @@
     {
       "moduleName": "ToolbarMenu",
       "filePath": "src/DataTable/ToolbarMenu.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [],
       "moduleExports": [],
       "slots": [
@@ -12822,6 +13104,8 @@
     {
       "moduleName": "ToolbarMenuItem",
       "filePath": "src/DataTable/ToolbarMenuItem.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [],
       "moduleExports": [],
       "slots": [
@@ -12847,6 +13131,8 @@
     {
       "moduleName": "ToolbarSearch",
       "filePath": "src/DataTable/ToolbarSearch.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "value",
@@ -12925,6 +13211,8 @@
     {
       "moduleName": "Tooltip",
       "filePath": "src/Tooltip/Tooltip.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "align",
@@ -13127,6 +13415,8 @@
     {
       "moduleName": "TooltipDefinition",
       "filePath": "src/TooltipDefinition/TooltipDefinition.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "tooltipText",
@@ -13218,6 +13508,8 @@
     {
       "moduleName": "TooltipIcon",
       "filePath": "src/TooltipIcon/TooltipIcon.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "tooltipText",
@@ -13309,6 +13601,8 @@
     {
       "moduleName": "UnorderedList",
       "filePath": "src/UnorderedList/UnorderedList.svelte",
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
       "props": [
         {
           "name": "nested",

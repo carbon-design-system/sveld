@@ -1,4 +1,6 @@
 {
+  "syntaxMode": "legacy",
+  "scriptLanguage": "ts",
   "props": [
     {
       "name": "data",
