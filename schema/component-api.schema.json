@@ -1,0 +1,312 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/carbon-design-system/sveld/main/schema/component-api.schema.json",
+  "title": "sveld COMPONENT_API.json",
+  "description": "Public JSON Schema for the combined COMPONENT_API.json file emitted by sveld when json output is enabled.",
+  "type": "object",
+  "required": ["schemaVersion", "generator", "total", "components"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1,
+      "description": "Version of the emitted sveld component API JSON format."
+    },
+    "generator": {
+      "type": "object",
+      "required": ["name", "version", "svelteVersion"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string" },
+        "svelteVersion": { "type": "string" }
+      }
+    },
+    "total": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of components in the components array."
+    },
+    "components": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/component" }
+    }
+  },
+  "$defs": {
+    "sourcePosition": {
+      "type": "object",
+      "required": ["line", "column"],
+      "additionalProperties": false,
+      "properties": {
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "sourceRange": {
+      "type": "object",
+      "required": ["start", "end"],
+      "additionalProperties": false,
+      "properties": {
+        "start": { "$ref": "#/$defs/sourcePosition" },
+        "end": { "$ref": "#/$defs/sourcePosition" }
+      }
+    },
+    "component": {
+      "type": "object",
+      "required": [
+        "moduleName",
+        "filePath",
+        "syntaxMode",
+        "props",
+        "moduleExports",
+        "slots",
+        "events",
+        "typedefs",
+        "generics"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "moduleName": { "type": "string" },
+        "filePath": { "type": "string" },
+        "source": { "$ref": "#/$defs/sourceRange" },
+        "syntaxMode": {
+          "enum": ["legacy", "runes"]
+        },
+        "scriptLanguage": {
+          "enum": ["js", "ts"]
+        },
+        "props": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/prop" }
+        },
+        "moduleExports": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/prop" }
+        },
+        "slots": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/slot" }
+        },
+        "events": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/event" }
+        },
+        "typedefs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/typedef" }
+        },
+        "generics": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "array",
+              "prefixItems": [{ "type": "string" }, { "type": "string" }],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          ]
+        },
+        "rest_props": { "$ref": "#/$defs/restProp" },
+        "extends": { "$ref": "#/$defs/extends" },
+        "componentComment": { "type": "string" },
+        "componentCommentSource": { "$ref": "#/$defs/sourceRange" },
+        "contexts": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/context" }
+        }
+      }
+    },
+    "prop": {
+      "type": "object",
+      "required": ["name", "kind", "isFunction", "isFunctionDeclaration", "isRequired", "constant", "reactive"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "localName": { "type": "string" },
+        "kind": {
+          "enum": ["let", "const", "function"]
+        },
+        "constant": { "type": "boolean" },
+        "type": { "type": "string" },
+        "typeSource": {
+          "enum": ["typescript", "jsdoc", "default", "inferred", "unknown"]
+        },
+        "value": { "type": "string" },
+        "defaultValue": { "$ref": "#/$defs/defaultValue" },
+        "description": { "type": "string" },
+        "params": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/propParam" }
+        },
+        "returnType": { "type": "string" },
+        "isFunction": { "type": "boolean" },
+        "isFunctionDeclaration": { "type": "boolean" },
+        "isRequired": { "type": "boolean" },
+        "reactive": { "type": "boolean" },
+        "binding": {
+          "enum": ["readonly", "writable"]
+        },
+        "bindable": {
+          "const": true,
+          "description": "Present only when the prop is explicitly declared with Svelte 5 $bindable()."
+        },
+        "source": { "$ref": "#/$defs/sourceRange" }
+      }
+    },
+    "defaultValue": {
+      "type": "object",
+      "required": ["raw", "kind"],
+      "additionalProperties": false,
+      "properties": {
+        "raw": { "type": "string" },
+        "kind": {
+          "enum": ["literal", "array", "object", "expression", "function", "unknown"]
+        },
+        "value": {
+          "description": "Parsed JSON-safe value for literals, arrays, and plain objects when statically available."
+        }
+      }
+    },
+    "propParam": {
+      "type": "object",
+      "required": ["name", "type"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "description": { "type": "string" },
+        "optional": { "type": "boolean" }
+      }
+    },
+    "slot": {
+      "type": "object",
+      "required": ["default"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": ["string", "null"]
+        },
+        "default": { "type": "boolean" },
+        "fallback": { "type": "string" },
+        "slot_props": { "type": "string" },
+        "description": { "type": "string" },
+        "tags": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/jsdocTag" }
+        },
+        "source": { "$ref": "#/$defs/sourceRange" }
+      }
+    },
+    "jsdocTag": {
+      "type": "object",
+      "required": ["name", "body"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "body": { "type": "string" }
+      }
+    },
+    "event": {
+      "oneOf": [{ "$ref": "#/$defs/forwardedEvent" }, { "$ref": "#/$defs/dispatchedEvent" }]
+    },
+    "forwardedEvent": {
+      "type": "object",
+      "required": ["type", "name", "element"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "const": "forwarded" },
+        "name": { "type": "string" },
+        "element": { "type": "string" },
+        "description": { "type": "string" },
+        "detail": { "type": "string" },
+        "source": { "$ref": "#/$defs/sourceRange" }
+      }
+    },
+    "dispatchedEvent": {
+      "type": "object",
+      "required": ["type", "name"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "const": "dispatched" },
+        "name": { "type": "string" },
+        "detail": { "type": "string" },
+        "description": { "type": "string" },
+        "source": { "$ref": "#/$defs/sourceRange" }
+      }
+    },
+    "typedef": {
+      "type": "object",
+      "required": ["type", "name", "ts"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "ts": { "type": "string" }
+      }
+    },
+    "context": {
+      "type": "object",
+      "required": ["key", "typeName", "properties"],
+      "additionalProperties": false,
+      "properties": {
+        "key": { "type": "string" },
+        "typeName": { "type": "string" },
+        "description": { "type": "string" },
+        "properties": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/contextProperty" }
+        }
+      }
+    },
+    "contextProperty": {
+      "type": "object",
+      "required": ["name", "type", "optional"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "description": { "type": "string" },
+        "optional": { "type": "boolean" }
+      }
+    },
+    "restProp": {
+      "oneOf": [{ "$ref": "#/$defs/elementRestProp" }, { "$ref": "#/$defs/inlineComponentRestProp" }]
+    },
+    "elementRestProp": {
+      "type": "object",
+      "required": ["type", "name"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "const": "Element" },
+        "name": { "type": "string" },
+        "thisValue": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "inlineComponentRestProp": {
+      "type": "object",
+      "required": ["type", "name"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "const": "InlineComponent" },
+        "name": { "type": "string" }
+      }
+    },
+    "extends": {
+      "type": "object",
+      "required": ["interface", "import"],
+      "additionalProperties": false,
+      "properties": {
+        "interface": { "type": "string" },
+        "import": { "type": "string" }
+      }
+    }
+  }
+}
