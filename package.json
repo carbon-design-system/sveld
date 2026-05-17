@@ -46,8 +46,7 @@
   },
   "files": [
     "lib",
-    "cli.js",
-    "schema"
+    "cli.js"
   ],
   "repository": {
     "type": "git",

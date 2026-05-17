@@ -339,7 +339,7 @@ sveld({
 When `json: true` is enabled, `sveld` emits a `COMPONENT_API.json` file with schema and generator metadata plus the parsed
 component API.
 
-The public JSON Schema for the combined output lives at `schema/component-api.schema.json`. Use it to document or validate
+The public JSON Schema for the combined output is hosted on GitHub ([path to file](https://github.com/carbon-design-system/sveld/blob/main/schema/component-api.schema.json), [raw URL](https://raw.githubusercontent.com/carbon-design-system/sveld/main/schema/component-api.schema.json)). Use it to document or validate
 generated `COMPONENT_API.json` files. The schema describes the emitted metadata contract; optional fields may be absent when
 the parser does not have a stable source for that metadata.
 
