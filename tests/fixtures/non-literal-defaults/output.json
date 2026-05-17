@@ -1,4 +1,14 @@
 {
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 80,
+      "column": 0
+    }
+  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -12,7 +22,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 14,
+          "column": 2
+        },
+        "end": {
+          "line": 14,
+          "column": 33
+        }
+      }
     },
     {
       "name": "theme",
@@ -24,7 +44,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 19,
+          "column": 2
+        },
+        "end": {
+          "line": 19,
+          "column": 38
+        }
+      }
     },
     {
       "name": "maxValue",
@@ -36,7 +66,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 24,
+          "column": 2
+        },
+        "end": {
+          "line": 24,
+          "column": 49
+        }
+      }
     },
     {
       "name": "minValue",
@@ -48,7 +88,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 29,
+          "column": 2
+        },
+        "end": {
+          "line": 29,
+          "column": 49
+        }
+      }
     },
     {
       "name": "maxSafeInt",
@@ -60,7 +110,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 34,
+          "column": 2
+        },
+        "end": {
+          "line": 34,
+          "column": 50
+        }
+      }
     },
     {
       "name": "minSafeInt",
@@ -72,7 +132,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 39,
+          "column": 2
+        },
+        "end": {
+          "line": 39,
+          "column": 50
+        }
+      }
     },
     {
       "name": "maxNumber",
@@ -84,7 +154,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 44,
+          "column": 2
+        },
+        "end": {
+          "line": 44,
+          "column": 42
+        }
+      }
     },
     {
       "name": "minNumber",
@@ -96,7 +176,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 49,
+          "column": 2
+        },
+        "end": {
+          "line": 49,
+          "column": 42
+        }
+      }
     },
     {
       "name": "pi",
@@ -108,7 +198,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 54,
+          "column": 2
+        },
+        "end": {
+          "line": 54,
+          "column": 26
+        }
+      }
     },
     {
       "name": "e",
@@ -120,7 +220,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 59,
+          "column": 2
+        },
+        "end": {
+          "line": 59,
+          "column": 24
+        }
+      }
     },
     {
       "name": "handler",
@@ -131,7 +241,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 64,
+          "column": 2
+        },
+        "end": {
+          "line": 64,
+          "column": 33
+        }
+      }
     },
     {
       "name": "appendTo",
@@ -143,7 +263,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 70,
+          "column": 2
+        },
+        "end": {
+          "line": 70,
+          "column": 38
+        }
+      }
     }
   ],
   "moduleExports": [],

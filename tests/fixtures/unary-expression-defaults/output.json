@@ -1,4 +1,14 @@
 {
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 19,
+      "column": 0
+    }
+  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -12,7 +22,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 2
+        },
+        "end": {
+          "line": 3,
+          "column": 25
+        }
+      }
     },
     {
       "name": "threshold",
@@ -24,7 +44,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 6,
+          "column": 2
+        },
+        "end": {
+          "line": 6,
+          "column": 30
+        }
+      }
     },
     {
       "name": "inverted",
@@ -35,7 +65,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 9,
+          "column": 2
+        },
+        "end": {
+          "line": 9,
+          "column": 31
+        }
+      }
     },
     {
       "name": "bitmask",
@@ -47,7 +87,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 12,
+          "column": 2
+        },
+        "end": {
+          "line": 12,
+          "column": 26
+        }
+      }
     },
     {
       "name": "absolute",
@@ -59,7 +109,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 15,
+          "column": 2
+        },
+        "end": {
+          "line": 15,
+          "column": 30
+        }
+      }
     }
   ],
   "moduleExports": [],

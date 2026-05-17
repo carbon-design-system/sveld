@@ -1,4 +1,14 @@
 {
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 26,
+      "column": 0
+    }
+  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -10,7 +20,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 2,
+          "column": 2
+        },
+        "end": {
+          "line": 2,
+          "column": 24
+        }
+      }
     },
     {
       "name": "propBool",
@@ -21,7 +41,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": true
+      "reactive": true,
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 2
+        },
+        "end": {
+          "line": 3,
+          "column": 29
+        }
+      }
     },
     {
       "name": "propString",
@@ -32,7 +62,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 4,
+          "column": 2
+        },
+        "end": {
+          "line": 4,
+          "column": 29
+        }
+      }
     },
     {
       "name": "name",
@@ -41,7 +81,17 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 5,
+          "column": 2
+        },
+        "end": {
+          "line": 5,
+          "column": 18
+        }
+      }
     },
     {
       "name": "id",
@@ -52,7 +102,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 6,
+          "column": 2
+        },
+        "end": {
+          "line": 6,
+          "column": 50
+        }
+      }
     },
     {
       "name": "propConst",
@@ -63,7 +123,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": true,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 7,
+          "column": 2
+        },
+        "end": {
+          "line": 7,
+          "column": 39
+        }
+      }
     },
     {
       "name": "fn",
@@ -73,7 +143,17 @@
       "isFunctionDeclaration": true,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 8,
+          "column": 2
+        },
+        "end": {
+          "line": 10,
+          "column": 3
+        }
+      }
     }
   ],
   "moduleExports": [],
@@ -82,7 +162,17 @@
       "name": null,
       "default": true,
       "fallback": "{name}",
-      "slot_props": "Record<string, never>"
+      "slot_props": "Record<string, never>",
+      "source": {
+        "start": {
+          "line": 24,
+          "column": 2
+        },
+        "end": {
+          "line": 24,
+          "column": 21
+        }
+      }
     }
   ],
   "events": [],

@@ -1,4 +1,14 @@
 {
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 28,
+      "column": 0
+    }
+  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -11,7 +21,17 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 7,
+          "column": 2
+        },
+        "end": {
+          "line": 7,
+          "column": 19
+        }
+      }
     },
     {
       "name": "prop2",
@@ -22,7 +42,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 13,
+          "column": 2
+        },
+        "end": {
+          "line": 13,
+          "column": 26
+        }
+      }
     },
     {
       "name": "prop3",
@@ -33,7 +63,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 18,
+          "column": 2
+        },
+        "end": {
+          "line": 18,
+          "column": 23
+        }
+      }
     },
     {
       "name": "prop4",
@@ -44,7 +84,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 21,
+          "column": 2
+        },
+        "end": {
+          "line": 21,
+          "column": 27
+        }
+      }
     }
   ],
   "moduleExports": [],

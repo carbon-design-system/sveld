@@ -1,4 +1,14 @@
 {
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 25,
+      "column": 0
+    }
+  },
   "syntaxMode": "runes",
   "scriptLanguage": "js",
   "props": [
@@ -12,7 +22,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 7,
+          "column": 4
+        },
+        "end": {
+          "line": 7,
+          "column": 20
+        }
+      }
     },
     {
       "name": "open",
@@ -25,7 +45,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": true
+      "reactive": true,
+      "source": {
+        "start": {
+          "line": 13,
+          "column": 4
+        },
+        "end": {
+          "line": 13,
+          "column": 27
+        }
+      }
     },
     {
       "name": "label",
@@ -37,7 +67,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 16,
+          "column": 4
+        },
+        "end": {
+          "line": 16,
+          "column": 20
+        }
+      }
     }
   ],
   "moduleExports": [],

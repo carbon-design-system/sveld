@@ -10,6 +10,10 @@
     {
       "moduleName": "RunesButton",
       "filePath": "src/RunesButton.svelte",
+      "source": {
+        "start": { "line": 1, "column": 0 },
+        "end": { "line": 15, "column": 0 }
+      },
       "syntaxMode": "runes",
       "scriptLanguage": "js",
       "props": [
@@ -20,7 +24,11 @@
           "isFunctionDeclaration": false,
           "isRequired": true,
           "constant": false,
-          "reactive": false
+          "reactive": false,
+          "source": {
+            "start": { "line": 2, "column": 8 },
+            "end": { "line": 2, "column": 13 }
+          }
         },
         {
           "name": "onclick",
@@ -29,7 +37,11 @@
           "isFunctionDeclaration": false,
           "isRequired": true,
           "constant": false,
-          "reactive": false
+          "reactive": false,
+          "source": {
+            "start": { "line": 2, "column": 15 },
+            "end": { "line": 2, "column": 22 }
+          }
         },
         {
           "name": "value",
@@ -40,7 +52,11 @@
           "isFunctionDeclaration": false,
           "isRequired": false,
           "constant": false,
-          "reactive": true
+          "reactive": true,
+          "source": {
+            "start": { "line": 2, "column": 34 },
+            "end": { "line": 2, "column": 60 }
+          }
         },
         {
           "name": "onpress",
@@ -49,12 +65,24 @@
           "isFunctionDeclaration": false,
           "isRequired": true,
           "constant": false,
-          "reactive": false
+          "reactive": false,
+          "source": {
+            "start": { "line": 2, "column": 62 },
+            "end": { "line": 2, "column": 69 }
+          }
         }
       ],
       "moduleExports": [],
       "slots": [
-        { "name": null, "default": true, "slot_props": "{ value: string }" }
+        {
+          "name": null,
+          "default": true,
+          "slot_props": "{ value: string }",
+          "source": {
+            "start": { "line": 13, "column": 2 },
+            "end": { "line": 13, "column": 33 }
+          }
+        }
       ],
       "events": [],
       "typedefs": [],

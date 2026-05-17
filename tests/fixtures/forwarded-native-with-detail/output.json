@@ -1,4 +1,14 @@
 {
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 13,
+      "column": 0
+    }
+  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -10,6 +20,16 @@
       "name": "change",
       "element": "input",
       "description": "The input value when changed",
+      "source": {
+        "start": {
+          "line": 8,
+          "column": 4
+        },
+        "end": {
+          "line": 11,
+          "column": 2
+        }
+      },
       "detail": "string"
     }
   ],

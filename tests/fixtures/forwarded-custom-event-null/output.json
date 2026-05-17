@@ -1,4 +1,14 @@
 {
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 15,
+      "column": 0
+    }
+  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -10,6 +20,16 @@
       "name": "clear",
       "element": "CustomComponent",
       "description": "Clear button clicked with no data",
+      "source": {
+        "start": {
+          "line": 7,
+          "column": 5
+        },
+        "end": {
+          "line": 10,
+          "column": 43
+        }
+      },
       "detail": "null"
     },
     {
@@ -17,6 +37,16 @@
       "name": "search",
       "element": "CustomComponent",
       "description": "Search query changed",
+      "source": {
+        "start": {
+          "line": 8,
+          "column": 5
+        },
+        "end": {
+          "line": 10,
+          "column": 39
+        }
+      },
       "detail": "string"
     }
   ],

@@ -1,4 +1,14 @@
 {
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 13,
+      "column": 0
+    }
+  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -8,7 +18,17 @@
       "name": "item",
       "default": false,
       "slot_props": "{ id: string }",
-      "description": "`@enum` shares blocks with typedefs/slots in some codebases; it must not attach to the slot."
+      "description": "`@enum` shares blocks with typedefs/slots in some codebases; it must not attach to the slot.",
+      "source": {
+        "start": {
+          "line": 9,
+          "column": 0
+        },
+        "end": {
+          "line": 12,
+          "column": 2
+        }
+      }
     }
   ],
   "events": [],

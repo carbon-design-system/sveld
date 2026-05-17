@@ -1,4 +1,14 @@
 {
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 26,
+      "column": 0
+    }
+  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -12,7 +22,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 5,
+          "column": 2
+        },
+        "end": {
+          "line": 5,
+          "column": 25
+        }
+      }
     },
     {
       "name": "prop1",
@@ -24,7 +44,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 12,
+          "column": 2
+        },
+        "end": {
+          "line": 12,
+          "column": 26
+        }
+      }
     },
     {
       "name": "prop2",
@@ -33,7 +63,17 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 14,
+          "column": 2
+        },
+        "end": {
+          "line": 14,
+          "column": 19
+        }
+      }
     },
     {
       "name": "prop3",
@@ -43,7 +83,17 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 17,
+          "column": 2
+        },
+        "end": {
+          "line": 17,
+          "column": 19
+        }
+      }
     }
   ],
   "moduleExports": [],
@@ -51,7 +101,17 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "{ prop: boolean, prop1: boolean | string, prop2: any, prop3: boolean }"
+      "slot_props": "{ prop: boolean, prop1: boolean | string, prop2: any, prop3: boolean }",
+      "source": {
+        "start": {
+          "line": 20,
+          "column": 0
+        },
+        "end": {
+          "line": 25,
+          "column": 2
+        }
+      }
     }
   ],
   "events": [],

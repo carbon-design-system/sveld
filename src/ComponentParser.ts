@@ -137,8 +137,21 @@ interface LegacyAstRoot {
   instance?: Node;
 }
 
+export interface SourcePosition {
+  /** 1-based source line number */
+  line: number;
+  /** 0-based source column number */
+  column: number;
+}
+
+export interface SourceRange {
+  start: SourcePosition;
+  end: SourcePosition;
+}
+
 interface RunesPropTypeMetadata {
   optional: boolean;
+  source?: SourceRange;
   type: string;
 }
 
@@ -165,6 +178,8 @@ type ModernRunesTypeMember = {
   type?: string;
   computed?: boolean;
   optional?: boolean;
+  start?: number;
+  end?: number;
   key?: Property["key"];
   typeAnnotation?: {
     start?: number;
@@ -292,6 +307,8 @@ interface ComponentProp {
   reactive: boolean;
   /** Explicit author-documented binding direction from `@bindable` JSDoc */
   binding?: ComponentPropBinding;
+  /** Source range for the prop declaration, when available */
+  source?: SourceRange;
 }
 
 /**
@@ -397,6 +414,8 @@ interface ComponentSlot {
    * (e.g. `@example`, `@deprecated`), in source order.
    */
   tags?: Array<{ name: string; body: string }>;
+  /** Source range for the slot/snippet declaration or documentation tag, when available */
+  source?: SourceRange;
 }
 
 /**
@@ -433,6 +452,8 @@ interface ForwardedEvent {
   description?: string;
   /** The detail type if explicitly specified in `@event` tag */
   detail?: string;
+  /** Source range for the forwarded event declaration or documentation tag, when available */
+  source?: SourceRange;
 }
 
 /**
@@ -450,6 +471,8 @@ interface DispatchedEvent {
   detail?: string;
   /** Description extracted from JSDoc `@event` tags */
   description?: string;
+  /** Source range for the dispatched event call or documentation tag, when available */
+  source?: SourceRange;
 }
 
 type ComponentEvent = ForwardedEvent | DispatchedEvent;
@@ -484,6 +507,8 @@ interface SerializedForwardedEvent {
   description?: string;
   /** The detail type if explicitly specified in `@event` tag */
   detail?: string;
+  /** Source range for the forwarded event declaration or documentation tag, when available */
+  source?: SourceRange;
 }
 
 type SerializedComponentEvent = SerializedForwardedEvent | DispatchedEvent;
@@ -624,6 +649,8 @@ interface ComponentContext {
  * ```
  */
 export interface ParsedComponent {
+  /** Source range for the component source that was parsed */
+  source?: SourceRange;
   /** Whether the component uses legacy or runes syntax according to compiler metadata */
   syntaxMode: SyntaxMode;
   /** Language used by the instance or module script when it can be determined */
@@ -646,6 +673,8 @@ export interface ParsedComponent {
   extends?: Extends;
   /** Component-level description from `@component` HTML comment */
   componentComment?: string;
+  /** Source range for the `@component` HTML comment, when available */
+  componentCommentSource?: SourceRange;
   /** Contexts created with `setContext` in the component */
   contexts?: ComponentContext[];
   /** Internal writer-only TypeScript metadata. Not serialized to JSON. */
@@ -679,6 +708,9 @@ export default class ComponentParser {
 
   /** Component-level description extracted from `@component` HTML comment */
   private componentComment?: string;
+
+  /** Source range for the `@component` HTML comment, when available */
+  private componentCommentSource?: SourceRange;
 
   /** Set of reactive variable names found in the component */
   private readonly reactive_vars: Set<string> = new Set();
@@ -758,6 +790,9 @@ export default class ComponentParser {
 
   /** Cached array of source code lines split by newline for efficient line-based operations */
   private sourceLinesCache?: string[];
+
+  /** Cached 0-based source offsets for the start of each line */
+  private sourceLineStartOffsetsCache?: number[];
 
   constructor(options?: ComponentParserOptions) {
     this.options = options;
@@ -879,6 +914,105 @@ export default class ComponentParser {
     const end = typeAnnotation?.end;
     if (start === undefined || end === undefined) return undefined;
     return this.sourceAtPos(start + 1, end)?.trim();
+  }
+
+  private getSourceLineStartOffsets() {
+    if (this.sourceLineStartOffsetsCache) return this.sourceLineStartOffsetsCache;
+
+    const offsets = [0];
+    if (this.source) {
+      for (let index = 0; index < this.source.length; index++) {
+        if (this.source[index] === "\n") {
+          offsets.push(index + 1);
+        }
+      }
+    }
+
+    this.sourceLineStartOffsetsCache = offsets;
+    return offsets;
+  }
+
+  private sourcePositionFromOffset(offset: number): SourcePosition | undefined {
+    if (!this.source || offset < 0 || offset > this.source.length) return undefined;
+
+    const offsets = this.getSourceLineStartOffsets();
+    let low = 0;
+    let high = offsets.length - 1;
+
+    while (low <= high) {
+      const mid = Math.floor((low + high) / 2);
+      const lineStart = offsets[mid];
+      const nextLineStart = offsets[mid + 1] ?? Number.POSITIVE_INFINITY;
+
+      if (offset < lineStart) {
+        high = mid - 1;
+      } else if (offset >= nextLineStart) {
+        low = mid + 1;
+      } else {
+        return {
+          line: mid + 1,
+          column: offset - lineStart,
+        };
+      }
+    }
+
+    return undefined;
+  }
+
+  private sourceRangeFromOffsets(start: number | undefined, end: number | undefined): SourceRange | undefined {
+    if (start === undefined || end === undefined || end < start) return undefined;
+
+    const startPosition = this.sourcePositionFromOffset(start);
+    const endPosition = this.sourcePositionFromOffset(end);
+    if (!startPosition || !endPosition) return undefined;
+
+    return {
+      start: startPosition,
+      end: endPosition,
+    };
+  }
+
+  private sourceRangeFromNode(node: unknown) {
+    if (!node || typeof node !== "object") return undefined;
+    const start = "start" in node && typeof node.start === "number" ? node.start : undefined;
+    const end = "end" in node && typeof node.end === "number" ? node.end : undefined;
+    return this.sourceRangeFromOffsets(start, end);
+  }
+
+  private sourceRangeFromCommentTag(
+    blockSource: Array<{ number: number; source: string }>,
+    tagSource: Array<{ number: number; source: string; tokens: { tag?: string } }> | undefined,
+    blockStartOffset: number | undefined,
+  ): SourceRange | undefined {
+    if (!tagSource || tagSource.length === 0 || blockStartOffset === undefined) return undefined;
+
+    const relevantTagSource = [...tagSource];
+    while (relevantTagSource.length > 1) {
+      const lastLine = relevantTagSource[relevantTagSource.length - 1];
+      if (lastLine.tokens.tag || !lastLine.source.trim().endsWith("*/")) break;
+      relevantTagSource.pop();
+    }
+
+    let tagLineOffset = blockStartOffset;
+    for (let index = 0; index < relevantTagSource[0].number - 1; index++) {
+      tagLineOffset += blockSource[index]?.source.length ?? 0;
+      tagLineOffset += 1;
+    }
+
+    const tagLine = relevantTagSource[0];
+    const tagColumn = tagLine.source.indexOf(tagLine.tokens.tag ?? "");
+    const start = tagLineOffset + Math.max(tagColumn, 0);
+
+    let end = blockStartOffset;
+    const lastLine = relevantTagSource[relevantTagSource.length - 1];
+    const lastLineNumber = lastLine.number;
+    for (let index = 0; index < lastLineNumber - 1; index++) {
+      end += blockSource[index]?.source.length ?? 0;
+      end += 1;
+    }
+    end += lastLine.source.length;
+
+    return this.sourceRangeFromOffsets(start, end);
   }
 
   private collectReferencedTypeDependencies(
@@ -1109,6 +1243,7 @@ export default class ComponentParser {
         metadata.set(propName, {
           type,
           optional: member.optional === true,
+          source: this.sourceRangeFromNode(member),
         });
       }
     };
@@ -2373,6 +2508,7 @@ export default class ComponentParser {
               isRequired: !typeMetadata.optional,
               constant: false,
               reactive: false,
+              source: typeMetadata.source,
             });
           }
         }
@@ -2475,6 +2611,7 @@ export default class ComponentParser {
           isRequired: unwrappedInit == null && typeMetadata?.optional !== true,
           constant: false,
           reactive: bindable,
+          source: this.sourceRangeFromNode(property),
         });
       }
     }
@@ -2835,12 +2972,14 @@ export default class ComponentParser {
     slot_fallback,
     slot_description,
     slot_tags,
+    source,
   }: {
     slot_name?: string;
     slot_props?: string;
     slot_fallback?: string;
     slot_description?: string;
     slot_tags?: Array<{ name: string; body: string }>;
+    source?: SourceRange;
   }) {
     const default_slot = slot_name === undefined || slot_name === "";
     const name: ComponentSlotName = default_slot ? DEFAULT_SLOT_NAME : (slot_name ?? "");
@@ -2858,6 +2997,7 @@ export default class ComponentParser {
           slot_props: existing_slot.slot_props === undefined ? props : existing_slot.slot_props,
           description: existing_slot.description || description,
           tags: existing_slot.tags || slot_tags,
+          source: source || existing_slot.source,
         });
       }
     } else {
@@ -2868,6 +3008,7 @@ export default class ComponentParser {
         slot_props,
         description,
         tags: slot_tags,
+        source,
       });
     }
   }
@@ -2912,7 +3053,8 @@ export default class ComponentParser {
     detail,
     has_argument,
     description,
-  }: Pick<DispatchedEvent, "name" | "description"> & { detail: string; has_argument: boolean }) {
+    source,
+  }: Pick<DispatchedEvent, "name" | "description" | "source"> & { detail: string; has_argument: boolean }) {
     if (name === undefined) return;
 
     /**
@@ -2928,6 +3070,7 @@ export default class ComponentParser {
         ...existing_event,
         detail: existing_event.detail === undefined ? default_detail : existing_event.detail,
         description: existing_event.description || event_description,
+        source: source || existing_event.source,
       });
     } else {
       this.events.set(name, {
@@ -2935,6 +3078,7 @@ export default class ComponentParser {
         name,
         detail: default_detail,
         description: event_description,
+        source,
       });
     }
   }
@@ -2994,12 +3138,21 @@ export default class ComponentParser {
    */
   private parseCustomTypes() {
     if (!this.source) return;
+    let commentSearchOffset = 0;
     for (const { tags, description: commentDescription, source: blockSource } of parseComment(this.source, {
       spacing: "preserve",
     })) {
+      const blockText = blockSource.map((line) => line.source).join("\n");
+      const blockStartOffset = this.source.indexOf(blockText, commentSearchOffset);
+      const commentBlockStartOffset = blockStartOffset === -1 ? undefined : blockStartOffset;
+      if (blockStartOffset !== -1) {
+        commentSearchOffset = blockStartOffset + blockText.length;
+      }
+
       let currentEventName: string | undefined;
       let currentEventType: string | undefined;
       let currentEventDescription: string | undefined;
+      let currentEventSource: SourceRange | undefined;
       const eventProperties: Array<{
         name: string;
         type: string;
@@ -3195,12 +3348,14 @@ export default class ComponentParser {
             detail: detailType,
             has_argument: false,
             description: currentEventDescription,
+            source: currentEventSource,
           });
           this.eventDescriptions.set(currentEventName, currentEventDescription);
           eventProperties.length = 0;
           currentEventName = undefined;
           currentEventType = undefined;
           currentEventDescription = undefined;
+          currentEventSource = undefined;
         }
       };
 
@@ -3392,6 +3547,7 @@ export default class ComponentParser {
               slot_props: type,
               slot_description: slotDesc || undefined,
               slot_tags: pendingTags.length > 0 ? [...pendingTags] : undefined,
+              source: this.sourceRangeFromCommentTag(blockSource, tagSource, commentBlockStartOffset),
             });
             pendingTags.length = 0;
             break;
@@ -3416,6 +3572,7 @@ export default class ComponentParser {
               currentEventDescription = commentDescription;
               commentDescriptionUsed = true;
             }
+            currentEventSource = this.sourceRangeFromCommentTag(blockSource, tagSource, commentBlockStartOffset);
             if (isFirstTag) isFirstTag = false;
             break;
           }
@@ -4139,6 +4296,7 @@ export default class ComponentParser {
     this.rest_props = undefined;
     this.extends = undefined;
     this.componentComment = undefined;
+    this.componentCommentSource = undefined;
     this.reactive_vars.clear();
     this.props.clear();
     this.moduleExports.clear();
@@ -4164,6 +4322,7 @@ export default class ComponentParser {
     this.scopeDeclarations = new WeakMap();
     this.activeScopes.length = 0;
     this.sourceLinesCache = undefined;
+    this.sourceLineStartOffsetsCache = undefined;
   }
 
   /**
@@ -4414,7 +4573,7 @@ export default class ComponentParser {
     }
 
     let dispatcher_name: undefined | string;
-    const callees: { name: string; arguments: Array<Expression | unknown> }[] = [];
+    const callees: { name: string; arguments: Array<Expression | unknown>; source?: SourceRange }[] = [];
     const componentRoot = {
       type: "ComponentRoot",
       instance: this.parsed.instance,
@@ -4467,6 +4626,7 @@ export default class ComponentParser {
             callees.push({
               name: calleeName,
               arguments: callExpr.arguments,
+              source: this.sourceRangeFromNode(callExpr),
             });
           }
         }
@@ -4653,6 +4813,7 @@ export default class ComponentParser {
             isRequired,
             constant: kind === "const",
             reactive: this.reactive_vars.has(prop_name),
+            source: this.sourceRangeFromNode(node),
           });
         }
 
@@ -4666,6 +4827,7 @@ export default class ComponentParser {
 
           if (COMPONENT_COMMENT_REGEX.test(data)) {
             this.componentComment = data.replace(COMPONENT_COMMENT_REGEX, "").replace(CARRIAGE_RETURN_REGEX, "");
+            this.componentCommentSource = this.sourceRangeFromNode(node);
           }
         }
 
@@ -4751,6 +4913,7 @@ export default class ComponentParser {
             slot_name,
             slot_props: JSON.stringify(slot_props, null, 2),
             slot_fallback: fallback,
+            source: this.sourceRangeFromNode(node),
           });
         }
 
@@ -4786,6 +4949,7 @@ export default class ComponentParser {
               this.addSlot({
                 slot_name,
                 slot_props,
+                source: this.sourceRangeFromNode(node),
               });
             }
 
@@ -4839,6 +5003,7 @@ export default class ComponentParser {
                     name: eventHandlerNode.name,
                     element: element,
                     description: event_description,
+                    source: this.sourceRangeFromNode(node),
                   });
                 } else if (existing_event.type === "forwarded" && event_description && !existing_event.description) {
                   /**
@@ -4847,6 +5012,7 @@ export default class ComponentParser {
                   this.events.set(eventHandlerNode.name, {
                     ...existing_event,
                     description: event_description,
+                    source: existing_event.source || this.sourceRangeFromNode(node),
                   });
                 }
                 /**
@@ -4937,6 +5103,7 @@ export default class ComponentParser {
               name: String(event_name),
               detail: event_detail == null ? "" : String(event_detail),
               has_argument: Boolean(event_argument),
+              source: callee.source,
             });
           }
         }
@@ -4979,6 +5146,7 @@ export default class ComponentParser {
           name: eventName,
           element: element,
           description: event_description,
+          source: event.source,
         };
         /**
          * Preserve detail type if it was explicitly set in `@event` tag.
@@ -5090,6 +5258,7 @@ export default class ComponentParser {
     const contextsArray = ComponentParser.mapToArray(this.contexts);
 
     const parsedComponent: ParsedComponent = {
+      source: this.sourceRangeFromOffsets(0, this.source?.length),
       syntaxMode: this.syntaxMode,
       ...(this.scriptLanguage ? { scriptLanguage: this.scriptLanguage } : {}),
       props: processedProps,
@@ -5101,6 +5270,7 @@ export default class ComponentParser {
       rest_props: this.rest_props,
       extends: this.extends,
       componentComment: this.componentComment,
+      componentCommentSource: this.componentCommentSource,
       contexts: contextsArray,
     };
 

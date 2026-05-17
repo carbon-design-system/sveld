@@ -1,4 +1,14 @@
 {
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 24,
+      "column": 0
+    }
+  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -11,7 +21,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 7,
+          "column": 2
+        },
+        "end": {
+          "line": 7,
+          "column": 24
+        }
+      }
     }
   ],
   "moduleExports": [],
@@ -19,13 +39,33 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "{ item: string | number; status: \"pending\" | \"complete\" | \"error\"; error: Error | null; }"
+      "slot_props": "{ item: string | number; status: \"pending\" | \"complete\" | \"error\"; error: Error | null; }",
+      "source": {
+        "start": {
+          "line": 18,
+          "column": 2
+        },
+        "end": {
+          "line": 22,
+          "column": 4
+        }
+      }
     },
     {
       "name": "header",
       "default": false,
       "slot_props": "{ active: boolean }",
-      "description": "Header slot"
+      "description": "Header slot",
+      "source": {
+        "start": {
+          "line": 11,
+          "column": 2
+        },
+        "end": {
+          "line": 14,
+          "column": 4
+        }
+      }
     }
   ],
   "events": [],

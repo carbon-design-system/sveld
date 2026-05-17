@@ -1,4 +1,14 @@
 {
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 21,
+      "column": 0
+    }
+  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -7,28 +17,78 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "Record<string, never>"
+      "slot_props": "Record<string, never>",
+      "source": {
+        "start": {
+          "line": 19,
+          "column": 2
+        },
+        "end": {
+          "line": 19,
+          "column": 10
+        }
+      }
     }
   ],
   "events": [
     {
       "type": "dispatched",
       "name": "destroy",
-      "detail": "null"
+      "detail": "null",
+      "source": {
+        "start": {
+          "line": 7,
+          "column": 4
+        },
+        "end": {
+          "line": 7,
+          "column": 25
+        }
+      }
     },
     {
       "type": "dispatched",
       "name": "destroy--component",
-      "detail": "null"
+      "detail": "null",
+      "source": {
+        "start": {
+          "line": 8,
+          "column": 4
+        },
+        "end": {
+          "line": 8,
+          "column": 36
+        }
+      }
     },
     {
       "type": "dispatched",
       "name": "destroy:component",
-      "detail": "null"
+      "detail": "null",
+      "source": {
+        "start": {
+          "line": 9,
+          "column": 4
+        },
+        "end": {
+          "line": 9,
+          "column": 35
+        }
+      }
     },
     {
       "type": "dispatched",
-      "name": "hover"
+      "name": "hover",
+      "source": {
+        "start": {
+          "line": 16,
+          "column": 4
+        },
+        "end": {
+          "line": 16,
+          "column": 37
+        }
+      }
     }
   ],
   "typedefs": [],

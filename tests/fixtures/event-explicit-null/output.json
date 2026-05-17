@@ -1,4 +1,14 @@
 {
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 21,
+      "column": 0
+    }
+  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -8,17 +18,47 @@
     {
       "type": "forwarded",
       "name": "change",
-      "element": "input"
+      "element": "input",
+      "source": {
+        "start": {
+          "line": 17,
+          "column": 2
+        },
+        "end": {
+          "line": 17,
+          "column": 11
+        }
+      }
     },
     {
       "type": "dispatched",
       "name": "clear",
-      "detail": "null"
+      "detail": "null",
+      "source": {
+        "start": {
+          "line": 12,
+          "column": 4
+        },
+        "end": {
+          "line": 12,
+          "column": 21
+        }
+      }
     },
     {
       "type": "forwarded",
       "name": "input",
-      "element": "input"
+      "element": "input",
+      "source": {
+        "start": {
+          "line": 18,
+          "column": 2
+        },
+        "end": {
+          "line": 18,
+          "column": 10
+        }
+      }
     }
   ],
   "typedefs": [],

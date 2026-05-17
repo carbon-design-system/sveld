@@ -1,4 +1,14 @@
 {
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 12,
+      "column": 0
+    }
+  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -10,12 +20,32 @@
       "name": "clear",
       "element": "ListBoxSelection",
       "description": "Fired when clear button is clicked",
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 5
+        },
+        "end": {
+          "line": 3,
+          "column": 83
+        }
+      },
       "detail": "KeyboardEvent | MouseEvent"
     },
     {
       "type": "forwarded",
       "name": "click",
-      "element": "ListBoxSelection"
+      "element": "ListBoxSelection",
+      "source": {
+        "start": {
+          "line": 10,
+          "column": 2
+        },
+        "end": {
+          "line": 10,
+          "column": 10
+        }
+      }
     }
   ],
   "typedefs": [],

@@ -1,4 +1,14 @@
 {
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 63,
+      "column": 0
+    }
+  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -12,7 +22,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 34,
+          "column": 2
+        },
+        "end": {
+          "line": 34,
+          "column": 30
+        }
+      }
     },
     {
       "name": "sizes",
@@ -24,7 +44,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 40,
+          "column": 2
+        },
+        "end": {
+          "line": 46,
+          "column": 4
+        }
+      }
     }
   ],
   "moduleExports": [],
@@ -32,54 +62,144 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "{ size: BreakpointSize; sizes: Record<BreakpointSize, boolean>; }"
+      "slot_props": "{ size: BreakpointSize; sizes: Record<BreakpointSize, boolean>; }",
+      "source": {
+        "start": {
+          "line": 55,
+          "column": 0
+        },
+        "end": {
+          "line": 58,
+          "column": 2
+        }
+      }
     },
     {
       "name": "break",
       "default": false,
-      "slot_props": "Record<string, never>"
+      "slot_props": "Record<string, never>",
+      "source": {
+        "start": {
+          "line": 31,
+          "column": 12
+        },
+        "end": {
+          "line": 31,
+          "column": 28
+        }
+      }
     },
     {
       "name": "breakpoint-sizes",
       "default": false,
       "slot_props": "{ sizes: Record<BreakpointSize, boolean>; }",
-      "description": "Slot for rendering breakpoint sizes"
+      "description": "Slot for rendering breakpoint sizes",
+      "source": {
+        "start": {
+          "line": 59,
+          "column": 0
+        },
+        "end": {
+          "line": 62,
+          "column": 2
+        }
+      }
     },
     {
       "name": "inline-slot",
       "default": false,
       "slot_props": "{ a: 4 }",
-      "description": "description"
+      "description": "description",
+      "source": {
+        "start": {
+          "line": 31,
+          "column": 13
+        },
+        "end": {
+          "line": 32,
+          "column": 9
+        }
+      }
     }
   ],
   "events": [
     {
       "type": "dispatched",
       "name": "change",
-      "detail": "{\n  size: BreakpointSize;\n  breakpointValue: BreakpointValue;\n}"
+      "detail": "{\n  size: BreakpointSize;\n  breakpointValue: BreakpointValue;\n}",
+      "source": {
+        "start": {
+          "line": 52,
+          "column": 29
+        },
+        "end": {
+          "line": 52,
+          "column": 79
+        }
+      }
     },
     {
       "type": "dispatched",
       "name": "dequeue",
       "detail": "null",
-      "description": "Slot for rendering breakpoint sizes"
+      "description": "Slot for rendering breakpoint sizes",
+      "source": {
+        "start": {
+          "line": 31,
+          "column": 9
+        },
+        "end": {
+          "line": 32,
+          "column": 1
+        }
+      }
     },
     {
       "type": "dispatched",
       "name": "queue",
       "detail": "null",
-      "description": "Event fired when item is dequeued from the queue"
+      "description": "Event fired when item is dequeued from the queue",
+      "source": {
+        "start": {
+          "line": 31,
+          "column": 7
+        },
+        "end": {
+          "line": 32,
+          "column": 12
+        }
+      }
     },
     {
       "type": "dispatched",
       "name": "resize",
       "detail": "null",
-      "description": "Event fired when size changes"
+      "description": "Event fired when size changes",
+      "source": {
+        "start": {
+          "line": 20,
+          "column": 6
+        },
+        "end": {
+          "line": 20,
+          "column": 19
+        }
+      }
     },
     {
       "type": "dispatched",
       "name": "scroll",
-      "detail": "null"
+      "detail": "null",
+      "source": {
+        "start": {
+          "line": 20,
+          "column": 7
+        },
+        "end": {
+          "line": 20,
+          "column": 20
+        }
+      }
     }
   ],
   "typedefs": [

@@ -10,6 +10,10 @@
     {
       "moduleName": "Button",
       "filePath": "src/Button.svelte",
+      "source": {
+        "start": { "line": 1, "column": 0 },
+        "end": { "line": 19, "column": 0 }
+      },
       "syntaxMode": "legacy",
       "scriptLanguage": "js",
       "props": [
@@ -22,7 +26,11 @@
           "isFunctionDeclaration": false,
           "isRequired": false,
           "constant": false,
-          "reactive": false
+          "reactive": false,
+          "source": {
+            "start": { "line": 3, "column": 2 },
+            "end": { "line": 3, "column": 29 }
+          }
         },
         {
           "name": "primary",
@@ -34,7 +42,11 @@
           "isFunctionDeclaration": false,
           "isRequired": false,
           "constant": false,
-          "reactive": false
+          "reactive": false,
+          "source": {
+            "start": { "line": 8, "column": 2 },
+            "end": { "line": 8, "column": 29 }
+          }
         }
       ],
       "moduleExports": [],
@@ -43,10 +55,24 @@
           "name": null,
           "default": true,
           "fallback": "Click me",
-          "slot_props": "Record<string, never>"
+          "slot_props": "Record<string, never>",
+          "source": {
+            "start": { "line": 17, "column": 2 },
+            "end": { "line": 17, "column": 23 }
+          }
         }
       ],
-      "events": [{ "type": "forwarded", "name": "click", "element": "button" }],
+      "events": [
+        {
+          "type": "forwarded",
+          "name": "click",
+          "element": "button",
+          "source": {
+            "start": { "line": 15, "column": 2 },
+            "end": { "line": 15, "column": 10 }
+          }
+        }
+      ],
       "typedefs": [],
       "generics": null,
       "rest_props": { "type": "Element", "name": "button" },
@@ -55,6 +81,10 @@
     {
       "moduleName": "Link",
       "filePath": "src/Link.svelte",
+      "source": {
+        "start": { "line": 1, "column": 0 },
+        "end": { "line": 7, "column": 0 }
+      },
       "syntaxMode": "legacy",
       "props": [],
       "moduleExports": [],
@@ -63,10 +93,24 @@
           "name": null,
           "default": true,
           "fallback": "Link text",
-          "slot_props": "Record<string, never>"
+          "slot_props": "Record<string, never>",
+          "source": {
+            "start": { "line": 5, "column": 3 },
+            "end": { "line": 5, "column": 25 }
+          }
         }
       ],
-      "events": [{ "type": "forwarded", "name": "click", "element": "a" }],
+      "events": [
+        {
+          "type": "forwarded",
+          "name": "click",
+          "element": "a",
+          "source": {
+            "start": { "line": 4, "column": 2 },
+            "end": { "line": 4, "column": 10 }
+          }
+        }
+      ],
       "typedefs": [],
       "generics": null,
       "rest_props": { "type": "Element", "name": "a" },
@@ -75,6 +119,10 @@
     {
       "moduleName": "Quote",
       "filePath": "src/Quote.svelte",
+      "source": {
+        "start": { "line": 1, "column": 0 },
+        "end": { "line": 10, "column": 0 }
+      },
       "syntaxMode": "legacy",
       "scriptLanguage": "js",
       "props": [
@@ -87,7 +135,11 @@
           "isFunctionDeclaration": false,
           "isRequired": false,
           "constant": false,
-          "reactive": false
+          "reactive": false,
+          "source": {
+            "start": { "line": 2, "column": 2 },
+            "end": { "line": 2, "column": 24 }
+          }
         },
         {
           "name": "author",
@@ -98,7 +150,11 @@
           "isFunctionDeclaration": false,
           "isRequired": false,
           "constant": false,
-          "reactive": false
+          "reactive": false,
+          "source": {
+            "start": { "line": 3, "column": 2 },
+            "end": { "line": 3, "column": 25 }
+          }
         }
       ],
       "moduleExports": [],
@@ -107,7 +163,11 @@
           "name": null,
           "default": true,
           "fallback": "{quote}",
-          "slot_props": "Record<string, never>"
+          "slot_props": "Record<string, never>",
+          "source": {
+            "start": { "line": 7, "column": 2 },
+            "end": { "line": 7, "column": 22 }
+          }
         }
       ],
       "events": [],
@@ -119,6 +179,10 @@
     {
       "moduleName": "SecondaryButton",
       "filePath": "src/SecondaryButton.svelte",
+      "source": {
+        "start": { "line": 1, "column": 0 },
+        "end": { "line": 15, "column": 0 }
+      },
       "syntaxMode": "legacy",
       "scriptLanguage": "js",
       "props": [
@@ -131,7 +195,11 @@
           "isFunctionDeclaration": false,
           "isRequired": false,
           "constant": true,
-          "reactive": false
+          "reactive": false,
+          "source": {
+            "start": { "line": 4, "column": 2 },
+            "end": { "line": 4, "column": 32 }
+          }
         }
       ],
       "moduleExports": [],
@@ -140,10 +208,24 @@
           "name": null,
           "default": true,
           "fallback": "Click me",
-          "slot_props": "Record<string, never>"
+          "slot_props": "Record<string, never>",
+          "source": {
+            "start": { "line": 13, "column": 2 },
+            "end": { "line": 13, "column": 23 }
+          }
         }
       ],
-      "events": [{ "type": "forwarded", "name": "click", "element": "Button" }],
+      "events": [
+        {
+          "type": "forwarded",
+          "name": "click",
+          "element": "Button",
+          "source": {
+            "start": { "line": 11, "column": 2 },
+            "end": { "line": 11, "column": 10 }
+          }
+        }
+      ],
       "typedefs": [],
       "generics": null,
       "rest_props": { "type": "InlineComponent", "name": "Button" },

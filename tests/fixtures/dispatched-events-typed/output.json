@@ -1,4 +1,14 @@
 {
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 23,
+      "column": 0
+    }
+  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -7,20 +17,50 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "Record<string, never>"
+      "slot_props": "Record<string, never>",
+      "source": {
+        "start": {
+          "line": 21,
+          "column": 2
+        },
+        "end": {
+          "line": 21,
+          "column": 10
+        }
+      }
     }
   ],
   "events": [
     {
       "type": "dispatched",
       "name": "destroy",
-      "detail": "null"
+      "detail": "null",
+      "source": {
+        "start": {
+          "line": 11,
+          "column": 4
+        },
+        "end": {
+          "line": 11,
+          "column": 25
+        }
+      }
     },
     {
       "type": "dispatched",
       "name": "hover",
       "detail": "{ h1: boolean; }",
-      "description": "Fired on mouseover."
+      "description": "Fired on mouseover.",
+      "source": {
+        "start": {
+          "line": 18,
+          "column": 4
+        },
+        "end": {
+          "line": 18,
+          "column": 37
+        }
+      }
     }
   ],
   "typedefs": [],

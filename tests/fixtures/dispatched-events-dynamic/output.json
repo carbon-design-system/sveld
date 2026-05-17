@@ -1,4 +1,14 @@
 {
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 18,
+      "column": 0
+    }
+  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -8,7 +18,17 @@
     {
       "type": "dispatched",
       "name": "KEY",
-      "detail": "{key: string;}"
+      "detail": "{key: string;}",
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 5
+        },
+        "end": {
+          "line": 3,
+          "column": 32
+        }
+      }
     }
   ],
   "typedefs": [],

@@ -1,4 +1,14 @@
 {
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 15,
+      "column": 0
+    }
+  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -8,12 +18,32 @@
       "name": null,
       "default": true,
       "fallback": "Default text",
-      "slot_props": "{ a: number; }"
+      "slot_props": "{ a: number; }",
+      "source": {
+        "start": {
+          "line": 10,
+          "column": 0
+        },
+        "end": {
+          "line": 10,
+          "column": 36
+        }
+      }
     },
     {
       "name": "text",
       "default": false,
-      "slot_props": "{ a: number; }"
+      "slot_props": "{ a: number; }",
+      "source": {
+        "start": {
+          "line": 11,
+          "column": 0
+        },
+        "end": {
+          "line": 14,
+          "column": 2
+        }
+      }
     }
   ],
   "events": [],
