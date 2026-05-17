@@ -20,6 +20,7 @@
         {
           "name": "label",
           "kind": "let",
+          "typeSource": "unknown",
           "isFunction": false,
           "isFunctionDeclaration": false,
           "isRequired": true,
@@ -33,6 +34,7 @@
         {
           "name": "onclick",
           "kind": "let",
+          "typeSource": "unknown",
           "isFunction": false,
           "isFunctionDeclaration": false,
           "isRequired": true,
@@ -46,8 +48,15 @@
         {
           "name": "value",
           "kind": "let",
+          "bindable": true,
           "type": "string",
+          "typeSource": "default",
           "value": "\"ready\"",
+          "defaultValue": {
+            "raw": "\"ready\"",
+            "kind": "literal",
+            "value": "ready"
+          },
           "isFunction": false,
           "isFunctionDeclaration": false,
           "isRequired": false,
@@ -61,6 +70,7 @@
         {
           "name": "onpress",
           "kind": "let",
+          "typeSource": "unknown",
           "isFunction": false,
           "isFunctionDeclaration": false,
           "isRequired": true,

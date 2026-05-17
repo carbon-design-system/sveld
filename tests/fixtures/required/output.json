@@ -17,7 +17,13 @@
       "kind": "let",
       "description": "@required",
       "type": "boolean",
+      "typeSource": "default",
       "value": "true",
+      "defaultValue": {
+        "raw": "true",
+        "kind": "literal",
+        "value": true
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -39,7 +45,13 @@
       "kind": "let",
       "description": "This is a comment.\n@required",
       "type": "boolean | string",
+      "typeSource": "jsdoc",
       "value": "true",
+      "defaultValue": {
+        "raw": "true",
+        "kind": "literal",
+        "value": true
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -59,6 +71,7 @@
     {
       "name": "prop2",
       "kind": "let",
+      "typeSource": "unknown",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -79,6 +92,7 @@
       "name": "prop3",
       "kind": "let",
       "type": "boolean",
+      "typeSource": "jsdoc",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,

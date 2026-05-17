@@ -17,6 +17,7 @@
       "kind": "let",
       "description": "prop1 description 1\nprop1 description 2",
       "type": "string",
+      "typeSource": "jsdoc",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -37,7 +38,13 @@
       "name": "prop2",
       "kind": "let",
       "description": "prop2 description 1\nprop2 description 2",
+      "typeSource": "unknown",
       "value": "null",
+      "defaultValue": {
+        "raw": "null",
+        "kind": "literal",
+        "value": null
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -58,7 +65,13 @@
       "name": "prop3",
       "kind": "let",
       "type": "4 | '4'",
+      "typeSource": "jsdoc",
       "value": "4",
+      "defaultValue": {
+        "raw": "4",
+        "kind": "literal",
+        "value": 4
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -79,7 +92,13 @@
       "name": "prop4",
       "kind": "let",
       "type": "\"red\" | \"blue\"",
+      "typeSource": "jsdoc",
       "value": "\"red\"",
+      "defaultValue": {
+        "raw": "\"red\"",
+        "kind": "literal",
+        "value": "red"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

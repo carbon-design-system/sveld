@@ -16,7 +16,13 @@
       "name": "a",
       "kind": "const",
       "type": "string",
+      "typeSource": "default",
       "value": "\"\"",
+      "defaultValue": {
+        "raw": "\"\"",
+        "kind": "literal",
+        "value": ""
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -39,7 +45,13 @@
       "name": "bool",
       "kind": "const",
       "type": "string",
+      "typeSource": "default",
       "value": "\"\"",
+      "defaultValue": {
+        "raw": "\"\"",
+        "kind": "literal",
+        "value": ""
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -50,7 +62,15 @@
       "name": "a",
       "kind": "const",
       "type": "{ b: 4 }",
+      "typeSource": "default",
       "value": "{ b: 4 }",
+      "defaultValue": {
+        "raw": "{ b: 4 }",
+        "kind": "object",
+        "value": {
+          "b": 4
+        }
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -62,7 +82,15 @@
       "kind": "const",
       "description": "Description for e",
       "type": "{ [key: string]: any; }",
+      "typeSource": "jsdoc",
       "value": "{ b: 4 }",
+      "defaultValue": {
+        "raw": "{ b: 4 }",
+        "kind": "object",
+        "value": {
+          "b": 4
+        }
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -74,6 +102,7 @@
       "kind": "function",
       "description": "Log something",
       "type": "(message: string) => void",
+      "typeSource": "jsdoc",
       "isFunction": true,
       "isFunctionDeclaration": true,
       "isRequired": false,
@@ -84,6 +113,11 @@
       "name": "b",
       "kind": "const",
       "type": "(...args: any[]) => any",
+      "typeSource": "default",
+      "defaultValue": {
+        "raw": "() => {}",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -94,6 +128,11 @@
       "name": "b2",
       "kind": "const",
       "type": "(...args: any[]) => any",
+      "typeSource": "default",
+      "defaultValue": {
+        "raw": "() => () => {}",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -104,6 +143,11 @@
       "name": "b3",
       "kind": "const",
       "type": "() => () => false",
+      "typeSource": "jsdoc",
+      "defaultValue": {
+        "raw": "() => () => false",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,

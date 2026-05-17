@@ -16,7 +16,13 @@
       "name": "variant",
       "kind": "let",
       "type": "\"inline\" | \"single\" | \"multi\"",
+      "typeSource": "jsdoc",
       "value": "\"single\"",
+      "defaultValue": {
+        "raw": "\"single\"",
+        "kind": "literal",
+        "value": "single"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

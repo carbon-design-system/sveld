@@ -16,7 +16,13 @@
       "name": "textElement",
       "kind": "let",
       "type": "\"abbr\" | \"code\" | \"em\" | \"strong\" | \"mark\" | \"kbd\" | \"samp\" | \"var\"",
+      "typeSource": "jsdoc",
       "value": "\"code\"",
+      "defaultValue": {
+        "raw": "\"code\"",
+        "kind": "literal",
+        "value": "code"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

@@ -21,7 +21,13 @@
           "name": "type",
           "kind": "let",
           "type": "string",
+          "typeSource": "default",
           "value": "\"button\"",
+          "defaultValue": {
+            "raw": "\"button\"",
+            "kind": "literal",
+            "value": "button"
+          },
           "isFunction": false,
           "isFunctionDeclaration": false,
           "isRequired": false,
@@ -36,7 +42,9 @@
           "name": "primary",
           "kind": "let",
           "type": "boolean",
+          "typeSource": "default",
           "value": "false",
+          "defaultValue": { "raw": "false", "kind": "literal", "value": false },
           "isFunction": false,
           "isFunctionDeclaration": false,
           "isRequired": false,

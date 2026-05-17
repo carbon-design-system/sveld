@@ -16,7 +16,12 @@
       "name": "id",
       "kind": "let",
       "type": "string",
+      "typeSource": "default",
       "value": "\"id-\" + Math.random().toString(36)",
+      "defaultValue": {
+        "raw": "\"id-\" + Math.random().toString(36)",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -37,7 +42,15 @@
       "name": "prop1",
       "kind": "let",
       "type": "MyTypedef",
+      "typeSource": "jsdoc",
       "value": "{ 1: true }",
+      "defaultValue": {
+        "raw": "{ 1: true }",
+        "kind": "object",
+        "value": {
+          "1": true
+        }
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

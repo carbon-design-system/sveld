@@ -16,6 +16,7 @@
       "name": "row",
       "kind": "let",
       "type": "Snippet<[item: string, index: number]>",
+      "typeSource": "typescript",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,

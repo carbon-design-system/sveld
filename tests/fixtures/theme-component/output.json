@@ -17,7 +17,13 @@
       "kind": "let",
       "description": "Set the current Carbon theme",
       "type": "CarbonTheme",
+      "typeSource": "jsdoc",
       "value": "\"white\"",
+      "defaultValue": {
+        "raw": "\"white\"",
+        "kind": "literal",
+        "value": "white"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -39,7 +45,13 @@
       "kind": "let",
       "description": "Customize a theme with your own tokens\n@see https://carbondesignsystem.com/guidelines/themes/overview#customizing-a-theme",
       "type": "{ [token: string]: any; }",
+      "typeSource": "jsdoc",
       "value": "{}",
+      "defaultValue": {
+        "raw": "{}",
+        "kind": "object",
+        "value": {}
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -61,7 +73,13 @@
       "kind": "let",
       "description": "Set to `true` to persist the theme using window.localStorage",
       "type": "boolean",
+      "typeSource": "default",
       "value": "false",
+      "defaultValue": {
+        "raw": "false",
+        "kind": "literal",
+        "value": false
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -83,7 +101,13 @@
       "kind": "let",
       "description": "Specify the local storage key",
       "type": "string",
+      "typeSource": "default",
       "value": "\"theme\"",
+      "defaultValue": {
+        "raw": "\"theme\"",
+        "kind": "literal",
+        "value": "theme"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -106,7 +130,19 @@
       "name": "themes",
       "kind": "const",
       "type": "Record<CarbonTheme, string>",
+      "typeSource": "jsdoc",
       "value": "{     white: \"White\",     g10: \"Gray 10\",     g80: \"Gray 80\",     g90: \"Gray 90\",     g100: \"Gray 100\",   }",
+      "defaultValue": {
+        "raw": "{     white: \"White\",     g10: \"Gray 10\",     g80: \"Gray 80\",     g90: \"Gray 90\",     g100: \"Gray 100\",   }",
+        "kind": "object",
+        "value": {
+          "white": "White",
+          "g10": "Gray 10",
+          "g80": "Gray 80",
+          "g90": "Gray 90",
+          "g100": "Gray 100"
+        }
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

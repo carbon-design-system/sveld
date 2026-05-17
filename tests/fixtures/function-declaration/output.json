@@ -16,6 +16,11 @@
       "name": "fnA",
       "kind": "let",
       "type": "(...args: any[]) => any",
+      "typeSource": "default",
+      "defaultValue": {
+        "raw": "() => {}",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -36,6 +41,11 @@
       "name": "fnB",
       "kind": "const",
       "type": "(...args: any[]) => any",
+      "typeSource": "default",
+      "defaultValue": {
+        "raw": "() => {}",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -56,6 +66,7 @@
       "name": "add",
       "kind": "function",
       "type": "() => any",
+      "typeSource": "inferred",
       "isFunction": true,
       "isFunctionDeclaration": true,
       "isRequired": false,
@@ -77,6 +88,7 @@
       "kind": "function",
       "description": "Multiplies two numbers",
       "type": "(a: number, b: number) => number",
+      "typeSource": "jsdoc",
       "isFunction": true,
       "isFunctionDeclaration": true,
       "isRequired": false,

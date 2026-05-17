@@ -16,6 +16,7 @@
       "name": "name",
       "kind": "let",
       "description": "Item name to display",
+      "typeSource": "unknown",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -36,7 +37,13 @@
       "name": "value",
       "kind": "let",
       "description": "Optional item value",
+      "typeSource": "unknown",
       "value": "null",
+      "defaultValue": {
+        "raw": "null",
+        "kind": "literal",
+        "value": null
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -60,6 +67,11 @@
       "kind": "const",
       "description": "A local utility function for formatting",
       "type": "(value: any) => string",
+      "typeSource": "jsdoc",
+      "defaultValue": {
+        "raw": "(value) => String(value)",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -71,7 +83,13 @@
       "kind": "const",
       "description": "Application version number",
       "type": "string",
+      "typeSource": "default",
       "value": "\"1.0.0\"",
+      "defaultValue": {
+        "raw": "\"1.0.0\"",
+        "kind": "literal",
+        "value": "1.0.0"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -83,6 +101,7 @@
       "kind": "function",
       "description": "Logger function",
       "type": "(msg: string) => void",
+      "typeSource": "jsdoc",
       "isFunction": true,
       "isFunctionDeclaration": true,
       "isRequired": false,

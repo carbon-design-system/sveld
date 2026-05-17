@@ -16,7 +16,13 @@
       "name": "headers",
       "kind": "let",
       "type": "ReadonlyArray<DataTableHeader<Row>>",
+      "typeSource": "jsdoc",
       "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -37,7 +43,13 @@
       "name": "rows",
       "kind": "let",
       "type": "ReadonlyArray<Row>",
+      "typeSource": "jsdoc",
       "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

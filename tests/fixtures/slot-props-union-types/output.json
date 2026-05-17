@@ -16,7 +16,13 @@
       "name": "items",
       "kind": "let",
       "type": "Array<{ value: string | number; status: \"pending\" | \"complete\" | \"error\" }>",
+      "typeSource": "jsdoc",
       "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

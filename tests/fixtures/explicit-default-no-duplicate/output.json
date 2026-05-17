@@ -17,6 +17,11 @@
       "kind": "let",
       "description": "Custom filter function.\n@default () => true",
       "type": "(item: string, value: string) => boolean",
+      "typeSource": "jsdoc",
+      "defaultValue": {
+        "raw": "() => true",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -38,7 +43,13 @@
       "kind": "let",
       "description": "Prop with only an inferred default.",
       "type": "string",
+      "typeSource": "default",
       "value": "\"world\"",
+      "defaultValue": {
+        "raw": "\"world\"",
+        "kind": "literal",
+        "value": "world"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -60,7 +71,13 @@
       "kind": "let",
       "description": "Prop with explicit @default matching the initializer.\n@default false",
       "type": "boolean",
+      "typeSource": "default",
       "value": "false",
+      "defaultValue": {
+        "raw": "false",
+        "kind": "literal",
+        "value": false
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -82,7 +99,13 @@
       "kind": "let",
       "description": "Prop with identifier default, no explicit annotation.\nShould resolve to the actual value.",
       "type": "\"sm\" | \"md\" | \"lg\"",
+      "typeSource": "jsdoc",
       "value": "\"md\"",
+      "defaultValue": {
+        "raw": "\"md\"",
+        "kind": "literal",
+        "value": "md"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -104,7 +127,13 @@
       "kind": "let",
       "description": "Number of items to display.",
       "type": "number",
+      "typeSource": "default",
       "value": "10",
+      "defaultValue": {
+        "raw": "10",
+        "kind": "literal",
+        "value": 10
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -126,6 +155,11 @@
       "kind": "let",
       "description": "Click handler.",
       "type": "(e: MouseEvent) => void",
+      "typeSource": "jsdoc",
+      "defaultValue": {
+        "raw": "() => {}",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -147,7 +181,16 @@
       "kind": "let",
       "description": "Component configuration.",
       "type": "{ theme: string; density: string }",
+      "typeSource": "jsdoc",
       "value": "{ theme: \"dark\", density: \"compact\" }",
+      "defaultValue": {
+        "raw": "{ theme: \"dark\", density: \"compact\" }",
+        "kind": "object",
+        "value": {
+          "theme": "dark",
+          "density": "compact"
+        }
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -169,7 +212,17 @@
       "kind": "let",
       "description": "List of items.",
       "type": "[\"a\", \"b\", \"c\"]",
+      "typeSource": "default",
       "value": "[\"a\", \"b\", \"c\"]",
+      "defaultValue": {
+        "raw": "[\"a\", \"b\", \"c\"]",
+        "kind": "array",
+        "value": [
+          "a",
+          "b",
+          "c"
+        ]
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -191,7 +244,13 @@
       "kind": "let",
       "description": "Starting offset.",
       "type": "number",
+      "typeSource": "default",
       "value": "-1",
+      "defaultValue": {
+        "raw": "-1",
+        "kind": "literal",
+        "value": -1
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

@@ -14,10 +14,17 @@
   "props": [
     {
       "name": "class",
+      "localName": "className",
       "kind": "let",
       "description": "Just your average CSS class string.",
       "type": "string|null",
+      "typeSource": "jsdoc",
       "value": "\"test\"",
+      "defaultValue": {
+        "raw": "\"test\"",
+        "kind": "literal",
+        "value": "test"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

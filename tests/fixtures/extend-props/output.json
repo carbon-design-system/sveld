@@ -16,7 +16,13 @@
       "name": "secondary",
       "kind": "let",
       "type": "boolean",
+      "typeSource": "default",
       "value": "false",
+      "defaultValue": {
+        "raw": "false",
+        "kind": "literal",
+        "value": false
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

@@ -16,6 +16,11 @@
       "name": "transform",
       "kind": "let",
       "type": "(value: string, options?: { uppercase?: boolean }) => string",
+      "typeSource": "jsdoc",
+      "defaultValue": {
+        "raw": "(value, options) => {     if (options?.uppercase) return value.toUpperCase();     return value;   }",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -36,6 +41,11 @@
       "name": "processItems",
       "kind": "let",
       "type": "(items: string[], callback: (item: string, index: number) => void) => Promise<void>",
+      "typeSource": "jsdoc",
+      "defaultValue": {
+        "raw": "async (items, callback) => {     for (let i = 0; i < items.length; i++) callback(items[i], i);   }",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -56,6 +66,11 @@
       "name": "createRecord",
       "kind": "let",
       "type": "(id: string) => { id: string; created: Date }",
+      "typeSource": "jsdoc",
+      "defaultValue": {
+        "raw": "(id) => ({ id, created: new Date() })",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,

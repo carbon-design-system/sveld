@@ -16,7 +16,13 @@
       "name": "tag",
       "kind": "let",
       "type": "string",
+      "typeSource": "default",
       "value": "\"div\"",
+      "defaultValue": {
+        "raw": "\"div\"",
+        "kind": "literal",
+        "value": "div"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

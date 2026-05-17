@@ -16,7 +16,12 @@
       "name": "cache",
       "kind": "let",
       "type": "Map<string, number>",
+      "typeSource": "jsdoc",
       "value": "new Map()",
+      "defaultValue": {
+        "raw": "new Map()",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -37,7 +42,12 @@
       "name": "selected",
       "kind": "let",
       "type": "Set<string>",
+      "typeSource": "jsdoc",
       "value": "new Set()",
+      "defaultValue": {
+        "raw": "new Set()",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -58,7 +68,12 @@
       "name": "createdAt",
       "kind": "let",
       "type": "Date",
+      "typeSource": "default",
       "value": "new Date()",
+      "defaultValue": {
+        "raw": "new Date()",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -79,7 +94,12 @@
       "name": "metadata",
       "kind": "let",
       "type": "WeakMap<object, any>",
+      "typeSource": "jsdoc",
       "value": "new WeakMap()",
+      "defaultValue": {
+        "raw": "new WeakMap()",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -100,7 +120,12 @@
       "name": "buffer",
       "kind": "let",
       "type": "number[]",
+      "typeSource": "jsdoc",
       "value": "new Array(10)",
+      "defaultValue": {
+        "raw": "new Array(10)",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -121,7 +146,12 @@
       "name": "items",
       "kind": "let",
       "type": "Map<any, any>",
+      "typeSource": "default",
       "value": "new Map()",
+      "defaultValue": {
+        "raw": "new Map()",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -142,7 +172,12 @@
       "name": "tags",
       "kind": "let",
       "type": "Set<any>",
+      "typeSource": "default",
       "value": "new Set()",
+      "defaultValue": {
+        "raw": "new Set()",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -163,7 +198,12 @@
       "name": "weakData",
       "kind": "let",
       "type": "WeakMap<object, any>",
+      "typeSource": "default",
       "value": "new WeakMap()",
+      "defaultValue": {
+        "raw": "new WeakMap()",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -184,7 +224,12 @@
       "name": "weakRefs",
       "kind": "let",
       "type": "WeakSet<object>",
+      "typeSource": "default",
       "value": "new WeakSet()",
+      "defaultValue": {
+        "raw": "new WeakSet()",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -205,7 +250,12 @@
       "name": "itemsArray",
       "kind": "let",
       "type": "any[]",
+      "typeSource": "default",
       "value": "new Array()",
+      "defaultValue": {
+        "raw": "new Array()",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -226,7 +276,12 @@
       "name": "pattern",
       "kind": "let",
       "type": "RegExp",
+      "typeSource": "default",
       "value": "new RegExp(\"test\")",
+      "defaultValue": {
+        "raw": "new RegExp(\"test\")",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -247,7 +302,12 @@
       "name": "customError",
       "kind": "let",
       "type": "Error",
+      "typeSource": "default",
       "value": "new Error(\"message\")",
+      "defaultValue": {
+        "raw": "new Error(\"message\")",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

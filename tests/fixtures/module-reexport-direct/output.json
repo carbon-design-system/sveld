@@ -17,7 +17,15 @@
       "kind": "let",
       "description": "Configuration settings",
       "type": "{ enabled: true }",
+      "typeSource": "default",
       "value": "{ enabled: true }",
+      "defaultValue": {
+        "raw": "{ enabled: true }",
+        "kind": "object",
+        "value": {
+          "enabled": true
+        }
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -38,6 +46,7 @@
       "name": "onReady",
       "kind": "let",
       "description": "Optional callback function",
+      "typeSource": "unknown",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,

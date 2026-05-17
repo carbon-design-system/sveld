@@ -17,7 +17,13 @@
       "kind": "let",
       "description": "Two levels deep: ALIAS -> ACTUAL_VALUE -> 42.",
       "type": "number",
+      "typeSource": "default",
       "value": "42",
+      "defaultValue": {
+        "raw": "42",
+        "kind": "literal",
+        "value": 42
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -39,7 +45,13 @@
       "kind": "let",
       "description": "Five levels deep: E -> D -> C -> B -> A -> \"hello\". Resolves within the depth limit.",
       "type": "string",
+      "typeSource": "default",
       "value": "\"hello\"",
+      "defaultValue": {
+        "raw": "\"hello\"",
+        "kind": "literal",
+        "value": "hello"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -60,7 +72,12 @@
       "name": "deep6",
       "kind": "let",
       "description": "Six levels deep: BEYOND -> Z -> Y -> X -> W -> V -> true. Exceeds the depth limit.",
+      "typeSource": "unknown",
       "value": "V",
+      "defaultValue": {
+        "raw": "V",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

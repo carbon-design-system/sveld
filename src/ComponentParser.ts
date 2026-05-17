@@ -223,6 +223,21 @@ type ScriptLanguage = "js" | "ts";
 type ScopeBindingKind = "prop" | "local";
 type ScopeBinding = { kind: ScopeBindingKind; publicPropName?: string };
 type LexicalScope = Map<string, ScopeBinding>;
+type ComponentPropTypeSource = "typescript" | "jsdoc" | "default" | "inferred" | "unknown";
+type ComponentPropDefaultValueKind = "literal" | "array" | "object" | "expression" | "function" | "unknown";
+
+interface ComponentPropDefaultValue {
+  raw: string;
+  kind: ComponentPropDefaultValueKind;
+  value?: unknown;
+}
+
+interface ProcessedInitializer {
+  value?: string;
+  type?: string;
+  isFunction: boolean;
+  defaultValue?: ComponentPropDefaultValue;
+}
 
 type ModernScriptAttribute = {
   name?: string;
@@ -289,8 +304,14 @@ interface ComponentProp {
   constant: boolean;
   /** The TypeScript type of the prop (e.g., "string", "number | string") */
   type?: string;
+  /** Conservative provenance for the prop type */
+  typeSource?: ComponentPropTypeSource;
+  /** Local variable name, emitted when it differs from the public prop name */
+  localName?: string;
   /** The default value as a string representation of the source code */
   value?: string;
+  /** Structured default value metadata for docs UIs */
+  defaultValue?: ComponentPropDefaultValue;
   /** Description extracted from JSDoc comments */
   description?: string;
   /** Function parameters (for function props) extracted from `@param` tags */
@@ -307,6 +328,8 @@ interface ComponentProp {
   reactive: boolean;
   /** Explicit author-documented binding direction from `@bindable` JSDoc */
   binding?: ComponentPropBinding;
+  /** True when the prop is explicitly declared with Svelte 5 `$bindable()` */
+  bindable?: true;
   /** Source range for the prop declaration, when available */
   source?: SourceRange;
 }
@@ -2255,6 +2278,121 @@ export default class ComponentParser {
     return this.source?.slice(start, end);
   }
 
+  private sourceForExpression(node: unknown) {
+    if (!node || typeof node !== "object") return undefined;
+    const start = "start" in node && typeof node.start === "number" ? node.start : undefined;
+    const end = "end" in node && typeof node.end === "number" ? node.end : undefined;
+    if (start === undefined || end === undefined) return undefined;
+    return this.sourceAtPos(start, end)?.replace(NEWLINE_CR_REGEX, " ");
+  }
+
+  private jsonSafeValueFromExpression(node: unknown): { ok: true; value: unknown } | { ok: false } {
+    if (!node || typeof node !== "object" || !("type" in node)) return { ok: false };
+
+    if (node.type === "Literal") {
+      const value = (node as Literal).value;
+      return typeof value === "bigint" ? { ok: false } : { ok: true, value };
+    }
+
+    if (node.type === "UnaryExpression") {
+      const unary = node as UnaryExpression;
+      const argument = unary.argument;
+      if (!argument || typeof argument !== "object" || !("type" in argument) || argument.type !== "Literal") {
+        return { ok: false };
+      }
+
+      const value = (argument as Literal).value;
+      if (typeof value === "number") {
+        if (unary.operator === "-") return { ok: true, value: -value };
+        if (unary.operator === "+") return { ok: true, value };
+      }
+      if (typeof value === "boolean" && unary.operator === "!") {
+        return { ok: true, value: !value };
+      }
+      return { ok: false };
+    }
+
+    if (node.type === "TemplateLiteral") {
+      const template = node as TemplateLiteral;
+      if (template.expressions.length > 0 || template.quasis.length !== 1) return { ok: false };
+      return { ok: true, value: template.quasis[0].value.cooked ?? template.quasis[0].value.raw };
+    }
+
+    if (node.type === "ArrayExpression") {
+      const array = node as ArrayExpression;
+      const values: unknown[] = [];
+      for (const element of array.elements) {
+        if (!element) return { ok: false };
+        const result = this.jsonSafeValueFromExpression(element);
+        if (!result.ok) return { ok: false };
+        values.push(result.value);
+      }
+      return { ok: true, value: values };
+    }
+
+    if (node.type === "ObjectExpression") {
+      const object = node as ObjectExpression;
+      const value: Record<string, unknown> = {};
+      for (const property of object.properties) {
+        if (property.type !== "Property" || property.computed) return { ok: false };
+        const key = this.getPropertyName(property.key);
+        if (!key) return { ok: false };
+        const propertyValue = this.jsonSafeValueFromExpression(property.value);
+        if (!propertyValue.ok) return { ok: false };
+        value[key] = propertyValue.value;
+      }
+      return { ok: true, value };
+    }
+
+    return { ok: false };
+  }
+
+  private classifyDefaultValue(init: unknown): ComponentPropDefaultValue | undefined {
+    const raw = this.sourceForExpression(init);
+    if (!raw || !init || typeof init !== "object" || !("type" in init)) return undefined;
+
+    let kind: ComponentPropDefaultValueKind = "expression";
+    if (init.type === "Literal" || init.type === "UnaryExpression") {
+      kind = "literal";
+    } else if (init.type === "TemplateLiteral") {
+      kind = (init as TemplateLiteral).expressions.length === 0 ? "literal" : "expression";
+    } else if (init.type === "ArrayExpression") {
+      kind = "array";
+    } else if (init.type === "ObjectExpression") {
+      kind = "object";
+    } else if (init.type === "ArrowFunctionExpression" || init.type === "FunctionExpression") {
+      kind = "function";
+    }
+
+    const defaultValue: ComponentPropDefaultValue = { raw, kind };
+    if (kind === "literal" || kind === "array" || kind === "object") {
+      const parsed = this.jsonSafeValueFromExpression(init);
+      if (parsed.ok) {
+        defaultValue.value = parsed.value;
+      }
+    }
+
+    return defaultValue;
+  }
+
+  private resolveTypeSource({
+    hasTypeScriptType,
+    hasJSDocType,
+    inferredType,
+    finalType,
+  }: {
+    hasTypeScriptType?: boolean;
+    hasJSDocType?: boolean;
+    inferredType?: string;
+    finalType?: string;
+  }): ComponentPropTypeSource {
+    if (hasTypeScriptType) return "typescript";
+    if (hasJSDocType) return "jsdoc";
+    if (inferredType !== undefined) return "default";
+    if (finalType !== undefined) return "inferred";
+    return "unknown";
+  }
+
   /**
    * Processes an initializer expression to extract its value, type, and function status.
    *
@@ -2284,7 +2422,7 @@ export default class ComponentParser {
    * // Returns: { value: "Math.PI", type: "number" (if numeric constant), isFunction: false }
    * ```
    */
-  private processInitializer(init: unknown, depth = 0): { value?: string; type?: string; isFunction: boolean } {
+  private processInitializer(init: unknown, depth = 0): ProcessedInitializer {
     let value: string | undefined;
     let type: string | undefined;
     let isFunction = false;
@@ -2293,18 +2431,21 @@ export default class ComponentParser {
       return { value, type, isFunction };
     }
 
+    const defaultValue = this.classifyDefaultValue(init);
+
     if (
       init.type === "ObjectExpression" ||
       init.type === "BinaryExpression" ||
       init.type === "ArrayExpression" ||
-      init.type === "ArrowFunctionExpression"
+      init.type === "ArrowFunctionExpression" ||
+      init.type === "FunctionExpression"
     ) {
       const expr = init as ObjectExpression | BinaryExpression | ArrayExpression | ArrowFunctionExpression;
       if ("start" in expr && "end" in expr && typeof expr.start === "number" && typeof expr.end === "number") {
         value = this.sourceAtPos(expr.start, expr.end)?.replace(NEWLINE_CR_REGEX, " ");
       }
       type = value;
-      isFunction = init.type === "ArrowFunctionExpression";
+      isFunction = init.type === "ArrowFunctionExpression" || init.type === "FunctionExpression";
 
       if (init.type === "BinaryExpression") {
         const binExpr = init as BinaryExpression;
@@ -2320,7 +2461,7 @@ export default class ComponentParser {
         }
       }
 
-      if (init.type === "ArrowFunctionExpression") {
+      if (init.type === "ArrowFunctionExpression" || init.type === "FunctionExpression") {
         type = "(...args: any[]) => any";
         value = undefined;
       }
@@ -2440,7 +2581,7 @@ export default class ComponentParser {
       }
     }
 
-    return { value, type, isFunction };
+    return { value, type, isFunction, defaultValue };
   }
 
   /**
@@ -2503,6 +2644,7 @@ export default class ComponentParser {
               name: propName,
               kind: "let",
               type: typeMetadata.type,
+              typeSource: "typescript",
               isFunction: false,
               isFunctionDeclaration: false,
               isRequired: !typeMetadata.optional,
@@ -2586,12 +2728,21 @@ export default class ComponentParser {
         );
         const { init: unwrappedInit, bindable } = this.unwrapBindableInitializer(init);
         const initResult = unwrappedInit == null ? { isFunction: false } : this.processInitializer(unwrappedInit);
-        const { value, type: inferredType, isFunction } = initResult;
+        const { value, type: inferredType, isFunction, defaultValue } = initResult;
         const isFunctionFromJSDoc =
           !!propertyJSDoc?.params?.length ||
           propertyJSDoc?.returnType !== undefined ||
           propertyJSDoc?.type?.includes("=>");
         const type = typeMetadata?.type ?? propertyJSDoc?.type ?? inferredType;
+        const typeSource = this.resolveTypeSource({
+          hasTypeScriptType: typeMetadata?.type !== undefined,
+          hasJSDocType:
+            propertyJSDoc?.type !== undefined ||
+            propertyJSDoc?.params !== undefined ||
+            propertyJSDoc?.returnType !== undefined,
+          inferredType,
+          finalType: type,
+        });
 
         if (bindable) {
           this.reactive_vars.add(propName);
@@ -2599,11 +2750,15 @@ export default class ComponentParser {
 
         this.addProp(propName, {
           name: propName,
+          ...(localName === propName ? {} : { localName }),
           kind: "let",
           description: propertyJSDoc?.description,
           binding: propertyJSDoc?.binding,
+          ...(bindable ? { bindable: true as const } : {}),
           type,
+          typeSource,
           value,
+          defaultValue,
           params: propertyJSDoc?.params,
           returnType: propertyJSDoc?.returnType,
           isFunction: Boolean(isFunction || isFunctionFromJSDoc),
@@ -3105,6 +3260,7 @@ export default class ComponentParser {
         ...prop,
         description: prop.description ?? event.description,
         type: hasExplicitPropTyping ? prop.type : callbackType,
+        typeSource: hasExplicitPropTyping ? prop.typeSource : "inferred",
         isFunction: true,
       });
 
@@ -4493,6 +4649,8 @@ export default class ComponentParser {
             let isFunction = false;
             let params: ComponentPropParam[] | undefined;
             let returnType: string | undefined;
+            let defaultValue: ComponentPropDefaultValue | undefined;
+            let inferredType: string | undefined;
 
             if (node.declaration.type === "FunctionDeclaration") {
               const funcDecl = node.declaration as { id?: { name?: string } };
@@ -4520,9 +4678,9 @@ export default class ComponentParser {
               prop_name = localPropName;
               kind = variableDeclarationKindToComponentPropKind(varDecl.kind);
               const initResult = init == null ? { isFunction: false } : this.processInitializer(init);
-              ({ value, type, isFunction } = initResult);
+              ({ value, type: inferredType, isFunction, defaultValue } = initResult);
               explicitType = this.getExplicitPropType(localPropName);
-              type = explicitType ?? type;
+              type = explicitType ?? inferredType;
             } else {
               return;
             }
@@ -4553,12 +4711,22 @@ export default class ComponentParser {
               description = this.typedefs.get(type)?.description;
             }
 
+            const typeSource = this.resolveTypeSource({
+              hasTypeScriptType: explicitType !== undefined,
+              hasJSDocType:
+                jsdocInfo?.type !== undefined || jsdocInfo?.params !== undefined || jsdocInfo?.returnType !== undefined,
+              inferredType,
+              finalType: type,
+            });
+
             this.addModuleExport(prop_name, {
               name: prop_name,
               kind,
               description,
               type,
+              typeSource,
               value,
+              defaultValue,
               params,
               returnType,
               isFunction,
@@ -4736,11 +4904,15 @@ export default class ComponentParser {
           let params: ComponentPropParam[] | undefined;
           let returnType: string | undefined;
           let isRequired = false;
+          let localName: string | undefined;
+          let defaultValue: ComponentPropDefaultValue | undefined;
+          let inferredType: string | undefined;
 
           if (node.declaration.type === "FunctionDeclaration") {
             const funcDecl = node.declaration as { id?: { name?: string } };
             if (!funcDecl.id?.name) return;
             prop_name ??= funcDecl.id.name;
+            localName = funcDecl.id.name;
             kind = "function";
             value = undefined;
             type = "() => any";
@@ -4758,6 +4930,7 @@ export default class ComponentParser {
 
             if (id && typeof id === "object" && "name" in id) {
               const localPropName = (id as Identifier).name;
+              localName = localPropName;
               prop_name ??= localPropName;
               explicitType = this.getExplicitPropType(localPropName);
             } else {
@@ -4767,8 +4940,8 @@ export default class ComponentParser {
             kind = variableDeclarationKindToComponentPropKind(varDecl.kind);
             isRequired = kind === "let" && init == null;
             const initResult = init == null ? { isFunction: false } : this.processInitializer(init);
-            ({ value, type, isFunction } = initResult);
-            type = explicitType ?? type;
+            ({ value, type: inferredType, isFunction, defaultValue } = initResult);
+            type = explicitType ?? inferredType;
           } else {
             return;
           }
@@ -4799,13 +4972,24 @@ export default class ComponentParser {
             description = this.typedefs.get(type)?.description;
           }
 
+          const typeSource = this.resolveTypeSource({
+            hasTypeScriptType: explicitType !== undefined,
+            hasJSDocType:
+              jsdocInfo?.type !== undefined || jsdocInfo?.params !== undefined || jsdocInfo?.returnType !== undefined,
+            inferredType,
+            finalType: type,
+          });
+
           this.addProp(prop_name, {
             name: prop_name,
+            ...(localName !== undefined && localName !== prop_name ? { localName } : {}),
             kind,
             description,
             binding: jsdocInfo?.binding,
             type,
+            typeSource,
             value,
+            defaultValue,
             params,
             returnType,
             isFunction,
@@ -5179,6 +5363,7 @@ export default class ComponentParser {
           return {
             ...prop,
             type: `null | ${elementTypes}`,
+            typeSource: "inferred" as const,
             reactive: prop.reactive || this.reactive_vars.has(prop.name),
           };
         }

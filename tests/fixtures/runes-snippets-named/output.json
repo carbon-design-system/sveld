@@ -15,6 +15,7 @@
     {
       "name": "item",
       "kind": "let",
+      "typeSource": "unknown",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,

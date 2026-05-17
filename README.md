@@ -382,10 +382,17 @@ interface ComponentDocApi {
 
 interface ComponentProp {
   name: string;
+  localName?: string;
   kind: "let" | "const" | "function";
   constant: boolean;
   type?: string;
+  typeSource?: "typescript" | "jsdoc" | "default" | "inferred" | "unknown";
   value?: string;
+  defaultValue?: {
+    raw: string;
+    kind: "literal" | "array" | "object" | "expression" | "function" | "unknown";
+    value?: unknown;
+  };
   description?: string;
   params?: Array<{ name: string; type: string; description?: string; optional?: boolean }>;
   returnType?: string;
@@ -394,6 +401,7 @@ interface ComponentProp {
   isRequired: boolean;
   reactive: boolean;
   binding?: "readonly" | "writable";
+  bindable?: true;
   source?: SourceRange;
 }
 
@@ -429,6 +437,13 @@ type ComponentEvent =
 include source text or raw character offsets.
 
 Note that `SourcePosition.line` is 1-based and `SourcePosition.column` is 0-based.
+
+Prop metadata is additive and preserves the older public fields:
+
+- `name` is always the public prop name. For runes `$props()` aliases such as `let { class: className } = $props()`, `localName` is emitted only when the local binding differs.
+- `typeSource` identifies the conservative source of the emitted `type`: TypeScript annotation, JSDoc, initializer/default inference, other parser inference, or unknown fallback.
+- `value` remains the raw default expression string. `defaultValue` adds structured metadata with the same raw expression, a coarse `kind`, and a parsed `value` only for JSON-safe literals, arrays, and plain objects. `sveld` does not evaluate arbitrary code.
+- `bindable: true` is emitted only for props explicitly declared with Svelte 5 `$bindable(...)`. Missing `bindable` should be treated as false.
 
 ## API Reference
 

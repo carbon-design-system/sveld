@@ -16,7 +16,13 @@
       "name": "items",
       "kind": "let",
       "type": "[]",
+      "typeSource": "default",
       "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -37,7 +43,13 @@
       "name": "config",
       "kind": "let",
       "type": "{}",
+      "typeSource": "default",
       "value": "{}",
+      "defaultValue": {
+        "raw": "{}",
+        "kind": "object",
+        "value": {}
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -58,7 +70,13 @@
       "name": "names",
       "kind": "let",
       "type": "string[]",
+      "typeSource": "jsdoc",
       "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -79,7 +97,13 @@
       "name": "settings",
       "kind": "let",
       "type": "{ enabled: boolean }",
+      "typeSource": "jsdoc",
       "value": "{}",
+      "defaultValue": {
+        "raw": "{}",
+        "kind": "object",
+        "value": {}
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -100,7 +124,16 @@
       "name": "nested",
       "kind": "let",
       "type": "{ items: [], meta: {} }",
+      "typeSource": "default",
       "value": "{ items: [], meta: {} }",
+      "defaultValue": {
+        "raw": "{ items: [], meta: {} }",
+        "kind": "object",
+        "value": {
+          "items": [],
+          "meta": {}
+        }
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

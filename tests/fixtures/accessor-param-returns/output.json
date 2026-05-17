@@ -17,6 +17,7 @@
       "kind": "function",
       "description": "Add a notification to the queue.\nIf a notification with the same id exists, the call is ignored.",
       "type": "(notification: NotificationData) => string",
+      "typeSource": "jsdoc",
       "params": [
         {
           "name": "notification",
@@ -47,6 +48,7 @@
       "kind": "function",
       "description": "Remove a notification by id.",
       "type": "(id: string) => boolean",
+      "typeSource": "jsdoc",
       "params": [
         {
           "name": "id",
@@ -77,6 +79,7 @@
       "kind": "function",
       "description": "Clear all notifications.",
       "type": "() => void",
+      "typeSource": "jsdoc",
       "returnType": "void",
       "isFunction": true,
       "isFunctionDeclaration": true,
@@ -99,6 +102,7 @@
       "kind": "function",
       "description": "Get notification count.",
       "type": "() => number",
+      "typeSource": "jsdoc",
       "returnType": "number",
       "isFunction": true,
       "isFunctionDeclaration": true,
@@ -121,6 +125,7 @@
       "kind": "function",
       "description": "Update a notification.",
       "type": "(id: string, data: NotificationData) => boolean",
+      "typeSource": "jsdoc",
       "params": [
         {
           "name": "id",
@@ -157,6 +162,7 @@
       "kind": "function",
       "description": "Function with only @param, no @returns (should default to any)",
       "type": "() => any",
+      "typeSource": "jsdoc",
       "params": [
         {
           "name": "message",
@@ -186,6 +192,7 @@
       "kind": "function",
       "description": "Computes the depth of a tree leaf node relative to <ul role=\"tree\" />\n@example \n```js\nlet nodeElement;\n$: depth = computeTreeLeafDepth(nodeElement);\n```",
       "type": "(node: HTMLLIElement) => number",
+      "typeSource": "jsdoc",
       "params": [
         {
           "name": "node",

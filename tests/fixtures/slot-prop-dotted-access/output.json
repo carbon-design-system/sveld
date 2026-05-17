@@ -16,7 +16,16 @@
       "name": "point",
       "kind": "let",
       "type": "{ x: number; y: number }",
+      "typeSource": "jsdoc",
       "value": "{ x: 0, y: 0 }",
+      "defaultValue": {
+        "raw": "{ x: 0, y: 0 }",
+        "kind": "object",
+        "value": {
+          "x": 0,
+          "y": 0
+        }
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

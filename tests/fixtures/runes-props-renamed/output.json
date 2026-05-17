@@ -14,7 +14,9 @@
   "props": [
     {
       "name": "class",
+      "localName": "klass",
       "kind": "let",
+      "typeSource": "unknown",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,

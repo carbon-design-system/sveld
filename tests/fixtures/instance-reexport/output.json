@@ -17,7 +17,13 @@
       "kind": "let",
       "description": "Array of data items",
       "type": "[]",
+      "typeSource": "default",
       "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -39,7 +45,13 @@
       "kind": "let",
       "description": "Whether to show details",
       "type": "boolean",
+      "typeSource": "default",
       "value": "false",
+      "defaultValue": {
+        "raw": "false",
+        "kind": "literal",
+        "value": false
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
