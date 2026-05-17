@@ -1,4 +1,6 @@
 import path from "node:path";
+import { version as svelteVersion } from "svelte/package.json";
+import { name as packageName, version as packageVersion } from "../../package.json";
 import { normalizeSeparators } from "../path";
 import type { ComponentDocApi, ComponentDocs } from "../plugin";
 import { createJsonWriter } from "./Writer";
@@ -17,8 +19,24 @@ export interface WriteJsonOptions {
  * component documentation objects.
  */
 interface JsonOutput {
+  schemaVersion: 1;
+  generator: {
+    name: string;
+    version: string;
+    svelteVersion: string;
+  };
   total: number;
   components: ComponentDocApi[];
+}
+
+const JSON_SCHEMA_VERSION = 1;
+
+function createGeneratorMetadata(): JsonOutput["generator"] {
+  return {
+    name: packageName,
+    version: packageVersion,
+    svelteVersion,
+  };
 }
 
 /**
@@ -94,6 +112,8 @@ async function writeJsonComponents(components: ComponentDocs, options: WriteJson
  */
 async function writeJsonLocal(components: ComponentDocs, options: WriteJsonOptions) {
   const output: JsonOutput = {
+    schemaVersion: JSON_SCHEMA_VERSION,
+    generator: createGeneratorMetadata(),
     total: components.size,
     components: transformAndSortComponents(components, options.inputDir),
   };
