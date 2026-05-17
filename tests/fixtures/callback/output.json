@@ -17,6 +17,11 @@
       "kind": "let",
       "description": "Callback fired when the value changes.",
       "type": "OnChange",
+      "typeSource": "jsdoc",
+      "defaultValue": {
+        "raw": "(value, index) => {}",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -37,6 +42,11 @@
       "name": "comparator",
       "kind": "let",
       "type": "Comparator",
+      "typeSource": "jsdoc",
+      "defaultValue": {
+        "raw": "(a, b) => a - b",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -58,6 +68,11 @@
       "kind": "let",
       "description": "No-arg callback.",
       "type": "OnClose",
+      "typeSource": "jsdoc",
+      "defaultValue": {
+        "raw": "() => {}",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,

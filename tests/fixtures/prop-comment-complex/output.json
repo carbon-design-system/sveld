@@ -17,7 +17,13 @@
       "kind": "let",
       "description": "Specify the switch text.\nAlternatively, use the default slot.\n@example \n```svelte\n<Switch>\n  <span>Custom Text</span>\n</Switch>\n```",
       "type": "string",
+      "typeSource": "default",
       "value": "\"\"",
+      "defaultValue": {
+        "raw": "\"\"",
+        "kind": "literal",
+        "value": ""
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -39,7 +45,12 @@
       "kind": "let",
       "description": "Specify the icon to render.\nAlternatively, use the named slot \"icon\".\n@example \n```svelte\n<Button>\n  <Icon slot=\"icon\" size={20} />\n</Button>\n```",
       "type": "any",
+      "typeSource": "jsdoc",
       "value": "undefined",
+      "defaultValue": {
+        "raw": "undefined",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

@@ -20,6 +20,7 @@ exports[`fixtures (JSON) "runes-callback-annotated/input.svelte" 1`] = `
       "kind": "let",
       "description": "Snowball event fired when throwing a snowball.",
       "type": "(detail: { isPacked: boolean; speed: number; color?: string; density?: number }) => void",
+      "typeSource": "jsdoc",
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -41,6 +42,7 @@ exports[`fixtures (JSON) "runes-callback-annotated/input.svelte" 1`] = `
       "kind": "let",
       "description": "Will be fired if value has been changed",
       "type": "() => void",
+      "typeSource": "jsdoc",
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -62,6 +64,7 @@ exports[`fixtures (JSON) "runes-callback-annotated/input.svelte" 1`] = `
       "kind": "let",
       "description": "Form submission with value",
       "type": "(detail: { value: string }) => void",
+      "typeSource": "jsdoc",
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -136,7 +139,13 @@ exports[`fixtures (JSON) "slots-named/input.svelte" 1`] = `
       "name": "text",
       "kind": "let",
       "type": "string",
+      "typeSource": "default",
       "value": "\\"\\"",
+      "defaultValue": {
+        "raw": "\\"\\"",
+        "kind": "literal",
+        "value": ""
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -248,6 +257,7 @@ exports[`fixtures (JSON) "module-reexport-mixed/input.svelte" 1`] = `
       "name": "name",
       "kind": "let",
       "description": "Item name to display",
+      "typeSource": "unknown",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -268,7 +278,13 @@ exports[`fixtures (JSON) "module-reexport-mixed/input.svelte" 1`] = `
       "name": "value",
       "kind": "let",
       "description": "Optional item value",
+      "typeSource": "unknown",
       "value": "null",
+      "defaultValue": {
+        "raw": "null",
+        "kind": "literal",
+        "value": null
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -292,6 +308,11 @@ exports[`fixtures (JSON) "module-reexport-mixed/input.svelte" 1`] = `
       "kind": "const",
       "description": "A local utility function for formatting",
       "type": "(value: any) => string",
+      "typeSource": "jsdoc",
+      "defaultValue": {
+        "raw": "(value) => String(value)",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -303,7 +324,13 @@ exports[`fixtures (JSON) "module-reexport-mixed/input.svelte" 1`] = `
       "kind": "const",
       "description": "Application version number",
       "type": "string",
+      "typeSource": "default",
       "value": "\\"1.0.0\\"",
+      "defaultValue": {
+        "raw": "\\"1.0.0\\"",
+        "kind": "literal",
+        "value": "1.0.0"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -315,6 +342,7 @@ exports[`fixtures (JSON) "module-reexport-mixed/input.svelte" 1`] = `
       "kind": "function",
       "description": "Logger function",
       "type": "(msg: string) => void",
+      "typeSource": "jsdoc",
       "isFunction": true,
       "isFunctionDeclaration": true,
       "isRequired": false,
@@ -350,7 +378,13 @@ exports[`fixtures (JSON) "generics-multiple/input.svelte" 1`] = `
       "name": "headers",
       "kind": "let",
       "type": "ReadonlyArray<DataTableHeader<Row, Header>>",
+      "typeSource": "jsdoc",
       "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -371,7 +405,13 @@ exports[`fixtures (JSON) "generics-multiple/input.svelte" 1`] = `
       "name": "rows",
       "kind": "let",
       "type": "ReadonlyArray<Row>",
+      "typeSource": "jsdoc",
       "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -531,6 +571,7 @@ exports[`fixtures (JSON) "runes-dispatched-events/input.svelte" 1`] = `
     {
       "name": "value",
       "kind": "let",
+      "typeSource": "unknown",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -550,6 +591,7 @@ exports[`fixtures (JSON) "runes-dispatched-events/input.svelte" 1`] = `
     {
       "name": "onchange",
       "kind": "let",
+      "typeSource": "unknown",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -596,7 +638,13 @@ exports[`fixtures (JSON) "module-reexport/input.svelte" 1`] = `
       "name": "data",
       "kind": "let",
       "description": "Chart data to display",
+      "typeSource": "unknown",
       "value": "null",
+      "defaultValue": {
+        "raw": "null",
+        "kind": "literal",
+        "value": null
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -618,7 +666,13 @@ exports[`fixtures (JSON) "module-reexport/input.svelte" 1`] = `
       "kind": "let",
       "description": "Chart title",
       "type": "string",
+      "typeSource": "default",
       "value": "\\"Chart\\"",
+      "defaultValue": {
+        "raw": "\\"Chart\\"",
+        "kind": "literal",
+        "value": "Chart"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -682,7 +736,13 @@ exports[`fixtures (JSON) "resolve-default-chained/input.svelte" 1`] = `
       "kind": "let",
       "description": "Two levels deep: ALIAS -> ACTUAL_VALUE -> 42.",
       "type": "number",
+      "typeSource": "default",
       "value": "42",
+      "defaultValue": {
+        "raw": "42",
+        "kind": "literal",
+        "value": 42
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -704,7 +764,13 @@ exports[`fixtures (JSON) "resolve-default-chained/input.svelte" 1`] = `
       "kind": "let",
       "description": "Five levels deep: E -> D -> C -> B -> A -> \\"hello\\". Resolves within the depth limit.",
       "type": "string",
+      "typeSource": "default",
       "value": "\\"hello\\"",
+      "defaultValue": {
+        "raw": "\\"hello\\"",
+        "kind": "literal",
+        "value": "hello"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -725,7 +791,12 @@ exports[`fixtures (JSON) "resolve-default-chained/input.svelte" 1`] = `
       "name": "deep6",
       "kind": "let",
       "description": "Six levels deep: BEYOND -> Z -> Y -> X -> W -> V -> true. Exceeds the depth limit.",
+      "typeSource": "unknown",
       "value": "V",
+      "defaultValue": {
+        "raw": "V",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -773,6 +844,7 @@ exports[`fixtures (JSON) "accessor-param-returns/input.svelte" 1`] = `
       "kind": "function",
       "description": "Add a notification to the queue.\\nIf a notification with the same id exists, the call is ignored.",
       "type": "(notification: NotificationData) => string",
+      "typeSource": "jsdoc",
       "params": [
         {
           "name": "notification",
@@ -803,6 +875,7 @@ exports[`fixtures (JSON) "accessor-param-returns/input.svelte" 1`] = `
       "kind": "function",
       "description": "Remove a notification by id.",
       "type": "(id: string) => boolean",
+      "typeSource": "jsdoc",
       "params": [
         {
           "name": "id",
@@ -833,6 +906,7 @@ exports[`fixtures (JSON) "accessor-param-returns/input.svelte" 1`] = `
       "kind": "function",
       "description": "Clear all notifications.",
       "type": "() => void",
+      "typeSource": "jsdoc",
       "returnType": "void",
       "isFunction": true,
       "isFunctionDeclaration": true,
@@ -855,6 +929,7 @@ exports[`fixtures (JSON) "accessor-param-returns/input.svelte" 1`] = `
       "kind": "function",
       "description": "Get notification count.",
       "type": "() => number",
+      "typeSource": "jsdoc",
       "returnType": "number",
       "isFunction": true,
       "isFunctionDeclaration": true,
@@ -877,6 +952,7 @@ exports[`fixtures (JSON) "accessor-param-returns/input.svelte" 1`] = `
       "kind": "function",
       "description": "Update a notification.",
       "type": "(id: string, data: NotificationData) => boolean",
+      "typeSource": "jsdoc",
       "params": [
         {
           "name": "id",
@@ -913,6 +989,7 @@ exports[`fixtures (JSON) "accessor-param-returns/input.svelte" 1`] = `
       "kind": "function",
       "description": "Function with only @param, no @returns (should default to any)",
       "type": "() => any",
+      "typeSource": "jsdoc",
       "params": [
         {
           "name": "message",
@@ -942,6 +1019,7 @@ exports[`fixtures (JSON) "accessor-param-returns/input.svelte" 1`] = `
       "kind": "function",
       "description": "Computes the depth of a tree leaf node relative to <ul role=\\"tree\\" />\\n@example \\n\`\`\`js\\nlet nodeElement;\\n$: depth = computeTreeLeafDepth(nodeElement);\\n\`\`\`",
       "type": "(node: HTMLLIElement) => number",
+      "typeSource": "jsdoc",
       "params": [
         {
           "name": "node",
@@ -1004,7 +1082,13 @@ exports[`fixtures (JSON) "typedef-description/input.svelte" 1`] = `
       "kind": "let",
       "description": "Specify the gap between items in the stack.\\nThe scale maps to Carbon layout values.\\nUse 0 to omit any gap class.\\nAlternatively, specify a custom value (e.g., \\"200px\\" or \\"1.5rem\\").\\nCustom values *must* be a string.",
       "type": "StackScaleOrString",
+      "typeSource": "jsdoc",
       "value": "1",
+      "defaultValue": {
+        "raw": "1",
+        "kind": "literal",
+        "value": 1
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -1080,7 +1164,17 @@ exports[`fixtures (JSON) "typedef-jsdoc-properties/input.svelte" 1`] = `
       "kind": "let",
       "description": "Represents a user in the system.",
       "type": "User",
+      "typeSource": "jsdoc",
       "value": "{ name: \\"John\\", email: \\"john@example.com\\", age: 30 }",
+      "defaultValue": {
+        "raw": "{ name: \\"John\\", email: \\"john@example.com\\", age: 30 }",
+        "kind": "object",
+        "value": {
+          "name": "John",
+          "email": "john@example.com",
+          "age": 30
+        }
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -1102,7 +1196,16 @@ exports[`fixtures (JSON) "typedef-jsdoc-properties/input.svelte" 1`] = `
       "kind": "let",
       "description": "Configuration options for the component.",
       "type": "ComponentConfig",
+      "typeSource": "jsdoc",
       "value": "{ enabled: true, theme: \\"dark\\" }",
+      "defaultValue": {
+        "raw": "{ enabled: true, theme: \\"dark\\" }",
+        "kind": "object",
+        "value": {
+          "enabled": true,
+          "theme": "dark"
+        }
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -1124,7 +1227,16 @@ exports[`fixtures (JSON) "typedef-jsdoc-properties/input.svelte" 1`] = `
       "kind": "let",
       "description": "Simple typedef without properties (backwards compatibility test).",
       "type": "SimpleType",
+      "typeSource": "jsdoc",
       "value": "{ id: 1, label: \\"Test\\" }",
+      "defaultValue": {
+        "raw": "{ id: 1, label: \\"Test\\" }",
+        "kind": "object",
+        "value": {
+          "id": 1,
+          "label": "Test"
+        }
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -1190,7 +1302,13 @@ exports[`fixtures (JSON) "legacy-bind-component-selected/input.svelte" 1`] = `
       "name": "pageSize",
       "kind": "let",
       "type": "number",
+      "typeSource": "default",
       "value": "10",
+      "defaultValue": {
+        "raw": "10",
+        "kind": "literal",
+        "value": 10
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -1204,6 +1322,318 @@ exports[`fixtures (JSON) "legacy-bind-component-selected/input.svelte" 1`] = `
         "end": {
           "line": 2,
           "column": 27
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "prop-metadata-consolidated/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 36,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "ts",
+  "props": [
+    {
+      "name": "typed",
+      "kind": "let",
+      "type": "string",
+      "typeSource": "typescript",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 8,
+          "column": 2
+        },
+        "end": {
+          "line": 8,
+          "column": 27
+        }
+      }
+    },
+    {
+      "name": "documented",
+      "kind": "let",
+      "description": "JSDoc wins over default inference.",
+      "type": "number",
+      "typeSource": "jsdoc",
+      "value": "1",
+      "defaultValue": {
+        "raw": "1",
+        "kind": "literal",
+        "value": 1
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 14,
+          "column": 2
+        },
+        "end": {
+          "line": 14,
+          "column": 28
+        }
+      }
+    },
+    {
+      "name": "literalDefault",
+      "kind": "let",
+      "type": "string",
+      "typeSource": "default",
+      "value": "\\"md\\"",
+      "defaultValue": {
+        "raw": "\\"md\\"",
+        "kind": "literal",
+        "value": "md"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 16,
+          "column": 2
+        },
+        "end": {
+          "line": 16,
+          "column": 35
+        }
+      }
+    },
+    {
+      "name": "boolDefault",
+      "kind": "let",
+      "type": "boolean",
+      "typeSource": "default",
+      "value": "true",
+      "defaultValue": {
+        "raw": "true",
+        "kind": "literal",
+        "value": true
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 17,
+          "column": 2
+        },
+        "end": {
+          "line": 17,
+          "column": 32
+        }
+      }
+    },
+    {
+      "name": "arrayDefault",
+      "kind": "let",
+      "type": "[1, \\"two\\", false]",
+      "typeSource": "default",
+      "value": "[1, \\"two\\", false]",
+      "defaultValue": {
+        "raw": "[1, \\"two\\", false]",
+        "kind": "array",
+        "value": [
+          1,
+          "two",
+          false
+        ]
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 18,
+          "column": 2
+        },
+        "end": {
+          "line": 18,
+          "column": 46
+        }
+      }
+    },
+    {
+      "name": "objectDefault",
+      "kind": "let",
+      "type": "{ size: \\"md\\", count: 2 }",
+      "typeSource": "default",
+      "value": "{ size: \\"md\\", count: 2 }",
+      "defaultValue": {
+        "raw": "{ size: \\"md\\", count: 2 }",
+        "kind": "object",
+        "value": {
+          "size": "md",
+          "count": 2
+        }
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 19,
+          "column": 2
+        },
+        "end": {
+          "line": 19,
+          "column": 54
+        }
+      }
+    },
+    {
+      "name": "callbackDefault",
+      "kind": "let",
+      "type": "(...args: any[]) => any",
+      "typeSource": "default",
+      "defaultValue": {
+        "raw": "(value: string) => value.toUpperCase()",
+        "kind": "function"
+      },
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 20,
+          "column": 2
+        },
+        "end": {
+          "line": 20,
+          "column": 70
+        }
+      }
+    },
+    {
+      "name": "callDefault",
+      "kind": "let",
+      "typeSource": "unknown",
+      "value": "makeDefault()",
+      "defaultValue": {
+        "raw": "makeDefault()",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 21,
+          "column": 2
+        },
+        "end": {
+          "line": 21,
+          "column": 41
+        }
+      }
+    },
+    {
+      "name": "memberDefault",
+      "kind": "let",
+      "type": "number",
+      "typeSource": "default",
+      "value": "Number.MAX_VALUE",
+      "defaultValue": {
+        "raw": "Number.MAX_VALUE",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 22,
+          "column": 2
+        },
+        "end": {
+          "line": 22,
+          "column": 46
+        }
+      }
+    },
+    {
+      "name": "expressionDefault",
+      "kind": "let",
+      "type": "number",
+      "typeSource": "jsdoc",
+      "value": "count + 1",
+      "defaultValue": {
+        "raw": "count + 1",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 27,
+          "column": 2
+        },
+        "end": {
+          "line": 27,
+          "column": 43
+        }
+      }
+    },
+    {
+      "name": "unknown",
+      "kind": "let",
+      "typeSource": "unknown",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 29,
+          "column": 2
+        },
+        "end": {
+          "line": 29,
+          "column": 21
         }
       }
     }
@@ -1237,7 +1667,13 @@ exports[`fixtures (JSON) "template-tag-multiple/input.svelte" 1`] = `
       "name": "headers",
       "kind": "let",
       "type": "ReadonlyArray<DataTableHeader<Row, Header>>",
+      "typeSource": "jsdoc",
       "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -1258,7 +1694,13 @@ exports[`fixtures (JSON) "template-tag-multiple/input.svelte" 1`] = `
       "name": "rows",
       "kind": "let",
       "type": "ReadonlyArray<Row>",
+      "typeSource": "jsdoc",
       "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -1340,6 +1782,7 @@ exports[`fixtures (JSON) "runes-props-intersection/input.svelte" 1`] = `
       "name": "label",
       "kind": "let",
       "type": "string",
+      "typeSource": "typescript",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -1360,6 +1803,7 @@ exports[`fixtures (JSON) "runes-props-intersection/input.svelte" 1`] = `
       "name": "disabled",
       "kind": "let",
       "type": "boolean",
+      "typeSource": "typescript",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -1494,7 +1938,13 @@ exports[`fixtures (JSON) "legacy-bind-component-ref-forward/input.svelte" 1`] = 
     {
       "name": "listRef",
       "kind": "let",
+      "typeSource": "unknown",
       "value": "null",
+      "defaultValue": {
+        "raw": "null",
+        "kind": "literal",
+        "value": null
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -1582,6 +2032,7 @@ exports[`fixtures (JSON) "legacy-export-typed/input.svelte" 1`] = `
       "name": "title",
       "kind": "let",
       "type": "string",
+      "typeSource": "typescript",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -1602,7 +2053,13 @@ exports[`fixtures (JSON) "legacy-export-typed/input.svelte" 1`] = `
       "name": "count",
       "kind": "let",
       "type": "number",
+      "typeSource": "typescript",
       "value": "0",
+      "defaultValue": {
+        "raw": "0",
+        "kind": "literal",
+        "value": 0
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -1748,6 +2205,7 @@ exports[`fixtures (JSON) "jsdoc-type-params/input.svelte" 1`] = `
       "kind": "function",
       "description": "Programmatically show a node by \`id\`.\\nBy default, the matching node will be expanded, selected, and focused.\\nUse the options parameter to customize this behavior.\\n@example \\n// Show node with all default behaviors (expand, select, focus)\\ntreeView.showNode(\\"node-1\\");\\n\\n// Expand node without selecting it\\ntreeView.showNode(\\"node-2\\", { select: false });\\n\\n// Select node without expanding or focusing\\ntreeView.showNode(\\"node-3\\", { expand: false, focus: false });",
       "type": "(id: TreeNodeId, options?: { expand?: boolean; select?: boolean; focus?: boolean }) => void",
+      "typeSource": "jsdoc",
       "params": [
         {
           "name": "id",
@@ -1814,7 +2272,13 @@ exports[`fixtures (JSON) "reactive-shadowed-local-reassignment/input.svelte" 1`]
       "name": "disabled",
       "kind": "let",
       "type": "boolean",
+      "typeSource": "default",
       "value": "false",
+      "defaultValue": {
+        "raw": "false",
+        "kind": "literal",
+        "value": false
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -1861,7 +2325,13 @@ exports[`fixtures (JSON) "empty-collection-defaults/input.svelte" 1`] = `
       "name": "items",
       "kind": "let",
       "type": "[]",
+      "typeSource": "default",
       "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -1882,7 +2352,13 @@ exports[`fixtures (JSON) "empty-collection-defaults/input.svelte" 1`] = `
       "name": "config",
       "kind": "let",
       "type": "{}",
+      "typeSource": "default",
       "value": "{}",
+      "defaultValue": {
+        "raw": "{}",
+        "kind": "object",
+        "value": {}
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -1903,7 +2379,13 @@ exports[`fixtures (JSON) "empty-collection-defaults/input.svelte" 1`] = `
       "name": "names",
       "kind": "let",
       "type": "string[]",
+      "typeSource": "jsdoc",
       "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -1924,7 +2406,13 @@ exports[`fixtures (JSON) "empty-collection-defaults/input.svelte" 1`] = `
       "name": "settings",
       "kind": "let",
       "type": "{ enabled: boolean }",
+      "typeSource": "jsdoc",
       "value": "{}",
+      "defaultValue": {
+        "raw": "{}",
+        "kind": "object",
+        "value": {}
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -1945,7 +2433,16 @@ exports[`fixtures (JSON) "empty-collection-defaults/input.svelte" 1`] = `
       "name": "nested",
       "kind": "let",
       "type": "{ items: [], meta: {} }",
+      "typeSource": "default",
       "value": "{ items: [], meta: {} }",
+      "defaultValue": {
+        "raw": "{ items: [], meta: {} }",
+        "kind": "object",
+        "value": {
+          "items": [],
+          "meta": {}
+        }
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -1992,6 +2489,11 @@ exports[`fixtures (JSON) "function-declaration/input.svelte" 1`] = `
       "name": "fnA",
       "kind": "let",
       "type": "(...args: any[]) => any",
+      "typeSource": "default",
+      "defaultValue": {
+        "raw": "() => {}",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -2012,6 +2514,11 @@ exports[`fixtures (JSON) "function-declaration/input.svelte" 1`] = `
       "name": "fnB",
       "kind": "const",
       "type": "(...args: any[]) => any",
+      "typeSource": "default",
+      "defaultValue": {
+        "raw": "() => {}",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -2032,6 +2539,7 @@ exports[`fixtures (JSON) "function-declaration/input.svelte" 1`] = `
       "name": "add",
       "kind": "function",
       "type": "() => any",
+      "typeSource": "inferred",
       "isFunction": true,
       "isFunctionDeclaration": true,
       "isRequired": false,
@@ -2053,6 +2561,7 @@ exports[`fixtures (JSON) "function-declaration/input.svelte" 1`] = `
       "kind": "function",
       "description": "Multiplies two numbers",
       "type": "(a: number, b: number) => number",
+      "typeSource": "jsdoc",
       "isFunction": true,
       "isFunctionDeclaration": true,
       "isRequired": false,
@@ -2200,7 +2709,12 @@ exports[`fixtures (JSON) "binary-expression-numeric/input.svelte" 1`] = `
       "name": "sum",
       "kind": "let",
       "type": "number",
+      "typeSource": "jsdoc",
       "value": "1 + 2",
+      "defaultValue": {
+        "raw": "1 + 2",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -2221,7 +2735,12 @@ exports[`fixtures (JSON) "binary-expression-numeric/input.svelte" 1`] = `
       "name": "product",
       "kind": "let",
       "type": "number",
+      "typeSource": "jsdoc",
       "value": "3 * 4",
+      "defaultValue": {
+        "raw": "3 * 4",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -2242,7 +2761,12 @@ exports[`fixtures (JSON) "binary-expression-numeric/input.svelte" 1`] = `
       "name": "ratio",
       "kind": "let",
       "type": "number",
+      "typeSource": "jsdoc",
       "value": "10 / 2",
+      "defaultValue": {
+        "raw": "10 / 2",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -2263,7 +2787,12 @@ exports[`fixtures (JSON) "binary-expression-numeric/input.svelte" 1`] = `
       "name": "remainder",
       "kind": "let",
       "type": "number",
+      "typeSource": "jsdoc",
       "value": "17 % 5",
+      "defaultValue": {
+        "raw": "17 % 5",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -2284,7 +2813,12 @@ exports[`fixtures (JSON) "binary-expression-numeric/input.svelte" 1`] = `
       "name": "computed",
       "kind": "let",
       "type": "number",
+      "typeSource": "jsdoc",
       "value": "(2 + 3) * 4",
+      "defaultValue": {
+        "raw": "(2 + 3) * 4",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -2305,7 +2839,12 @@ exports[`fixtures (JSON) "binary-expression-numeric/input.svelte" 1`] = `
       "name": "circumference",
       "kind": "let",
       "type": "number",
+      "typeSource": "jsdoc",
       "value": "2 * Math.PI * 10",
+      "defaultValue": {
+        "raw": "2 * Math.PI * 10",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -2326,7 +2865,12 @@ exports[`fixtures (JSON) "binary-expression-numeric/input.svelte" 1`] = `
       "name": "flags",
       "kind": "let",
       "type": "number",
+      "typeSource": "jsdoc",
       "value": "1 | 2 | 4",
+      "defaultValue": {
+        "raw": "1 | 2 | 4",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -2373,7 +2917,13 @@ exports[`fixtures (JSON) "reactive-shadowed-callback-param/input.svelte" 1`] = `
       "name": "disabled",
       "kind": "let",
       "type": "boolean",
+      "typeSource": "default",
       "value": "false",
+      "defaultValue": {
+        "raw": "false",
+        "kind": "literal",
+        "value": false
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -2421,7 +2971,12 @@ exports[`fixtures (JSON) "typedef-event-shared-block/input.svelte" 1`] = `
       "kind": "let",
       "description": "Determine the current breakpoint size.",
       "type": "BreakpointSize",
+      "typeSource": "jsdoc",
       "value": "undefined",
+      "defaultValue": {
+        "raw": "undefined",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -2443,7 +2998,19 @@ exports[`fixtures (JSON) "typedef-event-shared-block/input.svelte" 1`] = `
       "kind": "let",
       "description": "Sizes as an object.",
       "type": "Record<BreakpointSize, boolean>",
+      "typeSource": "jsdoc",
       "value": "{     sm: false,     md: false,     lg: false,     xlg: false,     max: false,   }",
+      "defaultValue": {
+        "raw": "{     sm: false,     md: false,     lg: false,     xlg: false,     max: false,   }",
+        "kind": "object",
+        "value": {
+          "sm": false,
+          "md": false,
+          "lg": false,
+          "xlg": false,
+          "max": false
+        }
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -2645,7 +3212,13 @@ exports[`fixtures (JSON) "theme-component/input.svelte" 1`] = `
       "kind": "let",
       "description": "Set the current Carbon theme",
       "type": "CarbonTheme",
+      "typeSource": "jsdoc",
       "value": "\\"white\\"",
+      "defaultValue": {
+        "raw": "\\"white\\"",
+        "kind": "literal",
+        "value": "white"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -2667,7 +3240,13 @@ exports[`fixtures (JSON) "theme-component/input.svelte" 1`] = `
       "kind": "let",
       "description": "Customize a theme with your own tokens\\n@see https://carbondesignsystem.com/guidelines/themes/overview#customizing-a-theme",
       "type": "{ [token: string]: any; }",
+      "typeSource": "jsdoc",
       "value": "{}",
+      "defaultValue": {
+        "raw": "{}",
+        "kind": "object",
+        "value": {}
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -2689,7 +3268,13 @@ exports[`fixtures (JSON) "theme-component/input.svelte" 1`] = `
       "kind": "let",
       "description": "Set to \`true\` to persist the theme using window.localStorage",
       "type": "boolean",
+      "typeSource": "default",
       "value": "false",
+      "defaultValue": {
+        "raw": "false",
+        "kind": "literal",
+        "value": false
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -2711,7 +3296,13 @@ exports[`fixtures (JSON) "theme-component/input.svelte" 1`] = `
       "kind": "let",
       "description": "Specify the local storage key",
       "type": "string",
+      "typeSource": "default",
       "value": "\\"theme\\"",
+      "defaultValue": {
+        "raw": "\\"theme\\"",
+        "kind": "literal",
+        "value": "theme"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -2734,7 +3325,19 @@ exports[`fixtures (JSON) "theme-component/input.svelte" 1`] = `
       "name": "themes",
       "kind": "const",
       "type": "Record<CarbonTheme, string>",
+      "typeSource": "jsdoc",
       "value": "{     white: \\"White\\",     g10: \\"Gray 10\\",     g80: \\"Gray 80\\",     g90: \\"Gray 90\\",     g100: \\"Gray 100\\",   }",
+      "defaultValue": {
+        "raw": "{     white: \\"White\\",     g10: \\"Gray 10\\",     g80: \\"Gray 80\\",     g90: \\"Gray 90\\",     g100: \\"Gray 100\\",   }",
+        "kind": "object",
+        "value": {
+          "white": "White",
+          "g10": "Gray 10",
+          "g80": "Gray 80",
+          "g90": "Gray 90",
+          "g100": "Gray 100"
+        }
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -2809,6 +3412,11 @@ exports[`fixtures (JSON) "callback/input.svelte" 1`] = `
       "kind": "let",
       "description": "Callback fired when the value changes.",
       "type": "OnChange",
+      "typeSource": "jsdoc",
+      "defaultValue": {
+        "raw": "(value, index) => {}",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -2829,6 +3437,11 @@ exports[`fixtures (JSON) "callback/input.svelte" 1`] = `
       "name": "comparator",
       "kind": "let",
       "type": "Comparator",
+      "typeSource": "jsdoc",
+      "defaultValue": {
+        "raw": "(a, b) => a - b",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -2850,6 +3463,11 @@ exports[`fixtures (JSON) "callback/input.svelte" 1`] = `
       "kind": "let",
       "description": "No-arg callback.",
       "type": "OnClose",
+      "typeSource": "jsdoc",
+      "defaultValue": {
+        "raw": "() => {}",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -2955,8 +3573,15 @@ exports[`fixtures (JSON) "runes-bindable/input.svelte" 1`] = `
     {
       "name": "value",
       "kind": "let",
+      "bindable": true,
       "type": "number",
+      "typeSource": "default",
       "value": "0",
+      "defaultValue": {
+        "raw": "0",
+        "kind": "literal",
+        "value": 0
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -3144,7 +3769,13 @@ exports[`fixtures (JSON) "infer-basic/input.svelte" 1`] = `
     {
       "name": "ref",
       "kind": "let",
+      "typeSource": "unknown",
       "value": "null",
+      "defaultValue": {
+        "raw": "null",
+        "kind": "literal",
+        "value": null
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -3165,7 +3796,13 @@ exports[`fixtures (JSON) "infer-basic/input.svelte" 1`] = `
       "name": "propBool",
       "kind": "let",
       "type": "boolean",
+      "typeSource": "default",
       "value": "true",
+      "defaultValue": {
+        "raw": "true",
+        "kind": "literal",
+        "value": true
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -3186,7 +3823,13 @@ exports[`fixtures (JSON) "infer-basic/input.svelte" 1`] = `
       "name": "propString",
       "kind": "let",
       "type": "string",
+      "typeSource": "default",
       "value": "\\"\\"",
+      "defaultValue": {
+        "raw": "\\"\\"",
+        "kind": "literal",
+        "value": ""
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -3206,6 +3849,7 @@ exports[`fixtures (JSON) "infer-basic/input.svelte" 1`] = `
     {
       "name": "name",
       "kind": "let",
+      "typeSource": "unknown",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -3226,7 +3870,12 @@ exports[`fixtures (JSON) "infer-basic/input.svelte" 1`] = `
       "name": "id",
       "kind": "let",
       "type": "string",
+      "typeSource": "default",
       "value": "\\"\\" + Math.random().toString(36)",
+      "defaultValue": {
+        "raw": "\\"\\" + Math.random().toString(36)",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -3247,7 +3896,15 @@ exports[`fixtures (JSON) "infer-basic/input.svelte" 1`] = `
       "name": "propConst",
       "kind": "const",
       "type": "{ 1: true }",
+      "typeSource": "default",
       "value": "{ 1: true }",
+      "defaultValue": {
+        "raw": "{ 1: true }",
+        "kind": "object",
+        "value": {
+          "1": true
+        }
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -3268,6 +3925,7 @@ exports[`fixtures (JSON) "infer-basic/input.svelte" 1`] = `
       "name": "fn",
       "kind": "function",
       "type": "() => any",
+      "typeSource": "inferred",
       "isFunction": true,
       "isFunctionDeclaration": true,
       "isRequired": false,
@@ -3375,7 +4033,13 @@ exports[`fixtures (JSON) "rest-props-description-multiline/input.svelte" 1`] = `
       "name": "variant",
       "kind": "let",
       "type": "\\"inline\\" | \\"single\\" | \\"multi\\"",
+      "typeSource": "jsdoc",
       "value": "\\"single\\"",
+      "defaultValue": {
+        "raw": "\\"single\\"",
+        "kind": "literal",
+        "value": "single"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -3426,6 +4090,7 @@ exports[`fixtures (JSON) "runes-props-basic/input.svelte" 1`] = `
     {
       "name": "title",
       "kind": "let",
+      "typeSource": "unknown",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -3446,7 +4111,13 @@ exports[`fixtures (JSON) "runes-props-basic/input.svelte" 1`] = `
       "name": "count",
       "kind": "let",
       "type": "number",
+      "typeSource": "default",
       "value": "0",
+      "defaultValue": {
+        "raw": "0",
+        "kind": "literal",
+        "value": 0
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -3542,7 +4213,13 @@ exports[`fixtures (JSON) "unary-expression-defaults/input.svelte" 1`] = `
       "kind": "let",
       "description": "Negative number constant",
       "type": "number",
+      "typeSource": "default",
       "value": "-1",
+      "defaultValue": {
+        "raw": "-1",
+        "kind": "literal",
+        "value": -1
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -3564,7 +4241,13 @@ exports[`fixtures (JSON) "unary-expression-defaults/input.svelte" 1`] = `
       "kind": "let",
       "description": "Negative decimal",
       "type": "number",
+      "typeSource": "default",
       "value": "-0.5",
+      "defaultValue": {
+        "raw": "-0.5",
+        "kind": "literal",
+        "value": -0.5
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -3585,7 +4268,13 @@ exports[`fixtures (JSON) "unary-expression-defaults/input.svelte" 1`] = `
       "name": "inverted",
       "kind": "let",
       "type": "boolean",
+      "typeSource": "jsdoc",
       "value": "!false",
+      "defaultValue": {
+        "raw": "!false",
+        "kind": "literal",
+        "value": true
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -3607,7 +4296,12 @@ exports[`fixtures (JSON) "unary-expression-defaults/input.svelte" 1`] = `
       "kind": "let",
       "description": "Bitwise NOT",
       "type": "number",
+      "typeSource": "default",
       "value": "~0",
+      "defaultValue": {
+        "raw": "~0",
+        "kind": "literal"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -3629,7 +4323,12 @@ exports[`fixtures (JSON) "unary-expression-defaults/input.svelte" 1`] = `
       "kind": "let",
       "description": "Double negation",
       "type": "number",
+      "typeSource": "default",
       "value": "-(-5)",
+      "defaultValue": {
+        "raw": "-(-5)",
+        "kind": "literal"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -3702,7 +4401,15 @@ exports[`fixtures (JSON) "module-reexport-direct/input.svelte" 1`] = `
       "kind": "let",
       "description": "Configuration settings",
       "type": "{ enabled: true }",
+      "typeSource": "default",
       "value": "{ enabled: true }",
+      "defaultValue": {
+        "raw": "{ enabled: true }",
+        "kind": "object",
+        "value": {
+          "enabled": true
+        }
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -3723,6 +4430,7 @@ exports[`fixtures (JSON) "module-reexport-direct/input.svelte" 1`] = `
       "name": "onReady",
       "kind": "let",
       "description": "Optional callback function",
+      "typeSource": "unknown",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -3800,7 +4508,16 @@ exports[`fixtures (JSON) "slot-prop-dotted-access/input.svelte" 1`] = `
       "name": "point",
       "kind": "let",
       "type": "{ x: number; y: number }",
+      "typeSource": "jsdoc",
       "value": "{ x: 0, y: 0 }",
+      "defaultValue": {
+        "raw": "{ x: 0, y: 0 }",
+        "kind": "object",
+        "value": {
+          "x": 0,
+          "y": 0
+        }
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -3863,7 +4580,13 @@ exports[`fixtures (JSON) "template-tag/input.svelte" 1`] = `
       "name": "headers",
       "kind": "let",
       "type": "ReadonlyArray<DataTableHeader<Row>>",
+      "typeSource": "jsdoc",
       "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -3884,7 +4607,13 @@ exports[`fixtures (JSON) "template-tag/input.svelte" 1`] = `
       "name": "rows",
       "kind": "let",
       "type": "ReadonlyArray<Row>",
+      "typeSource": "jsdoc",
       "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -3965,6 +4694,7 @@ exports[`fixtures (JSON) "runes-snippets-named/input.svelte" 1`] = `
     {
       "name": "item",
       "kind": "let",
+      "typeSource": "unknown",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -4027,7 +4757,13 @@ exports[`fixtures (JSON) "typed-slots/input.svelte" 1`] = `
       "name": "prop",
       "kind": "let",
       "type": "number",
+      "typeSource": "default",
       "value": "0",
+      "defaultValue": {
+        "raw": "0",
+        "kind": "literal",
+        "value": 0
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -4106,7 +4842,12 @@ exports[`fixtures (JSON) "constructor-expression-defaults/input.svelte" 1`] = `
       "name": "cache",
       "kind": "let",
       "type": "Map<string, number>",
+      "typeSource": "jsdoc",
       "value": "new Map()",
+      "defaultValue": {
+        "raw": "new Map()",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -4127,7 +4868,12 @@ exports[`fixtures (JSON) "constructor-expression-defaults/input.svelte" 1`] = `
       "name": "selected",
       "kind": "let",
       "type": "Set<string>",
+      "typeSource": "jsdoc",
       "value": "new Set()",
+      "defaultValue": {
+        "raw": "new Set()",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -4148,7 +4894,12 @@ exports[`fixtures (JSON) "constructor-expression-defaults/input.svelte" 1`] = `
       "name": "createdAt",
       "kind": "let",
       "type": "Date",
+      "typeSource": "default",
       "value": "new Date()",
+      "defaultValue": {
+        "raw": "new Date()",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -4169,7 +4920,12 @@ exports[`fixtures (JSON) "constructor-expression-defaults/input.svelte" 1`] = `
       "name": "metadata",
       "kind": "let",
       "type": "WeakMap<object, any>",
+      "typeSource": "jsdoc",
       "value": "new WeakMap()",
+      "defaultValue": {
+        "raw": "new WeakMap()",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -4190,7 +4946,12 @@ exports[`fixtures (JSON) "constructor-expression-defaults/input.svelte" 1`] = `
       "name": "buffer",
       "kind": "let",
       "type": "number[]",
+      "typeSource": "jsdoc",
       "value": "new Array(10)",
+      "defaultValue": {
+        "raw": "new Array(10)",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -4211,7 +4972,12 @@ exports[`fixtures (JSON) "constructor-expression-defaults/input.svelte" 1`] = `
       "name": "items",
       "kind": "let",
       "type": "Map<any, any>",
+      "typeSource": "default",
       "value": "new Map()",
+      "defaultValue": {
+        "raw": "new Map()",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -4232,7 +4998,12 @@ exports[`fixtures (JSON) "constructor-expression-defaults/input.svelte" 1`] = `
       "name": "tags",
       "kind": "let",
       "type": "Set<any>",
+      "typeSource": "default",
       "value": "new Set()",
+      "defaultValue": {
+        "raw": "new Set()",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -4253,7 +5024,12 @@ exports[`fixtures (JSON) "constructor-expression-defaults/input.svelte" 1`] = `
       "name": "weakData",
       "kind": "let",
       "type": "WeakMap<object, any>",
+      "typeSource": "default",
       "value": "new WeakMap()",
+      "defaultValue": {
+        "raw": "new WeakMap()",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -4274,7 +5050,12 @@ exports[`fixtures (JSON) "constructor-expression-defaults/input.svelte" 1`] = `
       "name": "weakRefs",
       "kind": "let",
       "type": "WeakSet<object>",
+      "typeSource": "default",
       "value": "new WeakSet()",
+      "defaultValue": {
+        "raw": "new WeakSet()",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -4295,7 +5076,12 @@ exports[`fixtures (JSON) "constructor-expression-defaults/input.svelte" 1`] = `
       "name": "itemsArray",
       "kind": "let",
       "type": "any[]",
+      "typeSource": "default",
       "value": "new Array()",
+      "defaultValue": {
+        "raw": "new Array()",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -4316,7 +5102,12 @@ exports[`fixtures (JSON) "constructor-expression-defaults/input.svelte" 1`] = `
       "name": "pattern",
       "kind": "let",
       "type": "RegExp",
+      "typeSource": "default",
       "value": "new RegExp(\\"test\\")",
+      "defaultValue": {
+        "raw": "new RegExp(\\"test\\")",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -4337,7 +5128,12 @@ exports[`fixtures (JSON) "constructor-expression-defaults/input.svelte" 1`] = `
       "name": "customError",
       "kind": "let",
       "type": "Error",
+      "typeSource": "default",
       "value": "new Error(\\"message\\")",
+      "defaultValue": {
+        "raw": "new Error(\\"message\\")",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -4384,7 +5180,13 @@ exports[`fixtures (JSON) "default-slot-with-props/input.svelte" 1`] = `
       "name": "items",
       "kind": "let",
       "type": "string[]",
+      "typeSource": "jsdoc",
       "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -4448,7 +5250,13 @@ exports[`fixtures (JSON) "runes-snippets-annotated/input.svelte" 1`] = `
       "name": "prop",
       "kind": "let",
       "type": "number",
+      "typeSource": "default",
       "value": "0",
+      "defaultValue": {
+        "raw": "0",
+        "kind": "literal",
+        "value": 0
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -4541,6 +5349,7 @@ exports[`fixtures (JSON) "runes-snippet-description-hyphens/input.svelte" 1`] = 
     {
       "name": "row",
       "kind": "let",
+      "typeSource": "unknown",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -4560,6 +5369,7 @@ exports[`fixtures (JSON) "runes-snippet-description-hyphens/input.svelte" 1`] = 
     {
       "name": "col",
       "kind": "let",
+      "typeSource": "unknown",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -4623,7 +5433,13 @@ exports[`fixtures (JSON) "element-tag-map-table-cells/input.svelte" 1`] = `
       "name": "cellType",
       "kind": "let",
       "type": "\\"td\\" | \\"th\\"",
+      "typeSource": "jsdoc",
       "value": "\\"td\\"",
+      "defaultValue": {
+        "raw": "\\"td\\"",
+        "kind": "literal",
+        "value": "td"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -4941,6 +5757,238 @@ exports[`fixtures (JSON) "dispatched-events/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "runes-prop-metadata-consolidated/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 27,
+      "column": 0
+    }
+  },
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "class",
+      "localName": "className",
+      "kind": "let",
+      "type": "string",
+      "typeSource": "default",
+      "value": "\\"primary\\"",
+      "defaultValue": {
+        "raw": "\\"primary\\"",
+        "kind": "literal",
+        "value": "primary"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 7,
+          "column": 4
+        },
+        "end": {
+          "line": 7,
+          "column": 32
+        }
+      }
+    },
+    {
+      "name": "value",
+      "kind": "let",
+      "bindable": true,
+      "type": "number",
+      "typeSource": "default",
+      "value": "0",
+      "defaultValue": {
+        "raw": "0",
+        "kind": "literal",
+        "value": 0
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true,
+      "source": {
+        "start": {
+          "line": 8,
+          "column": 4
+        },
+        "end": {
+          "line": 8,
+          "column": 24
+        }
+      }
+    },
+    {
+      "name": "open",
+      "kind": "let",
+      "bindable": true,
+      "typeSource": "unknown",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": true,
+      "source": {
+        "start": {
+          "line": 9,
+          "column": 4
+        },
+        "end": {
+          "line": 9,
+          "column": 22
+        }
+      }
+    },
+    {
+      "name": "items",
+      "kind": "let",
+      "type": "[1, 2]",
+      "typeSource": "default",
+      "value": "[1, 2]",
+      "defaultValue": {
+        "raw": "[1, 2]",
+        "kind": "array",
+        "value": [
+          1,
+          2
+        ]
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 10,
+          "column": 4
+        },
+        "end": {
+          "line": 10,
+          "column": 18
+        }
+      }
+    },
+    {
+      "name": "options",
+      "kind": "let",
+      "type": "{ dense: true }",
+      "typeSource": "default",
+      "value": "{ dense: true }",
+      "defaultValue": {
+        "raw": "{ dense: true }",
+        "kind": "object",
+        "value": {
+          "dense": true
+        }
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 11,
+          "column": 4
+        },
+        "end": {
+          "line": 11,
+          "column": 29
+        }
+      }
+    },
+    {
+      "name": "onaction",
+      "kind": "let",
+      "type": "(...args: any[]) => any",
+      "typeSource": "default",
+      "defaultValue": {
+        "raw": "() => {}",
+        "kind": "function"
+      },
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 12,
+          "column": 4
+        },
+        "end": {
+          "line": 12,
+          "column": 23
+        }
+      }
+    },
+    {
+      "name": "computed",
+      "kind": "let",
+      "typeSource": "unknown",
+      "value": "createDefault()",
+      "defaultValue": {
+        "raw": "createDefault()",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 13,
+          "column": 4
+        },
+        "end": {
+          "line": 13,
+          "column": 30
+        }
+      }
+    },
+    {
+      "name": "bare",
+      "kind": "let",
+      "typeSource": "unknown",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 14,
+          "column": 4
+        },
+        "end": {
+          "line": 14,
+          "column": 8
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "slot-jsdoc-two-slots-one-block-order/input.svelte" 1`] = `
 "{
   "source": {
@@ -5066,7 +6114,13 @@ exports[`fixtures (JSON) "module-reexport-renamed/input.svelte" 1`] = `
       "kind": "let",
       "description": "Controls visibility",
       "type": "boolean",
+      "typeSource": "default",
       "value": "true",
+      "defaultValue": {
+        "raw": "true",
+        "kind": "literal",
+        "value": true
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -5088,7 +6142,13 @@ exports[`fixtures (JSON) "module-reexport-renamed/input.svelte" 1`] = `
       "kind": "let",
       "description": "Configuration object",
       "type": "{}",
+      "typeSource": "default",
       "value": "{}",
+      "defaultValue": {
+        "raw": "{}",
+        "kind": "object",
+        "value": {}
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -5151,7 +6211,15 @@ exports[`fixtures (JSON) "typedefs/input.svelte" 1`] = `
       "name": "prop1",
       "kind": "let",
       "type": "MyTypedef",
+      "typeSource": "jsdoc",
       "value": "{ 1: true }",
+      "defaultValue": {
+        "raw": "{ 1: true }",
+        "kind": "object",
+        "value": {
+          "1": true
+        }
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -5172,7 +6240,13 @@ exports[`fixtures (JSON) "typedefs/input.svelte" 1`] = `
       "name": "prop2",
       "kind": "let",
       "type": "MyTypedefArray",
+      "typeSource": "jsdoc",
       "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -5246,7 +6320,13 @@ exports[`fixtures (JSON) "generics-with-rest-props/input.svelte" 1`] = `
       "name": "headers",
       "kind": "let",
       "type": "ReadonlyArray<DataTableHeader<Row>>",
+      "typeSource": "jsdoc",
       "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -5267,7 +6347,13 @@ exports[`fixtures (JSON) "generics-with-rest-props/input.svelte" 1`] = `
       "name": "rows",
       "kind": "let",
       "type": "ReadonlyArray<Row>",
+      "typeSource": "jsdoc",
       "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -5353,6 +6439,7 @@ exports[`fixtures (JSON) "bind-this/input.svelte" 1`] = `
       "name": "ref",
       "kind": "let",
       "type": "null | HTMLButtonElement",
+      "typeSource": "inferred",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -5416,7 +6503,13 @@ exports[`fixtures (JSON) "instance-reexport/input.svelte" 1`] = `
       "kind": "let",
       "description": "Array of data items",
       "type": "[]",
+      "typeSource": "default",
       "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -5438,7 +6531,13 @@ exports[`fixtures (JSON) "instance-reexport/input.svelte" 1`] = `
       "kind": "let",
       "description": "Whether to show details",
       "type": "boolean",
+      "typeSource": "default",
       "value": "false",
+      "defaultValue": {
+        "raw": "false",
+        "kind": "literal",
+        "value": false
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -5486,6 +6585,11 @@ exports[`fixtures (JSON) "explicit-default-no-duplicate/input.svelte" 1`] = `
       "kind": "let",
       "description": "Custom filter function.\\n@default () => true",
       "type": "(item: string, value: string) => boolean",
+      "typeSource": "jsdoc",
+      "defaultValue": {
+        "raw": "() => true",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -5507,7 +6611,13 @@ exports[`fixtures (JSON) "explicit-default-no-duplicate/input.svelte" 1`] = `
       "kind": "let",
       "description": "Prop with only an inferred default.",
       "type": "string",
+      "typeSource": "default",
       "value": "\\"world\\"",
+      "defaultValue": {
+        "raw": "\\"world\\"",
+        "kind": "literal",
+        "value": "world"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -5529,7 +6639,13 @@ exports[`fixtures (JSON) "explicit-default-no-duplicate/input.svelte" 1`] = `
       "kind": "let",
       "description": "Prop with explicit @default matching the initializer.\\n@default false",
       "type": "boolean",
+      "typeSource": "default",
       "value": "false",
+      "defaultValue": {
+        "raw": "false",
+        "kind": "literal",
+        "value": false
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -5551,7 +6667,13 @@ exports[`fixtures (JSON) "explicit-default-no-duplicate/input.svelte" 1`] = `
       "kind": "let",
       "description": "Prop with identifier default, no explicit annotation.\\nShould resolve to the actual value.",
       "type": "\\"sm\\" | \\"md\\" | \\"lg\\"",
+      "typeSource": "jsdoc",
       "value": "\\"md\\"",
+      "defaultValue": {
+        "raw": "\\"md\\"",
+        "kind": "literal",
+        "value": "md"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -5573,7 +6695,13 @@ exports[`fixtures (JSON) "explicit-default-no-duplicate/input.svelte" 1`] = `
       "kind": "let",
       "description": "Number of items to display.",
       "type": "number",
+      "typeSource": "default",
       "value": "10",
+      "defaultValue": {
+        "raw": "10",
+        "kind": "literal",
+        "value": 10
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -5595,6 +6723,11 @@ exports[`fixtures (JSON) "explicit-default-no-duplicate/input.svelte" 1`] = `
       "kind": "let",
       "description": "Click handler.",
       "type": "(e: MouseEvent) => void",
+      "typeSource": "jsdoc",
+      "defaultValue": {
+        "raw": "() => {}",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -5616,7 +6749,16 @@ exports[`fixtures (JSON) "explicit-default-no-duplicate/input.svelte" 1`] = `
       "kind": "let",
       "description": "Component configuration.",
       "type": "{ theme: string; density: string }",
+      "typeSource": "jsdoc",
       "value": "{ theme: \\"dark\\", density: \\"compact\\" }",
+      "defaultValue": {
+        "raw": "{ theme: \\"dark\\", density: \\"compact\\" }",
+        "kind": "object",
+        "value": {
+          "theme": "dark",
+          "density": "compact"
+        }
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -5638,7 +6780,17 @@ exports[`fixtures (JSON) "explicit-default-no-duplicate/input.svelte" 1`] = `
       "kind": "let",
       "description": "List of items.",
       "type": "[\\"a\\", \\"b\\", \\"c\\"]",
+      "typeSource": "default",
       "value": "[\\"a\\", \\"b\\", \\"c\\"]",
+      "defaultValue": {
+        "raw": "[\\"a\\", \\"b\\", \\"c\\"]",
+        "kind": "array",
+        "value": [
+          "a",
+          "b",
+          "c"
+        ]
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -5660,7 +6812,13 @@ exports[`fixtures (JSON) "explicit-default-no-duplicate/input.svelte" 1`] = `
       "kind": "let",
       "description": "Starting offset.",
       "type": "number",
+      "typeSource": "default",
       "value": "-1",
+      "defaultValue": {
+        "raw": "-1",
+        "kind": "literal",
+        "value": -1
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -5851,7 +7009,13 @@ exports[`fixtures (JSON) "required/input.svelte" 1`] = `
       "kind": "let",
       "description": "@required",
       "type": "boolean",
+      "typeSource": "default",
       "value": "true",
+      "defaultValue": {
+        "raw": "true",
+        "kind": "literal",
+        "value": true
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -5873,7 +7037,13 @@ exports[`fixtures (JSON) "required/input.svelte" 1`] = `
       "kind": "let",
       "description": "This is a comment.\\n@required",
       "type": "boolean | string",
+      "typeSource": "jsdoc",
       "value": "true",
+      "defaultValue": {
+        "raw": "true",
+        "kind": "literal",
+        "value": true
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -5893,6 +7063,7 @@ exports[`fixtures (JSON) "required/input.svelte" 1`] = `
     {
       "name": "prop2",
       "kind": "let",
+      "typeSource": "unknown",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -5913,6 +7084,7 @@ exports[`fixtures (JSON) "required/input.svelte" 1`] = `
       "name": "prop3",
       "kind": "let",
       "type": "boolean",
+      "typeSource": "jsdoc",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -6035,7 +7207,13 @@ exports[`fixtures (JSON) "reactive-shadowed-each-binding/input.svelte" 1`] = `
       "name": "value",
       "kind": "let",
       "type": "string",
+      "typeSource": "default",
       "value": "\\"\\"",
+      "defaultValue": {
+        "raw": "\\"\\"",
+        "kind": "literal",
+        "value": ""
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -6082,7 +7260,13 @@ exports[`fixtures (JSON) "legacy-bind-component-value/input.svelte" 1`] = `
       "name": "value",
       "kind": "let",
       "type": "string",
+      "typeSource": "default",
       "value": "\\"\\"",
+      "defaultValue": {
+        "raw": "\\"\\"",
+        "kind": "literal",
+        "value": ""
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -6129,7 +7313,13 @@ exports[`fixtures (JSON) "callback-typedef/input.svelte" 1`] = `
       "name": "direction",
       "kind": "let",
       "type": "SortDirection",
+      "typeSource": "jsdoc",
       "value": "\\"asc\\"",
+      "defaultValue": {
+        "raw": "\\"asc\\"",
+        "kind": "literal",
+        "value": "asc"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -6150,6 +7340,11 @@ exports[`fixtures (JSON) "callback-typedef/input.svelte" 1`] = `
       "name": "sort",
       "kind": "let",
       "type": "SortFn",
+      "typeSource": "jsdoc",
+      "defaultValue": {
+        "raw": "(a, b, direction) => 0",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -6207,7 +7402,13 @@ exports[`fixtures (JSON) "legacy-pass-through-nonreactive/input.svelte" 1`] = `
       "name": "disabled",
       "kind": "let",
       "type": "boolean",
+      "typeSource": "default",
       "value": "false",
+      "defaultValue": {
+        "raw": "false",
+        "kind": "literal",
+        "value": false
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -6255,7 +7456,13 @@ exports[`fixtures (JSON) "prop-comments/input.svelte" 1`] = `
       "kind": "let",
       "description": "This is a comment.\\n@see https://github.com/\\n@deprecated this prop will be removed in the next major release.",
       "type": "boolean | string",
+      "typeSource": "jsdoc",
       "value": "true",
+      "defaultValue": {
+        "raw": "true",
+        "kind": "literal",
+        "value": true
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -6277,7 +7484,13 @@ exports[`fixtures (JSON) "prop-comments/input.svelte" 1`] = `
       "kind": "let",
       "description": "@see https://github.com/",
       "type": "boolean",
+      "typeSource": "default",
       "value": "true",
+      "defaultValue": {
+        "raw": "true",
+        "kind": "literal",
+        "value": true
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -6299,7 +7512,13 @@ exports[`fixtures (JSON) "prop-comments/input.svelte" 1`] = `
       "kind": "let",
       "description": "This is a comment.",
       "type": "boolean | string",
+      "typeSource": "jsdoc",
       "value": "true",
+      "defaultValue": {
+        "raw": "true",
+        "kind": "literal",
+        "value": true
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -6455,7 +7674,13 @@ exports[`fixtures (JSON) "runes-generics/input.svelte" 1`] = `
       "name": "headers",
       "kind": "let",
       "type": "ReadonlyArray<DataTableHeader<Row>>",
+      "typeSource": "jsdoc",
       "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -6476,7 +7701,13 @@ exports[`fixtures (JSON) "runes-generics/input.svelte" 1`] = `
       "name": "rows",
       "kind": "let",
       "type": "ReadonlyArray<Row>",
+      "typeSource": "jsdoc",
       "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -6558,6 +7789,7 @@ exports[`fixtures (JSON) "async-function-props/input.svelte" 1`] = `
       "name": "initialize",
       "kind": "function",
       "type": "() => Promise<void>",
+      "typeSource": "jsdoc",
       "returnType": "Promise<void>",
       "isFunction": true,
       "isFunctionDeclaration": true,
@@ -6579,6 +7811,7 @@ exports[`fixtures (JSON) "async-function-props/input.svelte" 1`] = `
       "name": "fetchData",
       "kind": "function",
       "type": "(url: string) => Promise<Response>",
+      "typeSource": "jsdoc",
       "params": [
         {
           "name": "url",
@@ -6608,6 +7841,11 @@ exports[`fixtures (JSON) "async-function-props/input.svelte" 1`] = `
       "name": "validate",
       "kind": "let",
       "type": "(id: number) => Promise<boolean>",
+      "typeSource": "jsdoc",
+      "defaultValue": {
+        "raw": "async (id) => id > 0",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -6655,7 +7893,12 @@ exports[`fixtures (JSON) "bindable-direction-legacy/input.svelte" 1`] = `
       "kind": "let",
       "description": "Bind to the current value emitted by the component.",
       "binding": "readonly",
+      "typeSource": "unknown",
       "value": "undefined",
+      "defaultValue": {
+        "raw": "undefined",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -6678,7 +7921,13 @@ exports[`fixtures (JSON) "bindable-direction-legacy/input.svelte" 1`] = `
       "description": "Bind to state controlled by either the consumer or component.",
       "binding": "writable",
       "type": "boolean",
+      "typeSource": "default",
       "value": "false",
+      "defaultValue": {
+        "raw": "false",
+        "kind": "literal",
+        "value": false
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -6700,7 +7949,13 @@ exports[`fixtures (JSON) "bindable-direction-legacy/input.svelte" 1`] = `
       "kind": "let",
       "description": "Regular unannotated prop.",
       "type": "string",
+      "typeSource": "default",
       "value": "\\"Toggle\\"",
+      "defaultValue": {
+        "raw": "\\"Toggle\\"",
+        "kind": "literal",
+        "value": "Toggle"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -6747,6 +8002,7 @@ exports[`fixtures (JSON) "runes-whole-props-typed/input.svelte" 1`] = `
       "name": "item",
       "kind": "let",
       "type": "string",
+      "typeSource": "typescript",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -6767,6 +8023,7 @@ exports[`fixtures (JSON) "runes-whole-props-typed/input.svelte" 1`] = `
       "name": "disabled",
       "kind": "let",
       "type": "boolean",
+      "typeSource": "typescript",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -6887,10 +8144,17 @@ exports[`fixtures (JSON) "renamed-props/input.svelte" 1`] = `
   "props": [
     {
       "name": "class",
+      "localName": "className",
       "kind": "let",
       "description": "Just your average CSS class string.",
       "type": "string|null",
+      "typeSource": "jsdoc",
       "value": "\\"test\\"",
+      "defaultValue": {
+        "raw": "\\"test\\"",
+        "kind": "literal",
+        "value": "test"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -6937,7 +8201,13 @@ exports[`fixtures (JSON) "infer-with-types/input.svelte" 1`] = `
       "name": "propBool",
       "kind": "let",
       "type": "boolean",
+      "typeSource": "default",
       "value": "true",
+      "defaultValue": {
+        "raw": "true",
+        "kind": "literal",
+        "value": true
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -6958,7 +8228,13 @@ exports[`fixtures (JSON) "infer-with-types/input.svelte" 1`] = `
       "name": "propString",
       "kind": "let",
       "type": "string",
+      "typeSource": "default",
       "value": "\\"\\"",
+      "defaultValue": {
+        "raw": "\\"\\"",
+        "kind": "literal",
+        "value": ""
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -6979,6 +8255,7 @@ exports[`fixtures (JSON) "infer-with-types/input.svelte" 1`] = `
       "name": "name",
       "kind": "let",
       "type": "string",
+      "typeSource": "jsdoc",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -6999,7 +8276,12 @@ exports[`fixtures (JSON) "infer-with-types/input.svelte" 1`] = `
       "name": "id",
       "kind": "let",
       "type": "string",
+      "typeSource": "default",
       "value": "\\"\\" + Math.random().toString(36)",
+      "defaultValue": {
+        "raw": "\\"\\" + Math.random().toString(36)",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -7020,7 +8302,15 @@ exports[`fixtures (JSON) "infer-with-types/input.svelte" 1`] = `
       "name": "propConst",
       "kind": "const",
       "type": "{ [key: string]: boolean; }",
+      "typeSource": "jsdoc",
       "value": "{ 1: true }",
+      "defaultValue": {
+        "raw": "{ 1: true }",
+        "kind": "object",
+        "value": {
+          "1": true
+        }
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -7041,6 +8331,7 @@ exports[`fixtures (JSON) "infer-with-types/input.svelte" 1`] = `
       "name": "fn",
       "kind": "function",
       "type": "() => any",
+      "typeSource": "inferred",
       "isFunction": true,
       "isFunctionDeclaration": true,
       "isRequired": false,
@@ -7103,6 +8394,7 @@ exports[`fixtures (JSON) "runes-callback-props/input.svelte" 1`] = `
     {
       "name": "onclick",
       "kind": "let",
+      "typeSource": "unknown",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -7149,6 +8441,11 @@ exports[`fixtures (JSON) "arrow-function-with-jsdoc/input.svelte" 1`] = `
       "name": "transform",
       "kind": "let",
       "type": "(value: string, options?: { uppercase?: boolean }) => string",
+      "typeSource": "jsdoc",
+      "defaultValue": {
+        "raw": "(value, options) => {     if (options?.uppercase) return value.toUpperCase();     return value;   }",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -7169,6 +8466,11 @@ exports[`fixtures (JSON) "arrow-function-with-jsdoc/input.svelte" 1`] = `
       "name": "processItems",
       "kind": "let",
       "type": "(items: string[], callback: (item: string, index: number) => void) => Promise<void>",
+      "typeSource": "jsdoc",
+      "defaultValue": {
+        "raw": "async (items, callback) => {     for (let i = 0; i < items.length; i++) callback(items[i], i);   }",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -7189,6 +8491,11 @@ exports[`fixtures (JSON) "arrow-function-with-jsdoc/input.svelte" 1`] = `
       "name": "createRecord",
       "kind": "let",
       "type": "(id: string) => { id: string; created: Date }",
+      "typeSource": "jsdoc",
+      "defaultValue": {
+        "raw": "(id) => ({ id, created: new Date() })",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -7294,7 +8601,13 @@ exports[`fixtures (JSON) "non-literal-defaults/input.svelte" 1`] = `
       "kind": "let",
       "description": "Position of the element",
       "type": "Position",
+      "typeSource": "jsdoc",
       "value": "\\"top-left\\"",
+      "defaultValue": {
+        "raw": "\\"top-left\\"",
+        "kind": "literal",
+        "value": "top-left"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -7316,7 +8629,13 @@ exports[`fixtures (JSON) "non-literal-defaults/input.svelte" 1`] = `
       "kind": "let",
       "description": "Theme mode",
       "type": "string",
+      "typeSource": "default",
       "value": "\\"bottom-right\\"",
+      "defaultValue": {
+        "raw": "\\"bottom-right\\"",
+        "kind": "literal",
+        "value": "bottom-right"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -7338,7 +8657,12 @@ exports[`fixtures (JSON) "non-literal-defaults/input.svelte" 1`] = `
       "kind": "let",
       "description": "Numeric constant with Infinity",
       "type": "number",
+      "typeSource": "default",
       "value": "Number.POSITIVE_INFINITY",
+      "defaultValue": {
+        "raw": "Number.POSITIVE_INFINITY",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -7360,7 +8684,12 @@ exports[`fixtures (JSON) "non-literal-defaults/input.svelte" 1`] = `
       "kind": "let",
       "description": "Negative infinity constant",
       "type": "number",
+      "typeSource": "default",
       "value": "Number.NEGATIVE_INFINITY",
+      "defaultValue": {
+        "raw": "Number.NEGATIVE_INFINITY",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -7382,7 +8711,12 @@ exports[`fixtures (JSON) "non-literal-defaults/input.svelte" 1`] = `
       "kind": "let",
       "description": "Maximum safe integer",
       "type": "number",
+      "typeSource": "default",
       "value": "Number.MAX_SAFE_INTEGER",
+      "defaultValue": {
+        "raw": "Number.MAX_SAFE_INTEGER",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -7404,7 +8738,12 @@ exports[`fixtures (JSON) "non-literal-defaults/input.svelte" 1`] = `
       "kind": "let",
       "description": "Minimum safe integer",
       "type": "number",
+      "typeSource": "default",
       "value": "Number.MIN_SAFE_INTEGER",
+      "defaultValue": {
+        "raw": "Number.MIN_SAFE_INTEGER",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -7426,7 +8765,12 @@ exports[`fixtures (JSON) "non-literal-defaults/input.svelte" 1`] = `
       "kind": "let",
       "description": "Maximum numeric value",
       "type": "number",
+      "typeSource": "default",
       "value": "Number.MAX_VALUE",
+      "defaultValue": {
+        "raw": "Number.MAX_VALUE",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -7448,7 +8792,12 @@ exports[`fixtures (JSON) "non-literal-defaults/input.svelte" 1`] = `
       "kind": "let",
       "description": "Minimum numeric value",
       "type": "number",
+      "typeSource": "default",
       "value": "Number.MIN_VALUE",
+      "defaultValue": {
+        "raw": "Number.MIN_VALUE",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -7470,7 +8819,12 @@ exports[`fixtures (JSON) "non-literal-defaults/input.svelte" 1`] = `
       "kind": "let",
       "description": "Math constant PI",
       "type": "number",
+      "typeSource": "default",
       "value": "Math.PI",
+      "defaultValue": {
+        "raw": "Math.PI",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -7492,7 +8846,12 @@ exports[`fixtures (JSON) "non-literal-defaults/input.svelte" 1`] = `
       "kind": "let",
       "description": "Math constant E",
       "type": "number",
+      "typeSource": "default",
       "value": "Math.E",
+      "defaultValue": {
+        "raw": "Math.E",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -7513,7 +8872,12 @@ exports[`fixtures (JSON) "non-literal-defaults/input.svelte" 1`] = `
       "name": "handler",
       "kind": "let",
       "description": "Optional handler with undefined",
+      "typeSource": "unknown",
       "value": "undefined",
+      "defaultValue": {
+        "raw": "undefined",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -7535,7 +8899,12 @@ exports[`fixtures (JSON) "non-literal-defaults/input.svelte" 1`] = `
       "kind": "let",
       "description": "Append to element",
       "type": "HTMLElement",
+      "typeSource": "jsdoc",
       "value": "document.body",
+      "defaultValue": {
+        "raw": "document.body",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -7629,7 +8998,9 @@ exports[`fixtures (JSON) "runes-props-renamed/input.svelte" 1`] = `
   "props": [
     {
       "name": "class",
+      "localName": "klass",
       "kind": "let",
+      "typeSource": "unknown",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -7676,7 +9047,16 @@ exports[`fixtures (JSON) "multiple-typedef-same-property/input.svelte" 1`] = `
       "name": "user",
       "kind": "let",
       "type": "UserConfig",
+      "typeSource": "jsdoc",
       "value": "{ id: \\"1\\", name: \\"Admin\\" }",
+      "defaultValue": {
+        "raw": "{ id: \\"1\\", name: \\"Admin\\" }",
+        "kind": "object",
+        "value": {
+          "id": "1",
+          "name": "Admin"
+        }
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -7697,7 +9077,16 @@ exports[`fixtures (JSON) "multiple-typedef-same-property/input.svelte" 1`] = `
       "name": "theme",
       "kind": "let",
       "type": "ThemeConfig",
+      "typeSource": "jsdoc",
       "value": "{ id: \\"default\\", name: \\"Default\\" }",
+      "defaultValue": {
+        "raw": "{ id: \\"default\\", name: \\"Default\\" }",
+        "kind": "object",
+        "value": {
+          "id": "default",
+          "name": "Default"
+        }
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -7754,6 +9143,7 @@ exports[`fixtures (JSON) "runes-snippets-default/input.svelte" 1`] = `
     {
       "name": "item",
       "kind": "let",
+      "typeSource": "unknown",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -7816,7 +9206,13 @@ exports[`fixtures (JSON) "context-module/input.svelte" 1`] = `
       "name": "a",
       "kind": "const",
       "type": "string",
+      "typeSource": "default",
       "value": "\\"\\"",
+      "defaultValue": {
+        "raw": "\\"\\"",
+        "kind": "literal",
+        "value": ""
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -7839,7 +9235,13 @@ exports[`fixtures (JSON) "context-module/input.svelte" 1`] = `
       "name": "bool",
       "kind": "const",
       "type": "string",
+      "typeSource": "default",
       "value": "\\"\\"",
+      "defaultValue": {
+        "raw": "\\"\\"",
+        "kind": "literal",
+        "value": ""
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -7850,7 +9252,15 @@ exports[`fixtures (JSON) "context-module/input.svelte" 1`] = `
       "name": "a",
       "kind": "const",
       "type": "{ b: 4 }",
+      "typeSource": "default",
       "value": "{ b: 4 }",
+      "defaultValue": {
+        "raw": "{ b: 4 }",
+        "kind": "object",
+        "value": {
+          "b": 4
+        }
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -7862,7 +9272,15 @@ exports[`fixtures (JSON) "context-module/input.svelte" 1`] = `
       "kind": "const",
       "description": "Description for e",
       "type": "{ [key: string]: any; }",
+      "typeSource": "jsdoc",
       "value": "{ b: 4 }",
+      "defaultValue": {
+        "raw": "{ b: 4 }",
+        "kind": "object",
+        "value": {
+          "b": 4
+        }
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -7874,6 +9292,7 @@ exports[`fixtures (JSON) "context-module/input.svelte" 1`] = `
       "kind": "function",
       "description": "Log something",
       "type": "(message: string) => void",
+      "typeSource": "jsdoc",
       "isFunction": true,
       "isFunctionDeclaration": true,
       "isRequired": false,
@@ -7884,6 +9303,11 @@ exports[`fixtures (JSON) "context-module/input.svelte" 1`] = `
       "name": "b",
       "kind": "const",
       "type": "(...args: any[]) => any",
+      "typeSource": "default",
+      "defaultValue": {
+        "raw": "() => {}",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -7894,6 +9318,11 @@ exports[`fixtures (JSON) "context-module/input.svelte" 1`] = `
       "name": "b2",
       "kind": "const",
       "type": "(...args: any[]) => any",
+      "typeSource": "default",
+      "defaultValue": {
+        "raw": "() => () => {}",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -7904,6 +9333,11 @@ exports[`fixtures (JSON) "context-module/input.svelte" 1`] = `
       "name": "b3",
       "kind": "const",
       "type": "() => () => false",
+      "typeSource": "jsdoc",
+      "defaultValue": {
+        "raw": "() => () => false",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -7939,7 +9373,13 @@ exports[`fixtures (JSON) "element-tag-map-new/input.svelte" 1`] = `
       "name": "semanticTag",
       "kind": "let",
       "type": "\\"article\\" | \\"section\\" | \\"nav\\" | \\"main\\" | \\"header\\" | \\"footer\\"",
+      "typeSource": "jsdoc",
       "value": "\\"article\\"",
+      "defaultValue": {
+        "raw": "\\"article\\"",
+        "kind": "literal",
+        "value": "article"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -7990,7 +9430,13 @@ exports[`fixtures (JSON) "html-in-template-string/input.svelte" 1`] = `
       "name": "message",
       "kind": "let",
       "type": "string",
+      "typeSource": "default",
       "value": "\\"test\\"",
+      "defaultValue": {
+        "raw": "\\"test\\"",
+        "kind": "literal",
+        "value": "test"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -8037,7 +9483,13 @@ exports[`fixtures (JSON) "rest-props-multiple/input.svelte" 1`] = `
       "name": "type",
       "kind": "let",
       "type": "\\"ordered\\" | \\"unordered\\"",
+      "typeSource": "jsdoc",
       "value": "\\"ordered\\"",
+      "defaultValue": {
+        "raw": "\\"ordered\\"",
+        "kind": "literal",
+        "value": "ordered"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -8256,7 +9708,12 @@ exports[`fixtures (JSON) "call-expression-defaults/input.svelte" 1`] = `
       "name": "id",
       "kind": "let",
       "type": "string",
+      "typeSource": "jsdoc",
       "value": "generateId()",
+      "defaultValue": {
+        "raw": "generateId()",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -8277,7 +9734,12 @@ exports[`fixtures (JSON) "call-expression-defaults/input.svelte" 1`] = `
       "name": "timestamp",
       "kind": "let",
       "type": "number",
+      "typeSource": "jsdoc",
       "value": "Date.now()",
+      "defaultValue": {
+        "raw": "Date.now()",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -8298,7 +9760,12 @@ exports[`fixtures (JSON) "call-expression-defaults/input.svelte" 1`] = `
       "name": "config",
       "kind": "let",
       "type": "{ version: number }",
+      "typeSource": "jsdoc",
       "value": "JSON.parse('{\\"version\\": 1}')",
+      "defaultValue": {
+        "raw": "JSON.parse('{\\"version\\": 1}')",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -8319,7 +9786,12 @@ exports[`fixtures (JSON) "call-expression-defaults/input.svelte" 1`] = `
       "name": "uppercased",
       "kind": "let",
       "type": "string",
+      "typeSource": "jsdoc",
       "value": "\\"hello\\".toUpperCase()",
+      "defaultValue": {
+        "raw": "\\"hello\\".toUpperCase()",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -8409,7 +9881,12 @@ exports[`fixtures (JSON) "template-literal-default/input.svelte" 1`] = `
       "kind": "let",
       "description": "Template literal with call expression",
       "type": "string",
+      "typeSource": "default",
       "value": "\`ccs-\${Math.random().toString(36)}\`",
+      "defaultValue": {
+        "raw": "\`ccs-\${Math.random().toString(36)}\`",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -8431,7 +9908,13 @@ exports[`fixtures (JSON) "template-literal-default/input.svelte" 1`] = `
       "kind": "let",
       "description": "Static template literals",
       "type": "string",
+      "typeSource": "default",
       "value": "\`prefix-\`",
+      "defaultValue": {
+        "raw": "\`prefix-\`",
+        "kind": "literal",
+        "value": "prefix-"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -8452,7 +9935,13 @@ exports[`fixtures (JSON) "template-literal-default/input.svelte" 1`] = `
       "name": "suffix",
       "kind": "let",
       "type": "string",
+      "typeSource": "default",
       "value": "\`-suffix\`",
+      "defaultValue": {
+        "raw": "\`-suffix\`",
+        "kind": "literal",
+        "value": "-suffix"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -8474,7 +9963,12 @@ exports[`fixtures (JSON) "template-literal-default/input.svelte" 1`] = `
       "kind": "let",
       "description": "Template literal with multiple expressions",
       "type": "string",
+      "typeSource": "default",
       "value": "\`Hello, \${\\"world\\"}! Count: \${42}\`",
+      "defaultValue": {
+        "raw": "\`Hello, \${\\"world\\"}! Count: \${42}\`",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -8621,7 +10115,13 @@ exports[`fixtures (JSON) "context-generics/input.svelte" 1`] = `
       "kind": "let",
       "description": "Specify the rows the data table should render.",
       "type": "ReadonlyArray<Row>",
+      "typeSource": "jsdoc",
       "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -8758,7 +10258,13 @@ exports[`fixtures (JSON) "forwarded-standard-event-custom-detail/input.svelte" 1
       "name": "files",
       "kind": "let",
       "type": "[]",
+      "typeSource": "default",
       "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -8852,6 +10358,7 @@ exports[`fixtures (JSON) "runes-props-interface/input.svelte" 1`] = `
       "name": "foo",
       "kind": "let",
       "type": "string",
+      "typeSource": "typescript",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -8872,6 +10379,7 @@ exports[`fixtures (JSON) "runes-props-interface/input.svelte" 1`] = `
       "name": "bar",
       "kind": "let",
       "type": "number",
+      "typeSource": "typescript",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -8969,6 +10477,7 @@ exports[`fixtures (JSON) "bind-this-multiple/input.svelte" 1`] = `
       "name": "ref",
       "kind": "let",
       "type": "null | HTMLButtonElement | HTMLHeadingElement",
+      "typeSource": "inferred",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -8989,6 +10498,7 @@ exports[`fixtures (JSON) "bind-this-multiple/input.svelte" 1`] = `
       "name": "ref2",
       "kind": "let",
       "type": "null | HTMLDivElement",
+      "typeSource": "inferred",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -9009,7 +10519,13 @@ exports[`fixtures (JSON) "bind-this-multiple/input.svelte" 1`] = `
       "name": "propBool",
       "kind": "let",
       "type": "boolean",
+      "typeSource": "default",
       "value": "false",
+      "defaultValue": {
+        "raw": "false",
+        "kind": "literal",
+        "value": false
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -9073,7 +10589,12 @@ exports[`fixtures (JSON) "bindable-direction-runes/input.svelte" 1`] = `
       "kind": "let",
       "description": "Bind to the current value emitted by the component.",
       "binding": "readonly",
+      "typeSource": "unknown",
       "value": "undefined",
+      "defaultValue": {
+        "raw": "undefined",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -9095,8 +10616,15 @@ exports[`fixtures (JSON) "bindable-direction-runes/input.svelte" 1`] = `
       "kind": "let",
       "description": "Bind to state controlled by either the consumer or component.",
       "binding": "writable",
+      "bindable": true,
       "type": "boolean",
+      "typeSource": "default",
       "value": "false",
+      "defaultValue": {
+        "raw": "false",
+        "kind": "literal",
+        "value": false
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -9118,7 +10646,13 @@ exports[`fixtures (JSON) "bindable-direction-runes/input.svelte" 1`] = `
       "kind": "let",
       "description": "Regular unannotated prop.",
       "type": "string",
+      "typeSource": "default",
       "value": "\\"Toggle\\"",
+      "defaultValue": {
+        "raw": "\\"Toggle\\"",
+        "kind": "literal",
+        "value": "Toggle"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -9166,7 +10700,13 @@ exports[`fixtures (JSON) "context-template-tag/input.svelte" 1`] = `
       "kind": "let",
       "description": "Specify the rows the data table should render.",
       "type": "ReadonlyArray<Row>",
+      "typeSource": "jsdoc",
       "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -9357,7 +10897,13 @@ exports[`fixtures (JSON) "reactive-direct-mutation-still-true/input.svelte" 1`] 
       "name": "disabled",
       "kind": "let",
       "type": "boolean",
+      "typeSource": "default",
       "value": "false",
+      "defaultValue": {
+        "raw": "false",
+        "kind": "literal",
+        "value": false
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -9404,7 +10950,12 @@ exports[`fixtures (JSON) "typedef/input.svelte" 1`] = `
       "name": "id",
       "kind": "let",
       "type": "string",
+      "typeSource": "default",
       "value": "\\"id-\\" + Math.random().toString(36)",
+      "defaultValue": {
+        "raw": "\\"id-\\" + Math.random().toString(36)",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -9425,7 +10976,15 @@ exports[`fixtures (JSON) "typedef/input.svelte" 1`] = `
       "name": "prop1",
       "kind": "let",
       "type": "MyTypedef",
+      "typeSource": "jsdoc",
       "value": "{ 1: true }",
+      "defaultValue": {
+        "raw": "{ 1: true }",
+        "kind": "object",
+        "value": {
+          "1": true
+        }
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -9616,6 +11175,7 @@ exports[`fixtures (JSON) "runes-rest-props/input.svelte" 1`] = `
     {
       "name": "variant",
       "kind": "let",
+      "typeSource": "unknown",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -9800,7 +11360,13 @@ exports[`fixtures (JSON) "slot-props-union-types/input.svelte" 1`] = `
       "name": "items",
       "kind": "let",
       "type": "Array<{ value: string | number; status: \\"pending\\" | \\"complete\\" | \\"error\\" }>",
+      "typeSource": "jsdoc",
       "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -9908,6 +11474,7 @@ exports[`fixtures (JSON) "runes-snippet-positional/input.svelte" 1`] = `
       "name": "row",
       "kind": "let",
       "type": "Snippet<[item: string, index: number]>",
+      "typeSource": "typescript",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -9953,7 +11520,13 @@ exports[`fixtures (JSON) "legacy-bind-component-ref/input.svelte" 1`] = `
     {
       "name": "ref",
       "kind": "let",
+      "typeSource": "unknown",
       "value": "null",
+      "defaultValue": {
+        "raw": "null",
+        "kind": "literal",
+        "value": null
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -10042,7 +11615,13 @@ exports[`fixtures (JSON) "svelte-element-dynamic/input.svelte" 1`] = `
       "name": "tag",
       "kind": "let",
       "type": "string",
+      "typeSource": "default",
       "value": "\\"div\\"",
+      "defaultValue": {
+        "raw": "\\"div\\"",
+        "kind": "literal",
+        "value": "div"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -10094,7 +11673,13 @@ exports[`fixtures (JSON) "prop-comment-complex/input.svelte" 1`] = `
       "kind": "let",
       "description": "Specify the switch text.\\nAlternatively, use the default slot.\\n@example \\n\`\`\`svelte\\n<Switch>\\n  <span>Custom Text</span>\\n</Switch>\\n\`\`\`",
       "type": "string",
+      "typeSource": "default",
       "value": "\\"\\"",
+      "defaultValue": {
+        "raw": "\\"\\"",
+        "kind": "literal",
+        "value": ""
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -10116,7 +11701,12 @@ exports[`fixtures (JSON) "prop-comment-complex/input.svelte" 1`] = `
       "kind": "let",
       "description": "Specify the icon to render.\\nAlternatively, use the named slot \\"icon\\".\\n@example \\n\`\`\`svelte\\n<Button>\\n  <Icon slot=\\"icon\\" size={20} />\\n</Button>\\n\`\`\`",
       "type": "any",
+      "typeSource": "jsdoc",
       "value": "undefined",
+      "defaultValue": {
+        "raw": "undefined",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -10179,7 +11769,13 @@ exports[`fixtures (JSON) "element-tag-map-text-elements/input.svelte" 1`] = `
       "name": "textElement",
       "kind": "let",
       "type": "\\"abbr\\" | \\"code\\" | \\"em\\" | \\"strong\\" | \\"mark\\" | \\"kbd\\" | \\"samp\\" | \\"var\\"",
+      "typeSource": "jsdoc",
       "value": "\\"code\\"",
+      "defaultValue": {
+        "raw": "\\"code\\"",
+        "kind": "literal",
+        "value": "code"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -10287,7 +11883,13 @@ exports[`fixtures (JSON) "rest-props-description/input.svelte" 1`] = `
       "name": "variant",
       "kind": "let",
       "type": "\\"inline\\" | \\"single\\" | \\"multi\\"",
+      "typeSource": "jsdoc",
       "value": "\\"single\\"",
+      "defaultValue": {
+        "raw": "\\"single\\"",
+        "kind": "literal",
+        "value": "single"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -10419,7 +12021,13 @@ exports[`fixtures (JSON) "extend-props/input.svelte" 1`] = `
       "name": "secondary",
       "kind": "let",
       "type": "boolean",
+      "typeSource": "default",
       "value": "false",
+      "defaultValue": {
+        "raw": "false",
+        "kind": "literal",
+        "value": false
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -10490,7 +12098,13 @@ exports[`fixtures (JSON) "template-tag-with-rest-props/input.svelte" 1`] = `
       "name": "headers",
       "kind": "let",
       "type": "ReadonlyArray<DataTableHeader<Row>>",
+      "typeSource": "jsdoc",
       "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -10511,7 +12125,13 @@ exports[`fixtures (JSON) "template-tag-with-rest-props/input.svelte" 1`] = `
       "name": "rows",
       "kind": "let",
       "type": "ReadonlyArray<Row>",
+      "typeSource": "jsdoc",
       "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -10824,6 +12444,7 @@ exports[`fixtures (JSON) "typed-props/input.svelte" 1`] = `
       "kind": "let",
       "description": "prop1 description 1\\nprop1 description 2",
       "type": "string",
+      "typeSource": "jsdoc",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -10844,7 +12465,13 @@ exports[`fixtures (JSON) "typed-props/input.svelte" 1`] = `
       "name": "prop2",
       "kind": "let",
       "description": "prop2 description 1\\nprop2 description 2",
+      "typeSource": "unknown",
       "value": "null",
+      "defaultValue": {
+        "raw": "null",
+        "kind": "literal",
+        "value": null
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -10865,7 +12492,13 @@ exports[`fixtures (JSON) "typed-props/input.svelte" 1`] = `
       "name": "prop3",
       "kind": "let",
       "type": "4 | '4'",
+      "typeSource": "jsdoc",
       "value": "4",
+      "defaultValue": {
+        "raw": "4",
+        "kind": "literal",
+        "value": 4
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -10886,7 +12519,13 @@ exports[`fixtures (JSON) "typed-props/input.svelte" 1`] = `
       "name": "prop4",
       "kind": "let",
       "type": "\\"red\\" | \\"blue\\"",
+      "typeSource": "jsdoc",
       "value": "\\"red\\"",
+      "defaultValue": {
+        "raw": "\\"red\\"",
+        "kind": "literal",
+        "value": "red"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -10933,7 +12572,13 @@ exports[`fixtures (JSON) "reactive-shadowed-local-assignment/input.svelte" 1`] =
       "name": "disabled",
       "kind": "let",
       "type": "boolean",
+      "typeSource": "default",
       "value": "false",
+      "defaultValue": {
+        "raw": "false",
+        "kind": "literal",
+        "value": false
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -10980,7 +12625,13 @@ exports[`fixtures (JSON) "runes-typed-props/input.svelte" 1`] = `
       "name": "prop",
       "kind": "let",
       "type": "boolean",
+      "typeSource": "default",
       "value": "true",
+      "defaultValue": {
+        "raw": "true",
+        "kind": "literal",
+        "value": true
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -11002,7 +12653,13 @@ exports[`fixtures (JSON) "runes-typed-props/input.svelte" 1`] = `
       "kind": "let",
       "description": "@see https://github.com/",
       "type": "boolean",
+      "typeSource": "default",
       "value": "true",
+      "defaultValue": {
+        "raw": "true",
+        "kind": "literal",
+        "value": true
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -11024,7 +12681,13 @@ exports[`fixtures (JSON) "runes-typed-props/input.svelte" 1`] = `
       "kind": "let",
       "description": "This is a comment.",
       "type": "boolean | string",
+      "typeSource": "jsdoc",
       "value": "true",
+      "defaultValue": {
+        "raw": "true",
+        "kind": "literal",
+        "value": true
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -11071,7 +12734,13 @@ exports[`fixtures (JSON) "generics/input.svelte" 1`] = `
       "name": "headers",
       "kind": "let",
       "type": "ReadonlyArray<DataTableHeader<Row>>",
+      "typeSource": "jsdoc",
       "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -11092,7 +12761,13 @@ exports[`fixtures (JSON) "generics/input.svelte" 1`] = `
       "name": "rows",
       "kind": "let",
       "type": "ReadonlyArray<Row>",
+      "typeSource": "jsdoc",
       "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -11719,6 +13394,72 @@ export type LegacyBindComponentSelectedProps = {
 
 export default class LegacyBindComponentSelected extends SvelteComponentTyped<
   LegacyBindComponentSelectedProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "prop-metadata-consolidated/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type PropMetadataConsolidatedProps = {
+  /**
+   * @default undefined
+   */
+  typed: string;
+
+  /**
+   * JSDoc wins over default inference.
+   * @default 1
+   */
+  documented?: number;
+
+  /**
+   * @default "md"
+   */
+  literalDefault?: string;
+
+  /**
+   * @default true
+   */
+  boolDefault?: boolean;
+
+  /**
+   * @default [1, "two", false]
+   */
+  arrayDefault?: [1, "two", false];
+
+  /**
+   * @default { size: "md", count: 2 }
+   */
+  objectDefault?: { size: "md"; count: 2 };
+
+  callbackDefault?: (...args: any[]) => any;
+
+  /**
+   * @default makeDefault()
+   */
+  callDefault?: undefined;
+
+  /**
+   * @default Number.MAX_VALUE
+   */
+  memberDefault?: number;
+
+  /**
+   * @default count + 1
+   */
+  expressionDefault?: number;
+
+  /**
+   * @default undefined
+   */
+  unknown: undefined;
+};
+
+export default class PropMetadataConsolidated extends SvelteComponentTyped<
+  PropMetadataConsolidatedProps,
   Record<string, any>,
   Record<string, never>
 > {}
@@ -12943,6 +14684,56 @@ export default class DispatchedEvents extends SvelteComponentTyped<
     hover: CustomEvent<any>;
   },
   { default: Record<string, never> }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "runes-prop-metadata-consolidated/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type RunesPropMetadataConsolidatedProps = {
+  /**
+   * @default "primary"
+   */
+  class?: string;
+
+  /**
+   * @default 0
+   */
+  value?: number;
+
+  /**
+   * @default undefined
+   */
+  open: undefined;
+
+  /**
+   * @default [1, 2]
+   */
+  items?: [1, 2];
+
+  /**
+   * @default { dense: true }
+   */
+  options?: { dense: true };
+
+  onaction?: (...args: any[]) => any;
+
+  /**
+   * @default createDefault()
+   */
+  computed?: undefined;
+
+  /**
+   * @default undefined
+   */
+  bare: undefined;
+};
+
+export default class RunesPropMetadataConsolidated extends SvelteComponentTyped<
+  RunesPropMetadataConsolidatedProps,
+  Record<string, any>,
+  Record<string, never>
 > {}
 "
 `;

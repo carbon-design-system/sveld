@@ -22,7 +22,13 @@
           "kind": "let",
           "description": "Button type attribute",
           "type": "string",
+          "typeSource": "default",
           "value": "\"button\"",
+          "defaultValue": {
+            "raw": "\"button\"",
+            "kind": "literal",
+            "value": "button"
+          },
           "isFunction": false,
           "isFunctionDeclaration": false,
           "isRequired": false,
@@ -38,7 +44,9 @@
           "kind": "let",
           "description": "Set to `true` to use the primary variant",
           "type": "boolean",
+          "typeSource": "default",
           "value": "false",
+          "defaultValue": { "raw": "false", "kind": "literal", "value": false },
           "isFunction": false,
           "isFunctionDeclaration": false,
           "isRequired": false,

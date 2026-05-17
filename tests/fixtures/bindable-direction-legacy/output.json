@@ -17,7 +17,12 @@
       "kind": "let",
       "description": "Bind to the current value emitted by the component.",
       "binding": "readonly",
+      "typeSource": "unknown",
       "value": "undefined",
+      "defaultValue": {
+        "raw": "undefined",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -40,7 +45,13 @@
       "description": "Bind to state controlled by either the consumer or component.",
       "binding": "writable",
       "type": "boolean",
+      "typeSource": "default",
       "value": "false",
+      "defaultValue": {
+        "raw": "false",
+        "kind": "literal",
+        "value": false
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -62,7 +73,13 @@
       "kind": "let",
       "description": "Regular unannotated prop.",
       "type": "string",
+      "typeSource": "default",
       "value": "\"Toggle\"",
+      "defaultValue": {
+        "raw": "\"Toggle\"",
+        "kind": "literal",
+        "value": "Toggle"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

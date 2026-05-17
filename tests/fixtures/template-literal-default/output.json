@@ -17,7 +17,12 @@
       "kind": "let",
       "description": "Template literal with call expression",
       "type": "string",
+      "typeSource": "default",
       "value": "`ccs-${Math.random().toString(36)}`",
+      "defaultValue": {
+        "raw": "`ccs-${Math.random().toString(36)}`",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -39,7 +44,13 @@
       "kind": "let",
       "description": "Static template literals",
       "type": "string",
+      "typeSource": "default",
       "value": "`prefix-`",
+      "defaultValue": {
+        "raw": "`prefix-`",
+        "kind": "literal",
+        "value": "prefix-"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -60,7 +71,13 @@
       "name": "suffix",
       "kind": "let",
       "type": "string",
+      "typeSource": "default",
       "value": "`-suffix`",
+      "defaultValue": {
+        "raw": "`-suffix`",
+        "kind": "literal",
+        "value": "-suffix"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -82,7 +99,12 @@
       "kind": "let",
       "description": "Template literal with multiple expressions",
       "type": "string",
+      "typeSource": "default",
       "value": "`Hello, ${\"world\"}! Count: ${42}`",
+      "defaultValue": {
+        "raw": "`Hello, ${\"world\"}! Count: ${42}`",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

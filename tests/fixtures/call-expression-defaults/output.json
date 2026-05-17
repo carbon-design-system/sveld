@@ -16,7 +16,12 @@
       "name": "id",
       "kind": "let",
       "type": "string",
+      "typeSource": "jsdoc",
       "value": "generateId()",
+      "defaultValue": {
+        "raw": "generateId()",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -37,7 +42,12 @@
       "name": "timestamp",
       "kind": "let",
       "type": "number",
+      "typeSource": "jsdoc",
       "value": "Date.now()",
+      "defaultValue": {
+        "raw": "Date.now()",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -58,7 +68,12 @@
       "name": "config",
       "kind": "let",
       "type": "{ version: number }",
+      "typeSource": "jsdoc",
       "value": "JSON.parse('{\"version\": 1}')",
+      "defaultValue": {
+        "raw": "JSON.parse('{\"version\": 1}')",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -79,7 +94,12 @@
       "name": "uppercased",
       "kind": "let",
       "type": "string",
+      "typeSource": "jsdoc",
       "value": "\"hello\".toUpperCase()",
+      "defaultValue": {
+        "raw": "\"hello\".toUpperCase()",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

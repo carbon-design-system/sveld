@@ -17,7 +17,13 @@
       "kind": "let",
       "description": "Negative number constant",
       "type": "number",
+      "typeSource": "default",
       "value": "-1",
+      "defaultValue": {
+        "raw": "-1",
+        "kind": "literal",
+        "value": -1
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -39,7 +45,13 @@
       "kind": "let",
       "description": "Negative decimal",
       "type": "number",
+      "typeSource": "default",
       "value": "-0.5",
+      "defaultValue": {
+        "raw": "-0.5",
+        "kind": "literal",
+        "value": -0.5
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -60,7 +72,13 @@
       "name": "inverted",
       "kind": "let",
       "type": "boolean",
+      "typeSource": "jsdoc",
       "value": "!false",
+      "defaultValue": {
+        "raw": "!false",
+        "kind": "literal",
+        "value": true
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -82,7 +100,12 @@
       "kind": "let",
       "description": "Bitwise NOT",
       "type": "number",
+      "typeSource": "default",
       "value": "~0",
+      "defaultValue": {
+        "raw": "~0",
+        "kind": "literal"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -104,7 +127,12 @@
       "kind": "let",
       "description": "Double negation",
       "type": "number",
+      "typeSource": "default",
       "value": "-(-5)",
+      "defaultValue": {
+        "raw": "-(-5)",
+        "kind": "literal"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

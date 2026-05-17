@@ -16,7 +16,13 @@
       "name": "data",
       "kind": "let",
       "description": "Chart data to display",
+      "typeSource": "unknown",
       "value": "null",
+      "defaultValue": {
+        "raw": "null",
+        "kind": "literal",
+        "value": null
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -38,7 +44,13 @@
       "kind": "let",
       "description": "Chart title",
       "type": "string",
+      "typeSource": "default",
       "value": "\"Chart\"",
+      "defaultValue": {
+        "raw": "\"Chart\"",
+        "kind": "literal",
+        "value": "Chart"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

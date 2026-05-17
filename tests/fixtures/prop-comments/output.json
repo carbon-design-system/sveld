@@ -17,7 +17,13 @@
       "kind": "let",
       "description": "This is a comment.\n@see https://github.com/\n@deprecated this prop will be removed in the next major release.",
       "type": "boolean | string",
+      "typeSource": "jsdoc",
       "value": "true",
+      "defaultValue": {
+        "raw": "true",
+        "kind": "literal",
+        "value": true
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -39,7 +45,13 @@
       "kind": "let",
       "description": "@see https://github.com/",
       "type": "boolean",
+      "typeSource": "default",
       "value": "true",
+      "defaultValue": {
+        "raw": "true",
+        "kind": "literal",
+        "value": true
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -61,7 +73,13 @@
       "kind": "let",
       "description": "This is a comment.",
       "type": "boolean | string",
+      "typeSource": "jsdoc",
       "value": "true",
+      "defaultValue": {
+        "raw": "true",
+        "kind": "literal",
+        "value": true
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

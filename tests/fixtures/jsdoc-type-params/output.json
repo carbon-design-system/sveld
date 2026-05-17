@@ -17,6 +17,7 @@
       "kind": "function",
       "description": "Programmatically show a node by `id`.\nBy default, the matching node will be expanded, selected, and focused.\nUse the options parameter to customize this behavior.\n@example \n// Show node with all default behaviors (expand, select, focus)\ntreeView.showNode(\"node-1\");\n\n// Expand node without selecting it\ntreeView.showNode(\"node-2\", { select: false });\n\n// Select node without expanding or focusing\ntreeView.showNode(\"node-3\", { expand: false, focus: false });",
       "type": "(id: TreeNodeId, options?: { expand?: boolean; select?: boolean; focus?: boolean }) => void",
+      "typeSource": "jsdoc",
       "params": [
         {
           "name": "id",

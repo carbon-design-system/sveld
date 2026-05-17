@@ -5,24 +5,45 @@
       "column": 0
     },
     "end": {
-      "line": 80,
+      "line": 36,
       "column": 0
     }
   },
   "syntaxMode": "legacy",
-  "scriptLanguage": "js",
+  "scriptLanguage": "ts",
   "props": [
     {
-      "name": "position",
+      "name": "typed",
       "kind": "let",
-      "description": "Position of the element",
-      "type": "Position",
+      "type": "string",
+      "typeSource": "typescript",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 8,
+          "column": 2
+        },
+        "end": {
+          "line": 8,
+          "column": 27
+        }
+      }
+    },
+    {
+      "name": "documented",
+      "kind": "let",
+      "description": "JSDoc wins over default inference.",
+      "type": "number",
       "typeSource": "jsdoc",
-      "value": "\"top-left\"",
+      "value": "1",
       "defaultValue": {
-        "raw": "\"top-left\"",
+        "raw": "1",
         "kind": "literal",
-        "value": "top-left"
+        "value": 1
       },
       "isFunction": false,
       "isFunctionDeclaration": false,
@@ -36,21 +57,108 @@
         },
         "end": {
           "line": 14,
-          "column": 33
+          "column": 28
         }
       }
     },
     {
-      "name": "theme",
+      "name": "literalDefault",
       "kind": "let",
-      "description": "Theme mode",
       "type": "string",
       "typeSource": "default",
-      "value": "\"bottom-right\"",
+      "value": "\"md\"",
       "defaultValue": {
-        "raw": "\"bottom-right\"",
+        "raw": "\"md\"",
         "kind": "literal",
-        "value": "bottom-right"
+        "value": "md"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 16,
+          "column": 2
+        },
+        "end": {
+          "line": 16,
+          "column": 35
+        }
+      }
+    },
+    {
+      "name": "boolDefault",
+      "kind": "let",
+      "type": "boolean",
+      "typeSource": "default",
+      "value": "true",
+      "defaultValue": {
+        "raw": "true",
+        "kind": "literal",
+        "value": true
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 17,
+          "column": 2
+        },
+        "end": {
+          "line": 17,
+          "column": 32
+        }
+      }
+    },
+    {
+      "name": "arrayDefault",
+      "kind": "let",
+      "type": "[1, \"two\", false]",
+      "typeSource": "default",
+      "value": "[1, \"two\", false]",
+      "defaultValue": {
+        "raw": "[1, \"two\", false]",
+        "kind": "array",
+        "value": [
+          1,
+          "two",
+          false
+        ]
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 18,
+          "column": 2
+        },
+        "end": {
+          "line": 18,
+          "column": 46
+        }
+      }
+    },
+    {
+      "name": "objectDefault",
+      "kind": "let",
+      "type": "{ size: \"md\", count: 2 }",
+      "typeSource": "default",
+      "value": "{ size: \"md\", count: 2 }",
+      "defaultValue": {
+        "raw": "{ size: \"md\", count: 2 }",
+        "kind": "object",
+        "value": {
+          "size": "md",
+          "count": 2
+        }
       },
       "isFunction": false,
       "isFunctionDeclaration": false,
@@ -64,19 +172,42 @@
         },
         "end": {
           "line": 19,
-          "column": 38
+          "column": 54
         }
       }
     },
     {
-      "name": "maxValue",
+      "name": "callbackDefault",
       "kind": "let",
-      "description": "Numeric constant with Infinity",
-      "type": "number",
+      "type": "(...args: any[]) => any",
       "typeSource": "default",
-      "value": "Number.POSITIVE_INFINITY",
       "defaultValue": {
-        "raw": "Number.POSITIVE_INFINITY",
+        "raw": "(value: string) => value.toUpperCase()",
+        "kind": "function"
+      },
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 20,
+          "column": 2
+        },
+        "end": {
+          "line": 20,
+          "column": 70
+        }
+      }
+    },
+    {
+      "name": "callDefault",
+      "kind": "let",
+      "typeSource": "unknown",
+      "value": "makeDefault()",
+      "defaultValue": {
+        "raw": "makeDefault()",
         "kind": "expression"
       },
       "isFunction": false,
@@ -86,100 +217,18 @@
       "reactive": false,
       "source": {
         "start": {
-          "line": 24,
+          "line": 21,
           "column": 2
         },
         "end": {
-          "line": 24,
-          "column": 49
+          "line": 21,
+          "column": 41
         }
       }
     },
     {
-      "name": "minValue",
+      "name": "memberDefault",
       "kind": "let",
-      "description": "Negative infinity constant",
-      "type": "number",
-      "typeSource": "default",
-      "value": "Number.NEGATIVE_INFINITY",
-      "defaultValue": {
-        "raw": "Number.NEGATIVE_INFINITY",
-        "kind": "expression"
-      },
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 29,
-          "column": 2
-        },
-        "end": {
-          "line": 29,
-          "column": 49
-        }
-      }
-    },
-    {
-      "name": "maxSafeInt",
-      "kind": "let",
-      "description": "Maximum safe integer",
-      "type": "number",
-      "typeSource": "default",
-      "value": "Number.MAX_SAFE_INTEGER",
-      "defaultValue": {
-        "raw": "Number.MAX_SAFE_INTEGER",
-        "kind": "expression"
-      },
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 34,
-          "column": 2
-        },
-        "end": {
-          "line": 34,
-          "column": 50
-        }
-      }
-    },
-    {
-      "name": "minSafeInt",
-      "kind": "let",
-      "description": "Minimum safe integer",
-      "type": "number",
-      "typeSource": "default",
-      "value": "Number.MIN_SAFE_INTEGER",
-      "defaultValue": {
-        "raw": "Number.MIN_SAFE_INTEGER",
-        "kind": "expression"
-      },
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 39,
-          "column": 2
-        },
-        "end": {
-          "line": 39,
-          "column": 50
-        }
-      }
-    },
-    {
-      "name": "maxNumber",
-      "kind": "let",
-      "description": "Maximum numeric value",
       "type": "number",
       "typeSource": "default",
       "value": "Number.MAX_VALUE",
@@ -194,131 +243,23 @@
       "reactive": false,
       "source": {
         "start": {
-          "line": 44,
+          "line": 22,
           "column": 2
         },
         "end": {
-          "line": 44,
-          "column": 42
+          "line": 22,
+          "column": 46
         }
       }
     },
     {
-      "name": "minNumber",
+      "name": "expressionDefault",
       "kind": "let",
-      "description": "Minimum numeric value",
       "type": "number",
-      "typeSource": "default",
-      "value": "Number.MIN_VALUE",
-      "defaultValue": {
-        "raw": "Number.MIN_VALUE",
-        "kind": "expression"
-      },
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 49,
-          "column": 2
-        },
-        "end": {
-          "line": 49,
-          "column": 42
-        }
-      }
-    },
-    {
-      "name": "pi",
-      "kind": "let",
-      "description": "Math constant PI",
-      "type": "number",
-      "typeSource": "default",
-      "value": "Math.PI",
-      "defaultValue": {
-        "raw": "Math.PI",
-        "kind": "expression"
-      },
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 54,
-          "column": 2
-        },
-        "end": {
-          "line": 54,
-          "column": 26
-        }
-      }
-    },
-    {
-      "name": "e",
-      "kind": "let",
-      "description": "Math constant E",
-      "type": "number",
-      "typeSource": "default",
-      "value": "Math.E",
-      "defaultValue": {
-        "raw": "Math.E",
-        "kind": "expression"
-      },
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 59,
-          "column": 2
-        },
-        "end": {
-          "line": 59,
-          "column": 24
-        }
-      }
-    },
-    {
-      "name": "handler",
-      "kind": "let",
-      "description": "Optional handler with undefined",
-      "typeSource": "unknown",
-      "value": "undefined",
-      "defaultValue": {
-        "raw": "undefined",
-        "kind": "expression"
-      },
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 64,
-          "column": 2
-        },
-        "end": {
-          "line": 64,
-          "column": 33
-        }
-      }
-    },
-    {
-      "name": "appendTo",
-      "kind": "let",
-      "description": "Append to element",
-      "type": "HTMLElement",
       "typeSource": "jsdoc",
-      "value": "document.body",
+      "value": "count + 1",
       "defaultValue": {
-        "raw": "document.body",
+        "raw": "count + 1",
         "kind": "expression"
       },
       "isFunction": false,
@@ -328,12 +269,32 @@
       "reactive": false,
       "source": {
         "start": {
-          "line": 70,
+          "line": 27,
           "column": 2
         },
         "end": {
-          "line": 70,
-          "column": 38
+          "line": 27,
+          "column": 43
+        }
+      }
+    },
+    {
+      "name": "unknown",
+      "kind": "let",
+      "typeSource": "unknown",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 29,
+          "column": 2
+        },
+        "end": {
+          "line": 29,
+          "column": 21
         }
       }
     }
@@ -341,13 +302,7 @@
   "moduleExports": [],
   "slots": [],
   "events": [],
-  "typedefs": [
-    {
-      "type": "\"top-left\" | \"top-right\" | \"bottom-left\" | \"bottom-right\"",
-      "name": "Position",
-      "ts": "type Position = \"top-left\" | \"top-right\" | \"bottom-left\" | \"bottom-right\""
-    }
-  ],
+  "typedefs": [],
   "generics": null,
   "contexts": []
 }

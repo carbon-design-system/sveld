@@ -17,7 +17,13 @@
       "kind": "let",
       "description": "Specify the gap between items in the stack.\nThe scale maps to Carbon layout values.\nUse 0 to omit any gap class.\nAlternatively, specify a custom value (e.g., \"200px\" or \"1.5rem\").\nCustom values *must* be a string.",
       "type": "StackScaleOrString",
+      "typeSource": "jsdoc",
       "value": "1",
+      "defaultValue": {
+        "raw": "1",
+        "kind": "literal",
+        "value": 1
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

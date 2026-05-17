@@ -16,7 +16,13 @@
       "name": "semanticTag",
       "kind": "let",
       "type": "\"article\" | \"section\" | \"nav\" | \"main\" | \"header\" | \"footer\"",
+      "typeSource": "jsdoc",
       "value": "\"article\"",
+      "defaultValue": {
+        "raw": "\"article\"",
+        "kind": "literal",
+        "value": "article"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

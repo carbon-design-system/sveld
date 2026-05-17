@@ -16,7 +16,13 @@
       "name": "cellType",
       "kind": "let",
       "type": "\"td\" | \"th\"",
+      "typeSource": "jsdoc",
       "value": "\"td\"",
+      "defaultValue": {
+        "raw": "\"td\"",
+        "kind": "literal",
+        "value": "td"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

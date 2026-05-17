@@ -16,7 +16,13 @@
       "name": "pageSize",
       "kind": "let",
       "type": "number",
+      "typeSource": "default",
       "value": "10",
+      "defaultValue": {
+        "raw": "10",
+        "kind": "literal",
+        "value": 10
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

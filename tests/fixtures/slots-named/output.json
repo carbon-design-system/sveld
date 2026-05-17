@@ -16,7 +16,13 @@
       "name": "text",
       "kind": "let",
       "type": "string",
+      "typeSource": "default",
       "value": "\"\"",
+      "defaultValue": {
+        "raw": "\"\"",
+        "kind": "literal",
+        "value": ""
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

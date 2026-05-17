@@ -16,7 +16,13 @@
       "name": "type",
       "kind": "let",
       "type": "\"ordered\" | \"unordered\"",
+      "typeSource": "jsdoc",
       "value": "\"ordered\"",
+      "defaultValue": {
+        "raw": "\"ordered\"",
+        "kind": "literal",
+        "value": "ordered"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

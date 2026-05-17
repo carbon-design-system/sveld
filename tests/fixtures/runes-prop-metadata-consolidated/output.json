@@ -5,22 +5,24 @@
       "column": 0
     },
     "end": {
-      "line": 19,
+      "line": 27,
       "column": 0
     }
   },
-  "syntaxMode": "legacy",
+  "syntaxMode": "runes",
   "scriptLanguage": "js",
   "props": [
     {
-      "name": "sum",
+      "name": "class",
+      "localName": "className",
       "kind": "let",
-      "type": "number",
-      "typeSource": "jsdoc",
-      "value": "1 + 2",
+      "type": "string",
+      "typeSource": "default",
+      "value": "\"primary\"",
       "defaultValue": {
-        "raw": "1 + 2",
-        "kind": "expression"
+        "raw": "\"primary\"",
+        "kind": "literal",
+        "value": "primary"
       },
       "isFunction": false,
       "isFunctionDeclaration": false,
@@ -29,24 +31,77 @@
       "reactive": false,
       "source": {
         "start": {
-          "line": 3,
-          "column": 2
+          "line": 7,
+          "column": 4
         },
         "end": {
-          "line": 3,
-          "column": 25
+          "line": 7,
+          "column": 32
         }
       }
     },
     {
-      "name": "product",
+      "name": "value",
       "kind": "let",
+      "bindable": true,
       "type": "number",
-      "typeSource": "jsdoc",
-      "value": "3 * 4",
+      "typeSource": "default",
+      "value": "0",
       "defaultValue": {
-        "raw": "3 * 4",
-        "kind": "expression"
+        "raw": "0",
+        "kind": "literal",
+        "value": 0
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true,
+      "source": {
+        "start": {
+          "line": 8,
+          "column": 4
+        },
+        "end": {
+          "line": 8,
+          "column": 24
+        }
+      }
+    },
+    {
+      "name": "open",
+      "kind": "let",
+      "bindable": true,
+      "typeSource": "unknown",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": true,
+      "source": {
+        "start": {
+          "line": 9,
+          "column": 4
+        },
+        "end": {
+          "line": 9,
+          "column": 22
+        }
+      }
+    },
+    {
+      "name": "items",
+      "kind": "let",
+      "type": "[1, 2]",
+      "typeSource": "default",
+      "value": "[1, 2]",
+      "defaultValue": {
+        "raw": "[1, 2]",
+        "kind": "array",
+        "value": [
+          1,
+          2
+        ]
       },
       "isFunction": false,
       "isFunctionDeclaration": false,
@@ -55,101 +110,76 @@
       "reactive": false,
       "source": {
         "start": {
-          "line": 5,
-          "column": 2
+          "line": 10,
+          "column": 4
         },
         "end": {
-          "line": 5,
+          "line": 10,
+          "column": 18
+        }
+      }
+    },
+    {
+      "name": "options",
+      "kind": "let",
+      "type": "{ dense: true }",
+      "typeSource": "default",
+      "value": "{ dense: true }",
+      "defaultValue": {
+        "raw": "{ dense: true }",
+        "kind": "object",
+        "value": {
+          "dense": true
+        }
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 11,
+          "column": 4
+        },
+        "end": {
+          "line": 11,
           "column": 29
         }
       }
     },
     {
-      "name": "ratio",
+      "name": "onaction",
       "kind": "let",
-      "type": "number",
-      "typeSource": "jsdoc",
-      "value": "10 / 2",
+      "type": "(...args: any[]) => any",
+      "typeSource": "default",
       "defaultValue": {
-        "raw": "10 / 2",
-        "kind": "expression"
+        "raw": "() => {}",
+        "kind": "function"
       },
-      "isFunction": false,
+      "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
       "reactive": false,
       "source": {
         "start": {
-          "line": 7,
-          "column": 2
+          "line": 12,
+          "column": 4
         },
         "end": {
-          "line": 7,
-          "column": 28
-        }
-      }
-    },
-    {
-      "name": "remainder",
-      "kind": "let",
-      "type": "number",
-      "typeSource": "jsdoc",
-      "value": "17 % 5",
-      "defaultValue": {
-        "raw": "17 % 5",
-        "kind": "expression"
-      },
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 9,
-          "column": 2
-        },
-        "end": {
-          "line": 9,
-          "column": 32
+          "line": 12,
+          "column": 23
         }
       }
     },
     {
       "name": "computed",
       "kind": "let",
-      "type": "number",
-      "typeSource": "jsdoc",
-      "value": "(2 + 3) * 4",
+      "typeSource": "unknown",
+      "value": "createDefault()",
       "defaultValue": {
-        "raw": "(2 + 3) * 4",
-        "kind": "expression"
-      },
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 11,
-          "column": 2
-        },
-        "end": {
-          "line": 11,
-          "column": 36
-        }
-      }
-    },
-    {
-      "name": "circumference",
-      "kind": "let",
-      "type": "number",
-      "typeSource": "jsdoc",
-      "value": "2 * Math.PI * 10",
-      "defaultValue": {
-        "raw": "2 * Math.PI * 10",
+        "raw": "createDefault()",
         "kind": "expression"
       },
       "isFunction": false,
@@ -160,37 +190,31 @@
       "source": {
         "start": {
           "line": 13,
-          "column": 2
+          "column": 4
         },
         "end": {
           "line": 13,
-          "column": 46
+          "column": 30
         }
       }
     },
     {
-      "name": "flags",
+      "name": "bare",
       "kind": "let",
-      "type": "number",
-      "typeSource": "jsdoc",
-      "value": "1 | 2 | 4",
-      "defaultValue": {
-        "raw": "1 | 2 | 4",
-        "kind": "expression"
-      },
+      "typeSource": "unknown",
       "isFunction": false,
       "isFunctionDeclaration": false,
-      "isRequired": false,
+      "isRequired": true,
       "constant": false,
       "reactive": false,
       "source": {
         "start": {
-          "line": 15,
-          "column": 2
+          "line": 14,
+          "column": 4
         },
         "end": {
-          "line": 15,
-          "column": 31
+          "line": 14,
+          "column": 8
         }
       }
     }

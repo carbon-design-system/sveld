@@ -16,6 +16,7 @@
       "name": "title",
       "kind": "let",
       "type": "string",
+      "typeSource": "typescript",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -36,7 +37,13 @@
       "name": "count",
       "kind": "let",
       "type": "number",
+      "typeSource": "typescript",
       "value": "0",
+      "defaultValue": {
+        "raw": "0",
+        "kind": "literal",
+        "value": 0
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

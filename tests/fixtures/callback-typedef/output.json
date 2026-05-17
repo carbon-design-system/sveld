@@ -16,7 +16,13 @@
       "name": "direction",
       "kind": "let",
       "type": "SortDirection",
+      "typeSource": "jsdoc",
       "value": "\"asc\"",
+      "defaultValue": {
+        "raw": "\"asc\"",
+        "kind": "literal",
+        "value": "asc"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -37,6 +43,11 @@
       "name": "sort",
       "kind": "let",
       "type": "SortFn",
+      "typeSource": "jsdoc",
+      "defaultValue": {
+        "raw": "(a, b, direction) => 0",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,

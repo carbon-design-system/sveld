@@ -16,7 +16,13 @@
       "name": "files",
       "kind": "let",
       "type": "[]",
+      "typeSource": "default",
       "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

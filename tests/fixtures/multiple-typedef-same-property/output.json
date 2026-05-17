@@ -16,7 +16,16 @@
       "name": "user",
       "kind": "let",
       "type": "UserConfig",
+      "typeSource": "jsdoc",
       "value": "{ id: \"1\", name: \"Admin\" }",
+      "defaultValue": {
+        "raw": "{ id: \"1\", name: \"Admin\" }",
+        "kind": "object",
+        "value": {
+          "id": "1",
+          "name": "Admin"
+        }
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -37,7 +46,16 @@
       "name": "theme",
       "kind": "let",
       "type": "ThemeConfig",
+      "typeSource": "jsdoc",
       "value": "{ id: \"default\", name: \"Default\" }",
+      "defaultValue": {
+        "raw": "{ id: \"default\", name: \"Default\" }",
+        "kind": "object",
+        "value": {
+          "id": "default",
+          "name": "Default"
+        }
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

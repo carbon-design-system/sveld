@@ -16,7 +16,13 @@
       "name": "message",
       "kind": "let",
       "type": "string",
+      "typeSource": "default",
       "value": "\"test\"",
+      "defaultValue": {
+        "raw": "\"test\"",
+        "kind": "literal",
+        "value": "test"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

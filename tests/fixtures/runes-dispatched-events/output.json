@@ -15,6 +15,7 @@
     {
       "name": "value",
       "kind": "let",
+      "typeSource": "unknown",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -34,6 +35,7 @@
     {
       "name": "onchange",
       "kind": "let",
+      "typeSource": "unknown",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,

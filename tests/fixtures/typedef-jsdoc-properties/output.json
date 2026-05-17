@@ -17,7 +17,17 @@
       "kind": "let",
       "description": "Represents a user in the system.",
       "type": "User",
+      "typeSource": "jsdoc",
       "value": "{ name: \"John\", email: \"john@example.com\", age: 30 }",
+      "defaultValue": {
+        "raw": "{ name: \"John\", email: \"john@example.com\", age: 30 }",
+        "kind": "object",
+        "value": {
+          "name": "John",
+          "email": "john@example.com",
+          "age": 30
+        }
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -39,7 +49,16 @@
       "kind": "let",
       "description": "Configuration options for the component.",
       "type": "ComponentConfig",
+      "typeSource": "jsdoc",
       "value": "{ enabled: true, theme: \"dark\" }",
+      "defaultValue": {
+        "raw": "{ enabled: true, theme: \"dark\" }",
+        "kind": "object",
+        "value": {
+          "enabled": true,
+          "theme": "dark"
+        }
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -61,7 +80,16 @@
       "kind": "let",
       "description": "Simple typedef without properties (backwards compatibility test).",
       "type": "SimpleType",
+      "typeSource": "jsdoc",
       "value": "{ id: 1, label: \"Test\" }",
+      "defaultValue": {
+        "raw": "{ id: 1, label: \"Test\" }",
+        "kind": "object",
+        "value": {
+          "id": 1,
+          "label": "Test"
+        }
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

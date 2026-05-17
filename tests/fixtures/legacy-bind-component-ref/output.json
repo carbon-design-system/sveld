@@ -15,7 +15,13 @@
     {
       "name": "ref",
       "kind": "let",
+      "typeSource": "unknown",
       "value": "null",
+      "defaultValue": {
+        "raw": "null",
+        "kind": "literal",
+        "value": null
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

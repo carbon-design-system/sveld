@@ -15,8 +15,15 @@
     {
       "name": "value",
       "kind": "let",
+      "bindable": true,
       "type": "number",
+      "typeSource": "default",
       "value": "0",
+      "defaultValue": {
+        "raw": "0",
+        "kind": "literal",
+        "value": 0
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

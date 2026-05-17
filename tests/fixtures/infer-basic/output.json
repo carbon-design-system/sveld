@@ -15,7 +15,13 @@
     {
       "name": "ref",
       "kind": "let",
+      "typeSource": "unknown",
       "value": "null",
+      "defaultValue": {
+        "raw": "null",
+        "kind": "literal",
+        "value": null
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -36,7 +42,13 @@
       "name": "propBool",
       "kind": "let",
       "type": "boolean",
+      "typeSource": "default",
       "value": "true",
+      "defaultValue": {
+        "raw": "true",
+        "kind": "literal",
+        "value": true
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -57,7 +69,13 @@
       "name": "propString",
       "kind": "let",
       "type": "string",
+      "typeSource": "default",
       "value": "\"\"",
+      "defaultValue": {
+        "raw": "\"\"",
+        "kind": "literal",
+        "value": ""
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -77,6 +95,7 @@
     {
       "name": "name",
       "kind": "let",
+      "typeSource": "unknown",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": true,
@@ -97,7 +116,12 @@
       "name": "id",
       "kind": "let",
       "type": "string",
+      "typeSource": "default",
       "value": "\"\" + Math.random().toString(36)",
+      "defaultValue": {
+        "raw": "\"\" + Math.random().toString(36)",
+        "kind": "expression"
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -118,7 +142,15 @@
       "name": "propConst",
       "kind": "const",
       "type": "{ 1: true }",
+      "typeSource": "default",
       "value": "{ 1: true }",
+      "defaultValue": {
+        "raw": "{ 1: true }",
+        "kind": "object",
+        "value": {
+          "1": true
+        }
+      },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -139,6 +171,7 @@
       "name": "fn",
       "kind": "function",
       "type": "() => any",
+      "typeSource": "inferred",
       "isFunction": true,
       "isFunctionDeclaration": true,
       "isRequired": false,
