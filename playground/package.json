@@ -7,17 +7,17 @@
     "preview": "bun vite preview"
   },
   "devDependencies": {
-    "comment-parser": "^1.4.1",
-    "estree-walker": "^3.0.3",
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
     "@types/codemirror": "^5.60.17",
-    "carbon-components-svelte": "^0.105.0",
-    "carbon-preprocess-svelte": "^0.11.28",
+    "carbon-components-svelte": "^0.107.1",
+    "carbon-preprocess-svelte": "^0.11.30",
     "codemirror": "^5.65.20",
-    "prettier": "^3.8.1",
-    "svelte": "^5.55.0",
+    "comment-parser": "^1.4.1",
+    "estree-walker": "^3.0.3",
+    "prettier": "^3.8.3",
+    "svelte": "^5.55.9",
     "svelte-highlight": "^7.9.0",
-    "typescript": "^6.0.2",
-    "vite": "^8.0.3"
+    "typescript": "^6.0.3",
+    "vite": "^8.0.13"
   }
 }
