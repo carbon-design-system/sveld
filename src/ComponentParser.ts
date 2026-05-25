@@ -63,6 +63,9 @@ const WORD_CHAR_REGEX = /\w/;
 /** True when a slice between an AST comment end and a node start is only whitespace. */
 const ONLY_WHITESPACE_REGEX = /^\s*$/;
 
+/** Trailing semicolon on a typedef source slice before brace matching. */
+const TRAILING_SEMICOLON_REGEX = /;$/;
+
 /**
  * Extracts description text after the last dash from JSDoc comments.
  *
@@ -345,21 +348,46 @@ const DEFAULT_SLOT_NAME = null;
 type ComponentSlotName = typeof DEFAULT_SLOT_NAME | string;
 
 /**
- * Regular expression for detecting type definition endings.
+ * Returns true when `source` is a single balanced object literal — that is,
+ * its leading `{` matches its trailing `}` (optionally followed by `;`) with
+ * no top-level content before or after.
  *
- * Matches closing braces that indicate the end of a type definition
- * (e.g., `}` or `};`). Used to determine if a typedef should be
- * formatted as an interface or type alias.
- *
- * @example
- * ```ts
- * // Matches:
- * // "{ x: number }"     -> interface
- * // "{ x: number };"    -> interface
- * // "string | number"   -> type alias
- * ```
+ * Used to decide whether a `@typedef` body can be emitted as a TypeScript
+ * `interface X {...}` (single object literal) or must be emitted as a
+ * `type X = ...` alias (anything else: unions, intersections, primitives,
+ * generics, tuples, etc.). Without this check, a discriminated union like
+ * `{...} | {...}` would slip through and produce invalid TS.
  */
-const TYPEDEF_END_REGEX = /(\}|\};)$/;
+function isSingleObjectLiteral(source: string): boolean {
+  const s = source.trim().replace(TRAILING_SEMICOLON_REGEX, "").trimEnd();
+  if (!s.startsWith("{") || !s.endsWith("}")) return false;
+
+  let depth = 0;
+  let stringDelimiter: '"' | "'" | "`" | null = null;
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+    if (stringDelimiter !== null) {
+      if (ch === "\\") {
+        i++;
+        continue;
+      }
+      if (ch === stringDelimiter) stringDelimiter = null;
+      continue;
+    }
+    if (ch === '"' || ch === "'" || ch === "`") {
+      stringDelimiter = ch;
+      continue;
+    }
+    if (ch === "{" || ch === "[" || ch === "(") depth++;
+    else if (ch === "}" || ch === "]" || ch === ")") {
+      depth--;
+      // The opening `{` closed before the end of the string, so there must
+      // be additional top-level content (e.g. `{...} | {...}`).
+      if (depth === 0 && i < s.length - 1) return false;
+    }
+  }
+  return depth === 0;
+}
 
 /**
  * Regular expression for splitting context keys into parts.
@@ -3555,11 +3583,13 @@ export default class ComponentParser {
           } else if (currentTypedefType) {
             /**
              * Use inline type definition (existing behavior).
-             * If the type ends with `}` or `};`, treat it as an interface body,
-             * otherwise treat it as a type alias.
+             * Only emit `interface X {...}` when the body is a single balanced
+             * object literal. Unions/intersections (e.g. `{...} | {...}`) and
+             * other shapes are emitted as `type X = ...` aliases so they remain
+             * valid TypeScript.
              */
             typedefType = currentTypedefType;
-            typedefTs = TYPEDEF_END_REGEX.test(typedefType)
+            typedefTs = isSingleObjectLiteral(typedefType)
               ? `interface ${currentTypedefName} ${typedefType}`
               : `type ${currentTypedefName} = ${typedefType}`;
           } else {

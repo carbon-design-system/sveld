@@ -1,0 +1,75 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 12,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "entity",
+      "kind": "let",
+      "type": "Entity",
+      "typeSource": "jsdoc",
+      "value": "{ id: \"1\", createdAt: 0, kind: \"user\", name: \"Ada\" }",
+      "defaultValue": {
+        "raw": "{ id: \"1\", createdAt: 0, kind: \"user\", name: \"Ada\" }",
+        "kind": "object",
+        "value": {
+          "id": "1",
+          "createdAt": 0,
+          "kind": "user",
+          "name": "Ada"
+        }
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 10,
+          "column": 2
+        },
+        "end": {
+          "line": 10,
+          "column": 75
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{ id: string; createdAt: number }",
+      "name": "Base",
+      "ts": "interface Base { id: string; createdAt: number }"
+    },
+    {
+      "type": "Base & { kind: \"user\"; name: string }",
+      "name": "User",
+      "ts": "type User = Base & { kind: \"user\"; name: string }"
+    },
+    {
+      "type": "Base & { kind: \"post\"; title: string; body: string }",
+      "name": "Post",
+      "ts": "type Post = Base & { kind: \"post\"; title: string; body: string }"
+    },
+    {
+      "type": "User | Post",
+      "name": "Entity",
+      "ts": "type Entity = User | Post"
+    }
+  ],
+  "generics": null,
+  "contexts": []
+}

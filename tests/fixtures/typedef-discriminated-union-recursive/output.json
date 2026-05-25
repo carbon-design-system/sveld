@@ -1,0 +1,58 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 9,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "tree",
+      "kind": "let",
+      "type": "Tree",
+      "typeSource": "jsdoc",
+      "value": "{ kind: \"leaf\", value: 0 }",
+      "defaultValue": {
+        "raw": "{ kind: \"leaf\", value: 0 }",
+        "kind": "object",
+        "value": {
+          "kind": "leaf",
+          "value": 0
+        }
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 7,
+          "column": 2
+        },
+        "end": {
+          "line": 7,
+          "column": 47
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{ kind: \"leaf\"; value: number } | { kind: \"node\"; children: Tree[] }",
+      "name": "Tree",
+      "ts": "type Tree = { kind: \"leaf\"; value: number } | { kind: \"node\"; children: Tree[] }"
+    }
+  ],
+  "generics": null,
+  "contexts": []
+}
