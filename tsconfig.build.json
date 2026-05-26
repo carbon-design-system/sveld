@@ -4,6 +4,7 @@
     "declaration": true,
     "emitDeclarationOnly": true,
     "outDir": "lib",
+    "rootDir": "src",
     "target": "ESNext",
     "module": "CommonJS"
   },
