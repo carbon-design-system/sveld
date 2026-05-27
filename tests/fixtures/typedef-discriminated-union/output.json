@@ -1,0 +1,90 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 13,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "result",
+      "kind": "let",
+      "type": "Result",
+      "typeSource": "jsdoc",
+      "value": "{ kind: \"success\", value: \"ok\" }",
+      "defaultValue": {
+        "raw": "{ kind: \"success\", value: \"ok\" }",
+        "kind": "object",
+        "value": {
+          "kind": "success",
+          "value": "ok"
+        }
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 8,
+          "column": 2
+        },
+        "end": {
+          "line": 8,
+          "column": 55
+        }
+      }
+    },
+    {
+      "name": "status",
+      "kind": "let",
+      "type": "Status",
+      "typeSource": "jsdoc",
+      "value": "\"pending\"",
+      "defaultValue": {
+        "raw": "\"pending\"",
+        "kind": "literal",
+        "value": "pending"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 11,
+          "column": 2
+        },
+        "end": {
+          "line": 11,
+          "column": 32
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{ kind: \"success\"; value: string } | { kind: \"error\"; error: Error }",
+      "name": "Result",
+      "ts": "type Result = { kind: \"success\"; value: string } | { kind: \"error\"; error: Error }"
+    },
+    {
+      "type": "{ ok: true; data: number } | { ok: false; reason: string } | \"pending\"",
+      "name": "Status",
+      "ts": "type Status = { ok: true; data: number } | { ok: false; reason: string } | \"pending\""
+    }
+  ],
+  "generics": null,
+  "contexts": []
+}

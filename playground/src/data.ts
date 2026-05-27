@@ -151,6 +151,42 @@ const dispatchedEventsAnnotatedRunes: Example = {
 </form>`,
 };
 
+const discriminatedUnionRunes: Example = {
+  name: "Discriminated unions",
+  moduleName: "DiscriminatedUnionRunes",
+  code: `<script>
+  /**
+   * @typedef {{ kind: "success"; value: string } | { kind: "error"; error: Error }} Result
+   * @typedef {{ ok: true; data: number } | { ok: false; reason: string } | "pending"} Status
+   */
+
+  let {
+    /** @type {Result} */
+    result = { kind: "success", value: "ok" },
+    /** @type {Status} */
+    status = "pending",
+  } = $props();
+
+  function describe(r) {
+    switch (r.kind) {
+      case "success":
+        return r.value;
+      case "error":
+        return r.error.message;
+    }
+  }
+</script>
+
+<p>{describe(result)}</p>
+{#if typeof status === "string"}
+  <p>Status: {status}</p>
+{:else if status.ok}
+  <p>Data: {status.data}</p>
+{:else}
+  <p>Failed: {status.reason}</p>
+{/if}`,
+};
+
 const forwardedEventsRunes: Example = {
   name: "Forwarded events",
   moduleName: "ForwardedEventsRunes",
@@ -714,6 +750,7 @@ export default [
   typeScriptPropsRunes,
   dispatchedEventsRunes,
   dispatchedEventsAnnotatedRunes,
+  discriminatedUnionRunes,
   forwardedEventsRunes,
   genericsRunes,
   aliasedPropsRunes,

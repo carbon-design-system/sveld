@@ -849,6 +849,80 @@ export type ComponentProps = {
 
 > **Note:** The inline syntax `@typedef {{ name: string }} User` continues to work for backwards compatibility.
 
+#### Discriminated unions
+
+A `@typedef` can be a union of object literals, optionally mixed with primitive members. `sveld` emits these as `export type X = ...` aliases (not `interface`), so the discriminant narrows correctly on the consumer side.
+
+**Signature:**
+
+```js
+/**
+ * @typedef {A | B | C} TypeName
+ */
+```
+
+**Example:**
+
+```svelte
+<script>
+  /**
+   * @typedef {{ kind: "success"; value: string } | { kind: "error"; error: Error }} Result
+   * @typedef {{ ok: true; data: number } | { ok: false; reason: string } | "pending"} Status
+   */
+
+  /** @type {Result} */
+  export let result = { kind: "success", value: "ok" };
+
+  /** @type {Status} */
+  export let status = "pending";
+</script>
+```
+
+Output:
+
+```ts
+export type Result = { kind: "success"; value: string } | { kind: "error"; error: Error };
+
+export type Status = { ok: true; data: number } | { ok: false; reason: string } | "pending";
+
+export type ComponentProps = {
+  /** @default { kind: "success", value: "ok" } */
+  result?: Result;
+  /** @default "pending" */
+  status?: Status;
+};
+```
+
+Consumers can then narrow on the discriminant:
+
+```ts
+function describe(r: Result) {
+  switch (r.kind) {
+    case "success":
+      return r.value;
+    case "error":
+      return r.error.message;
+  }
+}
+```
+
+The same pattern works inline via `@type`, which is useful when the union is only used for a single prop:
+
+```js
+/** @type {{ kind: "success"; value: string } | { kind: "error"; error: Error }} */
+export let result = { kind: "success", value: "ok" };
+```
+
+In `<script lang="ts">` components, write the type alias directly — `sveld` preserves it in the emitted `.d.ts`:
+
+```svelte
+<script lang="ts">
+  type Result = { kind: "success"; value: string } | { kind: "error"; error: Error };
+
+  let { result = { kind: "success", value: "ok" } }: { result?: Result } = $props();
+</script>
+```
+
 ### `@callback`
 
 The `@callback` tag defines a function type using `@param` and `@returns` tags, following the [TypeScript JSDoc `@callback` specification](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html#callback). Like `@typedef`, callbacks are exported from the generated TypeScript definition file.
