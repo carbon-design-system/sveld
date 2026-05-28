@@ -124,6 +124,17 @@ function cleanDescription(description: string | undefined): string | undefined {
 }
 
 /**
+ * Returns the description text that appears on the same line as the tag itself,
+ * ignoring continuation lines that `comment-parser` aggregated into the tag's
+ * `description` field. Continuation lines belong to the next tag (or the
+ * enclosing event/typedef) and must not pollute the tag's own JSDoc.
+ */
+function getInlineTagDescription(tagSource: { tokens: { description?: string } }[] | undefined): string | undefined {
+  if (!tagSource || tagSource.length === 0) return undefined;
+  return tagSource[0].tokens.description;
+}
+
+/**
  * Maps ESTree `VariableDeclaration.kind` to `ComponentProp.kind`.
  * `var` becomes `let` for Svelte-oriented output; `using` / `await using`
  * map to `const` (single binding, not a valid Svelte prop keyword).
@@ -3337,6 +3348,7 @@ export default class ComponentParser {
       let currentEventType: string | undefined;
       let currentEventDescription: string | undefined;
       let currentEventSource: SourceRange | undefined;
+      let currentEventTagLine: number | undefined;
       const eventProperties: Array<{
         name: string;
         type: string;
@@ -3384,6 +3396,12 @@ export default class ComponentParser {
        * description lines and tag lines when looking backwards.
        */
       const tagLineNumbers = new Set<number>();
+      /**
+       * Track description line numbers already claimed as preceding-description
+       * for some tag, so trailing-text scans (e.g. `finalizeEvent`) don't
+       * re-attribute them to the wrong owner.
+       */
+      const consumedDescriptionLines = new Set<number>();
       for (const tagInfo of tags) {
         if (tagInfo.source && tagInfo.source.length > 0) {
           tagLineNumbers.add(tagInfo.source[0].number);
@@ -3432,6 +3450,7 @@ export default class ComponentParser {
          * non-blank non-description line.
          */
         const descLines: string[] = [];
+        const claimedLineNums: number[] = [];
         let foundDescriptionBlock = false;
 
         for (let lineNum = tagLineNumber - 1; lineNum >= 1; lineNum--) {
@@ -3449,6 +3468,7 @@ export default class ComponentParser {
           const desc = lineDescriptions.get(lineNum);
           if (desc) {
             descLines.unshift(desc);
+            claimedLineNums.unshift(lineNum);
             foundDescriptionBlock = true;
           } else if (foundDescriptionBlock) {
             /**
@@ -3478,7 +3498,9 @@ export default class ComponentParser {
            * to find the description block.
            */
         }
-        return descLines.length > 0 ? descLines.join("\n").trim() : undefined;
+        if (descLines.length === 0) return undefined;
+        for (const n of claimedLineNums) consumedDescriptionLines.add(n);
+        return descLines.join("\n").trim();
       };
 
       /**
@@ -3520,11 +3542,63 @@ export default class ComponentParser {
        */
       const finalizeEvent = () => {
         if (currentEventName !== undefined) {
+          /**
+           * Prefer an explicit `@type` shape over a property-derived object so
+           * unions and other non-object shapes survive intact. `@type {object}`
+           * (the documentation-only sentinel) falls through to property-derived
+           * construction so existing `@type {object} + @property` fixtures
+           * continue to work.
+           */
+          const explicitType =
+            currentEventType && currentEventType !== "object" && currentEventType !== "Object"
+              ? currentEventType
+              : undefined;
           let detailType: string;
-          if (eventProperties.length > 0) {
+          if (explicitType) {
+            detailType = explicitType;
+          } else if (eventProperties.length > 0) {
             detailType = this.buildEventDetailFromProperties(eventProperties, currentEventName, true);
           } else {
             detailType = currentEventType || "";
+          }
+
+          /**
+           * Capture trailing free-text paragraphs inside the event's scope and
+           * append them to the event description. The scope extends from the
+           * `@event` tag line to the next non-event-internal tag (next `@event`,
+           * `@typedef`, `@callback`, `@slot`, `@snippet`, `@restProps`) or to
+           * the end of the comment block. Lines already claimed as
+           * preceding-description for another tag are skipped.
+           */
+          if (currentEventTagLine !== undefined) {
+            let scopeBoundaryLine: number | undefined;
+            for (const t of tags) {
+              const tLine = t.source?.[0]?.number;
+              if (typeof tLine !== "number") continue;
+              if (tLine <= currentEventTagLine) continue;
+              if (t.tag === "property" || t.tag === "type") continue;
+              scopeBoundaryLine = tLine;
+              break;
+            }
+            const trailing: string[] = [];
+            const sortedLineNums = Array.from(lineDescriptions.keys()).sort((a, b) => a - b);
+            for (const lineNum of sortedLineNums) {
+              if (lineNum <= currentEventTagLine) continue;
+              if (scopeBoundaryLine !== undefined && lineNum >= scopeBoundaryLine) continue;
+              if (consumedDescriptionLines.has(lineNum)) continue;
+              const desc = lineDescriptions.get(lineNum);
+              const trimmed = desc?.trim();
+              if (trimmed) {
+                trailing.push(trimmed);
+                consumedDescriptionLines.add(lineNum);
+              }
+            }
+            if (trailing.length > 0) {
+              const trailingText = trailing.join("\n");
+              currentEventDescription = currentEventDescription
+                ? `${currentEventDescription}\n${trailingText}`
+                : trailingText;
+            }
           }
 
           this.addDispatchedEvent({
@@ -3540,6 +3614,7 @@ export default class ComponentParser {
           currentEventType = undefined;
           currentEventDescription = undefined;
           currentEventSource = undefined;
+          currentEventTagLine = undefined;
         }
       };
 
@@ -3718,7 +3793,7 @@ export default class ComponentParser {
              * only when no passthrough tags precede `@slot` (avoids treating `@example` fenced code
              * as the slot description).
              */
-            const inlineSlotDesc = cleanDescription(description);
+            const inlineSlotDesc = cleanDescription(getInlineTagDescription(tagSource));
             let slotDesc = inlineSlotDesc;
             if (!slotDesc && isFirstTag && !commentDescriptionUsed && commentDescription) {
               slotDesc = commentDescription;
@@ -3752,7 +3827,8 @@ export default class ComponentParser {
              */
             currentEventName = name;
             currentEventType = type;
-            const inlineEventDesc = cleanDescription(description);
+            currentEventTagLine = tagSource && tagSource.length > 0 ? tagSource[0].number : undefined;
+            const inlineEventDesc = cleanDescription(getInlineTagDescription(tagSource));
             currentEventDescription = inlineEventDesc || precedingDescription;
             if (!currentEventDescription && isFirstTag && !commentDescriptionUsed && commentDescription) {
               currentEventDescription = commentDescription;
@@ -3796,7 +3872,7 @@ export default class ComponentParser {
             const propertyData = {
               name,
               type,
-              description: cleanDescription(description),
+              description: cleanDescription(getInlineTagDescription(tagSource)),
               optional: optional || false,
               default: defaultValue,
             };
@@ -3821,7 +3897,7 @@ export default class ComponentParser {
              */
             currentTypedefName = name;
             currentTypedefType = type;
-            const inlineTypedefDesc = cleanDescription(description);
+            const inlineTypedefDesc = cleanDescription(getInlineTagDescription(tagSource));
             currentTypedefDescription = inlineTypedefDesc || precedingDescription;
             if (!currentTypedefDescription && isFirstTag && !commentDescriptionUsed && commentDescription) {
               currentTypedefDescription = commentDescription;
@@ -3841,7 +3917,7 @@ export default class ComponentParser {
              * Subsequent @param and @returns tags will be accumulated for this callback.
              */
             currentCallbackName = name;
-            const inlineCallbackDesc = cleanDescription(description);
+            const inlineCallbackDesc = cleanDescription(getInlineTagDescription(tagSource));
             currentCallbackDescription = inlineCallbackDesc || precedingDescription;
             if (!currentCallbackDescription && isFirstTag && !commentDescriptionUsed && commentDescription) {
               currentCallbackDescription = commentDescription;

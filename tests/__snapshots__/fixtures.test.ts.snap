@@ -3113,7 +3113,7 @@ exports[`fixtures (JSON) "typedef-event-shared-block/input.svelte" 1`] = `
       "type": "dispatched",
       "name": "dequeue",
       "detail": "null",
-      "description": "Slot for rendering breakpoint sizes",
+      "description": "Event fired when item is dequeued from the queue",
       "source": {
         "start": {
           "line": 31,
@@ -3129,7 +3129,7 @@ exports[`fixtures (JSON) "typedef-event-shared-block/input.svelte" 1`] = `
       "type": "dispatched",
       "name": "queue",
       "detail": "null",
-      "description": "Event fired when item is dequeued from the queue",
+      "description": "Event fired when queue is updated",
       "source": {
         "start": {
           "line": 31,
@@ -3184,6 +3184,68 @@ exports[`fixtures (JSON) "typedef-event-shared-block/input.svelte" 1`] = `
       "type": "320 | 672 | 1056 | 1312 | 1584",
       "name": "BreakpointValue",
       "ts": "type BreakpointValue = 320 | 672 | 1056 | 1312 | 1584"
+    }
+  ],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "typedef-discriminated-union-recursive/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 9,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "tree",
+      "kind": "let",
+      "type": "Tree",
+      "typeSource": "jsdoc",
+      "value": "{ kind: \\"leaf\\", value: 0 }",
+      "defaultValue": {
+        "raw": "{ kind: \\"leaf\\", value: 0 }",
+        "kind": "object",
+        "value": {
+          "kind": "leaf",
+          "value": 0
+        }
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 7,
+          "column": 2
+        },
+        "end": {
+          "line": 7,
+          "column": 47
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{ kind: \\"leaf\\"; value: number } | { kind: \\"node\\"; children: Tree[] }",
+      "name": "Tree",
+      "ts": "type Tree = { kind: \\"leaf\\"; value: number } | { kind: \\"node\\"; children: Tree[] }"
     }
   ],
   "generics": null,
@@ -6477,6 +6539,100 @@ exports[`fixtures (JSON) "bind-this/input.svelte" 1`] = `
   ],
   "events": [],
   "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "typedef-discriminated-union/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 13,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "result",
+      "kind": "let",
+      "type": "Result",
+      "typeSource": "jsdoc",
+      "value": "{ kind: \\"success\\", value: \\"ok\\" }",
+      "defaultValue": {
+        "raw": "{ kind: \\"success\\", value: \\"ok\\" }",
+        "kind": "object",
+        "value": {
+          "kind": "success",
+          "value": "ok"
+        }
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 8,
+          "column": 2
+        },
+        "end": {
+          "line": 8,
+          "column": 55
+        }
+      }
+    },
+    {
+      "name": "status",
+      "kind": "let",
+      "type": "Status",
+      "typeSource": "jsdoc",
+      "value": "\\"pending\\"",
+      "defaultValue": {
+        "raw": "\\"pending\\"",
+        "kind": "literal",
+        "value": "pending"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 11,
+          "column": 2
+        },
+        "end": {
+          "line": 11,
+          "column": 32
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{ kind: \\"success\\"; value: string } | { kind: \\"error\\"; error: Error }",
+      "name": "Result",
+      "ts": "type Result = { kind: \\"success\\"; value: string } | { kind: \\"error\\"; error: Error }"
+    },
+    {
+      "type": "{ ok: true; data: number } | { ok: false; reason: string } | \\"pending\\"",
+      "name": "Status",
+      "ts": "type Status = { ok: true; data: number } | { ok: false; reason: string } | \\"pending\\""
+    }
+  ],
   "generics": null,
   "contexts": []
 }
@@ -10095,6 +10251,48 @@ exports[`fixtures (JSON) "event-explicit-null/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "dispatched-events-jsdoc-union-type/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 20,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "sort",
+      "detail": "{ key: null; direction: \\"none\\" } | { key: string; direction: \\"ascending\\" | \\"descending\\" }",
+      "description": "Dispatched when a sortable column header would change the active sort.",
+      "source": {
+        "start": {
+          "line": 15,
+          "column": 4
+        },
+        "end": {
+          "line": 15,
+          "column": 54
+        }
+      }
+    }
+  ],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "context-generics/input.svelte" 1`] = `
 "{
   "source": {
@@ -11802,6 +12000,85 @@ exports[`fixtures (JSON) "element-tag-map-text-elements/input.svelte" 1`] = `
     "type": "Element",
     "name": "abbr | code | em | strong | mark | kbd | samp | var"
   },
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "typedef-discriminated-union-intersection/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 12,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "entity",
+      "kind": "let",
+      "type": "Entity",
+      "typeSource": "jsdoc",
+      "value": "{ id: \\"1\\", createdAt: 0, kind: \\"user\\", name: \\"Ada\\" }",
+      "defaultValue": {
+        "raw": "{ id: \\"1\\", createdAt: 0, kind: \\"user\\", name: \\"Ada\\" }",
+        "kind": "object",
+        "value": {
+          "id": "1",
+          "createdAt": 0,
+          "kind": "user",
+          "name": "Ada"
+        }
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 10,
+          "column": 2
+        },
+        "end": {
+          "line": 10,
+          "column": 75
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{ id: string; createdAt: number }",
+      "name": "Base",
+      "ts": "interface Base { id: string; createdAt: number }"
+    },
+    {
+      "type": "Base & { kind: \\"user\\"; name: string }",
+      "name": "User",
+      "ts": "type User = Base & { kind: \\"user\\"; name: string }"
+    },
+    {
+      "type": "Base & { kind: \\"post\\"; title: string; body: string }",
+      "name": "Post",
+      "ts": "type Post = Base & { kind: \\"post\\"; title: string; body: string }"
+    },
+    {
+      "type": "User | Post",
+      "name": "Entity",
+      "ts": "type Entity = User | Post"
+    }
+  ],
+  "generics": null,
   "contexts": []
 }
 "
@@ -13889,9 +14166,9 @@ export default class TypedefEventSharedBlock extends SvelteComponentTyped<
       size: BreakpointSize;
       breakpointValue: BreakpointValue;
     }>;
-    /** Slot for rendering breakpoint sizes */
-    dequeue: CustomEvent<null>;
     /** Event fired when item is dequeued from the queue */
+    dequeue: CustomEvent<null>;
+    /** Event fired when queue is updated */
     queue: CustomEvent<null>;
     /** Event fired when size changes */
     resize: CustomEvent<null>;
@@ -13905,6 +14182,26 @@ export default class TypedefEventSharedBlock extends SvelteComponentTyped<
     /** description */
     "inline-slot": { a: 4 };
   }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "typedef-discriminated-union-recursive/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type Tree = { kind: "leaf"; value: number } | { kind: "node"; children: Tree[] };
+
+export type TypedefDiscriminatedUnionRecursiveProps = {
+  /**
+   * @default { kind: "leaf", value: 0 }
+   */
+  tree?: Tree;
+};
+
+export default class TypedefDiscriminatedUnionRecursive extends SvelteComponentTyped<
+  TypedefDiscriminatedUnionRecursiveProps,
+  Record<string, any>,
+  Record<string, never>
 > {}
 "
 `;
@@ -14907,6 +15204,33 @@ export default class BindThis extends SvelteComponentTyped<
   BindThisProps,
   Record<string, any>,
   { default: Record<string, never> }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "typedef-discriminated-union/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type Result = { kind: "success"; value: string } | { kind: "error"; error: Error };
+
+export type Status = { ok: true; data: number } | { ok: false; reason: string } | "pending";
+
+export type TypedefDiscriminatedUnionProps = {
+  /**
+   * @default { kind: "success", value: "ok" }
+   */
+  result?: Result;
+
+  /**
+   * @default "pending"
+   */
+  status?: Status;
+};
+
+export default class TypedefDiscriminatedUnion extends SvelteComponentTyped<
+  TypedefDiscriminatedUnionProps,
+  Record<string, any>,
+  Record<string, never>
 > {}
 "
 `;
@@ -15953,6 +16277,22 @@ export default class EventExplicitNull extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "dispatched-events-jsdoc-union-type/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type DispatchedEventsJsdocUnionTypeProps = Record<string, never>;
+
+export default class DispatchedEventsJsdocUnionType extends SvelteComponentTyped<
+  DispatchedEventsJsdocUnionTypeProps,
+  {
+    /** Dispatched when a sortable column header would change the active sort. */
+    sort: CustomEvent<{ key: null; direction: "none" } | { key: string; direction: "ascending" | "descending" }>;
+  },
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "context-generics/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -16592,6 +16932,35 @@ export default class ElementTagMapTextElements extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "typedef-discriminated-union-intersection/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export interface Base {
+  id: string;
+  createdAt: number;
+}
+
+export type User = Base & { kind: "user"; name: string };
+
+export type Post = Base & { kind: "post"; title: string; body: string };
+
+export type Entity = User | Post;
+
+export type TypedefDiscriminatedUnionIntersectionProps = {
+  /**
+   * @default { id: "1", createdAt: 0, kind: "user", name: "Ada" }
+   */
+  entity?: Entity;
+};
+
+export default class TypedefDiscriminatedUnionIntersection extends SvelteComponentTyped<
+  TypedefDiscriminatedUnionIntersectionProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "slots-spread/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -17003,317 +17372,6 @@ export default class SlotDescriptionHyphensInline extends SvelteComponentTyped<
     /** Row id maps to server-side UUID v4 (not v1-v3). */
     item: { id: string };
   }
-> {}
-"
-`;
-
-exports[`fixtures (JSON) "typedef-discriminated-union/input.svelte" 1`] = `
-"{
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 13,
-      "column": 0
-    }
-  },
-  "syntaxMode": "legacy",
-  "scriptLanguage": "js",
-  "props": [
-    {
-      "name": "result",
-      "kind": "let",
-      "type": "Result",
-      "typeSource": "jsdoc",
-      "value": "{ kind: \\"success\\", value: \\"ok\\" }",
-      "defaultValue": {
-        "raw": "{ kind: \\"success\\", value: \\"ok\\" }",
-        "kind": "object",
-        "value": {
-          "kind": "success",
-          "value": "ok"
-        }
-      },
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 8,
-          "column": 2
-        },
-        "end": {
-          "line": 8,
-          "column": 55
-        }
-      }
-    },
-    {
-      "name": "status",
-      "kind": "let",
-      "type": "Status",
-      "typeSource": "jsdoc",
-      "value": "\\"pending\\"",
-      "defaultValue": {
-        "raw": "\\"pending\\"",
-        "kind": "literal",
-        "value": "pending"
-      },
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 11,
-          "column": 2
-        },
-        "end": {
-          "line": 11,
-          "column": 32
-        }
-      }
-    }
-  ],
-  "moduleExports": [],
-  "slots": [],
-  "events": [],
-  "typedefs": [
-    {
-      "type": "{ kind: \\"success\\"; value: string } | { kind: \\"error\\"; error: Error }",
-      "name": "Result",
-      "ts": "type Result = { kind: \\"success\\"; value: string } | { kind: \\"error\\"; error: Error }"
-    },
-    {
-      "type": "{ ok: true; data: number } | { ok: false; reason: string } | \\"pending\\"",
-      "name": "Status",
-      "ts": "type Status = { ok: true; data: number } | { ok: false; reason: string } | \\"pending\\""
-    }
-  ],
-  "generics": null,
-  "contexts": []
-}
-"
-`;
-
-exports[`fixtures (TypeScript) "typedef-discriminated-union/input.svelte" 1`] = `
-"import { SvelteComponentTyped } from "svelte";
-
-export type Result = { kind: "success"; value: string } | { kind: "error"; error: Error };
-
-export type Status = { ok: true; data: number } | { ok: false; reason: string } | "pending";
-
-export type TypedefDiscriminatedUnionProps = {
-  /**
-   * @default { kind: "success", value: "ok" }
-   */
-  result?: Result;
-
-  /**
-   * @default "pending"
-   */
-  status?: Status;
-};
-
-export default class TypedefDiscriminatedUnion extends SvelteComponentTyped<
-  TypedefDiscriminatedUnionProps,
-  Record<string, any>,
-  Record<string, never>
-> {}
-"
-`;
-
-exports[`fixtures (JSON) "typedef-discriminated-union-recursive/input.svelte" 1`] = `
-"{
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 9,
-      "column": 0
-    }
-  },
-  "syntaxMode": "legacy",
-  "scriptLanguage": "js",
-  "props": [
-    {
-      "name": "tree",
-      "kind": "let",
-      "type": "Tree",
-      "typeSource": "jsdoc",
-      "value": "{ kind: \\"leaf\\", value: 0 }",
-      "defaultValue": {
-        "raw": "{ kind: \\"leaf\\", value: 0 }",
-        "kind": "object",
-        "value": {
-          "kind": "leaf",
-          "value": 0
-        }
-      },
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 7,
-          "column": 2
-        },
-        "end": {
-          "line": 7,
-          "column": 47
-        }
-      }
-    }
-  ],
-  "moduleExports": [],
-  "slots": [],
-  "events": [],
-  "typedefs": [
-    {
-      "type": "{ kind: \\"leaf\\"; value: number } | { kind: \\"node\\"; children: Tree[] }",
-      "name": "Tree",
-      "ts": "type Tree = { kind: \\"leaf\\"; value: number } | { kind: \\"node\\"; children: Tree[] }"
-    }
-  ],
-  "generics": null,
-  "contexts": []
-}
-"
-`;
-
-exports[`fixtures (JSON) "typedef-discriminated-union-intersection/input.svelte" 1`] = `
-"{
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 12,
-      "column": 0
-    }
-  },
-  "syntaxMode": "legacy",
-  "scriptLanguage": "js",
-  "props": [
-    {
-      "name": "entity",
-      "kind": "let",
-      "type": "Entity",
-      "typeSource": "jsdoc",
-      "value": "{ id: \\"1\\", createdAt: 0, kind: \\"user\\", name: \\"Ada\\" }",
-      "defaultValue": {
-        "raw": "{ id: \\"1\\", createdAt: 0, kind: \\"user\\", name: \\"Ada\\" }",
-        "kind": "object",
-        "value": {
-          "id": "1",
-          "createdAt": 0,
-          "kind": "user",
-          "name": "Ada"
-        }
-      },
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 10,
-          "column": 2
-        },
-        "end": {
-          "line": 10,
-          "column": 75
-        }
-      }
-    }
-  ],
-  "moduleExports": [],
-  "slots": [],
-  "events": [],
-  "typedefs": [
-    {
-      "type": "{ id: string; createdAt: number }",
-      "name": "Base",
-      "ts": "interface Base { id: string; createdAt: number }"
-    },
-    {
-      "type": "Base & { kind: \\"user\\"; name: string }",
-      "name": "User",
-      "ts": "type User = Base & { kind: \\"user\\"; name: string }"
-    },
-    {
-      "type": "Base & { kind: \\"post\\"; title: string; body: string }",
-      "name": "Post",
-      "ts": "type Post = Base & { kind: \\"post\\"; title: string; body: string }"
-    },
-    {
-      "type": "User | Post",
-      "name": "Entity",
-      "ts": "type Entity = User | Post"
-    }
-  ],
-  "generics": null,
-  "contexts": []
-}
-"
-`;
-
-exports[`fixtures (TypeScript) "typedef-discriminated-union-recursive/input.svelte" 1`] = `
-"import { SvelteComponentTyped } from "svelte";
-
-export type Tree = { kind: "leaf"; value: number } | { kind: "node"; children: Tree[] };
-
-export type TypedefDiscriminatedUnionRecursiveProps = {
-  /**
-   * @default { kind: "leaf", value: 0 }
-   */
-  tree?: Tree;
-};
-
-export default class TypedefDiscriminatedUnionRecursive extends SvelteComponentTyped<
-  TypedefDiscriminatedUnionRecursiveProps,
-  Record<string, any>,
-  Record<string, never>
-> {}
-"
-`;
-
-exports[`fixtures (TypeScript) "typedef-discriminated-union-intersection/input.svelte" 1`] = `
-"import { SvelteComponentTyped } from "svelte";
-
-export interface Base {
-  id: string;
-  createdAt: number;
-}
-
-export type User = Base & { kind: "user"; name: string };
-
-export type Post = Base & { kind: "post"; title: string; body: string };
-
-export type Entity = User | Post;
-
-export type TypedefDiscriminatedUnionIntersectionProps = {
-  /**
-   * @default { id: "1", createdAt: 0, kind: "user", name: "Ada" }
-   */
-  entity?: Entity;
-};
-
-export default class TypedefDiscriminatedUnionIntersection extends SvelteComponentTyped<
-  TypedefDiscriminatedUnionIntersectionProps,
-  Record<string, any>,
-  Record<string, never>
 > {}
 "
 `;

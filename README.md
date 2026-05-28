@@ -1484,6 +1484,41 @@ export default class Component extends SvelteComponentTyped<
 > {}
 ```
 
+#### Discriminated unions in event details
+
+When the event detail is a union (or any non-object shape), use `@type` to declare it directly. An explicit `@type` takes precedence over `@property` tags, so the union is preserved verbatim in the emitted `.d.ts` rather than being flattened into independent property unions. The special form `@type {object}` is the only exception — it signals that the shape should be built from the `@property` tags (as shown above).
+
+**Example:**
+
+```svelte
+<script>
+  /**
+   * @event sort
+   * @type {{ key: null; direction: "none" } | { key: string; direction: "ascending" | "descending" }}
+   * Dispatched when a sortable column header would change the active sort.
+   */
+
+  import { createEventDispatcher } from "svelte";
+
+  const dispatch = createEventDispatcher();
+</script>
+```
+
+Output:
+
+```ts
+export default class Component extends SvelteComponentTyped<
+  ComponentProps,
+  {
+    /** Dispatched when a sortable column header would change the active sort. */
+    sort: CustomEvent<{ key: null; direction: "none" } | { key: string; direction: "ascending" | "descending" }>;
+  },
+  Record<string, never>
+> {}
+```
+
+Any free-text prose after the tags is attached to the event description, not to a property doc.
+
 ### Context API
 
 `sveld` automatically generates TypeScript definitions for Svelte's `setContext`/`getContext` API by extracting types from JSDoc annotations on the context values.
