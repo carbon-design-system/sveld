@@ -1026,6 +1026,67 @@ const userId = "user_123" as ComponentProps["userId"];
 component.$set({ userId: "user_123" });
 ```
 
+#### Utility types
+
+`sveld` preserves TypeScript's built-in utility types verbatim, so a prop type can be _derived_ from an existing `@typedef` instead of restating its fields. `Pick`, `Omit`, `Partial`, `Required`, `Readonly`, `ReturnType`, `Parameters`, and `Awaited` all pass through to the generated `.d.ts` unchanged. Deriving types this way keeps a single source of truth: when the base type changes, every derived prop changes with it.
+
+**Example:**
+
+```svelte
+<script>
+  /**
+   * @typedef {{ id: string; size: "sm" | "md" | "lg"; disabled: boolean }} Options
+   */
+
+  /**
+   * @typedef {() => Options} Factory
+   */
+
+  /**
+   * A subset of `Options`.
+   * @type {Pick<Options, "id" | "size">}
+   */
+  export let summary;
+
+  /**
+   * Everything in `Options` except `disabled`.
+   * @type {Omit<Options, "disabled">}
+   */
+  export let editable;
+
+  /**
+   * Derived from the factory's return type rather than restated.
+   * @type {ReturnType<Factory>}
+   */
+  export let defaults;
+
+  /**
+   * The resolved value of an async source.
+   * @type {Awaited<Promise<Options>>}
+   */
+  export let resolved;
+</script>
+```
+
+Output:
+
+```ts
+export interface Options {
+  id: string;
+  size: "sm" | "md" | "lg";
+  disabled: boolean;
+}
+
+export type Factory = () => Options;
+
+export type ComponentProps = {
+  summary: Pick<Options, "id" | "size">;
+  editable: Omit<Options, "disabled">;
+  defaults: ReturnType<Factory>;
+  resolved: Awaited<Promise<Options>>;
+};
+```
+
 ### `@callback`
 
 The `@callback` tag defines a function type using `@param` and `@returns` tags, following the [TypeScript JSDoc `@callback` specification](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html#callback). Like `@typedef`, callbacks are exported from the generated TypeScript definition file.

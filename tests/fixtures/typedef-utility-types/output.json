@@ -1,0 +1,123 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 46,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "summary",
+      "kind": "let",
+      "description": "A read-only subset of `Options`.",
+      "type": "Pick<Options, \"id\" | \"size\">",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 19,
+          "column": 2
+        },
+        "end": {
+          "line": 19,
+          "column": 21
+        }
+      }
+    },
+    {
+      "name": "editable",
+      "kind": "let",
+      "description": "Everything in `Options` except `disabled`.",
+      "type": "Omit<Options, \"disabled\">",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 25,
+          "column": 2
+        },
+        "end": {
+          "line": 25,
+          "column": 22
+        }
+      }
+    },
+    {
+      "name": "defaults",
+      "kind": "let",
+      "description": "Derived from the factory's return type rather than restated.",
+      "type": "ReturnType<Factory>",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 31,
+          "column": 2
+        },
+        "end": {
+          "line": 31,
+          "column": 22
+        }
+      }
+    },
+    {
+      "name": "resolved",
+      "kind": "let",
+      "description": "The resolved value of an async source.",
+      "type": "Awaited<Promise<Options>>",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 37,
+          "column": 2
+        },
+        "end": {
+          "line": 37,
+          "column": 22
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{ id: string; size: \"sm\" | \"md\" | \"lg\"; disabled: boolean }",
+      "name": "Options",
+      "description": "The full set of options. Other prop types are derived from this one\ninstead of redeclaring its fields.",
+      "ts": "interface Options { id: string; size: \"sm\" | \"md\" | \"lg\"; disabled: boolean }"
+    },
+    {
+      "type": "() => Options",
+      "name": "Factory",
+      "description": "A factory that produces an `Options` value.",
+      "ts": "type Factory = () => Options"
+    }
+  ],
+  "generics": null,
+  "contexts": []
+}
