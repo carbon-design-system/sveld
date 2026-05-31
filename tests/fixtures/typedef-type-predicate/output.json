@@ -1,0 +1,78 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 25,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "isUser",
+      "kind": "let",
+      "description": "A type guard. It accepts an `unknown` value and returns a type predicate,\nso callers can narrow `unknown` to `User` before accessing its fields.",
+      "type": "(value: unknown) => value is User",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 12,
+          "column": 2
+        },
+        "end": {
+          "line": 12,
+          "column": 20
+        }
+      }
+    },
+    {
+      "name": "validate",
+      "kind": "let",
+      "description": "A type guard expressed as a `@callback`.",
+      "type": "UserGuard",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 21,
+          "column": 2
+        },
+        "end": {
+          "line": 21,
+          "column": 22
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{ id: string; name: string }",
+      "name": "User",
+      "ts": "interface User { id: string; name: string }"
+    },
+    {
+      "type": "(value: unknown) => value is User",
+      "name": "UserGuard",
+      "description": "A type guard expressed as a `@callback`.",
+      "ts": "type UserGuard = (value: unknown) => value is User"
+    }
+  ],
+  "generics": null,
+  "contexts": []
+}

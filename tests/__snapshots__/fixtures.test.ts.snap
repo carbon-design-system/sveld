@@ -12281,6 +12281,88 @@ exports[`fixtures (JSON) "typedef-discriminated-union-intersection/input.svelte"
 "
 `;
 
+exports[`fixtures (JSON) "typedef-type-predicate/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 25,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "isUser",
+      "kind": "let",
+      "description": "A type guard. It accepts an \`unknown\` value and returns a type predicate,\\nso callers can narrow \`unknown\` to \`User\` before accessing its fields.",
+      "type": "(value: unknown) => value is User",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 12,
+          "column": 2
+        },
+        "end": {
+          "line": 12,
+          "column": 20
+        }
+      }
+    },
+    {
+      "name": "validate",
+      "kind": "let",
+      "description": "A type guard expressed as a \`@callback\`.",
+      "type": "UserGuard",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 21,
+          "column": 2
+        },
+        "end": {
+          "line": 21,
+          "column": 22
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{ id: string; name: string }",
+      "name": "User",
+      "ts": "interface User { id: string; name: string }"
+    },
+    {
+      "type": "(value: unknown) => value is User",
+      "name": "UserGuard",
+      "description": "A type guard expressed as a \`@callback\`.",
+      "ts": "type UserGuard = (value: unknown) => value is User"
+    }
+  ],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "slots-spread/input.svelte" 1`] = `
 "{
   "source": {
@@ -17231,6 +17313,42 @@ export type TypedefDiscriminatedUnionIntersectionProps = {
 
 export default class TypedefDiscriminatedUnionIntersection extends SvelteComponentTyped<
   TypedefDiscriminatedUnionIntersectionProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "typedef-type-predicate/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export interface User {
+  id: string;
+  name: string;
+}
+
+/**
+ * A type guard expressed as a \`@callback\`.
+ */
+export type UserGuard = (value: unknown) => value is User;
+
+export type TypedefTypePredicateProps = {
+  /**
+   * A type guard. It accepts an \`unknown\` value and returns a type predicate,
+   * so callers can narrow \`unknown\` to \`User\` before accessing its fields.
+   * @default undefined
+   */
+  isUser: (value: unknown) => value is User;
+
+  /**
+   * A type guard expressed as a \`@callback\`.
+   * @default undefined
+   */
+  validate: UserGuard;
+};
+
+export default class TypedefTypePredicate extends SvelteComponentTyped<
+  TypedefTypePredicateProps,
   Record<string, any>,
   Record<string, never>
 > {}
