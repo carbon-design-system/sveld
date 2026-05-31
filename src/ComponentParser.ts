@@ -1117,7 +1117,7 @@ export default class ComponentParser {
         return;
       case "TSTypeLiteral":
         for (const member of typeNode.members ?? []) {
-          if (!member || member.type !== "TSPropertySignature") continue;
+          if (member?.type !== "TSPropertySignature") continue;
           this.collectReferencedTypeDependencies(
             member.typeAnnotation?.typeAnnotation,
             referencedImportedTypes,
@@ -1289,7 +1289,7 @@ export default class ComponentParser {
 
     const mergeMembers = (members: ModernRunesTypeMember[]) => {
       for (const member of members) {
-        if (!member || member.type !== "TSPropertySignature" || member.computed) continue;
+        if (member?.type !== "TSPropertySignature" || member.computed) continue;
         if (!member.key) continue;
 
         const propName = this.getPropertyName(member.key as Property["key"]);
