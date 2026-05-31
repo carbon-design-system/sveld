@@ -2,7 +2,7 @@ import path from "node:path";
 import { version as svelteVersion } from "svelte/package.json";
 import { name as packageName, version as packageVersion } from "../../package.json";
 import { normalizeSeparators } from "../path";
-import type { ComponentDocApi, ComponentDocs } from "../plugin";
+import type { ComponentDocApi, ComponentDocs } from "../SveldDocumenter";
 import { createJsonWriter } from "./Writer";
 
 export interface WriteJsonOptions {

@@ -256,7 +256,7 @@ If no `input` is specified, `sveld` will infer the entry point based on the `pac
 import { sveld } from "sveld";
 import pkg from "./package.json" with { type: "json" };
 
-sveld({
+await sveld({
   input: "./src/index.js",
   glob: true,
   markdown: true,
@@ -276,6 +276,38 @@ sveld({
 });
 ```
 
+For advanced usage, `createSveld` exposes the same pipeline as a documenter with separate `inspect` and `write` methods.
+
+Use `inspect` when you need component metadata without writing files:
+
+```js
+import { createSveld } from "sveld";
+
+const documenter = createSveld();
+
+const document = await documenter.inspect({
+  input: "./src/index.js",
+  glob: true,
+});
+
+console.log([...document.components.keys()]);
+```
+
+Use `write` when you want the same generated files as `sveld(...)` and a result describing what was written:
+
+```js
+const result = await documenter.write({
+  input: "./src/index.js",
+  glob: true,
+  json: true,
+  markdown: true,
+});
+
+console.log(result.written); // ["types", "json", "markdown"]
+```
+
+`inspect` returns `undefined` when no entry point can be resolved. Otherwise, its document includes `components` for exported components and `allComponentsForTypes` for exported plus glob-discovered Svelte files used by TypeScript definition generation.
+
 #### `jsonOptions.outDir`
 
 If `json` is `true`, a `COMPONENT_API.json` file will be generated at the root of your project. This file contains documentation for all components.
@@ -283,7 +315,7 @@ If `json` is `true`, a `COMPONENT_API.json` file will be generated at the root o
 Use the `jsonOptions.outDir` option to specify the folder for individual JSON files to be emitted.
 
 ```js
-sveld({
+await sveld({
   json: true,
   jsonOptions: {
     // an individual JSON file will be generated for each component API

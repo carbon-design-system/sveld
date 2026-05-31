@@ -1,4 +1,4 @@
-import type { ComponentDocs } from "../plugin";
+import type { ComponentDocs } from "../SveldDocumenter";
 import { type AppendType, MarkdownWriterBaseImpl } from "./MarkdownWriterBase";
 import { renderComponentsToMarkdown } from "./markdown-render-utils";
 

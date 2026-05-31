@@ -1,4 +1,4 @@
-import type { ComponentDocApi, ComponentDocs } from "../plugin";
+import type { ComponentDocApi, ComponentDocs } from "../SveldDocumenter";
 import type { AppendType } from "./MarkdownWriterBase";
 import {
   EVENT_TABLE_HEADER,

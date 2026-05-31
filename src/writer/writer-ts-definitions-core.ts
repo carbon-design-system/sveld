@@ -1,5 +1,5 @@
 import { getParsedComponentTypeScriptMetadata } from "../ComponentParser";
-import type { ComponentDocApi } from "../plugin";
+import type { ComponentDocApi } from "../SveldDocumenter";
 
 const ANY_TYPE = "any";
 const EMPTY_STR = "";
