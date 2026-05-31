@@ -570,6 +570,71 @@ For runes components with multiple destructured props, place JSDoc on the indivi
 </script>
 ```
 
+#### Importing types
+
+`sveld` supports TypeScript's [`import(...)` type syntax](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html#import-types), so a `@type` or `@typedef` can reference a type from another module without a top-level `import` statement. The expression is preserved verbatim in the generated `.d.ts`, where it resolves the same way it would in hand-written TypeScript:
+
+- `import("module").Type` references an exported **type**.
+- `typeof import("module").value` references the type of an exported **value**.
+- `import("svelte").ComponentProps<...>` and other utility types compose with imports.
+
+This keeps third-party types (Svelte stores, another component's props, library types) out of the component's runtime imports while still flowing into IntelliSense for consumers.
+
+**Example:**
+
+```svelte
+<script>
+  /**
+   * A store imported from `svelte/store` — no top-level `import` required.
+   * @type {import("svelte/store").Writable<string>}
+   */
+  export let value;
+
+  /**
+   * `typeof import(...)` references the type of a value export, here the
+   * `writable` factory itself rather than a type it exports.
+   * @type {typeof import("svelte/store").writable}
+   */
+  export let createStore;
+
+  /**
+   * Reuse another component's props with Svelte's `ComponentProps` utility.
+   * @type {import("svelte").ComponentProps<import("svelte").SvelteComponent>}
+   */
+  export let buttonProps;
+
+  /**
+   * `import(...)` works inside a `@typedef` too — useful for typing the value
+   * shared via `setContext` / `getContext`.
+   *
+   * @typedef {{ rows: import("svelte/store").Writable<string[]>; selected: import("svelte/store").Readable<number> }} TableContext
+   */
+
+  /** @type {TableContext} */
+  export let context;
+</script>
+```
+
+Output:
+
+```ts
+export interface TableContext {
+  rows: import("svelte/store").Writable<string[]>;
+  selected: import("svelte/store").Readable<number>;
+}
+
+export type ComponentProps = {
+  /** @default undefined */
+  value: import("svelte/store").Writable<string>;
+  /** @default undefined */
+  createStore: typeof import("svelte/store").writable;
+  /** @default undefined */
+  buttonProps: import("svelte").ComponentProps<import("svelte").SvelteComponent>;
+  /** @default undefined */
+  context: TableContext;
+};
+```
+
 #### Prefer `unknown` over `any`
 
 When a prop accepts data whose shape is not known ahead of time, annotate it as `unknown` rather than `any`. `sveld` preserves either keyword verbatim in the emitted prop type, but the two behave very differently for consumers: `unknown` forces a narrowing check before the value is used, whereas `any` opts out of type checking everywhere the value flows. Reserve `any` for genuine escape hatches.

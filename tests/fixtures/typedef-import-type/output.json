@@ -1,0 +1,139 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 40,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "value",
+      "kind": "let",
+      "description": "A store imported from `svelte/store`. The `import(...)` type is resolved at\ntype level and emitted verbatim — no top-level `import` statement required.",
+      "type": "import(\"svelte/store\").Writable<string>",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 8,
+          "column": 2
+        },
+        "end": {
+          "line": 8,
+          "column": 19
+        }
+      }
+    },
+    {
+      "name": "count",
+      "kind": "let",
+      "description": "A read-only store.",
+      "type": "import(\"svelte/store\").Readable<number>",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 14,
+          "column": 2
+        },
+        "end": {
+          "line": 14,
+          "column": 19
+        }
+      }
+    },
+    {
+      "name": "createStore",
+      "kind": "let",
+      "description": "`typeof import(...)` references the type of a value export — here the\n`writable` factory itself, rather than a type it exports.",
+      "type": "typeof import(\"svelte/store\").writable",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 22,
+          "column": 2
+        },
+        "end": {
+          "line": 22,
+          "column": 25
+        }
+      }
+    },
+    {
+      "name": "buttonProps",
+      "kind": "let",
+      "description": "Reuse another component's props with Svelte's `ComponentProps` utility.",
+      "type": "import(\"svelte\").ComponentProps<import(\"svelte\").SvelteComponent>",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 28,
+          "column": 2
+        },
+        "end": {
+          "line": 28,
+          "column": 25
+        }
+      }
+    },
+    {
+      "name": "context",
+      "kind": "let",
+      "description": "The value stored under a Svelte context key, typed with imported store\ntypes. `import(...)` works inside a `@typedef` too.",
+      "type": "TableContext",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 38,
+          "column": 2
+        },
+        "end": {
+          "line": 38,
+          "column": 21
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{ rows: import(\"svelte/store\").Writable<string[]>; selected: import(\"svelte/store\").Readable<number> }",
+      "name": "TableContext",
+      "description": "The value stored under a Svelte context key, typed with imported store\ntypes. `import(...)` works inside a `@typedef` too.",
+      "ts": "interface TableContext { rows: import(\"svelte/store\").Writable<string[]>; selected: import(\"svelte/store\").Readable<number> }"
+    }
+  ],
+  "generics": null,
+  "contexts": []
+}
