@@ -1087,6 +1087,63 @@ export type ComponentProps = {
 };
 ```
 
+#### Type guards
+
+A prop typed as a [type predicate](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates) (`value is T`) lets a component receive a user-defined type guard. `sveld` preserves the predicate verbatim — whether written inline with `@type` or named with a `@typedef` — so the narrowing survives in the generated `.d.ts`. Name guards `isX` or `hasX`, and make sure the implementation actually verifies the claim the predicate makes.
+
+**Example:**
+
+```svelte
+<script>
+  /**
+   * @typedef {{ id: string; name: string }} User
+   */
+
+  /**
+   * A type guard. It accepts an `unknown` value and returns a type predicate,
+   * so callers can narrow `unknown` to `User` before accessing its fields.
+   *
+   * @type {(value: unknown) => value is User}
+   */
+  export let isUser;
+
+  /**
+   * A type guard expressed as a reusable `@typedef`.
+   *
+   * @typedef {(value: unknown) => value is User} UserGuard
+   */
+
+  /** @type {UserGuard} */
+  export let validate;
+</script>
+```
+
+Output:
+
+```ts
+export interface User {
+  id: string;
+  name: string;
+}
+
+export type UserGuard = (value: unknown) => value is User;
+
+export type ComponentProps = {
+  isUser: (value: unknown) => value is User;
+  validate: UserGuard;
+};
+```
+
+Consumers use the guard to narrow an `unknown` value:
+
+```ts
+function render(value: unknown, props: ComponentProps) {
+  if (props.isUser(value)) {
+    value.name; // narrowed to User
+  }
+}
+```
+
 ### `@callback`
 
 The `@callback` tag defines a function type using `@param` and `@returns` tags, following the [TypeScript JSDoc `@callback` specification](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html#callback). Like `@typedef`, callbacks are exported from the generated TypeScript definition file.
