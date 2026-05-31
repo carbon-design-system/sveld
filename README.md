@@ -570,6 +570,56 @@ For runes components with multiple destructured props, place JSDoc on the indivi
 </script>
 ```
 
+#### Prefer `unknown` over `any`
+
+When a prop accepts data whose shape is not known ahead of time, annotate it as `unknown` rather than `any`. `sveld` preserves either keyword verbatim in the emitted prop type, but the two behave very differently for consumers: `unknown` forces a narrowing check before the value is used, whereas `any` opts out of type checking everywhere the value flows. Reserve `any` for genuine escape hatches.
+
+**Example:**
+
+```svelte
+<script>
+  /**
+   * A value of unknown shape. Prefer `unknown` over `any`: consumers must
+   * narrow it before use instead of silently opting out of type checking.
+   *
+   * @type {unknown}
+   */
+  export let payload;
+
+  /**
+   * An escape hatch typed as `any`, shown for contrast. `any` disables type
+   * checking everywhere it flows, so reach for `unknown` at boundaries instead.
+   *
+   * @type {any}
+   */
+  export let raw;
+</script>
+```
+
+Output:
+
+```ts
+export type ComponentProps = {
+  /** @default undefined */
+  payload: unknown;
+  /** @default undefined */
+  raw: any;
+};
+```
+
+Consumers must narrow an `unknown` prop before using it, while an `any` prop silently accepts anything:
+
+```ts
+function handle(props: ComponentProps) {
+  // Error: 'payload' is of type 'unknown' — narrow it first
+  props.payload.toUpperCase();
+
+  if (typeof props.payload === "string") {
+    props.payload.toUpperCase(); // OK after narrowing
+  }
+}
+```
+
 ### `@default`
 
 By default, `sveld` infers the `@default` value from the prop's initializer and includes it in the generated TypeScript definitions:
