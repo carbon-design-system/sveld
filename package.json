@@ -15,13 +15,13 @@
   },
   "scripts": {
     "test": "bun test --parallel",
-    "test:fixtures-types": "tsc --project tsconfig.fixtures.json",
+    "test:fixtures-types": "tsgo --project tsconfig.fixtures.json",
     "test:e2e": "bun tests/test-e2e.ts",
     "format": "biome format --write .",
     "lint": "biome lint .",
     "lint:fix": "biome check --write --unsafe .",
     "build": "bun scripts/build.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsgo --noEmit"
   },
   "dependencies": {
     "prettier": "^3.8.3"
@@ -31,6 +31,7 @@
     "@rollup/plugin-node-resolve": "^13.3.0",
     "@types/bun": "^1.3.14",
     "@types/jest": "^30.0.0",
+    "@typescript/native-preview": "^7.0.0-dev.20260527.2",
     "acorn": "^8.14.1",
     "comment-parser": "^1.4.1",
     "culls": "^0.2.0",
@@ -38,8 +39,7 @@
     "rollup": "^2.79.2",
     "rollup-plugin-svelte": "^7.2.2",
     "svelte": "^5.55.9",
-    "tinyglobby": "^0.2.16",
-    "typescript": "^6.0.3"
+    "tinyglobby": "^0.2.16"
   },
   "bin": {
     "sveld": "cli.js"
