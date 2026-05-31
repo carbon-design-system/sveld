@@ -3,15 +3,15 @@
 [![NPM][npm]][npm-url]
 ![npm downloads to date](https://img.shields.io/npm/dt/sveld?color=262626&style=for-the-badge)
 
-`sveld` generates TypeScript definitions and component documentation (Markdown/JSON) for Svelte components. It analyzes props, events, slots, and other component features through static analysis. Types and signatures can be defined using [JSDoc notation](https://jsdoc.app/).
+`sveld` generates TypeScript definitions and component documentation (Markdown/JSON) for Svelte components. It statically analyzes props, events, slots, and the rest. Add types with [JSDoc](https://jsdoc.app/) when inference is not enough.
 
-The purpose of this project is to make third party Svelte component libraries compatible with the Svelte Language Server and TypeScript with minimal effort required by the author. For example, TypeScript definitions may be used during development via intelligent code completion in Integrated Development Environments (IDEs) like VSCode.
+The goal is to get third-party Svelte libraries working with the Svelte Language Server and TypeScript with minimal effort from the author. Generated `.d.ts` files give you autocomplete in VS Code and other IDEs.
 
 [Carbon Components Svelte](https://github.com/carbon-design-system/carbon-components-svelte) uses this library to auto-generate component types and API metadata.
 
 `sveld` uses the Svelte 5 compiler to parse `.svelte` files. That single parse path powers docgen and TypeScript output for Svelte 3, Svelte 4, Svelte 5 without runes (`export let`, `<slot>`, `$$restProps`, …), and Svelte 5 Runes (`$props()`, `$bindable()`, `{@render ...}`, callback props such as `onclick`, …).
 
-For `lang="ts"` components, `sveld` preserves source-level prop type annotations when possible instead of requiring JSDoc as the primary source of truth. This includes legacy `export let` props, typed `$props()` destructuring, typed whole-object `$props()` captures, local `interface`/`type` declarations, and imported type references in emitted `.d.ts` files.
+For `lang="ts"` components, `sveld` keeps source-level prop type annotations when it can, instead of forcing JSDoc. That covers legacy `export let` props, typed `$props()` destructuring, typed whole-object `$props()` captures, local `interface`/`type` declarations, and imported type references in emitted `.d.ts` files.
 
 | Syntax mode          | Supported |
 | :------------------- | :-------: |
@@ -20,11 +20,11 @@ For `lang="ts"` components, `sveld` preserves source-level prop type annotations
 | Svelte 5 (non-Runes) |     ✓     |
 | Svelte 5 Runes       |     ✓     |
 
-**Note** that generated `.d.ts` files extend `SvelteComponentTyped` from `svelte`, so TypeScript and the Svelte Language Server work whether consumers use Svelte 3, Svelte 4, or Svelte 5.
+Generated `.d.ts` files extend `SvelteComponentTyped` from `svelte`, so TypeScript and the Svelte Language Server work whether consumers use Svelte 3, Svelte 4, or Svelte 5.
 
 ---
 
-Given a Svelte component, `sveld` can infer basic prop types to generate TypeScript definitions compatible with the [Svelte Language Server](https://github.com/sveltejs/language-tools):
+From a Svelte component, `sveld` can infer basic prop types and emit definitions the [Svelte Language Server](https://github.com/sveltejs/language-tools) understands:
 
 **Button.svelte**
 
@@ -72,9 +72,7 @@ export default class Button extends SvelteComponentTyped<
 > {}
 ```
 
-Sometimes, inferring prop types is insufficient.
-
-Prop/event/slot types and signatures can be augmented using [JSDoc](https://jsdoc.app/) notations.
+Inference only gets you so far. Use [JSDoc](https://jsdoc.app/) to document prop, event, and slot types when you need more precision.
 
 ```js
 /** @type {"button" | "submit" | "reset"} */
@@ -86,7 +84,7 @@ export let type = "button";
 export let primary = false;
 ```
 
-The accompanying JSDoc annotations would generate the following:
+With JSDoc, the output looks like this:
 
 ```ts
 import type { SvelteHTMLElements } from "svelte/elements";
@@ -149,9 +147,9 @@ export default class Button extends SvelteComponentTyped<
 
 ## Approach
 
-`sveld` uses the Svelte compiler to statically analyze Svelte components exported from a library to generate documentation useful to the end user.
+`sveld` uses the Svelte compiler to statically analyze exported components and emit docs for consumers.
 
-Extracted metadata include:
+It extracts:
 
 - props
 - slots
@@ -160,7 +158,7 @@ Extracted metadata include:
 - context (setContext/getContext)
 - `$$restProps`
 
-This library adopts a progressively enhanced approach. Any property type that cannot be inferred (e.g., "hello" is a string) falls back to "any" to minimize incorrectly typed properties or signatures. To mitigate this, the library author can add JSDoc annotations to specify types that cannot be reliably inferred. This represents a progressively enhanced approach because JSDocs are comments that can be ignored by the compiler.
+When inference fails, props fall back to `any` rather than guessing wrong. Authors can tighten types with JSDoc. Comments are optional from the compiler's point of view, so plain JavaScript components still parse.
 
 When both TypeScript syntax and JSDoc are present, `sveld` resolves prop types in this order:
 
@@ -169,7 +167,7 @@ When both TypeScript syntax and JSDoc are present, `sveld` resolves prop types i
 3. initializer inference
 4. `any`
 
-`sveld` intentionally stays AST-only. It preserves imported and local type text in generated `.d.ts` output, but it does not perform project-wide semantic resolution with the TypeScript compiler. That means opaque imported whole-object `$props()` types can be preserved in declarations without being fully expanded into JSON metadata.
+`sveld` stays AST-only. It copies imported and local type text into generated `.d.ts` output but does not run project-wide semantic resolution with the TypeScript compiler. Opaque imported whole-object `$props()` types can therefore stay in declarations without being fully expanded into JSON metadata.
 
 ## Usage
 
@@ -206,7 +204,7 @@ export default defineConfig({
 });
 ```
 
-Since Vite uses Rollup for production builds, `sveld` also works in Rollup configurations.
+Since Vite uses Rollup for production builds, the same plugin works in Rollup configs.
 
 By default, `sveld` will use the `"svelte"` field from your `package.json` to determine the entry point. You can override this by specifying an explicit `entry` option:
 
@@ -248,7 +246,7 @@ npx sveld --json --markdown
 
 ### Node.js
 
-You can also use `sveld` programmatically in Node.js. The package is **ESM-only**; `require("sveld")` is not supported. Use `import` or dynamic `import()`.
+You can also call `sveld` from Node.js. The package is **ESM-only**; `require("sveld")` does not work. Use `import` or dynamic `import()`.
 
 If no `input` is specified, `sveld` will infer the entry point based on the `package.json#svelte` field.
 
@@ -278,7 +276,7 @@ sveld({
 
 #### `jsonOptions.outDir`
 
-If `json` is `true`, a `COMPONENT_API.json` file will be generated at the root of your project. This file contains documentation for all components.
+With `json: true`, `sveld` writes `COMPONENT_API.json` at the project root. The file documents all components.
 
 Use the `jsonOptions.outDir` option to specify the folder for individual JSON files to be emitted.
 
@@ -295,7 +293,7 @@ sveld({
 
 ### Publishing to NPM
 
-TypeScript definitions are outputted to the `types` folder by default. Don't forget to include the folder in your `package.json` when publishing the package to NPM.
+TypeScript definitions land in the `types` folder by default. Include that folder in `package.json` when you publish to npm.
 
 ```diff
 {
@@ -339,9 +337,7 @@ sveld({
 When `json: true` is enabled, `sveld` emits a `COMPONENT_API.json` file with schema and generator metadata plus the parsed
 component API.
 
-The public JSON Schema for the combined output is hosted on GitHub ([path to file](https://github.com/carbon-design-system/sveld/blob/main/schema/component-api.schema.json), [raw URL](https://raw.githubusercontent.com/carbon-design-system/sveld/main/schema/component-api.schema.json)). Use it to document or validate
-generated `COMPONENT_API.json` files. The schema describes the emitted metadata contract; optional fields may be absent when
-the parser does not have a stable source for that metadata.
+The JSON Schema lives on GitHub ([path to file](https://github.com/carbon-design-system/sveld/blob/main/schema/component-api.schema.json), [raw URL](https://raw.githubusercontent.com/carbon-design-system/sveld/main/schema/component-api.schema.json)). Use it to validate generated `COMPONENT_API.json` files. Optional fields may be missing when the parser has no stable source for that metadata.
 
 ```ts
 interface ComponentApiJson {
@@ -437,12 +433,11 @@ type ComponentEvent =
     };
 ```
 
-`source` fields are optional and are included only when the Svelte or JavaScript AST provides stable positions. They do not
-include source text or raw character offsets.
+`source` fields appear only when the Svelte or JavaScript AST has stable positions. They omit source text and raw character offsets.
 
-Note that `SourcePosition.line` is 1-based and `SourcePosition.column` is 0-based.
+`SourcePosition.line` is 1-based. `SourcePosition.column` is 0-based.
 
-Prop metadata is additive and preserves the older public fields:
+Prop metadata is additive and keeps the older public fields:
 
 - `name` is always the public prop name. For runes `$props()` aliases such as `let { class: className } = $props()`, `localName` is emitted only when the local binding differs.
 - `typeSource` identifies the conservative source of the emitted `type`: TypeScript annotation, JSDoc, initializer/default inference, other parser inference, or unknown fallback.
@@ -453,7 +448,7 @@ Prop metadata is additive and preserves the older public fields:
 
 ### `reactive`
 
-The `reactive` field in generated JSON is heuristic metadata. It is not a complete statement of whether a parent may use `bind:prop` in Svelte.
+The `reactive` field in generated JSON is a heuristic. It does not fully answer whether a parent can use `bind:prop` in Svelte.
 
 `sveld` marks `reactive: true` when it finds internal evidence that a prop is writable, including:
 
@@ -468,7 +463,7 @@ Local variables or parameters that shadow a prop name do not count as writes to 
 
 ### `binding`
 
-The optional `binding` field in generated JSON is explicit documentation metadata for a prop's intended `bind:` contract. It is separate from `reactive`, and it is never inferred from internal writes or `$bindable()`.
+The optional `binding` field documents a prop's intended `bind:` contract. It is separate from `reactive` and is never inferred from internal writes or `$bindable()`.
 
 Use `@bindable readonly` for component-owned or output-style bindings where the consumer binds to the current value emitted by the component:
 
@@ -496,7 +491,7 @@ Use `@bindable writable` for two-way or shared state bindings where either the c
 
 Generated JSON includes `"binding": "readonly"` or `"binding": "writable"` for annotated props. Unannotated props omit the field.
 
-This is documentation metadata only. Generated `.svelte.d.ts` prop types are unchanged because TypeScript cannot reliably express Svelte component binding direction.
+This is documentation only. Generated `.svelte.d.ts` prop types do not change. TypeScript cannot express Svelte binding direction reliably.
 
 For stable output, generated `events` arrays are emitted in deterministic sorted order.
 
@@ -516,9 +511,9 @@ export let id = `ccs-${Math.random().toString(36)}`;
 // inferred type: "string"
 ```
 
-Use the `@type` tag to explicitly document the type. In the following example, the `kind` property has an enumerated (enum) type.
+Use the `@type` tag to document the type explicitly. In the example below, `kind` is a string union.
 
-For `lang="ts"` components, prefer native TypeScript annotations when they are already present. `@type` remains useful for JavaScript components, for overriding inferred types, and for cases where the AST cannot recover a more precise type.
+For `lang="ts"` components, prefer native TypeScript annotations when you already have them. `@type` still helps in JavaScript components, for overriding inferred types, and when the AST cannot recover a sharper type.
 
 **Signature:**
 
@@ -550,7 +545,7 @@ For `lang="ts"` components, prefer native TypeScript annotations when they are a
 </script>
 ```
 
-For runes components with multiple destructured props, place JSDoc on the individual property you want to document. A declaration-level JSDoc block is only used as a fallback when the destructure exposes a single public prop.
+For runes components with multiple destructured props, put JSDoc on the property you want to document. A declaration-level block is a fallback when the destructure exposes a single public prop.
 
 **Svelte 3, 4, 5 (non-Runes):**
 
@@ -572,20 +567,20 @@ For runes components with multiple destructured props, place JSDoc on the indivi
 
 #### Importing types
 
-`sveld` supports TypeScript's [`import(...)` type syntax](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html#import-types), so a `@type` or `@typedef` can reference a type from another module without a top-level `import` statement. The expression is preserved verbatim in the generated `.d.ts`, where it resolves the same way it would in hand-written TypeScript:
+`sveld` supports TypeScript's [`import(...)` type syntax](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html#import-types), so a `@type` or `@typedef` can reference a type from another module without a top-level `import`. The expression is copied verbatim into the generated `.d.ts` and resolves the same way as hand-written TypeScript:
 
 - `import("module").Type` references an exported **type**.
 - `typeof import("module").value` references the type of an exported **value**.
 - `import("svelte").ComponentProps<...>` and other utility types compose with imports.
 
-This keeps third-party types (Svelte stores, another component's props, library types) out of the component's runtime imports while still flowing into IntelliSense for consumers.
+This keeps third-party types (Svelte stores, another component's props, library types) out of runtime imports while still showing up in IntelliSense for consumers.
 
 **Example:**
 
 ```svelte
 <script>
   /**
-   * A store imported from `svelte/store` — no top-level `import` required.
+   * A store from `svelte/store`. No top-level `import` required.
    * @type {import("svelte/store").Writable<string>}
    */
   export let value;
@@ -604,8 +599,7 @@ This keeps third-party types (Svelte stores, another component's props, library 
   export let buttonProps;
 
   /**
-   * `import(...)` works inside a `@typedef` too — useful for typing the value
-   * shared via `setContext` / `getContext`.
+   * `import(...)` works inside a `@typedef` too, which helps when typing values shared via `setContext` / `getContext`.
    *
    * @typedef {{ rows: import("svelte/store").Writable<string[]>; selected: import("svelte/store").Readable<number> }} TableContext
    */
@@ -637,7 +631,7 @@ export type ComponentProps = {
 
 #### Prefer `unknown` over `any`
 
-When a prop accepts data whose shape is not known ahead of time, annotate it as `unknown` rather than `any`. `sveld` preserves either keyword verbatim in the emitted prop type, but the two behave very differently for consumers: `unknown` forces a narrowing check before the value is used, whereas `any` opts out of type checking everywhere the value flows. Reserve `any` for genuine escape hatches.
+When a prop accepts data whose shape you do not know ahead of time, annotate it as `unknown` rather than `any`. `sveld` preserves either keyword in the emitted prop type, but they behave differently for consumers: `unknown` forces a narrowing check before use; `any` disables type checking everywhere the value flows. Reserve `any` for real escape hatches.
 
 **Example:**
 
@@ -676,7 +670,7 @@ Consumers must narrow an `unknown` prop before using it, while an `any` prop sil
 
 ```ts
 function handle(props: ComponentProps) {
-  // Error: 'payload' is of type 'unknown' — narrow it first
+  // Error: 'payload' is of type 'unknown'. Narrow it first.
   props.payload.toUpperCase();
 
   if (typeof props.payload === "string") {
@@ -702,9 +696,9 @@ By default, `sveld` infers the `@default` value from the prop's initializer and 
 open?: boolean;
 ```
 
-Use the `@default` tag to explicitly document the default value. When an explicit `@default` annotation is provided, `sveld` uses it instead of the inferred value, avoiding duplicate `@default` tags in the output.
+Use `@default` to document the default value. When you supply `@default`, `sveld` uses it instead of the inferred value and avoids duplicate `@default` tags in the output.
 
-This is useful when the initializer references a variable or expression that is not meaningful to consumers:
+Use `@default` when the initializer references a variable or expression that means nothing to consumers:
 
 ```svelte
 <script>
@@ -727,7 +721,7 @@ shouldFilter?: (item: string, value: string) => boolean;
 
 #### Identifier resolution
 
-When a prop's initializer is a variable reference, `sveld` resolves it to the actual value automatically:
+When a prop's initializer is a variable reference, `sveld` resolves it to the actual value:
 
 ```svelte
 <script>
@@ -769,7 +763,7 @@ When an explicit `@default` annotation is provided, it always takes precedence o
 
 ### `@typedef`
 
-The `@typedef` tag can be used to define a common type that is used multiple times within a component. All typedefs defined in a component will be exported from the generated TypeScript definition file.
+The `@typedef` tag defines a shared type used multiple times in a component. All typedefs in a component are exported from the generated `.d.ts`.
 
 **Signature:**
 
@@ -818,7 +812,7 @@ The `@typedef` tag can be used to define a common type that is used multiple tim
 
 #### Using `@property` for complex typedefs
 
-For complex object types, use the `@property` tag to document individual properties. This provides better documentation and IDE support with per-property tooltips.
+For complex object types, use `@property` to document individual fields. That gives per-property tooltips in the IDE.
 
 **Signature:**
 
@@ -889,7 +883,7 @@ export type ComponentProps = {
 
 #### Optional properties and default values
 
-Following JSDoc standards, use square brackets to mark properties as optional. You can also specify default values using the `[propertyName=defaultValue]` syntax.
+Use square brackets for optional properties, per JSDoc. Default values use `[propertyName=defaultValue]`.
 
 **Signature:**
 
@@ -962,7 +956,7 @@ export type ComponentProps = {
 };
 ```
 
-> **Note:** The inline syntax `@typedef {{ name: string }} User` continues to work for backwards compatibility.
+> The inline syntax `@typedef {{ name: string }} User` still works for backwards compatibility.
 
 #### Discriminated unions
 
@@ -1028,7 +1022,7 @@ The same pattern works inline via `@type`, which is useful when the union is onl
 export let result = { kind: "success", value: "ok" };
 ```
 
-In `<script lang="ts">` components, write the type alias directly — `sveld` preserves it in the emitted `.d.ts`:
+In `<script lang="ts">` components, write the type alias directly. `sveld` preserves it in the emitted `.d.ts`:
 
 ```svelte
 <script lang="ts">
@@ -1040,7 +1034,7 @@ In `<script lang="ts">` components, write the type alias directly — `sveld` pr
 
 #### Branded types
 
-A branded type is a primitive intersected with a unique marker so that otherwise interchangeable values (a `UserId` vs. any other `string`) become distinct domain types. At runtime the value is still the underlying primitive, but TypeScript treats the brand as a separate type. Declare the brand inline with `@type` — `sveld` preserves the intersection verbatim in the emitted prop type, so the brand participates fully in IntelliSense, autocomplete, and hover tooltips on the consumer side.
+A branded type is a primitive plus a unique marker so values like `UserId` are not interchangeable with any other `string`. At runtime it is still the underlying primitive; TypeScript treats the brand as a separate type. Declare the brand inline with `@type`. `sveld` copies the intersection verbatim into the emitted prop type, so the brand shows up in IntelliSense, autocomplete, and hover tooltips on the consumer side.
 
 **Example:**
 
@@ -1082,7 +1076,7 @@ export type ComponentProps = {
 };
 ```
 
-Consumers construct branded values with a narrowing cast and then enjoy compile-time protection against mixing them up:
+Consumers construct branded values with a narrowing cast, then get compile-time protection against mixing them up:
 
 ```ts
 const userId = "user_123" as ComponentProps["userId"];
@@ -1093,7 +1087,7 @@ component.$set({ userId: "user_123" });
 
 #### Utility types
 
-`sveld` preserves TypeScript's built-in utility types verbatim, so a prop type can be _derived_ from an existing `@typedef` instead of restating its fields. `Pick`, `Omit`, `Partial`, `Required`, `Readonly`, `ReturnType`, `Parameters`, and `Awaited` all pass through to the generated `.d.ts` unchanged. Deriving types this way keeps a single source of truth: when the base type changes, every derived prop changes with it.
+`sveld` preserves TypeScript utility types verbatim, so a prop type can be derived from an existing `@typedef` instead of restating its fields. `Pick`, `Omit`, `Partial`, `Required`, `Readonly`, `ReturnType`, `Parameters`, and `Awaited` pass through unchanged. When the base type changes, derived props follow.
 
 **Example:**
 
@@ -1154,7 +1148,7 @@ export type ComponentProps = {
 
 #### Type guards
 
-A prop typed as a [type predicate](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates) (`value is T`) lets a component receive a user-defined type guard. `sveld` preserves the predicate verbatim — whether written inline with `@type` or named with a `@typedef` — so the narrowing survives in the generated `.d.ts`. Name guards `isX` or `hasX`, and make sure the implementation actually verifies the claim the predicate makes.
+A prop typed as a [type predicate](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates) (`value is T`) lets a component accept a user-defined type guard. `sveld` copies the predicate verbatim, whether you write it inline with `@type` or name it with `@typedef`, so narrowing survives in the generated `.d.ts`. Name guards `isX` or `hasX`, and make sure the implementation actually checks what the predicate claims.
 
 **Example:**
 
@@ -1211,9 +1205,9 @@ function render(value: unknown, props: ComponentProps) {
 
 ### `@callback`
 
-The `@callback` tag defines a function type using `@param` and `@returns` tags, following the [TypeScript JSDoc `@callback` specification](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html#callback). Like `@typedef`, callbacks are exported from the generated TypeScript definition file.
+The `@callback` tag defines a function type with `@param` and `@returns`, following the [TypeScript JSDoc `@callback` spec](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html#callback). Like `@typedef`, callbacks are exported from the generated `.d.ts`.
 
-This is useful for typing callback props without using inline function type syntax.
+Use it for callback props when you do not want inline function type syntax.
 
 **Signature:**
 
@@ -1295,9 +1289,9 @@ When `@returns` is omitted, the return type defaults to `void`. When no `@param`
 
 ### `@slot` / `@snippet`
 
-Use the `@slot` tag for typing component slots. For Svelte 5 runes components, `@snippet` is also supported as an alias. Both are non-standard JSDoc tags.
+Use `@slot` to type component slots. In Svelte 5 runes components, `@snippet` is an alias. Both are non-standard JSDoc tags.
 
-Descriptions are optional for every slot, including the default slot: use prose lines in the same `/** */` block above `@slot` / `@snippet`, and/or an inline description on the `@slot` line for named slots.
+Descriptions are optional for every slot, including the default slot. Put prose in the same `/** */` block above `@slot` / `@snippet`, or an inline description on the `@slot` line for named slots.
 
 **Signature:**
 
@@ -1365,9 +1359,9 @@ Omit the `slot-name` to type the default slot.
 
 #### Extra JSDoc tags before `@slot`
 
-Tags such as `@example`, `@deprecated`, `@see`, or `@since` that appear **after** the prose description and **before** the `@slot` / `@snippet` line are carried into generated `.d.ts` files: the emitted JSDoc above each slot’s snippet prop (and the traditional `SlotDefs` shape) contains the description, then those tags in source order. The same entries are available on each slot in JSON output as `tags: [{ "name", "body" }, ...]`.
+Tags such as `@example`, `@deprecated`, `@see`, or `@since` that appear after the prose description and before the `@slot` / `@snippet` line are copied into generated `.d.ts` files. The emitted JSDoc above each slot's snippet prop (and the traditional `SlotDefs` shape) lists the description, then those tags in source order. The same entries appear in JSON as `tags: [{ "name", "body" }, ...]`.
 
-Put `@slot` / `@snippet` last in the block (`description` → optional extra tags → slot tag). Tags placed after `@slot` / `@snippet` in the same comment are not tied to that slot. Unknown tag names are passed through as-is (no allowlist). Markdown docs do not render slot descriptions or these tags yet; use TypeScript hover or JSON for that metadata.
+Put `@slot` / `@snippet` last in the block (description, optional extra tags, slot tag). Tags after `@slot` / `@snippet` in the same comment are not tied to that slot. Unknown tag names pass through as-is. Markdown docs do not render slot descriptions or these tags yet; use TypeScript hover or JSON.
 
 **Example (default slot with `@example` and `@deprecated`):**
 
@@ -1391,11 +1385,11 @@ Put `@slot` / `@snippet` last in the block (`description` → optional extra tag
 
 #### Svelte 5 Snippet Compatibility
 
-For Svelte 5 compatibility, `sveld` automatically generates optional snippet props for all slots. This allows consumers to use either the traditional slot syntax or Svelte 5's `{#snippet}` syntax.
+For Svelte 5, `sveld` generates optional snippet props for all slots so consumers can use traditional slot syntax or `{#snippet}`.
 
-When parsing runes components, `sveld` maps `{@render ...}` calls back into the same slot metadata used for traditional `<slot>` declarations. Reserved snippet props such as `children`, along with named snippet props discovered from `{@render ...}`, are represented through `slots` metadata and generated snippet prop types rather than duplicated in the `props` output.
+When parsing runes components, `sveld` maps `{@render ...}` calls back into the same slot metadata used for `<slot>`. Reserved snippet props like `children`, plus named snippet props from `{@render ...}`, live in `slots` metadata and generated snippet prop types, not duplicated in `props`.
 
-Positional snippet calls such as `{@render row?.(item, index)}` are preserved as typed props when the prop itself has an explicit type like `Snippet<[Item, number]>`. They are not converted into synthetic slot metadata.
+Positional snippet calls like `{@render row?.(item, index)}` stay typed props when the prop has an explicit type like `Snippet<[Item, number]>`. They are not turned into synthetic slot metadata.
 
 For slots with props (e.g., `let:prop`), the generated type uses a Snippet-compatible signature:
 
@@ -1411,8 +1405,8 @@ slotName?: (this: void) => void;
 
 **Why this signature?**
 
-- **`this: void`** – Ensures the snippet cannot be called with a `this` context, matching Svelte's internal enforcement that snippets are pure render functions
-- **`...args: [Props]`** – Uses tuple spread for type-safe parameters. This accepts fixed-length tuples (like `[{ row: Row }]`) while rejecting array types (like `Props[]`), matching how Svelte's `Snippet<T>` type works
+- **`this: void`** blocks calling the snippet with a `this` context, matching Svelte's rule that snippets are pure render functions
+- **`...args: [Props]`** uses tuple spread for type-safe parameters. It accepts fixed-length tuples (like `[{ row: Row }]`) and rejects array types (like `Props[]`), matching Svelte's `Snippet<T>` type
 
 **Default slot (`children` prop):**
 
@@ -1454,7 +1448,7 @@ type DropdownProps = {
 </DataTable>
 ```
 
-The generated TypeScript definition includes both the snippet prop and the traditional slot definition:
+Generated output includes both the snippet prop and the traditional slot definition:
 
 ```ts
 type DataTableProps<Row> = {
@@ -1499,7 +1493,7 @@ export default class DataTable<Row> extends SvelteComponentTyped<
 
 Use the `@event` tag to type dispatched events. An event name is required and a description optional.
 
-In Svelte 5 runes components, callback props such as `onclick` are treated as component props, not events. The `events` output remains reserved for real dispatched events and legacy forwarded events. If a runes component documents `@event foo` and exposes a matching callback prop like `onfoo` without actually dispatching or forwarding `foo`, `sveld` aliases that documentation onto the callback prop instead of synthesizing an emitted event.
+In Svelte 5 runes components, callback props like `onclick` are props, not events. The `events` output stays reserved for dispatched events and legacy forwarded events. If a runes component documents `@event foo` and exposes a matching callback prop like `onfoo` without actually dispatching or forwarding `foo`, `sveld` aliases that documentation onto the callback prop instead of synthesizing an emitted event.
 
 Use `null` as the value if no event detail is provided.
 
@@ -1585,7 +1579,7 @@ export default class Component extends SvelteComponentTyped<
 
 #### Using `@property` for complex event details
 
-For events with complex object payloads, use the `@property` tag to document individual properties. The main comment description will be used as the event description.
+For events with complex object payloads, use `@property` to document individual fields. The main comment becomes the event description.
 
 **Signature:**
 
@@ -1680,7 +1674,7 @@ export default class Component extends SvelteComponentTyped<
 
 #### Optional properties in event details
 
-Just like with typedefs, you can mark event detail properties as optional using square brackets. This is useful when some properties may not always be included in the event payload.
+Like typedefs, you can mark event detail properties as optional with square brackets when they are not always in the payload.
 
 **Example:**
 
@@ -1772,7 +1766,7 @@ export default class Component extends SvelteComponentTyped<
 
 #### Discriminated unions in event details
 
-When the event detail is a union (or any non-object shape), use `@type` to declare it directly. An explicit `@type` takes precedence over `@property` tags, so the union is preserved verbatim in the emitted `.d.ts` rather than being flattened into independent property unions. The special form `@type {object}` is the only exception — it signals that the shape should be built from the `@property` tags (as shown above).
+When the event detail is a union (or any non-object shape), use `@type` to declare it directly. An explicit `@type` wins over `@property` tags, so the union is copied verbatim into the emitted `.d.ts` instead of being flattened into independent property unions. The only exception is `@type {object}`, which tells `sveld` to build the shape from `@property` tags (as shown above).
 
 **Example:**
 
@@ -1807,16 +1801,16 @@ Any free-text prose after the tags is attached to the event description, not to 
 
 ### Context API
 
-`sveld` automatically generates TypeScript definitions for Svelte's `setContext`/`getContext` API by extracting types from JSDoc annotations on the context values.
+`sveld` generates TypeScript definitions for Svelte's `setContext`/`getContext` by extracting types from JSDoc on context values.
 
 #### How it works
 
-When you use `setContext` in a component, `sveld` will:
+When you call `setContext` in a component, `sveld`:
 
-1. Detect the `setContext` call
-2. Extract the context key (must be a string literal)
-3. Find JSDoc `@type` annotations on the variables being passed
-4. Generate a TypeScript type export for the context
+1. Detects the `setContext` call
+2. Extracts the context key (must be a string literal)
+3. Finds JSDoc `@type` annotations on the variables being passed
+4. Generates a TypeScript type export for the context
 
 #### Example
 
@@ -1910,7 +1904,6 @@ export default class Modal extends SvelteComponentTyped<
   import { getContext } from 'svelte';
   import type { SimpleModalContext } from 'modal-library/Modal.svelte';
 
-  // Fully typed with autocomplete!
   const { close, open } = getContext<SimpleModalContext>('simple-modal');
 </script>
 
@@ -1919,7 +1912,7 @@ export default class Modal extends SvelteComponentTyped<
 
 #### Explicitly typing contexts
 
-There are several ways to provide type information for contexts:
+There are several ways to type contexts:
 
 **Option 1: Inline JSDoc on variables (recommended)**
 
@@ -1990,7 +1983,7 @@ There are several ways to provide type information for contexts:
 </script>
 ```
 
-> **Note:** For best results, use explicit JSDoc `@type` annotations. Inline functions without annotations will be inferred with generic signatures.
+> Inline functions without `@type` annotations get generic inferred signatures. Add explicit JSDoc when you care about the shape.
 
 #### Notes
 
@@ -2010,9 +2003,9 @@ There are several ways to provide type information for contexts:
 
 ### `@restProps`
 
-`sveld` can pick up inline HTML elements that `$$restProps` is forwarded to. However, it cannot infer the underlying element for instantiated components.
+`sveld` can detect inline HTML elements that `$$restProps` is forwarded to. It cannot infer the underlying element for instantiated components.
 
-You can use the `@restProps` tag to specify the element tags that `$$restProps` is forwarded to.
+Use `@restProps` to name the element tags `$$restProps` is forwarded to.
 
 **Signature:**
 
@@ -2066,9 +2059,9 @@ You can use the `@restProps` tag to specify the element tags that `$$restProps` 
 
 ### `@extendProps`
 
-In some cases, a component may be based on another component. The `@extendProps` tag can be used to extend generated component props.
+When a component wraps another, use `@extendProps` to extend generated props.
 
-> **Note:** `@extends` is supported as an alias but `@extendProps` is preferred to avoid conflicts with standard JSDoc `@extends` (used for class inheritance).
+> `@extends` works as an alias, but prefer `@extendProps` to avoid clashing with standard JSDoc `@extends` for class inheritance.
 
 **Signature:**
 
@@ -2097,7 +2090,7 @@ Svelte supports defining generics via the [`generics` attribute](https://svelte.
 <script lang="ts" generics="Row extends DataTableRow = any"></script>
 ```
 
-Because `sveld` is designed to support JavaScript-only usage as a baseline, the API design to specify generics uses the standard JSDoc `@template` tag. The `@generics` tag is also supported as an alias.
+Because `sveld` targets JavaScript-only usage as a baseline, generics use the standard JSDoc `@template` tag. `@generics` is also supported as an alias.
 
 **Signature:** Uses standard [JSDoc `@template` syntax](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html#template):
 
@@ -2163,7 +2156,7 @@ Because `sveld` is designed to support JavaScript-only usage as a baseline, the 
 <slot {headers} {rows} />
 ```
 
-The generated TypeScript definition will resemble the following:
+Generated output looks like this:
 
 ```ts
 export type ComponentProps<Row extends DataTableRow = DataTableRow> = {
@@ -2206,7 +2199,7 @@ export default class Component<
 
 ### `@generics`
 
-As an alternative to `@template`, sveld also supports a custom `@generics` tag. Unlike `@template`, which is [officially supported by JSDoc/TypeScript](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html#template), `@generics` is sveld-specific. However, its syntax can be more readable since the full constraint is written inline:
+As an alternative to `@template`, sveld supports `@generics`. Unlike `@template`, which [JSDoc/TypeScript support officially](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html#template), `@generics` is sveld-specific. The syntax can be easier to read because the full constraint is inline:
 
 ```js
 /**
@@ -2288,9 +2281,9 @@ export default class Button extends SvelteComponentTyped<
 
 ### Accessor Props
 
-Exported functions and consts become accessor props in generated TypeScript definitions. Use `@type` to document function signatures, or use `@param` and `@returns` (or `@return`) JSDoc tags for richer documentation.
+Exported functions and consts become accessor props in generated TypeScript definitions. Use `@type` for function signatures, or `@param` and `@returns` (or `@return`) for richer docs.
 
-Note that `@type` tag annotations take precedence over `@param`/`@returns` tags.
+`@type` wins over `@param`/`@returns` when both are present.
 
 **Signature:**
 
@@ -2426,7 +2419,7 @@ When only `@param` tags are present without `@returns`, the return type defaults
 
 ## Contributing
 
-Refer to the [contributing guidelines](CONTRIBUTING.md).
+See [contributing guidelines](CONTRIBUTING.md).
 
 ## License
 
