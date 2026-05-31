@@ -923,6 +923,59 @@ In `<script lang="ts">` components, write the type alias directly — `sveld` pr
 </script>
 ```
 
+#### Branded types
+
+A branded type is a primitive intersected with a unique marker so that otherwise interchangeable values (a `UserId` vs. any other `string`) become distinct domain types. At runtime the value is still the underlying primitive, but TypeScript treats the brand as a separate type. Declare the brand inline with `@type` — `sveld` preserves the intersection verbatim in the emitted prop type, so the brand participates fully in IntelliSense, autocomplete, and hover tooltips on the consumer side.
+
+**Example:**
+
+```svelte
+<script>
+  /**
+   * A branded string. At runtime it is a plain `string`, but the brand makes it
+   * a distinct domain type that other strings cannot be assigned to.
+   *
+   * @type {string & { readonly __brand: "UserId" }}
+   */
+  export let userId;
+
+  /**
+   * A branded number representing a monetary amount in cents.
+   *
+   * @type {number & { readonly __brand: "Cents" }}
+   */
+  export let amount;
+</script>
+```
+
+Output:
+
+```ts
+export type ComponentProps = {
+  /**
+   * A branded string. At runtime it is a plain `string`, but the brand makes it
+   * a distinct domain type that other strings cannot be assigned to.
+   * @default undefined
+   */
+  userId: string & { readonly __brand: "UserId" };
+
+  /**
+   * A branded number representing a monetary amount in cents.
+   * @default undefined
+   */
+  amount: number & { readonly __brand: "Cents" };
+};
+```
+
+Consumers construct branded values with a narrowing cast and then enjoy compile-time protection against mixing them up:
+
+```ts
+const userId = "user_123" as ComponentProps["userId"];
+
+// Error: a plain string is not assignable to the branded userId
+component.$set({ userId: "user_123" });
+```
+
 ### `@callback`
 
 The `@callback` tag defines a function type using `@param` and `@returns` tags, following the [TypeScript JSDoc `@callback` specification](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html#callback). Like `@typedef`, callbacks are exported from the generated TypeScript definition file.
