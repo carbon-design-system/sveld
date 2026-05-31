@@ -2589,6 +2589,76 @@ exports[`fixtures (JSON) "function-declaration/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "typedef-unknown-type/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 20,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "payload",
+      "kind": "let",
+      "description": "A value of unknown shape. Prefer \`unknown\` over \`any\`: consumers must\\nnarrow it before use instead of silently opting out of type checking.",
+      "type": "unknown",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 8,
+          "column": 2
+        },
+        "end": {
+          "line": 8,
+          "column": 21
+        }
+      }
+    },
+    {
+      "name": "raw",
+      "kind": "let",
+      "description": "An escape hatch typed as \`any\`, shown for contrast. \`any\` disables type\\nchecking everywhere it flows, so reach for \`unknown\` at boundaries instead.",
+      "type": "any",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 16,
+          "column": 2
+        },
+        "end": {
+          "line": 16,
+          "column": 17
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "forwarded-events/input.svelte" 1`] = `
 "{
   "source": {
@@ -14036,6 +14106,33 @@ export default class FunctionDeclaration extends SvelteComponentTyped<
    */
   multiply: (a: number, b: number) => number;
 }
+"
+`;
+
+exports[`fixtures (TypeScript) "typedef-unknown-type/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type TypedefUnknownTypeProps = {
+  /**
+   * A value of unknown shape. Prefer \`unknown\` over \`any\`: consumers must
+   * narrow it before use instead of silently opting out of type checking.
+   * @default undefined
+   */
+  payload: unknown;
+
+  /**
+   * An escape hatch typed as \`any\`, shown for contrast. \`any\` disables type
+   * checking everywhere it flows, so reach for \`unknown\` at boundaries instead.
+   * @default undefined
+   */
+  raw: any;
+};
+
+export default class TypedefUnknownType extends SvelteComponentTyped<
+  TypedefUnknownTypeProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
 "
 `;
 
