@@ -553,6 +553,133 @@ exports[`fixtures (JSON) "slot-jsdoc-example/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "typedef-utility-types/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 46,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "summary",
+      "kind": "let",
+      "description": "A read-only subset of \`Options\`.",
+      "type": "Pick<Options, \\"id\\" | \\"size\\">",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 19,
+          "column": 2
+        },
+        "end": {
+          "line": 19,
+          "column": 21
+        }
+      }
+    },
+    {
+      "name": "editable",
+      "kind": "let",
+      "description": "Everything in \`Options\` except \`disabled\`.",
+      "type": "Omit<Options, \\"disabled\\">",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 25,
+          "column": 2
+        },
+        "end": {
+          "line": 25,
+          "column": 22
+        }
+      }
+    },
+    {
+      "name": "defaults",
+      "kind": "let",
+      "description": "Derived from the factory's return type rather than restated.",
+      "type": "ReturnType<Factory>",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 31,
+          "column": 2
+        },
+        "end": {
+          "line": 31,
+          "column": 22
+        }
+      }
+    },
+    {
+      "name": "resolved",
+      "kind": "let",
+      "description": "The resolved value of an async source.",
+      "type": "Awaited<Promise<Options>>",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 37,
+          "column": 2
+        },
+        "end": {
+          "line": 37,
+          "column": 22
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{ id: string; size: \\"sm\\" | \\"md\\" | \\"lg\\"; disabled: boolean }",
+      "name": "Options",
+      "description": "The full set of options. Other prop types are derived from this one\\ninstead of redeclaring its fields.",
+      "ts": "interface Options { id: string; size: \\"sm\\" | \\"md\\" | \\"lg\\"; disabled: boolean }"
+    },
+    {
+      "type": "() => Options",
+      "name": "Factory",
+      "description": "A factory that produces an \`Options\` value.",
+      "ts": "type Factory = () => Options"
+    }
+  ],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "runes-dispatched-events/input.svelte" 1`] = `
 "{
   "source": {
@@ -13470,6 +13597,58 @@ export default class SlotJsdocExample extends SvelteComponentTyped<
      */
     default: { props?: { "aria-current"?: string; class: "bx--link" } };
   }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "typedef-utility-types/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+/**
+ * The full set of options. Other prop types are derived from this one
+ * instead of redeclaring its fields.
+ */
+export interface Options {
+  id: string;
+  size: "sm" | "md" | "lg";
+  disabled: boolean;
+}
+
+/**
+ * A factory that produces an \`Options\` value.
+ */
+export type Factory = () => Options;
+
+export type TypedefUtilityTypesProps = {
+  /**
+   * A read-only subset of \`Options\`.
+   * @default undefined
+   */
+  summary: Pick<Options, "id" | "size">;
+
+  /**
+   * Everything in \`Options\` except \`disabled\`.
+   * @default undefined
+   */
+  editable: Omit<Options, "disabled">;
+
+  /**
+   * Derived from the factory's return type rather than restated.
+   * @default undefined
+   */
+  defaults: ReturnType<Factory>;
+
+  /**
+   * The resolved value of an async source.
+   * @default undefined
+   */
+  resolved: Awaited<Promise<Options>>;
+};
+
+export default class TypedefUtilityTypes extends SvelteComponentTyped<
+  TypedefUtilityTypesProps,
+  Record<string, any>,
+  Record<string, never>
 > {}
 "
 `;
