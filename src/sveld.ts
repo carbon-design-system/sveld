@@ -11,14 +11,7 @@ interface SveldOptions extends PluginSveldOptions {
 }
 
 /**
- * Main entry point for programmatic sveld usage.
- *
- * Generates component documentation from Svelte source files and writes
- * output files based on the provided options. Can be used as a library
- * in addition to the CLI interface.
- *
- * @param opts - Options for generating documentation
- * @returns A promise that resolves when documentation generation is complete
+ * Programmatic entry point for sveld.
  *
  * @example
  * ```ts

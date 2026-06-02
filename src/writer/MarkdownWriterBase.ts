@@ -18,10 +18,6 @@ export interface MarkdownWriterBase {
   get source(): string;
 }
 
-/**
- * Base class containing shared markdown writing logic.
- * This can be extended or used via composition.
- */
 export class MarkdownWriterBaseImpl implements MarkdownWriterBase {
   public sourceParts: string[] = [];
   public hasToC = false;

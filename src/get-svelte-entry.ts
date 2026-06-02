@@ -3,10 +3,7 @@ import { join } from "node:path";
 
 export type SvelteEntryPoint = string;
 
-/**
- * Get the file path entry point for uncompiled Svelte source code
- * Expects a "svelte" field in the consumer's `package.json`
- */
+/** Resolve the Svelte entry from `entryPoint` or `package.json#svelte`. */
 export function getSvelteEntry(entryPoint?: SvelteEntryPoint): SvelteEntryPoint | null {
   if (entryPoint) {
     const entry_path = join(process.cwd(), entryPoint);

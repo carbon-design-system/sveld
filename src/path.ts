@@ -1,10 +1,6 @@
 import { sep } from "node:path";
 
-/**
- * Normalize directory separators to always use `/`.
- * @param filePath A file path.
- * @returns Path with normalized separators.
- */
+/** Normalize path separators to `/`. */
 export function normalizeSeparators(filePath: string) {
   return sep === "/" ? filePath : filePath.split(sep).join("/");
 }

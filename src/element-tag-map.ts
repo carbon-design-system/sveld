@@ -1,9 +1,5 @@
 /**
- * Element tag map adapted from TypeScript's `lib.dom.d.ts`.
- *
- * Maps HTML element tag names to their corresponding TypeScript element types.
- * Used for generating proper TypeScript types for element bindings and rest props.
- * See the TypeScript lib.dom.d.ts for the original source.
+ * Tag-to-DOM-type map from TypeScript `lib.dom.d.ts`. Unknown tags fall back to `HTMLElement`.
  *
  * @example
  * ```ts
@@ -138,13 +134,7 @@ const tag_map = {
 type ElementTag = keyof typeof tag_map;
 
 /**
- * Gets the TypeScript element type for a given HTML tag name.
- *
- * Returns the specific element type (e.g., `HTMLButtonElement`) if the tag
- * is in the map, otherwise returns the generic `HTMLElement` type.
- *
- * @param element - The HTML tag name (e.g., "button", "div", "input")
- * @returns The corresponding TypeScript element type name
+ * Returns the DOM interface for a tag, or `HTMLElement` when unknown.
  *
  * @example
  * ```ts

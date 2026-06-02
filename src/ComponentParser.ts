@@ -2005,23 +2005,14 @@ export default class ComponentParser {
    * ```ts
    * // Input JSDoc:
    * /**
-   *  * @type {string}
-   *  * @param {number} x - The x coordinate
-   *  * @param {number} y - The y coordinate
-   *  * @returns {void}
-   *  * Description text
-   *  *\/
-   *
+   * * @type {string}
+   * * @param {number} x - The x coordinate
+   * * @param {number} y - The y coordinate
+   * * @returns {void}
+   * * Description text
+   * *\/
    * // Output:
-   * {
-   *   type: "string",
-   *   params: [
-   *     { name: "x", type: "number", description: "The x coordinate", optional: false },
-   *     { name: "y", type: "number", description: "The y coordinate", optional: false }
-   *   ],
-   *   returnType: "void",
-   *   description: "Description text"
-   * }
+   * { type: "string", params: [ { name: "x", type: "number", description: "The x coordinate", optional: false }, { name: "y", type: "number", description: "The y coordinate", optional: false } ], returnType: "void", description: "Description text" }
    * ```
    */
   private processJSDocComment(leadingComments: unknown[]):
@@ -3995,11 +3986,7 @@ export default class ComponentParser {
    * @example
    * ```ts
    * // Input:
-   * [
-   *   { name: "value", type: "string", description: "The new value" },
-   *   { name: "count", type: "number", optional: true, default: "0" }
-   * ]
-   *
+   * [ { name: "value", type: "string", description: "The new value" }, { name: "count", type: "number", optional: true, default: "0" } ]
    * // Output:
    * "{ /** The new value *\/ value: string; /** @default 0 *\/ count?: number; }"
    * ```
