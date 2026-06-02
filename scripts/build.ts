@@ -6,36 +6,11 @@ const isWatchMode = process.argv.includes("-w") || process.argv.includes("--watc
 await $`rm -rf lib; mkdir lib`;
 
 async function emitTypeDeclarations() {
-  try {
-    const ts = await import("typescript");
-    const configPath = ts.findConfigFile(".", ts.sys.fileExists, "tsconfig.build.json");
-
-    if (!configPath) {
-      throw new Error("Could not find tsconfig.build.json");
-    }
-
-    const configFile = ts.readConfigFile(configPath, ts.sys.readFile);
-    if (configFile.error) {
-      throw new Error(`Failed to read tsconfig: ${ts.formatDiagnostic(configFile.error, ts.createCompilerHost({}))}`);
-    }
-
-    const parsedConfig = ts.parseJsonConfigFileContent(configFile.config, ts.sys, "./");
-
-    const program = ts.createProgram(parsedConfig.fileNames, parsedConfig.options);
-    const emitResult = program.emit();
-    const allDiagnostics = ts.getPreEmitDiagnostics(program).concat(emitResult.diagnostics);
-
-    if (allDiagnostics.length > 0) {
-      const host = ts.createCompilerHost(parsedConfig.options);
-      for (const diagnostic of allDiagnostics) {
-        console.error(ts.formatDiagnostic(diagnostic, host));
-      }
-    }
-  } catch (error) {
-    if (error instanceof Error) {
-      console.error(error.message);
-    } else {
-      console.error(error);
+  const result = await $`tsgo --project tsconfig.build.json`.quiet();
+  if (result.exitCode !== 0) {
+    console.error(result.stderr.toString());
+    if (!isWatchMode) {
+      process.exit(1);
     }
   }
 }
