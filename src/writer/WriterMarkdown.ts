@@ -10,11 +10,7 @@ interface MarkdownOptions {
 export type { AppendType };
 
 /**
- * Markdown writer that extends Writer for file operations.
- *
- * Combines file writing capabilities from Writer with markdown
- * generation capabilities from MarkdownWriterBaseImpl. Supports
- * callbacks for monitoring document construction.
+ * Markdown writer with Prettier formatting and optional append callbacks.
  *
  * @example
  * ```ts
@@ -31,11 +27,6 @@ export default class WriterMarkdown extends Writer {
   onAppend?: OnAppend;
   private markdownBase: MarkdownWriterBaseImpl;
 
-  /**
-   * Creates a new WriterMarkdown instance.
-   *
-   * @param options - Markdown writer options including append callback
-   */
   constructor(options: MarkdownOptions) {
     super({ parser: "markdown", printWidth: 80 });
     this.onAppend = options.onAppend;

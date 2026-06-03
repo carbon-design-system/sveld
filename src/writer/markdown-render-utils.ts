@@ -14,19 +14,12 @@ import {
 } from "./markdown-format-utils";
 import { getTypeDefs } from "./writer-ts-definitions-core";
 
-/**
- * Interface for markdown documents that can be used for rendering.
- * Only requires the methods we actually use, not the full implementation.
- */
+/** Minimal markdown writer surface used by JSON and browser renderers. */
 interface MarkdownDocument {
   append(type: AppendType, raw?: string): MarkdownDocument;
   tableOfContents(): MarkdownDocument;
 }
 
-/**
- * Renders component documentation to a markdown document.
- * This shared function is used by both writeMarkdown and writeMarkdownCore.
- */
 export function renderComponentsToMarkdown(document: MarkdownDocument, components: ComponentDocs) {
   document.append("h1", "Component Index");
   document.append("h2", "Components").tableOfContents();
@@ -42,9 +35,6 @@ export function renderComponentsToMarkdown(document: MarkdownDocument, component
   }
 }
 
-/**
- * Renders a section conditionally - if items exist, calls renderFn, otherwise renders "None."
- */
 function renderSectionIfNotEmpty<TItem>(
   document: MarkdownDocument,
   items: TItem[],
@@ -58,18 +48,9 @@ function renderSectionIfNotEmpty<TItem>(
   }
 }
 
-/**
- * Renders a single component's documentation to the markdown document.
- *
- * @param document - The markdown document to append to
- * @param component - The component documentation to render
- */
 function renderComponent(document: MarkdownDocument, component: ComponentDocApi) {
   document.append("h2", `\`${component.moduleName}\``);
 
-  /**
-   * Render typedefs section if the component has any type definitions.
-   */
   if (component.typedefs.length > 0) {
     document.append("h3", "Types").append(
       "raw",
@@ -79,10 +60,6 @@ function renderComponent(document: MarkdownDocument, component: ComponentDocApi)
     );
   }
 
-  /**
-   * Render props section with a table of all component props.
-   * Props are sorted with reactive props first, then constants last.
-   */
   document.append("h3", "Props");
   renderSectionIfNotEmpty(document, component.props, () => {
     document.append("raw", PROP_TABLE_HEADER);
@@ -103,10 +80,6 @@ function renderComponent(document: MarkdownDocument, component: ComponentDocApi)
     }
   });
 
-  /**
-   * Render slots section with a table of all component slots.
-   * Includes slot name, default status, props, and fallback content.
-   */
   document.append("h3", "Slots");
   renderSectionIfNotEmpty(document, component.slots, () => {
     document.append("raw", SLOT_TABLE_HEADER);
@@ -120,10 +93,6 @@ function renderComponent(document: MarkdownDocument, component: ComponentDocApi)
     }
   });
 
-  /**
-   * Render events section with a table of all component events.
-   * Includes event name, type (dispatched/forwarded), detail type, and description.
-   */
   document.append("h3", "Events");
   renderSectionIfNotEmpty(document, component.events, () => {
     document.append("raw", EVENT_TABLE_HEADER);

@@ -16,13 +16,7 @@ const GT_REGEX = />/g;
 const NEWLINE_REGEX = /\n/g;
 
 /**
- * Formats a prop type for display in markdown tables.
- *
- * Escapes pipe characters to prevent breaking markdown table syntax
- * and wraps the type in a code block.
- *
- * @param type - The type string to format
- * @returns Formatted type string or MD_TYPE_UNDEFINED if type is undefined
+ * Escape `|` and wrap a prop type for markdown table cells.
  *
  * @example
  * ```ts
@@ -36,13 +30,7 @@ export function formatPropType(type?: string) {
 }
 
 /**
- * Escapes HTML special characters in text.
- *
- * Converts `<` to `&lt;` and `>` to `&gt;` to prevent HTML injection
- * and ensure proper rendering in markdown.
- *
- * @param text - The text to escape
- * @returns The escaped text
+ * Escape `<` and `>` for markdown output.
  *
  * @example
  * ```ts
@@ -54,12 +42,7 @@ export function escapeHtml(text: string) {
 }
 
 /**
- * Formats a prop default value for display in markdown tables.
- *
- * Escapes backticks and pipe characters, and wraps the value in a code block.
- *
- * @param value - The default value string to format
- * @returns Formatted value string or MD_TYPE_UNDEFINED if value is undefined
+ * Format a default value for markdown table cells.
  *
  * @example
  * ```ts
@@ -73,13 +56,7 @@ export function formatPropValue(value: string | undefined) {
 }
 
 /**
- * Formats a prop description for display in markdown tables.
- *
- * Escapes HTML characters and converts newlines to `<br />` tags
- * for proper rendering in markdown tables.
- *
- * @param description - The description string to format
- * @returns Formatted description or MD_TYPE_UNDEFINED if description is empty
+ * Format a prop description; newlines become `<br />`.
  *
  * @example
  * ```ts
@@ -93,14 +70,7 @@ export function formatPropDescription(description: string | undefined) {
 }
 
 /**
- * Formats slot props for display in markdown tables.
- *
- * Converts TypeScript type definitions to a single-line format
- * and wraps them in a code block. Returns MD_TYPE_UNDEFINED for
- * empty or undefined props.
- *
- * @param props - The slot props type string
- * @returns Formatted props string or MD_TYPE_UNDEFINED
+ * Format slot props for markdown table cells.
  *
  * @example
  * ```ts
@@ -114,13 +84,7 @@ export function formatSlotProps(props?: string) {
 }
 
 /**
- * Formats slot fallback content for display in markdown tables.
- *
- * Escapes HTML and converts newlines to `<br />` tags, then wraps
- * in a code block.
- *
- * @param fallback - The fallback content string
- * @returns Formatted fallback string or MD_TYPE_UNDEFINED if undefined
+ * Format slot fallback content for markdown table cells.
  *
  * @example
  * ```ts
@@ -134,13 +98,7 @@ export function formatSlotFallback(fallback?: string) {
 }
 
 /**
- * Formats event detail type for display in markdown tables.
- *
- * Converts the detail type to a single-line format and wraps it
- * in a code block.
- *
- * @param detail - The event detail type string
- * @returns Formatted detail string or MD_TYPE_UNDEFINED if undefined
+ * Format event detail types for markdown table cells.
  *
  * @example
  * ```ts

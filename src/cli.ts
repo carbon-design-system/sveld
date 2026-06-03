@@ -5,12 +5,7 @@ import { getSvelteEntry } from "./get-svelte-entry";
 import { generateBundle, type PluginSveldOptions, writeOutput } from "./plugin";
 
 /**
- * Command-line interface for sveld.
- *
- * Parses command-line arguments, runs Rollup to process the entry point,
- * generates component documentation, and writes output files.
- *
- * @param process - Node.js process object containing command-line arguments
+ * CLI entry point: parse flags, run Rollup, generate docs, write outputs.
  *
  * @example
  * ```ts
