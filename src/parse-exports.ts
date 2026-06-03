@@ -1,6 +1,7 @@
 import { lstatSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { type Node, parse } from "acorn";
+import { asRelativeSourcePath, type RelativeSourcePath } from "./brands";
 import { normalizeSeparators } from "./path";
 import { resolvePathAlias, resolvePathAliasAbsolute } from "./resolve-alias";
 
@@ -30,7 +31,14 @@ type BodyNode =
   | NodeExportDefaultDeclaration
   | NodeExportAllDeclaration;
 
-export type ParsedExports = Record<string, { source: string; default: boolean; mixed?: boolean }>;
+export type ParsedExports = Record<
+  string,
+  {
+    source: RelativeSourcePath;
+    default: boolean;
+    mixed?: boolean;
+  }
+>;
 
 interface ProgramNode extends Node {
   type: "Program";
@@ -38,6 +46,13 @@ interface ProgramNode extends Node {
 }
 
 const astCache = new Map<string, ProgramNode>();
+
+function parseProgram(source: string): ProgramNode {
+  return parse(source, {
+    ecmaVersion: "latest",
+    sourceType: "module",
+  }) as ProgramNode;
+}
 
 /**
  * Parses exports from an entry file and resolves aliases against `dir`.
@@ -57,10 +72,7 @@ export function parseExports(source: string, dir: string) {
   let ast = astCache.get(source);
 
   if (!ast) {
-    ast = parse(source, {
-      ecmaVersion: "latest",
-      sourceType: "module",
-    }) as ProgramNode;
+    ast = parseProgram(source);
     astCache.set(source, ast);
   }
 
@@ -73,7 +85,7 @@ export function parseExports(source: string, dir: string) {
       if (id in exports_by_identifier) {
         exports_by_identifier[id].default = true;
       } else {
-        exports_by_identifier[id] = { source: "", default: true };
+        exports_by_identifier[id] = { source: asRelativeSourcePath(""), default: true };
       }
     } else if (node.type === "ExportAllDeclaration") {
       if (!node.source) continue;
@@ -95,7 +107,7 @@ export function parseExports(source: string, dir: string) {
       const exports = parseExports(export_file, dirname(file_path));
 
       for (const [key, value] of Object.entries(exports)) {
-        const source = normalizeSeparators(`./${join(node.source.value, value.source)}`);
+        const source = asRelativeSourcePath(normalizeSeparators(`./${join(node.source.value, value.source)}`));
         exports_by_identifier[key] = {
           ...value,
           source,
@@ -113,11 +125,11 @@ export function parseExports(source: string, dir: string) {
           }
 
           if (!exports_by_identifier[id].source) {
-            exports_by_identifier[id].source = resolvePathAlias(node.source?.value ?? "", dir);
+            exports_by_identifier[id].source = asRelativeSourcePath(resolvePathAlias(node.source?.value ?? "", dir));
           }
         } else {
           exports_by_identifier[id] = {
-            source: resolvePathAlias(node.source?.value ?? "", dir),
+            source: asRelativeSourcePath(resolvePathAlias(node.source?.value ?? "", dir)),
             default: local_name === "default",
           };
         }
@@ -127,11 +139,11 @@ export function parseExports(source: string, dir: string) {
 
       if (id in exports_by_identifier) {
         if (!exports_by_identifier[id].source) {
-          exports_by_identifier[id].source = resolvePathAlias(node.source?.value ?? "", dir);
+          exports_by_identifier[id].source = asRelativeSourcePath(resolvePathAlias(node.source?.value ?? "", dir));
         }
       } else {
         exports_by_identifier[id] = {
-          source: resolvePathAlias(node.source?.value ?? "", dir),
+          source: asRelativeSourcePath(resolvePathAlias(node.source?.value ?? "", dir)),
           default: id === "default",
         };
       }

@@ -1,19 +1,21 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { asSvelteEntryPoint, type SvelteEntryPoint } from "./brands";
+import { parsePackageJson } from "./validate";
 
-export type SvelteEntryPoint = string;
+export type { SvelteEntryPoint };
 
 /** Resolve the Svelte entry from `entryPoint` or `package.json#svelte`. */
-export function getSvelteEntry(entryPoint?: SvelteEntryPoint): SvelteEntryPoint | null {
+export function getSvelteEntry(entryPoint?: string): SvelteEntryPoint | null {
   if (entryPoint) {
     const entry_path = join(process.cwd(), entryPoint);
 
     if (existsSync(entry_path)) {
-      return entryPoint;
-    } else {
-      console.log(`Invalid entry point: ${entry_path}.`);
-      return null;
+      return asSvelteEntryPoint(entryPoint);
     }
+
+    console.log(`Invalid entry point: ${entry_path}.`);
+    return null;
   }
 
   const pkg_path = join(process.cwd(), "package.json");
@@ -24,10 +26,10 @@ export function getSvelteEntry(entryPoint?: SvelteEntryPoint): SvelteEntryPoint 
   }
 
   try {
-    const pkg: { svelte?: SvelteEntryPoint } = JSON.parse(readFileSync(pkg_path, "utf-8"));
+    const pkg = parsePackageJson(JSON.parse(readFileSync(pkg_path, "utf-8")));
 
-    if (typeof pkg.svelte === "string" && pkg.svelte.trim()) {
-      return pkg.svelte;
+    if (pkg.svelte?.trim()) {
+      return asSvelteEntryPoint(pkg.svelte);
     }
 
     console.log("Could not determine an entry point.\n");

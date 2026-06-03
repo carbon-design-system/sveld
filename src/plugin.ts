@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { dirname, isAbsolute, parse, relative, resolve } from "node:path";
 import { parse as parseSvelte } from "svelte/compiler";
 import { globSync } from "tinyglobby";
+import { asRelativeSourcePath, type NormalizedPath } from "./brands";
 import ComponentParser, { type ParsedComponent } from "./ComponentParser";
 import { getSvelteEntry } from "./get-svelte-entry";
 import { type ParsedExports, parseExports } from "./parse-exports";
@@ -26,14 +27,12 @@ export interface PluginSveldOptions {
   markdownOptions?: Partial<WriteMarkdownOptions>;
 }
 
-type ComponentModuleName = string;
-
 export interface ComponentDocApi extends ParsedComponent {
-  filePath: string;
+  filePath: NormalizedPath;
   moduleName: string;
 }
 
-export type ComponentDocs = Map<ComponentModuleName, ComponentDocApi>;
+export type ComponentDocs = Map<string, ComponentDocApi>;
 
 const STYLE_TAG_REGEX = /<style.+?<\/style>/gims;
 const HYPHEN_REGEX = /-/g;
@@ -135,7 +134,7 @@ export async function generateBundle(input: string, glob: boolean) {
     for (const matchedFile of globSync(["**/*.svelte"], { cwd: rootDir, absolute: true })) {
       const file = resolve(matchedFile);
       const moduleName = parse(file).name.replace(HYPHEN_REGEX, "");
-      const source = normalizeSeparators(`./${relative(rootDir, file)}`);
+      const source = asRelativeSourcePath(normalizeSeparators(`./${relative(rootDir, file)}`));
 
       if (exports[moduleName]) {
         exports[moduleName].source = source;
@@ -235,12 +234,12 @@ export async function generateBundle(input: string, glob: boolean) {
       const parser = new ComponentParser();
       const parsed = parser.parseSvelteComponent(stripTopLevelStyleBlock(source), {
         moduleName,
-        filePath,
+        filePath: normalizeSeparators(filePath),
       });
 
       return {
         moduleName,
-        filePath,
+        filePath: normalizeSeparators(filePath),
         ...parsed,
       };
     }
