@@ -1,40 +1,47 @@
 import { convertSvelteExt, createExports, removeSvelteExt } from "../src/create-exports";
+import { mockParsedExport, mockParsedExports } from "./test-brands";
 
 describe("createExports", () => {
   test("single default export", () => {
-    const source = { default: { source: "./Component.svelte", default: true } };
+    const source = mockParsedExports({
+      default: mockParsedExport("./Component.svelte", { default: true }),
+    });
 
     expect(createExports(source)).toEqual('export { default } from "./Component.svelte";');
   });
 
   test("single default export (declaration)", () => {
-    const source = { Component: { source: "./Component.svelte", default: true } };
+    const source = mockParsedExports({
+      Component: mockParsedExport("./Component.svelte", { default: true }),
+    });
 
     expect(createExports(source)).toEqual('export { default as Component } from "./Component.svelte";');
   });
 
   test("single named export", () => {
-    const source = { Component: { source: "./Component.svelte", default: false } };
+    const source = mockParsedExports({
+      Component: mockParsedExport("./Component.svelte"),
+    });
 
     expect(createExports(source)).toEqual('export { default as Component } from "./Component.svelte";');
   });
 
   test("multiple named exports", () => {
-    const source = {
-      Component: { source: "./Component.svelte", default: false },
-      Component2: { source: "./Component2.svelte", default: false },
-    };
+    const source = mockParsedExports({
+      Component: mockParsedExport("./Component.svelte"),
+      Component2: mockParsedExport("./Component2.svelte"),
+    });
 
     expect(createExports(source)).toEqual(`export { default as Component } from "./Component.svelte";
 export { default as Component2 } from "./Component2.svelte";`);
   });
 
   test("multiple named exports with a default export", () => {
-    const source = {
-      Component: { source: "./Component.svelte", default: false },
-      Component2: { source: "./Component2.svelte", default: false },
-      default: { source: "./Component2.svelte", default: true },
-    };
+    const source = mockParsedExports({
+      Component: mockParsedExport("./Component.svelte"),
+      Component2: mockParsedExport("./Component2.svelte"),
+      default: mockParsedExport("./Component2.svelte", { default: true }),
+    });
 
     expect(createExports(source)).toEqual(`export { default as Component } from "./Component.svelte";
 export { default as Component2 } from "./Component2.svelte";
@@ -42,11 +49,11 @@ export { default } from "./Component2.svelte";`);
   });
 
   test("multiple named exports with a default export (declaration)", () => {
-    const source = {
-      Component: { source: "./Component.svelte", default: false },
-      Component2: { source: "./Component2.svelte", default: false },
-      Component3: { source: "./Component3.svelte", default: true },
-    };
+    const source = mockParsedExports({
+      Component: mockParsedExport("./Component.svelte"),
+      Component2: mockParsedExport("./Component2.svelte"),
+      Component3: mockParsedExport("./Component3.svelte", { default: true }),
+    });
 
     expect(createExports(source)).toEqual(`export { default as Component } from "./Component.svelte";
 export { default as Component2 } from "./Component2.svelte";
@@ -54,18 +61,20 @@ export { default as Component3 } from "./Component3.svelte";`);
   });
 
   test("mixed exports", () => {
-    const source = { Component: { source: "./Component.svelte", default: true, mixed: true } };
+    const source = mockParsedExports({
+      Component: mockParsedExport("./Component.svelte", { default: true, mixed: true }),
+    });
 
     expect(createExports(source)).toEqual(`export { default as Component } from "./Component.svelte";
 export { default } from "./Component.svelte";`);
   });
 
   test("grouped named exports from same source", () => {
-    const source = {
-      filterTreeNodes: { source: "./utils/filterTreeNodes", default: false },
-      filterTreeById: { source: "./utils/filterTreeNodes", default: false },
-      filterTreeByText: { source: "./utils/filterTreeNodes", default: false },
-    };
+    const source = mockParsedExports({
+      filterTreeNodes: mockParsedExport("./utils/filterTreeNodes"),
+      filterTreeById: mockParsedExport("./utils/filterTreeNodes"),
+      filterTreeByText: mockParsedExport("./utils/filterTreeNodes"),
+    });
 
     expect(createExports(source)).toEqual(
       'export { filterTreeNodes, filterTreeById, filterTreeByText } from "./utils/filterTreeNodes";',
@@ -73,12 +82,12 @@ export { default } from "./Component.svelte";`);
   });
 
   test("grouped named exports with multiple sources", () => {
-    const source = {
-      filterTreeNodes: { source: "./utils/filterTreeNodes", default: false },
-      filterTreeById: { source: "./utils/filterTreeNodes", default: false },
-      sortTree: { source: "./utils/sortTree", default: false },
-      normalizeTree: { source: "./utils/normalizeTree", default: false },
-    };
+    const source = mockParsedExports({
+      filterTreeNodes: mockParsedExport("./utils/filterTreeNodes"),
+      filterTreeById: mockParsedExport("./utils/filterTreeNodes"),
+      sortTree: mockParsedExport("./utils/sortTree"),
+      normalizeTree: mockParsedExport("./utils/normalizeTree"),
+    });
 
     expect(createExports(source)).toEqual(`export { filterTreeNodes, filterTreeById } from "./utils/filterTreeNodes";
 export { sortTree } from "./utils/sortTree";
@@ -86,22 +95,22 @@ export { normalizeTree } from "./utils/normalizeTree";`);
   });
 
   test("grouped named exports with mixed default and named from same source", () => {
-    const source = {
-      Component: { source: "./Component.svelte", default: true },
-      helperA: { source: "./utils/helpers", default: false },
-      helperB: { source: "./utils/helpers", default: false },
-      helperC: { source: "./utils/helpers", default: false },
-    };
+    const source = mockParsedExports({
+      Component: mockParsedExport("./Component.svelte", { default: true }),
+      helperA: mockParsedExport("./utils/helpers"),
+      helperB: mockParsedExport("./utils/helpers"),
+      helperC: mockParsedExport("./utils/helpers"),
+    });
 
     expect(createExports(source)).toEqual(`export { default as Component } from "./Component.svelte";
 export { helperA, helperB, helperC } from "./utils/helpers";`);
   });
 
   test("default and named export from same Svelte file (module context)", () => {
-    const source = {
-      Theme: { source: "./Theme/Theme.svelte", default: true },
-      themes: { source: "./Theme/Theme.svelte", default: false },
-    };
+    const source = mockParsedExports({
+      Theme: mockParsedExport("./Theme/Theme.svelte", { default: true }),
+      themes: mockParsedExport("./Theme/Theme.svelte"),
+    });
 
     expect(createExports(source)).toEqual('export { default as Theme, themes } from "./Theme/Theme.svelte";');
   });

@@ -5,20 +5,10 @@ import { version as svelteVersion } from "svelte/package.json";
 import { name as packageName, version as packageVersion } from "../package.json";
 import type { ComponentDocApi, ComponentDocs } from "../src/plugin";
 import writeJson from "../src/writer/writer-json";
+import { mockComponentDocApi } from "./test-brands";
 
-function createComponent(moduleName: string, filePath: string): ComponentDocApi {
-  return {
-    moduleName,
-    filePath,
-    syntaxMode: "legacy",
-    props: [],
-    moduleExports: [],
-    slots: [],
-    events: [],
-    typedefs: [],
-    generics: null,
-    rest_props: undefined,
-  };
+function createComponent(moduleName: string, filePath: string) {
+  return mockComponentDocApi(moduleName, filePath);
 }
 
 describe("writeJson", () => {

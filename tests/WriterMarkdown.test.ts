@@ -1,3 +1,4 @@
+import { asNormalizedPath } from "../src/brands";
 import type { AppendType } from "../src/writer/WriterMarkdown";
 import WriterMarkdown from "../src/writer/WriterMarkdown";
 import { writeMarkdownCore } from "../src/writer/writer-markdown-core";
@@ -80,7 +81,7 @@ describe("WriterMarkdown", () => {
         [
           "Example",
           {
-            filePath: "Example.svelte",
+            filePath: asNormalizedPath("Example.svelte"),
             moduleName: "Example",
             syntaxMode: "legacy",
             props: [

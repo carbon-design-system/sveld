@@ -623,7 +623,7 @@ const STANDARD_DOM_EVENTS = new Set([
   "compositionstart",
   "compositionupdate",
   "compositionend",
-]);
+] satisfies readonly string[]);
 
 function genEventDef(def: Pick<ComponentDocApi, "events">) {
   const createDispatchedEvent = (detail: string = ANY_TYPE) => {
@@ -649,45 +649,31 @@ function genEventDef(def: Pick<ComponentDocApi, "events">) {
       }
 
       let eventType: string;
-      if (event.type === "dispatched") {
-        eventType = createDispatchedEvent(event.detail);
-      } else {
-        /**
-         * For forwarded events, determine the type based on `@event` JSDoc and element/event type.
-         * Handle both serialized (string) and object formats for backward compatibility.
-         */
-        const elementName = typeof event.element === "string" ? event.element : event.element.name;
-        const isComponent = elementName && COMPONENT_NAME_REGEX.test(elementName);
-        const isStandardEvent = !isComponent || isStandardDomEvent(event.name);
-
-        /**
-         * Check if there's an explicit detail type from `@event` JSDoc (including null).
-         * Note: detail="null" on standard DOM events is treated as "not explicitly typed"
-         * because `@event` click (without {type}) defaults to null but shouldn't override WindowEventMap.
-         * However, for custom component events, explicit null should be respected.
-         */
-        const hasExplicitDetail =
-          event.detail !== undefined && event.detail !== "undefined" && !(event.detail === "null" && isStandardEvent);
-        const hasExplicitNullForCustomComponent = event.detail === "null" && !isStandardEvent;
-
-        if (hasExplicitDetail || hasExplicitNullForCustomComponent) {
-          /**
-           * If `@event` tag explicitly provides a detail type (including null for custom components),
-           * always use it (highest priority). This allows developers to override default behavior.
-           */
+      switch (event.type) {
+        case "dispatched":
           eventType = createDispatchedEvent(event.detail);
-        } else if (isStandardEvent) {
-          /**
-           * Standard DOM event (native element or standard event name) without explicit type.
-           * Use WindowEventMap for better type inference from lib.dom.d.ts.
-           */
-          eventType = `${mapEvent()}["${event.name}"]`;
-        } else {
-          /**
-           * Custom event from component with no explicit type.
-           * Default to CustomEvent<any> since we don't know the detail type.
-           */
-          eventType = createDispatchedEvent();
+          break;
+        case "forwarded": {
+          const elementName = event.element;
+          const isComponent = elementName && COMPONENT_NAME_REGEX.test(elementName);
+          const isStandardEvent = !isComponent || isStandardDomEvent(event.name);
+
+          const hasExplicitDetail =
+            event.detail !== undefined && event.detail !== "undefined" && !(event.detail === "null" && isStandardEvent);
+          const hasExplicitNullForCustomComponent = event.detail === "null" && !isStandardEvent;
+
+          if (hasExplicitDetail || hasExplicitNullForCustomComponent) {
+            eventType = createDispatchedEvent(event.detail);
+          } else if (isStandardEvent) {
+            eventType = `${mapEvent()}["${event.name}"]`;
+          } else {
+            eventType = createDispatchedEvent();
+          }
+          break;
+        }
+        default: {
+          const _exhaustive: never = event;
+          return _exhaustive;
         }
       }
 

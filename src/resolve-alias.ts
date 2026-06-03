@@ -1,14 +1,9 @@
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { normalizeSeparators } from "./path";
+import { type ParsedTsConfig, parseTsConfig } from "./validate";
 
-interface TSConfig {
-  compilerOptions?: {
-    baseUrl?: string;
-    paths?: Record<string, string[]>;
-  };
-  extends?: string;
-}
+interface TSConfig extends ParsedTsConfig {}
 
 const configCache = new Map<string, TSConfig | null>();
 const pathPatternRegexCache = new Map<string, RegExp>();
@@ -56,7 +51,7 @@ function parseConfig(configPath: string): TSConfig | null {
   try {
     const content = readFileSync(configPath, "utf-8");
     const jsonContent = content.replace(COMMENT_PATTERN, "");
-    const config: TSConfig = JSON.parse(jsonContent);
+    const config: TSConfig = parseTsConfig(JSON.parse(jsonContent));
 
     if (config.extends) {
       const baseConfigPath = isAbsolute(config.extends) ? config.extends : resolve(dirname(configPath), config.extends);

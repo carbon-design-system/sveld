@@ -4,6 +4,38 @@ import svelte from "rollup-plugin-svelte";
 import { getSvelteEntry } from "./get-svelte-entry";
 import { generateBundle, type PluginSveldOptions, writeOutput } from "./plugin";
 
+function parseCliFlag(arg: string): Partial<PluginSveldOptions> {
+  if (!arg.startsWith("--")) {
+    return {};
+  }
+
+  const eqIndex = arg.indexOf("=");
+  const flag = eqIndex === -1 ? arg.slice(2) : arg.slice(2, eqIndex);
+  const value = eqIndex === -1 ? true : arg.slice(eqIndex + 1);
+
+  switch (flag) {
+    case "glob":
+    case "types":
+    case "json":
+    case "markdown":
+      return { [flag]: value === true || value === "true" };
+    case "entry":
+      return typeof value === "string" ? { entry: value } : {};
+    default:
+      return {};
+  }
+}
+
+function parseCliOptions(argv: string[]): PluginSveldOptions {
+  const options: PluginSveldOptions = {};
+
+  for (const arg of argv) {
+    Object.assign(options, parseCliFlag(arg));
+  }
+
+  return options;
+}
+
 /**
  * CLI entry point: parse flags, run Rollup, generate docs, write outputs.
  *
@@ -14,22 +46,7 @@ import { generateBundle, type PluginSveldOptions, writeOutput } from "./plugin";
  * ```
  */
 export async function cli(process: NodeJS.Process) {
-  const options: PluginSveldOptions = process.argv
-    .slice(2)
-    .map((arg) => {
-      const [flag, value] = arg.split("=");
-      const key = flag.slice(2);
-      return { [key]: value === undefined ? true : value };
-    })
-    .reduce(
-      (a, c) => {
-        for (const key in c) {
-          a[key] = c[key];
-        }
-        return a;
-      },
-      {} as Record<string, string | boolean>,
-    );
+  const options = parseCliOptions(process.argv.slice(2));
 
   const input = getSvelteEntry() || "src/index.js";
   const rollup_bundle = await rollup({
@@ -39,7 +56,7 @@ export async function cli(process: NodeJS.Process) {
 
   await rollup_bundle.generate({});
 
-  const result = await generateBundle(input, options?.glob === true);
+  const result = await generateBundle(input, options.glob === true);
 
   writeOutput(result, options, input);
 }

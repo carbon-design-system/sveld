@@ -24,6 +24,13 @@ import type {
 import type { Node } from "estree-walker";
 import { walk } from "estree-walker";
 import { compile, parse } from "svelte/compiler";
+import {
+  isCallExpressionNamed,
+  isIdentifier,
+  isLiteral,
+  isObjectExpression,
+  isVariableDeclaration,
+} from "./ast-guards";
 import { getElementByTag } from "./element-tag-map";
 
 /**
@@ -283,7 +290,6 @@ interface ComponentParserOptions {
   verbose?: boolean;
 }
 
-type ComponentPropName = string;
 type ComponentPropBinding = "readonly" | "writable";
 
 /**
@@ -355,8 +361,6 @@ interface ComponentProp {
  * The default slot is accessed without a name attribute.
  */
 const DEFAULT_SLOT_NAME = null;
-
-type ComponentSlotName = typeof DEFAULT_SLOT_NAME | string;
 
 /**
  * Returns true when `source` is a single balanced object literal — that is,
@@ -495,8 +499,6 @@ interface SlotPropValue {
 
 type SlotProps = Record<string, SlotPropValue>;
 
-type ComponentEventName = string;
-
 /**
  * Event that is forwarded from a child component or element.
  *
@@ -555,7 +557,7 @@ type ComponentEvent = ForwardedEvent | DispatchedEvent;
  * { type: "forwarded", name: "click", element: "button" }
  * ```
  */
-interface SerializedForwardedEvent {
+export interface SerializedForwardedEvent {
   /** Always "forwarded" for forwarded events */
   type: "forwarded";
   /** The event name (e.g., "click", "change") */
@@ -573,9 +575,7 @@ interface SerializedForwardedEvent {
   source?: SourceRange;
 }
 
-type SerializedComponentEvent = SerializedForwardedEvent | DispatchedEvent;
-
-type TypeDefName = string;
+export type SerializedComponentEvent = SerializedForwardedEvent | DispatchedEvent;
 
 /**
  * Type definition extracted from JSDoc `@typedef` tags.
@@ -652,8 +652,6 @@ interface ComponentPropBindings {
   elements: string[];
 }
 
-type ComponentContextName = string;
-
 /**
  * Property definition for a component context.
  *
@@ -723,8 +721,8 @@ export interface ParsedComponent {
   moduleExports: ComponentProp[];
   /** Slots available in the component template */
   slots: ComponentSlot[];
-  /** Events that the component can dispatch or forward */
-  events: ComponentEvent[];
+  /** Events that the component can dispatch or forward (serialized for JSON/API output) */
+  events: SerializedComponentEvent[];
   /** Custom type definitions from JSDoc `@typedef` tags */
   typedefs: TypeDef[];
   /** Generic type parameters (e.g., `[name: "T", type: "string"]`) or null */
@@ -781,34 +779,34 @@ export default class ComponentParser {
   private readonly vars: Set<VariableDeclaration> = new Set();
 
   /** Map of component props keyed by prop name */
-  private readonly props: Map<ComponentPropName, ComponentProp> = new Map();
+  private readonly props: Map<string, ComponentProp> = new Map();
 
   /** Map of module exports (functions/variables exported from script) keyed by name */
-  private readonly moduleExports: Map<ComponentPropName, ComponentProp> = new Map();
+  private readonly moduleExports: Map<string, ComponentProp> = new Map();
 
   /** Map of component slots keyed by slot name (null for default slot) */
-  private readonly slots: Map<ComponentSlotName, ComponentSlot> = new Map();
+  private readonly slots: Map<string | null, ComponentSlot> = new Map();
 
   /** Map of component events (dispatched events) keyed by event name */
-  private readonly events: Map<ComponentEventName, ComponentEvent> = new Map();
+  private readonly events: Map<string, ComponentEvent> = new Map();
 
   /** Map of event descriptions extracted from JSDoc comments keyed by event name */
-  private readonly eventDescriptions: Map<ComponentEventName, string | undefined> = new Map();
+  private readonly eventDescriptions: Map<string, string | undefined> = new Map();
 
   /** Map of forwarded events (events forwarded from child components) keyed by event name */
-  private readonly forwardedEvents: Map<ComponentEventName, ComponentInlineElement | ComponentElement> = new Map();
+  private readonly forwardedEvents: Map<string, ComponentInlineElement | ComponentElement> = new Map();
 
   /** Map of type definitions (typedefs) extracted from JSDoc comments keyed by type name */
-  private readonly typedefs: Map<TypeDefName, TypeDef> = new Map();
+  private readonly typedefs: Map<string, TypeDef> = new Map();
 
   /** Component generic type parameters (null if no generics) */
   private generics: ComponentGenerics = null;
 
   /** Map of prop bindings (e.g., `bind:value`) keyed by prop name */
-  private readonly bindings: Map<ComponentPropName, ComponentPropBindings> = new Map();
+  private readonly bindings: Map<string, ComponentPropBindings> = new Map();
 
   /** Map of component contexts (created with `setContext`) keyed by context name */
-  private readonly contexts: Map<ComponentContextName, ComponentContext> = new Map();
+  private readonly contexts: Map<string, ComponentContext> = new Map();
 
   /** Cache for variable type and description information to avoid redundant lookups */
   private variableInfoCache: Map<string, { type: string; description?: string }> = new Map();
@@ -860,7 +858,7 @@ export default class ComponentParser {
     this.options = options;
   }
 
-  private static mapToArray<T>(map: Map<string, T> | Map<ComponentSlotName, T>) {
+  private static mapToArray<T>(map: Map<string, T> | Map<string | null, T>) {
     return Array.from(map, ([_key, value]) => value);
   }
 
@@ -1471,21 +1469,16 @@ export default class ComponentParser {
     varScope: LexicalScope,
     options?: { allowRunesProps?: boolean; forceProp?: boolean },
   ) {
-    if (
-      !declaration ||
-      typeof declaration !== "object" ||
-      !("type" in declaration) ||
-      declaration.type !== "VariableDeclaration"
-    ) {
+    if (!isVariableDeclaration(declaration)) {
       return;
     }
 
     const allowRunesProps = options?.allowRunesProps ?? false;
     const forceProp = options?.forceProp ?? false;
-    const variableDeclaration = declaration as VariableDeclaration;
+    const variableDeclaration = declaration;
 
     for (const declarator of variableDeclaration.declarations) {
-      if (allowRunesProps && this.isCallExpressionNamed(declarator.init, "$props")) {
+      if (allowRunesProps && isCallExpressionNamed(declarator.init, "$props")) {
         for (const binding of this.extractRunesScopeBindings(variableDeclaration, declarator)) {
           this.declareScopeBinding(
             binding.kind === "prop" ? lexicalScope : varScope,
@@ -1781,28 +1774,14 @@ export default class ComponentParser {
     }
   }
 
-  private isCallExpressionNamed(node: unknown, calleeName: string): node is CallExpression {
-    if (!node || typeof node !== "object" || !("type" in node) || node.type !== "CallExpression") {
-      return false;
-    }
-
-    const callExpr = node as CallExpression;
-    return (
-      !!callExpr.callee &&
-      typeof callExpr.callee === "object" &&
-      "name" in callExpr.callee &&
-      callExpr.callee.name === calleeName
-    );
-  }
-
   private getPropertyName(node: Property["key"]): string | undefined {
     if (!node || typeof node !== "object" || !("type" in node)) return undefined;
 
-    if (node.type === "Identifier") {
+    if (isIdentifier(node)) {
       return node.name;
     }
 
-    if (node.type === "Literal") {
+    if (isLiteral(node)) {
       return node.value == null ? undefined : String(node.value);
     }
 
@@ -2213,7 +2192,7 @@ export default class ComponentParser {
       if (!statement || typeof statement !== "object" || !("declarations" in statement)) continue;
 
       for (const declarator of statement.declarations ?? []) {
-        if (!this.isCallExpressionNamed(declarator.init, "$props")) continue;
+        if (!isCallExpressionNamed(declarator.init, "$props")) continue;
         const canonicalType = this.getTypeAnnotationText(declarator.id?.typeAnnotation);
         const metadata = this.buildRunesPropTypeMetadataMap(
           declarator.id?.typeAnnotation?.typeAnnotation,
@@ -2641,7 +2620,7 @@ export default class ComponentParser {
    * Unwraps `$bindable(...)` calls so defaults are documented as their underlying values.
    */
   private unwrapBindableInitializer(init: unknown): { init?: unknown; bindable: boolean } {
-    if (this.isCallExpressionNamed(init, "$bindable")) {
+    if (isCallExpressionNamed(init, "$bindable")) {
       return {
         init: init.arguments[0],
         bindable: true,
@@ -2659,7 +2638,7 @@ export default class ComponentParser {
    */
   private parseRunesPropsDeclaration(node: VariableDeclaration) {
     for (const declarator of node.declarations) {
-      if (!this.isCallExpressionNamed(declarator.init, "$props")) continue;
+      if (!isCallExpressionNamed(declarator.init, "$props")) continue;
 
       if (declarator.id.type === "Identifier") {
         this.wholePropsLocals.add(declarator.id.name);
@@ -3036,7 +3015,7 @@ export default class ComponentParser {
    * aliasType("number")   // Returns: "number"
    * ```
    */
-  private aliasType(type: string) {
+  private aliasType(type: string): string {
     if (type === "*") return "any";
     return type.trim();
   }
@@ -3167,7 +3146,7 @@ export default class ComponentParser {
     source?: SourceRange;
   }) {
     const default_slot = slot_name === undefined || slot_name === "";
-    const name: ComponentSlotName = default_slot ? DEFAULT_SLOT_NAME : (slot_name ?? "");
+    const name: string | null = default_slot ? DEFAULT_SLOT_NAME : (slot_name ?? "");
     const fallback = ComponentParser.assignValue(slot_fallback);
     const props = ComponentParser.assignValue(slot_props);
     const description = slot_description?.trim() || undefined;
@@ -4324,71 +4303,60 @@ export default class ComponentParser {
        * Extract each property and try to infer its type from the variable it references.
        */
       const properties: ComponentContextProp[] = [];
-      const objExpr = node as ObjectExpression;
+      if (!isObjectExpression(node)) {
+        return null;
+      }
+      const objExpr = node;
 
       for (const prop of objExpr.properties) {
-        if (prop.type === "Property") {
-          const propObj = prop as Property;
-          const propName =
-            propObj.key && "name" in propObj.key
-              ? (propObj.key as Identifier).name
-              : propObj.key && "value" in propObj.key
-                ? String((propObj.key as Literal).value)
-                : undefined;
-          if (!propName) continue;
+        if (prop.type !== "Property") continue;
 
-          /**
-           * Try to find the variable definition to get its JSDoc type.
-           * If not found, default to "any" and optionally warn in verbose mode.
-           */
-          let propType = "any";
-          let propDescription: string | undefined;
+        const propName = this.getPropertyName(prop.key);
+        if (!propName) continue;
 
-          if (propObj.value && typeof propObj.value === "object" && "type" in propObj.value) {
-            if (propObj.value.type === "Identifier") {
-              const varName = (propObj.value as Identifier).name;
-              const varInfo = this.findVariableTypeAndDescription(varName);
-              if (varInfo) {
-                propType = varInfo.type;
-                propDescription = varInfo.description;
-              } else if (this.options?.verbose) {
-                console.warn(`Warning: Context "${key}" property "${propName}" has no type annotation. Using "any".`);
-              }
-            } else if (
-              propObj.value.type === "ArrowFunctionExpression" ||
-              propObj.value.type === "FunctionExpression"
-            ) {
-              /**
-               * Inline function - infer function type from parameters.
-               * Parameters are typed as `any` since we don't have type information.
-               */
-              const funcExpr = propObj.value as ArrowFunctionExpression | FunctionExpression;
-              const params =
-                funcExpr.params
-                  ?.map((p) => {
-                    if (p && typeof p === "object" && "name" in p) {
-                      return `${(p as Identifier).name || "arg"}: any`;
-                    }
-                    return "arg: any";
-                  })
-                  .join(", ") || "";
-              propType = `(${params}) => any`;
-            } else if (propObj.value.type === "Literal") {
-              /**
-               * Literal value - infer type from the literal's value type.
-               */
-              const literal = propObj.value as Literal;
-              propType = literal.value == null ? "null" : typeof literal.value;
-            }
+        /**
+         * Try to find the variable definition to get its JSDoc type.
+         * If not found, default to "any" and optionally warn in verbose mode.
+         */
+        let propType = "any";
+        let propDescription: string | undefined;
+
+        if (isIdentifier(prop.value)) {
+          const varName = prop.value.name;
+          const varInfo = this.findVariableTypeAndDescription(varName);
+          if (varInfo) {
+            propType = varInfo.type;
+            propDescription = varInfo.description;
+          } else if (this.options?.verbose) {
+            console.warn(`Warning: Context "${key}" property "${propName}" has no type annotation. Using "any".`);
           }
-
-          properties.push({
-            name: propName,
-            type: propType,
-            description: propDescription,
-            optional: false,
-          });
+        } else if (
+          prop.value &&
+          typeof prop.value === "object" &&
+          "type" in prop.value &&
+          (prop.value.type === "ArrowFunctionExpression" || prop.value.type === "FunctionExpression")
+        ) {
+          const funcExpr = prop.value as ArrowFunctionExpression | FunctionExpression;
+          const params =
+            funcExpr.params
+              ?.map((p) => {
+                if (isIdentifier(p)) {
+                  return `${p.name || "arg"}: any`;
+                }
+                return "arg: any";
+              })
+              .join(", ") || "";
+          propType = `(${params}) => any`;
+        } else if (isLiteral(prop.value)) {
+          propType = prop.value.value == null ? "null" : typeof prop.value.value;
         }
+
+        properties.push({
+          name: propName,
+          type: propType,
+          description: propDescription,
+          optional: false,
+        });
       }
 
       return {
@@ -4397,14 +4365,13 @@ export default class ComponentParser {
         properties,
         description: undefined,
       };
-    } else if (node.type === "Identifier") {
+    } else if (isIdentifier(node)) {
       /**
        * setContext('key', someVariable)
        * The context value is a direct variable reference.
        * Look up the variable's type from its JSDoc comment.
        */
-      const ident = node as Identifier;
-      const varName = ident.name;
+      const varName = node.name;
       const varInfo = this.findVariableTypeAndDescription(varName);
 
       if (varInfo) {
@@ -4915,7 +4882,7 @@ export default class ComponentParser {
             "type" in parent &&
             parent.type === "Program" &&
             (node as VariableDeclaration).declarations.some((declarator) =>
-              this.isCallExpressionNamed(declarator.init, "$props"),
+              isCallExpressionNamed(declarator.init, "$props"),
             )
           ) {
             this.parseRunesPropsDeclaration(node as VariableDeclaration);
@@ -5220,7 +5187,7 @@ export default class ComponentParser {
             }
 
             const slot_name = renderInfo.publicName === "children" ? undefined : renderInfo.publicName;
-            const slotKey: ComponentSlotName = slot_name === undefined ? DEFAULT_SLOT_NAME : slot_name;
+            const slotKey: string | null = slot_name === undefined ? DEFAULT_SLOT_NAME : slot_name;
 
             if (slot_props !== undefined) {
               this.addSlot({
@@ -5510,13 +5477,19 @@ export default class ComponentParser {
      */
     const eventsArray = ComponentParser.mapToArray(this.events)
       .map((event): SerializedComponentEvent => {
-        if (event.type === "forwarded") {
-          return {
-            ...event,
-            element: event.element.name,
-          };
+        switch (event.type) {
+          case "forwarded":
+            return {
+              ...event,
+              element: event.element.name,
+            };
+          case "dispatched":
+            return event;
+          default: {
+            const _exhaustive: never = event;
+            return _exhaustive;
+          }
         }
-        return event;
       })
       .sort((a, b) => {
         const nameCompare = a.name.localeCompare(b.name);
@@ -5542,7 +5515,7 @@ export default class ComponentParser {
       props: processedProps,
       moduleExports: moduleExportsArray,
       slots: processedSlots,
-      events: eventsArray as ComponentEvent[], // Type assertion: serialized format for JSON, but typed as ComponentEvent for API
+      events: eventsArray,
       typedefs: typedefsArray,
       generics: this.generics,
       rest_props: this.rest_props,

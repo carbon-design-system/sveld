@@ -1,3 +1,4 @@
+import { asNormalizedPath } from "../src/brands";
 import type { ParsedComponent } from "../src/ComponentParser";
 import { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "../src/ComponentParser";
 import type { ComponentDocApi } from "../src/plugin";
@@ -108,7 +109,7 @@ describe("writerTsDefinition", () => {
 
     const component_api: ComponentDocApi = {
       moduleName: "ModuleName",
-      filePath: "./src/ModuleName.svelte",
+      filePath: asNormalizedPath("./src/ModuleName.svelte"),
       ...parsed_output,
     };
 
@@ -118,7 +119,7 @@ describe("writerTsDefinition", () => {
   test('"default" module name', () => {
     const component_api: ComponentDocApi = {
       moduleName: "default",
-      filePath: "./src/ModuleName.svelte",
+      filePath: asNormalizedPath("./src/ModuleName.svelte"),
       syntaxMode: "legacy",
       props: [],
       moduleExports: [],
@@ -242,7 +243,7 @@ describe("writerTsDefinition", () => {
   test("generates function signatures from @param and @returns", () => {
     const component_api: ComponentDocApi = {
       moduleName: "TestComponent",
-      filePath: "./src/TestComponent.svelte",
+      filePath: asNormalizedPath("./src/TestComponent.svelte"),
       syntaxMode: "legacy",
       props: [
         {
@@ -377,7 +378,7 @@ describe("writerTsDefinition", () => {
   test("generates module export function signatures from @param and @returns with @example", () => {
     const component_api: ComponentDocApi = {
       moduleName: "TestComponent",
-      filePath: "./src/TestComponent.svelte",
+      filePath: asNormalizedPath("./src/TestComponent.svelte"),
       syntaxMode: "legacy",
       props: [],
       moduleExports: [
@@ -424,7 +425,7 @@ describe("writerTsDefinition", () => {
   test("generates snippet props for named slots (Svelte 5 compatibility)", () => {
     const component_api: ComponentDocApi = {
       moduleName: "CardComponent",
-      filePath: "./src/CardComponent.svelte",
+      filePath: asNormalizedPath("./src/CardComponent.svelte"),
       syntaxMode: "legacy",
       props: [
         {
@@ -508,7 +509,7 @@ describe("writerTsDefinition", () => {
   test("snippet props with no regular props", () => {
     const component_api: ComponentDocApi = {
       moduleName: "SlotOnlyComponent",
-      filePath: "./src/SlotOnlyComponent.svelte",
+      filePath: asNormalizedPath("./src/SlotOnlyComponent.svelte"),
       syntaxMode: "legacy",
       props: [],
       moduleExports: [],
@@ -536,7 +537,7 @@ describe("writerTsDefinition", () => {
   test("imports Snippet when prop types reference it directly", () => {
     const component_api: ComponentDocApi = {
       moduleName: "RunesTable",
-      filePath: "./src/RunesTable.svelte",
+      filePath: asNormalizedPath("./src/RunesTable.svelte"),
       syntaxMode: "legacy",
       props: [
         {
@@ -566,7 +567,7 @@ describe("writerTsDefinition", () => {
   test("preserves canonical props types with local declarations and type-only imports", () => {
     const component_api: ComponentDocApi = {
       moduleName: "TypedButton",
-      filePath: "./src/TypedButton.svelte",
+      filePath: asNormalizedPath("./src/TypedButton.svelte"),
       syntaxMode: "legacy",
       props: [
         {

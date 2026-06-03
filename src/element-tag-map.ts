@@ -129,9 +129,13 @@ const tag_map = {
   var: "HTMLElement",
   video: "HTMLVideoElement",
   wbr: "HTMLElement",
-};
+} satisfies Record<string, string>;
 
 type ElementTag = keyof typeof tag_map;
+
+export function isElementTag(element: string): element is ElementTag {
+  return element in tag_map;
+}
 
 /**
  * Returns the DOM interface for a tag, or `HTMLElement` when unknown.
@@ -143,6 +147,9 @@ type ElementTag = keyof typeof tag_map;
  * getElementByTag("custom")  // Returns: "HTMLElement" (fallback)
  * ```
  */
-export function getElementByTag(element: ElementTag | string) {
-  return element in tag_map ? tag_map[element as ElementTag] : "HTMLElement";
+export function getElementByTag(element: string): string {
+  if (isElementTag(element)) {
+    return tag_map[element];
+  }
+  return "HTMLElement";
 }
