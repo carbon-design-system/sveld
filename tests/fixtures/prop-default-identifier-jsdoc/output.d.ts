@@ -29,6 +29,29 @@ export type PropDefaultIdentifierJsdocProps = {
    * @default "Submit"
    */
   label?: string;
+
+  /**
+   * Determine if an item should be filtered given the current value.
+   */
+  shouldFilterItem?: (item: string, value: string) => boolean;
+
+  format?: (...args: any[]) => any;
+
+  /**
+   * Render the message shown when there are no items.
+   */
+  renderEmpty?: (...args: any[]) => any;
+
+  /**
+   * Resolve the unique key for an item.
+   */
+  getKey?: (item: string, index: number) => string;
+
+  /**
+   * Translate a label to the active locale.
+   * @example translate("submit") // => "Submit"
+   */
+  translate?: (key: string) => string;
 };
 
 export default class PropDefaultIdentifierJsdoc extends SvelteComponentTyped<

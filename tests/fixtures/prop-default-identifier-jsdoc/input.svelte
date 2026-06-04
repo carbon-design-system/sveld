@@ -37,6 +37,55 @@
   const DEFAULT_LABEL = "Submit";
 
   export let label = DEFAULT_LABEL;
+
+  /**
+   * Determine if an item should be filtered given the current value.
+   * @type {(item: string, value: string) => boolean}
+   */
+  function defaultShouldFilter() {
+    return true;
+  }
+
+  export let shouldFilterItem = defaultShouldFilter;
+
+  function defaultFormat(value) {
+    return String(value);
+  }
+
+  export let format = defaultFormat;
+
+  /** Render the message shown when there are no items. */
+  function defaultRenderEmpty() {
+    return "No results";
+  }
+
+  export let renderEmpty = defaultRenderEmpty;
+
+  /**
+   * Resolve the unique key for an item.
+   * @param {string} item
+   * @param {number} index
+   * @returns {string}
+   */
+  function defaultGetKey() {
+    return "";
+  }
+
+  export let getKey = defaultGetKey;
+
+  /**
+   * Translate a label to the active locale.
+   * @type {(key: string) => string}
+   * @example translate("submit") // => "Submit"
+   */
+  function defaultTranslate(key) {
+    return key;
+  }
+
+  export let translate = defaultTranslate;
 </script>
 
-<button on:click={() => copy(label)}>{label} {size} {config.duration} {items.length}</button>
+<button on:click={() => copy(label)}>
+  {label} {size} {config.duration} {items.length} {shouldFilterItem("a", "b")}
+  {format(1)} {renderEmpty()} {getKey("a", 0)} {translate("submit")}
+</button>
