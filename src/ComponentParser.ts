@@ -4552,6 +4552,7 @@ export default class ComponentParser {
     this.componentComment = undefined;
     this.componentCommentSource = undefined;
     this.reactive_vars.clear();
+    this.vars.clear();
     this.props.clear();
     this.moduleExports.clear();
     this.slots.clear();
