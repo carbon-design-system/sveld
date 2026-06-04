@@ -18087,3 +18087,390 @@ export default class TypedefBrandedTypes extends SvelteComponentTyped<
 > {}
 "
 `;
+
+exports[`fixtures (JSON) "prop-default-identifier-jsdoc/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 43,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "copy",
+      "kind": "let",
+      "description": "Override the default copy behavior of using the navigator.clipboard.writeText API to copy text.",
+      "type": "(text: string) => void | Promise<void>",
+      "typeSource": "jsdoc",
+      "defaultValue": {
+        "raw": "async (text) => {     await navigator.clipboard.writeText(text);   }",
+        "kind": "function"
+      },
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 10,
+          "column": 2
+        },
+        "end": {
+          "line": 10,
+          "column": 32
+        }
+      }
+    },
+    {
+      "name": "size",
+      "kind": "let",
+      "description": "Default size in pixels.",
+      "type": "number",
+      "typeSource": "jsdoc",
+      "value": "16",
+      "defaultValue": {
+        "raw": "16",
+        "kind": "literal",
+        "value": 16
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 18,
+          "column": 2
+        },
+        "end": {
+          "line": 18,
+          "column": 33
+        }
+      }
+    },
+    {
+      "name": "config",
+      "kind": "let",
+      "description": "Animation configuration applied on mount.",
+      "type": "{ duration: number; easing: string }",
+      "typeSource": "jsdoc",
+      "value": "{ duration: 200, easing: \\"ease-in-out\\" }",
+      "defaultValue": {
+        "raw": "{ duration: 200, easing: \\"ease-in-out\\" }",
+        "kind": "object",
+        "value": {
+          "duration": 200,
+          "easing": "ease-in-out"
+        }
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 26,
+          "column": 2
+        },
+        "end": {
+          "line": 26,
+          "column": 37
+        }
+      }
+    },
+    {
+      "name": "items",
+      "kind": "let",
+      "description": "Items rendered when no value is provided.",
+      "type": "string[]",
+      "typeSource": "jsdoc",
+      "value": "[\\"one\\", \\"two\\"]",
+      "defaultValue": {
+        "raw": "[\\"one\\", \\"two\\"]",
+        "kind": "array",
+        "value": [
+          "one",
+          "two"
+        ]
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 34,
+          "column": 2
+        },
+        "end": {
+          "line": 34,
+          "column": 35
+        }
+      }
+    },
+    {
+      "name": "label",
+      "kind": "let",
+      "description": "Fallback label shown when none is provided.",
+      "type": "string",
+      "typeSource": "default",
+      "value": "\\"Submit\\"",
+      "defaultValue": {
+        "raw": "\\"Submit\\"",
+        "kind": "literal",
+        "value": "Submit"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 39,
+          "column": 2
+        },
+        "end": {
+          "line": 39,
+          "column": 35
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (TypeScript) "prop-default-identifier-jsdoc/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type PropDefaultIdentifierJsdocProps = {
+  /**
+   * Override the default copy behavior of using the navigator.clipboard.writeText API to copy text.
+   */
+  copy?: (text: string) => void | Promise<void>;
+
+  /**
+   * Default size in pixels.
+   * @default 16
+   */
+  size?: number;
+
+  /**
+   * Animation configuration applied on mount.
+   * @default { duration: 200, easing: "ease-in-out" }
+   */
+  config?: { duration: number; easing: string };
+
+  /**
+   * Items rendered when no value is provided.
+   * @default ["one", "two"]
+   */
+  items?: string[];
+
+  /**
+   * Fallback label shown when none is provided.
+   * @default "Submit"
+   */
+  label?: string;
+};
+
+export default class PropDefaultIdentifierJsdoc extends SvelteComponentTyped<
+  PropDefaultIdentifierJsdocProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (JSON) "runes-prop-default-identifier-jsdoc/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 29,
+      "column": 0
+    }
+  },
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "copy",
+      "kind": "let",
+      "description": "Override the default copy behavior of using the navigator.clipboard.writeText API to copy text.",
+      "type": "(text: string) => void | Promise<void>",
+      "typeSource": "jsdoc",
+      "defaultValue": {
+        "raw": "async (text) => {     await navigator.clipboard.writeText(text);   }",
+        "kind": "function"
+      },
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 25,
+          "column": 8
+        },
+        "end": {
+          "line": 25,
+          "column": 26
+        }
+      }
+    },
+    {
+      "name": "size",
+      "kind": "let",
+      "description": "Default size in pixels.",
+      "type": "number",
+      "typeSource": "jsdoc",
+      "value": "16",
+      "defaultValue": {
+        "raw": "16",
+        "kind": "literal",
+        "value": 16
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 25,
+          "column": 28
+        },
+        "end": {
+          "line": 25,
+          "column": 47
+        }
+      }
+    },
+    {
+      "name": "config",
+      "kind": "let",
+      "description": "Animation configuration applied on mount.",
+      "type": "{ duration: number; easing: string }",
+      "typeSource": "jsdoc",
+      "value": "{ duration: 200, easing: \\"ease-in-out\\" }",
+      "defaultValue": {
+        "raw": "{ duration: 200, easing: \\"ease-in-out\\" }",
+        "kind": "object",
+        "value": {
+          "duration": 200,
+          "easing": "ease-in-out"
+        }
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 25,
+          "column": 49
+        },
+        "end": {
+          "line": 25,
+          "column": 72
+        }
+      }
+    },
+    {
+      "name": "label",
+      "kind": "let",
+      "description": "Fallback label shown when none is provided.",
+      "type": "string",
+      "typeSource": "default",
+      "value": "\\"Submit\\"",
+      "defaultValue": {
+        "raw": "\\"Submit\\"",
+        "kind": "literal",
+        "value": "Submit"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 25,
+          "column": 74
+        },
+        "end": {
+          "line": 25,
+          "column": 95
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
+"
+`;
+
+exports[`fixtures (TypeScript) "runes-prop-default-identifier-jsdoc/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type RunesPropDefaultIdentifierJsdocProps = {
+  /**
+   * Override the default copy behavior of using the navigator.clipboard.writeText API to copy text.
+   */
+  copy?: (text: string) => void | Promise<void>;
+
+  /**
+   * Default size in pixels.
+   * @default 16
+   */
+  size?: number;
+
+  /**
+   * Animation configuration applied on mount.
+   * @default { duration: 200, easing: "ease-in-out" }
+   */
+  config?: { duration: number; easing: string };
+
+  /**
+   * Fallback label shown when none is provided.
+   * @default "Submit"
+   */
+  label?: string;
+};
+
+export default class RunesPropDefaultIdentifierJsdoc extends SvelteComponentTyped<
+  RunesPropDefaultIdentifierJsdocProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;

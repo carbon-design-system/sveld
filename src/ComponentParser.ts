@@ -258,6 +258,11 @@ interface ProcessedInitializer {
   type?: string;
   isFunction: boolean;
   defaultValue?: ComponentPropDefaultValue;
+  /** JSDoc from identifier default when the prop has none. */
+  resolvedType?: string;
+  resolvedDescription?: string;
+  resolvedParams?: ComponentPropParam[];
+  resolvedReturnType?: string;
 }
 
 type ModernScriptAttribute = {
@@ -2553,7 +2558,15 @@ export default class ComponentParser {
       if (depth < 5) {
         const resolvedInit = this.resolveLocalVarInitializer(ident.name);
         if (resolvedInit) {
-          return this.processInitializer(resolvedInit, depth + 1);
+          const inner = this.processInitializer(resolvedInit, depth + 1);
+          const resolvedJSDoc = this.resolveLocalVarJSDoc(ident.name);
+          return {
+            ...inner,
+            resolvedType: resolvedJSDoc?.type ?? inner.resolvedType,
+            resolvedDescription: resolvedJSDoc?.description ?? inner.resolvedDescription,
+            resolvedParams: resolvedJSDoc?.params ?? inner.resolvedParams,
+            resolvedReturnType: resolvedJSDoc?.returnType ?? inner.resolvedReturnType,
+          };
         }
       }
       if ("start" in ident && "end" in ident && typeof ident.start === "number" && typeof ident.end === "number") {
@@ -2611,6 +2624,27 @@ export default class ComponentParser {
         ) {
           return declarator.init;
         }
+      }
+    }
+    return undefined;
+  }
+
+  /**
+   * Look up JSDoc on a local variable declaration by name.
+   */
+  private resolveLocalVarJSDoc(name: string) {
+    for (const decl of this.vars) {
+      const matches = decl.declarations.some(
+        (declarator) =>
+          declarator.id &&
+          typeof declarator.id === "object" &&
+          "type" in declarator.id &&
+          declarator.id.type === "Identifier" &&
+          "name" in declarator.id &&
+          declarator.id.name === name,
+      );
+      if (matches) {
+        return this.processNodeJSDoc(decl as unknown as { leadingComments?: unknown[]; start?: number });
       }
     }
     return undefined;
@@ -2738,17 +2772,21 @@ export default class ComponentParser {
         const { init: unwrappedInit, bindable } = this.unwrapBindableInitializer(init);
         const initResult = unwrappedInit == null ? { isFunction: false } : this.processInitializer(unwrappedInit);
         const { value, type: inferredType, isFunction, defaultValue } = initResult;
+        const inheritedType =
+          typeMetadata?.type === undefined && propertyJSDoc?.type === undefined ? initResult.resolvedType : undefined;
         const isFunctionFromJSDoc =
           !!propertyJSDoc?.params?.length ||
           propertyJSDoc?.returnType !== undefined ||
-          propertyJSDoc?.type?.includes("=>");
-        const type = typeMetadata?.type ?? propertyJSDoc?.type ?? inferredType;
+          propertyJSDoc?.type?.includes("=>") ||
+          !!inheritedType?.includes("=>");
+        const type = typeMetadata?.type ?? propertyJSDoc?.type ?? inheritedType ?? inferredType;
         const typeSource = this.resolveTypeSource({
           hasTypeScriptType: typeMetadata?.type !== undefined,
           hasJSDocType:
             propertyJSDoc?.type !== undefined ||
             propertyJSDoc?.params !== undefined ||
-            propertyJSDoc?.returnType !== undefined,
+            propertyJSDoc?.returnType !== undefined ||
+            inheritedType !== undefined,
           inferredType,
           finalType: type,
         });
@@ -2761,15 +2799,15 @@ export default class ComponentParser {
           name: propName,
           ...(localName === propName ? {} : { localName }),
           kind: "let",
-          description: propertyJSDoc?.description,
+          description: propertyJSDoc?.description ?? initResult.resolvedDescription,
           binding: propertyJSDoc?.binding,
           ...(bindable ? { bindable: true as const } : {}),
           type,
           typeSource,
           value,
           defaultValue,
-          params: propertyJSDoc?.params,
-          returnType: propertyJSDoc?.returnType,
+          params: propertyJSDoc?.params ?? initResult.resolvedParams,
+          returnType: propertyJSDoc?.returnType ?? initResult.resolvedReturnType,
           isFunction: Boolean(isFunction || isFunctionFromJSDoc),
           isFunctionDeclaration: false,
           isRequired: unwrappedInit == null && typeMetadata?.optional !== true,
@@ -4711,6 +4749,12 @@ export default class ComponentParser {
             let returnType: string | undefined;
             let defaultValue: ComponentPropDefaultValue | undefined;
             let inferredType: string | undefined;
+            let resolvedJSDoc:
+              | Pick<
+                  ProcessedInitializer,
+                  "resolvedType" | "resolvedDescription" | "resolvedParams" | "resolvedReturnType"
+                >
+              | undefined;
 
             if (node.declaration.type === "FunctionDeclaration") {
               const funcDecl = node.declaration as { id?: { name?: string } };
@@ -4739,6 +4783,7 @@ export default class ComponentParser {
               kind = variableDeclarationKindToComponentPropKind(varDecl.kind);
               const initResult = init == null ? { isFunction: false } : this.processInitializer(init);
               ({ value, type: inferredType, isFunction, defaultValue } = initResult);
+              resolvedJSDoc = initResult;
               explicitType = this.getExplicitPropType(localPropName);
               type = explicitType ?? inferredType;
             } else {
@@ -4752,6 +4797,16 @@ export default class ComponentParser {
               returnType = jsdocInfo.returnType;
               if (jsdocInfo.description) description = jsdocInfo.description;
             }
+
+            if (explicitType === undefined && jsdocInfo?.type === undefined && resolvedJSDoc?.resolvedType) {
+              type = resolvedJSDoc.resolvedType;
+            }
+            if (description === undefined && resolvedJSDoc?.resolvedDescription) {
+              description = resolvedJSDoc.resolvedDescription;
+            }
+            if (params === undefined && resolvedJSDoc?.resolvedParams) params = resolvedJSDoc.resolvedParams;
+            if (returnType === undefined && resolvedJSDoc?.resolvedReturnType)
+              returnType = resolvedJSDoc.resolvedReturnType;
 
             // Merge returnType into type for function declarations if not overridden by @type
             if (isFunctionDeclaration && type === "() => any" && returnType) {
@@ -4774,7 +4829,10 @@ export default class ComponentParser {
             const typeSource = this.resolveTypeSource({
               hasTypeScriptType: explicitType !== undefined,
               hasJSDocType:
-                jsdocInfo?.type !== undefined || jsdocInfo?.params !== undefined || jsdocInfo?.returnType !== undefined,
+                jsdocInfo?.type !== undefined ||
+                jsdocInfo?.params !== undefined ||
+                jsdocInfo?.returnType !== undefined ||
+                resolvedJSDoc?.resolvedType !== undefined,
               inferredType,
               finalType: type,
             });
@@ -4967,6 +5025,12 @@ export default class ComponentParser {
           let localName: string | undefined;
           let defaultValue: ComponentPropDefaultValue | undefined;
           let inferredType: string | undefined;
+          let resolvedJSDoc:
+            | Pick<
+                ProcessedInitializer,
+                "resolvedType" | "resolvedDescription" | "resolvedParams" | "resolvedReturnType"
+              >
+            | undefined;
 
           if (node.declaration.type === "FunctionDeclaration") {
             const funcDecl = node.declaration as { id?: { name?: string } };
@@ -5001,6 +5065,7 @@ export default class ComponentParser {
             isRequired = kind === "let" && init == null;
             const initResult = init == null ? { isFunction: false } : this.processInitializer(init);
             ({ value, type: inferredType, isFunction, defaultValue } = initResult);
+            resolvedJSDoc = initResult;
             type = explicitType ?? inferredType;
           } else {
             return;
@@ -5013,6 +5078,16 @@ export default class ComponentParser {
             returnType = jsdocInfo.returnType;
             if (jsdocInfo.description) description = jsdocInfo.description;
           }
+
+          if (explicitType === undefined && jsdocInfo?.type === undefined && resolvedJSDoc?.resolvedType) {
+            type = resolvedJSDoc.resolvedType;
+          }
+          if (description === undefined && resolvedJSDoc?.resolvedDescription) {
+            description = resolvedJSDoc.resolvedDescription;
+          }
+          if (params === undefined && resolvedJSDoc?.resolvedParams) params = resolvedJSDoc.resolvedParams;
+          if (returnType === undefined && resolvedJSDoc?.resolvedReturnType)
+            returnType = resolvedJSDoc.resolvedReturnType;
 
           // Merge returnType into type for function declarations if not overridden by @type
           if (isFunctionDeclaration && type === "() => any" && returnType) {
@@ -5035,7 +5110,10 @@ export default class ComponentParser {
           const typeSource = this.resolveTypeSource({
             hasTypeScriptType: explicitType !== undefined,
             hasJSDocType:
-              jsdocInfo?.type !== undefined || jsdocInfo?.params !== undefined || jsdocInfo?.returnType !== undefined,
+              jsdocInfo?.type !== undefined ||
+              jsdocInfo?.params !== undefined ||
+              jsdocInfo?.returnType !== undefined ||
+              resolvedJSDoc?.resolvedType !== undefined,
             inferredType,
             finalType: type,
           });

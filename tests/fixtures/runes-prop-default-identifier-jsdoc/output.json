@@ -1,0 +1,135 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 29,
+      "column": 0
+    }
+  },
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "copy",
+      "kind": "let",
+      "description": "Override the default copy behavior of using the navigator.clipboard.writeText API to copy text.",
+      "type": "(text: string) => void | Promise<void>",
+      "typeSource": "jsdoc",
+      "defaultValue": {
+        "raw": "async (text) => {     await navigator.clipboard.writeText(text);   }",
+        "kind": "function"
+      },
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 25,
+          "column": 8
+        },
+        "end": {
+          "line": 25,
+          "column": 26
+        }
+      }
+    },
+    {
+      "name": "size",
+      "kind": "let",
+      "description": "Default size in pixels.",
+      "type": "number",
+      "typeSource": "jsdoc",
+      "value": "16",
+      "defaultValue": {
+        "raw": "16",
+        "kind": "literal",
+        "value": 16
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 25,
+          "column": 28
+        },
+        "end": {
+          "line": 25,
+          "column": 47
+        }
+      }
+    },
+    {
+      "name": "config",
+      "kind": "let",
+      "description": "Animation configuration applied on mount.",
+      "type": "{ duration: number; easing: string }",
+      "typeSource": "jsdoc",
+      "value": "{ duration: 200, easing: \"ease-in-out\" }",
+      "defaultValue": {
+        "raw": "{ duration: 200, easing: \"ease-in-out\" }",
+        "kind": "object",
+        "value": {
+          "duration": 200,
+          "easing": "ease-in-out"
+        }
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 25,
+          "column": 49
+        },
+        "end": {
+          "line": 25,
+          "column": 72
+        }
+      }
+    },
+    {
+      "name": "label",
+      "kind": "let",
+      "description": "Fallback label shown when none is provided.",
+      "type": "string",
+      "typeSource": "default",
+      "value": "\"Submit\"",
+      "defaultValue": {
+        "raw": "\"Submit\"",
+        "kind": "literal",
+        "value": "Submit"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 25,
+          "column": 74
+        },
+        "end": {
+          "line": 25,
+          "column": 95
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": []
+}
