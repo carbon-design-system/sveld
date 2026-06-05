@@ -1645,7 +1645,7 @@ exports[`fixtures (JSON) "prop-metadata-consolidated/input.svelte" 1`] = `
     {
       "name": "callbackDefault",
       "kind": "let",
-      "type": "(...args: any[]) => any",
+      "type": "(value: any) => any",
       "typeSource": "default",
       "defaultValue": {
         "raw": "(value: string) => value.toUpperCase()",
@@ -14186,7 +14186,7 @@ export type PropMetadataConsolidatedProps = {
    */
   objectDefault?: { size: "md"; count: 2 };
 
-  callbackDefault?: (...args: any[]) => any;
+  callbackDefault?: (value: any) => any;
 
   /**
    * @default makeDefault()
@@ -18272,7 +18272,7 @@ exports[`fixtures (JSON) "prop-default-identifier-jsdoc/input.svelte" 1`] = `
     {
       "name": "format",
       "kind": "let",
-      "type": "(...args: any[]) => any",
+      "type": "(value: any) => string",
       "typeSource": "jsdoc",
       "isFunction": true,
       "isFunctionDeclaration": false,
@@ -18294,7 +18294,7 @@ exports[`fixtures (JSON) "prop-default-identifier-jsdoc/input.svelte" 1`] = `
       "name": "renderEmpty",
       "kind": "let",
       "description": "Render the message shown when there are no items.",
-      "type": "(...args: any[]) => any",
+      "type": "(...args: any[]) => string",
       "typeSource": "jsdoc",
       "isFunction": true,
       "isFunctionDeclaration": false,
@@ -18420,12 +18420,12 @@ export type PropDefaultIdentifierJsdocProps = {
    */
   shouldFilterItem?: (item: string, value: string) => boolean;
 
-  format?: (...args: any[]) => any;
+  format?: (value: any) => string;
 
   /**
    * Render the message shown when there are no items.
    */
-  renderEmpty?: (...args: any[]) => any;
+  renderEmpty?: (...args: any[]) => string;
 
   /**
    * Resolve the unique key for an item.
@@ -18600,7 +18600,7 @@ exports[`fixtures (JSON) "runes-prop-default-identifier-jsdoc/input.svelte" 1`] 
     {
       "name": "format",
       "kind": "let",
-      "type": "(...args: any[]) => any",
+      "type": "(value: any) => string",
       "typeSource": "jsdoc",
       "isFunction": true,
       "isFunctionDeclaration": false,
@@ -18622,7 +18622,7 @@ exports[`fixtures (JSON) "runes-prop-default-identifier-jsdoc/input.svelte" 1`] 
       "name": "renderEmpty",
       "kind": "let",
       "description": "Render the message shown when there are no items.",
-      "type": "(...args: any[]) => any",
+      "type": "(...args: any[]) => string",
       "typeSource": "jsdoc",
       "isFunction": true,
       "isFunctionDeclaration": false,
@@ -18742,12 +18742,12 @@ export type RunesPropDefaultIdentifierJsdocProps = {
    */
   shouldFilterItem?: (item: string, value: string) => boolean;
 
-  format?: (...args: any[]) => any;
+  format?: (value: any) => string;
 
   /**
    * Render the message shown when there are no items.
    */
-  renderEmpty?: (...args: any[]) => any;
+  renderEmpty?: (...args: any[]) => string;
 
   /**
    * Resolve the unique key for an item.

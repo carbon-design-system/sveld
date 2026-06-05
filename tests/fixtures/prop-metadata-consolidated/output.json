@@ -179,7 +179,7 @@
     {
       "name": "callbackDefault",
       "kind": "let",
-      "type": "(...args: any[]) => any",
+      "type": "(value: any) => any",
       "typeSource": "default",
       "defaultValue": {
         "raw": "(value: string) => value.toUpperCase()",

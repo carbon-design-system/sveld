@@ -29,12 +29,12 @@ export type RunesPropDefaultIdentifierJsdocProps = {
    */
   shouldFilterItem?: (item: string, value: string) => boolean;
 
-  format?: (...args: any[]) => any;
+  format?: (value: any) => string;
 
   /**
    * Render the message shown when there are no items.
    */
-  renderEmpty?: (...args: any[]) => any;
+  renderEmpty?: (...args: any[]) => string;
 
   /**
    * Resolve the unique key for an item.
