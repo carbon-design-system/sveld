@@ -2479,7 +2479,7 @@ export default class ComponentParser {
       }
 
       if (init.type === "ArrowFunctionExpression" || init.type === "FunctionExpression") {
-        type = "(...args: any[]) => any";
+        type = this.inferFunctionTypeFromNode(init as ArrowFunctionExpression | FunctionExpression);
         value = undefined;
       }
     } else if (init.type === "UnaryExpression") {
@@ -2575,11 +2575,12 @@ export default class ComponentParser {
         // `function defaultX() {}` has no initializer. Read JSDoc off the declaration.
         if (this.funcDecls.has(ident.name)) {
           const resolvedJSDoc = this.resolveLocalVarJSDoc(ident.name);
+          const funcNode = this.funcDecls.get(ident.name);
           return {
             value: undefined,
             type: undefined,
             isFunction: true,
-            resolvedType: resolvedJSDoc?.type ?? this.buildFunctionTypeFromParts(resolvedJSDoc),
+            resolvedType: resolvedJSDoc?.type ?? this.buildFunctionTypeFromParts(resolvedJSDoc, funcNode),
             resolvedDescription: resolvedJSDoc?.description,
             resolvedParams: resolvedJSDoc?.params,
             resolvedReturnType: resolvedJSDoc?.returnType,
@@ -2675,9 +2676,13 @@ export default class ComponentParser {
 
   /**
    * Build a function type from `@param`/`@returns` when `@type` is missing.
-   * No params or return type? `(...args: any[]) => any`.
+   * If JSDoc has no params or return either, try the function `node`, then
+   * `(...args: any[]) => any`.
    */
-  private buildFunctionTypeFromParts(jsdoc?: { params?: ComponentPropParam[]; returnType?: string }): string {
+  private buildFunctionTypeFromParts(
+    jsdoc?: { params?: ComponentPropParam[]; returnType?: string },
+    node?: FunctionDeclaration | FunctionExpression | ArrowFunctionExpression,
+  ): string {
     const returnType = jsdoc?.returnType ?? "any";
     const params = jsdoc?.params;
     if (params && params.length > 0) {
@@ -2687,7 +2692,142 @@ export default class ComponentParser {
     if (jsdoc?.returnType) {
       return `() => ${returnType}`;
     }
+    if (node) {
+      return this.inferFunctionTypeFromNode(node);
+    }
     return "(...args: any[]) => any";
+  }
+
+  /**
+   * Guess arity and return type for a function default with no JSDoc `@type`.
+   * Explicit `@type`/`@param`/`@returns` on the prop beat this every time.
+   * A default's body is a weak signal for the prop contract. We only read
+   * named params and literal returns. Everything else becomes `any`.
+   */
+  private inferFunctionTypeFromNode(node: FunctionDeclaration | FunctionExpression | ArrowFunctionExpression): string {
+    return `(${this.inferParamsFromNode(node)}) => ${this.inferReturnTypeFromNode(node)}`;
+  }
+
+  /**
+   * Turn params into `name: any`, or use `...args: any[]` when arity is unclear:
+   * no params, destructuring, rest, or defaults.
+   */
+  private inferParamsFromNode(node: FunctionDeclaration | FunctionExpression | ArrowFunctionExpression): string {
+    const params = node.params;
+    if (!Array.isArray(params) || params.length === 0) {
+      return "...args: any[]";
+    }
+    const names: string[] = [];
+    for (const param of params) {
+      if (
+        param &&
+        typeof param === "object" &&
+        "type" in param &&
+        param.type === "Identifier" &&
+        "name" in param &&
+        typeof param.name === "string"
+      ) {
+        names.push(`${param.name}: any`);
+      } else {
+        // Destructuring, rest, or default param: use ...args: any[]
+        return "...args: any[]";
+      }
+    }
+    return names.join(", ");
+  }
+
+  /**
+   * Infer return type from literal returns only. Every `return` must agree on
+   * the same primitive. Bare `return;`, no returns, identifiers, calls,
+   * objects, ternaries, async, or generators all become `any`.
+   */
+  private inferReturnTypeFromNode(node: FunctionDeclaration | FunctionExpression | ArrowFunctionExpression): string {
+    if (node.async || node.generator) {
+      return "any";
+    }
+
+    const body = node.body;
+    let returnArgs: unknown[];
+    if (body && typeof body === "object" && "type" in body && body.type === "BlockStatement") {
+      returnArgs = this.collectReturnArguments(body);
+      if (returnArgs.length === 0) {
+        return "any";
+      }
+    } else {
+      // Expression-bodied arrow: body is the return value.
+      returnArgs = [body];
+    }
+
+    let inferred: string | null = null;
+    for (const arg of returnArgs) {
+      const primitive = this.inferReturnPrimitive(arg);
+      if (!primitive) {
+        return "any";
+      }
+      if (inferred === null) {
+        inferred = primitive;
+      } else if (inferred !== primitive) {
+        return "any";
+      }
+    }
+    return inferred ?? "any";
+  }
+
+  /**
+   * Walk a block body and collect each `return`'s argument, skipping nested
+   * functions. Bare `return;` becomes `null`.
+   */
+  private collectReturnArguments(body: unknown): unknown[] {
+    const returnArgs: unknown[] = [];
+    walk(body as Node, {
+      enter(node) {
+        if (
+          node.type === "FunctionDeclaration" ||
+          node.type === "FunctionExpression" ||
+          node.type === "ArrowFunctionExpression"
+        ) {
+          this.skip();
+          return;
+        }
+        if (node.type === "ReturnStatement") {
+          returnArgs.push((node as { argument?: unknown }).argument ?? null);
+        }
+      },
+    });
+    return returnArgs;
+  }
+
+  /**
+   * Map one return expression to `string`, `number`, or `boolean`, or `null`
+   * if it isn't a literal, template literal, or `String`/`Number`/`Boolean` call.
+   */
+  private inferReturnPrimitive(expr: unknown): "string" | "number" | "boolean" | null {
+    if (!expr || typeof expr !== "object" || !("type" in expr)) {
+      return null;
+    }
+    switch (expr.type) {
+      case "Literal": {
+        const value = (expr as Literal).value;
+        if (typeof value === "string") return "string";
+        if (typeof value === "number") return "number";
+        if (typeof value === "boolean") return "boolean";
+        return null;
+      }
+      case "TemplateLiteral":
+        return "string";
+      case "CallExpression": {
+        const callee = (expr as CallExpression).callee;
+        if (callee && typeof callee === "object" && "type" in callee && callee.type === "Identifier") {
+          const name = (callee as Identifier).name;
+          if (name === "String") return "string";
+          if (name === "Number") return "number";
+          if (name === "Boolean") return "boolean";
+        }
+        return null;
+      }
+      default:
+        return null;
+    }
   }
 
   /**

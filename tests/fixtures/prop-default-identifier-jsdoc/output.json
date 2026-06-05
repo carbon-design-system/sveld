@@ -181,7 +181,7 @@
     {
       "name": "format",
       "kind": "let",
-      "type": "(...args: any[]) => any",
+      "type": "(value: any) => string",
       "typeSource": "jsdoc",
       "isFunction": true,
       "isFunctionDeclaration": false,
@@ -203,7 +203,7 @@
       "name": "renderEmpty",
       "kind": "let",
       "description": "Render the message shown when there are no items.",
-      "type": "(...args: any[]) => any",
+      "type": "(...args: any[]) => string",
       "typeSource": "jsdoc",
       "isFunction": true,
       "isFunctionDeclaration": false,
