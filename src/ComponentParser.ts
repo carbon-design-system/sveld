@@ -783,6 +783,9 @@ export default class ComponentParser {
   /** Set of all variable declarations found in the component script */
   private readonly vars: Set<VariableDeclaration> = new Set();
 
+  /** Function declarations in the component script, by name */
+  private readonly funcDecls: Map<string, FunctionDeclaration> = new Map();
+
   /** Map of component props keyed by prop name */
   private readonly props: Map<string, ComponentProp> = new Map();
 
@@ -2568,6 +2571,20 @@ export default class ComponentParser {
             resolvedReturnType: resolvedJSDoc?.returnType ?? inner.resolvedReturnType,
           };
         }
+
+        // `function defaultX() {}` has no initializer. Read JSDoc off the declaration.
+        if (this.funcDecls.has(ident.name)) {
+          const resolvedJSDoc = this.resolveLocalVarJSDoc(ident.name);
+          return {
+            value: undefined,
+            type: undefined,
+            isFunction: true,
+            resolvedType: resolvedJSDoc?.type ?? this.buildFunctionTypeFromParts(resolvedJSDoc),
+            resolvedDescription: resolvedJSDoc?.description,
+            resolvedParams: resolvedJSDoc?.params,
+            resolvedReturnType: resolvedJSDoc?.returnType,
+          };
+        }
       }
       if ("start" in ident && "end" in ident && typeof ident.start === "number" && typeof ident.end === "number") {
         value = this.sourceAtPos(ident.start, ident.end);
@@ -2647,7 +2664,30 @@ export default class ComponentParser {
         return this.processNodeJSDoc(decl as unknown as { leadingComments?: unknown[]; start?: number });
       }
     }
+
+    const funcDecl = this.funcDecls.get(name);
+    if (funcDecl) {
+      return this.processNodeJSDoc(funcDecl as unknown as { leadingComments?: unknown[]; start?: number });
+    }
+
     return undefined;
+  }
+
+  /**
+   * Build a function type from `@param`/`@returns` when `@type` is missing.
+   * No params or return type? `(...args: any[]) => any`.
+   */
+  private buildFunctionTypeFromParts(jsdoc?: { params?: ComponentPropParam[]; returnType?: string }): string {
+    const returnType = jsdoc?.returnType ?? "any";
+    const params = jsdoc?.params;
+    if (params && params.length > 0) {
+      const paramsString = params.map((param) => `${param.name}${param.optional ? "?" : ""}: ${param.type}`).join(", ");
+      return `(${paramsString}) => ${returnType}`;
+    }
+    if (jsdoc?.returnType) {
+      return `() => ${returnType}`;
+    }
+    return "(...args: any[]) => any";
   }
 
   /**
@@ -4553,6 +4593,7 @@ export default class ComponentParser {
     this.componentCommentSource = undefined;
     this.reactive_vars.clear();
     this.vars.clear();
+    this.funcDecls.clear();
     this.props.clear();
     this.moduleExports.clear();
     this.slots.clear();
@@ -4930,6 +4971,13 @@ export default class ComponentParser {
             this.restPropLocals.has(spreadNode.expression?.name ?? "")
           ) {
             this.maybeSetRestProps(parent);
+          }
+        }
+
+        if (node.type === "FunctionDeclaration") {
+          const funcDecl = node as unknown as FunctionDeclaration;
+          if (funcDecl.id?.name) {
+            this.funcDecls.set(funcDecl.id.name, funcDecl);
           }
         }
 

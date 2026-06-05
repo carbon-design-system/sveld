@@ -5,7 +5,7 @@
       "column": 0
     },
     "end": {
-      "line": 43,
+      "line": 92,
       "column": 0
     }
   },
@@ -153,6 +153,130 @@
         "end": {
           "line": 39,
           "column": 35
+        }
+      }
+    },
+    {
+      "name": "shouldFilterItem",
+      "kind": "let",
+      "description": "Determine if an item should be filtered given the current value.",
+      "type": "(item: string, value: string) => boolean",
+      "typeSource": "jsdoc",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 49,
+          "column": 2
+        },
+        "end": {
+          "line": 49,
+          "column": 52
+        }
+      }
+    },
+    {
+      "name": "format",
+      "kind": "let",
+      "type": "(...args: any[]) => any",
+      "typeSource": "jsdoc",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 55,
+          "column": 2
+        },
+        "end": {
+          "line": 55,
+          "column": 36
+        }
+      }
+    },
+    {
+      "name": "renderEmpty",
+      "kind": "let",
+      "description": "Render the message shown when there are no items.",
+      "type": "(...args: any[]) => any",
+      "typeSource": "jsdoc",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 62,
+          "column": 2
+        },
+        "end": {
+          "line": 62,
+          "column": 46
+        }
+      }
+    },
+    {
+      "name": "getKey",
+      "kind": "let",
+      "description": "Resolve the unique key for an item.",
+      "type": "(item: string, index: number) => string",
+      "typeSource": "jsdoc",
+      "params": [
+        {
+          "name": "item",
+          "type": "string",
+          "description": "",
+          "optional": false
+        },
+        {
+          "name": "index",
+          "type": "number",
+          "description": "",
+          "optional": false
+        }
+      ],
+      "returnType": "string",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 74,
+          "column": 2
+        },
+        "end": {
+          "line": 74,
+          "column": 36
+        }
+      }
+    },
+    {
+      "name": "translate",
+      "kind": "let",
+      "description": "Translate a label to the active locale.\n@example translate(\"submit\") // => \"Submit\"",
+      "type": "(key: string) => string",
+      "typeSource": "jsdoc",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 85,
+          "column": 2
+        },
+        "end": {
+          "line": 85,
+          "column": 42
         }
       }
     }

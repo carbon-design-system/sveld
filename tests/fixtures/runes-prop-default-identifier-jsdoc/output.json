@@ -5,7 +5,7 @@
       "column": 0
     },
     "end": {
-      "line": 29,
+      "line": 78,
       "column": 0
     }
   },
@@ -29,12 +29,12 @@
       "reactive": false,
       "source": {
         "start": {
-          "line": 25,
-          "column": 8
+          "line": 62,
+          "column": 4
         },
         "end": {
-          "line": 25,
-          "column": 26
+          "line": 62,
+          "column": 22
         }
       }
     },
@@ -57,12 +57,12 @@
       "reactive": false,
       "source": {
         "start": {
-          "line": 25,
-          "column": 28
+          "line": 63,
+          "column": 4
         },
         "end": {
-          "line": 25,
-          "column": 47
+          "line": 63,
+          "column": 23
         }
       }
     },
@@ -88,12 +88,12 @@
       "reactive": false,
       "source": {
         "start": {
-          "line": 25,
-          "column": 49
+          "line": 64,
+          "column": 4
         },
         "end": {
-          "line": 25,
-          "column": 72
+          "line": 64,
+          "column": 27
         }
       }
     },
@@ -116,12 +116,136 @@
       "reactive": false,
       "source": {
         "start": {
-          "line": 25,
-          "column": 74
+          "line": 65,
+          "column": 4
         },
         "end": {
-          "line": 25,
-          "column": 95
+          "line": 65,
+          "column": 25
+        }
+      }
+    },
+    {
+      "name": "shouldFilterItem",
+      "kind": "let",
+      "description": "Determine if an item should be filtered given the current value.",
+      "type": "(item: string, value: string) => boolean",
+      "typeSource": "jsdoc",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 66,
+          "column": 4
+        },
+        "end": {
+          "line": 66,
+          "column": 42
+        }
+      }
+    },
+    {
+      "name": "format",
+      "kind": "let",
+      "type": "(...args: any[]) => any",
+      "typeSource": "jsdoc",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 67,
+          "column": 4
+        },
+        "end": {
+          "line": 67,
+          "column": 26
+        }
+      }
+    },
+    {
+      "name": "renderEmpty",
+      "kind": "let",
+      "description": "Render the message shown when there are no items.",
+      "type": "(...args: any[]) => any",
+      "typeSource": "jsdoc",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 68,
+          "column": 4
+        },
+        "end": {
+          "line": 68,
+          "column": 36
+        }
+      }
+    },
+    {
+      "name": "getKey",
+      "kind": "let",
+      "description": "Resolve the unique key for an item.",
+      "type": "(item: string, index: number) => string",
+      "typeSource": "jsdoc",
+      "params": [
+        {
+          "name": "item",
+          "type": "string",
+          "description": "",
+          "optional": false
+        },
+        {
+          "name": "index",
+          "type": "number",
+          "description": "",
+          "optional": false
+        }
+      ],
+      "returnType": "string",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 69,
+          "column": 4
+        },
+        "end": {
+          "line": 69,
+          "column": 26
+        }
+      }
+    },
+    {
+      "name": "translate",
+      "kind": "let",
+      "description": "Translate a label to the active locale.\n@example translate(\"submit\") // => \"Submit\"",
+      "type": "(key: string) => string",
+      "typeSource": "jsdoc",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 70,
+          "column": 4
+        },
+        "end": {
+          "line": 70,
+          "column": 32
         }
       }
     }
