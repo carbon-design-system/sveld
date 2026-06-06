@@ -19,7 +19,7 @@ export default defineConfig({
     svelte({
       preprocess: [optimizeImports()],
     }),
-    optimizeCss(),
+    optimizeCss({ experimental: { strict: true } }),
   ],
   optimizeDeps: {
     exclude: ["carbon-components-svelte"],
