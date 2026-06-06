@@ -11,7 +11,7 @@
     "@types/codemirror": "^5.60.17",
     "carbon-components-svelte": "^0.108.0",
     "carbon-icons-svelte": "^13.12.0",
-    "carbon-preprocess-svelte": "^0.11.33",
+    "carbon-preprocess-svelte": "^0.11.34",
     "codemirror": "^5.65.20",
     "comment-parser": "^1.4.1",
     "estree-walker": "^3.0.3",
