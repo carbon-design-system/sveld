@@ -15,12 +15,7 @@ export default defineConfig({
       "estree-walker": path.join(playgroundDir, "node_modules/estree-walker"),
     },
   },
-  plugins: [
-    svelte({
-      preprocess: [optimizeImports()],
-    }),
-    optimizeCss({ experimental: { strict: true } }),
-  ],
+  plugins: [svelte({ preprocess: [optimizeImports()] }), optimizeCss({ experimental: { strict: true } })],
   optimizeDeps: {
     exclude: ["carbon-components-svelte"],
   },

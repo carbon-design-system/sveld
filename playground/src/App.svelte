@@ -10,6 +10,9 @@
     TabContent,
     Tabs,
   } from "carbon-components-svelte";
+  import Code from "carbon-icons-svelte/lib/Code.svelte";
+  import Json from "carbon-icons-svelte/lib/Json.svelte";
+  import TextCreation from "carbon-icons-svelte/lib/TextCreation.svelte";
   import { type Component, onMount, tick } from "svelte";
   import ComponentParser from "../../src/ComponentParser";
   import data from "./data";
@@ -123,10 +126,19 @@
           type="container"
           id="output"
         >
-          <Tab label="TypeScript" />
-          <Tab label="JSON" />
-          <Tab label="Markdown" />
-          <div slot="content">
+          <Tab
+            label="TypeScript"
+            icon={Code}
+          />
+          <Tab
+            label="JSON"
+            icon={Json}
+          />
+          <Tab
+            label="Markdown"
+            icon={TextCreation}
+          />
+          <svelte:fragment slot="content">
             {#if parse_error}
               <TabContentOverlay title="Parse error"> {parse_error} </TabContentOverlay>
             {/if}
@@ -163,7 +175,7 @@
                 <InlineLoading style="margin: var(--cds-spacing-05)" />
               {/if}
             </TabContent>
-          </div>
+          </svelte:fragment>
         </Tabs>
       </Column>
     </Row>

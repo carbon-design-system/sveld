@@ -1,9 +1,5 @@
 <!doctype html>
-<html
-  lang="en"
-  theme="g100"
-  style="color-scheme: dark"
->
+<html lang="en">
   <head>
     <meta charset="utf-8">
     <meta
@@ -19,6 +15,19 @@
       name="description"
       content="Generate TypeScript definitions for your Svelte components."
     >
+    <script>
+      (() => {
+        var stored = localStorage.getItem("theme");
+        var theme;
+        if (stored === "white" || stored === "g100") {
+          theme = stored;
+        } else {
+          theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "g100" : "white";
+        }
+        document.documentElement.setAttribute("theme", theme);
+        document.documentElement.style.colorScheme = theme === "white" ? "light" : "dark";
+      })();
+    </script>
   </head>
 
   <body>

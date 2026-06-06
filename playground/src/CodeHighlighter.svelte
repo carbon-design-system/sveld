@@ -4,8 +4,34 @@
   export let noWrap = false;
 
   import { CopyButton } from "carbon-components-svelte";
+  import { onMount } from "svelte";
   import Highlight from "svelte-highlight";
-  import "svelte-highlight/styles/zenburn.css";
+  import githubStyles from "svelte-highlight/styles/github.css?url";
+  import zenburnStyles from "svelte-highlight/styles/zenburn.css?url";
+  import { type Theme, theme } from "./theme";
+
+  const HIGHLIGHT_STYLES: Record<Theme, string> = {
+    g100: zenburnStyles,
+    white: githubStyles,
+  };
+
+  let highlightStylesheet: HTMLLinkElement | undefined;
+
+  function setHighlightTheme(value: Theme) {
+    if (!highlightStylesheet) {
+      highlightStylesheet = document.createElement("link");
+      highlightStylesheet.rel = "stylesheet";
+      document.head.appendChild(highlightStylesheet);
+    }
+
+    highlightStylesheet.href = HIGHLIGHT_STYLES[value];
+  }
+
+  onMount(() => {
+    setHighlightTheme($theme);
+
+    return theme.subscribe(setHighlightTheme);
+  });
 </script>
 
 <div
@@ -34,7 +60,7 @@
   }
 
   :global(code.hljs) {
-    background: var(--cds-ui-01); /** TODO: use token */
+    background: var(--cds-ui-01);
     font-family: var(--cds-code-02-font-family);
     font-size: var(--cds-code-02-font-size);
     font-weight: var(--cds-code-02-font-weight);
