@@ -4,6 +4,7 @@
 >
   import CodeMirror from "codemirror";
   import "codemirror/mode/htmlmixed/htmlmixed";
+  import "./codemirror-github.css";
   import "codemirror/theme/zenburn.css";
 </script>
 
@@ -12,16 +13,21 @@
   export let codemirror: CodeMirror.Editor | null = null;
 
   import { createEventDispatcher, onMount } from "svelte";
+  import { type Theme, theme } from "./theme";
 
   const dispatch = createEventDispatcher();
 
   let ref: HTMLDivElement;
 
+  function getCodeMirrorTheme(value: Theme) {
+    return value === "g100" ? "zenburn" : "github";
+  }
+
   onMount(() => {
     codemirror = CodeMirror(ref, {
       value: code,
       mode: "htmlmixed",
-      theme: "zenburn",
+      theme: getCodeMirrorTheme($theme),
     });
 
     codemirror.on("change", () => {
@@ -30,7 +36,12 @@
       }
     });
 
+    const unsubscribe = theme.subscribe((value) => {
+      codemirror?.setOption("theme", getCodeMirrorTheme(value));
+    });
+
     return () => {
+      unsubscribe();
       codemirror = null;
     };
   });
@@ -60,7 +71,8 @@
     }
   }
 
-  :global(.cm-s-zenburn.CodeMirror) {
+  :global(.cm-s-zenburn.CodeMirror),
+  :global(.cm-s-github.CodeMirror) {
     background-color: var(--cds-ui-01);
   }
 
@@ -99,21 +111,6 @@
 
   :global(.CodeMirror-lines) {
     cursor: text;
-  }
-
-  :global(.CodeMirror ::-webkit-scrollbar) {
-    width: 10px;
-    height: 10px;
-  }
-
-  :global(.CodeMirror ::-webkit-scrollbar-track) {
-    background: var(--cds-ui-02);
-    border-radius: 10px;
-  }
-
-  :global(.CodeMirror ::-webkit-scrollbar-thumb) {
-    border-radius: 10px;
-    background: var(--cds-ui-04);
   }
 
   :global(.CodeMirror-vscrollbar) {
