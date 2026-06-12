@@ -1,0 +1,72 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 15,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "icon",
+      "kind": "let",
+      "type": "Icon",
+      "typeSource": "jsdoc",
+      "value": "undefined",
+      "defaultValue": {
+        "raw": "undefined",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 11,
+          "column": 2
+        },
+        "end": {
+          "line": 11,
+          "column": 52
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "badge",
+      "default": false,
+      "slot_props": "Record<string, never>",
+      "description": "Optional badge overlay.",
+      "source": {
+        "start": {
+          "line": 14,
+          "column": 0
+        },
+        "end": {
+          "line": 14,
+          "column": 21
+        }
+      }
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": [
+    "Icon",
+    "Icon = any"
+  ],
+  "extends": {
+    "interface": "ButtonProps",
+    "import": "\"./Button.svelte\""
+  },
+  "contexts": []
+}
