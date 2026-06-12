@@ -3921,8 +3921,14 @@ export default class ComponentParser {
        * `@template` in the same block as `@slot` / `@snippet` is slot documentation only
        * (e.g. describing a generic for prose); it must not set component-level generics or
        * passthrough to slot output.
+       *
+       * Exception: when the same block also declares `@extends` / `@extendProps`, the
+       * `@template` parameter is component-level — it parameterizes the inherited props
+       * (e.g. `ButtonProps<Icon>`) and the component class. In that case the `@template`
+       * must still set generics even though a `@slot` shares the block.
        */
       const blockHasSlotOrSnippetTag = tags.some((t) => t.tag === "slot" || t.tag === "snippet");
+      const blockHasExtendsTag = tags.some((t) => t.tag === "extends" || t.tag === "extendProps");
 
       for (const {
         tag,
@@ -4119,7 +4125,7 @@ export default class ComponentParser {
             if (isFirstTag) isFirstTag = false;
             break;
           case "template": {
-            if (blockHasSlotOrSnippetTag) break;
+            if (blockHasSlotOrSnippetTag && !blockHasExtendsTag) break;
 
             // Build constraint from standard JSDoc @template syntax:
             //   @template T              → type="", name="T", default=undefined
