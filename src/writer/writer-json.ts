@@ -86,7 +86,7 @@ async function writeJsonComponents(components: ComponentDocs, options: WriteJson
     output.map((c) => {
       const outFile = path.resolve(path.join(options.outDir || "", `${c.moduleName}.api.json`));
       const writer = createJsonWriter();
-      console.log(`created ${outFile}"\n`);
+      console.log(`created "${outFile}".`);
       return writer.write(outFile, JSON.stringify(c));
     }),
   );
@@ -122,7 +122,7 @@ async function writeJsonLocal(components: ComponentDocs, options: WriteJsonOptio
   const writer = createJsonWriter();
   await writer.write(output_path, JSON.stringify(output));
 
-  console.log(`created "${options.outFile}".\n`);
+  console.log(`created "${options.outFile}".`);
 }
 
 /**
