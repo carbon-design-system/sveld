@@ -19,6 +19,20 @@
    * @event {{ value: string }} submit - Form submission with value
    */
 
+  /**
+   * The event detail described once as a named typedef, then reused via `@event`.
+   * @typedef {object} ChangeDetail
+   * @property {string[]} items - The full new set of items.
+   * @property {string[]} added - Items added since the last change.
+   * @property {string[]} [removed] - Items removed since the last change.
+   */
+
+  /**
+   * Fired when the collection changes. The detail reuses a named typedef so
+   * each documented property survives into the generated definitions.
+   * @event {ChangeDetail} items:change
+   */
+
   import { createEventDispatcher } from "svelte";
 
   const dispatcher = createEventDispatcher();
@@ -37,8 +51,13 @@
   function handleSubmit() {
     dispatcher("submit", { value: "test" });
   }
+
+  function handleItemsChange() {
+    dispatcher("items:change", { items: [], added: [], removed: [] });
+  }
 </script>
 
 <button on:click={throwSnowball}>Throw</button>
 <button on:click={handleChange}>Change</button>
 <button on:click={handleSubmit}>Submit</button>
+<button on:click={handleItemsChange}>Change items</button>
