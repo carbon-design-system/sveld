@@ -28,8 +28,8 @@
    */
 
   /**
-   * Fired when the collection changes. The detail reuses a named typedef so
-   * each documented property survives into the generated definitions.
+   * Fired when the collection changes. The detail carries the up-to-date,
+   * well-formed set of items (hyphenated prose must survive verbatim).
    * @event {ChangeDetail} items:change
    */
 
