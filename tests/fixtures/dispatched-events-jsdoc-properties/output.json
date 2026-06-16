@@ -5,7 +5,7 @@
       "column": 0
     },
     "end": {
-      "line": 45,
+      "line": 64,
       "column": 0
     }
   },
@@ -22,12 +22,28 @@
       "description": "Will be fired if value has been changed",
       "source": {
         "start": {
-          "line": 34,
+          "line": 48,
           "column": 4
         },
         "end": {
-          "line": 34,
+          "line": 48,
           "column": 24
+        }
+      }
+    },
+    {
+      "type": "dispatched",
+      "name": "items:change",
+      "detail": "ChangeDetail",
+      "description": "Fired when the collection changes. The detail reuses a named typedef so\neach documented property survives into the generated definitions.",
+      "source": {
+        "start": {
+          "line": 56,
+          "column": 4
+        },
+        "end": {
+          "line": 56,
+          "column": 69
         }
       }
     },
@@ -38,11 +54,11 @@
       "description": "Snowball event fired when throwing a snowball.",
       "source": {
         "start": {
-          "line": 27,
+          "line": 41,
           "column": 4
         },
         "end": {
-          "line": 30,
+          "line": 44,
           "column": 6
         }
       }
@@ -54,17 +70,24 @@
       "description": "Form submission with value",
       "source": {
         "start": {
-          "line": 38,
+          "line": 52,
           "column": 4
         },
         "end": {
-          "line": 38,
+          "line": 52,
           "column": 43
         }
       }
     }
   ],
-  "typedefs": [],
+  "typedefs": [
+    {
+      "type": "{\n  /** The full new set of items. */\n  items: string[];\n  /** Items added since the last change. */\n  added: string[];\n  /** Items removed since the last change. */\n  removed?: string[];\n}",
+      "name": "ChangeDetail",
+      "description": "The event detail described once as a named typedef, then reused via `@event`.",
+      "ts": "type ChangeDetail = {\n  /** The full new set of items. */\n  items: string[];\n  /** Items added since the last change. */\n  added: string[];\n  /** Items removed since the last change. */\n  removed?: string[];\n}"
+    }
+  ],
   "generics": null,
   "contexts": []
 }
