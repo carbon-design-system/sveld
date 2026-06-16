@@ -1300,9 +1300,11 @@ Descriptions are optional for every slot, including the default slot. Put prose 
  * @slot {Type} slot-name [slot description]
  * @snippet {Type} snippet-name [snippet description]
  */
+```
 
 Omit the `slot-name` to type the default slot.
 
+```js
 /**
  * @slot {Type}
  * @snippet {Type}
@@ -1580,6 +1582,8 @@ export default class Component extends SvelteComponentTyped<
 #### Using `@property` for complex event details
 
 For events with complex object payloads, use `@property` to document individual fields. The main comment becomes the event description.
+
+This is the idiomatic way to describe each field of an event detail. An inline object literal such as `@event {{ items: string[]; added: string[] }} change` types the payload but cannot carry per-field descriptions, since a nested block comment would terminate the host JSDoc. Declare the detail with `@type {object}` and `@property` instead to document every field.
 
 **Signature:**
 
@@ -2118,8 +2122,7 @@ Because `sveld` targets JavaScript-only usage as a baseline, generics use the st
    * @typedef {{ id: string | number; [key: string]: any; }} DataTableRow
    * @typedef {Exclude<keyof Row, "id">} DataTableKey<Row>
    * @typedef {{ key: DataTableKey<Row>; value: string; }} DataTableHeader<Row=DataTableRow>
-   * @template {DataTableRow} <Row extends DataTableRow = DataTableRow>
-   * @generics {Row extends DataTableRow = DataTableRow} Row
+   * @template {DataTableRow} [Row=DataTableRow]
    */
 
   let {
@@ -2142,8 +2145,7 @@ Because `sveld` targets JavaScript-only usage as a baseline, generics use the st
    * @typedef {{ id: string | number; [key: string]: any; }} DataTableRow
    * @typedef {Exclude<keyof Row, "id">} DataTableKey<Row>
    * @typedef {{ key: DataTableKey<Row>; value: string; }} DataTableHeader<Row=DataTableRow>
-   * @template {DataTableRow} <Row extends DataTableRow = DataTableRow>
-   * @generics {Row extends DataTableRow = DataTableRow} Row
+   * @template {DataTableRow} [Row=DataTableRow]
    */
 
   /** @type {ReadonlyArray<DataTableHeader<Row>>} */
@@ -2160,6 +2162,7 @@ Generated output looks like this:
 
 ```ts
 export type ComponentProps<Row extends DataTableRow = DataTableRow> = {
+  headers?: ReadonlyArray<DataTableHeader<Row>>;
   rows?: ReadonlyArray<Row>;
 };
 
