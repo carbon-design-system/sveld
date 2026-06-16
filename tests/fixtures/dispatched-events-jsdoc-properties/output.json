@@ -35,7 +35,7 @@
       "type": "dispatched",
       "name": "items:change",
       "detail": "ChangeDetail",
-      "description": "Fired when the collection changes. The detail reuses a named typedef so\neach documented property survives into the generated definitions.",
+      "description": "Fired when the collection changes. The detail carries the up-to-date,\nwell-formed set of items (hyphenated prose must survive verbatim).",
       "source": {
         "start": {
           "line": 56,

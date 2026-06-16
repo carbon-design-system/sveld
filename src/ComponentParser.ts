@@ -74,33 +74,6 @@ const ONLY_WHITESPACE_REGEX = /^\s*$/;
 const TRAILING_SEMICOLON_REGEX = /;$/;
 
 /**
- * Extracts description text after the last dash from JSDoc comments.
- *
- * Used for parsing inline descriptions in JSDoc tags like `@event` where the
- * description follows a dash separator.
- *
- * @param description - The description string that may contain a dash separator
- * @returns The description text after the last dash, or the trimmed description if no dash is found
- *
- * @example
- * ```ts
- * extractDescriptionAfterDash("@event click - Fires when clicked")
- * // Returns: "Fires when clicked"
- *
- * extractDescriptionAfterDash("Simple description")
- * // Returns: "Simple description"
- *
- * extractDescriptionAfterDash("@event change - Updates value")
- * // Returns: "Updates value"
- * ```
- */
-function extractDescriptionAfterDash(description: string | undefined): string | undefined {
-  if (!description) return undefined;
-  const dashIndex = description.lastIndexOf("-");
-  return dashIndex >= 0 ? description.substring(dashIndex + 1).trim() : description.trim();
-}
-
-/**
  * Removes leading dash and whitespace from a description string.
  *
  * Used for cleaning up inline descriptions in JSDoc tags that may have been
@@ -3445,7 +3418,7 @@ export default class ComponentParser {
      * where events without detail have `detail: null`.
      */
     const default_detail = !has_argument && !detail ? "null" : ComponentParser.assignValue(detail);
-    const event_description = extractDescriptionAfterDash(description);
+    const event_description = description;
     if (this.events.has(name)) {
       const existing_event = this.events.get(name) as DispatchedEvent;
       this.events.set(name, {
@@ -5508,8 +5481,7 @@ export default class ComponentParser {
                 /**
                  * Check if this event has a JSDoc description from `@event` tags.
                  */
-                const description = this.eventDescriptions.get(eventHandlerNode.name);
-                const event_description = extractDescriptionAfterDash(description);
+                const event_description = this.eventDescriptions.get(eventHandlerNode.name);
 
                 if (!existing_event) {
                   /**
@@ -5656,8 +5628,7 @@ export default class ComponentParser {
        * This happens when @event JSDoc is used but the event is actually forwarded via on: syntax.
        */
       if (event && event.type === "dispatched" && !actuallyDispatchedEvents.has(eventName)) {
-        const description = this.eventDescriptions.get(eventName);
-        const event_description = extractDescriptionAfterDash(description);
+        const event_description = this.eventDescriptions.get(eventName);
         const forwardedEvent: ForwardedEvent = {
           type: "forwarded",
           name: eventName,
