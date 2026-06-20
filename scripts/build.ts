@@ -6,7 +6,7 @@ const isWatchMode = process.argv.includes("-w") || process.argv.includes("--watc
 await $`rm -rf lib; mkdir lib`;
 
 async function emitTypeDeclarations() {
-  const result = await $`tsgo --project tsconfig.build.json`.quiet();
+  const result = await $`tsc --project tsconfig.build.json`.quiet();
   if (result.exitCode !== 0) {
     console.error(result.stderr.toString());
     if (!isWatchMode) {
