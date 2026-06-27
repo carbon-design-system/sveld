@@ -27,6 +27,6 @@ interface SveldOptions extends Omit<PluginSveldOptions, "entry"> {
 export async function sveld(opts?: SveldOptions) {
   const input = getSvelteEntry(opts?.input);
   if (input === null) return;
-  const result = await generateBundle(input, opts?.glob === true);
+  const result = await generateBundle(input, opts?.glob === true, { failFast: opts?.failFast });
   writeOutput(result, { ...opts, entry: opts?.input }, input);
 }

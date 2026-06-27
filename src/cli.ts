@@ -19,6 +19,8 @@ function parseCliFlag(arg: string): Partial<PluginSveldOptions> {
     case "json":
     case "markdown":
       return { [flag]: value === true || value === "true" };
+    case "fail-fast":
+      return { failFast: value === true || value === "true" };
     case "entry":
       return typeof value === "string" ? { entry: value } : {};
     default:
@@ -26,7 +28,7 @@ function parseCliFlag(arg: string): Partial<PluginSveldOptions> {
   }
 }
 
-function parseCliOptions(argv: string[]): PluginSveldOptions {
+export function parseCliOptions(argv: string[]): PluginSveldOptions {
   const options: PluginSveldOptions = {};
 
   for (const arg of argv) {
@@ -56,7 +58,7 @@ export async function cli(process: NodeJS.Process) {
 
   await rollup_bundle.generate({});
 
-  const result = await generateBundle(input, options.glob === true);
+  const result = await generateBundle(input, options.glob === true, { failFast: options.failFast });
 
   writeOutput(result, options, input);
 }

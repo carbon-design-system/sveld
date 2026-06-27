@@ -5,9 +5,12 @@ import {
   collectSvelteFilePaths,
   type ComponentDocApi,
   type ComponentDocs,
+  type ComponentParseError,
   type GenerateBundleResult,
   processComponent,
+  type ProcessComponentOptions,
   readFileMap,
+  reportParseErrors,
   type ResolveComponentFilePath,
 } from "./bundle";
 
@@ -135,19 +138,34 @@ export async function createSveldBundle(input: string, glob: boolean): Promise<S
   const components: ComponentDocs = new Map();
   const allComponentsForTypes: ComponentDocs = new Map();
 
+  // Parse diagnostics, keyed by normalized file path so they survive across
+  // incremental updates and can be cleared when a file is re-parsed cleanly.
+  const parseErrors = new Map<string, ComponentParseError>();
+  const processOptions: ProcessComponentOptions = {
+    onParseError: (error) => parseErrors.set(error.filePath, error),
+  };
+
+  const buildResult = (): GenerateBundleResult => ({
+    exports,
+    components,
+    allComponentsForTypes,
+    errors: Array.from(parseErrors.values()),
+  });
+
   // Initial full parse.
   {
     const uniqueFilePaths = collectSvelteFilePaths([exportEntries, allComponentEntries], resolveComponentFilePath);
     const fileMap = await readFileMap(uniqueFilePaths);
 
     for (const entry of exportEntries) {
-      const result = processComponent(entry, exportEntries, fileMap, resolveComponentFilePath);
+      const result = processComponent(entry, exportEntries, fileMap, resolveComponentFilePath, processOptions);
       if (result) components.set(result.moduleName, result);
     }
     for (const entry of allComponentEntries) {
-      const result = processComponent(entry, allComponentEntries, fileMap, resolveComponentFilePath);
+      const result = processComponent(entry, allComponentEntries, fileMap, resolveComponentFilePath, processOptions);
       if (result) allComponentsForTypes.set(result.moduleName, result);
     }
+    reportParseErrors(buildResult().errors);
   }
 
   // Dependency graph derived from the full parse; rebuilt after every update so
@@ -169,7 +187,7 @@ export async function createSveldBundle(input: string, glob: boolean): Promise<S
       const resolvedPath = resolveComponentFilePath(entry[1].source);
       if (!affected.has(resolvedPath)) continue;
 
-      const result = processComponent(entry, entries, fileMap, resolveComponentFilePath);
+      const result = processComponent(entry, entries, fileMap, resolveComponentFilePath, processOptions);
       if (result) {
         target.set(result.moduleName, result);
         reparsed.add(resolvedPath);
@@ -189,10 +207,18 @@ export async function createSveldBundle(input: string, glob: boolean): Promise<S
     const changed = changedFilePaths.filter((path) => SVELTE_EXT_REGEX.test(path)).map((path) => resolve(path));
 
     if (changed.length === 0) {
-      return { result: { exports, components, allComponentsForTypes }, reparsed: [] };
+      return { result: buildResult(), reparsed: [] };
     }
 
     const affected = expandAffected(changed, reverseDeps);
+
+    // Clear stale diagnostics for the files we are about to re-parse; any that
+    // still fail will be re-recorded below.
+    for (const [filePath, error] of parseErrors) {
+      if (affected.has(resolveComponentFilePath(error.filePath))) {
+        parseErrors.delete(filePath);
+      }
+    }
 
     // Read fresh contents for the affected files only.
     const fileMap = await readFileMap(affected);
@@ -208,15 +234,18 @@ export async function createSveldBundle(input: string, glob: boolean): Promise<S
     // Refresh the dependency graph from the up-to-date parse.
     reverseDeps = buildReverseDeps(allComponentsForTypes, resolveComponentFilePath);
 
+    const result = buildResult();
+    reportParseErrors(result.errors);
+
     return {
-      result: { exports, components, allComponentsForTypes },
+      result,
       reparsed: Array.from(reparsed),
     };
   };
 
   return {
     get result() {
-      return { exports, components, allComponentsForTypes };
+      return buildResult();
     },
     update,
   };

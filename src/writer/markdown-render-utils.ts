@@ -6,6 +6,7 @@ import {
   formatPropDescription,
   formatPropType,
   formatPropValue,
+  formatSlotDescription,
   formatSlotFallback,
   formatSlotProps,
   MD_TYPE_UNDEFINED,
@@ -88,7 +89,7 @@ function renderComponent(document: MarkdownDocument, component: ComponentDocApi)
         "raw",
         `| ${slot.default ? MD_TYPE_UNDEFINED : slot.name} | ${slot.default ? "Yes" : "No"} | ${formatSlotProps(
           slot.slot_props,
-        )} | ${formatSlotFallback(slot.fallback)} |\n`,
+        )} | ${formatSlotFallback(slot.fallback)} | ${formatSlotDescription(slot.description, slot.tags)} |\n`,
       );
     }
   });

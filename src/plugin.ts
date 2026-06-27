@@ -10,6 +10,8 @@ export type {
   CollectedComponents,
   ComponentDocApi,
   ComponentDocs,
+  ComponentParseError,
+  GenerateBundleOptions,
   GenerateBundleResult,
   ResolveComponentFilePath,
 } from "./bundle";
@@ -19,6 +21,7 @@ export {
   generateBundle,
   processComponent,
   readFileMap,
+  reportParseErrors,
 } from "./bundle";
 
 export interface PluginSveldOptions {
@@ -34,6 +37,12 @@ export interface PluginSveldOptions {
   jsonOptions?: Partial<Omit<WriteJsonOptions, "inputDir">>;
   markdown?: boolean;
   markdownOptions?: Partial<WriteMarkdownOptions>;
+  /**
+   * Abort the entire run when a single component fails to parse.
+   * When `false` (the default), parse failures are collected as diagnostics
+   * and the remaining components still emit their output.
+   */
+  failFast?: boolean;
   /**
    * Regenerate output incrementally when `.svelte` source changes during
    * `vite dev` / `vite build --watch`. Only the changed component and the
@@ -115,7 +124,7 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
       // In watch mode the initial build happens in `buildStart`.
       if (watch) return;
       if (input != null) {
-        result = await generateBundle(input, opts?.glob === true);
+        result = await generateBundle(input, opts?.glob === true, { failFast: opts?.failFast });
       }
     },
     writeBundle() {

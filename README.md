@@ -321,6 +321,7 @@ TypeScript definitions land in the `types` folder by default. Include that folde
 - **`markdown`** (boolean, optional): Generate component documentation in Markdown format.
 - **`markdownOptions`** (object, optional): Options for Markdown output.
 - **`watch`** (boolean, optional, default: `false`): Regenerate output incrementally when `.svelte` source changes during `vite dev` / `vite build --watch`. Only the changed component and the components that depend on it via [`@extendProps`](#extendprops) / `@extends` are re-parsed, rather than rebuilding every component. Without this option, the plugin only runs during `vite build`.
+- **`failFast`** (boolean, optional, default: `false`): Abort the entire run when a single component fails to parse. By default, parse failures are collected as diagnostics (and reported to `stderr`) so the remaining components still emit their output. Also available as the `--fail-fast` CLI flag.
 
 By default, only TypeScript definitions are generated.
 
@@ -1364,7 +1365,7 @@ Omit the `slot-name` to type the default slot.
 
 Tags such as `@example`, `@deprecated`, `@see`, or `@since` that appear after the prose description and before the `@slot` / `@snippet` line are copied into generated `.d.ts` files. The emitted JSDoc above each slot's snippet prop (and the traditional `SlotDefs` shape) lists the description, then those tags in source order. The same entries appear in JSON as `tags: [{ "name", "body" }, ...]`.
 
-Put `@slot` / `@snippet` last in the block (description, optional extra tags, slot tag). Tags after `@slot` / `@snippet` in the same comment are not tied to that slot. Unknown tag names pass through as-is. Markdown docs do not render slot descriptions or these tags yet; use TypeScript hover or JSON.
+Put `@slot` / `@snippet` last in the block (description, optional extra tags, slot tag). Tags after `@slot` / `@snippet` in the same comment are not tied to that slot. Unknown tag names pass through as-is. Markdown docs render the description and these tags in the slot's **Description** column (newlines and tag boundaries become `<br />`), alongside TypeScript hover and JSON.
 
 **Example (default slot with `@example` and `@deprecated`):**
 
