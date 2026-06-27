@@ -37,6 +37,8 @@ export interface PluginSveldOptions extends Pick<GenerateBundleOptions, "resolve
    */
   entry?: string;
   glob?: boolean;
+  /** Record consts, functions, and types from the entry barrel. Off by default. */
+  documentExports?: boolean;
   types?: boolean;
   typesOptions?: Partial<Omit<WriteTsDefinitionsOptions, "inputDir">>;
   json?: boolean;
@@ -122,7 +124,7 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
         // Produce the initial output and prime the incremental bundle. This
         // covers both `vite dev` (where generateBundle/writeBundle never fire)
         // and `vite build --watch`.
-        bundle = await createSveldBundle(input, opts?.glob === true);
+        bundle = await createSveldBundle(input, opts?.glob === true, opts?.documentExports === true);
         writeOutput(bundle.result, opts || {}, input);
       }
     },
@@ -196,6 +198,7 @@ export function writeOutput(result: GenerateBundleResult, opts: PluginSveldOptio
       ...opts?.jsonOptions,
       input,
       inputDir,
+      entryExports: result.entryExports,
     });
   }
 
@@ -208,6 +211,7 @@ export function writeOutput(result: GenerateBundleResult, opts: PluginSveldOptio
     writeMarkdown(result.components, {
       outFile: "COMPONENT_INDEX.md",
       ...opts?.markdownOptions,
+      entryExports: result.entryExports,
     });
   }
 }

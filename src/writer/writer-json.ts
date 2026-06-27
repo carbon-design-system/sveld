@@ -1,6 +1,7 @@
 import path from "node:path";
 import { version as svelteVersion } from "svelte/package.json";
 import { name as packageName, version as packageVersion } from "../../package.json";
+import type { EntryExports } from "../parse-entry-exports";
 import { normalizeSeparators } from "../path";
 import type { ComponentDocApi, ComponentDocs } from "../plugin";
 import { createJsonWriter } from "./Writer";
@@ -10,6 +11,8 @@ export interface WriteJsonOptions {
   inputDir: string;
   outFile: string;
   outDir?: string;
+  /** Entry-barrel exports when `documentExports` is on. */
+  entryExports?: EntryExports;
 }
 
 /**
@@ -27,6 +30,9 @@ interface JsonOutput {
   };
   total: number;
   components: ComponentDocApi[];
+  /** Only when `documentExports` is on. */
+  totalExports?: number;
+  exports?: EntryExports;
 }
 
 const JSON_SCHEMA_VERSION = 1;
@@ -121,6 +127,11 @@ async function writeJsonLocal(components: ComponentDocs, options: WriteJsonOptio
     total: components.size,
     components: transformAndSortComponents(components, options.inputDir),
   };
+
+  if (options.entryExports && options.entryExports.length > 0) {
+    output.totalExports = options.entryExports.length;
+    output.exports = options.entryExports;
+  }
 
   const output_path = path.join(process.cwd(), options.outFile);
   const writer = createJsonWriter();

@@ -51,4 +51,61 @@ describe("writeJson", () => {
       rmSync(tempDir, { recursive: true, force: true });
     }
   });
+
+  test("omits entry exports collection when documentExports is off", async () => {
+    const tempDir = await mkdtemp(path.join(process.cwd(), ".tmp-sveld-json-"));
+    const outFile = path.relative(process.cwd(), path.join(tempDir, "COMPONENT_API.json"));
+    const components: ComponentDocs = new Map([["Alpha", createComponent("Alpha", "Alpha.svelte")]]);
+
+    try {
+      await writeJson(components, { input: "src", inputDir: "src", outFile });
+
+      const output = JSON.parse(readFileSync(path.join(tempDir, "COMPONENT_API.json"), "utf-8"));
+      expect(output.exports).toBeUndefined();
+      expect(output.totalExports).toBeUndefined();
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  test("writes the entry exports collection when provided", async () => {
+    const tempDir = await mkdtemp(path.join(process.cwd(), ".tmp-sveld-json-"));
+    const outFile = path.relative(process.cwd(), path.join(tempDir, "COMPONENT_API.json"));
+    const components: ComponentDocs = new Map([["Alpha", createComponent("Alpha", "Alpha.svelte")]]);
+
+    try {
+      await writeJson(components, {
+        input: "src",
+        inputDir: "src",
+        outFile,
+        entryExports: [
+          {
+            name: "VERSION",
+            kind: "const",
+            type: "string",
+            value: '"1.0.0"',
+            isTypeOnly: false,
+            source: "./constants.ts",
+          },
+          { name: "Theme", kind: "type", type: '"light" | "dark"', isTypeOnly: true, source: "./types.ts" },
+        ],
+      });
+
+      const output = JSON.parse(readFileSync(path.join(tempDir, "COMPONENT_API.json"), "utf-8"));
+      expect(output.totalExports).toBe(2);
+      expect(output.exports).toEqual([
+        {
+          name: "VERSION",
+          kind: "const",
+          type: "string",
+          value: '"1.0.0"',
+          isTypeOnly: false,
+          source: "./constants.ts",
+        },
+        { name: "Theme", kind: "type", type: '"light" | "dark"', isTypeOnly: true, source: "./types.ts" },
+      ]);
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
 });

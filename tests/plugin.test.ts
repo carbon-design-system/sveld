@@ -85,4 +85,25 @@ describe("generateBundle", () => {
     expect(result.exports).toBeDefined();
     expect(result.components).toBeDefined();
   });
+
+  describe("documentExports", () => {
+    const entryFile = path.join(process.cwd(), "tests", "fixtures-entry-exports", "entry.js");
+
+    test("does not document entry exports by default", async () => {
+      const result = await generateBundle(entryFile, false);
+      expect(result.entryExports).toEqual([]);
+    });
+
+    test("documents non-component entry exports when enabled", async () => {
+      const result = await generateBundle(entryFile, false, { documentExports: true });
+      const byName = new Map(result.entryExports.map((entry) => [entry.name, entry]));
+
+      // Components are excluded from the entry exports collection.
+      expect(byName.has("Button")).toBe(false);
+
+      expect(byName.get("VERSION")).toMatchObject({ kind: "const", type: "string" });
+      expect(byName.get("clamp")).toMatchObject({ kind: "function" });
+      expect(byName.get("Theme")).toMatchObject({ kind: "type", isTypeOnly: true });
+    });
+  });
 });

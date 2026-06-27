@@ -10,6 +10,7 @@ import ComponentParser, {
   type ParsedComponent,
 } from "./ComponentParser";
 import { dedupeDiagnostics, type SveldDiagnostic } from "./diagnostics";
+import { type EntryExports, parseEntryExports } from "./parse-entry-exports";
 import { type ParsedExports, parseExports } from "./parse-exports";
 import { normalizeSeparators } from "./path";
 
@@ -33,6 +34,8 @@ export interface ComponentParseError {
 
 export interface GenerateBundleResult {
   exports: ParsedExports;
+  /** Entry-barrel exports other than components. Empty when `documentExports` is off. */
+  entryExports: EntryExports;
   components: ComponentDocs;
   allComponentsForTypes: ComponentDocs;
   /**
@@ -55,14 +58,17 @@ export interface GenerateBundleOptions {
    * types into JSON/Markdown props. Off by default; requires `typescript`.
    */
   resolveTypes?: boolean;
+  /** Record consts, functions, and types from the entry barrel. Off by default. */
+  documentExports?: boolean;
 }
 
 export function toGenerateBundleOptions(
-  opts?: Pick<GenerateBundleOptions, "failFast" | "resolveTypes">,
+  opts?: Pick<GenerateBundleOptions, "failFast" | "resolveTypes" | "documentExports">,
 ): GenerateBundleOptions {
   return {
     failFast: opts?.failFast,
     resolveTypes: opts?.resolveTypes === true,
+    documentExports: opts?.documentExports === true,
   };
 }
 
@@ -117,8 +123,11 @@ export interface CollectedComponents {
  *
  * Parses the entry's exports (when `input` is a file) and, when `glob` is set,
  * augments the set with every `.svelte` file under the entry directory.
+ *
+ * @param documentExports - When `true`, log and continue if the entry file fails
+ *   the acorn component-export parse (TypeScript-only syntax is common).
  */
-export function collectComponents(input: string, glob: boolean): CollectedComponents {
+export function collectComponents(input: string, glob: boolean, documentExports = false): CollectedComponents {
   const isFile = lstatSync(input).isFile();
   const dir = isFile ? dirname(input) : input;
   const rootDir = resolve(dir);
@@ -132,7 +141,14 @@ export function collectComponents(input: string, glob: boolean): CollectedCompon
   let exports: ParsedExports = {};
   if (isFile) {
     const entry = readFileSync(input, "utf-8");
-    exports = parseExports(entry, rootDir);
+    try {
+      exports = parseExports(entry, rootDir);
+    } catch (error) {
+      // Without documentExports, throw. With it, warn and continue.
+      if (!documentExports) throw error;
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn(`Warning: Failed to parse component exports from ${input}: ${message}`);
+    }
   }
 
   const allComponents: ParsedExports = { ...exports };
@@ -299,8 +315,8 @@ export function reportParseErrors(errors: ComponentParseError[]): void {
  *
  * @param input - Entry point file or directory containing Svelte components
  * @param glob - Whether to glob for all .svelte files in the directory
- * @param options - Bundle options (e.g. `failFast`, `resolveTypes`)
- * @returns Bundle result containing exports, components, allComponentsForTypes, and errors
+ * @param options - Bundle options (e.g. `failFast`, `resolveTypes`, `documentExports`)
+ * @returns Bundle result containing exports, entryExports, components, allComponentsForTypes, and errors
  *
  * @example
  * ```ts
@@ -319,7 +335,12 @@ export async function generateBundle(
   glob: boolean,
   options: GenerateBundleOptions = {},
 ): Promise<GenerateBundleResult> {
-  const { exports, allComponents, rootDir, resolveComponentFilePath } = collectComponents(input, glob);
+  const documentExports = options.documentExports === true;
+  const { exports, allComponents, rootDir, resolveComponentFilePath } = collectComponents(input, glob, documentExports);
+
+  // File entry only; directory inputs have no barrel.
+  const entryExports: EntryExports =
+    documentExports && lstatSync(input).isFile() ? parseEntryExports(resolve(input)) : [];
 
   const exportEntries = Object.entries(exports);
   const allComponentEntries = Object.entries(allComponents);
@@ -375,6 +396,7 @@ export async function generateBundle(
 
   return {
     exports,
+    entryExports,
     components,
     allComponentsForTypes,
     errors,

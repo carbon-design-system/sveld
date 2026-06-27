@@ -1,7 +1,9 @@
+import type { EntryExports } from "../parse-entry-exports";
 import type { ComponentDocApi, ComponentDocs } from "../plugin";
 import type { AppendType } from "./MarkdownWriterBase";
 import {
   EVENT_TABLE_HEADER,
+  EXPORT_TABLE_HEADER,
   formatEventDetail,
   formatNameWithDeprecation,
   formatPropDescription,
@@ -13,6 +15,7 @@ import {
   MD_TYPE_UNDEFINED,
   PROP_TABLE_HEADER,
   SLOT_TABLE_HEADER,
+  WHITESPACE_REGEX,
 } from "./markdown-format-utils";
 import { getTypeDefs } from "./writer-ts-definitions-core";
 
@@ -22,10 +25,18 @@ interface MarkdownDocument {
   tableOfContents(): MarkdownDocument;
 }
 
-export function renderComponentsToMarkdown(document: MarkdownDocument, components: ComponentDocs) {
+export function renderComponentsToMarkdown(
+  document: MarkdownDocument,
+  components: ComponentDocs,
+  entryExports?: EntryExports,
+) {
   document.append("h1", "Component Index");
   document.append("h2", "Components").tableOfContents();
   document.append("divider");
+
+  if (entryExports && entryExports.length > 0) {
+    renderExports(document, entryExports);
+  }
 
   const keys = Array.from(components.keys()).sort();
 
@@ -35,6 +46,25 @@ export function renderComponentsToMarkdown(document: MarkdownDocument, component
 
     renderComponent(document, component);
   }
+}
+
+function renderExports(document: MarkdownDocument, entryExports: EntryExports) {
+  document.append("h2", "Exports");
+  document.append("raw", EXPORT_TABLE_HEADER);
+
+  for (const entry of entryExports) {
+    // Collapse whitespace so multi-line types (e.g. interface bodies) stay on a
+    // single table row. JSON retains the verbatim type text.
+    const type = (entry.type ?? entry.value)?.replace(WHITESPACE_REGEX, " ").trim();
+    document.append(
+      "raw",
+      `| ${entry.name} | ${`<code>${entry.kind}</code>`} | ${formatPropType(type)} | ${formatPropDescription(
+        entry.description,
+      )} |\n`,
+    );
+  }
+
+  document.append("divider");
 }
 
 function renderSectionIfNotEmpty<TItem>(
