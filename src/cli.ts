@@ -3,7 +3,7 @@ import { rollup } from "rollup";
 import svelte from "rollup-plugin-svelte";
 import { formatDiagnosticsSummary } from "./diagnostics";
 import { getSvelteEntry } from "./get-svelte-entry";
-import { generateBundle, type PluginSveldOptions, writeOutput } from "./plugin";
+import { generateBundle, type PluginSveldOptions, toGenerateBundleOptions, writeOutput } from "./plugin";
 
 /** CLI options layered on top of the shared plugin options. */
 interface CliOptions extends PluginSveldOptions {
@@ -26,6 +26,7 @@ function parseCliFlag(arg: string): Partial<CliOptions> {
     case "json":
     case "markdown":
     case "strict":
+    case "resolveTypes":
       return { [flag]: value === true || value === "true" };
     case "fail-fast":
       return { failFast: value === true || value === "true" };
@@ -66,7 +67,7 @@ export async function cli(process: NodeJS.Process) {
 
   await rollup_bundle.generate({});
 
-  const result = await generateBundle(input, options.glob === true, { failFast: options.failFast });
+  const result = await generateBundle(input, options.glob === true, toGenerateBundleOptions(options));
 
   writeOutput(result, options, input);
 

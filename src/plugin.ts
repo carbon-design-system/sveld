@@ -1,5 +1,10 @@
 import { dirname } from "node:path";
-import { type GenerateBundleResult, generateBundle } from "./bundle";
+import {
+  type GenerateBundleOptions,
+  type GenerateBundleResult,
+  generateBundle,
+  toGenerateBundleOptions,
+} from "./bundle";
 import { getSvelteEntry } from "./get-svelte-entry";
 import { createSveldBundle, type SveldBundle } from "./watch";
 import writeJson, { type WriteJsonOptions } from "./writer/writer-json";
@@ -22,9 +27,10 @@ export {
   processComponent,
   readFileMap,
   reportParseErrors,
+  toGenerateBundleOptions,
 } from "./bundle";
 
-export interface PluginSveldOptions {
+export interface PluginSveldOptions extends Pick<GenerateBundleOptions, "resolveTypes"> {
   /**
    * Specify the entry point to uncompiled Svelte source.
    * If not provided, sveld will use the "svelte" field from package.json.
@@ -124,7 +130,7 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
       // In watch mode the initial build happens in `buildStart`.
       if (watch) return;
       if (input != null) {
-        result = await generateBundle(input, opts?.glob === true, { failFast: opts?.failFast });
+        result = await generateBundle(input, opts?.glob === true, toGenerateBundleOptions(opts));
       }
     },
     writeBundle() {

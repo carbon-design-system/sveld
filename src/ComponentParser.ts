@@ -213,6 +213,39 @@ export function getParsedComponentTypeScriptMetadata(component: {
   return component[PARSED_COMPONENT_TYPE_SCRIPT_METADATA];
 }
 
+/** One prop returned by the TypeScript checker during `resolveTypes`. */
+export interface ResolvedComponentProp {
+  name: string;
+  type: string;
+  isRequired: boolean;
+  description?: string;
+}
+
+/** Append checker-resolved props. Names the AST walker already found are left alone. */
+export function applyResolvedProps(component: ParsedComponent, resolved: ResolvedComponentProp[]): void {
+  if (resolved.length === 0) return;
+
+  const existing = new Set(component.props.map((prop) => prop.name));
+
+  for (const prop of resolved) {
+    if (existing.has(prop.name)) continue;
+    existing.add(prop.name);
+
+    component.props.push({
+      name: prop.name,
+      kind: "let",
+      constant: false,
+      type: prop.type,
+      typeSource: "typescript",
+      ...(prop.description ? { description: prop.description } : {}),
+      isFunction: prop.type.includes("=>"),
+      isFunctionDeclaration: false,
+      isRequired: prop.isRequired,
+      reactive: false,
+    });
+  }
+}
+
 type SyntaxMode = "legacy" | "runes";
 type ScriptLanguage = "js" | "ts";
 type ScopeBindingKind = "prop" | "local";

@@ -169,6 +169,36 @@ When both TypeScript syntax and JSDoc are present, `sveld` resolves prop types i
 
 `sveld` stays AST-only. It copies imported and local type text into generated `.d.ts` output but does not run project-wide semantic resolution with the TypeScript compiler. Opaque imported whole-object `$props()` types can therefore stay in declarations without being fully expanded into JSON metadata.
 
+#### Opt-in semantic resolution (`resolveTypes`)
+
+Imported whole-object `$props()` types stay opaque in JSON by default (`"props": []`). Turn on `resolveTypes` when a docs site or prop table needs the individual fields.
+
+```ts
+await sveld({ json: true, resolveTypes: true });
+```
+
+```svelte
+<script lang="ts">
+  import type { Props } from "./types";
+
+  let props: Props = $props();
+</script>
+```
+
+Without `resolveTypes`, JSON lists no props. With it, each field shows up with `"typeSource": "typescript"`:
+
+```jsonc
+{
+  "props": [
+    { "name": "disabled", "type": "boolean", "isRequired": false, "typeSource": "typescript" },
+    { "name": "href", "type": "string", "isRequired": true, "typeSource": "typescript" },
+    { "name": "variant", "type": "\"primary\" | \"secondary\"", "isRequired": true, "typeSource": "typescript" }
+  ]
+}
+```
+
+**Performance.** Off by default. This is the only path that loads TypeScript. It needs `typescript` and a `tsconfig.json`, runs slower than the AST-only pipeline, and gets slower as your types grow. Use it only when you need expanded JSON. `.d.ts` output is unchanged.
+
 ## Usage
 
 ### Installation
