@@ -1,16 +1,25 @@
-import { lstatSync, readFileSync } from "node:fs";
-import { readFile } from "node:fs/promises";
-import { dirname, isAbsolute, parse, relative, resolve } from "node:path";
-import { parse as parseSvelte } from "svelte/compiler";
-import { globSync } from "tinyglobby";
-import { asRelativeSourcePath, type NormalizedPath } from "./brands";
-import ComponentParser, { type ParsedComponent } from "./ComponentParser";
+import { dirname } from "node:path";
+import { generateBundle, type GenerateBundleResult } from "./bundle";
 import { getSvelteEntry } from "./get-svelte-entry";
-import { type ParsedExports, parseExports } from "./parse-exports";
-import { normalizeSeparators } from "./path";
+import { createSveldBundle, type SveldBundle } from "./watch";
 import writeJson, { type WriteJsonOptions } from "./writer/writer-json";
 import writeMarkdown, { type WriteMarkdownOptions } from "./writer/writer-markdown";
 import writeTsDefinitions, { type WriteTsDefinitionsOptions } from "./writer/writer-ts-definitions";
+
+export type {
+  CollectedComponents,
+  ComponentDocApi,
+  ComponentDocs,
+  GenerateBundleResult,
+  ResolveComponentFilePath,
+} from "./bundle";
+export {
+  collectComponents,
+  collectSvelteFilePaths,
+  generateBundle,
+  processComponent,
+  readFileMap,
+} from "./bundle";
 
 export interface PluginSveldOptions {
   /**
@@ -25,263 +34,100 @@ export interface PluginSveldOptions {
   jsonOptions?: Partial<Omit<WriteJsonOptions, "inputDir">>;
   markdown?: boolean;
   markdownOptions?: Partial<WriteMarkdownOptions>;
+  /**
+   * Regenerate output incrementally when `.svelte` source changes during
+   * `vite dev` / `vite build --watch`. Only the changed component and the
+   * components that depend on it via `@extendProps` / `@extends` are re-parsed.
+   * @default false
+   */
+  watch?: boolean;
 }
 
-export interface ComponentDocApi extends ParsedComponent {
-  filePath: NormalizedPath;
-  moduleName: string;
-}
-
-export type ComponentDocs = Map<string, ComponentDocApi>;
-
-const STYLE_TAG_REGEX = /<style.+?<\/style>/gims;
-const HYPHEN_REGEX = /-/g;
-
-function stripTopLevelStyleBlock(source: string) {
-  try {
-    const parsed = parseSvelte(source, { modern: false }) as { css?: { start?: number; end?: number } };
-    const start = parsed.css?.start;
-    const end = parsed.css?.end;
-
-    if (start === undefined || end === undefined) {
-      return source;
-    }
-
-    return `${source.slice(0, start)}${source.slice(end)}`;
-  } catch {
-    // Fall back to the previous regex behavior if the source cannot be parsed.
-    return source.replace(STYLE_TAG_REGEX, "");
-  }
+/** Subset of Vite/Rollup's HMR context that the watch hook relies on. */
+interface HotUpdateContext {
+  file: string;
 }
 
 interface SveldPlugin {
   name: string;
   apply?: "build" | "serve";
   enforce?: "pre" | "post";
-  buildStart(): void;
+  buildStart(): void | Promise<void>;
   generateBundle(): Promise<void>;
   writeBundle(): void;
+  /** Vite dev-server HMR hook (serve mode). */
+  handleHotUpdate?(ctx: HotUpdateContext): void;
+  /** Rollup/Vite watch hook (build `--watch`). */
+  watchChange?(id: string): void;
 }
 
+/** Debounce window (ms) for coalescing rapid file changes into one regeneration. */
+const WATCH_DEBOUNCE_MS = 50;
+
+const SVELTE_EXT_REGEX = /\.svelte$/;
+
 export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
+  const watch = opts?.watch === true;
   let result: GenerateBundleResult;
   let input: string | null;
 
+  // Watch-mode state: a long-lived bundle that supports scoped re-parsing.
+  let bundle: SveldBundle | null = null;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const pending = new Set<string>();
+
+  const flush = async () => {
+    if (bundle == null || input == null || pending.size === 0) return;
+    const changed = Array.from(pending);
+    pending.clear();
+    try {
+      const { result: next } = await bundle.update(changed);
+      writeOutput(next, opts || {}, input);
+    } catch (error) {
+      console.error("sveld: failed to regenerate types in watch mode:", error);
+    }
+  };
+
+  const scheduleUpdate = (id: string) => {
+    if (!watch || bundle == null || !SVELTE_EXT_REGEX.test(id)) return;
+    pending.add(id);
+    clearTimeout(timer);
+    timer = setTimeout(flush, WATCH_DEBOUNCE_MS);
+  };
+
   return {
     name: "vite-plugin-sveld",
-    apply: "build",
+    // In watch mode the plugin must also run in `serve` (dev server), so leave
+    // `apply` unset. Otherwise keep the original build-only behavior.
+    apply: watch ? undefined : "build",
     enforce: "post",
-    buildStart() {
+    async buildStart() {
       input = getSvelteEntry(opts?.entry);
+      if (watch && input != null) {
+        // Produce the initial output and prime the incremental bundle. This
+        // covers both `vite dev` (where generateBundle/writeBundle never fire)
+        // and `vite build --watch`.
+        bundle = await createSveldBundle(input, opts?.glob === true);
+        writeOutput(bundle.result, opts || {}, input);
+      }
     },
     async generateBundle() {
+      // In watch mode the initial build happens in `buildStart`.
+      if (watch) return;
       if (input != null) {
         result = await generateBundle(input, opts?.glob === true);
       }
     },
     writeBundle() {
+      if (watch) return;
       if (input != null) writeOutput(result, opts || {}, input);
     },
-  };
-}
-
-interface GenerateBundleResult {
-  exports: ParsedExports;
-  components: ComponentDocs;
-  allComponentsForTypes: ComponentDocs;
-}
-
-/**
- * Generates component documentation bundle from Svelte source files.
- *
- * Parses exports, discovers components (optionally via glob), and processes
- * all Svelte files to extract component metadata. Returns both exported
- * components (for JSON/Markdown) and all components (for TypeScript definitions).
- *
- * @param input - Entry point file or directory containing Svelte components
- * @param glob - Whether to glob for all .svelte files in the directory
- * @returns Bundle result containing exports, components, and allComponentsForTypes
- *
- * @example
- * ```ts
- * // Generate from single file:
- * const result = await generateBundle("./src/App.svelte", false);
- *
- * // Generate from directory with glob:
- * const result = await generateBundle("./src", true);
- * ```
- */
-export async function generateBundle(input: string, glob: boolean) {
-  const isFile = lstatSync(input).isFile();
-  const dir = isFile ? dirname(input) : input;
-  const rootDir = resolve(dir);
-  const resolveComponentFilePath = (filePath: string) =>
-    isAbsolute(filePath) ? resolve(filePath) : resolve(rootDir, filePath);
-
-  /**
-   * Only parse exports if input is a file.
-   * Directory inputs don't have a single entry point to parse exports from.
-   */
-  let exports: ParsedExports = {};
-  if (isFile) {
-    const entry = readFileSync(input, "utf-8");
-    exports = parseExports(entry, rootDir);
-  }
-
-  const allComponents: ParsedExports = { ...exports };
-
-  if (glob) {
-    for (const matchedFile of globSync(["**/*.svelte"], { cwd: rootDir, absolute: true })) {
-      const file = resolve(matchedFile);
-      const moduleName = parse(file).name.replace(HYPHEN_REGEX, "");
-      const source = asRelativeSourcePath(normalizeSeparators(`./${relative(rootDir, file)}`));
-
-      if (exports[moduleName]) {
-        exports[moduleName].source = source;
-      }
-
-      if (allComponents[moduleName]) {
-        allComponents[moduleName].source = source;
-      } else {
-        allComponents[moduleName] = { source, default: false };
-      }
-    }
-  }
-
-  const components: ComponentDocs = new Map();
-  const allComponentsForTypes: ComponentDocs = new Map();
-  const exportEntries = Object.entries(exports);
-  const allComponentEntries = Object.entries(allComponents);
-
-  const uniqueFilePaths = new Set<string>();
-  for (const [, entry] of exportEntries) {
-    const filePath = entry.source;
-    const { ext } = parse(filePath);
-    if (ext === ".svelte") {
-      uniqueFilePaths.add(resolveComponentFilePath(filePath));
-    }
-  }
-  for (const [, entry] of allComponentEntries) {
-    const filePath = entry.source;
-    const { ext } = parse(filePath);
-    if (ext === ".svelte") {
-      uniqueFilePaths.add(resolveComponentFilePath(filePath));
-    }
-  }
-
-  const fileContents = await Promise.all(
-    Array.from(uniqueFilePaths).map(async (filePath) => {
-      try {
-        const content = await readFile(filePath, "utf-8");
-        return { path: filePath, content };
-      } catch (error) {
-        console.warn(`Warning: Failed to read file ${filePath}:`, error);
-        return { path: filePath, content: null };
-      }
-    }),
-  );
-
-  const fileMap = new Map<string, string | null>(fileContents.map(({ path, content }) => [path, content]));
-
-  /**
-   * Helper function to process a single component.
-   *
-   * Reads the component file, removes top-level styles for metadata parsing,
-   * and parses it to extract component metadata. Handles file read errors gracefully.
-   *
-   * @param entry - Export entry tuple [exportName, exportInfo]
-   * @param entries - All export entries for context
-   * @param fileMap - Map of file paths to their contents
-   * @returns Component documentation or null if processing failed
-   *
-   * @example
-   * ```ts
-   * const result = await processComponent(
-   *   ["Button", { source: "./Button.svelte", default: true }],
-   *   allEntries,
-   *   fileMap
-   * );
-   * // Returns: { moduleName: "Button", filePath: "./Button.svelte", props: [...], ... }
-   * ```
-   */
-  const processComponent = async (
-    [exportName, entry]: [string, ParsedExports[string]],
-    entries: Array<[string, ParsedExports[string]]>,
-    fileMap: Map<string, string | null>,
-  ) => {
-    const filePath = entry.source;
-    const { ext, name } = parse(filePath);
-
-    let moduleName = exportName;
-
-    if (entries.length === 1 && exportName === "default") {
-      moduleName = name;
-    }
-
-    if (ext === ".svelte") {
-      const resolvedPath = resolveComponentFilePath(filePath);
-      const source = fileMap.get(resolvedPath);
-
-      if (source === null || source === undefined) {
-        /**
-         * File was not found or failed to read, skip this component.
-         * This can happen if the file doesn't exist or if there was an error
-         * reading it (already logged as a warning).
-         */
-        return null;
-      }
-
-      const parser = new ComponentParser();
-      const parsed = parser.parseSvelteComponent(stripTopLevelStyleBlock(source), {
-        moduleName,
-        filePath: normalizeSeparators(filePath),
-      });
-
-      return {
-        moduleName,
-        filePath: normalizeSeparators(filePath),
-        ...parsed,
-      };
-    }
-
-    return null;
-  };
-
-  /**
-   * Process exported components (for metadata/JSON/Markdown).
-   * Only components that are explicitly exported are included in the
-   * components map for JSON and Markdown output.
-   */
-  const componentPromises = exportEntries.map((entry) => processComponent(entry, exportEntries, fileMap));
-
-  /**
-   * Process all components (for .d.ts generation).
-   * All discovered components are included in allComponentsForTypes
-   * to ensure TypeScript definitions are generated for all components,
-   * even if they're not explicitly exported.
-   */
-  const allComponentPromises = allComponentEntries.map((entry) =>
-    processComponent(entry, allComponentEntries, fileMap),
-  );
-
-  const [results, allResults] = await Promise.all([Promise.all(componentPromises), Promise.all(allComponentPromises)]);
-
-  for (const result of results) {
-    if (result) {
-      components.set(result.moduleName, result);
-    }
-  }
-
-  for (const result of allResults) {
-    if (result) {
-      allComponentsForTypes.set(result.moduleName, result);
-    }
-  }
-
-  return {
-    exports,
-    components,
-    allComponentsForTypes,
+    handleHotUpdate(ctx) {
+      scheduleUpdate(ctx.file);
+    },
+    watchChange(id) {
+      scheduleUpdate(id);
+    },
   };
 }
 
