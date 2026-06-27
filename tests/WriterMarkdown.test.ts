@@ -138,4 +138,60 @@ describe("WriterMarkdown", () => {
     expect(output).toContain("| size | No | <code>let</code> | No | readonly | -- | -- | Current value. |");
     expect(output).toContain("| label | No | <code>let</code> | No | -- | -- | -- | Label text. |");
   });
+
+  test("slots table renders descriptions and pass-through tags", () => {
+    const output = writeMarkdownCore(
+      new Map([
+        [
+          "Example",
+          {
+            filePath: asNormalizedPath("Example.svelte"),
+            moduleName: "Example",
+            syntaxMode: "legacy",
+            props: [],
+            moduleExports: [],
+            slots: [
+              {
+                name: null,
+                default: true,
+                slot_props: "{ prop: number }",
+                description: "Default content.\nSpans two lines.",
+                tags: [
+                  { name: "deprecated", body: "Prefer the `body` slot." },
+                  { name: "since", body: "1.2.0" },
+                ],
+              },
+              {
+                name: "title",
+                default: false,
+                slot_props: "{}",
+                description: "Heading content.",
+                tags: [{ name: "example", body: "<Example>Hi</Example>" }],
+              },
+              {
+                name: "footer",
+                default: false,
+                slot_props: "{}",
+              },
+            ],
+            events: [],
+            typedefs: [],
+            generics: null,
+            rest_props: undefined,
+            contexts: [],
+          },
+        ],
+      ]),
+    );
+
+    expect(output).toMatchSnapshot();
+    expect(output).toContain("| Slot name | Default | Props | Fallback | Description |");
+    expect(output).toContain(
+      "| -- | Yes | <code>{ prop: number } </code> | -- | Default content.<br />Spans two lines.<br />@deprecated Prefer the `body` slot.<br />@since 1.2.0 |",
+    );
+    expect(output).toContain(
+      "| title | No | -- | -- | Heading content.<br />@example &lt;Example&gt;Hi&lt;/Example&gt; |",
+    );
+    expect(output).toContain("| footer | No | -- | -- | -- |");
+  });
 });

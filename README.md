@@ -1363,7 +1363,7 @@ Omit the `slot-name` to type the default slot.
 
 Tags such as `@example`, `@deprecated`, `@see`, or `@since` that appear after the prose description and before the `@slot` / `@snippet` line are copied into generated `.d.ts` files. The emitted JSDoc above each slot's snippet prop (and the traditional `SlotDefs` shape) lists the description, then those tags in source order. The same entries appear in JSON as `tags: [{ "name", "body" }, ...]`.
 
-Put `@slot` / `@snippet` last in the block (description, optional extra tags, slot tag). Tags after `@slot` / `@snippet` in the same comment are not tied to that slot. Unknown tag names pass through as-is. Markdown docs do not render slot descriptions or these tags yet; use TypeScript hover or JSON.
+Put `@slot` / `@snippet` last in the block (description, optional extra tags, slot tag). Tags after `@slot` / `@snippet` in the same comment are not tied to that slot. Unknown tag names pass through as-is. Markdown docs render the description and these tags in the slot's **Description** column (newlines and tag boundaries become `<br />`), alongside TypeScript hover and JSON.
 
 **Example (default slot with `@example` and `@deprecated`):**
 
