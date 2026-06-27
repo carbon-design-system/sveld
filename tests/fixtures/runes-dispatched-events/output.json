@@ -58,5 +58,19 @@
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "runes-dispatched-events/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "value",
+      "message": "Prop \"value\" type could not be inferred; falling back to \"any\"."
+    },
+    {
+      "component": "runes-dispatched-events/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "onchange",
+      "message": "Prop \"onchange\" type could not be inferred; falling back to \"any\"."
+    }
+  ]
 }

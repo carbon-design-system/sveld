@@ -103,5 +103,13 @@
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "bindable-direction-runes/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "size",
+      "message": "Prop \"size\" type could not be inferred; falling back to \"any\"."
+    }
+  ]
 }

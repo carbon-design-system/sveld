@@ -100,5 +100,13 @@
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "resolve-default-chained/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "deep6",
+      "message": "Prop \"deep6\" type could not be inferred; falling back to \"any\"."
+    }
+  ]
 }

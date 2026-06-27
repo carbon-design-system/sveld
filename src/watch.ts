@@ -12,6 +12,7 @@ import {
   readFileMap,
   reportParseErrors,
 } from "./bundle";
+import { dedupeDiagnostics } from "./diagnostics";
 import type { ParsedExports } from "./parse-exports";
 
 const SVELTE_EXT_REGEX = /\.svelte$/;
@@ -150,6 +151,9 @@ export async function createSveldBundle(input: string, glob: boolean): Promise<S
     components,
     allComponentsForTypes,
     errors: Array.from(parseErrors.values()),
+    diagnostics: dedupeDiagnostics(
+      Array.from(allComponentsForTypes.values()).flatMap((component) => component.diagnostics ?? []),
+    ),
   });
 
   // Initial full parse.

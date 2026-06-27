@@ -49,5 +49,6 @@
     "type": "Element",
     "name": "svelte:element"
   },
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }

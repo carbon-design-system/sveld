@@ -304,5 +304,19 @@
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "prop-metadata-consolidated/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "callDefault",
+      "message": "Prop \"callDefault\" type could not be inferred; falling back to \"any\"."
+    },
+    {
+      "component": "prop-metadata-consolidated/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "unknown",
+      "message": "Prop \"unknown\" type could not be inferred; falling back to \"any\"."
+    }
+  ]
 }

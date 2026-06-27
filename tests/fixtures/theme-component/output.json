@@ -192,5 +192,13 @@
     }
   ],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "theme-component/input.svelte",
+      "kind": "event-no-source",
+      "name": "update",
+      "message": "@event \"update\" has no matching dispatch or callback prop."
+    }
+  ]
 }

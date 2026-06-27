@@ -50,5 +50,6 @@
     "name": "button | span",
     "description": "Spread to the span (inline variant) or the copy button (single/multi)."
   },
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }

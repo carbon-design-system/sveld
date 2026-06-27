@@ -233,5 +233,31 @@
     }
   ],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "typedef-event-shared-block/input.svelte",
+      "kind": "event-no-source",
+      "name": "resize",
+      "message": "@event \"resize\" has no matching dispatch or callback prop."
+    },
+    {
+      "component": "typedef-event-shared-block/input.svelte",
+      "kind": "event-no-source",
+      "name": "scroll",
+      "message": "@event \"scroll\" has no matching dispatch or callback prop."
+    },
+    {
+      "component": "typedef-event-shared-block/input.svelte",
+      "kind": "event-no-source",
+      "name": "queue",
+      "message": "@event \"queue\" has no matching dispatch or callback prop."
+    },
+    {
+      "component": "typedef-event-shared-block/input.svelte",
+      "kind": "event-no-source",
+      "name": "dequeue",
+      "message": "@event \"dequeue\" has no matching dispatch or callback prop."
+    }
+  ]
 }

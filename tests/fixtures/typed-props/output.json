@@ -121,5 +121,13 @@
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "typed-props/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "prop2",
+      "message": "Prop \"prop2\" type could not be inferred; falling back to \"any\"."
+    }
+  ]
 }

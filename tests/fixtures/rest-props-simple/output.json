@@ -20,5 +20,6 @@
     "type": "Element",
     "name": "h1"
   },
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }

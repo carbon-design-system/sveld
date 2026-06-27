@@ -349,5 +349,13 @@
     }
   ],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "non-literal-defaults/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "handler",
+      "message": "Prop \"handler\" type could not be inferred; falling back to \"any\"."
+    }
+  ]
 }

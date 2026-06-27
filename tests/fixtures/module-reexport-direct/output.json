@@ -100,5 +100,13 @@
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "module-reexport-direct/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "onReady",
+      "message": "Prop \"onReady\" type could not be inferred; falling back to \"any\"."
+    }
+  ]
 }

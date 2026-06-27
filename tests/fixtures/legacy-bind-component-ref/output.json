@@ -44,5 +44,13 @@
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "legacy-bind-component-ref/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "ref",
+      "message": "Prop \"ref\" type could not be inferred; falling back to \"any\"."
+    }
+  ]
 }

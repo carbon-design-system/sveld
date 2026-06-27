@@ -89,5 +89,13 @@
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "module-reexport/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "data",
+      "message": "Prop \"data\" type could not be inferred; falling back to \"any\"."
+    }
+  ]
 }

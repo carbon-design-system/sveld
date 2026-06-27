@@ -5,6 +5,7 @@ import { parse as parseSvelte } from "svelte/compiler";
 import { globSync } from "tinyglobby";
 import { asRelativeSourcePath, type NormalizedPath } from "./brands";
 import ComponentParser, { type ParsedComponent } from "./ComponentParser";
+import { dedupeDiagnostics, type SveldDiagnostic } from "./diagnostics";
 import { type ParsedExports, parseExports } from "./parse-exports";
 import { normalizeSeparators } from "./path";
 
@@ -35,6 +36,8 @@ export interface GenerateBundleResult {
    * one or more components threw during parsing.
    */
   errors: ComponentParseError[];
+  /** Unknown props, `any` contexts, and orphan `@event` tags across the bundle. */
+  diagnostics: SveldDiagnostic[];
 }
 
 export interface GenerateBundleOptions {
@@ -343,10 +346,16 @@ export async function generateBundle(
   const errors = Array.from(parseErrors.values());
   reportParseErrors(errors);
 
+  // Same file can land in both export and all-components passes; dedupe before returning.
+  const diagnostics = dedupeDiagnostics(
+    Array.from(allComponentsForTypes.values()).flatMap((component) => component.diagnostics ?? []),
+  );
+
   return {
     exports,
     components,
     allComponentsForTypes,
     errors,
+    diagnostics,
   };
 }

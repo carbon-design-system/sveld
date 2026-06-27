@@ -49,5 +49,6 @@
     "type": "Element",
     "name": "abbr | code | em | strong | mark | kbd | samp | var"
   },
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }

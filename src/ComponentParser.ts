@@ -31,6 +31,7 @@ import {
   isObjectExpression,
   isVariableDeclaration,
 } from "./ast-guards";
+import type { SveldDiagnostic, SveldDiagnosticKind } from "./diagnostics";
 import { getElementByTag } from "./element-tag-map";
 
 /**
@@ -715,6 +716,11 @@ export interface ParsedComponent {
   componentCommentSource?: SourceRange;
   /** Contexts created with `setContext` in the component */
   contexts?: ComponentContext[];
+  /**
+   * Type guesses from this parse (unknown props, `any` contexts, orphan `@event` tags).
+   * Set on every {@link ComponentParser.parseSvelteComponent} call.
+   */
+  diagnostics?: SveldDiagnostic[];
   /** Internal writer-only TypeScript metadata. Not serialized to JSON. */
   [PARSED_COMPONENT_TYPE_SCRIPT_METADATA]?: ParsedComponentTypeScriptMetadata;
 }
@@ -829,6 +835,15 @@ export default class ComponentParser {
   /** Active lexical scopes while walking the component AST */
   private readonly activeScopes: LexicalScope[] = [];
 
+  /** Diagnostics for the parse in progress. */
+  private readonly diagnosticRecords: SveldDiagnostic[] = [];
+
+  /** File path tagged onto each diagnostic. */
+  private componentFilePath = "";
+
+  /** `@event` names from JSDoc, checked against dispatches at end of parse. */
+  private readonly jsDocEventNames: Set<string> = new Set();
+
   /** Cached array of source code lines split by newline for efficient line-based operations */
   private sourceLinesCache?: string[];
 
@@ -879,6 +894,15 @@ export default class ComponentParser {
 
   private static assignValue(value?: "" | string) {
     return value === undefined || value === "" ? undefined : value;
+  }
+
+  private recordDiagnostic(kind: SveldDiagnosticKind, name: string, message: string) {
+    this.diagnosticRecords.push({
+      component: this.componentFilePath,
+      kind,
+      name,
+      message,
+    });
   }
 
   private resolvePublicPropName(name: string) {
@@ -3770,6 +3794,7 @@ export default class ComponentParser {
             source: currentEventSource,
           });
           this.eventDescriptions.set(currentEventName, currentEventDescription);
+          this.jsDocEventNames.add(currentEventName);
           eventProperties.length = 0;
           currentEventName = undefined;
           currentEventType = undefined;
@@ -4524,8 +4549,15 @@ export default class ComponentParser {
           if (varInfo) {
             propType = varInfo.type;
             propDescription = varInfo.description;
-          } else if (this.options?.verbose) {
-            console.warn(`Warning: Context "${key}" property "${propName}" has no type annotation. Using "any".`);
+          } else {
+            this.recordDiagnostic(
+              "context-any-type",
+              propName,
+              `Context "${key}" property "${propName}" has no type annotation; defaulted to "any".`,
+            );
+            if (this.options?.verbose) {
+              console.warn(`Warning: Context "${key}" property "${propName}" has no type annotation. Using "any".`);
+            }
           }
         } else if (
           prop.value &&
@@ -4584,7 +4616,14 @@ export default class ComponentParser {
             },
           ],
         };
-      } else if (this.options?.verbose) {
+      }
+
+      this.recordDiagnostic(
+        "context-any-type",
+        varName,
+        `Context "${key}" variable "${varName}" has no type annotation; defaulted to "any".`,
+      );
+      if (this.options?.verbose) {
         console.warn(`Warning: Context "${key}" variable "${varName}" has no type annotation. Using "any".`);
       }
 
@@ -4736,6 +4775,9 @@ export default class ComponentParser {
     this.componentScope.clear();
     this.scopeDeclarations = new WeakMap();
     this.activeScopes.length = 0;
+    this.diagnosticRecords.length = 0;
+    this.componentFilePath = "";
+    this.jsDocEventNames.clear();
     this.sourceLinesCache = undefined;
     this.sourceLineStartOffsetsCache = undefined;
   }
@@ -4847,6 +4889,7 @@ export default class ComponentParser {
     }
 
     this.cleanup();
+    this.componentFilePath = diagnostics.filePath;
     /**
      * Strip TypeScript directives from script blocks only to prevent interference with JSDoc.
      * TypeScript directive comments can break JSDoc parsing if not removed.
@@ -5752,6 +5795,31 @@ export default class ComponentParser {
     const typedefsArray = ComponentParser.mapToArray(this.typedefs);
     const contextsArray = ComponentParser.mapToArray(this.contexts);
 
+    for (const prop of processedProps) {
+      if (prop.typeSource === "unknown") {
+        this.recordDiagnostic(
+          "prop-unknown-type",
+          prop.name,
+          `Prop "${prop.name}" type could not be inferred; falling back to "${prop.type ?? "any"}".`,
+        );
+      }
+    }
+
+    /**
+     * `@event` in JSDoc with no `createEventDispatcher`, `on:` forward,
+     * or `on<event>` callback prop.
+     */
+    for (const eventName of this.jsDocEventNames) {
+      if (actuallyDispatchedEvents.has(eventName)) continue;
+      if (this.forwardedEvents.has(eventName)) continue;
+      if (this.props.has(`on${eventName}`)) continue;
+      this.recordDiagnostic(
+        "event-no-source",
+        eventName,
+        `@event "${eventName}" has no matching dispatch or callback prop.`,
+      );
+    }
+
     const parsedComponent: ParsedComponent = {
       source: this.sourceRangeFromOffsets(0, this.source?.length),
       syntaxMode: this.syntaxMode,
@@ -5767,6 +5835,7 @@ export default class ComponentParser {
       componentComment: this.componentComment,
       componentCommentSource: this.componentCommentSource,
       contexts: contextsArray,
+      diagnostics: this.diagnosticRecords.slice(),
     };
 
     const typeScriptMetadata = this.buildTypeScriptMetadata();
