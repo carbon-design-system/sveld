@@ -85,6 +85,33 @@ describe("component API JSON schema", () => {
     );
   });
 
+  test("documents the optional entry exports collection", () => {
+    const schema = readJson("schema/component-api.schema.json");
+    const properties = objectProperty(schema, "properties");
+    const defs = objectProperty(schema, "$defs");
+
+    // Optional: not part of the required root keys so default output is unchanged.
+    expect(stringArrayProperty(schema, "required")).not.toContain("exports");
+    expect(Object.keys(properties)).toEqual(expect.arrayContaining(["totalExports", "exports"]));
+    expect(objectProperty(properties, "exports")).toMatchObject({
+      type: "array",
+      items: { $ref: "#/$defs/entryExport" },
+    });
+
+    const entryExportProperties = objectProperty(objectProperty(defs, "entryExport"), "properties");
+    expect(Object.keys(entryExportProperties)).toEqual(
+      expect.arrayContaining(["name", "kind", "type", "value", "description", "source", "isTypeOnly"]),
+    );
+    expect(objectProperty(entryExportProperties, "kind")).toMatchObject({
+      enum: ["const", "let", "var", "function", "class", "type", "interface", "enum"],
+    });
+    expect(stringArrayProperty(objectProperty(defs, "entryExport"), "required")).toEqual([
+      "name",
+      "kind",
+      "isTypeOnly",
+    ]);
+  });
+
   test("covers recent prop metadata fields", () => {
     const schema = readJson("schema/component-api.schema.json");
     const defs = objectProperty(schema, "$defs");

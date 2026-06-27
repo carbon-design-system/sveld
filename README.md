@@ -126,6 +126,7 @@ export default class Button extends SvelteComponentTyped<
   - [Config File](#config-file)
   - [Publishing to NPM](#publishing-to-npm)
 - [Available Options](#available-options)
+- [Documenting Entry Exports](#documenting-entry-exports)
 - [JSON Output](#json-output)
 - [API Reference](#api-reference)
   - [@type](#type)
@@ -371,6 +372,7 @@ TypeScript definitions land in the `types` folder by default. Include that folde
 
 - **`entry`** (string, optional): Specify the entry point to uncompiled Svelte source. If not provided, sveld will use the `"svelte"` field from `package.json`.
 - **`glob`** (boolean, optional): Enable glob mode to analyze all `*.svelte` files.
+- **`documentExports`** (boolean, optional): Include consts, functions, and types from the entry barrel in JSON (`exports`) and Markdown ("Exports"). Off by default. See [Documenting Entry Exports](#documenting-entry-exports).
 - **`types`** (boolean, optional, default: `true`): Generate TypeScript definitions.
 - **`typesOptions`** (object, optional): Options for TypeScript definition generation, including `outDir`, `preamble`, and `printWidth`.
 - **`json`** (boolean, optional): Generate component documentation in JSON format.
@@ -391,6 +393,32 @@ sveld({
 })
 ```
 
+## Documenting Entry Exports
+
+Most entry barrels re-export more than `.svelte` components. Set `documentExports: true` to add consts, functions, and types to the JSON and Markdown output.
+
+```diff
+sveld({
+  json: true,
+  markdown: true,
++  documentExports: true,
+})
+```
+
+Example entry file:
+
+```ts
+// src/index.ts
+export { default as Button } from "./Button.svelte";
+export { VERSION } from "./constants";
+export { clamp } from "./utils";
+export type { Theme } from "./types";
+```
+
+From that barrel, `sveld` documents `VERSION`, `clamp`, and `Theme`. `Button` still goes through the component path. Type text is copied from source, not resolved with `tsc`, same as the rest of the tool.
+
+JSON adds `exports` and `totalExports`. Markdown adds an "Exports" section. Each item has `name`, `kind`, type text, optional JSDoc `description`, and `source`.
+
 ## JSON Output
 
 When `json: true` is enabled, `sveld` emits a `COMPONENT_API.json` file with schema and generator metadata plus the parsed
@@ -408,6 +436,19 @@ interface ComponentApiJson {
   };
   total: number;
   components: ComponentDocApi[];
+  // Present only when `documentExports` is enabled.
+  totalExports?: number;
+  exports?: EntryExport[];
+}
+
+interface EntryExport {
+  name: string;
+  kind: "const" | "let" | "var" | "function" | "class" | "type" | "interface" | "enum";
+  type?: string;
+  value?: string;
+  description?: string;
+  source?: string;
+  isTypeOnly: boolean;
 }
 
 interface SourceRange {

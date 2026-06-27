@@ -29,6 +29,16 @@
     "components": {
       "type": "array",
       "items": { "$ref": "#/$defs/component" }
+    },
+    "totalExports": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Count of entry-barrel exports. Only when `documentExports` is on."
+    },
+    "exports": {
+      "type": "array",
+      "description": "Entry-barrel exports other than components. Only when `documentExports` is on.",
+      "items": { "$ref": "#/$defs/entryExport" }
     }
   },
   "$defs": {
@@ -326,6 +336,22 @@
       "properties": {
         "interface": { "type": "string" },
         "import": { "type": "string" }
+      }
+    },
+    "entryExport": {
+      "type": "object",
+      "required": ["name", "kind", "isTypeOnly"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "kind": {
+          "enum": ["const", "let", "var", "function", "class", "type", "interface", "enum"]
+        },
+        "type": { "type": "string" },
+        "value": { "type": "string" },
+        "description": { "type": "string" },
+        "source": { "type": "string" },
+        "isTypeOnly": { "type": "boolean" }
       }
     }
   }

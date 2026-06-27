@@ -1,4 +1,5 @@
 import { join } from "node:path";
+import type { EntryExports } from "../parse-entry-exports";
 import type { ComponentDocs } from "../plugin";
 import { renderComponentsToMarkdown } from "./markdown-render-utils";
 import WriterMarkdown, { type AppendType } from "./WriterMarkdown";
@@ -6,6 +7,8 @@ import WriterMarkdown, { type AppendType } from "./WriterMarkdown";
 export interface WriteMarkdownOptions {
   write?: boolean;
   outFile: string;
+  /** Entry-barrel exports when `documentExports` is on. */
+  entryExports?: EntryExports;
   onAppend?: (type: AppendType, document: WriterMarkdown, components: ComponentDocs) => void;
 }
 
@@ -31,7 +34,7 @@ export default async function writeMarkdown(components: ComponentDocs, options: 
     },
   });
 
-  renderComponentsToMarkdown(document, components);
+  renderComponentsToMarkdown(document, components, options.entryExports);
 
   if (write) {
     const outFile = join(process.cwd(), options.outFile);

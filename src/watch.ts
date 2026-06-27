@@ -1,3 +1,4 @@
+import { lstatSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import {
   type ComponentDocApi,
@@ -13,6 +14,7 @@ import {
   reportParseErrors,
 } from "./bundle";
 import { dedupeDiagnostics } from "./diagnostics";
+import { type EntryExports, parseEntryExports } from "./parse-entry-exports";
 import type { ParsedExports } from "./parse-exports";
 
 const SVELTE_EXT_REGEX = /\.svelte$/;
@@ -127,11 +129,16 @@ function expandAffected(changed: Iterable<string>, reverseDeps: Map<string, Set<
  *
  * @param input - Entry point file or directory containing Svelte components
  * @param glob - Whether to glob for all `.svelte` files in the directory
+ * @param documentExports - Record consts, functions, and types from the entry barrel
  */
-export async function createSveldBundle(input: string, glob: boolean): Promise<SveldBundle> {
+export async function createSveldBundle(input: string, glob: boolean, documentExports = false): Promise<SveldBundle> {
   // Discover sources once. The export/source maps only change when the entry
   // file or the set of files on disk changes; for a single edit they are stable.
-  const { exports, allComponents, resolveComponentFilePath } = collectComponents(input, glob);
+  const { exports, allComponents, resolveComponentFilePath } = collectComponents(input, glob, documentExports);
+
+  // Entry exports only change when the barrel changes; resolve once.
+  const entryExports: EntryExports =
+    documentExports && lstatSync(input).isFile() ? parseEntryExports(resolve(input)) : [];
 
   const exportEntries = Object.entries(exports);
   const allComponentEntries = Object.entries(allComponents);
@@ -148,6 +155,7 @@ export async function createSveldBundle(input: string, glob: boolean): Promise<S
 
   const buildResult = (): GenerateBundleResult => ({
     exports,
+    entryExports,
     components,
     allComponentsForTypes,
     errors: Array.from(parseErrors.values()),

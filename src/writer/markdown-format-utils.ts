@@ -11,6 +11,7 @@ export const PROP_TABLE_HEADER =
 export const SLOT_TABLE_HEADER =
   "| Slot name | Default | Props | Fallback | Description |\n| :- | :- | :- | :- | :- |\n";
 export const EVENT_TABLE_HEADER = "| Event name | Type | Detail | Description |\n| :- | :- | :- | :- |\n";
+export const EXPORT_TABLE_HEADER = "| Name | Kind | Type | Description |\n| :- | :- | :- | :- |\n";
 
 const PIPE_REGEX = /\|/g;
 const LT_REGEX = /</g;
