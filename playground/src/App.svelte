@@ -13,7 +13,7 @@
   import Code from "carbon-icons-svelte/lib/Code.svelte";
   import Json from "carbon-icons-svelte/lib/Json.svelte";
   import TextCreation from "carbon-icons-svelte/lib/TextCreation.svelte";
-  import { type Component, onMount, tick } from "svelte";
+  import { type Component, onMount } from "svelte";
   import ComponentParser from "../../src/ComponentParser";
   import data from "./data";
   import Header from "./Header.svelte";
@@ -56,7 +56,6 @@
 
   let parsed_component = {};
   let parse_error: string | null = null;
-  let codemirror: CodeMirror.Editor | null = null;
 
   $: {
     try {
@@ -95,22 +94,12 @@
           }))}
           on:select={(e) => {
             selectedId = e.detail.selectedId;
-
-            tick().then(() => {
-              if (selected?.code) {
-                codemirror?.setValue(selected.code);
-              }
-            });
           }}
         />
         {#if codeEditor}
           <svelte:component
             this={codeEditor}
             bind:code={value}
-            bind:codemirror
-            on:change={(e) => {
-              value = e.detail;
-            }}
           />
         {:else}
           <InlineLoading style="margin: var(--cds-spacing-05)" />
@@ -138,7 +127,10 @@
             label="Markdown"
             icon={TextCreation}
           />
-          <svelte:fragment slot="content">
+          <div
+            class="tab-content-slot"
+            slot="content"
+          >
             {#if parse_error}
               <TabContentOverlay title="Parse error"> {parse_error} </TabContentOverlay>
             {/if}
@@ -175,7 +167,7 @@
                 <InlineLoading style="margin: var(--cds-spacing-05)" />
               {/if}
             </TabContent>
-          </svelte:fragment>
+          </div>
         </Tabs>
       </Column>
     </Row>
@@ -187,20 +179,26 @@
     justify-content: center;
   }
 
+  :global(.tab-content-slot) {
+    position: relative;
+    height: calc(100vh - 13rem);
+  }
+
+  @media (max-width: 1056px) {
+    :global(.tab-content-slot) {
+      height: auto;
+    }
+  }
+
   :global(.bx--tab-content) {
     padding: 0;
+    position: relative;
   }
 
   :global(.bx--tab-content[aria-hidden="false"]) {
     display: flex;
-    height: calc(100vh - 13rem);
+    height: 100%;
     overflow-y: auto;
-  }
-
-  @media (max-width: 1056px) {
-    :global(.bx--tab-content[aria-hidden="false"]) {
-      height: auto;
-    }
   }
 
   :global(pre) {

@@ -27,11 +27,8 @@
     outline-offset: -2px;
   }
 
-  :global([slot="content"]) {
-    position: relative;
-  }
-
-  :global(.tab-content-overlay ~ [role="tabpanel"]) {
+  :global(.tab-content-overlay ~ [role="tabpanel"]),
+  :global(.tab-content-overlay ~ :not(.tab-content-overlay)) {
     opacity: 0.4;
   }
 
