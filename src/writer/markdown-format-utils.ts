@@ -7,7 +7,8 @@ export const MD_TYPE_UNDEFINED = "--";
 
 export const PROP_TABLE_HEADER =
   "| Prop name | Required | Kind | Reactive | Binding | Type | Default value | Description |\n| :- | :- | :- | :- | :- | :- | :- | :- |\n";
-export const SLOT_TABLE_HEADER = "| Slot name | Default | Props | Fallback |\n| :- | :- | :- | :- |\n";
+export const SLOT_TABLE_HEADER =
+  "| Slot name | Default | Props | Fallback | Description |\n| :- | :- | :- | :- | :- |\n";
 export const EVENT_TABLE_HEADER = "| Event name | Type | Detail | Description |\n| :- | :- | :- | :- |\n";
 
 const PIPE_REGEX = /\|/g;
@@ -95,6 +96,38 @@ export function formatSlotProps(props?: string) {
 export function formatSlotFallback(fallback?: string) {
   if (fallback === undefined) return MD_TYPE_UNDEFINED;
   return formatPropType(escapeHtml(fallback).replace(NEWLINE_REGEX, "<br />"));
+}
+
+/**
+ * Format a slot/snippet description plus pass-through JSDoc tags for markdown
+ * table cells. Newlines become `<br />` and `<`, `>`, `|` are escaped so the
+ * content stays inside a single table cell.
+ *
+ * @example
+ * ```ts
+ * formatSlotDescription("Header content.", [{ name: "since", body: "1.0.0" }])
+ * // Returns: "Header content.<br />@since 1.0.0"
+ * formatSlotDescription(undefined, [{ name: "deprecated", body: "" }])
+ * // Returns: "@deprecated"
+ * formatSlotDescription(undefined, [])
+ * // Returns: "--"
+ * ```
+ */
+export function formatSlotDescription(description?: string, tags?: Array<{ name: string; body: string }>) {
+  const segments: string[] = [];
+
+  if (description !== undefined && description.trim().length > 0) {
+    segments.push(escapeHtml(description));
+  }
+
+  for (const { name, body } of tags ?? []) {
+    const trimmed = body?.trim();
+    segments.push(trimmed ? `@${name} ${escapeHtml(trimmed)}` : `@${name}`);
+  }
+
+  if (segments.length === 0) return MD_TYPE_UNDEFINED;
+
+  return segments.join("\n").replace(PIPE_REGEX, "&#124;").replace(NEWLINE_REGEX, "<br />");
 }
 
 /**

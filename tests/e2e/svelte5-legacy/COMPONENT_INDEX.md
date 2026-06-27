@@ -17,9 +17,9 @@
 
 ### Slots
 
-| Slot name | Default | Props                               | Fallback |
-| :-------- | :------ | :---------------------------------- | :------- |
-| --        | Yes     | <code>Record<string, never> </code> | --       |
+| Slot name | Default | Props                               | Fallback | Description |
+| :-------- | :------ | :---------------------------------- | :------- | :---------- |
+| --        | Yes     | <code>Record<string, never> </code> | --       | --          |
 
 ### Events
 

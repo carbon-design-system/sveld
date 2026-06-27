@@ -28,3 +28,32 @@ None.
 
 "
 `;
+
+exports[`WriterMarkdown slots table renders descriptions and pass-through tags 1`] = `
+"# Component Index
+
+## Components
+
+  - [\`Example\`](#example)
+
+---
+
+## \`Example\`
+
+### Props
+
+None.
+
+### Slots
+
+| Slot name | Default | Props | Fallback | Description |
+| :- | :- | :- | :- | :- |
+| -- | Yes | <code>{ prop: number } </code> | -- | Default content.<br />Spans two lines.<br />@deprecated Prefer the \`body\` slot.<br />@since 1.2.0 |
+| title | No | -- | -- | Heading content.<br />@example &lt;Example&gt;Hi&lt;/Example&gt; |
+| footer | No | -- | -- | -- |
+### Events
+
+None.
+
+"
+`;
