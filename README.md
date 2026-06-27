@@ -123,6 +123,7 @@ export default class Button extends SvelteComponentTyped<
   - [Vite](#vite)
   - [Node.js](#nodejs)
   - [CLI](#cli)
+  - [Config File](#config-file)
   - [Publishing to NPM](#publishing-to-npm)
 - [Available Options](#available-options)
 - [JSON Output](#json-output)
@@ -321,6 +322,31 @@ sveld({
   },
 });
 ```
+
+### Config File
+
+Put a `sveld.config.js`, `sveld.config.mjs`, or `sveld.config.ts` at your project root to set defaults for the CLI and the programmatic `sveld()` API.
+
+Import `defineConfig` from `sveld` for typed options. Config files must use ESM syntax (`export default`).
+
+```js
+// sveld.config.js
+import { defineConfig } from "sveld";
+
+export default defineConfig({
+  glob: true,
+  json: true,
+  markdown: true,
+});
+```
+
+Later sources win when options overlap:
+
+CLI flags > config file > `package.json#svelte` inference / defaults
+
+With the config above, `npx sveld --json` keeps `glob` and `markdown` from the file. A CLI flag overrides the same key in the config.
+
+A bad config (syntax error, throws at load time, or no default-export object) fails with an error that names the file.
 
 ### Publishing to NPM
 

@@ -3,6 +3,7 @@ import { rollup } from "rollup";
 import svelte from "rollup-plugin-svelte";
 import { formatDiagnosticsSummary } from "./diagnostics";
 import { getSvelteEntry } from "./get-svelte-entry";
+import { loadConfig, mergeConfig } from "./load-config";
 import { generateBundle, type PluginSveldOptions, toGenerateBundleOptions, writeOutput } from "./plugin";
 
 /** CLI options layered on top of the shared plugin options. */
@@ -48,7 +49,8 @@ export function parseCliOptions(argv: string[]): CliOptions {
 }
 
 /**
- * CLI entry point: parse flags, run Rollup, generate docs, write outputs.
+ * CLI entry point: parse flags, load any config file, run Rollup, generate
+ * docs, write outputs.
  *
  * @example
  * ```ts
@@ -57,9 +59,11 @@ export function parseCliOptions(argv: string[]): CliOptions {
  * ```
  */
 export async function cli(process: NodeJS.Process) {
-  const options = parseCliOptions(process.argv.slice(2));
+  const cliOptions = parseCliOptions(process.argv.slice(2));
+  const fileConfig = await loadConfig();
+  const options = mergeConfig<CliOptions>(fileConfig, cliOptions);
 
-  const input = getSvelteEntry() || "src/index.js";
+  const input = getSvelteEntry(options.entry) || "src/index.js";
   const rollup_bundle = await rollup({
     input,
     plugins: [svelte(), resolve()],

@@ -1,5 +1,6 @@
 import { formatDiagnosticsSummary, type SveldDiagnostic } from "./diagnostics";
 import { getSvelteEntry } from "./get-svelte-entry";
+import { loadConfig, mergeConfig } from "./load-config";
 import { generateBundle, type PluginSveldOptions, toGenerateBundleOptions, writeOutput } from "./plugin";
 
 interface SveldOptions extends Omit<PluginSveldOptions, "entry"> {
@@ -38,16 +39,19 @@ interface SveldResult {
  * ```
  */
 export async function sveld(opts?: SveldOptions): Promise<SveldResult> {
-  const input = getSvelteEntry(opts?.input);
+  const { input: inputOverride, strict, ...runtimeOpts } = opts ?? {};
+  const fileConfig = await loadConfig();
+  const input = getSvelteEntry(inputOverride ?? fileConfig.entry);
   if (input === null) return { diagnostics: [] };
-  const result = await generateBundle(input, opts?.glob === true, toGenerateBundleOptions(opts));
-  writeOutput(result, { ...opts, entry: opts?.input }, input);
+  const merged = mergeConfig<PluginSveldOptions>(fileConfig, runtimeOpts, { entry: input });
+  const result = await generateBundle(input, merged.glob === true, toGenerateBundleOptions(merged));
+  writeOutput(result, merged, input);
 
   const { diagnostics } = result;
   if (diagnostics.length > 0) {
     console.warn(formatDiagnosticsSummary(diagnostics));
 
-    if (opts?.strict) {
+    if (strict) {
       process.exitCode = 1;
     }
   }
