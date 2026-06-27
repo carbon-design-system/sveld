@@ -320,6 +320,7 @@ TypeScript definitions land in the `types` folder by default. Include that folde
 - **`jsonOptions`** (object, optional): Options for JSON output.
 - **`markdown`** (boolean, optional): Generate component documentation in Markdown format.
 - **`markdownOptions`** (object, optional): Options for Markdown output.
+- **`watch`** (boolean, optional, default: `false`): Regenerate output incrementally when `.svelte` source changes during `vite dev` / `vite build --watch`. Only the changed component and the components that depend on it via [`@extendProps`](#extendprops) / `@extends` are re-parsed, rather than rebuilding every component. Without this option, the plugin only runs during `vite build`.
 - **`failFast`** (boolean, optional, default: `false`): Abort the entire run when a single component fails to parse. By default, parse failures are collected as diagnostics (and reported to `stderr`) so the remaining components still emit their output. Also available as the `--fail-fast` CLI flag.
 
 By default, only TypeScript definitions are generated.

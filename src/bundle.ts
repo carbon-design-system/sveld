@@ -1,0 +1,352 @@
+import { lstatSync, readFileSync } from "node:fs";
+import { readFile } from "node:fs/promises";
+import { dirname, isAbsolute, parse, relative, resolve } from "node:path";
+import { parse as parseSvelte } from "svelte/compiler";
+import { globSync } from "tinyglobby";
+import { asRelativeSourcePath, type NormalizedPath } from "./brands";
+import ComponentParser, { type ParsedComponent } from "./ComponentParser";
+import { type ParsedExports, parseExports } from "./parse-exports";
+import { normalizeSeparators } from "./path";
+
+export interface ComponentDocApi extends ParsedComponent {
+  filePath: NormalizedPath;
+  moduleName: string;
+}
+
+export type ComponentDocs = Map<string, ComponentDocApi>;
+
+/**
+ * A parse failure for a single component, captured so the rest of the run
+ * can continue. Surfaced via {@link GenerateBundleResult.errors}.
+ */
+export interface ComponentParseError {
+  filePath: string;
+  moduleName: string;
+  message: string;
+  stack?: string;
+}
+
+export interface GenerateBundleResult {
+  exports: ParsedExports;
+  components: ComponentDocs;
+  allComponentsForTypes: ComponentDocs;
+  /**
+   * Components that failed to parse. Empty unless `failFast` is disabled and
+   * one or more components threw during parsing.
+   */
+  errors: ComponentParseError[];
+}
+
+export interface GenerateBundleOptions {
+  /**
+   * Throw on the first component that fails to parse instead of collecting
+   * the failure and continuing with the remaining components.
+   */
+  failFast?: boolean;
+}
+
+/** A function that resolves a (possibly relative) component path to an absolute path. */
+export type ResolveComponentFilePath = (filePath: string) => string;
+
+/** Options controlling how a single component parse failure is handled. */
+export interface ProcessComponentOptions {
+  /** Rethrow on parse failure instead of reporting it via `onParseError`. */
+  failFast?: boolean;
+  /** Invoked with a diagnostic when a component fails to parse (and `failFast` is off). */
+  onParseError?: (error: ComponentParseError) => void;
+}
+
+const STYLE_TAG_REGEX = /<style.+?<\/style>/gims;
+const HYPHEN_REGEX = /-/g;
+
+function stripTopLevelStyleBlock(source: string) {
+  try {
+    const parsed = parseSvelte(source, { modern: false }) as { css?: { start?: number; end?: number } };
+    const start = parsed.css?.start;
+    const end = parsed.css?.end;
+
+    if (start === undefined || end === undefined) {
+      return source;
+    }
+
+    return `${source.slice(0, start)}${source.slice(end)}`;
+  } catch {
+    // Fall back to the previous regex behavior if the source cannot be parsed.
+    return source.replace(STYLE_TAG_REGEX, "");
+  }
+}
+
+/**
+ * Discovered component sources for an entry point, before parsing.
+ *
+ * `exports` holds explicitly exported components (used for JSON/Markdown);
+ * `allComponents` additionally includes glob-discovered components (used for
+ * `.d.ts` generation). `resolveComponentFilePath` maps a component `source`
+ * to its absolute path on disk.
+ */
+export interface CollectedComponents {
+  exports: ParsedExports;
+  allComponents: ParsedExports;
+  rootDir: string;
+  resolveComponentFilePath: ResolveComponentFilePath;
+}
+
+/**
+ * Discovers component sources for an entry point without parsing them.
+ *
+ * Parses the entry's exports (when `input` is a file) and, when `glob` is set,
+ * augments the set with every `.svelte` file under the entry directory.
+ */
+export function collectComponents(input: string, glob: boolean): CollectedComponents {
+  const isFile = lstatSync(input).isFile();
+  const dir = isFile ? dirname(input) : input;
+  const rootDir = resolve(dir);
+  const resolveComponentFilePath: ResolveComponentFilePath = (filePath) =>
+    isAbsolute(filePath) ? resolve(filePath) : resolve(rootDir, filePath);
+
+  /**
+   * Only parse exports if input is a file.
+   * Directory inputs don't have a single entry point to parse exports from.
+   */
+  let exports: ParsedExports = {};
+  if (isFile) {
+    const entry = readFileSync(input, "utf-8");
+    exports = parseExports(entry, rootDir);
+  }
+
+  const allComponents: ParsedExports = { ...exports };
+
+  if (glob) {
+    for (const matchedFile of globSync(["**/*.svelte"], { cwd: rootDir, absolute: true })) {
+      const file = resolve(matchedFile);
+      const moduleName = parse(file).name.replace(HYPHEN_REGEX, "");
+      const source = asRelativeSourcePath(normalizeSeparators(`./${relative(rootDir, file)}`));
+
+      if (exports[moduleName]) {
+        exports[moduleName].source = source;
+      }
+
+      if (allComponents[moduleName]) {
+        allComponents[moduleName].source = source;
+      } else {
+        allComponents[moduleName] = { source, default: false };
+      }
+    }
+  }
+
+  return { exports, allComponents, rootDir, resolveComponentFilePath };
+}
+
+/**
+ * Reads the given component file paths into a map of path -> contents.
+ *
+ * Failed reads are recorded as `null` (and logged) so callers can skip them
+ * gracefully rather than aborting the whole bundle.
+ */
+export async function readFileMap(filePaths: Iterable<string>): Promise<Map<string, string | null>> {
+  const fileContents = await Promise.all(
+    Array.from(filePaths).map(async (filePath) => {
+      try {
+        const content = await readFile(filePath, "utf-8");
+        return { path: filePath, content };
+      } catch (error) {
+        console.warn(`Warning: Failed to read file ${filePath}:`, error);
+        return { path: filePath, content: null };
+      }
+    }),
+  );
+
+  return new Map<string, string | null>(fileContents.map(({ path, content }) => [path, content]));
+}
+
+/**
+ * Parses a single component entry into its documentation API.
+ *
+ * Reads the component contents from `fileMap`, removes top-level styles for
+ * metadata parsing, and parses it to extract component metadata. Returns `null`
+ * for non-Svelte entries or files that could not be read.
+ *
+ * A component that throws while parsing is captured via `options.onParseError`
+ * (and `null` is returned) so callers can continue with the rest, unless
+ * `options.failFast` is set, in which case the error is rethrown.
+ *
+ * @param entry - Export entry tuple `[exportName, exportInfo]`
+ * @param entries - All sibling entries, used to resolve the module name
+ * @param fileMap - Map of resolved file paths to their contents
+ * @param resolveComponentFilePath - Resolves a component `source` to its absolute path
+ * @param options - Parse-failure handling (`failFast` / `onParseError`)
+ */
+export function processComponent(
+  [exportName, entry]: [string, ParsedExports[string]],
+  entries: Array<[string, ParsedExports[string]]>,
+  fileMap: Map<string, string | null>,
+  resolveComponentFilePath: ResolveComponentFilePath,
+  options: ProcessComponentOptions = {},
+): ComponentDocApi | null {
+  const filePath = entry.source;
+  const { ext, name } = parse(filePath);
+
+  let moduleName = exportName;
+
+  if (entries.length === 1 && exportName === "default") {
+    moduleName = name;
+  }
+
+  if (ext === ".svelte") {
+    const resolvedPath = resolveComponentFilePath(filePath);
+    const source = fileMap.get(resolvedPath);
+
+    if (source === null || source === undefined) {
+      /**
+       * File was not found or failed to read, skip this component.
+       * This can happen if the file doesn't exist or if there was an error
+       * reading it (already logged as a warning).
+       */
+      return null;
+    }
+
+    const normalizedFilePath = normalizeSeparators(filePath);
+    const parser = new ComponentParser();
+
+    let parsed: ParsedComponent;
+    try {
+      parsed = parser.parseSvelteComponent(stripTopLevelStyleBlock(source), {
+        moduleName,
+        filePath: normalizedFilePath,
+      });
+    } catch (error) {
+      /**
+       * Capture the failure as a diagnostic so the remaining components can
+       * still be processed. When `failFast` is enabled we rethrow to restore
+       * the abort-on-first-error behavior.
+       */
+      if (options.failFast) {
+        throw error;
+      }
+
+      const message = error instanceof Error ? error.message : String(error);
+      const stack = error instanceof Error ? error.stack : undefined;
+      options.onParseError?.({ filePath: normalizedFilePath, moduleName, message, stack });
+      return null;
+    }
+
+    return {
+      moduleName,
+      filePath: normalizedFilePath,
+      ...parsed,
+    };
+  }
+
+  return null;
+}
+
+/** Collects the resolved, absolute paths of all `.svelte` entries. */
+export function collectSvelteFilePaths(
+  entriesList: Array<Array<[string, ParsedExports[string]]>>,
+  resolveComponentFilePath: ResolveComponentFilePath,
+): Set<string> {
+  const uniqueFilePaths = new Set<string>();
+  for (const entries of entriesList) {
+    for (const [, entry] of entries) {
+      if (parse(entry.source).ext === ".svelte") {
+        uniqueFilePaths.add(resolveComponentFilePath(entry.source));
+      }
+    }
+  }
+  return uniqueFilePaths;
+}
+
+/** Reports collected component parse errors to stderr. No-op when empty. */
+export function reportParseErrors(errors: ComponentParseError[]): void {
+  if (errors.length === 0) return;
+  console.error(`sveld: failed to parse ${errors.length} component(s):`);
+  for (const { filePath, message } of errors) {
+    console.error(`  - ${filePath}: ${message}`);
+  }
+}
+
+/**
+ * Generates component documentation bundle from Svelte source files.
+ *
+ * Parses exports, discovers components (optionally via glob), and processes
+ * all Svelte files to extract component metadata. Returns both exported
+ * components (for JSON/Markdown) and all components (for TypeScript definitions).
+ *
+ * A single component that fails to parse is captured as a diagnostic (see
+ * {@link GenerateBundleResult.errors}) so the remaining components still emit
+ * output. Pass `{ failFast: true }` to restore abort-on-first-error behavior.
+ *
+ * @param input - Entry point file or directory containing Svelte components
+ * @param glob - Whether to glob for all .svelte files in the directory
+ * @param options - Bundle options (e.g. `failFast`)
+ * @returns Bundle result containing exports, components, allComponentsForTypes, and errors
+ *
+ * @example
+ * ```ts
+ * // Generate from single file:
+ * const result = await generateBundle("./src/App.svelte", false);
+ *
+ * // Generate from directory with glob:
+ * const result = await generateBundle("./src", true);
+ *
+ * // Abort on the first parse failure:
+ * const result = await generateBundle("./src", true, { failFast: true });
+ * ```
+ */
+export async function generateBundle(
+  input: string,
+  glob: boolean,
+  options: GenerateBundleOptions = {},
+): Promise<GenerateBundleResult> {
+  const { exports, allComponents, resolveComponentFilePath } = collectComponents(input, glob);
+
+  const exportEntries = Object.entries(exports);
+  const allComponentEntries = Object.entries(allComponents);
+
+  const uniqueFilePaths = collectSvelteFilePaths([exportEntries, allComponentEntries], resolveComponentFilePath);
+  const fileMap = await readFileMap(uniqueFilePaths);
+
+  const components: ComponentDocs = new Map();
+  const allComponentsForTypes: ComponentDocs = new Map();
+
+  /**
+   * Dedupe by file path: the same component is parsed once for the exported
+   * set and once for the all-components set.
+   */
+  const parseErrors = new Map<string, ComponentParseError>();
+  const processOptions: ProcessComponentOptions = {
+    failFast: options.failFast === true,
+    onParseError: (error) => parseErrors.set(error.filePath, error),
+  };
+
+  /**
+   * Process exported components (for metadata/JSON/Markdown).
+   * Only components that are explicitly exported are included in the
+   * components map for JSON and Markdown output.
+   */
+  for (const entry of exportEntries) {
+    const result = processComponent(entry, exportEntries, fileMap, resolveComponentFilePath, processOptions);
+    if (result) components.set(result.moduleName, result);
+  }
+
+  /**
+   * Process all components (for .d.ts generation).
+   * All discovered components are included in allComponentsForTypes
+   * to ensure TypeScript definitions are generated for all components,
+   * even if they're not explicitly exported.
+   */
+  for (const entry of allComponentEntries) {
+    const result = processComponent(entry, allComponentEntries, fileMap, resolveComponentFilePath, processOptions);
+    if (result) allComponentsForTypes.set(result.moduleName, result);
+  }
+
+  const errors = Array.from(parseErrors.values());
+  reportParseErrors(errors);
+
+  return {
+    exports,
+    components,
+    allComponentsForTypes,
+    errors,
+  };
+}
