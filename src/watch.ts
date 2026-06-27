@@ -1,18 +1,18 @@
 import { dirname, resolve } from "node:path";
-import type { ParsedExports } from "./parse-exports";
 import {
-  collectComponents,
-  collectSvelteFilePaths,
   type ComponentDocApi,
   type ComponentDocs,
   type ComponentParseError,
+  collectComponents,
+  collectSvelteFilePaths,
   type GenerateBundleResult,
-  processComponent,
   type ProcessComponentOptions,
+  processComponent,
+  type ResolveComponentFilePath,
   readFileMap,
   reportParseErrors,
-  type ResolveComponentFilePath,
 } from "./bundle";
+import type { ParsedExports } from "./parse-exports";
 
 const SVELTE_EXT_REGEX = /\.svelte$/;
 

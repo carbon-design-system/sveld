@@ -1,5 +1,5 @@
 import { dirname } from "node:path";
-import { generateBundle, type GenerateBundleResult } from "./bundle";
+import { type GenerateBundleResult, generateBundle } from "./bundle";
 import { getSvelteEntry } from "./get-svelte-entry";
 import { createSveldBundle, type SveldBundle } from "./watch";
 import writeJson, { type WriteJsonOptions } from "./writer/writer-json";
