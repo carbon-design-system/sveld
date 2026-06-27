@@ -1,0 +1,51 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 14,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>",
+      "source": {
+        "start": {
+          "line": 13,
+          "column": 27
+        },
+        "end": {
+          "line": 13,
+          "column": 35
+        }
+      }
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "notification",
+      "typeName": "NotificationContext",
+      "properties": [
+        {
+          "name": "notify",
+          "type": "(message: string) => void",
+          "description": "Push a notification message.",
+          "optional": false
+        }
+      ]
+    }
+  ],
+  "diagnostics": []
+}

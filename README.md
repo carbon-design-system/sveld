@@ -1961,9 +1961,26 @@ label?: string;
 When you call `setContext` in a component, `sveld`:
 
 1. Detects the `setContext` call
-2. Extracts the context key (must be a string literal)
+2. Resolves the context key (see [Supported context keys](#supported-context-keys))
 3. Finds JSDoc `@type` annotations on the variables being passed
 4. Generates a TypeScript type export for the context
+
+#### Supported context keys
+
+The key becomes the `{PascalCase}Context` type name. `sveld` can resolve:
+
+| Key form | Example | Generated type |
+| --- | --- | --- |
+| String literal | `setContext("simple-modal", …)` | `SimpleModalContext` |
+| Static template literal | `` setContext(`simple-modal`, …) `` | `SimpleModalContext` |
+| `const`-bound string | `const KEY = "simple-modal";`<br>`setContext(KEY, …)` | `SimpleModalContext` |
+| `Symbol()` / `Symbol.for()` | `setContext(Symbol("tabs"), …)` | `TabsContext` |
+
+`const` identifiers are followed up to 5 levels deep (`const A = "x"; const B = A;`). Only `const` bindings count. `let`, `var`, and props are skipped because they can change at runtime.
+
+Symbol keys take their name from the description: `Symbol("tabs")` and `Symbol.for("tabs")` both become `TabsContext`. For `const ModalKey = Symbol()` with no description, the binding name wins: `ModalKeyContext`.
+
+Anything else (dynamic identifiers, template interpolation, other function calls) logs a warning. No context type is generated.
 
 #### Example
 

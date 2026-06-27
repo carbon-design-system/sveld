@@ -1,0 +1,57 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 22,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>",
+      "source": {
+        "start": {
+          "line": 21,
+          "column": 19
+        },
+        "end": {
+          "line": 21,
+          "column": 27
+        }
+      }
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "simple-modal",
+      "typeName": "SimpleModalContext",
+      "properties": [
+        {
+          "name": "open",
+          "type": "(component: any, props?: any) => void",
+          "description": "Open the modal with content",
+          "optional": false
+        },
+        {
+          "name": "close",
+          "type": "() => void",
+          "description": "Close the modal",
+          "optional": false
+        }
+      ]
+    }
+  ],
+  "diagnostics": []
+}
