@@ -147,7 +147,17 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": true,
-      "reactive": false
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 2
+        },
+        "end": {
+          "line": 9,
+          "column": 4
+        }
+      }
     }
   ],
   "slots": [

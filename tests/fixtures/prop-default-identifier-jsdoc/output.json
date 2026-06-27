@@ -261,7 +261,7 @@
     {
       "name": "translate",
       "kind": "let",
-      "description": "Translate a label to the active locale.\n@example translate(\"submit\") // => \"Submit\"",
+      "description": "Translate a label to the active locale.",
       "type": "(key: string) => string",
       "typeSource": "jsdoc",
       "isFunction": true,

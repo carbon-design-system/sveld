@@ -77,30 +77,44 @@ function deprecatedCommentLine(deprecated: DeprecatedValue | undefined): string 
   return `* ${line.replace(NEWLINE_TO_COMMENT_REGEX, "\n* ")}\n`;
 }
 
+function expandJsDocTagContent(name: string, body: string): string[] {
+  if (!body) return [`@${name}`];
+  if (!body.includes("\n")) return [`@${name} ${body}`];
+  return [`@${name}`, ...body.split("\n")];
+}
+
+function expandJsDocTagLines(tags: Array<{ name: string; body: string }> | undefined): string[] {
+  const lines: string[] = [];
+  for (const { name, body } of tags ?? []) {
+    lines.push(...expandJsDocTagContent(name, body));
+  }
+  return lines;
+}
+
 function formatSlotJsDoc(
   description: string | undefined,
   tags: Array<{ name: string; body: string }> | undefined,
   deprecated?: DeprecatedValue,
 ): string {
   const deprecatedLine = formatDeprecatedJsDocLine(deprecated);
-  const hasTags = tags && tags.length > 0;
+  const tagLines = expandJsDocTagLines(tags);
+  const hasTags = tagLines.length > 0;
   if (!description && !hasTags && !deprecatedLine) return "";
   if (!hasTags && !deprecatedLine) {
     return description?.includes("\n") ? formatMultiLineComment(description) : formatSingleLineComment(description);
   }
   const lines: string[] = [];
   if (description) lines.push(...description.split("\n"));
-  for (const { name, body } of tags ?? []) {
-    if (!body) {
-      lines.push(`@${name}`);
-    } else if (body.includes("\n")) {
-      lines.push(`@${name}`, ...body.split("\n"));
-    } else {
-      lines.push(`@${name} ${body}`);
-    }
-  }
+  lines.push(...tagLines);
   if (deprecatedLine) lines.push(...deprecatedLine.split("\n"));
   return `/**\n * ${lines.join("\n * ")}\n */`;
+}
+
+/** Renders structured JSDoc tags as `* @tag ...\n` lines for `wrapCommentInJSDoc`. */
+function formatTagCommentLines(tags?: Array<{ name: string; body: string }>): string {
+  const tagLines = expandJsDocTagLines(tags);
+  if (tagLines.length === 0) return "";
+  return tagLines.map((line) => `* ${line}\n`).join("");
 }
 
 export function formatTsProps(props?: string) {
@@ -245,8 +259,16 @@ function addCommentLine(value: string | boolean | undefined, returnValue?: strin
 /**
  * Creates a prop comment string from a description and optional deprecation.
  */
-function createPropComment(description: string | undefined, deprecated?: DeprecatedValue): string {
-  return [addCommentLine(formatDescriptionForComment(description)), deprecatedCommentLine(deprecated)]
+function createPropComment(
+  description: string | undefined,
+  deprecated?: DeprecatedValue,
+  tags?: Array<{ name: string; body: string }>,
+): string {
+  return [
+    addCommentLine(formatDescriptionForComment(description)),
+    deprecatedCommentLine(deprecated),
+    formatTagCommentLines(tags),
+  ]
     .filter(Boolean)
     .join("");
 }
@@ -315,8 +337,7 @@ function genPropDef(
       const descriptionHasDefault = DESCRIPTION_DEFAULT_TAG_REGEX.test(prop.description ?? "");
 
       const prop_comments = [
-        addCommentLine(formatDescriptionForComment(prop.description)),
-        deprecatedCommentLine(prop.deprecated),
+        createPropComment(prop.description, prop.deprecated, prop.tags),
         addCommentLine(prop.constant, "@constant"),
         /**
          * Don't add @default for functions - they don't have meaningful default values.
@@ -722,10 +743,9 @@ function genEventDef(def: Pick<ComponentDocApi, "events">) {
   const events_map = def.events
     .map((event) => {
       let description = "";
-      if (event.deprecated !== undefined) {
-        description = `${wrapCommentInJSDoc(createPropComment(event.description, event.deprecated))}\n`;
-      } else if (event.description) {
-        description = `${formatSingleLineComment(event.description)}\n`;
+      const eventComment = formatSlotJsDoc(event.description, event.tags, event.deprecated);
+      if (eventComment) {
+        description = `${eventComment}\n`;
       }
 
       let eventType: string;
@@ -810,7 +830,7 @@ function genAccessors(def: Pick<ComponentDocApi, "props">) {
   return def.props
     .filter((prop) => prop.isFunctionDeclaration || prop.kind === "const")
     .map((prop) => {
-      const prop_comments = createPropComment(prop.description, prop.deprecated);
+      const prop_comments = createPropComment(prop.description, prop.deprecated, prop.tags);
 
       const functionType = generateFunctionType(prop);
 
@@ -840,7 +860,7 @@ function genComponentComment(def: Pick<ComponentDocApi, "componentComment">) {
 function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">) {
   return def.moduleExports
     .map((prop) => {
-      const prop_comments = createPropComment(prop.description, prop.deprecated);
+      const prop_comments = createPropComment(prop.description, prop.deprecated, prop.tags);
 
       let type_def: string;
 

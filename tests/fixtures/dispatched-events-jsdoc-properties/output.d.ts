@@ -19,8 +19,10 @@ export default class DispatchedEventsJsdocProperties extends SvelteComponentType
   {
     /** Will be fired if value has been changed */
     change: CustomEvent<null>;
-    /** Fired when the collection changes. The detail carries the up-to-date,
-well-formed set of items (hyphenated prose must survive verbatim). */
+    /**
+     * Fired when the collection changes. The detail carries the up-to-date,
+     * well-formed set of items (hyphenated prose must survive verbatim).
+     */
     "items:change": CustomEvent<ChangeDetail>;
     /** Snowball event fired when throwing a snowball. */
     snowball: CustomEvent<{

@@ -115,6 +115,41 @@ function getInlineTagDescription(tagSource: { tokens: { description?: string } }
   return tagSource[0].tokens.description;
 }
 
+/** Structured JSDoc tag (e.g. `{ name: "since", body: "1.2.0" }`). */
+interface JsDocPassthroughTag {
+  name: string;
+  body: string;
+}
+
+/** `@since` and `@example` are kept out of prose descriptions and exposed as `tags` instead. */
+const IDE_PASSTHROUGH_TAGS = new Set(["since", "example"]);
+
+type JsDocSourceTokens = {
+  tag?: string;
+  name?: string;
+  postName?: string;
+  description?: string;
+  postDelimiter?: string;
+  end?: string;
+};
+
+/** Rebuilds a tag body from `comment-parser` source lines (needed for multi-line `@example`). */
+function getPassthroughTagBodyFromSource(tagSource: Array<{ tokens: JsDocSourceTokens }> | undefined): string {
+  if (!tagSource || tagSource.length === 0) return "";
+  const parts: string[] = [];
+  for (const line of tagSource) {
+    const t = line.tokens;
+    if ((t.end ?? "").trim() === "*/") break;
+    if (t.tag) {
+      const inline = `${t.name ?? ""}${t.postName ?? ""}${t.description ?? ""}`.trimEnd();
+      if (inline) parts.push(inline);
+    } else {
+      parts.push(`${t.postDelimiter ?? ""}${t.description ?? ""}`);
+    }
+  }
+  return parts.join("\n");
+}
+
 /**
  * From `@deprecated` JSDoc: a message string, or `true` when the tag has no message.
  */
@@ -378,6 +413,8 @@ interface ComponentProp {
   bindable?: true;
   /** From `@deprecated` JSDoc. */
   deprecated?: DeprecatedValue;
+  /** Structured `@since` / `@example` tags, in source order. */
+  tags?: JsDocPassthroughTag[];
   /** Source range for the prop declaration, when available */
   source?: SourceRange;
 }
@@ -509,7 +546,7 @@ interface ComponentSlot {
    * JSDoc tags that appeared after the prose description and before `@slot` / `@snippet`
    * (e.g. `@example`), in source order.
    */
-  tags?: Array<{ name: string; body: string }>;
+  tags?: JsDocPassthroughTag[];
   /** Source range for the slot/snippet declaration or documentation tag, when available */
   source?: SourceRange;
 }
@@ -548,6 +585,8 @@ interface ForwardedEvent {
   deprecated?: DeprecatedValue;
   /** The detail type if explicitly specified in `@event` tag */
   detail?: string;
+  /** Structured `@since` / `@example` tags, in source order. */
+  tags?: JsDocPassthroughTag[];
   /** Source range for the forwarded event declaration or documentation tag, when available */
   source?: SourceRange;
 }
@@ -569,6 +608,8 @@ interface DispatchedEvent {
   description?: string;
   /** From `@deprecated` JSDoc. */
   deprecated?: DeprecatedValue;
+  /** Structured `@since` / `@example` tags, in source order. */
+  tags?: JsDocPassthroughTag[];
   /** Source range for the dispatched event call or documentation tag, when available */
   source?: SourceRange;
 }
@@ -607,6 +648,8 @@ export interface SerializedForwardedEvent {
   deprecated?: DeprecatedValue;
   /** The detail type if explicitly specified in `@event` tag */
   detail?: string;
+  /** Structured `@since` / `@example` tags, in source order. */
+  tags?: JsDocPassthroughTag[];
   /** Source range for the forwarded event declaration or documentation tag, when available */
   source?: SourceRange;
 }
@@ -1895,7 +1938,8 @@ export default class ComponentParser {
    *     { tag: "param", name: "value", type: "string" }
    *   ],
    *   returns: { tag: "returns", type: "void" },
-   *   additional: [{ tag: "since", name: "1.0.0" }],
+   *   additional: [{ tag: "see", name: "OtherType" }],
+   *   passthrough: [{ tag: "since", name: "1.0.0" }],
    *   description: "Main description text"
    * }
    * ```
@@ -1925,6 +1969,7 @@ export default class ComponentParser {
     let binding: ComponentPropBinding | undefined;
     let deprecated: DeprecatedValue | undefined;
     const additionalTags: typeof tags = [];
+    const passthroughTags: typeof tags = [];
 
     for (const tag of tags) {
       if (tag.tag === "type") {
@@ -1935,6 +1980,8 @@ export default class ComponentParser {
         returnsTag = tag;
       } else if (tag.tag === "deprecated") {
         deprecated ??= deprecatedValueFromParts(tag.name, tag.description);
+      } else if (IDE_PASSTHROUGH_TAGS.has(tag.tag)) {
+        passthroughTags.push(tag);
       } else if (tag.tag === "bindable") {
         if (tag.type) {
           this.logParserWarning(`Ignoring invalid @bindable value "${tag.type} ${tag.name}".`);
@@ -1959,6 +2006,7 @@ export default class ComponentParser {
       binding,
       deprecated,
       additional: additionalTags,
+      passthrough: passthroughTags,
       description: parsed[0]?.description,
     };
   }
@@ -2069,6 +2117,7 @@ export default class ComponentParser {
         description?: string;
         binding?: ComponentPropBinding;
         deprecated?: DeprecatedValue;
+        tags?: JsDocPassthroughTag[];
       }
     | undefined {
     if (!leadingComments) return undefined;
@@ -2087,6 +2136,7 @@ export default class ComponentParser {
       binding,
       deprecated,
       additional: additionalTags,
+      passthrough: passthroughTags,
       description: commentDescription,
     } = this.getCommentTags(comment);
 
@@ -2117,9 +2167,8 @@ export default class ComponentParser {
     if (returnsTag) returnType = this.aliasType(returnsTag.type);
 
     /**
-     * Build description from comment description and non-param/non-type tags.
-     * Additional tags (like `@since`) are included in the description
-     * as formatted strings to preserve all metadata.
+     * Build description from comment description and tags that are not handled
+     * elsewhere (params, type, passthrough tags, etc.).
      */
     const formattedDescription = ComponentParser.assignValue(commentDescription?.trim());
     if (formattedDescription || additionalTags.length > 0) {
@@ -2134,7 +2183,15 @@ export default class ComponentParser {
       description = descriptionParts.join("\n");
     }
 
-    return { type, params, returnType, description, binding, deprecated };
+    const tags: JsDocPassthroughTag[] | undefined =
+      passthroughTags.length > 0
+        ? passthroughTags.map((tag) => ({
+            name: tag.tag,
+            body: getPassthroughTagBodyFromSource(tag.source),
+          }))
+        : undefined;
+
+    return { type, params, returnType, description, binding, deprecated, tags };
   }
 
   private buildRunesPropTypeMetadata() {
@@ -3043,6 +3100,7 @@ export default class ComponentParser {
           description: propertyJSDoc?.description ?? initResult.resolvedDescription,
           binding: propertyJSDoc?.binding,
           deprecated: propertyJSDoc?.deprecated,
+          tags: propertyJSDoc?.tags,
           ...(bindable ? { bindable: true as const } : {}),
           type,
           typeSource,
@@ -3424,7 +3482,7 @@ export default class ComponentParser {
     slot_fallback?: string;
     slot_description?: string;
     slot_deprecated?: DeprecatedValue;
-    slot_tags?: Array<{ name: string; body: string }>;
+    slot_tags?: JsDocPassthroughTag[];
     source?: SourceRange;
   }) {
     const default_slot = slot_name === undefined || slot_name === "";
@@ -3502,8 +3560,9 @@ export default class ComponentParser {
     has_argument,
     description,
     deprecated,
+    tags,
     source,
-  }: Pick<DispatchedEvent, "name" | "description" | "deprecated" | "source"> & {
+  }: Pick<DispatchedEvent, "name" | "description" | "deprecated" | "tags" | "source"> & {
     detail: string;
     has_argument: boolean;
   }) {
@@ -3518,11 +3577,13 @@ export default class ComponentParser {
     const event_description = description;
     if (this.events.has(name)) {
       const existing_event = this.events.get(name) as DispatchedEvent;
+      const merged_tags = existing_event.tags ?? tags;
       this.events.set(name, {
         ...existing_event,
         detail: existing_event.detail === undefined ? default_detail : existing_event.detail,
         description: existing_event.description || event_description,
         deprecated: existing_event.deprecated ?? deprecated,
+        tags: merged_tags,
         source: source || existing_event.source,
       });
     } else {
@@ -3532,6 +3593,7 @@ export default class ComponentParser {
         detail: default_detail,
         description: event_description,
         deprecated,
+        tags,
         source,
       });
     }
@@ -3610,6 +3672,7 @@ export default class ComponentParser {
       let currentEventDeprecated: DeprecatedValue | undefined;
       let currentEventSource: SourceRange | undefined;
       let currentEventTagLine: number | undefined;
+      let currentEventTags: JsDocPassthroughTag[] = [];
       const eventProperties: Array<{
         name: string;
         type: string;
@@ -3645,7 +3708,7 @@ export default class ComponentParser {
        */
       let commentDescriptionUsed = false;
       let isFirstTag = true;
-      const pendingTags: Array<{ name: string; body: string }> = [];
+      const pendingTags: JsDocPassthroughTag[] = [];
       /** `@deprecated` for the next `@slot` / `@snippet` in this block. */
       let pendingDeprecated: DeprecatedValue | undefined;
 
@@ -3767,26 +3830,6 @@ export default class ComponentParser {
       };
 
       /**
-       * Verbatim JSDoc body for a passthrough tag (lines after `@tag` on the tag line, plus
-       * continuation lines until the next tag or end of block).
-       */
-      const getPassthroughTagBody = (tagSource: typeof blockSource): string => {
-        if (!tagSource || tagSource.length === 0) return "";
-        const parts: string[] = [];
-        for (const line of tagSource) {
-          const t = line.tokens;
-          if ((t.end ?? "").trim() === "*/") break;
-          if (t.tag) {
-            const inline = `${t.name}${t.postName}${t.description}`.trimEnd();
-            if (inline) parts.push(inline);
-          } else {
-            parts.push(`${t.postDelimiter}${t.description}`);
-          }
-        }
-        return parts.join("\n");
-      };
-
-      /**
        * Finalizes the current event being built and adds it to the events map.
        *
        * If the event has properties defined via `@property` tags, builds a detail type
@@ -3870,6 +3913,7 @@ export default class ComponentParser {
             has_argument: false,
             description: currentEventDescription,
             deprecated: currentEventDeprecated,
+            tags: currentEventTags.length > 0 ? currentEventTags : undefined,
             source: currentEventSource,
           });
           this.eventDescriptions.set(currentEventName, currentEventDescription);
@@ -3881,6 +3925,7 @@ export default class ComponentParser {
           currentEventDeprecated = undefined;
           currentEventSource = undefined;
           currentEventTagLine = undefined;
+          currentEventTags = [];
         }
       };
 
@@ -4249,7 +4294,17 @@ export default class ComponentParser {
              */
             break;
           default:
-            pendingTags.push({ name: tag, body: getPassthroughTagBody(tagSource) });
+            {
+              const passthroughTag = {
+                name: tag,
+                body: getPassthroughTagBodyFromSource(tagSource),
+              };
+              if (currentEventName !== undefined && IDE_PASSTHROUGH_TAGS.has(tag)) {
+                currentEventTags.push(passthroughTag);
+              } else {
+                pendingTags.push(passthroughTag);
+              }
+            }
             break;
         }
       }
@@ -5137,6 +5192,7 @@ export default class ComponentParser {
               kind,
               description,
               deprecated: jsdocInfo?.deprecated,
+              tags: jsdocInfo?.tags,
               type,
               typeSource,
               value,
@@ -5148,6 +5204,7 @@ export default class ComponentParser {
               isRequired: false,
               constant: kind === "const",
               reactive: false,
+              source: this.sourceRangeFromNode(node),
             });
           }
         },
@@ -5428,6 +5485,7 @@ export default class ComponentParser {
             description,
             binding: jsdocInfo?.binding,
             deprecated: jsdocInfo?.deprecated,
+            tags: jsdocInfo?.tags,
             type,
             typeSource,
             value,
@@ -5774,6 +5832,7 @@ export default class ComponentParser {
           element: element,
           description: event_description,
           deprecated: event.deprecated,
+          tags: event.tags,
           source: event.source,
         };
         /**

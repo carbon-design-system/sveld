@@ -49,7 +49,6 @@ export type PropDefaultIdentifierJsdocProps = {
 
   /**
    * Translate a label to the active locale.
-   * @example translate("submit") // => "Submit"
    */
   translate?: (key: string) => string;
 };

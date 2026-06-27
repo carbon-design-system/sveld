@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "generator": {
     "name": "sveld",
-    "version": "0.32.3",
-    "svelteVersion": "5.55.9"
+    "version": "0.32.8",
+    "svelteVersion": "5.56.3"
   },
   "total": 156,
   "components": [
@@ -921,7 +921,13 @@
         {
           "name": "icon",
           "kind": "let",
-          "description": "Specify the icon to render.\nAlternatively, use the named slot \"icon\".\n@example \n```svelte\n<Button>\n  <Icon slot=\"icon\" size={20} />\n</Button>\n```",
+          "description": "Specify the icon to render.\nAlternatively, use the named slot \"icon\".",
+          "tags": [
+            {
+              "name": "example",
+              "body": " ```svelte\n <Button>\n   <Icon slot=\"icon\" size={20} />\n </Button>\n ```"
+            }
+          ],
           "type": "any",
           "typeSource": "jsdoc",
           "value": "undefined",
@@ -1019,7 +1025,13 @@
         {
           "name": "as",
           "kind": "let",
-          "description": "Set to `true` to render a custom HTML element.\nProps are destructured as `props` in the default slot.\n@example \n```svelte\n<Button let:props>\n  <div {...props}>Custom Element</div>\n</Button>\n```",
+          "description": "Set to `true` to render a custom HTML element.\nProps are destructured as `props` in the default slot.",
+          "tags": [
+            {
+              "name": "example",
+              "body": " ```svelte\n <Button let:props>\n   <div {...props}>Custom Element</div>\n </Button>\n ```"
+            }
+          ],
           "type": "boolean",
           "typeSource": "default",
           "value": "false",
@@ -1333,7 +1345,7 @@
         {
           "name": "small",
           "kind": "let",
-          "description": "@deprecated this prop will be removed in the next major release\nUse size=\"small\" instead",
+          "deprecated": "this prop will be removed in the next major release\nUse size=\"small\" instead",
           "type": "boolean",
           "typeSource": "default",
           "value": "false",
@@ -8278,7 +8290,8 @@
         {
           "name": "ariaLabel",
           "kind": "let",
-          "description": "Specify the ARIA label for the nav\n@deprecated use \"aria-label\" instead",
+          "description": "Specify the ARIA label for the nav",
+          "deprecated": "use \"aria-label\" instead",
           "type": "string",
           "typeSource": "jsdoc",
           "value": "undefined",
@@ -16214,7 +16227,7 @@
         {
           "name": "small",
           "kind": "let",
-          "description": "@deprecated this prop will be removed in the next major release\nUse size=\"sm\" instead",
+          "deprecated": "this prop will be removed in the next major release\nUse size=\"sm\" instead",
           "type": "boolean",
           "typeSource": "jsdoc",
           "value": "false",
@@ -16595,7 +16608,7 @@
         {
           "name": "small",
           "kind": "let",
-          "description": "@deprecated this prop will be removed in the next major release\nSet to `true` to use the small variant",
+          "deprecated": "this prop will be removed in the next major release\nSet to `true` to use the small variant",
           "type": "boolean",
           "typeSource": "default",
           "value": "false",
@@ -22416,7 +22429,7 @@
         {
           "name": "hideLabel",
           "kind": "let",
-          "description": "@deprecated The `hideLabel` prop for `TimePickerSelect` is no longer needed and has been deprecated. It will be removed in the next major release.\nSet to `false` to show the label text",
+          "deprecated": "The `hideLabel` prop for `TimePickerSelect` is no longer needed and has been deprecated. It will be removed in the next major release.\nSet to `false` to show the label text",
           "type": "boolean",
           "typeSource": "default",
           "value": "true",

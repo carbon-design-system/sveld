@@ -161,6 +161,10 @@
           "description": "Present only when the prop is explicitly declared with Svelte 5 $bindable()."
         },
         "deprecated": { "$ref": "#/$defs/deprecated" },
+        "tags": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/jsdocTag" }
+        },
         "source": { "$ref": "#/$defs/sourceRange" }
       }
     },
@@ -232,6 +236,10 @@
         "description": { "type": "string" },
         "deprecated": { "$ref": "#/$defs/deprecated" },
         "detail": { "type": "string" },
+        "tags": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/jsdocTag" }
+        },
         "source": { "$ref": "#/$defs/sourceRange" }
       }
     },
@@ -245,6 +253,10 @@
         "detail": { "type": "string" },
         "description": { "type": "string" },
         "deprecated": { "$ref": "#/$defs/deprecated" },
+        "tags": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/jsdocTag" }
+        },
         "source": { "$ref": "#/$defs/sourceRange" }
       }
     },

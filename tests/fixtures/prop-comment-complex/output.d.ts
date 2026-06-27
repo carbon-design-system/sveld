@@ -5,11 +5,11 @@ export type PropCommentComplexProps = {
    * Specify the switch text.
    * Alternatively, use the default slot.
    * @example
-   * ```svelte
-   * <Switch>
-   *   <span>Custom Text</span>
-   * </Switch>
-   * ```
+   *  ```svelte
+   *  <Switch>
+   *    <span>Custom Text</span>
+   *  </Switch>
+   *  ```
    * @default ""
    */
   text?: string;
@@ -18,11 +18,11 @@ export type PropCommentComplexProps = {
    * Specify the icon to render.
    * Alternatively, use the named slot "icon".
    * @example
-   * ```svelte
-   * <Button>
-   *   <Icon slot="icon" size={20} />
-   * </Button>
-   * ```
+   *  ```svelte
+   *  <Button>
+   *    <Icon slot="icon" size={20} />
+   *  </Button>
+   *  ```
    * @default undefined
    */
   icon?: any;
