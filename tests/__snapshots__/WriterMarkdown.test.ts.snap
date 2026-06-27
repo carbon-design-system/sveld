@@ -29,6 +29,96 @@ None.
 "
 `;
 
+exports[`WriterMarkdown single-file output is unchanged when no options are passed 1`] = `
+"# Component Index
+
+## Components
+
+  - [\`Button\`](#button)
+  - [\`Input\`](#input)
+
+---
+
+## \`Button\`
+
+### Props
+
+None.
+
+### Slots
+
+None.
+
+### Events
+
+None.
+
+## \`Input\`
+
+### Props
+
+None.
+
+### Slots
+
+None.
+
+### Events
+
+None.
+
+"
+`;
+
+exports[`WriterMarkdown single-file output supports opt-in toc and anchors 1`] = `
+"# Component Index
+
+## Components
+
+  - [\`Button\`](#button)
+
+---
+
+<a id="button"></a>
+
+## \`Button\`
+
+- [Types](#button-types)
+- [Props](#button-props)
+- [Slots](#button-slots)
+- [Events](#button-events)
+
+<a id="button-types"></a>
+
+### Types
+
+\`\`\`ts
+export type ButtonSize
+\`\`\`
+
+<a id="button-props"></a>
+
+### Props
+
+| Prop name | Required | Kind | Reactive | Binding | Type | Default value | Description |
+| :- | :- | :- | :- | :- | :- | :- | :- |
+| size | No | <code>let</code> | No | -- | -- | -- | Button size. |
+<a id="button-slots"></a>
+
+### Slots
+
+None.
+
+<a id="button-events"></a>
+
+### Events
+
+| Event name | Type | Detail | Description |
+| :- | :- | :- | :- |
+| click | forwarded | -- | -- |
+"
+`;
+
 exports[`WriterMarkdown slots table renders descriptions and pass-through tags 1`] = `
 "# Component Index
 
@@ -51,6 +141,77 @@ None.
 | -- | Yes | <code>{ prop: number } </code> | -- | Default content.<br />Spans two lines.<br />@deprecated Prefer the \`body\` slot.<br />@since 1.2.0 |
 | title | No | -- | -- | Heading content.<br />@example &lt;Example&gt;Hi&lt;/Example&gt; |
 | footer | No | -- | -- | -- |
+### Events
+
+None.
+
+"
+`;
+
+exports[`WriterMarkdown split mode emits one document per component with frontmatter 1`] = `
+"---
+name: "Button"
+since: "1.2.0"
+---
+
+<a id="button"></a>
+
+## \`Button\`
+
+- [Props](#button-props)
+- [Slots](#button-slots)
+- [Events](#button-events)
+
+<a id="button-props"></a>
+
+### Props
+
+| Prop name | Required | Kind | Reactive | Binding | Type | Default value | Description |
+| :- | :- | :- | :- | :- | :- | :- | :- |
+| disabled | No | <code>let</code> | No | -- | -- | -- | Disable the button. |
+<a id="button-slots"></a>
+
+### Slots
+
+None.
+
+<a id="button-events"></a>
+
+### Events
+
+None.
+
+"
+`;
+
+exports[`WriterMarkdown split mode emits one document per component with frontmatter 2`] = `
+"---
+name: "LegacyInput"
+deprecated: "Use \`Input\` instead."
+---
+
+<a id="legacyinput"></a>
+
+## \`LegacyInput\`
+
+- [Props](#legacyinput-props)
+- [Slots](#legacyinput-slots)
+- [Events](#legacyinput-events)
+
+<a id="legacyinput-props"></a>
+
+### Props
+
+None.
+
+<a id="legacyinput-slots"></a>
+
+### Slots
+
+None.
+
+<a id="legacyinput-events"></a>
+
 ### Events
 
 None.

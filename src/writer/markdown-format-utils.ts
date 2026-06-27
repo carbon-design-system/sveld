@@ -6,6 +6,23 @@ export const WHITESPACE_REGEX = /\s+/g;
 
 export const MD_TYPE_UNDEFINED = "--";
 
+/**
+ * Slugify heading text into a stable anchor fragment.
+ *
+ * Lowercases the text, strips backticks, and collapses whitespace runs
+ * into single hyphens. Used both for the global table of contents and for
+ * per-heading anchors so links resolve consistently.
+ *
+ * @example
+ * ```ts
+ * slugify("`Button`")   // Returns: "button"
+ * slugify("Props list") // Returns: "props-list"
+ * ```
+ */
+export function slugify(raw: string): string {
+  return raw.toLowerCase().replace(BACKTICK_REGEX, "").replace(WHITESPACE_REGEX, "-");
+}
+
 export const PROP_TABLE_HEADER =
   "| Prop name | Required | Kind | Reactive | Binding | Type | Default value | Description |\n| :- | :- | :- | :- | :- | :- | :- | :- |\n";
 export const SLOT_TABLE_HEADER =
