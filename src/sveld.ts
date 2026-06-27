@@ -1,6 +1,6 @@
 import { formatDiagnosticsSummary, type SveldDiagnostic } from "./diagnostics";
 import { getSvelteEntry } from "./get-svelte-entry";
-import { generateBundle, type PluginSveldOptions, writeOutput } from "./plugin";
+import { generateBundle, type PluginSveldOptions, toGenerateBundleOptions, writeOutput } from "./plugin";
 
 interface SveldOptions extends Omit<PluginSveldOptions, "entry"> {
   /**
@@ -40,7 +40,7 @@ interface SveldResult {
 export async function sveld(opts?: SveldOptions): Promise<SveldResult> {
   const input = getSvelteEntry(opts?.input);
   if (input === null) return { diagnostics: [] };
-  const result = await generateBundle(input, opts?.glob === true, { failFast: opts?.failFast });
+  const result = await generateBundle(input, opts?.glob === true, toGenerateBundleOptions(opts));
   writeOutput(result, { ...opts, entry: opts?.input }, input);
 
   const { diagnostics } = result;

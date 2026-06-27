@@ -4,7 +4,11 @@ import { dirname, isAbsolute, parse, relative, resolve } from "node:path";
 import { parse as parseSvelte } from "svelte/compiler";
 import { globSync } from "tinyglobby";
 import { asRelativeSourcePath, type NormalizedPath } from "./brands";
-import ComponentParser, { type ParsedComponent } from "./ComponentParser";
+import ComponentParser, {
+  applyResolvedProps,
+  getParsedComponentTypeScriptMetadata,
+  type ParsedComponent,
+} from "./ComponentParser";
 import { dedupeDiagnostics, type SveldDiagnostic } from "./diagnostics";
 import { type ParsedExports, parseExports } from "./parse-exports";
 import { normalizeSeparators } from "./path";
@@ -46,6 +50,20 @@ export interface GenerateBundleOptions {
    * the failure and continuing with the remaining components.
    */
   failFast?: boolean;
+  /**
+   * Load the TypeScript program to expand opaque imported whole-object `$props()`
+   * types into JSON/Markdown props. Off by default; requires `typescript`.
+   */
+  resolveTypes?: boolean;
+}
+
+export function toGenerateBundleOptions(
+  opts?: Pick<GenerateBundleOptions, "failFast" | "resolveTypes">,
+): GenerateBundleOptions {
+  return {
+    failFast: opts?.failFast,
+    resolveTypes: opts?.resolveTypes === true,
+  };
 }
 
 /** A function that resolves a (possibly relative) component path to an absolute path. */
@@ -281,7 +299,7 @@ export function reportParseErrors(errors: ComponentParseError[]): void {
  *
  * @param input - Entry point file or directory containing Svelte components
  * @param glob - Whether to glob for all .svelte files in the directory
- * @param options - Bundle options (e.g. `failFast`)
+ * @param options - Bundle options (e.g. `failFast`, `resolveTypes`)
  * @returns Bundle result containing exports, components, allComponentsForTypes, and errors
  *
  * @example
@@ -301,7 +319,7 @@ export async function generateBundle(
   glob: boolean,
   options: GenerateBundleOptions = {},
 ): Promise<GenerateBundleResult> {
-  const { exports, allComponents, resolveComponentFilePath } = collectComponents(input, glob);
+  const { exports, allComponents, rootDir, resolveComponentFilePath } = collectComponents(input, glob);
 
   const exportEntries = Object.entries(exports);
   const allComponentEntries = Object.entries(allComponents);
@@ -346,6 +364,10 @@ export async function generateBundle(
   const errors = Array.from(parseErrors.values());
   reportParseErrors(errors);
 
+  if (options.resolveTypes) {
+    await resolveImportedPropTypes(components, rootDir, resolveComponentFilePath);
+  }
+
   // Same file can land in both export and all-components passes; dedupe before returning.
   const diagnostics = dedupeDiagnostics(
     Array.from(allComponentsForTypes.values()).flatMap((component) => component.diagnostics ?? []),
@@ -358,4 +380,44 @@ export async function generateBundle(
     errors,
     diagnostics,
   };
+}
+
+async function resolveImportedPropTypes(
+  components: ComponentDocs,
+  rootDir: string,
+  resolveComponentFilePath: ResolveComponentFilePath,
+): Promise<void> {
+  const candidates: Array<{
+    component: ComponentDocApi;
+    metadata: NonNullable<ReturnType<typeof getParsedComponentTypeScriptMetadata>>;
+  }> = [];
+
+  for (const component of components.values()) {
+    const metadata = getParsedComponentTypeScriptMetadata(component);
+    if (!metadata?.canonicalPropsType || component.props.length > 0) continue;
+    candidates.push({ component, metadata });
+  }
+
+  if (candidates.length === 0) return;
+
+  const { TypeResolver } = await import("./resolve-types");
+  const resolver = await TypeResolver.create(rootDir);
+  if (!resolver) return;
+
+  try {
+    const resolvedByModule = await resolver.expandAll(
+      candidates.map(({ component, metadata }) => ({
+        moduleName: component.moduleName,
+        metadata,
+        filePath: resolveComponentFilePath(component.filePath),
+      })),
+    );
+
+    for (const { component } of candidates) {
+      const resolved = resolvedByModule.get(component.moduleName);
+      if (resolved) applyResolvedProps(component, resolved);
+    }
+  } finally {
+    await resolver.dispose();
+  }
 }
