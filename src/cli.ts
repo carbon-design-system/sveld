@@ -1,10 +1,17 @@
 import resolve from "@rollup/plugin-node-resolve";
 import { rollup } from "rollup";
 import svelte from "rollup-plugin-svelte";
+import { formatDiagnosticsSummary } from "./diagnostics";
 import { getSvelteEntry } from "./get-svelte-entry";
 import { generateBundle, type PluginSveldOptions, writeOutput } from "./plugin";
 
-function parseCliFlag(arg: string): Partial<PluginSveldOptions> {
+/** CLI options layered on top of the shared plugin options. */
+interface CliOptions extends PluginSveldOptions {
+  /** Set exit code 1 when diagnostics are present. */
+  strict?: boolean;
+}
+
+function parseCliFlag(arg: string): Partial<CliOptions> {
   if (!arg.startsWith("--")) {
     return {};
   }
@@ -18,6 +25,7 @@ function parseCliFlag(arg: string): Partial<PluginSveldOptions> {
     case "types":
     case "json":
     case "markdown":
+    case "strict":
       return { [flag]: value === true || value === "true" };
     case "fail-fast":
       return { failFast: value === true || value === "true" };
@@ -28,8 +36,8 @@ function parseCliFlag(arg: string): Partial<PluginSveldOptions> {
   }
 }
 
-export function parseCliOptions(argv: string[]): PluginSveldOptions {
-  const options: PluginSveldOptions = {};
+export function parseCliOptions(argv: string[]): CliOptions {
+  const options: CliOptions = {};
 
   for (const arg of argv) {
     Object.assign(options, parseCliFlag(arg));
@@ -61,4 +69,11 @@ export async function cli(process: NodeJS.Process) {
   const result = await generateBundle(input, options.glob === true, { failFast: options.failFast });
 
   writeOutput(result, options, input);
+
+  const { diagnostics } = result;
+  console.log(formatDiagnosticsSummary(diagnostics));
+
+  if (options.strict && diagnostics.length > 0) {
+    process.exitCode = 1;
+  }
 }

@@ -224,5 +224,25 @@
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "runes-prop-metadata-consolidated/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "open",
+      "message": "Prop \"open\" type could not be inferred; falling back to \"any\"."
+    },
+    {
+      "component": "runes-prop-metadata-consolidated/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "computed",
+      "message": "Prop \"computed\" type could not be inferred; falling back to \"any\"."
+    },
+    {
+      "component": "runes-prop-metadata-consolidated/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "bare",
+      "message": "Prop \"bare\" type could not be inferred; falling back to \"any\"."
+    }
+  ]
 }

@@ -55,10 +55,14 @@ function createGeneratorMetadata(): JsonOutput["generator"] {
  * ```
  */
 function transformAndSortComponents(components: ComponentDocs, inputDir: string): ComponentDocApi[] {
-  return Array.from(components, ([_moduleName, component]) => ({
-    ...component,
-    filePath: normalizeSeparators(path.join(inputDir, path.normalize(component.filePath))),
-  })).sort((a, b) => a.moduleName.localeCompare(b.moduleName));
+  return Array.from(components, ([_moduleName, component]) => {
+    // `diagnostics` is for the Node API only; COMPONENT_API.json skips it.
+    const { diagnostics: _diagnostics, ...rest } = component;
+    return {
+      ...rest,
+      filePath: normalizeSeparators(path.join(inputDir, path.normalize(component.filePath))),
+    } as ComponentDocApi;
+  }).sort((a, b) => a.moduleName.localeCompare(b.moduleName));
 }
 
 /**

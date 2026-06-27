@@ -87,7 +87,8 @@ exports[`fixtures (JSON) "runes-callback-annotated/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -115,7 +116,8 @@ exports[`fixtures (JSON) "svg-props/input.svelte" 1`] = `
     "type": "Element",
     "name": "svg"
   },
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -233,7 +235,8 @@ exports[`fixtures (JSON) "slots-named/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -354,7 +357,21 @@ exports[`fixtures (JSON) "module-reexport-mixed/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "module-reexport-mixed/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "name",
+      "message": "Prop \\"name\\" type could not be inferred; falling back to \\"any\\"."
+    },
+    {
+      "component": "module-reexport-mixed/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "value",
+      "message": "Prop \\"value\\" type could not be inferred; falling back to \\"any\\"."
+    }
+  ]
 }
 "
 `;
@@ -469,7 +486,8 @@ exports[`fixtures (JSON) "generics-multiple/input.svelte" 1`] = `
     "Row,Header",
     "Row extends DataTableRow = DataTableRow, Header extends DataTableRow = DataTableRow"
   ],
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -500,7 +518,8 @@ exports[`fixtures (JSON) "context-empty/input.svelte" 1`] = `
       "typeName": "BreadcrumbItemContext",
       "properties": []
     }
-  ]
+  ],
+  "diagnostics": []
 }
 "
 `;
@@ -548,7 +567,8 @@ exports[`fixtures (JSON) "slot-jsdoc-example/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -675,7 +695,8 @@ exports[`fixtures (JSON) "typedef-utility-types/input.svelte" 1`] = `
     }
   ],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -741,7 +762,21 @@ exports[`fixtures (JSON) "runes-dispatched-events/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "runes-dispatched-events/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "value",
+      "message": "Prop \\"value\\" type could not be inferred; falling back to \\"any\\"."
+    },
+    {
+      "component": "runes-dispatched-events/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "onchange",
+      "message": "Prop \\"onchange\\" type could not be inferred; falling back to \\"any\\"."
+    }
+  ]
 }
 "
 `;
@@ -838,7 +873,15 @@ exports[`fixtures (JSON) "module-reexport/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "module-reexport/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "data",
+      "message": "Prop \\"data\\" type could not be inferred; falling back to \\"any\\"."
+    }
+  ]
 }
 "
 `;
@@ -946,7 +989,15 @@ exports[`fixtures (JSON) "resolve-default-chained/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "resolve-default-chained/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "deep6",
+      "message": "Prop \\"deep6\\" type could not be inferred; falling back to \\"any\\"."
+    }
+  ]
 }
 "
 `;
@@ -1184,7 +1235,8 @@ exports[`fixtures (JSON) "accessor-param-returns/input.svelte" 1`] = `
     }
   ],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -1266,7 +1318,8 @@ exports[`fixtures (JSON) "typedef-description/input.svelte" 1`] = `
     }
   ],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -1405,7 +1458,8 @@ exports[`fixtures (JSON) "typedef-jsdoc-properties/input.svelte" 1`] = `
     }
   ],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -1458,7 +1512,8 @@ exports[`fixtures (JSON) "legacy-bind-component-selected/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -1770,7 +1825,21 @@ exports[`fixtures (JSON) "prop-metadata-consolidated/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "prop-metadata-consolidated/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "callDefault",
+      "message": "Prop \\"callDefault\\" type could not be inferred; falling back to \\"any\\"."
+    },
+    {
+      "component": "prop-metadata-consolidated/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "unknown",
+      "message": "Prop \\"unknown\\" type could not be inferred; falling back to \\"any\\"."
+    }
+  ]
 }
 "
 `;
@@ -1885,7 +1954,8 @@ exports[`fixtures (JSON) "template-tag-multiple/input.svelte" 1`] = `
     "Row,Header",
     "Row extends DataTableRow = DataTableRow, Header extends DataTableRow = DataTableRow"
   ],
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -1953,7 +2023,8 @@ exports[`fixtures (JSON) "runes-props-intersection/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -2042,7 +2113,8 @@ exports[`fixtures (JSON) "mixed-event-types/input.svelte" 1`] = `
   ],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -2094,7 +2166,15 @@ exports[`fixtures (JSON) "legacy-bind-component-ref-forward/input.svelte" 1`] = 
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "legacy-bind-component-ref-forward/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "listRef",
+      "message": "Prop \\"listRef\\" type could not be inferred; falling back to \\"any\\"."
+    }
+  ]
 }
 "
 `;
@@ -2135,7 +2215,15 @@ exports[`fixtures (JSON) "dispatched-events-dynamic/input.svelte" 1`] = `
   ],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "dispatched-events-dynamic/input.svelte",
+      "kind": "event-no-source",
+      "name": "KEY",
+      "message": "@event \\"KEY\\" has no matching dispatch or callback prop."
+    }
+  ]
 }
 "
 `;
@@ -2209,7 +2297,8 @@ exports[`fixtures (JSON) "legacy-export-typed/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -2263,7 +2352,8 @@ exports[`fixtures (JSON) "context-issue-103/input.svelte" 1`] = `
         }
       ]
     }
-  ]
+  ],
+  "diagnostics": []
 }
 "
 `;
@@ -2307,7 +2397,8 @@ exports[`fixtures (JSON) "context-mixed-separators/input.svelte" 1`] = `
         }
       ]
     }
-  ]
+  ],
+  "diagnostics": []
 }
 "
 `;
@@ -2375,7 +2466,8 @@ exports[`fixtures (JSON) "jsdoc-type-params/input.svelte" 1`] = `
     }
   ],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -2428,7 +2520,8 @@ exports[`fixtures (JSON) "reactive-shadowed-local-reassignment/input.svelte" 1`]
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -2592,7 +2685,8 @@ exports[`fixtures (JSON) "empty-collection-defaults/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -2711,7 +2805,8 @@ exports[`fixtures (JSON) "function-declaration/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -2781,7 +2876,8 @@ exports[`fixtures (JSON) "typedef-unknown-type/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -2882,7 +2978,8 @@ exports[`fixtures (JSON) "forwarded-events/input.svelte" 1`] = `
   ],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -3090,7 +3187,92 @@ exports[`fixtures (JSON) "binary-expression-numeric/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "typedef-branded-types/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 23,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "userId",
+      "kind": "let",
+      "description": "A branded string. At runtime it is a plain \`string\`, but the brand makes it\\na distinct domain type that other strings cannot be assigned to.",
+      "type": "UserId",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 16,
+          "column": 2
+        },
+        "end": {
+          "line": 16,
+          "column": 20
+        }
+      }
+    },
+    {
+      "name": "amount",
+      "kind": "let",
+      "description": "A branded number representing a monetary amount in cents.",
+      "type": "Cents",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 19,
+          "column": 2
+        },
+        "end": {
+          "line": 19,
+          "column": 20
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "string & { readonly __brand: \\"UserId\\" }",
+      "name": "UserId",
+      "description": "A branded string. At runtime it is a plain \`string\`, but the brand makes it\\na distinct domain type that other strings cannot be assigned to.",
+      "ts": "type UserId = string & { readonly __brand: \\"UserId\\" }"
+    },
+    {
+      "type": "number & { readonly __brand: \\"Cents\\" }",
+      "name": "Cents",
+      "description": "A branded number representing a monetary amount in cents.",
+      "ts": "type Cents = number & { readonly __brand: \\"Cents\\" }"
+    }
+  ],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -3143,7 +3325,8 @@ exports[`fixtures (JSON) "reactive-shadowed-callback-param/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -3384,7 +3567,33 @@ exports[`fixtures (JSON) "typedef-event-shared-block/input.svelte" 1`] = `
     }
   ],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "typedef-event-shared-block/input.svelte",
+      "kind": "event-no-source",
+      "name": "resize",
+      "message": "@event \\"resize\\" has no matching dispatch or callback prop."
+    },
+    {
+      "component": "typedef-event-shared-block/input.svelte",
+      "kind": "event-no-source",
+      "name": "scroll",
+      "message": "@event \\"scroll\\" has no matching dispatch or callback prop."
+    },
+    {
+      "component": "typedef-event-shared-block/input.svelte",
+      "kind": "event-no-source",
+      "name": "queue",
+      "message": "@event \\"queue\\" has no matching dispatch or callback prop."
+    },
+    {
+      "component": "typedef-event-shared-block/input.svelte",
+      "kind": "event-no-source",
+      "name": "dequeue",
+      "message": "@event \\"dequeue\\" has no matching dispatch or callback prop."
+    }
+  ]
 }
 "
 `;
@@ -3446,7 +3655,8 @@ exports[`fixtures (JSON) "typedef-discriminated-union-recursive/input.svelte" 1`
     }
   ],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -3646,7 +3856,15 @@ exports[`fixtures (JSON) "theme-component/input.svelte" 1`] = `
     }
   ],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "theme-component/input.svelte",
+      "kind": "event-no-source",
+      "name": "update",
+      "message": "@event \\"update\\" has no matching dispatch or callback prop."
+    }
+  ]
 }
 "
 `;
@@ -3767,7 +3985,8 @@ exports[`fixtures (JSON) "callback/input.svelte" 1`] = `
     }
   ],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -3809,7 +4028,8 @@ exports[`fixtures (JSON) "slot-description-with-dash/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -3863,7 +4083,8 @@ exports[`fixtures (JSON) "runes-bindable/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -3949,7 +4170,8 @@ exports[`fixtures (JSON) "events-stable-order/input.svelte" 1`] = `
   ],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -4005,7 +4227,8 @@ exports[`fixtures (JSON) "mixed-events/input.svelte" 1`] = `
   ],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -4224,7 +4447,21 @@ exports[`fixtures (JSON) "infer-basic/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "infer-basic/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "ref",
+      "message": "Prop \\"ref\\" type could not be inferred; falling back to \\"any\\"."
+    },
+    {
+      "component": "infer-basic/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "name",
+      "message": "Prop \\"name\\" type could not be inferred; falling back to \\"any\\"."
+    }
+  ]
 }
 "
 `;
@@ -4268,7 +4505,8 @@ exports[`fixtures (JSON) "context-underscore/input.svelte" 1`] = `
         }
       ]
     }
-  ]
+  ],
+  "diagnostics": []
 }
 "
 `;
@@ -4326,7 +4564,8 @@ exports[`fixtures (JSON) "rest-props-description-multiline/input.svelte" 1`] = `
     "name": "button | span",
     "description": "Rest props are spread to the span (inline variant)\\nor the copy button (single/multi)."
   },
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -4399,7 +4638,15 @@ exports[`fixtures (JSON) "runes-props-basic/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "runes-props-basic/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "title",
+      "message": "Prop \\"title\\" type could not be inferred; falling back to \\"any\\"."
+    }
+  ]
 }
 "
 `;
@@ -4447,7 +4694,8 @@ exports[`fixtures (JSON) "slot-jsdoc-inheritdoc-before-slot/input.svelte" 1`] = 
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -4610,7 +4858,8 @@ exports[`fixtures (JSON) "unary-expression-defaults/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -4635,7 +4884,8 @@ exports[`fixtures (JSON) "empty-export/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -4743,7 +4993,15 @@ exports[`fixtures (JSON) "module-reexport-direct/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "module-reexport-direct/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "onReady",
+      "message": "Prop \\"onReady\\" type could not be inferred; falling back to \\"any\\"."
+    }
+  ]
 }
 "
 `;
@@ -4815,7 +5073,8 @@ exports[`fixtures (JSON) "slot-prop-dotted-access/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -4930,7 +5189,8 @@ exports[`fixtures (JSON) "template-tag/input.svelte" 1`] = `
     "Row",
     "Row extends DataTableRow = DataTableRow"
   ],
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -4992,7 +5252,15 @@ exports[`fixtures (JSON) "runes-snippets-named/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "runes-snippets-named/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "item",
+      "message": "Prop \\"item\\" type could not be inferred; falling back to \\"any\\"."
+    }
+  ]
 }
 "
 `;
@@ -5077,7 +5345,8 @@ exports[`fixtures (JSON) "typed-slots/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -5415,7 +5684,8 @@ exports[`fixtures (JSON) "constructor-expression-defaults/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -5485,7 +5755,8 @@ exports[`fixtures (JSON) "default-slot-with-props/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -5585,7 +5856,8 @@ exports[`fixtures (JSON) "runes-snippets-annotated/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -5668,7 +5940,21 @@ exports[`fixtures (JSON) "runes-snippet-description-hyphens/input.svelte" 1`] = 
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "runes-snippet-description-hyphens/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "row",
+      "message": "Prop \\"row\\" type could not be inferred; falling back to \\"any\\"."
+    },
+    {
+      "component": "runes-snippet-description-hyphens/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "col",
+      "message": "Prop \\"col\\" type could not be inferred; falling back to \\"any\\"."
+    }
+  ]
 }
 "
 `;
@@ -5725,7 +6011,8 @@ exports[`fixtures (JSON) "element-tag-map-table-cells/input.svelte" 1`] = `
     "type": "Element",
     "name": "td | th"
   },
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -5791,7 +6078,8 @@ exports[`fixtures (JSON) "context-typedef/input.svelte" 1`] = `
         }
       ]
     }
-  ]
+  ],
+  "diagnostics": []
 }
 "
 `;
@@ -5835,7 +6123,8 @@ exports[`fixtures (JSON) "context-colon/input.svelte" 1`] = `
         }
       ]
     }
-  ]
+  ],
+  "diagnostics": []
 }
 "
 `;
@@ -5910,7 +6199,303 @@ exports[`fixtures (JSON) "forwarded-events-typed/input.svelte" 1`] = `
   ],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "prop-default-identifier-jsdoc/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 92,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "copy",
+      "kind": "let",
+      "description": "Override the default copy behavior of using the navigator.clipboard.writeText API to copy text.",
+      "type": "(text: string) => void | Promise<void>",
+      "typeSource": "jsdoc",
+      "defaultValue": {
+        "raw": "async (text) => {     await navigator.clipboard.writeText(text);   }",
+        "kind": "function"
+      },
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 10,
+          "column": 2
+        },
+        "end": {
+          "line": 10,
+          "column": 32
+        }
+      }
+    },
+    {
+      "name": "size",
+      "kind": "let",
+      "description": "Default size in pixels.",
+      "type": "number",
+      "typeSource": "jsdoc",
+      "value": "16",
+      "defaultValue": {
+        "raw": "16",
+        "kind": "literal",
+        "value": 16
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 18,
+          "column": 2
+        },
+        "end": {
+          "line": 18,
+          "column": 33
+        }
+      }
+    },
+    {
+      "name": "config",
+      "kind": "let",
+      "description": "Animation configuration applied on mount.",
+      "type": "{ duration: number; easing: string }",
+      "typeSource": "jsdoc",
+      "value": "{ duration: 200, easing: \\"ease-in-out\\" }",
+      "defaultValue": {
+        "raw": "{ duration: 200, easing: \\"ease-in-out\\" }",
+        "kind": "object",
+        "value": {
+          "duration": 200,
+          "easing": "ease-in-out"
+        }
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 26,
+          "column": 2
+        },
+        "end": {
+          "line": 26,
+          "column": 37
+        }
+      }
+    },
+    {
+      "name": "items",
+      "kind": "let",
+      "description": "Items rendered when no value is provided.",
+      "type": "string[]",
+      "typeSource": "jsdoc",
+      "value": "[\\"one\\", \\"two\\"]",
+      "defaultValue": {
+        "raw": "[\\"one\\", \\"two\\"]",
+        "kind": "array",
+        "value": [
+          "one",
+          "two"
+        ]
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 34,
+          "column": 2
+        },
+        "end": {
+          "line": 34,
+          "column": 35
+        }
+      }
+    },
+    {
+      "name": "label",
+      "kind": "let",
+      "description": "Fallback label shown when none is provided.",
+      "type": "string",
+      "typeSource": "default",
+      "value": "\\"Submit\\"",
+      "defaultValue": {
+        "raw": "\\"Submit\\"",
+        "kind": "literal",
+        "value": "Submit"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 39,
+          "column": 2
+        },
+        "end": {
+          "line": 39,
+          "column": 35
+        }
+      }
+    },
+    {
+      "name": "shouldFilterItem",
+      "kind": "let",
+      "description": "Determine if an item should be filtered given the current value.",
+      "type": "(item: string, value: string) => boolean",
+      "typeSource": "jsdoc",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 49,
+          "column": 2
+        },
+        "end": {
+          "line": 49,
+          "column": 52
+        }
+      }
+    },
+    {
+      "name": "format",
+      "kind": "let",
+      "type": "(value: any) => string",
+      "typeSource": "jsdoc",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 55,
+          "column": 2
+        },
+        "end": {
+          "line": 55,
+          "column": 36
+        }
+      }
+    },
+    {
+      "name": "renderEmpty",
+      "kind": "let",
+      "description": "Render the message shown when there are no items.",
+      "type": "(...args: any[]) => string",
+      "typeSource": "jsdoc",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 62,
+          "column": 2
+        },
+        "end": {
+          "line": 62,
+          "column": 46
+        }
+      }
+    },
+    {
+      "name": "getKey",
+      "kind": "let",
+      "description": "Resolve the unique key for an item.",
+      "type": "(item: string, index: number) => string",
+      "typeSource": "jsdoc",
+      "params": [
+        {
+          "name": "item",
+          "type": "string",
+          "description": "",
+          "optional": false
+        },
+        {
+          "name": "index",
+          "type": "number",
+          "description": "",
+          "optional": false
+        }
+      ],
+      "returnType": "string",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 74,
+          "column": 2
+        },
+        "end": {
+          "line": 74,
+          "column": 36
+        }
+      }
+    },
+    {
+      "name": "translate",
+      "kind": "let",
+      "description": "Translate a label to the active locale.\\n@example translate(\\"submit\\") // => \\"Submit\\"",
+      "type": "(key: string) => string",
+      "typeSource": "jsdoc",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 85,
+          "column": 2
+        },
+        "end": {
+          "line": 85,
+          "column": 42
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -6011,7 +6596,8 @@ exports[`fixtures (JSON) "dispatched-events/input.svelte" 1`] = `
   ],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -6243,7 +6829,27 @@ exports[`fixtures (JSON) "runes-prop-metadata-consolidated/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "runes-prop-metadata-consolidated/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "open",
+      "message": "Prop \\"open\\" type could not be inferred; falling back to \\"any\\"."
+    },
+    {
+      "component": "runes-prop-metadata-consolidated/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "computed",
+      "message": "Prop \\"computed\\" type could not be inferred; falling back to \\"any\\"."
+    },
+    {
+      "component": "runes-prop-metadata-consolidated/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "bare",
+      "message": "Prop \\"bare\\" type could not be inferred; falling back to \\"any\\"."
+    }
+  ]
 }
 "
 `;
@@ -6306,7 +6912,8 @@ exports[`fixtures (JSON) "slot-jsdoc-two-slots-one-block-order/input.svelte" 1`]
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -6348,7 +6955,8 @@ exports[`fixtures (JSON) "slot-jsdoc-orphan-type-before-slot/input.svelte" 1`] =
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -6446,7 +7054,8 @@ exports[`fixtures (JSON) "module-reexport-renamed/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -6555,7 +7164,8 @@ exports[`fixtures (JSON) "typedefs/input.svelte" 1`] = `
     }
   ],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -6674,7 +7284,8 @@ exports[`fixtures (JSON) "generics-with-rest-props/input.svelte" 1`] = `
     "type": "Element",
     "name": "div"
   },
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -6737,7 +7348,8 @@ exports[`fixtures (JSON) "bind-this/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -6831,7 +7443,8 @@ exports[`fixtures (JSON) "typedef-discriminated-union/input.svelte" 1`] = `
     }
   ],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -6913,7 +7526,8 @@ exports[`fixtures (JSON) "instance-reexport/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -7194,7 +7808,8 @@ exports[`fixtures (JSON) "explicit-default-no-duplicate/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -7267,7 +7882,8 @@ exports[`fixtures (JSON) "dispatched-events-typed/input.svelte" 1`] = `
   ],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -7337,7 +7953,8 @@ exports[`fixtures (JSON) "input-events/input.svelte" 1`] = `
   ],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -7476,7 +8093,15 @@ exports[`fixtures (JSON) "required/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "required/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "prop2",
+      "message": "Prop \\"prop2\\" type could not be inferred; falling back to \\"any\\"."
+    }
+  ]
 }
 "
 `;
@@ -7536,7 +8161,8 @@ exports[`fixtures (JSON) "context-imported-type/input.svelte" 1`] = `
         }
       ]
     }
-  ]
+  ],
+  "diagnostics": []
 }
 "
 `;
@@ -7589,7 +8215,8 @@ exports[`fixtures (JSON) "reactive-shadowed-each-binding/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -7642,7 +8269,8 @@ exports[`fixtures (JSON) "legacy-bind-component-value/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -7731,7 +8359,8 @@ exports[`fixtures (JSON) "callback-typedef/input.svelte" 1`] = `
     }
   ],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -7784,7 +8413,8 @@ exports[`fixtures (JSON) "legacy-pass-through-nonreactive/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -7910,7 +8540,8 @@ exports[`fixtures (JSON) "prop-comments/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -8003,7 +8634,8 @@ exports[`fixtures (JSON) "forwarded-events-native-with-jsdoc/input.svelte" 1`] =
   ],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -8118,7 +8750,8 @@ exports[`fixtures (JSON) "runes-generics/input.svelte" 1`] = `
     "Row",
     "Row extends DataTableRow = DataTableRow"
   ],
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -8221,7 +8854,272 @@ exports[`fixtures (JSON) "async-function-props/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "runes-prop-default-identifier-jsdoc/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 78,
+      "column": 0
+    }
+  },
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "copy",
+      "kind": "let",
+      "description": "Override the default copy behavior of using the navigator.clipboard.writeText API to copy text.",
+      "type": "(text: string) => void | Promise<void>",
+      "typeSource": "jsdoc",
+      "defaultValue": {
+        "raw": "async (text) => {     await navigator.clipboard.writeText(text);   }",
+        "kind": "function"
+      },
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 62,
+          "column": 4
+        },
+        "end": {
+          "line": 62,
+          "column": 22
+        }
+      }
+    },
+    {
+      "name": "size",
+      "kind": "let",
+      "description": "Default size in pixels.",
+      "type": "number",
+      "typeSource": "jsdoc",
+      "value": "16",
+      "defaultValue": {
+        "raw": "16",
+        "kind": "literal",
+        "value": 16
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 63,
+          "column": 4
+        },
+        "end": {
+          "line": 63,
+          "column": 23
+        }
+      }
+    },
+    {
+      "name": "config",
+      "kind": "let",
+      "description": "Animation configuration applied on mount.",
+      "type": "{ duration: number; easing: string }",
+      "typeSource": "jsdoc",
+      "value": "{ duration: 200, easing: \\"ease-in-out\\" }",
+      "defaultValue": {
+        "raw": "{ duration: 200, easing: \\"ease-in-out\\" }",
+        "kind": "object",
+        "value": {
+          "duration": 200,
+          "easing": "ease-in-out"
+        }
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 64,
+          "column": 4
+        },
+        "end": {
+          "line": 64,
+          "column": 27
+        }
+      }
+    },
+    {
+      "name": "label",
+      "kind": "let",
+      "description": "Fallback label shown when none is provided.",
+      "type": "string",
+      "typeSource": "default",
+      "value": "\\"Submit\\"",
+      "defaultValue": {
+        "raw": "\\"Submit\\"",
+        "kind": "literal",
+        "value": "Submit"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 65,
+          "column": 4
+        },
+        "end": {
+          "line": 65,
+          "column": 25
+        }
+      }
+    },
+    {
+      "name": "shouldFilterItem",
+      "kind": "let",
+      "description": "Determine if an item should be filtered given the current value.",
+      "type": "(item: string, value: string) => boolean",
+      "typeSource": "jsdoc",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 66,
+          "column": 4
+        },
+        "end": {
+          "line": 66,
+          "column": 42
+        }
+      }
+    },
+    {
+      "name": "format",
+      "kind": "let",
+      "type": "(value: any) => string",
+      "typeSource": "jsdoc",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 67,
+          "column": 4
+        },
+        "end": {
+          "line": 67,
+          "column": 26
+        }
+      }
+    },
+    {
+      "name": "renderEmpty",
+      "kind": "let",
+      "description": "Render the message shown when there are no items.",
+      "type": "(...args: any[]) => string",
+      "typeSource": "jsdoc",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 68,
+          "column": 4
+        },
+        "end": {
+          "line": 68,
+          "column": 36
+        }
+      }
+    },
+    {
+      "name": "getKey",
+      "kind": "let",
+      "description": "Resolve the unique key for an item.",
+      "type": "(item: string, index: number) => string",
+      "typeSource": "jsdoc",
+      "params": [
+        {
+          "name": "item",
+          "type": "string",
+          "description": "",
+          "optional": false
+        },
+        {
+          "name": "index",
+          "type": "number",
+          "description": "",
+          "optional": false
+        }
+      ],
+      "returnType": "string",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 69,
+          "column": 4
+        },
+        "end": {
+          "line": 69,
+          "column": 26
+        }
+      }
+    },
+    {
+      "name": "translate",
+      "kind": "let",
+      "description": "Translate a label to the active locale.\\n@example translate(\\"submit\\") // => \\"Submit\\"",
+      "type": "(key: string) => string",
+      "typeSource": "jsdoc",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 70,
+          "column": 4
+        },
+        "end": {
+          "line": 70,
+          "column": 32
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -8331,7 +9229,15 @@ exports[`fixtures (JSON) "bindable-direction-legacy/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "bindable-direction-legacy/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "size",
+      "message": "Prop \\"size\\" type could not be inferred; falling back to \\"any\\"."
+    }
+  ]
 }
 "
 `;
@@ -8415,7 +9321,8 @@ exports[`fixtures (JSON) "runes-whole-props-typed/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -8475,7 +9382,8 @@ exports[`fixtures (JSON) "context-simple/input.svelte" 1`] = `
         }
       ]
     }
-  ]
+  ],
+  "diagnostics": []
 }
 "
 `;
@@ -8530,7 +9438,8 @@ exports[`fixtures (JSON) "renamed-props/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -8724,7 +9633,8 @@ exports[`fixtures (JSON) "infer-with-types/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -8770,7 +9680,15 @@ exports[`fixtures (JSON) "runes-callback-props/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "runes-callback-props/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "onclick",
+      "message": "Prop \\"onclick\\" type could not be inferred; falling back to \\"any\\"."
+    }
+  ]
 }
 "
 `;
@@ -8871,7 +9789,8 @@ exports[`fixtures (JSON) "arrow-function-with-jsdoc/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -8929,7 +9848,8 @@ exports[`fixtures (JSON) "slot-description-named-pair/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -9286,7 +10206,15 @@ exports[`fixtures (JSON) "non-literal-defaults/input.svelte" 1`] = `
     }
   ],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "non-literal-defaults/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "handler",
+      "message": "Prop \\"handler\\" type could not be inferred; falling back to \\"any\\"."
+    }
+  ]
 }
 "
 `;
@@ -9329,7 +10257,8 @@ exports[`fixtures (JSON) "forwarded-native-with-detail/input.svelte" 1`] = `
   ],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -9376,7 +10305,15 @@ exports[`fixtures (JSON) "runes-props-renamed/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "runes-props-renamed/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "class",
+      "message": "Prop \\"class\\" type could not be inferred; falling back to \\"any\\"."
+    }
+  ]
 }
 "
 `;
@@ -9473,7 +10410,8 @@ exports[`fixtures (JSON) "multiple-typedef-same-property/input.svelte" 1`] = `
     }
   ],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -9535,7 +10473,15 @@ exports[`fixtures (JSON) "runes-snippets-default/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "runes-snippets-default/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "item",
+      "message": "Prop \\"item\\" type could not be inferred; falling back to \\"any\\"."
+    }
+  ]
 }
 "
 `;
@@ -9702,7 +10648,8 @@ exports[`fixtures (JSON) "context-module/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -9759,7 +10706,85 @@ exports[`fixtures (JSON) "element-tag-map-new/input.svelte" 1`] = `
     "type": "Element",
     "name": "article | section | nav | main | header | footer"
   },
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "slot-extends-template/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 15,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "icon",
+      "kind": "let",
+      "type": "Icon",
+      "typeSource": "jsdoc",
+      "value": "undefined",
+      "defaultValue": {
+        "raw": "undefined",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 11,
+          "column": 2
+        },
+        "end": {
+          "line": 11,
+          "column": 52
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "badge",
+      "default": false,
+      "slot_props": "Record<string, never>",
+      "description": "Optional badge overlay.",
+      "source": {
+        "start": {
+          "line": 14,
+          "column": 0
+        },
+        "end": {
+          "line": 14,
+          "column": 21
+        }
+      }
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": [
+    "Icon",
+    "Icon = any"
+  ],
+  "extends": {
+    "interface": "ButtonProps",
+    "import": "\\"./Button.svelte\\""
+  },
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -9812,7 +10837,8 @@ exports[`fixtures (JSON) "html-in-template-string/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -9869,7 +10895,8 @@ exports[`fixtures (JSON) "rest-props-multiple/input.svelte" 1`] = `
     "type": "Element",
     "name": "ul | ol"
   },
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -9921,7 +10948,8 @@ exports[`fixtures (JSON) "slot-jsdoc-multiple-tags/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -10037,7 +11065,8 @@ exports[`fixtures (JSON) "forwarded-from-component-to-native/input.svelte" 1`] =
   ],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -10167,7 +11196,8 @@ exports[`fixtures (JSON) "call-expression-defaults/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -10209,7 +11239,8 @@ exports[`fixtures (JSON) "slot-jsdoc-enum-not-passthrough/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -10344,7 +11375,8 @@ exports[`fixtures (JSON) "template-literal-default/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -10368,7 +11400,8 @@ exports[`fixtures (JSON) "no-props/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -10443,7 +11476,8 @@ exports[`fixtures (JSON) "event-explicit-null/input.svelte" 1`] = `
     "type": "Element",
     "name": "input"
   },
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -10485,7 +11519,8 @@ exports[`fixtures (JSON) "dispatched-events-jsdoc-union-type/input.svelte" 1`] =
   ],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -10600,7 +11635,8 @@ exports[`fixtures (JSON) "context-generics/input.svelte" 1`] = `
         }
       ]
     }
-  ]
+  ],
+  "diagnostics": []
 }
 "
 `;
@@ -10629,7 +11665,8 @@ exports[`fixtures (JSON) "svelte-element-hardcoded-button/input.svelte" 1`] = `
     "name": "svelte:element",
     "thisValue": "button"
   },
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -10729,7 +11766,8 @@ exports[`fixtures (JSON) "forwarded-standard-event-custom-detail/input.svelte" 1
   ],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -10797,7 +11835,124 @@ exports[`fixtures (JSON) "runes-props-interface/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "context-template-tag-multiple/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 23,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "selected",
+      "kind": "let",
+      "type": "Value | undefined",
+      "typeSource": "jsdoc",
+      "value": "undefined",
+      "defaultValue": {
+        "raw": "undefined",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 8,
+          "column": 2
+        },
+        "end": {
+          "line": 8,
+          "column": 34
+        }
+      }
+    },
+    {
+      "name": "icon",
+      "kind": "let",
+      "type": "Icon",
+      "typeSource": "jsdoc",
+      "value": "undefined",
+      "defaultValue": {
+        "raw": "undefined",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 11,
+          "column": 2
+        },
+        "end": {
+          "line": 11,
+          "column": 30
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>",
+      "source": {
+        "start": {
+          "line": 22,
+          "column": 0
+        },
+        "end": {
+          "line": 22,
+          "column": 8
+        }
+      }
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": [
+    "Value,Icon",
+    "Value extends string = string, Icon = any"
+  ],
+  "contexts": [
+    {
+      "key": "demo:Wrapper",
+      "typeName": "DemoWrapperContext",
+      "properties": [
+        {
+          "name": "selectedValue",
+          "type": "import(\\"svelte/store\\").Writable<Value | undefined>",
+          "description": "",
+          "optional": false
+        },
+        {
+          "name": "icon",
+          "type": "Icon",
+          "optional": false
+        }
+      ]
+    }
+  ],
+  "diagnostics": []
 }
 "
 `;
@@ -10848,7 +12003,8 @@ exports[`fixtures (JSON) "component-comment-single/input.svelte" 1`] = `
       "column": 37
     }
   },
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -10959,7 +12115,8 @@ exports[`fixtures (JSON) "bind-this-multiple/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -11070,7 +12227,15 @@ exports[`fixtures (JSON) "bindable-direction-runes/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "bindable-direction-runes/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "size",
+      "message": "Prop \\"size\\" type could not be inferred; falling back to \\"any\\"."
+    }
+  ]
 }
 "
 `;
@@ -11185,7 +12350,8 @@ exports[`fixtures (JSON) "context-template-tag/input.svelte" 1`] = `
         }
       ]
     }
-  ]
+  ],
+  "diagnostics": []
 }
 "
 `;
@@ -11210,7 +12376,8 @@ exports[`fixtures (JSON) "runes-whole-props-imported/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -11268,7 +12435,8 @@ exports[`fixtures (JSON) "forwarded-custom-events/input.svelte" 1`] = `
   ],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -11411,7 +12579,8 @@ exports[`fixtures (JSON) "typedef-import-type/input.svelte" 1`] = `
     }
   ],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -11464,7 +12633,8 @@ exports[`fixtures (JSON) "reactive-direct-mutation-still-true/input.svelte" 1`] 
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -11567,7 +12737,8 @@ exports[`fixtures (JSON) "typedef/input.svelte" 1`] = `
     }
   ],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -11595,7 +12766,8 @@ exports[`fixtures (JSON) "rest-props-simple/input.svelte" 1`] = `
     "type": "Element",
     "name": "h1"
   },
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -11639,7 +12811,8 @@ exports[`fixtures (JSON) "anchor-props/input.svelte" 1`] = `
     "type": "Element",
     "name": "a"
   },
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -11690,7 +12863,8 @@ exports[`fixtures (JSON) "component-comment-multi/input.svelte" 1`] = `
       "column": 3
     }
   },
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -11740,7 +12914,15 @@ exports[`fixtures (JSON) "runes-rest-props/input.svelte" 1`] = `
     "type": "Element",
     "name": "button"
   },
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "runes-rest-props/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "variant",
+      "message": "Prop \\"variant\\" type could not be inferred; falling back to \\"any\\"."
+    }
+  ]
 }
 "
 `;
@@ -11800,7 +12982,8 @@ exports[`fixtures (JSON) "forwarded-custom-event-null/input.svelte" 1`] = `
   ],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -11897,7 +13080,8 @@ exports[`fixtures (JSON) "dispatched-events-jsdoc-properties/input.svelte" 1`] =
     }
   ],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -11982,7 +13166,8 @@ exports[`fixtures (JSON) "slot-props-union-types/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -12011,7 +13196,8 @@ exports[`fixtures (JSON) "svelte-element-hardcoded-div/input.svelte" 1`] = `
     "name": "svelte:element",
     "thisValue": "div"
   },
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -12058,7 +13244,8 @@ exports[`fixtures (JSON) "runes-snippet-positional/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -12110,7 +13297,15 @@ exports[`fixtures (JSON) "legacy-bind-component-ref/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "legacy-bind-component-ref/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "ref",
+      "message": "Prop \\"ref\\" type could not be inferred; falling back to \\"any\\"."
+    }
+  ]
 }
 "
 `;
@@ -12152,7 +13347,8 @@ exports[`fixtures (JSON) "slot-jsdoc-template-not-passthrough/input.svelte" 1`] 
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -12209,7 +13405,8 @@ exports[`fixtures (JSON) "svelte-element-dynamic/input.svelte" 1`] = `
     "type": "Element",
     "name": "svelte:element"
   },
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -12306,7 +13503,8 @@ exports[`fixtures (JSON) "prop-comment-complex/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -12363,7 +13561,8 @@ exports[`fixtures (JSON) "element-tag-map-text-elements/input.svelte" 1`] = `
     "type": "Element",
     "name": "abbr | code | em | strong | mark | kbd | samp | var"
   },
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -12442,7 +13641,8 @@ exports[`fixtures (JSON) "typedef-discriminated-union-intersection/input.svelte"
     }
   ],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -12524,7 +13724,8 @@ exports[`fixtures (JSON) "typedef-type-predicate/input.svelte" 1`] = `
     }
   ],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -12581,7 +13782,8 @@ exports[`fixtures (JSON) "slots-spread/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -12639,7 +13841,8 @@ exports[`fixtures (JSON) "rest-props-description/input.svelte" 1`] = `
     "name": "button | span",
     "description": "Spread to the span (inline variant) or the copy button (single/multi)."
   },
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -12681,7 +13884,8 @@ exports[`fixtures (JSON) "slot-description-hyphens-prose/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -12719,7 +13923,8 @@ exports[`fixtures (JSON) "context-space/input.svelte" 1`] = `
         }
       ]
     }
-  ]
+  ],
+  "diagnostics": []
 }
 "
 `;
@@ -12796,7 +14001,8 @@ exports[`fixtures (JSON) "extend-props/input.svelte" 1`] = `
     "interface": "ButtonProps",
     "import": "\\"./Button.svelte\\""
   },
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -12915,7 +14121,8 @@ exports[`fixtures (JSON) "template-tag-with-rest-props/input.svelte" 1`] = `
     "type": "Element",
     "name": "div"
   },
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -12956,7 +14163,8 @@ exports[`fixtures (JSON) "forwarded-and-dispatched-events/input.svelte" 1`] = `
   ],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -13013,7 +14221,8 @@ exports[`fixtures (JSON) "slots-spread-typed/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -13071,7 +14280,8 @@ exports[`fixtures (JSON) "context-inline-functions/input.svelte" 1`] = `
         }
       ]
     }
-  ]
+  ],
+  "diagnostics": []
 }
 "
 `;
@@ -13141,7 +14351,8 @@ exports[`fixtures (JSON) "slot-jsdoc-tags-named-pair/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -13270,7 +14481,15 @@ exports[`fixtures (JSON) "typed-props/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "typed-props/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "prop2",
+      "message": "Prop \\"prop2\\" type could not be inferred; falling back to \\"any\\"."
+    }
+  ]
 }
 "
 `;
@@ -13323,7 +14542,8 @@ exports[`fixtures (JSON) "reactive-shadowed-local-assignment/input.svelte" 1`] =
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -13432,7 +14652,8 @@ exports[`fixtures (JSON) "runes-typed-props/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -13547,7 +14768,8 @@ exports[`fixtures (JSON) "generics/input.svelte" 1`] = `
     "Row",
     "Row extends DataTableRow = DataTableRow"
   ],
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -13591,7 +14813,8 @@ exports[`fixtures (JSON) "context-dot-notation/input.svelte" 1`] = `
         }
       ]
     }
-  ]
+  ],
+  "diagnostics": []
 }
 "
 `;
@@ -13633,7 +14856,8 @@ exports[`fixtures (JSON) "slot-description-hyphens-inline/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -14631,6 +15855,43 @@ export default class BinaryExpressionNumeric extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "typedef-branded-types/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+/**
+ * A branded string. At runtime it is a plain \`string\`, but the brand makes it
+ * a distinct domain type that other strings cannot be assigned to.
+ */
+export type UserId = string & { readonly __brand: "UserId" };
+
+/**
+ * A branded number representing a monetary amount in cents.
+ */
+export type Cents = number & { readonly __brand: "Cents" };
+
+export type TypedefBrandedTypesProps = {
+  /**
+   * A branded string. At runtime it is a plain \`string\`, but the brand makes it
+   * a distinct domain type that other strings cannot be assigned to.
+   * @default undefined
+   */
+  userId: UserId;
+
+  /**
+   * A branded number representing a monetary amount in cents.
+   * @default undefined
+   */
+  amount: Cents;
+};
+
+export default class TypedefBrandedTypes extends SvelteComponentTyped<
+  TypedefBrandedTypesProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "reactive-shadowed-callback-param/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -15489,6 +16750,71 @@ export default class ForwardedEventsTyped extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "prop-default-identifier-jsdoc/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type PropDefaultIdentifierJsdocProps = {
+  /**
+   * Override the default copy behavior of using the navigator.clipboard.writeText API to copy text.
+   */
+  copy?: (text: string) => void | Promise<void>;
+
+  /**
+   * Default size in pixels.
+   * @default 16
+   */
+  size?: number;
+
+  /**
+   * Animation configuration applied on mount.
+   * @default { duration: 200, easing: "ease-in-out" }
+   */
+  config?: { duration: number; easing: string };
+
+  /**
+   * Items rendered when no value is provided.
+   * @default ["one", "two"]
+   */
+  items?: string[];
+
+  /**
+   * Fallback label shown when none is provided.
+   * @default "Submit"
+   */
+  label?: string;
+
+  /**
+   * Determine if an item should be filtered given the current value.
+   */
+  shouldFilterItem?: (item: string, value: string) => boolean;
+
+  format?: (value: any) => string;
+
+  /**
+   * Render the message shown when there are no items.
+   */
+  renderEmpty?: (...args: any[]) => string;
+
+  /**
+   * Resolve the unique key for an item.
+   */
+  getKey?: (item: string, index: number) => string;
+
+  /**
+   * Translate a label to the active locale.
+   * @example translate("submit") // => "Submit"
+   */
+  translate?: (key: string) => string;
+};
+
+export default class PropDefaultIdentifierJsdoc extends SvelteComponentTyped<
+  PropDefaultIdentifierJsdocProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "dispatched-events/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -16140,6 +17466,65 @@ export default class AsyncFunctionProps extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "runes-prop-default-identifier-jsdoc/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type RunesPropDefaultIdentifierJsdocProps = {
+  /**
+   * Override the default copy behavior of using the navigator.clipboard.writeText API to copy text.
+   */
+  copy?: (text: string) => void | Promise<void>;
+
+  /**
+   * Default size in pixels.
+   * @default 16
+   */
+  size?: number;
+
+  /**
+   * Animation configuration applied on mount.
+   * @default { duration: 200, easing: "ease-in-out" }
+   */
+  config?: { duration: number; easing: string };
+
+  /**
+   * Fallback label shown when none is provided.
+   * @default "Submit"
+   */
+  label?: string;
+
+  /**
+   * Determine if an item should be filtered given the current value.
+   */
+  shouldFilterItem?: (item: string, value: string) => boolean;
+
+  format?: (value: any) => string;
+
+  /**
+   * Render the message shown when there are no items.
+   */
+  renderEmpty?: (...args: any[]) => string;
+
+  /**
+   * Resolve the unique key for an item.
+   */
+  getKey?: (item: string, index: number) => string;
+
+  /**
+   * Translate a label to the active locale.
+   * @example translate("submit") // => "Submit"
+   */
+  translate?: (key: string) => string;
+};
+
+export default class RunesPropDefaultIdentifierJsdoc extends SvelteComponentTyped<
+  RunesPropDefaultIdentifierJsdocProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "bindable-direction-legacy/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -16582,6 +17967,31 @@ export default class ElementTagMapNew extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "slot-extends-template/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { ButtonProps } from "./Button.svelte";
+
+export type SlotExtendsTemplateProps<Icon = any> = ButtonProps & {
+  /**
+   * @default undefined
+   */
+  icon?: Icon;
+
+  /** Optional badge overlay. */
+  badge?: (this: void) => void;
+};
+
+export default class SlotExtendsTemplate<Icon = any> extends SvelteComponentTyped<
+  SlotExtendsTemplateProps<Icon>,
+  Record<string, any>,
+  {
+    /** Optional badge overlay. */
+    badge: Record<string, never>;
+  }
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "html-in-template-string/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -16915,6 +18325,36 @@ export default class RunesPropsInterface extends SvelteComponentTyped<
   RunesPropsInterfaceProps,
   Record<string, any>,
   Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "context-template-tag-multiple/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type DemoWrapperContext<Value extends string = string, Icon = any> = {
+  selectedValue: import("svelte/store").Writable<Value | undefined>;
+  icon: Icon;
+};
+
+export type ContextTemplateTagMultipleProps<Value extends string = string, Icon = any> = {
+  /**
+   * @default undefined
+   */
+  selected?: Value | undefined;
+
+  /**
+   * @default undefined
+   */
+  icon?: Icon;
+
+  children?: (this: void) => void;
+};
+
+export default class ContextTemplateTagMultiple<Value extends string = string, Icon = any> extends SvelteComponentTyped<
+  ContextTemplateTagMultipleProps<Value, Icon>,
+  Record<string, any>,
+  { default: Record<string, never> }
 > {}
 "
 `;
@@ -18002,1053 +19442,6 @@ export default class SlotDescriptionHyphensInline extends SvelteComponentTyped<
     /** Row id maps to server-side UUID v4 (not v1-v3). */
     item: { id: string };
   }
-> {}
-"
-`;
-
-exports[`fixtures (JSON) "typedef-branded-types/input.svelte" 1`] = `
-"{
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 23,
-      "column": 0
-    }
-  },
-  "syntaxMode": "legacy",
-  "scriptLanguage": "js",
-  "props": [
-    {
-      "name": "userId",
-      "kind": "let",
-      "description": "A branded string. At runtime it is a plain \`string\`, but the brand makes it\\na distinct domain type that other strings cannot be assigned to.",
-      "type": "UserId",
-      "typeSource": "jsdoc",
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": true,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 16,
-          "column": 2
-        },
-        "end": {
-          "line": 16,
-          "column": 20
-        }
-      }
-    },
-    {
-      "name": "amount",
-      "kind": "let",
-      "description": "A branded number representing a monetary amount in cents.",
-      "type": "Cents",
-      "typeSource": "jsdoc",
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": true,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 19,
-          "column": 2
-        },
-        "end": {
-          "line": 19,
-          "column": 20
-        }
-      }
-    }
-  ],
-  "moduleExports": [],
-  "slots": [],
-  "events": [],
-  "typedefs": [
-    {
-      "type": "string & { readonly __brand: \\"UserId\\" }",
-      "name": "UserId",
-      "description": "A branded string. At runtime it is a plain \`string\`, but the brand makes it\\na distinct domain type that other strings cannot be assigned to.",
-      "ts": "type UserId = string & { readonly __brand: \\"UserId\\" }"
-    },
-    {
-      "type": "number & { readonly __brand: \\"Cents\\" }",
-      "name": "Cents",
-      "description": "A branded number representing a monetary amount in cents.",
-      "ts": "type Cents = number & { readonly __brand: \\"Cents\\" }"
-    }
-  ],
-  "generics": null,
-  "contexts": []
-}
-"
-`;
-
-exports[`fixtures (TypeScript) "typedef-branded-types/input.svelte" 1`] = `
-"import { SvelteComponentTyped } from "svelte";
-
-/**
- * A branded string. At runtime it is a plain \`string\`, but the brand makes it
- * a distinct domain type that other strings cannot be assigned to.
- */
-export type UserId = string & { readonly __brand: "UserId" };
-
-/**
- * A branded number representing a monetary amount in cents.
- */
-export type Cents = number & { readonly __brand: "Cents" };
-
-export type TypedefBrandedTypesProps = {
-  /**
-   * A branded string. At runtime it is a plain \`string\`, but the brand makes it
-   * a distinct domain type that other strings cannot be assigned to.
-   * @default undefined
-   */
-  userId: UserId;
-
-  /**
-   * A branded number representing a monetary amount in cents.
-   * @default undefined
-   */
-  amount: Cents;
-};
-
-export default class TypedefBrandedTypes extends SvelteComponentTyped<
-  TypedefBrandedTypesProps,
-  Record<string, any>,
-  Record<string, never>
-> {}
-"
-`;
-
-exports[`fixtures (JSON) "prop-default-identifier-jsdoc/input.svelte" 1`] = `
-"{
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 92,
-      "column": 0
-    }
-  },
-  "syntaxMode": "legacy",
-  "scriptLanguage": "js",
-  "props": [
-    {
-      "name": "copy",
-      "kind": "let",
-      "description": "Override the default copy behavior of using the navigator.clipboard.writeText API to copy text.",
-      "type": "(text: string) => void | Promise<void>",
-      "typeSource": "jsdoc",
-      "defaultValue": {
-        "raw": "async (text) => {     await navigator.clipboard.writeText(text);   }",
-        "kind": "function"
-      },
-      "isFunction": true,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 10,
-          "column": 2
-        },
-        "end": {
-          "line": 10,
-          "column": 32
-        }
-      }
-    },
-    {
-      "name": "size",
-      "kind": "let",
-      "description": "Default size in pixels.",
-      "type": "number",
-      "typeSource": "jsdoc",
-      "value": "16",
-      "defaultValue": {
-        "raw": "16",
-        "kind": "literal",
-        "value": 16
-      },
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 18,
-          "column": 2
-        },
-        "end": {
-          "line": 18,
-          "column": 33
-        }
-      }
-    },
-    {
-      "name": "config",
-      "kind": "let",
-      "description": "Animation configuration applied on mount.",
-      "type": "{ duration: number; easing: string }",
-      "typeSource": "jsdoc",
-      "value": "{ duration: 200, easing: \\"ease-in-out\\" }",
-      "defaultValue": {
-        "raw": "{ duration: 200, easing: \\"ease-in-out\\" }",
-        "kind": "object",
-        "value": {
-          "duration": 200,
-          "easing": "ease-in-out"
-        }
-      },
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 26,
-          "column": 2
-        },
-        "end": {
-          "line": 26,
-          "column": 37
-        }
-      }
-    },
-    {
-      "name": "items",
-      "kind": "let",
-      "description": "Items rendered when no value is provided.",
-      "type": "string[]",
-      "typeSource": "jsdoc",
-      "value": "[\\"one\\", \\"two\\"]",
-      "defaultValue": {
-        "raw": "[\\"one\\", \\"two\\"]",
-        "kind": "array",
-        "value": [
-          "one",
-          "two"
-        ]
-      },
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 34,
-          "column": 2
-        },
-        "end": {
-          "line": 34,
-          "column": 35
-        }
-      }
-    },
-    {
-      "name": "label",
-      "kind": "let",
-      "description": "Fallback label shown when none is provided.",
-      "type": "string",
-      "typeSource": "default",
-      "value": "\\"Submit\\"",
-      "defaultValue": {
-        "raw": "\\"Submit\\"",
-        "kind": "literal",
-        "value": "Submit"
-      },
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 39,
-          "column": 2
-        },
-        "end": {
-          "line": 39,
-          "column": 35
-        }
-      }
-    },
-    {
-      "name": "shouldFilterItem",
-      "kind": "let",
-      "description": "Determine if an item should be filtered given the current value.",
-      "type": "(item: string, value: string) => boolean",
-      "typeSource": "jsdoc",
-      "isFunction": true,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 49,
-          "column": 2
-        },
-        "end": {
-          "line": 49,
-          "column": 52
-        }
-      }
-    },
-    {
-      "name": "format",
-      "kind": "let",
-      "type": "(value: any) => string",
-      "typeSource": "jsdoc",
-      "isFunction": true,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 55,
-          "column": 2
-        },
-        "end": {
-          "line": 55,
-          "column": 36
-        }
-      }
-    },
-    {
-      "name": "renderEmpty",
-      "kind": "let",
-      "description": "Render the message shown when there are no items.",
-      "type": "(...args: any[]) => string",
-      "typeSource": "jsdoc",
-      "isFunction": true,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 62,
-          "column": 2
-        },
-        "end": {
-          "line": 62,
-          "column": 46
-        }
-      }
-    },
-    {
-      "name": "getKey",
-      "kind": "let",
-      "description": "Resolve the unique key for an item.",
-      "type": "(item: string, index: number) => string",
-      "typeSource": "jsdoc",
-      "params": [
-        {
-          "name": "item",
-          "type": "string",
-          "description": "",
-          "optional": false
-        },
-        {
-          "name": "index",
-          "type": "number",
-          "description": "",
-          "optional": false
-        }
-      ],
-      "returnType": "string",
-      "isFunction": true,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 74,
-          "column": 2
-        },
-        "end": {
-          "line": 74,
-          "column": 36
-        }
-      }
-    },
-    {
-      "name": "translate",
-      "kind": "let",
-      "description": "Translate a label to the active locale.\\n@example translate(\\"submit\\") // => \\"Submit\\"",
-      "type": "(key: string) => string",
-      "typeSource": "jsdoc",
-      "isFunction": true,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 85,
-          "column": 2
-        },
-        "end": {
-          "line": 85,
-          "column": 42
-        }
-      }
-    }
-  ],
-  "moduleExports": [],
-  "slots": [],
-  "events": [],
-  "typedefs": [],
-  "generics": null,
-  "contexts": []
-}
-"
-`;
-
-exports[`fixtures (TypeScript) "prop-default-identifier-jsdoc/input.svelte" 1`] = `
-"import { SvelteComponentTyped } from "svelte";
-
-export type PropDefaultIdentifierJsdocProps = {
-  /**
-   * Override the default copy behavior of using the navigator.clipboard.writeText API to copy text.
-   */
-  copy?: (text: string) => void | Promise<void>;
-
-  /**
-   * Default size in pixels.
-   * @default 16
-   */
-  size?: number;
-
-  /**
-   * Animation configuration applied on mount.
-   * @default { duration: 200, easing: "ease-in-out" }
-   */
-  config?: { duration: number; easing: string };
-
-  /**
-   * Items rendered when no value is provided.
-   * @default ["one", "two"]
-   */
-  items?: string[];
-
-  /**
-   * Fallback label shown when none is provided.
-   * @default "Submit"
-   */
-  label?: string;
-
-  /**
-   * Determine if an item should be filtered given the current value.
-   */
-  shouldFilterItem?: (item: string, value: string) => boolean;
-
-  format?: (value: any) => string;
-
-  /**
-   * Render the message shown when there are no items.
-   */
-  renderEmpty?: (...args: any[]) => string;
-
-  /**
-   * Resolve the unique key for an item.
-   */
-  getKey?: (item: string, index: number) => string;
-
-  /**
-   * Translate a label to the active locale.
-   * @example translate("submit") // => "Submit"
-   */
-  translate?: (key: string) => string;
-};
-
-export default class PropDefaultIdentifierJsdoc extends SvelteComponentTyped<
-  PropDefaultIdentifierJsdocProps,
-  Record<string, any>,
-  Record<string, never>
-> {}
-"
-`;
-
-exports[`fixtures (JSON) "runes-prop-default-identifier-jsdoc/input.svelte" 1`] = `
-"{
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 78,
-      "column": 0
-    }
-  },
-  "syntaxMode": "runes",
-  "scriptLanguage": "js",
-  "props": [
-    {
-      "name": "copy",
-      "kind": "let",
-      "description": "Override the default copy behavior of using the navigator.clipboard.writeText API to copy text.",
-      "type": "(text: string) => void | Promise<void>",
-      "typeSource": "jsdoc",
-      "defaultValue": {
-        "raw": "async (text) => {     await navigator.clipboard.writeText(text);   }",
-        "kind": "function"
-      },
-      "isFunction": true,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 62,
-          "column": 4
-        },
-        "end": {
-          "line": 62,
-          "column": 22
-        }
-      }
-    },
-    {
-      "name": "size",
-      "kind": "let",
-      "description": "Default size in pixels.",
-      "type": "number",
-      "typeSource": "jsdoc",
-      "value": "16",
-      "defaultValue": {
-        "raw": "16",
-        "kind": "literal",
-        "value": 16
-      },
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 63,
-          "column": 4
-        },
-        "end": {
-          "line": 63,
-          "column": 23
-        }
-      }
-    },
-    {
-      "name": "config",
-      "kind": "let",
-      "description": "Animation configuration applied on mount.",
-      "type": "{ duration: number; easing: string }",
-      "typeSource": "jsdoc",
-      "value": "{ duration: 200, easing: \\"ease-in-out\\" }",
-      "defaultValue": {
-        "raw": "{ duration: 200, easing: \\"ease-in-out\\" }",
-        "kind": "object",
-        "value": {
-          "duration": 200,
-          "easing": "ease-in-out"
-        }
-      },
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 64,
-          "column": 4
-        },
-        "end": {
-          "line": 64,
-          "column": 27
-        }
-      }
-    },
-    {
-      "name": "label",
-      "kind": "let",
-      "description": "Fallback label shown when none is provided.",
-      "type": "string",
-      "typeSource": "default",
-      "value": "\\"Submit\\"",
-      "defaultValue": {
-        "raw": "\\"Submit\\"",
-        "kind": "literal",
-        "value": "Submit"
-      },
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 65,
-          "column": 4
-        },
-        "end": {
-          "line": 65,
-          "column": 25
-        }
-      }
-    },
-    {
-      "name": "shouldFilterItem",
-      "kind": "let",
-      "description": "Determine if an item should be filtered given the current value.",
-      "type": "(item: string, value: string) => boolean",
-      "typeSource": "jsdoc",
-      "isFunction": true,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 66,
-          "column": 4
-        },
-        "end": {
-          "line": 66,
-          "column": 42
-        }
-      }
-    },
-    {
-      "name": "format",
-      "kind": "let",
-      "type": "(value: any) => string",
-      "typeSource": "jsdoc",
-      "isFunction": true,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 67,
-          "column": 4
-        },
-        "end": {
-          "line": 67,
-          "column": 26
-        }
-      }
-    },
-    {
-      "name": "renderEmpty",
-      "kind": "let",
-      "description": "Render the message shown when there are no items.",
-      "type": "(...args: any[]) => string",
-      "typeSource": "jsdoc",
-      "isFunction": true,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 68,
-          "column": 4
-        },
-        "end": {
-          "line": 68,
-          "column": 36
-        }
-      }
-    },
-    {
-      "name": "getKey",
-      "kind": "let",
-      "description": "Resolve the unique key for an item.",
-      "type": "(item: string, index: number) => string",
-      "typeSource": "jsdoc",
-      "params": [
-        {
-          "name": "item",
-          "type": "string",
-          "description": "",
-          "optional": false
-        },
-        {
-          "name": "index",
-          "type": "number",
-          "description": "",
-          "optional": false
-        }
-      ],
-      "returnType": "string",
-      "isFunction": true,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 69,
-          "column": 4
-        },
-        "end": {
-          "line": 69,
-          "column": 26
-        }
-      }
-    },
-    {
-      "name": "translate",
-      "kind": "let",
-      "description": "Translate a label to the active locale.\\n@example translate(\\"submit\\") // => \\"Submit\\"",
-      "type": "(key: string) => string",
-      "typeSource": "jsdoc",
-      "isFunction": true,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 70,
-          "column": 4
-        },
-        "end": {
-          "line": 70,
-          "column": 32
-        }
-      }
-    }
-  ],
-  "moduleExports": [],
-  "slots": [],
-  "events": [],
-  "typedefs": [],
-  "generics": null,
-  "contexts": []
-}
-"
-`;
-
-exports[`fixtures (TypeScript) "runes-prop-default-identifier-jsdoc/input.svelte" 1`] = `
-"import { SvelteComponentTyped } from "svelte";
-
-export type RunesPropDefaultIdentifierJsdocProps = {
-  /**
-   * Override the default copy behavior of using the navigator.clipboard.writeText API to copy text.
-   */
-  copy?: (text: string) => void | Promise<void>;
-
-  /**
-   * Default size in pixels.
-   * @default 16
-   */
-  size?: number;
-
-  /**
-   * Animation configuration applied on mount.
-   * @default { duration: 200, easing: "ease-in-out" }
-   */
-  config?: { duration: number; easing: string };
-
-  /**
-   * Fallback label shown when none is provided.
-   * @default "Submit"
-   */
-  label?: string;
-
-  /**
-   * Determine if an item should be filtered given the current value.
-   */
-  shouldFilterItem?: (item: string, value: string) => boolean;
-
-  format?: (value: any) => string;
-
-  /**
-   * Render the message shown when there are no items.
-   */
-  renderEmpty?: (...args: any[]) => string;
-
-  /**
-   * Resolve the unique key for an item.
-   */
-  getKey?: (item: string, index: number) => string;
-
-  /**
-   * Translate a label to the active locale.
-   * @example translate("submit") // => "Submit"
-   */
-  translate?: (key: string) => string;
-};
-
-export default class RunesPropDefaultIdentifierJsdoc extends SvelteComponentTyped<
-  RunesPropDefaultIdentifierJsdocProps,
-  Record<string, any>,
-  Record<string, never>
-> {}
-"
-`;
-
-exports[`fixtures (JSON) "slot-extends-template/input.svelte" 1`] = `
-"{
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 15,
-      "column": 0
-    }
-  },
-  "syntaxMode": "legacy",
-  "scriptLanguage": "js",
-  "props": [
-    {
-      "name": "icon",
-      "kind": "let",
-      "type": "Icon",
-      "typeSource": "jsdoc",
-      "value": "undefined",
-      "defaultValue": {
-        "raw": "undefined",
-        "kind": "expression"
-      },
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 11,
-          "column": 2
-        },
-        "end": {
-          "line": 11,
-          "column": 52
-        }
-      }
-    }
-  ],
-  "moduleExports": [],
-  "slots": [
-    {
-      "name": "badge",
-      "default": false,
-      "slot_props": "Record<string, never>",
-      "description": "Optional badge overlay.",
-      "source": {
-        "start": {
-          "line": 14,
-          "column": 0
-        },
-        "end": {
-          "line": 14,
-          "column": 21
-        }
-      }
-    }
-  ],
-  "events": [],
-  "typedefs": [],
-  "generics": [
-    "Icon",
-    "Icon = any"
-  ],
-  "extends": {
-    "interface": "ButtonProps",
-    "import": "\\"./Button.svelte\\""
-  },
-  "contexts": []
-}
-"
-`;
-
-exports[`fixtures (TypeScript) "slot-extends-template/input.svelte" 1`] = `
-"import { SvelteComponentTyped } from "svelte";
-import type { ButtonProps } from "./Button.svelte";
-
-export type SlotExtendsTemplateProps<Icon = any> = ButtonProps & {
-  /**
-   * @default undefined
-   */
-  icon?: Icon;
-
-  /** Optional badge overlay. */
-  badge?: (this: void) => void;
-};
-
-export default class SlotExtendsTemplate<Icon = any> extends SvelteComponentTyped<
-  SlotExtendsTemplateProps<Icon>,
-  Record<string, any>,
-  {
-    /** Optional badge overlay. */
-    badge: Record<string, never>;
-  }
-> {}
-"
-`;
-
-exports[`fixtures (JSON) "context-template-tag-multiple/input.svelte" 1`] = `
-"{
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 23,
-      "column": 0
-    }
-  },
-  "syntaxMode": "legacy",
-  "scriptLanguage": "js",
-  "props": [
-    {
-      "name": "selected",
-      "kind": "let",
-      "type": "Value | undefined",
-      "typeSource": "jsdoc",
-      "value": "undefined",
-      "defaultValue": {
-        "raw": "undefined",
-        "kind": "expression"
-      },
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 8,
-          "column": 2
-        },
-        "end": {
-          "line": 8,
-          "column": 34
-        }
-      }
-    },
-    {
-      "name": "icon",
-      "kind": "let",
-      "type": "Icon",
-      "typeSource": "jsdoc",
-      "value": "undefined",
-      "defaultValue": {
-        "raw": "undefined",
-        "kind": "expression"
-      },
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 11,
-          "column": 2
-        },
-        "end": {
-          "line": 11,
-          "column": 30
-        }
-      }
-    }
-  ],
-  "moduleExports": [],
-  "slots": [
-    {
-      "name": null,
-      "default": true,
-      "slot_props": "Record<string, never>",
-      "source": {
-        "start": {
-          "line": 22,
-          "column": 0
-        },
-        "end": {
-          "line": 22,
-          "column": 8
-        }
-      }
-    }
-  ],
-  "events": [],
-  "typedefs": [],
-  "generics": [
-    "Value,Icon",
-    "Value extends string = string, Icon = any"
-  ],
-  "contexts": [
-    {
-      "key": "demo:Wrapper",
-      "typeName": "DemoWrapperContext",
-      "properties": [
-        {
-          "name": "selectedValue",
-          "type": "import(\\"svelte/store\\").Writable<Value | undefined>",
-          "description": "",
-          "optional": false
-        },
-        {
-          "name": "icon",
-          "type": "Icon",
-          "optional": false
-        }
-      ]
-    }
-  ]
-}
-"
-`;
-
-exports[`fixtures (TypeScript) "context-template-tag-multiple/input.svelte" 1`] = `
-"import { SvelteComponentTyped } from "svelte";
-
-export type DemoWrapperContext<Value extends string = string, Icon = any> = {
-  selectedValue: import("svelte/store").Writable<Value | undefined>;
-  icon: Icon;
-};
-
-export type ContextTemplateTagMultipleProps<Value extends string = string, Icon = any> = {
-  /**
-   * @default undefined
-   */
-  selected?: Value | undefined;
-
-  /**
-   * @default undefined
-   */
-  icon?: Icon;
-
-  children?: (this: void) => void;
-};
-
-export default class ContextTemplateTagMultiple<Value extends string = string, Icon = any> extends SvelteComponentTyped<
-  ContextTemplateTagMultipleProps<Value, Icon>,
-  Record<string, any>,
-  { default: Record<string, never> }
 > {}
 "
 `;

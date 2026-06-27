@@ -49,5 +49,6 @@
     "type": "Element",
     "name": "article | section | nav | main | header | footer"
   },
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }

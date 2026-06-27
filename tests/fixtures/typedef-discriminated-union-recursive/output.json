@@ -54,5 +54,6 @@
     }
   ],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }

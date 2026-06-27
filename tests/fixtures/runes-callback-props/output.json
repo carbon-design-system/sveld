@@ -38,5 +38,13 @@
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "runes-callback-props/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "onclick",
+      "message": "Prop \"onclick\" type could not be inferred; falling back to \"any\"."
+    }
+  ]
 }

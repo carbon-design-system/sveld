@@ -75,5 +75,19 @@
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "runes-snippet-description-hyphens/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "row",
+      "message": "Prop \"row\" type could not be inferred; falling back to \"any\"."
+    },
+    {
+      "component": "runes-snippet-description-hyphens/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "col",
+      "message": "Prop \"col\" type could not be inferred; falling back to \"any\"."
+    }
+  ]
 }

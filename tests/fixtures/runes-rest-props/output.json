@@ -42,5 +42,13 @@
     "type": "Element",
     "name": "button"
   },
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "runes-rest-props/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "variant",
+      "message": "Prop \"variant\" type could not be inferred; falling back to \"any\"."
+    }
+  ]
 }

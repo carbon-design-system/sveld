@@ -39,5 +39,13 @@
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "runes-props-renamed/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "class",
+      "message": "Prop \"class\" type could not be inferred; falling back to \"any\"."
+    }
+  ]
 }

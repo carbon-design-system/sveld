@@ -49,5 +49,6 @@
     "type": "Element",
     "name": "ul | ol"
   },
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }

@@ -68,5 +68,6 @@
     "interface": "ButtonProps",
     "import": "\"./Button.svelte\""
   },
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }

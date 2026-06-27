@@ -113,5 +113,19 @@
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "module-reexport-mixed/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "name",
+      "message": "Prop \"name\" type could not be inferred; falling back to \"any\"."
+    },
+    {
+      "component": "module-reexport-mixed/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "value",
+      "message": "Prop \"value\" type could not be inferred; falling back to \"any\"."
+    }
+  ]
 }

@@ -20,5 +20,6 @@
     "type": "Element",
     "name": "svg"
   },
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }

@@ -36,5 +36,6 @@
     "type": "Element",
     "name": "a"
   },
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }

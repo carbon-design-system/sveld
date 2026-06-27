@@ -44,5 +44,13 @@
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "legacy-bind-component-ref-forward/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "listRef",
+      "message": "Prop \"listRef\" type could not be inferred; falling back to \"any\"."
+    }
+  ]
 }

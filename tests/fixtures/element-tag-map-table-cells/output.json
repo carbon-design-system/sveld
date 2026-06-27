@@ -49,5 +49,6 @@
     "type": "Element",
     "name": "td | th"
   },
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }

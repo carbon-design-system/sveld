@@ -211,5 +211,19 @@
   "events": [],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "infer-basic/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "ref",
+      "message": "Prop \"ref\" type could not be inferred; falling back to \"any\"."
+    },
+    {
+      "component": "infer-basic/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "name",
+      "message": "Prop \"name\" type could not be inferred; falling back to \"any\"."
+    }
+  ]
 }

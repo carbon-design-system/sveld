@@ -107,5 +107,6 @@
     "Row",
     "Row extends DataTableRow = DataTableRow"
   ],
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }

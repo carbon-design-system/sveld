@@ -67,5 +67,6 @@
     "type": "Element",
     "name": "input"
   },
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }

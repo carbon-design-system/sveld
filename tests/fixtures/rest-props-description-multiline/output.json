@@ -50,5 +50,6 @@
     "name": "button | span",
     "description": "Rest props are spread to the span (inline variant)\nor the copy button (single/multi)."
   },
-  "contexts": []
+  "contexts": [],
+  "diagnostics": []
 }

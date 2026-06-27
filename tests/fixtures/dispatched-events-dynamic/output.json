@@ -33,5 +33,13 @@
   ],
   "typedefs": [],
   "generics": null,
-  "contexts": []
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "dispatched-events-dynamic/input.svelte",
+      "kind": "event-no-source",
+      "name": "KEY",
+      "message": "@event \"KEY\" has no matching dispatch or callback prop."
+    }
+  ]
 }
