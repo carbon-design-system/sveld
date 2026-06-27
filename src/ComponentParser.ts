@@ -2766,6 +2766,35 @@ export default class ComponentParser {
   }
 
   /**
+   * Look up the initializer for a local `const` by name.
+   *
+   * {@link resolveLocalVarInitializer} also walks `let`/`var`. This method does not.
+   * Props and mutable bindings can change at runtime, so they cannot be context keys.
+   *
+   * @param name - The variable name to look up
+   * @returns The initializer node for a matching `const` binding, or undefined
+   */
+  private resolveConstInitializer(name: string): unknown | undefined {
+    for (const decl of this.vars) {
+      if (decl.kind !== "const") continue;
+      for (const declarator of decl.declarations) {
+        if (
+          declarator.id &&
+          typeof declarator.id === "object" &&
+          "type" in declarator.id &&
+          declarator.id.type === "Identifier" &&
+          "name" in declarator.id &&
+          declarator.id.name === name &&
+          declarator.init
+        ) {
+          return declarator.init;
+        }
+      }
+    }
+    return undefined;
+  }
+
+  /**
    * Look up JSDoc on a local variable declaration by name.
    */
   private resolveLocalVarJSDoc(name: string) {
@@ -4795,11 +4824,98 @@ export default class ComponentParser {
   }
 
   /**
+   * Resolve a `setContext` key to the string used in `{PascalCase}Context`.
+   *
+   * Accepts string literals, static template literals, `const`-bound identifiers
+   * (up to 5 indirection levels, same as `@default`), and `Symbol()` /
+   * `Symbol.for()`. Description-less symbols fall back to the binding name.
+   *
+   * @param keyArg - The first argument of the `setContext` call
+   * @param depth - Current identifier-resolution depth (internal recursion guard)
+   * @returns The resolved key string, or `null` when the key cannot be resolved at parse time
+   */
+  private resolveContextKey(keyArg: unknown, depth = 0): string | null {
+    if (!keyArg || typeof keyArg !== "object" || !("type" in keyArg)) return null;
+    const node = keyArg as Expression;
+
+    if (node.type === "Literal") {
+      return typeof node.value === "string" ? node.value : node.value == null ? null : String(node.value);
+    }
+
+    if (node.type === "TemplateLiteral") {
+      /** Static template only; interpolated templates return null. */
+      if (node.quasis?.length === 1) {
+        const cooked = node.quasis[0].value.cooked;
+        return cooked == null ? null : cooked;
+      }
+      return null;
+    }
+
+    if (node.type === "CallExpression" || node.type === "NewExpression") {
+      return this.resolveSymbolKeyDescription(node);
+    }
+
+    if (node.type === "Identifier") {
+      /** Follow const bindings, same 5-level cap as @default. */
+      if (depth >= 5) return null;
+      const resolvedInit = this.resolveConstInitializer(node.name);
+      if (resolvedInit && typeof resolvedInit === "object" && "type" in resolvedInit) {
+        const init = resolvedInit as Expression;
+        /** No description: use the binding name (e.g. KEY from `const KEY = Symbol()`). */
+        if (
+          (init.type === "CallExpression" || init.type === "NewExpression") &&
+          this.resolveSymbolKeyDescription(init) === ""
+        ) {
+          return node.name;
+        }
+        return this.resolveContextKey(init, depth + 1);
+      }
+      return null;
+    }
+
+    return null;
+  }
+
+  /**
+   * Extracts the description string from a `Symbol(...)` or `Symbol.for(...)` call
+   * used as a context key.
+   *
+   * @param node - A CallExpression or NewExpression AST node
+   * @returns The symbol description (`""` when the symbol has no static description),
+   *   or `null` when the node is not a `Symbol()` / `Symbol.for()` call
+   */
+  private resolveSymbolKeyDescription(node: CallExpression | NewExpression): string | null {
+    const callee = node.callee;
+    if (!callee || typeof callee !== "object" || !("type" in callee)) return null;
+
+    const isSymbolCall = callee.type === "Identifier" && callee.name === "Symbol";
+    const isSymbolFor =
+      callee.type === "MemberExpression" &&
+      !callee.computed &&
+      callee.object.type === "Identifier" &&
+      callee.object.name === "Symbol" &&
+      callee.property.type === "Identifier" &&
+      callee.property.name === "for";
+
+    if (!isSymbolCall && !isSymbolFor) return null;
+
+    const firstArg = node.arguments[0];
+    if (!firstArg || typeof firstArg !== "object" || !("type" in firstArg)) return "";
+
+    if (firstArg.type === "Literal" && typeof firstArg.value === "string") return firstArg.value;
+    if (firstArg.type === "TemplateLiteral" && firstArg.quasis?.length === 1) {
+      return firstArg.quasis[0].value.cooked ?? "";
+    }
+
+    /** Non-string description: treat as unnamed symbol. */
+    return "";
+  }
+
+  /**
    * Parses a `setContext` call expression to extract context information.
    *
-   * Extracts the context key from the first argument (must be a string literal
-   * or simple template literal) and the context value from the second argument.
-   * Only processes static keys - dynamic keys are skipped with a warning.
+   * Reads the context key from the first argument and the value from the second.
+   * Unresolved keys log a warning and are skipped.
    *
    * @param node - The AST node (should be a CallExpression)
    * @param _parent - The parent node (unused)
@@ -4809,7 +4925,10 @@ export default class ComponentParser {
    * // Parses: setContext('modal', { open, close })
    * // Extracts: key = "modal", value = { open, close }
    *
-   * // Skips: setContext(dynamicKey, value) // key is not a literal
+   * // Parses: const KEY = "modal"; setContext(KEY, value) // resolves to "modal"
+   * // Parses: setContext(Symbol("modal"), value)          // resolves to "modal"
+   *
+   * // Diagnostic: setContext(dynamicKey, value) // key cannot be statically resolved
    * ```
    */
   private parseSetContextCall(node: Node, _parent?: Node) {
@@ -4824,26 +4943,16 @@ export default class ComponentParser {
     const keyArg = callExpr.arguments[0];
     if (!keyArg) return;
 
-    let contextKey: string | null = null;
-    if (keyArg.type === "Literal") {
-      const literal = keyArg as Literal;
-      contextKey = typeof literal.value === "string" ? literal.value : String(literal.value);
-    } else if (keyArg.type === "TemplateLiteral") {
-      /**
-       * Handle simple template literals (static strings only).
-       * Dynamic template literals with expressions are skipped.
-       */
-      if (keyArg.quasis?.length === 1) {
-        const cooked = keyArg.quasis[0].value.cooked;
-        contextKey = cooked == null ? null : cooked;
-      } else if (this.options?.verbose) {
-        console.warn("Warning: Skipping setContext with dynamic template literal key");
-      }
-    } else if (this.options?.verbose) {
-      console.warn(`Warning: Skipping setContext with non-literal key (type: ${keyArg.type})`);
-    }
+    const contextKey = this.resolveContextKey(keyArg);
 
-    if (!contextKey) return;
+    if (!contextKey) {
+      /** Dynamic key: warn and skip. */
+      const location = this.componentFilePath ? ` in ${this.componentFilePath}` : "";
+      console.warn(
+        `Warning: Could not resolve setContext key${location}. Use a string literal, const-bound string, or Symbol(). Skipping context type generation.`,
+      );
+      return;
+    }
 
     /**
      * Extract context value (second argument).

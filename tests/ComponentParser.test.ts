@@ -1289,4 +1289,126 @@ describe("ComponentParser", () => {
     const result = parser.parseSvelteComponent(source, diagnostics);
     expect(result.props).toHaveLength(0);
   });
+
+  test("resolves a const-bound string key to the same context type as a literal", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        import { setContext } from "svelte";
+        const CONTEXT_KEY = "simple-modal";
+        /** @type {() => void} */
+        const close = () => {};
+        setContext(CONTEXT_KEY, { close });
+      </script>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.contexts).toHaveLength(1);
+    expect(result.contexts?.[0].key).toBe("simple-modal");
+    expect(result.contexts?.[0].typeName).toBe("SimpleModalContext");
+  });
+
+  test("follows const indirection for string keys", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        import { setContext } from "svelte";
+        const BASE_KEY = "tabs";
+        const CONTEXT_KEY = BASE_KEY;
+        /** @type {number} */
+        let activeTab = 0;
+        setContext(CONTEXT_KEY, { activeTab });
+      </script>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.contexts?.[0].typeName).toBe("TabsContext");
+  });
+
+  test("names Symbol() context keys from their description", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        import { setContext } from "svelte";
+        const KEY = Symbol("tabs");
+        /** @type {number} */
+        let activeTab = 0;
+        setContext(KEY, { activeTab });
+      </script>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.contexts?.[0].typeName).toBe("TabsContext");
+  });
+
+  test("supports inline Symbol.for() context keys", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        import { setContext } from "svelte";
+        /** @type {() => void} */
+        const notify = () => {};
+        setContext(Symbol.for("notification"), { notify });
+      </script>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.contexts?.[0].typeName).toBe("NotificationContext");
+  });
+
+  test("falls back to the binding name for a description-less const Symbol", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        import { setContext } from "svelte";
+        const ModalKey = Symbol();
+        /** @type {() => void} */
+        const close = () => {};
+        setContext(ModalKey, { close });
+      </script>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.contexts?.[0].typeName).toBe("ModalKeyContext");
+  });
+
+  test("emits a diagnostic and skips context for an unresolvable key", () => {
+    const warn = jest.spyOn(console, "warn").mockImplementation(() => undefined);
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        import { setContext } from "svelte";
+        export let dynamicKey = "modal";
+        /** @type {() => void} */
+        const close = () => {};
+        setContext(dynamicKey, { close });
+      </script>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.contexts ?? []).toHaveLength(0);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("Could not resolve setContext key"));
+
+    warn.mockRestore();
+  });
+
+  test("does not resolve mutable (let) bindings as static keys", () => {
+    const warn = jest.spyOn(console, "warn").mockImplementation(() => undefined);
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        import { setContext } from "svelte";
+        let mutableKey = "modal";
+        /** @type {() => void} */
+        const close = () => {};
+        setContext(mutableKey, { close });
+      </script>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.contexts ?? []).toHaveLength(0);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("Could not resolve setContext key"));
+
+    warn.mockRestore();
+  });
 });
