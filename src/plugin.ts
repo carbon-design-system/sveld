@@ -25,6 +25,12 @@ export interface PluginSveldOptions {
   jsonOptions?: Partial<Omit<WriteJsonOptions, "inputDir">>;
   markdown?: boolean;
   markdownOptions?: Partial<WriteMarkdownOptions>;
+  /**
+   * Abort the entire run when a single component fails to parse.
+   * When `false` (the default), parse failures are collected as diagnostics
+   * and the remaining components still emit their output.
+   */
+  failFast?: boolean;
 }
 
 export interface ComponentDocApi extends ParsedComponent {
@@ -33,6 +39,17 @@ export interface ComponentDocApi extends ParsedComponent {
 }
 
 export type ComponentDocs = Map<string, ComponentDocApi>;
+
+/**
+ * A parse failure for a single component, captured so the rest of the run
+ * can continue. Surfaced via {@link GenerateBundleResult.errors}.
+ */
+export interface ComponentParseError {
+  filePath: string;
+  moduleName: string;
+  message: string;
+  stack?: string;
+}
 
 const STYLE_TAG_REGEX = /<style.+?<\/style>/gims;
 const HYPHEN_REGEX = /-/g;
@@ -76,7 +93,7 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
     },
     async generateBundle() {
       if (input != null) {
-        result = await generateBundle(input, opts?.glob === true);
+        result = await generateBundle(input, opts?.glob === true, { failFast: opts?.failFast });
       }
     },
     writeBundle() {
@@ -89,6 +106,19 @@ interface GenerateBundleResult {
   exports: ParsedExports;
   components: ComponentDocs;
   allComponentsForTypes: ComponentDocs;
+  /**
+   * Components that failed to parse. Empty unless `failFast` is disabled and
+   * one or more components threw during parsing.
+   */
+  errors: ComponentParseError[];
+}
+
+export interface GenerateBundleOptions {
+  /**
+   * Throw on the first component that fails to parse instead of collecting
+   * the failure and continuing with the remaining components.
+   */
+  failFast?: boolean;
 }
 
 /**
@@ -98,9 +128,14 @@ interface GenerateBundleResult {
  * all Svelte files to extract component metadata. Returns both exported
  * components (for JSON/Markdown) and all components (for TypeScript definitions).
  *
+ * A single component that fails to parse is captured as a diagnostic (see
+ * {@link GenerateBundleResult.errors}) so the remaining components still emit
+ * output. Pass `{ failFast: true }` to restore abort-on-first-error behavior.
+ *
  * @param input - Entry point file or directory containing Svelte components
  * @param glob - Whether to glob for all .svelte files in the directory
- * @returns Bundle result containing exports, components, and allComponentsForTypes
+ * @param options - Bundle options (e.g. `failFast`)
+ * @returns Bundle result containing exports, components, allComponentsForTypes, and errors
  *
  * @example
  * ```ts
@@ -109,9 +144,14 @@ interface GenerateBundleResult {
  *
  * // Generate from directory with glob:
  * const result = await generateBundle("./src", true);
+ *
+ * // Abort on the first parse failure:
+ * const result = await generateBundle("./src", true, { failFast: true });
  * ```
  */
-export async function generateBundle(input: string, glob: boolean) {
+export async function generateBundle(input: string, glob: boolean, options: GenerateBundleOptions = {}) {
+  const failFast = options.failFast === true;
+  const parseErrors = new Map<string, ComponentParseError>();
   const isFile = lstatSync(input).isFile();
   const dir = isFile ? dirname(input) : input;
   const rootDir = resolve(dir);
@@ -231,15 +271,38 @@ export async function generateBundle(input: string, glob: boolean) {
         return null;
       }
 
+      const normalizedFilePath = normalizeSeparators(filePath);
       const parser = new ComponentParser();
-      const parsed = parser.parseSvelteComponent(stripTopLevelStyleBlock(source), {
-        moduleName,
-        filePath: normalizeSeparators(filePath),
-      });
+
+      let parsed: ParsedComponent;
+      try {
+        parsed = parser.parseSvelteComponent(stripTopLevelStyleBlock(source), {
+          moduleName,
+          filePath: normalizedFilePath,
+        });
+      } catch (error) {
+        /**
+         * Capture the failure as a diagnostic so the remaining components can
+         * still be processed. When `failFast` is enabled we rethrow to restore
+         * the abort-on-first-error behavior.
+         */
+        if (failFast) {
+          throw error;
+        }
+
+        const message = error instanceof Error ? error.message : String(error);
+        const stack = error instanceof Error ? error.stack : undefined;
+        /**
+         * Dedupe by file path: the same component is parsed once for the
+         * exported set and once for the all-components set.
+         */
+        parseErrors.set(normalizedFilePath, { filePath: normalizedFilePath, moduleName, message, stack });
+        return null;
+      }
 
       return {
         moduleName,
-        filePath: normalizeSeparators(filePath),
+        filePath: normalizedFilePath,
         ...parsed,
       };
     }
@@ -278,10 +341,20 @@ export async function generateBundle(input: string, glob: boolean) {
     }
   }
 
+  const errors = Array.from(parseErrors.values());
+
+  if (errors.length > 0) {
+    console.error(`sveld: failed to parse ${errors.length} component(s):`);
+    for (const { filePath, message } of errors) {
+      console.error(`  - ${filePath}: ${message}`);
+    }
+  }
+
   return {
     exports,
     components,
     allComponentsForTypes,
+    errors,
   };
 }
 
