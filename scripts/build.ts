@@ -17,7 +17,7 @@ async function emitTypeDeclarations() {
 
 async function buildProject() {
   const result = await build({
-    entrypoints: ["./src/index.ts"],
+    entrypoints: ["./src/index.ts", "./src/testing.ts"],
     outdir: "./lib",
     format: "esm",
     target: "node",

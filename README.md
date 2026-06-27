@@ -128,6 +128,7 @@ export default class Button extends SvelteComponentTyped<
 - [Available Options](#available-options)
 - [Documenting Entry Exports](#documenting-entry-exports)
 - [JSON Output](#json-output)
+- [Testing](#testing)
 - [API Reference](#api-reference)
   - [@type](#type)
   - [@default](#default)
@@ -543,6 +544,81 @@ Prop metadata is additive and keeps the older public fields:
 - `typeSource` identifies the conservative source of the emitted `type`: TypeScript annotation, JSDoc, initializer/default inference, other parser inference, or unknown fallback.
 - `value` remains the raw default expression string. `defaultValue` adds structured metadata with the same raw expression, a coarse `kind`, and a parsed `value` only for JSON-safe literals, arrays, and plain objects. `sveld` does not evaluate arbitrary code.
 - `bindable: true` is emitted only for props explicitly declared with Svelte 5 `$bindable(...)`. Missing `bindable` should be treated as false.
+
+## Testing
+
+`sveld/testing` is a small, framework-agnostic helper for guarding a library's generated component API against unintended drift. It generates the API in-memory and asserts it matches a committed **golden snapshot**, failing with a readable diff that classifies the drift as **breaking**, **additive**, or **doc-only**.
+
+It throws a plain `Error` on mismatch, so it works from Bun, Jest, Vitest, or a standalone script — no test-framework integration required.
+
+```ts
+// component-api.test.ts
+import { test } from "vitest"; // or: import { test } from "bun:test"
+import { assertComponentApi } from "sveld/testing";
+
+test("component API is stable", async () => {
+  await assertComponentApi({
+    // Entry file (re-exporting components) or a directory of `.svelte` files.
+    // Defaults to the `svelte` field of package.json when omitted.
+    input: "src/index.js",
+    // Committed golden snapshot, relative to the current working directory.
+    snapshot: "test/__snapshots__/component-api.json",
+  });
+});
+```
+
+### Creating and updating the snapshot
+
+The first run needs a snapshot to compare against. Generate (or refresh) it by passing `update: true`, or by setting the `SVELD_UPDATE_SNAPSHOT` environment variable:
+
+```ts
+await assertComponentApi({ input: "src/index.js", snapshot, update: true });
+```
+
+```bash
+SVELD_UPDATE_SNAPSHOT=1 vitest run
+```
+
+Commit the generated `component-api.json`. It is a deterministic, position-free projection of your component API — it omits volatile data (the generator version, absolute file paths, and source ranges), so it only changes when the public API actually changes.
+
+### Failure output
+
+When the API drifts, the assertion throws a `ComponentApiDriftError` with a grouped, classified report:
+
+```text
+Component API drift detected (3 changes: 1 breaking, 1 additive, 1 doc-only).
+
+BREAKING
+  ✖ Button: prop `size` type changed: "small" | "large" → "sm" | "lg"
+
+ADDITIVE
+  + Button: prop `disabled` was added
+
+DOC-ONLY
+  ~ Button: prop `type` description changed
+```
+
+The thrown error exposes the structured diff for programmatic use:
+
+```ts
+import { assertComponentApi, ComponentApiDriftError } from "sveld/testing";
+
+try {
+  await assertComponentApi({ input: "src/index.js", snapshot });
+} catch (error) {
+  if (error instanceof ComponentApiDriftError) {
+    error.diff.classification; // "breaking" | "additive" | "doc-only"
+    error.diff.breaking; // ApiChange[]
+  }
+}
+```
+
+### Lower-level helpers
+
+- `generateComponentApi(options)` — returns the in-memory `ComponentApi` snapshot without asserting.
+- `diffComponentApi(previous, next)` — classifies the differences between two snapshots.
+- `formatApiDiff(diff)` — renders a diff as the readable report shown above.
+- `writeComponentApiSnapshot(path, api)` / `serializeComponentApi(api)` — persist a snapshot.
 
 ## API Reference
 
