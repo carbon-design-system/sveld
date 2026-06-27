@@ -1,7 +1,25 @@
 import { asNormalizedPath } from "../src/brands";
+import type { ComponentDocApi, ComponentDocs } from "../src/plugin";
 import type { AppendType } from "../src/writer/WriterMarkdown";
 import WriterMarkdown from "../src/writer/WriterMarkdown";
-import { writeMarkdownCore } from "../src/writer/writer-markdown-core";
+import { splitMarkdownCore, writeMarkdownCore } from "../src/writer/writer-markdown-core";
+
+function createComponent(moduleName: string, overrides?: Partial<ComponentDocApi>): ComponentDocApi {
+  return {
+    moduleName,
+    filePath: asNormalizedPath(`${moduleName}.svelte`),
+    syntaxMode: "legacy",
+    props: [],
+    moduleExports: [],
+    slots: [],
+    events: [],
+    typedefs: [],
+    generics: null,
+    rest_props: undefined,
+    contexts: [],
+    ...overrides,
+  };
+}
 
 describe("WriterMarkdown", () => {
   test("basic functionality", () => {
@@ -262,5 +280,101 @@ describe("WriterMarkdown", () => {
     expect(output).toContain(
       "| <s>change</s><br />**Deprecated**: Listen for `input` instead. | dispatched | -- | Fires on change. |",
     );
+  });
+
+  test("single-file output is unchanged when no options are passed", () => {
+    const components: ComponentDocs = new Map([
+      ["Button", createComponent("Button")],
+      ["Input", createComponent("Input")],
+    ]);
+
+    const baseline = writeMarkdownCore(components);
+    expect(baseline).not.toContain("<a id=");
+    expect(baseline).not.toContain("---\nname:");
+    expect(baseline).toMatchSnapshot();
+  });
+
+  test("single-file output supports opt-in toc and anchors", () => {
+    const components: ComponentDocs = new Map([
+      [
+        "Button",
+        createComponent("Button", {
+          typedefs: [{ type: "type ButtonSize = 'sm' | 'lg'", name: "ButtonSize", ts: "type ButtonSize" }],
+          props: [
+            {
+              name: "size",
+              kind: "let",
+              constant: false,
+              description: "Button size.",
+              isFunction: false,
+              isFunctionDeclaration: false,
+              isRequired: false,
+              reactive: false,
+            },
+          ],
+          events: [{ type: "forwarded", name: "click", element: "button" }],
+        }),
+      ],
+    ]);
+
+    const output = writeMarkdownCore(components, { toc: true, anchors: true });
+
+    expect(output).toContain('<a id="button"></a>');
+    expect(output).toContain('<a id="button-props"></a>');
+    expect(output).toContain("- [Types](#button-types)");
+    expect(output).toContain("- [Events](#button-events)");
+    expect(output).toMatchSnapshot();
+  });
+
+  test("split mode emits one document per component with frontmatter", () => {
+    const components: ComponentDocs = new Map([
+      [
+        "Button",
+        createComponent("Button", {
+          componentComment: "A button.\n@since 1.2.0",
+          props: [
+            {
+              name: "disabled",
+              kind: "let",
+              constant: false,
+              description: "Disable the button.",
+              isFunction: false,
+              isFunctionDeclaration: false,
+              isRequired: false,
+              reactive: false,
+            },
+          ],
+        }),
+      ],
+      [
+        "LegacyInput",
+        createComponent("LegacyInput", {
+          componentComment: "@deprecated Use `Input` instead.",
+        }),
+      ],
+    ]);
+
+    const files = splitMarkdownCore(components, { frontmatter: true, toc: true, anchors: true });
+
+    expect(Array.from(files.keys())).toEqual(["Button", "LegacyInput"]);
+
+    const button = files.get("Button") ?? "";
+    expect(button).toContain('name: "Button"');
+    expect(button).toContain('since: "1.2.0"');
+    expect(button).not.toContain("# Component Index");
+
+    const legacy = files.get("LegacyInput") ?? "";
+    expect(legacy).toContain('deprecated: "Use `Input` instead."');
+
+    expect(button).toMatchSnapshot();
+    expect(legacy).toMatchSnapshot();
+  });
+
+  test("split mode omits frontmatter when not requested", () => {
+    const components: ComponentDocs = new Map([["Button", createComponent("Button")]]);
+
+    const files = splitMarkdownCore(components);
+
+    expect(files.get("Button")).not.toContain("---\nname:");
   });
 });

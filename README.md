@@ -322,6 +322,45 @@ sveld({
 });
 ```
 
+#### `markdownOptions.split`
+
+With `markdown: true`, `sveld` writes a single `COMPONENT_INDEX.md` at the project root that documents all components.
+
+Enable `markdownOptions.split` to instead emit one Markdown file per component. Use `markdownOptions.outDir` to set the destination folder (defaults to `docs`).
+
+```js
+sveld({
+  markdown: true,
+  markdownOptions: {
+    // an individual Markdown file will be generated for each component
+    // e.g. "docs/Button.md"
+    split: true,
+    outDir: "docs",
+  },
+});
+```
+
+#### `markdownOptions.frontmatter`, `toc`, and `anchors`
+
+The following options are opt-in and can be combined with either single-file or `split` mode:
+
+- **`frontmatter`** (boolean): Emit YAML frontmatter (`name`, and `since`/`deprecated` parsed from the `@component` comment) at the top of each generated file. Only applies in `split` mode, where each file maps to one component.
+- **`toc`** (boolean): Emit a per-component table of contents linking to each section (Types, Props, Slots, Events).
+- **`anchors`** (boolean): Emit stable, slugified HTML anchors before each component and section heading so fragment links resolve consistently across Markdown renderers.
+
+```js
+sveld({
+  markdown: true,
+  markdownOptions: {
+    split: true,
+    outDir: "docs",
+    frontmatter: true,
+    toc: true,
+    anchors: true,
+  },
+});
+```
+
 ### Publishing to NPM
 
 TypeScript definitions land in the `types` folder by default. Include that folder in `package.json` when you publish to npm.
@@ -350,7 +389,7 @@ TypeScript definitions land in the `types` folder by default. Include that folde
 - **`json`** (boolean, optional): Generate component documentation in JSON format.
 - **`jsonOptions`** (object, optional): Options for JSON output.
 - **`markdown`** (boolean, optional): Generate component documentation in Markdown format.
-- **`markdownOptions`** (object, optional): Options for Markdown output.
+- **`markdownOptions`** (object, optional): Options for Markdown output, including `split`, `outDir`, `frontmatter`, `toc`, and `anchors`.
 - **`watch`** (boolean, optional, default: `false`): Regenerate output incrementally when `.svelte` source changes during `vite dev` / `vite build --watch`. Only the changed component and the components that depend on it via [`@extendProps`](#extendprops) / `@extends` are re-parsed, rather than rebuilding every component. Without this option, the plugin only runs during `vite build`.
 - **`failFast`** (boolean, optional, default: `false`): Abort the entire run when a single component fails to parse. By default, parse failures are collected as diagnostics (and reported to `stderr`) so the remaining components still emit their output. Also available as the `--fail-fast` CLI flag.
 

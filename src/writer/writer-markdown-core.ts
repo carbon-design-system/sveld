@@ -1,8 +1,8 @@
 import type { ComponentDocs } from "../plugin";
 import { type AppendType, MarkdownWriterBaseImpl } from "./MarkdownWriterBase";
-import { renderComponentsToMarkdown } from "./markdown-render-utils";
+import { type MarkdownRenderOptions, renderComponentFile, renderComponentsToMarkdown } from "./markdown-render-utils";
 
-export type { AppendType };
+export type { AppendType, MarkdownRenderOptions };
 
 type OnAppend = (type: AppendType, document: BrowserWriterMarkdown) => void;
 
@@ -41,7 +41,7 @@ export class BrowserWriterMarkdown extends MarkdownWriterBaseImpl {
   }
 }
 
-export interface WriteMarkdownCoreOptions {
+export interface WriteMarkdownCoreOptions extends MarkdownRenderOptions {
   onAppend?: (type: AppendType, document: BrowserWriterMarkdown, components: ComponentDocs) => void;
 }
 
@@ -52,7 +52,36 @@ export function writeMarkdownCore(components: ComponentDocs, options?: WriteMark
     },
   });
 
-  renderComponentsToMarkdown(document, components);
+  renderComponentsToMarkdown(document, components, options);
 
   return document.end();
+}
+
+/**
+ * Render one markdown document per component.
+ *
+ * Browser-safe counterpart to split mode: returns a map of module name to
+ * rendered markdown without touching the file system. Components are sorted by
+ * module name to match the single-file ordering.
+ *
+ * @example
+ * ```ts
+ * const files = splitMarkdownCore(components, { frontmatter: true });
+ * files.get("Button"); // "---\nname: \"Button\"\n---\n\n## `Button`\n\n..."
+ * ```
+ */
+export function splitMarkdownCore(components: ComponentDocs, options?: MarkdownRenderOptions): Map<string, string> {
+  const files = new Map<string, string>();
+  const keys = Array.from(components.keys()).sort();
+
+  for (const key of keys) {
+    const component = components.get(key);
+    if (!component) continue;
+
+    const document = new BrowserWriterMarkdown({});
+    renderComponentFile(document, component, options);
+    files.set(component.moduleName, document.end());
+  }
+
+  return files;
 }
