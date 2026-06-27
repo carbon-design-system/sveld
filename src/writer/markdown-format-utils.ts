@@ -1,3 +1,4 @@
+import type { DeprecatedValue } from "../ComponentParser";
 import { formatTsProps } from "./writer-ts-definitions-core";
 
 export const BACKTICK_REGEX = /`/g;
@@ -57,6 +58,24 @@ export function formatPropValue(value: string | undefined) {
 }
 
 /**
+ * Strike through deprecated prop, slot, and event names in markdown tables.
+ *
+ * @example
+ * ```ts
+ * formatNameWithDeprecation("size", "use width")
+ * // Returns: "<s>size</s><br />**Deprecated**: use width"
+ * ```
+ */
+export function formatNameWithDeprecation(name: string, deprecated: DeprecatedValue | undefined): string {
+  if (deprecated === undefined) return name;
+  const suffix =
+    typeof deprecated === "string" && deprecated.trim().length > 0
+      ? `: ${escapeHtml(deprecated).replace(NEWLINE_REGEX, " ").replace(PIPE_REGEX, "&#124;")}`
+      : "";
+  return `<s>${name}</s><br />**Deprecated**${suffix}`;
+}
+
+/**
  * Format a prop description; newlines become `<br />`.
  *
  * @example
@@ -107,8 +126,6 @@ export function formatSlotFallback(fallback?: string) {
  * ```ts
  * formatSlotDescription("Header content.", [{ name: "since", body: "1.0.0" }])
  * // Returns: "Header content.<br />@since 1.0.0"
- * formatSlotDescription(undefined, [{ name: "deprecated", body: "" }])
- * // Returns: "@deprecated"
  * formatSlotDescription(undefined, [])
  * // Returns: "--"
  * ```

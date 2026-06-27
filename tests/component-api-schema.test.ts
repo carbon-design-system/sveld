@@ -100,6 +100,44 @@ describe("component API JSON schema", () => {
     expect(objectProperty(propProperties, "defaultValue")).toMatchObject({ $ref: "#/$defs/defaultValue" });
   });
 
+  test("documents @deprecated across props, slots, and events", () => {
+    const schema = readJson("schema/component-api.schema.json");
+    const defs = objectProperty(schema, "$defs");
+
+    expect(objectProperty(defs, "deprecated")).toMatchObject({
+      oneOf: [{ type: "string" }, { const: true }],
+    });
+
+    for (const def of ["prop", "slot", "dispatchedEvent", "forwardedEvent"]) {
+      const properties = objectProperty(objectProperty(defs, def), "properties");
+      expect(objectProperty(properties, "deprecated")).toMatchObject({ $ref: "#/$defs/deprecated" });
+    }
+  });
+
+  test("represents @deprecated in focused fixture output", () => {
+    const focused = readJson("tests/fixtures/deprecated-tags/output.json");
+
+    const props = arrayProperty(focused, "props");
+    expect(findObjectByProperty(props, "name", "label")).toMatchObject({
+      deprecated: "Use the `text` prop instead.",
+    });
+    // A bare `@deprecated` is represented as `true`.
+    expect(findObjectByProperty(props, "name", "id")).toMatchObject({ deprecated: true });
+    expect(findObjectByProperty(props, "name", "focus")).toMatchObject({
+      deprecated: "Focus the underlying element directly.",
+    });
+
+    const slots = arrayProperty(focused, "slots");
+    expect(findObjectByProperty(slots, "name", "badge")).toMatchObject({
+      deprecated: "Render the badge inline instead.",
+    });
+
+    const events = arrayProperty(focused, "events");
+    expect(findObjectByProperty(events, "name", "change")).toMatchObject({
+      deprecated: "Listen for the native `input` event instead.",
+    });
+  });
+
   test("keeps representative combined output and focused fixture coverage", () => {
     const api = readJson("tests/e2e/svelte5-runes/COMPONENT_API.json");
 

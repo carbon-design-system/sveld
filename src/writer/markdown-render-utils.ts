@@ -3,6 +3,7 @@ import type { AppendType } from "./MarkdownWriterBase";
 import {
   EVENT_TABLE_HEADER,
   formatEventDetail,
+  formatNameWithDeprecation,
   formatPropDescription,
   formatPropType,
   formatPropValue,
@@ -72,7 +73,7 @@ function renderComponent(document: MarkdownDocument, component: ComponentDocApi)
     for (const prop of sortedProps) {
       document.append(
         "raw",
-        `| ${prop.name} | ${prop.isRequired ? "Yes" : "No"} | ${`<code>${prop.kind}</code>`} | ${
+        `| ${formatNameWithDeprecation(prop.name, prop.deprecated)} | ${prop.isRequired ? "Yes" : "No"} | ${`<code>${prop.kind}</code>`} | ${
           prop.reactive ? "Yes" : "No"
         } | ${prop.binding ?? "--"} | ${formatPropType(prop.type)} | ${formatPropValue(prop.value)} | ${formatPropDescription(
           prop.description,
@@ -87,7 +88,7 @@ function renderComponent(document: MarkdownDocument, component: ComponentDocApi)
     for (const slot of component.slots) {
       document.append(
         "raw",
-        `| ${slot.default ? MD_TYPE_UNDEFINED : slot.name} | ${slot.default ? "Yes" : "No"} | ${formatSlotProps(
+        `| ${formatNameWithDeprecation(slot.default ? MD_TYPE_UNDEFINED : (slot.name ?? MD_TYPE_UNDEFINED), slot.deprecated)} | ${slot.default ? "Yes" : "No"} | ${formatSlotProps(
           slot.slot_props,
         )} | ${formatSlotFallback(slot.fallback)} | ${formatSlotDescription(slot.description, slot.tags)} |\n`,
       );
@@ -100,7 +101,7 @@ function renderComponent(document: MarkdownDocument, component: ComponentDocApi)
     for (const event of component.events) {
       document.append(
         "raw",
-        `| ${event.name} | ${event.type} | ${
+        `| ${formatNameWithDeprecation(event.name, event.deprecated)} | ${event.type} | ${
           event.type === "dispatched" ? formatEventDetail(event.detail) : MD_TYPE_UNDEFINED
         } | ${formatPropDescription(event.description)} |\n`,
       );

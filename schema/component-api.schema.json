@@ -56,6 +56,10 @@
         "end": { "$ref": "#/$defs/sourcePosition" }
       }
     },
+    "deprecated": {
+      "oneOf": [{ "type": "string" }, { "const": true }],
+      "description": "Author-documented deprecation from `@deprecated`. A string is the message; `true` means the tag had no message."
+    },
     "component": {
       "type": "object",
       "required": [
@@ -156,6 +160,7 @@
           "const": true,
           "description": "Present only when the prop is explicitly declared with Svelte 5 $bindable()."
         },
+        "deprecated": { "$ref": "#/$defs/deprecated" },
         "source": { "$ref": "#/$defs/sourceRange" }
       }
     },
@@ -196,6 +201,7 @@
         "fallback": { "type": "string" },
         "slot_props": { "type": "string" },
         "description": { "type": "string" },
+        "deprecated": { "$ref": "#/$defs/deprecated" },
         "tags": {
           "type": "array",
           "items": { "$ref": "#/$defs/jsdocTag" }
@@ -224,6 +230,7 @@
         "name": { "type": "string" },
         "element": { "type": "string" },
         "description": { "type": "string" },
+        "deprecated": { "$ref": "#/$defs/deprecated" },
         "detail": { "type": "string" },
         "source": { "$ref": "#/$defs/sourceRange" }
       }
@@ -237,6 +244,7 @@
         "name": { "type": "string" },
         "detail": { "type": "string" },
         "description": { "type": "string" },
+        "deprecated": { "$ref": "#/$defs/deprecated" },
         "source": { "$ref": "#/$defs/sourceRange" }
       }
     },

@@ -135,6 +135,7 @@ export default class Button extends SvelteComponentTyped<
     - [Extra JSDoc tags before `@slot`](#extra-jsdoc-tags-before-slot)
     - [Svelte 5 Snippet Compatibility](#svelte-5-snippet-compatibility)
   - [@event](#event)
+  - [@deprecated](#deprecated)
   - [Context API](#context-api)
   - [@restProps](#restprops)
   - [@extendProps](#extendprops)
@@ -1393,7 +1394,9 @@ Omit the `slot-name` to type the default slot.
 
 #### Extra JSDoc tags before `@slot`
 
-Tags such as `@example`, `@deprecated`, `@see`, or `@since` that appear after the prose description and before the `@slot` / `@snippet` line are copied into generated `.d.ts` files. The emitted JSDoc above each slot's snippet prop (and the traditional `SlotDefs` shape) lists the description, then those tags in source order. The same entries appear in JSON as `tags: [{ "name", "body" }, ...]`.
+Tags such as `@example`, `@see`, or `@since` that appear after the prose description and before the `@slot` / `@snippet` line are copied into generated `.d.ts` files. The emitted JSDoc above each slot's snippet prop (and the traditional `SlotDefs` shape) lists the description, then those tags in source order. The same entries appear in JSON as `tags: [{ "name", "body" }, ...]`.
+
+`@deprecated` is handled separately from passthrough slot tags. It fills the slot's `deprecated` JSON field, adds a Markdown badge, and emits `@deprecated` in the `.d.ts`. See [@deprecated](#deprecated).
 
 Put `@slot` / `@snippet` last in the block (description, optional extra tags, slot tag). Tags after `@slot` / `@snippet` in the same comment are not tied to that slot. Unknown tag names pass through as-is. Markdown docs render the description and these tags in the slot's **Description** column (newlines and tag boundaries become `<br />`), alongside TypeScript hover and JSON.
 
@@ -1834,6 +1837,53 @@ export default class Component extends SvelteComponentTyped<
 ```
 
 Any free-text prose after the tags is attached to the event description, not to a property doc.
+
+### `@deprecated`
+
+Add `@deprecated` to a prop, event, slot, or exported accessor. An optional message after the tag can explain why or name a replacement.
+
+```svelte
+<script>
+  /**
+   * The visible label.
+   * @deprecated Use the `text` prop instead.
+   */
+  export let label = "";
+
+  /**
+   * Programmatically focus the field.
+   * @deprecated Focus the underlying element directly.
+   */
+  export function focus() {}
+
+  /**
+   * @event {{ value: string }} change
+   * @deprecated Listen for the native `input` event instead.
+   */
+
+  /**
+   * Badge content rendered next to the label.
+   * @deprecated Render the badge inline instead.
+   * @slot {{ count: number }} badge
+   */
+</script>
+```
+
+For slots, put `@deprecated` before the `@slot` / `@snippet` line, alongside the description and any other [extra tags](#extra-jsdoc-tags-before-slot). For events, put it after the `@event` line.
+
+Generated `.d.ts` files include an `@deprecated` JSDoc line so editors strike the symbol through. JSON adds a `deprecated` field (the message string, or `true` when the tag has no message). Markdown strikes through the name and adds a **Deprecated** badge with the message when present.
+
+```ts
+/**
+ * The visible label.
+ * @deprecated Use the `text` prop instead.
+ */
+label?: string;
+```
+
+```json
+{ "name": "label", "deprecated": "Use the `text` prop instead." }
+```
 
 ### Context API
 

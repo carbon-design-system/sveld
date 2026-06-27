@@ -116,6 +116,20 @@ function getInlineTagDescription(tagSource: { tokens: { description?: string } }
 }
 
 /**
+ * From `@deprecated` JSDoc: a message string, or `true` when the tag has no message.
+ */
+export type DeprecatedValue = string | true;
+
+function deprecatedValueFromBody(body: string): DeprecatedValue {
+  const message = body.trim();
+  return message === "" ? true : message;
+}
+
+function deprecatedValueFromParts(name: string | undefined, description: string | undefined): DeprecatedValue {
+  return deprecatedValueFromBody(`${name ?? ""}${description ? ` ${description}` : ""}`);
+}
+
+/**
  * Maps ESTree `VariableDeclaration.kind` to `ComponentProp.kind`.
  * `var` becomes `let` for Svelte-oriented output; `using` / `await using`
  * map to `const` (single binding, not a valid Svelte prop keyword).
@@ -362,6 +376,8 @@ interface ComponentProp {
   binding?: ComponentPropBinding;
   /** True when the prop is explicitly declared with Svelte 5 `$bindable()` */
   bindable?: true;
+  /** From `@deprecated` JSDoc. */
+  deprecated?: DeprecatedValue;
   /** Source range for the prop declaration, when available */
   source?: SourceRange;
 }
@@ -487,9 +503,11 @@ interface ComponentSlot {
   slot_props?: string;
   /** Description extracted from JSDoc `@slot` or `@snippet` tags */
   description?: string;
+  /** From `@deprecated` JSDoc. */
+  deprecated?: DeprecatedValue;
   /**
    * JSDoc tags that appeared after the prose description and before `@slot` / `@snippet`
-   * (e.g. `@example`, `@deprecated`), in source order.
+   * (e.g. `@example`), in source order.
    */
   tags?: Array<{ name: string; body: string }>;
   /** Source range for the slot/snippet declaration or documentation tag, when available */
@@ -526,6 +544,8 @@ interface ForwardedEvent {
   element: ComponentInlineElement | ComponentElement;
   /** Description extracted from JSDoc `@event` tags */
   description?: string;
+  /** From `@deprecated` JSDoc. */
+  deprecated?: DeprecatedValue;
   /** The detail type if explicitly specified in `@event` tag */
   detail?: string;
   /** Source range for the forwarded event declaration or documentation tag, when available */
@@ -547,6 +567,8 @@ interface DispatchedEvent {
   detail?: string;
   /** Description extracted from JSDoc `@event` tags */
   description?: string;
+  /** From `@deprecated` JSDoc. */
+  deprecated?: DeprecatedValue;
   /** Source range for the dispatched event call or documentation tag, when available */
   source?: SourceRange;
 }
@@ -581,6 +603,8 @@ export interface SerializedForwardedEvent {
   element: string;
   /** Description extracted from JSDoc `@event` tags */
   description?: string;
+  /** From `@deprecated` JSDoc. */
+  deprecated?: DeprecatedValue;
   /** The detail type if explicitly specified in `@event` tag */
   detail?: string;
   /** Source range for the forwarded event declaration or documentation tag, when available */
@@ -1892,12 +1916,14 @@ export default class ComponentParser {
       "typedef",
       "callback",
       "bindable",
+      "deprecated",
     ]);
 
     let typeTag: (typeof tags)[number] | undefined;
     const paramTags: typeof tags = [];
     let returnsTag: (typeof tags)[number] | undefined;
     let binding: ComponentPropBinding | undefined;
+    let deprecated: DeprecatedValue | undefined;
     const additionalTags: typeof tags = [];
 
     for (const tag of tags) {
@@ -1907,6 +1933,8 @@ export default class ComponentParser {
         paramTags.push(tag);
       } else if (tag.tag === "returns" || tag.tag === "return") {
         returnsTag = tag;
+      } else if (tag.tag === "deprecated") {
+        deprecated ??= deprecatedValueFromParts(tag.name, tag.description);
       } else if (tag.tag === "bindable") {
         if (tag.type) {
           this.logParserWarning(`Ignoring invalid @bindable value "${tag.type} ${tag.name}".`);
@@ -1929,6 +1957,7 @@ export default class ComponentParser {
       param: paramTags,
       returns: returnsTag,
       binding,
+      deprecated,
       additional: additionalTags,
       description: parsed[0]?.description,
     };
@@ -2039,6 +2068,7 @@ export default class ComponentParser {
         returnType?: string;
         description?: string;
         binding?: ComponentPropBinding;
+        deprecated?: DeprecatedValue;
       }
     | undefined {
     if (!leadingComments) return undefined;
@@ -2055,6 +2085,7 @@ export default class ComponentParser {
       param: paramTags,
       returns: returnsTag,
       binding,
+      deprecated,
       additional: additionalTags,
       description: commentDescription,
     } = this.getCommentTags(comment);
@@ -2087,7 +2118,7 @@ export default class ComponentParser {
 
     /**
      * Build description from comment description and non-param/non-type tags.
-     * Additional tags (like `@since`, `@deprecated`) are included in the description
+     * Additional tags (like `@since`) are included in the description
      * as formatted strings to preserve all metadata.
      */
     const formattedDescription = ComponentParser.assignValue(commentDescription?.trim());
@@ -2103,7 +2134,7 @@ export default class ComponentParser {
       description = descriptionParts.join("\n");
     }
 
-    return { type, params, returnType, description, binding };
+    return { type, params, returnType, description, binding, deprecated };
   }
 
   private buildRunesPropTypeMetadata() {
@@ -3011,6 +3042,7 @@ export default class ComponentParser {
           kind: "let",
           description: propertyJSDoc?.description ?? initResult.resolvedDescription,
           binding: propertyJSDoc?.binding,
+          deprecated: propertyJSDoc?.deprecated,
           ...(bindable ? { bindable: true as const } : {}),
           type,
           typeSource,
@@ -3383,6 +3415,7 @@ export default class ComponentParser {
     slot_props,
     slot_fallback,
     slot_description,
+    slot_deprecated,
     slot_tags,
     source,
   }: {
@@ -3390,6 +3423,7 @@ export default class ComponentParser {
     slot_props?: string;
     slot_fallback?: string;
     slot_description?: string;
+    slot_deprecated?: DeprecatedValue;
     slot_tags?: Array<{ name: string; body: string }>;
     source?: SourceRange;
   }) {
@@ -3408,6 +3442,7 @@ export default class ComponentParser {
           fallback,
           slot_props: existing_slot.slot_props === undefined ? props : existing_slot.slot_props,
           description: existing_slot.description || description,
+          deprecated: existing_slot.deprecated ?? slot_deprecated,
           tags: existing_slot.tags || slot_tags,
           source: source || existing_slot.source,
         });
@@ -3419,6 +3454,7 @@ export default class ComponentParser {
         fallback,
         slot_props,
         description,
+        deprecated: slot_deprecated,
         tags: slot_tags,
         source,
       });
@@ -3465,8 +3501,12 @@ export default class ComponentParser {
     detail,
     has_argument,
     description,
+    deprecated,
     source,
-  }: Pick<DispatchedEvent, "name" | "description" | "source"> & { detail: string; has_argument: boolean }) {
+  }: Pick<DispatchedEvent, "name" | "description" | "deprecated" | "source"> & {
+    detail: string;
+    has_argument: boolean;
+  }) {
     if (name === undefined) return;
 
     /**
@@ -3482,6 +3522,7 @@ export default class ComponentParser {
         ...existing_event,
         detail: existing_event.detail === undefined ? default_detail : existing_event.detail,
         description: existing_event.description || event_description,
+        deprecated: existing_event.deprecated ?? deprecated,
         source: source || existing_event.source,
       });
     } else {
@@ -3490,6 +3531,7 @@ export default class ComponentParser {
         name,
         detail: default_detail,
         description: event_description,
+        deprecated,
         source,
       });
     }
@@ -3565,6 +3607,7 @@ export default class ComponentParser {
       let currentEventName: string | undefined;
       let currentEventType: string | undefined;
       let currentEventDescription: string | undefined;
+      let currentEventDeprecated: DeprecatedValue | undefined;
       let currentEventSource: SourceRange | undefined;
       let currentEventTagLine: number | undefined;
       const eventProperties: Array<{
@@ -3603,6 +3646,8 @@ export default class ComponentParser {
       let commentDescriptionUsed = false;
       let isFirstTag = true;
       const pendingTags: Array<{ name: string; body: string }> = [];
+      /** `@deprecated` for the next `@slot` / `@snippet` in this block. */
+      let pendingDeprecated: DeprecatedValue | undefined;
 
       /**
        * Build a map of line numbers to their description content (for lines without tags).
@@ -3824,6 +3869,7 @@ export default class ComponentParser {
             detail: detailType,
             has_argument: false,
             description: currentEventDescription,
+            deprecated: currentEventDeprecated,
             source: currentEventSource,
           });
           this.eventDescriptions.set(currentEventName, currentEventDescription);
@@ -3832,6 +3878,7 @@ export default class ComponentParser {
           currentEventName = undefined;
           currentEventType = undefined;
           currentEventDescription = undefined;
+          currentEventDeprecated = undefined;
           currentEventSource = undefined;
           currentEventTagLine = undefined;
         }
@@ -4032,10 +4079,12 @@ export default class ComponentParser {
               slot_name: name,
               slot_props: type,
               slot_description: slotDesc || undefined,
+              slot_deprecated: pendingDeprecated,
               slot_tags: pendingTags.length > 0 ? [...pendingTags] : undefined,
               source: this.sourceRangeFromCommentTag(blockSource, tagSource, commentBlockStartOffset),
             });
             pendingTags.length = 0;
+            pendingDeprecated = undefined;
             break;
           }
           case "event": {
@@ -4174,6 +4223,15 @@ export default class ComponentParser {
               this.generics = [name, constraint];
             }
             if (isFirstTag) isFirstTag = false;
+            break;
+          }
+          case "deprecated": {
+            const deprecatedValue = deprecatedValueFromParts(name, description);
+            if (currentEventName === undefined) {
+              pendingDeprecated ??= deprecatedValue;
+            } else {
+              currentEventDeprecated ??= deprecatedValue;
+            }
             break;
           }
           case "enum":
@@ -5078,6 +5136,7 @@ export default class ComponentParser {
               name: prop_name,
               kind,
               description,
+              deprecated: jsdocInfo?.deprecated,
               type,
               typeSource,
               value,
@@ -5368,6 +5427,7 @@ export default class ComponentParser {
             kind,
             description,
             binding: jsdocInfo?.binding,
+            deprecated: jsdocInfo?.deprecated,
             type,
             typeSource,
             value,
@@ -5558,6 +5618,7 @@ export default class ComponentParser {
                  * Check if this event has a JSDoc description from `@event` tags.
                  */
                 const event_description = this.eventDescriptions.get(eventHandlerNode.name);
+                const event_deprecated = existing_event?.deprecated;
 
                 if (!existing_event) {
                   /**
@@ -5568,6 +5629,7 @@ export default class ComponentParser {
                     name: eventHandlerNode.name,
                     element: element,
                     description: event_description,
+                    deprecated: event_deprecated,
                     source: this.sourceRangeFromNode(node),
                   });
                 } else if (existing_event.type === "forwarded" && event_description && !existing_event.description) {
@@ -5577,6 +5639,7 @@ export default class ComponentParser {
                   this.events.set(eventHandlerNode.name, {
                     ...existing_event,
                     description: event_description,
+                    deprecated: existing_event.deprecated ?? event_deprecated,
                     source: existing_event.source || this.sourceRangeFromNode(node),
                   });
                 }
@@ -5710,6 +5773,7 @@ export default class ComponentParser {
           name: eventName,
           element: element,
           description: event_description,
+          deprecated: event.deprecated,
           source: event.source,
         };
         /**
