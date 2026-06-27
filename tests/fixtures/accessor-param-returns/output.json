@@ -190,7 +190,13 @@
     {
       "name": "computeTreeLeafDepth",
       "kind": "function",
-      "description": "Computes the depth of a tree leaf node relative to <ul role=\"tree\" />\n@example \n```js\nlet nodeElement;\n$: depth = computeTreeLeafDepth(nodeElement);\n```",
+      "description": "Computes the depth of a tree leaf node relative to <ul role=\"tree\" />",
+      "tags": [
+        {
+          "name": "example",
+          "body": " ```js\n let nodeElement;\n $: depth = computeTreeLeafDepth(nodeElement);\n ```"
+        }
+      ],
       "type": "(node: HTMLLIElement) => number",
       "typeSource": "jsdoc",
       "params": [

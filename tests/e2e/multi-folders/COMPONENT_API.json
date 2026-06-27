@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "generator": {
     "name": "sveld",
-    "version": "0.32.3",
-    "svelteVersion": "5.55.9"
+    "version": "0.32.8",
+    "svelteVersion": "5.56.3"
   },
   "total": 5,
   "components": [

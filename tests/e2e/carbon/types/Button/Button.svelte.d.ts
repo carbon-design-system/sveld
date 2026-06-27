@@ -42,11 +42,11 @@ type $Props = {
    * Specify the icon to render.
    * Alternatively, use the named slot "icon".
    * @example
-   * ```svelte
-   * <Button>
-   *   <Icon slot="icon" size={20} />
-   * </Button>
-   * ```
+   *  ```svelte
+   *  <Button>
+   *    <Icon slot="icon" size={20} />
+   *  </Button>
+   *  ```
    * @default undefined
    */
   icon?: any;
@@ -82,11 +82,11 @@ type $Props = {
    * Set to `true` to render a custom HTML element.
    * Props are destructured as `props` in the default slot.
    * @example
-   * ```svelte
-   * <Button let:props>
-   *   <div {...props}>Custom Element</div>
-   * </Button>
-   * ```
+   *  ```svelte
+   *  <Button let:props>
+   *    <div {...props}>Custom Element</div>
+   *  </Button>
+   *  ```
    * @default false
    */
   as?: boolean;

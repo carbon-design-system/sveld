@@ -5,7 +5,7 @@
       "column": 0
     },
     "end": {
-      "line": 33,
+      "line": 20,
       "column": 0
     }
   },
@@ -13,22 +13,26 @@
   "scriptLanguage": "js",
   "props": [
     {
-      "name": "text",
+      "name": "label",
       "kind": "let",
-      "description": "Specify the switch text.\nAlternatively, use the default slot.",
+      "description": "The accessible label for the button.",
       "tags": [
         {
+          "name": "since",
+          "body": "1.4.0"
+        },
+        {
           "name": "example",
-          "body": " ```svelte\n <Switch>\n   <span>Custom Text</span>\n </Switch>\n ```"
+          "body": " ```svelte\n <Button label=\"Save\" />\n ```"
         }
       ],
       "type": "string",
       "typeSource": "default",
-      "value": "\"\"",
+      "value": "\"Click\"",
       "defaultValue": {
-        "raw": "\"\"",
+        "raw": "\"Click\"",
         "kind": "literal",
-        "value": ""
+        "value": "Click"
       },
       "isFunction": false,
       "isFunctionDeclaration": false,
@@ -37,31 +41,32 @@
       "reactive": false,
       "source": {
         "start": {
-          "line": 12,
+          "line": 10,
           "column": 2
         },
         "end": {
-          "line": 12,
-          "column": 23
+          "line": 10,
+          "column": 29
         }
       }
     },
     {
-      "name": "icon",
+      "name": "size",
       "kind": "let",
-      "description": "Specify the icon to render.\nAlternatively, use the named slot \"icon\".",
+      "description": "Visual size token.",
       "tags": [
         {
-          "name": "example",
-          "body": " ```svelte\n <Button>\n   <Icon slot=\"icon\" size={20} />\n </Button>\n ```"
+          "name": "since",
+          "body": "0.9.0"
         }
       ],
-      "type": "any",
-      "typeSource": "jsdoc",
-      "value": "undefined",
+      "type": "string",
+      "typeSource": "default",
+      "value": "\"md\"",
       "defaultValue": {
-        "raw": "undefined",
-        "kind": "expression"
+        "raw": "\"md\"",
+        "kind": "literal",
+        "value": "md"
       },
       "isFunction": false,
       "isFunctionDeclaration": false,
@@ -70,34 +75,18 @@
       "reactive": false,
       "source": {
         "start": {
-          "line": 26,
+          "line": 16,
           "column": 2
         },
         "end": {
-          "line": 26,
-          "column": 30
+          "line": 16,
+          "column": 25
         }
       }
     }
   ],
   "moduleExports": [],
-  "slots": [
-    {
-      "name": null,
-      "default": true,
-      "slot_props": "{ text: string, icon: any }",
-      "source": {
-        "start": {
-          "line": 29,
-          "column": 0
-        },
-        "end": {
-          "line": 32,
-          "column": 2
-        }
-      }
-    }
-  ],
+  "slots": [],
   "events": [],
   "typedefs": [],
   "generics": null,

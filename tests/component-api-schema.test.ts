@@ -91,13 +91,31 @@ describe("component API JSON schema", () => {
     const propProperties = objectProperty(objectProperty(defs, "prop"), "properties");
 
     expect(Object.keys(propProperties)).toEqual(
-      expect.arrayContaining(["typeSource", "localName", "bindable", "defaultValue"]),
+      expect.arrayContaining(["typeSource", "localName", "bindable", "defaultValue", "tags", "source"]),
     );
     expect(objectProperty(propProperties, "typeSource")).toMatchObject({
       enum: ["typescript", "jsdoc", "default", "inferred", "unknown"],
     });
     expect(objectProperty(propProperties, "bindable")).toMatchObject({ const: true });
     expect(objectProperty(propProperties, "defaultValue")).toMatchObject({ $ref: "#/$defs/defaultValue" });
+    expect(objectProperty(propProperties, "tags")).toMatchObject({ items: { $ref: "#/$defs/jsdocTag" } });
+  });
+
+  test("surfaces IDE-facing tags on props and both event variants", () => {
+    const schema = readJson("schema/component-api.schema.json");
+    const defs = objectProperty(schema, "$defs");
+
+    for (const def of ["prop", "dispatchedEvent", "forwardedEvent"]) {
+      const properties = objectProperty(objectProperty(defs, def), "properties");
+      expect(objectProperty(properties, "tags")).toMatchObject({
+        type: "array",
+        items: { $ref: "#/$defs/jsdocTag" },
+      });
+    }
+
+    expect(objectProperty(defs, "jsdocTag")).toMatchObject({
+      required: ["name", "body"],
+    });
   });
 
   test("documents @deprecated across props, slots, and events", () => {
