@@ -18907,3 +18907,148 @@ export default class SlotExtendsTemplate<Icon = any> extends SvelteComponentType
 > {}
 "
 `;
+
+exports[`fixtures (JSON) "context-template-tag-multiple/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 23,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "selected",
+      "kind": "let",
+      "type": "Value | undefined",
+      "typeSource": "jsdoc",
+      "value": "undefined",
+      "defaultValue": {
+        "raw": "undefined",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 8,
+          "column": 2
+        },
+        "end": {
+          "line": 8,
+          "column": 34
+        }
+      }
+    },
+    {
+      "name": "icon",
+      "kind": "let",
+      "type": "Icon",
+      "typeSource": "jsdoc",
+      "value": "undefined",
+      "defaultValue": {
+        "raw": "undefined",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 11,
+          "column": 2
+        },
+        "end": {
+          "line": 11,
+          "column": 30
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>",
+      "source": {
+        "start": {
+          "line": 22,
+          "column": 0
+        },
+        "end": {
+          "line": 22,
+          "column": 8
+        }
+      }
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": [
+    "Value,Icon",
+    "Value extends string = string, Icon = any"
+  ],
+  "contexts": [
+    {
+      "key": "demo:Wrapper",
+      "typeName": "DemoWrapperContext",
+      "properties": [
+        {
+          "name": "selectedValue",
+          "type": "import(\\"svelte/store\\").Writable<Value | undefined>",
+          "description": "",
+          "optional": false
+        },
+        {
+          "name": "icon",
+          "type": "Icon",
+          "optional": false
+        }
+      ]
+    }
+  ]
+}
+"
+`;
+
+exports[`fixtures (TypeScript) "context-template-tag-multiple/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type DemoWrapperContext<Value extends string = string, Icon = any> = {
+  selectedValue: import("svelte/store").Writable<Value | undefined>;
+  icon: Icon;
+};
+
+export type ContextTemplateTagMultipleProps<Value extends string = string, Icon = any> = {
+  /**
+   * @default undefined
+   */
+  selected?: Value | undefined;
+
+  /**
+   * @default undefined
+   */
+  icon?: Icon;
+
+  children?: (this: void) => void;
+};
+
+export default class ContextTemplateTagMultiple<Value extends string = string, Icon = any> extends SvelteComponentTyped<
+  ContextTemplateTagMultipleProps<Value, Icon>,
+  Record<string, any>,
+  { default: Record<string, never> }
+> {}
+"
+`;

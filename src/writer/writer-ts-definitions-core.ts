@@ -96,6 +96,38 @@ export function getTypeDefs(def: Pick<ComponentDocApi, "typedefs">) {
 }
 
 /**
+ * Splits a string on top-level commas, ignoring commas nested inside
+ * `<>`, `()`, `[]`, or `{}`. Used to separate generic constraint declarations
+ * that may themselves contain commas (e.g. `Value extends Record<string, any>`).
+ */
+function splitTopLevel(value: string): string[] {
+  const parts: string[] = [];
+  let depth = 0;
+  let start = 0;
+
+  for (let i = 0; i < value.length; i++) {
+    const char = value[i];
+    if (char === "<" || char === "(" || char === "[" || char === "{") depth++;
+    else if (char === ">" || char === ")" || char === "]" || char === "}") depth--;
+    else if (char === "," && depth === 0) {
+      parts.push(value.slice(start, i));
+      start = i + 1;
+    }
+  }
+
+  parts.push(value.slice(start));
+  return parts;
+}
+
+/**
+ * Returns whether a property type references a generic type parameter by name,
+ * matching on word boundaries so `Value` doesn't match `ValueType`.
+ */
+function referencesGeneric(propType: string, name: string): boolean {
+  return new RegExp(`\\b${name}\\b`).test(propType);
+}
+
+/**
  * Generates TypeScript type definitions for component contexts.
  *
  * Creates exported type definitions for each context, including generic
@@ -121,11 +153,22 @@ export function getContextDefs(def: Pick<ComponentDocApi, "contexts" | "generics
   if (!def.contexts || def.contexts.length === 0) return EMPTY_STR;
 
   /**
-   * Extract generic parameter for context types if generics are defined
-   * and the context properties reference the generic type.
+   * Pair each generic name with its constraint declaration so the context type
+   * can be parameterized with only the generics it actually references.
+   *
+   * A component may declare multiple `@template`s, in which case `generics` holds
+   * comma-joined names (`"Value,Icon"`) and constraints
+   * (`"Value extends string = string, Icon = any"`). Constraints may themselves
+   * contain commas (e.g. `Record<string, any>`), so names drive the pairing and
+   * constraints are split only at top-level commas.
    */
-  const genericsName = def.generics ? def.generics[0] : null;
-  const genericsType = def.generics ? def.generics[1] : null;
+  const genericParams =
+    def.generics === null
+      ? []
+      : def.generics[0].split(",").map((name, index) => ({
+          name: name.trim(),
+          constraint: (splitTopLevel(def.generics?.[1] ?? "")[index] ?? name).trim(),
+        }));
 
   return def.contexts
     .map((context) => {
@@ -139,11 +182,16 @@ export function getContextDefs(def: Pick<ComponentDocApi, "contexts" | "generics
 
       const contextComment = context.description ? `${formatMultiLineComment(context.description)}\n` : "";
 
-      // If context properties reference the generic type, parameterize the context type
-      const referencesGeneric = genericsName && context.properties.some((prop) => prop.type.includes(genericsName));
+      /**
+       * Parameterize the context type with the generics its properties reference,
+       * preserving declaration order (e.g. `ModalContext<Value, Icon>`). Generics
+       * that aren't referenced are omitted so the type stays as narrow as possible.
+       */
+      const referencedConstraints = genericParams
+        .filter(({ name }) => context.properties.some((prop) => referencesGeneric(prop.type, name)))
+        .map(({ constraint }) => constraint);
 
-      // Build generic suffix if context references generics (e.g., `ModalContext<T>`)
-      const genericSuffix = referencesGeneric && genericsType ? `<${genericsType}>` : "";
+      const genericSuffix = referencedConstraints.length > 0 ? `<${referencedConstraints.join(", ")}>` : "";
 
       /**
        * Use Record<string, never> for empty context objects instead of {}.
