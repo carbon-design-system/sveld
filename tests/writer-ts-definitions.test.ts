@@ -218,6 +218,80 @@ describe("writerTsDefinition", () => {
     );
   });
 
+  test("getContextDefs with multiple generics referenced", () => {
+    // Context referencing two `@template` generics should emit the full parameter list
+    expect(
+      getContextDefs({
+        contexts: [
+          {
+            key: "demo:Wrapper",
+            typeName: "DemoWrapperContext",
+            properties: [
+              {
+                name: "selectedValue",
+                type: 'import("svelte/store").Writable<Value | undefined>',
+                optional: false,
+              },
+              {
+                name: "icon",
+                type: "Icon",
+                optional: false,
+              },
+            ],
+          },
+        ],
+        generics: ["Value,Icon", "Value extends string = string, Icon = any"],
+      }),
+    ).toEqual(
+      'export type DemoWrapperContext<Value extends string = string, Icon = any> = {\n  selectedValue: import("svelte/store").Writable<Value | undefined>;\n  icon: Icon;\n};',
+    );
+  });
+
+  test("getContextDefs with multiple generics, only one referenced", () => {
+    // Only the generics actually referenced by the context should be emitted
+    expect(
+      getContextDefs({
+        contexts: [
+          {
+            key: "demo:Wrapper",
+            typeName: "DemoWrapperContext",
+            properties: [
+              {
+                name: "selectedValue",
+                type: 'import("svelte/store").Writable<Value | undefined>',
+                optional: false,
+              },
+            ],
+          },
+        ],
+        generics: ["Value,Icon", "Value extends string = string, Icon = any"],
+      }),
+    ).toEqual(
+      'export type DemoWrapperContext<Value extends string = string> = {\n  selectedValue: import("svelte/store").Writable<Value | undefined>;\n};',
+    );
+  });
+
+  test("getContextDefs splits constraints with nested commas", () => {
+    // Constraints that contain commas (e.g. inside `<>`) must not be split apart
+    expect(
+      getContextDefs({
+        contexts: [
+          {
+            key: "demo:Wrapper",
+            typeName: "DemoWrapperContext",
+            properties: [
+              { name: "row", type: "Row", optional: false },
+              { name: "icon", type: "Icon", optional: false },
+            ],
+          },
+        ],
+        generics: ["Row,Icon", "Row extends Record<string, any> = Record<string, any>, Icon = any"],
+      }),
+    ).toEqual(
+      "export type DemoWrapperContext<Row extends Record<string, any> = Record<string, any>, Icon = any> = {\n  row: Row;\n  icon: Icon;\n};",
+    );
+  });
+
   test("getContextDefs without generics reference", () => {
     // Context that doesn't reference generic types should NOT include the generic parameter
     expect(
