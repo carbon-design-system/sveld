@@ -1,216 +1,48 @@
-<script
-  lang="ts"
-  module
->
-  import CodeMirror from "codemirror";
-  import "codemirror/mode/htmlmixed/htmlmixed";
-  import "./codemirror-github.css";
-  import "codemirror/theme/zenburn.css";
-</script>
-
 <script lang="ts">
+  import { HighlightEditable, HighlightStyle } from "svelte-highlight";
+  import svelte from "svelte-highlight/languages/svelte";
+  import github from "svelte-highlight/styles/github";
+  import zenburn from "svelte-highlight/styles/zenburn";
+
   export let code = "";
-  export let codemirror: CodeMirror.Editor | null = null;
-
-  import { createEventDispatcher, onMount } from "svelte";
-  import { type Theme, theme } from "./theme";
-
-  const dispatch = createEventDispatcher();
-
-  let ref: HTMLDivElement;
-
-  function getCodeMirrorTheme(value: Theme) {
-    return value === "g100" ? "zenburn" : "github";
-  }
-
-  onMount(() => {
-    codemirror = CodeMirror(ref, {
-      value: code,
-      mode: "htmlmixed",
-      theme: getCodeMirrorTheme($theme),
-    });
-
-    codemirror.on("change", () => {
-      if (codemirror) {
-        dispatch("change", codemirror.getValue());
-      }
-    });
-
-    const unsubscribe = theme.subscribe((value) => {
-      codemirror?.setOption("theme", getCodeMirrorTheme(value));
-    });
-
-    return () => {
-      unsubscribe();
-      codemirror = null;
-    };
-  });
 </script>
 
-<div bind:this={ref}></div>
+<HighlightStyle
+  light={github}
+  dark={zenburn}
+  mode={'[theme="g100"]'}
+>
+  <HighlightEditable
+    language={svelte}
+    --outline-width="0px"
+    bind:code
+    class="code-editor"
+  />
+</HighlightStyle>
 
 <style>
-  /**
-   * Styles adapted from @joshnuss/svelte-codemirror
-   * @see https://github.com/joshnuss/svelte-codemirror/blob/e456dbf4377efe2d4f84162dd001b20428f71583/src/Component.svelte
-   */
+  :global(.code-editor) {
+    flex: 1;
+    margin: 0;
+    height: calc(100vh - 13rem);
+    overflow-y: auto;
+  }
 
-  :global(.CodeMirror) {
+  @media (max-width: 1056px) {
+    :global(.code-editor) {
+      height: auto;
+    }
+  }
+
+  :global(.code-editor code.hljs) {
+    background-color: var(--cds-ui-01);
     font-family: var(--cds-code-02-font-family);
     font-size: var(--cds-code-02-font-size);
     font-weight: var(--cds-code-02-font-weight);
     letter-spacing: var(--cds-code-02-letter-spacing);
     line-height: var(--cds-code-02-line-height);
-    height: calc(100vh - 13rem);
-    padding: 1rem 0.75rem;
-  }
-
-  @media (max-width: 1056px) {
-    :global(.CodeMirror) {
-      height: auto;
-    }
-  }
-
-  :global(.cm-s-zenburn.CodeMirror),
-  :global(.cm-s-github.CodeMirror) {
-    background-color: var(--cds-ui-01);
-  }
-
-  /** Hide the cursor if the editor is blurred */
-  :global(.CodeMirror:not(.CodeMirror-focused) .CodeMirror-cursor) {
-    display: none;
-  }
-
-  :global(.CodeMirror) {
-    position: relative;
-    overflow: hidden;
-  }
-
-  :global(.CodeMirror-scroll) {
-    position: relative;
-    overflow: scroll;
-    margin-bottom: -30px;
-    margin-right: -30px;
-    padding-bottom: 30px;
-    height: 100%;
-  }
-
-  :global(.CodeMirror-sizer) {
-    position: relative;
-    border-right: 30px solid transparent;
-  }
-
-  :global(.CodeMirror-vscrollbar),
-  :global(.CodeMirror-hscrollbar),
-  :global(.CodeMirror-scrollbar-filler),
-  :global(.CodeMirror-gutter-filler) {
-    position: absolute;
-    z-index: 6;
-    display: none;
-  }
-
-  :global(.CodeMirror-lines) {
-    cursor: text;
-  }
-
-  :global(.CodeMirror-vscrollbar) {
-    right: 0;
-    top: 0;
-    overflow-x: hidden;
-    overflow-y: scroll;
-  }
-
-  :global(.CodeMirror-hscrollbar) {
-    bottom: 0;
-    left: 0;
-    overflow-y: hidden;
-    overflow-x: scroll;
-    height: 10px;
-  }
-
-  :global(.CodeMirror-scrollbar-filler) {
-    right: 0;
-    bottom: 0;
-  }
-
-  :global(.CodeMirror-gutter-filler) {
-    left: 0;
-    bottom: 0;
-  }
-
-  :global(.CodeMirror-gutters) {
-    position: absolute;
-    z-index: 3;
-    left: 0;
-    top: 0;
     min-height: 100%;
-  }
-
-  :global(.CodeMirror-gutter) {
-    white-space: normal;
-    height: 100%;
-    display: inline-block;
-    vertical-align: top;
-    margin-bottom: -30px;
-  }
-
-  :global(.CodeMirror-gutter-wrapper) {
-    position: absolute;
-    z-index: 4;
-  }
-
-  :global(.CodeMirror-gutter-background) {
-    position: absolute;
-    z-index: 4;
-    top: 0;
-    bottom: 0;
-  }
-
-  :global(.CodeMirror pre.CodeMirror-line),
-  :global(.CodeMirror pre.CodeMirror-line-like) {
-    position: relative;
-    z-index: 2;
-    margin: 0;
-    white-space: pre;
-    word-wrap: normal;
-    line-height: 1.5;
-    overflow: visible;
-  }
-
-  :global(.CodeMirror-wrap pre.CodeMirror-line),
-  :global(.CodeMirror-wrap pre.CodeMirror-line-like) {
-    word-wrap: break-word;
-    word-break: normal;
+    padding: 1rem 0.75rem;
     white-space: pre-wrap;
-  }
-
-  :global(.CodeMirror-linebackground) {
-    position: absolute;
-    z-index: 0;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-  }
-
-  :global(.CodeMirror-scroll),
-  :global(.CodeMirror-sizer),
-  :global(.CodeMirror-gutter),
-  :global(.CodeMirror-gutters),
-  :global(.CodeMirror-linenumber) {
-    box-sizing: content-box;
-  }
-
-  :global(.CodeMirror-measure) {
-    position: absolute;
-    width: 100%;
-    height: 0;
-    overflow: hidden;
-    visibility: hidden;
-  }
-
-  :global(.CodeMirror-cursor) {
-    position: absolute;
-    pointer-events: none;
   }
 </style>
