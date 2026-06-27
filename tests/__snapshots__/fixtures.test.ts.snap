@@ -6129,6 +6129,149 @@ exports[`fixtures (JSON) "context-colon/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "deprecated-tags/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 46,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "label",
+      "kind": "let",
+      "description": "The visible label.",
+      "deprecated": "Use the \`text\` prop instead.",
+      "type": "string",
+      "typeSource": "default",
+      "value": "\\"\\"",
+      "defaultValue": {
+        "raw": "\\"\\"",
+        "kind": "literal",
+        "value": ""
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 10,
+          "column": 2
+        },
+        "end": {
+          "line": 10,
+          "column": 24
+        }
+      }
+    },
+    {
+      "name": "id",
+      "kind": "let",
+      "deprecated": true,
+      "type": "string",
+      "typeSource": "default",
+      "value": "\\"\\"",
+      "defaultValue": {
+        "raw": "\\"\\"",
+        "kind": "literal",
+        "value": ""
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 15,
+          "column": 2
+        },
+        "end": {
+          "line": 15,
+          "column": 21
+        }
+      }
+    },
+    {
+      "name": "focus",
+      "kind": "function",
+      "description": "Programmatically focus the field.",
+      "deprecated": "Focus the underlying element directly.",
+      "type": "() => any",
+      "typeSource": "inferred",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 21,
+          "column": 2
+        },
+        "end": {
+          "line": 21,
+          "column": 28
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "badge",
+      "default": false,
+      "slot_props": "{ count: number }",
+      "description": "Badge content rendered next to the label.",
+      "deprecated": "Render the badge inline instead.",
+      "source": {
+        "start": {
+          "line": 41,
+          "column": 2
+        },
+        "end": {
+          "line": 44,
+          "column": 4
+        }
+      }
+    }
+  ],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "change",
+      "detail": "{ value: string }",
+      "description": "Fired when the value changes.",
+      "deprecated": "Listen for the native \`input\` event instead.",
+      "source": {
+        "start": {
+          "line": 35,
+          "column": 4
+        },
+        "end": {
+          "line": 35,
+          "column": 40
+        }
+      }
+    }
+  ],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "forwarded-events-typed/input.svelte" 1`] = `
 "{
   "source": {
@@ -8437,7 +8580,8 @@ exports[`fixtures (JSON) "prop-comments/input.svelte" 1`] = `
     {
       "name": "prop",
       "kind": "let",
-      "description": "This is a comment.\\n@see https://github.com/\\n@deprecated this prop will be removed in the next major release.",
+      "description": "This is a comment.\\n@see https://github.com/",
+      "deprecated": "this prop will be removed in the next major release.",
       "type": "boolean | string",
       "typeSource": "jsdoc",
       "value": "true",
@@ -10923,14 +11067,11 @@ exports[`fixtures (JSON) "slot-jsdoc-multiple-tags/input.svelte" 1`] = `
       "default": true,
       "slot_props": "{ props?: { \\"aria-current\\"?: string; class: \\"bx--link\\" } }",
       "description": "Spread \`props\` onto a custom element to inherit the link class\\nand \`aria-current\` attribute when \`isCurrentPage\` is set.",
+      "deprecated": "Prefer the \`link\` snippet.",
       "tags": [
         {
           "name": "example",
           "body": " \`\`\`svelte\\n <BreadcrumbItem let:props>\\n   <a {...props} href=\\"/\\">Home</a>\\n </BreadcrumbItem>\\n \`\`\`"
-        },
-        {
-          "name": "deprecated",
-          "body": "Prefer the \`link\` snippet."
         }
       ],
       "source": {
@@ -14330,12 +14471,7 @@ exports[`fixtures (JSON) "slot-jsdoc-tags-named-pair/input.svelte" 1`] = `
       "default": false,
       "slot_props": "{ message: string }",
       "description": "Status text for live regions; prefer \`aria-current=\\"page\\"\` on the active link.",
-      "tags": [
-        {
-          "name": "deprecated",
-          "body": "Use the \`live\` region pattern instead."
-        }
-      ],
+      "deprecated": "Use the \`live\` region pattern instead.",
       "source": {
         "start": {
           "line": 21,
@@ -16728,6 +16864,56 @@ export default class ContextColon extends SvelteComponentTyped<
   Record<string, any>,
   Record<string, never>
 > {}
+"
+`;
+
+exports[`fixtures (TypeScript) "deprecated-tags/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type DeprecatedTagsProps = {
+  /**
+   * The visible label.
+   * @deprecated Use the \`text\` prop instead.
+   * @default ""
+   */
+  label?: string;
+
+  /**
+   * @deprecated
+   * @default ""
+   */
+  id?: string;
+
+  /**
+   * Badge content rendered next to the label.
+   * @deprecated Render the badge inline instead.
+   */
+  badge?: (this: void, ...args: [{ count: number }]) => void;
+};
+
+export default class DeprecatedTags extends SvelteComponentTyped<
+  DeprecatedTagsProps,
+  {
+    /**
+     * Fired when the value changes.
+     * @deprecated Listen for the native \`input\` event instead.
+     */
+    change: CustomEvent<{ value: string }>;
+  },
+  {
+    /**
+     * Badge content rendered next to the label.
+     * @deprecated Render the badge inline instead.
+     */
+    badge: { count: number };
+  }
+> {
+  /**
+   * Programmatically focus the field.
+   * @deprecated Focus the underlying element directly.
+   */
+  focus: () => any;
+}
 "
 `;
 

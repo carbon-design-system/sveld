@@ -1,4 +1,4 @@
-import { getParsedComponentTypeScriptMetadata } from "../ComponentParser";
+import { type DeprecatedValue, getParsedComponentTypeScriptMetadata } from "../ComponentParser";
 import type { ComponentDocApi } from "../plugin";
 
 const ANY_TYPE = "any";
@@ -57,13 +57,35 @@ function formatMultiLineComment(description: string | undefined): string {
   return `/**\n * ${description.replace(NEWLINE_TO_COMMENT_REGEX, "\n * ")}\n */`;
 }
 
+/**
+ * Builds the `@deprecated` JSDoc line(s) for a symbol, or undefined when the
+ * symbol is not deprecated. `true` emits a bare `@deprecated`; a string appends
+ * the message.
+ */
+function formatDeprecatedJsDocLine(deprecated: DeprecatedValue | undefined): string | undefined {
+  if (deprecated === undefined) return undefined;
+  return deprecated === true ? "@deprecated" : `@deprecated ${deprecated}`;
+}
+
+/**
+ * Builds a `* @deprecated ...\n` comment fragment for `wrapCommentInJSDoc`, or
+ * undefined when the symbol is not deprecated.
+ */
+function deprecatedCommentLine(deprecated: DeprecatedValue | undefined): string | undefined {
+  const line = formatDeprecatedJsDocLine(deprecated);
+  if (line === undefined) return undefined;
+  return `* ${line.replace(NEWLINE_TO_COMMENT_REGEX, "\n* ")}\n`;
+}
+
 function formatSlotJsDoc(
   description: string | undefined,
   tags: Array<{ name: string; body: string }> | undefined,
+  deprecated?: DeprecatedValue,
 ): string {
+  const deprecatedLine = formatDeprecatedJsDocLine(deprecated);
   const hasTags = tags && tags.length > 0;
-  if (!description && !hasTags) return "";
-  if (!hasTags) {
+  if (!description && !hasTags && !deprecatedLine) return "";
+  if (!hasTags && !deprecatedLine) {
     return description?.includes("\n") ? formatMultiLineComment(description) : formatSingleLineComment(description);
   }
   const lines: string[] = [];
@@ -77,6 +99,7 @@ function formatSlotJsDoc(
       lines.push(`@${name} ${body}`);
     }
   }
+  if (deprecatedLine) lines.push(...deprecatedLine.split("\n"));
   return `/**\n * ${lines.join("\n * ")}\n */`;
 }
 
@@ -220,10 +243,12 @@ function addCommentLine(value: string | boolean | undefined, returnValue?: strin
 }
 
 /**
- * Creates a prop comment string from a description.
+ * Creates a prop comment string from a description and optional deprecation.
  */
-function createPropComment(description: string | undefined): string {
-  return [addCommentLine(formatDescriptionForComment(description))].filter(Boolean).join("");
+function createPropComment(description: string | undefined, deprecated?: DeprecatedValue): string {
+  return [addCommentLine(formatDescriptionForComment(description)), deprecatedCommentLine(deprecated)]
+    .filter(Boolean)
+    .join("");
 }
 
 /**
@@ -291,6 +316,7 @@ function genPropDef(
 
       const prop_comments = [
         addCommentLine(formatDescriptionForComment(prop.description)),
+        deprecatedCommentLine(prop.deprecated),
         addCommentLine(prop.constant, "@constant"),
         /**
          * Don't add @default for functions - they don't have meaningful default values.
@@ -329,7 +355,7 @@ function genPropDef(
     .map((slot) => {
       const slotName = slot.name;
       const key = clampKey(slotName);
-      const slotComment = formatSlotJsDoc(slot.description, slot.tags);
+      const slotComment = formatSlotJsDoc(slot.description, slot.tags, slot.deprecated);
       const description = slotComment ? `${slotComment}\n      ` : "";
       /**
        * Use Snippet-compatible type: (this: void, ...args: [Props]) => void for slots with props
@@ -350,7 +376,11 @@ function genPropDef(
   const children_snippet_prop =
     default_slot && !existingPropNames.has("children")
       ? (() => {
-          const defaultSlotComment = formatSlotJsDoc(default_slot.description, default_slot.tags);
+          const defaultSlotComment = formatSlotJsDoc(
+            default_slot.description,
+            default_slot.tags,
+            default_slot.deprecated,
+          );
           const description = defaultSlotComment ? `${defaultSlotComment}\n      ` : "";
           const hasSlotProps = default_slot.slot_props && default_slot.slot_props !== "Record<string, never>";
           const snippetType = hasSlotProps
@@ -529,7 +559,7 @@ function genSlotDef(def: Pick<ComponentDocApi, "slots">) {
   const slotDefs = def.slots
     .map(({ name, slot_props, ...rest }) => {
       const key = rest.default || name === null ? "default" : clampKey(name ?? "");
-      const slotDefComment = formatSlotJsDoc(rest.description, rest.tags);
+      const slotDefComment = formatSlotJsDoc(rest.description, rest.tags, rest.deprecated);
       const description = slotDefComment ? `${slotDefComment}\n` : "";
       return `${description}${clampKey(key)}: ${formatTsProps(slot_props)};`;
     })
@@ -692,7 +722,9 @@ function genEventDef(def: Pick<ComponentDocApi, "events">) {
   const events_map = def.events
     .map((event) => {
       let description = "";
-      if (event.description) {
+      if (event.deprecated !== undefined) {
+        description = `${wrapCommentInJSDoc(createPropComment(event.description, event.deprecated))}\n`;
+      } else if (event.description) {
         description = `${formatSingleLineComment(event.description)}\n`;
       }
 
@@ -778,7 +810,7 @@ function genAccessors(def: Pick<ComponentDocApi, "props">) {
   return def.props
     .filter((prop) => prop.isFunctionDeclaration || prop.kind === "const")
     .map((prop) => {
-      const prop_comments = createPropComment(prop.description);
+      const prop_comments = createPropComment(prop.description, prop.deprecated);
 
       const functionType = generateFunctionType(prop);
 
@@ -808,7 +840,7 @@ function genComponentComment(def: Pick<ComponentDocApi, "componentComment">) {
 function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">) {
   return def.moduleExports
     .map((prop) => {
-      const prop_comments = createPropComment(prop.description);
+      const prop_comments = createPropComment(prop.description, prop.deprecated);
 
       let type_def: string;
 

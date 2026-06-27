@@ -41,12 +41,7 @@
       "default": false,
       "slot_props": "{ message: string }",
       "description": "Status text for live regions; prefer `aria-current=\"page\"` on the active link.",
-      "tags": [
-        {
-          "name": "deprecated",
-          "body": "Use the `live` region pattern instead."
-        }
-      ],
+      "deprecated": "Use the `live` region pattern instead.",
       "source": {
         "start": {
           "line": 21,

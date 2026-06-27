@@ -194,4 +194,73 @@ describe("WriterMarkdown", () => {
     );
     expect(output).toContain("| footer | No | -- | -- | -- |");
   });
+
+  test("badges deprecated props, events, and slots", () => {
+    const output = writeMarkdownCore(
+      new Map([
+        [
+          "Example",
+          {
+            filePath: asNormalizedPath("Example.svelte"),
+            moduleName: "Example",
+            syntaxMode: "legacy",
+            props: [
+              {
+                name: "label",
+                kind: "let",
+                constant: false,
+                description: "Label text.",
+                isFunction: false,
+                isFunctionDeclaration: false,
+                isRequired: false,
+                reactive: false,
+                deprecated: "Use `text` instead.",
+              },
+              {
+                name: "id",
+                kind: "let",
+                constant: false,
+                isFunction: false,
+                isFunctionDeclaration: false,
+                isRequired: false,
+                reactive: false,
+                deprecated: true,
+              },
+            ],
+            moduleExports: [],
+            slots: [
+              {
+                name: "badge",
+                default: false,
+                deprecated: "Render the badge inline instead.",
+              },
+            ],
+            events: [
+              {
+                type: "dispatched",
+                name: "change",
+                description: "Fires on change.",
+                deprecated: "Listen for `input` instead.",
+              },
+            ],
+            typedefs: [],
+            generics: null,
+            rest_props: undefined,
+            contexts: [],
+          },
+        ],
+      ]),
+    );
+
+    // Deprecated entries are struck through and badged with the message.
+    expect(output).toContain(
+      "| <s>label</s><br />**Deprecated**: Use `text` instead. | No | <code>let</code> | No | -- | -- | -- | Label text. |",
+    );
+    // A bare `@deprecated` (no message) still badges, without a trailing message.
+    expect(output).toContain("| <s>id</s><br />**Deprecated** | No | <code>let</code> | No | -- | -- | -- | -- |");
+    expect(output).toContain("| <s>badge</s><br />**Deprecated**: Render the badge inline instead. | No |");
+    expect(output).toContain(
+      "| <s>change</s><br />**Deprecated**: Listen for `input` instead. | dispatched | -- | Fires on change. |",
+    );
+  });
 });
