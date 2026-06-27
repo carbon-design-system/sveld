@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.33.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.33.0) - 2026-06-26
+
+**Features**
+
+- isolate per-component parse failures; add `failFast` / `--fail-fast` to abort on first error
+- render slot/snippet descriptions and tags in Markdown
+- add opt-in watch mode for incremental type generation in the Vite plugin
+- add type-inference diagnostics and `--strict` mode
+- add opt-in TypeScript semantic resolution for imported prop types (`resolveTypes: true`)
+- surface `@deprecated` across `.d.ts`, JSON, and Markdown
+- surface `@since` and `@example` as structured IDE metadata on props, events, and slots
+- support `sveld.config.{js,ts,mjs}` config file with `defineConfig`
+- add `documentExports` for entry-level module exports in JSON and Markdown
+- broaden `setContext` key resolution for `const`-bound strings and `Symbol()` keys
+
 ## [0.32.8](https://github.com/carbon-design-system/sveld/releases/tag/v0.32.8) - 2026-06-26
 
 **Fixes**
