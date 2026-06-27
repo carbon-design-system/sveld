@@ -123,6 +123,7 @@ export default class Button extends SvelteComponentTyped<
   - [Vite](#vite)
   - [Node.js](#nodejs)
   - [CLI](#cli)
+    - [API diff](#api-diff)
   - [Config File](#config-file)
   - [Publishing to NPM](#publishing-to-npm)
 - [Available Options](#available-options)
@@ -275,6 +276,37 @@ Generate documentation in JSON and/or Markdown formats using the following flags
 
 ```sh
 npx sveld --json --markdown
+```
+
+#### API diff
+
+Compare two `COMPONENT_API.json` snapshots and classify each change as **breaking**, **additive**, or **doc-only**:
+
+```sh
+npx sveld diff old/COMPONENT_API.json new/COMPONENT_API.json
+```
+
+By default the command exits with code `1` when breaking changes are present. Use `--fail-on=additive` to fail on any API change, or `--no-fail` to always exit `0`. Pass `--json` for machine-readable output.
+
+```sh
+# CI: fail on breaking changes only (default)
+npx sveld diff baseline.json COMPONENT_API.json
+
+# Fail on any prop/event/slot/component change
+npx sveld diff baseline.json COMPONENT_API.json --fail-on=additive
+
+# Structured output for changelogs or PR comments
+npx sveld diff baseline.json COMPONENT_API.json --json
+```
+
+The same logic is available programmatically:
+
+```js
+import { diffComponentApi, formatDiffReport } from "sveld";
+
+const result = diffComponentApi(oldApi, newApi);
+if (result.hasBreaking) process.exit(1);
+console.log(formatDiffReport(result));
 ```
 
 ### Node.js
