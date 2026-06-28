@@ -20516,3 +20516,222 @@ export default class ContextSymbolFor extends SvelteComponentTyped<
 > {}
 "
 `;
+
+exports[`fixtures (JSON) "slot-event-template-prop-reference/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 15,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "icon",
+      "kind": "let",
+      "type": "Icon",
+      "typeSource": "jsdoc",
+      "value": "undefined",
+      "defaultValue": {
+        "raw": "undefined",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 11,
+          "column": 2
+        },
+        "end": {
+          "line": 11,
+          "column": 30
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "icon",
+      "default": false,
+      "slot_props": "Record<string, never>",
+      "source": {
+        "start": {
+          "line": 14,
+          "column": 0
+        },
+        "end": {
+          "line": 14,
+          "column": 20
+        }
+      }
+    }
+  ],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "select",
+      "detail": "Icon",
+      "description": "\`@template\` shared with both \`@event\` and \`@slot\` still sets a component generic\\nwhen a prop references it.",
+      "source": {
+        "start": {
+          "line": 6,
+          "column": 5
+        },
+        "end": {
+          "line": 6,
+          "column": 25
+        }
+      }
+    }
+  ],
+  "typedefs": [],
+  "generics": [
+    "Icon",
+    "Icon = any"
+  ],
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "slot-event-template-prop-reference/input.svelte",
+      "kind": "event-no-source",
+      "name": "select",
+      "message": "@event \\"select\\" has no matching dispatch or callback prop."
+    }
+  ]
+}
+"
+`;
+
+exports[`fixtures (JSON) "slot-template-prop-reference/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 17,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "icon",
+      "kind": "let",
+      "description": "Specify the icon to render.",
+      "type": "Icon",
+      "typeSource": "jsdoc",
+      "value": "undefined",
+      "defaultValue": {
+        "raw": "undefined",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 13,
+          "column": 2
+        },
+        "end": {
+          "line": 13,
+          "column": 30
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "icon",
+      "default": false,
+      "slot_props": "Record<string, never>",
+      "description": "\`@template\` co-located with \`@slot\` still sets a component generic when a prop\\nreferences it, so the emitted \`.d.ts\` doesn't name an undeclared type.",
+      "source": {
+        "start": {
+          "line": 16,
+          "column": 0
+        },
+        "end": {
+          "line": 16,
+          "column": 20
+        }
+      }
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": [
+    "Icon",
+    "Icon = any"
+  ],
+  "contexts": [],
+  "diagnostics": []
+}
+"
+`;
+
+exports[`fixtures (TypeScript) "slot-event-template-prop-reference/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type SlotEventTemplatePropReferenceProps<Icon = any> = {
+  /**
+   * @default undefined
+   */
+  icon?: Icon;
+};
+
+export default class SlotEventTemplatePropReference<Icon = any> extends SvelteComponentTyped<
+  SlotEventTemplatePropReferenceProps<Icon>,
+  {
+    /**
+     * \`@template\` shared with both \`@event\` and \`@slot\` still sets a component generic
+     * when a prop references it.
+     */
+    select: CustomEvent<Icon>;
+  },
+  { icon: Record<string, never> }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "slot-template-prop-reference/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type SlotTemplatePropReferenceProps<Icon = any> = {
+  /**
+   * Specify the icon to render.
+   * @default undefined
+   */
+  icon?: Icon;
+};
+
+export default class SlotTemplatePropReference<Icon = any> extends SvelteComponentTyped<
+  SlotTemplatePropReferenceProps<Icon>,
+  Record<string, any>,
+  {
+    /**
+     * \`@template\` co-located with \`@slot\` still sets a component generic when a prop
+     * references it, so the emitted \`.d.ts\` doesn't name an undeclared type.
+     */
+    icon: Record<string, never>;
+  }
+> {}
+"
+`;
