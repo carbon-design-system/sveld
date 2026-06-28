@@ -889,6 +889,14 @@ export default class ComponentParser {
   /** Component generic type parameters (null if no generics) */
   private generics: ComponentGenerics = null;
 
+  /**
+   * `@template` tags co-located with `@slot` / `@snippet` (and no `@extends`). These are
+   * treated as slot documentation and dropped — unless a prop or slot type actually
+   * references the generic name, in which case it is promoted to a component generic
+   * during finalization so the emitted `.d.ts` doesn't reference an undeclared name.
+   */
+  private deferredSlotBlockGenerics: Array<{ name: string; constraint: string }> = [];
+
   /** Map of prop bindings (e.g., `bind:value`) keyed by prop name */
   private readonly bindings: Map<string, ComponentPropBindings> = new Map();
 
@@ -4279,8 +4287,6 @@ export default class ComponentParser {
             if (isFirstTag) isFirstTag = false;
             break;
           case "template": {
-            if (blockHasSlotOrSnippetTag && !blockHasExtendsTag) break;
-
             // Build constraint from standard JSDoc @template syntax:
             //   @template T              → type="", name="T", default=undefined
             //   @template {string} T     → type="string", name="T", default=undefined
@@ -4289,6 +4295,13 @@ export default class ComponentParser {
             let constraint = name;
             if (type) constraint = `${name} extends ${type}`;
             if (defaultValue) constraint += ` = ${defaultValue}`;
+
+            if (blockHasSlotOrSnippetTag && !blockHasExtendsTag) {
+              // Defer: promote to a component generic only if a prop/slot type
+              // references it (resolved during finalization).
+              this.deferredSlotBlockGenerics.push({ name, constraint });
+              break;
+            }
 
             if (this.generics) {
               // Accumulate multiple @template tags
@@ -5015,6 +5028,7 @@ export default class ComponentParser {
     this.forwardedEvents.clear();
     this.typedefs.clear();
     this.generics = null;
+    this.deferredSlotBlockGenerics.length = 0;
     this.bindings.clear();
     this.contexts.clear();
     this.variableInfoCache.clear();
@@ -6020,6 +6034,29 @@ export default class ComponentParser {
         if (aName > bName) return 1;
         return 0;
       });
+
+    /**
+     * Promote deferred `@template` generics (co-located with `@slot` / `@snippet`) only
+     * when a prop or slot type actually references the generic name. A referenced generic
+     * must be declared or the emitted `.d.ts` names an undeclared type (TS2304); an unused
+     * one stays slot documentation and is dropped.
+     */
+    if (this.deferredSlotBlockGenerics.length > 0) {
+      const referencedTypeText = [
+        ...processedProps.map((prop) => prop.type ?? ""),
+        ...processedSlots.map((slot) => slot.slot_props ?? ""),
+      ].join("\n");
+      for (const { name, constraint } of this.deferredSlotBlockGenerics) {
+        const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        // Word-boundary match so `Icon` doesn't match `IconButton`.
+        if (!new RegExp(`\\b${escapedName}\\b`).test(referencedTypeText)) continue;
+        if (this.generics) {
+          this.generics = [`${this.generics[0]},${name}`, `${this.generics[1]}, ${constraint}`];
+        } else {
+          this.generics = [name, constraint];
+        }
+      }
+    }
 
     const moduleExportsArray = ComponentParser.mapToArray(this.moduleExports);
     /**
