@@ -889,6 +889,9 @@ export default class ComponentParser {
   /** Component generic type parameters (null if no generics) */
   private generics: ComponentGenerics = null;
 
+  /** @template tags in a @slot/@snippet block (no @extends), held until finalization. */
+  private deferredSlotBlockGenerics: Array<{ name: string; constraint: string }> = [];
+
   /** Map of prop bindings (e.g., `bind:value`) keyed by prop name */
   private readonly bindings: Map<string, ComponentPropBindings> = new Map();
 
@@ -4279,8 +4282,6 @@ export default class ComponentParser {
             if (isFirstTag) isFirstTag = false;
             break;
           case "template": {
-            if (blockHasSlotOrSnippetTag && !blockHasExtendsTag) break;
-
             // Build constraint from standard JSDoc @template syntax:
             //   @template T              → type="", name="T", default=undefined
             //   @template {string} T     → type="string", name="T", default=undefined
@@ -4290,12 +4291,12 @@ export default class ComponentParser {
             if (type) constraint = `${name} extends ${type}`;
             if (defaultValue) constraint += ` = ${defaultValue}`;
 
-            if (this.generics) {
-              // Accumulate multiple @template tags
-              this.generics = [`${this.generics[0]},${name}`, `${this.generics[1]}, ${constraint}`];
-            } else {
-              this.generics = [name, constraint];
+            if (blockHasSlotOrSnippetTag && !blockHasExtendsTag) {
+              this.deferredSlotBlockGenerics.push({ name, constraint });
+              break;
             }
+
+            this.accumulateGeneric(name, constraint);
             if (isFirstTag) isFirstTag = false;
             break;
           }
@@ -4994,6 +4995,14 @@ export default class ComponentParser {
    * parser.parseSvelteComponent(source2, diagnostics2); // Fresh parse
    * ```
    */
+  private accumulateGeneric(name: string, constraint: string): void {
+    if (this.generics) {
+      this.generics = [`${this.generics[0]},${name}`, `${this.generics[1]}, ${constraint}`];
+    } else {
+      this.generics = [name, constraint];
+    }
+  }
+
   public cleanup() {
     this.syntaxMode = "legacy";
     this.scriptLanguage = undefined;
@@ -5015,6 +5024,7 @@ export default class ComponentParser {
     this.forwardedEvents.clear();
     this.typedefs.clear();
     this.generics = null;
+    this.deferredSlotBlockGenerics.length = 0;
     this.bindings.clear();
     this.contexts.clear();
     this.variableInfoCache.clear();
@@ -6020,6 +6030,18 @@ export default class ComponentParser {
         if (aName > bName) return 1;
         return 0;
       });
+
+    if (this.deferredSlotBlockGenerics.length > 0) {
+      const referencedTypeText = [
+        ...processedProps.map((prop) => prop.type ?? ""),
+        ...processedSlots.map((slot) => slot.slot_props ?? ""),
+      ].join("\n");
+      for (const { name, constraint } of this.deferredSlotBlockGenerics) {
+        const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        if (!new RegExp(`\\b${escapedName}\\b`).test(referencedTypeText)) continue;
+        this.accumulateGeneric(name, constraint);
+      }
+    }
 
     const moduleExportsArray = ComponentParser.mapToArray(this.moduleExports);
     /**
