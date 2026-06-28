@@ -122,6 +122,102 @@ exports[`fixtures (JSON) "svg-props/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "slot-event-template-prop-reference/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 14,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "icon",
+      "kind": "let",
+      "type": "Icon",
+      "typeSource": "jsdoc",
+      "value": "undefined",
+      "defaultValue": {
+        "raw": "undefined",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 10,
+          "column": 2
+        },
+        "end": {
+          "line": 10,
+          "column": 30
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "icon",
+      "default": false,
+      "slot_props": "Record<string, never>",
+      "source": {
+        "start": {
+          "line": 13,
+          "column": 0
+        },
+        "end": {
+          "line": 13,
+          "column": 20
+        }
+      }
+    }
+  ],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "select",
+      "detail": "Icon",
+      "description": "\`@template\` shared by \`@event\` and \`@slot\` still becomes a component generic when a prop uses it.",
+      "source": {
+        "start": {
+          "line": 5,
+          "column": 5
+        },
+        "end": {
+          "line": 5,
+          "column": 25
+        }
+      }
+    }
+  ],
+  "typedefs": [],
+  "generics": [
+    "Icon",
+    "Icon = any"
+  ],
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "slot-event-template-prop-reference/input.svelte",
+      "kind": "event-no-source",
+      "name": "select",
+      "message": "@event \\"select\\" has no matching dispatch or callback prop."
+    }
+  ]
+}
+"
+`;
+
 exports[`fixtures (JSON) "slots-named/input.svelte" 1`] = `
 "{
   "source": {
@@ -1109,6 +1205,80 @@ exports[`fixtures (JSON) "resolve-default-chained/input.svelte" 1`] = `
       "message": "Prop \\"deep6\\" type could not be inferred; falling back to \\"any\\"."
     }
   ]
+}
+"
+`;
+
+exports[`fixtures (JSON) "slot-template-prop-reference/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 17,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "icon",
+      "kind": "let",
+      "description": "Specify the icon to render.",
+      "type": "Icon",
+      "typeSource": "jsdoc",
+      "value": "undefined",
+      "defaultValue": {
+        "raw": "undefined",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 13,
+          "column": 2
+        },
+        "end": {
+          "line": 13,
+          "column": 30
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "icon",
+      "default": false,
+      "slot_props": "Record<string, never>",
+      "description": "\`@template\` in a \`@slot\` block becomes a component generic when a prop uses the name.\\nWithout that, \`.d.ts\` references an undeclared type (TS2304).",
+      "source": {
+        "start": {
+          "line": 16,
+          "column": 0
+        },
+        "end": {
+          "line": 16,
+          "column": 20
+        }
+      }
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": [
+    "Icon",
+    "Icon = any"
+  ],
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -2809,6 +2979,67 @@ exports[`fixtures (JSON) "empty-collection-defaults/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": [],
+  "diagnostics": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "context-const-key/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 22,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>",
+      "source": {
+        "start": {
+          "line": 21,
+          "column": 19
+        },
+        "end": {
+          "line": 21,
+          "column": 27
+        }
+      }
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "simple-modal",
+      "typeName": "SimpleModalContext",
+      "properties": [
+        {
+          "name": "open",
+          "type": "(component: any, props?: any) => void",
+          "description": "Open the modal with content",
+          "optional": false
+        },
+        {
+          "name": "close",
+          "type": "() => void",
+          "description": "Close the modal",
+          "optional": false
+        }
+      ]
+    }
+  ],
   "diagnostics": []
 }
 "
@@ -6187,6 +6418,76 @@ exports[`fixtures (JSON) "runes-snippet-description-hyphens/input.svelte" 1`] = 
       "message": "Prop \\"col\\" type could not be inferred; falling back to \\"any\\"."
     }
   ]
+}
+"
+`;
+
+exports[`fixtures (JSON) "context-unresolvable-key/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 16,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "dynamicKey",
+      "kind": "let",
+      "type": "string",
+      "typeSource": "default",
+      "value": "\\"modal\\"",
+      "defaultValue": {
+        "raw": "\\"modal\\"",
+        "kind": "literal",
+        "value": "modal"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 4,
+          "column": 2
+        },
+        "end": {
+          "line": 4,
+          "column": 34
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>",
+      "source": {
+        "start": {
+          "line": 15,
+          "column": 19
+        },
+        "end": {
+          "line": 15,
+          "column": 27
+        }
+      }
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -10688,6 +10989,67 @@ exports[`fixtures (JSON) "forwarded-native-with-detail/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "context-symbol/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 22,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>",
+      "source": {
+        "start": {
+          "line": 21,
+          "column": 18
+        },
+        "end": {
+          "line": 21,
+          "column": 26
+        }
+      }
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "tabs",
+      "typeName": "TabsContext",
+      "properties": [
+        {
+          "name": "activeTab",
+          "type": "number",
+          "description": "The currently active tab index.",
+          "optional": false
+        },
+        {
+          "name": "registerTab",
+          "type": "(label: string) => number",
+          "description": "Register a tab and return its index.",
+          "optional": false
+        }
+      ]
+    }
+  ],
+  "diagnostics": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "runes-props-renamed/input.svelte" 1`] = `
 "{
   "source": {
@@ -13883,6 +14245,61 @@ exports[`fixtures (JSON) "legacy-bind-component-ref/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "context-symbol-for/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 14,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>",
+      "source": {
+        "start": {
+          "line": 13,
+          "column": 27
+        },
+        "end": {
+          "line": 13,
+          "column": 35
+        }
+      }
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "notification",
+      "typeName": "NotificationContext",
+      "properties": [
+        {
+          "name": "notify",
+          "type": "(message: string) => void",
+          "description": "Push a notification message.",
+          "optional": false
+        }
+      ]
+    }
+  ],
+  "diagnostics": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "slot-jsdoc-template-not-passthrough/input.svelte" 1`] = `
 "{
   "source": {
@@ -15486,6 +15903,27 @@ export default class SvgProps extends SvelteComponentTyped<SvgPropsProps, Record
 "
 `;
 
+exports[`fixtures (TypeScript) "slot-event-template-prop-reference/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type SlotEventTemplatePropReferenceProps<Icon = any> = {
+  /**
+   * @default undefined
+   */
+  icon?: Icon;
+};
+
+export default class SlotEventTemplatePropReference<Icon = any> extends SvelteComponentTyped<
+  SlotEventTemplatePropReferenceProps<Icon>,
+  {
+    /** \`@template\` shared by \`@event\` and \`@slot\` still becomes a component generic when a prop uses it. */
+    select: CustomEvent<Icon>;
+  },
+  { icon: Record<string, never> }
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "slots-named/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -15810,6 +16248,31 @@ export default class ResolveDefaultChained extends SvelteComponentTyped<
   ResolveDefaultChainedProps,
   Record<string, any>,
   Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "slot-template-prop-reference/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type SlotTemplatePropReferenceProps<Icon = any> = {
+  /**
+   * Specify the icon to render.
+   * @default undefined
+   */
+  icon?: Icon;
+};
+
+export default class SlotTemplatePropReference<Icon = any> extends SvelteComponentTyped<
+  SlotTemplatePropReferenceProps<Icon>,
+  Record<string, any>,
+  {
+    /**
+     * \`@template\` in a \`@slot\` block becomes a component generic when a prop uses the name.
+     * Without that, \`.d.ts\` references an undeclared type (TS2304).
+     */
+    icon: Record<string, never>;
+  }
 > {}
 "
 `;
@@ -16340,6 +16803,28 @@ export default class EmptyCollectionDefaults extends SvelteComponentTyped<
   EmptyCollectionDefaultsProps,
   Record<string, any>,
   Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "context-const-key/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type SimpleModalContext = {
+  /** Open the modal with content */
+  open: (component: any, props?: any) => void;
+  /** Close the modal */
+  close: () => void;
+};
+
+export type ContextConstKeyProps = {
+  children?: (this: void) => void;
+};
+
+export default class ContextConstKey extends SvelteComponentTyped<
+  ContextConstKeyProps,
+  Record<string, any>,
+  { default: Record<string, never> }
 > {}
 "
 `;
@@ -17293,6 +17778,26 @@ export default class RunesSnippetDescriptionHyphens extends SvelteComponentTyped
      */
     default: { row: string; col: string };
   }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "context-unresolvable-key/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type ContextUnresolvableKeyProps = {
+  /**
+   * @default "modal"
+   */
+  dynamicKey?: string;
+
+  children?: (this: void) => void;
+};
+
+export default class ContextUnresolvableKey extends SvelteComponentTyped<
+  ContextUnresolvableKeyProps,
+  Record<string, any>,
+  { default: Record<string, never> }
 > {}
 "
 `;
@@ -18539,6 +19044,28 @@ export default class ForwardedNativeWithDetail extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "context-symbol/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type TabsContext = {
+  /** The currently active tab index. */
+  activeTab: number;
+  /** Register a tab and return its index. */
+  registerTab: (label: string) => number;
+};
+
+export type ContextSymbolProps = {
+  children?: (this: void) => void;
+};
+
+export default class ContextSymbol extends SvelteComponentTyped<
+  ContextSymbolProps,
+  Record<string, any>,
+  { default: Record<string, never> }
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "runes-props-renamed/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -19589,6 +20116,26 @@ export default class LegacyBindComponentRef extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "context-symbol-for/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type NotificationContext = {
+  /** Push a notification message. */
+  notify: (message: string) => void;
+};
+
+export type ContextSymbolForProps = {
+  children?: (this: void) => void;
+};
+
+export default class ContextSymbolFor extends SvelteComponentTyped<
+  ContextSymbolForProps,
+  Record<string, any>,
+  { default: Record<string, never> }
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "slot-jsdoc-template-not-passthrough/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -20182,337 +20729,6 @@ export default class SlotDescriptionHyphensInline extends SvelteComponentTyped<
     /** Row id maps to server-side UUID v4 (not v1-v3). */
     item: { id: string };
   }
-> {}
-"
-`;
-
-exports[`fixtures (JSON) "context-const-key/input.svelte" 1`] = `
-"{
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 22,
-      "column": 0
-    }
-  },
-  "syntaxMode": "legacy",
-  "scriptLanguage": "js",
-  "props": [],
-  "moduleExports": [],
-  "slots": [
-    {
-      "name": null,
-      "default": true,
-      "slot_props": "Record<string, never>",
-      "source": {
-        "start": {
-          "line": 21,
-          "column": 19
-        },
-        "end": {
-          "line": 21,
-          "column": 27
-        }
-      }
-    }
-  ],
-  "events": [],
-  "typedefs": [],
-  "generics": null,
-  "contexts": [
-    {
-      "key": "simple-modal",
-      "typeName": "SimpleModalContext",
-      "properties": [
-        {
-          "name": "open",
-          "type": "(component: any, props?: any) => void",
-          "description": "Open the modal with content",
-          "optional": false
-        },
-        {
-          "name": "close",
-          "type": "() => void",
-          "description": "Close the modal",
-          "optional": false
-        }
-      ]
-    }
-  ],
-  "diagnostics": []
-}
-"
-`;
-
-exports[`fixtures (JSON) "context-unresolvable-key/input.svelte" 1`] = `
-"{
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 16,
-      "column": 0
-    }
-  },
-  "syntaxMode": "legacy",
-  "scriptLanguage": "js",
-  "props": [
-    {
-      "name": "dynamicKey",
-      "kind": "let",
-      "type": "string",
-      "typeSource": "default",
-      "value": "\\"modal\\"",
-      "defaultValue": {
-        "raw": "\\"modal\\"",
-        "kind": "literal",
-        "value": "modal"
-      },
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 4,
-          "column": 2
-        },
-        "end": {
-          "line": 4,
-          "column": 34
-        }
-      }
-    }
-  ],
-  "moduleExports": [],
-  "slots": [
-    {
-      "name": null,
-      "default": true,
-      "slot_props": "Record<string, never>",
-      "source": {
-        "start": {
-          "line": 15,
-          "column": 19
-        },
-        "end": {
-          "line": 15,
-          "column": 27
-        }
-      }
-    }
-  ],
-  "events": [],
-  "typedefs": [],
-  "generics": null,
-  "contexts": [],
-  "diagnostics": []
-}
-"
-`;
-
-exports[`fixtures (JSON) "context-symbol/input.svelte" 1`] = `
-"{
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 22,
-      "column": 0
-    }
-  },
-  "syntaxMode": "legacy",
-  "scriptLanguage": "js",
-  "props": [],
-  "moduleExports": [],
-  "slots": [
-    {
-      "name": null,
-      "default": true,
-      "slot_props": "Record<string, never>",
-      "source": {
-        "start": {
-          "line": 21,
-          "column": 18
-        },
-        "end": {
-          "line": 21,
-          "column": 26
-        }
-      }
-    }
-  ],
-  "events": [],
-  "typedefs": [],
-  "generics": null,
-  "contexts": [
-    {
-      "key": "tabs",
-      "typeName": "TabsContext",
-      "properties": [
-        {
-          "name": "activeTab",
-          "type": "number",
-          "description": "The currently active tab index.",
-          "optional": false
-        },
-        {
-          "name": "registerTab",
-          "type": "(label: string) => number",
-          "description": "Register a tab and return its index.",
-          "optional": false
-        }
-      ]
-    }
-  ],
-  "diagnostics": []
-}
-"
-`;
-
-exports[`fixtures (JSON) "context-symbol-for/input.svelte" 1`] = `
-"{
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 14,
-      "column": 0
-    }
-  },
-  "syntaxMode": "legacy",
-  "scriptLanguage": "js",
-  "props": [],
-  "moduleExports": [],
-  "slots": [
-    {
-      "name": null,
-      "default": true,
-      "slot_props": "Record<string, never>",
-      "source": {
-        "start": {
-          "line": 13,
-          "column": 27
-        },
-        "end": {
-          "line": 13,
-          "column": 35
-        }
-      }
-    }
-  ],
-  "events": [],
-  "typedefs": [],
-  "generics": null,
-  "contexts": [
-    {
-      "key": "notification",
-      "typeName": "NotificationContext",
-      "properties": [
-        {
-          "name": "notify",
-          "type": "(message: string) => void",
-          "description": "Push a notification message.",
-          "optional": false
-        }
-      ]
-    }
-  ],
-  "diagnostics": []
-}
-"
-`;
-
-exports[`fixtures (TypeScript) "context-const-key/input.svelte" 1`] = `
-"import { SvelteComponentTyped } from "svelte";
-
-export type SimpleModalContext = {
-  /** Open the modal with content */
-  open: (component: any, props?: any) => void;
-  /** Close the modal */
-  close: () => void;
-};
-
-export type ContextConstKeyProps = {
-  children?: (this: void) => void;
-};
-
-export default class ContextConstKey extends SvelteComponentTyped<
-  ContextConstKeyProps,
-  Record<string, any>,
-  { default: Record<string, never> }
-> {}
-"
-`;
-
-exports[`fixtures (TypeScript) "context-unresolvable-key/input.svelte" 1`] = `
-"import { SvelteComponentTyped } from "svelte";
-
-export type ContextUnresolvableKeyProps = {
-  /**
-   * @default "modal"
-   */
-  dynamicKey?: string;
-
-  children?: (this: void) => void;
-};
-
-export default class ContextUnresolvableKey extends SvelteComponentTyped<
-  ContextUnresolvableKeyProps,
-  Record<string, any>,
-  { default: Record<string, never> }
-> {}
-"
-`;
-
-exports[`fixtures (TypeScript) "context-symbol/input.svelte" 1`] = `
-"import { SvelteComponentTyped } from "svelte";
-
-export type TabsContext = {
-  /** The currently active tab index. */
-  activeTab: number;
-  /** Register a tab and return its index. */
-  registerTab: (label: string) => number;
-};
-
-export type ContextSymbolProps = {
-  children?: (this: void) => void;
-};
-
-export default class ContextSymbol extends SvelteComponentTyped<
-  ContextSymbolProps,
-  Record<string, any>,
-  { default: Record<string, never> }
-> {}
-"
-`;
-
-exports[`fixtures (TypeScript) "context-symbol-for/input.svelte" 1`] = `
-"import { SvelteComponentTyped } from "svelte";
-
-export type NotificationContext = {
-  /** Push a notification message. */
-  notify: (message: string) => void;
-};
-
-export type ContextSymbolForProps = {
-  children?: (this: void) => void;
-};
-
-export default class ContextSymbolFor extends SvelteComponentTyped<
-  ContextSymbolForProps,
-  Record<string, any>,
-  { default: Record<string, never> }
 > {}
 "
 `;

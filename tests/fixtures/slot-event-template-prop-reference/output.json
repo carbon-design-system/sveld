@@ -1,0 +1,92 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 14,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "icon",
+      "kind": "let",
+      "type": "Icon",
+      "typeSource": "jsdoc",
+      "value": "undefined",
+      "defaultValue": {
+        "raw": "undefined",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 10,
+          "column": 2
+        },
+        "end": {
+          "line": 10,
+          "column": 30
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "icon",
+      "default": false,
+      "slot_props": "Record<string, never>",
+      "source": {
+        "start": {
+          "line": 13,
+          "column": 0
+        },
+        "end": {
+          "line": 13,
+          "column": 20
+        }
+      }
+    }
+  ],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "select",
+      "detail": "Icon",
+      "description": "`@template` shared by `@event` and `@slot` still becomes a component generic when a prop uses it.",
+      "source": {
+        "start": {
+          "line": 5,
+          "column": 5
+        },
+        "end": {
+          "line": 5,
+          "column": 25
+        }
+      }
+    }
+  ],
+  "typedefs": [],
+  "generics": [
+    "Icon",
+    "Icon = any"
+  ],
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "slot-event-template-prop-reference/input.svelte",
+      "kind": "event-no-source",
+      "name": "select",
+      "message": "@event \"select\" has no matching dispatch or callback prop."
+    }
+  ]
+}
