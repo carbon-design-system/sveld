@@ -1,0 +1,168 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 51,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "formatValue",
+      "kind": "function",
+      "description": "Formats a value. Its example is valid and should compile cleanly.",
+      "tags": [
+        {
+          "name": "example",
+          "body": " ```js\n formatValue(\"ok\");\n ```"
+        }
+      ],
+      "type": "(value: string) => string",
+      "typeSource": "jsdoc",
+      "params": [
+        {
+          "name": "value",
+          "type": "string",
+          "description": "",
+          "optional": false
+        }
+      ],
+      "returnType": "string",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 11,
+          "column": 2
+        },
+        "end": {
+          "line": 13,
+          "column": 3
+        }
+      }
+    },
+    {
+      "name": "newFormatName",
+      "kind": "function",
+      "description": "Renamed from `oldFormatName`; the example below was never updated and\nstill calls the old, now-nonexistent name.",
+      "tags": [
+        {
+          "name": "example",
+          "body": " ```js\n oldFormatName(\"ok\");\n ```"
+        }
+      ],
+      "type": "(value: string) => string",
+      "typeSource": "jsdoc",
+      "params": [
+        {
+          "name": "value",
+          "type": "string",
+          "description": "",
+          "optional": false
+        }
+      ],
+      "returnType": "string",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 25,
+          "column": 2
+        },
+        "end": {
+          "line": 27,
+          "column": 3
+        }
+      }
+    },
+    {
+      "name": "tooManyArgs",
+      "kind": "function",
+      "description": "Its example calls it with more arguments than it declares.",
+      "tags": [
+        {
+          "name": "example",
+          "body": " ```js\n tooManyArgs(\"a\", \"b\", \"c\");\n ```"
+        }
+      ],
+      "type": "(value: string) => string",
+      "typeSource": "jsdoc",
+      "params": [
+        {
+          "name": "value",
+          "type": "string",
+          "description": "",
+          "optional": false
+        }
+      ],
+      "returnType": "string",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 38,
+          "column": 2
+        },
+        "end": {
+          "line": 40,
+          "column": 3
+        }
+      }
+    },
+    {
+      "name": "widgetSlot",
+      "kind": "let",
+      "description": "Svelte example, not TS/JS. sveld skips it.",
+      "tags": [
+        {
+          "name": "example",
+          "body": " ```svelte\n <Widget prop={doesNotExist} />\n ```"
+        }
+      ],
+      "type": "string",
+      "typeSource": "default",
+      "value": "\"unused\"",
+      "defaultValue": {
+        "raw": "\"unused\"",
+        "kind": "literal",
+        "value": "unused"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 49,
+          "column": 2
+        },
+        "end": {
+          "line": 49,
+          "column": 35
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}

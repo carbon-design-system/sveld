@@ -25,6 +25,7 @@ describe("parseCliOptions", () => {
     expect(parseCliOptions(["--cache=false"])).toEqual({ cache: false });
   });
 
+<<<<<<< HEAD
   test("--check enables the default snapshot check", () => {
     expect(parseCliOptions(["--check"])).toEqual({ check: true });
   });
@@ -35,5 +36,9 @@ describe("parseCliOptions", () => {
 
   test("--check=false disables the check", () => {
     expect(parseCliOptions(["--check=false"])).toEqual({ check: false });
+=======
+  test("--checkExamples enables checkExamples", () => {
+    expect(parseCliOptions(["--checkExamples"])).toEqual({ checkExamples: true });
+>>>>>>> fdd2a46 (feat: add opt-in `checkExamples` to type-check `@example` blocks)
   });
 });

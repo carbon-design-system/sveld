@@ -215,6 +215,45 @@ await sveld({ json: true, cache: true });
 
 If a component [`@extendProps`](#extendprops) / [`@extends`](#extendprops) another file, it is re-parsed when that dependency changes, same as in [`watch`](#available-options) mode. Bumping the `sveld` or Svelte version clears the cache.
 
+#### Compile-checked `@example` blocks (`checkExamples`)
+
+`@example` blocks are just text. Rename a prop and the sample code can sit there broken for months. Set `checkExamples: true` to run plain TS/JS `@example` blocks through the TypeScript program. Broken examples show up as `example-compile-error` diagnostics.
+
+```ts
+await sveld({ json: true, checkExamples: true });
+```
+
+```svelte
+<script>
+  /**
+   * Formats a value.
+   * @param {string} value
+   * @returns {string}
+   * @example
+   * ```js
+   * formatValue("ok");
+   * ```
+   */
+  export function formatValue(value) {
+    return value;
+  }
+</script>
+```
+
+If `formatValue` is later renamed and the example is never updated, `checkExamples` reports it:
+
+```
+@example blocks that failed to compile (1):
+  ./Component.svelte
+    - Line 1: Cannot find name 'formatValue'.
+```
+
+Plain TS/JS only. Examples fenced as `svelte` or `html`, or bare markup like `<Button />`, are skipped. Checking those needs `svelte2tsx` or similar, and sveld stays AST-only.
+
+The check is narrow on purpose. It catches renamed or removed symbols and wrong argument counts. It is not full type checking and never pulls in types sveld cannot see.
+
+Needs `typescript` and a `tsconfig.json`, same as `resolveTypes`. Use `--strict` (or the `strict` option) to fail CI when an example breaks.
+
 ## Usage
 
 ### Installation
@@ -420,7 +459,9 @@ TypeScript definitions land in the `types` folder by default. Include that folde
 - **`markdownOptions`** (object, optional): Options for Markdown output.
 - **`watch`** (boolean, optional, default: `false`): Regenerate output incrementally when `.svelte` source changes during `vite dev` / `vite build --watch`. Only the changed component and the components that depend on it via [`@extendProps`](#extendprops) / `@extends` are re-parsed, rather than rebuilding every component. Without this option, the plugin only runs during `vite build`.
 - **`failFast`** (boolean, optional, default: `false`): Abort the entire run when a single component fails to parse. By default, parse failures are collected as diagnostics (and reported to `stderr`) so the remaining components still emit their output. Also available as the `--fail-fast` CLI flag.
+- **`resolveTypes`** (boolean, optional, default: `false`): Load the TypeScript program to expand opaque imported whole-object `$props()` types into JSON. See [Opt-in semantic resolution](#opt-in-semantic-resolution-resolvetypes).
 - **`cache`** (boolean | string, optional, default: `false`): Write parsed component output to disk and skip re-parsing unchanged files on later runs. `true` uses `node_modules/.cache/sveld/parse-cache.json`; a string sets a custom path. Also available as `--cache` / `--cache=<path>`. See [Persistent parse cache](#persistent-parse-cache-cache).
+- **`checkExamples`** (boolean, optional, default: `false`): Run plain TS/JS `@example` blocks through the TypeScript program. Broken ones get an `example-compile-error` diagnostic. See [Compile-checked `@example` blocks](#compile-checked-example-blocks-checkexamples).
 
 By default, only TypeScript definitions are generated.
 

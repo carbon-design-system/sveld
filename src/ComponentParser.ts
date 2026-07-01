@@ -376,7 +376,7 @@ interface ComponentPropParam {
  * its type, default value, description, and metadata about whether it's
  * required, reactive, or a function.
  */
-interface ComponentProp {
+export interface ComponentProp {
   /** The prop name as declared in the component */
   name: string;
   /** The declaration kind: "let" (required), "const" (optional with default), or "function" */
@@ -529,7 +529,7 @@ const NEWLINE_CR_REGEX = /[\r\n]+/g;
  * Represents a slot that can be used to pass content into the component.
  * Includes information about slot props, fallback content, and descriptions.
  */
-interface ComponentSlot {
+export interface ComponentSlot {
   /** The slot name (null or undefined for default slot) */
   name?: string | null;
   /** Whether this is the default slot */
