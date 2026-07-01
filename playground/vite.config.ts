@@ -17,7 +17,7 @@ export default defineConfig({
   },
   plugins: [svelte({ preprocess: [optimizeImports()] }), optimizeCss({ experimental: { strict: true } })],
   optimizeDeps: {
-    exclude: ["carbon-components-svelte"],
+    exclude: ["carbon-components-svelte", "carbon-icons-svelte"],
   },
   build: {
     rollupOptions: {
