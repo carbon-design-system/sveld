@@ -123,6 +123,7 @@ export default class Button extends SvelteComponentTyped<
   - [Vite](#vite)
   - [Node.js](#nodejs)
   - [CLI](#cli)
+  - [CI: API-drift checks (`--check`)](#ci-api-drift-checks---check)
   - [Config File](#config-file)
   - [Publishing to NPM](#publishing-to-npm)
 - [Available Options](#available-options)
@@ -288,6 +289,32 @@ Generate documentation in JSON and/or Markdown formats using the following flags
 ```sh
 npx sveld --json --markdown
 ```
+
+### CI: API-drift checks (`--check`)
+
+`--check` diffs the parsed component API against a committed `COMPONENT_API.json` snapshot, assigns a semver bump to each change, and exits `1` when it finds a breaking change.
+
+1. Generate and commit the snapshot once: `npx sveld --json`, then commit `COMPONENT_API.json`.
+2. Add `npx sveld --check` to CI:
+
+```sh
+npx sveld --check
+```
+
+```
+sveld --check: 2 API changes detected against "COMPONENT_API.json".
+Suggested semver bump: major.
+
+  Button
+    [BREAKING] prop "target" added (required)
+    [BREAKING] prop "href" removed
+```
+
+Removed props, events, or slots, and props that become required, are breaking (`major`). New optional props, new events, and widened union types are additive (`minor`). Changes to generics, `@restProps`, `@extends`, or context shapes are not classified further. If any of those changed, `--check` calls it breaking.
+
+`--check` does not write the snapshot. Run `sveld --json` (or `sveld --json --check`) and commit the file when you want to update it. If there is no snapshot yet, `--check` prints a notice and exits `0`.
+
+Use `--check=<path>` to diff against a snapshot at a custom location (defaults to `jsonOptions.outFile`, or `COMPONENT_API.json`).
 
 ### Node.js
 

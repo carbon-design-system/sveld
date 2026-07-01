@@ -24,4 +24,16 @@ describe("parseCliOptions", () => {
   test("--cache=false disables the cache", () => {
     expect(parseCliOptions(["--cache=false"])).toEqual({ cache: false });
   });
+
+  test("--check enables the default snapshot check", () => {
+    expect(parseCliOptions(["--check"])).toEqual({ check: true });
+  });
+
+  test("--check=<path> sets a custom snapshot location", () => {
+    expect(parseCliOptions(["--check=api-snapshot.json"])).toEqual({ check: "api-snapshot.json" });
+  });
+
+  test("--check=false disables the check", () => {
+    expect(parseCliOptions(["--check=false"])).toEqual({ check: false });
+  });
 });
