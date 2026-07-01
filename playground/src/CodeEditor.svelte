@@ -35,7 +35,7 @@
   }
 
   :global(.code-editor code.hljs) {
-    background-color: var(--cds-ui-01);
+    background: var(--cds-ui-01);
     font-family: var(--cds-code-02-font-family);
     font-size: var(--cds-code-02-font-size);
     font-weight: var(--cds-code-02-font-weight);
@@ -44,5 +44,9 @@
     min-height: 100%;
     padding: 1rem 0.75rem;
     white-space: pre-wrap;
+  }
+
+  :global([theme="g100"] .code-editor code.hljs) {
+    background: var(--cds-ui-01);
   }
 </style>
