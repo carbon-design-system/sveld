@@ -5,3 +5,5 @@ export type { SvelteEntryPoint } from "./get-svelte-entry";
 export { defineConfig, type SveldConfig } from "./load-config";
 export { default } from "./plugin";
 export { sveld } from "./sveld";
+export { buildComponentApiDocument, type ComponentApiDocument } from "./writer/document-model";
+export { getWriter, listWriters, type OutputWriter, registerWriter } from "./writer/registry";

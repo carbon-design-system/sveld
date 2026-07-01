@@ -1,5 +1,6 @@
 import type { EntryExports } from "../parse-entry-exports";
 import type { ComponentDocApi, ComponentDocs } from "../plugin";
+import { buildComponentApiDocument } from "./document-model";
 import type { AppendType } from "./MarkdownWriterBase";
 import {
   EVENT_TABLE_HEADER,
@@ -38,12 +39,9 @@ export function renderComponentsToMarkdown(
     renderExports(document, entryExports);
   }
 
-  const keys = Array.from(components.keys()).sort();
+  const apiDocument = buildComponentApiDocument(components);
 
-  for (const key of keys) {
-    const component = components.get(key);
-    if (!component) continue;
-
+  for (const component of apiDocument.components) {
     renderComponent(document, component);
   }
 }
