@@ -1,12 +1,26 @@
 import { existsSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import type { ParsedComponentTypeScriptMetadata, ResolvedComponentProp } from "./ComponentParser";
+import type { ExampleCheckSource } from "./example-check";
 import { normalizeSeparators } from "./path";
 
 export interface ResolveTarget {
   moduleName: string;
   filePath: string;
   metadata: ParsedComponentTypeScriptMetadata;
+}
+
+export interface ExampleCheckTarget {
+  moduleName: string;
+  filePath: string;
+  sources: ExampleCheckSource[];
+}
+
+/** One `@example` block that failed to type-check. */
+export interface ExampleCheckDiagnostic {
+  id: string;
+  name: string;
+  message: string;
 }
 
 // The opt-in resolution path talks to the TypeScript 7 native preview through
@@ -18,6 +32,11 @@ type TS = any;
 const VIRTUAL_PROPS_BINDING = "__sveld_resolved_props__";
 const VIRTUAL_PROPS_TYPE = "__SveldResolvedProps__";
 const TRAILING_UNDEFINED = / \| undefined$/;
+const NON_FILENAME_CHAR_REGEX = /[^A-Za-z0-9_-]/g;
+const NON_IDENTIFIER_CHAR_REGEX = /[^A-Za-z0-9_$]/g;
+const LEADING_DIGIT_REGEX = /^[0-9]/;
+/** Line 1 of an example virtual file is always the declaration; the example body starts on line 2. */
+const EXAMPLE_CODE_START_LINE = 2;
 
 /**
  * Expands opaque imported `$props()` types using the project's TypeScript program.
@@ -104,6 +123,67 @@ export class TypeResolver {
     return results;
   }
 
+  /**
+   * Type-checks every `@example` block in one program snapshot.
+   *
+   * Each example gets its own virtual file: a `declare`-style binding for the
+   * documented symbol (typed as `any` end-to-end, so types sveld can't see
+   * never cause a false positive), then the example body. Catches renamed
+   * or removed symbols and wrong arity. Not full type checking; it does not
+   * depend on the rest of the component's types.
+   */
+  async checkExamples(targets: ExampleCheckTarget[]): Promise<Map<string, ExampleCheckDiagnostic[]>> {
+    const results = new Map<string, ExampleCheckDiagnostic[]>();
+    if (targets.length === 0) return results;
+
+    const examples: Array<{ moduleName: string; source: ExampleCheckSource; file: string }> = [];
+    for (const target of targets) {
+      for (const source of target.sources) {
+        const file = this.exampleFileName(target.filePath, target.moduleName, source.id);
+        this.overlay.set(file, buildExampleModule(source));
+        examples.push({ moduleName: target.moduleName, source, file });
+      }
+    }
+
+    if (examples.length === 0) return results;
+
+    const snapshot = await this.api.updateSnapshot({
+      openProject: this.tsconfigPath,
+      fileChanges: { created: examples.map((example) => example.file) },
+    });
+
+    try {
+      await Promise.all(
+        examples.map(async ({ moduleName, source, file }) => {
+          const project = await snapshot.getDefaultProjectForFile(file);
+          if (!project) return;
+
+          const [syntactic, semantic]: [TS[], TS[]] = await Promise.all([
+            project.program.getSyntacticDiagnostics(file),
+            project.program.getSemanticDiagnostics(file),
+          ]);
+          const diagnostics = [...syntactic, ...semantic];
+          if (diagnostics.length === 0) return;
+
+          const content = this.overlay.get(file) ?? "";
+          const message = diagnostics
+            .map((diagnostic: TS) => formatExampleDiagnostic(diagnostic, content))
+            .sort((a, b) => a.line - b.line)
+            .map((entry) => `Line ${entry.line}: ${entry.text}`)
+            .join("\n");
+
+          const list = results.get(moduleName) ?? [];
+          list.push({ id: source.id, name: source.name, message });
+          results.set(moduleName, list);
+        }),
+      );
+    } finally {
+      await snapshot.dispose?.();
+    }
+
+    return results;
+  }
+
   /** Closes the TypeScript server process. */
   async dispose(): Promise<void> {
     this.overlay.clear();
@@ -182,6 +262,12 @@ export class TypeResolver {
     const dir = path.dirname(path.resolve(componentFilePath));
     return normalizeSeparators(path.join(dir, `__sveld_resolved_${moduleName}.ts`));
   }
+
+  private exampleFileName(componentFilePath: string, moduleName: string, exampleId: string) {
+    const dir = path.dirname(path.resolve(componentFilePath));
+    const safeId = exampleId.replace(NON_FILENAME_CHAR_REGEX, "_");
+    return normalizeSeparators(path.join(dir, `__sveld_example_${moduleName}_${safeId}.ts`));
+  }
 }
 
 function buildVirtualModule(metadata: ParsedComponentTypeScriptMetadata): string {
@@ -191,6 +277,27 @@ function buildVirtualModule(metadata: ParsedComponentTypeScriptMetadata): string
     `type ${VIRTUAL_PROPS_TYPE} = ${metadata.canonicalPropsType};`,
     `declare const ${VIRTUAL_PROPS_BINDING}: ${VIRTUAL_PROPS_TYPE};`,
   ].join("\n");
+}
+
+/** Sanitizes a documented symbol's name into a valid binding identifier (e.g. a slot named `"header-icon"`). */
+function declarationIdentifier(name: string): string {
+  const sanitized = name.replace(NON_IDENTIFIER_CHAR_REGEX, "_");
+  if (sanitized === "" || LEADING_DIGIT_REGEX.test(sanitized)) return `_${sanitized}`;
+  return sanitized;
+}
+
+/** One example, in its own virtual file: a typed binding for the symbol, then the example body. */
+function buildExampleModule(source: ExampleCheckSource): string {
+  const binding = declarationIdentifier(source.name);
+  return `const ${binding} = null as unknown as (${source.type});\n${source.code}\n`;
+}
+
+/** Converts a diagnostic's character offset into a line number relative to the example body. */
+function formatExampleDiagnostic(diagnostic: TS, content: string): { line: number; text: string } {
+  const pos: number = diagnostic.pos ?? 0;
+  const virtualLine = content.slice(0, pos).split("\n").length;
+  const line = Math.max(1, virtualLine - EXAMPLE_CODE_START_LINE + 1);
+  return { line, text: String(diagnostic.text ?? "").trim() };
 }
 
 /** Offset of the props binding identifier on the trailing `declare const` line. */

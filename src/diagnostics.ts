@@ -4,8 +4,13 @@
  * - `prop-unknown-type`: prop `typeSource` is `"unknown"`.
  * - `context-any-type`: `setContext` value inferred as `any`.
  * - `event-no-source`: `@event` with no dispatch, forward, or callback prop.
+ * - `example-compile-error`: an `@example` block failed to type-check (opt-in, `checkExamples`).
  */
-export type SveldDiagnosticKind = "prop-unknown-type" | "context-any-type" | "event-no-source";
+export type SveldDiagnosticKind =
+  | "prop-unknown-type"
+  | "context-any-type"
+  | "event-no-source"
+  | "example-compile-error";
 
 /**
  * One place sveld had to guess a type instead of inferring it.
@@ -24,9 +29,15 @@ const KIND_LABELS: Record<SveldDiagnosticKind, string> = {
   "prop-unknown-type": "Props without inferred types",
   "context-any-type": "Context values typed as `any`",
   "event-no-source": "@event tags with no dispatch or callback",
+  "example-compile-error": "@example blocks that failed to compile",
 };
 
-const KIND_ORDER: SveldDiagnosticKind[] = ["prop-unknown-type", "context-any-type", "event-no-source"];
+const KIND_ORDER: SveldDiagnosticKind[] = [
+  "prop-unknown-type",
+  "context-any-type",
+  "event-no-source",
+  "example-compile-error",
+];
 
 /**
  * Drop duplicates (same component, kind, and name). Each file is parsed twice

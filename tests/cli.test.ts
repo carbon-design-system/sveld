@@ -36,4 +36,8 @@ describe("parseCliOptions", () => {
   test("--check=false disables the check", () => {
     expect(parseCliOptions(["--check=false"])).toEqual({ check: false });
   });
+
+  test("--checkExamples enables checkExamples", () => {
+    expect(parseCliOptions(["--checkExamples"])).toEqual({ checkExamples: true });
+  });
 });

@@ -11,6 +11,7 @@ import ComponentParser, {
 } from "./ComponentParser";
 import { buildReverseDeps, expandAffected } from "./dependency-graph";
 import { dedupeDiagnostics, type SveldDiagnostic } from "./diagnostics";
+import { collectExampleSources } from "./example-check";
 import { hashSource, ParseCache, resolveCacheFilePath } from "./parse-cache";
 import { type EntryExports, parseEntryExports } from "./parse-entry-exports";
 import { type ParsedExports, parseExports } from "./parse-exports";
@@ -68,16 +69,24 @@ export interface GenerateBundleOptions {
    * string sets a custom path. Off by default.
    */
   cache?: boolean | string;
+  /**
+   * Run plain TS/JS `@example` blocks on props, module exports, slots, and
+   * events through the TypeScript program. Broken examples become
+   * `example-compile-error` diagnostics. Svelte/HTML markup is skipped.
+   * Off by default. Requires `typescript`.
+   */
+  checkExamples?: boolean;
 }
 
 export function toGenerateBundleOptions(
-  opts?: Pick<GenerateBundleOptions, "failFast" | "resolveTypes" | "documentExports" | "cache">,
+  opts?: Pick<GenerateBundleOptions, "failFast" | "resolveTypes" | "documentExports" | "cache" | "checkExamples">,
 ): GenerateBundleOptions {
   return {
     failFast: opts?.failFast,
     resolveTypes: opts?.resolveTypes === true,
     documentExports: opts?.documentExports === true,
     cache: opts?.cache,
+    checkExamples: opts?.checkExamples === true,
   };
 }
 
@@ -452,6 +461,13 @@ export async function generateBundle(
 
   cache?.save();
 
+  if (options.checkExamples) {
+    // Runs over allComponentsForTypes (not just exports): that's the map the
+    // diagnostics summary below is built from, so every discovered component's
+    // examples get checked and surfaced, not just the public barrel.
+    await checkComponentExamples(allComponentsForTypes, rootDir, resolveComponentFilePath);
+  }
+
   // Same file can land in both export and all-components passes; dedupe before returning.
   const diagnostics = dedupeDiagnostics(
     Array.from(allComponentsForTypes.values()).flatMap((component) => component.diagnostics ?? []),
@@ -501,6 +517,54 @@ async function resolveImportedPropTypes(
     for (const { component } of candidates) {
       const resolved = resolvedByModule.get(component.moduleName);
       if (resolved) applyResolvedProps(component, resolved);
+    }
+  } finally {
+    await resolver.dispose();
+  }
+}
+
+async function checkComponentExamples(
+  components: ComponentDocs,
+  rootDir: string,
+  resolveComponentFilePath: ResolveComponentFilePath,
+): Promise<void> {
+  const candidates: Array<{ component: ComponentDocApi; sources: ReturnType<typeof collectExampleSources> }> = [];
+
+  for (const component of components.values()) {
+    const sources = collectExampleSources(component);
+    if (sources.length === 0) continue;
+    candidates.push({ component, sources });
+  }
+
+  if (candidates.length === 0) return;
+
+  const { TypeResolver } = await import("./resolve-types");
+  const resolver = await TypeResolver.create(rootDir);
+  if (!resolver) return;
+
+  try {
+    const diagnosticsByModule = await resolver.checkExamples(
+      candidates.map(({ component, sources }) => ({
+        moduleName: component.moduleName,
+        filePath: resolveComponentFilePath(component.filePath),
+        sources,
+      })),
+    );
+
+    for (const { component } of candidates) {
+      const found = diagnosticsByModule.get(component.moduleName);
+      if (!found || found.length === 0) continue;
+
+      const diagnostics = component.diagnostics ?? [];
+      for (const item of found) {
+        diagnostics.push({
+          component: component.filePath,
+          kind: "example-compile-error",
+          name: item.name,
+          message: item.message,
+        });
+      }
+      component.diagnostics = diagnostics;
     }
   } finally {
     await resolver.dispose();
