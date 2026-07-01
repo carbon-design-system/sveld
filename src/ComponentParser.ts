@@ -1,22 +1,14 @@
 import { parse as parseComment } from "comment-parser";
 import type {
-  ArrayExpression,
-  ArrowFunctionExpression,
   AssignmentExpression,
-  BinaryExpression,
   CallExpression,
   Expression,
   FunctionDeclaration,
-  FunctionExpression,
   Identifier,
   Literal,
   MemberExpression,
-  NewExpression,
   ObjectExpression,
-  Pattern,
   Property,
-  TemplateLiteral,
-  UnaryExpression,
   UpdateExpression,
   VariableDeclaration,
   VariableDeclarator,
@@ -24,15 +16,30 @@ import type {
 import type { Node } from "estree-walker";
 import { walk } from "estree-walker";
 import { compile, parse } from "svelte/compiler";
-import {
-  isCallExpressionNamed,
-  isIdentifier,
-  isLiteral,
-  isObjectExpression,
-  isVariableDeclaration,
-} from "./ast-guards";
-import type { SveldDiagnostic, SveldDiagnosticKind } from "./diagnostics";
+import { isCallExpressionNamed, isIdentifier, isLiteral } from "./ast-guards";
+import type { SveldDiagnostic } from "./diagnostics";
 import { getElementByTag } from "./element-tag-map";
+import { resolveMemberExpressionType } from "./parser/bindings";
+import { createParserContext, type ParserContext } from "./parser/context";
+import { parseSetContextCall } from "./parser/contexts";
+import { recordDiagnostic } from "./parser/diagnostics";
+import { addDispatchedEvent } from "./parser/events";
+import { getCommentTags, parseCustomTypes, processNodeJSDoc } from "./parser/jsdoc";
+import { addProp, processInitializer } from "./parser/props";
+import { maybeSetRestProps } from "./parser/rest-props";
+import {
+  buildRunesPropTypeMetadata,
+  normalizeRunesCallbackProps,
+  parseRunesPropsDeclaration,
+} from "./parser/runes-props";
+import {
+  buildScopeDeclarations,
+  markReactivePropsFromMutationTarget,
+  resolveIdentifierToReactiveProp,
+} from "./parser/scopes";
+import { addSlot, buildSlotPropsFromObjectExpression, extractRenderTagInfo } from "./parser/slots";
+import { sourceAtPos, sourceRangeFromNode, sourceRangeFromOffsets } from "./parser/source-position";
+import { buildTypeScriptMetadata } from "./parser/type-resolution";
 
 /**
  * Regular expression for matching variable declarations.
@@ -50,119 +57,21 @@ import { getElementByTag } from "./element-tag-map";
  */
 const VAR_DECLARATION_REGEX = /(?:const|let|function)\s+(\w+)\s*[=(]/;
 
-/**
- * Regular expression for removing leading dash and whitespace from descriptions.
- *
- * Used to clean up inline descriptions in JSDoc tags that may be prefixed
- * with a dash (e.g., `@slot name - description` or `@snippet name - description`).
- *
- * @example
- * ```ts
- * // Matches and removes:
- * // "- description"  -> "description"
- * // "-  padded"     -> "padded"
- * ```
- */
-const DESCRIPTION_DASH_PREFIX_REGEX = /^-\s*/;
-
-/** Matches a single word character (letter, digit, or underscore). Used for dotted prop access validation. */
-const WORD_CHAR_REGEX = /\w/;
-
-/** True when a slice between an AST comment end and a node start is only whitespace. */
-const ONLY_WHITESPACE_REGEX = /^\s*$/;
-
-/** Trailing semicolon on a typedef source slice before brace matching. */
-const TRAILING_SEMICOLON_REGEX = /;$/;
-
-/**
- * Removes leading dash and whitespace from a description string.
- *
- * Used for cleaning up inline descriptions in JSDoc tags that may have been
- * prefixed with a dash (e.g., `@slot name - description` or `@snippet name - description`).
- *
- * @param description - The description string to clean
- * @returns The cleaned description, empty string if result is empty, or undefined if input was undefined
- *
- * @example
- * ```ts
- * cleanDescription("- Description text")
- * // Returns: "Description text"
- *
- * cleanDescription("  -   Padded description  ")
- * // Returns: "Padded description"
- *
- * cleanDescription("-")
- * // Returns: ""
- *
- * cleanDescription(undefined)
- * // Returns: undefined
- * ```
- */
-function cleanDescription(description: string | undefined): string | undefined {
-  if (description === undefined) return undefined;
-  const cleaned = description.replace(DESCRIPTION_DASH_PREFIX_REGEX, "").trim();
-  return cleaned === "" ? "" : cleaned;
-}
-
-/**
- * Returns the description text that appears on the same line as the tag itself,
- * ignoring continuation lines that `comment-parser` aggregated into the tag's
- * `description` field. Continuation lines belong to the next tag (or the
- * enclosing event/typedef) and must not pollute the tag's own JSDoc.
- */
-function getInlineTagDescription(tagSource: { tokens: { description?: string } }[] | undefined): string | undefined {
-  if (!tagSource || tagSource.length === 0) return undefined;
-  return tagSource[0].tokens.description;
+/** Returns `value`, or `undefined` when it's `undefined` or the empty string. */
+export function assignValue(value?: "" | string) {
+  return value === undefined || value === "" ? undefined : value;
 }
 
 /** Structured JSDoc tag (e.g. `{ name: "since", body: "1.2.0" }`). */
-interface JsDocPassthroughTag {
+export interface JsDocPassthroughTag {
   name: string;
   body: string;
-}
-
-/** `@since` and `@example` are kept out of prose descriptions and exposed as `tags` instead. */
-const IDE_PASSTHROUGH_TAGS = new Set(["since", "example"]);
-
-type JsDocSourceTokens = {
-  tag?: string;
-  name?: string;
-  postName?: string;
-  description?: string;
-  postDelimiter?: string;
-  end?: string;
-};
-
-/** Rebuilds a tag body from `comment-parser` source lines (needed for multi-line `@example`). */
-function getPassthroughTagBodyFromSource(tagSource: Array<{ tokens: JsDocSourceTokens }> | undefined): string {
-  if (!tagSource || tagSource.length === 0) return "";
-  const parts: string[] = [];
-  for (const line of tagSource) {
-    const t = line.tokens;
-    if ((t.end ?? "").trim() === "*/") break;
-    if (t.tag) {
-      const inline = `${t.name ?? ""}${t.postName ?? ""}${t.description ?? ""}`.trimEnd();
-      if (inline) parts.push(inline);
-    } else {
-      parts.push(`${t.postDelimiter ?? ""}${t.description ?? ""}`);
-    }
-  }
-  return parts.join("\n");
 }
 
 /**
  * From `@deprecated` JSDoc: a message string, or `true` when the tag has no message.
  */
 export type DeprecatedValue = string | true;
-
-function deprecatedValueFromBody(body: string): DeprecatedValue {
-  const message = body.trim();
-  return message === "" ? true : message;
-}
-
-function deprecatedValueFromParts(name: string | undefined, description: string | undefined): DeprecatedValue {
-  return deprecatedValueFromBody(`${name ?? ""}${description ? ` ${description}` : ""}`);
-}
 
 /**
  * Maps ESTree `VariableDeclaration.kind` to `ComponentProp.kind`.
@@ -175,7 +84,7 @@ function variableDeclarationKindToComponentPropKind(kind: VariableDeclaration["k
   return kind;
 }
 
-interface LegacyAstRoot {
+export interface LegacyAstRoot {
   module?: Node;
   html?: Node;
   instance?: Node;
@@ -193,20 +102,20 @@ export interface SourceRange {
   end: SourcePosition;
 }
 
-interface RunesPropTypeMetadata {
+export interface RunesPropTypeMetadata {
   optional: boolean;
   source?: SourceRange;
   type: string;
 }
 
-interface RunesPropsDeclarationMetadata {
+export interface RunesPropsDeclarationMetadata {
   canonicalType?: string;
   props: Map<string, RunesPropTypeMetadata>;
   referencedImportedTypes: Set<string>;
   referencedLocalTypes: Set<string>;
 }
 
-type ModernRunesTypeNode = {
+export type ModernRunesTypeNode = {
   type?: string;
   id?: { name?: string };
   start?: number;
@@ -218,7 +127,7 @@ type ModernRunesTypeNode = {
   members?: ModernRunesTypeMember[];
 };
 
-type ModernRunesTypeMember = {
+export type ModernRunesTypeMember = {
   type?: string;
   computed?: boolean;
   optional?: boolean;
@@ -234,14 +143,14 @@ type ModernRunesTypeMember = {
 
 type TemplateNode = { start?: number; end?: number };
 
-interface TypeImportBinding {
+export interface TypeImportBinding {
   importedName?: string;
   localName: string;
   source: string;
   specifierType: "default" | "named" | "namespace";
 }
 
-interface LocalTypeDeclaration {
+export interface LocalTypeDeclaration {
   code: string;
   node: ModernRunesTypeNode;
   start: number;
@@ -295,21 +204,21 @@ export function applyResolvedProps(component: ParsedComponent, resolved: Resolve
   }
 }
 
-type SyntaxMode = "legacy" | "runes";
-type ScriptLanguage = "js" | "ts";
-type ScopeBindingKind = "prop" | "local";
-type ScopeBinding = { kind: ScopeBindingKind; publicPropName?: string };
-type LexicalScope = Map<string, ScopeBinding>;
-type ComponentPropTypeSource = "typescript" | "jsdoc" | "default" | "inferred" | "unknown";
-type ComponentPropDefaultValueKind = "literal" | "array" | "object" | "expression" | "function" | "unknown";
+export type SyntaxMode = "legacy" | "runes";
+export type ScriptLanguage = "js" | "ts";
+export type ScopeBindingKind = "prop" | "local";
+export type ScopeBinding = { kind: ScopeBindingKind; publicPropName?: string };
+export type LexicalScope = Map<string, ScopeBinding>;
+export type ComponentPropTypeSource = "typescript" | "jsdoc" | "default" | "inferred" | "unknown";
+export type ComponentPropDefaultValueKind = "literal" | "array" | "object" | "expression" | "function" | "unknown";
 
-interface ComponentPropDefaultValue {
+export interface ComponentPropDefaultValue {
   raw: string;
   kind: ComponentPropDefaultValueKind;
   value?: unknown;
 }
 
-interface ProcessedInitializer {
+export interface ProcessedInitializer {
   value?: string;
   type?: string;
   isFunction: boolean;
@@ -326,7 +235,7 @@ type ModernScriptAttribute = {
   value?: Array<{ data?: string; raw?: string }> | boolean;
 };
 
-type ModernScriptNode = {
+export type ModernScriptNode = {
   attributes?: ModernScriptAttribute[];
 };
 
@@ -351,14 +260,14 @@ interface ComponentParserOptions {
   verbose?: boolean;
 }
 
-type ComponentPropBinding = "readonly" | "writable";
+export type ComponentPropBinding = "readonly" | "writable";
 
 /**
  * Parameter information for function props.
  *
  * Extracted from JSDoc `@param` tags to provide detailed function signatures.
  */
-interface ComponentPropParam {
+export interface ComponentPropParam {
   /** The parameter name */
   name: string;
   /** The parameter type (e.g., "string", "number", "CustomType") */
@@ -428,64 +337,6 @@ export interface ComponentProp {
 const DEFAULT_SLOT_NAME = null;
 
 /**
- * Returns true when `source` is a single balanced object literal — that is,
- * its leading `{` matches its trailing `}` (optionally followed by `;`) with
- * no top-level content before or after.
- *
- * Used to decide whether a `@typedef` body can be emitted as a TypeScript
- * `interface X {...}` (single object literal) or must be emitted as a
- * `type X = ...` alias (anything else: unions, intersections, primitives,
- * generics, tuples, etc.). Without this check, a discriminated union like
- * `{...} | {...}` would slip through and produce invalid TS.
- */
-function isSingleObjectLiteral(source: string): boolean {
-  const s = source.trim().replace(TRAILING_SEMICOLON_REGEX, "").trimEnd();
-  if (!s.startsWith("{") || !s.endsWith("}")) return false;
-
-  let depth = 0;
-  let stringDelimiter: '"' | "'" | "`" | null = null;
-  for (let i = 0; i < s.length; i++) {
-    const ch = s[i];
-    if (stringDelimiter !== null) {
-      if (ch === "\\") {
-        i++;
-        continue;
-      }
-      if (ch === stringDelimiter) stringDelimiter = null;
-      continue;
-    }
-    if (ch === '"' || ch === "'" || ch === "`") {
-      stringDelimiter = ch;
-      continue;
-    }
-    if (ch === "{" || ch === "[" || ch === "(") depth++;
-    else if (ch === "}" || ch === "]" || ch === ")") {
-      depth--;
-      // The opening `{` closed before the end of the string, so there must
-      // be additional top-level content (e.g. `{...} | {...}`).
-      if (depth === 0 && i < s.length - 1) return false;
-    }
-  }
-  return depth === 0;
-}
-
-/**
- * Regular expression for splitting context keys into parts.
- *
- * Splits on dashes, underscores, and whitespace to convert kebab-case,
- * snake_case, or space-separated keys into parts for PascalCase conversion.
- *
- * @example
- * ```ts
- * // Splits:
- * // "simple-modal"  -> ["simple", "modal"]
- * // "user_settings" -> ["user", "settings"]
- * // "my context"     -> ["my", "context"]
- * ```
- */
-const CONTEXT_KEY_SPLIT_REGEX = /[-_.:/\s]+/;
-
-/**
  * Regular expression for matching component comment markers.
  *
  * Matches HTML comments that start with `@component` in the template.
@@ -521,7 +372,7 @@ const CARRIAGE_RETURN_REGEX = /\r/g;
  * // "\r"     -> carriage return
  * ```
  */
-const NEWLINE_CR_REGEX = /[\r\n]+/g;
+const _NEWLINE_CR_REGEX = /[\r\n]+/g;
 
 /**
  * Component slot definition.
@@ -557,14 +408,14 @@ export interface ComponentSlot {
  * Used internally to track slot prop types and whether they should be
  * replaced with prop type references.
  */
-interface SlotPropValue {
+export interface SlotPropValue {
   /** The prop type value or reference */
   value?: string;
   /** Whether this value should be replaced with a prop type reference */
   replace: boolean;
 }
 
-type SlotProps = Record<string, SlotPropValue>;
+export type SlotProps = Record<string, SlotPropValue>;
 
 /**
  * Event that is forwarded from a child component or element.
@@ -572,7 +423,7 @@ type SlotProps = Record<string, SlotPropValue>;
  * Forwarded events are those that use `on:eventname` syntax without
  * a handler, passing the event through to the parent.
  */
-interface ForwardedEvent {
+export interface ForwardedEvent {
   /** Always "forwarded" for forwarded events */
   type: "forwarded";
   /** The event name (e.g., "click", "change") */
@@ -597,7 +448,7 @@ interface ForwardedEvent {
  * Dispatched events are those created with `createEventDispatcher()`
  * and dispatched via `dispatch("eventname", detail)`.
  */
-interface DispatchedEvent {
+export interface DispatchedEvent {
   /** Always "dispatched" for dispatched events */
   type: "dispatched";
   /** The event name (e.g., "click", "change") */
@@ -614,7 +465,7 @@ interface DispatchedEvent {
   source?: SourceRange;
 }
 
-type ComponentEvent = ForwardedEvent | DispatchedEvent;
+export type ComponentEvent = ForwardedEvent | DispatchedEvent;
 
 /**
  * Serialized version of {@link ForwardedEvent} for JSON output.
@@ -662,7 +513,7 @@ export type SerializedComponentEvent = SerializedForwardedEvent | DispatchedEven
  * Represents custom types defined in component comments that can be
  * referenced by props, events, and other type annotations.
  */
-interface TypeDef {
+export interface TypeDef {
   /** The type string representation (e.g., "{ x: number; y: number }") */
   type: string;
   /** The type name (e.g., "Point", "User") */
@@ -673,21 +524,21 @@ interface TypeDef {
   ts: string;
 }
 
-type ComponentGenerics = [name: string, type: string] | null;
+export type ComponentGenerics = [name: string, type: string] | null;
 
 /**
  * Represents an inline Svelte component element.
  *
  * Used to identify which component forwards an event or accepts rest props.
  */
-interface ComponentInlineElement {
+export interface ComponentInlineElement {
   /** Always "InlineComponent" for component elements */
   type: "InlineComponent";
   /** The component name (e.g., "Button", "Modal") */
   name: string;
 }
 
-interface ComponentElement {
+export interface ComponentElement {
   type: "Element";
   name: string;
   /**
@@ -712,7 +563,7 @@ interface ComponentElement {
   description?: string;
 }
 
-type RestProps = undefined | ComponentInlineElement | ComponentElement;
+export type RestProps = undefined | ComponentInlineElement | ComponentElement;
 
 /**
  * Interface extension information from JSDoc `@extends` tag.
@@ -720,14 +571,14 @@ type RestProps = undefined | ComponentInlineElement | ComponentElement;
  * Allows components to extend external TypeScript interfaces for
  * better type safety and code reuse.
  */
-interface Extends {
+export interface Extends {
   /** The interface name to extend (e.g., "ButtonProps") */
   interface: string;
   /** The import path for the interface (e.g., "./types" or "carbon-components-svelte") */
   import: string;
 }
 
-interface ComponentPropBindings {
+export interface ComponentPropBindings {
   elements: string[];
 }
 
@@ -736,7 +587,7 @@ interface ComponentPropBindings {
  *
  * Represents a single property in a context object created with `setContext`.
  */
-interface ComponentContextProp {
+export interface ComponentContextProp {
   /** The property name */
   name: string;
   /** The property type (inferred from JSDoc or variable types) */
@@ -753,7 +604,7 @@ interface ComponentContextProp {
  * Represents a context created with `setContext(key, value)` that can be
  * accessed by child components via `getContext(key)`.
  */
-interface ComponentContext {
+export interface ComponentContext {
   /** The context key (e.g., "modal", "tabs") */
   key: string;
   /** The generated TypeScript type name (e.g., "ModalContext", "TabsContext") */
@@ -827,131 +678,14 @@ export interface ParsedComponent {
 
 export default class ComponentParser {
   /** Parser configuration options (e.g., verbose logging) */
-  private options?: ComponentParserOptions;
+  options?: ComponentParserOptions;
 
-  /** Whether the component uses legacy or runes syntax according to compiler metadata */
-  private syntaxMode: SyntaxMode = "legacy";
-
-  /** Language used by the component's instance or module script, when supported */
-  private scriptLanguage?: ScriptLanguage;
-
-  /** Raw source code of the Svelte component being parsed */
-  private source?: string;
-
-  /** Compiled Svelte code containing extracted variables and AST */
-  private compiled?: ReturnType<typeof compile>;
-
-  /** Parsed abstract syntax tree from the Svelte compiler */
-  private parsed?: LegacyAstRoot;
-
-  /** Rest props configuration (e.g., `$$restProps`) if present in component */
-  private rest_props?: RestProps;
-
-  /** Component extension information (e.g., `extends` attribute) */
-  private extends?: Extends;
-
-  /** Component-level description extracted from `@component` HTML comment */
-  private componentComment?: string;
-
-  /** Source range for the `@component` HTML comment, when available */
-  private componentCommentSource?: SourceRange;
-
-  /** Set of reactive variable names found in the component */
-  private readonly reactive_vars: Set<string> = new Set();
-
-  /** Set of all variable declarations found in the component script */
-  private readonly vars: Set<VariableDeclaration> = new Set();
-
-  /** Function declarations in the component script, by name */
-  private readonly funcDecls: Map<string, FunctionDeclaration> = new Map();
-
-  /** Map of component props keyed by prop name */
-  private readonly props: Map<string, ComponentProp> = new Map();
-
-  /** Map of module exports (functions/variables exported from script) keyed by name */
-  private readonly moduleExports: Map<string, ComponentProp> = new Map();
-
-  /** Map of component slots keyed by slot name (null for default slot) */
-  private readonly slots: Map<string | null, ComponentSlot> = new Map();
-
-  /** Map of component events (dispatched events) keyed by event name */
-  private readonly events: Map<string, ComponentEvent> = new Map();
-
-  /** Map of event descriptions extracted from JSDoc comments keyed by event name */
-  private readonly eventDescriptions: Map<string, string | undefined> = new Map();
-
-  /** Map of forwarded events (events forwarded from child components) keyed by event name */
-  private readonly forwardedEvents: Map<string, ComponentInlineElement | ComponentElement> = new Map();
-
-  /** Map of type definitions (typedefs) extracted from JSDoc comments keyed by type name */
-  private readonly typedefs: Map<string, TypeDef> = new Map();
-
-  /** Component generic type parameters (null if no generics) */
-  private generics: ComponentGenerics = null;
-
-  /** @template tags in a @slot/@snippet block (no @extends), held until finalization. */
-  private deferredSlotBlockGenerics: Array<{ name: string; constraint: string }> = [];
-
-  /** Map of prop bindings (e.g., `bind:value`) keyed by prop name */
-  private readonly bindings: Map<string, ComponentPropBindings> = new Map();
-
-  /** Map of component contexts (created with `setContext`) keyed by context name */
-  private readonly contexts: Map<string, ComponentContext> = new Map();
-
-  /** Cache for variable type and description information to avoid redundant lookups */
-  private variableInfoCache: Map<string, { type: string; description?: string }> = new Map();
-
-  /** Maps local binding names back to their public prop names */
-  private readonly propLocalToPublicName: Map<string, string> = new Map();
-
-  /** Tracks `$props()` bindings that are used as spread/rest props */
-  private readonly restPropLocals: Set<string> = new Set();
-
-  /** Tracks identifier bindings that capture the entire `$props()` object */
-  private readonly wholePropsLocals: Set<string> = new Set();
-
-  /** Tracks prop locals that are used as snippet/render props */
-  private readonly snippetPropLocals: Set<string> = new Set();
-
-  /** Per-declarator type metadata extracted from modern AST `$props()` annotations */
-  private readonly runesPropsDeclarationMetadataByDeclaratorStart: Map<number, RunesPropsDeclarationMetadata> =
-    new Map();
-
-  /** Explicit TypeScript prop annotations for legacy `export let` declarations keyed by local name */
-  private readonly explicitPropTypesByName: Map<string, string> = new Map();
-
-  /** Type-only imports keyed by their local binding names */
-  private readonly typeImportBindingsByLocalName: Map<string, TypeImportBinding> = new Map();
-
-  /** Local interface/type declarations keyed by type name */
-  private readonly localTypeDeclarationsByName: Map<string, LocalTypeDeclaration> = new Map();
-
-  /** Typed `$props()` declarations discovered in source order */
-  private readonly typedRunesPropsDeclarations: RunesPropsDeclarationMetadata[] = [];
-
-  /** Component-level lexical scope shared by instance script and template */
-  private readonly componentScope: LexicalScope = new Map();
-
-  /** Precomputed lexical scopes for nested AST nodes */
-  private scopeDeclarations: WeakMap<object, LexicalScope> = new WeakMap();
-
-  /** Active lexical scopes while walking the component AST */
-  private readonly activeScopes: LexicalScope[] = [];
-
-  /** Diagnostics for the parse in progress. */
-  private readonly diagnosticRecords: SveldDiagnostic[] = [];
-
-  /** File path tagged onto each diagnostic. */
-  private componentFilePath = "";
-
-  /** `@event` names from JSDoc, checked against dispatches at end of parse. */
-  private readonly jsDocEventNames: Set<string> = new Set();
-
-  /** Cached array of source code lines split by newline for efficient line-based operations */
-  private sourceLinesCache?: string[];
-
-  /** Cached 0-based source offsets for the start of each line */
-  private sourceLineStartOffsetsCache?: number[];
+  /**
+   * All per-parse mutable state (props, slots, events, scopes, source, etc.).
+   * See {@link ParserContext} for field-by-field documentation. Replaced
+   * wholesale by `cleanup()` between parses.
+   */
+  private ctx: ParserContext = createParserContext();
 
   constructor(options?: ComponentParserOptions) {
     this.options = options;
@@ -970,7 +704,7 @@ export default class ComponentParser {
       .trim();
   }
 
-  private static resolveScriptLanguage(parsed: {
+  resolveScriptLanguage(parsed: {
     instance?: ModernScriptNode;
     module?: ModernScriptNode;
   }): ScriptLanguage | undefined {
@@ -996,893 +730,30 @@ export default class ComponentParser {
   }
 
   private static assignValue(value?: "" | string) {
-    return value === undefined || value === "" ? undefined : value;
-  }
-
-  private recordDiagnostic(kind: SveldDiagnosticKind, name: string, message: string) {
-    this.diagnosticRecords.push({
-      component: this.componentFilePath,
-      kind,
-      name,
-      message,
-    });
+    return assignValue(value);
   }
 
   private resolvePublicPropName(name: string) {
-    return this.propLocalToPublicName.get(name) ?? name;
+    return this.ctx.propLocalToPublicName.get(name) ?? name;
   }
 
-  private trackPropLocalName(propName: string, localName = propName) {
-    this.propLocalToPublicName.set(localName, propName);
+  trackPropLocalName(propName: string, localName = propName) {
+    this.ctx.propLocalToPublicName.set(localName, propName);
   }
 
   private getPropByLocalOrPublic(name: string) {
-    return this.props.get(this.resolvePublicPropName(name));
+    return this.ctx.props.get(this.resolvePublicPropName(name));
   }
 
-  private getPropTypeByLocalOrPublic(name: string) {
+  getPropTypeByLocalOrPublic(name: string) {
     return this.getPropByLocalOrPublic(name)?.type;
   }
 
-  private getExplicitPropType(name: string) {
-    return this.explicitPropTypesByName.get(name);
+  getExplicitPropType(name: string) {
+    return this.ctx.explicitPropTypesByName.get(name);
   }
 
-  private getRunesPropsDeclarationMetadata(declaratorStart: number | undefined) {
-    if (declaratorStart === undefined) return undefined;
-    return this.runesPropsDeclarationMetadataByDeclaratorStart.get(declaratorStart);
-  }
-
-  private getRunesPropTypeMetadata(declaratorStart: number | undefined, propName: string) {
-    return this.getRunesPropsDeclarationMetadata(declaratorStart)?.props.get(propName);
-  }
-
-  private getTypeReferenceName(typeName: unknown): string | undefined {
-    if (!typeName || typeof typeName !== "object" || !("type" in typeName)) return undefined;
-
-    if (typeName.type === "Identifier" && "name" in typeName && typeof typeName.name === "string") {
-      return typeName.name;
-    }
-
-    if (
-      typeName.type === "TSQualifiedName" &&
-      "right" in typeName &&
-      typeName.right &&
-      typeof typeName.right === "object" &&
-      "name" in typeName.right &&
-      typeof typeName.right.name === "string"
-    ) {
-      return typeName.right.name;
-    }
-
-    return undefined;
-  }
-
-  private getTypeDependencyName(typeName: unknown): string | undefined {
-    if (!typeName || typeof typeName !== "object" || !("type" in typeName)) return undefined;
-
-    if (typeName.type === "Identifier" && "name" in typeName && typeof typeName.name === "string") {
-      return typeName.name;
-    }
-
-    if (
-      typeName.type === "TSQualifiedName" &&
-      "left" in typeName &&
-      typeName.left &&
-      typeof typeName.left === "object"
-    ) {
-      return this.getTypeDependencyName(typeName.left);
-    }
-
-    return undefined;
-  }
-
-  private getTypeAnnotationText(typeAnnotation: { start?: number; end?: number } | undefined) {
-    const start = typeAnnotation?.start;
-    const end = typeAnnotation?.end;
-    if (start === undefined || end === undefined) return undefined;
-    return this.sourceAtPos(start + 1, end)?.trim();
-  }
-
-  private getSourceLineStartOffsets() {
-    if (this.sourceLineStartOffsetsCache) return this.sourceLineStartOffsetsCache;
-
-    const offsets = [0];
-    if (this.source) {
-      for (let index = 0; index < this.source.length; index++) {
-        if (this.source[index] === "\n") {
-          offsets.push(index + 1);
-        }
-      }
-    }
-
-    this.sourceLineStartOffsetsCache = offsets;
-    return offsets;
-  }
-
-  private sourcePositionFromOffset(offset: number): SourcePosition | undefined {
-    if (!this.source || offset < 0 || offset > this.source.length) return undefined;
-
-    const offsets = this.getSourceLineStartOffsets();
-    let low = 0;
-    let high = offsets.length - 1;
-
-    while (low <= high) {
-      const mid = Math.floor((low + high) / 2);
-      const lineStart = offsets[mid];
-      const nextLineStart = offsets[mid + 1] ?? Number.POSITIVE_INFINITY;
-
-      if (offset < lineStart) {
-        high = mid - 1;
-      } else if (offset >= nextLineStart) {
-        low = mid + 1;
-      } else {
-        return {
-          line: mid + 1,
-          column: offset - lineStart,
-        };
-      }
-    }
-
-    return undefined;
-  }
-
-  private sourceRangeFromOffsets(start: number | undefined, end: number | undefined): SourceRange | undefined {
-    if (start === undefined || end === undefined || end < start) return undefined;
-
-    const startPosition = this.sourcePositionFromOffset(start);
-    const endPosition = this.sourcePositionFromOffset(end);
-    if (!startPosition || !endPosition) return undefined;
-
-    return {
-      start: startPosition,
-      end: endPosition,
-    };
-  }
-
-  private sourceRangeFromNode(node: unknown) {
-    if (!node || typeof node !== "object") return undefined;
-    const start = "start" in node && typeof node.start === "number" ? node.start : undefined;
-    const end = "end" in node && typeof node.end === "number" ? node.end : undefined;
-    return this.sourceRangeFromOffsets(start, end);
-  }
-
-  private sourceRangeFromCommentTag(
-    blockSource: Array<{ number: number; source: string }>,
-    tagSource: Array<{ number: number; source: string; tokens: { tag?: string } }> | undefined,
-    blockStartOffset: number | undefined,
-  ): SourceRange | undefined {
-    if (!tagSource || tagSource.length === 0 || blockStartOffset === undefined) return undefined;
-
-    const relevantTagSource = [...tagSource];
-    while (relevantTagSource.length > 1) {
-      const lastLine = relevantTagSource[relevantTagSource.length - 1];
-      if (lastLine.tokens.tag || !lastLine.source.trim().endsWith("*/")) break;
-      relevantTagSource.pop();
-    }
-
-    let tagLineOffset = blockStartOffset;
-    for (let index = 0; index < relevantTagSource[0].number - 1; index++) {
-      tagLineOffset += blockSource[index]?.source.length ?? 0;
-      tagLineOffset += 1;
-    }
-
-    const tagLine = relevantTagSource[0];
-    const tagColumn = tagLine.source.indexOf(tagLine.tokens.tag ?? "");
-    const start = tagLineOffset + Math.max(tagColumn, 0);
-
-    let end = blockStartOffset;
-    const lastLine = relevantTagSource[relevantTagSource.length - 1];
-    const lastLineNumber = lastLine.number;
-    for (let index = 0; index < lastLineNumber - 1; index++) {
-      end += blockSource[index]?.source.length ?? 0;
-      end += 1;
-    }
-    end += lastLine.source.length;
-
-    return this.sourceRangeFromOffsets(start, end);
-  }
-
-  private collectReferencedTypeDependencies(
-    typeNode: ModernRunesTypeNode | undefined,
-    referencedImportedTypes: Set<string>,
-    referencedLocalTypes: Set<string>,
-    visitedLocalTypes: Set<string> = new Set(),
-  ) {
-    if (!typeNode?.type) return;
-
-    switch (typeNode.type) {
-      case "TSInterfaceDeclaration":
-        this.collectReferencedTypeDependencies(
-          { type: "TSTypeLiteral", members: typeNode.body?.body },
-          referencedImportedTypes,
-          referencedLocalTypes,
-          visitedLocalTypes,
-        );
-        return;
-      case "TSTypeAliasDeclaration":
-      case "TSParenthesizedType":
-      case "TSTypeAnnotation":
-        this.collectReferencedTypeDependencies(
-          typeNode.typeAnnotation,
-          referencedImportedTypes,
-          referencedLocalTypes,
-          visitedLocalTypes,
-        );
-        return;
-      case "TSIntersectionType":
-      case "TSUnionType":
-        for (const nestedType of typeNode.types ?? []) {
-          this.collectReferencedTypeDependencies(
-            nestedType,
-            referencedImportedTypes,
-            referencedLocalTypes,
-            visitedLocalTypes,
-          );
-        }
-        return;
-      case "TSTypeLiteral":
-        for (const member of typeNode.members ?? []) {
-          if (member?.type !== "TSPropertySignature") continue;
-          this.collectReferencedTypeDependencies(
-            member.typeAnnotation?.typeAnnotation,
-            referencedImportedTypes,
-            referencedLocalTypes,
-            visitedLocalTypes,
-          );
-        }
-        return;
-      case "TSTypeReference": {
-        const dependencyName = this.getTypeDependencyName(typeNode.typeName);
-        if (dependencyName) {
-          if (this.typeImportBindingsByLocalName.has(dependencyName)) {
-            referencedImportedTypes.add(dependencyName);
-          }
-
-          const localDeclaration = this.localTypeDeclarationsByName.get(dependencyName);
-          if (localDeclaration && !visitedLocalTypes.has(dependencyName)) {
-            referencedLocalTypes.add(dependencyName);
-            visitedLocalTypes.add(dependencyName);
-            this.collectReferencedTypeDependencies(
-              localDeclaration.node,
-              referencedImportedTypes,
-              referencedLocalTypes,
-              visitedLocalTypes,
-            );
-            visitedLocalTypes.delete(dependencyName);
-          }
-        }
-
-        if ("typeParameters" in typeNode && typeNode.typeParameters && typeof typeNode.typeParameters === "object") {
-          const paramsNode = typeNode.typeParameters as { params?: ModernRunesTypeNode[] };
-          for (const param of paramsNode.params ?? []) {
-            this.collectReferencedTypeDependencies(
-              param,
-              referencedImportedTypes,
-              referencedLocalTypes,
-              visitedLocalTypes,
-            );
-          }
-        }
-        return;
-      }
-      case "TSArrayType":
-      case "TSRestType":
-      case "TSOptionalType":
-      case "TSIndexedAccessType":
-      case "TSTypeOperator":
-      case "TSExpressionWithTypeArguments":
-      case "TSTupleType":
-      case "TSConditionalType":
-      case "TSInferType":
-      case "TSMappedType":
-      case "TSFunctionType":
-      case "TSConstructorType":
-      case "TSTypeQuery":
-      case "TSImportType":
-      case "TSLiteralType":
-      case "TSTypePredicate":
-      case "TSNamedTupleMember":
-        break;
-      default:
-        break;
-    }
-
-    for (const value of Object.values(typeNode)) {
-      if (!value || typeof value !== "object") continue;
-
-      if (Array.isArray(value)) {
-        for (const item of value) {
-          if (!item || typeof item !== "object" || !("type" in item)) continue;
-          this.collectReferencedTypeDependencies(
-            item as ModernRunesTypeNode,
-            referencedImportedTypes,
-            referencedLocalTypes,
-            visitedLocalTypes,
-          );
-        }
-        continue;
-      }
-
-      if ("type" in value) {
-        this.collectReferencedTypeDependencies(
-          value as ModernRunesTypeNode,
-          referencedImportedTypes,
-          referencedLocalTypes,
-          visitedLocalTypes,
-        );
-      }
-    }
-  }
-
-  private buildTypeImportStatements(referencedImportedTypes: Set<string>) {
-    const groupedImports = new Map<
-      string,
-      { default: string[]; named: Array<{ imported?: string; local: string }>; namespace: string[] }
-    >();
-
-    for (const importedType of Array.from(referencedImportedTypes).sort()) {
-      const binding = this.typeImportBindingsByLocalName.get(importedType);
-      if (!binding) continue;
-
-      const group = groupedImports.get(binding.source) ?? { default: [], named: [], namespace: [] };
-
-      if (binding.specifierType === "default") {
-        group.default.push(binding.localName);
-      } else if (binding.specifierType === "namespace") {
-        group.namespace.push(binding.localName);
-      } else {
-        group.named.push({
-          imported: binding.importedName,
-          local: binding.localName,
-        });
-      }
-
-      groupedImports.set(binding.source, group);
-    }
-
-    return Array.from(groupedImports.entries())
-      .sort(([sourceA], [sourceB]) => sourceA.localeCompare(sourceB))
-      .map(([source, group]) => {
-        if (group.namespace.length > 0) {
-          return group.namespace.map((localName) => `import type * as ${localName} from "${source}";`).join("\n");
-        }
-
-        const namedParts = group.named.map(({ imported, local }) => {
-          if (!imported || imported === local) return local;
-          return `${imported} as ${local}`;
-        });
-        const defaultImport = group.default[0];
-        const namedImport = namedParts.length > 0 ? `{ ${namedParts.join(", ")} }` : "";
-
-        if (defaultImport && namedImport) {
-          return `import type ${defaultImport}, ${namedImport} from "${source}";`;
-        }
-        if (defaultImport) {
-          return `import type ${defaultImport} from "${source}";`;
-        }
-        return `import type ${namedImport} from "${source}";`;
-      });
-  }
-
-  private buildTypeScriptMetadata(): ParsedComponentTypeScriptMetadata | undefined {
-    if (this.typedRunesPropsDeclarations.length !== 1) return undefined;
-
-    const [typedDeclaration] = this.typedRunesPropsDeclarations;
-    if (!typedDeclaration.canonicalType) return undefined;
-
-    const localTypeDeclarations = Array.from(typedDeclaration.referencedLocalTypes)
-      .map((typeName) => this.localTypeDeclarationsByName.get(typeName))
-      .filter((declaration): declaration is LocalTypeDeclaration => declaration !== undefined)
-      .sort((a, b) => a.start - b.start)
-      .map((declaration) => declaration.code);
-
-    return {
-      canonicalPropsType: typedDeclaration.canonicalType,
-      canonicalPropNames: Array.from(typedDeclaration.props.keys()).sort(),
-      localTypeDeclarations,
-      typeImportStatements: this.buildTypeImportStatements(typedDeclaration.referencedImportedTypes),
-    };
-  }
-
-  private buildRunesPropTypeMetadataMap(
-    typeNode: ModernRunesTypeNode | undefined,
-    localTypeDeclarations: Map<string, ModernRunesTypeNode>,
-    visitedTypeNames: Set<string> = new Set(),
-  ): Map<string, RunesPropTypeMetadata> {
-    const metadata = new Map<string, RunesPropTypeMetadata>();
-    if (!typeNode?.type) return metadata;
-
-    const mergeMembers = (members: ModernRunesTypeMember[]) => {
-      for (const member of members) {
-        if (member?.type !== "TSPropertySignature" || member.computed) continue;
-        if (!member.key) continue;
-
-        const propName = this.getPropertyName(member.key as Property["key"]);
-        if (!propName) continue;
-
-        const typeStart = member.typeAnnotation?.start;
-        const typeEnd = member.typeAnnotation?.end;
-        if (typeStart === undefined || typeEnd === undefined) continue;
-
-        const type = this.sourceAtPos(typeStart + 1, typeEnd)?.trim();
-        if (!type) continue;
-
-        metadata.set(propName, {
-          type,
-          optional: member.optional === true,
-          source: this.sourceRangeFromNode(member),
-        });
-      }
-    };
-
-    switch (typeNode.type) {
-      case "TSTypeLiteral":
-        mergeMembers(typeNode.members ?? []);
-        break;
-      case "TSInterfaceDeclaration":
-        mergeMembers(typeNode.body?.body ?? []);
-        break;
-      case "TSTypeAliasDeclaration": {
-        const nestedMetadata = this.buildRunesPropTypeMetadataMap(
-          typeNode.typeAnnotation,
-          localTypeDeclarations,
-          visitedTypeNames,
-        );
-        for (const [propName, memberMetadata] of nestedMetadata) {
-          metadata.set(propName, memberMetadata);
-        }
-        break;
-      }
-      case "TSTypeReference": {
-        const typeName = this.getTypeReferenceName(typeNode.typeName);
-        if (!typeName || visitedTypeNames.has(typeName)) break;
-
-        const declaration = localTypeDeclarations.get(typeName);
-        if (!declaration) break;
-
-        visitedTypeNames.add(typeName);
-        const nestedMetadata = this.buildRunesPropTypeMetadataMap(declaration, localTypeDeclarations, visitedTypeNames);
-        visitedTypeNames.delete(typeName);
-
-        for (const [propName, memberMetadata] of nestedMetadata) {
-          metadata.set(propName, memberMetadata);
-        }
-        break;
-      }
-      case "TSIntersectionType":
-        for (const nestedType of typeNode.types ?? []) {
-          const nestedMetadata = this.buildRunesPropTypeMetadataMap(
-            nestedType,
-            localTypeDeclarations,
-            visitedTypeNames,
-          );
-          for (const [propName, memberMetadata] of nestedMetadata) {
-            metadata.set(propName, memberMetadata);
-          }
-        }
-        break;
-      case "TSParenthesizedType": {
-        const nestedMetadata = this.buildRunesPropTypeMetadataMap(
-          typeNode.typeAnnotation,
-          localTypeDeclarations,
-          visitedTypeNames,
-        );
-        for (const [propName, memberMetadata] of nestedMetadata) {
-          metadata.set(propName, memberMetadata);
-        }
-        break;
-      }
-    }
-
-    return metadata;
-  }
-
-  private declareScopeBinding(scope: LexicalScope, name: string, binding: ScopeBinding) {
-    if (ComponentParser.assignValue(name) === undefined || scope.has(name)) return;
-    scope.set(name, binding);
-  }
-
-  private resolveIdentifierToReactiveProp(name: string) {
-    for (let i = this.activeScopes.length - 1; i >= 0; i -= 1) {
-      const binding = this.activeScopes[i]?.get(name);
-      if (!binding) continue;
-      return binding.kind === "prop" ? binding.publicPropName : undefined;
-    }
-
-    return undefined;
-  }
-
-  private collectPatternIdentifiers(target: Pattern | Expression | null | undefined, names: Set<string> = new Set()) {
-    if (!target || typeof target !== "object" || !("type" in target)) return names;
-
-    switch (target.type) {
-      case "Identifier":
-        names.add(target.name);
-        break;
-      case "AssignmentPattern":
-        this.collectPatternIdentifiers(target.left, names);
-        break;
-      case "ArrayPattern":
-        for (const element of target.elements) {
-          this.collectPatternIdentifiers(element ?? undefined, names);
-        }
-        break;
-      case "ObjectPattern":
-        for (const property of target.properties) {
-          if (property.type === "Property") {
-            this.collectPatternIdentifiers(property.value as Pattern, names);
-          } else if (property.type === "RestElement") {
-            this.collectPatternIdentifiers(property.argument, names);
-          }
-        }
-        break;
-      case "RestElement":
-        this.collectPatternIdentifiers(target.argument, names);
-        break;
-    }
-
-    return names;
-  }
-
-  private markReactivePropsFromMutationTarget(target: Pattern | Expression | null | undefined) {
-    const identifiers = this.collectPatternIdentifiers(target);
-
-    if (!identifiers) return;
-
-    for (const identifier of identifiers) {
-      const publicPropName = this.resolveIdentifierToReactiveProp(identifier);
-      if (publicPropName) {
-        this.reactive_vars.add(publicPropName);
-      }
-    }
-  }
-
-  private isScopeOwner(node: unknown) {
-    if (!node || typeof node !== "object" || !("type" in node)) return false;
-
-    switch (String(node.type)) {
-      case "BlockStatement":
-      case "FunctionDeclaration":
-      case "FunctionExpression":
-      case "ArrowFunctionExpression":
-      case "CatchClause":
-      case "EachBlock":
-      case "ThenBlock":
-      case "CatchBlock":
-        return true;
-      default:
-        return false;
-    }
-  }
-
-  private isFunctionScopeOwner(node: unknown) {
-    if (!node || typeof node !== "object" || !("type" in node)) return false;
-    const type = String(node.type);
-    return type === "FunctionDeclaration" || type === "FunctionExpression" || type === "ArrowFunctionExpression";
-  }
-
-  private getOrCreateScope(node: object) {
-    let scope = this.scopeDeclarations.get(node);
-    if (!scope) {
-      scope = new Map();
-      this.scopeDeclarations.set(node, scope);
-    }
-    return scope;
-  }
-
-  private declareVariableDeclaration(
-    declaration: unknown,
-    lexicalScope: LexicalScope,
-    varScope: LexicalScope,
-    options?: { allowRunesProps?: boolean; forceProp?: boolean },
-  ) {
-    if (!isVariableDeclaration(declaration)) {
-      return;
-    }
-
-    const allowRunesProps = options?.allowRunesProps ?? false;
-    const forceProp = options?.forceProp ?? false;
-    const variableDeclaration = declaration;
-
-    for (const declarator of variableDeclaration.declarations) {
-      if (allowRunesProps && isCallExpressionNamed(declarator.init, "$props")) {
-        for (const binding of this.extractRunesScopeBindings(variableDeclaration, declarator)) {
-          this.declareScopeBinding(
-            binding.kind === "prop" ? lexicalScope : varScope,
-            binding.name,
-            binding.kind === "prop" ? { kind: "prop", publicPropName: binding.publicPropName } : { kind: "local" },
-          );
-        }
-        continue;
-      }
-
-      const targetScope = variableDeclaration.kind === "var" ? varScope : lexicalScope;
-      const bindingKind: ScopeBindingKind = forceProp ? "prop" : "local";
-
-      for (const identifier of this.collectPatternIdentifiers(declarator.id)) {
-        this.declareScopeBinding(
-          targetScope,
-          identifier,
-          bindingKind === "prop" ? { kind: "prop", publicPropName: identifier } : { kind: "local" },
-        );
-      }
-    }
-  }
-
-  private declareFunctionLikeScopeBindings(
-    node: FunctionExpression | ArrowFunctionExpression | FunctionDeclaration,
-    scope: LexicalScope,
-  ) {
-    if (
-      "id" in node &&
-      node.id &&
-      typeof node.id === "object" &&
-      "name" in node.id &&
-      typeof node.id.name === "string"
-    ) {
-      this.declareScopeBinding(scope, node.id.name, { kind: "local" });
-    }
-
-    for (const param of node.params) {
-      for (const identifier of this.collectPatternIdentifiers(param)) {
-        this.declareScopeBinding(scope, identifier, { kind: "local" });
-      }
-    }
-  }
-
-  private collectDirectBlockDeclarations(body: unknown, lexicalScope: LexicalScope, varScope: LexicalScope) {
-    if (!Array.isArray(body)) return;
-
-    for (const statement of body) {
-      if (!statement || typeof statement !== "object" || !("type" in statement)) continue;
-
-      switch (statement.type) {
-        case "VariableDeclaration":
-          this.declareVariableDeclaration(statement, lexicalScope, varScope);
-          break;
-        case "FunctionDeclaration":
-          if (statement.id?.name) {
-            this.declareScopeBinding(lexicalScope, statement.id.name, { kind: "local" });
-          }
-          break;
-        case "ClassDeclaration":
-          if (statement.id?.name) {
-            this.declareScopeBinding(lexicalScope, statement.id.name, { kind: "local" });
-          }
-          break;
-      }
-    }
-  }
-
-  private extractRunesScopeBindings(_node: VariableDeclaration, declarator: VariableDeclarator) {
-    const bindings: Array<{ kind: ScopeBindingKind; name: string; publicPropName?: string }> = [];
-
-    if (declarator.id.type === "Identifier") {
-      bindings.push({ kind: "local", name: declarator.id.name });
-      return bindings;
-    }
-
-    if (declarator.id.type !== "ObjectPattern") {
-      return bindings;
-    }
-
-    for (const property of declarator.id.properties) {
-      if (property.type === "RestElement") {
-        if (property.argument.type === "Identifier") {
-          bindings.push({ kind: "local", name: property.argument.name });
-        }
-        continue;
-      }
-
-      if (property.computed) continue;
-
-      const propName = this.getPropertyName(property.key);
-      if (!propName) continue;
-
-      let localName: string | undefined;
-
-      if (property.value.type === "Identifier") {
-        localName = property.value.name;
-      } else if (property.value.type === "AssignmentPattern" && property.value.left.type === "Identifier") {
-        localName = property.value.left.name;
-      }
-
-      if (!localName) continue;
-
-      bindings.push({ kind: "prop", name: localName, publicPropName: propName });
-    }
-
-    return bindings;
-  }
-
-  private collectComponentScopeDeclarations(instance: unknown) {
-    if (!instance || typeof instance !== "object") return;
-
-    const program =
-      "content" in instance &&
-      instance.content &&
-      typeof instance.content === "object" &&
-      "body" in instance.content &&
-      Array.isArray(instance.content.body)
-        ? instance.content
-        : "body" in instance && Array.isArray(instance.body)
-          ? instance
-          : undefined;
-
-    if (!program || !("body" in program) || !Array.isArray(program.body)) return;
-
-    for (const statement of program.body) {
-      if (!statement || typeof statement !== "object" || !("type" in statement)) continue;
-
-      switch (statement.type) {
-        case "ImportDeclaration":
-          for (const specifier of statement.specifiers ?? []) {
-            if (specifier.local?.name) {
-              this.declareScopeBinding(this.componentScope, specifier.local.name, { kind: "local" });
-            }
-          }
-          break;
-        case "VariableDeclaration":
-          this.declareVariableDeclaration(statement, this.componentScope, this.componentScope, {
-            allowRunesProps: true,
-          });
-          break;
-        case "FunctionDeclaration":
-          if (statement.id?.name) {
-            this.declareScopeBinding(this.componentScope, statement.id.name, { kind: "local" });
-          }
-          break;
-        case "ClassDeclaration":
-          if (statement.id?.name) {
-            this.declareScopeBinding(this.componentScope, statement.id.name, { kind: "local" });
-          }
-          break;
-        case "ExportNamedDeclaration":
-          if (
-            !statement.declaration ||
-            typeof statement.declaration !== "object" ||
-            !("type" in statement.declaration)
-          ) {
-            break;
-          }
-
-          if (statement.declaration.type === "VariableDeclaration") {
-            this.declareVariableDeclaration(statement.declaration, this.componentScope, this.componentScope, {
-              forceProp: true,
-            });
-          } else if (statement.declaration.type === "FunctionDeclaration" && statement.declaration.id?.name) {
-            this.declareScopeBinding(this.componentScope, statement.declaration.id.name, {
-              kind: "prop",
-              publicPropName: statement.declaration.id.name,
-            });
-          }
-          break;
-      }
-    }
-  }
-
-  private collectNestedScopeDeclarations(componentRoot: Node) {
-    const varScopeStack: LexicalScope[] = [this.componentScope];
-
-    walk(componentRoot, {
-      enter: (node) => {
-        if (!this.isScopeOwner(node)) return;
-
-        const scope = this.getOrCreateScope(node as unknown as object);
-        const currentVarScope = varScopeStack[varScopeStack.length - 1] ?? this.componentScope;
-        const nodeType = String(node.type);
-
-        switch (nodeType) {
-          case "FunctionDeclaration":
-          case "FunctionExpression":
-          case "ArrowFunctionExpression":
-            this.declareFunctionLikeScopeBindings(
-              node as FunctionExpression | ArrowFunctionExpression | FunctionDeclaration,
-              scope,
-            );
-            break;
-          case "BlockStatement":
-            this.collectDirectBlockDeclarations((node as { body?: unknown }).body, scope, currentVarScope);
-            break;
-          case "CatchClause":
-            if ("param" in node) {
-              for (const identifier of this.collectPatternIdentifiers((node as { param?: Pattern }).param)) {
-                this.declareScopeBinding(scope, identifier, { kind: "local" });
-              }
-            }
-            break;
-          case "EachBlock": {
-            const eachBlock = node as { context?: Pattern; index?: Identifier | string };
-            for (const identifier of this.collectPatternIdentifiers(eachBlock.context)) {
-              this.declareScopeBinding(scope, identifier, { kind: "local" });
-            }
-            if (typeof eachBlock.index === "string") {
-              this.declareScopeBinding(scope, eachBlock.index, { kind: "local" });
-            } else if (eachBlock.index && "name" in eachBlock.index) {
-              this.declareScopeBinding(scope, eachBlock.index.name, { kind: "local" });
-            }
-            break;
-          }
-          case "ThenBlock":
-            if ("value" in node) {
-              for (const identifier of this.collectPatternIdentifiers((node as { value?: Pattern }).value)) {
-                this.declareScopeBinding(scope, identifier, { kind: "local" });
-              }
-            }
-            break;
-          case "CatchBlock":
-            if ("error" in node) {
-              for (const identifier of this.collectPatternIdentifiers((node as { error?: Pattern }).error)) {
-                this.declareScopeBinding(scope, identifier, { kind: "local" });
-              }
-            }
-            break;
-        }
-
-        if (this.isFunctionScopeOwner(node)) {
-          varScopeStack.push(scope);
-        }
-      },
-      leave: (node) => {
-        if (this.isFunctionScopeOwner(node)) {
-          varScopeStack.pop();
-        }
-      },
-    });
-  }
-
-  private buildScopeDeclarations(componentRoot: Node) {
-    this.componentScope.clear();
-    this.scopeDeclarations = new WeakMap();
-    this.activeScopes.length = 0;
-
-    this.collectComponentScopeDeclarations(this.parsed?.instance);
-    this.collectNestedScopeDeclarations(componentRoot);
-  }
-
-  private createRestPropsFromParent(parent: unknown): RestProps {
-    if (!parent || typeof parent !== "object" || !("type" in parent)) return undefined;
-
-    const parentType = String(parent.type);
-    if (parentType !== "InlineComponent" && parentType !== "Element") return undefined;
-
-    const parentName = "name" in parent && typeof parent.name === "string" ? parent.name : undefined;
-    if (!parentName) return undefined;
-
-    const restProps: RestProps =
-      parentType === "InlineComponent"
-        ? {
-            type: "InlineComponent",
-            name: parentName,
-          }
-        : {
-            type: "Element",
-            name: parentName,
-          };
-
-    if (
-      parentType === "Element" &&
-      parentName === "svelte:element" &&
-      "tag" in parent &&
-      typeof parent.tag === "string"
-    ) {
-      (restProps as ComponentElement).thisValue = parent.tag;
-    }
-
-    return restProps;
-  }
-
-  private maybeSetRestProps(parent: unknown) {
-    if (this.rest_props !== undefined) return;
-
-    const restProps = this.createRestPropsFromParent(parent);
-    if (restProps) {
-      this.rest_props = restProps;
-    }
-  }
-
-  private getPropertyName(node: Property["key"]): string | undefined {
+  getPropertyName(node: Property["key"]): string | undefined {
     if (!node || typeof node !== "object" || !("type" in node)) return undefined;
 
     if (isIdentifier(node)) {
@@ -1896,460 +767,15 @@ export default class ComponentParser {
     return undefined;
   }
 
-  private logUnsupportedRunesPattern(message: string) {
-    if (this.options?.verbose && this.syntaxMode === "runes") {
+  logUnsupportedRunesPattern(message: string) {
+    if (this.options?.verbose && this.ctx.syntaxMode === "runes") {
       console.warn(`Warning: ${message}`);
     }
   }
 
-  private logParserWarning(message: string) {
+  logParserWarning(message: string) {
     if (this.options?.verbose) {
       console.warn(`Warning: ${message}`);
-    }
-  }
-
-  private static formatComment(comment: string) {
-    let formatted_comment = comment;
-
-    if (!formatted_comment.startsWith("/*")) {
-      formatted_comment = `/*${formatted_comment}`;
-    }
-
-    if (!formatted_comment.endsWith("*/")) {
-      formatted_comment += "*/";
-    }
-
-    return formatted_comment;
-  }
-
-  /**
-   * Extracts and categorizes JSDoc tags from a parsed comment.
-   *
-   * Separates tags into type, param, returns, and additional categories while
-   * excluding tags that are handled separately (extends, restProps, slot/snippet, event, typedef).
-   *
-   * @param parsed - The parsed comment result from comment-parser
-   * @returns An object containing categorized tags and the comment description
-   *
-   * @example
-   * ```ts
-   * // Input: Parsed comment with tags
-   * // Output:
-   * {
-   *   type: { tag: "type", type: "string" },
-   *   param: [
-   *     { tag: "param", name: "value", type: "string" }
-   *   ],
-   *   returns: { tag: "returns", type: "void" },
-   *   additional: [{ tag: "see", name: "OtherType" }],
-   *   passthrough: [{ tag: "since", name: "1.0.0" }],
-   *   description: "Main description text"
-   * }
-   * ```
-   */
-  private getCommentTags(parsed: ReturnType<typeof parseComment>) {
-    const tags = parsed[0]?.tags ?? [];
-    const excludedTags = new Set([
-      "type",
-      "param",
-      "returns",
-      "return",
-      "extends",
-      "extendProps",
-      "restProps",
-      "slot",
-      "snippet",
-      "event",
-      "typedef",
-      "callback",
-      "bindable",
-      "deprecated",
-    ]);
-
-    let typeTag: (typeof tags)[number] | undefined;
-    const paramTags: typeof tags = [];
-    let returnsTag: (typeof tags)[number] | undefined;
-    let binding: ComponentPropBinding | undefined;
-    let deprecated: DeprecatedValue | undefined;
-    const additionalTags: typeof tags = [];
-    const passthroughTags: typeof tags = [];
-
-    for (const tag of tags) {
-      if (tag.tag === "type") {
-        typeTag = tag;
-      } else if (tag.tag === "param") {
-        paramTags.push(tag);
-      } else if (tag.tag === "returns" || tag.tag === "return") {
-        returnsTag = tag;
-      } else if (tag.tag === "deprecated") {
-        deprecated ??= deprecatedValueFromParts(tag.name, tag.description);
-      } else if (IDE_PASSTHROUGH_TAGS.has(tag.tag)) {
-        passthroughTags.push(tag);
-      } else if (tag.tag === "bindable") {
-        if (tag.type) {
-          this.logParserWarning(`Ignoring invalid @bindable value "${tag.type} ${tag.name}".`);
-          continue;
-        }
-
-        const value = `${tag.name}${tag.description ? ` ${tag.description}` : ""}`.trim();
-        if (value === "readonly" || value === "writable") {
-          binding ??= value;
-        } else {
-          this.logParserWarning(`Ignoring invalid @bindable value "${value}".`);
-        }
-      } else if (!excludedTags.has(tag.tag)) {
-        additionalTags.push(tag);
-      }
-    }
-
-    return {
-      type: typeTag,
-      param: paramTags,
-      returns: returnsTag,
-      binding,
-      deprecated,
-      additional: additionalTags,
-      passthrough: passthroughTags,
-      description: parsed[0]?.description,
-    };
-  }
-
-  /**
-   * Finds the last comment from an array of leading comments.
-   *
-   * TypeScript directives are stripped before parsing, so we can safely take
-   * the last comment as it will be the JSDoc comment if present.
-   *
-   * @param leadingComments - Array of comment nodes from the AST
-   * @returns The last comment's value if found, undefined otherwise
-   *
-   * @example
-   * ```ts
-   * // Given leadingComments with multiple comments:
-   * // [/* regular comment *\/, /** JSDoc comment *\/]
-   * // Returns: { value: " JSDoc comment " }
-   *
-   * // If no comments:
-   * // Returns: undefined
-   * ```
-   */
-  private static findJSDocComment(leadingComments: unknown[]): { value: string } | undefined {
-    if (!leadingComments || leadingComments.length === 0) return undefined;
-    const comment = leadingComments[leadingComments.length - 1];
-    return comment && typeof comment === "object" && "value" in comment ? (comment as { value: string }) : undefined;
-  }
-
-  private findAdjacentJSDocComment(
-    leadingComments: unknown[] | undefined,
-    nodeStart: number | undefined,
-  ): { value: string } | undefined {
-    if (!leadingComments || leadingComments.length === 0 || nodeStart === undefined || !this.source) return undefined;
-
-    for (let index = leadingComments.length - 1; index >= 0; index--) {
-      const comment = leadingComments[index];
-      if (!comment || typeof comment !== "object" || !("value" in comment) || !("end" in comment)) continue;
-      if (typeof comment.end !== "number") continue;
-
-      const between = this.source.slice(comment.end, nodeStart);
-      if (ONLY_WHITESPACE_REGEX.test(between)) {
-        return comment as { value: string };
-      }
-    }
-
-    return undefined;
-  }
-
-  private processNodeJSDoc(
-    node:
-      | {
-          leadingComments?: unknown[];
-          start?: number;
-        }
-      | null
-      | undefined,
-  ) {
-    if (!node?.leadingComments) return undefined;
-
-    const jsdoc_comment = this.findAdjacentJSDocComment(node.leadingComments, node.start);
-    if (!jsdoc_comment) return undefined;
-
-    return this.processJSDocComment([jsdoc_comment]);
-  }
-
-  private processLeadingCommentsJSDoc(
-    node:
-      | {
-          leadingComments?: unknown[];
-          start?: number;
-        }
-      | null
-      | undefined,
-  ) {
-    if (!node?.leadingComments) return undefined;
-    return this.processNodeJSDoc(node);
-  }
-
-  /**
-   * Processes JSDoc comments from leadingComments and extracts structured information.
-   *
-   * Parses JSDoc comments to extract type information, parameters, return types,
-   * and descriptions. Handles both inline and block-level descriptions.
-   *
-   * @param leadingComments - Array of comment nodes from the AST
-   * @returns Structured JSDoc information or undefined if no JSDoc comment is found
-   *
-   * @example
-   * ```ts
-   * // Input JSDoc:
-   * /**
-   * * @type {string}
-   * * @param {number} x - The x coordinate
-   * * @param {number} y - The y coordinate
-   * * @returns {void}
-   * * Description text
-   * *\/
-   * // Output:
-   * { type: "string", params: [ { name: "x", type: "number", description: "The x coordinate", optional: false }, { name: "y", type: "number", description: "The y coordinate", optional: false } ], returnType: "void", description: "Description text" }
-   * ```
-   */
-  private processJSDocComment(leadingComments: unknown[]):
-    | {
-        type?: string;
-        params?: ComponentPropParam[];
-        returnType?: string;
-        description?: string;
-        binding?: ComponentPropBinding;
-        deprecated?: DeprecatedValue;
-        tags?: JsDocPassthroughTag[];
-      }
-    | undefined {
-    if (!leadingComments) return undefined;
-
-    const jsdoc_comment = ComponentParser.findJSDocComment(leadingComments);
-    if (!jsdoc_comment) return undefined;
-
-    const comment = parseComment(ComponentParser.formatComment(jsdoc_comment.value), {
-      spacing: "preserve",
-    });
-
-    const {
-      type: typeTag,
-      param: paramTags,
-      returns: returnsTag,
-      binding,
-      deprecated,
-      additional: additionalTags,
-      passthrough: passthroughTags,
-      description: commentDescription,
-    } = this.getCommentTags(comment);
-
-    let type: string | undefined;
-    let params: ComponentPropParam[] | undefined;
-    let returnType: string | undefined;
-    let description: string | undefined;
-
-    // `@type` tag overrides any inferred type from the initializer
-    if (typeTag) type = this.aliasType(typeTag.type);
-
-    /**
-     * Extract `@param` tags to document function parameters.
-     * Nested params like "options.expand" are excluded as they represent
-     * object property access rather than direct parameters.
-     */
-    if (paramTags.length > 0) {
-      params = paramTags
-        .filter((tag) => !tag.name.includes("."))
-        .map((tag) => ({
-          name: tag.name,
-          type: this.aliasType(tag.type),
-          description: cleanDescription(tag.description),
-          optional: tag.optional || false,
-        }));
-    }
-
-    if (returnsTag) returnType = this.aliasType(returnsTag.type);
-
-    /**
-     * Build description from comment description and tags that are not handled
-     * elsewhere (params, type, passthrough tags, etc.).
-     */
-    const formattedDescription = ComponentParser.assignValue(commentDescription?.trim());
-    if (formattedDescription || additionalTags.length > 0) {
-      const descriptionParts: string[] = [];
-      if (formattedDescription) {
-        descriptionParts.push(formattedDescription);
-      }
-      for (const tag of additionalTags) {
-        const tagStr = `@${tag.tag}${tag.name ? ` ${tag.name}` : ""}${tag.description ? ` ${tag.description}` : ""}`;
-        descriptionParts.push(tagStr);
-      }
-      description = descriptionParts.join("\n");
-    }
-
-    const tags: JsDocPassthroughTag[] | undefined =
-      passthroughTags.length > 0
-        ? passthroughTags.map((tag) => ({
-            name: tag.tag,
-            body: getPassthroughTagBodyFromSource(tag.source),
-          }))
-        : undefined;
-
-    return { type, params, returnType, description, binding, deprecated, tags };
-  }
-
-  private buildRunesPropTypeMetadata() {
-    this.runesPropsDeclarationMetadataByDeclaratorStart.clear();
-    this.explicitPropTypesByName.clear();
-    this.typeImportBindingsByLocalName.clear();
-    this.localTypeDeclarationsByName.clear();
-    this.typedRunesPropsDeclarations.length = 0;
-    if (!this.source) return;
-
-    const modernParsed = parse(this.source, { modern: true }) as {
-      instance?: ModernScriptNode & {
-        content?: {
-          body?: Array<{
-            type?: string;
-            start?: number;
-            end?: number;
-            importKind?: string;
-            source?: { value?: string };
-            specifiers?: Array<{
-              type?: string;
-              importKind?: string;
-              local?: { name?: string };
-              imported?: { type?: string; name?: string; value?: string };
-            }>;
-            id?: { name?: string };
-            declaration?: {
-              type?: string;
-              declarations?: Array<{
-                id?: {
-                  type?: string;
-                  name?: string;
-                  typeAnnotation?: {
-                    start?: number;
-                    end?: number;
-                    typeAnnotation?: ModernRunesTypeNode;
-                  };
-                };
-              }>;
-            };
-            declarations?: Array<{
-              id?: {
-                type?: string;
-                name?: string;
-                typeAnnotation?: {
-                  start?: number;
-                  end?: number;
-                  typeAnnotation?: ModernRunesTypeNode;
-                };
-              };
-              init?: unknown;
-              start?: number;
-            }>;
-          }>;
-        };
-      };
-      module?: ModernScriptNode;
-    };
-
-    this.scriptLanguage = ComponentParser.resolveScriptLanguage(modernParsed);
-    const body = modernParsed.instance?.content?.body ?? [];
-
-    for (const statement of body) {
-      if (!statement?.type) continue;
-      if (statement.type === "ImportDeclaration" && statement.source?.value) {
-        for (const specifier of statement.specifiers ?? []) {
-          const localName = specifier.local?.name;
-          if (!localName) continue;
-          const isTypeOnly = statement.importKind === "type" || specifier.importKind === "type";
-          if (!isTypeOnly) continue;
-
-          let specifierType: TypeImportBinding["specifierType"] | undefined;
-          let importedName: string | undefined;
-
-          if (specifier.type === "ImportSpecifier") {
-            specifierType = "named";
-            importedName =
-              specifier.imported?.type === "Identifier"
-                ? specifier.imported.name
-                : typeof specifier.imported?.value === "string"
-                  ? specifier.imported.value
-                  : undefined;
-          } else if (specifier.type === "ImportDefaultSpecifier") {
-            specifierType = "default";
-          } else if (specifier.type === "ImportNamespaceSpecifier") {
-            specifierType = "namespace";
-          }
-
-          if (!specifierType) continue;
-
-          this.typeImportBindingsByLocalName.set(localName, {
-            importedName,
-            localName,
-            source: String(statement.source.value),
-            specifierType,
-          });
-        }
-      }
-      if (
-        (statement.type === "TSInterfaceDeclaration" || statement.type === "TSTypeAliasDeclaration") &&
-        statement.id?.name &&
-        statement.start !== undefined &&
-        statement.end !== undefined
-      ) {
-        this.localTypeDeclarationsByName.set(statement.id.name, {
-          code: this.sourceAtPos(statement.start, statement.end)?.trim() ?? "",
-          node: statement as ModernRunesTypeNode,
-          start: statement.start,
-        });
-      }
-
-      if (statement.type === "ExportNamedDeclaration" && statement.declaration?.type === "VariableDeclaration") {
-        for (const declarator of statement.declaration.declarations ?? []) {
-          if (declarator.id?.type !== "Identifier" || !declarator.id.name) continue;
-          const explicitType = this.getTypeAnnotationText(declarator.id.typeAnnotation);
-          if (explicitType) {
-            this.explicitPropTypesByName.set(declarator.id.name, explicitType);
-          }
-        }
-      }
-    }
-
-    for (const statement of body) {
-      if (!statement || typeof statement !== "object" || !("declarations" in statement)) continue;
-
-      for (const declarator of statement.declarations ?? []) {
-        if (!isCallExpressionNamed(declarator.init, "$props")) continue;
-        const canonicalType = this.getTypeAnnotationText(declarator.id?.typeAnnotation);
-        const metadata = this.buildRunesPropTypeMetadataMap(
-          declarator.id?.typeAnnotation?.typeAnnotation,
-          new Map(
-            Array.from(this.localTypeDeclarationsByName.entries(), ([name, declaration]) => [name, declaration.node]),
-          ),
-        );
-        const referencedImportedTypes = new Set<string>();
-        const referencedLocalTypes = new Set<string>();
-        this.collectReferencedTypeDependencies(
-          declarator.id?.typeAnnotation?.typeAnnotation,
-          referencedImportedTypes,
-          referencedLocalTypes,
-        );
-
-        if (declarator.start !== undefined) {
-          const declarationMetadata: RunesPropsDeclarationMetadata = {
-            canonicalType,
-            props: metadata,
-            referencedImportedTypes,
-            referencedLocalTypes,
-          };
-          this.runesPropsDeclarationMetadataByDeclaratorStart.set(declarator.start, declarationMetadata);
-          if (canonicalType) {
-            this.typedRunesPropsDeclarations.push(declarationMetadata);
-          }
-        }
-      }
     }
   }
 
@@ -2375,7 +801,7 @@ export default class ComponentParser {
    * Number.UNKNOWN            // false
    * ```
    */
-  private isNumericConstant(memberExpr: unknown): boolean {
+  isNumericConstant(memberExpr: unknown): boolean {
     if (!memberExpr || typeof memberExpr !== "object" || !("type" in memberExpr)) return false;
     if (memberExpr.type !== "MemberExpression") return false;
 
@@ -2405,115 +831,7 @@ export default class ComponentParser {
     return false;
   }
 
-  /**
-   * Extracts source code at the given position range.
-   *
-   * @param start - Start position in the source
-   * @param end - End position in the source
-   * @returns The source code substring, or undefined if source is not available
-   */
-  private sourceAtPos(start: number, end: number) {
-    return this.source?.slice(start, end);
-  }
-
-  private sourceForExpression(node: unknown) {
-    if (!node || typeof node !== "object") return undefined;
-    const start = "start" in node && typeof node.start === "number" ? node.start : undefined;
-    const end = "end" in node && typeof node.end === "number" ? node.end : undefined;
-    if (start === undefined || end === undefined) return undefined;
-    return this.sourceAtPos(start, end)?.replace(NEWLINE_CR_REGEX, " ");
-  }
-
-  private jsonSafeValueFromExpression(node: unknown): { ok: true; value: unknown } | { ok: false } {
-    if (!node || typeof node !== "object" || !("type" in node)) return { ok: false };
-
-    if (node.type === "Literal") {
-      const value = (node as Literal).value;
-      return typeof value === "bigint" ? { ok: false } : { ok: true, value };
-    }
-
-    if (node.type === "UnaryExpression") {
-      const unary = node as UnaryExpression;
-      const argument = unary.argument;
-      if (!argument || typeof argument !== "object" || !("type" in argument) || argument.type !== "Literal") {
-        return { ok: false };
-      }
-
-      const value = (argument as Literal).value;
-      if (typeof value === "number") {
-        if (unary.operator === "-") return { ok: true, value: -value };
-        if (unary.operator === "+") return { ok: true, value };
-      }
-      if (typeof value === "boolean" && unary.operator === "!") {
-        return { ok: true, value: !value };
-      }
-      return { ok: false };
-    }
-
-    if (node.type === "TemplateLiteral") {
-      const template = node as TemplateLiteral;
-      if (template.expressions.length > 0 || template.quasis.length !== 1) return { ok: false };
-      return { ok: true, value: template.quasis[0].value.cooked ?? template.quasis[0].value.raw };
-    }
-
-    if (node.type === "ArrayExpression") {
-      const array = node as ArrayExpression;
-      const values: unknown[] = [];
-      for (const element of array.elements) {
-        if (!element) return { ok: false };
-        const result = this.jsonSafeValueFromExpression(element);
-        if (!result.ok) return { ok: false };
-        values.push(result.value);
-      }
-      return { ok: true, value: values };
-    }
-
-    if (node.type === "ObjectExpression") {
-      const object = node as ObjectExpression;
-      const value: Record<string, unknown> = {};
-      for (const property of object.properties) {
-        if (property.type !== "Property" || property.computed) return { ok: false };
-        const key = this.getPropertyName(property.key);
-        if (!key) return { ok: false };
-        const propertyValue = this.jsonSafeValueFromExpression(property.value);
-        if (!propertyValue.ok) return { ok: false };
-        value[key] = propertyValue.value;
-      }
-      return { ok: true, value };
-    }
-
-    return { ok: false };
-  }
-
-  private classifyDefaultValue(init: unknown): ComponentPropDefaultValue | undefined {
-    const raw = this.sourceForExpression(init);
-    if (!raw || !init || typeof init !== "object" || !("type" in init)) return undefined;
-
-    let kind: ComponentPropDefaultValueKind = "expression";
-    if (init.type === "Literal" || init.type === "UnaryExpression") {
-      kind = "literal";
-    } else if (init.type === "TemplateLiteral") {
-      kind = (init as TemplateLiteral).expressions.length === 0 ? "literal" : "expression";
-    } else if (init.type === "ArrayExpression") {
-      kind = "array";
-    } else if (init.type === "ObjectExpression") {
-      kind = "object";
-    } else if (init.type === "ArrowFunctionExpression" || init.type === "FunctionExpression") {
-      kind = "function";
-    }
-
-    const defaultValue: ComponentPropDefaultValue = { raw, kind };
-    if (kind === "literal" || kind === "array" || kind === "object") {
-      const parsed = this.jsonSafeValueFromExpression(init);
-      if (parsed.ok) {
-        defaultValue.value = parsed.value;
-      }
-    }
-
-    return defaultValue;
-  }
-
-  private resolveTypeSource({
+  resolveTypeSource({
     hasTypeScriptType,
     hasJSDocType,
     inferredType,
@@ -2532,276 +850,10 @@ export default class ComponentParser {
   }
 
   /**
-   * Processes an initializer expression to extract its value, type, and function status.
-   *
-   * Handles various expression types including object literals, arrays, binary expressions,
-   * arrow functions, unary expressions, identifiers, member expressions, template literals,
-   * and primitive literals. Extracts the source code representation and infers types
-   * where possible.
-   *
-   * @param init - The initializer AST node
-   * @returns An object containing the value (source code), inferred type, and whether it's a function
-   *
-   * @example
-   * ```ts
-   * // ObjectExpression: { x: 1, y: 2 }
-   * // Returns: { value: "{ x: 1, y: 2 }", type: "{ x: 1, y: 2 }", isFunction: false }
-   *
-   * // ArrowFunctionExpression: () => {}
-   * // Returns: { value: undefined, type: "(...args: any[]) => any", isFunction: true }
-   *
-   * // Literal: "hello"
-   * // Returns: { value: '"hello"', type: "string", isFunction: false }
-   *
-   * // BinaryExpression: "a" + "b"
-   * // Returns: { value: '"a" + "b"', type: "string", isFunction: false }
-   *
-   * // MemberExpression: Math.PI
-   * // Returns: { value: "Math.PI", type: "number" (if numeric constant), isFunction: false }
-   * ```
-   */
-  private processInitializer(init: unknown, depth = 0): ProcessedInitializer {
-    let value: string | undefined;
-    let type: string | undefined;
-    let isFunction = false;
-
-    if (!init || typeof init !== "object" || !("type" in init)) {
-      return { value, type, isFunction };
-    }
-
-    const defaultValue = this.classifyDefaultValue(init);
-
-    if (
-      init.type === "ObjectExpression" ||
-      init.type === "BinaryExpression" ||
-      init.type === "ArrayExpression" ||
-      init.type === "ArrowFunctionExpression" ||
-      init.type === "FunctionExpression"
-    ) {
-      const expr = init as ObjectExpression | BinaryExpression | ArrayExpression | ArrowFunctionExpression;
-      if ("start" in expr && "end" in expr && typeof expr.start === "number" && typeof expr.end === "number") {
-        value = this.sourceAtPos(expr.start, expr.end)?.replace(NEWLINE_CR_REGEX, " ");
-      }
-      type = value;
-      isFunction = init.type === "ArrowFunctionExpression" || init.type === "FunctionExpression";
-
-      if (init.type === "BinaryExpression") {
-        const binExpr = init as BinaryExpression;
-        if (
-          binExpr.left &&
-          typeof binExpr.left === "object" &&
-          "type" in binExpr.left &&
-          binExpr.left.type === "Literal" &&
-          "value" in binExpr.left &&
-          typeof binExpr.left.value === "string"
-        ) {
-          type = "string";
-        }
-      }
-
-      if (init.type === "ArrowFunctionExpression" || init.type === "FunctionExpression") {
-        type = this.inferFunctionTypeFromNode(init as ArrowFunctionExpression | FunctionExpression);
-        value = undefined;
-      }
-    } else if (init.type === "UnaryExpression") {
-      const unaryExpr = init as UnaryExpression;
-      if (
-        "start" in unaryExpr &&
-        "end" in unaryExpr &&
-        typeof unaryExpr.start === "number" &&
-        typeof unaryExpr.end === "number"
-      ) {
-        value = this.sourceAtPos(unaryExpr.start, unaryExpr.end);
-      }
-      if (unaryExpr.argument) {
-        // If the argument is another UnaryExpression, recursively resolve the type
-        if (
-          typeof unaryExpr.argument === "object" &&
-          "type" in unaryExpr.argument &&
-          unaryExpr.argument.type === "UnaryExpression"
-        ) {
-          const nestedResult = this.processInitializer(unaryExpr.argument);
-          type = nestedResult.type;
-        } else if (typeof unaryExpr.argument === "object" && "value" in unaryExpr.argument) {
-          // Direct literal argument
-          type = typeof (unaryExpr.argument as Literal).value;
-        }
-      }
-    } else if (init.type === "NewExpression") {
-      const newExpr = init as NewExpression;
-      if (
-        "start" in newExpr &&
-        "end" in newExpr &&
-        typeof newExpr.start === "number" &&
-        typeof newExpr.end === "number"
-      ) {
-        value = this.sourceAtPos(newExpr.start, newExpr.end);
-      }
-      // Infer type from callee if it's an Identifier (e.g., new Date() -> Date)
-      if (
-        newExpr.callee &&
-        typeof newExpr.callee === "object" &&
-        "type" in newExpr.callee &&
-        newExpr.callee.type === "Identifier"
-      ) {
-        const calleeName = (newExpr.callee as Identifier).name;
-        // Common built-in constructors
-        if (calleeName === "Date") {
-          type = "Date";
-        } else if (calleeName === "Map") {
-          type = "Map<any, any>";
-        } else if (calleeName === "Set") {
-          type = "Set<any>";
-        } else if (calleeName === "WeakMap") {
-          type = "WeakMap<object, any>";
-        } else if (calleeName === "WeakSet") {
-          type = "WeakSet<object>";
-        } else if (calleeName === "Array") {
-          type = "any[]";
-        } else if (calleeName === "RegExp" || calleeName === "Regexp") {
-          type = "RegExp";
-        } else if (calleeName === "Error") {
-          type = "Error";
-        } else {
-          // For other constructors, use the constructor name as the type
-          type = calleeName;
-        }
-      }
-    } else if (init.type === "CallExpression") {
-      const callExpr = init as CallExpression;
-      if (
-        "start" in callExpr &&
-        "end" in callExpr &&
-        typeof callExpr.start === "number" &&
-        typeof callExpr.end === "number"
-      ) {
-        value = this.sourceAtPos(callExpr.start, callExpr.end);
-      }
-    } else if (init.type === "Identifier") {
-      const ident = init as Identifier;
-      if (depth < 5) {
-        const resolvedInit = this.resolveLocalVarInitializer(ident.name);
-        if (resolvedInit) {
-          const inner = this.processInitializer(resolvedInit, depth + 1);
-          const resolvedJSDoc = this.resolveLocalVarJSDoc(ident.name);
-          return {
-            ...inner,
-            resolvedType: resolvedJSDoc?.type ?? inner.resolvedType,
-            resolvedDescription: resolvedJSDoc?.description ?? inner.resolvedDescription,
-            resolvedParams: resolvedJSDoc?.params ?? inner.resolvedParams,
-            resolvedReturnType: resolvedJSDoc?.returnType ?? inner.resolvedReturnType,
-          };
-        }
-
-        // `function defaultX() {}` has no initializer. Read JSDoc off the declaration.
-        if (this.funcDecls.has(ident.name)) {
-          const resolvedJSDoc = this.resolveLocalVarJSDoc(ident.name);
-          const funcNode = this.funcDecls.get(ident.name);
-          return {
-            value: undefined,
-            type: undefined,
-            isFunction: true,
-            resolvedType: resolvedJSDoc?.type ?? this.buildFunctionTypeFromParts(resolvedJSDoc, funcNode),
-            resolvedDescription: resolvedJSDoc?.description,
-            resolvedParams: resolvedJSDoc?.params,
-            resolvedReturnType: resolvedJSDoc?.returnType,
-          };
-        }
-      }
-      if ("start" in ident && "end" in ident && typeof ident.start === "number" && typeof ident.end === "number") {
-        value = this.sourceAtPos(ident.start, ident.end);
-      }
-    } else if (init.type === "MemberExpression") {
-      const memberExpr = init as MemberExpression;
-      if (
-        "start" in memberExpr &&
-        "end" in memberExpr &&
-        typeof memberExpr.start === "number" &&
-        typeof memberExpr.end === "number"
-      ) {
-        value = this.sourceAtPos(memberExpr.start, memberExpr.end);
-      }
-      if (this.isNumericConstant(init)) {
-        type = "number";
-      }
-    } else if (init.type === "TemplateLiteral") {
-      const template = init as TemplateLiteral;
-      if (
-        "start" in template &&
-        "end" in template &&
-        typeof template.start === "number" &&
-        typeof template.end === "number"
-      ) {
-        value = this.sourceAtPos(template.start, template.end);
-      }
-      type = "string";
-    } else if ("raw" in init && typeof init.raw === "string") {
-      value = init.raw;
-      if ("value" in init) {
-        type = init.value == null ? undefined : typeof init.value;
-      }
-    }
-
-    return { value, type, isFunction, defaultValue };
-  }
-
-  /**
-   * Look up a local variable's initializer AST node by name.
-   * Returns the init node if found, or undefined.
-   */
-  private resolveLocalVarInitializer(name: string): unknown | undefined {
-    for (const decl of this.vars) {
-      for (const declarator of decl.declarations) {
-        if (
-          declarator.id &&
-          typeof declarator.id === "object" &&
-          "type" in declarator.id &&
-          declarator.id.type === "Identifier" &&
-          "name" in declarator.id &&
-          declarator.id.name === name &&
-          declarator.init
-        ) {
-          return declarator.init;
-        }
-      }
-    }
-    return undefined;
-  }
-
-  /**
-   * Look up the initializer for a local `const` by name.
-   *
-   * {@link resolveLocalVarInitializer} also walks `let`/`var`. This method does not.
-   * Props and mutable bindings can change at runtime, so they cannot be context keys.
-   *
-   * @param name - The variable name to look up
-   * @returns The initializer node for a matching `const` binding, or undefined
-   */
-  private resolveConstInitializer(name: string): unknown | undefined {
-    for (const decl of this.vars) {
-      if (decl.kind !== "const") continue;
-      for (const declarator of decl.declarations) {
-        if (
-          declarator.id &&
-          typeof declarator.id === "object" &&
-          "type" in declarator.id &&
-          declarator.id.type === "Identifier" &&
-          "name" in declarator.id &&
-          declarator.id.name === name &&
-          declarator.init
-        ) {
-          return declarator.init;
-        }
-      }
-    }
-    return undefined;
-  }
-
-  /**
    * Look up JSDoc on a local variable declaration by name.
    */
-  private resolveLocalVarJSDoc(name: string) {
-    for (const decl of this.vars) {
+  resolveLocalVarJSDoc(name: string) {
+    for (const decl of this.ctx.vars) {
       const matches = decl.declarations.some(
         (declarator) =>
           declarator.id &&
@@ -2812,525 +864,16 @@ export default class ComponentParser {
           declarator.id.name === name,
       );
       if (matches) {
-        return this.processNodeJSDoc(decl as unknown as { leadingComments?: unknown[]; start?: number });
+        return processNodeJSDoc(this.ctx, this, decl as unknown as { leadingComments?: unknown[]; start?: number });
       }
     }
 
-    const funcDecl = this.funcDecls.get(name);
+    const funcDecl = this.ctx.funcDecls.get(name);
     if (funcDecl) {
-      return this.processNodeJSDoc(funcDecl as unknown as { leadingComments?: unknown[]; start?: number });
+      return processNodeJSDoc(this.ctx, this, funcDecl as unknown as { leadingComments?: unknown[]; start?: number });
     }
 
     return undefined;
-  }
-
-  /**
-   * Build a function type from `@param`/`@returns` when `@type` is missing.
-   * If JSDoc has no params or return either, try the function `node`, then
-   * `(...args: any[]) => any`.
-   */
-  private buildFunctionTypeFromParts(
-    jsdoc?: { params?: ComponentPropParam[]; returnType?: string },
-    node?: FunctionDeclaration | FunctionExpression | ArrowFunctionExpression,
-  ): string {
-    const returnType = jsdoc?.returnType ?? "any";
-    const params = jsdoc?.params;
-    if (params && params.length > 0) {
-      const paramsString = params.map((param) => `${param.name}${param.optional ? "?" : ""}: ${param.type}`).join(", ");
-      return `(${paramsString}) => ${returnType}`;
-    }
-    if (jsdoc?.returnType) {
-      return `() => ${returnType}`;
-    }
-    if (node) {
-      return this.inferFunctionTypeFromNode(node);
-    }
-    return "(...args: any[]) => any";
-  }
-
-  /**
-   * Guess arity and return type for a function default with no JSDoc `@type`.
-   * Explicit `@type`/`@param`/`@returns` on the prop beat this every time.
-   * A default's body is a weak signal for the prop contract. We only read
-   * named params and literal returns. Everything else becomes `any`.
-   */
-  private inferFunctionTypeFromNode(node: FunctionDeclaration | FunctionExpression | ArrowFunctionExpression): string {
-    return `(${this.inferParamsFromNode(node)}) => ${this.inferReturnTypeFromNode(node)}`;
-  }
-
-  /**
-   * Turn params into `name: any`, or use `...args: any[]` when arity is unclear:
-   * no params, destructuring, rest, or defaults.
-   */
-  private inferParamsFromNode(node: FunctionDeclaration | FunctionExpression | ArrowFunctionExpression): string {
-    const params = node.params;
-    if (!Array.isArray(params) || params.length === 0) {
-      return "...args: any[]";
-    }
-    const names: string[] = [];
-    for (const param of params) {
-      if (
-        param &&
-        typeof param === "object" &&
-        "type" in param &&
-        param.type === "Identifier" &&
-        "name" in param &&
-        typeof param.name === "string"
-      ) {
-        names.push(`${param.name}: any`);
-      } else {
-        // Destructuring, rest, or default param: use ...args: any[]
-        return "...args: any[]";
-      }
-    }
-    return names.join(", ");
-  }
-
-  /**
-   * Infer return type from literal returns only. Every `return` must agree on
-   * the same primitive. Bare `return;`, no returns, identifiers, calls,
-   * objects, ternaries, async, or generators all become `any`.
-   */
-  private inferReturnTypeFromNode(node: FunctionDeclaration | FunctionExpression | ArrowFunctionExpression): string {
-    if (node.async || node.generator) {
-      return "any";
-    }
-
-    const body = node.body;
-    let returnArgs: unknown[];
-    if (body && typeof body === "object" && "type" in body && body.type === "BlockStatement") {
-      returnArgs = this.collectReturnArguments(body);
-      if (returnArgs.length === 0) {
-        return "any";
-      }
-    } else {
-      // Expression-bodied arrow: body is the return value.
-      returnArgs = [body];
-    }
-
-    let inferred: string | null = null;
-    for (const arg of returnArgs) {
-      const primitive = this.inferReturnPrimitive(arg);
-      if (!primitive) {
-        return "any";
-      }
-      if (inferred === null) {
-        inferred = primitive;
-      } else if (inferred !== primitive) {
-        return "any";
-      }
-    }
-    return inferred ?? "any";
-  }
-
-  /**
-   * Walk a block body and collect each `return`'s argument, skipping nested
-   * functions. Bare `return;` becomes `null`.
-   */
-  private collectReturnArguments(body: unknown): unknown[] {
-    const returnArgs: unknown[] = [];
-    walk(body as Node, {
-      enter(node) {
-        if (
-          node.type === "FunctionDeclaration" ||
-          node.type === "FunctionExpression" ||
-          node.type === "ArrowFunctionExpression"
-        ) {
-          this.skip();
-          return;
-        }
-        if (node.type === "ReturnStatement") {
-          returnArgs.push((node as { argument?: unknown }).argument ?? null);
-        }
-      },
-    });
-    return returnArgs;
-  }
-
-  /**
-   * Map one return expression to `string`, `number`, or `boolean`, or `null`
-   * if it isn't a literal, template literal, or `String`/`Number`/`Boolean` call.
-   */
-  private inferReturnPrimitive(expr: unknown): "string" | "number" | "boolean" | null {
-    if (!expr || typeof expr !== "object" || !("type" in expr)) {
-      return null;
-    }
-    switch (expr.type) {
-      case "Literal": {
-        const value = (expr as Literal).value;
-        if (typeof value === "string") return "string";
-        if (typeof value === "number") return "number";
-        if (typeof value === "boolean") return "boolean";
-        return null;
-      }
-      case "TemplateLiteral":
-        return "string";
-      case "CallExpression": {
-        const callee = (expr as CallExpression).callee;
-        if (callee && typeof callee === "object" && "type" in callee && callee.type === "Identifier") {
-          const name = (callee as Identifier).name;
-          if (name === "String") return "string";
-          if (name === "Number") return "number";
-          if (name === "Boolean") return "boolean";
-        }
-        return null;
-      }
-      default:
-        return null;
-    }
-  }
-
-  /**
-   * Unwraps `$bindable(...)` calls so defaults are documented as their underlying values.
-   */
-  private unwrapBindableInitializer(init: unknown): { init?: unknown; bindable: boolean } {
-    if (isCallExpressionNamed(init, "$bindable")) {
-      return {
-        init: init.arguments[0],
-        bindable: true,
-      };
-    }
-
-    return {
-      init,
-      bindable: false,
-    };
-  }
-
-  /**
-   * Extracts component props from top-level `$props()` declarations in runes components.
-   */
-  private parseRunesPropsDeclaration(node: VariableDeclaration) {
-    for (const declarator of node.declarations) {
-      if (!isCallExpressionNamed(declarator.init, "$props")) continue;
-
-      if (declarator.id.type === "Identifier") {
-        this.wholePropsLocals.add(declarator.id.name);
-        this.restPropLocals.add(declarator.id.name);
-
-        const metadata = this.getRunesPropsDeclarationMetadata(
-          (declarator as VariableDeclarator & { start?: number }).start,
-        );
-        if (metadata) {
-          for (const [propName, typeMetadata] of metadata.props) {
-            this.addProp(propName, {
-              name: propName,
-              kind: "let",
-              type: typeMetadata.type,
-              typeSource: "typescript",
-              isFunction: false,
-              isFunctionDeclaration: false,
-              isRequired: !typeMetadata.optional,
-              constant: false,
-              reactive: false,
-              source: typeMetadata.source,
-            });
-          }
-        }
-        continue;
-      }
-
-      if (declarator.id.type !== "ObjectPattern") {
-        this.logUnsupportedRunesPattern("Skipping unsupported $props() declaration pattern.");
-        continue;
-      }
-
-      const declarationJSDoc = this.processNodeJSDoc(node);
-
-      const supportedPublicPropCount = declarator.id.properties.filter((property) => {
-        if (property.type !== "Property" || property.computed) return false;
-        const propName = this.getPropertyName(property.key);
-        if (!propName) return false;
-        if (property.value.type === "Identifier") return true;
-        return property.value.type === "AssignmentPattern" && property.value.left.type === "Identifier";
-      }).length;
-
-      for (const property of declarator.id.properties) {
-        if (property.type === "RestElement") {
-          if (property.argument.type === "Identifier") {
-            this.restPropLocals.add(property.argument.name);
-          } else {
-            this.logUnsupportedRunesPattern("Skipping unsupported rest element in $props() destructuring.");
-          }
-          continue;
-        }
-
-        if (property.computed) {
-          this.logUnsupportedRunesPattern("Skipping computed property in $props() destructuring.");
-          continue;
-        }
-
-        const propName = this.getPropertyName(property.key);
-        if (!propName) {
-          this.logUnsupportedRunesPattern("Skipping unsupported property name in $props() destructuring.");
-          continue;
-        }
-
-        let localName: string | undefined;
-        let init: unknown;
-
-        if (property.value.type === "Identifier") {
-          localName = property.value.name;
-        } else if (property.value.type === "AssignmentPattern") {
-          if (property.value.left.type !== "Identifier") {
-            this.logUnsupportedRunesPattern(
-              `Skipping nested pattern for prop "${propName}" in $props() destructuring.`,
-            );
-            continue;
-          }
-
-          localName = property.value.left.name;
-          init = property.value.right;
-        } else {
-          this.logUnsupportedRunesPattern(`Skipping nested pattern for prop "${propName}" in $props() destructuring.`);
-          continue;
-        }
-
-        if (!localName) continue;
-
-        this.trackPropLocalName(propName, localName);
-        if (propName === "children") {
-          this.snippetPropLocals.add(localName);
-        }
-
-        const propertyJSDoc =
-          this.processLeadingCommentsJSDoc(property) ?? (supportedPublicPropCount === 1 ? declarationJSDoc : undefined);
-        const typeMetadata = this.getRunesPropTypeMetadata(
-          (declarator as VariableDeclarator & { start?: number }).start,
-          propName,
-        );
-        const { init: unwrappedInit, bindable } = this.unwrapBindableInitializer(init);
-        const initResult = unwrappedInit == null ? { isFunction: false } : this.processInitializer(unwrappedInit);
-        const { value, type: inferredType, isFunction, defaultValue } = initResult;
-        const inheritedType =
-          typeMetadata?.type === undefined && propertyJSDoc?.type === undefined ? initResult.resolvedType : undefined;
-        const isFunctionFromJSDoc =
-          !!propertyJSDoc?.params?.length ||
-          propertyJSDoc?.returnType !== undefined ||
-          propertyJSDoc?.type?.includes("=>") ||
-          !!inheritedType?.includes("=>");
-        const type = typeMetadata?.type ?? propertyJSDoc?.type ?? inheritedType ?? inferredType;
-        const typeSource = this.resolveTypeSource({
-          hasTypeScriptType: typeMetadata?.type !== undefined,
-          hasJSDocType:
-            propertyJSDoc?.type !== undefined ||
-            propertyJSDoc?.params !== undefined ||
-            propertyJSDoc?.returnType !== undefined ||
-            inheritedType !== undefined,
-          inferredType,
-          finalType: type,
-        });
-
-        if (bindable) {
-          this.reactive_vars.add(propName);
-        }
-
-        this.addProp(propName, {
-          name: propName,
-          ...(localName === propName ? {} : { localName }),
-          kind: "let",
-          description: propertyJSDoc?.description ?? initResult.resolvedDescription,
-          binding: propertyJSDoc?.binding,
-          deprecated: propertyJSDoc?.deprecated,
-          tags: propertyJSDoc?.tags,
-          ...(bindable ? { bindable: true as const } : {}),
-          type,
-          typeSource,
-          value,
-          defaultValue,
-          params: propertyJSDoc?.params ?? initResult.resolvedParams,
-          returnType: propertyJSDoc?.returnType ?? initResult.resolvedReturnType,
-          isFunction: Boolean(isFunction || isFunctionFromJSDoc),
-          isFunctionDeclaration: false,
-          isRequired: unwrappedInit == null && typeMetadata?.optional !== true,
-          constant: false,
-          reactive: bindable,
-          source: this.sourceRangeFromNode(property),
-        });
-      }
-    }
-  }
-
-  private inferSlotPropValueFromExpression(expression: unknown): SlotPropValue {
-    const slot_prop_value: SlotPropValue = {
-      value: undefined,
-      replace: false,
-    };
-
-    if (!expression || typeof expression !== "object" || !("type" in expression)) {
-      return slot_prop_value;
-    }
-
-    if (expression.type === "Identifier") {
-      slot_prop_value.value = (expression as Identifier).name;
-      slot_prop_value.replace = true;
-    } else if (expression.type === "Literal") {
-      slot_prop_value.value = String((expression as Literal).value);
-    } else if (expression.type === "MemberExpression") {
-      slot_prop_value.value = this.resolveMemberExpressionType(expression);
-    } else if (
-      (expression.type === "ObjectExpression" || expression.type === "TemplateLiteral") &&
-      "start" in expression &&
-      "end" in expression &&
-      typeof expression.start === "number" &&
-      typeof expression.end === "number"
-    ) {
-      slot_prop_value.value = this.sourceAtPos(expression.start, expression.end);
-    }
-
-    return slot_prop_value;
-  }
-
-  private buildSlotPropsFromObjectExpression(expression: ObjectExpression): SlotProps {
-    const slot_props: SlotProps = {};
-
-    for (const property of expression.properties) {
-      if (property.type !== "Property" || property.computed) continue;
-
-      const propName = this.getPropertyName(property.key);
-      if (!propName) continue;
-      slot_props[propName] = this.inferSlotPropValueFromExpression(property.value);
-    }
-
-    return slot_props;
-  }
-
-  private resolveRenderTagPropReference(callee: unknown): { publicName: string; trackingName: string } | null {
-    if (!callee || typeof callee !== "object" || !("type" in callee)) {
-      return null;
-    }
-
-    if (callee.type === "Identifier") {
-      const identifier = callee as Identifier;
-      const publicName = this.propLocalToPublicName.get(identifier.name);
-      if (!publicName) return null;
-
-      return {
-        publicName,
-        trackingName: identifier.name,
-      };
-    }
-
-    if (callee.type !== "MemberExpression") {
-      return null;
-    }
-
-    const memberExpression = callee as MemberExpression;
-    const objectName =
-      memberExpression.object &&
-      typeof memberExpression.object === "object" &&
-      "type" in memberExpression.object &&
-      memberExpression.object.type === "Identifier"
-        ? memberExpression.object.name
-        : undefined;
-    if (!objectName || !this.wholePropsLocals.has(objectName)) {
-      return null;
-    }
-
-    let publicName: string | undefined;
-    if (
-      !memberExpression.computed &&
-      memberExpression.property &&
-      typeof memberExpression.property === "object" &&
-      "type" in memberExpression.property
-    ) {
-      if (memberExpression.property.type === "Identifier") {
-        publicName = memberExpression.property.name;
-      } else if (memberExpression.property.type === "Literal" && memberExpression.property.value != null) {
-        publicName = String(memberExpression.property.value);
-      }
-    } else if (
-      memberExpression.computed &&
-      memberExpression.property &&
-      typeof memberExpression.property === "object" &&
-      "type" in memberExpression.property &&
-      memberExpression.property.type === "Literal" &&
-      "value" in memberExpression.property &&
-      memberExpression.property.value != null
-    ) {
-      publicName = String(memberExpression.property.value);
-    }
-
-    if (!publicName) return null;
-
-    return {
-      publicName,
-      trackingName: publicName,
-    };
-  }
-
-  private extractRenderTagInfo(
-    expression: unknown,
-  ): { publicName: string; trackingName: string; arguments: Array<Expression | unknown> } | null {
-    let callExpression = expression;
-
-    if (
-      callExpression &&
-      typeof callExpression === "object" &&
-      "type" in callExpression &&
-      callExpression.type === "ChainExpression"
-    ) {
-      callExpression = (callExpression as { expression?: unknown }).expression;
-    }
-
-    if (
-      !callExpression ||
-      typeof callExpression !== "object" ||
-      !("type" in callExpression) ||
-      callExpression.type !== "CallExpression"
-    ) {
-      return null;
-    }
-
-    const callExpr = callExpression as CallExpression;
-
-    if (!callExpr.callee || typeof callExpr.callee !== "object" || !("type" in callExpr.callee)) {
-      return null;
-    }
-
-    const propReference = this.resolveRenderTagPropReference(callExpr.callee);
-    if (!propReference) return null;
-
-    return {
-      ...propReference,
-      arguments: callExpr.arguments,
-    };
-  }
-
-  /**
-   * Adds or merges a component prop to the props map.
-   *
-   * If a prop with the same name already exists, the new data is merged
-   * with the existing prop, with new values taking precedence.
-   *
-   * @param prop_name - The name of the prop
-   * @param data - The prop data to add or merge
-   *
-   * @example
-   * ```ts
-   * // First call:
-   * addProp("count", { name: "count", type: "number", kind: "let" })
-   * // Props map: { "count" => { name: "count", type: "number", kind: "let" } }
-   *
-   * // Second call (merge):
-   * addProp("count", { description: "The count value" })
-   * // Props map: { "count" => { name: "count", type: "number", kind: "let", description: "The count value" } }
-   * ```
-   */
-  private addProp(prop_name: string, data: ComponentProp) {
-    if (ComponentParser.assignValue(prop_name) === undefined) return;
-    this.trackPropLocalName(prop_name);
-
-    if (this.props.has(prop_name)) {
-      const existing_slot = this.props.get(prop_name);
-
-      this.props.set(prop_name, {
-        ...existing_slot,
-        ...data,
-      });
-    } else {
-      this.props.set(prop_name, data);
-    }
   }
 
   /**
@@ -3357,15 +900,15 @@ export default class ComponentParser {
   private addModuleExport(prop_name: string, data: ComponentProp) {
     if (ComponentParser.assignValue(prop_name) === undefined) return;
 
-    if (this.moduleExports.has(prop_name)) {
-      const existing_slot = this.moduleExports.get(prop_name);
+    if (this.ctx.moduleExports.has(prop_name)) {
+      const existing_slot = this.ctx.moduleExports.get(prop_name);
 
-      this.moduleExports.set(prop_name, {
+      this.ctx.moduleExports.set(prop_name, {
         ...existing_slot,
         ...data,
       });
     } else {
-      this.moduleExports.set(prop_name, data);
+      this.ctx.moduleExports.set(prop_name, data);
     }
   }
 
@@ -3385,1050 +928,9 @@ export default class ComponentParser {
    * aliasType("number")   // Returns: "number"
    * ```
    */
-  private aliasType(type: string): string {
+  aliasType(type: string): string {
     if (type === "*") return "any";
     return type.trim();
-  }
-
-  /**
-   * Extracts a property's type from an object type string.
-   *
-   * Parses type strings like `{ value: string; other: number }` and returns
-   * the type for the requested property name. Handles nested braces, generics,
-   * and optional properties.
-   *
-   * @returns The property type string, or undefined if not found
-   */
-  private extractPropertyType(typeStr: string, propName: string): string | undefined {
-    const trimmed = typeStr.trim();
-    if (!trimmed.startsWith("{") || !trimmed.endsWith("}")) return undefined;
-
-    const inner = trimmed.slice(1, -1);
-    const segments: string[] = [];
-    let depth = 0;
-    let current = "";
-
-    for (const char of inner) {
-      if (char === "{" || char === "<" || char === "(" || char === "[") {
-        depth++;
-        current += char;
-      } else if (char === "}" || char === ">" || char === ")" || char === "]") {
-        depth--;
-        current += char;
-      } else if ((char === ";" || char === ",") && depth === 0) {
-        segments.push(current.trim());
-        current = "";
-      } else {
-        current += char;
-      }
-    }
-    if (current.trim()) segments.push(current.trim());
-
-    for (const segment of segments) {
-      if (!segment.startsWith(propName)) continue;
-      const afterName = segment.slice(propName.length);
-      if (afterName.length > 0 && WORD_CHAR_REGEX.test(afterName[0])) continue;
-      let rest = afterName.trimStart();
-      if (rest.startsWith("?")) rest = rest.slice(1).trimStart();
-      if (rest.startsWith(":")) {
-        return rest.slice(1).trim();
-      }
-    }
-
-    return undefined;
-  }
-
-  /**
-   * Resolves the type of a MemberExpression (e.g., `obj.value`) by looking up
-   * the object's type annotation and extracting the property type.
-   *
-   * @returns The resolved type string, or undefined if it cannot be resolved
-   */
-  private resolveMemberExpressionType(expr: unknown): string | undefined {
-    const memberExpr = expr as {
-      object?: { type?: string; name?: string };
-      property?: { type?: string; name?: string };
-      computed?: boolean;
-    };
-
-    if (memberExpr.computed || memberExpr.object?.type !== "Identifier" || memberExpr.property?.type !== "Identifier") {
-      return undefined;
-    }
-
-    const objName = memberExpr.object.name;
-    const propName = memberExpr.property.name;
-    if (!objName || !propName) return undefined;
-
-    if (this.wholePropsLocals.has(objName)) {
-      return this.getPropTypeByLocalOrPublic(propName);
-    }
-
-    const objType = this.getPropTypeByLocalOrPublic(objName) ?? this.findVariableTypeAndDescription(objName)?.type;
-    if (!objType) return undefined;
-
-    return this.extractPropertyType(objType, propName);
-  }
-
-  /**
-   * Adds or merges a slot definition to the slots map.
-   *
-   * Handles both named slots and the default slot. If a slot with the same
-   * name already exists, merges the data with existing values taking precedence
-   * where appropriate.
-   *
-   * @param slot_name - Optional slot name (undefined/empty = default slot)
-   * @param slot_props - Optional slot props type definition
-   * @param slot_fallback - Optional fallback content for the slot
-   * @param slot_description - Optional description for the slot
-   *
-   * @example
-   * ```ts
-   * // Default slot:
-   * addSlot({ slot_name: undefined, slot_props: "{ children: string }" })
-   *
-   * // Named slot:
-   * addSlot({
-   *   slot_name: "header",
-   *   slot_props: "{ title: string }",
-   *   slot_description: "Header slot with title prop"
-   * })
-   *
-   * // Slot with fallback:
-   * addSlot({
-   *   slot_name: "footer",
-   *   slot_fallback: "<p>Default footer</p>"
-   * })
-   * ```
-   */
-  private addSlot({
-    slot_name,
-    slot_props,
-    slot_fallback,
-    slot_description,
-    slot_deprecated,
-    slot_tags,
-    source,
-  }: {
-    slot_name?: string;
-    slot_props?: string;
-    slot_fallback?: string;
-    slot_description?: string;
-    slot_deprecated?: DeprecatedValue;
-    slot_tags?: JsDocPassthroughTag[];
-    source?: SourceRange;
-  }) {
-    const default_slot = slot_name === undefined || slot_name === "";
-    const name: string | null = default_slot ? DEFAULT_SLOT_NAME : (slot_name ?? "");
-    const fallback = ComponentParser.assignValue(slot_fallback);
-    const props = ComponentParser.assignValue(slot_props);
-    const description = slot_description?.trim() || undefined;
-
-    if (this.slots.has(name)) {
-      const existing_slot = this.slots.get(name);
-      if (existing_slot) {
-        this.slots.set(name, {
-          ...existing_slot,
-          default: existing_slot.default ?? default_slot,
-          fallback,
-          slot_props: existing_slot.slot_props === undefined ? props : existing_slot.slot_props,
-          description: existing_slot.description || description,
-          deprecated: existing_slot.deprecated ?? slot_deprecated,
-          tags: existing_slot.tags || slot_tags,
-          source: source || existing_slot.source,
-        });
-      }
-    } else {
-      this.slots.set(name, {
-        name,
-        default: default_slot,
-        fallback,
-        slot_props,
-        description,
-        deprecated: slot_deprecated,
-        tags: slot_tags,
-        source,
-      });
-    }
-  }
-
-  /**
-   * Adds or merges a dispatched event to the events map.
-   *
-   * Handles event detail type inference: if no argument is provided to the
-   * dispatcher and no `@event` tag specifies a detail type, the detail defaults
-   * to `null`. Otherwise, uses the provided detail type.
-   *
-   * @param name - The event name
-   * @param detail - The event detail type string
-   * @param has_argument - Whether the dispatcher call includes a detail argument
-   * @param description - Optional event description
-   *
-   * @example
-   * ```ts
-   * // Event without detail:
-   * // createEventDispatcher()("click")
-   * addDispatchedEvent({
-   *   name: "click",
-   *   detail: "",
-   *   has_argument: false,
-   *   description: "Fires on click"
-   * })
-   * // Result: { type: "dispatched", name: "click", detail: "null" }
-   *
-   * // Event with detail:
-   * // dispatch("change", { value: 42 })
-   * addDispatchedEvent({
-   *   name: "change",
-   *   detail: "{ value: number }",
-   *   has_argument: true,
-   *   description: "Fires when value changes"
-   * })
-   * // Result: { type: "dispatched", name: "change", detail: "{ value: number }" }
-   * ```
-   */
-  private addDispatchedEvent({
-    name,
-    detail,
-    has_argument,
-    description,
-    deprecated,
-    tags,
-    source,
-  }: Pick<DispatchedEvent, "name" | "description" | "deprecated" | "tags" | "source"> & {
-    detail: string;
-    has_argument: boolean;
-  }) {
-    if (name === undefined) return;
-
-    /**
-     * `e.detail` should be `null` if the dispatcher is not provided a second
-     * argument and if `@event` is not specified. This matches Svelte's behavior
-     * where events without detail have `detail: null`.
-     */
-    const default_detail = !has_argument && !detail ? "null" : ComponentParser.assignValue(detail);
-    const event_description = description;
-    if (this.events.has(name)) {
-      const existing_event = this.events.get(name) as DispatchedEvent;
-      const merged_tags = existing_event.tags ?? tags;
-      this.events.set(name, {
-        ...existing_event,
-        detail: existing_event.detail === undefined ? default_detail : existing_event.detail,
-        description: existing_event.description || event_description,
-        deprecated: existing_event.deprecated ?? deprecated,
-        tags: merged_tags,
-        source: source || existing_event.source,
-      });
-    } else {
-      this.events.set(name, {
-        type: "dispatched",
-        name,
-        detail: default_detail,
-        description: event_description,
-        deprecated,
-        tags,
-        source,
-      });
-    }
-  }
-
-  private normalizeRunesCallbackProps(actuallyDispatchedEvents: Set<string>) {
-    if (this.syntaxMode !== "runes") return;
-
-    for (const [eventName, event] of Array.from(this.events.entries())) {
-      if (event.type !== "dispatched") continue;
-      if (actuallyDispatchedEvents.has(eventName) || this.forwardedEvents.has(eventName)) continue;
-
-      const callbackPropName = `on${eventName}`;
-      const prop = this.props.get(callbackPropName);
-      if (!prop) continue;
-
-      const hasExplicitPropTyping =
-        prop.type !== undefined || prop.params !== undefined || prop.returnType !== undefined;
-      const callbackType =
-        event.detail === undefined || event.detail === "undefined" || event.detail === "null"
-          ? "() => void"
-          : `(detail: ${event.detail}) => void`;
-
-      this.props.set(callbackPropName, {
-        ...prop,
-        description: prop.description ?? event.description,
-        type: hasExplicitPropTyping ? prop.type : callbackType,
-        typeSource: hasExplicitPropTyping ? prop.typeSource : "inferred",
-        isFunction: true,
-      });
-
-      this.events.delete(eventName);
-    }
-  }
-
-  /**
-   * Parses custom types, events, slots, and other JSDoc annotations from component comments.
-   *
-   * Scans the entire source for JSDoc comment blocks and extracts structured information
-   * about events, typedefs, callbacks, slots, extends, restProps, and generics. Handles complex
-   * description extraction logic that supports both inline descriptions and preceding
-   * line descriptions.
-   *
-   * @example
-   * ```ts
-   * // Parses comments like:
-   * /**
-   *  * @event {CustomEvent} change - Fires when value changes
-   *  * @property {string} value - The new value
-   *  * @property {number} timestamp - When it changed
-   *  *\/
-   *
-   * // Or:
-   * /**
-   *  * Description for the event
-   *  * @event change
-   *  *\/
-   * ```
-   */
-  private parseCustomTypes() {
-    if (!this.source) return;
-    let commentSearchOffset = 0;
-    for (const { tags, description: commentDescription, source: blockSource } of parseComment(this.source, {
-      spacing: "preserve",
-    })) {
-      const blockText = blockSource.map((line) => line.source).join("\n");
-      const blockStartOffset = this.source.indexOf(blockText, commentSearchOffset);
-      const commentBlockStartOffset = blockStartOffset === -1 ? undefined : blockStartOffset;
-      if (blockStartOffset !== -1) {
-        commentSearchOffset = blockStartOffset + blockText.length;
-      }
-
-      let currentEventName: string | undefined;
-      let currentEventType: string | undefined;
-      let currentEventDescription: string | undefined;
-      let currentEventDeprecated: DeprecatedValue | undefined;
-      let currentEventSource: SourceRange | undefined;
-      let currentEventTagLine: number | undefined;
-      let currentEventTags: JsDocPassthroughTag[] = [];
-      const eventProperties: Array<{
-        name: string;
-        type: string;
-        description?: string;
-        optional?: boolean;
-        default?: string;
-      }> = [];
-
-      let currentTypedefName: string | undefined;
-      let currentTypedefType: string | undefined;
-      let currentTypedefDescription: string | undefined;
-      const typedefProperties: Array<{
-        name: string;
-        type: string;
-        description?: string;
-        optional?: boolean;
-        default?: string;
-      }> = [];
-
-      let currentCallbackName: string | undefined;
-      let currentCallbackDescription: string | undefined;
-      const callbackParams: Array<{
-        name: string;
-        type: string;
-        optional?: boolean;
-      }> = [];
-      let callbackReturnType: string | undefined;
-
-      /**
-       * Track if we've used the comment block description for any tag in this block.
-       * Only the first tag (that needs a description) should use the comment block
-       * description to avoid duplicating it across multiple tags.
-       */
-      let commentDescriptionUsed = false;
-      let isFirstTag = true;
-      const pendingTags: JsDocPassthroughTag[] = [];
-      /** `@deprecated` for the next `@slot` / `@snippet` in this block. */
-      let pendingDeprecated: DeprecatedValue | undefined;
-
-      /**
-       * Build a map of line numbers to their description content (for lines without tags).
-       * This allows us to find descriptions that appear on lines preceding tags.
-       */
-      const lineDescriptions = new Map<number, string>();
-      /**
-       * Track line numbers that contain tags so we can distinguish between
-       * description lines and tag lines when looking backwards.
-       */
-      const tagLineNumbers = new Set<number>();
-      /**
-       * Track description line numbers already claimed as preceding-description
-       * for some tag, so trailing-text scans (e.g. `finalizeEvent`) don't
-       * re-attribute them to the wrong owner.
-       */
-      const consumedDescriptionLines = new Set<number>();
-      for (const tagInfo of tags) {
-        if (tagInfo.source && tagInfo.source.length > 0) {
-          tagLineNumbers.add(tagInfo.source[0].number);
-        }
-      }
-      for (const line of blockSource) {
-        /**
-         * Only track lines that have a description but no tag.
-         * Also filter out lines that are just "}" (artifact from some comment formats
-         * that may include closing braces in the description).
-         */
-        if (!line.tokens.tag && line.tokens.description && line.tokens.description.trim() !== "}") {
-          lineDescriptions.set(line.number, line.tokens.description);
-        }
-      }
-
-      /**
-       * Helper to get the description from lines preceding a tag.
-       *
-       * Looks backwards from the tag until hitting another tag, collecting description
-       * lines. Stops after finding the first contiguous block of description lines,
-       * allowing blank lines to separate descriptions from tags.
-       *
-       * @param tagSource - The source information for the tag
-       * @returns The concatenated description from preceding lines, or undefined
-       *
-       * @example
-       * ```ts
-       * // Comment structure:
-       * /**
-       *  * This is a description
-       *  * that spans multiple lines
-       *  *
-       *  * @event change
-       *  *\/
-       * // getPrecedingDescription would return: "This is a description\nthat spans multiple lines"
-       * ```
-       */
-      const getPrecedingDescription = (tagSource: typeof blockSource): string | undefined => {
-        if (!tagSource || tagSource.length === 0) return undefined;
-        const tagLineNumber = tagSource[0].number;
-
-        /**
-         * Look backwards from the tag line to find the immediately preceding description.
-         * Collects description lines in order, stopping when we hit another tag or a
-         * non-blank non-description line.
-         */
-        const descLines: string[] = [];
-        const claimedLineNums: number[] = [];
-        let foundDescriptionBlock = false;
-
-        for (let lineNum = tagLineNumber - 1; lineNum >= 1; lineNum--) {
-          /**
-           * Stop if we hit a tag line - descriptions belong to the nearest preceding tag.
-           */
-          if (tagLineNumbers.has(lineNum)) {
-            break;
-          }
-
-          /**
-           * Check if this line has a description and add it to our collection.
-           * We unshift to maintain forward order when we reverse through the lines.
-           */
-          const desc = lineDescriptions.get(lineNum);
-          if (desc) {
-            descLines.unshift(desc);
-            claimedLineNums.unshift(lineNum);
-            foundDescriptionBlock = true;
-          } else if (foundDescriptionBlock) {
-            /**
-             * We've already found description lines and now hit a non-description line.
-             * Check if it's blank - if so, continue (blank lines can separate descriptions
-             * from tags); if not, stop here as we've reached the end of the description block.
-             */
-            const sourceLine = blockSource.find((l) => l.number === lineNum);
-            const isBlank =
-              !sourceLine ||
-              (!sourceLine.tokens.tag &&
-                (!sourceLine.tokens.description || sourceLine.tokens.description.trim() === ""));
-            if (!isBlank) {
-              /**
-               * Non-blank non-description line - stop here as we've reached content
-               * that's not part of the description.
-               */
-              break;
-            }
-            /**
-             * Blank line - continue (blank lines can separate descriptions from tags
-             * and are allowed in the description block).
-             */
-          }
-          /**
-           * If we haven't found any description yet, continue looking backwards
-           * to find the description block.
-           */
-        }
-        if (descLines.length === 0) return undefined;
-        for (const n of claimedLineNums) consumedDescriptionLines.add(n);
-        return descLines.join("\n").trim();
-      };
-
-      /**
-       * Finalizes the current event being built and adds it to the events map.
-       *
-       * If the event has properties defined via `@property` tags, builds a detail type
-       * from those properties. Otherwise, uses the type from `@type` tag or empty string.
-       * Stores the event description for later use in forwarded event detection.
-       *
-       * @example
-       * ```ts
-       * // After processing:
-       * // @event change
-       * // @type {CustomEvent}
-       * // @property {string} value
-       * // finalizeEvent() creates:
-       * // { type: "dispatched", name: "change", detail: "{ value: string }" }
-       * ```
-       */
-      const finalizeEvent = () => {
-        if (currentEventName !== undefined) {
-          /**
-           * Prefer an explicit `@type` shape over a property-derived object so
-           * unions and other non-object shapes survive intact. `@type {object}`
-           * (the documentation-only sentinel) falls through to property-derived
-           * construction so existing `@type {object} + @property` fixtures
-           * continue to work.
-           */
-          const explicitType =
-            currentEventType && currentEventType !== "object" && currentEventType !== "Object"
-              ? currentEventType
-              : undefined;
-          let detailType: string;
-          if (explicitType) {
-            detailType = explicitType;
-          } else if (eventProperties.length > 0) {
-            detailType = this.buildEventDetailFromProperties(eventProperties, currentEventName, true);
-          } else {
-            detailType = currentEventType || "";
-          }
-
-          /**
-           * Capture trailing free-text paragraphs inside the event's scope and
-           * append them to the event description. The scope extends from the
-           * `@event` tag line to the next non-event-internal tag (next `@event`,
-           * `@typedef`, `@callback`, `@slot`, `@snippet`, `@restProps`) or to
-           * the end of the comment block. Lines already claimed as
-           * preceding-description for another tag are skipped.
-           */
-          if (currentEventTagLine !== undefined) {
-            let scopeBoundaryLine: number | undefined;
-            for (const t of tags) {
-              const tLine = t.source?.[0]?.number;
-              if (typeof tLine !== "number") continue;
-              if (tLine <= currentEventTagLine) continue;
-              if (t.tag === "property" || t.tag === "type") continue;
-              scopeBoundaryLine = tLine;
-              break;
-            }
-            const trailing: string[] = [];
-            const sortedLineNums = Array.from(lineDescriptions.keys()).sort((a, b) => a - b);
-            for (const lineNum of sortedLineNums) {
-              if (lineNum <= currentEventTagLine) continue;
-              if (scopeBoundaryLine !== undefined && lineNum >= scopeBoundaryLine) continue;
-              if (consumedDescriptionLines.has(lineNum)) continue;
-              const desc = lineDescriptions.get(lineNum);
-              const trimmed = desc?.trim();
-              if (trimmed) {
-                trailing.push(trimmed);
-                consumedDescriptionLines.add(lineNum);
-              }
-            }
-            if (trailing.length > 0) {
-              const trailingText = trailing.join("\n");
-              currentEventDescription = currentEventDescription
-                ? `${currentEventDescription}\n${trailingText}`
-                : trailingText;
-            }
-          }
-
-          this.addDispatchedEvent({
-            name: currentEventName,
-            detail: detailType,
-            has_argument: false,
-            description: currentEventDescription,
-            deprecated: currentEventDeprecated,
-            tags: currentEventTags.length > 0 ? currentEventTags : undefined,
-            source: currentEventSource,
-          });
-          this.eventDescriptions.set(currentEventName, currentEventDescription);
-          this.jsDocEventNames.add(currentEventName);
-          eventProperties.length = 0;
-          currentEventName = undefined;
-          currentEventType = undefined;
-          currentEventDescription = undefined;
-          currentEventDeprecated = undefined;
-          currentEventSource = undefined;
-          currentEventTagLine = undefined;
-          currentEventTags = [];
-        }
-      };
-
-      /**
-       * Finalizes the current typedef being built and adds it to the typedefs map.
-       *
-       * Handles three cases:
-       * 1. Properties defined via `@property` tags - builds an object type
-       * 2. Inline type definition via `@typedef {type}` - uses the type directly
-       * 3. No type specified - defaults to empty object type
-       *
-       * @example
-       * ```ts
-       * // Case 1: With properties
-       * // @typedef User
-       * // @property {string} name
-       * // @property {number} age
-       * // Result: type User = { name: string; age: number; }
-       *
-       * // Case 2: Inline type
-       * // @typedef {string | number} ID
-       * // Result: type ID = string | number
-       *
-       * // Case 3: No type
-       * // @typedef Empty
-       * // Result: type Empty = {}
-       * ```
-       */
-      const finalizeTypedef = () => {
-        if (currentTypedefName !== undefined) {
-          let typedefType: string;
-          let typedefTs: string;
-
-          if (typedefProperties.length > 0) {
-            /**
-             * Build type alias with property descriptions from `@property` tags.
-             * Use multiline formatting for better readability.
-             */
-            typedefType = this.buildEventDetailFromProperties(typedefProperties, undefined, true);
-            typedefTs = `type ${currentTypedefName} = ${typedefType}`;
-          } else if (currentTypedefType) {
-            /**
-             * Use inline type definition (existing behavior).
-             * Only emit `interface X {...}` when the body is a single balanced
-             * object literal. Unions/intersections (e.g. `{...} | {...}`) and
-             * other shapes are emitted as `type X = ...` aliases so they remain
-             * valid TypeScript.
-             */
-            typedefType = currentTypedefType;
-            typedefTs = isSingleObjectLiteral(typedefType)
-              ? `interface ${currentTypedefName} ${typedefType}`
-              : `type ${currentTypedefName} = ${typedefType}`;
-          } else {
-            /**
-             * No type or properties specified, default to empty object type.
-             */
-            typedefType = "{}";
-            typedefTs = `type ${currentTypedefName} = ${typedefType}`;
-          }
-
-          this.typedefs.set(currentTypedefName, {
-            type: typedefType,
-            name: currentTypedefName,
-            description: ComponentParser.assignValue(currentTypedefDescription),
-            ts: typedefTs,
-          });
-
-          typedefProperties.length = 0;
-          currentTypedefName = undefined;
-          currentTypedefType = undefined;
-          currentTypedefDescription = undefined;
-        }
-      };
-
-      /**
-       * Finalizes the current callback being built and adds it to the typedefs map.
-       *
-       * Builds a function type from accumulated `@param` and `@returns` tags.
-       *
-       * @example
-       * ```ts
-       * // @callback OnChange
-       * // @param {string} value
-       * // @param {number} index
-       * // @returns {void}
-       * // Result: type OnChange = (value: string, index: number) => void
-       * ```
-       */
-      const finalizeCallback = () => {
-        if (currentCallbackName !== undefined) {
-          const params = callbackParams
-            .map(({ name, type, optional }) => {
-              const optionalMarker = optional ? "?" : "";
-              return `${name}${optionalMarker}: ${type}`;
-            })
-            .join(", ");
-          const returnType = callbackReturnType || "void";
-          const callbackType = `(${params}) => ${returnType}`;
-          const callbackTs = `type ${currentCallbackName} = ${callbackType}`;
-
-          this.typedefs.set(currentCallbackName, {
-            type: callbackType,
-            name: currentCallbackName,
-            description: ComponentParser.assignValue(currentCallbackDescription),
-            ts: callbackTs,
-          });
-
-          callbackParams.length = 0;
-          callbackReturnType = undefined;
-          currentCallbackName = undefined;
-          currentCallbackDescription = undefined;
-        }
-      };
-
-      /**
-       * `@template` in the same block as `@slot` / `@snippet` is slot documentation only
-       * (e.g. describing a generic for prose); it must not set component-level generics or
-       * passthrough to slot output.
-       *
-       * Exception: when the same block also declares `@extends` / `@extendProps`, the
-       * `@template` parameter is component-level — it parameterizes the inherited props
-       * (e.g. `ButtonProps<Icon>`) and the component class. In that case the `@template`
-       * must still set generics even though a `@slot` shares the block.
-       */
-      const blockHasSlotOrSnippetTag = tags.some((t) => t.tag === "slot" || t.tag === "snippet");
-      const blockHasExtendsTag = tags.some((t) => t.tag === "extends" || t.tag === "extendProps");
-
-      for (const {
-        tag,
-        type: tagType,
-        name,
-        description,
-        optional,
-        default: defaultValue,
-        source: tagSource,
-      } of tags) {
-        const type = this.aliasType(tagType);
-        /**
-         * Get the description from the line immediately before this tag.
-         * This supports the pattern where descriptions appear on lines preceding tags.
-         */
-        const precedingDescription = getPrecedingDescription(tagSource);
-
-        switch (tag) {
-          case "extends":
-          case "extendProps":
-            this.extends = {
-              interface: name,
-              import: type,
-            };
-            if (isFirstTag) isFirstTag = false;
-            break;
-          case "restProps": {
-            /**
-             * Prefer inline description (e.g., "@restProps {type} description" or "@restProps {type} - description"),
-             * fall back to preceding line description, then fall back to the
-             * comment block description (only for first tag if not already used).
-             *
-             * Note: comment-parser treats the first word after the type as "name" and the rest as "description",
-             * so we combine them to form the full inline description for @restProps.
-             */
-            const rawInlineDesc = name ? (description ? `${name} ${description}` : name) : description;
-            const inlineRestPropsDesc = cleanDescription(rawInlineDesc);
-            let restPropsDesc = inlineRestPropsDesc || precedingDescription;
-            if (!restPropsDesc && isFirstTag && !commentDescriptionUsed && commentDescription) {
-              restPropsDesc = commentDescription;
-              commentDescriptionUsed = true;
-            }
-            this.rest_props = {
-              type: "Element",
-              name: type,
-              description: restPropsDesc || undefined,
-            };
-            if (isFirstTag) isFirstTag = false;
-            break;
-          }
-          case "slot":
-          case "snippet": {
-            /**
-             * Prefer inline description (e.g., "@slot name - description" or "@snippet name - description"),
-             * then comment block prose (when still eligible), then lines immediately above `@slot`
-             * only when no passthrough tags precede `@slot` (avoids treating `@example` fenced code
-             * as the slot description).
-             */
-            const inlineSlotDesc = cleanDescription(getInlineTagDescription(tagSource));
-            let slotDesc = inlineSlotDesc;
-            if (!slotDesc && isFirstTag && !commentDescriptionUsed && commentDescription) {
-              slotDesc = commentDescription;
-              commentDescriptionUsed = true;
-            }
-            if (!slotDesc && pendingTags.length === 0) {
-              slotDesc = precedingDescription;
-            }
-            if (isFirstTag) isFirstTag = false;
-            this.addSlot({
-              slot_name: name,
-              slot_props: type,
-              slot_description: slotDesc || undefined,
-              slot_deprecated: pendingDeprecated,
-              slot_tags: pendingTags.length > 0 ? [...pendingTags] : undefined,
-              source: this.sourceRangeFromCommentTag(blockSource, tagSource, commentBlockStartOffset),
-            });
-            pendingTags.length = 0;
-            pendingDeprecated = undefined;
-            break;
-          }
-          case "event": {
-            /**
-             * Finalize any previous event being built before starting a new one.
-             */
-            finalizeEvent();
-
-            /**
-             * Start tracking new event with its name and type.
-             * Prefer inline description (e.g., "@event {type} name - description"),
-             * fall back to preceding line, then fall back to comment block description
-             * (only for first tag if not already used).
-             */
-            currentEventName = name;
-            currentEventType = type;
-            currentEventTagLine = tagSource && tagSource.length > 0 ? tagSource[0].number : undefined;
-            const inlineEventDesc = cleanDescription(getInlineTagDescription(tagSource));
-            currentEventDescription = inlineEventDesc || precedingDescription;
-            if (!currentEventDescription && isFirstTag && !commentDescriptionUsed && commentDescription) {
-              currentEventDescription = commentDescription;
-              commentDescriptionUsed = true;
-            }
-            currentEventSource = this.sourceRangeFromCommentTag(blockSource, tagSource, commentBlockStartOffset);
-            if (isFirstTag) isFirstTag = false;
-            break;
-          }
-          case "type":
-            /**
-             * Track the `@type` tag for the current event.
-             * This allows specifying the event detail type separately from the `@event` tag.
-             */
-            if (currentEventName !== undefined) {
-              currentEventType = type;
-            }
-            break;
-          case "param":
-            /**
-             * Accumulate parameters for the current callback being built.
-             */
-            if (currentCallbackName !== undefined) {
-              callbackParams.push({ name, type, optional: optional || false });
-            }
-            break;
-          case "returns":
-          case "return":
-            /**
-             * Track the return type for the current callback being built.
-             */
-            if (currentCallbackName !== undefined) {
-              callbackReturnType = type;
-            }
-            break;
-          case "property": {
-            /**
-             * Collect properties for the current event or typedef.
-             * Properties are accumulated until the event/typedef is finalized.
-             */
-            const propertyData = {
-              name,
-              type,
-              description: cleanDescription(getInlineTagDescription(tagSource)),
-              optional: optional || false,
-              default: defaultValue,
-            };
-
-            if (currentEventName !== undefined) {
-              eventProperties.push(propertyData);
-            } else if (currentTypedefName !== undefined) {
-              typedefProperties.push(propertyData);
-            }
-            break;
-          }
-          case "typedef": {
-            /**
-             * Finalize any previous typedef being built before starting a new one.
-             */
-            finalizeTypedef();
-
-            /**
-             * Start tracking new typedef with its name and type.
-             * Prefer inline description, fall back to preceding line description,
-             * then fall back to comment block description (only for first tag if not already used).
-             */
-            currentTypedefName = name;
-            currentTypedefType = type;
-            const inlineTypedefDesc = cleanDescription(getInlineTagDescription(tagSource));
-            currentTypedefDescription = inlineTypedefDesc || precedingDescription;
-            if (!currentTypedefDescription && isFirstTag && !commentDescriptionUsed && commentDescription) {
-              currentTypedefDescription = commentDescription;
-              commentDescriptionUsed = true;
-            }
-            if (isFirstTag) isFirstTag = false;
-            break;
-          }
-          case "callback": {
-            /**
-             * Finalize any previous callback being built before starting a new one.
-             */
-            finalizeCallback();
-
-            /**
-             * Start tracking new callback with its name.
-             * Subsequent @param and @returns tags will be accumulated for this callback.
-             */
-            currentCallbackName = name;
-            const inlineCallbackDesc = cleanDescription(getInlineTagDescription(tagSource));
-            currentCallbackDescription = inlineCallbackDesc || precedingDescription;
-            if (!currentCallbackDescription && isFirstTag && !commentDescriptionUsed && commentDescription) {
-              currentCallbackDescription = commentDescription;
-              commentDescriptionUsed = true;
-            }
-            if (isFirstTag) isFirstTag = false;
-            break;
-          }
-          case "generics":
-            this.generics = [name, type];
-            if (isFirstTag) isFirstTag = false;
-            break;
-          case "template": {
-            // Build constraint from standard JSDoc @template syntax:
-            //   @template T              → type="", name="T", default=undefined
-            //   @template {string} T     → type="string", name="T", default=undefined
-            //   @template [T=string]     → type="", name="T", default="string"
-            //   @template {Foo} [T=Foo]  → type="Foo", name="T", default="Foo"
-            let constraint = name;
-            if (type) constraint = `${name} extends ${type}`;
-            if (defaultValue) constraint += ` = ${defaultValue}`;
-
-            if (blockHasSlotOrSnippetTag && !blockHasExtendsTag) {
-              this.deferredSlotBlockGenerics.push({ name, constraint });
-              break;
-            }
-
-            this.accumulateGeneric(name, constraint);
-            if (isFirstTag) isFirstTag = false;
-            break;
-          }
-          case "deprecated": {
-            const deprecatedValue = deprecatedValueFromParts(name, description);
-            if (currentEventName === undefined) {
-              pendingDeprecated ??= deprecatedValue;
-            } else {
-              currentEventDeprecated ??= deprecatedValue;
-            }
-            break;
-          }
-          case "enum":
-          case "class":
-          case "implements":
-          case "this":
-          case "namespace":
-          case "memberof":
-          case "module":
-          case "file":
-          case "overview":
-            /**
-             * JSDoc tags often used in the same block must be ignored
-             * as to not break the slot passthrough logic.
-             */
-            break;
-          default:
-            {
-              const passthroughTag = {
-                name: tag,
-                body: getPassthroughTagBodyFromSource(tagSource),
-              };
-              if (currentEventName !== undefined && IDE_PASSTHROUGH_TAGS.has(tag)) {
-                currentEventTags.push(passthroughTag);
-              } else {
-                pendingTags.push(passthroughTag);
-              }
-            }
-            break;
-        }
-      }
-
-      /**
-       * Finalize any remaining event, typedef, or callback that wasn't closed by a new tag.
-       * This handles cases where the comment block ends without starting a new tag.
-       */
-      finalizeEvent();
-      finalizeTypedef();
-      finalizeCallback();
-    }
-  }
-
-  /**
-   * Builds an event detail type string from an array of property definitions.
-   *
-   * Creates an inline object type with JSDoc comments for each property,
-   * including descriptions and default values. Used for both event details
-   * and typedef property definitions.
-   *
-   * @param properties - Array of property definitions with name, type, description, etc.
-   * @param _eventName - Optional event name (unused, kept for API consistency)
-   * @returns A string representation of the object type with JSDoc comments
-   *
-   * @example
-   * ```ts
-   * // Input:
-   * [ { name: "value", type: "string", description: "The new value" }, { name: "count", type: "number", optional: true, default: "0" } ]
-   * // Output:
-   * "{ /** The new value *\/ value: string; /** @default 0 *\/ count?: number; }"
-   * ```
-   */
-  private buildEventDetailFromProperties(
-    properties: Array<{ name: string; type: string; description?: string; optional?: boolean; default?: string }>,
-    _eventName?: string,
-    multiline = false,
-  ): string {
-    if (properties.length === 0) return "null";
-
-    /**
-     * Build inline object type with property descriptions as JSDoc comments.
-     * Each property gets a JSDoc comment if it has a description or default value.
-     */
-    const props = properties
-      .map(({ name, type, description, optional, default: defaultValue }) => {
-        const optionalMarker = optional ? "?" : "";
-        let comment = description || "";
-
-        /**
-         * Add default value to description if present.
-         * If there's already a description, append the default; otherwise use only the default.
-         */
-        if (defaultValue && comment) {
-          comment = `${comment} @default ${defaultValue}`;
-        } else if (defaultValue) {
-          comment = `@default ${defaultValue}`;
-        }
-
-        if (comment) {
-          if (multiline) {
-            return `/** ${comment} */\n  ${name}${optionalMarker}: ${type};`;
-          }
-          return `/** ${comment} */ ${name}${optionalMarker}: ${type};`;
-        }
-        return `${name}${optionalMarker}: ${type};`;
-      })
-      .join(multiline ? "\n  " : " ");
-
-    return multiline ? `{\n  ${props}\n}` : `{ ${props} }`;
-  }
-
-  /**
-   * Generates a TypeScript type name for a context key.
-   *
-   * Converts kebab-case, snake_case, or space-separated keys into PascalCase
-   * with "Context" suffix. Splits on dashes, underscores, and spaces, then
-   * capitalizes each part.
-   *
-   * @param key - The context key (e.g., "simple-modal", "tabs_context", "My Context")
-   * @returns The generated type name (e.g., "SimpleModalContext", "TabsContext", "MyContextContext")
-   *
-   * @example
-   * ```ts
-   * generateContextTypeName("simple-modal")  // Returns: "SimpleModalContext"
-   * generateContextTypeName("Tabs")           // Returns: "TabsContext"
-   * generateContextTypeName("user_settings") // Returns: "UserSettingsContext"
-   * generateContextTypeName("my context")    // Returns: "MyContextContext"
-   * ```
-   */
-  private generateContextTypeName(key: string): string {
-    const parts = key.split(CONTEXT_KEY_SPLIT_REGEX);
-    const capitalized = parts.map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join("");
-    return `${capitalized}Context`;
   }
 
   /**
@@ -4452,12 +954,12 @@ export default class ComponentParser {
    * ```
    */
   private buildVariableInfoCache() {
-    if (!this.source) return;
+    if (!this.ctx.source) return;
 
-    if (!this.sourceLinesCache) {
-      this.sourceLinesCache = this.source.split("\n");
+    if (!this.ctx.sourceLinesCache) {
+      this.ctx.sourceLinesCache = this.ctx.source.split("\n");
     }
-    const lines = this.sourceLinesCache;
+    const lines = this.ctx.sourceLinesCache;
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
@@ -4504,9 +1006,9 @@ export default class ComponentParser {
              * Store in cache for later lookup.
              */
             const parsed = parseComment(commentBlock, { spacing: "preserve" });
-            const { type: typeTag, description } = this.getCommentTags(parsed);
+            const { type: typeTag, description } = getCommentTags(this, parsed);
             if (typeTag) {
-              this.variableInfoCache.set(varName, {
+              this.ctx.variableInfoCache.set(varName, {
                 type: this.aliasType(typeTag.type),
                 description: description || typeTag.description,
               });
@@ -4585,7 +1087,7 @@ export default class ComponentParser {
    * // Returns: { type: "number", description: "The count value" }
    * ```
    */
-  private findVariableTypeAndDescription(varName: string): { type: string; description?: string } | null {
+  findVariableTypeAndDescription(varName: string): { type: string; description?: string } | null {
     const prop = this.getPropByLocalOrPublic(varName);
     if (prop?.type) {
       return {
@@ -4594,7 +1096,7 @@ export default class ComponentParser {
       };
     }
 
-    const cached = this.variableInfoCache.get(varName);
+    const cached = this.ctx.variableInfoCache.get(varName);
     if (cached) {
       return cached;
     }
@@ -4603,12 +1105,12 @@ export default class ComponentParser {
      * Search through the source code directly for JSDoc comments.
      * This is a fallback when the variable wasn't found in the cache.
      */
-    if (!this.source) return null;
+    if (!this.ctx.source) return null;
 
-    if (!this.sourceLinesCache) {
-      this.sourceLinesCache = this.source.split("\n");
+    if (!this.ctx.sourceLinesCache) {
+      this.ctx.sourceLinesCache = this.ctx.source.split("\n");
     }
-    const lines = this.sourceLinesCache;
+    const lines = this.ctx.sourceLinesCache;
 
     const [constRegex, letRegex, funcRegex] = ComponentParser.getVarNameRegexes(varName);
 
@@ -4654,7 +1156,7 @@ export default class ComponentParser {
              * Parse the JSDoc to extract `@type` tag and description.
              */
             const parsed = parseComment(commentBlock, { spacing: "preserve" });
-            const { type: typeTag, description } = this.getCommentTags(parsed);
+            const { type: typeTag, description } = getCommentTags(this, parsed);
             if (typeTag) {
               return {
                 type: this.aliasType(typeTag.type),
@@ -4671,317 +1173,6 @@ export default class ComponentParser {
   }
 
   /**
-   * Parses a context value from an AST node to extract type information.
-   *
-   * Handles two cases:
-   * 1. ObjectExpression: Parses object literal properties and infers types from variable references
-   * 2. Identifier: Looks up the variable's type from JSDoc comments
-   *
-   * @param node - The AST node representing the context value
-   * @param key - The context key name
-   * @returns A ComponentContext object with parsed properties, or null if parsing fails
-   *
-   * @example
-   * ```ts
-   * // Case 1: Object literal
-   * // setContext('modal', { open, close })
-   * // Returns: { key: "modal", typeName: "ModalContext", properties: [...] }
-   *
-   * // Case 2: Variable reference
-   * // setContext('tabs', tabContext)
-   * // Returns: { key: "tabs", typeName: "TabsContext", properties: [...] }
-   * ```
-   */
-  private parseContextValue(node: Node, key: string): ComponentContext | null {
-    if (!node || typeof node !== "object" || !("type" in node)) return null;
-
-    if (node.type === "ObjectExpression") {
-      /**
-       * Parse object literal: { open, close }
-       * Extract each property and try to infer its type from the variable it references.
-       */
-      const properties: ComponentContextProp[] = [];
-      if (!isObjectExpression(node)) {
-        return null;
-      }
-      const objExpr = node;
-
-      for (const prop of objExpr.properties) {
-        if (prop.type !== "Property") continue;
-
-        const propName = this.getPropertyName(prop.key);
-        if (!propName) continue;
-
-        /**
-         * Try to find the variable definition to get its JSDoc type.
-         * If not found, default to "any" and optionally warn in verbose mode.
-         */
-        let propType = "any";
-        let propDescription: string | undefined;
-
-        if (isIdentifier(prop.value)) {
-          const varName = prop.value.name;
-          const varInfo = this.findVariableTypeAndDescription(varName);
-          if (varInfo) {
-            propType = varInfo.type;
-            propDescription = varInfo.description;
-          } else {
-            this.recordDiagnostic(
-              "context-any-type",
-              propName,
-              `Context "${key}" property "${propName}" has no type annotation; defaulted to "any".`,
-            );
-            if (this.options?.verbose) {
-              console.warn(`Warning: Context "${key}" property "${propName}" has no type annotation. Using "any".`);
-            }
-          }
-        } else if (
-          prop.value &&
-          typeof prop.value === "object" &&
-          "type" in prop.value &&
-          (prop.value.type === "ArrowFunctionExpression" || prop.value.type === "FunctionExpression")
-        ) {
-          const funcExpr = prop.value as ArrowFunctionExpression | FunctionExpression;
-          const params =
-            funcExpr.params
-              ?.map((p) => {
-                if (isIdentifier(p)) {
-                  return `${p.name || "arg"}: any`;
-                }
-                return "arg: any";
-              })
-              .join(", ") || "";
-          propType = `(${params}) => any`;
-        } else if (isLiteral(prop.value)) {
-          propType = prop.value.value == null ? "null" : typeof prop.value.value;
-        }
-
-        properties.push({
-          name: propName,
-          type: propType,
-          description: propDescription,
-          optional: false,
-        });
-      }
-
-      return {
-        key,
-        typeName: this.generateContextTypeName(key),
-        properties,
-        description: undefined,
-      };
-    } else if (isIdentifier(node)) {
-      /**
-       * setContext('key', someVariable)
-       * The context value is a direct variable reference.
-       * Look up the variable's type from its JSDoc comment.
-       */
-      const varName = node.name;
-      const varInfo = this.findVariableTypeAndDescription(varName);
-
-      if (varInfo) {
-        return {
-          key,
-          typeName: this.generateContextTypeName(key),
-          properties: [
-            {
-              name: varName,
-              type: varInfo.type,
-              description: varInfo.description,
-              optional: false,
-            },
-          ],
-        };
-      }
-
-      this.recordDiagnostic(
-        "context-any-type",
-        varName,
-        `Context "${key}" variable "${varName}" has no type annotation; defaulted to "any".`,
-      );
-      if (this.options?.verbose) {
-        console.warn(`Warning: Context "${key}" variable "${varName}" has no type annotation. Using "any".`);
-      }
-
-      /**
-       * Still create context with 'any' type even if we couldn't find type information.
-       * This ensures the context is documented even without type annotations.
-       */
-      return {
-        key,
-        typeName: this.generateContextTypeName(key),
-        properties: [
-          {
-            name: varName,
-            type: "any",
-            description: undefined,
-            optional: false,
-          },
-        ],
-      };
-    }
-
-    return null;
-  }
-
-  /**
-   * Resolve a `setContext` key to the string used in `{PascalCase}Context`.
-   *
-   * Accepts string literals, static template literals, `const`-bound identifiers
-   * (up to 5 indirection levels, same as `@default`), and `Symbol()` /
-   * `Symbol.for()`. Description-less symbols fall back to the binding name.
-   *
-   * @param keyArg - The first argument of the `setContext` call
-   * @param depth - Current identifier-resolution depth (internal recursion guard)
-   * @returns The resolved key string, or `null` when the key cannot be resolved at parse time
-   */
-  private resolveContextKey(keyArg: unknown, depth = 0): string | null {
-    if (!keyArg || typeof keyArg !== "object" || !("type" in keyArg)) return null;
-    const node = keyArg as Expression;
-
-    if (node.type === "Literal") {
-      return typeof node.value === "string" ? node.value : node.value == null ? null : String(node.value);
-    }
-
-    if (node.type === "TemplateLiteral") {
-      /** Static template only; interpolated templates return null. */
-      if (node.quasis?.length === 1) {
-        const cooked = node.quasis[0].value.cooked;
-        return cooked == null ? null : cooked;
-      }
-      return null;
-    }
-
-    if (node.type === "CallExpression" || node.type === "NewExpression") {
-      return this.resolveSymbolKeyDescription(node);
-    }
-
-    if (node.type === "Identifier") {
-      /** Follow const bindings, same 5-level cap as @default. */
-      if (depth >= 5) return null;
-      const resolvedInit = this.resolveConstInitializer(node.name);
-      if (resolvedInit && typeof resolvedInit === "object" && "type" in resolvedInit) {
-        const init = resolvedInit as Expression;
-        /** No description: use the binding name (e.g. KEY from `const KEY = Symbol()`). */
-        if (
-          (init.type === "CallExpression" || init.type === "NewExpression") &&
-          this.resolveSymbolKeyDescription(init) === ""
-        ) {
-          return node.name;
-        }
-        return this.resolveContextKey(init, depth + 1);
-      }
-      return null;
-    }
-
-    return null;
-  }
-
-  /**
-   * Extracts the description string from a `Symbol(...)` or `Symbol.for(...)` call
-   * used as a context key.
-   *
-   * @param node - A CallExpression or NewExpression AST node
-   * @returns The symbol description (`""` when the symbol has no static description),
-   *   or `null` when the node is not a `Symbol()` / `Symbol.for()` call
-   */
-  private resolveSymbolKeyDescription(node: CallExpression | NewExpression): string | null {
-    const callee = node.callee;
-    if (!callee || typeof callee !== "object" || !("type" in callee)) return null;
-
-    const isSymbolCall = callee.type === "Identifier" && callee.name === "Symbol";
-    const isSymbolFor =
-      callee.type === "MemberExpression" &&
-      !callee.computed &&
-      callee.object.type === "Identifier" &&
-      callee.object.name === "Symbol" &&
-      callee.property.type === "Identifier" &&
-      callee.property.name === "for";
-
-    if (!isSymbolCall && !isSymbolFor) return null;
-
-    const firstArg = node.arguments[0];
-    if (!firstArg || typeof firstArg !== "object" || !("type" in firstArg)) return "";
-
-    if (firstArg.type === "Literal" && typeof firstArg.value === "string") return firstArg.value;
-    if (firstArg.type === "TemplateLiteral" && firstArg.quasis?.length === 1) {
-      return firstArg.quasis[0].value.cooked ?? "";
-    }
-
-    /** Non-string description: treat as unnamed symbol. */
-    return "";
-  }
-
-  /**
-   * Parses a `setContext` call expression to extract context information.
-   *
-   * Reads the context key from the first argument and the value from the second.
-   * Unresolved keys log a warning and are skipped.
-   *
-   * @param node - The AST node (should be a CallExpression)
-   * @param _parent - The parent node (unused)
-   *
-   * @example
-   * ```ts
-   * // Parses: setContext('modal', { open, close })
-   * // Extracts: key = "modal", value = { open, close }
-   *
-   * // Parses: const KEY = "modal"; setContext(KEY, value) // resolves to "modal"
-   * // Parses: setContext(Symbol("modal"), value)          // resolves to "modal"
-   *
-   * // Diagnostic: setContext(dynamicKey, value) // key cannot be statically resolved
-   * ```
-   */
-  private parseSetContextCall(node: Node, _parent?: Node) {
-    /**
-     * Extract context key (first argument).
-     * Must be a CallExpression with at least one argument.
-     */
-    if (!node || typeof node !== "object" || !("type" in node) || node.type !== "CallExpression") {
-      return;
-    }
-    const callExpr = node as CallExpression;
-    const keyArg = callExpr.arguments[0];
-    if (!keyArg) return;
-
-    const contextKey = this.resolveContextKey(keyArg);
-
-    if (!contextKey) {
-      /** Dynamic key: warn and skip. */
-      const location = this.componentFilePath ? ` in ${this.componentFilePath}` : "";
-      console.warn(
-        `Warning: Could not resolve setContext key${location}. Use a string literal, const-bound string, or Symbol(). Skipping context type generation.`,
-      );
-      return;
-    }
-
-    /**
-     * Extract context value (second argument).
-     * This is parsed to extract type information from the value.
-     */
-    const valueArg = callExpr.arguments[1];
-    if (!valueArg) return;
-
-    /**
-     * Parse the context object to extract properties and types.
-     */
-    const contextInfo = this.parseContextValue(valueArg, contextKey);
-    if (contextInfo) {
-      /**
-       * Check if context with same key already exists.
-       * If it does, warn and use the first occurrence (don't overwrite).
-       */
-      if (this.contexts.has(contextKey)) {
-        if (this.options?.verbose) {
-          console.warn(`Warning: Multiple setContext calls with key "${contextKey}". Using first occurrence.`);
-        }
-      } else {
-        this.contexts.set(contextKey, contextInfo);
-      }
-    }
-  }
-
-  /**
    * Cleans up all parser state, resetting the instance for reuse.
    *
    * Clears all maps, caches, and resets all state variables to their initial
@@ -4995,56 +1186,16 @@ export default class ComponentParser {
    * parser.parseSvelteComponent(source2, diagnostics2); // Fresh parse
    * ```
    */
-  private accumulateGeneric(name: string, constraint: string): void {
-    if (this.generics) {
-      this.generics = [`${this.generics[0]},${name}`, `${this.generics[1]}, ${constraint}`];
+  accumulateGeneric(name: string, constraint: string): void {
+    if (this.ctx.generics) {
+      this.ctx.generics = [`${this.ctx.generics[0]},${name}`, `${this.ctx.generics[1]}, ${constraint}`];
     } else {
-      this.generics = [name, constraint];
+      this.ctx.generics = [name, constraint];
     }
   }
 
   public cleanup() {
-    this.syntaxMode = "legacy";
-    this.scriptLanguage = undefined;
-    this.source = undefined;
-    this.compiled = undefined;
-    this.parsed = undefined;
-    this.rest_props = undefined;
-    this.extends = undefined;
-    this.componentComment = undefined;
-    this.componentCommentSource = undefined;
-    this.reactive_vars.clear();
-    this.vars.clear();
-    this.funcDecls.clear();
-    this.props.clear();
-    this.moduleExports.clear();
-    this.slots.clear();
-    this.events.clear();
-    this.eventDescriptions.clear();
-    this.forwardedEvents.clear();
-    this.typedefs.clear();
-    this.generics = null;
-    this.deferredSlotBlockGenerics.length = 0;
-    this.bindings.clear();
-    this.contexts.clear();
-    this.variableInfoCache.clear();
-    this.propLocalToPublicName.clear();
-    this.restPropLocals.clear();
-    this.wholePropsLocals.clear();
-    this.snippetPropLocals.clear();
-    this.runesPropsDeclarationMetadataByDeclaratorStart.clear();
-    this.explicitPropTypesByName.clear();
-    this.typeImportBindingsByLocalName.clear();
-    this.localTypeDeclarationsByName.clear();
-    this.typedRunesPropsDeclarations.length = 0;
-    this.componentScope.clear();
-    this.scopeDeclarations = new WeakMap();
-    this.activeScopes.length = 0;
-    this.diagnosticRecords.length = 0;
-    this.componentFilePath = "";
-    this.jsDocEventNames.clear();
-    this.sourceLinesCache = undefined;
-    this.sourceLineStartOffsetsCache = undefined;
+    this.ctx = createParserContext();
   }
 
   /**
@@ -5154,14 +1305,14 @@ export default class ComponentParser {
     }
 
     this.cleanup();
-    this.componentFilePath = diagnostics.filePath;
+    this.ctx.componentFilePath = diagnostics.filePath;
     /**
      * Strip TypeScript directives from script blocks only to prevent interference with JSDoc.
      * TypeScript directive comments can break JSDoc parsing if not removed.
      */
     const cleanedSource = ComponentParser.stripTypeScriptDirectivesFromScripts(source);
-    this.source = cleanedSource;
-    this.buildRunesPropTypeMetadata();
+    this.ctx.source = cleanedSource;
+    buildRunesPropTypeMetadata(this, this.ctx);
 
     /**
      * Parse once - compile() internally calls parse(), so we can extract the AST from it.
@@ -5171,23 +1322,23 @@ export default class ComponentParser {
       generate: false,
       modernAst: false,
     });
-    this.compiled = compiled;
-    this.syntaxMode = compiled.metadata.runes ? "runes" : "legacy";
+    this.ctx.compiled = compiled;
+    this.ctx.syntaxMode = compiled.metadata.runes ? "runes" : "legacy";
 
     /**
      * Reuse the AST from compilation instead of parsing again.
      * The compile result includes the parsed AST, so we use that if available,
      * otherwise fall back to parsing directly.
      */
-    this.parsed =
+    this.ctx.parsed =
       (compiled.ast as LegacyAstRoot | undefined) || (parse(cleanedSource, { modern: false }) as LegacyAstRoot);
 
-    this.sourceLinesCache = this.source.split("\n");
+    this.ctx.sourceLinesCache = this.ctx.source.split("\n");
     this.buildVariableInfoCache();
-    this.parseCustomTypes();
+    parseCustomTypes(this.ctx, this);
 
-    if (this.parsed?.module) {
-      walk(this.parsed?.module as unknown as Node, {
+    if (this.ctx.parsed?.module) {
+      walk(this.ctx.parsed?.module as unknown as Node, {
         enter: (node) => {
           if (node.type === "ExportNamedDeclaration") {
             /**
@@ -5250,7 +1401,7 @@ export default class ComponentParser {
               const localPropName = (id as Identifier).name;
               prop_name = localPropName;
               kind = variableDeclarationKindToComponentPropKind(varDecl.kind);
-              const initResult = init == null ? { isFunction: false } : this.processInitializer(init);
+              const initResult = init == null ? { isFunction: false } : processInitializer(this, this.ctx, init);
               ({ value, type: inferredType, isFunction, defaultValue } = initResult);
               resolvedJSDoc = initResult;
               explicitType = this.getExplicitPropType(localPropName);
@@ -5259,7 +1410,7 @@ export default class ComponentParser {
               return;
             }
 
-            const jsdocInfo = this.processNodeJSDoc(node);
+            const jsdocInfo = processNodeJSDoc(this.ctx, this, node);
             if (jsdocInfo) {
               if (jsdocInfo.type && explicitType === undefined) type = jsdocInfo.type;
               params = jsdocInfo.params;
@@ -5291,8 +1442,8 @@ export default class ComponentParser {
               }
             }
 
-            if (!description && type && this.typedefs.has(type)) {
-              description = this.typedefs.get(type)?.description;
+            if (!description && type && this.ctx.typedefs.has(type)) {
+              description = this.ctx.typedefs.get(type)?.description;
             }
 
             const typeSource = this.resolveTypeSource({
@@ -5323,7 +1474,7 @@ export default class ComponentParser {
               isRequired: false,
               constant: kind === "const",
               reactive: false,
-              source: this.sourceRangeFromNode(node),
+              source: sourceRangeFromNode(this.ctx, node),
             });
           }
         },
@@ -5334,26 +1485,26 @@ export default class ComponentParser {
     const callees: { name: string; arguments: Array<Expression | unknown>; source?: SourceRange }[] = [];
     const componentRoot = {
       type: "ComponentRoot",
-      instance: this.parsed.instance,
-      html: this.parsed.html,
+      instance: this.ctx.parsed.instance,
+      html: this.ctx.parsed.html,
     } as unknown as Node;
 
-    this.buildScopeDeclarations(componentRoot);
-    this.activeScopes.push(this.componentScope);
+    buildScopeDeclarations(this, this.ctx, componentRoot);
+    this.ctx.activeScopes.push(this.ctx.componentScope);
 
     walk(componentRoot, {
       enter: (node, parent, _prop) => {
-        const nodeScope = this.scopeDeclarations.get(node as unknown as object);
+        const nodeScope = this.ctx.scopeDeclarations.get(node as unknown as object);
         if (nodeScope) {
-          this.activeScopes.push(nodeScope);
+          this.ctx.activeScopes.push(nodeScope);
         }
 
         if (node.type === "AssignmentExpression") {
-          this.markReactivePropsFromMutationTarget((node as AssignmentExpression).left);
+          markReactivePropsFromMutationTarget(this.ctx, (node as AssignmentExpression).left);
         }
 
         if (node.type === "UpdateExpression") {
-          this.markReactivePropsFromMutationTarget((node as UpdateExpression).argument);
+          markReactivePropsFromMutationTarget(this.ctx, (node as UpdateExpression).argument);
         }
 
         if (node.type === "CallExpression") {
@@ -5377,14 +1528,14 @@ export default class ComponentParser {
           }
 
           if (calleeName === "setContext") {
-            this.parseSetContextCall(node, parent ?? undefined);
+            parseSetContextCall(this.ctx, this, node, parent ?? undefined);
           }
 
           if (calleeName) {
             callees.push({
               name: calleeName,
               arguments: callExpr.arguments,
-              source: this.sourceRangeFromNode(callExpr),
+              source: sourceRangeFromNode(this.ctx, callExpr),
             });
           }
         }
@@ -5398,21 +1549,21 @@ export default class ComponentParser {
           const spreadNode = node as { type: string; expression?: { name?: string } };
           if (
             spreadNode.expression?.name === "$$restProps" ||
-            this.restPropLocals.has(spreadNode.expression?.name ?? "")
+            this.ctx.restPropLocals.has(spreadNode.expression?.name ?? "")
           ) {
-            this.maybeSetRestProps(parent);
+            maybeSetRestProps(this.ctx, parent);
           }
         }
 
         if (node.type === "FunctionDeclaration") {
           const funcDecl = node as unknown as FunctionDeclaration;
           if (funcDecl.id?.name) {
-            this.funcDecls.set(funcDecl.id.name, funcDecl);
+            this.ctx.funcDecls.set(funcDecl.id.name, funcDecl);
           }
         }
 
         if (node.type === "VariableDeclaration") {
-          this.vars.add(node as unknown as VariableDeclaration);
+          this.ctx.vars.add(node as unknown as VariableDeclaration);
           if (
             parent &&
             typeof parent === "object" &&
@@ -5422,7 +1573,7 @@ export default class ComponentParser {
               isCallExpressionNamed(declarator.init, "$props"),
             )
           ) {
-            this.parseRunesPropsDeclaration(node as VariableDeclaration);
+            parseRunesPropsDeclaration(this, this.ctx, node as VariableDeclaration);
           }
         }
 
@@ -5456,7 +1607,7 @@ export default class ComponentParser {
              * Limitation: the variable must have been declared before the export
              * since we're walking the AST in order.
              */
-            for (const varDecl of Array.from(this.vars)) {
+            for (const varDecl of Array.from(this.ctx.vars)) {
               if (
                 varDecl.declarations.some(
                   (decl) =>
@@ -5542,7 +1693,7 @@ export default class ComponentParser {
 
             kind = variableDeclarationKindToComponentPropKind(varDecl.kind);
             isRequired = kind === "let" && init == null;
-            const initResult = init == null ? { isFunction: false } : this.processInitializer(init);
+            const initResult = init == null ? { isFunction: false } : processInitializer(this, this.ctx, init);
             ({ value, type: inferredType, isFunction, defaultValue } = initResult);
             resolvedJSDoc = initResult;
             type = explicitType ?? inferredType;
@@ -5550,7 +1701,7 @@ export default class ComponentParser {
             return;
           }
 
-          const jsdocInfo = this.processNodeJSDoc(node);
+          const jsdocInfo = processNodeJSDoc(this.ctx, this, node);
           if (jsdocInfo) {
             if (jsdocInfo.type && explicitType === undefined) type = jsdocInfo.type;
             params = jsdocInfo.params;
@@ -5582,8 +1733,8 @@ export default class ComponentParser {
             }
           }
 
-          if (!description && type && this.typedefs.has(type)) {
-            description = this.typedefs.get(type)?.description;
+          if (!description && type && this.ctx.typedefs.has(type)) {
+            description = this.ctx.typedefs.get(type)?.description;
           }
 
           const typeSource = this.resolveTypeSource({
@@ -5597,7 +1748,7 @@ export default class ComponentParser {
             finalType: type,
           });
 
-          this.addProp(prop_name, {
+          addProp(this, this.ctx, prop_name, {
             name: prop_name,
             ...(localName !== undefined && localName !== prop_name ? { localName } : {}),
             kind,
@@ -5615,8 +1766,8 @@ export default class ComponentParser {
             isFunctionDeclaration,
             isRequired,
             constant: kind === "const",
-            reactive: this.reactive_vars.has(prop_name),
-            source: this.sourceRangeFromNode(node),
+            reactive: this.ctx.reactive_vars.has(prop_name),
+            source: sourceRangeFromNode(this.ctx, node),
           });
         }
 
@@ -5629,8 +1780,8 @@ export default class ComponentParser {
           const data: string = commentNode?.data?.trim() ?? "";
 
           if (COMPONENT_COMMENT_REGEX.test(data)) {
-            this.componentComment = data.replace(COMPONENT_COMMENT_REGEX, "").replace(CARRIAGE_RETURN_REGEX, "");
-            this.componentCommentSource = this.sourceRangeFromNode(node);
+            this.ctx.componentComment = data.replace(COMPONENT_COMMENT_REGEX, "").replace(CARRIAGE_RETURN_REGEX, "");
+            this.ctx.componentCommentSource = sourceRangeFromNode(this.ctx, node);
           }
         }
 
@@ -5687,11 +1838,11 @@ export default class ComponentParser {
                   if (expression.type === "Literal" && "value" in expression) {
                     slot_prop_value.value = String((expression as Literal).value);
                   } else if (expression.type === "MemberExpression") {
-                    slot_prop_value.value = this.resolveMemberExpressionType(expression);
+                    slot_prop_value.value = resolveMemberExpressionType(this.ctx, this, expression);
                   } else if (expression.type !== "Identifier") {
                     if (start !== undefined && end !== undefined) {
                       if (expression.type === "ObjectExpression" || expression.type === "TemplateLiteral") {
-                        slot_prop_value.value = this.sourceAtPos(start + 1, end - 1);
+                        slot_prop_value.value = sourceAtPos(this.ctx, start + 1, end - 1);
                       }
                     }
                   }
@@ -5707,22 +1858,22 @@ export default class ComponentParser {
           const fallback = (slotNode.children as TemplateNode[] | undefined)
             ?.map(({ start, end }) => {
               if (start === undefined || end === undefined) return "";
-              return this.sourceAtPos(start, end) ?? "";
+              return sourceAtPos(this.ctx, start, end) ?? "";
             })
             .join("")
             .trim();
 
-          this.addSlot({
+          addSlot(this.ctx, {
             slot_name,
             slot_props: JSON.stringify(slot_props, null, 2),
             slot_fallback: fallback,
-            source: this.sourceRangeFromNode(node),
+            source: sourceRangeFromNode(this.ctx, node),
           });
         }
 
         if (node && typeof node === "object" && "type" in node && String(node.type) === "RenderTag") {
           const renderTag = node as { expression?: unknown };
-          const renderInfo = this.extractRenderTagInfo(renderTag.expression);
+          const renderInfo = extractRenderTagInfo(this.ctx, renderTag.expression);
           if (renderInfo) {
             let slot_props: string | undefined;
             if (renderInfo.arguments.length === 0) {
@@ -5735,7 +1886,7 @@ export default class ComponentParser {
               renderInfo.arguments[0].type === "ObjectExpression"
             ) {
               slot_props = JSON.stringify(
-                this.buildSlotPropsFromObjectExpression(renderInfo.arguments[0] as ObjectExpression),
+                buildSlotPropsFromObjectExpression(this.ctx, this, renderInfo.arguments[0] as ObjectExpression),
                 null,
                 2,
               );
@@ -5749,15 +1900,15 @@ export default class ComponentParser {
             const slotKey: string | null = slot_name === undefined ? DEFAULT_SLOT_NAME : slot_name;
 
             if (slot_props !== undefined) {
-              this.addSlot({
+              addSlot(this.ctx, {
                 slot_name,
                 slot_props,
-                source: this.sourceRangeFromNode(node),
+                source: sourceRangeFromNode(this.ctx, node),
               });
             }
 
-            if (slot_props !== undefined || this.slots.has(slotKey)) {
-              this.snippetPropLocals.add(renderInfo.trackingName);
+            if (slot_props !== undefined || this.ctx.slots.has(slotKey)) {
+              this.ctx.snippetPropLocals.add(renderInfo.trackingName);
             }
           }
         }
@@ -5787,37 +1938,37 @@ export default class ComponentParser {
                  * Track that this event is forwarded (we'll use this info later).
                  * This helps distinguish between dispatched and forwarded events during post-processing.
                  */
-                this.forwardedEvents.set(eventHandlerNode.name, element);
+                this.ctx.forwardedEvents.set(eventHandlerNode.name, element);
 
-                const existing_event = this.events.get(eventHandlerNode.name);
+                const existing_event = this.ctx.events.get(eventHandlerNode.name);
 
                 /**
                  * Check if this event has a JSDoc description from `@event` tags.
                  */
-                const event_description = this.eventDescriptions.get(eventHandlerNode.name);
+                const event_description = this.ctx.eventDescriptions.get(eventHandlerNode.name);
                 const event_deprecated = existing_event?.deprecated;
 
                 if (!existing_event) {
                   /**
                    * Add new forwarded event to the events map.
                    */
-                  this.events.set(eventHandlerNode.name, {
+                  this.ctx.events.set(eventHandlerNode.name, {
                     type: "forwarded",
                     name: eventHandlerNode.name,
                     element: element,
                     description: event_description,
                     deprecated: event_deprecated,
-                    source: this.sourceRangeFromNode(node),
+                    source: sourceRangeFromNode(this.ctx, node),
                   });
                 } else if (existing_event.type === "forwarded" && event_description && !existing_event.description) {
                   /**
                    * Event is already forwarded, just add the description if it wasn't set before.
                    */
-                  this.events.set(eventHandlerNode.name, {
+                  this.ctx.events.set(eventHandlerNode.name, {
                     ...existing_event,
                     description: event_description,
                     deprecated: existing_event.deprecated ?? event_deprecated,
-                    source: existing_event.source || this.sourceRangeFromNode(node),
+                    source: existing_event.source || sourceRangeFromNode(this.ctx, node),
                   });
                 }
                 /**
@@ -5848,9 +1999,9 @@ export default class ComponentParser {
         ) {
           const bindingNode = node as { name?: string; expression?: { name?: string } };
           if (bindingNode.expression?.name) {
-            const prop_name = this.resolveIdentifierToReactiveProp(bindingNode.expression.name);
+            const prop_name = resolveIdentifierToReactiveProp(this.ctx, bindingNode.expression.name);
             if (prop_name) {
-              this.reactive_vars.add(prop_name);
+              this.ctx.reactive_vars.add(prop_name);
             }
           }
 
@@ -5861,23 +2012,23 @@ export default class ComponentParser {
             "name" in parent &&
             typeof parent.name === "string"
           ) {
-            const prop_name = this.resolveIdentifierToReactiveProp(bindingNode.expression.name);
+            const prop_name = resolveIdentifierToReactiveProp(this.ctx, bindingNode.expression.name);
             if (!prop_name) {
               return;
             }
             const element_name = parent.name;
 
-            if (this.bindings.has(prop_name)) {
-              const existing_bindings = this.bindings.get(prop_name);
+            if (this.ctx.bindings.has(prop_name)) {
+              const existing_bindings = this.ctx.bindings.get(prop_name);
 
               if (existing_bindings && !existing_bindings.elements.includes(element_name)) {
-                this.bindings.set(prop_name, {
+                this.ctx.bindings.set(prop_name, {
                   ...existing_bindings,
                   elements: [...existing_bindings.elements, element_name],
                 });
               }
             } else {
-              this.bindings.set(prop_name, {
+              this.ctx.bindings.set(prop_name, {
                 elements: [element_name],
               });
             }
@@ -5885,8 +2036,8 @@ export default class ComponentParser {
         }
       },
       leave: (node) => {
-        if (this.scopeDeclarations.has(node as unknown as object)) {
-          this.activeScopes.pop();
+        if (this.ctx.scopeDeclarations.has(node as unknown as object)) {
+          this.ctx.activeScopes.pop();
         }
       },
     });
@@ -5904,7 +2055,7 @@ export default class ComponentParser {
               : undefined;
 
           if (event_name != null) {
-            this.addDispatchedEvent({
+            addDispatchedEvent(this.ctx, {
               name: String(event_name),
               detail: event_detail == null ? "" : String(event_detail),
               has_argument: Boolean(event_argument),
@@ -5937,14 +2088,14 @@ export default class ComponentParser {
       }
     }
 
-    this.forwardedEvents.forEach((element, eventName) => {
-      const event = this.events.get(eventName);
+    this.ctx.forwardedEvents.forEach((element, eventName) => {
+      const event = this.ctx.events.get(eventName);
       /**
        * If event is marked as dispatched but is NOT actually dispatched, convert it to forwarded.
        * This happens when @event JSDoc is used but the event is actually forwarded via on: syntax.
        */
       if (event && event.type === "dispatched" && !actuallyDispatchedEvents.has(eventName)) {
-        const event_description = this.eventDescriptions.get(eventName);
+        const event_description = this.ctx.eventDescriptions.get(eventName);
         const forwardedEvent: ForwardedEvent = {
           type: "forwarded",
           name: eventName,
@@ -5962,22 +2113,22 @@ export default class ComponentParser {
         if (event.detail !== undefined && event.detail !== "undefined") {
           forwardedEvent.detail = event.detail;
         }
-        this.events.set(eventName, forwardedEvent);
+        this.ctx.events.set(eventName, forwardedEvent);
       }
     });
 
-    this.normalizeRunesCallbackProps(actuallyDispatchedEvents);
+    normalizeRunesCallbackProps(this.ctx, actuallyDispatchedEvents);
 
     const snippetPropNames =
-      this.syntaxMode === "runes"
-        ? new Set(Array.from(this.snippetPropLocals, (localName) => this.resolvePublicPropName(localName)))
+      this.ctx.syntaxMode === "runes"
+        ? new Set(Array.from(this.ctx.snippetPropLocals, (localName) => this.resolvePublicPropName(localName)))
         : new Set<string>();
 
-    const processedProps = ComponentParser.mapToArray(this.props)
+    const processedProps = ComponentParser.mapToArray(this.ctx.props)
       .filter((prop) => !snippetPropNames.has(prop.name))
       .map((prop) => {
-        if (this.bindings.has(prop.name)) {
-          const elementTypes = this.bindings
+        if (this.ctx.bindings.has(prop.name)) {
+          const elementTypes = this.ctx.bindings
             .get(prop.name)
             ?.elements.sort()
             .map((element) => getElementByTag(element))
@@ -5986,19 +2137,19 @@ export default class ComponentParser {
             ...prop,
             type: `null | ${elementTypes}`,
             typeSource: "inferred" as const,
-            reactive: prop.reactive || this.reactive_vars.has(prop.name),
+            reactive: prop.reactive || this.ctx.reactive_vars.has(prop.name),
           };
         }
 
         return {
           ...prop,
-          reactive: prop.reactive || this.reactive_vars.has(prop.name),
+          reactive: prop.reactive || this.ctx.reactive_vars.has(prop.name),
         };
       });
 
-    this.activeScopes.length = 0;
+    this.ctx.activeScopes.length = 0;
 
-    const processedSlots = ComponentParser.mapToArray(this.slots)
+    const processedSlots = ComponentParser.mapToArray(this.ctx.slots)
       .map((slot) => {
         try {
           if (!slot.slot_props) {
@@ -6031,25 +2182,25 @@ export default class ComponentParser {
         return 0;
       });
 
-    if (this.deferredSlotBlockGenerics.length > 0) {
+    if (this.ctx.deferredSlotBlockGenerics.length > 0) {
       const referencedTypeText = [
         ...processedProps.map((prop) => prop.type ?? ""),
         ...processedSlots.map((slot) => slot.slot_props ?? ""),
       ].join("\n");
-      for (const { name, constraint } of this.deferredSlotBlockGenerics) {
+      for (const { name, constraint } of this.ctx.deferredSlotBlockGenerics) {
         const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         if (!new RegExp(`\\b${escapedName}\\b`).test(referencedTypeText)) continue;
         this.accumulateGeneric(name, constraint);
       }
     }
 
-    const moduleExportsArray = ComponentParser.mapToArray(this.moduleExports);
+    const moduleExportsArray = ComponentParser.mapToArray(this.ctx.moduleExports);
     /**
      * Transform events for JSON serialization: convert element object to string for backward compatibility.
      * The internal representation uses element objects, but JSON output uses strings for compatibility
      * with older versions of sveld and external tools.
      */
-    const eventsArray = ComponentParser.mapToArray(this.events)
+    const eventsArray = ComponentParser.mapToArray(this.ctx.events)
       .map((event): SerializedComponentEvent => {
         switch (event.type) {
           case "forwarded":
@@ -6079,12 +2230,13 @@ export default class ComponentParser {
 
         return (a.detail ?? "").localeCompare(b.detail ?? "");
       });
-    const typedefsArray = ComponentParser.mapToArray(this.typedefs);
-    const contextsArray = ComponentParser.mapToArray(this.contexts);
+    const typedefsArray = ComponentParser.mapToArray(this.ctx.typedefs);
+    const contextsArray = ComponentParser.mapToArray(this.ctx.contexts);
 
     for (const prop of processedProps) {
       if (prop.typeSource === "unknown") {
-        this.recordDiagnostic(
+        recordDiagnostic(
+          this.ctx,
           "prop-unknown-type",
           prop.name,
           `Prop "${prop.name}" type could not be inferred; falling back to "${prop.type ?? "any"}".`,
@@ -6096,11 +2248,12 @@ export default class ComponentParser {
      * `@event` in JSDoc with no `createEventDispatcher`, `on:` forward,
      * or `on<event>` callback prop.
      */
-    for (const eventName of this.jsDocEventNames) {
+    for (const eventName of this.ctx.jsDocEventNames) {
       if (actuallyDispatchedEvents.has(eventName)) continue;
-      if (this.forwardedEvents.has(eventName)) continue;
-      if (this.props.has(`on${eventName}`)) continue;
-      this.recordDiagnostic(
+      if (this.ctx.forwardedEvents.has(eventName)) continue;
+      if (this.ctx.props.has(`on${eventName}`)) continue;
+      recordDiagnostic(
+        this.ctx,
         "event-no-source",
         eventName,
         `@event "${eventName}" has no matching dispatch or callback prop.`,
@@ -6108,24 +2261,24 @@ export default class ComponentParser {
     }
 
     const parsedComponent: ParsedComponent = {
-      source: this.sourceRangeFromOffsets(0, this.source?.length),
-      syntaxMode: this.syntaxMode,
-      ...(this.scriptLanguage ? { scriptLanguage: this.scriptLanguage } : {}),
+      source: sourceRangeFromOffsets(this.ctx, 0, this.ctx.source?.length),
+      syntaxMode: this.ctx.syntaxMode,
+      ...(this.ctx.scriptLanguage ? { scriptLanguage: this.ctx.scriptLanguage } : {}),
       props: processedProps,
       moduleExports: moduleExportsArray,
       slots: processedSlots,
       events: eventsArray,
       typedefs: typedefsArray,
-      generics: this.generics,
-      rest_props: this.rest_props,
-      extends: this.extends,
-      componentComment: this.componentComment,
-      componentCommentSource: this.componentCommentSource,
+      generics: this.ctx.generics,
+      rest_props: this.ctx.rest_props,
+      extends: this.ctx.extends,
+      componentComment: this.ctx.componentComment,
+      componentCommentSource: this.ctx.componentCommentSource,
       contexts: contextsArray,
-      diagnostics: this.diagnosticRecords.slice(),
+      diagnostics: this.ctx.diagnosticRecords.slice(),
     };
 
-    const typeScriptMetadata = this.buildTypeScriptMetadata();
+    const typeScriptMetadata = buildTypeScriptMetadata(this.ctx);
     if (typeScriptMetadata) {
       parsedComponent[PARSED_COMPONENT_TYPE_SCRIPT_METADATA] = typeScriptMetadata;
     }
