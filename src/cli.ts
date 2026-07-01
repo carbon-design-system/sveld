@@ -9,7 +9,9 @@ import { generateBundle, type PluginSveldOptions, toGenerateBundleOptions, write
 
 /** CLI options layered on top of the shared plugin options. */
 interface CliOptions extends PluginSveldOptions {
-  /** Set exit code 1 when diagnostics are present. */
+  /** Print unresolved-type diagnostics to stderr. */
+  reportDiagnostics?: boolean;
+  /** Set exit code 1 when diagnostics are present. Implies `reportDiagnostics`. */
   strict?: boolean;
   /**
    * Diff the parsed component API against a committed snapshot (default:
@@ -34,7 +36,11 @@ function parseCliFlag(arg: string): Partial<CliOptions> {
     case "types":
     case "json":
     case "markdown":
+      return { [flag]: value === true || value === "true" };
     case "strict":
+      return { strict: value === true || value === "true" };
+    case "report-diagnostics":
+      return { reportDiagnostics: value === true || value === "true" };
     case "resolveTypes":
     case "checkExamples":
       return { [flag]: value === true || value === "true" };
@@ -109,7 +115,11 @@ export async function cli(process: NodeJS.Process) {
   writeOutput(result, options, input);
 
   const { diagnostics } = result;
-  console.log(formatDiagnosticsSummary(diagnostics));
+  const shouldReport = options.reportDiagnostics || options.strict;
+
+  if (shouldReport && diagnostics.length > 0) {
+    console.error(formatDiagnosticsSummary(diagnostics));
+  }
 
   if (checkResult) {
     console.log(formatCheckReport(checkResult));
