@@ -163,7 +163,14 @@ describe("sveld() strict mode", () => {
 
     expect(diagnostics.some((d) => d.kind === "event-no-source" && d.name === "phantom")).toBe(true);
     expect(process.exitCode).toBeUndefined();
+    expect(warnSpy).not.toHaveBeenCalled();
+  });
+
+  test("reportDiagnostics: true prints the summary", async () => {
+    await sveld({ input: relativeDir, glob: true, types: false, reportDiagnostics: true });
+
     expect(warnSpy).toHaveBeenCalled();
+    expect(String(warnSpy.mock.calls[0]?.[0])).toContain("unresolved types found");
   });
 
   test("strict: true sets a non-zero exit code when diagnostics exist", async () => {
@@ -171,5 +178,6 @@ describe("sveld() strict mode", () => {
 
     expect(diagnostics.length).toBeGreaterThan(0);
     expect(process.exitCode).toBe(1);
+    expect(warnSpy).toHaveBeenCalled();
   });
 });

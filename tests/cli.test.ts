@@ -40,4 +40,16 @@ describe("parseCliOptions", () => {
   test("--checkExamples enables checkExamples", () => {
     expect(parseCliOptions(["--checkExamples"])).toEqual({ checkExamples: true });
   });
+
+  test("--report-diagnostics enables reportDiagnostics", () => {
+    expect(parseCliOptions(["--report-diagnostics"])).toEqual({ reportDiagnostics: true });
+  });
+
+  test("--report-diagnostics=false disables reportDiagnostics", () => {
+    expect(parseCliOptions(["--report-diagnostics=false"])).toEqual({ reportDiagnostics: false });
+  });
+
+  test("--strict enables strict", () => {
+    expect(parseCliOptions(["--strict"])).toEqual({ strict: true });
+  });
 });

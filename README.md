@@ -254,6 +254,58 @@ The check is narrow on purpose. It catches renamed or removed symbols and wrong 
 
 Needs `typescript` and a `tsconfig.json`, same as `resolveTypes`. Use `--strict` (or the `strict` option) to fail CI when an example breaks.
 
+#### Type inference diagnostics
+
+`sveld` collects unresolved-type diagnostics on every run: props that fall back to `any`, context values typed as `any`, `@event` tags with no dispatch or callback, and (when `checkExamples` is enabled) `example-compile-error`. They are always returned from the programmatic `sveld()` API in `SveldResult.diagnostics`.
+
+With `reportDiagnostics` or `strict`, the grouped summary looks like this:
+
+```
+sveld: 4 unresolved types found.
+
+Props without inferred types (1):
+  ./icons/Add.svelte
+    - Prop "title" type could not be inferred; falling back to "any".
+
+Context values typed as `any` (1):
+  ./ThemeProvider.svelte
+    - Context "theme" variable "themeStore" has no type annotation; defaulted to "any".
+
+@event tags with no dispatch or callback (2):
+  ./Modal.svelte
+    - @event "open" has no matching dispatch or callback prop.
+    - @event "close" has no matching dispatch or callback prop.
+```
+
+When `checkExamples` is also enabled, `@example` compile failures appear as a fourth group:
+
+```
+@example blocks that failed to compile (1):
+  ./Component.svelte
+    - Line 1: Cannot find name 'formatValue'.
+```
+
+By default, nothing is printed. Opt in when you are working on types or want CI output:
+
+```ts
+await sveld({ json: true, reportDiagnostics: true });
+```
+
+Use `strict: true` (or `--strict`) to exit with code `1` when diagnostics exist. `strict` implies `reportDiagnostics`, so CI always shows why the run failed.
+
+```ts
+await sveld({ json: true, strict: true });
+```
+
+CLI equivalent:
+
+```sh
+npx sveld --json --report-diagnostics
+npx sveld --json --strict
+```
+
+`--check` is separate: it diffs `COMPONENT_API.json` for API drift and semver classification, not inference warnings.
+
 ## Usage
 
 ### Installation
@@ -365,7 +417,7 @@ If no `input` is specified, `sveld` will infer the entry point based on the `pac
 import { sveld } from "sveld";
 import pkg from "./package.json" with { type: "json" };
 
-sveld({
+const { diagnostics } = await sveld({
   input: "./src/index.js",
   glob: true,
   markdown: true,
@@ -384,6 +436,8 @@ sveld({
   },
 });
 ```
+
+`diagnostics` is always populated; printing is opt-in via `reportDiagnostics` or `strict` (see [Type inference diagnostics](#type-inference-diagnostics)).
 
 #### `jsonOptions.outDir`
 
@@ -462,6 +516,8 @@ TypeScript definitions land in the `types` folder by default. Include that folde
 - **`resolveTypes`** (boolean, optional, default: `false`): Load the TypeScript program to expand opaque imported whole-object `$props()` types into JSON. See [Opt-in semantic resolution](#opt-in-semantic-resolution-resolvetypes).
 - **`cache`** (boolean | string, optional, default: `false`): Write parsed component output to disk and skip re-parsing unchanged files on later runs. `true` uses `node_modules/.cache/sveld/parse-cache.json`; a string sets a custom path. Also available as `--cache` / `--cache=<path>`. See [Persistent parse cache](#persistent-parse-cache-cache).
 - **`checkExamples`** (boolean, optional, default: `false`): Run plain TS/JS `@example` blocks through the TypeScript program. Broken ones get an `example-compile-error` diagnostic. See [Compile-checked `@example` blocks](#compile-checked-example-blocks-checkexamples).
+- **`reportDiagnostics`** (boolean, optional, default: `false`): Print unresolved-type diagnostics to stderr (CLI) or `console.warn` (programmatic API). Also available as `--report-diagnostics`. See [Type inference diagnostics](#type-inference-diagnostics).
+- **`strict`** (boolean, optional, default: `false`): Exit with code `1` when diagnostics exist. Implies `reportDiagnostics`. Also available as `--strict`. See [Type inference diagnostics](#type-inference-diagnostics).
 
 By default, only TypeScript definitions are generated.
 

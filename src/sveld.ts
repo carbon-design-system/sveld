@@ -11,7 +11,12 @@ interface SveldOptions extends Omit<PluginSveldOptions, "entry"> {
    */
   input?: string;
   /**
-   * Exit with code 1 when diagnostics are present. Default `false`.
+   * Print unresolved-type diagnostics to stderr. Default `false`.
+   */
+  reportDiagnostics?: boolean;
+  /**
+   * Exit with code 1 when diagnostics are present. Implies `reportDiagnostics`.
+   * Default `false`.
    */
   strict?: boolean;
 }
@@ -39,7 +44,7 @@ interface SveldResult {
  * ```
  */
 export async function sveld(opts?: SveldOptions): Promise<SveldResult> {
-  const { input: inputOverride, strict, ...runtimeOpts } = opts ?? {};
+  const { input: inputOverride, strict, reportDiagnostics, ...runtimeOpts } = opts ?? {};
   const fileConfig = await loadConfig();
   const input = getSvelteEntry(inputOverride ?? fileConfig.entry);
   if (input === null) return { diagnostics: [] };
@@ -48,12 +53,14 @@ export async function sveld(opts?: SveldOptions): Promise<SveldResult> {
   writeOutput(result, merged, input);
 
   const { diagnostics } = result;
-  if (diagnostics.length > 0) {
-    console.warn(formatDiagnosticsSummary(diagnostics));
+  const shouldReport = reportDiagnostics || strict;
 
-    if (strict) {
-      process.exitCode = 1;
-    }
+  if (shouldReport && diagnostics.length > 0) {
+    console.warn(formatDiagnosticsSummary(diagnostics));
+  }
+
+  if (strict && diagnostics.length > 0) {
+    process.exitCode = 1;
   }
 
   return { diagnostics };
