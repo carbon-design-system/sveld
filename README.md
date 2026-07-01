@@ -202,6 +202,18 @@ Without `resolveTypes`, JSON lists no props. With it, each field shows up with `
 
 **Performance.** Off by default. This is the only path that loads TypeScript. It needs `typescript` and a `tsconfig.json`, runs slower than the AST-only pipeline, and gets slower as your types grow. Use it only when you need expanded JSON. `.d.ts` output is unchanged.
 
+#### Persistent parse cache (`cache`)
+
+By default, every component is re-parsed on every run. With `cache`, parsed output is written to disk and reused when the source file has not changed. That applies across runs, including CI on a fresh checkout.
+
+```ts
+await sveld({ json: true, cache: true });
+```
+
+`cache: true` writes to `node_modules/.cache/sveld/parse-cache.json`. Pass a string to use a different location, e.g. `cache: ".cache/sveld.json"`. Also available as `--cache` / `--cache=<path>` on the CLI.
+
+If a component [`@extendProps`](#extendprops) / [`@extends`](#extendprops) another file, it is re-parsed when that dependency changes, same as in [`watch`](#available-options) mode. Bumping the `sveld` or Svelte version clears the cache.
+
 ## Usage
 
 ### Installation
@@ -381,6 +393,7 @@ TypeScript definitions land in the `types` folder by default. Include that folde
 - **`markdownOptions`** (object, optional): Options for Markdown output.
 - **`watch`** (boolean, optional, default: `false`): Regenerate output incrementally when `.svelte` source changes during `vite dev` / `vite build --watch`. Only the changed component and the components that depend on it via [`@extendProps`](#extendprops) / `@extends` are re-parsed, rather than rebuilding every component. Without this option, the plugin only runs during `vite build`.
 - **`failFast`** (boolean, optional, default: `false`): Abort the entire run when a single component fails to parse. By default, parse failures are collected as diagnostics (and reported to `stderr`) so the remaining components still emit their output. Also available as the `--fail-fast` CLI flag.
+- **`cache`** (boolean | string, optional, default: `false`): Write parsed component output to disk and skip re-parsing unchanged files on later runs. `true` uses `node_modules/.cache/sveld/parse-cache.json`; a string sets a custom path. Also available as `--cache` / `--cache=<path>`. See [Persistent parse cache](#persistent-parse-cache-cache).
 
 By default, only TypeScript definitions are generated.
 

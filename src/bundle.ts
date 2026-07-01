@@ -9,7 +9,9 @@ import ComponentParser, {
   getParsedComponentTypeScriptMetadata,
   type ParsedComponent,
 } from "./ComponentParser";
+import { buildReverseDeps, expandAffected } from "./dependency-graph";
 import { dedupeDiagnostics, type SveldDiagnostic } from "./diagnostics";
+import { hashSource, ParseCache, resolveCacheFilePath } from "./parse-cache";
 import { type EntryExports, parseEntryExports } from "./parse-entry-exports";
 import { type ParsedExports, parseExports } from "./parse-exports";
 import { normalizeSeparators } from "./path";
@@ -60,15 +62,22 @@ export interface GenerateBundleOptions {
   resolveTypes?: boolean;
   /** Record consts, functions, and types from the entry barrel. Off by default. */
   documentExports?: boolean;
+  /**
+   * Cache parsed component output to disk. Unchanged files skip re-parsing on
+   * later runs. `true` uses `node_modules/.cache/sveld/parse-cache.json`; a
+   * string sets a custom path. Off by default.
+   */
+  cache?: boolean | string;
 }
 
 export function toGenerateBundleOptions(
-  opts?: Pick<GenerateBundleOptions, "failFast" | "resolveTypes" | "documentExports">,
+  opts?: Pick<GenerateBundleOptions, "failFast" | "resolveTypes" | "documentExports" | "cache">,
 ): GenerateBundleOptions {
   return {
     failFast: opts?.failFast,
     resolveTypes: opts?.resolveTypes === true,
     documentExports: opts?.documentExports === true,
+    cache: opts?.cache,
   };
 }
 
@@ -81,6 +90,8 @@ export interface ProcessComponentOptions {
   failFast?: boolean;
   /** Invoked with a diagnostic when a component fails to parse (and `failFast` is off). */
   onParseError?: (error: ComponentParseError) => void;
+  /** When set, reuse a component's previous parse if its content hash is unchanged. */
+  cache?: ParseCache;
 }
 
 const STYLE_TAG_REGEX = /<style.+?<\/style>/gims;
@@ -243,28 +254,39 @@ export function processComponent(
     }
 
     const normalizedFilePath = normalizeSeparators(filePath);
-    const parser = new ComponentParser();
+
+    const hash = options.cache ? hashSource(source) : undefined;
+    const cached = hash === undefined ? null : options.cache?.get(resolvedPath, hash);
 
     let parsed: ParsedComponent;
-    try {
-      parsed = parser.parseSvelteComponent(stripTopLevelStyleBlock(source), {
-        moduleName,
-        filePath: normalizedFilePath,
-      });
-    } catch (error) {
-      /**
-       * Capture the failure as a diagnostic so the remaining components can
-       * still be processed. When `failFast` is enabled we rethrow to restore
-       * the abort-on-first-error behavior.
-       */
-      if (options.failFast) {
-        throw error;
+    if (cached) {
+      parsed = cached;
+    } else {
+      const parser = new ComponentParser();
+      try {
+        parsed = parser.parseSvelteComponent(stripTopLevelStyleBlock(source), {
+          moduleName,
+          filePath: normalizedFilePath,
+        });
+      } catch (error) {
+        /**
+         * Capture the failure as a diagnostic so the remaining components can
+         * still be processed. When `failFast` is enabled we rethrow to restore
+         * the abort-on-first-error behavior.
+         */
+        if (options.failFast) {
+          throw error;
+        }
+
+        const message = error instanceof Error ? error.message : String(error);
+        const stack = error instanceof Error ? error.stack : undefined;
+        options.onParseError?.({ filePath: normalizedFilePath, moduleName, message, stack });
+        return null;
       }
 
-      const message = error instanceof Error ? error.message : String(error);
-      const stack = error instanceof Error ? error.stack : undefined;
-      options.onParseError?.({ filePath: normalizedFilePath, moduleName, message, stack });
-      return null;
+      if (hash !== undefined) {
+        options.cache?.set(resolvedPath, hash, parsed);
+      }
     }
 
     return {
@@ -351,6 +373,20 @@ export async function generateBundle(
   const components: ComponentDocs = new Map();
   const allComponentsForTypes: ComponentDocs = new Map();
 
+  const cache = options.cache ? new ParseCache(resolveCacheFilePath(rootDir, options.cache)) : undefined;
+
+  // Files that changed or were never cached. Used to invalidate @extends dependents.
+  const misses = new Set<string>();
+  if (cache) {
+    for (const filePath of uniqueFilePaths) {
+      const source = fileMap.get(filePath);
+      if (source === null || source === undefined) continue;
+      if (!cache.has(filePath, hashSource(source))) {
+        misses.add(filePath);
+      }
+    }
+  }
+
   /**
    * Dedupe by file path: the same component is parsed once for the exported
    * set and once for the all-components set.
@@ -359,6 +395,7 @@ export async function generateBundle(
   const processOptions: ProcessComponentOptions = {
     failFast: options.failFast === true,
     onParseError: (error) => parseErrors.set(error.filePath, error),
+    cache,
   };
 
   /**
@@ -382,12 +419,38 @@ export async function generateBundle(
     if (result) allComponentsForTypes.set(result.moduleName, result);
   }
 
+  if (cache && misses.size > 0) {
+    // Reparse unchanged files that extend something that changed.
+    const reverseDeps = buildReverseDeps(allComponentsForTypes, resolveComponentFilePath);
+    const affected = expandAffected(misses, reverseDeps);
+
+    for (const filePath of affected) {
+      if (misses.has(filePath)) continue;
+      cache.invalidate(filePath);
+    }
+
+    for (const entry of exportEntries) {
+      const resolvedPath = resolveComponentFilePath(entry[1].source);
+      if (!affected.has(resolvedPath) || misses.has(resolvedPath)) continue;
+      const result = processComponent(entry, exportEntries, fileMap, resolveComponentFilePath, processOptions);
+      if (result) components.set(result.moduleName, result);
+    }
+    for (const entry of allComponentEntries) {
+      const resolvedPath = resolveComponentFilePath(entry[1].source);
+      if (!affected.has(resolvedPath) || misses.has(resolvedPath)) continue;
+      const result = processComponent(entry, allComponentEntries, fileMap, resolveComponentFilePath, processOptions);
+      if (result) allComponentsForTypes.set(result.moduleName, result);
+    }
+  }
+
   const errors = Array.from(parseErrors.values());
   reportParseErrors(errors);
 
   if (options.resolveTypes) {
     await resolveImportedPropTypes(components, rootDir, resolveComponentFilePath);
   }
+
+  cache?.save();
 
   // Same file can land in both export and all-components passes; dedupe before returning.
   const diagnostics = dedupeDiagnostics(
