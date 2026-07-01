@@ -1,9 +1,8 @@
 import path from "node:path";
-import { version as svelteVersion } from "svelte/package.json";
-import { name as packageName, version as packageVersion } from "../../package.json";
 import type { EntryExports } from "../parse-entry-exports";
 import { normalizeSeparators } from "../path";
 import type { ComponentDocApi, ComponentDocs } from "../plugin";
+import { buildComponentApiDocument, type ComponentApiDocument } from "./document-model";
 import { createJsonWriter } from "./Writer";
 
 export interface WriteJsonOptions {
@@ -16,59 +15,18 @@ export interface WriteJsonOptions {
 }
 
 /**
- * JSON output structure for component documentation.
+ * Normalizes each component's `filePath` to be resolvable from `cwd`.
  *
- * Contains the total count of components and an array of all
- * component documentation objects.
+ * This is JSON-output-specific: it makes `COMPONENT_API.json` self-describing.
+ * Other writers (e.g. `.d.ts`) need the original relative `filePath` to
+ * compute their own output locations, so this must not live in the shared
+ * document model.
  */
-interface JsonOutput {
-  schemaVersion: 1;
-  generator: {
-    name: string;
-    version: string;
-    svelteVersion: string;
-  };
-  total: number;
-  components: ComponentDocApi[];
-  /** Only when `documentExports` is on. */
-  totalExports?: number;
-  exports?: EntryExports;
-}
-
-const JSON_SCHEMA_VERSION = 1;
-
-function createGeneratorMetadata(): JsonOutput["generator"] {
-  return {
-    name: packageName,
-    version: packageVersion,
-    svelteVersion,
-  };
-}
-
-/**
- * Transforms and sorts component documentation for JSON output.
- *
- * Normalizes file paths and sorts components alphabetically by module name.
- *
- * @param components - Map of component documentation
- * @param inputDir - The input directory for normalizing paths
- * @returns Sorted array of component documentation with normalized paths
- *
- * @example
- * ```ts
- * // Input: components with relative paths
- * // Output: components with normalized absolute paths, sorted by name
- * ```
- */
-function transformAndSortComponents(components: ComponentDocs, inputDir: string): ComponentDocApi[] {
-  return Array.from(components, ([_moduleName, component]) => {
-    // `diagnostics` is for the Node API only; COMPONENT_API.json skips it.
-    const { diagnostics: _diagnostics, ...rest } = component;
-    return {
-      ...rest,
-      filePath: normalizeSeparators(path.join(inputDir, path.normalize(component.filePath))),
-    } as ComponentDocApi;
-  }).sort((a, b) => a.moduleName.localeCompare(b.moduleName));
+function withNormalizedFilePaths(components: ComponentDocApi[], inputDir: string): ComponentDocApi[] {
+  return components.map((component) => ({
+    ...component,
+    filePath: normalizeSeparators(path.join(inputDir, path.normalize(component.filePath))),
+  }));
 }
 
 /**
@@ -90,7 +48,8 @@ function transformAndSortComponents(components: ComponentDocs, inputDir: string)
  * ```
  */
 async function writeJsonComponents(components: ComponentDocs, options: WriteJsonOptions) {
-  const output = transformAndSortComponents(components, options.inputDir);
+  const document = buildComponentApiDocument(components);
+  const output = withNormalizedFilePaths(document.components, options.inputDir);
 
   await Promise.all(
     output.map((c) => {
@@ -121,17 +80,11 @@ async function writeJsonComponents(components: ComponentDocs, options: WriteJson
  * ```
  */
 async function writeJsonLocal(components: ComponentDocs, options: WriteJsonOptions) {
-  const output: JsonOutput = {
-    schemaVersion: JSON_SCHEMA_VERSION,
-    generator: createGeneratorMetadata(),
-    total: components.size,
-    components: transformAndSortComponents(components, options.inputDir),
+  const document = buildComponentApiDocument(components, { entryExports: options.entryExports });
+  const output: ComponentApiDocument = {
+    ...document,
+    components: withNormalizedFilePaths(document.components, options.inputDir),
   };
-
-  if (options.entryExports && options.entryExports.length > 0) {
-    output.totalExports = options.entryExports.length;
-    output.exports = options.entryExports;
-  }
 
   const output_path = path.join(process.cwd(), options.outFile);
   const writer = createJsonWriter();

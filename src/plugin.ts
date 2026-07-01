@@ -1,5 +1,6 @@
 import { dirname } from "node:path";
 import {
+  type ComponentDocs,
   type GenerateBundleOptions,
   type GenerateBundleResult,
   generateBundle,
@@ -7,9 +8,12 @@ import {
 } from "./bundle";
 import { getSvelteEntry } from "./get-svelte-entry";
 import { createSveldBundle, type SveldBundle } from "./watch";
-import writeJson, { type WriteJsonOptions } from "./writer/writer-json";
-import writeMarkdown, { type WriteMarkdownOptions } from "./writer/writer-markdown";
-import writeTsDefinitions, { type WriteTsDefinitionsOptions } from "./writer/writer-ts-definitions";
+// Side-effect import: registers the built-in "json"/"markdown"/"types" writers.
+import "./writer/built-in-writers";
+import { getWriter } from "./writer/registry";
+import type { WriteJsonOptions } from "./writer/writer-json";
+import type { WriteMarkdownOptions } from "./writer/writer-markdown";
+import type { WriteTsDefinitionsOptions } from "./writer/writer-ts-definitions";
 
 export type {
   CollectedComponents,
@@ -45,6 +49,12 @@ export interface PluginSveldOptions extends Pick<GenerateBundleOptions, "resolve
   jsonOptions?: Partial<Omit<WriteJsonOptions, "inputDir">>;
   markdown?: boolean;
   markdownOptions?: Partial<WriteMarkdownOptions>;
+  /**
+   * Run additional, userland-registered writers (via `registerWriter` from
+   * "sveld") beyond the built-in `json`/`markdown`/`types` outputs. Keyed by
+   * the writer's registered `name`, valued by that writer's options.
+   */
+  additionalWriters?: Record<string, unknown>;
   /**
    * Abort the entire run when a single component fails to parse.
    * When `false` (the default), parse failures are collected as diagnostics
@@ -148,6 +158,13 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
   };
 }
 
+/** Looks up a built-in writer by name; throws if `built-in-writers` never registered it. */
+function runBuiltInWriter(name: "types" | "json" | "markdown", components: ComponentDocs, options: unknown) {
+  const writer = getWriter(name);
+  if (!writer) throw new Error(`sveld: built-in writer "${name}" is not registered.`);
+  return writer.write(components, options);
+}
+
 /**
  * Writes output files based on plugin options.
  *
@@ -178,13 +195,13 @@ export function writeOutput(result: GenerateBundleResult, opts: PluginSveldOptio
      * This ensures TypeScript definitions are available for all components,
      * not just exported ones, which is useful for type checking.
      */
-    writeTsDefinitions(result.allComponentsForTypes, {
+    runBuiltInWriter("types", result.allComponentsForTypes, {
       outDir: "types",
       preamble: "",
       ...opts?.typesOptions,
       exports: result.exports,
       inputDir,
-    });
+    } satisfies WriteTsDefinitionsOptions);
   }
 
   if (opts?.json) {
@@ -193,13 +210,13 @@ export function writeOutput(result: GenerateBundleResult, opts: PluginSveldOptio
      * JSON output should only include components that are actually exported,
      * matching the public API surface.
      */
-    writeJson(result.components, {
+    runBuiltInWriter("json", result.components, {
       outFile: "COMPONENT_API.json",
       ...opts?.jsonOptions,
       input,
       inputDir,
       entryExports: result.entryExports,
-    });
+    } satisfies WriteJsonOptions);
   }
 
   if (opts?.markdown) {
@@ -208,10 +225,20 @@ export function writeOutput(result: GenerateBundleResult, opts: PluginSveldOptio
      * Documentation should only include exported components that are
      * part of the public API.
      */
-    writeMarkdown(result.components, {
+    runBuiltInWriter("markdown", result.components, {
       outFile: "COMPONENT_INDEX.md",
       ...opts?.markdownOptions,
       entryExports: result.entryExports,
-    });
+    } satisfies WriteMarkdownOptions);
+  }
+
+  for (const [name, writerOptions] of Object.entries(opts?.additionalWriters ?? {})) {
+    const writer = getWriter(name);
+    if (!writer) {
+      console.warn(`sveld: no writer registered with name "${name}"; skipping.`);
+      continue;
+    }
+    const components = writer.componentSet === "all" ? result.allComponentsForTypes : result.components;
+    writer.write(components, writerOptions);
   }
 }

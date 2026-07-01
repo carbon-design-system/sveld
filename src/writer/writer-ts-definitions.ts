@@ -2,6 +2,7 @@ import { join } from "node:path";
 import { convertSvelteExt, createExports } from "../create-exports";
 import type { ParsedExports } from "../parse-exports";
 import type { ComponentDocs } from "../plugin";
+import { buildComponentApiDocument } from "./document-model";
 import { createTypeScriptWriter } from "./Writer";
 import { writeTsDefinition } from "./writer-ts-definitions-core";
 
@@ -83,7 +84,8 @@ export default async function writeTsDefinitions(components: ComponentDocs, opti
   const writer = createTypeScriptWriter(options.printWidth);
   const indexDTs = options.preamble + createExports(options.exports);
 
-  const writePromises = Array.from(components).map(async ([_moduleName, component]) => {
+  const document = buildComponentApiDocument(components);
+  const writePromises = document.components.map(async (component) => {
     const ts_filepath = convertSvelteExt(join(options.outDir, component.filePath));
     await writer.write(ts_filepath, writeTsDefinition(component));
   });
