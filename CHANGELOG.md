@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.34.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.34.0) - 2026-06-30
+
+**Features**
+
+- add persistent cross-run parse cache (`cache` option)
+- add `sveld --check` API-drift gate and semver classifier
+- add opt-in `checkExamples` to type-check `@example` blocks
+
+**Fixes**
+
+- keep `@template` generic when a referencing prop shares its `@slot` block
+
 ## [0.33.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.33.0) - 2026-06-26
 
 **Features**
