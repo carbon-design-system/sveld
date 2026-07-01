@@ -33,6 +33,11 @@ function parseCliFlag(arg: string): Partial<CliOptions> {
       return { failFast: value === true || value === "true" };
     case "entry":
       return typeof value === "string" ? { entry: value } : {};
+    case "cache":
+      // Bare `--cache` enables the default cache location; `--cache=<path>`
+      // overrides it; `--cache=false` disables it.
+      if (value === "false") return { cache: false };
+      return { cache: typeof value === "string" ? value : true };
     default:
       return {};
   }

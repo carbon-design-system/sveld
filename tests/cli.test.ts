@@ -12,4 +12,16 @@ describe("parseCliOptions", () => {
   test("failFast is absent by default", () => {
     expect(parseCliOptions(["--glob", "--types"])).toEqual({ glob: true, types: true });
   });
+
+  test("--cache enables the default cache location", () => {
+    expect(parseCliOptions(["--cache"])).toEqual({ cache: true });
+  });
+
+  test("--cache=<path> sets a custom cache location", () => {
+    expect(parseCliOptions(["--cache=.cache/sveld.json"])).toEqual({ cache: ".cache/sveld.json" });
+  });
+
+  test("--cache=false disables the cache", () => {
+    expect(parseCliOptions(["--cache=false"])).toEqual({ cache: false });
+  });
 });
