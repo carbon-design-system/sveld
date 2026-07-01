@@ -34,7 +34,7 @@ export {
   toGenerateBundleOptions,
 } from "./bundle";
 
-export interface PluginSveldOptions extends Pick<GenerateBundleOptions, "resolveTypes" | "cache"> {
+export interface PluginSveldOptions extends Pick<GenerateBundleOptions, "resolveTypes" | "cache" | "checkExamples"> {
   /**
    * Specify the entry point to uncompiled Svelte source.
    * If not provided, sveld will use the "svelte" field from package.json.

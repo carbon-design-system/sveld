@@ -36,6 +36,7 @@ function parseCliFlag(arg: string): Partial<CliOptions> {
     case "markdown":
     case "strict":
     case "resolveTypes":
+    case "checkExamples":
       return { [flag]: value === true || value === "true" };
     case "fail-fast":
       return { failFast: value === true || value === "true" };
