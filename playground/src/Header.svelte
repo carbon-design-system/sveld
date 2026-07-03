@@ -11,6 +11,7 @@
   import Light from "carbon-icons-svelte/lib/Light.svelte";
   import pkg from "../../package.json";
   import LogoGithub20 from "./LogoGithub20.svelte";
+  // biome-ignore lint/correctness/noUnusedImports: `theme` is used as `$theme` in the markup below
   import { theme, toggleTheme } from "./theme";
 </script>
 
