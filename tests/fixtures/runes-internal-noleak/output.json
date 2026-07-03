@@ -1,0 +1,76 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 21,
+      "column": 0
+    }
+  },
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "value",
+      "kind": "let",
+      "typeSource": "unknown",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 2,
+          "column": 8
+        },
+        "end": {
+          "line": 2,
+          "column": 13
+        }
+      }
+    },
+    {
+      "name": "onchange",
+      "kind": "let",
+      "typeSource": "unknown",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 2,
+          "column": 15
+        },
+        "end": {
+          "line": 2,
+          "column": 23
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "runes-internal-noleak/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "value",
+      "message": "Prop \"value\" type could not be inferred; falling back to \"any\"."
+    },
+    {
+      "component": "runes-internal-noleak/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "onchange",
+      "message": "Prop \"onchange\" type could not be inferred; falling back to \"any\"."
+    }
+  ]
+}
