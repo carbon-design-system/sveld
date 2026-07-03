@@ -1,0 +1,55 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 9,
+      "column": 0
+    }
+  },
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "label",
+      "kind": "let",
+      "typeSource": "unknown",
+      "value": "$derived(now.toISOString())",
+      "defaultValue": {
+        "raw": "$derived(now.toISOString())",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 5,
+          "column": 8
+        },
+        "end": {
+          "line": 5,
+          "column": 28
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "runes-derived-prop-default/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "label",
+      "message": "Prop \"label\" type could not be inferred; falling back to \"any\"."
+    }
+  ]
+}
