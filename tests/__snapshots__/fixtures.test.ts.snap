@@ -337,6 +337,178 @@ exports[`fixtures (JSON) "slots-named/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "example-check/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 51,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "formatValue",
+      "kind": "function",
+      "description": "Formats a value. Its example is valid and should compile cleanly.",
+      "tags": [
+        {
+          "name": "example",
+          "body": " \`\`\`js\\n formatValue(\\"ok\\");\\n \`\`\`"
+        }
+      ],
+      "type": "(value: string) => string",
+      "typeSource": "jsdoc",
+      "params": [
+        {
+          "name": "value",
+          "type": "string",
+          "description": "",
+          "optional": false
+        }
+      ],
+      "returnType": "string",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 11,
+          "column": 2
+        },
+        "end": {
+          "line": 13,
+          "column": 3
+        }
+      }
+    },
+    {
+      "name": "newFormatName",
+      "kind": "function",
+      "description": "Renamed from \`oldFormatName\`; the example below was never updated and\\nstill calls the old, now-nonexistent name.",
+      "tags": [
+        {
+          "name": "example",
+          "body": " \`\`\`js\\n oldFormatName(\\"ok\\");\\n \`\`\`"
+        }
+      ],
+      "type": "(value: string) => string",
+      "typeSource": "jsdoc",
+      "params": [
+        {
+          "name": "value",
+          "type": "string",
+          "description": "",
+          "optional": false
+        }
+      ],
+      "returnType": "string",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 25,
+          "column": 2
+        },
+        "end": {
+          "line": 27,
+          "column": 3
+        }
+      }
+    },
+    {
+      "name": "tooManyArgs",
+      "kind": "function",
+      "description": "Its example calls it with more arguments than it declares.",
+      "tags": [
+        {
+          "name": "example",
+          "body": " \`\`\`js\\n tooManyArgs(\\"a\\", \\"b\\", \\"c\\");\\n \`\`\`"
+        }
+      ],
+      "type": "(value: string) => string",
+      "typeSource": "jsdoc",
+      "params": [
+        {
+          "name": "value",
+          "type": "string",
+          "description": "",
+          "optional": false
+        }
+      ],
+      "returnType": "string",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 38,
+          "column": 2
+        },
+        "end": {
+          "line": 40,
+          "column": 3
+        }
+      }
+    },
+    {
+      "name": "widgetSlot",
+      "kind": "let",
+      "description": "Svelte example, not TS/JS. sveld skips it.",
+      "tags": [
+        {
+          "name": "example",
+          "body": " \`\`\`svelte\\n <Widget prop={doesNotExist} />\\n \`\`\`"
+        }
+      ],
+      "type": "string",
+      "typeSource": "default",
+      "value": "\\"unused\\"",
+      "defaultValue": {
+        "raw": "\\"unused\\"",
+        "kind": "literal",
+        "value": "unused"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 49,
+          "column": 2
+        },
+        "end": {
+          "line": 49,
+          "column": 35
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "event-jsdoc-since/input.svelte" 1`] = `
 "{
   "source": {
@@ -3338,6 +3510,58 @@ exports[`fixtures (JSON) "forwarded-events/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "runes-attachment-generic/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 12,
+      "column": 0
+    }
+  },
+  "syntaxMode": "runes",
+  "scriptLanguage": "ts",
+  "props": [
+    {
+      "name": "measure",
+      "kind": "let",
+      "description": "@generics Element",
+      "type": "Attachment<Element>",
+      "typeSource": "typescript",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 8,
+          "column": 8
+        },
+        "end": {
+          "line": 8,
+          "column": 15
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": [
+    "Element",
+    "Element extends HTMLElement = HTMLDivElement"
+  ],
+  "contexts": [],
+  "diagnostics": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "binary-expression-numeric/input.svelte" 1`] = `
 "{
   "source": {
@@ -4488,6 +4712,60 @@ exports[`fixtures (JSON) "slot-description-with-dash/input.svelte" 1`] = `
       }
     }
   ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "runes-attachment-array/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 8,
+      "column": 0
+    }
+  },
+  "syntaxMode": "runes",
+  "scriptLanguage": "ts",
+  "props": [
+    {
+      "name": "attachments",
+      "kind": "let",
+      "type": "Attachment[]",
+      "typeSource": "typescript",
+      "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 4,
+          "column": 8
+        },
+        "end": {
+          "line": 4,
+          "column": 24
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
   "events": [],
   "typedefs": [],
   "generics": null,
@@ -6138,6 +6416,54 @@ exports[`fixtures (JSON) "constructor-expression-defaults/input.svelte" 1`] = `
         "end": {
           "line": 19,
           "column": 48
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "runes-attachment-prop/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 8,
+      "column": 0
+    }
+  },
+  "syntaxMode": "runes",
+  "scriptLanguage": "ts",
+  "props": [
+    {
+      "name": "onmount",
+      "kind": "let",
+      "type": "Attachment",
+      "typeSource": "typescript",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 4,
+          "column": 8
+        },
+        "end": {
+          "line": 4,
+          "column": 15
         }
       }
     }
@@ -7960,6 +8286,54 @@ exports[`fixtures (JSON) "generics-with-rest-props/input.svelte" 1`] = `
     "type": "Element",
     "name": "div"
   },
+  "contexts": [],
+  "diagnostics": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "runes-attachment-factory/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 8,
+      "column": 0
+    }
+  },
+  "syntaxMode": "runes",
+  "scriptLanguage": "ts",
+  "props": [
+    {
+      "name": "createTooltip",
+      "kind": "let",
+      "type": "(text: string) => Attachment",
+      "typeSource": "typescript",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 4,
+          "column": 8
+        },
+        "end": {
+          "line": 4,
+          "column": 21
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
   "contexts": [],
   "diagnostics": []
 }
@@ -15953,6 +16327,57 @@ export default class SlotsNamed extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "example-check/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type ExampleCheckProps = {
+  /**
+   * Svelte example, not TS/JS. sveld skips it.
+   * @example
+   *  \`\`\`svelte
+   *  <Widget prop={doesNotExist} />
+   *  \`\`\`
+   * @default "unused"
+   */
+  widgetSlot?: string;
+};
+
+export default class ExampleCheck extends SvelteComponentTyped<
+  ExampleCheckProps,
+  Record<string, any>,
+  Record<string, never>
+> {
+  /**
+   * Formats a value. Its example is valid and should compile cleanly.
+   * @example
+   *  \`\`\`js
+   *  formatValue("ok");
+   *  \`\`\`
+   */
+  formatValue: (value: string) => string;
+
+  /**
+   * Renamed from \`oldFormatName\`; the example below was never updated and
+   * still calls the old, now-nonexistent name.
+   * @example
+   *  \`\`\`js
+   *  oldFormatName("ok");
+   *  \`\`\`
+   */
+  newFormatName: (value: string) => string;
+
+  /**
+   * Its example calls it with more arguments than it declares.
+   * @example
+   *  \`\`\`js
+   *  tooManyArgs("a", "b", "c");
+   *  \`\`\`
+   */
+  tooManyArgs: (value: string) => string;
+}
+"
+`;
+
 exports[`fixtures (TypeScript) "event-jsdoc-since/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -16900,6 +17325,22 @@ export default class ForwardedEvents extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "runes-attachment-generic/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { Attachment } from "svelte/attachments";
+
+type $Props<Element extends HTMLElement = HTMLDivElement> = { measure?: Attachment<Element> };
+
+export type RunesAttachmentGenericProps<Element extends HTMLElement = HTMLDivElement> = $Props<Element>;
+
+export default class RunesAttachmentGeneric<Element extends HTMLElement = HTMLDivElement> extends SvelteComponentTyped<
+  RunesAttachmentGenericProps<Element>,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "binary-expression-numeric/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -17217,6 +17658,22 @@ export default class SlotDescriptionWithDash extends SvelteComponentTyped<
      */
     default: { props?: { "aria-current"?: string; class: "bx--link" } };
   }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "runes-attachment-array/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { Attachment } from "svelte/attachments";
+
+type $Props = { attachments?: Attachment[] };
+
+export type RunesAttachmentArrayProps = $Props;
+
+export default class RunesAttachmentArray extends SvelteComponentTyped<
+  RunesAttachmentArrayProps,
+  Record<string, any>,
+  Record<string, never>
 > {}
 "
 `;
@@ -17691,6 +18148,22 @@ export type ConstructorExpressionDefaultsProps = {
 
 export default class ConstructorExpressionDefaults extends SvelteComponentTyped<
   ConstructorExpressionDefaultsProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "runes-attachment-prop/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { Attachment } from "svelte/attachments";
+
+type $Props = { onmount?: Attachment };
+
+export type RunesAttachmentPropProps = $Props;
+
+export default class RunesAttachmentProp extends SvelteComponentTyped<
+  RunesAttachmentPropProps,
   Record<string, any>,
   Record<string, never>
 > {}
@@ -18227,6 +18700,22 @@ export default class GenericsWithRestProps<Row extends DataTableRow = DataTableR
   GenericsWithRestPropsProps<Row>,
   Record<string, any>,
   { default: { headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> } }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "runes-attachment-factory/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { Attachment } from "svelte/attachments";
+
+type $Props = { createTooltip?: (text: string) => Attachment };
+
+export type RunesAttachmentFactoryProps = $Props;
+
+export default class RunesAttachmentFactory extends SvelteComponentTyped<
+  RunesAttachmentFactoryProps,
+  Record<string, any>,
+  Record<string, never>
 > {}
 "
 `;
@@ -20730,228 +21219,5 @@ export default class SlotDescriptionHyphensInline extends SvelteComponentTyped<
     item: { id: string };
   }
 > {}
-"
-`;
-
-exports[`fixtures (JSON) "example-check/input.svelte" 1`] = `
-"{
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 51,
-      "column": 0
-    }
-  },
-  "syntaxMode": "legacy",
-  "scriptLanguage": "js",
-  "props": [
-    {
-      "name": "formatValue",
-      "kind": "function",
-      "description": "Formats a value. Its example is valid and should compile cleanly.",
-      "tags": [
-        {
-          "name": "example",
-          "body": " \`\`\`js\\n formatValue(\\"ok\\");\\n \`\`\`"
-        }
-      ],
-      "type": "(value: string) => string",
-      "typeSource": "jsdoc",
-      "params": [
-        {
-          "name": "value",
-          "type": "string",
-          "description": "",
-          "optional": false
-        }
-      ],
-      "returnType": "string",
-      "isFunction": true,
-      "isFunctionDeclaration": true,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 11,
-          "column": 2
-        },
-        "end": {
-          "line": 13,
-          "column": 3
-        }
-      }
-    },
-    {
-      "name": "newFormatName",
-      "kind": "function",
-      "description": "Renamed from \`oldFormatName\`; the example below was never updated and\\nstill calls the old, now-nonexistent name.",
-      "tags": [
-        {
-          "name": "example",
-          "body": " \`\`\`js\\n oldFormatName(\\"ok\\");\\n \`\`\`"
-        }
-      ],
-      "type": "(value: string) => string",
-      "typeSource": "jsdoc",
-      "params": [
-        {
-          "name": "value",
-          "type": "string",
-          "description": "",
-          "optional": false
-        }
-      ],
-      "returnType": "string",
-      "isFunction": true,
-      "isFunctionDeclaration": true,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 25,
-          "column": 2
-        },
-        "end": {
-          "line": 27,
-          "column": 3
-        }
-      }
-    },
-    {
-      "name": "tooManyArgs",
-      "kind": "function",
-      "description": "Its example calls it with more arguments than it declares.",
-      "tags": [
-        {
-          "name": "example",
-          "body": " \`\`\`js\\n tooManyArgs(\\"a\\", \\"b\\", \\"c\\");\\n \`\`\`"
-        }
-      ],
-      "type": "(value: string) => string",
-      "typeSource": "jsdoc",
-      "params": [
-        {
-          "name": "value",
-          "type": "string",
-          "description": "",
-          "optional": false
-        }
-      ],
-      "returnType": "string",
-      "isFunction": true,
-      "isFunctionDeclaration": true,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 38,
-          "column": 2
-        },
-        "end": {
-          "line": 40,
-          "column": 3
-        }
-      }
-    },
-    {
-      "name": "widgetSlot",
-      "kind": "let",
-      "description": "Svelte example, not TS/JS. sveld skips it.",
-      "tags": [
-        {
-          "name": "example",
-          "body": " \`\`\`svelte\\n <Widget prop={doesNotExist} />\\n \`\`\`"
-        }
-      ],
-      "type": "string",
-      "typeSource": "default",
-      "value": "\\"unused\\"",
-      "defaultValue": {
-        "raw": "\\"unused\\"",
-        "kind": "literal",
-        "value": "unused"
-      },
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 49,
-          "column": 2
-        },
-        "end": {
-          "line": 49,
-          "column": 35
-        }
-      }
-    }
-  ],
-  "moduleExports": [],
-  "slots": [],
-  "events": [],
-  "typedefs": [],
-  "generics": null,
-  "contexts": [],
-  "diagnostics": []
-}
-"
-`;
-
-exports[`fixtures (TypeScript) "example-check/input.svelte" 1`] = `
-"import { SvelteComponentTyped } from "svelte";
-
-export type ExampleCheckProps = {
-  /**
-   * Svelte example, not TS/JS. sveld skips it.
-   * @example
-   *  \`\`\`svelte
-   *  <Widget prop={doesNotExist} />
-   *  \`\`\`
-   * @default "unused"
-   */
-  widgetSlot?: string;
-};
-
-export default class ExampleCheck extends SvelteComponentTyped<
-  ExampleCheckProps,
-  Record<string, any>,
-  Record<string, never>
-> {
-  /**
-   * Formats a value. Its example is valid and should compile cleanly.
-   * @example
-   *  \`\`\`js
-   *  formatValue("ok");
-   *  \`\`\`
-   */
-  formatValue: (value: string) => string;
-
-  /**
-   * Renamed from \`oldFormatName\`; the example below was never updated and
-   * still calls the old, now-nonexistent name.
-   * @example
-   *  \`\`\`js
-   *  oldFormatName("ok");
-   *  \`\`\`
-   */
-  newFormatName: (value: string) => string;
-
-  /**
-   * Its example calls it with more arguments than it declares.
-   * @example
-   *  \`\`\`js
-   *  tooManyArgs("a", "b", "c");
-   *  \`\`\`
-   */
-  tooManyArgs: (value: string) => string;
-}
 "
 `;

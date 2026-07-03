@@ -1,0 +1,48 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 12,
+      "column": 0
+    }
+  },
+  "syntaxMode": "runes",
+  "scriptLanguage": "ts",
+  "props": [
+    {
+      "name": "measure",
+      "kind": "let",
+      "description": "@generics Element",
+      "type": "Attachment<Element>",
+      "typeSource": "typescript",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 8,
+          "column": 8
+        },
+        "end": {
+          "line": 8,
+          "column": 15
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": [
+    "Element",
+    "Element extends HTMLElement = HTMLDivElement"
+  ],
+  "contexts": [],
+  "diagnostics": []
+}
