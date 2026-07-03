@@ -6,6 +6,7 @@ import type {
   Identifier,
   Literal,
   MemberExpression,
+  NewExpression,
   ObjectExpression,
   VariableDeclaration,
 } from "estree";
@@ -40,6 +41,18 @@ export function isCallExpression(node: unknown): node is CallExpression {
 
 export function isCallExpressionNamed(node: unknown, calleeName: string): node is CallExpression {
   if (!isCallExpression(node)) {
+    return false;
+  }
+
+  return !!node.callee && isObject(node.callee) && node.callee.type === "Identifier" && node.callee.name === calleeName;
+}
+
+export function isNewExpression(node: unknown): node is NewExpression {
+  return isObject(node) && node.type === "NewExpression";
+}
+
+export function isNewExpressionNamed(node: unknown, calleeName: string): node is NewExpression {
+  if (!isNewExpression(node)) {
     return false;
   }
 

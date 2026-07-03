@@ -9408,6 +9408,48 @@ exports[`fixtures (JSON) "required/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "dispatched-events-string-literal-detail/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 12,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "status",
+      "detail": "\\"done\\"",
+      "source": {
+        "start": {
+          "line": 7,
+          "column": 4
+        },
+        "end": {
+          "line": 7,
+          "column": 30
+        }
+      }
+    }
+  ],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "context-imported-type/input.svelte" 1`] = `
 "{
   "source": {
@@ -14437,7 +14479,7 @@ exports[`fixtures (JSON) "runes-host-custom-element/input.svelte" 1`] = `
       "column": 0
     },
     "end": {
-      "line": 12,
+      "line": 24,
       "column": 0
     }
   },
@@ -14467,7 +14509,52 @@ exports[`fixtures (JSON) "runes-host-custom-element/input.svelte" 1`] = `
   ],
   "moduleExports": [],
   "slots": [],
-  "events": [],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "close",
+      "detail": "null",
+      "source": {
+        "start": {
+          "line": 17,
+          "column": 4
+        },
+        "end": {
+          "line": 17,
+          "column": 45
+        }
+      }
+    },
+    {
+      "type": "dispatched",
+      "name": "notify",
+      "source": {
+        "start": {
+          "line": 9,
+          "column": 4
+        },
+        "end": {
+          "line": 9,
+          "column": 68
+        }
+      }
+    },
+    {
+      "type": "dispatched",
+      "name": "ready",
+      "detail": "\\"loaded\\"",
+      "source": {
+        "start": {
+          "line": 13,
+          "column": 4
+        },
+        "end": {
+          "line": 13,
+          "column": 73
+        }
+      }
+    }
+  ],
   "typedefs": [],
   "generics": null,
   "contexts": [],
@@ -19420,6 +19507,19 @@ export default class Required extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "dispatched-events-string-literal-detail/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type DispatchedEventsStringLiteralDetailProps = Record<string, never>;
+
+export default class DispatchedEventsStringLiteralDetail extends SvelteComponentTyped<
+  DispatchedEventsStringLiteralDetailProps,
+  { status: CustomEvent<"done"> },
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "context-imported-type/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -20929,7 +21029,7 @@ export type RunesHostCustomElementProps = {
 
 export default class RunesHostCustomElement extends SvelteComponentTyped<
   RunesHostCustomElementProps,
-  Record<string, any>,
+  { close: CustomEvent<null>; notify: CustomEvent<any>; ready: CustomEvent<"loaded"> },
   Record<string, never>
 > {}
 "

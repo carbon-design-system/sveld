@@ -16,14 +16,14 @@ import type {
 import type { Node } from "estree-walker";
 import { walk } from "estree-walker";
 import { compile, parse } from "svelte/compiler";
-import { isCallExpressionNamed, isIdentifier, isLiteral } from "./ast-guards";
+import { isCallExpressionNamed, isIdentifier, isLiteral, isMemberExpression } from "./ast-guards";
 import type { SveldDiagnostic } from "./diagnostics";
 import { getElementByTag } from "./element-tag-map";
 import { resolveMemberExpressionType } from "./parser/bindings";
 import { createParserContext, type ParserContext } from "./parser/context";
 import { parseSetContextCall } from "./parser/contexts";
 import { recordDiagnostic } from "./parser/diagnostics";
-import { addDispatchedEvent } from "./parser/events";
+import { addDispatchedEvent, literalDetailToTypeText, parseHostDispatchEventCall } from "./parser/events";
 import { getCommentTags, parseCustomTypes, processNodeJSDoc } from "./parser/jsdoc";
 import { addProp, processInitializer } from "./parser/props";
 import { maybeSetRestProps } from "./parser/rest-props";
@@ -445,8 +445,9 @@ export interface ForwardedEvent {
 /**
  * Event that is dispatched by the component.
  *
- * Dispatched events are those created with `createEventDispatcher()`
- * and dispatched via `dispatch("eventname", detail)`.
+ * Dispatched events are those created with `createEventDispatcher()` and
+ * dispatched via `dispatch("eventname", detail)`, or dispatched from a custom
+ * element via `$host().dispatchEvent(new CustomEvent("eventname", { detail }))`.
  */
 export interface DispatchedEvent {
   /** Always "dispatched" for dispatched events */
@@ -1482,6 +1483,8 @@ export default class ComponentParser {
     }
 
     let dispatcher_name: undefined | string;
+    const hostLocalNames = new Set<string>();
+    const hostDispatchedEventNames = new Set<string>();
     const callees: { name: string; arguments: Array<Expression | unknown>; source?: SourceRange }[] = [];
     const componentRoot = {
       type: "ComponentRoot",
@@ -1527,6 +1530,19 @@ export default class ComponentParser {
             }
           }
 
+          if (calleeName === "$host") {
+            if (
+              parent &&
+              typeof parent === "object" &&
+              "id" in parent &&
+              parent.id &&
+              typeof parent.id === "object" &&
+              "name" in parent.id
+            ) {
+              hostLocalNames.add((parent.id as Identifier).name);
+            }
+          }
+
           if (calleeName === "setContext") {
             parseSetContextCall(this.ctx, this, node, parent ?? undefined);
           }
@@ -1537,6 +1553,19 @@ export default class ComponentParser {
               arguments: callExpr.arguments,
               source: sourceRangeFromNode(this.ctx, callExpr),
             });
+          }
+
+          if (
+            isMemberExpression(callExpr.callee) &&
+            isIdentifier(callExpr.callee.property) &&
+            callExpr.callee.property.name === "dispatchEvent" &&
+            (isCallExpressionNamed(callExpr.callee.object, "$host") ||
+              (isIdentifier(callExpr.callee.object) && hostLocalNames.has(callExpr.callee.object.name)))
+          ) {
+            const hostDispatchedEventName = parseHostDispatchEventCall(this.ctx, callExpr);
+            if (hostDispatchedEventName) {
+              hostDispatchedEventNames.add(hostDispatchedEventName);
+            }
           }
         }
 
@@ -2057,7 +2086,7 @@ export default class ComponentParser {
           if (event_name != null) {
             addDispatchedEvent(this.ctx, {
               name: String(event_name),
-              detail: event_detail == null ? "" : String(event_detail),
+              detail: event_detail == null ? "" : literalDetailToTypeText(event_detail),
               has_argument: Boolean(event_argument),
               source: callee.source,
             });
@@ -2074,7 +2103,7 @@ export default class ComponentParser {
      * forwarded via `on:eventname` syntax rather than dispatched. We need to check
      * which events are actually dispatched and convert the rest to forwarded events.
      */
-    const actuallyDispatchedEvents = new Set<string>();
+    const actuallyDispatchedEvents = new Set<string>(hostDispatchedEventNames);
     if (dispatcher_name !== undefined) {
       for (const callee of callees) {
         if (callee.name === dispatcher_name) {

@@ -1,9 +1,17 @@
+import type { CallExpression } from "estree";
+import { isIdentifier, isLiteral, isNewExpressionNamed, isObjectExpression } from "../ast-guards";
 import type { DispatchedEvent } from "../ComponentParser";
 import type { ParserContext } from "./context";
+import { sourceRangeFromNode } from "./source-position";
 
 /** Returns `value`, or `undefined` when it's `undefined` or the empty string. */
 function assignValueOrUndefined(value?: "" | string) {
   return value === undefined || value === "" ? undefined : value;
+}
+
+/** Render a literal event-detail value (from a `dispatch()`/`CustomEvent` argument) as TS type text, quoting strings. */
+export function literalDetailToTypeText(value: unknown): string {
+  return typeof value === "string" ? JSON.stringify(value) : String(value);
 }
 
 /** Merge or add a dispatched event. Detail defaults to `null` when the dispatch has no argument and no `@event` detail. */
@@ -48,6 +56,42 @@ export function addDispatchedEvent(
       source,
     });
   }
+}
+
+/**
+ * Detect `$host().dispatchEvent(new CustomEvent("name", { detail }))` (or `new Event(...)`) and
+ * record it as a dispatched event, mirroring `createEventDispatcher()` detection.
+ */
+export function parseHostDispatchEventCall(ctx: ParserContext, dispatchEventCall: CallExpression): string | undefined {
+  const eventArg = dispatchEventCall.arguments[0];
+  const isCustomEvent = isNewExpressionNamed(eventArg, "CustomEvent");
+  if (!isCustomEvent && !isNewExpressionNamed(eventArg, "Event")) return undefined;
+
+  const nameArg = eventArg.arguments[0];
+  const eventName = isLiteral(nameArg) ? nameArg.value : undefined;
+  if (eventName == null) return undefined;
+
+  const optionsArg = isCustomEvent ? eventArg.arguments[1] : undefined;
+  let hasArgument = false;
+  let detailValue: unknown;
+  if (isObjectExpression(optionsArg)) {
+    const detailProperty = optionsArg.properties.find(
+      (property) => property.type === "Property" && isIdentifier(property.key) && property.key.name === "detail",
+    );
+    if (detailProperty?.type === "Property") {
+      hasArgument = true;
+      detailValue = isLiteral(detailProperty.value) ? detailProperty.value.value : undefined;
+    }
+  }
+
+  addDispatchedEvent(ctx, {
+    name: String(eventName),
+    detail: detailValue == null ? "" : literalDetailToTypeText(detailValue),
+    has_argument: hasArgument,
+    source: sourceRangeFromNode(ctx, dispatchEventCall),
+  });
+
+  return String(eventName);
 }
 
 /** Build an inline object type (with optional JSDoc per property) for event details or typedefs. */
