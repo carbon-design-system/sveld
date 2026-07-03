@@ -9,6 +9,6 @@ export type RunesHostCustomElementProps = {
 
 export default class RunesHostCustomElement extends SvelteComponentTyped<
   RunesHostCustomElementProps,
-  Record<string, any>,
+  { close: CustomEvent<null>; notify: CustomEvent<any>; ready: CustomEvent<"loaded"> },
   Record<string, never>
 > {}

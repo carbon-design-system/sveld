@@ -5,7 +5,7 @@
       "column": 0
     },
     "end": {
-      "line": 12,
+      "line": 24,
       "column": 0
     }
   },
@@ -35,7 +35,52 @@
   ],
   "moduleExports": [],
   "slots": [],
-  "events": [],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "close",
+      "detail": "null",
+      "source": {
+        "start": {
+          "line": 17,
+          "column": 4
+        },
+        "end": {
+          "line": 17,
+          "column": 45
+        }
+      }
+    },
+    {
+      "type": "dispatched",
+      "name": "notify",
+      "source": {
+        "start": {
+          "line": 9,
+          "column": 4
+        },
+        "end": {
+          "line": 9,
+          "column": 68
+        }
+      }
+    },
+    {
+      "type": "dispatched",
+      "name": "ready",
+      "detail": "\"loaded\"",
+      "source": {
+        "start": {
+          "line": 13,
+          "column": 4
+        },
+        "end": {
+          "line": 13,
+          "column": 73
+        }
+      }
+    }
+  ],
   "typedefs": [],
   "generics": null,
   "contexts": [],
