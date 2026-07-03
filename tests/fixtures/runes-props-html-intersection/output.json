@@ -1,0 +1,54 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 11,
+      "column": 0
+    }
+  },
+  "syntaxMode": "runes",
+  "scriptLanguage": "ts",
+  "props": [
+    {
+      "name": "variant",
+      "kind": "let",
+      "type": "\"primary\" | \"secondary\"",
+      "typeSource": "typescript",
+      "value": "\"primary\"",
+      "defaultValue": {
+        "raw": "\"primary\"",
+        "kind": "literal",
+        "value": "primary"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 4,
+          "column": 8
+        },
+        "end": {
+          "line": 4,
+          "column": 27
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "rest_props": {
+    "type": "Element",
+    "name": "button"
+  },
+  "contexts": [],
+  "diagnostics": []
+}

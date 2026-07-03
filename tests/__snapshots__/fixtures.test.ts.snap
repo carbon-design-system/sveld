@@ -4830,6 +4830,64 @@ exports[`fixtures (JSON) "runes-attachment-array/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "runes-props-html-intersection/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 11,
+      "column": 0
+    }
+  },
+  "syntaxMode": "runes",
+  "scriptLanguage": "ts",
+  "props": [
+    {
+      "name": "variant",
+      "kind": "let",
+      "type": "\\"primary\\" | \\"secondary\\"",
+      "typeSource": "typescript",
+      "value": "\\"primary\\"",
+      "defaultValue": {
+        "raw": "\\"primary\\"",
+        "kind": "literal",
+        "value": "primary"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 4,
+          "column": 8
+        },
+        "end": {
+          "line": 4,
+          "column": 27
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "rest_props": {
+    "type": "Element",
+    "name": "button"
+  },
+  "contexts": [],
+  "diagnostics": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "runes-bindable/input.svelte" 1`] = `
 "{
   "source": {
@@ -12214,6 +12272,57 @@ exports[`fixtures (JSON) "slot-extends-template/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "runes-snippet-generic-tuple/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 22,
+      "column": 0
+    }
+  },
+  "syntaxMode": "runes",
+  "scriptLanguage": "ts",
+  "props": [
+    {
+      "name": "rows",
+      "kind": "let",
+      "type": "Row[]",
+      "typeSource": "typescript",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 9,
+          "column": 4
+        },
+        "end": {
+          "line": 9,
+          "column": 8
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": [
+    "Row",
+    "Row"
+  ],
+  "contexts": [],
+  "diagnostics": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "html-in-template-string/input.svelte" 1`] = `
 "{
   "source": {
@@ -17998,6 +18107,27 @@ export default class RunesAttachmentArray extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "runes-props-html-intersection/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
+import type { HTMLButtonAttributes } from "svelte/elements";
+
+type $RestProps = SvelteHTMLElements["button"];
+
+type $Props = ({ variant?: "primary" | "secondary" } & HTMLButtonAttributes) & {
+  [key: \`data-\${string}\`]: unknown;
+};
+
+export type RunesPropsHtmlIntersectionProps = Omit<$RestProps, keyof $Props> & $Props;
+
+export default class RunesPropsHtmlIntersection extends SvelteComponentTyped<
+  RunesPropsHtmlIntersectionProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "runes-bindable/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -20077,6 +20207,25 @@ export default class SlotExtendsTemplate<Icon = any> extends SvelteComponentType
     /** Optional badge overlay. */
     badge: Record<string, never>;
   }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "runes-snippet-generic-tuple/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { Snippet } from "svelte";
+
+type $Props<Row> = {
+  rows: Row[];
+  children: Snippet<[row: Row, index: number]>;
+};
+
+export type RunesSnippetGenericTupleProps<Row> = $Props<Row>;
+
+export default class RunesSnippetGenericTuple<Row> extends SvelteComponentTyped<
+  RunesSnippetGenericTupleProps<Row>,
+  Record<string, any>,
+  Record<string, never>
 > {}
 "
 `;
