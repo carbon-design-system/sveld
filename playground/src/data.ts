@@ -410,6 +410,47 @@ const functionWithParamsRunes: Example = {
 `,
 };
 
+const attachmentsRunes: Example = {
+  name: "Attachments",
+  moduleName: "AttachmentsRunes",
+  code: `<script lang="ts">
+  import type { Attachment } from "svelte/attachments";
+
+  let {
+    value = $bindable(""),
+    autofocus,
+  }: {
+    value?: string;
+    autofocus?: Attachment<HTMLInputElement>;
+  } = $props();
+</script>
+
+<input bind:value {@attach autofocus} />
+`,
+};
+
+const customElementEventsRunes: Example = {
+  name: "Custom element events",
+  moduleName: "CustomElementEventsRunes",
+  code: `<svelte:options customElement="my-toggle" />
+
+<script>
+  let { pressed = $bindable(false) } = $props();
+
+  function toggle() {
+    pressed = !pressed;
+    $host().dispatchEvent(
+      new CustomEvent("toggle", { detail: pressed }),
+    );
+  }
+</script>
+
+<button onclick={toggle}>
+  {pressed ? "On" : "Off"}
+</button>
+`,
+};
+
 const buttonLegacy: Example = {
   name: "Button (non-Runes)",
   moduleName: "ButtonLegacy",
@@ -758,6 +799,8 @@ export default [
   namedSnippetsRunes,
   componentCommentsRunes,
   functionWithParamsRunes,
+  attachmentsRunes,
+  customElementEventsRunes,
   buttonLegacy,
   typeScriptPropsLegacy,
   dispatchedEventsLegacy,
