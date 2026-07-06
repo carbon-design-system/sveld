@@ -30,8 +30,6 @@ async function buildProject() {
       // Runtime dependency; avoids bundling css-tree/mdn-data which use
       // createRequire with relative paths for JSON data files.
       "prettier",
-      // Native module used by rollup's file watcher (not needed at runtime).
-      "fsevents",
     ],
   });
 
