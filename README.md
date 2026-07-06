@@ -407,6 +407,10 @@ npx sveld --json --markdown
 
 If no entry point can be resolved (no `package.json#svelte` field and no `--entry`), the CLI exits `1` and prints the reason to `stderr`. If `src/index.js` happens to exist relative to your working directory, sveld falls back to it and prints a one-line note asking you to set `package.json#svelte` (or `--entry`) instead of relying on the fallback.
 
+Flags are kebab-case: `--entry`, `--glob`, `--types`, `--json`, `--markdown`, `--fail-fast`, `--cache`, `--resolve-types`, `--check-examples`, `--report-diagnostics`, `--strict`, `--check`. The camelCase spellings `--resolveTypes` and `--checkExamples` still work as deprecated aliases for compatibility with existing scripts. An unrecognized flag (e.g. `--markdwon`) prints `Unknown flag: --markdwon` to `stderr`, exits `1`, and skips generation; sveld takes no positional arguments, so any non-flag argument errors the same way.
+
+Run `npx sveld --help` for the full flag list with descriptions, or `npx sveld --version` to print the installed version.
+
 ### CI: API-drift checks (`--check`)
 
 `--check` diffs the parsed component API against a committed `COMPONENT_API.json` snapshot, assigns a semver bump to each change, and exits `1` when it finds a breaking change.
@@ -551,9 +555,9 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
 - **`customElementsOptions`** (object, optional): Options for Custom Elements Manifest output, including `outFile`.
 - **`watch`** (boolean, optional, default: `false`): Regenerate output incrementally when `.svelte` source changes during `vite dev` / `vite build --watch`. Only the changed component and the components that depend on it via [`@extendProps`](#extendprops) / `@extends` are re-parsed, rather than rebuilding every component. Without this option, the plugin only runs during `vite build`.
 - **`failFast`** (boolean, optional, default: `false`): Abort the entire run when a single component fails to parse. By default, parse failures are collected as diagnostics (and reported to `stderr`) so the remaining components still emit their output. Also available as the `--fail-fast` CLI flag.
-- **`resolveTypes`** (boolean, optional, default: `false`): Load the TypeScript program to expand opaque imported whole-object `$props()` types into JSON. See [Opt-in semantic resolution](#opt-in-semantic-resolution-resolvetypes).
+- **`resolveTypes`** (boolean, optional, default: `false`): Load the TypeScript program to expand opaque imported whole-object `$props()` types into JSON. Also available as `--resolve-types` (`--resolveTypes` remains as a deprecated alias). See [Opt-in semantic resolution](#opt-in-semantic-resolution-resolvetypes).
 - **`cache`** (boolean | string, optional, default: `false`): Write parsed component output to disk and skip re-parsing unchanged files on later runs. `true` uses `node_modules/.cache/sveld/parse-cache.json`; a string sets a custom path. Also available as `--cache` / `--cache=<path>`. See [Persistent parse cache](#persistent-parse-cache-cache).
-- **`checkExamples`** (boolean, optional, default: `false`): Run plain TS/JS `@example` blocks through the TypeScript program. Broken ones get an `example-compile-error` diagnostic. See [Compile-checked `@example` blocks](#compile-checked-example-blocks-checkexamples).
+- **`checkExamples`** (boolean, optional, default: `false`): Run plain TS/JS `@example` blocks through the TypeScript program. Broken ones get an `example-compile-error` diagnostic. Also available as `--check-examples` (`--checkExamples` remains as a deprecated alias). See [Compile-checked `@example` blocks](#compile-checked-example-blocks-checkexamples).
 - **`reportDiagnostics`** (boolean, optional, default: `false`): Print unresolved-type diagnostics to stderr (CLI) or `console.warn` (programmatic API). Also available as `--report-diagnostics`. See [Type inference diagnostics](#type-inference-diagnostics).
 - **`strict`** (boolean, optional, default: `false`): Exit with code `1` when diagnostics exist. Implies `reportDiagnostics`. Also available as `--strict`. See [Type inference diagnostics](#type-inference-diagnostics).
 

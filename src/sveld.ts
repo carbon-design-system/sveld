@@ -54,7 +54,7 @@ export async function sveld(opts?: SveldOptions): Promise<SveldResult> {
   }
   const merged = mergeConfig<PluginSveldOptions>(fileConfig, runtimeOpts, { entry: input });
   const result = await generateBundle(input, merged.glob === true, toGenerateBundleOptions(merged));
-  writeOutput(result, merged, input);
+  await writeOutput(result, merged, input);
 
   const { diagnostics } = result;
   const shouldReport = reportDiagnostics || strict;
