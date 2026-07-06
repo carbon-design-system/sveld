@@ -3,17 +3,21 @@
 [![NPM][npm]][npm-url]
 ![npm downloads to date](https://img.shields.io/npm/dt/sveld?color=262626&style=for-the-badge)
 
-`sveld` generates TypeScript definitions and component documentation (Markdown/JSON) for Svelte components. It statically analyzes props, events, slots, and the rest. Add types with [JSDoc](https://jsdoc.app/) when inference is not enough.
+`sveld` generates TypeScript definitions and component documentation (Markdown/JSON) for Svelte components. It statically analyzes props, events, slots, module exports, context, and `$$restProps`. Add types with [JSDoc](https://jsdoc.app/) when inference is not enough.
 
 The goal is to get third-party Svelte libraries working with the Svelte Language Server and TypeScript with minimal effort from the author. Generated `.d.ts` files give you autocomplete in VS Code and other IDEs.
 
 [Carbon Components Svelte](https://github.com/carbon-design-system/carbon-components-svelte) uses this library to auto-generate component types and API metadata.
 
-`sveld` uses the Svelte 5 compiler to parse `.svelte` files. That single parse path powers docgen and TypeScript output for Svelte 3, Svelte 4, Svelte 5 without runes (`export let`, `<slot>`, `$$restProps`, …), and Svelte 5 Runes (`$props()`, `$bindable()`, `{@render ...}`, callback props such as `onclick`, …).
+`sveld` uses the Svelte 5 compiler to parse `.svelte` files. That single parse path powers docgen and TypeScript output for Svelte 3, Svelte 4, and Svelte 5 without runes (`export let`, `<slot>`, `$$restProps`, …). It also covers Svelte 5 Runes (`$props()`, `$bindable()`, `{@render ...}`, callback props such as `onclick`, …).
 
 For `lang="ts"` components, `sveld` keeps source-level prop type annotations when it can, instead of forcing JSDoc. That covers legacy `export let` props, typed `$props()` destructuring, typed whole-object `$props()` captures, local `interface`/`type` declarations, and imported type references in emitted `.d.ts` files.
 
 Generated `.d.ts` files extend `SvelteComponentTyped` from `svelte`, so TypeScript and the Svelte Language Server work whether consumers use Svelte 3, Svelte 4, or Svelte 5.
+
+## When to use sveld
+
+SvelteKit's library tooling (`svelte-package`) and `svelte2tsx` already emit `.d.ts` files for SvelteKit-based projects, so start there if that's your setup. `sveld` targets JS-first Svelte libraries: components authored in plain JavaScript with JSDoc rather than `lang="ts"`, where you still want full editor types without adopting TypeScript. It also covers cases `svelte-package` doesn't: generating JSON and Markdown component docs from the same source as the types, checking for API drift between releases (`--check`), and deriving richer types from JSDoc tags (`@typedef`, `@callback`, `@slot`, context types) than plain type inference produces.
 
 ---
 
@@ -113,12 +117,14 @@ export default class Button extends SvelteComponentTyped<
 
 ## Table of Contents
 
+- [When to use sveld](#when-to-use-sveld)
 - [Approach](#approach)
 - [Features](#features)
   - [Opt-in semantic resolution (`resolveTypes`)](#opt-in-semantic-resolution-resolvetypes)
   - [Persistent parse cache (`cache`)](#persistent-parse-cache-cache)
   - [Compile-checked `@example` blocks (`checkExamples`)](#compile-checked-example-blocks-checkexamples)
   - [Type inference diagnostics](#type-inference-diagnostics)
+- [Requirements](#requirements)
 - [Usage](#usage)
   - [Installation](#installation)
   - [Vite](#vite)
@@ -149,6 +155,7 @@ export default class Button extends SvelteComponentTyped<
   - [@generics](#generics)
   - [@component comments](#component-comments)
   - [Accessor Props](#accessor-props)
+- [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -311,6 +318,12 @@ npx sveld --json --strict
 
 `--check` is separate: it diffs `COMPONENT_API.json` for API drift and semver classification, not inference warnings.
 
+## Requirements
+
+- Node 22+. CI tests against Node 22 on Linux, Windows, and macOS; earlier LTS versions are not verified.
+- `sveld` is ESM-only. `require("sveld")` does not work — use `import` or dynamic `import()`.
+- `sveld` bundles its own Svelte 5 compiler to parse `.svelte` files. Parsing does not depend on the Svelte version installed in your project, so Svelte 3 and Svelte 4 codebases parse the same way Svelte 5 codebases do — there is no compiler version to match up.
+
 ## Usage
 
 ### Installation
@@ -348,7 +361,7 @@ export default defineConfig({
 
 Since Vite uses Rollup for production builds, the same plugin works in Rollup configs.
 
-By default, `sveld` will use the `"svelte"` field from your `package.json` to determine the entry point. You can override this by specifying an explicit `entry` option:
+By default, `sveld` uses the `"svelte"` field from your `package.json` to determine the entry point. You can override this by specifying an explicit `entry` option:
 
 ```js
 sveld({
@@ -416,9 +429,9 @@ The CLI exits non-zero on any fatal error (an unreadable entry, a config file th
 
 ### Node.js
 
-You can also call `sveld` from Node.js. The package is **ESM-only**; `require("sveld")` does not work. Use `import` or dynamic `import()`.
+You can also call `sveld` from Node.js. See [Requirements](#requirements) for supported Node versions and the ESM-only constraint.
 
-If no `input` is specified, `sveld` will infer the entry point based on the `package.json#svelte` field.
+If no `input` is specified, `sveld` infers the entry point based on the `package.json#svelte` field.
 
 ```js
 import { sveld } from "sveld";
@@ -490,13 +503,19 @@ A bad config (syntax error, throws at load time, or no default-export object) fa
 
 ### Publishing to NPM
 
-TypeScript definitions land in the `types` folder by default. Include that folder in `package.json` when you publish to npm.
+TypeScript definitions land in the `types` folder by default. Point consumers at them with an `exports` map, and include that folder in `package.json` when you publish to npm.
 
 ```diff
 {
   "svelte": "./src/index.js",
++ "exports": {
++   ".": {
++     "types": "./types/index.d.ts",
++     "svelte": "./src/index.js",
++     "default": "./lib/index.mjs"
++   }
++ },
   "main": "./lib/index.mjs",
-+ "types": "./types/index.d.ts",
   "files": [
     "src",
     "lib",
@@ -505,11 +524,13 @@ TypeScript definitions land in the `types` folder by default. Include that folde
 }
 ```
 
+The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack via `svelte-loader`) resolve straight to source; `types` and `default` cover TypeScript and everything else. Keep the top-level `"svelte"` field too — older tooling that predates conditional exports still reads it directly.
+
 ## Available Options
 
 ### Plugin Options
 
-- **`entry`** (string, optional): Specify the entry point to uncompiled Svelte source. If not provided, sveld will use the `"svelte"` field from `package.json`.
+- **`entry`** (string, optional): Specify the entry point to uncompiled Svelte source. If not provided, sveld uses the `"svelte"` field from `package.json`.
 - **`glob`** (boolean, optional): Enable glob mode to analyze all `*.svelte` files.
 - **`documentExports`** (boolean, optional): Include consts, functions, and types from the entry barrel in JSON (`exports`) and Markdown ("Exports"). Off by default. See [Documenting Entry Exports](#documenting-entry-exports).
 - **`types`** (boolean, optional, default: `true`): Generate TypeScript definitions.
@@ -739,7 +760,7 @@ This is documentation only. Generated `.svelte.d.ts` prop types do not change. T
 
 ### `@type`
 
-Without a `@type` annotation, `sveld` will infer the primitive type for a prop:
+Without a `@type` annotation, `sveld` infers the primitive type for a prop:
 
 ```js
 export let kind = "primary";
@@ -768,8 +789,6 @@ For `lang="ts"` components, prefer native TypeScript annotations when you alread
 
 **Example:**
 
-**Svelte 5 Runes:**
-
 ```svelte
 <script>
   let {
@@ -789,7 +808,8 @@ For `lang="ts"` components, prefer native TypeScript annotations when you alread
 
 For runes components with multiple destructured props, put JSDoc on the property you want to document. A declaration-level block is a fallback when the destructure exposes a single public prop.
 
-**Svelte 3, 4, 5 (non-Runes):**
+<details>
+<summary>Svelte 3/4 (legacy) syntax</summary>
 
 ```svelte
 <script>
@@ -806,6 +826,8 @@ For runes components with multiple destructured props, put JSDoc on the property
   export let renderIcon = Close20;
 </script>
 ```
+
+</details>
 
 #### Importing types
 
@@ -1017,8 +1039,6 @@ The `@typedef` tag defines a shared type used multiple times in a component. All
 
 **Example:**
 
-**Svelte 5 Runes:**
-
 ```svelte
 <script>
   /**
@@ -1035,7 +1055,8 @@ The `@typedef` tag defines a shared type used multiple times in a component. All
 </script>
 ```
 
-**Svelte 3, 4, 5 (non-Runes):**
+<details>
+<summary>Svelte 3/4 (legacy) syntax</summary>
 
 ```svelte
 <script>
@@ -1051,6 +1072,8 @@ The `@typedef` tag defines a shared type used multiple times in a component. All
   export let authors = [];
 </script>
 ```
+
+</details>
 
 #### Using `@property` for complex typedefs
 
@@ -1068,8 +1091,6 @@ For complex object types, use `@property` to document individual fields. That gi
 
 **Example:**
 
-**Svelte 5 Runes:**
-
 ```svelte
 <script>
   /**
@@ -1085,7 +1106,8 @@ For complex object types, use `@property` to document individual fields. That gi
 </script>
 ```
 
-**Svelte 3, 4, 5 (non-Runes):**
+<details>
+<summary>Svelte 3/4 (legacy) syntax</summary>
 
 ```svelte
 <script>
@@ -1101,6 +1123,10 @@ For complex object types, use `@property` to document individual fields. That gi
   export let user = { name: "John", email: "john@example.com", age: 30 };
 </script>
 ```
+
+</details>
+
+Output is identical for both syntax modes.
 
 Output:
 
@@ -1139,8 +1165,6 @@ Use square brackets for optional properties, per JSDoc. Default values use `[pro
 
 **Example:**
 
-**Svelte 5 Runes:**
-
 ```svelte
 <script>
   /**
@@ -1157,7 +1181,8 @@ Use square brackets for optional properties, per JSDoc. Default values use `[pro
 </script>
 ```
 
-**Svelte 3, 4, 5 (non-Runes):**
+<details>
+<summary>Svelte 3/4 (legacy) syntax</summary>
 
 ```svelte
 <script>
@@ -1174,6 +1199,10 @@ Use square brackets for optional properties, per JSDoc. Default values use `[pro
   export let config = { enabled: true, theme: "dark" };
 </script>
 ```
+
+</details>
+
+Output is identical for both syntax modes.
 
 Output:
 
@@ -1464,8 +1493,6 @@ Use it for callback props when you do not want inline function type syntax.
 
 **Example:**
 
-**Svelte 5 Runes:**
-
 ```svelte
 <script>
   /**
@@ -1481,7 +1508,8 @@ Use it for callback props when you do not want inline function type syntax.
 </script>
 ```
 
-**Svelte 3, 4, 5 (non-Runes):**
+<details>
+<summary>Svelte 3/4 (legacy) syntax</summary>
 
 ```svelte
 <script>
@@ -1497,6 +1525,10 @@ Use it for callback props when you do not want inline function type syntax.
   export let onChange = (value, index) => {};
 </script>
 ```
+
+</details>
+
+Output is identical for both syntax modes.
 
 Output:
 
@@ -1555,8 +1587,6 @@ Omit the `slot-name` to type the default slot.
 
 **Example:**
 
-**Svelte 5 Runes:**
-
 ```svelte
 <script>
   /**
@@ -1578,7 +1608,8 @@ Omit the `slot-name` to type the default slot.
 </p>
 ```
 
-**Svelte 3, 4, 5 (non-Runes):**
+<details>
+<summary>Svelte 3/4 (legacy) syntax</summary>
 
 ```svelte
 <script>
@@ -1600,6 +1631,8 @@ Omit the `slot-name` to type the default slot.
   <slot name="body" {prop} />
 </p>
 ```
+
+</details>
 
 #### Extra JSDoc tags before `@slot`
 
@@ -1754,8 +1787,6 @@ Use `null` as the value if no event detail is provided.
 
 **Example:**
 
-**Svelte 5 Runes:**
-
 ```svelte
 <script>
   /**
@@ -1790,7 +1821,8 @@ Use `null` as the value if no event detail is provided.
 </script>
 ```
 
-**Svelte 3, 4, 5 (non-Runes):**
+<details>
+<summary>Svelte 3/4 (legacy) syntax</summary>
 
 ```svelte
 <script>
@@ -1809,6 +1841,10 @@ Use `null` as the value if no event detail is provided.
   $: if (key) dispatch("key");
 </script>
 ```
+
+</details>
+
+Output is identical for both syntax modes.
 
 Output:
 
@@ -1842,8 +1878,6 @@ This is the idiomatic way to describe each field of an event detail. An inline o
 
 **Example:**
 
-**Svelte 5 Runes:**
-
 ```svelte
 <script>
   /**
@@ -1870,7 +1904,8 @@ This is the idiomatic way to describe each field of an event detail. An inline o
 <button type="button" onclick={handleSubmit}>Submit</button>
 ```
 
-**Svelte 3, 4, 5 (non-Runes):**
+<details>
+<summary>Svelte 3/4 (legacy) syntax</summary>
 
 ```svelte
 <script>
@@ -1900,6 +1935,10 @@ This is the idiomatic way to describe each field of an event detail. An inline o
 <button type="button" on:click={handleSubmit}>Submit</button>
 ```
 
+</details>
+
+Output is identical for both syntax modes.
+
 Output:
 
 ```ts
@@ -1925,8 +1964,6 @@ export default class Component extends SvelteComponentTyped<
 Like typedefs, you can mark event detail properties as optional with square brackets when they are not always in the payload.
 
 **Example:**
-
-**Svelte 5 Runes:**
 
 ```svelte
 <script>
@@ -1958,7 +1995,8 @@ Like typedefs, you can mark event detail properties as optional with square brac
 <button type="button" onclick={throwSnowball}>Throw</button>
 ```
 
-**Svelte 3, 4, 5 (non-Runes):**
+<details>
+<summary>Svelte 3/4 (legacy) syntax</summary>
 
 ```svelte
 <script>
@@ -1989,6 +2027,10 @@ Like typedefs, you can mark event detail properties as optional with square brac
 
 <button type="button" on:click={throwSnowball}>Throw</button>
 ```
+
+</details>
+
+Output is identical for both syntax modes.
 
 Output:
 
@@ -2128,8 +2170,6 @@ Anything else (dynamic identifiers, template interpolation, other function calls
 
 **Modal.svelte**
 
-**Svelte 5 Runes:**
-
 ```svelte
 <script>
   import { setContext } from "svelte";
@@ -2160,7 +2200,8 @@ Anything else (dynamic identifiers, template interpolation, other function calls
 </div>
 ```
 
-**Svelte 3, 4, 5 (non-Runes):**
+<details>
+<summary>Svelte 3/4 (legacy) syntax</summary>
 
 ```svelte
 <script>
@@ -2189,6 +2230,10 @@ Anything else (dynamic identifiers, template interpolation, other function calls
   <slot />
 </div>
 ```
+
+</details>
+
+Output is identical for both syntax modes.
 
 **Generated TypeScript definition:**
 
@@ -2333,8 +2378,6 @@ Use `@restProps` to name the element tags `$$restProps` is forwarded to.
 
 **Example:**
 
-**Svelte 5 Runes:**
-
 ```svelte
 <script>
   import Button from "./Button.svelte";
@@ -2352,7 +2395,8 @@ Use `@restProps` to name the element tags `$$restProps` is forwarded to.
 {/if}
 ```
 
-**Svelte 3, 4, 5 (non-Runes):**
+<details>
+<summary>Svelte 3/4 (legacy) syntax</summary>
 
 ```svelte
 <script>
@@ -2368,6 +2412,8 @@ Use `@restProps` to name the element tags `$$restProps` is forwarded to.
   <h1 {...$$restProps}><slot /></h1>
 {/if}
 ```
+
+</details>
 
 ### `@extendProps`
 
@@ -2422,8 +2468,6 @@ Because `sveld` targets JavaScript-only usage as a baseline, generics use the st
 
 **Component example:**
 
-**Svelte 5 Runes:**
-
 ```svelte
 <script>
   /**
@@ -2445,7 +2489,8 @@ Because `sveld` targets JavaScript-only usage as a baseline, generics use the st
 {@render children?.({ headers, rows })}
 ```
 
-**Svelte 3, 4, 5 (non-Runes):**
+<details>
+<summary>Svelte 3/4 (legacy) syntax</summary>
 
 ```svelte
 <script>
@@ -2465,6 +2510,10 @@ Because `sveld` targets JavaScript-only usage as a baseline, generics use the st
 
 <slot {headers} {rows} />
 ```
+
+</details>
+
+Output is identical for both syntax modes.
 
 Generated output looks like this:
 
@@ -2538,11 +2587,9 @@ For multiple generics, use a single `@generics` tag with comma-separated names:
 
 The Svelte Language Server supports component-level comments through the following syntax: `<!-- @component [comment] -->`.
 
-`sveld` will copy these over to the exported default component in the TypeScript definition.
+`sveld` copies these over to the exported default component in the TypeScript definition.
 
 **Example:**
-
-**Svelte 5 Runes:**
 
 ```svelte
 <!-- @component
@@ -2560,7 +2607,8 @@ The Svelte Language Server supports component-level comments through the followi
 </button>
 ```
 
-**Svelte 3, 4, 5 (non-Runes):**
+<details>
+<summary>Svelte 3/4 (legacy) syntax</summary>
 
 ```svelte
 <!-- @component
@@ -2573,6 +2621,10 @@ The Svelte Language Server supports component-level comments through the followi
   <slot />
 </button>
 ```
+
+</details>
+
+Output is identical for both syntax modes.
 
 Output:
 
@@ -2608,8 +2660,6 @@ Exported functions and consts become accessor props in generated TypeScript defi
 ```
 
 **Example:**
-
-**Svelte 5 Runes:**
 
 ```svelte
 <script>
@@ -2654,7 +2704,8 @@ Exported functions and consts become accessor props in generated TypeScript defi
 </div>
 ```
 
-**Svelte 3, 4, 5 (non-Runes):**
+<details>
+<summary>Svelte 3/4 (legacy) syntax</summary>
 
 ```svelte
 <script>
@@ -2693,6 +2744,10 @@ Exported functions and consts become accessor props in generated TypeScript defi
 </script>
 ```
 
+</details>
+
+Output is identical for both syntax modes.
+
 Output:
 
 ```ts
@@ -2727,6 +2782,14 @@ export default class Component extends SvelteComponentTyped<
 ```
 
 When only `@param` tags are present without `@returns`, the return type defaults to `any`. When only `@returns` is present without `@param`, the function signature is `() => returnType`.
+
+## Troubleshooting
+
+**A prop came out `any`.** Enable [`reportDiagnostics`](#type-inference-diagnostics) (or `strict` to fail CI) to see which props sveld couldn't infer, then tighten them with `@type` or a native TypeScript annotation.
+
+**Generated types don't appear for consumers.** Check that the `types` folder is listed in `exports` and `files` in `package.json`. See [Publishing to NPM](#publishing-to-npm).
+
+**Output differs in CI.** Commit `COMPONENT_API.json` and run [`--check`](#ci-api-drift-checks---check) in CI so API drift fails the build instead of silently diverging.
 
 ## Contributing
 
