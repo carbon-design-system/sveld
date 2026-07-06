@@ -205,10 +205,14 @@ describe("sveld() strict mode", () => {
   });
 
   test("returns the aggregated diagnostics array and stays non-failing by default", async () => {
+    // Bun ignores `process.exitCode = undefined` once a numeric code has been
+    // set earlier in the process, so assert against the pre-call value rather
+    // than an unreachable literal `undefined`.
+    const exitCodeBefore = process.exitCode;
     const { diagnostics } = await sveld({ input: relativeDir, glob: true, types: false });
 
     expect(diagnostics.some((d) => d.kind === "event-no-source" && d.name === "phantom")).toBe(true);
-    expect(process.exitCode).toBeUndefined();
+    expect(process.exitCode).toBe(exitCodeBefore);
     expect(warnSpy).not.toHaveBeenCalled();
   });
 

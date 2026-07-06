@@ -123,7 +123,7 @@ export async function cli(process: NodeJS.Process) {
     });
   }
 
-  writeOutput(result, options, input);
+  await writeOutput(result, options, input);
 
   const { diagnostics } = result;
   const shouldReport = options.reportDiagnostics || options.strict;
