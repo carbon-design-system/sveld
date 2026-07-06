@@ -407,6 +407,8 @@ Removed props, events, or slots, and props that become required, are breaking (`
 
 Use `--check=<path>` to diff against a snapshot at a custom location (defaults to `jsonOptions.outFile`, or `COMPONENT_API.json`).
 
+The CLI exits non-zero on any fatal error (an unreadable entry, a config file that throws, etc.), not just on `--strict`/`--check` findings, so it's safe to use either flag as a CI gate.
+
 ### Node.js
 
 You can also call `sveld` from Node.js. The package is **ESM-only**; `require("sveld")` does not work. Use `import` or dynamic `import()`.
