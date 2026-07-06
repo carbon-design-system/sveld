@@ -1,0 +1,208 @@
+{
+  "schemaVersion": 1,
+  "generator": {
+    "name": "sveld",
+    "version": "0.34.1",
+    "svelteVersion": "5.56.3"
+  },
+  "total": 3,
+  "components": [
+    {
+      "moduleName": "LegacyPanel",
+      "filePath": "src/LegacyPanel.svelte",
+      "source": {
+        "start": { "line": 1, "column": 0 },
+        "end": { "line": 18, "column": 0 }
+      },
+      "syntaxMode": "legacy",
+      "scriptLanguage": "ts",
+      "props": [
+        {
+          "name": "title",
+          "kind": "let",
+          "type": "string",
+          "typeSource": "typescript",
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": true,
+          "constant": false,
+          "reactive": false,
+          "source": {
+            "start": { "line": 4, "column": 2 },
+            "end": { "line": 4, "column": 27 }
+          }
+        }
+      ],
+      "moduleExports": [],
+      "slots": [],
+      "events": [
+        {
+          "type": "forwarded",
+          "name": "click",
+          "element": "button",
+          "source": {
+            "start": { "line": 15, "column": 10 },
+            "end": { "line": 15, "column": 18 }
+          }
+        },
+        {
+          "type": "dispatched",
+          "name": "close",
+          "source": {
+            "start": { "line": 9, "column": 4 },
+            "end": { "line": 9, "column": 41 }
+          }
+        }
+      ],
+      "typedefs": [],
+      "generics": null,
+      "contexts": []
+    },
+    {
+      "moduleName": "RunesButton",
+      "filePath": "src/RunesButton.svelte",
+      "source": {
+        "start": { "line": 1, "column": 0 },
+        "end": { "line": 28, "column": 0 }
+      },
+      "syntaxMode": "runes",
+      "scriptLanguage": "ts",
+      "props": [
+        {
+          "name": "label",
+          "kind": "let",
+          "type": "string",
+          "typeSource": "typescript",
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": true,
+          "constant": false,
+          "reactive": false,
+          "source": {
+            "start": { "line": 5, "column": 4 },
+            "end": { "line": 5, "column": 9 }
+          }
+        },
+        {
+          "name": "onclick",
+          "kind": "let",
+          "type": "(event: MouseEvent) => void",
+          "typeSource": "typescript",
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": false,
+          "constant": false,
+          "reactive": false,
+          "source": {
+            "start": { "line": 6, "column": 4 },
+            "end": { "line": 6, "column": 11 }
+          }
+        },
+        {
+          "name": "onpress",
+          "kind": "let",
+          "type": "(value: string) => void",
+          "typeSource": "typescript",
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": false,
+          "constant": false,
+          "reactive": false,
+          "source": {
+            "start": { "line": 7, "column": 4 },
+            "end": { "line": 7, "column": 11 }
+          }
+        },
+        {
+          "name": "value",
+          "kind": "let",
+          "bindable": true,
+          "type": "string",
+          "typeSource": "typescript",
+          "value": "\"ready\"",
+          "defaultValue": {
+            "raw": "\"ready\"",
+            "kind": "literal",
+            "value": "ready"
+          },
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": false,
+          "constant": false,
+          "reactive": true,
+          "source": {
+            "start": { "line": 8, "column": 4 },
+            "end": { "line": 8, "column": 30 }
+          }
+        }
+      ],
+      "moduleExports": [],
+      "slots": [
+        {
+          "name": null,
+          "default": true,
+          "slot_props": "{ value: string }",
+          "source": {
+            "start": { "line": 26, "column": 2 },
+            "end": { "line": 26, "column": 33 }
+          }
+        }
+      ],
+      "events": [],
+      "typedefs": [],
+      "generics": null,
+      "contexts": []
+    },
+    {
+      "moduleName": "RunesGenericList",
+      "filePath": "src/RunesGenericList.svelte",
+      "source": {
+        "start": { "line": 1, "column": 0 },
+        "end": { "line": 18, "column": 0 }
+      },
+      "syntaxMode": "runes",
+      "scriptLanguage": "ts",
+      "props": [
+        {
+          "name": "items",
+          "kind": "let",
+          "type": "Item[]",
+          "typeSource": "typescript",
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": true,
+          "constant": false,
+          "reactive": false,
+          "source": {
+            "start": { "line": 5, "column": 4 },
+            "end": { "line": 5, "column": 9 }
+          }
+        },
+        {
+          "name": "row",
+          "kind": "let",
+          "type": "Snippet<[item: Item]>",
+          "typeSource": "typescript",
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": true,
+          "constant": false,
+          "reactive": false,
+          "source": {
+            "start": { "line": 6, "column": 4 },
+            "end": { "line": 6, "column": 7 }
+          }
+        }
+      ],
+      "moduleExports": [],
+      "slots": [],
+      "events": [],
+      "typedefs": [],
+      "generics": [
+        "Item",
+        "Item extends { id: string | number } = { id: string }"
+      ],
+      "contexts": []
+    }
+  ]
+}

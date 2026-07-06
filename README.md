@@ -13,7 +13,7 @@ The goal is to get third-party Svelte libraries working with the Svelte Language
 
 For `lang="ts"` components, `sveld` keeps source-level prop type annotations when it can, instead of forcing JSDoc. That covers legacy `export let` props, typed `$props()` destructuring, typed whole-object `$props()` captures, local `interface`/`type` declarations, and imported type references in emitted `.d.ts` files.
 
-Generated `.d.ts` files extend `SvelteComponentTyped` from `svelte`, so TypeScript and the Svelte Language Server work whether consumers use Svelte 3, Svelte 4, or Svelte 5.
+By default, generated `.d.ts` files extend `SvelteComponentTyped` from `svelte`, so TypeScript and the Svelte Language Server work whether consumers use Svelte 3, Svelte 4, or Svelte 5. Set `typesOptions.format: "component"` to instead emit the Svelte 5 `Component` type; see [`typesOptions.format`](#typesoptionsformat).
 
 ## When to use sveld
 
@@ -120,6 +120,7 @@ export default class Button extends SvelteComponentTyped<
 - [When to use sveld](#when-to-use-sveld)
 - [Approach](#approach)
 - [Features](#features)
+  - [`.d.ts` output format (`typesOptions.format`)](#dts-output-format-typesoptionsformat)
   - [Opt-in semantic resolution (`resolveTypes`)](#opt-in-semantic-resolution-resolvetypes)
   - [Persistent parse cache (`cache`)](#persistent-parse-cache-cache)
   - [Compile-checked `@example` blocks (`checkExamples`)](#compile-checked-example-blocks-checkexamples)
@@ -186,6 +187,70 @@ When both TypeScript syntax and JSDoc are present, `sveld` resolves prop types i
 `sveld` stays AST-only. It copies imported and local type text into generated `.d.ts` output but does not run project-wide semantic resolution with the TypeScript compiler. Opaque imported whole-object `$props()` types can therefore stay in declarations without being fully expanded into JSON metadata.
 
 ## Features
+
+### `.d.ts` output format (`typesOptions.format`)
+
+`typesOptions.format` controls the shape of generated `.d.ts` files: `"class"` (the default) or `"component"`.
+
+`"class"` extends `SvelteComponentTyped`, deprecated in Svelte 5 and plausibly removed in Svelte 6:
+
+```ts
+import { SvelteComponentTyped } from "svelte";
+
+export type ButtonProps = { label?: string };
+
+export default class Button extends SvelteComponentTyped<
+  ButtonProps,
+  { click: WindowEventMap["click"] },
+  { default: Record<string, never> }
+> {}
+```
+
+`"component"` emits the Svelte 5 `Component` type instead:
+
+```ts
+import type { Component } from "svelte";
+
+export type ButtonProps = { label?: string; onclick?: (event: WindowEventMap["click"]) => void };
+export type ButtonExports = Record<string, never>;
+
+declare const Button: Component<ButtonProps, ButtonExports, "">;
+export default Button;
+```
+
+Publish `"component"` if you target Svelte 5+ consumers. `"class"` remains compatible with Svelte 3, 4, and 5.
+
+```ts
+await sveld({ types: true, typesOptions: { format: "component" } });
+```
+
+Also available as `--types-format=component` on the CLI.
+
+`"component"`'s three type parameters:
+
+- **Props**: the same `$Props`/`<Name>Props` type as `"class"`. Runes components already declare callback props (e.g. `onclick`) as regular props. Legacy (non-runes) components additionally get `on<name>?: (event: Type) => void` callback props for every dispatched and forwarded event, so Svelte 5 consumers can attach handlers as props instead of `on:event`.
+- **Exports**: the component's accessor props (exported `function`/`const` members), the same members that render as class members under `"class"`.
+- **Bindings**: a union of string literals for props declared with `$bindable(...)` (runes) or marked `@bindable writable` ([see `binding`](#binding)) (legacy) — e.g. `"value"`, or `"value" | "open"` for more than one. `""` when the component declares none, matching Svelte's own convention for "no bindings."
+
+**Generic components.** A `declare const X: Component<...>` value can't itself carry a generic type parameter the way a class can, so generic components (`@template`/`generics`) get a per-component interface instead of `Component<...>` directly:
+
+```ts
+interface GenericListComponent {
+  new <Item extends { id: string | number } = { id: string }>(
+    options: ComponentConstructorOptions<GenericListProps<Item>>,
+  ): SvelteComponent<GenericListProps<Item>> & GenericListExports;
+  <Item extends { id: string | number } = { id: string }>(
+    this: void,
+    internals: ComponentInternals,
+    props: GenericListProps<Item>,
+  ): { $on?(...): () => void; $set?(...): void } & GenericListExports;
+  z_$$bindings?: "";
+}
+declare const GenericList: GenericListComponent;
+export default GenericList;
+```
+
+Both signatures carry their own generic parameter (not the `const` itself), so `Item` is inferred per usage site, e.g. `<GenericList items={numbers} />` infers `Item` from `numbers`. The `new` signature is the one place `"component"` format still touches a legacy type (`SvelteComponent`/`ComponentConstructorOptions`, not the deprecated `SvelteComponentTyped`): the Svelte language server resolves generic inference for `<Comp prop={...} />` template usage through `new`, not the plain call signature, confirmed by comparing against `@sveltejs/package`'s own generated output for the same component. Omitting it silently breaks inference instead of erroring, so it stays in even though it means one legacy import for generic components.
 
 ### Opt-in semantic resolution (`resolveTypes`)
 
@@ -407,7 +472,7 @@ npx sveld --json --markdown
 
 If no entry point can be resolved (no `package.json#svelte` field and no `--entry`), the CLI exits `1` and prints the reason to `stderr`. If `src/index.js` happens to exist relative to your working directory, sveld falls back to it and prints a one-line note asking you to set `package.json#svelte` (or `--entry`) instead of relying on the fallback.
 
-Flags are kebab-case: `--entry`, `--glob`, `--types`, `--json`, `--markdown`, `--fail-fast`, `--cache`, `--resolve-types`, `--check-examples`, `--report-diagnostics`, `--strict`, `--check`. The camelCase spellings `--resolveTypes` and `--checkExamples` still work as deprecated aliases for compatibility with existing scripts. An unrecognized flag (e.g. `--markdwon`) prints `Unknown flag: --markdwon` to `stderr`, exits `1`, and skips generation; sveld takes no positional arguments, so any non-flag argument errors the same way.
+Flags are kebab-case: `--entry`, `--glob`, `--types`, `--json`, `--markdown`, `--fail-fast`, `--cache`, `--resolve-types`, `--check-examples`, `--report-diagnostics`, `--strict`, `--check`, `--types-format`. The camelCase spellings `--resolveTypes` and `--checkExamples` still work as deprecated aliases for compatibility with existing scripts. An unrecognized flag (e.g. `--markdwon`) prints `Unknown flag: --markdwon` to `stderr`, exits `1`, and skips generation; sveld takes no positional arguments, so any non-flag argument errors the same way.
 
 Run `npx sveld --help` for the full flag list with descriptions, or `npx sveld --version` to print the installed version.
 
@@ -572,7 +637,8 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
 - **`glob`** (boolean, optional): Enable glob mode to analyze all `*.svelte` files.
 - **`documentExports`** (boolean, optional): Include consts, functions, and types from the entry barrel in JSON (`exports`) and Markdown ("Exports"). Off by default. See [Documenting Entry Exports](#documenting-entry-exports).
 - **`types`** (boolean, optional, default: `true`): Generate TypeScript definitions.
-- **`typesOptions`** (object, optional): Options for TypeScript definition generation, including `outDir`, `preamble`, and `printWidth`.
+- **`typesOptions`** (object, optional): Options for TypeScript definition generation, including `outDir`, `preamble`, `printWidth`, and `format`.
+  - **`format`** (`"class"` | `"component"`, optional, default: `"class"`): `.d.ts` output shape. `"class"` extends `SvelteComponentTyped`; `"component"` emits the Svelte 5 `Component` type. Also available as `--types-format`. See [`.d.ts` output format](#dts-output-format-typesoptionsformat).
 - **`json`** (boolean, optional): Generate component documentation in JSON format.
 - **`jsonOptions`** (object, optional): Options for JSON output.
 - **`markdown`** (boolean, optional): Generate component documentation in Markdown format.

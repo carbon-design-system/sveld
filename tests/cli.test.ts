@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { cli, parseCliOptions } from "../src/cli";
@@ -79,6 +79,13 @@ describe("parseCliOptions", () => {
 
   test("--strict enables strict", () => {
     expect(parseCliOptions(["--strict"])).toEqual({ kind: "options", options: { strict: true } });
+  });
+
+  test("--types-format=component sets typesOptions.format", () => {
+    expect(parseCliOptions(["--types-format=component"])).toEqual({
+      kind: "options",
+      options: { typesOptions: { format: "component" } },
+    });
   });
 
   test("unknown flag surfaces as an unknown result", () => {
@@ -176,5 +183,43 @@ describe("cli() unknown flag", () => {
     expect(errorSpy).toHaveBeenCalledWith("Unknown flag: --markdwon");
     expect(existsSync(join(dir, "types"))).toBe(false);
     expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(false);
+  });
+});
+
+describe("cli() --types-format merges with config file typesOptions", () => {
+  let dir: string;
+  let previousCwd: string;
+  let previousArgv: string[];
+
+  beforeEach(() => {
+    previousCwd = process.cwd();
+    previousArgv = process.argv;
+    process.exitCode = 0;
+    dir = mkdtempSync(join(tmpdir(), "sveld-cli-types-format-"));
+    process.chdir(dir);
+    mkdirSync(join(dir, "src"), { recursive: true });
+    writeFileSync(
+      join(dir, "src", "Button.svelte"),
+      '<script>\n  export let label = "";\n</script>\n<button>{label}</button>\n',
+    );
+    writeFileSync(join(dir, "src", "index.js"), 'export { default as Button } from "./Button.svelte";\n');
+    writeFileSync(join(dir, "sveld.config.js"), 'export default { typesOptions: { outDir: "custom-types" } };\n');
+  });
+
+  afterEach(() => {
+    process.chdir(previousCwd);
+    process.argv = previousArgv;
+    process.exitCode = 0;
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("--types-format=component keeps the config file's typesOptions.outDir", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types-format=component"];
+
+    await cli(process);
+
+    const outputPath = join(dir, "custom-types", "Button.svelte.d.ts");
+    expect(existsSync(outputPath)).toBe(true);
+    expect(readFileSync(outputPath, "utf-8")).toContain("declare const Button: Component<");
   });
 });

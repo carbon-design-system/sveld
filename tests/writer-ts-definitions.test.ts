@@ -700,3 +700,279 @@ describe("writerTsDefinition", () => {
     expect(output).toContain("export type TypedButtonProps = $Props;");
   });
 });
+
+describe(`writeTsDefinition with format: "component"`, () => {
+  test("plain props component emits declare const with Component<Props>", () => {
+    const component_api: ComponentDocApi = {
+      moduleName: "Button",
+      filePath: asNormalizedPath("./src/Button.svelte"),
+      syntaxMode: "runes",
+      props: [
+        {
+          name: "label",
+          kind: "let",
+          type: "string",
+          value: '""',
+          isFunction: false,
+          isFunctionDeclaration: false,
+          isRequired: false,
+          constant: false,
+          reactive: false,
+        },
+      ],
+      moduleExports: [],
+      slots: [],
+      events: [],
+      typedefs: [],
+      generics: null,
+      rest_props: undefined,
+    };
+
+    const output = writeTsDefinition(component_api, { format: "component" });
+    expect(output).toContain('import type { Component } from "svelte";');
+    expect(output).not.toContain("SvelteComponentTyped");
+    expect(output).toContain("export type ButtonExports = Record<string, never>;");
+    expect(output).toContain(
+      `declare const Button: Component<
+      ButtonProps,
+      ButtonExports,
+      ""
+    >;
+    export default Button;`,
+    );
+  });
+
+  test('$bindable props populate the Bindings union; none produces ""', () => {
+    const bindableComponent: ComponentDocApi = {
+      moduleName: "TextInput",
+      filePath: asNormalizedPath("./src/TextInput.svelte"),
+      syntaxMode: "runes",
+      props: [
+        {
+          name: "value",
+          kind: "let",
+          bindable: true,
+          type: "string",
+          value: '""',
+          isFunction: false,
+          isFunctionDeclaration: false,
+          isRequired: false,
+          constant: false,
+          reactive: true,
+        },
+        {
+          name: "disabled",
+          kind: "let",
+          binding: "writable",
+          type: "boolean",
+          value: "false",
+          isFunction: false,
+          isFunctionDeclaration: false,
+          isRequired: false,
+          constant: false,
+          reactive: false,
+        },
+        {
+          name: "label",
+          kind: "let",
+          type: "string",
+          value: '""',
+          isFunction: false,
+          isFunctionDeclaration: false,
+          isRequired: false,
+          constant: false,
+          reactive: false,
+        },
+      ],
+      moduleExports: [],
+      slots: [],
+      events: [],
+      typedefs: [],
+      generics: null,
+      rest_props: undefined,
+    };
+
+    const output = writeTsDefinition(bindableComponent, { format: "component" });
+    expect(output).toContain('"value" | "disabled"');
+
+    const noBindableComponent: ComponentDocApi = {
+      ...bindableComponent,
+      props: bindableComponent.props.map(({ bindable: _bindable, binding: _binding, ...prop }) => prop),
+    };
+    const noBindableOutput = writeTsDefinition(noBindableComponent, { format: "component" });
+    expect(noBindableOutput).toContain(
+      `declare const TextInput: Component<
+      TextInputProps,
+      TextInputExports,
+      ""
+    >;`,
+    );
+  });
+
+  test("legacy dispatched and forwarded events become on* callback props", () => {
+    const component_api: ComponentDocApi = {
+      moduleName: "Modal",
+      filePath: asNormalizedPath("./src/Modal.svelte"),
+      syntaxMode: "legacy",
+      props: [],
+      moduleExports: [],
+      slots: [],
+      events: [
+        { type: "dispatched", name: "close", detail: "{ id: string }" },
+        {
+          type: "forwarded",
+          name: "click",
+          element: "button",
+        },
+      ],
+      typedefs: [],
+      generics: null,
+      rest_props: undefined,
+    };
+
+    const output = writeTsDefinition(component_api, { format: "component" });
+    expect(output).toContain("onclose?: (event: CustomEvent<{ id: string }>) => void;");
+    expect(output).toContain('onclick?: (event: WindowEventMap["click"]) => void;');
+  });
+
+  test("does not add on* callback props for runes components", () => {
+    const component_api: ComponentDocApi = {
+      moduleName: "RunesButton",
+      filePath: asNormalizedPath("./src/RunesButton.svelte"),
+      syntaxMode: "runes",
+      props: [
+        {
+          name: "onclick",
+          kind: "let",
+          type: "(event: MouseEvent) => void",
+          isFunction: true,
+          isFunctionDeclaration: false,
+          isRequired: false,
+          constant: false,
+          reactive: false,
+        },
+      ],
+      moduleExports: [],
+      slots: [],
+      events: [{ type: "dispatched", name: "close", detail: "{ id: string }" }],
+      typedefs: [],
+      generics: null,
+      rest_props: undefined,
+    };
+
+    const output = writeTsDefinition(component_api, { format: "component" });
+    expect(output).not.toContain("onclose");
+  });
+
+  test("exported accessors populate the Exports shape", () => {
+    const component_api: ComponentDocApi = {
+      moduleName: "Tree",
+      filePath: asNormalizedPath("./src/Tree.svelte"),
+      syntaxMode: "legacy",
+      props: [
+        {
+          name: "expandAll",
+          kind: "function",
+          type: "() => any",
+          isFunction: true,
+          isFunctionDeclaration: true,
+          isRequired: false,
+          constant: false,
+          reactive: false,
+          returnType: "void",
+        },
+      ],
+      moduleExports: [],
+      slots: [],
+      events: [],
+      typedefs: [],
+      generics: null,
+      rest_props: undefined,
+    };
+
+    const output = writeTsDefinition(component_api, { format: "component" });
+    expect(output).toContain("export type TreeExports = {");
+    expect(output).toContain("expandAll: () => void;");
+    expect(output).toContain(
+      `declare const Tree: Component<
+      TreeProps,
+      TreeExports,
+      ""
+    >;`,
+    );
+  });
+
+  test("generic components emit an interface with a generic call signature", () => {
+    const component_api: ComponentDocApi = {
+      moduleName: "GenericList",
+      filePath: asNormalizedPath("./src/GenericList.svelte"),
+      syntaxMode: "runes",
+      props: [
+        {
+          name: "items",
+          kind: "let",
+          type: "Row[]",
+          isFunction: false,
+          isFunctionDeclaration: false,
+          isRequired: true,
+          constant: false,
+          reactive: false,
+        },
+      ],
+      moduleExports: [],
+      slots: [],
+      events: [],
+      typedefs: [],
+      generics: ["Row", "Row extends { id: string } = { id: string }"],
+      rest_props: undefined,
+    };
+
+    const output = writeTsDefinition(component_api, { format: "component" });
+    expect(output).not.toContain("SvelteComponentTyped");
+    expect(output).toContain(
+      'import type { SvelteComponent, ComponentConstructorOptions, ComponentInternals } from "svelte";',
+    );
+    expect(output).toContain("interface GenericListComponent {");
+    expect(output).toContain(
+      "new <Row extends { id: string } = { id: string }>(\n        options: ComponentConstructorOptions<GenericListProps<Row>>\n      ): SvelteComponent<GenericListProps<Row>> & GenericListExports;",
+    );
+    expect(output).toContain(
+      "<Row extends { id: string } = { id: string }>(\n        this: void,\n        internals: ComponentInternals,\n        props: GenericListProps<Row>",
+    );
+    expect(output).toContain("declare const GenericList: GenericListComponent;");
+    expect(output).toContain("export default GenericList;");
+  });
+
+  test("generic Exports type is parameterized only when it references the generic", () => {
+    const component_api: ComponentDocApi = {
+      moduleName: "GenericTree",
+      filePath: asNormalizedPath("./src/GenericTree.svelte"),
+      syntaxMode: "legacy",
+      props: [
+        {
+          name: "getSelected",
+          kind: "function",
+          type: "() => any",
+          isFunction: true,
+          isFunctionDeclaration: true,
+          isRequired: false,
+          constant: false,
+          reactive: false,
+          returnType: "Row[]",
+        },
+      ],
+      moduleExports: [],
+      slots: [],
+      events: [],
+      typedefs: [],
+      generics: ["Row", "Row extends { id: string } = { id: string }"],
+      rest_props: undefined,
+    };
+
+    const output = writeTsDefinition(component_api, { format: "component" });
+    expect(output).toContain("export type GenericTreeExports<Row extends { id: string } = { id: string }> = {");
+    expect(output).toContain("getSelected: () => Row[];");
+    expect(output).toContain("props: GenericTreeProps<Row>");
+    expect(output).toContain("} & GenericTreeExports<Row>;");
+  });
+});
