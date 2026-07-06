@@ -1,8 +1,42 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { parse } from "node:path";
-import { format, type ParserOptions } from "prettier";
+import type { ParserOptions } from "prettier";
 
 export const DEFAULT_TYPESCRIPT_PRINT_WIDTH = 80;
+
+// undefined = not yet attempted, null = confirmed unavailable
+let prettierModule: typeof import("prettier") | null | undefined;
+
+/**
+ * Exposed so tests can simulate prettier being unavailable by stubbing
+ * `prettierLoader.load` directly, instead of fighting the module registry to
+ * make a real, installed dependency appear missing.
+ *
+ * @internal
+ */
+export const prettierLoader = {
+  load: (): Promise<typeof import("prettier")> => import("prettier"),
+};
+
+/** @internal exposed for tests to reset the module-scope cache between cases */
+export function __resetPrettierCacheForTesting(): void {
+  prettierModule = undefined;
+}
+
+async function loadPrettier(): Promise<typeof import("prettier") | null> {
+  if (prettierModule !== undefined) {
+    return prettierModule;
+  }
+
+  try {
+    prettierModule = await prettierLoader.load();
+  } catch {
+    prettierModule = null;
+    console.warn("prettier is not installed; emitting unformatted output. Install prettier for formatted files.");
+  }
+
+  return prettierModule;
+}
 
 /**
  * Options for configuring a Writer instance.
@@ -43,6 +77,7 @@ export default class Writer {
    * Returns the original content if formatting fails.
    *
    * @param raw - The raw content to format
+   * @param filePath - Optional file path, included in the error message if formatting fails
    * @returns Formatted content, or original content if formatting fails
    *
    * @example
@@ -51,12 +86,18 @@ export default class Writer {
    * // Returns: "export type Props = {};\n"
    * ```
    */
-  public async format(raw: string) {
+  public async format(raw: string, filePath?: string) {
+    const prettier = await loadPrettier();
+
+    if (!prettier) {
+      return raw;
+    }
+
     try {
-      const result = await format(raw, this.options);
+      const result = await prettier.format(raw, this.options);
       return result;
     } catch (error) {
-      console.error(error);
+      console.error(filePath ? `Failed to format ${filePath}:` : "Failed to format:", error);
       return raw;
     }
   }
@@ -78,7 +119,7 @@ export default class Writer {
    */
   public async write(filePath: string, raw: string) {
     await mkdir(parse(filePath).dir, { recursive: true });
-    await writeFile(filePath, await this.format(raw));
+    await writeFile(filePath, await this.format(raw, filePath));
   }
 }
 

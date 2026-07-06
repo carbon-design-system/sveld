@@ -133,7 +133,7 @@ A change to props, events, slots, or context handling should be exercised across
 
 ## Build
 
-[`scripts/build.ts`](scripts/build.ts) (`bun run build`) removes `lib/`, bundles `src/index.ts` with `Bun.build` (minified ESM, Node target), then runs `tsc --project tsconfig.build.json` to emit declarations. Dependencies are bundled into `lib/` _except_ `prettier` (kept external — it uses `createRequire` for its data files). `lib/` is gitignored and is never committed. `bun run build -w` rebuilds on changes under `src/`.
+[`scripts/build.ts`](scripts/build.ts) (`bun run build`) removes `lib/`, bundles `src/index.ts` with `Bun.build` (minified ESM, Node target), then runs `tsc --project tsconfig.build.json` to emit declarations. Dependencies are bundled into `lib/` _except_ `prettier` (kept external — it's an optional peer dependency, dynamically imported at runtime, and uses `createRequire` for its data files). `lib/` is gitignored and is never committed. `bun run build -w` rebuilds on changes under `src/`.
 
 The published binary is [`cli.js`](cli.js), which dynamically imports the built `lib/index.js` and calls `cli`.
 

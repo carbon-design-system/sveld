@@ -1,4 +1,4 @@
-import Writer, { createTypeScriptWriter } from "../src/writer/Writer";
+import Writer, { __resetPrettierCacheForTesting, createTypeScriptWriter, prettierLoader } from "../src/writer/Writer";
 
 describe("Writer", () => {
   beforeEach(() => {
@@ -60,5 +60,28 @@ describe("Writer", () => {
     expect(await writer.format(null)).toEqual(null);
     // @ts-expect-error
     expect(await writer.format(undefined)).toEqual(undefined);
+  });
+
+  describe("when prettier is unavailable", () => {
+    const originalLoad = prettierLoader.load;
+
+    beforeEach(() => {
+      __resetPrettierCacheForTesting();
+      prettierLoader.load = () => Promise.reject(new Error("Cannot find module 'prettier'"));
+    });
+
+    afterEach(() => {
+      prettierLoader.load = originalLoad;
+      __resetPrettierCacheForTesting();
+    });
+
+    test("returns raw input and warns exactly once across multiple calls", async () => {
+      const consoleWarn = jest.spyOn(console, "warn").mockImplementation(() => {});
+      const writer = new Writer({ parser: "json", printWidth: 80 });
+
+      expect(await writer.format("{a:null}")).toBe("{a:null}");
+      expect(await writer.format("{b:null}")).toBe("{b:null}");
+      expect(consoleWarn).toHaveBeenCalledTimes(1);
+    });
   });
 });
