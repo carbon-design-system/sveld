@@ -13,13 +13,6 @@ The goal is to get third-party Svelte libraries working with the Svelte Language
 
 For `lang="ts"` components, `sveld` keeps source-level prop type annotations when it can, instead of forcing JSDoc. That covers legacy `export let` props, typed `$props()` destructuring, typed whole-object `$props()` captures, local `interface`/`type` declarations, and imported type references in emitted `.d.ts` files.
 
-| Syntax mode          | Supported |
-| :------------------- | :-------: |
-| Svelte 3             |     ✓     |
-| Svelte 4             |     ✓     |
-| Svelte 5 (non-Runes) |     ✓     |
-| Svelte 5 Runes       |     ✓     |
-
 Generated `.d.ts` files extend `SvelteComponentTyped` from `svelte`, so TypeScript and the Svelte Language Server work whether consumers use Svelte 3, Svelte 4, or Svelte 5.
 
 ---
@@ -72,6 +65,8 @@ export default class Button extends SvelteComponentTyped<
 > {}
 ```
 
+`sveld` adds the `[key: \`data-${string}\`]: unknown;` index signature whenever `$$restProps` is spread onto an element, so callers can pass arbitrary `data-*` attributes.
+
 Inference only gets you so far. Use [JSDoc](https://jsdoc.app/) to document prop, event, and slot types when you need more precision.
 
 ```js
@@ -87,6 +82,7 @@ export let primary = false;
 With JSDoc, the output looks like this:
 
 ```ts
+import { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
 type $RestProps = SvelteHTMLElements["button"];
@@ -118,18 +114,25 @@ export default class Button extends SvelteComponentTyped<
 ## Table of Contents
 
 - [Approach](#approach)
+- [Features](#features)
+  - [Opt-in semantic resolution (`resolveTypes`)](#opt-in-semantic-resolution-resolvetypes)
+  - [Persistent parse cache (`cache`)](#persistent-parse-cache-cache)
+  - [Compile-checked `@example` blocks (`checkExamples`)](#compile-checked-example-blocks-checkexamples)
+  - [Type inference diagnostics](#type-inference-diagnostics)
 - [Usage](#usage)
   - [Installation](#installation)
   - [Vite](#vite)
-  - [Node.js](#nodejs)
   - [CLI](#cli)
   - [CI: API-drift checks (`--check`)](#ci-api-drift-checks---check)
+  - [Node.js](#nodejs)
   - [Config File](#config-file)
   - [Publishing to NPM](#publishing-to-npm)
 - [Available Options](#available-options)
 - [Documenting Entry Exports](#documenting-entry-exports)
 - [JSON Output](#json-output)
 - [API Reference](#api-reference)
+  - [reactive](#reactive)
+  - [binding](#binding)
   - [@type](#type)
   - [@default](#default)
   - [@typedef](#typedef)
@@ -173,7 +176,9 @@ When both TypeScript syntax and JSDoc are present, `sveld` resolves prop types i
 
 `sveld` stays AST-only. It copies imported and local type text into generated `.d.ts` output but does not run project-wide semantic resolution with the TypeScript compiler. Opaque imported whole-object `$props()` types can therefore stay in declarations without being fully expanded into JSON metadata.
 
-#### Opt-in semantic resolution (`resolveTypes`)
+## Features
+
+### Opt-in semantic resolution (`resolveTypes`)
 
 Imported whole-object `$props()` types stay opaque in JSON by default (`"props": []`). Turn on `resolveTypes` when a docs site or prop table needs the individual fields.
 
@@ -203,7 +208,7 @@ Without `resolveTypes`, JSON lists no props. With it, each field shows up with `
 
 **Performance.** Off by default. This is the only path that loads TypeScript. It needs `typescript` and a `tsconfig.json`, runs slower than the AST-only pipeline, and gets slower as your types grow. Use it only when you need expanded JSON. `.d.ts` output is unchanged.
 
-#### Persistent parse cache (`cache`)
+### Persistent parse cache (`cache`)
 
 By default, every component is re-parsed on every run. With `cache`, parsed output is written to disk and reused when the source file has not changed. That applies across runs, including CI on a fresh checkout.
 
@@ -215,7 +220,7 @@ await sveld({ json: true, cache: true });
 
 If a component [`@extendProps`](#extendprops) / [`@extends`](#extendprops) another file, it is re-parsed when that dependency changes, same as in [`watch`](#available-options) mode. Bumping the `sveld` or Svelte version clears the cache.
 
-#### Compile-checked `@example` blocks (`checkExamples`)
+### Compile-checked `@example` blocks (`checkExamples`)
 
 `@example` blocks are just text. Rename a prop and the sample code can sit there broken for months. Set `checkExamples: true` to run plain TS/JS `@example` blocks through the TypeScript program. Broken examples show up as `example-compile-error` diagnostics.
 
@@ -254,7 +259,7 @@ The check is narrow on purpose. It catches renamed or removed symbols and wrong 
 
 Needs `typescript` and a `tsconfig.json`, same as `resolveTypes`. Use `--strict` (or the `strict` option) to fail CI when an example breaks.
 
-#### Type inference diagnostics
+### Type inference diagnostics
 
 `sveld` collects unresolved-type diagnostics on every run: props that fall back to `any`, context values typed as `any`, `@event` tags with no dispatch or callback, and (when `checkExamples` is enabled) `example-compile-error`. They are always returned from the programmatic `sveld()` API in `SveldResult.diagnostics`.
 
@@ -328,7 +333,7 @@ yarn add -D sveld
 
 ### Vite
 
-Import and add `sveld` as a plugin to your `vite.config.ts`. The plugin only runs during `vite build` (not the dev server).
+Import and add `sveld` as a plugin to your `vite.config.ts`. The plugin only runs during `vite build`, unless `watch: true` is set, in which case it also regenerates output during `vite dev`.
 
 ```ts
 // vite.config.ts
@@ -559,7 +564,7 @@ JSON adds `exports` and `totalExports`. Markdown adds an "Exports" section. Each
 ## JSON Output
 
 When `json: true` is enabled, `sveld` emits a `COMPONENT_API.json` file with schema and generator metadata plus the parsed
-component API.
+component API. For stable output, generated `events` arrays are emitted in deterministic sorted order.
 
 The JSON Schema lives on GitHub ([path to file](https://github.com/carbon-design-system/sveld/blob/main/schema/component-api.schema.json), [raw URL](https://raw.githubusercontent.com/carbon-design-system/sveld/main/schema/component-api.schema.json)). Use it to validate generated `COMPONENT_API.json` files. Optional fields may be missing when the parser has no stable source for that metadata.
 
@@ -729,8 +734,6 @@ Use `@bindable writable` for two-way or shared state bindings where either the c
 Generated JSON includes `"binding": "readonly"` or `"binding": "writable"` for annotated props. Unannotated props omit the field.
 
 This is documentation only. Generated `.svelte.d.ts` prop types do not change. TypeScript cannot express Svelte binding direction reliably.
-
-For stable output, generated `events` arrays are emitted in deterministic sorted order.
 
 ### `@type`
 
@@ -2294,7 +2297,7 @@ There are several ways to type contexts:
 
 #### Notes
 
-- Context keys must be string literals (dynamic keys are not supported)
+- Context keys must be statically resolvable: a string literal, a static template literal, a `const`-bound string, or a `Symbol()` / `Symbol.for()` call with a static description. Dynamic expressions (runtime identifiers, template interpolation, other function calls) are skipped with a warning.
 - Variables passed to `setContext` should have JSDoc `@type` annotations for accurate types
 - The generated type name follows the pattern: `{PascalCase}Context`. Separators (hyphens, underscores, dots, colons, slashes, spaces) are stripped and each segment is capitalized:
   | Context Key | Generated Type Name |
