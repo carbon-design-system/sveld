@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { ComponentDocApi, ComponentDocs } from "./bundle";
+import type { SveldRuntimeOptions } from "./load-config";
 import type { EntryExports } from "./parse-entry-exports";
 import {
   buildComponentApiDocument,
@@ -348,6 +349,15 @@ async function readSnapshot(snapshotFile: string): Promise<ComponentApiDocument 
 export interface RunCheckOptions {
   /** Entry-barrel exports when `documentExports` is on. */
   entryExports?: EntryExports;
+}
+
+/**
+ * Resolves the snapshot path for `check`: an explicit string wins, otherwise
+ * it falls back to the `json` writer's `outFile`, or `COMPONENT_API.json`.
+ */
+export function resolveCheckSnapshotFile(options: Pick<SveldRuntimeOptions, "check" | "jsonOptions">): string {
+  if (typeof options.check === "string") return options.check;
+  return options.jsonOptions?.outFile ?? "COMPONENT_API.json";
 }
 
 /**

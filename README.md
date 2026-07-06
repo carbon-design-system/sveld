@@ -469,6 +469,21 @@ const { diagnostics } = await sveld({
 
 `diagnostics` is always populated; printing is opt-in via `reportDiagnostics` or `strict` (see [Type inference diagnostics](#type-inference-diagnostics)).
 
+Pass `check: true` (or `check: "<path>"` for a custom snapshot location) to diff against a committed `COMPONENT_API.json`, the same way `--check` does on the CLI. The result lands on `SveldResult.check`; sveld does not print it or touch `process.exitCode` for you, so inspect and act on it yourself:
+
+```js
+import { formatCheckReport } from "sveld";
+
+const { check } = await sveld({ json: true, check: true });
+
+if (check) {
+  console.log(formatCheckReport(check));
+  if (check.bump === "major") process.exitCode = 1;
+}
+```
+
+See [CI: API-drift checks (`--check`)](#ci-api-drift-checks---check) for how changes are classified.
+
 #### `jsonOptions.outDir`
 
 With `json: true`, `sveld` writes `COMPONENT_API.json` at the project root. The file documents all components.
@@ -508,6 +523,17 @@ Later sources win when options overlap:
 CLI flags > config file > `package.json#svelte` inference / defaults
 
 With the config above, `npx sveld --json` keeps `glob` and `markdown` from the file. A CLI flag overrides the same key in the config.
+
+`strict`, `reportDiagnostics`, and `check` are valid config keys too — not just CLI flags or `sveld()` options — and follow the same precedence: a CLI flag (or an option passed to `sveld()`) overrides the same key set in the config file.
+
+```js
+// sveld.config.js
+export default {
+  json: true,
+  strict: true,
+  check: "snapshots/COMPONENT_API.json",
+};
+```
 
 A bad config (syntax error, throws at load time, or no default-export object) fails with an error that names the file.
 
@@ -556,6 +582,7 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
 - **`checkExamples`** (boolean, optional, default: `false`): Run plain TS/JS `@example` blocks through the TypeScript program. Broken ones get an `example-compile-error` diagnostic. Also available as `--check-examples` (`--checkExamples` remains as a deprecated alias). See [Compile-checked `@example` blocks](#compile-checked-example-blocks-checkexamples).
 - **`reportDiagnostics`** (boolean, optional, default: `false`): Print unresolved-type diagnostics to stderr (CLI) or `console.warn` (programmatic API). Also available as `--report-diagnostics`. See [Type inference diagnostics](#type-inference-diagnostics).
 - **`strict`** (boolean, optional, default: `false`): Exit with code `1` when diagnostics exist. Implies `reportDiagnostics`. Also available as `--strict`. See [Type inference diagnostics](#type-inference-diagnostics).
+- **`check`** (boolean | string, optional, default: `false`): Diff the parsed component API against a committed snapshot and assign a semver bump to each change. `true` uses the `json` writer's `outFile` (or `COMPONENT_API.json`); a string sets a custom snapshot path. Also available as `--check` / `--check=<path>`. On the CLI this exits `1` on a breaking change; from `sveld()` it's returned on `SveldResult.check` for you to act on. See [CI: API-drift checks (`--check`)](#ci-api-drift-checks---check).
 
 By default, only TypeScript definitions are generated.
 

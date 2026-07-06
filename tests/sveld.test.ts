@@ -1,7 +1,9 @@
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 import { sveld } from "../src/sveld";
+import { buildComponentApiDocument } from "../src/writer/document-model";
+import { mockComponentDocApi } from "./test-brands";
 
 const ENTRY_ERROR = /entry/i;
 
@@ -28,5 +30,54 @@ describe("sveld() entry resolution failures", () => {
 
   test("throws when no input is given and package.json#svelte is absent", async () => {
     await expect(sveld()).rejects.toThrow(ENTRY_ERROR);
+  });
+});
+
+describe("sveld() check", () => {
+  // `getSvelteEntry` resolves `input` against `process.cwd()`, so the fixture
+  // lives under cwd and is referenced by its relative directory name.
+  let absoluteDir: string;
+  let relativeDir: string;
+
+  let entry: string;
+
+  beforeEach(() => {
+    absoluteDir = mkdtempSync(join(process.cwd(), "sveld-check-"));
+    relativeDir = basename(absoluteDir);
+    entry = join(relativeDir, "index.js");
+    writeFileSync(
+      join(absoluteDir, "Button.svelte"),
+      "<script>\n  export let label;\n</script>\n<button>{label}</button>\n",
+    );
+    writeFileSync(
+      join(absoluteDir, "index.js"),
+      'import Button from "./Button.svelte";\n\nexport { Button };\nexport default Button;\n',
+    );
+  });
+
+  afterEach(() => {
+    rmSync(absoluteDir, { recursive: true, force: true });
+  });
+
+  test("populates result.check when a snapshot exists", async () => {
+    const snapshotFile = join(relativeDir, "COMPONENT_API.json");
+    const snapshot = buildComponentApiDocument(
+      new Map([["Button", mockComponentDocApi("Button", "Button.svelte", { props: [] })]]),
+    );
+    writeFileSync(join(absoluteDir, "COMPONENT_API.json"), JSON.stringify(snapshot));
+
+    const result = await sveld({ input: entry, types: false, check: snapshotFile });
+
+    expect(result.check).toBeDefined();
+    expect(result.check?.snapshotExists).toBe(true);
+    expect(result.check?.changes).toContainEqual(
+      expect.objectContaining({ component: "Button", kind: "prop", name: "label" }),
+    );
+  });
+
+  test("does not run check when the option is omitted", async () => {
+    const result = await sveld({ input: entry, types: false });
+
+    expect(result.check).toBeUndefined();
   });
 });
