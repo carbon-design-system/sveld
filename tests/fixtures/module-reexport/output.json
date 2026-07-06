@@ -95,7 +95,17 @@
       "component": "module-reexport/input.svelte",
       "kind": "prop-unknown-type",
       "name": "data",
-      "message": "Prop \"data\" type could not be inferred; falling back to \"any\"."
+      "message": "Prop \"data\" type could not be inferred; falling back to \"any\".",
+      "source": {
+        "start": {
+          "line": 12,
+          "column": 2
+        },
+        "end": {
+          "line": 12,
+          "column": 25
+        }
+      }
     }
   ]
 }

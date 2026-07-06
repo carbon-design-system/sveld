@@ -256,7 +256,7 @@ Needs `typescript` and a `tsconfig.json`, same as `resolveTypes`. Use `--strict`
 
 #### Type inference diagnostics
 
-`sveld` collects unresolved-type diagnostics on every run: props that fall back to `any`, context values typed as `any`, `@event` tags with no dispatch or callback, and (when `checkExamples` is enabled) `example-compile-error`. They are always returned from the programmatic `sveld()` API in `SveldResult.diagnostics`.
+`sveld` collects unresolved-type diagnostics on every run: props that fall back to `any`, context values typed as `any`, `@event` tags with no dispatch or callback, and (when `checkExamples` is enabled) `example-compile-error`. They are always returned from the programmatic `sveld()` API in `SveldResult.diagnostics`. Each diagnostic carries an optional `source` range (the same `{ start: { line, column }, end: { line, column } }` shape as JSON output source ranges) whenever the parser holds a stable position for it.
 
 With `reportDiagnostics` or `strict`, the grouped summary looks like this:
 
@@ -265,16 +265,16 @@ sveld: 4 unresolved types found.
 
 Props without inferred types (1):
   ./icons/Add.svelte
-    - Prop "title" type could not be inferred; falling back to "any".
+    - Prop "title" type could not be inferred; falling back to "any". (./icons/Add.svelte:4:2)
 
 Context values typed as `any` (1):
   ./ThemeProvider.svelte
-    - Context "theme" variable "themeStore" has no type annotation; defaulted to "any".
+    - Context "theme" variable "themeStore" has no type annotation; defaulted to "any". (./ThemeProvider.svelte:8:6)
 
 @event tags with no dispatch or callback (2):
   ./Modal.svelte
-    - @event "open" has no matching dispatch or callback prop.
-    - @event "close" has no matching dispatch or callback prop.
+    - @event "open" has no matching dispatch or callback prop. (./Modal.svelte:3:5)
+    - @event "close" has no matching dispatch or callback prop. (./Modal.svelte:4:5)
 ```
 
 When `checkExamples` is also enabled, `@example` compile failures appear as a fourth group:

@@ -355,7 +355,17 @@
       "component": "non-literal-defaults/input.svelte",
       "kind": "prop-unknown-type",
       "name": "handler",
-      "message": "Prop \"handler\" type could not be inferred; falling back to \"any\"."
+      "message": "Prop \"handler\" type could not be inferred; falling back to \"any\".",
+      "source": {
+        "start": {
+          "line": 64,
+          "column": 2
+        },
+        "end": {
+          "line": 64,
+          "column": 33
+        }
+      }
     }
   ]
 }

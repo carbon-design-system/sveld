@@ -230,19 +230,49 @@
       "component": "runes-prop-metadata-consolidated/input.svelte",
       "kind": "prop-unknown-type",
       "name": "open",
-      "message": "Prop \"open\" type could not be inferred; falling back to \"any\"."
+      "message": "Prop \"open\" type could not be inferred; falling back to \"any\".",
+      "source": {
+        "start": {
+          "line": 9,
+          "column": 4
+        },
+        "end": {
+          "line": 9,
+          "column": 22
+        }
+      }
     },
     {
       "component": "runes-prop-metadata-consolidated/input.svelte",
       "kind": "prop-unknown-type",
       "name": "computed",
-      "message": "Prop \"computed\" type could not be inferred; falling back to \"any\"."
+      "message": "Prop \"computed\" type could not be inferred; falling back to \"any\".",
+      "source": {
+        "start": {
+          "line": 13,
+          "column": 4
+        },
+        "end": {
+          "line": 13,
+          "column": 30
+        }
+      }
     },
     {
       "component": "runes-prop-metadata-consolidated/input.svelte",
       "kind": "prop-unknown-type",
       "name": "bare",
-      "message": "Prop \"bare\" type could not be inferred; falling back to \"any\"."
+      "message": "Prop \"bare\" type could not be inferred; falling back to \"any\".",
+      "source": {
+        "start": {
+          "line": 14,
+          "column": 4
+        },
+        "end": {
+          "line": 14,
+          "column": 8
+        }
+      }
     }
   ]
 }

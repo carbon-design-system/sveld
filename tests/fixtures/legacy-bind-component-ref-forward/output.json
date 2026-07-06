@@ -50,7 +50,17 @@
       "component": "legacy-bind-component-ref-forward/input.svelte",
       "kind": "prop-unknown-type",
       "name": "listRef",
-      "message": "Prop \"listRef\" type could not be inferred; falling back to \"any\"."
+      "message": "Prop \"listRef\" type could not be inferred; falling back to \"any\".",
+      "source": {
+        "start": {
+          "line": 2,
+          "column": 2
+        },
+        "end": {
+          "line": 2,
+          "column": 28
+        }
+      }
     }
   ]
 }

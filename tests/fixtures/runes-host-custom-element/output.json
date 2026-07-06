@@ -89,7 +89,17 @@
       "component": "runes-host-custom-element/input.svelte",
       "kind": "prop-unknown-type",
       "name": "value",
-      "message": "Prop \"value\" type could not be inferred; falling back to \"any\"."
+      "message": "Prop \"value\" type could not be inferred; falling back to \"any\".",
+      "source": {
+        "start": {
+          "line": 4,
+          "column": 8
+        },
+        "end": {
+          "line": 4,
+          "column": 13
+        }
+      }
     }
   ]
 }

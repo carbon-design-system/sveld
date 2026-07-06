@@ -44,7 +44,17 @@
       "component": "runes-callback-props/input.svelte",
       "kind": "prop-unknown-type",
       "name": "onclick",
-      "message": "Prop \"onclick\" type could not be inferred; falling back to \"any\"."
+      "message": "Prop \"onclick\" type could not be inferred; falling back to \"any\".",
+      "source": {
+        "start": {
+          "line": 2,
+          "column": 8
+        },
+        "end": {
+          "line": 2,
+          "column": 15
+        }
+      }
     }
   ]
 }

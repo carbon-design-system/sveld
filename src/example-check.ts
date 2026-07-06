@@ -1,4 +1,4 @@
-import type { ComponentProp, ComponentSlot, ParsedComponent } from "./ComponentParser";
+import type { ComponentProp, ComponentSlot, ParsedComponent, SourceRange } from "./ComponentParser";
 
 /**
  * One `@example` block worth type-checking, reduced to what `resolve-types.ts`
@@ -13,6 +13,8 @@ export interface ExampleCheckSource {
   type: string;
   /** The `@example` body, stripped of any surrounding code fence. */
   code: string;
+  /** Source range of the documented symbol (prop/export/slot/event), when available. */
+  source?: SourceRange;
 }
 
 const FENCE_REGEX = /^```([\w-]*)\r?\n([\s\S]*?)\r?\n?```$/;
@@ -54,6 +56,7 @@ function sourcesFromTags(
   idPrefix: string,
   name: string,
   type: string,
+  source: SourceRange | undefined,
 ): ExampleCheckSource[] {
   const examples = (tags ?? []).filter((tag) => tag.name === "example");
   const sources: ExampleCheckSource[] = [];
@@ -67,6 +70,7 @@ function sourcesFromTags(
       name: numbered ? `${name} (example ${index + 1})` : name,
       type,
       code,
+      ...(source ? { source } : {}),
     });
   });
 
@@ -87,7 +91,7 @@ export function collectExampleSources(component: ParsedComponent): ExampleCheckS
   const sources: ExampleCheckSource[] = [];
 
   for (const prop of component.props) {
-    sources.push(...sourcesFromTags(prop.tags, `prop:${prop.name}`, prop.name, typeForProp(prop)));
+    sources.push(...sourcesFromTags(prop.tags, `prop:${prop.name}`, prop.name, typeForProp(prop), prop.source));
   }
 
   for (const moduleExport of component.moduleExports) {
@@ -97,16 +101,17 @@ export function collectExampleSources(component: ParsedComponent): ExampleCheckS
         `export:${moduleExport.name}`,
         moduleExport.name,
         typeForProp(moduleExport),
+        moduleExport.source,
       ),
     );
   }
 
   for (const slot of component.slots) {
-    sources.push(...sourcesFromTags(slot.tags, `slot:${slotName(slot)}`, slotName(slot), "any"));
+    sources.push(...sourcesFromTags(slot.tags, `slot:${slotName(slot)}`, slotName(slot), "any", slot.source));
   }
 
   for (const event of component.events) {
-    sources.push(...sourcesFromTags(event.tags, `event:${event.name}`, event.name, "any"));
+    sources.push(...sourcesFromTags(event.tags, `event:${event.name}`, event.name, "any", event.source));
   }
 
   return sources;

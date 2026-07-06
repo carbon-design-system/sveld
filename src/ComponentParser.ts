@@ -2269,6 +2269,7 @@ export default class ComponentParser {
           "prop-unknown-type",
           prop.name,
           `Prop "${prop.name}" type could not be inferred; falling back to "${prop.type ?? "any"}".`,
+          prop.source,
         );
       }
     }
@@ -2286,6 +2287,7 @@ export default class ComponentParser {
         "event-no-source",
         eventName,
         `@event "${eventName}" has no matching dispatch or callback prop.`,
+        this.ctx.jsDocEventSources.get(eventName),
       );
     }
 

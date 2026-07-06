@@ -60,7 +60,17 @@
       "component": "runes-snippets-named/input.svelte",
       "kind": "prop-unknown-type",
       "name": "item",
-      "message": "Prop \"item\" type could not be inferred; falling back to \"any\"."
+      "message": "Prop \"item\" type could not be inferred; falling back to \"any\".",
+      "source": {
+        "start": {
+          "line": 2,
+          "column": 8
+        },
+        "end": {
+          "line": 2,
+          "column": 12
+        }
+      }
     }
   ]
 }

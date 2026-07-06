@@ -38,6 +38,7 @@ describe("ComponentParser diagnostics", () => {
       name: "value",
     });
     expect(typeof propDiagnostic?.message).toBe("string");
+    expect(propDiagnostic?.source?.start.line).toBe(3);
   });
 
   test("flags setContext values that default to any", () => {
@@ -112,6 +113,15 @@ describe("diagnostics helpers", () => {
     expect(deduped.map((d) => d.name)).toEqual(["value", "other"]);
   });
 
+  test("dedupeDiagnostics collapses records that differ only in source", () => {
+    const withSource = make({ source: { start: { line: 1, column: 0 }, end: { line: 1, column: 5 } } });
+    const withoutSource = make({});
+
+    const deduped = dedupeDiagnostics([withSource, withoutSource]);
+
+    expect(deduped).toHaveLength(1);
+  });
+
   test("formatDiagnosticsSummary reports a clean run", () => {
     expect(formatDiagnosticsSummary([])).toBe("sveld: all types resolved.");
   });
@@ -127,6 +137,24 @@ describe("diagnostics helpers", () => {
     expect(summary).toContain("@event tags with no dispatch or callback (1):");
     expect(summary).toContain("prop fallback");
     expect(summary).toContain("event fallback");
+  });
+
+  test("formatDiagnosticsSummary appends the position when source is present", () => {
+    const summary = formatDiagnosticsSummary([
+      make({
+        message: "prop fallback",
+        source: { start: { line: 4, column: 2 }, end: { line: 4, column: 10 } },
+      }),
+    ]);
+
+    expect(summary).toContain("prop fallback (./A.svelte:4:2)");
+  });
+
+  test("formatDiagnosticsSummary omits the position when source is absent", () => {
+    const summary = formatDiagnosticsSummary([make({ message: "prop fallback" })]);
+
+    expect(summary).toContain("- prop fallback");
+    expect(summary).not.toContain("prop fallback (");
   });
 });
 

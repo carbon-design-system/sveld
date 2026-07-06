@@ -211,7 +211,17 @@ exports[`fixtures (JSON) "slot-event-template-prop-reference/input.svelte" 1`] =
       "component": "slot-event-template-prop-reference/input.svelte",
       "kind": "event-no-source",
       "name": "select",
-      "message": "@event \\"select\\" has no matching dispatch or callback prop."
+      "message": "@event \\"select\\" has no matching dispatch or callback prop.",
+      "source": {
+        "start": {
+          "line": 5,
+          "column": 5
+        },
+        "end": {
+          "line": 5,
+          "column": 25
+        }
+      }
     }
   ]
 }
@@ -742,13 +752,33 @@ exports[`fixtures (JSON) "module-reexport-mixed/input.svelte" 1`] = `
       "component": "module-reexport-mixed/input.svelte",
       "kind": "prop-unknown-type",
       "name": "name",
-      "message": "Prop \\"name\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"name\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 27,
+          "column": 2
+        },
+        "end": {
+          "line": 27,
+          "column": 18
+        }
+      }
     },
     {
       "component": "module-reexport-mixed/input.svelte",
       "kind": "prop-unknown-type",
       "name": "value",
-      "message": "Prop \\"value\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"value\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 30,
+          "column": 2
+        },
+        "end": {
+          "line": 30,
+          "column": 26
+        }
+      }
     }
   ]
 }
@@ -1147,13 +1177,33 @@ exports[`fixtures (JSON) "runes-dispatched-events/input.svelte" 1`] = `
       "component": "runes-dispatched-events/input.svelte",
       "kind": "prop-unknown-type",
       "name": "value",
-      "message": "Prop \\"value\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"value\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 2,
+          "column": 8
+        },
+        "end": {
+          "line": 2,
+          "column": 13
+        }
+      }
     },
     {
       "component": "runes-dispatched-events/input.svelte",
       "kind": "prop-unknown-type",
       "name": "onchange",
-      "message": "Prop \\"onchange\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"onchange\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 2,
+          "column": 15
+        },
+        "end": {
+          "line": 2,
+          "column": 23
+        }
+      }
     }
   ]
 }
@@ -1258,7 +1308,17 @@ exports[`fixtures (JSON) "module-reexport/input.svelte" 1`] = `
       "component": "module-reexport/input.svelte",
       "kind": "prop-unknown-type",
       "name": "data",
-      "message": "Prop \\"data\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"data\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 12,
+          "column": 2
+        },
+        "end": {
+          "line": 12,
+          "column": 25
+        }
+      }
     }
   ]
 }
@@ -1374,7 +1434,17 @@ exports[`fixtures (JSON) "resolve-default-chained/input.svelte" 1`] = `
       "component": "resolve-default-chained/input.svelte",
       "kind": "prop-unknown-type",
       "name": "deep6",
-      "message": "Prop \\"deep6\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"deep6\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 25,
+          "column": 2
+        },
+        "end": {
+          "line": 25,
+          "column": 28
+        }
+      }
     }
   ]
 }
@@ -2290,13 +2360,33 @@ exports[`fixtures (JSON) "prop-metadata-consolidated/input.svelte" 1`] = `
       "component": "prop-metadata-consolidated/input.svelte",
       "kind": "prop-unknown-type",
       "name": "callDefault",
-      "message": "Prop \\"callDefault\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"callDefault\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 21,
+          "column": 2
+        },
+        "end": {
+          "line": 21,
+          "column": 41
+        }
+      }
     },
     {
       "component": "prop-metadata-consolidated/input.svelte",
       "kind": "prop-unknown-type",
       "name": "unknown",
-      "message": "Prop \\"unknown\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"unknown\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 29,
+          "column": 2
+        },
+        "end": {
+          "line": 29,
+          "column": 21
+        }
+      }
     }
   ]
 }
@@ -2686,7 +2776,17 @@ exports[`fixtures (JSON) "legacy-bind-component-ref-forward/input.svelte" 1`] = 
       "component": "legacy-bind-component-ref-forward/input.svelte",
       "kind": "prop-unknown-type",
       "name": "listRef",
-      "message": "Prop \\"listRef\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"listRef\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 2,
+          "column": 2
+        },
+        "end": {
+          "line": 2,
+          "column": 28
+        }
+      }
     }
   ]
 }
@@ -2735,7 +2835,17 @@ exports[`fixtures (JSON) "dispatched-events-dynamic/input.svelte" 1`] = `
       "component": "dispatched-events-dynamic/input.svelte",
       "kind": "event-no-source",
       "name": "KEY",
-      "message": "@event \\"KEY\\" has no matching dispatch or callback prop."
+      "message": "@event \\"KEY\\" has no matching dispatch or callback prop.",
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 5
+        },
+        "end": {
+          "line": 3,
+          "column": 32
+        }
+      }
     }
   ]
 }
@@ -4206,25 +4316,65 @@ exports[`fixtures (JSON) "typedef-event-shared-block/input.svelte" 1`] = `
       "component": "typedef-event-shared-block/input.svelte",
       "kind": "event-no-source",
       "name": "resize",
-      "message": "@event \\"resize\\" has no matching dispatch or callback prop."
+      "message": "@event \\"resize\\" has no matching dispatch or callback prop.",
+      "source": {
+        "start": {
+          "line": 20,
+          "column": 6
+        },
+        "end": {
+          "line": 20,
+          "column": 19
+        }
+      }
     },
     {
       "component": "typedef-event-shared-block/input.svelte",
       "kind": "event-no-source",
       "name": "scroll",
-      "message": "@event \\"scroll\\" has no matching dispatch or callback prop."
+      "message": "@event \\"scroll\\" has no matching dispatch or callback prop.",
+      "source": {
+        "start": {
+          "line": 20,
+          "column": 7
+        },
+        "end": {
+          "line": 20,
+          "column": 20
+        }
+      }
     },
     {
       "component": "typedef-event-shared-block/input.svelte",
       "kind": "event-no-source",
       "name": "queue",
-      "message": "@event \\"queue\\" has no matching dispatch or callback prop."
+      "message": "@event \\"queue\\" has no matching dispatch or callback prop.",
+      "source": {
+        "start": {
+          "line": 31,
+          "column": 7
+        },
+        "end": {
+          "line": 32,
+          "column": 12
+        }
+      }
     },
     {
       "component": "typedef-event-shared-block/input.svelte",
       "kind": "event-no-source",
       "name": "dequeue",
-      "message": "@event \\"dequeue\\" has no matching dispatch or callback prop."
+      "message": "@event \\"dequeue\\" has no matching dispatch or callback prop.",
+      "source": {
+        "start": {
+          "line": 31,
+          "column": 9
+        },
+        "end": {
+          "line": 32,
+          "column": 1
+        }
+      }
     }
   ]
 }
@@ -4505,7 +4655,17 @@ exports[`fixtures (JSON) "theme-component/input.svelte" 1`] = `
       "component": "theme-component/input.svelte",
       "kind": "event-no-source",
       "name": "update",
-      "message": "@event \\"update\\" has no matching dispatch or callback prop."
+      "message": "@event \\"update\\" has no matching dispatch or callback prop.",
+      "source": {
+        "start": {
+          "line": 26,
+          "column": 8
+        },
+        "end": {
+          "line": 26,
+          "column": 21
+        }
+      }
     }
   ]
 }
@@ -5307,13 +5467,33 @@ exports[`fixtures (JSON) "infer-basic/input.svelte" 1`] = `
       "component": "infer-basic/input.svelte",
       "kind": "prop-unknown-type",
       "name": "ref",
-      "message": "Prop \\"ref\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"ref\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 2,
+          "column": 2
+        },
+        "end": {
+          "line": 2,
+          "column": 24
+        }
+      }
     },
     {
       "component": "infer-basic/input.svelte",
       "kind": "prop-unknown-type",
       "name": "name",
-      "message": "Prop \\"name\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"name\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 5,
+          "column": 2
+        },
+        "end": {
+          "line": 5,
+          "column": 18
+        }
+      }
     }
   ]
 }
@@ -5498,7 +5678,17 @@ exports[`fixtures (JSON) "runes-props-basic/input.svelte" 1`] = `
       "component": "runes-props-basic/input.svelte",
       "kind": "prop-unknown-type",
       "name": "title",
-      "message": "Prop \\"title\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"title\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 2,
+          "column": 8
+        },
+        "end": {
+          "line": 2,
+          "column": 13
+        }
+      }
     }
   ]
 }
@@ -5606,7 +5796,17 @@ exports[`fixtures (JSON) "runes-derived-prop-default/input.svelte" 1`] = `
       "component": "runes-derived-prop-default/input.svelte",
       "kind": "prop-unknown-type",
       "name": "label",
-      "message": "Prop \\"label\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"label\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 5,
+          "column": 8
+        },
+        "end": {
+          "line": 5,
+          "column": 28
+        }
+      }
     }
   ]
 }
@@ -5912,7 +6112,17 @@ exports[`fixtures (JSON) "module-reexport-direct/input.svelte" 1`] = `
       "component": "module-reexport-direct/input.svelte",
       "kind": "prop-unknown-type",
       "name": "onReady",
-      "message": "Prop \\"onReady\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"onReady\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 13,
+          "column": 2
+        },
+        "end": {
+          "line": 13,
+          "column": 21
+        }
+      }
     }
   ]
 }
@@ -6171,7 +6381,17 @@ exports[`fixtures (JSON) "runes-snippets-named/input.svelte" 1`] = `
       "component": "runes-snippets-named/input.svelte",
       "kind": "prop-unknown-type",
       "name": "item",
-      "message": "Prop \\"item\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"item\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 2,
+          "column": 8
+        },
+        "end": {
+          "line": 2,
+          "column": 12
+        }
+      }
     }
   ]
 }
@@ -6907,13 +7127,33 @@ exports[`fixtures (JSON) "runes-snippet-description-hyphens/input.svelte" 1`] = 
       "component": "runes-snippet-description-hyphens/input.svelte",
       "kind": "prop-unknown-type",
       "name": "row",
-      "message": "Prop \\"row\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"row\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 7,
+          "column": 8
+        },
+        "end": {
+          "line": 7,
+          "column": 11
+        }
+      }
     },
     {
       "component": "runes-snippet-description-hyphens/input.svelte",
       "kind": "prop-unknown-type",
       "name": "col",
-      "message": "Prop \\"col\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"col\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 7,
+          "column": 13
+        },
+        "end": {
+          "line": 7,
+          "column": 16
+        }
+      }
     }
   ]
 }
@@ -7182,13 +7422,33 @@ exports[`fixtures (JSON) "runes-internal-noleak/input.svelte" 1`] = `
       "component": "runes-internal-noleak/input.svelte",
       "kind": "prop-unknown-type",
       "name": "value",
-      "message": "Prop \\"value\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"value\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 2,
+          "column": 8
+        },
+        "end": {
+          "line": 2,
+          "column": 13
+        }
+      }
     },
     {
       "component": "runes-internal-noleak/input.svelte",
       "kind": "prop-unknown-type",
       "name": "onchange",
-      "message": "Prop \\"onchange\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"onchange\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 2,
+          "column": 15
+        },
+        "end": {
+          "line": 2,
+          "column": 23
+        }
+      }
     }
   ]
 }
@@ -8089,19 +8349,49 @@ exports[`fixtures (JSON) "runes-prop-metadata-consolidated/input.svelte" 1`] = `
       "component": "runes-prop-metadata-consolidated/input.svelte",
       "kind": "prop-unknown-type",
       "name": "open",
-      "message": "Prop \\"open\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"open\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 9,
+          "column": 4
+        },
+        "end": {
+          "line": 9,
+          "column": 22
+        }
+      }
     },
     {
       "component": "runes-prop-metadata-consolidated/input.svelte",
       "kind": "prop-unknown-type",
       "name": "computed",
-      "message": "Prop \\"computed\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"computed\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 13,
+          "column": 4
+        },
+        "end": {
+          "line": 13,
+          "column": 30
+        }
+      }
     },
     {
       "component": "runes-prop-metadata-consolidated/input.svelte",
       "kind": "prop-unknown-type",
       "name": "bare",
-      "message": "Prop \\"bare\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"bare\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 14,
+          "column": 4
+        },
+        "end": {
+          "line": 14,
+          "column": 8
+        }
+      }
     }
   ]
 }
@@ -9401,7 +9691,17 @@ exports[`fixtures (JSON) "required/input.svelte" 1`] = `
       "component": "required/input.svelte",
       "kind": "prop-unknown-type",
       "name": "prop2",
-      "message": "Prop \\"prop2\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"prop2\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 14,
+          "column": 2
+        },
+        "end": {
+          "line": 14,
+          "column": 19
+        }
+      }
     }
   ]
 }
@@ -10580,7 +10880,17 @@ exports[`fixtures (JSON) "bindable-direction-legacy/input.svelte" 1`] = `
       "component": "bindable-direction-legacy/input.svelte",
       "kind": "prop-unknown-type",
       "name": "size",
-      "message": "Prop \\"size\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"size\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 6,
+          "column": 2
+        },
+        "end": {
+          "line": 6,
+          "column": 30
+        }
+      }
     }
   ]
 }
@@ -11031,7 +11341,17 @@ exports[`fixtures (JSON) "runes-callback-props/input.svelte" 1`] = `
       "component": "runes-callback-props/input.svelte",
       "kind": "prop-unknown-type",
       "name": "onclick",
-      "message": "Prop \\"onclick\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"onclick\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 2,
+          "column": 8
+        },
+        "end": {
+          "line": 2,
+          "column": 15
+        }
+      }
     }
   ]
 }
@@ -11557,7 +11877,17 @@ exports[`fixtures (JSON) "non-literal-defaults/input.svelte" 1`] = `
       "component": "non-literal-defaults/input.svelte",
       "kind": "prop-unknown-type",
       "name": "handler",
-      "message": "Prop \\"handler\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"handler\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 64,
+          "column": 2
+        },
+        "end": {
+          "line": 64,
+          "column": 33
+        }
+      }
     }
   ]
 }
@@ -11766,7 +12096,17 @@ exports[`fixtures (JSON) "runes-props-renamed/input.svelte" 1`] = `
       "component": "runes-props-renamed/input.svelte",
       "kind": "prop-unknown-type",
       "name": "class",
-      "message": "Prop \\"class\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"class\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 2,
+          "column": 8
+        },
+        "end": {
+          "line": 2,
+          "column": 20
+        }
+      }
     }
   ]
 }
@@ -11934,7 +12274,17 @@ exports[`fixtures (JSON) "runes-snippets-default/input.svelte" 1`] = `
       "component": "runes-snippets-default/input.svelte",
       "kind": "prop-unknown-type",
       "name": "item",
-      "message": "Prop \\"item\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"item\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 2,
+          "column": 8
+        },
+        "end": {
+          "line": 2,
+          "column": 12
+        }
+      }
     }
   ]
 }
@@ -13887,7 +14237,17 @@ exports[`fixtures (JSON) "bindable-direction-runes/input.svelte" 1`] = `
       "component": "bindable-direction-runes/input.svelte",
       "kind": "prop-unknown-type",
       "name": "size",
-      "message": "Prop \\"size\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"size\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 7,
+          "column": 4
+        },
+        "end": {
+          "line": 7,
+          "column": 20
+        }
+      }
     }
   ]
 }
@@ -14563,7 +14923,17 @@ exports[`fixtures (JSON) "runes-host-custom-element/input.svelte" 1`] = `
       "component": "runes-host-custom-element/input.svelte",
       "kind": "prop-unknown-type",
       "name": "value",
-      "message": "Prop \\"value\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"value\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 4,
+          "column": 8
+        },
+        "end": {
+          "line": 4,
+          "column": 13
+        }
+      }
     }
   ]
 }
@@ -14669,7 +15039,17 @@ exports[`fixtures (JSON) "runes-props-id-default/input.svelte" 1`] = `
       "component": "runes-props-id-default/input.svelte",
       "kind": "prop-unknown-type",
       "name": "label",
-      "message": "Prop \\"label\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"label\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 2,
+          "column": 8
+        },
+        "end": {
+          "line": 2,
+          "column": 13
+        }
+      }
     }
   ]
 }
@@ -14727,7 +15107,17 @@ exports[`fixtures (JSON) "runes-rest-props/input.svelte" 1`] = `
       "component": "runes-rest-props/input.svelte",
       "kind": "prop-unknown-type",
       "name": "variant",
-      "message": "Prop \\"variant\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"variant\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 2,
+          "column": 8
+        },
+        "end": {
+          "line": 2,
+          "column": 15
+        }
+      }
     }
   ]
 }
@@ -15110,7 +15500,17 @@ exports[`fixtures (JSON) "legacy-bind-component-ref/input.svelte" 1`] = `
       "component": "legacy-bind-component-ref/input.svelte",
       "kind": "prop-unknown-type",
       "name": "ref",
-      "message": "Prop \\"ref\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"ref\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 2,
+          "column": 2
+        },
+        "end": {
+          "line": 2,
+          "column": 24
+        }
+      }
     }
   ]
 }
@@ -16356,7 +16756,17 @@ exports[`fixtures (JSON) "typed-props/input.svelte" 1`] = `
       "component": "typed-props/input.svelte",
       "kind": "prop-unknown-type",
       "name": "prop2",
-      "message": "Prop \\"prop2\\" type could not be inferred; falling back to \\"any\\"."
+      "message": "Prop \\"prop2\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 13,
+          "column": 2
+        },
+        "end": {
+          "line": 13,
+          "column": 26
+        }
+      }
     }
   ]
 }

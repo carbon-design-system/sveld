@@ -502,6 +502,7 @@ export function parseCustomTypes(ctx: ParserContext, parser: ComponentParser) {
         });
         ctx.eventDescriptions.set(currentEventName, currentEventDescription);
         ctx.jsDocEventNames.add(currentEventName);
+        ctx.jsDocEventSources.set(currentEventName, currentEventSource);
         eventProperties.length = 0;
         currentEventName = undefined;
         currentEventType = undefined;

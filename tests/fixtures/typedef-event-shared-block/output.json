@@ -239,25 +239,65 @@
       "component": "typedef-event-shared-block/input.svelte",
       "kind": "event-no-source",
       "name": "resize",
-      "message": "@event \"resize\" has no matching dispatch or callback prop."
+      "message": "@event \"resize\" has no matching dispatch or callback prop.",
+      "source": {
+        "start": {
+          "line": 20,
+          "column": 6
+        },
+        "end": {
+          "line": 20,
+          "column": 19
+        }
+      }
     },
     {
       "component": "typedef-event-shared-block/input.svelte",
       "kind": "event-no-source",
       "name": "scroll",
-      "message": "@event \"scroll\" has no matching dispatch or callback prop."
+      "message": "@event \"scroll\" has no matching dispatch or callback prop.",
+      "source": {
+        "start": {
+          "line": 20,
+          "column": 7
+        },
+        "end": {
+          "line": 20,
+          "column": 20
+        }
+      }
     },
     {
       "component": "typedef-event-shared-block/input.svelte",
       "kind": "event-no-source",
       "name": "queue",
-      "message": "@event \"queue\" has no matching dispatch or callback prop."
+      "message": "@event \"queue\" has no matching dispatch or callback prop.",
+      "source": {
+        "start": {
+          "line": 31,
+          "column": 7
+        },
+        "end": {
+          "line": 32,
+          "column": 12
+        }
+      }
     },
     {
       "component": "typedef-event-shared-block/input.svelte",
       "kind": "event-no-source",
       "name": "dequeue",
-      "message": "@event \"dequeue\" has no matching dispatch or callback prop."
+      "message": "@event \"dequeue\" has no matching dispatch or callback prop.",
+      "source": {
+        "start": {
+          "line": 31,
+          "column": 9
+        },
+        "end": {
+          "line": 32,
+          "column": 1
+        }
+      }
     }
   ]
 }
