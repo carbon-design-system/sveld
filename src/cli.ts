@@ -2,30 +2,18 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import pkg from "../package.json" with { type: "json" };
 import { asSvelteEntryPoint } from "./brands";
-import { type CheckResult, formatCheckReport, runCheck } from "./check";
+import { type CheckResult, formatCheckReport, resolveCheckSnapshotFile, runCheck } from "./check";
 import { formatDiagnosticsSummary } from "./diagnostics";
 import { getSvelteEntry } from "./get-svelte-entry";
-import { loadConfig, mergeConfig } from "./load-config";
+import { loadConfig, mergeConfig, type SveldRuntimeOptions } from "./load-config";
 import { normalizeSeparators } from "./path";
-import { generateBundle, type PluginSveldOptions, toGenerateBundleOptions, writeOutput } from "./plugin";
+import { generateBundle, toGenerateBundleOptions, writeOutput } from "./plugin";
 
 /** Relative fallback entry used only when entry resolution otherwise fails. */
 const FALLBACK_ENTRY = "src/index.js";
 
-/** CLI options layered on top of the shared plugin options. */
-interface CliOptions extends PluginSveldOptions {
-  /** Print unresolved-type diagnostics to stderr. */
-  reportDiagnostics?: boolean;
-  /** Set exit code 1 when diagnostics are present. Implies `reportDiagnostics`. */
-  strict?: boolean;
-  /**
-   * Diff the parsed component API against a committed snapshot (default:
-   * the `json` writer's `outFile`, or `COMPONENT_API.json`) and assign a
-   * semver bump to each change. Exits `1` on a breaking change. Pass a
-   * string for a custom snapshot path.
-   */
-  check?: boolean | string;
-}
+/** CLI options: identical surface to the shared runtime options. */
+type CliOptions = SveldRuntimeOptions;
 
 const HELP_TEXT = `Usage: sveld [options]
 
@@ -111,12 +99,6 @@ function parseCliFlag(arg: string): CliFlagResult {
     default:
       return { kind: "unknown", arg };
   }
-}
-
-/** Default snapshot path mirrors the `json` writer's default `outFile`. */
-function resolveCheckSnapshotFile(options: CliOptions): string {
-  if (typeof options.check === "string") return options.check;
-  return options.jsonOptions?.outFile ?? "COMPONENT_API.json";
 }
 
 /** Discriminated result of parsing the full argument list. */

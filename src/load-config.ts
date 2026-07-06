@@ -5,10 +5,29 @@ import type { PluginSveldOptions } from "./plugin";
 import { isRecord } from "./validate";
 
 /**
- * Public shape of a `sveld.config.{js,ts,mjs}` file. Identical to the options
- * accepted by the Vite/Rollup plugin and the CLI.
+ * Options shared by the config file, the CLI, and the programmatic `sveld()`
+ * API. Superset of `PluginSveldOptions` with the CLI-oriented flags that only
+ * make sense as part of a full `sveld` run (not the Vite/Rollup plugin).
  */
-export type SveldConfig = PluginSveldOptions;
+export interface SveldRuntimeOptions extends PluginSveldOptions {
+  /** Print unresolved-type diagnostics to stderr. */
+  reportDiagnostics?: boolean;
+  /** Exit code 1 when diagnostics exist. Implies `reportDiagnostics`. */
+  strict?: boolean;
+  /**
+   * Diff the parsed component API against a committed snapshot (default:
+   * the `json` writer's `outFile`, or `COMPONENT_API.json`) and assign a
+   * semver bump to each change. Exits `1` on a breaking change. Pass a
+   * string for a custom snapshot path.
+   */
+  check?: boolean | string;
+}
+
+/**
+ * Public shape of a `sveld.config.{js,ts,mjs}` file. Identical to the options
+ * accepted by the CLI and the programmatic `sveld()` API.
+ */
+export type SveldConfig = SveldRuntimeOptions;
 
 /** Config file names probed at the project root. First existing file wins. */
 export const CONFIG_FILE_NAMES = ["sveld.config.js", "sveld.config.mjs", "sveld.config.ts"] as const;

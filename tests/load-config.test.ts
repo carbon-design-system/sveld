@@ -1,7 +1,14 @@
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { loadConfig, loadConfigFrom, mergeConfig, resolveConfigPath } from "../src/load-config";
+import {
+  defineConfig,
+  loadConfig,
+  loadConfigFrom,
+  mergeConfig,
+  resolveConfigPath,
+  type SveldRuntimeOptions,
+} from "../src/load-config";
 import type { PluginSveldOptions } from "../src/plugin";
 
 function withTempDir(prefix: string, run: (dir: string) => void | Promise<void>) {
@@ -60,6 +67,21 @@ describe("loadConfig", () => {
           "export default defineConfig({ markdown: true });",
       );
       await expect(loadConfig(dir)).resolves.toEqual({ markdown: true });
+    });
+  });
+
+  test("defineConfig accepts strict, reportDiagnostics, and check", () => {
+    expect(defineConfig({ strict: true, reportDiagnostics: true, check: true })).toEqual({
+      strict: true,
+      reportDiagnostics: true,
+      check: true,
+    });
+  });
+
+  test("loads a config with strict and a custom check snapshot path", async () => {
+    await withTempDir("sveld-config-load-", async (dir) => {
+      writeFileSync(path.join(dir, "sveld.config.js"), 'export default { strict: true, check: "snapshots/api.json" };');
+      await expect(loadConfig(dir)).resolves.toEqual({ strict: true, check: "snapshots/api.json" });
     });
   });
 
@@ -123,5 +145,14 @@ describe("mergeConfig", () => {
 
   test("leaves config keys alone when a later source omits them", () => {
     expect(mergeConfig({ markdown: true }, {})).toEqual({ markdown: true });
+  });
+
+  test("carries strict, reportDiagnostics, and check through the merge", () => {
+    const fileConfig: Partial<SveldRuntimeOptions> = { strict: true, check: "snapshots/api.json" };
+    expect(mergeConfig<SveldRuntimeOptions>(fileConfig, { reportDiagnostics: true })).toEqual({
+      strict: true,
+      check: "snapshots/api.json",
+      reportDiagnostics: true,
+    });
   });
 });
