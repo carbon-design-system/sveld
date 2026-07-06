@@ -10,7 +10,8 @@
       "!!**/.svelte-kit/**/*",
       "!!**/tests/e2e/**/*.svelte",
       "!!**/tests/e2e/**/*.d.ts",
-      "!!**/tests/e2e/**/*.json"
+      "!!**/tests/e2e/**/*.json",
+      "!!**/tests/e2e/cli-crash/**/*"
     ]
   },
   "formatter": {
