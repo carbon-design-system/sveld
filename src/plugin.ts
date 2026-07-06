@@ -232,13 +232,15 @@ export async function writeOutput(result: GenerateBundleResult, opts: PluginSvel
     } satisfies WriteMarkdownOptions);
   }
 
-  for (const [name, writerOptions] of Object.entries(opts?.additionalWriters ?? {})) {
+  const additionalWrites = Object.entries(opts?.additionalWriters ?? {}).map(([name, writerOptions]) => {
     const writer = getWriter(name);
     if (!writer) {
       console.warn(`sveld: no writer registered with name "${name}"; skipping.`);
-      continue;
+      return undefined;
     }
     const components = writer.componentSet === "all" ? result.allComponentsForTypes : result.components;
-    await writer.write(components, writerOptions);
-  }
+    return writer.write(components, writerOptions);
+  });
+
+  await Promise.all(additionalWrites);
 }
