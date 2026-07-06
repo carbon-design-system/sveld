@@ -1,0 +1,54 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 20,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>",
+      "source": {
+        "start": {
+          "line": 19,
+          "column": 5
+        },
+        "end": {
+          "line": 19,
+          "column": 13
+        }
+      }
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": [
+    "Value$Type",
+    "Value$Type extends string"
+  ],
+  "contexts": [
+    {
+      "key": "Demo",
+      "typeName": "DemoContext",
+      "properties": [
+        {
+          "name": "value",
+          "type": "Value$Type",
+          "description": "",
+          "optional": false
+        }
+      ]
+    }
+  ],
+  "diagnostics": []
+}

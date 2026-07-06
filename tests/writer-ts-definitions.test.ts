@@ -314,6 +314,25 @@ describe("writerTsDefinition", () => {
     ).toEqual("export type SimpleContext = {\n  count: number;\n};");
   });
 
+  test("getContextDefs with regex-metacharacter generic name", () => {
+    // A malformed `@template` name containing an unescaped regex metacharacter
+    // (here an unbalanced "(") previously threw `SyntaxError: Invalid regular
+    // expression` when building the word-boundary check. It must not throw, and
+    // must still correctly detect the reference.
+    expect(
+      getContextDefs({
+        contexts: [
+          {
+            key: "demo:Wrapper",
+            typeName: "DemoWrapperContext",
+            properties: [{ name: "value", type: "T(x)", optional: false }],
+          },
+        ],
+        generics: ["T(", "T( extends string = string"],
+      }),
+    ).toEqual("export type DemoWrapperContext<T( extends string = string> = {\n  value: T(x);\n};");
+  });
+
   test("generates function signatures from @param and @returns", () => {
     const component_api: ComponentDocApi = {
       moduleName: "TestComponent",

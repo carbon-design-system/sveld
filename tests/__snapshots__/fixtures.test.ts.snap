@@ -22277,3 +22277,80 @@ export default class SlotDescriptionHyphensInline extends SvelteComponentTyped<
 > {}
 "
 `;
+
+exports[`fixtures (JSON) "context-generics-dollar-name/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 20,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>",
+      "source": {
+        "start": {
+          "line": 19,
+          "column": 5
+        },
+        "end": {
+          "line": 19,
+          "column": 13
+        }
+      }
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": [
+    "Value$Type",
+    "Value$Type extends string"
+  ],
+  "contexts": [
+    {
+      "key": "Demo",
+      "typeName": "DemoContext",
+      "properties": [
+        {
+          "name": "value",
+          "type": "Value$Type",
+          "description": "",
+          "optional": false
+        }
+      ]
+    }
+  ],
+  "diagnostics": []
+}
+"
+`;
+
+exports[`fixtures (TypeScript) "context-generics-dollar-name/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type DemoContext<Value$Type extends string> = {
+  value: Value$Type;
+};
+
+export type ContextGenericsDollarNameProps<Value$Type extends string> = {
+  children?: (this: void) => void;
+};
+
+export default class ContextGenericsDollarName<Value$Type extends string> extends SvelteComponentTyped<
+  ContextGenericsDollarNameProps<Value$Type>,
+  Record<string, any>,
+  { default: Record<string, never> }
+> {}
+"
+`;

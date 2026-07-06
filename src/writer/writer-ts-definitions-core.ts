@@ -31,6 +31,9 @@ const NEWLINE_TO_COMMENT_REGEX = /\n/g;
 const WHITESPACE_REGEX = /\s+/g;
 const SNIPPET_TYPE_REFERENCE_REGEX = /(^|[^.\w])Snippet(?:\s*<|\b)/;
 const PRESERVED_SNIPPET_IMPORT_REGEX = /import\s+type\s+[^;]*\bSnippet\b[^;]*from\s+"svelte";/;
+// Matches regex metacharacters that must be escaped before interpolating
+// a user-authored generic name into a RegExp.
+const REGEX_METACHARS = /[.*+?^${}()|[\]\\]/g;
 
 /**
  * Formats a description for use in multi-line comment blocks.
@@ -161,7 +164,8 @@ function splitTopLevel(value: string): string[] {
  * matching on word boundaries so `Value` doesn't match `ValueType`.
  */
 function referencesGeneric(propType: string, name: string): boolean {
-  return new RegExp(`\\b${name}\\b`).test(propType);
+  const escapedName = name.replace(REGEX_METACHARS, "\\$&");
+  return new RegExp(`\\b${escapedName}\\b`).test(propType);
 }
 
 /**
