@@ -11,6 +11,7 @@ import type {
   TypeImportBinding,
 } from "../ComponentParser";
 import type { ParserContext } from "./context";
+import { collectGenericsAttributeTypeDependencies } from "./generics";
 import { processLeadingCommentsJSDoc, processNodeJSDoc } from "./jsdoc";
 import { addProp, processInitializer, unwrapBindableInitializer } from "./props";
 import { sourceAtPos, sourceRangeFromNode } from "./source-position";
@@ -194,6 +195,7 @@ export function buildRunesPropTypeMetadata(parser: ComponentParser, ctx: ParserC
 
   ctx.scriptLanguage = parser.resolveScriptLanguage(modernParsed);
   ctx.customElementTag = modernParsed.options?.customElement?.tag;
+  ctx.scriptGenericsAttribute = parser.resolveScriptGenericsAttribute(modernParsed);
   const body = modernParsed.instance?.content?.body ?? [];
 
   for (const statement of body) {
@@ -278,6 +280,7 @@ export function buildRunesPropTypeMetadata(parser: ComponentParser, ctx: ParserC
         referencedImportedTypes,
         referencedLocalTypes,
       );
+      collectGenericsAttributeTypeDependencies(ctx, referencedImportedTypes, referencedLocalTypes);
 
       if (declarator.start !== undefined) {
         const declarationMetadata: RunesPropsDeclarationMetadata = {

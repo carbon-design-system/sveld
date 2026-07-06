@@ -24,6 +24,7 @@ import { createParserContext, type ParserContext } from "./parser/context";
 import { parseSetContextCall } from "./parser/contexts";
 import { recordDiagnostic } from "./parser/diagnostics";
 import { addDispatchedEvent, literalDetailToTypeText, parseHostDispatchEventCall } from "./parser/events";
+import { parseGenericsAttribute } from "./parser/generics";
 import { getCommentTags, parseCustomTypes, processNodeJSDoc } from "./parser/jsdoc";
 import { addProp, processInitializer } from "./parser/props";
 import { maybeSetRestProps } from "./parser/rest-props";
@@ -233,6 +234,8 @@ export interface ProcessedInitializer {
 type ModernScriptAttribute = {
   name?: string;
   value?: Array<{ data?: string; raw?: string }> | boolean;
+  start?: number;
+  end?: number;
 };
 
 export type ModernScriptNode = {
@@ -715,6 +718,41 @@ export default class ComponentParser {
     }
 
     return hasPlainScript ? "js" : undefined;
+  }
+
+  /**
+   * Reads the `generics` attribute off the instance script (Svelte only allows
+   * it there, and only alongside `lang="ts"`). Returns the raw value for later
+   * precedence resolution against `@generics`/`@template` JSDoc tags, or
+   * `undefined` if absent. Records a `syntax-skipped` diagnostic and returns
+   * `undefined` if the attribute is present without `lang="ts"`, since sveld
+   * can't safely guess how to parse it as plain JavaScript.
+   */
+  resolveScriptGenericsAttribute(parsed: {
+    instance?: ModernScriptNode;
+  }): { value: string; source?: SourceRange } | undefined {
+    const genericsAttribute = parsed.instance?.attributes?.find((attribute) => attribute.name === "generics");
+    if (!genericsAttribute) return undefined;
+
+    const source = sourceRangeFromNode(this.ctx, genericsAttribute);
+    const langAttribute = parsed.instance?.attributes?.find((attribute) => attribute.name === "lang");
+    const language = langAttribute ? ComponentParser.getStaticAttributeValue(langAttribute)?.toLowerCase() : undefined;
+
+    if (language !== "ts") {
+      recordDiagnostic(
+        this.ctx,
+        "syntax-skipped",
+        "generics",
+        `<script generics="..."> requires lang="ts"; the generics attribute was ignored because the script is not TypeScript.`,
+        source,
+      );
+      return undefined;
+    }
+
+    const value = ComponentParser.getStaticAttributeValue(genericsAttribute);
+    if (!value) return undefined;
+
+    return { value, source };
   }
 
   private static assignValue(value?: "" | string) {
@@ -2201,6 +2239,23 @@ export default class ComponentParser {
         if (!new RegExp(`\\b${escapedName}\\b`).test(referencedTypeText)) continue;
         this.accumulateGeneric(name, constraint);
       }
+    }
+
+    /**
+     * The `generics` script attribute is the compiler-checked source of truth,
+     * so it wins over any `@generics`/`@template` JSDoc tags parsed above.
+     */
+    if (this.ctx.scriptGenericsAttribute) {
+      if (this.ctx.generics) {
+        recordDiagnostic(
+          this.ctx,
+          "syntax-skipped",
+          "generics",
+          `Both the "generics" script attribute and @generics/@template JSDoc tags declare component generics; the script attribute takes precedence and the JSDoc declaration was ignored.`,
+          this.ctx.scriptGenericsAttribute.source,
+        );
+      }
+      this.ctx.generics = parseGenericsAttribute(this.ctx.scriptGenericsAttribute.value);
     }
 
     const moduleExportsArray = ComponentParser.mapToArray(this.ctx.moduleExports);

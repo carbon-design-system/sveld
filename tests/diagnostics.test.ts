@@ -113,6 +113,29 @@ describe("ComponentParser diagnostics", () => {
     expect(syntaxDiagnostic?.source).toBeDefined();
     expect(props.map((p) => p.name)).toContain("title");
   });
+
+  test("the generics script attribute wins over @generics/@template JSDoc tags, flagged as syntax-skipped", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script lang="ts" generics="Row extends DataTableRow = DataTableRow">
+        /**
+         * @generics {Header extends string = string} Header
+         */
+        interface DataTableRow {
+          id: string | number;
+        }
+
+        let { row }: { row: Row } = $props();
+      </script>
+    `;
+
+    const { diagnostics, generics } = parser.parseSvelteComponent(source, parseContext);
+    const conflictDiagnostic = diagnostics?.find((d) => d.kind === "syntax-skipped" && d.name === "generics");
+
+    expect(generics).toEqual(["Row", "Row extends DataTableRow = DataTableRow"]);
+    expect(conflictDiagnostic).toBeDefined();
+    expect(conflictDiagnostic?.message).toContain("JSDoc declaration was ignored");
+  });
 });
 
 describe("diagnostics helpers", () => {

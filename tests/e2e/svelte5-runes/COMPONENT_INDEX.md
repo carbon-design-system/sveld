@@ -3,6 +3,7 @@
 ## Components
 
 - [`RunesButton`](#runesbutton)
+- [`RunesGenericList`](#runesgenericlist)
 
 ---
 
@@ -22,6 +23,23 @@
 | Slot name | Default | Props                           | Fallback | Description |
 | :-------- | :------ | :------------------------------ | :------- | :---------- |
 | --        | Yes     | <code>{ value: string } </code> | --       | --          |
+
+### Events
+
+None.
+
+## `RunesGenericList`
+
+### Props
+
+| Prop name | Required | Kind             | Reactive | Binding | Type                               | Default value | Description |
+| :-------- | :------- | :--------------- | :------- | :------ | :--------------------------------- | :------------ | :---------- |
+| items     | Yes      | <code>let</code> | No       | --      | <code>Item[]</code>                | --            | --          |
+| row       | Yes      | <code>let</code> | No       | --      | <code>Snippet<[item: Item]></code> | --            | --          |
+
+### Slots
+
+None.
 
 ### Events
 

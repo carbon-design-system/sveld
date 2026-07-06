@@ -1405,4 +1405,18 @@ describe("ComponentParser", () => {
 
     warn.mockRestore();
   });
+
+  test('ignores the generics script attribute without lang="ts" and reports syntax-skipped', () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script generics="Row extends DataTableRow = DataTableRow">
+        export let row;
+      </script>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+
+    expect(result.generics).toBeNull();
+    expect(result.diagnostics).toContainEqual(expect.objectContaining({ kind: "syntax-skipped", name: "generics" }));
+  });
 });
