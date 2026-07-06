@@ -40,7 +40,8 @@ describe("getSvelteEntry", () => {
     const result = getSvelteEntry("src/NonExistent.svelte");
 
     expect(result).toBeNull();
-    expect(console.log).toHaveBeenCalledWith(expect.stringContaining("Invalid entry point"));
+    expect(console.error).toHaveBeenCalledWith(expect.stringContaining("Invalid entry point"));
+    expect(console.log).not.toHaveBeenCalled();
   });
 
   test("returns svelte field from package.json if no entry point provided", () => {
@@ -60,7 +61,8 @@ describe("getSvelteEntry", () => {
     const result = getSvelteEntry();
 
     expect(result).toBeNull();
-    expect(console.log).toHaveBeenCalledWith(expect.stringContaining("Could not determine an entry point"));
+    expect(console.error).toHaveBeenCalledWith(expect.stringContaining("Could not determine an entry point"));
+    expect(console.log).not.toHaveBeenCalled();
   });
 
   test("returns null if package.json does not exist", () => {
@@ -69,7 +71,8 @@ describe("getSvelteEntry", () => {
     const result = getSvelteEntry();
 
     expect(result).toBeNull();
-    expect(console.log).toHaveBeenCalledWith(expect.stringContaining("Could not locate a package.json file"));
+    expect(console.error).toHaveBeenCalledWith(expect.stringContaining("Could not locate a package.json file"));
+    expect(console.log).not.toHaveBeenCalled();
   });
 
   test("handles malformed package.json", () => {
@@ -84,7 +87,7 @@ describe("getSvelteEntry", () => {
     const result = getSvelteEntry("");
 
     expect(result).toBeNull();
-    expect(console.log).toHaveBeenCalledWith(expect.stringContaining("Could not locate a package.json file."));
+    expect(console.error).toHaveBeenCalledWith(expect.stringContaining("Could not locate a package.json file."));
   });
 
   test("handles undefined svelte field in package.json", () => {
@@ -93,6 +96,6 @@ describe("getSvelteEntry", () => {
 
     const result = getSvelteEntry();
     expect(result).toBeNull();
-    expect(console.log).toHaveBeenCalledWith(expect.stringContaining("Could not determine an entry point"));
+    expect(console.error).toHaveBeenCalledWith(expect.stringContaining("Could not determine an entry point"));
   });
 });

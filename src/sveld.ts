@@ -47,7 +47,11 @@ export async function sveld(opts?: SveldOptions): Promise<SveldResult> {
   const { input: inputOverride, strict, reportDiagnostics, ...runtimeOpts } = opts ?? {};
   const fileConfig = await loadConfig();
   const input = getSvelteEntry(inputOverride ?? fileConfig.entry);
-  if (input === null) return { diagnostics: [] };
+  if (input === null) {
+    throw new Error(
+      'sveld: could not resolve a Svelte entry point. Set package.json#svelte, or pass the "input" option.',
+    );
+  }
   const merged = mergeConfig<PluginSveldOptions>(fileConfig, runtimeOpts, { entry: input });
   const result = await generateBundle(input, merged.glob === true, toGenerateBundleOptions(merged));
   writeOutput(result, merged, input);

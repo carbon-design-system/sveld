@@ -399,6 +399,8 @@ Generate documentation in JSON and/or Markdown formats using the following flags
 npx sveld --json --markdown
 ```
 
+If no entry point can be resolved (no `package.json#svelte` field and no `--entry`), the CLI exits `1` and prints the reason to `stderr`. If `src/index.js` happens to exist relative to your working directory, sveld falls back to it and prints a one-line note asking you to set `package.json#svelte` (or `--entry`) instead of relying on the fallback.
+
 ### CI: API-drift checks (`--check`)
 
 `--check` diffs the parsed component API against a committed `COMPONENT_API.json` snapshot, assigns a semver bump to each change, and exits `1` when it finds a breaking change.
@@ -431,7 +433,7 @@ The CLI exits non-zero on any fatal error (an unreadable entry, a config file th
 
 You can also call `sveld` from Node.js. See [Requirements](#requirements) for supported Node versions and the ESM-only constraint.
 
-If no `input` is specified, `sveld` infers the entry point based on the `package.json#svelte` field.
+If no `input` is specified, `sveld` infers the entry point based on the `package.json#svelte` field. If no entry point can be resolved, `sveld()` throws with an actionable message (previously it resolved to `{ diagnostics: [] }` and generated nothing).
 
 ```js
 import { sveld } from "sveld";

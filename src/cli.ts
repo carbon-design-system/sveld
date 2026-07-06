@@ -1,8 +1,15 @@
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+import { asSvelteEntryPoint } from "./brands";
 import { type CheckResult, formatCheckReport, runCheck } from "./check";
 import { formatDiagnosticsSummary } from "./diagnostics";
 import { getSvelteEntry } from "./get-svelte-entry";
 import { loadConfig, mergeConfig } from "./load-config";
+import { normalizeSeparators } from "./path";
 import { generateBundle, type PluginSveldOptions, toGenerateBundleOptions, writeOutput } from "./plugin";
+
+/** Relative fallback entry used only when entry resolution otherwise fails. */
+const FALLBACK_ENTRY = "src/index.js";
 
 /** CLI options layered on top of the shared plugin options. */
 interface CliOptions extends PluginSveldOptions {
@@ -91,7 +98,21 @@ export async function cli(process: NodeJS.Process) {
   const fileConfig = await loadConfig();
   const options = mergeConfig<CliOptions>(fileConfig, cliOptions);
 
-  const input = getSvelteEntry(options.entry) || "src/index.js";
+  const resolvedEntry = getSvelteEntry(options.entry);
+  let input: string;
+
+  if (resolvedEntry !== null) {
+    input = resolvedEntry;
+  } else if (existsSync(join(process.cwd(), FALLBACK_ENTRY))) {
+    console.error(
+      `sveld: could not resolve an entry point; falling back to "${FALLBACK_ENTRY}". Set package.json#svelte (or pass --entry) to avoid relying on this fallback.`,
+    );
+    input = asSvelteEntryPoint(normalizeSeparators(FALLBACK_ENTRY));
+  } else {
+    process.exitCode = 1;
+    return;
+  }
+
   const result = await generateBundle(input, options.glob === true, toGenerateBundleOptions(options));
 
   // Read the committed snapshot before `writeOutput` can overwrite it.
