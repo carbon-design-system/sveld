@@ -136,6 +136,8 @@ export default class Button extends SvelteComponentTyped<
 - [Available Options](#available-options)
 - [Documenting Entry Exports](#documenting-entry-exports)
 - [JSON Output](#json-output)
+- [Custom Elements Manifest](#custom-elements-manifest)
+  - [Consuming the manifest](#consuming-the-manifest)
 - [API Reference](#api-reference)
   - [reactive](#reactive)
   - [binding](#binding)
@@ -545,6 +547,8 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
 - **`jsonOptions`** (object, optional): Options for JSON output.
 - **`markdown`** (boolean, optional): Generate component documentation in Markdown format.
 - **`markdownOptions`** (object, optional): Options for Markdown output.
+- **`customElements`** (boolean, optional): Generate a [Custom Elements Manifest](#custom-elements-manifest) (`custom-elements.json`). Also available as the `--custom-elements` CLI flag.
+- **`customElementsOptions`** (object, optional): Options for Custom Elements Manifest output, including `outFile`.
 - **`watch`** (boolean, optional, default: `false`): Regenerate output incrementally when `.svelte` source changes during `vite dev` / `vite build --watch`. Only the changed component and the components that depend on it via [`@extendProps`](#extendprops) / `@extends` are re-parsed, rather than rebuilding every component. Without this option, the plugin only runs during `vite build`.
 - **`failFast`** (boolean, optional, default: `false`): Abort the entire run when a single component fails to parse. By default, parse failures are collected as diagnostics (and reported to `stderr`) so the remaining components still emit their output. Also available as the `--fail-fast` CLI flag.
 - **`resolveTypes`** (boolean, optional, default: `false`): Load the TypeScript program to expand opaque imported whole-object `$props()` types into JSON. See [Opt-in semantic resolution](#opt-in-semantic-resolution-resolvetypes).
@@ -649,6 +653,7 @@ interface ComponentDocApi {
   componentComment?: string;
   componentCommentSource?: SourceRange;
   contexts?: ComponentContext[];
+  customElementTag?: string;
 }
 
 interface ComponentProp {
@@ -714,6 +719,47 @@ Prop metadata is additive and keeps the older public fields:
 - `typeSource` identifies the conservative source of the emitted `type`: TypeScript annotation, JSDoc, initializer/default inference, other parser inference, or unknown fallback.
 - `value` remains the raw default expression string. `defaultValue` adds structured metadata with the same raw expression, a coarse `kind`, and a parsed `value` only for JSON-safe literals, arrays, and plain objects. `sveld` does not evaluate arbitrary code.
 - `bindable: true` is emitted only for props explicitly declared with Svelte 5 `$bindable(...)`. Missing `bindable` should be treated as false.
+
+## Custom Elements Manifest
+
+Set `customElements: true` to emit a [Custom Elements Manifest](https://github.com/webcomponents/custom-elements-manifest) (`custom-elements.json`, `schemaVersion: "1.0.0"`). This is the interchange format the web-components ecosystem standardized on: Storybook autodocs, VS Code/JetBrains HTML data, and other CEM-aware tooling can all read it directly.
+
+```diff
+sveld({
++  customElements: true,
+})
+```
+
+- **`customElements`** (boolean, optional): Generate `custom-elements.json`.
+- **`customElementsOptions.outFile`** (string, optional, default: `"custom-elements.json"`): Override the output path.
+- Also available as the `--custom-elements` CLI flag.
+
+Each exported component becomes one `javascript-module` with a class declaration:
+
+- **Members** — every prop becomes a `ClassField` (`name`, `type.text`, `default`, `description`, `deprecated`).
+- **Attributes** — derived conservatively from props: only props with a bare primitive type (`string`, `number`, or `boolean`) become attributes, using the same default name Svelte's custom-element runtime uses (`prop.toLowerCase()`, unless the tool's own `attribute` override applies). Props whose lowercased name collides with another prop are dropped from `attributes` on both sides, since which one wins at runtime is ambiguous. Complex types (arrays, objects, unions, custom types) never become attributes.
+- **Events** — dispatched events (`createEventDispatcher()`, and `$host().dispatchEvent(...)` from inside a custom element) become `{ name, type: { text: "CustomEvent<...>" } }`. Forwarded (`on:click`) events are left out, since they aren't dispatched by the component's own class.
+- **Slots** — named and default slots, with descriptions. The default slot's `name` is `""`, matching the CEM convention.
+
+When a component sets `<svelte:options customElement="x-foo" />` (or the object form, `<svelte:options customElement={{ tag: "x-foo" }} />`), its declaration gets `tagName: "x-foo"` and `customElement: true`, and the module's `exports` include a `custom-element-definition` export alongside the plain `js` export.
+
+Components without `customElement` still emit a plain class declaration (no `tagName`/`customElement`) — useful for documenting the class shape even before it's compiled as a custom element, but the manifest is most useful for `customElement`-compiled builds, where downstream tooling can resolve `tagName`, `attributes`, and `events` for actual custom-element usage.
+
+### Consuming the manifest
+
+Most tools discover `custom-elements.json` through a `customElements` field in `package.json`, pointing at the generated file:
+
+```json
+{
+  "customElements": "custom-elements.json"
+}
+```
+
+With that in place:
+
+- The [VS Code custom elements extension](https://marketplace.visualstudio.com/items?itemName=BendingSpoons.vscode-custom-elements) and JetBrains IDEs pick it up automatically, giving tag name, attribute, and slot completion/hover in HTML and Svelte templates.
+- [Storybook](https://storybook.js.org/docs/api/doc-blocks/doc-block-argtypes#extracting-argtypes) for web components reads the manifest to auto-generate `argTypes` (controls, docs tables) for `customElement`-compiled components, once you point it at the file (e.g. `setCustomElementsManifest` from `@storybook/web-components`, or `customElements: "custom-elements.json"` in `.storybook/main.js`).
+- Any other tool built against the [Custom Elements Manifest spec](https://github.com/webcomponents/custom-elements-manifest) (API viewers, doc generators, linters) can read the file directly without sveld-specific integration.
 
 ## API Reference
 

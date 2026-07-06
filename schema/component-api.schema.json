@@ -133,6 +133,10 @@
         "contexts": {
           "type": "array",
           "items": { "$ref": "#/$defs/context" }
+        },
+        "customElementTag": {
+          "type": "string",
+          "description": "Custom-element tag name from `<svelte:options customElement=\"x-foo\" />` (or the object form's `tag`), when present."
         }
       }
     },

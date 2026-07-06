@@ -41,6 +41,8 @@ function parseCliFlag(arg: string): Partial<CliOptions> {
     case "json":
     case "markdown":
       return { [flag]: value === true || value === "true" };
+    case "custom-elements":
+      return { customElements: value === true || value === "true" };
     case "strict":
       return { strict: value === true || value === "true" };
     case "report-diagnostics":

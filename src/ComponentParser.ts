@@ -660,6 +660,8 @@ export interface ParsedComponent {
   componentCommentSource?: SourceRange;
   /** Contexts created with `setContext` in the component */
   contexts?: ComponentContext[];
+  /** Custom-element tag name from `<svelte:options customElement="x-foo" />` (or the object form's `tag`), when present */
+  customElementTag?: string;
   /**
    * Type guesses from this parse (unknown props, `any` contexts, orphan `@event` tags).
    * Set on every {@link ComponentParser.parseSvelteComponent} call.
@@ -2284,6 +2286,7 @@ export default class ComponentParser {
       componentComment: this.ctx.componentComment,
       componentCommentSource: this.ctx.componentCommentSource,
       contexts: contextsArray,
+      customElementTag: this.ctx.customElementTag,
       diagnostics: this.ctx.diagnosticRecords.slice(),
     };
 

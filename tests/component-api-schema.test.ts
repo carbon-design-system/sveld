@@ -81,6 +81,7 @@ describe("component API JSON schema", () => {
         "componentComment",
         "componentCommentSource",
         "contexts",
+        "customElementTag",
       ]),
     );
   });
