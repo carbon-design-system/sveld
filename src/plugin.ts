@@ -8,9 +8,10 @@ import {
 } from "./bundle";
 import { getSvelteEntry } from "./get-svelte-entry";
 import { createSveldBundle, type SveldBundle } from "./watch";
-// Side-effect import: registers the built-in "json"/"markdown"/"types" writers.
+// Side-effect import: registers the built-in "json"/"markdown"/"types"/"custom-elements" writers.
 import "./writer/built-in-writers";
 import { getWriter } from "./writer/registry";
+import type { WriteCustomElementsOptions } from "./writer/writer-custom-elements";
 import type { WriteJsonOptions } from "./writer/writer-json";
 import type { WriteMarkdownOptions } from "./writer/writer-markdown";
 import type { WriteTsDefinitionsOptions } from "./writer/writer-ts-definitions";
@@ -49,6 +50,9 @@ export interface PluginSveldOptions extends Pick<GenerateBundleOptions, "resolve
   jsonOptions?: Partial<Omit<WriteJsonOptions, "inputDir">>;
   markdown?: boolean;
   markdownOptions?: Partial<WriteMarkdownOptions>;
+  /** Generate a Custom Elements Manifest (`custom-elements.json`, schemaVersion "1.0.0"). */
+  customElements?: boolean;
+  customElementsOptions?: Partial<Omit<WriteCustomElementsOptions, "inputDir">>;
   /**
    * Run additional, userland-registered writers (via `registerWriter` from
    * "sveld") beyond the built-in `json`/`markdown`/`types` outputs. Keyed by
@@ -159,7 +163,11 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
 }
 
 /** Looks up a built-in writer by name; throws if `built-in-writers` never registered it. */
-function runBuiltInWriter(name: "types" | "json" | "markdown", components: ComponentDocs, options: unknown) {
+function runBuiltInWriter(
+  name: "types" | "json" | "markdown" | "custom-elements",
+  components: ComponentDocs,
+  options: unknown,
+) {
   const writer = getWriter(name);
   if (!writer) throw new Error(`sveld: built-in writer "${name}" is not registered.`);
   return writer.write(components, options);
@@ -230,6 +238,18 @@ export async function writeOutput(result: GenerateBundleResult, opts: PluginSvel
       ...opts?.markdownOptions,
       entryExports: result.entryExports,
     } satisfies WriteMarkdownOptions);
+  }
+
+  if (opts?.customElements) {
+    /**
+     * Use components (exported only) for the Custom Elements Manifest, matching
+     * the JSON/Markdown outputs' public-API-surface convention.
+     */
+    await runBuiltInWriter("custom-elements", result.components, {
+      outFile: "custom-elements.json",
+      ...opts?.customElementsOptions,
+      inputDir,
+    } satisfies WriteCustomElementsOptions);
   }
 
   const additionalWrites = Object.entries(opts?.additionalWriters ?? {}).map(([name, writerOptions]) => {

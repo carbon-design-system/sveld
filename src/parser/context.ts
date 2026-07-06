@@ -56,6 +56,9 @@ export interface ParserContext {
   /** Component extension information (e.g., `extends` attribute) */
   extends?: Extends;
 
+  /** Custom-element tag name from `<svelte:options customElement="x-foo" />` (or the object form's `tag`), when present */
+  customElementTag?: string;
+
   /** Component-level description extracted from `@component` HTML comment */
   componentComment?: string;
 
@@ -183,6 +186,7 @@ export function createParserContext(): ParserContext {
     // metadata
     rest_props: undefined,
     extends: undefined,
+    customElementTag: undefined,
     componentComment: undefined,
     componentCommentSource: undefined,
     generics: null,

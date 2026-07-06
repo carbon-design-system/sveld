@@ -39,6 +39,7 @@ Options:
   --types               Generate TypeScript definitions (default: true)
   --json                Generate component documentation in JSON format
   --markdown            Generate component documentation in Markdown format
+  --custom-elements     Generate a Custom Elements Manifest (custom-elements.json)
   --fail-fast           Abort the run when a single component fails to parse
   --cache[=<path>]      Persist parsed output and skip re-parsing unchanged files (default path: node_modules/.cache/sveld/parse-cache.json)
   --resolve-types       Expand opaque imported $props() types into JSON (alias: --resolveTypes, deprecated)
@@ -83,6 +84,8 @@ function parseCliFlag(arg: string): CliFlagResult {
     case "json":
     case "markdown":
       return { kind: "option", option: { [flag]: value === true || value === "true" } };
+    case "custom-elements":
+      return { kind: "option", option: { customElements: value === true || value === "true" } };
     case "strict":
       return { kind: "option", option: { strict: value === true || value === "true" } };
     case "report-diagnostics":

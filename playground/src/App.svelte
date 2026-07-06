@@ -11,6 +11,7 @@
     Tabs,
   } from "carbon-components-svelte";
   import Code from "carbon-icons-svelte/lib/Code.svelte";
+  import Cube from "carbon-icons-svelte/lib/Cube.svelte";
   import Json from "carbon-icons-svelte/lib/Json.svelte";
   import TextCreation from "carbon-icons-svelte/lib/TextCreation.svelte";
   import { type Component, onMount } from "svelte";
@@ -31,6 +32,7 @@
   let tabTypeScript: Component<TabProps> | undefined;
   let tabJson: Component<TabProps> | undefined;
   let tabMarkdown: Component<TabProps> | undefined;
+  let tabCustomElements: Component<TabProps> | undefined;
 
   onMount(() => {
     import("./CodeEditor.svelte").then((importee) => {
@@ -47,6 +49,10 @@
 
     import("./TabMarkdown.svelte").then((importee) => {
       tabMarkdown = importee.default;
+    });
+
+    import("./TabCustomElements.svelte").then((importee) => {
+      tabCustomElements = importee.default;
     });
   });
 
@@ -127,6 +133,10 @@
             label="Markdown"
             icon={TextCreation}
           />
+          <Tab
+            label="Custom Elements"
+            icon={Cube}
+          />
           <div
             class="tab-content-slot"
             slot="content"
@@ -160,6 +170,17 @@
               {#if tabMarkdown}
                 <svelte:component
                   this={tabMarkdown}
+                  {parsed_component}
+                  {moduleName}
+                />
+              {:else}
+                <InlineLoading style="margin: var(--cds-spacing-05)" />
+              {/if}
+            </TabContent>
+            <TabContent>
+              {#if tabCustomElements}
+                <svelte:component
+                  this={tabCustomElements}
                   {parsed_component}
                   {moduleName}
                 />

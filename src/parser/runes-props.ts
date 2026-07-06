@@ -189,9 +189,11 @@ export function buildRunesPropTypeMetadata(parser: ComponentParser, ctx: ParserC
       };
     };
     module?: ModernScriptNode;
+    options?: { customElement?: { tag?: string } } | null;
   };
 
   ctx.scriptLanguage = parser.resolveScriptLanguage(modernParsed);
+  ctx.customElementTag = modernParsed.options?.customElement?.tag;
   const body = modernParsed.instance?.content?.body ?? [];
 
   for (const statement of body) {

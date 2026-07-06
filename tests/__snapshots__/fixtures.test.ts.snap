@@ -122,6 +122,86 @@ exports[`fixtures (JSON) "svg-props/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "runes-render-skipped-argument/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 10,
+      "column": 0
+    }
+  },
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "title",
+      "kind": "let",
+      "typeSource": "unknown",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 2,
+          "column": 8
+        },
+        "end": {
+          "line": 2,
+          "column": 13
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "runes-render-skipped-argument/input.svelte",
+      "kind": "syntax-skipped",
+      "name": "children",
+      "message": "{@render children(...)} argument is not a plain object literal; the render call was not mapped to slot metadata.",
+      "source": {
+        "start": {
+          "line": 9,
+          "column": 12
+        },
+        "end": {
+          "line": 9,
+          "column": 42
+        }
+      }
+    },
+    {
+      "component": "runes-render-skipped-argument/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "title",
+      "message": "Prop \\"title\\" type could not be inferred; falling back to \\"any\\".",
+      "source": {
+        "start": {
+          "line": 2,
+          "column": 8
+        },
+        "end": {
+          "line": 2,
+          "column": 13
+        }
+      }
+    }
+  ]
+}
+"
+`;
+
 exports[`fixtures (JSON) "slot-event-template-prop-reference/input.svelte" 1`] = `
 "{
   "source": {
@@ -2504,6 +2584,64 @@ exports[`fixtures (JSON) "template-tag-multiple/input.svelte" 1`] = `
     "Row extends DataTableRow = DataTableRow, Header extends DataTableRow = DataTableRow"
   ],
   "contexts": [],
+  "diagnostics": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "context-generics-dollar-name/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 20,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>",
+      "source": {
+        "start": {
+          "line": 19,
+          "column": 5
+        },
+        "end": {
+          "line": 19,
+          "column": 13
+        }
+      }
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": [
+    "Value$Type",
+    "Value$Type extends string"
+  ],
+  "contexts": [
+    {
+      "key": "Demo",
+      "typeName": "DemoContext",
+      "properties": [
+        {
+          "name": "value",
+          "type": "Value$Type",
+          "description": "",
+          "optional": false
+        }
+      ]
+    }
+  ],
   "diagnostics": []
 }
 "
@@ -14918,6 +15056,7 @@ exports[`fixtures (JSON) "runes-host-custom-element/input.svelte" 1`] = `
   "typedefs": [],
   "generics": null,
   "contexts": [],
+  "customElementTag": "my-widget",
   "diagnostics": [
     {
       "component": "runes-host-custom-element/input.svelte",
@@ -15610,6 +15749,78 @@ exports[`fixtures (JSON) "slot-jsdoc-template-not-passthrough/input.svelte" 1`] 
   "typedefs": [],
   "generics": null,
   "contexts": [],
+  "diagnostics": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "custom-element-options-tag/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 11,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "label",
+      "kind": "let",
+      "description": "The badge label.",
+      "type": "string",
+      "typeSource": "default",
+      "value": "\\"\\"",
+      "defaultValue": {
+        "raw": "\\"\\"",
+        "kind": "literal",
+        "value": ""
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 5,
+          "column": 2
+        },
+        "end": {
+          "line": 5,
+          "column": 24
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>",
+      "source": {
+        "start": {
+          "line": 10,
+          "column": 0
+        },
+        "end": {
+          "line": 10,
+          "column": 8
+        }
+      }
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "customElementTag": "x-badge",
   "diagnostics": []
 }
 "
@@ -17185,6 +17396,24 @@ export default class SvgProps extends SvelteComponentTyped<SvgPropsProps, Record
 "
 `;
 
+exports[`fixtures (TypeScript) "runes-render-skipped-argument/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type RunesRenderSkippedArgumentProps = {
+  /**
+   * @default undefined
+   */
+  title: undefined;
+};
+
+export default class RunesRenderSkippedArgument extends SvelteComponentTyped<
+  RunesRenderSkippedArgumentProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "slot-event-template-prop-reference/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -17910,6 +18139,25 @@ export default class TemplateTagMultiple<
   TemplateTagMultipleProps<Row, Header>,
   Record<string, any>,
   { default: { headers: ReadonlyArray<DataTableHeader<Row, Header>>; rows: ReadonlyArray<Row> } }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "context-generics-dollar-name/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type DemoContext<Value$Type extends string> = {
+  value: Value$Type;
+};
+
+export type ContextGenericsDollarNameProps<Value$Type extends string> = {
+  children?: (this: void) => void;
+};
+
+export default class ContextGenericsDollarName<Value$Type extends string> extends SvelteComponentTyped<
+  ContextGenericsDollarNameProps<Value$Type>,
+  Record<string, any>,
+  { default: Record<string, never> }
 > {}
 "
 `;
@@ -21700,6 +21948,27 @@ export default class SlotJsdocTemplateNotPassthrough extends SvelteComponentType
 "
 `;
 
+exports[`fixtures (TypeScript) "custom-element-options-tag/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type CustomElementOptionsTagProps = {
+  /**
+   * The badge label.
+   * @default ""
+   */
+  label?: string;
+
+  children?: (this: void) => void;
+};
+
+export default class CustomElementOptionsTag extends SvelteComponentTyped<
+  CustomElementOptionsTagProps,
+  Record<string, any>,
+  { default: Record<string, never> }
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "svelte-element-dynamic/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 import type { HTMLAttributes } from "svelte/elements";
@@ -22274,181 +22543,6 @@ export default class SlotDescriptionHyphensInline extends SvelteComponentTyped<
     /** Row id maps to server-side UUID v4 (not v1-v3). */
     item: { id: string };
   }
-> {}
-"
-`;
-
-exports[`fixtures (JSON) "context-generics-dollar-name/input.svelte" 1`] = `
-"{
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 20,
-      "column": 0
-    }
-  },
-  "syntaxMode": "legacy",
-  "scriptLanguage": "js",
-  "props": [],
-  "moduleExports": [],
-  "slots": [
-    {
-      "name": null,
-      "default": true,
-      "slot_props": "Record<string, never>",
-      "source": {
-        "start": {
-          "line": 19,
-          "column": 5
-        },
-        "end": {
-          "line": 19,
-          "column": 13
-        }
-      }
-    }
-  ],
-  "events": [],
-  "typedefs": [],
-  "generics": [
-    "Value$Type",
-    "Value$Type extends string"
-  ],
-  "contexts": [
-    {
-      "key": "Demo",
-      "typeName": "DemoContext",
-      "properties": [
-        {
-          "name": "value",
-          "type": "Value$Type",
-          "description": "",
-          "optional": false
-        }
-      ]
-    }
-  ],
-  "diagnostics": []
-}
-"
-`;
-
-exports[`fixtures (TypeScript) "context-generics-dollar-name/input.svelte" 1`] = `
-"import { SvelteComponentTyped } from "svelte";
-
-export type DemoContext<Value$Type extends string> = {
-  value: Value$Type;
-};
-
-export type ContextGenericsDollarNameProps<Value$Type extends string> = {
-  children?: (this: void) => void;
-};
-
-export default class ContextGenericsDollarName<Value$Type extends string> extends SvelteComponentTyped<
-  ContextGenericsDollarNameProps<Value$Type>,
-  Record<string, any>,
-  { default: Record<string, never> }
-> {}
-"
-`;
-
-exports[`fixtures (JSON) "runes-render-skipped-argument/input.svelte" 1`] = `
-"{
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 10,
-      "column": 0
-    }
-  },
-  "syntaxMode": "runes",
-  "scriptLanguage": "js",
-  "props": [
-    {
-      "name": "title",
-      "kind": "let",
-      "typeSource": "unknown",
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": true,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 2,
-          "column": 8
-        },
-        "end": {
-          "line": 2,
-          "column": 13
-        }
-      }
-    }
-  ],
-  "moduleExports": [],
-  "slots": [],
-  "events": [],
-  "typedefs": [],
-  "generics": null,
-  "contexts": [],
-  "diagnostics": [
-    {
-      "component": "runes-render-skipped-argument/input.svelte",
-      "kind": "syntax-skipped",
-      "name": "children",
-      "message": "{@render children(...)} argument is not a plain object literal; the render call was not mapped to slot metadata.",
-      "source": {
-        "start": {
-          "line": 9,
-          "column": 12
-        },
-        "end": {
-          "line": 9,
-          "column": 42
-        }
-      }
-    },
-    {
-      "component": "runes-render-skipped-argument/input.svelte",
-      "kind": "prop-unknown-type",
-      "name": "title",
-      "message": "Prop \\"title\\" type could not be inferred; falling back to \\"any\\".",
-      "source": {
-        "start": {
-          "line": 2,
-          "column": 8
-        },
-        "end": {
-          "line": 2,
-          "column": 13
-        }
-      }
-    }
-  ]
-}
-"
-`;
-
-exports[`fixtures (TypeScript) "runes-render-skipped-argument/input.svelte" 1`] = `
-"import { SvelteComponentTyped } from "svelte";
-
-export type RunesRenderSkippedArgumentProps = {
-  /**
-   * @default undefined
-   */
-  title: undefined;
-};
-
-export default class RunesRenderSkippedArgument extends SvelteComponentTyped<
-  RunesRenderSkippedArgumentProps,
-  Record<string, any>,
-  Record<string, never>
 > {}
 "
 `;
