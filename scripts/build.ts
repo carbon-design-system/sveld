@@ -27,7 +27,7 @@ async function buildProject() {
     // them so `svelte/compiler` (and `estree-walker`) ship inside `lib`.
     packages: "bundle",
     external: [
-      // Runtime dependency; avoids bundling css-tree/mdn-data which use
+      // Optional peer dependency; avoids bundling css-tree/mdn-data which use
       // createRequire with relative paths for JSON data files.
       "prettier",
     ],

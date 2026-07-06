@@ -415,6 +415,8 @@ bun i -D sveld
 yarn add -D sveld
 ```
 
+`prettier` is an optional peer dependency, used only to format emitted `.d.ts` and Markdown output. Install it alongside `sveld` for formatted output; without it, output is still valid but unformatted.
+
 ### Vite
 
 Import and add `sveld` as a plugin to your `vite.config.ts`. The plugin only runs during `vite build`, unless `watch: true` is set, in which case it also regenerates output during `vite dev`.
