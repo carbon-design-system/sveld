@@ -1,5 +1,6 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
+import pkg from "../package.json" with { type: "json" };
 import { asSvelteEntryPoint } from "./brands";
 import { type CheckResult, formatCheckReport, runCheck } from "./check";
 import { formatDiagnosticsSummary } from "./diagnostics";
@@ -26,44 +27,86 @@ interface CliOptions extends PluginSveldOptions {
   check?: boolean | string;
 }
 
-function parseCliFlag(arg: string): Partial<CliOptions> {
+const HELP_TEXT = `Usage: sveld [options]
+
+Generate TypeScript definitions and component documentation for a Svelte
+library. With no flags, only TypeScript definitions are generated for the
+entry resolved from package.json#svelte.
+
+Options:
+  --entry=<path>        Entry point to uncompiled Svelte source (default: package.json "svelte" field)
+  --glob                Analyze all *.svelte files instead of the entry barrel
+  --types               Generate TypeScript definitions (default: true)
+  --json                Generate component documentation in JSON format
+  --markdown            Generate component documentation in Markdown format
+  --fail-fast           Abort the run when a single component fails to parse
+  --cache[=<path>]      Persist parsed output and skip re-parsing unchanged files (default path: node_modules/.cache/sveld/parse-cache.json)
+  --resolve-types       Expand opaque imported $props() types into JSON (alias: --resolveTypes, deprecated)
+  --check-examples      Compile-check @example blocks against the TypeScript program (alias: --checkExamples, deprecated)
+  --report-diagnostics  Print unresolved-type diagnostics to stderr
+  --strict              Exit with code 1 when diagnostics exist (implies --report-diagnostics)
+  --check[=<path>]      Diff the parsed API against a committed snapshot; exit 1 on a breaking change (default path: COMPONENT_API.json)
+  --help                Print this help message and exit
+  --version             Print the installed sveld version and exit
+`;
+
+/** Discriminated result of parsing a single CLI argument, kept side-effect free. */
+type CliFlagResult =
+  | { kind: "option"; option: Partial<CliOptions> }
+  | { kind: "help" }
+  | { kind: "version" }
+  | { kind: "unknown"; arg: string };
+
+/** Maps deprecated camelCase flag spellings to their canonical kebab-case form. */
+const FLAG_ALIASES: Record<string, string> = {
+  resolveTypes: "resolve-types",
+  checkExamples: "check-examples",
+};
+
+function parseCliFlag(arg: string): CliFlagResult {
   if (!arg.startsWith("--")) {
-    return {};
+    return { kind: "unknown", arg };
   }
 
   const eqIndex = arg.indexOf("=");
-  const flag = eqIndex === -1 ? arg.slice(2) : arg.slice(2, eqIndex);
+  const rawFlag = eqIndex === -1 ? arg.slice(2) : arg.slice(2, eqIndex);
   const value = eqIndex === -1 ? true : arg.slice(eqIndex + 1);
+  const flag = FLAG_ALIASES[rawFlag] ?? rawFlag;
 
   switch (flag) {
+    case "help":
+      return { kind: "help" };
+    case "version":
+      return { kind: "version" };
     case "glob":
     case "types":
     case "json":
     case "markdown":
-      return { [flag]: value === true || value === "true" };
+      return { kind: "option", option: { [flag]: value === true || value === "true" } };
     case "strict":
-      return { strict: value === true || value === "true" };
+      return { kind: "option", option: { strict: value === true || value === "true" } };
     case "report-diagnostics":
-      return { reportDiagnostics: value === true || value === "true" };
-    case "resolveTypes":
-    case "checkExamples":
-      return { [flag]: value === true || value === "true" };
+      return { kind: "option", option: { reportDiagnostics: value === true || value === "true" } };
+    case "resolve-types":
+      return { kind: "option", option: { resolveTypes: value === true || value === "true" } };
+    case "check-examples":
+      return { kind: "option", option: { checkExamples: value === true || value === "true" } };
     case "fail-fast":
-      return { failFast: value === true || value === "true" };
+      return { kind: "option", option: { failFast: value === true || value === "true" } };
     case "entry":
-      return typeof value === "string" ? { entry: value } : {};
+      return typeof value === "string" ? { kind: "option", option: { entry: value } } : { kind: "option", option: {} };
     case "cache":
       // Bare `--cache` enables the default cache location; `--cache=<path>`
       // overrides it; `--cache=false` disables it.
-      if (value === "false") return { cache: false };
-      return { cache: typeof value === "string" ? value : true };
+      if (value === "false") return { kind: "option", option: { cache: false } };
+      return { kind: "option", option: { cache: typeof value === "string" ? value : true } };
     case "check":
       // Bare `--check` diffs against the default snapshot path;
       // `--check=<path>` overrides it; `--check=false` disables it.
-      if (value === "false") return { check: false };
-      return { check: typeof value === "string" ? value : true };
+      if (value === "false") return { kind: "option", option: { check: false } };
+      return { kind: "option", option: { check: typeof value === "string" ? value : true } };
     default:
-      return {};
+      return { kind: "unknown", arg };
   }
 }
 
@@ -73,14 +116,27 @@ function resolveCheckSnapshotFile(options: CliOptions): string {
   return options.jsonOptions?.outFile ?? "COMPONENT_API.json";
 }
 
-export function parseCliOptions(argv: string[]): CliOptions {
+/** Discriminated result of parsing the full argument list. */
+export type CliParseResult =
+  | { kind: "options"; options: CliOptions }
+  | { kind: "help" }
+  | { kind: "version" }
+  | { kind: "unknown"; arg: string };
+
+export function parseCliOptions(argv: string[]): CliParseResult {
   const options: CliOptions = {};
 
   for (const arg of argv) {
-    Object.assign(options, parseCliFlag(arg));
+    const result = parseCliFlag(arg);
+
+    if (result.kind !== "option") {
+      return result;
+    }
+
+    Object.assign(options, result.option);
   }
 
-  return options;
+  return { kind: "options", options };
 }
 
 /**
@@ -94,7 +150,26 @@ export function parseCliOptions(argv: string[]): CliOptions {
  * ```
  */
 export async function cli(process: NodeJS.Process) {
-  const cliOptions = parseCliOptions(process.argv.slice(2));
+  const parsed = parseCliOptions(process.argv.slice(2));
+
+  if (parsed.kind === "help") {
+    console.log(HELP_TEXT);
+    return;
+  }
+
+  if (parsed.kind === "version") {
+    console.log(pkg.version);
+    return;
+  }
+
+  if (parsed.kind === "unknown") {
+    console.error(`Unknown flag: ${parsed.arg}`);
+    console.error("Run sveld --help for a list of available flags.");
+    process.exitCode = 1;
+    return;
+  }
+
+  const cliOptions = parsed.options;
   const fileConfig = await loadConfig();
   const options = mergeConfig<CliOptions>(fileConfig, cliOptions);
 

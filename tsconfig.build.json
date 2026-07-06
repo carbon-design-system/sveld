@@ -6,7 +6,8 @@
     "outDir": "lib",
     "rootDir": "src",
     "target": "ESNext",
-    "module": "CommonJS"
+    "module": "ESNext",
+    "resolveJsonModule": true
   },
   "include": ["src/**/*"]
 }
