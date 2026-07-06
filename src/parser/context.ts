@@ -68,6 +68,13 @@ export interface ParserContext {
   /** Component generic type parameters (null if no generics) */
   generics: ComponentGenerics;
 
+  /**
+   * Raw `generics` script attribute value (with `lang="ts"` already validated),
+   * held until the end of parsing so it can override any `@generics`/`@template`
+   * JSDoc-derived {@link ParserContext.generics}.
+   */
+  scriptGenericsAttribute?: { value: string; source?: SourceRange };
+
   /** Diagnostics for the parse in progress. */
   readonly diagnosticRecords: SveldDiagnostic[];
 
@@ -190,6 +197,7 @@ export function createParserContext(): ParserContext {
     componentComment: undefined,
     componentCommentSource: undefined,
     generics: null,
+    scriptGenericsAttribute: undefined,
     diagnosticRecords: [],
     componentFilePath: "",
 

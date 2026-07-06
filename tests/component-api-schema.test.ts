@@ -189,7 +189,7 @@ describe("component API JSON schema", () => {
 
     expect(api.schemaVersion).toBe(1);
     expect(objectProperty(api, "generator")).toMatchObject({ name: "sveld" });
-    expect(api.total).toBe(1);
+    expect(api.total).toBe(2);
 
     const components = arrayProperty(api, "components");
     const runesButton = findObjectByProperty(components, "moduleName", "RunesButton");

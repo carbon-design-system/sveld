@@ -2524,14 +2524,15 @@ import Button from "./Button.svelte";
 
 ### `@template`
 
-Svelte supports defining generics via the [`generics` attribute](https://svelte.dev/docs/svelte/typescript) on the script tag, but this requires `lang="ts"`.
+Svelte supports defining generics via the [`generics` attribute](https://svelte.dev/docs/svelte/typescript) on the script tag, but this requires `lang="ts"`:
 
 ```svelte
-<!-- Requires lang="ts" -->
 <script lang="ts" generics="Row extends DataTableRow = any"></script>
 ```
 
-Because `sveld` targets JavaScript-only usage as a baseline, generics use the standard JSDoc `@template` tag. `@generics` is also supported as an alias.
+`sveld` reads the `generics` attribute directly, and it's the recommended way to declare generics for `lang="ts"` components. Because `sveld` also targets JavaScript-only usage as a baseline, plain JS (or JS-with-JSDoc) components instead use the standard JSDoc `@template` tag; `@generics` is also supported as an alias.
+
+**Precedence:** if a component declares generics both ways, the `generics` attribute wins — it's the compiler-checked source of truth — and the `@generics`/`@template` tag is reported as a `syntax-skipped` diagnostic rather than silently dropped. The attribute is invalid without `lang="ts"`; if present on a plain-JS script, sveld reports `syntax-skipped` and ignores it rather than guessing.
 
 **Signature:** Uses standard [JSDoc `@template` syntax](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html#template):
 

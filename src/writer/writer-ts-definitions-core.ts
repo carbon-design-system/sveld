@@ -1,4 +1,5 @@
 import { type DeprecatedValue, getParsedComponentTypeScriptMetadata } from "../ComponentParser";
+import { splitTopLevelCommas } from "../parser/generics";
 import type { ComponentDocApi } from "../plugin";
 
 const ANY_TYPE = "any";
@@ -136,30 +137,6 @@ export function getTypeDefs(def: Pick<ComponentDocApi, "typedefs">) {
 }
 
 /**
- * Splits a string on top-level commas, ignoring commas nested inside
- * `<>`, `()`, `[]`, or `{}`. Used to separate generic constraint declarations
- * that may themselves contain commas (e.g. `Value extends Record<string, any>`).
- */
-function splitTopLevel(value: string): string[] {
-  const parts: string[] = [];
-  let depth = 0;
-  let start = 0;
-
-  for (let i = 0; i < value.length; i++) {
-    const char = value[i];
-    if (char === "<" || char === "(" || char === "[" || char === "{") depth++;
-    else if (char === ">" || char === ")" || char === "]" || char === "}") depth--;
-    else if (char === "," && depth === 0) {
-      parts.push(value.slice(start, i));
-      start = i + 1;
-    }
-  }
-
-  parts.push(value.slice(start));
-  return parts;
-}
-
-/**
  * Returns whether a property type references a generic type parameter by name,
  * matching on word boundaries so `Value` doesn't match `ValueType`.
  */
@@ -208,7 +185,7 @@ export function getContextDefs(def: Pick<ComponentDocApi, "contexts" | "generics
       ? []
       : def.generics[0].split(",").map((name, index) => ({
           name: name.trim(),
-          constraint: (splitTopLevel(def.generics?.[1] ?? "")[index] ?? name).trim(),
+          constraint: (splitTopLevelCommas(def.generics?.[1] ?? "")[index] ?? name).trim(),
         }));
 
   return def.contexts
