@@ -97,7 +97,7 @@
     {
       "type": "MyTypedef[]",
       "name": "MyTypedefArray",
-      "ts": "type MyTypedefArray = MyTypedef[]"
+      "ts": "type MyTypedefArray = MyTypedef[];"
     }
   ],
   "generics": null,

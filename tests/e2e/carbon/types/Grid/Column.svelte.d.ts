@@ -80,10 +80,7 @@ type $Props = {
    */
   max?: ColumnBreakpoint;
 
-  children?: (
-    this: void,
-    ...args: [{ props: { class: string; [key: string]: any } }]
-  ) => void;
+  children?: (this: void, ...args: [{ props: { class: string; [key: string]: any } }]) => void;
 
   [key: `data-${string}`]: unknown;
 };

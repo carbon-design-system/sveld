@@ -50,10 +50,6 @@ export type TabsProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class Tabs extends SvelteComponentTyped<
   TabsProps,
-  {
-    change: CustomEvent<any>;
-    click: WindowEventMap["click"];
-    keypress: WindowEventMap["keypress"];
-  },
+  { change: CustomEvent<any>; click: WindowEventMap["click"]; keypress: WindowEventMap["keypress"] },
   { default: Record<string, never>; content: Record<string, never> }
 > {}

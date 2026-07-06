@@ -24,11 +24,11 @@ export type RequiredProps = {
    */
   prop3: boolean;
 
-  children?: (this: void, ...args: [{ prop: boolean; prop1: boolean | string; prop2: any; prop3: boolean }]) => void;
+  children?: (this: void, ...args: [{ prop: boolean, prop1: boolean | string, prop2: any, prop3: boolean }]) => void;
 };
 
 export default class Required extends SvelteComponentTyped<
   RequiredProps,
   Record<string, any>,
-  { default: { prop: boolean; prop1: boolean | string; prop2: any; prop3: boolean } }
+  { default: { prop: boolean, prop1: boolean | string, prop2: any, prop3: boolean } }
 > {}

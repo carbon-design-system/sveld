@@ -3,7 +3,8 @@ import { BACKTICK_REGEX, WHITESPACE_REGEX } from "./markdown-format-utils";
 export type AppendType = "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "quote" | "p" | "divider" | "raw";
 
 export interface TocLine {
-  array: number[];
+  /** Leading space count; 0 for the top-level (`h2`) entries the TOC currently lists. */
+  indent: number;
   raw: string;
 }
 
@@ -45,10 +46,7 @@ export class MarkdownWriterBaseImpl implements MarkdownWriterBase {
         this.sourceParts.push(`${"#".repeat(length)} ${raw}`);
 
         if (this.hasToC && type === "h2") {
-          this.toc.push({
-            array: Array.from({ length: (length - 1) * 2 }),
-            raw: raw ?? "",
-          });
+          this.toc.push({ indent: 0, raw: raw ?? "" });
         }
         break;
       }
@@ -82,8 +80,8 @@ export class MarkdownWriterBaseImpl implements MarkdownWriterBase {
     return source.replace(
       "<!-- __TOC__ -->",
       this.toc
-        .map(({ array, raw }) => {
-          return `${array.join(" ")} - [${raw}](#${raw.toLowerCase().replace(BACKTICK_REGEX, "").replace(WHITESPACE_REGEX, "-")})`;
+        .map(({ indent, raw }) => {
+          return `${" ".repeat(indent)}- [${raw}](#${raw.toLowerCase().replace(BACKTICK_REGEX, "").replace(WHITESPACE_REGEX, "-")})`;
         })
         .join("\n"),
     );

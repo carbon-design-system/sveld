@@ -59,7 +59,7 @@ The pipeline, end to end:
    - [`writer-ts-definitions.ts`](src/writer/writer-ts-definitions.ts) + [`writer-ts-definitions-core.ts`](src/writer/writer-ts-definitions-core.ts) → `.d.ts` extending `SvelteComponentTyped`.
    - [`writer-json.ts`](src/writer/writer-json.ts) → `COMPONENT_API.json` (carries a `schemaVersion`).
    - [`writer-markdown.ts`](src/writer/writer-markdown.ts) and the `WriterMarkdown` / `MarkdownWriterBase` / `markdown-*-utils` modules → Markdown.
-   - [`Writer.ts`](src/writer/Writer.ts) wraps Prettier to format emitted source.
+   - [`Writer.ts`](src/writer/Writer.ts) handles file I/O for emitted output; [`format-generated-ts.ts`](src/writer/format-generated-ts.ts) reindents generated `.d.ts` source (no external formatter dependency).
 
 Orchestration and entry surfaces:
 
@@ -134,7 +134,7 @@ A change to props, events, slots, or context handling should be exercised across
 
 ## Build
 
-[`scripts/build.ts`](scripts/build.ts) (`bun run build`) removes `lib/`, bundles `src/index.ts` with `Bun.build` (minified ESM, Node target), then runs `tsc --project tsconfig.build.json` to emit declarations. Dependencies are bundled into `lib/` _except_ `prettier` (kept external — it's an optional peer dependency, dynamically imported at runtime, and uses `createRequire` for its data files). `lib/` is gitignored and is never committed. `bun run build -w` rebuilds on changes under `src/`.
+[`scripts/build.ts`](scripts/build.ts) (`bun run build`) removes `lib/`, bundles `src/index.ts` with `Bun.build` (minified ESM, Node target), then runs `tsc --project tsconfig.build.json` to emit declarations. `lib/` is gitignored and is never committed. `bun run build -w` rebuilds on changes under `src/`.
 
 The published binary is [`cli.js`](cli.js), which dynamically imports the built `lib/index.js` and calls `cli`.
 

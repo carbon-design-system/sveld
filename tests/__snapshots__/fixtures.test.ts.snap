@@ -1,391 +1,5 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`fixtures (JSON) "runes-script-generics-attribute-multiple/input.svelte" 1`] = `
-"{
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 25,
-      "column": 0
-    }
-  },
-  "syntaxMode": "runes",
-  "scriptLanguage": "ts",
-  "props": [
-    {
-      "name": "headers",
-      "kind": "let",
-      "type": "ReadonlyArray<Row>",
-      "typeSource": "typescript",
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": true,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 11,
-          "column": 4
-        },
-        "end": {
-          "line": 11,
-          "column": 11
-        }
-      }
-    },
-    {
-      "name": "rows",
-      "kind": "let",
-      "type": "ReadonlyArray<Row>",
-      "typeSource": "typescript",
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": true,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 12,
-          "column": 4
-        },
-        "end": {
-          "line": 12,
-          "column": 8
-        }
-      }
-    },
-    {
-      "name": "key",
-      "kind": "let",
-      "type": "K",
-      "typeSource": "typescript",
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 13,
-          "column": 4
-        },
-        "end": {
-          "line": 13,
-          "column": 7
-        }
-      }
-    }
-  ],
-  "moduleExports": [],
-  "slots": [
-    {
-      "name": null,
-      "default": true,
-      "slot_props": "{ headers: ReadonlyArray<Row>, rows: ReadonlyArray<Row> }",
-      "source": {
-        "start": {
-          "line": 21,
-          "column": 0
-        },
-        "end": {
-          "line": 24,
-          "column": 2
-        }
-      }
-    }
-  ],
-  "events": [],
-  "typedefs": [],
-  "generics": [
-    "Row,K",
-    "Row extends DataTableRow = DataTableRow, K extends keyof Map<string, Row> = never"
-  ],
-  "contexts": [],
-  "diagnostics": []
-}
-"
-`;
-
-exports[`fixtures (JSON) "runes-script-generics-attribute/input.svelte" 1`] = `
-"{
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 23,
-      "column": 0
-    }
-  },
-  "syntaxMode": "runes",
-  "scriptLanguage": "ts",
-  "props": [
-    {
-      "name": "headers",
-      "kind": "let",
-      "type": "ReadonlyArray<Row>",
-      "typeSource": "typescript",
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": true,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 11,
-          "column": 4
-        },
-        "end": {
-          "line": 11,
-          "column": 11
-        }
-      }
-    },
-    {
-      "name": "rows",
-      "kind": "let",
-      "type": "ReadonlyArray<Row>",
-      "typeSource": "typescript",
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": true,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 12,
-          "column": 4
-        },
-        "end": {
-          "line": 12,
-          "column": 8
-        }
-      }
-    }
-  ],
-  "moduleExports": [],
-  "slots": [
-    {
-      "name": null,
-      "default": true,
-      "slot_props": "{ headers: ReadonlyArray<Row>, rows: ReadonlyArray<Row> }",
-      "source": {
-        "start": {
-          "line": 19,
-          "column": 0
-        },
-        "end": {
-          "line": 22,
-          "column": 2
-        }
-      }
-    }
-  ],
-  "events": [],
-  "typedefs": [],
-  "generics": [
-    "Row",
-    "Row extends DataTableRow = DataTableRow"
-  ],
-  "contexts": [],
-  "diagnostics": []
-}
-"
-`;
-
-exports[`fixtures (JSON) "runes-script-generics-attribute-jsdoc-conflict/input.svelte" 1`] = `
-"{
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 26,
-      "column": 0
-    }
-  },
-  "syntaxMode": "runes",
-  "scriptLanguage": "ts",
-  "props": [
-    {
-      "name": "headers",
-      "kind": "let",
-      "type": "ReadonlyArray<Row>",
-      "typeSource": "typescript",
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": true,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 14,
-          "column": 4
-        },
-        "end": {
-          "line": 14,
-          "column": 11
-        }
-      }
-    },
-    {
-      "name": "rows",
-      "kind": "let",
-      "type": "ReadonlyArray<Row>",
-      "typeSource": "typescript",
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": true,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 15,
-          "column": 4
-        },
-        "end": {
-          "line": 15,
-          "column": 8
-        }
-      }
-    }
-  ],
-  "moduleExports": [],
-  "slots": [
-    {
-      "name": null,
-      "default": true,
-      "slot_props": "{ headers: ReadonlyArray<Row>, rows: ReadonlyArray<Row> }",
-      "source": {
-        "start": {
-          "line": 22,
-          "column": 0
-        },
-        "end": {
-          "line": 25,
-          "column": 2
-        }
-      }
-    }
-  ],
-  "events": [],
-  "typedefs": [],
-  "generics": [
-    "Row",
-    "Row extends DataTableRow = DataTableRow"
-  ],
-  "contexts": [],
-  "diagnostics": [
-    {
-      "component": "runes-script-generics-attribute-jsdoc-conflict/input.svelte",
-      "kind": "syntax-skipped",
-      "name": "generics",
-      "message": "Both the \\"generics\\" script attribute and @generics/@template JSDoc tags declare component generics; the script attribute takes precedence and the JSDoc declaration was ignored.",
-      "source": {
-        "start": {
-          "line": 3,
-          "column": 2
-        },
-        "end": {
-          "line": 3,
-          "column": 52
-        }
-      }
-    }
-  ]
-}
-"
-`;
-
-exports[`fixtures (TypeScript) "runes-script-generics-attribute-multiple/input.svelte" 1`] = `
-"import { SvelteComponentTyped } from "svelte";
-
-interface DataTableRow {
-  id: string | number;
-  [key: string]: any;
-}
-
-type $Props<Row extends DataTableRow = DataTableRow, K extends keyof Map<string, Row> = never> = {
-  headers: ReadonlyArray<Row>;
-  rows: ReadonlyArray<Row>;
-  key?: K;
-} & {
-  children?: (this: void, ...args: [{ headers: ReadonlyArray<Row>; rows: ReadonlyArray<Row> }]) => void;
-};
-
-export type RunesScriptGenericsAttributeMultipleProps<
-  Row extends DataTableRow = DataTableRow,
-  K extends keyof Map<string, Row> = never,
-> = $Props<Row, K>;
-
-export default class RunesScriptGenericsAttributeMultiple<
-  Row extends DataTableRow = DataTableRow,
-  K extends keyof Map<string, Row> = never,
-> extends SvelteComponentTyped<
-  RunesScriptGenericsAttributeMultipleProps<Row, K>,
-  Record<string, any>,
-  { default: { headers: ReadonlyArray<Row>; rows: ReadonlyArray<Row> } }
-> {}
-"
-`;
-
-exports[`fixtures (TypeScript) "runes-script-generics-attribute/input.svelte" 1`] = `
-"import { SvelteComponentTyped } from "svelte";
-
-interface DataTableRow {
-  id: string | number;
-  [key: string]: any;
-}
-
-type $Props<Row extends DataTableRow = DataTableRow> = {
-  headers: ReadonlyArray<Row>;
-  rows: ReadonlyArray<Row>;
-} & {
-  children?: (this: void, ...args: [{ headers: ReadonlyArray<Row>; rows: ReadonlyArray<Row> }]) => void;
-};
-
-export type RunesScriptGenericsAttributeProps<Row extends DataTableRow = DataTableRow> = $Props<Row>;
-
-export default class RunesScriptGenericsAttribute<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
-  RunesScriptGenericsAttributeProps<Row>,
-  Record<string, any>,
-  { default: { headers: ReadonlyArray<Row>; rows: ReadonlyArray<Row> } }
-> {}
-"
-`;
-
-exports[`fixtures (TypeScript) "runes-script-generics-attribute-jsdoc-conflict/input.svelte" 1`] = `
-"import { SvelteComponentTyped } from "svelte";
-
-interface DataTableRow {
-  id: string | number;
-  [key: string]: any;
-}
-
-type $Props<Row extends DataTableRow = DataTableRow> = {
-  headers: ReadonlyArray<Row>;
-  rows: ReadonlyArray<Row>;
-} & {
-  children?: (this: void, ...args: [{ headers: ReadonlyArray<Row>; rows: ReadonlyArray<Row> }]) => void;
-};
-
-export type RunesScriptGenericsAttributeJsdocConflictProps<Row extends DataTableRow = DataTableRow> = $Props<Row>;
-
-export default class RunesScriptGenericsAttributeJsdocConflict<
-  Row extends DataTableRow = DataTableRow,
-> extends SvelteComponentTyped<
-  RunesScriptGenericsAttributeJsdocConflictProps<Row>,
-  Record<string, any>,
-  { default: { headers: ReadonlyArray<Row>; rows: ReadonlyArray<Row> } }
-> {}
-"
-`;
-
 exports[`fixtures (JSON) "runes-callback-annotated/input.svelte" 1`] = `
 "{
   "source": {
@@ -1349,12 +963,12 @@ exports[`fixtures (JSON) "generics-multiple/input.svelte" 1`] = `
     {
       "type": "Exclude<keyof Row, \\"id\\">",
       "name": "DataTableKey<Row>",
-      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \\"id\\">"
+      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \\"id\\">;"
     },
     {
       "type": "{ key: DataTableKey<Row>; value: Header; }",
-      "name": "DataTableHeader<Row=DataTableRow,Header=DataTableRow>",
-      "ts": "interface DataTableHeader<Row=DataTableRow,Header=DataTableRow> { key: DataTableKey<Row>; value: Header; }"
+      "name": "DataTableHeader<Row = DataTableRow, Header = DataTableRow>",
+      "ts": "interface DataTableHeader<Row = DataTableRow, Header = DataTableRow> { key: DataTableKey<Row>; value: Header; }"
     }
   ],
   "generics": [
@@ -1566,7 +1180,7 @@ exports[`fixtures (JSON) "typedef-utility-types/input.svelte" 1`] = `
       "type": "() => Options",
       "name": "Factory",
       "description": "A factory that produces an \`Options\` value.",
-      "ts": "type Factory = () => Options"
+      "ts": "type Factory = () => Options;"
     }
   ],
   "generics": null,
@@ -2226,7 +1840,7 @@ exports[`fixtures (JSON) "accessor-param-returns/input.svelte" 1`] = `
     {
       "type": "{\\n  /** Optional id for deduplication */\\n  id?: string;\\n  kind?: \\"error\\" | \\"info\\" | \\"success\\";\\n  title?: string;\\n}",
       "name": "NotificationData",
-      "ts": "type NotificationData = {\\n  /** Optional id for deduplication */\\n  id?: string;\\n  kind?: \\"error\\" | \\"info\\" | \\"success\\";\\n  title?: string;\\n}"
+      "ts": "type NotificationData = {\\n  /** Optional id for deduplication */\\n  id?: string;\\n  kind?: \\"error\\" | \\"info\\" | \\"success\\";\\n  title?: string;\\n};"
     }
   ],
   "generics": null,
@@ -2304,12 +1918,12 @@ exports[`fixtures (JSON) "typedef-description/input.svelte" 1`] = `
       "type": "0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13",
       "name": "StackScale",
       "description": "The stack scale maps to the following \`@carbon/layout\` values:\\n- 0  --> 0 (no gap)\\n- 1  --> 0.125rem\\n- 2  --> 0.25rem\\n- 3  --> 0.5rem\\n- 4  --> 0.75rem\\n- 5  --> 1rem\\n- 6  --> 1.5rem\\n- 7  --> 2rem\\n- 8  --> 2.5rem\\n- 9  --> 3rem\\n- 10 --> 4rem\\n- 11 --> 5rem\\n- 12 --> 6rem\\n- 13 --> 10rem",
-      "ts": "type StackScale = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13"
+      "ts": "type StackScale = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13;"
     },
     {
       "type": "StackScale | string",
       "name": "StackScaleOrString",
-      "ts": "type StackScaleOrString = StackScale | string"
+      "ts": "type StackScaleOrString = StackScale | string;"
     }
   ],
   "generics": null,
@@ -2437,13 +2051,13 @@ exports[`fixtures (JSON) "typedef-jsdoc-properties/input.svelte" 1`] = `
       "type": "{\\n  /** The user's full name. */\\n  name: string;\\n  /** The user's email address. */\\n  email: string;\\n  /** The user's age in years. */\\n  age: number;\\n  /** Optional nickname. */\\n  nickname?: string;\\n  /** Optional phone with default. @default 555-0000 */\\n  phone?: string;\\n}",
       "name": "User",
       "description": "Represents a user in the system.",
-      "ts": "type User = {\\n  /** The user's full name. */\\n  name: string;\\n  /** The user's email address. */\\n  email: string;\\n  /** The user's age in years. */\\n  age: number;\\n  /** Optional nickname. */\\n  nickname?: string;\\n  /** Optional phone with default. @default 555-0000 */\\n  phone?: string;\\n}"
+      "ts": "type User = {\\n  /** The user's full name. */\\n  name: string;\\n  /** The user's email address. */\\n  email: string;\\n  /** The user's age in years. */\\n  age: number;\\n  /** Optional nickname. */\\n  nickname?: string;\\n  /** Optional phone with default. @default 555-0000 */\\n  phone?: string;\\n};"
     },
     {
       "type": "{\\n  /** Whether the component is enabled. */\\n  enabled: boolean;\\n  /** The component theme. */\\n  theme: string;\\n  /** Optional timeout in milliseconds. @default 5000 */\\n  timeout?: number;\\n}",
       "name": "ComponentConfig",
       "description": "Configuration options for the component.",
-      "ts": "type ComponentConfig = {\\n  /** Whether the component is enabled. */\\n  enabled: boolean;\\n  /** The component theme. */\\n  theme: string;\\n  /** Optional timeout in milliseconds. @default 5000 */\\n  timeout?: number;\\n}"
+      "ts": "type ComponentConfig = {\\n  /** Whether the component is enabled. */\\n  enabled: boolean;\\n  /** The component theme. */\\n  theme: string;\\n  /** Optional timeout in milliseconds. @default 5000 */\\n  timeout?: number;\\n};"
     },
     {
       "type": "{ id: number; label: string; }",
@@ -2957,16 +2571,16 @@ exports[`fixtures (JSON) "template-tag-multiple/input.svelte" 1`] = `
     {
       "type": "Exclude<keyof Row, \\"id\\">",
       "name": "DataTableKey<Row>",
-      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \\"id\\">"
+      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \\"id\\">;"
     },
     {
       "type": "{ key: DataTableKey<Row>; value: Header; }",
-      "name": "DataTableHeader<Row=DataTableRow,Header=DataTableRow>",
-      "ts": "interface DataTableHeader<Row=DataTableRow,Header=DataTableRow> { key: DataTableKey<Row>; value: Header; }"
+      "name": "DataTableHeader<Row = DataTableRow, Header = DataTableRow>",
+      "ts": "interface DataTableHeader<Row = DataTableRow, Header = DataTableRow> { key: DataTableKey<Row>; value: Header; }"
     }
   ],
   "generics": [
-    "Row,Header",
+    "Row, Header",
     "Row extends DataTableRow = DataTableRow, Header extends DataTableRow = DataTableRow"
   ],
   "contexts": [],
@@ -3616,7 +3230,7 @@ exports[`fixtures (JSON) "jsdoc-type-params/input.svelte" 1`] = `
     {
       "type": "string",
       "name": "TreeNodeId",
-      "ts": "type TreeNodeId = string"
+      "ts": "type TreeNodeId = string;"
     }
   ],
   "generics": null,
@@ -3901,6 +3515,115 @@ exports[`fixtures (JSON) "context-const-key/input.svelte" 1`] = `
       ]
     }
   ],
+  "diagnostics": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "runes-script-generics-attribute-multiple/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 25,
+      "column": 0
+    }
+  },
+  "syntaxMode": "runes",
+  "scriptLanguage": "ts",
+  "props": [
+    {
+      "name": "headers",
+      "kind": "let",
+      "type": "ReadonlyArray<Row>",
+      "typeSource": "typescript",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 11,
+          "column": 4
+        },
+        "end": {
+          "line": 11,
+          "column": 11
+        }
+      }
+    },
+    {
+      "name": "rows",
+      "kind": "let",
+      "type": "ReadonlyArray<Row>",
+      "typeSource": "typescript",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 12,
+          "column": 4
+        },
+        "end": {
+          "line": 12,
+          "column": 8
+        }
+      }
+    },
+    {
+      "name": "key",
+      "kind": "let",
+      "type": "K",
+      "typeSource": "typescript",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 13,
+          "column": 4
+        },
+        "end": {
+          "line": 13,
+          "column": 7
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{ headers: ReadonlyArray<Row>, rows: ReadonlyArray<Row> }",
+      "source": {
+        "start": {
+          "line": 21,
+          "column": 0
+        },
+        "end": {
+          "line": 24,
+          "column": 2
+        }
+      }
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": [
+    "Row, K",
+    "Row extends DataTableRow = DataTableRow, K extends keyof Map<string, Row> = never"
+  ],
+  "contexts": [],
   "diagnostics": []
 }
 "
@@ -4528,13 +4251,13 @@ exports[`fixtures (JSON) "typedef-branded-types/input.svelte" 1`] = `
       "type": "string & { readonly __brand: \\"UserId\\" }",
       "name": "UserId",
       "description": "A branded string. At runtime it is a plain \`string\`, but the brand makes it\\na distinct domain type that other strings cannot be assigned to.",
-      "ts": "type UserId = string & { readonly __brand: \\"UserId\\" }"
+      "ts": "type UserId = string & { readonly __brand: \\"UserId\\" };"
     },
     {
       "type": "number & { readonly __brand: \\"Cents\\" }",
       "name": "Cents",
       "description": "A branded number representing a monetary amount in cents.",
-      "ts": "type Cents = number & { readonly __brand: \\"Cents\\" }"
+      "ts": "type Cents = number & { readonly __brand: \\"Cents\\" };"
     }
   ],
   "generics": null,
@@ -4825,12 +4548,12 @@ exports[`fixtures (JSON) "typedef-event-shared-block/input.svelte" 1`] = `
       "type": "\\"sm\\" | \\"md\\" | \\"lg\\" | \\"xlg\\" | \\"max\\"",
       "name": "BreakpointSize",
       "description": "Breakpoint size names",
-      "ts": "type BreakpointSize = \\"sm\\" | \\"md\\" | \\"lg\\" | \\"xlg\\" | \\"max\\""
+      "ts": "type BreakpointSize = \\"sm\\" | \\"md\\" | \\"lg\\" | \\"xlg\\" | \\"max\\";"
     },
     {
       "type": "320 | 672 | 1056 | 1312 | 1584",
       "name": "BreakpointValue",
-      "ts": "type BreakpointValue = 320 | 672 | 1056 | 1312 | 1584"
+      "ts": "type BreakpointValue = 320 | 672 | 1056 | 1312 | 1584;"
     }
   ],
   "generics": null,
@@ -4958,7 +4681,7 @@ exports[`fixtures (JSON) "typedef-discriminated-union-recursive/input.svelte" 1`
     {
       "type": "{ kind: \\"leaf\\"; value: number } | { kind: \\"node\\"; children: Tree[] }",
       "name": "Tree",
-      "ts": "type Tree = { kind: \\"leaf\\"; value: number } | { kind: \\"node\\"; children: Tree[] }"
+      "ts": "type Tree = { kind: \\"leaf\\"; value: number } | { kind: \\"node\\"; children: Tree[] };"
     }
   ],
   "generics": null,
@@ -5169,7 +4892,7 @@ exports[`fixtures (JSON) "theme-component/input.svelte" 1`] = `
     {
       "type": "\\"white\\" | \\"g10\\" | \\"g80\\" | \\"g90\\" | \\"g100\\"",
       "name": "CarbonTheme",
-      "ts": "type CarbonTheme = \\"white\\" | \\"g10\\" | \\"g80\\" | \\"g90\\" | \\"g100\\""
+      "ts": "type CarbonTheme = \\"white\\" | \\"g10\\" | \\"g80\\" | \\"g90\\" | \\"g100\\";"
     }
   ],
   "generics": null,
@@ -5396,18 +5119,18 @@ exports[`fixtures (JSON) "callback/input.svelte" 1`] = `
       "type": "(value: string, index: number) => void",
       "name": "OnChange",
       "description": "Callback fired when the value changes.",
-      "ts": "type OnChange = (value: string, index: number) => void"
+      "ts": "type OnChange = (value: string, index: number) => void;"
     },
     {
       "type": "(a: any, b: any) => number",
       "name": "Comparator",
-      "ts": "type Comparator = (a: any, b: any) => number"
+      "ts": "type Comparator = (a: any, b: any) => number;"
     },
     {
       "type": "() => void",
       "name": "OnClose",
       "description": "No-arg callback.",
-      "ts": "type OnClose = () => void"
+      "ts": "type OnClose = () => void;"
     }
   ],
   "generics": null,
@@ -6501,6 +6224,199 @@ exports[`fixtures (JSON) "unary-expression-defaults/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "runes-script-generics-attribute/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 23,
+      "column": 0
+    }
+  },
+  "syntaxMode": "runes",
+  "scriptLanguage": "ts",
+  "props": [
+    {
+      "name": "headers",
+      "kind": "let",
+      "type": "ReadonlyArray<Row>",
+      "typeSource": "typescript",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 11,
+          "column": 4
+        },
+        "end": {
+          "line": 11,
+          "column": 11
+        }
+      }
+    },
+    {
+      "name": "rows",
+      "kind": "let",
+      "type": "ReadonlyArray<Row>",
+      "typeSource": "typescript",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 12,
+          "column": 4
+        },
+        "end": {
+          "line": 12,
+          "column": 8
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{ headers: ReadonlyArray<Row>, rows: ReadonlyArray<Row> }",
+      "source": {
+        "start": {
+          "line": 19,
+          "column": 0
+        },
+        "end": {
+          "line": 22,
+          "column": 2
+        }
+      }
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": [
+    "Row",
+    "Row extends DataTableRow = DataTableRow"
+  ],
+  "contexts": [],
+  "diagnostics": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "runes-script-generics-attribute-jsdoc-conflict/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 26,
+      "column": 0
+    }
+  },
+  "syntaxMode": "runes",
+  "scriptLanguage": "ts",
+  "props": [
+    {
+      "name": "headers",
+      "kind": "let",
+      "type": "ReadonlyArray<Row>",
+      "typeSource": "typescript",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 14,
+          "column": 4
+        },
+        "end": {
+          "line": 14,
+          "column": 11
+        }
+      }
+    },
+    {
+      "name": "rows",
+      "kind": "let",
+      "type": "ReadonlyArray<Row>",
+      "typeSource": "typescript",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 15,
+          "column": 4
+        },
+        "end": {
+          "line": 15,
+          "column": 8
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{ headers: ReadonlyArray<Row>, rows: ReadonlyArray<Row> }",
+      "source": {
+        "start": {
+          "line": 22,
+          "column": 0
+        },
+        "end": {
+          "line": 25,
+          "column": 2
+        }
+      }
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": [
+    "Row",
+    "Row extends DataTableRow = DataTableRow"
+  ],
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "runes-script-generics-attribute-jsdoc-conflict/input.svelte",
+      "kind": "syntax-skipped",
+      "name": "generics",
+      "message": "Both the \\"generics\\" script attribute and @generics/@template JSDoc tags declare component generics; the script attribute takes precedence and the JSDoc declaration was ignored.",
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 2
+        },
+        "end": {
+          "line": 3,
+          "column": 52
+        }
+      }
+    }
+  ]
+}
+"
+`;
+
 exports[`fixtures (JSON) "empty-export/input.svelte" 1`] = `
 "{
   "source": {
@@ -6824,12 +6740,12 @@ exports[`fixtures (JSON) "template-tag/input.svelte" 1`] = `
     {
       "type": "Exclude<keyof Row, \\"id\\">",
       "name": "DataTableKey<Row>",
-      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \\"id\\">"
+      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \\"id\\">;"
     },
     {
       "type": "{ key: DataTableKey<Row>; value: string; }",
-      "name": "DataTableHeader<Row=DataTableRow>",
-      "ts": "interface DataTableHeader<Row=DataTableRow> { key: DataTableKey<Row>; value: string; }"
+      "name": "DataTableHeader<Row = DataTableRow>",
+      "ts": "interface DataTableHeader<Row = DataTableRow> { key: DataTableKey<Row>; value: string; }"
     }
   ],
   "generics": [
@@ -7850,7 +7766,7 @@ exports[`fixtures (JSON) "context-typedef/input.svelte" 1`] = `
     {
       "type": "{\\n  id: string;\\n  label: string;\\n  disabled?: boolean;\\n}",
       "name": "TabData",
-      "ts": "type TabData = {\\n  id: string;\\n  label: string;\\n  disabled?: boolean;\\n}"
+      "ts": "type TabData = {\\n  id: string;\\n  label: string;\\n  disabled?: boolean;\\n};"
     }
   ],
   "generics": null,
@@ -9228,7 +9144,7 @@ exports[`fixtures (JSON) "typedefs/input.svelte" 1`] = `
     {
       "type": "MyTypedef[]",
       "name": "MyTypedefArray",
-      "ts": "type MyTypedefArray = MyTypedef[]"
+      "ts": "type MyTypedefArray = MyTypedef[];"
     }
   ],
   "generics": null,
@@ -9336,12 +9252,12 @@ exports[`fixtures (JSON) "generics-with-rest-props/input.svelte" 1`] = `
     {
       "type": "Exclude<keyof Row, \\"id\\">",
       "name": "DataTableKey<Row>",
-      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \\"id\\">"
+      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \\"id\\">;"
     },
     {
       "type": "{ key: DataTableKey<Row>; value: string; }",
-      "name": "DataTableHeader<Row=DataTableRow>",
-      "ts": "interface DataTableHeader<Row=DataTableRow> { key: DataTableKey<Row>; value: string; }"
+      "name": "DataTableHeader<Row = DataTableRow>",
+      "ts": "interface DataTableHeader<Row = DataTableRow> { key: DataTableKey<Row>; value: string; }"
     }
   ],
   "generics": [
@@ -9550,12 +9466,12 @@ exports[`fixtures (JSON) "typedef-discriminated-union/input.svelte" 1`] = `
     {
       "type": "{ kind: \\"success\\"; value: string } | { kind: \\"error\\"; error: Error }",
       "name": "Result",
-      "ts": "type Result = { kind: \\"success\\"; value: string } | { kind: \\"error\\"; error: Error }"
+      "ts": "type Result = { kind: \\"success\\"; value: string } | { kind: \\"error\\"; error: Error };"
     },
     {
       "type": "{ ok: true; data: number } | { ok: false; reason: string } | \\"pending\\"",
       "name": "Status",
-      "ts": "type Status = { ok: true; data: number } | { ok: false; reason: string } | \\"pending\\""
+      "ts": "type Status = { ok: true; data: number } | { ok: false; reason: string } | \\"pending\\";"
     }
   ],
   "generics": null,
@@ -10312,7 +10228,7 @@ exports[`fixtures (JSON) "context-imported-type/input.svelte" 1`] = `
     {
       "type": "{\\n  open: () => void;\\n  close: () => void;\\n}",
       "name": "ModalAPI",
-      "ts": "type ModalAPI = {\\n  open: () => void;\\n  close: () => void;\\n}"
+      "ts": "type ModalAPI = {\\n  open: () => void;\\n  close: () => void;\\n};"
     }
   ],
   "generics": null,
@@ -10518,12 +10434,12 @@ exports[`fixtures (JSON) "callback-typedef/input.svelte" 1`] = `
     {
       "type": "\\"asc\\" | \\"desc\\"",
       "name": "SortDirection",
-      "ts": "type SortDirection = \\"asc\\" | \\"desc\\""
+      "ts": "type SortDirection = \\"asc\\" | \\"desc\\";"
     },
     {
       "type": "(a: any, b: any, direction: SortDirection) => number",
       "name": "SortFn",
-      "ts": "type SortFn = (a: any, b: any, direction: SortDirection) => number"
+      "ts": "type SortFn = (a: any, b: any, direction: SortDirection) => number;"
     }
   ],
   "generics": null,
@@ -10907,12 +10823,12 @@ exports[`fixtures (JSON) "runes-generics/input.svelte" 1`] = `
     {
       "type": "Exclude<keyof Row, \\"id\\">",
       "name": "DataTableKey<Row>",
-      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \\"id\\">"
+      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \\"id\\">;"
     },
     {
       "type": "{ key: DataTableKey<Row>; value: string; }",
-      "name": "DataTableHeader<Row=DataTableRow>",
-      "ts": "interface DataTableHeader<Row=DataTableRow> { key: DataTableKey<Row>; value: string; }"
+      "name": "DataTableHeader<Row = DataTableRow>",
+      "ts": "interface DataTableHeader<Row = DataTableRow> { key: DataTableKey<Row>; value: string; }"
     }
   ],
   "generics": [
@@ -12391,7 +12307,7 @@ exports[`fixtures (JSON) "non-literal-defaults/input.svelte" 1`] = `
     {
       "type": "\\"top-left\\" | \\"top-right\\" | \\"bottom-left\\" | \\"bottom-right\\"",
       "name": "Position",
-      "ts": "type Position = \\"top-left\\" | \\"top-right\\" | \\"bottom-left\\" | \\"bottom-right\\""
+      "ts": "type Position = \\"top-left\\" | \\"top-right\\" | \\"bottom-left\\" | \\"bottom-right\\";"
     }
   ],
   "generics": null,
@@ -12720,12 +12636,12 @@ exports[`fixtures (JSON) "multiple-typedef-same-property/input.svelte" 1`] = `
     {
       "type": "{\\n  /** User identifier */\\n  id: string;\\n  /** User display name */\\n  name: string;\\n}",
       "name": "UserConfig",
-      "ts": "type UserConfig = {\\n  /** User identifier */\\n  id: string;\\n  /** User display name */\\n  name: string;\\n}"
+      "ts": "type UserConfig = {\\n  /** User identifier */\\n  id: string;\\n  /** User display name */\\n  name: string;\\n};"
     },
     {
       "type": "{\\n  /** Theme identifier */\\n  id: string;\\n  /** Theme display name */\\n  name: string;\\n}",
       "name": "ThemeConfig",
-      "ts": "type ThemeConfig = {\\n  /** Theme identifier */\\n  id: string;\\n  /** Theme display name */\\n  name: string;\\n}"
+      "ts": "type ThemeConfig = {\\n  /** Theme identifier */\\n  id: string;\\n  /** Theme display name */\\n  name: string;\\n};"
     }
   ],
   "generics": null,
@@ -14044,7 +13960,7 @@ exports[`fixtures (JSON) "context-generics/input.svelte" 1`] = `
     {
       "type": "any",
       "name": "DataTableRowId",
-      "ts": "type DataTableRowId = any"
+      "ts": "type DataTableRowId = any;"
     }
   ],
   "generics": [
@@ -14377,7 +14293,7 @@ exports[`fixtures (JSON) "context-template-tag-multiple/input.svelte" 1`] = `
   "events": [],
   "typedefs": [],
   "generics": [
-    "Value,Icon",
+    "Value, Icon",
     "Value extends string = string, Icon = any"
   ],
   "contexts": [
@@ -14850,7 +14766,7 @@ exports[`fixtures (JSON) "context-template-tag/input.svelte" 1`] = `
     {
       "type": "any",
       "name": "DataTableRowId",
-      "ts": "type DataTableRowId = any"
+      "ts": "type DataTableRowId = any;"
     }
   ],
   "generics": [
@@ -15798,7 +15714,7 @@ exports[`fixtures (JSON) "dispatched-events-jsdoc-properties/input.svelte" 1`] =
       "type": "{\\n  /** The full new set of items. */\\n  items: string[];\\n  /** Items added since the last change. */\\n  added: string[];\\n  /** Items removed since the last change. */\\n  removed?: string[];\\n}",
       "name": "ChangeDetail",
       "description": "The event detail described once as a named typedef, then reused via \`@event\`.",
-      "ts": "type ChangeDetail = {\\n  /** The full new set of items. */\\n  items: string[];\\n  /** Items added since the last change. */\\n  added: string[];\\n  /** Items removed since the last change. */\\n  removed?: string[];\\n}"
+      "ts": "type ChangeDetail = {\\n  /** The full new set of items. */\\n  items: string[];\\n  /** Items added since the last change. */\\n  added: string[];\\n  /** Items removed since the last change. */\\n  removed?: string[];\\n};"
     }
   ],
   "generics": null,
@@ -16498,17 +16414,17 @@ exports[`fixtures (JSON) "typedef-discriminated-union-intersection/input.svelte"
     {
       "type": "Base & { kind: \\"user\\"; name: string }",
       "name": "User",
-      "ts": "type User = Base & { kind: \\"user\\"; name: string }"
+      "ts": "type User = Base & { kind: \\"user\\"; name: string };"
     },
     {
       "type": "Base & { kind: \\"post\\"; title: string; body: string }",
       "name": "Post",
-      "ts": "type Post = Base & { kind: \\"post\\"; title: string; body: string }"
+      "ts": "type Post = Base & { kind: \\"post\\"; title: string; body: string };"
     },
     {
       "type": "User | Post",
       "name": "Entity",
-      "ts": "type Entity = User | Post"
+      "ts": "type Entity = User | Post;"
     }
   ],
   "generics": null,
@@ -16591,7 +16507,7 @@ exports[`fixtures (JSON) "typedef-type-predicate/input.svelte" 1`] = `
       "type": "(value: unknown) => value is User",
       "name": "UserGuard",
       "description": "A type guard expressed as a \`@callback\`.",
-      "ts": "type UserGuard = (value: unknown) => value is User"
+      "ts": "type UserGuard = (value: unknown) => value is User;"
     }
   ],
   "generics": null,
@@ -16976,12 +16892,12 @@ exports[`fixtures (JSON) "template-tag-with-rest-props/input.svelte" 1`] = `
     {
       "type": "Exclude<keyof Row, \\"id\\">",
       "name": "DataTableKey<Row>",
-      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \\"id\\">"
+      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \\"id\\">;"
     },
     {
       "type": "{ key: DataTableKey<Row>; value: string; }",
-      "name": "DataTableHeader<Row=DataTableRow>",
-      "ts": "interface DataTableHeader<Row=DataTableRow> { key: DataTableKey<Row>; value: string; }"
+      "name": "DataTableHeader<Row = DataTableRow>",
+      "ts": "interface DataTableHeader<Row = DataTableRow> { key: DataTableKey<Row>; value: string; }"
     }
   ],
   "generics": [
@@ -17632,12 +17548,12 @@ exports[`fixtures (JSON) "generics/input.svelte" 1`] = `
     {
       "type": "Exclude<keyof Row, \\"id\\">",
       "name": "DataTableKey<Row>",
-      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \\"id\\">"
+      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \\"id\\">;"
     },
     {
       "type": "{ key: DataTableKey<Row>; value: string; }",
-      "name": "DataTableHeader<Row=DataTableRow>",
-      "ts": "interface DataTableHeader<Row=DataTableRow> { key: DataTableKey<Row>; value: string; }"
+      "name": "DataTableHeader<Row = DataTableRow>",
+      "ts": "interface DataTableHeader<Row = DataTableRow> { key: DataTableKey<Row>; value: string; }"
     }
   ],
   "generics": [
@@ -17984,10 +17900,7 @@ export interface DataTableHeader<Row = DataTableRow, Header = DataTableRow> {
   value: Header;
 }
 
-export type GenericsMultipleProps<
-  Row extends DataTableRow = DataTableRow,
-  Header extends DataTableRow = DataTableRow,
-> = {
+export type GenericsMultipleProps<Row extends DataTableRow = DataTableRow, Header extends DataTableRow = DataTableRow> = {
   /**
    * @default []
    */
@@ -17998,19 +17911,13 @@ export type GenericsMultipleProps<
    */
   rows?: ReadonlyArray<Row>;
 
-  children?: (
-    this: void,
-    ...args: [{ headers: ReadonlyArray<DataTableHeader<Row, Header>>; rows: ReadonlyArray<Row> }]
-  ) => void;
+  children?: (this: void, ...args: [{ headers: ReadonlyArray<DataTableHeader<Row, Header>>, rows: ReadonlyArray<Row> }]) => void;
 };
 
-export default class GenericsMultiple<
-  Row extends DataTableRow = DataTableRow,
-  Header extends DataTableRow = DataTableRow,
-> extends SvelteComponentTyped<
-  GenericsMultipleProps<Row, Header>,
+export default class GenericsMultiple<Row extends DataTableRow = DataTableRow, Header extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
+  GenericsMultipleProps<Row,Header>,
   Record<string, any>,
-  { default: { headers: ReadonlyArray<DataTableHeader<Row, Header>>; rows: ReadonlyArray<Row> } }
+  { default: { headers: ReadonlyArray<DataTableHeader<Row, Header>>, rows: ReadonlyArray<Row> } }
 > {}
 "
 `;
@@ -18077,7 +17984,7 @@ exports[`fixtures (TypeScript) "typedef-utility-types/input.svelte" 1`] = `
 export interface Options {
   id: string;
   size: "sm" | "md" | "lg";
-  disabled: boolean;
+  disabled: boolean
 }
 
 /**
@@ -18450,7 +18357,7 @@ export type PropMetadataConsolidatedProps = {
   /**
    * @default { size: "md", count: 2 }
    */
-  objectDefault?: { size: "md"; count: 2 };
+  objectDefault?: { size: "md", count: 2 };
 
   callbackDefault?: (value: any) => any;
 
@@ -18498,10 +18405,7 @@ export interface DataTableHeader<Row = DataTableRow, Header = DataTableRow> {
   value: Header;
 }
 
-export type TemplateTagMultipleProps<
-  Row extends DataTableRow = DataTableRow,
-  Header extends DataTableRow = DataTableRow,
-> = {
+export type TemplateTagMultipleProps<Row extends DataTableRow = DataTableRow, Header extends DataTableRow = DataTableRow> = {
   /**
    * @default []
    */
@@ -18512,19 +18416,13 @@ export type TemplateTagMultipleProps<
    */
   rows?: ReadonlyArray<Row>;
 
-  children?: (
-    this: void,
-    ...args: [{ headers: ReadonlyArray<DataTableHeader<Row, Header>>; rows: ReadonlyArray<Row> }]
-  ) => void;
+  children?: (this: void, ...args: [{ headers: ReadonlyArray<DataTableHeader<Row, Header>>, rows: ReadonlyArray<Row> }]) => void;
 };
 
-export default class TemplateTagMultiple<
-  Row extends DataTableRow = DataTableRow,
-  Header extends DataTableRow = DataTableRow,
-> extends SvelteComponentTyped<
+export default class TemplateTagMultiple<Row extends DataTableRow = DataTableRow, Header extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
   TemplateTagMultipleProps<Row, Header>,
   Record<string, any>,
-  { default: { headers: ReadonlyArray<DataTableHeader<Row, Header>>; rows: ReadonlyArray<Row> } }
+  { default: { headers: ReadonlyArray<DataTableHeader<Row, Header>>, rows: ReadonlyArray<Row> } }
 > {}
 "
 `;
@@ -18781,7 +18679,7 @@ export type EmptyCollectionDefaultsProps = {
   /**
    * @default { items: [], meta: {} }
    */
-  nested?: { items: []; meta: {} };
+  nested?: { items: [], meta: {} };
 };
 
 export default class EmptyCollectionDefaults extends SvelteComponentTyped<
@@ -18810,6 +18708,32 @@ export default class ContextConstKey extends SvelteComponentTyped<
   ContextConstKeyProps,
   Record<string, any>,
   { default: Record<string, never> }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "runes-script-generics-attribute-multiple/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+interface DataTableRow {
+  id: string | number;
+  [key: string]: any;
+}
+
+type $Props<Row extends DataTableRow = DataTableRow, K extends keyof Map<string, Row> = never> = {
+  headers: ReadonlyArray<Row>;
+  rows: ReadonlyArray<Row>;
+  key?: K;
+} & {
+  children?: (this: void, ...args: [{ headers: ReadonlyArray<Row>, rows: ReadonlyArray<Row> }]) => void;
+};
+
+export type RunesScriptGenericsAttributeMultipleProps<Row extends DataTableRow = DataTableRow, K extends keyof Map<string, Row> = never> = $Props<Row, K>;
+
+export default class RunesScriptGenericsAttributeMultiple<Row extends DataTableRow = DataTableRow, K extends keyof Map<string, Row> = never> extends SvelteComponentTyped<
+  RunesScriptGenericsAttributeMultipleProps<Row, K>,
+  Record<string, any>,
+  { default: { headers: ReadonlyArray<Row>, rows: ReadonlyArray<Row> } }
 > {}
 "
 `;
@@ -19042,9 +18966,9 @@ export default class TypedefEventSharedBlock extends SvelteComponentTyped<
   TypedefEventSharedBlockProps,
   {
     change: CustomEvent<{
-      size: BreakpointSize;
-      breakpointValue: BreakpointValue;
-    }>;
+        size: BreakpointSize;
+        breakpointValue: BreakpointValue;
+      }>;
     /** Event fired when item is dequeued from the queue */
     dequeue: CustomEvent<null>;
     /** Event fired when queue is updated */
@@ -19123,11 +19047,7 @@ export type ThemeComponentProps = {
 
 export default class ThemeComponent extends SvelteComponentTyped<
   ThemeComponentProps,
-  {
-    update: CustomEvent<{
-      theme: CarbonTheme;
-    }>;
-  },
+  { update: CustomEvent<{ theme: CarbonTheme; }> },
   { default: { theme: CarbonTheme } }
 > {}
 "
@@ -19504,6 +19424,56 @@ export default class UnaryExpressionDefaults extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "runes-script-generics-attribute/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+interface DataTableRow {
+  id: string | number;
+  [key: string]: any;
+}
+
+type $Props<Row extends DataTableRow = DataTableRow> = {
+  headers: ReadonlyArray<Row>;
+  rows: ReadonlyArray<Row>;
+} & {
+  children?: (this: void, ...args: [{ headers: ReadonlyArray<Row>, rows: ReadonlyArray<Row> }]) => void;
+};
+
+export type RunesScriptGenericsAttributeProps<Row extends DataTableRow = DataTableRow> = $Props<Row>;
+
+export default class RunesScriptGenericsAttribute<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
+  RunesScriptGenericsAttributeProps<Row>,
+  Record<string, any>,
+  { default: { headers: ReadonlyArray<Row>, rows: ReadonlyArray<Row> } }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "runes-script-generics-attribute-jsdoc-conflict/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+interface DataTableRow {
+  id: string | number;
+  [key: string]: any;
+}
+
+type $Props<Row extends DataTableRow = DataTableRow> = {
+  headers: ReadonlyArray<Row>;
+  rows: ReadonlyArray<Row>;
+} & {
+  children?: (this: void, ...args: [{ headers: ReadonlyArray<Row>, rows: ReadonlyArray<Row> }]) => void;
+};
+
+export type RunesScriptGenericsAttributeJsdocConflictProps<Row extends DataTableRow = DataTableRow> = $Props<Row>;
+
+export default class RunesScriptGenericsAttributeJsdocConflict<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
+  RunesScriptGenericsAttributeJsdocConflictProps<Row>,
+  Record<string, any>,
+  { default: { headers: ReadonlyArray<Row>, rows: ReadonlyArray<Row> } }
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "empty-export/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -19555,22 +19525,9 @@ export type SlotPropDottedAccessProps = {
    */
   point?: { x: number; y: number };
 
-  children?: (
-    this: void,
-    ...args: [
-      {
-        a: string;
-        b: string;
-        c: number;
-        d: string;
-        e: "pending" | "done" | "error";
-        f: { deep: number };
-        g: Array<string>;
-        h: any;
-        i: number;
-      },
-    ]
-  ) => void;
+  children?: (this: void, ...args: [{
+        a: string, b: string, c: number, d: string, e: "pending" | "done" | "error", f: { deep: number }, g: Array<string>, h: any, i: number
+      }]) => void;
 };
 
 export default class SlotPropDottedAccess extends SvelteComponentTyped<
@@ -19578,15 +19535,7 @@ export default class SlotPropDottedAccess extends SvelteComponentTyped<
   Record<string, any>,
   {
     default: {
-      a: string;
-      b: string;
-      c: number;
-      d: string;
-      e: "pending" | "done" | "error";
-      f: { deep: number };
-      g: Array<string>;
-      h: any;
-      i: number;
+      a: string, b: string, c: number, d: string, e: "pending" | "done" | "error", f: { deep: number }, g: Array<string>, h: any, i: number
     };
   }
 > {}
@@ -19619,16 +19568,13 @@ export type TemplateTagProps<Row extends DataTableRow = DataTableRow> = {
    */
   rows?: ReadonlyArray<Row>;
 
-  children?: (
-    this: void,
-    ...args: [{ headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> }]
-  ) => void;
+  children?: (this: void, ...args: [{ headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> }]) => void;
 };
 
 export default class TemplateTag<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
   TemplateTagProps<Row>,
   Record<string, any>,
-  { default: { headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> } }
+  { default: { headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> } }
 > {}
 "
 `;
@@ -20267,13 +20213,13 @@ export type TypedefsProps = {
    */
   prop2?: MyTypedefArray;
 
-  children?: (this: void, ...args: [{ prop1: MyTypedef; prop2: MyTypedefArray }]) => void;
+  children?: (this: void, ...args: [{ prop1: MyTypedef, prop2: MyTypedefArray }]) => void;
 };
 
 export default class Typedefs extends SvelteComponentTyped<
   TypedefsProps,
   Record<string, any>,
-  { default: { prop1: MyTypedef; prop2: MyTypedefArray } }
+  { default: { prop1: MyTypedef, prop2: MyTypedefArray } }
 > {}
 "
 `;
@@ -20307,21 +20253,17 @@ type $Props<Row extends DataTableRow = DataTableRow> = {
    */
   rows?: ReadonlyArray<Row>;
 
-  children?: (
-    this: void,
-    ...args: [{ headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> }]
-  ) => void;
+  children?: (this: void, ...args: [{ headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> }]) => void;
 
   [key: \`data-\${string}\`]: unknown;
 };
 
-export type GenericsWithRestPropsProps<Row extends DataTableRow = DataTableRow> = Omit<$RestProps, keyof $Props<Row>> &
-  $Props<Row>;
+export type GenericsWithRestPropsProps<Row extends DataTableRow = DataTableRow> = Omit<$RestProps, keyof $Props<Row>> & $Props<Row>;
 
 export default class GenericsWithRestProps<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
   GenericsWithRestPropsProps<Row>,
   Record<string, any>,
-  { default: { headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> } }
+  { default: { headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> } }
 > {}
 "
 `;
@@ -20540,13 +20482,13 @@ export type RequiredProps = {
    */
   prop3: boolean;
 
-  children?: (this: void, ...args: [{ prop: boolean; prop1: boolean | string; prop2: any; prop3: boolean }]) => void;
+  children?: (this: void, ...args: [{ prop: boolean, prop1: boolean | string, prop2: any, prop3: boolean }]) => void;
 };
 
 export default class Required extends SvelteComponentTyped<
   RequiredProps,
   Record<string, any>,
-  { default: { prop: boolean; prop1: boolean | string; prop2: any; prop3: boolean } }
+  { default: { prop: boolean, prop1: boolean | string, prop2: any, prop3: boolean } }
 > {}
 "
 `;
@@ -20691,13 +20633,13 @@ export type PropCommentsProps = {
    */
   prop2?: boolean | string;
 
-  children?: (this: void, ...args: [{ prop: boolean | string; prop1: boolean; prop2: boolean | string }]) => void;
+  children?: (this: void, ...args: [{ prop: boolean | string, prop1: boolean, prop2: boolean | string }]) => void;
 };
 
 export default class PropComments extends SvelteComponentTyped<
   PropCommentsProps,
   Record<string, any>,
-  { default: { prop: boolean | string; prop1: boolean; prop2: boolean | string } }
+  { default: { prop: boolean | string, prop1: boolean, prop2: boolean | string } }
 > {}
 "
 `;
@@ -20750,16 +20692,13 @@ export type RunesGenericsProps<Row extends DataTableRow = DataTableRow> = {
    */
   rows?: ReadonlyArray<Row>;
 
-  children?: (
-    this: void,
-    ...args: [{ headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> }]
-  ) => void;
+  children?: (this: void, ...args: [{ headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> }]) => void;
 };
 
 export default class RunesGenerics<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
   RunesGenericsProps<Row>,
   Record<string, any>,
-  { default: { headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> } }
+  { default: { headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> } }
 > {}
 "
 `;
@@ -20923,7 +20862,7 @@ export type RenamedPropsProps = {
    * Just your average CSS class string.
    * @default "test"
    */
-  class?: string | null;
+  class?: string|null;
 };
 
 export default class RenamedProps extends SvelteComponentTyped<
@@ -21304,12 +21243,7 @@ exports[`fixtures (TypeScript) "element-tag-map-new/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
-type $RestProps = SvelteHTMLElements["article"] &
-  SvelteHTMLElements["section"] &
-  SvelteHTMLElements["nav"] &
-  SvelteHTMLElements["main"] &
-  SvelteHTMLElements["header"] &
-  SvelteHTMLElements["footer"];
+type $RestProps = SvelteHTMLElements["article"] & SvelteHTMLElements["section"] & SvelteHTMLElements["nav"] & SvelteHTMLElements["main"] & SvelteHTMLElements["header"] & SvelteHTMLElements["footer"];
 
 type $Props = {
   /**
@@ -21625,10 +21559,7 @@ export type DataTableContext<Row extends DataTableRow = DataTableRow> = {
   /** Reset selected row ids */
   resetSelectedRowIds: () => void;
   /** Filter rows by search value */
-  filterRows: (
-    searchValue: string,
-    customFilter?: (row: Row, value: string) => boolean,
-  ) => ReadonlyArray<DataTableRowId>;
+  filterRows: (searchValue: string, customFilter?: (row: Row, value: string) => boolean) => ReadonlyArray<DataTableRowId>;
 };
 
 export type ContextGenericsProps<Row extends DataTableRow = DataTableRow> = {
@@ -21860,10 +21791,7 @@ export type DataTableContext<Row extends DataTableRow = DataTableRow> = {
   /** Reset selected row ids */
   resetSelectedRowIds: () => void;
   /** Filter rows by search value */
-  filterRows: (
-    searchValue: string,
-    customFilter?: (row: Row, value: string) => boolean,
-  ) => ReadonlyArray<DataTableRowId>;
+  filterRows: (searchValue: string, customFilter?: (row: Row, value: string) => boolean) => ReadonlyArray<DataTableRowId>;
 };
 
 export type ContextTemplateTagProps<Row extends DataTableRow = DataTableRow> = {
@@ -21926,7 +21854,7 @@ exports[`fixtures (TypeScript) "typedef-import-type/input.svelte" 1`] = `
  */
 export interface TableContext {
   rows: import("svelte/store").Writable<string[]>;
-  selected: import("svelte/store").Readable<number>;
+  selected: import("svelte/store").Readable<number>
 }
 
 export type TypedefImportTypeProps = {
@@ -22190,15 +22118,15 @@ export default class DispatchedEventsJsdocProperties extends SvelteComponentType
     "items:change": CustomEvent<ChangeDetail>;
     /** Snowball event fired when throwing a snowball. */
     snowball: CustomEvent<{
-      /** Indicates whether the snowball is tightly packed. */
-      isPacked: boolean;
-      /** The speed of the snowball in mph. */
-      speed: number;
-      /** Optional color of the snowball. */
-      color?: string;
-      /** Optional density with default value. @default 0.9 */
-      density?: number;
-    }>;
+        /** Indicates whether the snowball is tightly packed. */
+        isPacked: boolean;
+        /** The speed of the snowball in mph. */
+        speed: number;
+        /** Optional color of the snowball. */
+        color?: string;
+        /** Optional density with default value. @default 0.9 */
+        density?: number;
+      }>;
     /** Form submission with value */
     submit: CustomEvent<{ value: string }>;
   },
@@ -22219,10 +22147,7 @@ export type SlotPropsUnionTypesProps = {
   /** Header slot */
   header?: (this: void, ...args: [{ active: boolean }]) => void;
 
-  children?: (
-    this: void,
-    ...args: [{ item: string | number; status: "pending" | "complete" | "error"; error: Error | null }]
-  ) => void;
+  children?: (this: void, ...args: [{ item: string | number; status: "pending" | "complete" | "error"; error: Error | null }]) => void;
 };
 
 export default class SlotPropsUnionTypes extends SvelteComponentTyped<
@@ -22410,13 +22335,13 @@ export type PropCommentComplexProps = {
    */
   icon?: any;
 
-  children?: (this: void, ...args: [{ text: string; icon: any }]) => void;
+  children?: (this: void, ...args: [{ text: string, icon: any }]) => void;
 };
 
 export default class PropCommentComplex extends SvelteComponentTyped<
   PropCommentComplexProps,
   Record<string, any>,
-  { default: { text: string; icon: any } }
+  { default: { text: string, icon: any } }
 > {}
 "
 `;
@@ -22425,14 +22350,7 @@ exports[`fixtures (TypeScript) "element-tag-map-text-elements/input.svelte" 1`] 
 "import { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
-type $RestProps = SvelteHTMLElements["abbr"] &
-  SvelteHTMLElements["code"] &
-  SvelteHTMLElements["em"] &
-  SvelteHTMLElements["strong"] &
-  SvelteHTMLElements["mark"] &
-  SvelteHTMLElements["kbd"] &
-  SvelteHTMLElements["samp"] &
-  SvelteHTMLElements["var"];
+type $RestProps = SvelteHTMLElements["abbr"] & SvelteHTMLElements["code"] & SvelteHTMLElements["em"] & SvelteHTMLElements["strong"] & SvelteHTMLElements["mark"] & SvelteHTMLElements["kbd"] & SvelteHTMLElements["samp"] & SvelteHTMLElements["var"];
 
 type $Props = {
   /**
@@ -22458,7 +22376,7 @@ exports[`fixtures (TypeScript) "typedef-discriminated-union-intersection/input.s
 
 export interface Base {
   id: string;
-  createdAt: number;
+  createdAt: number
 }
 
 export type User = Base & { kind: "user"; name: string };
@@ -22487,7 +22405,7 @@ exports[`fixtures (TypeScript) "typedef-type-predicate/input.svelte" 1`] = `
 
 export interface User {
   id: string;
-  name: string;
+  name: string
 }
 
 /**
@@ -22655,24 +22573,17 @@ type $Props<Row extends DataTableRow = DataTableRow> = {
    */
   rows?: ReadonlyArray<Row>;
 
-  children?: (
-    this: void,
-    ...args: [{ headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> }]
-  ) => void;
+  children?: (this: void, ...args: [{ headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> }]) => void;
 
   [key: \`data-\${string}\`]: unknown;
 };
 
-export type TemplateTagWithRestPropsProps<Row extends DataTableRow = DataTableRow> = Omit<
-  $RestProps,
-  keyof $Props<Row>
-> &
-  $Props<Row>;
+export type TemplateTagWithRestPropsProps<Row extends DataTableRow = DataTableRow> = Omit<$RestProps, keyof $Props<Row>> & $Props<Row>;
 
 export default class TemplateTagWithRestProps<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
   TemplateTagWithRestPropsProps<Row>,
   Record<string, any>,
-  { default: { headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> } }
+  { default: { headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> } }
 > {}
 "
 `;
@@ -22790,7 +22701,7 @@ export type TypedPropsProps = {
   /**
    * @default 4
    */
-  prop3?: 4 | "4";
+  prop3?: 4 | '4';
 
   /**
    * @default "red"
@@ -22880,16 +22791,13 @@ export type GenericsProps<Row extends DataTableRow = DataTableRow> = {
    */
   rows?: ReadonlyArray<Row>;
 
-  children?: (
-    this: void,
-    ...args: [{ headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> }]
-  ) => void;
+  children?: (this: void, ...args: [{ headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> }]) => void;
 };
 
 export default class Generics<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
   GenericsProps<Row>,
   Record<string, any>,
-  { default: { headers: ReadonlyArray<DataTableHeader<Row>>; rows: ReadonlyArray<Row> } }
+  { default: { headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> } }
 > {}
 "
 `;

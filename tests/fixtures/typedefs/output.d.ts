@@ -17,11 +17,11 @@ export type TypedefsProps = {
    */
   prop2?: MyTypedefArray;
 
-  children?: (this: void, ...args: [{ prop1: MyTypedef; prop2: MyTypedefArray }]) => void;
+  children?: (this: void, ...args: [{ prop1: MyTypedef, prop2: MyTypedefArray }]) => void;
 };
 
 export default class Typedefs extends SvelteComponentTyped<
   TypedefsProps,
   Record<string, any>,
-  { default: { prop1: MyTypedef; prop2: MyTypedefArray } }
+  { default: { prop1: MyTypedef, prop2: MyTypedefArray } }
 > {}

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "generator": {
     "name": "sveld",
-    "version": "0.32.8",
+    "version": "0.34.1",
     "svelteVersion": "5.56.3"
   },
   "total": 1,
@@ -11,8 +11,14 @@
       "moduleName": "Button",
       "filePath": "src/button/Button.svelte",
       "source": {
-        "start": { "line": 1, "column": 0 },
-        "end": { "line": 41, "column": 0 }
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 41,
+          "column": 0
+        }
       },
       "syntaxMode": "legacy",
       "scriptLanguage": "ts",
@@ -34,8 +40,14 @@
           "constant": false,
           "reactive": false,
           "source": {
-            "start": { "line": 27, "column": 2 },
-            "end": { "line": 27, "column": 38 }
+            "start": {
+              "line": 27,
+              "column": 2
+            },
+            "end": {
+              "line": 27,
+              "column": 38
+            }
           }
         },
         {
@@ -44,15 +56,25 @@
           "type": "boolean",
           "typeSource": "default",
           "value": "false",
-          "defaultValue": { "raw": "false", "kind": "literal", "value": false },
+          "defaultValue": {
+            "raw": "false",
+            "kind": "literal",
+            "value": false
+          },
           "isFunction": false,
           "isFunctionDeclaration": false,
           "isRequired": false,
           "constant": false,
           "reactive": false,
           "source": {
-            "start": { "line": 28, "column": 2 },
-            "end": { "line": 28, "column": 29 }
+            "start": {
+              "line": 28,
+              "column": 2
+            },
+            "end": {
+              "line": 28,
+              "column": 29
+            }
           }
         }
       ],
@@ -63,15 +85,25 @@
           "type": "boolean",
           "typeSource": "default",
           "value": "false",
-          "defaultValue": { "raw": "false", "kind": "literal", "value": false },
+          "defaultValue": {
+            "raw": "false",
+            "kind": "literal",
+            "value": false
+          },
           "isFunction": false,
           "isFunctionDeclaration": false,
           "isRequired": false,
           "constant": true,
           "reactive": false,
           "source": {
-            "start": { "line": 2, "column": 2 },
-            "end": { "line": 2, "column": 28 }
+            "start": {
+              "line": 2,
+              "column": 2
+            },
+            "end": {
+              "line": 2,
+              "column": 28
+            }
           }
         },
         {
@@ -85,8 +117,14 @@
           "constant": false,
           "reactive": false,
           "source": {
-            "start": { "line": 4, "column": 2 },
-            "end": { "line": 13, "column": 3 }
+            "start": {
+              "line": 4,
+              "column": 2
+            },
+            "end": {
+              "line": 13,
+              "column": 3
+            }
           }
         },
         {
@@ -101,8 +139,14 @@
           "constant": false,
           "reactive": false,
           "source": {
-            "start": { "line": 19, "column": 2 },
-            "end": { "line": 23, "column": 3 }
+            "start": {
+              "line": 19,
+              "column": 2
+            },
+            "end": {
+              "line": 23,
+              "column": 3
+            }
           }
         }
       ],
@@ -113,8 +157,14 @@
           "fallback": "Click me",
           "slot_props": "Record<string, never>",
           "source": {
-            "start": { "line": 39, "column": 2 },
-            "end": { "line": 39, "column": 23 }
+            "start": {
+              "line": 39,
+              "column": 2
+            },
+            "end": {
+              "line": 39,
+              "column": 23
+            }
           }
         }
       ],
@@ -124,14 +174,23 @@
           "name": "click",
           "element": "button",
           "source": {
-            "start": { "line": 37, "column": 2 },
-            "end": { "line": 37, "column": 10 }
+            "start": {
+              "line": 37,
+              "column": 2
+            },
+            "end": {
+              "line": 37,
+              "column": 10
+            }
           }
         }
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "button" },
+      "rest_props": {
+        "type": "Element",
+        "name": "button"
+      },
       "contexts": []
     }
   ]

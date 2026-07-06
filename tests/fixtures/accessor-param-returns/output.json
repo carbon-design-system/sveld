@@ -232,7 +232,7 @@
     {
       "type": "{\n  /** Optional id for deduplication */\n  id?: string;\n  kind?: \"error\" | \"info\" | \"success\";\n  title?: string;\n}",
       "name": "NotificationData",
-      "ts": "type NotificationData = {\n  /** Optional id for deduplication */\n  id?: string;\n  kind?: \"error\" | \"info\" | \"success\";\n  title?: string;\n}"
+      "ts": "type NotificationData = {\n  /** Optional id for deduplication */\n  id?: string;\n  kind?: \"error\" | \"info\" | \"success\";\n  title?: string;\n};"
     }
   ],
   "generics": null,

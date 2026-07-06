@@ -77,12 +77,12 @@
     {
       "type": "{ kind: \"success\"; value: string } | { kind: \"error\"; error: Error }",
       "name": "Result",
-      "ts": "type Result = { kind: \"success\"; value: string } | { kind: \"error\"; error: Error }"
+      "ts": "type Result = { kind: \"success\"; value: string } | { kind: \"error\"; error: Error };"
     },
     {
       "type": "{ ok: true; data: number } | { ok: false; reason: string } | \"pending\"",
       "name": "Status",
-      "ts": "type Status = { ok: true; data: number } | { ok: false; reason: string } | \"pending\""
+      "ts": "type Status = { ok: true; data: number } | { ok: false; reason: string } | \"pending\";"
     }
   ],
   "generics": null,

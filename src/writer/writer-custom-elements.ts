@@ -46,7 +46,7 @@ export default async function writeCustomElements(components: ComponentDocs, opt
 
   const output_path = path.join(process.cwd(), options.outFile);
   const writer = createJsonWriter();
-  await writer.write(output_path, JSON.stringify(manifest));
+  await writer.write(output_path, `${JSON.stringify(manifest, null, 2)}\n`);
 
   console.log(`created "${options.outFile}".`);
 }

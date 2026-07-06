@@ -95,16 +95,16 @@
     {
       "type": "Exclude<keyof Row, \"id\">",
       "name": "DataTableKey<Row>",
-      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \"id\">"
+      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \"id\">;"
     },
     {
       "type": "{ key: DataTableKey<Row>; value: Header; }",
-      "name": "DataTableHeader<Row=DataTableRow,Header=DataTableRow>",
-      "ts": "interface DataTableHeader<Row=DataTableRow,Header=DataTableRow> { key: DataTableKey<Row>; value: Header; }"
+      "name": "DataTableHeader<Row = DataTableRow, Header = DataTableRow>",
+      "ts": "interface DataTableHeader<Row = DataTableRow, Header = DataTableRow> { key: DataTableKey<Row>; value: Header; }"
     }
   ],
   "generics": [
-    "Row,Header",
+    "Row, Header",
     "Row extends DataTableRow = DataTableRow, Header extends DataTableRow = DataTableRow"
   ],
   "contexts": [],

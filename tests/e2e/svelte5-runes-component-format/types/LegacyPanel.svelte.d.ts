@@ -13,5 +13,9 @@ export type LegacyPanelProps = {
 
 export type LegacyPanelExports = Record<string, never>;
 
-declare const LegacyPanel: Component<LegacyPanelProps, LegacyPanelExports, "">;
+declare const LegacyPanel: Component<
+  LegacyPanelProps,
+  LegacyPanelExports,
+  ""
+>;
 export default LegacyPanel;

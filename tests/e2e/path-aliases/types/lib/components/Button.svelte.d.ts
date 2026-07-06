@@ -14,8 +14,4 @@ export type ButtonProps = {
   size?: string;
 };
 
-export default class Button extends SvelteComponentTyped<
-  ButtonProps,
-  Record<string, any>,
-  Record<string, never>
-> {}
+export default class Button extends SvelteComponentTyped<ButtonProps, Record<string, any>, Record<string, never>> {}

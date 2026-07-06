@@ -104,9 +104,7 @@ type $Props = {
    * Override the sorting logic
    * The default sorting compare the item text value
    */
-  sortItem?:
-    | ((a: MultiSelectItem, b: MultiSelectItem) => MultiSelectItem)
-    | (() => void);
+  sortItem?: ((a: MultiSelectItem, b: MultiSelectItem) => MultiSelectItem) | (() => void);
 
   /**
    * Override the default translation ids

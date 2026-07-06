@@ -31,9 +31,6 @@ export type CopyProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class Copy extends SvelteComponentTyped<
   CopyProps,
-  {
-    animationend: WindowEventMap["animationend"];
-    click: WindowEventMap["click"];
-  },
+  { animationend: WindowEventMap["animationend"]; click: WindowEventMap["click"] },
   { default: Record<string, never> }
 > {}

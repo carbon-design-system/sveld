@@ -67,8 +67,7 @@ type $Props = {
   [key: `data-${string}`]: unknown;
 };
 
-export type FileUploaderDropContainerProps = Omit<$RestProps, keyof $Props> &
-  $Props;
+export type FileUploaderDropContainerProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class FileUploaderDropContainer extends SvelteComponentTyped<
   FileUploaderDropContainerProps,

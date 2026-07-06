@@ -6,13 +6,9 @@ type $Props<Item extends { id: string | number } = { id: string }> = {
   row: Snippet<[item: Item]>;
 };
 
-export type RunesGenericListProps<
-  Item extends { id: string | number } = { id: string },
-> = $Props<Item>;
+export type RunesGenericListProps<Item extends { id: string | number } = { id: string }> = $Props<Item>;
 
-export default class RunesGenericList<
-  Item extends { id: string | number } = { id: string },
-> extends SvelteComponentTyped<
+export default class RunesGenericList<Item extends { id: string | number } = { id: string }> extends SvelteComponentTyped<
   RunesGenericListProps<Item>,
   Record<string, any>,
   Record<string, never>

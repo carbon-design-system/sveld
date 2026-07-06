@@ -5,7 +5,7 @@ exports[`WriterMarkdown props table includes binding metadata 1`] = `
 
 ## Components
 
-  - [\`Example\`](#example)
+- [\`Example\`](#example)
 
 ---
 
@@ -18,6 +18,7 @@ exports[`WriterMarkdown props table includes binding metadata 1`] = `
 | open | No | <code>let</code> | Yes | writable | -- | -- | Shared state. |
 | size | No | <code>let</code> | No | readonly | -- | -- | Current value. |
 | label | No | <code>let</code> | No | -- | -- | -- | Label text. |
+
 ### Slots
 
 None.
@@ -34,7 +35,7 @@ exports[`WriterMarkdown slots table renders descriptions and pass-through tags 1
 
 ## Components
 
-  - [\`Example\`](#example)
+- [\`Example\`](#example)
 
 ---
 
@@ -51,6 +52,7 @@ None.
 | -- | Yes | <code>{ prop: number } </code> | -- | Default content.<br />Spans two lines.<br />@deprecated Prefer the \`body\` slot.<br />@since 1.2.0 |
 | title | No | -- | -- | Heading content.<br />@example &lt;Example&gt;Hi&lt;/Example&gt; |
 | footer | No | -- | -- | -- |
+
 ### Events
 
 None.

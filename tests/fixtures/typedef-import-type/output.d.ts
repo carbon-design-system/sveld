@@ -6,7 +6,7 @@ import { SvelteComponentTyped } from "svelte";
  */
 export interface TableContext {
   rows: import("svelte/store").Writable<string[]>;
-  selected: import("svelte/store").Readable<number>;
+  selected: import("svelte/store").Readable<number>
 }
 
 export type TypedefImportTypeProps = {

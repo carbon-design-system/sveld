@@ -97,7 +97,7 @@
   "events": [],
   "typedefs": [],
   "generics": [
-    "Row,K",
+    "Row, K",
     "Row extends DataTableRow = DataTableRow, K extends keyof Map<string, Row> = never"
   ],
   "contexts": [],

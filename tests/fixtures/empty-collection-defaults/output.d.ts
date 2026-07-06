@@ -24,7 +24,7 @@ export type EmptyCollectionDefaultsProps = {
   /**
    * @default { items: [], meta: {} }
    */
-  nested?: { items: []; meta: {} };
+  nested?: { items: [], meta: {} };
 };
 
 export default class EmptyCollectionDefaults extends SvelteComponentTyped<

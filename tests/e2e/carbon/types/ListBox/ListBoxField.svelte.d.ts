@@ -63,5 +63,5 @@ export default class ListBoxField extends SvelteComponentTyped<
   /**
    * Default translation ids
    */
-  translationIds: { close: "close"; open: "open" };
+  translationIds: { close: "close", open: "open" };
 }

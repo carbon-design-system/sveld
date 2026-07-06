@@ -18,7 +18,7 @@ export type TypedPropsProps = {
   /**
    * @default 4
    */
-  prop3?: 4 | "4";
+  prop3?: 4 | '4';
 
   /**
    * @default "red"

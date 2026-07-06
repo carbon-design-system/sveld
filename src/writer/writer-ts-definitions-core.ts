@@ -1,6 +1,7 @@
 import { type DeprecatedValue, getParsedComponentTypeScriptMetadata } from "../ComponentParser";
 import { splitTopLevelCommas } from "../parser/generics";
 import type { ComponentDocApi } from "../plugin";
+import { formatGeneratedTypeScript } from "./format-generated-ts";
 
 const ANY_TYPE = "any";
 const EMPTY_STR = "";
@@ -497,7 +498,7 @@ function genPropDef(
           const element = name.trim();
           return `SvelteHTMLElements["${element}"]`;
         })
-        .join("&");
+        .join(" & ");
     }
 
     /**
@@ -585,7 +586,7 @@ function genPropDef(
       prop_def = `
     export type ${props_name}${genericsName} = ${def.extends === undefined ? "" : `${def.extends.interface} & `} {
       ${props}
-    }
+    };
   `;
     }
   }
@@ -1056,16 +1057,16 @@ function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">) {
          * Convert function type to function declaration format.
          */
         const [first, second, ...rest] = prop.type.split("=>");
-        const rest_type = rest.map((item) => `=>${item}`).join("");
-        type_def = `export declare function ${prop.name}${first}:${second}${rest_type};`;
+        const rest_type = rest.map((item) => ` => ${item.trim()}`).join("");
+        type_def = `export declare function ${prop.name}${first.trimEnd()}: ${second.trim()}${rest_type};`;
       } else if (is_function && prop.type) {
         /**
          * Fall back to existing function type handling (including default function type).
          * Convert the function type expression to a function declaration.
          */
         const [first, second, ...rest] = prop.type.split("=>");
-        const rest_type = rest.map((item) => `=>${item}`).join("");
-        type_def = `export declare function ${prop.name}${first}:${second}${rest_type};`;
+        const rest_type = rest.map((item) => ` => ${item.trim()}`).join("");
+        type_def = `export declare function ${prop.name}${first.trimEnd()}: ${second.trim()}${rest_type};`;
       } else if (prop.kind === "const") {
         /**
          * Const exports that are functions (shouldn't happen, but handle gracefully).
@@ -1087,6 +1088,9 @@ function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">) {
     .join("\n");
 }
 
+/** Line length under which a class shell with no accessors can stay on one line. */
+const COMPONENT_SHELL_INLINE_WIDTH = 120;
+
 function genComponentShell(def: {
   accessors: string;
   events: string;
@@ -1095,7 +1099,16 @@ function genComponentShell(def: {
   moduleName: string;
   slots: string;
 }) {
-  return `export default class ${def.moduleName === "default" ? "" : def.moduleName}${def.generic} extends SvelteComponentTyped<
+  const name = def.moduleName === "default" ? "" : def.moduleName;
+  const header = `export default class ${name}${def.generic} extends SvelteComponentTyped<`;
+  const typeArgs = [def.genericProps, def.events, def.slots];
+
+  if (def.accessors.trim() === "" && typeArgs.every((arg) => !arg.includes("\n"))) {
+    const oneLiner = `${header}${typeArgs.join(", ")}> {}`;
+    if (oneLiner.length <= COMPONENT_SHELL_INLINE_WIDTH) return oneLiner;
+  }
+
+  return `${header}
       ${def.genericProps},
       ${def.events},
       ${def.slots}
@@ -1234,5 +1247,5 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
     .filter(Boolean)
     .join("\n\n");
 
-  return [importSection, bodySection].filter(Boolean).join("\n\n");
+  return formatGeneratedTypeScript([importSection, bodySection].filter(Boolean).join("\n\n"));
 }

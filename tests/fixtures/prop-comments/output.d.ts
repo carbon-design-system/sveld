@@ -21,11 +21,11 @@ export type PropCommentsProps = {
    */
   prop2?: boolean | string;
 
-  children?: (this: void, ...args: [{ prop: boolean | string; prop1: boolean; prop2: boolean | string }]) => void;
+  children?: (this: void, ...args: [{ prop: boolean | string, prop1: boolean, prop2: boolean | string }]) => void;
 };
 
 export default class PropComments extends SvelteComponentTyped<
   PropCommentsProps,
   Record<string, any>,
-  { default: { prop: boolean | string; prop1: boolean; prop2: boolean | string } }
+  { default: { prop: boolean | string, prop1: boolean, prop2: boolean | string } }
 > {}

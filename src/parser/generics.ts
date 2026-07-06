@@ -44,7 +44,7 @@ export function parseGenericsAttribute(value: string): ComponentGenerics {
 
   const names = constraints.map((constraint) => constraint.match(LEADING_IDENTIFIER_REGEX)?.[0] ?? constraint);
 
-  return [names.join(","), constraints.join(", ")];
+  return [names.join(", "), constraints.join(", ")];
 }
 
 /**

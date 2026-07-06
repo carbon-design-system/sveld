@@ -2,7 +2,7 @@ import { SvelteComponentTyped } from "svelte";
 
 export interface Base {
   id: string;
-  createdAt: number;
+  createdAt: number
 }
 
 export type User = Base & { kind: "user"; name: string };

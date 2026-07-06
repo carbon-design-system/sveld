@@ -8,18 +8,7 @@ type $Props = {
    * Specify the type of tag
    * @default undefined
    */
-  type?:
-    | "red"
-    | "magenta"
-    | "purple"
-    | "blue"
-    | "cyan"
-    | "teal"
-    | "green"
-    | "gray"
-    | "cool-gray"
-    | "warm-gray"
-    | "high-contrast";
+  type?: "red" | "magenta" | "purple" | "blue" | "cyan" | "teal" | "green" | "gray" | "cool-gray" | "warm-gray" | "high-contrast";
 
   /**
    * Set to `true` to use filterable variant
@@ -57,10 +46,7 @@ type $Props = {
    */
   id?: string;
 
-  children?: (
-    this: void,
-    ...args: [{ props: { class: "bx--tag__label" } }]
-  ) => void;
+  children?: (this: void, ...args: [{ props: { class: "bx--tag__label" } }]) => void;
 
   [key: `data-${string}`]: unknown;
 };

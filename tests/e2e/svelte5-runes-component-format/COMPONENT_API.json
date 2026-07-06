@@ -11,8 +11,14 @@
       "moduleName": "LegacyPanel",
       "filePath": "src/LegacyPanel.svelte",
       "source": {
-        "start": { "line": 1, "column": 0 },
-        "end": { "line": 18, "column": 0 }
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 18,
+          "column": 0
+        }
       },
       "syntaxMode": "legacy",
       "scriptLanguage": "ts",
@@ -28,8 +34,14 @@
           "constant": false,
           "reactive": false,
           "source": {
-            "start": { "line": 4, "column": 2 },
-            "end": { "line": 4, "column": 27 }
+            "start": {
+              "line": 4,
+              "column": 2
+            },
+            "end": {
+              "line": 4,
+              "column": 27
+            }
           }
         }
       ],
@@ -41,16 +53,28 @@
           "name": "click",
           "element": "button",
           "source": {
-            "start": { "line": 15, "column": 10 },
-            "end": { "line": 15, "column": 18 }
+            "start": {
+              "line": 15,
+              "column": 10
+            },
+            "end": {
+              "line": 15,
+              "column": 18
+            }
           }
         },
         {
           "type": "dispatched",
           "name": "close",
           "source": {
-            "start": { "line": 9, "column": 4 },
-            "end": { "line": 9, "column": 41 }
+            "start": {
+              "line": 9,
+              "column": 4
+            },
+            "end": {
+              "line": 9,
+              "column": 41
+            }
           }
         }
       ],
@@ -62,8 +86,14 @@
       "moduleName": "RunesButton",
       "filePath": "src/RunesButton.svelte",
       "source": {
-        "start": { "line": 1, "column": 0 },
-        "end": { "line": 28, "column": 0 }
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 28,
+          "column": 0
+        }
       },
       "syntaxMode": "runes",
       "scriptLanguage": "ts",
@@ -79,8 +109,14 @@
           "constant": false,
           "reactive": false,
           "source": {
-            "start": { "line": 5, "column": 4 },
-            "end": { "line": 5, "column": 9 }
+            "start": {
+              "line": 5,
+              "column": 4
+            },
+            "end": {
+              "line": 5,
+              "column": 9
+            }
           }
         },
         {
@@ -94,8 +130,14 @@
           "constant": false,
           "reactive": false,
           "source": {
-            "start": { "line": 6, "column": 4 },
-            "end": { "line": 6, "column": 11 }
+            "start": {
+              "line": 6,
+              "column": 4
+            },
+            "end": {
+              "line": 6,
+              "column": 11
+            }
           }
         },
         {
@@ -109,8 +151,14 @@
           "constant": false,
           "reactive": false,
           "source": {
-            "start": { "line": 7, "column": 4 },
-            "end": { "line": 7, "column": 11 }
+            "start": {
+              "line": 7,
+              "column": 4
+            },
+            "end": {
+              "line": 7,
+              "column": 11
+            }
           }
         },
         {
@@ -131,8 +179,14 @@
           "constant": false,
           "reactive": true,
           "source": {
-            "start": { "line": 8, "column": 4 },
-            "end": { "line": 8, "column": 30 }
+            "start": {
+              "line": 8,
+              "column": 4
+            },
+            "end": {
+              "line": 8,
+              "column": 30
+            }
           }
         }
       ],
@@ -143,8 +197,14 @@
           "default": true,
           "slot_props": "{ value: string }",
           "source": {
-            "start": { "line": 26, "column": 2 },
-            "end": { "line": 26, "column": 33 }
+            "start": {
+              "line": 26,
+              "column": 2
+            },
+            "end": {
+              "line": 26,
+              "column": 33
+            }
           }
         }
       ],
@@ -157,8 +217,14 @@
       "moduleName": "RunesGenericList",
       "filePath": "src/RunesGenericList.svelte",
       "source": {
-        "start": { "line": 1, "column": 0 },
-        "end": { "line": 18, "column": 0 }
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 18,
+          "column": 0
+        }
       },
       "syntaxMode": "runes",
       "scriptLanguage": "ts",
@@ -174,8 +240,14 @@
           "constant": false,
           "reactive": false,
           "source": {
-            "start": { "line": 5, "column": 4 },
-            "end": { "line": 5, "column": 9 }
+            "start": {
+              "line": 5,
+              "column": 4
+            },
+            "end": {
+              "line": 5,
+              "column": 9
+            }
           }
         },
         {
@@ -189,8 +261,14 @@
           "constant": false,
           "reactive": false,
           "source": {
-            "start": { "line": 6, "column": 4 },
-            "end": { "line": 6, "column": 7 }
+            "start": {
+              "line": 6,
+              "column": 4
+            },
+            "end": {
+              "line": 6,
+              "column": 7
+            }
           }
         }
       ],

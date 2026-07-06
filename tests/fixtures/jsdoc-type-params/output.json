@@ -62,7 +62,7 @@
     {
       "type": "string",
       "name": "TreeNodeId",
-      "ts": "type TreeNodeId = string"
+      "ts": "type TreeNodeId = string;"
     }
   ],
   "generics": null,

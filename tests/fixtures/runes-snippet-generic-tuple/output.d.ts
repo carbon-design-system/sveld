@@ -1,5 +1,5 @@
-import type { Snippet } from "svelte";
 import { SvelteComponentTyped } from "svelte";
+import type { Snippet } from "svelte";
 
 type $Props<Row> = {
   rows: Row[];

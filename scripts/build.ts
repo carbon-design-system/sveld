@@ -26,11 +26,6 @@ async function buildProject() {
     // Default Bun behavior treats `node_modules` imports as external; bundle
     // them so `svelte/compiler` (and `estree-walker`) ship inside `lib`.
     packages: "bundle",
-    external: [
-      // Optional peer dependency; avoids bundling css-tree/mdn-data which use
-      // createRequire with relative paths for JSON data files.
-      "prettier",
-    ],
   });
 
   if (!result.success) {

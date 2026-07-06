@@ -11,9 +11,6 @@ export type CopyButtonProps = CopyProps & {
 
 export default class CopyButton extends SvelteComponentTyped<
   CopyButtonProps,
-  {
-    animationend: WindowEventMap["animationend"];
-    click: WindowEventMap["click"];
-  },
+  { animationend: WindowEventMap["animationend"]; click: WindowEventMap["click"] },
   Record<string, never>
 > {}

@@ -734,11 +734,11 @@ describe(`writeTsDefinition with format: "component"`, () => {
     expect(output).toContain("export type ButtonExports = Record<string, never>;");
     expect(output).toContain(
       `declare const Button: Component<
-      ButtonProps,
-      ButtonExports,
-      ""
-    >;
-    export default Button;`,
+  ButtonProps,
+  ButtonExports,
+  ""
+>;
+export default Button;`,
     );
   });
 
@@ -792,20 +792,24 @@ describe(`writeTsDefinition with format: "component"`, () => {
       rest_props: undefined,
     };
 
-    const output = writeTsDefinition(bindableComponent, { format: "component" });
+    const output = writeTsDefinition(bindableComponent, {
+      format: "component",
+    });
     expect(output).toContain('"value" | "disabled"');
 
     const noBindableComponent: ComponentDocApi = {
       ...bindableComponent,
       props: bindableComponent.props.map(({ bindable: _bindable, binding: _binding, ...prop }) => prop),
     };
-    const noBindableOutput = writeTsDefinition(noBindableComponent, { format: "component" });
+    const noBindableOutput = writeTsDefinition(noBindableComponent, {
+      format: "component",
+    });
     expect(noBindableOutput).toContain(
       `declare const TextInput: Component<
-      TextInputProps,
-      TextInputExports,
-      ""
-    >;`,
+  TextInputProps,
+  TextInputExports,
+  ""
+>;`,
     );
   });
 
@@ -895,10 +899,10 @@ describe(`writeTsDefinition with format: "component"`, () => {
     expect(output).toContain("expandAll: () => void;");
     expect(output).toContain(
       `declare const Tree: Component<
-      TreeProps,
-      TreeExports,
-      ""
-    >;`,
+  TreeProps,
+  TreeExports,
+  ""
+>;`,
     );
   });
 
@@ -934,10 +938,10 @@ describe(`writeTsDefinition with format: "component"`, () => {
     );
     expect(output).toContain("interface GenericListComponent {");
     expect(output).toContain(
-      "new <Row extends { id: string } = { id: string }>(\n        options: ComponentConstructorOptions<GenericListProps<Row>>\n      ): SvelteComponent<GenericListProps<Row>> & GenericListExports;",
+      "new <Row extends { id: string } = { id: string }>(\n    options: ComponentConstructorOptions<GenericListProps<Row>>\n  ): SvelteComponent<GenericListProps<Row>> & GenericListExports;",
     );
     expect(output).toContain(
-      "<Row extends { id: string } = { id: string }>(\n        this: void,\n        internals: ComponentInternals,\n        props: GenericListProps<Row>",
+      "<Row extends { id: string } = { id: string }>(\n    this: void,\n    internals: ComponentInternals,\n    props: GenericListProps<Row>",
     );
     expect(output).toContain("declare const GenericList: GenericListComponent;");
     expect(output).toContain("export default GenericList;");

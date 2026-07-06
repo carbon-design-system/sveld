@@ -13,10 +13,7 @@ export type DataTableContext<Row extends DataTableRow = DataTableRow> = {
   /** Reset selected row ids */
   resetSelectedRowIds: () => void;
   /** Filter rows by search value */
-  filterRows: (
-    searchValue: string,
-    customFilter?: (row: Row, value: string) => boolean,
-  ) => ReadonlyArray<DataTableRowId>;
+  filterRows: (searchValue: string, customFilter?: (row: Row, value: string) => boolean) => ReadonlyArray<DataTableRowId>;
 };
 
 export type ContextGenericsProps<Row extends DataTableRow = DataTableRow> = {

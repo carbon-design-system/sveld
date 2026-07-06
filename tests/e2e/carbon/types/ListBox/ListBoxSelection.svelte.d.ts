@@ -42,5 +42,5 @@ export default class ListBoxSelection extends SvelteComponentTyped<
   /**
    * Default translation ids
    */
-  translationIds: { clearAll: "clearAll"; clearSelection: "clearSelection" };
+  translationIds: { clearAll: "clearAll", clearSelection: "clearSelection", };
 }

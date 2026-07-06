@@ -70,7 +70,7 @@
       "type": "(value: unknown) => value is User",
       "name": "UserGuard",
       "description": "A type guard expressed as a `@callback`.",
-      "ts": "type UserGuard = (value: unknown) => value is User"
+      "ts": "type UserGuard = (value: unknown) => value is User;"
     }
   ],
   "generics": null,

@@ -14,8 +14,4 @@ export type InputProps = {
   value?: string;
 };
 
-export default class Input extends SvelteComponentTyped<
-  InputProps,
-  Record<string, any>,
-  Record<string, never>
-> {}
+export default class Input extends SvelteComponentTyped<InputProps, Record<string, any>, Record<string, never>> {}

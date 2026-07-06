@@ -142,9 +142,5 @@ export default class Modal extends SvelteComponentTyped<
     open: CustomEvent<null>;
     submit: CustomEvent<null>;
   },
-  {
-    default: Record<string, never>;
-    heading: Record<string, never>;
-    label: Record<string, never>;
-  }
+  { default: Record<string, never>; heading: Record<string, never>; label: Record<string, never> }
 > {}

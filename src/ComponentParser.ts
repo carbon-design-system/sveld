@@ -1202,7 +1202,7 @@ export default class ComponentParser {
    */
   accumulateGeneric(name: string, constraint: string): void {
     if (this.ctx.generics) {
-      this.ctx.generics = [`${this.ctx.generics[0]},${name}`, `${this.ctx.generics[1]}, ${constraint}`];
+      this.ctx.generics = [`${this.ctx.generics[0]}, ${name}`, `${this.ctx.generics[1]}, ${constraint}`];
     } else {
       this.ctx.generics = [name, constraint];
     }
