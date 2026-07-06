@@ -14,14 +14,16 @@ export function getSvelteEntry(entryPoint?: string): SvelteEntryPoint | null {
       return asSvelteEntryPoint(entryPoint);
     }
 
-    console.log(`Invalid entry point: ${entry_path}.`);
+    console.error(`Invalid entry point: ${entry_path}. Pass a valid --entry (or "entry" option), or unset it and`);
+    console.error('set the "svelte" field in your package.json instead.');
     return null;
   }
 
   const pkg_path = join(process.cwd(), "package.json");
 
   if (!existsSync(pkg_path)) {
-    console.log("Could not locate a package.json file.\n");
+    console.error("Could not locate a package.json file.");
+    console.error('Specify an entry point with --entry (or the "entry" option) instead.\n');
     return null;
   }
 
@@ -32,8 +34,10 @@ export function getSvelteEntry(entryPoint?: string): SvelteEntryPoint | null {
       return asSvelteEntryPoint(pkg.svelte);
     }
 
-    console.log("Could not determine an entry point.\n");
-    console.log('Specify an entry point to your Svelte code in the "svelte" field of your package.json.\n');
+    console.error("Could not determine an entry point.\n");
+    console.error(
+      'Specify an entry point to your Svelte code in the "svelte" field of your package.json, or pass --entry (or the "entry" option).\n',
+    );
     return null;
   } catch (error) {
     console.error("Error reading package.json:", error);

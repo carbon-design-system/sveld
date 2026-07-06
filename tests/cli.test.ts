@@ -1,4 +1,7 @@
-import { parseCliOptions } from "../src/cli";
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { cli, parseCliOptions } from "../src/cli";
 
 describe("parseCliOptions", () => {
   test("--fail-fast enables failFast", () => {
@@ -51,5 +54,51 @@ describe("parseCliOptions", () => {
 
   test("--strict enables strict", () => {
     expect(parseCliOptions(["--strict"])).toEqual({ strict: true });
+  });
+});
+
+describe("cli() entry resolution failures", () => {
+  // `process.exitCode = undefined` does not clear a previously-set numeric
+  // exit code (Node/Bun ignore the assignment), so `0` is used as the
+  // neutral baseline instead of relying on the initial `undefined` state.
+  let dir: string;
+  let previousCwd: string;
+  let previousArgv: string[];
+  let errorSpy: ReturnType<typeof jest.spyOn>;
+
+  beforeEach(() => {
+    previousCwd = process.cwd();
+    previousArgv = process.argv;
+    process.exitCode = 0;
+    process.argv = ["bun", "cli.js"];
+    dir = mkdtempSync(join(tmpdir(), "sveld-cli-entry-"));
+    process.chdir(dir);
+    errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    process.chdir(previousCwd);
+    process.argv = previousArgv;
+    process.exitCode = 0;
+    rmSync(dir, { recursive: true, force: true });
+    jest.restoreAllMocks();
+  });
+
+  test("sets exitCode 1 and writes nothing when no entry and no src/index.js fallback exist", async () => {
+    await cli(process);
+
+    expect(process.exitCode).toBe(1);
+    expect(existsSync(join(dir, "types"))).toBe(false);
+    expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(false);
+  });
+
+  test("falls back to src/index.js with a stderr note when resolution fails but the fallback exists", async () => {
+    mkdirSync(join(dir, "src"), { recursive: true });
+    writeFileSync(join(dir, "src", "index.js"), "export {};\n");
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(0);
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('falling back to "src/index.js"'));
   });
 });
