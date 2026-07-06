@@ -125,9 +125,7 @@ describe("ComponentParser", () => {
   });
 
   test("parses @bindable JSDoc metadata and ignores invalid values", () => {
-    const log = jest.spyOn(console, "log").mockImplementation(() => undefined);
-    const warn = jest.spyOn(console, "warn").mockImplementation(() => undefined);
-    const parser = new ComponentParser({ verbose: true });
+    const parser = new ComponentParser();
     const source = `
       <script>
         /**
@@ -149,10 +147,6 @@ describe("ComponentParser", () => {
     expect(result.props.find((p) => p.name === "size")?.binding).toBe("readonly");
     expect(result.props.find((p) => p.name === "size")?.description).toBe("Current value.");
     expect(result.props.find((p) => p.name === "invalid")?.binding).toBeUndefined();
-    expect(warn).toHaveBeenCalledWith('Warning: Ignoring invalid @bindable value "sideways".');
-
-    warn.mockRestore();
-    log.mockRestore();
   });
 
   test("preserves JSDoc when @ts-ignore is present", () => {

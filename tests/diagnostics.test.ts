@@ -95,6 +95,24 @@ describe("ComponentParser diagnostics", () => {
 
     expect(diagnostics?.some((d) => d.kind === "event-no-source")).toBe(false);
   });
+
+  test("flags a non-trivial {@render} argument as syntax-skipped", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        let { children, title } = $props();
+      </script>
+      <div>{title}{@render children(getProps())}</div>
+    `;
+
+    const { diagnostics, props } = parser.parseSvelteComponent(source, parseContext);
+    const syntaxDiagnostic = diagnostics?.find((d) => d.kind === "syntax-skipped");
+
+    expect(syntaxDiagnostic).toMatchObject({ kind: "syntax-skipped", name: "children" });
+    expect(typeof syntaxDiagnostic?.message).toBe("string");
+    expect(syntaxDiagnostic?.source).toBeDefined();
+    expect(props.map((p) => p.name)).toContain("title");
+  });
 });
 
 describe("diagnostics helpers", () => {

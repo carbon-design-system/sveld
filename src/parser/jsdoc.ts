@@ -131,7 +131,7 @@ export function formatComment(comment: string) {
 }
 
 /** Split JSDoc tags into type/param/returns/passthrough buckets. */
-export function getCommentTags(parser: ComponentParser, parsed: ReturnType<typeof parseComment>) {
+export function getCommentTags(parsed: ReturnType<typeof parseComment>) {
   const tags = parsed[0]?.tags ?? [];
   const excludedTags = new Set([
     "type",
@@ -171,15 +171,12 @@ export function getCommentTags(parser: ComponentParser, parsed: ReturnType<typeo
       passthroughTags.push(tag);
     } else if (tag.tag === "bindable") {
       if (tag.type) {
-        parser.logParserWarning(`Ignoring invalid @bindable value "${tag.type} ${tag.name}".`);
         continue;
       }
 
       const value = `${tag.name}${tag.description ? ` ${tag.description}` : ""}`.trim();
       if (value === "readonly" || value === "writable") {
         binding ??= value;
-      } else {
-        parser.logParserWarning(`Ignoring invalid @bindable value "${value}".`);
       }
     } else if (!excludedTags.has(tag.tag)) {
       additionalTags.push(tag);
@@ -293,7 +290,7 @@ export function processJSDocComment(
     additional: additionalTags,
     passthrough: passthroughTags,
     description: commentDescription,
-  } = getCommentTags(parser, comment);
+  } = getCommentTags(comment);
 
   let type: string | undefined;
   let params: ComponentPropParam[] | undefined;

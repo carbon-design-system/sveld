@@ -1,4 +1,4 @@
-import type { Property, VariableDeclaration, VariableDeclarator } from "estree";
+import type { AssignmentPattern, Identifier, Property, VariableDeclaration, VariableDeclarator } from "estree";
 import { parse } from "svelte/compiler";
 import { isCallExpressionNamed } from "../ast-guards";
 import type ComponentParser from "../ComponentParser";
@@ -326,7 +326,6 @@ export function parseRunesPropsDeclaration(parser: ComponentParser, ctx: ParserC
     }
 
     if (declarator.id.type !== "ObjectPattern") {
-      parser.logUnsupportedRunesPattern("Skipping unsupported $props() declaration pattern.");
       continue;
     }
 
@@ -344,20 +343,14 @@ export function parseRunesPropsDeclaration(parser: ComponentParser, ctx: ParserC
       if (property.type === "RestElement") {
         if (property.argument.type === "Identifier") {
           ctx.restPropLocals.add(property.argument.name);
-        } else {
-          parser.logUnsupportedRunesPattern("Skipping unsupported rest element in $props() destructuring.");
         }
         continue;
       }
 
-      if (property.computed) {
-        parser.logUnsupportedRunesPattern("Skipping computed property in $props() destructuring.");
-        continue;
-      }
-
+      // Svelte's own `$props()` analysis (VariableDeclarator.js) already rejects computed keys
+      // and non-Identifier destructuring targets as a compile error, so neither can reach here.
       const propName = parser.getPropertyName(property.key);
       if (!propName) {
-        parser.logUnsupportedRunesPattern("Skipping unsupported property name in $props() destructuring.");
         continue;
       }
 
@@ -366,19 +359,10 @@ export function parseRunesPropsDeclaration(parser: ComponentParser, ctx: ParserC
 
       if (property.value.type === "Identifier") {
         localName = property.value.name;
-      } else if (property.value.type === "AssignmentPattern") {
-        if (property.value.left.type !== "Identifier") {
-          parser.logUnsupportedRunesPattern(
-            `Skipping nested pattern for prop "${propName}" in $props() destructuring.`,
-          );
-          continue;
-        }
-
-        localName = property.value.left.name;
-        init = property.value.right;
       } else {
-        parser.logUnsupportedRunesPattern(`Skipping nested pattern for prop "${propName}" in $props() destructuring.`);
-        continue;
+        const assignmentPattern = property.value as AssignmentPattern & { left: Identifier };
+        localName = assignmentPattern.left.name;
+        init = assignmentPattern.right;
       }
 
       if (!localName) continue;

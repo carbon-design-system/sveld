@@ -256,12 +256,12 @@ Needs `typescript` and a `tsconfig.json`, same as `resolveTypes`. Use `--strict`
 
 #### Type inference diagnostics
 
-`sveld` collects unresolved-type diagnostics on every run: props that fall back to `any`, context values typed as `any`, `@event` tags with no dispatch or callback, and (when `checkExamples` is enabled) `example-compile-error`. They are always returned from the programmatic `sveld()` API in `SveldResult.diagnostics`. Each diagnostic carries an optional `source` range (the same `{ start: { line, column }, end: { line, column } }` shape as JSON output source ranges) whenever the parser holds a stable position for it.
+`sveld` collects unresolved-type diagnostics on every run: props that fall back to `any`, context values typed as `any`, `@event` tags with no dispatch or callback, `$props()`/`{@render}` syntax sveld can't model, and (when `checkExamples` is enabled) `example-compile-error`. They are always returned from the programmatic `sveld()` API in `SveldResult.diagnostics`. Each diagnostic carries an optional `source` range (the same `{ start: { line, column }, end: { line, column } }` shape as JSON output source ranges) whenever the parser holds a stable position for it.
 
 With `reportDiagnostics` or `strict`, the grouped summary looks like this:
 
 ```
-sveld: 4 unresolved types found.
+sveld: 5 unresolved types found.
 
 Props without inferred types (1):
   ./icons/Add.svelte
@@ -275,9 +275,13 @@ Context values typed as `any` (1):
   ./Modal.svelte
     - @event "open" has no matching dispatch or callback prop. (./Modal.svelte:3:5)
     - @event "close" has no matching dispatch or callback prop. (./Modal.svelte:4:5)
+
+Component syntax sveld skipped (1):
+  ./Tabs.svelte
+    - {@render tabs(getTabProps())} argument is not a plain object literal; the render call was not mapped to slot metadata. (./Tabs.svelte:6:4)
 ```
 
-When `checkExamples` is also enabled, `@example` compile failures appear as a fourth group:
+When `checkExamples` is also enabled, `@example` compile failures appear as a fifth group:
 
 ```
 @example blocks that failed to compile (1):

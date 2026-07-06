@@ -57,9 +57,6 @@ export function parseContextValue(
             `Context "${key}" property "${propName}" has no type annotation; defaulted to "any".`,
             sourceRangeFromNode(ctx, prop),
           );
-          if (parser.options?.verbose) {
-            console.warn(`Warning: Context "${key}" property "${propName}" has no type annotation. Using "any".`);
-          }
         }
       } else if (
         prop.value &&
@@ -122,9 +119,6 @@ export function parseContextValue(
       `Context "${key}" variable "${varName}" has no type annotation; defaulted to "any".`,
       sourceRangeFromNode(ctx, node),
     );
-    if (parser.options?.verbose) {
-      console.warn(`Warning: Context "${key}" variable "${varName}" has no type annotation. Using "any".`);
-    }
 
     return {
       key,
@@ -241,13 +235,7 @@ export function parseSetContextCall(ctx: ParserContext, parser: ComponentParser,
   if (!valueArg) return;
 
   const contextInfo = parseContextValue(ctx, parser, valueArg, contextKey);
-  if (contextInfo) {
-    if (ctx.contexts.has(contextKey)) {
-      if (parser.options?.verbose) {
-        console.warn(`Warning: Multiple setContext calls with key "${contextKey}". Using first occurrence.`);
-      }
-    } else {
-      ctx.contexts.set(contextKey, contextInfo);
-    }
+  if (contextInfo && !ctx.contexts.has(contextKey)) {
+    ctx.contexts.set(contextKey, contextInfo);
   }
 }
