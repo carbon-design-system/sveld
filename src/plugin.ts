@@ -81,7 +81,7 @@ interface SveldPlugin {
   enforce?: "pre" | "post";
   buildStart(): void | Promise<void>;
   generateBundle(): Promise<void>;
-  writeBundle(): void;
+  writeBundle(): Promise<void>;
   /** Vite dev-server HMR hook (serve mode). */
   handleHotUpdate?(ctx: HotUpdateContext): void;
   /** Rollup/Vite watch hook (build `--watch`). */
@@ -109,7 +109,7 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
     pending.clear();
     try {
       const { result: next } = await bundle.update(changed);
-      writeOutput(next, opts || {}, input);
+      await writeOutput(next, opts || {}, input);
     } catch (error) {
       console.error("sveld: failed to regenerate types in watch mode:", error);
     }
@@ -135,7 +135,7 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
         // covers both `vite dev` (where generateBundle/writeBundle never fire)
         // and `vite build --watch`.
         bundle = await createSveldBundle(input, opts?.glob === true, opts?.documentExports === true);
-        writeOutput(bundle.result, opts || {}, input);
+        await writeOutput(bundle.result, opts || {}, input);
       }
     },
     async generateBundle() {
@@ -145,9 +145,9 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
         result = await generateBundle(input, opts?.glob === true, toGenerateBundleOptions(opts));
       }
     },
-    writeBundle() {
+    async writeBundle() {
       if (watch) return;
-      if (input != null) writeOutput(result, opts || {}, input);
+      if (input != null) await writeOutput(result, opts || {}, input);
     },
     handleHotUpdate(ctx) {
       scheduleUpdate(ctx.file);
@@ -178,7 +178,7 @@ function runBuiltInWriter(name: "types" | "json" | "markdown", components: Compo
  *
  * @example
  * ```ts
- * writeOutput(result, {
+ * await writeOutput(result, {
  *   types: true,
  *   json: true,
  *   markdown: true
@@ -186,7 +186,7 @@ function runBuiltInWriter(name: "types" | "json" | "markdown", components: Compo
  * // Generates: types/*.d.ts, COMPONENT_API.json, COMPONENT_INDEX.md
  * ```
  */
-export function writeOutput(result: GenerateBundleResult, opts: PluginSveldOptions, input: string) {
+export async function writeOutput(result: GenerateBundleResult, opts: PluginSveldOptions, input: string) {
   const inputDir = dirname(input);
 
   if (opts?.types !== false) {
@@ -195,7 +195,7 @@ export function writeOutput(result: GenerateBundleResult, opts: PluginSveldOptio
      * This ensures TypeScript definitions are available for all components,
      * not just exported ones, which is useful for type checking.
      */
-    runBuiltInWriter("types", result.allComponentsForTypes, {
+    await runBuiltInWriter("types", result.allComponentsForTypes, {
       outDir: "types",
       preamble: "",
       ...opts?.typesOptions,
@@ -210,7 +210,7 @@ export function writeOutput(result: GenerateBundleResult, opts: PluginSveldOptio
      * JSON output should only include components that are actually exported,
      * matching the public API surface.
      */
-    runBuiltInWriter("json", result.components, {
+    await runBuiltInWriter("json", result.components, {
       outFile: "COMPONENT_API.json",
       ...opts?.jsonOptions,
       input,
@@ -225,20 +225,22 @@ export function writeOutput(result: GenerateBundleResult, opts: PluginSveldOptio
      * Documentation should only include exported components that are
      * part of the public API.
      */
-    runBuiltInWriter("markdown", result.components, {
+    await runBuiltInWriter("markdown", result.components, {
       outFile: "COMPONENT_INDEX.md",
       ...opts?.markdownOptions,
       entryExports: result.entryExports,
     } satisfies WriteMarkdownOptions);
   }
 
-  for (const [name, writerOptions] of Object.entries(opts?.additionalWriters ?? {})) {
+  const additionalWrites = Object.entries(opts?.additionalWriters ?? {}).map(([name, writerOptions]) => {
     const writer = getWriter(name);
     if (!writer) {
       console.warn(`sveld: no writer registered with name "${name}"; skipping.`);
-      continue;
+      return undefined;
     }
     const components = writer.componentSet === "all" ? result.allComponentsForTypes : result.components;
-    writer.write(components, writerOptions);
-  }
+    return writer.write(components, writerOptions);
+  });
+
+  await Promise.all(additionalWrites);
 }
