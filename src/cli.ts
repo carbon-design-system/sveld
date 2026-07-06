@@ -1,6 +1,3 @@
-import resolve from "@rollup/plugin-node-resolve";
-import { rollup } from "rollup";
-import svelte from "rollup-plugin-svelte";
 import { type CheckResult, formatCheckReport, runCheck } from "./check";
 import { formatDiagnosticsSummary } from "./diagnostics";
 import { getSvelteEntry } from "./get-svelte-entry";
@@ -80,8 +77,8 @@ export function parseCliOptions(argv: string[]): CliOptions {
 }
 
 /**
- * CLI entry point: parse flags, load any config file, run Rollup, generate
- * docs, write outputs.
+ * CLI entry point: parse flags, load any config file, generate docs, write
+ * outputs.
  *
  * @example
  * ```ts
@@ -95,13 +92,6 @@ export async function cli(process: NodeJS.Process) {
   const options = mergeConfig<CliOptions>(fileConfig, cliOptions);
 
   const input = getSvelteEntry(options.entry) || "src/index.js";
-  const rollup_bundle = await rollup({
-    input,
-    plugins: [svelte(), resolve()],
-  });
-
-  await rollup_bundle.generate({});
-
   const result = await generateBundle(input, options.glob === true, toGenerateBundleOptions(options));
 
   // Read the committed snapshot before `writeOutput` can overwrite it.

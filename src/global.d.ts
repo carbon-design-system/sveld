@@ -1,5 +1,3 @@
-declare module "@rollup/plugin-node-resolve";
-
 /**
  * Ambient typings for `comment-parser`. The package ships `.d.ts` under `lib/`, but with
  * `moduleResolution: "bundler"` TypeScript 6 resolves the entry to `lib/index.cjs` and does
