@@ -81,13 +81,33 @@
       "component": "runes-snippet-description-hyphens/input.svelte",
       "kind": "prop-unknown-type",
       "name": "row",
-      "message": "Prop \"row\" type could not be inferred; falling back to \"any\"."
+      "message": "Prop \"row\" type could not be inferred; falling back to \"any\".",
+      "source": {
+        "start": {
+          "line": 7,
+          "column": 8
+        },
+        "end": {
+          "line": 7,
+          "column": 11
+        }
+      }
     },
     {
       "component": "runes-snippet-description-hyphens/input.svelte",
       "kind": "prop-unknown-type",
       "name": "col",
-      "message": "Prop \"col\" type could not be inferred; falling back to \"any\"."
+      "message": "Prop \"col\" type could not be inferred; falling back to \"any\".",
+      "source": {
+        "start": {
+          "line": 7,
+          "column": 13
+        },
+        "end": {
+          "line": 7,
+          "column": 16
+        }
+      }
     }
   ]
 }

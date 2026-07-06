@@ -149,13 +149,33 @@
       "component": "module-reexport-mixed/input.svelte",
       "kind": "prop-unknown-type",
       "name": "name",
-      "message": "Prop \"name\" type could not be inferred; falling back to \"any\"."
+      "message": "Prop \"name\" type could not be inferred; falling back to \"any\".",
+      "source": {
+        "start": {
+          "line": 27,
+          "column": 2
+        },
+        "end": {
+          "line": 27,
+          "column": 18
+        }
+      }
     },
     {
       "component": "module-reexport-mixed/input.svelte",
       "kind": "prop-unknown-type",
       "name": "value",
-      "message": "Prop \"value\" type could not be inferred; falling back to \"any\"."
+      "message": "Prop \"value\" type could not be inferred; falling back to \"any\".",
+      "source": {
+        "start": {
+          "line": 30,
+          "column": 2
+        },
+        "end": {
+          "line": 30,
+          "column": 26
+        }
+      }
     }
   ]
 }

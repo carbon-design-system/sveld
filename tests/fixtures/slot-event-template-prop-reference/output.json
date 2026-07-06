@@ -86,7 +86,17 @@
       "component": "slot-event-template-prop-reference/input.svelte",
       "kind": "event-no-source",
       "name": "select",
-      "message": "@event \"select\" has no matching dispatch or callback prop."
+      "message": "@event \"select\" has no matching dispatch or callback prop.",
+      "source": {
+        "start": {
+          "line": 5,
+          "column": 5
+        },
+        "end": {
+          "line": 5,
+          "column": 25
+        }
+      }
     }
   ]
 }

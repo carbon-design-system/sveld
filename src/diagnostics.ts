@@ -1,3 +1,5 @@
+import type { SourceRange } from "./ComponentParser";
+
 /**
  * Why sveld could not pin a type during parsing.
  *
@@ -23,6 +25,8 @@ export interface SveldDiagnostic {
   name: string;
   /** What went wrong and what type sveld used. */
   message: string;
+  /** Where in the component source this diagnostic points, when the parser holds a stable position. */
+  source?: SourceRange;
 }
 
 const KIND_LABELS: Record<SveldDiagnosticKind, string> = {
@@ -86,7 +90,10 @@ export function formatDiagnosticsSummary(diagnostics: SveldDiagnostic[]): string
     for (const [component, group] of byComponent) {
       lines.push(`  ${component}`);
       for (const diagnostic of group) {
-        lines.push(`    - ${diagnostic.message}`);
+        const location = diagnostic.source
+          ? ` (${component}:${diagnostic.source.start.line}:${diagnostic.source.start.column})`
+          : "";
+        lines.push(`    - ${diagnostic.message}${location}`);
       }
     }
   }

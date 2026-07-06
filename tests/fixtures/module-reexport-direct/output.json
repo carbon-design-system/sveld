@@ -106,7 +106,17 @@
       "component": "module-reexport-direct/input.svelte",
       "kind": "prop-unknown-type",
       "name": "onReady",
-      "message": "Prop \"onReady\" type could not be inferred; falling back to \"any\"."
+      "message": "Prop \"onReady\" type could not be inferred; falling back to \"any\".",
+      "source": {
+        "start": {
+          "line": 13,
+          "column": 2
+        },
+        "end": {
+          "line": 13,
+          "column": 21
+        }
+      }
     }
   ]
 }

@@ -39,7 +39,17 @@
       "component": "dispatched-events-dynamic/input.svelte",
       "kind": "event-no-source",
       "name": "KEY",
-      "message": "@event \"KEY\" has no matching dispatch or callback prop."
+      "message": "@event \"KEY\" has no matching dispatch or callback prop.",
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 5
+        },
+        "end": {
+          "line": 3,
+          "column": 32
+        }
+      }
     }
   ]
 }

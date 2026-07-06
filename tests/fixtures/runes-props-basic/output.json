@@ -71,7 +71,17 @@
       "component": "runes-props-basic/input.svelte",
       "kind": "prop-unknown-type",
       "name": "title",
-      "message": "Prop \"title\" type could not be inferred; falling back to \"any\"."
+      "message": "Prop \"title\" type could not be inferred; falling back to \"any\".",
+      "source": {
+        "start": {
+          "line": 2,
+          "column": 8
+        },
+        "end": {
+          "line": 2,
+          "column": 13
+        }
+      }
     }
   ]
 }

@@ -150,6 +150,9 @@ export interface ParserContext {
   /** `@event` names from JSDoc, checked against dispatches at end of parse. */
   readonly jsDocEventNames: Set<string>;
 
+  /** Source range of each `@event` JSDoc tag, keyed by event name, for `event-no-source` diagnostics. */
+  readonly jsDocEventSources: Map<string, SourceRange | undefined>;
+
   // --- contexts/bindings ---
 
   /** Map of prop bindings (e.g., `bind:value`) keyed by prop name */
@@ -218,6 +221,7 @@ export function createParserContext(): ParserContext {
     eventDescriptions: new Map(),
     forwardedEvents: new Map(),
     jsDocEventNames: new Set(),
+    jsDocEventSources: new Map(),
 
     // contexts/bindings
     bindings: new Map(),

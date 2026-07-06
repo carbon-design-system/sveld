@@ -137,7 +137,17 @@
       "component": "required/input.svelte",
       "kind": "prop-unknown-type",
       "name": "prop2",
-      "message": "Prop \"prop2\" type could not be inferred; falling back to \"any\"."
+      "message": "Prop \"prop2\" type could not be inferred; falling back to \"any\".",
+      "source": {
+        "start": {
+          "line": 14,
+          "column": 2
+        },
+        "end": {
+          "line": 14,
+          "column": 19
+        }
+      }
     }
   ]
 }

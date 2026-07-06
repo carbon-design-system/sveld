@@ -208,7 +208,17 @@
       "component": "theme-component/input.svelte",
       "kind": "event-no-source",
       "name": "update",
-      "message": "@event \"update\" has no matching dispatch or callback prop."
+      "message": "@event \"update\" has no matching dispatch or callback prop.",
+      "source": {
+        "start": {
+          "line": 26,
+          "column": 8
+        },
+        "end": {
+          "line": 26,
+          "column": 21
+        }
+      }
     }
   ]
 }

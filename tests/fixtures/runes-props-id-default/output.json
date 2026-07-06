@@ -44,7 +44,17 @@
       "component": "runes-props-id-default/input.svelte",
       "kind": "prop-unknown-type",
       "name": "label",
-      "message": "Prop \"label\" type could not be inferred; falling back to \"any\"."
+      "message": "Prop \"label\" type could not be inferred; falling back to \"any\".",
+      "source": {
+        "start": {
+          "line": 2,
+          "column": 8
+        },
+        "end": {
+          "line": 2,
+          "column": 13
+        }
+      }
     }
   ]
 }

@@ -551,17 +551,21 @@ async function checkComponentExamples(
       })),
     );
 
-    for (const { component } of candidates) {
+    for (const { component, sources } of candidates) {
       const found = diagnosticsByModule.get(component.moduleName);
       if (!found || found.length === 0) continue;
 
+      const sourceById = new Map(sources.map((source) => [source.id, source.source]));
+
       const diagnostics = component.diagnostics ?? [];
       for (const item of found) {
+        const source = sourceById.get(item.id);
         diagnostics.push({
           component: component.filePath,
           kind: "example-compile-error",
           name: item.name,
           message: item.message,
+          ...(source ? { source } : {}),
         });
       }
       component.diagnostics = diagnostics;

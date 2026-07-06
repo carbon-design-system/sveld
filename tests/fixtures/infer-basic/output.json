@@ -217,13 +217,33 @@
       "component": "infer-basic/input.svelte",
       "kind": "prop-unknown-type",
       "name": "ref",
-      "message": "Prop \"ref\" type could not be inferred; falling back to \"any\"."
+      "message": "Prop \"ref\" type could not be inferred; falling back to \"any\".",
+      "source": {
+        "start": {
+          "line": 2,
+          "column": 2
+        },
+        "end": {
+          "line": 2,
+          "column": 24
+        }
+      }
     },
     {
       "component": "infer-basic/input.svelte",
       "kind": "prop-unknown-type",
       "name": "name",
-      "message": "Prop \"name\" type could not be inferred; falling back to \"any\"."
+      "message": "Prop \"name\" type could not be inferred; falling back to \"any\".",
+      "source": {
+        "start": {
+          "line": 5,
+          "column": 2
+        },
+        "end": {
+          "line": 5,
+          "column": 18
+        }
+      }
     }
   ]
 }

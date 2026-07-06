@@ -6,6 +6,7 @@ import type { ComponentContext, ComponentContextProp } from "../ComponentParser"
 import type { ParserContext } from "./context";
 import { recordDiagnostic } from "./diagnostics";
 import { resolveConstInitializer } from "./props";
+import { sourceRangeFromNode } from "./source-position";
 
 /** Split a `setContext` key on `-`, `_`, `.`, `:`, `/`, or whitespace for PascalCase naming. */
 const CONTEXT_KEY_SPLIT_REGEX = /[-_.:/\s]+/;
@@ -54,6 +55,7 @@ export function parseContextValue(
             "context-any-type",
             propName,
             `Context "${key}" property "${propName}" has no type annotation; defaulted to "any".`,
+            sourceRangeFromNode(ctx, prop),
           );
           if (parser.options?.verbose) {
             console.warn(`Warning: Context "${key}" property "${propName}" has no type annotation. Using "any".`);
@@ -118,6 +120,7 @@ export function parseContextValue(
       "context-any-type",
       varName,
       `Context "${key}" variable "${varName}" has no type annotation; defaulted to "any".`,
+      sourceRangeFromNode(ctx, node),
     );
     if (parser.options?.verbose) {
       console.warn(`Warning: Context "${key}" variable "${varName}" has no type annotation. Using "any".`);
