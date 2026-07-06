@@ -252,14 +252,6 @@ interface ComponentParserDiagnostics {
   filePath: string;
 }
 
-/**
- * Options for configuring the ComponentParser behavior.
- */
-interface ComponentParserOptions {
-  /** Enable verbose logging for debugging parsing issues */
-  verbose?: boolean;
-}
-
 export type ComponentPropBinding = "readonly" | "writable";
 
 /**
@@ -678,19 +670,12 @@ export interface ParsedComponent {
 }
 
 export default class ComponentParser {
-  /** Parser configuration options (e.g., verbose logging) */
-  options?: ComponentParserOptions;
-
   /**
    * All per-parse mutable state (props, slots, events, scopes, source, etc.).
    * See {@link ParserContext} for field-by-field documentation. Replaced
    * wholesale by `cleanup()` between parses.
    */
   private ctx: ParserContext = createParserContext();
-
-  constructor(options?: ComponentParserOptions) {
-    this.options = options;
-  }
 
   private static mapToArray<T>(map: Map<string, T> | Map<string | null, T>) {
     return Array.from(map, ([_key, value]) => value);
@@ -766,18 +751,6 @@ export default class ComponentParser {
     }
 
     return undefined;
-  }
-
-  logUnsupportedRunesPattern(message: string) {
-    if (this.options?.verbose && this.ctx.syntaxMode === "runes") {
-      console.warn(`Warning: ${message}`);
-    }
-  }
-
-  logParserWarning(message: string) {
-    if (this.options?.verbose) {
-      console.warn(`Warning: ${message}`);
-    }
   }
 
   /**
@@ -1007,7 +980,7 @@ export default class ComponentParser {
              * Store in cache for later lookup.
              */
             const parsed = parseComment(commentBlock, { spacing: "preserve" });
-            const { type: typeTag, description } = getCommentTags(this, parsed);
+            const { type: typeTag, description } = getCommentTags(parsed);
             if (typeTag) {
               this.ctx.variableInfoCache.set(varName, {
                 type: this.aliasType(typeTag.type),
@@ -1157,7 +1130,7 @@ export default class ComponentParser {
              * Parse the JSDoc to extract `@type` tag and description.
              */
             const parsed = parseComment(commentBlock, { spacing: "preserve" });
-            const { type: typeTag, description } = getCommentTags(this, parsed);
+            const { type: typeTag, description } = getCommentTags(parsed);
             if (typeTag) {
               return {
                 type: this.aliasType(typeTag.type),
@@ -1301,10 +1274,6 @@ export default class ComponentParser {
    * ```
    */
   public parseSvelteComponent(source: string, diagnostics: ComponentParserDiagnostics): ParsedComponent {
-    if (this.options?.verbose) {
-      console.log(`[parsing] "${diagnostics.moduleName}" ${diagnostics.filePath}`);
-    }
-
     this.cleanup();
     this.ctx.componentFilePath = diagnostics.filePath;
     /**
@@ -1919,9 +1888,18 @@ export default class ComponentParser {
                 null,
                 2,
               );
-            } else {
-              this.logUnsupportedRunesPattern(
-                `Skipping unsupported {@render ...} argument for snippet prop "${renderInfo.publicName}".`,
+            } else if (renderInfo.arguments.length === 1) {
+              /**
+               * Multiple positional arguments (e.g. `{@render row(item, index)}`) are a
+               * supported pattern typed via `Snippet<[...]>` and intentionally left unmodeled
+               * here; only a single non-object argument loses information sveld can't recover.
+               */
+              recordDiagnostic(
+                this.ctx,
+                "syntax-skipped",
+                renderInfo.publicName,
+                `{@render ${renderInfo.publicName}(...)} argument is not a plain object literal; the render call was not mapped to slot metadata.`,
+                sourceRangeFromNode(this.ctx, node),
               );
             }
 
