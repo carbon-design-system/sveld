@@ -4,7 +4,7 @@ import type { ParsedExports } from "../parse-exports";
 import type { ComponentDocs } from "../plugin";
 import { buildComponentApiDocument } from "./document-model";
 import { createTypeScriptWriter } from "./Writer";
-import { writeTsDefinition } from "./writer-ts-definitions-core";
+import { type WriteTsDefinitionOptions, writeTsDefinition } from "./writer-ts-definitions-core";
 
 /**
  * Re-export browser-compatible functions from core module.
@@ -19,6 +19,7 @@ export {
   formatTsProps,
   getContextDefs,
   getTypeDefs,
+  type WriteTsDefinitionOptions,
   writeTsDefinition,
 } from "./writer-ts-definitions-core";
 
@@ -29,6 +30,7 @@ export {
  * @property inputDir - The input directory containing source components
  * @property preamble - Text to prepend to the main `index.d.ts` file
  * @property exports - Parsed export information for generating the index file
+ * @property format - `"class"` (default) or `"component"`; see {@link WriteTsDefinitionOptions}
  *
  * @example
  * ```ts
@@ -40,7 +42,7 @@ export {
  * };
  * ```
  */
-export interface WriteTsDefinitionsOptions {
+export interface WriteTsDefinitionsOptions extends WriteTsDefinitionOptions {
   outDir: string;
   inputDir: string;
   preamble: string;
@@ -87,7 +89,7 @@ export default async function writeTsDefinitions(components: ComponentDocs, opti
   const document = buildComponentApiDocument(components);
   const writePromises = document.components.map(async (component) => {
     const ts_filepath = convertSvelteExt(join(options.outDir, component.filePath));
-    await writer.write(ts_filepath, writeTsDefinition(component));
+    await writer.write(ts_filepath, writeTsDefinition(component, { format: options.format }));
   });
 
   await Promise.all([...writePromises, writer.write(ts_base_path, indexDTs)]);

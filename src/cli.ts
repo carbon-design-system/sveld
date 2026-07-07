@@ -34,6 +34,7 @@ Options:
   --check-examples      Compile-check @example blocks against the TypeScript program (alias: --checkExamples, deprecated)
   --report-diagnostics  Print unresolved-type diagnostics to stderr
   --strict              Exit with code 1 when diagnostics exist (implies --report-diagnostics)
+  --types-format=<format>  ".d.ts" output format: "class" (default) or "component" (Svelte 5 Component<...>)
   --check[=<path>]      Diff the parsed API against a committed snapshot; exit 1 on a breaking change (default path: COMPONENT_API.json)
   --help                Print this help message and exit
   --version             Print the installed sveld version and exit
@@ -96,6 +97,10 @@ function parseCliFlag(arg: string): CliFlagResult {
       // `--check=<path>` overrides it; `--check=false` disables it.
       if (value === "false") return { kind: "option", option: { check: false } };
       return { kind: "option", option: { check: typeof value === "string" ? value : true } };
+    case "types-format":
+      return typeof value === "string"
+        ? { kind: "option", option: { typesOptions: { format: value as "class" | "component" } } }
+        : { kind: "option", option: {} };
     default:
       return { kind: "unknown", arg };
   }
@@ -157,6 +162,14 @@ export async function cli(process: NodeJS.Process) {
   const cliOptions = parsed.options;
   const fileConfig = await loadConfig();
   const options = mergeConfig<CliOptions>(fileConfig, cliOptions);
+
+  /**
+   * `mergeConfig` shallow-merges: `--types-format` alone would otherwise
+   * replace a config file's whole `typesOptions` object instead of adding to it.
+   */
+  if (fileConfig.typesOptions || cliOptions.typesOptions) {
+    options.typesOptions = { ...fileConfig.typesOptions, ...cliOptions.typesOptions };
+  }
 
   const resolvedEntry = getSvelteEntry(options.entry);
   let input: string;
