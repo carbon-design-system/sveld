@@ -25,6 +25,10 @@ export type ListBoxMenuItemProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class ListBoxMenuItem extends SvelteComponentTyped<
   ListBoxMenuItemProps,
-  { click: WindowEventMap["click"]; mouseenter: WindowEventMap["mouseenter"]; mouseleave: WindowEventMap["mouseleave"] },
+  {
+    click: WindowEventMap["click"];
+    mouseenter: WindowEventMap["mouseenter"];
+    mouseleave: WindowEventMap["mouseleave"];
+  },
   { default: Record<string, never> }
 > {}

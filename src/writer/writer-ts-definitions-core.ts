@@ -609,7 +609,10 @@ function genSlotDef(def: Pick<ComponentDocApi, "slots">) {
     })
     .join("\n");
 
-  return `{${slotDefs}}`;
+  // With more than one slot, always break onto separate lines (matching how
+  // an `interface` body is never collapsed) rather than leave it up to
+  // whether the combined line happens to fit under the formatter's width.
+  return def.slots.length === 1 ? `{${slotDefs}}` : `{\n${slotDefs}\n}`;
 }
 
 /**
@@ -808,7 +811,10 @@ function genEventDef(def: Pick<ComponentDocApi, "events">) {
     })
     .join("");
 
-  return `{${events_map}}`;
+  // With more than one event, always break onto separate lines (matching how
+  // an `interface` body is never collapsed) rather than leave it up to
+  // whether the combined line happens to fit under the formatter's width.
+  return def.events.length === 1 ? `{${events_map}}` : `{\n${events_map}}`;
 }
 
 /**

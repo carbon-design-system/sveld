@@ -101,6 +101,9 @@ export type SelectProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class Select extends SvelteComponentTyped<
   SelectProps,
-  { blur: WindowEventMap["blur"]; change: CustomEvent<string> },
+  {
+    blur: WindowEventMap["blur"];
+    change: CustomEvent<string>;
+  },
   { default: Record<string, never> }
 > {}

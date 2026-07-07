@@ -85,7 +85,7 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "{ text: string, icon: any }",
+      "slot_props": "{\n  text: string;\n  icon: any;\n}",
       "source": {
         "start": {
           "line": 29,

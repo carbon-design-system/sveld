@@ -81,7 +81,7 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "{ headers: ReadonlyArray<Row>, rows: ReadonlyArray<Row> }",
+      "slot_props": "{\n  headers: ReadonlyArray<Row>;\n  rows: ReadonlyArray<Row>;\n}",
       "source": {
         "start": {
           "line": 21,

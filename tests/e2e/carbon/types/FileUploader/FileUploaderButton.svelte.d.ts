@@ -77,6 +77,10 @@ export type FileUploaderButtonProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class FileUploaderButton extends SvelteComponentTyped<
   FileUploaderButtonProps,
-  { change: WindowEventMap["change"]; click: WindowEventMap["click"]; keydown: WindowEventMap["keydown"] },
+  {
+    change: WindowEventMap["change"];
+    click: WindowEventMap["click"];
+    keydown: WindowEventMap["keydown"];
+  },
   Record<string, never>
 > {}

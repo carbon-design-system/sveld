@@ -103,7 +103,7 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "{ prop: boolean | string, prop1: boolean, prop2: boolean | string }",
+      "slot_props": "{\n  prop: boolean | string;\n  prop1: boolean;\n  prop2: boolean | string;\n}",
       "source": {
         "start": {
           "line": 20,

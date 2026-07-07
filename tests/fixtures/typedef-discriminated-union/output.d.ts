@@ -1,8 +1,20 @@
 import { SvelteComponentTyped } from "svelte";
 
-export type Result = { kind: "success"; value: string } | { kind: "error"; error: Error };
+export type Result = {
+  kind: "success";
+  value: string
+} | {
+  kind: "error";
+  error: Error
+};
 
-export type Status = { ok: true; data: number } | { ok: false; reason: string } | "pending";
+export type Status = {
+  ok: true;
+  data: number
+} | {
+  ok: false;
+  reason: string
+} | "pending";
 
 export type TypedefDiscriminatedUnionProps = {
   /**

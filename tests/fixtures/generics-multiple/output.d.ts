@@ -23,11 +23,19 @@ export type GenericsMultipleProps<Row extends DataTableRow = DataTableRow, Heade
    */
   rows?: ReadonlyArray<Row>;
 
-  children?: (this: void, ...args: [{ headers: ReadonlyArray<DataTableHeader<Row, Header>>, rows: ReadonlyArray<Row> }]) => void;
+  children?: (this: void, ...args: [{
+        headers: ReadonlyArray<DataTableHeader<Row, Header>>;
+        rows: ReadonlyArray<Row>;
+      }]) => void;
 };
 
 export default class GenericsMultiple<Row extends DataTableRow = DataTableRow, Header extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
   GenericsMultipleProps<Row,Header>,
   Record<string, any>,
-  { default: { headers: ReadonlyArray<DataTableHeader<Row, Header>>, rows: ReadonlyArray<Row> } }
+  {
+    default: {
+      headers: ReadonlyArray<DataTableHeader<Row, Header>>;
+      rows: ReadonlyArray<Row>;
+    };
+  }
 > {}

@@ -26,7 +26,10 @@ type $Props<Row extends DataTableRow = DataTableRow> = {
    */
   rows?: ReadonlyArray<Row>;
 
-  children?: (this: void, ...args: [{ headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> }]) => void;
+  children?: (this: void, ...args: [{
+        headers: ReadonlyArray<DataTableHeader<Row>>;
+        rows: ReadonlyArray<Row>;
+      }]) => void;
 
   [key: `data-${string}`]: unknown;
 };
@@ -36,5 +39,10 @@ export type TemplateTagWithRestPropsProps<Row extends DataTableRow = DataTableRo
 export default class TemplateTagWithRestProps<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
   TemplateTagWithRestPropsProps<Row>,
   Record<string, any>,
-  { default: { headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> } }
+  {
+    default: {
+      headers: ReadonlyArray<DataTableHeader<Row>>;
+      rows: ReadonlyArray<Row>;
+    };
+  }
 > {}

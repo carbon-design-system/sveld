@@ -4,7 +4,12 @@ export type RunesCallbackAnnotatedProps = {
   /**
    * Snowball event fired when throwing a snowball.
    */
-  onsnowball: (detail: { isPacked: boolean; speed: number; color?: string; density?: number }) => void;
+  onsnowball: (detail: {
+      isPacked: boolean;
+      speed: number;
+      color?: string;
+      density?: number
+    }) => void;
 
   /**
    * Will be fired if value has been changed

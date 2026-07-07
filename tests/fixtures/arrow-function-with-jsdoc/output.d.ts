@@ -5,7 +5,10 @@ export type ArrowFunctionWithJsdocProps = {
 
   processItems?: (items: string[], callback: (item: string, index: number) => void) => Promise<void>;
 
-  createRecord?: (id: string) => { id: string; created: Date };
+  createRecord?: (id: string) => {
+    id: string;
+    created: Date
+  };
 };
 
 export default class ArrowFunctionWithJsdoc extends SvelteComponentTyped<

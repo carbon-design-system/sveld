@@ -119,7 +119,15 @@ type $Props = {
   ref?: null | HTMLAnchorElement | HTMLButtonElement;
 
   children?: (this: void, ...args: [{
-        props: { role: "button"; type?: string; tabindex: any; disabled: boolean; href?: string; class: string; [key: string]: any }
+        props: {
+          role: "button";
+          type?: string;
+          tabindex: any;
+          disabled: boolean;
+          href?: string;
+          class: string;
+          [key: string]: any;
+        }
       }]) => void;
 
   [key: `data-${string}`]: unknown;
@@ -139,7 +147,15 @@ export default class Button extends SvelteComponentTyped<
   },
   {
     default: {
-      props: { role: "button"; type?: string; tabindex: any; disabled: boolean; href?: string; class: string; [key: string]: any }
+      props: {
+        role: "button";
+        type?: string;
+        tabindex: any;
+        disabled: boolean;
+        href?: string;
+        class: string;
+        [key: string]: any;
+      }
     };
     icon: { style: undefined | string };
   }

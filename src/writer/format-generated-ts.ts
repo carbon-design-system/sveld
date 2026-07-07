@@ -192,14 +192,19 @@ function expandStatements(raw: string): string {
       if (!content.includes("/*") && raw[i + 1] !== "\n" && !endsWithInterfaceHeader(out)) {
         // Recurse first so nested `{...}` blocks (e.g. `CustomEvent<{ ... }>`)
         // get their own collapse-or-expand decision instead of being copied
-        // through untouched as part of this span's raw content.
+        // through untouched as part of this span's raw content. If a nested
+        // block decided to expand (e.g. a generated multi-member type the
+        // caller deliberately authored as multi-line), don't flatten that
+        // decision back out just because the outer span would otherwise fit.
         const normalized = expandStatements(content).trim();
-        const body = normalized.endsWith(";") ? normalized.slice(0, -1) : normalized;
-        const candidate = `{ ${flattenToOneLine(body)} }`;
-        if (candidate.length <= INLINE_WIDTH_BUDGET) {
-          out += candidate;
-          i = closeIndex;
-          continue;
+        if (!normalized.includes("\n")) {
+          const body = normalized.endsWith(";") ? normalized.slice(0, -1) : normalized;
+          const candidate = `{ ${flattenToOneLine(body)} }`;
+          if (candidate.length <= INLINE_WIDTH_BUDGET) {
+            out += candidate;
+            i = closeIndex;
+            continue;
+          }
         }
       }
 

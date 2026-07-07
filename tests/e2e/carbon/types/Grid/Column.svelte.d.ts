@@ -80,7 +80,12 @@ type $Props = {
    */
   max?: ColumnBreakpoint;
 
-  children?: (this: void, ...args: [{ props: { class: string; [key: string]: any } }]) => void;
+  children?: (this: void, ...args: [{
+        props: {
+          class: string;
+          [key: string]: any;
+        }
+      }]) => void;
 
   [key: `data-${string}`]: unknown;
 };
@@ -90,5 +95,12 @@ export type ColumnProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class Column extends SvelteComponentTyped<
   ColumnProps,
   Record<string, any>,
-  { default: { props: { class: string; [key: string]: any } } }
+  {
+    default: {
+      props: {
+        class: string;
+        [key: string]: any;
+      }
+    };
+  }
 > {}

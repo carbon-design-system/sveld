@@ -72,7 +72,7 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "{ headers: ReadonlyArray<DataTableHeader<Row, Header>>, rows: ReadonlyArray<Row> }",
+      "slot_props": "{\n  headers: ReadonlyArray<DataTableHeader<Row, Header>>;\n  rows: ReadonlyArray<Row>;\n}",
       "source": {
         "start": {
           "line": 16,

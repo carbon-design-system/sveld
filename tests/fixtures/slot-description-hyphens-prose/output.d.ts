@@ -2,7 +2,10 @@ import { SvelteComponentTyped } from "svelte";
 
 export type SlotDescriptionHyphensProseProps = {
   /** Bind row-id and column-id so drag-and-drop works across multi-pane layouts. */
-  children?: (this: void, ...args: [{ row: string; column: string }]) => void;
+  children?: (this: void, ...args: [{
+        row: string;
+        column: string
+      }]) => void;
 };
 
 export default class SlotDescriptionHyphensProse extends SvelteComponentTyped<
@@ -10,6 +13,9 @@ export default class SlotDescriptionHyphensProse extends SvelteComponentTyped<
   Record<string, any>,
   {
     /** Bind row-id and column-id so drag-and-drop works across multi-pane layouts. */
-    default: { row: string; column: string };
+    default: {
+      row: string;
+      column: string
+    };
   }
 > {}

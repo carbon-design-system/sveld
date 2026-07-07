@@ -940,7 +940,7 @@ exports[`fixtures (JSON) "generics-multiple/input.svelte" 1`] = `
     {
       "name": null,
       "default": true,
-      "slot_props": "{ headers: ReadonlyArray<DataTableHeader<Row, Header>>, rows: ReadonlyArray<Row> }",
+      "slot_props": "{\\n  headers: ReadonlyArray<DataTableHeader<Row, Header>>;\\n  rows: ReadonlyArray<Row>;\\n}",
       "source": {
         "start": {
           "line": 16,
@@ -2548,7 +2548,7 @@ exports[`fixtures (JSON) "template-tag-multiple/input.svelte" 1`] = `
     {
       "name": null,
       "default": true,
-      "slot_props": "{ headers: ReadonlyArray<DataTableHeader<Row, Header>>, rows: ReadonlyArray<Row> }",
+      "slot_props": "{\\n  headers: ReadonlyArray<DataTableHeader<Row, Header>>;\\n  rows: ReadonlyArray<Row>;\\n}",
       "source": {
         "start": {
           "line": 17,
@@ -3604,7 +3604,7 @@ exports[`fixtures (JSON) "runes-script-generics-attribute-multiple/input.svelte"
     {
       "name": null,
       "default": true,
-      "slot_props": "{ headers: ReadonlyArray<Row>, rows: ReadonlyArray<Row> }",
+      "slot_props": "{\\n  headers: ReadonlyArray<Row>;\\n  rows: ReadonlyArray<Row>;\\n}",
       "source": {
         "start": {
           "line": 21,
@@ -6287,7 +6287,7 @@ exports[`fixtures (JSON) "runes-script-generics-attribute/input.svelte" 1`] = `
     {
       "name": null,
       "default": true,
-      "slot_props": "{ headers: ReadonlyArray<Row>, rows: ReadonlyArray<Row> }",
+      "slot_props": "{\\n  headers: ReadonlyArray<Row>;\\n  rows: ReadonlyArray<Row>;\\n}",
       "source": {
         "start": {
           "line": 19,
@@ -6375,7 +6375,7 @@ exports[`fixtures (JSON) "runes-script-generics-attribute-jsdoc-conflict/input.s
     {
       "name": null,
       "default": true,
-      "slot_props": "{ headers: ReadonlyArray<Row>, rows: ReadonlyArray<Row> }",
+      "slot_props": "{\\n  headers: ReadonlyArray<Row>;\\n  rows: ReadonlyArray<Row>;\\n}",
       "source": {
         "start": {
           "line": 22,
@@ -6620,7 +6620,7 @@ exports[`fixtures (JSON) "slot-prop-dotted-access/input.svelte" 1`] = `
     {
       "name": null,
       "default": true,
-      "slot_props": "{ a: string, b: string, c: number, d: string, e: \\"pending\\" | \\"done\\" | \\"error\\", f: { deep: number }, g: Array<string>, h: any, i: number }",
+      "slot_props": "{\\n  a: string;\\n  b: string;\\n  c: number;\\n  d: string;\\n  e: \\"pending\\" | \\"done\\" | \\"error\\";\\n  f: { deep: number };\\n  g: Array<string>;\\n  h: any;\\n  i: number;\\n}",
       "source": {
         "start": {
           "line": 26,
@@ -6717,7 +6717,7 @@ exports[`fixtures (JSON) "template-tag/input.svelte" 1`] = `
     {
       "name": null,
       "default": true,
-      "slot_props": "{ headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> }",
+      "slot_props": "{\\n  headers: ReadonlyArray<DataTableHeader<Row>>;\\n  rows: ReadonlyArray<Row>;\\n}",
       "source": {
         "start": {
           "line": 16,
@@ -9121,7 +9121,7 @@ exports[`fixtures (JSON) "typedefs/input.svelte" 1`] = `
     {
       "name": null,
       "default": true,
-      "slot_props": "{ prop1: MyTypedef, prop2: MyTypedefArray }",
+      "slot_props": "{\\n  prop1: MyTypedef;\\n  prop2: MyTypedefArray;\\n}",
       "source": {
         "start": {
           "line": 15,
@@ -9229,7 +9229,7 @@ exports[`fixtures (JSON) "generics-with-rest-props/input.svelte" 1`] = `
     {
       "name": null,
       "default": true,
-      "slot_props": "{ headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> }",
+      "slot_props": "{\\n  headers: ReadonlyArray<DataTableHeader<Row>>;\\n  rows: ReadonlyArray<Row>;\\n}",
       "source": {
         "start": {
           "line": 17,
@@ -10109,7 +10109,7 @@ exports[`fixtures (JSON) "required/input.svelte" 1`] = `
     {
       "name": null,
       "default": true,
-      "slot_props": "{ prop: boolean, prop1: boolean | string, prop2: any, prop3: boolean }",
+      "slot_props": "{\\n  prop: boolean;\\n  prop1: boolean | string;\\n  prop2: any;\\n  prop3: boolean;\\n}",
       "source": {
         "start": {
           "line": 20,
@@ -10609,7 +10609,7 @@ exports[`fixtures (JSON) "prop-comments/input.svelte" 1`] = `
     {
       "name": null,
       "default": true,
-      "slot_props": "{ prop: boolean | string, prop1: boolean, prop2: boolean | string }",
+      "slot_props": "{\\n  prop: boolean | string;\\n  prop1: boolean;\\n  prop2: boolean | string;\\n}",
       "source": {
         "start": {
           "line": 20,
@@ -10800,7 +10800,7 @@ exports[`fixtures (JSON) "runes-generics/input.svelte" 1`] = `
     {
       "name": null,
       "default": true,
-      "slot_props": "{ headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> }",
+      "slot_props": "{\\n  headers: ReadonlyArray<DataTableHeader<Row>>;\\n  rows: ReadonlyArray<Row>;\\n}",
       "source": {
         "start": {
           "line": 19,
@@ -16274,7 +16274,7 @@ exports[`fixtures (JSON) "prop-comment-complex/input.svelte" 1`] = `
     {
       "name": null,
       "default": true,
-      "slot_props": "{ text: string, icon: any }",
+      "slot_props": "{\\n  text: string;\\n  icon: any;\\n}",
       "source": {
         "start": {
           "line": 29,
@@ -16869,7 +16869,7 @@ exports[`fixtures (JSON) "template-tag-with-rest-props/input.svelte" 1`] = `
     {
       "name": null,
       "default": true,
-      "slot_props": "{ headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> }",
+      "slot_props": "{\\n  headers: ReadonlyArray<DataTableHeader<Row>>;\\n  rows: ReadonlyArray<Row>;\\n}",
       "source": {
         "start": {
           "line": 17,
@@ -17525,7 +17525,7 @@ exports[`fixtures (JSON) "generics/input.svelte" 1`] = `
     {
       "name": null,
       "default": true,
-      "slot_props": "{ headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> }",
+      "slot_props": "{\\n  headers: ReadonlyArray<DataTableHeader<Row>>;\\n  rows: ReadonlyArray<Row>;\\n}",
       "source": {
         "start": {
           "line": 16,
@@ -17661,7 +17661,12 @@ export type RunesCallbackAnnotatedProps = {
   /**
    * Snowball event fired when throwing a snowball.
    */
-  onsnowball: (detail: { isPacked: boolean; speed: number; color?: string; density?: number }) => void;
+  onsnowball: (detail: {
+      isPacked: boolean;
+      speed: number;
+      color?: string;
+      density?: number
+    }) => void;
 
   /**
    * Will be fired if value has been changed
@@ -17911,13 +17916,21 @@ export type GenericsMultipleProps<Row extends DataTableRow = DataTableRow, Heade
    */
   rows?: ReadonlyArray<Row>;
 
-  children?: (this: void, ...args: [{ headers: ReadonlyArray<DataTableHeader<Row, Header>>, rows: ReadonlyArray<Row> }]) => void;
+  children?: (this: void, ...args: [{
+        headers: ReadonlyArray<DataTableHeader<Row, Header>>;
+        rows: ReadonlyArray<Row>;
+      }]) => void;
 };
 
 export default class GenericsMultiple<Row extends DataTableRow = DataTableRow, Header extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
   GenericsMultipleProps<Row,Header>,
   Record<string, any>,
-  { default: { headers: ReadonlyArray<DataTableHeader<Row, Header>>, rows: ReadonlyArray<Row> } }
+  {
+    default: {
+      headers: ReadonlyArray<DataTableHeader<Row, Header>>;
+      rows: ReadonlyArray<Row>;
+    };
+  }
 > {}
 "
 `;
@@ -17951,7 +17964,12 @@ export type SlotJsdocExampleProps = {
    *  </BreadcrumbItem>
    *  \`\`\`
    */
-  children?: (this: void, ...args: [{ props?: { "aria-current"?: string; class: "bx--link" } }]) => void;
+  children?: (this: void, ...args: [{
+        props?: {
+          "aria-current"?: string;
+          class: "bx--link"
+        }
+      }]) => void;
 };
 
 export default class SlotJsdocExample extends SvelteComponentTyped<
@@ -17968,7 +17986,12 @@ export default class SlotJsdocExample extends SvelteComponentTyped<
      *  </BreadcrumbItem>
      *  \`\`\`
      */
-    default: { props?: { "aria-current"?: string; class: "bx--link" } };
+    default: {
+      props?: {
+        "aria-current"?: string;
+        class: "bx--link"
+      }
+    };
   }
 > {}
 "
@@ -18416,13 +18439,21 @@ export type TemplateTagMultipleProps<Row extends DataTableRow = DataTableRow, He
    */
   rows?: ReadonlyArray<Row>;
 
-  children?: (this: void, ...args: [{ headers: ReadonlyArray<DataTableHeader<Row, Header>>, rows: ReadonlyArray<Row> }]) => void;
+  children?: (this: void, ...args: [{
+        headers: ReadonlyArray<DataTableHeader<Row, Header>>;
+        rows: ReadonlyArray<Row>;
+      }]) => void;
 };
 
 export default class TemplateTagMultiple<Row extends DataTableRow = DataTableRow, Header extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
   TemplateTagMultipleProps<Row, Header>,
   Record<string, any>,
-  { default: { headers: ReadonlyArray<DataTableHeader<Row, Header>>, rows: ReadonlyArray<Row> } }
+  {
+    default: {
+      headers: ReadonlyArray<DataTableHeader<Row, Header>>;
+      rows: ReadonlyArray<Row>;
+    };
+  }
 > {}
 "
 `;
@@ -18629,7 +18660,11 @@ export default class JsdocTypeParams extends SvelteComponentTyped<
    *  // Select node without expanding or focusing
    *  treeView.showNode("node-3", { expand: false, focus: false });
    */
-  showNode: (id: TreeNodeId, options?: { expand?: boolean; select?: boolean; focus?: boolean }) => void;
+  showNode: (id: TreeNodeId, options?: {
+      expand?: boolean;
+      select?: boolean;
+      focus?: boolean
+    }) => void;
 }
 "
 `;
@@ -18725,7 +18760,10 @@ type $Props<Row extends DataTableRow = DataTableRow, K extends keyof Map<string,
   rows: ReadonlyArray<Row>;
   key?: K;
 } & {
-  children?: (this: void, ...args: [{ headers: ReadonlyArray<Row>, rows: ReadonlyArray<Row> }]) => void;
+  children?: (this: void, ...args: [{
+        headers: ReadonlyArray<Row>;
+        rows: ReadonlyArray<Row>;
+      }]) => void;
 };
 
 export type RunesScriptGenericsAttributeMultipleProps<Row extends DataTableRow = DataTableRow, K extends keyof Map<string, Row> = never> = $Props<Row, K>;
@@ -18733,7 +18771,12 @@ export type RunesScriptGenericsAttributeMultipleProps<Row extends DataTableRow =
 export default class RunesScriptGenericsAttributeMultiple<Row extends DataTableRow = DataTableRow, K extends keyof Map<string, Row> = never> extends SvelteComponentTyped<
   RunesScriptGenericsAttributeMultipleProps<Row, K>,
   Record<string, any>,
-  { default: { headers: ReadonlyArray<Row>, rows: ReadonlyArray<Row> } }
+  {
+    default: {
+      headers: ReadonlyArray<Row>;
+      rows: ReadonlyArray<Row>;
+    };
+  }
 > {}
 "
 `;
@@ -18959,7 +19002,10 @@ export type TypedefEventSharedBlockProps = {
   /** description */
   "inline-slot"?: (this: void, ...args: [{ a: 4 }]) => void;
 
-  children?: (this: void, ...args: [{ size: BreakpointSize; sizes: Record<BreakpointSize, boolean> }]) => void;
+  children?: (this: void, ...args: [{
+        size: BreakpointSize;
+        sizes: Record<BreakpointSize, boolean>;
+      }]) => void;
 };
 
 export default class TypedefEventSharedBlock extends SvelteComponentTyped<
@@ -18978,7 +19024,10 @@ export default class TypedefEventSharedBlock extends SvelteComponentTyped<
     scroll: CustomEvent<null>;
   },
   {
-    default: { size: BreakpointSize; sizes: Record<BreakpointSize, boolean> };
+    default: {
+      size: BreakpointSize;
+      sizes: Record<BreakpointSize, boolean>;
+    };
     break: Record<string, never>;
     /** Slot for rendering breakpoint sizes */
     "breakpoint-sizes": { sizes: Record<BreakpointSize, boolean> };
@@ -18992,7 +19041,13 @@ export default class TypedefEventSharedBlock extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "typedef-discriminated-union-recursive/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
-export type Tree = { kind: "leaf"; value: number } | { kind: "node"; children: Tree[] };
+export type Tree = {
+  kind: "leaf";
+  value: number
+} | {
+  kind: "node";
+  children: Tree[]
+};
 
 export type TypedefDiscriminatedUnionRecursiveProps = {
   /**
@@ -19047,7 +19102,11 @@ export type ThemeComponentProps = {
 
 export default class ThemeComponent extends SvelteComponentTyped<
   ThemeComponentProps,
-  { update: CustomEvent<{ theme: CarbonTheme; }> },
+  {
+    update: CustomEvent<{
+        theme: CarbonTheme;
+      }>;
+  },
   { default: { theme: CarbonTheme } }
 > {}
 "
@@ -19125,7 +19184,12 @@ export type SlotDescriptionWithDashProps = {
    * Spread \`props\` onto a custom element to inherit the link class
    * and \`aria-current\` attribute when \`isCurrentPage\` is set.
    */
-  children?: (this: void, ...args: [{ props?: { "aria-current"?: string; class: "bx--link" } }]) => void;
+  children?: (this: void, ...args: [{
+        props?: {
+          "aria-current"?: string;
+          class: "bx--link";
+        }
+      }]) => void;
 };
 
 export default class SlotDescriptionWithDash extends SvelteComponentTyped<
@@ -19136,7 +19200,12 @@ export default class SlotDescriptionWithDash extends SvelteComponentTyped<
      * Spread \`props\` onto a custom element to inherit the link class
      * and \`aria-current\` attribute when \`isCurrentPage\` is set.
      */
-    default: { props?: { "aria-current"?: string; class: "bx--link" } };
+    default: {
+      props?: {
+        "aria-current"?: string;
+        class: "bx--link";
+      }
+    };
   }
 > {}
 "
@@ -19204,7 +19273,12 @@ export type EventsStableOrderProps = Record<string, never>;
 
 export default class EventsStableOrder extends SvelteComponentTyped<
   EventsStableOrderProps,
-  { alpha: CustomEvent<null>; blur: WindowEventMap["blur"]; click: WindowEventMap["click"]; zeta: CustomEvent<null> },
+  {
+    alpha: CustomEvent<null>;
+    blur: WindowEventMap["blur"];
+    click: WindowEventMap["click"];
+    zeta: CustomEvent<null>;
+  },
   Record<string, never>
 > {}
 "
@@ -19217,7 +19291,10 @@ export type MixedEventsProps = Record<string, never>;
 
 export default class MixedEvents extends SvelteComponentTyped<
   MixedEventsProps,
-  { blur: FocusEvent | CustomEvent<FocusEvent>; "custom-focus": CustomEvent<FocusEvent | number> },
+  {
+    blur: FocusEvent | CustomEvent<FocusEvent>;
+    "custom-focus": CustomEvent<FocusEvent | number>;
+  },
   Record<string, never>
 > {}
 "
@@ -19436,7 +19513,10 @@ type $Props<Row extends DataTableRow = DataTableRow> = {
   headers: ReadonlyArray<Row>;
   rows: ReadonlyArray<Row>;
 } & {
-  children?: (this: void, ...args: [{ headers: ReadonlyArray<Row>, rows: ReadonlyArray<Row> }]) => void;
+  children?: (this: void, ...args: [{
+        headers: ReadonlyArray<Row>;
+        rows: ReadonlyArray<Row>;
+      }]) => void;
 };
 
 export type RunesScriptGenericsAttributeProps<Row extends DataTableRow = DataTableRow> = $Props<Row>;
@@ -19444,7 +19524,12 @@ export type RunesScriptGenericsAttributeProps<Row extends DataTableRow = DataTab
 export default class RunesScriptGenericsAttribute<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
   RunesScriptGenericsAttributeProps<Row>,
   Record<string, any>,
-  { default: { headers: ReadonlyArray<Row>, rows: ReadonlyArray<Row> } }
+  {
+    default: {
+      headers: ReadonlyArray<Row>;
+      rows: ReadonlyArray<Row>;
+    };
+  }
 > {}
 "
 `;
@@ -19461,7 +19546,10 @@ type $Props<Row extends DataTableRow = DataTableRow> = {
   headers: ReadonlyArray<Row>;
   rows: ReadonlyArray<Row>;
 } & {
-  children?: (this: void, ...args: [{ headers: ReadonlyArray<Row>, rows: ReadonlyArray<Row> }]) => void;
+  children?: (this: void, ...args: [{
+        headers: ReadonlyArray<Row>;
+        rows: ReadonlyArray<Row>;
+      }]) => void;
 };
 
 export type RunesScriptGenericsAttributeJsdocConflictProps<Row extends DataTableRow = DataTableRow> = $Props<Row>;
@@ -19469,7 +19557,12 @@ export type RunesScriptGenericsAttributeJsdocConflictProps<Row extends DataTable
 export default class RunesScriptGenericsAttributeJsdocConflict<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
   RunesScriptGenericsAttributeJsdocConflictProps<Row>,
   Record<string, any>,
-  { default: { headers: ReadonlyArray<Row>, rows: ReadonlyArray<Row> } }
+  {
+    default: {
+      headers: ReadonlyArray<Row>;
+      rows: ReadonlyArray<Row>;
+    };
+  }
 > {}
 "
 `;
@@ -19511,7 +19604,10 @@ export type ModuleReexportDirectProps = {
 export default class ModuleReexportDirect extends SvelteComponentTyped<
   ModuleReexportDirectProps,
   Record<string, any>,
-  { default: Record<string, never>; header: Record<string, never> }
+  {
+    default: Record<string, never>;
+    header: Record<string, never>;
+  }
 > {}
 "
 `;
@@ -19523,10 +19619,21 @@ export type SlotPropDottedAccessProps = {
   /**
    * @default { x: 0, y: 0 }
    */
-  point?: { x: number; y: number };
+  point?: {
+    x: number;
+    y: number
+  };
 
   children?: (this: void, ...args: [{
-        a: string, b: string, c: number, d: string, e: "pending" | "done" | "error", f: { deep: number }, g: Array<string>, h: any, i: number
+        a: string;
+        b: string;
+        c: number;
+        d: string;
+        e: "pending" | "done" | "error";
+        f: { deep: number };
+        g: Array<string>;
+        h: any;
+        i: number;
       }]) => void;
 };
 
@@ -19535,7 +19642,15 @@ export default class SlotPropDottedAccess extends SvelteComponentTyped<
   Record<string, any>,
   {
     default: {
-      a: string, b: string, c: number, d: string, e: "pending" | "done" | "error", f: { deep: number }, g: Array<string>, h: any, i: number
+      a: string;
+      b: string;
+      c: number;
+      d: string;
+      e: "pending" | "done" | "error";
+      f: { deep: number };
+      g: Array<string>;
+      h: any;
+      i: number;
     };
   }
 > {}
@@ -19568,13 +19683,21 @@ export type TemplateTagProps<Row extends DataTableRow = DataTableRow> = {
    */
   rows?: ReadonlyArray<Row>;
 
-  children?: (this: void, ...args: [{ headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> }]) => void;
+  children?: (this: void, ...args: [{
+        headers: ReadonlyArray<DataTableHeader<Row>>;
+        rows: ReadonlyArray<Row>;
+      }]) => void;
 };
 
 export default class TemplateTag<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
   TemplateTagProps<Row>,
   Record<string, any>,
-  { default: { headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> } }
+  {
+    default: {
+      headers: ReadonlyArray<DataTableHeader<Row>>;
+      rows: ReadonlyArray<Row>;
+    };
+  }
 > {}
 "
 `;
@@ -19611,14 +19734,20 @@ export type TypedSlotsProps = {
   /** description */
   description?: (this: void, ...args: [{ props: { class?: string } }]) => void;
 
-  children?: (this: void, ...args: [{ prop: number; doubled: number }]) => void;
+  children?: (this: void, ...args: [{
+        prop: number;
+        doubled: number;
+      }]) => void;
 };
 
 export default class TypedSlots extends SvelteComponentTyped<
   TypedSlotsProps,
   Record<string, any>,
   {
-    default: { prop: number; doubled: number };
+    default: {
+      prop: number;
+      doubled: number;
+    };
     /** description */
     description: { props: { class?: string } };
   }
@@ -19724,13 +19853,25 @@ export type DefaultSlotWithPropsProps = {
    */
   items?: string[];
 
-  children?: (this: void, ...args: [{ item: string; index: number; isFirst: boolean; isLast: boolean }]) => void;
+  children?: (this: void, ...args: [{
+        item: string;
+        index: number;
+        isFirst: boolean;
+        isLast: boolean;
+      }]) => void;
 };
 
 export default class DefaultSlotWithProps extends SvelteComponentTyped<
   DefaultSlotWithPropsProps,
   Record<string, any>,
-  { default: { item: string; index: number; isFirst: boolean; isLast: boolean } }
+  {
+    default: {
+      item: string;
+      index: number;
+      isFirst: boolean;
+      isLast: boolean;
+    };
+  }
 > {}
 "
 `;
@@ -19749,14 +19890,20 @@ export type RunesSnippetsAnnotatedProps = {
 
   title?: (this: void) => void;
 
-  children?: (this: void, ...args: [{ prop: number; doubled: number }]) => void;
+  children?: (this: void, ...args: [{
+        prop: number;
+        doubled: number;
+      }]) => void;
 };
 
 export default class RunesSnippetsAnnotated extends SvelteComponentTyped<
   RunesSnippetsAnnotatedProps,
   Record<string, any>,
   {
-    default: { prop: number; doubled: number };
+    default: {
+      prop: number;
+      doubled: number;
+    };
     /** Customize the paragraph text. */
     body: { prop: number };
     title: Record<string, never>;
@@ -19783,7 +19930,10 @@ export type RunesSnippetDescriptionHyphensProps = {
    * First line documents \`row-id\` binding.
    * Second line: column-id and drag-and-drop targets share one surface.
    */
-  children?: (this: void, ...args: [{ row: string; col: string }]) => void;
+  children?: (this: void, ...args: [{
+        row: string;
+        col: string
+      }]) => void;
 };
 
 export default class RunesSnippetDescriptionHyphens extends SvelteComponentTyped<
@@ -19794,7 +19944,10 @@ export default class RunesSnippetDescriptionHyphens extends SvelteComponentTyped
      * First line documents \`row-id\` binding.
      * Second line: column-id and drag-and-drop targets share one surface.
      */
-    default: { row: string; col: string };
+    default: {
+      row: string;
+      col: string
+    };
   }
 > {}
 "
@@ -20004,7 +20157,10 @@ export type PropDefaultIdentifierJsdocProps = {
    * Animation configuration applied on mount.
    * @default { duration: 200, easing: "ease-in-out" }
    */
-  config?: { duration: number; easing: string };
+  config?: {
+    duration: number;
+    easing: string
+  };
 
   /**
    * Items rendered when no value is provided.
@@ -20213,13 +20369,21 @@ export type TypedefsProps = {
    */
   prop2?: MyTypedefArray;
 
-  children?: (this: void, ...args: [{ prop1: MyTypedef, prop2: MyTypedefArray }]) => void;
+  children?: (this: void, ...args: [{
+        prop1: MyTypedef;
+        prop2: MyTypedefArray;
+      }]) => void;
 };
 
 export default class Typedefs extends SvelteComponentTyped<
   TypedefsProps,
   Record<string, any>,
-  { default: { prop1: MyTypedef, prop2: MyTypedefArray } }
+  {
+    default: {
+      prop1: MyTypedef;
+      prop2: MyTypedefArray;
+    };
+  }
 > {}
 "
 `;
@@ -20253,7 +20417,10 @@ type $Props<Row extends DataTableRow = DataTableRow> = {
    */
   rows?: ReadonlyArray<Row>;
 
-  children?: (this: void, ...args: [{ headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> }]) => void;
+  children?: (this: void, ...args: [{
+        headers: ReadonlyArray<DataTableHeader<Row>>;
+        rows: ReadonlyArray<Row>;
+      }]) => void;
 
   [key: \`data-\${string}\`]: unknown;
 };
@@ -20263,7 +20430,12 @@ export type GenericsWithRestPropsProps<Row extends DataTableRow = DataTableRow> 
 export default class GenericsWithRestProps<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
   GenericsWithRestPropsProps<Row>,
   Record<string, any>,
-  { default: { headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> } }
+  {
+    default: {
+      headers: ReadonlyArray<DataTableHeader<Row>>;
+      rows: ReadonlyArray<Row>;
+    };
+  }
 > {}
 "
 `;
@@ -20307,9 +20479,21 @@ export default class BindThis extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "typedef-discriminated-union/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
-export type Result = { kind: "success"; value: string } | { kind: "error"; error: Error };
+export type Result = {
+  kind: "success";
+  value: string
+} | {
+  kind: "error";
+  error: Error
+};
 
-export type Status = { ok: true; data: number } | { ok: false; reason: string } | "pending";
+export type Status = {
+  ok: true;
+  data: number
+} | {
+  ok: false;
+  reason: string
+} | "pending";
 
 export type TypedefDiscriminatedUnionProps = {
   /**
@@ -20400,7 +20584,10 @@ export type ExplicitDefaultNoDuplicateProps = {
    * Component configuration.
    * @default { theme: "dark", density: "compact" }
    */
-  config?: { theme: string; density: string };
+  config?: {
+    theme: string;
+    density: string
+  };
 
   /**
    * List of items.
@@ -20449,7 +20636,11 @@ export type InputEventsProps = Record<string, never>;
 
 export default class InputEvents extends SvelteComponentTyped<
   InputEventsProps,
-  { change: WindowEventMap["change"]; input: WindowEventMap["input"]; paste: WindowEventMap["paste"] },
+  {
+    change: WindowEventMap["change"];
+    input: WindowEventMap["input"];
+    paste: WindowEventMap["paste"];
+  },
   Record<string, never>
 > {}
 "
@@ -20482,13 +20673,25 @@ export type RequiredProps = {
    */
   prop3: boolean;
 
-  children?: (this: void, ...args: [{ prop: boolean, prop1: boolean | string, prop2: any, prop3: boolean }]) => void;
+  children?: (this: void, ...args: [{
+        prop: boolean;
+        prop1: boolean | string;
+        prop2: any;
+        prop3: boolean;
+      }]) => void;
 };
 
 export default class Required extends SvelteComponentTyped<
   RequiredProps,
   Record<string, any>,
-  { default: { prop: boolean, prop1: boolean | string, prop2: any, prop3: boolean } }
+  {
+    default: {
+      prop: boolean;
+      prop1: boolean | string;
+      prop2: any;
+      prop3: boolean;
+    };
+  }
 > {}
 "
 `;
@@ -20633,13 +20836,23 @@ export type PropCommentsProps = {
    */
   prop2?: boolean | string;
 
-  children?: (this: void, ...args: [{ prop: boolean | string, prop1: boolean, prop2: boolean | string }]) => void;
+  children?: (this: void, ...args: [{
+        prop: boolean | string;
+        prop1: boolean;
+        prop2: boolean | string;
+      }]) => void;
 };
 
 export default class PropComments extends SvelteComponentTyped<
   PropCommentsProps,
   Record<string, any>,
-  { default: { prop: boolean | string, prop1: boolean, prop2: boolean | string } }
+  {
+    default: {
+      prop: boolean | string;
+      prop1: boolean;
+      prop2: boolean | string;
+    };
+  }
 > {}
 "
 `;
@@ -20692,13 +20905,21 @@ export type RunesGenericsProps<Row extends DataTableRow = DataTableRow> = {
    */
   rows?: ReadonlyArray<Row>;
 
-  children?: (this: void, ...args: [{ headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> }]) => void;
+  children?: (this: void, ...args: [{
+        headers: ReadonlyArray<DataTableHeader<Row>>;
+        rows: ReadonlyArray<Row>;
+      }]) => void;
 };
 
 export default class RunesGenerics<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
   RunesGenericsProps<Row>,
   Record<string, any>,
-  { default: { headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> } }
+  {
+    default: {
+      headers: ReadonlyArray<DataTableHeader<Row>>;
+      rows: ReadonlyArray<Row>;
+    };
+  }
 > {}
 "
 `;
@@ -20741,7 +20962,10 @@ export type RunesPropDefaultIdentifierJsdocProps = {
    * Animation configuration applied on mount.
    * @default { duration: 200, easing: "ease-in-out" }
    */
-  config?: { duration: number; easing: string };
+  config?: {
+    duration: number;
+    easing: string
+  };
 
   /**
    * Fallback label shown when none is provided.
@@ -20938,7 +21162,10 @@ export type ArrowFunctionWithJsdocProps = {
 
   processItems?: (items: string[], callback: (item: string, index: number) => void) => Promise<void>;
 
-  createRecord?: (id: string) => { id: string; created: Date };
+  createRecord?: (id: string) => {
+    id: string;
+    created: Date
+  };
 };
 
 export default class ArrowFunctionWithJsdoc extends SvelteComponentTyped<
@@ -21366,7 +21593,12 @@ export type SlotJsdocMultipleTagsProps = {
    *  \`\`\`
    * @deprecated Prefer the \`link\` snippet.
    */
-  children?: (this: void, ...args: [{ props?: { "aria-current"?: string; class: "bx--link" } }]) => void;
+  children?: (this: void, ...args: [{
+        props?: {
+          "aria-current"?: string;
+          class: "bx--link"
+        }
+      }]) => void;
 };
 
 export default class SlotJsdocMultipleTags extends SvelteComponentTyped<
@@ -21384,7 +21616,12 @@ export default class SlotJsdocMultipleTags extends SvelteComponentTyped<
      *  \`\`\`
      * @deprecated Prefer the \`link\` snippet.
      */
-    default: { props?: { "aria-current"?: string; class: "bx--link" } };
+    default: {
+      props?: {
+        "aria-current"?: string;
+        class: "bx--link"
+      }
+    };
   }
 > {}
 "
@@ -21521,7 +21758,11 @@ export type EventExplicitNullProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class EventExplicitNull extends SvelteComponentTyped<
   EventExplicitNullProps,
-  { change: WindowEventMap["change"]; clear: CustomEvent<null>; input: WindowEventMap["input"] },
+  {
+    change: WindowEventMap["change"];
+    clear: CustomEvent<null>;
+    input: WindowEventMap["input"];
+  },
   Record<string, never>
 > {}
 "
@@ -21536,7 +21777,13 @@ export default class DispatchedEventsJsdocUnionType extends SvelteComponentTyped
   DispatchedEventsJsdocUnionTypeProps,
   {
     /** Dispatched when a sortable column header would change the active sort. */
-    sort: CustomEvent<{ key: null; direction: "none" } | { key: string; direction: "ascending" | "descending" }>;
+    sort: CustomEvent<{
+        key: null;
+        direction: "none"
+      } | {
+        key: string;
+        direction: "ascending" | "descending"
+      }>;
   },
   Record<string, never>
 > {}
@@ -22001,7 +22248,11 @@ export type RunesHostCustomElementProps = {
 
 export default class RunesHostCustomElement extends SvelteComponentTyped<
   RunesHostCustomElementProps,
-  { close: CustomEvent<null>; notify: CustomEvent<any>; ready: CustomEvent<"loaded"> },
+  {
+    close: CustomEvent<null>;
+    notify: CustomEvent<any>;
+    ready: CustomEvent<"loaded">;
+  },
   Record<string, never>
 > {}
 "
@@ -22142,19 +22393,30 @@ export type SlotPropsUnionTypesProps = {
   /**
    * @default []
    */
-  items?: Array<{ value: string | number; status: "pending" | "complete" | "error" }>;
+  items?: Array<{
+      value: string | number;
+      status: "pending" | "complete" | "error"
+    }>;
 
   /** Header slot */
   header?: (this: void, ...args: [{ active: boolean }]) => void;
 
-  children?: (this: void, ...args: [{ item: string | number; status: "pending" | "complete" | "error"; error: Error | null }]) => void;
+  children?: (this: void, ...args: [{
+        item: string | number;
+        status: "pending" | "complete" | "error";
+        error: Error | null;
+      }]) => void;
 };
 
 export default class SlotPropsUnionTypes extends SvelteComponentTyped<
   SlotPropsUnionTypesProps,
   Record<string, any>,
   {
-    default: { item: string | number; status: "pending" | "complete" | "error"; error: Error | null };
+    default: {
+      item: string | number;
+      status: "pending" | "complete" | "error";
+      error: Error | null;
+    };
     /** Header slot */
     header: { active: boolean };
   }
@@ -22335,13 +22597,21 @@ export type PropCommentComplexProps = {
    */
   icon?: any;
 
-  children?: (this: void, ...args: [{ text: string, icon: any }]) => void;
+  children?: (this: void, ...args: [{
+        text: string;
+        icon: any;
+      }]) => void;
 };
 
 export default class PropCommentComplex extends SvelteComponentTyped<
   PropCommentComplexProps,
   Record<string, any>,
-  { default: { text: string, icon: any } }
+  {
+    default: {
+      text: string;
+      icon: any;
+    };
+  }
 > {}
 "
 `;
@@ -22379,9 +22649,16 @@ export interface Base {
   createdAt: number
 }
 
-export type User = Base & { kind: "user"; name: string };
+export type User = Base & {
+  kind: "user";
+  name: string
+};
 
-export type Post = Base & { kind: "post"; title: string; body: string };
+export type Post = Base & {
+  kind: "post";
+  title: string;
+  body: string
+};
 
 export type Entity = User | Post;
 
@@ -22448,7 +22725,10 @@ export type SlotsSpreadProps = {
 export default class SlotsSpread extends SvelteComponentTyped<
   SlotsSpreadProps,
   Record<string, any>,
-  { default: Record<string, never>; text: Record<string, never> }
+  {
+    default: Record<string, never>;
+    text: Record<string, never>;
+  }
 > {}
 "
 `;
@@ -22484,7 +22764,10 @@ exports[`fixtures (TypeScript) "slot-description-hyphens-prose/input.svelte" 1`]
 
 export type SlotDescriptionHyphensProseProps = {
   /** Bind row-id and column-id so drag-and-drop works across multi-pane layouts. */
-  children?: (this: void, ...args: [{ row: string; column: string }]) => void;
+  children?: (this: void, ...args: [{
+        row: string;
+        column: string
+      }]) => void;
 };
 
 export default class SlotDescriptionHyphensProse extends SvelteComponentTyped<
@@ -22492,7 +22775,10 @@ export default class SlotDescriptionHyphensProse extends SvelteComponentTyped<
   Record<string, any>,
   {
     /** Bind row-id and column-id so drag-and-drop works across multi-pane layouts. */
-    default: { row: string; column: string };
+    default: {
+      row: string;
+      column: string
+    };
   }
 > {}
 "
@@ -22573,7 +22859,10 @@ type $Props<Row extends DataTableRow = DataTableRow> = {
    */
   rows?: ReadonlyArray<Row>;
 
-  children?: (this: void, ...args: [{ headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> }]) => void;
+  children?: (this: void, ...args: [{
+        headers: ReadonlyArray<DataTableHeader<Row>>;
+        rows: ReadonlyArray<Row>;
+      }]) => void;
 
   [key: \`data-\${string}\`]: unknown;
 };
@@ -22583,7 +22872,12 @@ export type TemplateTagWithRestPropsProps<Row extends DataTableRow = DataTableRo
 export default class TemplateTagWithRestProps<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
   TemplateTagWithRestPropsProps<Row>,
   Record<string, any>,
-  { default: { headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> } }
+  {
+    default: {
+      headers: ReadonlyArray<DataTableHeader<Row>>;
+      rows: ReadonlyArray<Row>;
+    };
+  }
 > {}
 "
 `;
@@ -22613,7 +22907,10 @@ export type SlotsSpreadTypedProps = {
 export default class SlotsSpreadTyped extends SvelteComponentTyped<
   SlotsSpreadTypedProps,
   Record<string, any>,
-  { default: { a: number }; text: { a: number } }
+  {
+    default: { a: number };
+    text: { a: number };
+  }
 > {}
 "
 `;
@@ -22791,13 +23088,21 @@ export type GenericsProps<Row extends DataTableRow = DataTableRow> = {
    */
   rows?: ReadonlyArray<Row>;
 
-  children?: (this: void, ...args: [{ headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> }]) => void;
+  children?: (this: void, ...args: [{
+        headers: ReadonlyArray<DataTableHeader<Row>>;
+        rows: ReadonlyArray<Row>;
+      }]) => void;
 };
 
 export default class Generics<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
   GenericsProps<Row>,
   Record<string, any>,
-  { default: { headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> } }
+  {
+    default: {
+      headers: ReadonlyArray<DataTableHeader<Row>>;
+      rows: ReadonlyArray<Row>;
+    };
+  }
 > {}
 "
 `;

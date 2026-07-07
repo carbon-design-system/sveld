@@ -184,7 +184,12 @@ type $Props<Row extends DataTableRow = DataTableRow> = {
    */
   page?: number;
 
-  cell?: (this: void, ...args: [{ row: Row; cell: DataTableCell<Row>; rowIndex: number; cellIndex: number }]) => void;
+  cell?: (this: void, ...args: [{
+        row: Row;
+        cell: DataTableCell<Row>;
+        rowIndex: number;
+        cellIndex: number;
+      }]) => void;
 
   "cell-header"?: (this: void, ...args: [{ header: DataTableNonEmptyHeader }]) => void;
 
@@ -200,20 +205,41 @@ export type DataTableProps<Row extends DataTableRow = DataTableRow> = Omit<$Rest
 export default class DataTable<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
   DataTableProps<Row>,
   {
-    click: CustomEvent<{ header?: DataTableHeader<Row>; row?: Row; cell?: DataTableCell<Row> }>;
+    click: CustomEvent<{
+        header?: DataTableHeader<Row>;
+        row?: Row;
+        cell?: DataTableCell<Row>;
+      }>;
     "click:cell": CustomEvent<DataTableCell<Row>>;
-    "click:header": CustomEvent<{ header: DataTableHeader<Row>; sortDirection?: "ascending" | "descending" | "none" }>;
+    "click:header": CustomEvent<{
+        header: DataTableHeader<Row>;
+        sortDirection?: "ascending" | "descending" | "none"
+      }>;
     "click:header--expand": CustomEvent<{ expanded: boolean }>;
-    "click:header--select": CustomEvent<{ indeterminate: boolean; selected: boolean }>;
+    "click:header--select": CustomEvent<{
+        indeterminate: boolean;
+        selected: boolean;
+      }>;
     "click:row": CustomEvent<Row>;
-    "click:row--expand": CustomEvent<{ expanded: boolean; row: Row }>;
-    "click:row--select": CustomEvent<{ selected: boolean; row: Row }>;
+    "click:row--expand": CustomEvent<{
+        expanded: boolean;
+        row: Row;
+      }>;
+    "click:row--select": CustomEvent<{
+        selected: boolean;
+        row: Row;
+      }>;
     "mouseenter:row": CustomEvent<Row>;
     "mouseleave:row": CustomEvent<Row>;
   },
   {
     default: Record<string, never>;
-    cell: { row: Row; cell: DataTableCell<Row>; rowIndex: number; cellIndex: number };
+    cell: {
+      row: Row;
+      cell: DataTableCell<Row>;
+      rowIndex: number;
+      cellIndex: number;
+    };
     "cell-header": { header: DataTableNonEmptyHeader };
     description: Record<string, never>;
     "expanded-row": { row: Row };

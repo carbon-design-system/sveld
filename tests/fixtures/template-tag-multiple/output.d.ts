@@ -23,11 +23,19 @@ export type TemplateTagMultipleProps<Row extends DataTableRow = DataTableRow, He
    */
   rows?: ReadonlyArray<Row>;
 
-  children?: (this: void, ...args: [{ headers: ReadonlyArray<DataTableHeader<Row, Header>>, rows: ReadonlyArray<Row> }]) => void;
+  children?: (this: void, ...args: [{
+        headers: ReadonlyArray<DataTableHeader<Row, Header>>;
+        rows: ReadonlyArray<Row>;
+      }]) => void;
 };
 
 export default class TemplateTagMultiple<Row extends DataTableRow = DataTableRow, Header extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
   TemplateTagMultipleProps<Row, Header>,
   Record<string, any>,
-  { default: { headers: ReadonlyArray<DataTableHeader<Row, Header>>, rows: ReadonlyArray<Row> } }
+  {
+    default: {
+      headers: ReadonlyArray<DataTableHeader<Row, Header>>;
+      rows: ReadonlyArray<Row>;
+    };
+  }
 > {}

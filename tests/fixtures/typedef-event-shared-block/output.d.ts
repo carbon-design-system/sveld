@@ -28,7 +28,10 @@ export type TypedefEventSharedBlockProps = {
   /** description */
   "inline-slot"?: (this: void, ...args: [{ a: 4 }]) => void;
 
-  children?: (this: void, ...args: [{ size: BreakpointSize; sizes: Record<BreakpointSize, boolean> }]) => void;
+  children?: (this: void, ...args: [{
+        size: BreakpointSize;
+        sizes: Record<BreakpointSize, boolean>;
+      }]) => void;
 };
 
 export default class TypedefEventSharedBlock extends SvelteComponentTyped<
@@ -47,7 +50,10 @@ export default class TypedefEventSharedBlock extends SvelteComponentTyped<
     scroll: CustomEvent<null>;
   },
   {
-    default: { size: BreakpointSize; sizes: Record<BreakpointSize, boolean> };
+    default: {
+      size: BreakpointSize;
+      sizes: Record<BreakpointSize, boolean>;
+    };
     break: Record<string, never>;
     /** Slot for rendering breakpoint sizes */
     "breakpoint-sizes": { sizes: Record<BreakpointSize, boolean> };

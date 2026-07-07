@@ -53,5 +53,8 @@ export default class TooltipIcon extends SvelteComponentTyped<
     mouseleave: WindowEventMap["mouseleave"];
     mouseover: WindowEventMap["mouseover"];
   },
-  { default: Record<string, never>; text: Record<string, never> }
+  {
+    default: Record<string, never>;
+    text: Record<string, never>;
+  }
 > {}

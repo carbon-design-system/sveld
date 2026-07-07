@@ -96,11 +96,17 @@ export default class OverflowMenu extends SvelteComponentTyped<
   OverflowMenuProps,
   {
     click: WindowEventMap["click"];
-    close: CustomEvent<{ index: number; text: string }>;
+    close: CustomEvent<{
+        index: number;
+        text: string;
+      }>;
     keydown: WindowEventMap["keydown"];
     mouseenter: WindowEventMap["mouseenter"];
     mouseleave: WindowEventMap["mouseleave"];
     mouseover: WindowEventMap["mouseover"];
   },
-  { default: Record<string, never>; menu: Record<string, never> }
+  {
+    default: Record<string, never>;
+    menu: Record<string, never>;
+  }
 > {}

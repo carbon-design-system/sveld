@@ -157,5 +157,8 @@ export default class NumberInput extends SvelteComponentTyped<
   /**
    * Default translation ids
    */
-  translationIds: { increment: "increment"; decrement: "decrement" };
+  translationIds: {
+    increment: "increment";
+    decrement: "decrement"
+  };
 }

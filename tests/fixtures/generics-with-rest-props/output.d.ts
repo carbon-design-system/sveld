@@ -26,7 +26,10 @@ type $Props<Row extends DataTableRow = DataTableRow> = {
    */
   rows?: ReadonlyArray<Row>;
 
-  children?: (this: void, ...args: [{ headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> }]) => void;
+  children?: (this: void, ...args: [{
+        headers: ReadonlyArray<DataTableHeader<Row>>;
+        rows: ReadonlyArray<Row>;
+      }]) => void;
 
   [key: `data-${string}`]: unknown;
 };
@@ -36,5 +39,10 @@ export type GenericsWithRestPropsProps<Row extends DataTableRow = DataTableRow> 
 export default class GenericsWithRestProps<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
   GenericsWithRestPropsProps<Row>,
   Record<string, any>,
-  { default: { headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> } }
+  {
+    default: {
+      headers: ReadonlyArray<DataTableHeader<Row>>;
+      rows: ReadonlyArray<Row>;
+    };
+  }
 > {}

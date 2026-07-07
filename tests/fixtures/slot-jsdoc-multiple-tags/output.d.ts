@@ -12,7 +12,12 @@ export type SlotJsdocMultipleTagsProps = {
    *  ```
    * @deprecated Prefer the `link` snippet.
    */
-  children?: (this: void, ...args: [{ props?: { "aria-current"?: string; class: "bx--link" } }]) => void;
+  children?: (this: void, ...args: [{
+        props?: {
+          "aria-current"?: string;
+          class: "bx--link"
+        }
+      }]) => void;
 };
 
 export default class SlotJsdocMultipleTags extends SvelteComponentTyped<
@@ -30,6 +35,11 @@ export default class SlotJsdocMultipleTags extends SvelteComponentTyped<
      *  ```
      * @deprecated Prefer the `link` snippet.
      */
-    default: { props?: { "aria-current"?: string; class: "bx--link" } };
+    default: {
+      props?: {
+        "aria-current"?: string;
+        class: "bx--link"
+      }
+    };
   }
 > {}

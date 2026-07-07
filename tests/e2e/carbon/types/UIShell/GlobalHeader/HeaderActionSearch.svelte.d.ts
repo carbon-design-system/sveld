@@ -13,7 +13,10 @@ export default class HeaderActionSearch extends SvelteComponentTyped<
   {
     focusInputSearch: CustomEvent<null>;
     focusOutInputSearch: CustomEvent<null>;
-    inputSearch: CustomEvent<{ action: "search"; textInput: string }>;
+    inputSearch: CustomEvent<{
+        action: "search";
+        textInput: string;
+      }>;
   },
   Record<string, never>
 > {}

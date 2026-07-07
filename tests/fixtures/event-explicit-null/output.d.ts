@@ -11,6 +11,10 @@ export type EventExplicitNullProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class EventExplicitNull extends SvelteComponentTyped<
   EventExplicitNullProps,
-  { change: WindowEventMap["change"]; clear: CustomEvent<null>; input: WindowEventMap["input"] },
+  {
+    change: WindowEventMap["change"];
+    clear: CustomEvent<null>;
+    input: WindowEventMap["input"];
+  },
   Record<string, never>
 > {}

@@ -52,5 +52,8 @@ export default class TooltipDefinition extends SvelteComponentTyped<
     mouseleave: WindowEventMap["mouseleave"];
     mouseover: WindowEventMap["mouseover"];
   },
-  { default: Record<string, never>; tooltip: Record<string, never> }
+  {
+    default: Record<string, never>;
+    tooltip: Record<string, never>;
+  }
 > {}

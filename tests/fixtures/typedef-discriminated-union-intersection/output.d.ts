@@ -5,9 +5,16 @@ export interface Base {
   createdAt: number
 }
 
-export type User = Base & { kind: "user"; name: string };
+export type User = Base & {
+  kind: "user";
+  name: string
+};
 
-export type Post = Base & { kind: "post"; title: string; body: string };
+export type Post = Base & {
+  kind: "post";
+  title: string;
+  body: string
+};
 
 export type Entity = User | Post;
 

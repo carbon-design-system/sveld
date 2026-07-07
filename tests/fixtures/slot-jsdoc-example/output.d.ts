@@ -11,7 +11,12 @@ export type SlotJsdocExampleProps = {
    *  </BreadcrumbItem>
    *  ```
    */
-  children?: (this: void, ...args: [{ props?: { "aria-current"?: string; class: "bx--link" } }]) => void;
+  children?: (this: void, ...args: [{
+        props?: {
+          "aria-current"?: string;
+          class: "bx--link"
+        }
+      }]) => void;
 };
 
 export default class SlotJsdocExample extends SvelteComponentTyped<
@@ -28,6 +33,11 @@ export default class SlotJsdocExample extends SvelteComponentTyped<
      *  </BreadcrumbItem>
      *  ```
      */
-    default: { props?: { "aria-current"?: string; class: "bx--link" } };
+    default: {
+      props?: {
+        "aria-current"?: string;
+        class: "bx--link"
+      }
+    };
   }
 > {}
