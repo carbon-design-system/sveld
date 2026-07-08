@@ -6,6 +6,7 @@ import { buildComponentApiDocument } from "../src/writer/document-model";
 import { mockComponentDocApi } from "./test-brands";
 
 const ENTRY_ERROR = /entry/i;
+const INPUT_RENAMED_ERROR = /renamed to `entry`/;
 
 describe("sveld() entry resolution failures", () => {
   let dir: string;
@@ -24,17 +25,22 @@ describe("sveld() entry resolution failures", () => {
     jest.restoreAllMocks();
   });
 
-  test("throws when the given input does not resolve", async () => {
-    await expect(sveld({ input: "does-not-exist/" })).rejects.toThrow(ENTRY_ERROR);
+  test("throws when the given entry does not resolve", async () => {
+    await expect(sveld({ entry: "does-not-exist/" })).rejects.toThrow(ENTRY_ERROR);
   });
 
-  test("throws when no input is given and package.json#svelte is absent", async () => {
+  test("throws when no entry is given and package.json#svelte is absent", async () => {
     await expect(sveld()).rejects.toThrow(ENTRY_ERROR);
+  });
+
+  test("throws when the removed `input` option is passed", async () => {
+    const legacyOpts = { input: "./src" } as unknown as Parameters<typeof sveld>[0];
+    await expect(sveld(legacyOpts)).rejects.toThrow(INPUT_RENAMED_ERROR);
   });
 });
 
 describe("sveld() check", () => {
-  // `getSvelteEntry` resolves `input` against `process.cwd()`, so the fixture
+  // `getSvelteEntry` resolves `entry` against `process.cwd()`, so the fixture
   // lives under cwd and is referenced by its relative directory name.
   let absoluteDir: string;
   let relativeDir: string;
@@ -66,7 +72,7 @@ describe("sveld() check", () => {
     );
     writeFileSync(join(absoluteDir, "COMPONENT_API.json"), JSON.stringify(snapshot));
 
-    const result = await sveld({ input: entry, types: false, check: snapshotFile });
+    const result = await sveld({ entry, types: false, check: snapshotFile });
 
     expect(result.check).toBeDefined();
     expect(result.check?.snapshotExists).toBe(true);
@@ -76,7 +82,7 @@ describe("sveld() check", () => {
   });
 
   test("does not run check when the option is omitted", async () => {
-    const result = await sveld({ input: entry, types: false });
+    const result = await sveld({ entry, types: false });
 
     expect(result.check).toBeUndefined();
   });
