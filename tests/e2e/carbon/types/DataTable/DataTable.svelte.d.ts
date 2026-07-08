@@ -25,9 +25,7 @@ export interface DataTableNonEmptyHeader<Row> {
   minWidth?: string;
 }
 
-export type DataTableHeader<Row> =
-  | DataTableNonEmptyHeader<Row>
-  | DataTableEmptyHeader<Row>;
+export type DataTableHeader<Row> = DataTableNonEmptyHeader<Row> | DataTableEmptyHeader<Row>;
 
 export interface DataTableRow {
   id: any;
@@ -186,22 +184,14 @@ type $Props<Row extends DataTableRow = DataTableRow> = {
    */
   page?: number;
 
-  cell?: (
-    this: void,
-    ...args: [
-      {
+  cell?: (this: void, ...args: [{
         row: Row;
         cell: DataTableCell<Row>;
         rowIndex: number;
         cellIndex: number;
-      },
-    ]
-  ) => void;
+      }]) => void;
 
-  "cell-header"?: (
-    this: void,
-    ...args: [{ header: DataTableNonEmptyHeader }]
-  ) => void;
+  "cell-header"?: (this: void, ...args: [{ header: DataTableNonEmptyHeader }]) => void;
 
   "expanded-row"?: (this: void, ...args: [{ row: Row }]) => void;
 
@@ -210,35 +200,35 @@ type $Props<Row extends DataTableRow = DataTableRow> = {
   [key: `data-${string}`]: unknown;
 };
 
-export type DataTableProps<Row extends DataTableRow = DataTableRow> = Omit<
-  $RestProps,
-  keyof $Props<Row>
-> &
-  $Props<Row>;
+export type DataTableProps<Row extends DataTableRow = DataTableRow> = Omit<$RestProps, keyof $Props<Row>> & $Props<Row>;
 
-export default class DataTable<
-  Row extends DataTableRow = DataTableRow,
-> extends SvelteComponentTyped<
+export default class DataTable<Row extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
   DataTableProps<Row>,
   {
     click: CustomEvent<{
-      header?: DataTableHeader<Row>;
-      row?: Row;
-      cell?: DataTableCell<Row>;
-    }>;
+        header?: DataTableHeader<Row>;
+        row?: Row;
+        cell?: DataTableCell<Row>;
+      }>;
     "click:cell": CustomEvent<DataTableCell<Row>>;
     "click:header": CustomEvent<{
-      header: DataTableHeader<Row>;
-      sortDirection?: "ascending" | "descending" | "none";
-    }>;
+        header: DataTableHeader<Row>;
+        sortDirection?: "ascending" | "descending" | "none"
+      }>;
     "click:header--expand": CustomEvent<{ expanded: boolean }>;
     "click:header--select": CustomEvent<{
-      indeterminate: boolean;
-      selected: boolean;
-    }>;
+        indeterminate: boolean;
+        selected: boolean;
+      }>;
     "click:row": CustomEvent<Row>;
-    "click:row--expand": CustomEvent<{ expanded: boolean; row: Row }>;
-    "click:row--select": CustomEvent<{ selected: boolean; row: Row }>;
+    "click:row--expand": CustomEvent<{
+        expanded: boolean;
+        row: Row;
+      }>;
+    "click:row--select": CustomEvent<{
+        selected: boolean;
+        row: Row;
+      }>;
     "mouseenter:row": CustomEvent<Row>;
     "mouseleave:row": CustomEvent<Row>;
   },

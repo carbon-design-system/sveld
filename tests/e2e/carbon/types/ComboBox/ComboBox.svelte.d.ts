@@ -135,10 +135,10 @@ export default class ComboBox extends SvelteComponentTyped<
     keydown: WindowEventMap["keydown"];
     scroll: WindowEventMap["scroll"];
     select: CustomEvent<{
-      selectedId: string;
-      selectedIndex: number;
-      selectedItem: ComboBoxItem;
-    }>;
+        selectedId: string;
+        selectedIndex: number;
+        selectedItem: ComboBoxItem
+      }>;
   },
   Record<string, never>
 > {}

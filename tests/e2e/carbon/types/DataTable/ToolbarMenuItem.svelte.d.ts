@@ -7,6 +7,9 @@ export type ToolbarMenuItemProps = OverflowMenuItemProps & {
 
 export default class ToolbarMenuItem extends SvelteComponentTyped<
   ToolbarMenuItemProps,
-  { click: WindowEventMap["click"]; keydown: WindowEventMap["keydown"] },
+  {
+    click: WindowEventMap["click"];
+    keydown: WindowEventMap["keydown"];
+  },
   { default: Record<string, never> }
 > {}

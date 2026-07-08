@@ -16,7 +16,10 @@ export type RunesPropDefaultIdentifierJsdocProps = {
    * Animation configuration applied on mount.
    * @default { duration: 200, easing: "ease-in-out" }
    */
-  config?: { duration: number; easing: string };
+  config?: {
+    duration: number;
+    easing: string
+  };
 
   /**
    * Fallback label shown when none is provided.

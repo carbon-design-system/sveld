@@ -1,6 +1,12 @@
 import { SvelteComponentTyped } from "svelte";
 
-export type Tree = { kind: "leaf"; value: number } | { kind: "node"; children: Tree[] };
+export type Tree = {
+  kind: "leaf";
+  value: number
+} | {
+  kind: "node";
+  children: Tree[]
+};
 
 export type TypedefDiscriminatedUnionRecursiveProps = {
   /**

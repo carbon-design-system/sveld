@@ -9,5 +9,8 @@ export type SlotsSpreadProps = {
 export default class SlotsSpread extends SvelteComponentTyped<
   SlotsSpreadProps,
   Record<string, any>,
-  { default: Record<string, never>; text: Record<string, never> }
+  {
+    default: Record<string, never>;
+    text: Record<string, never>;
+  }
 > {}

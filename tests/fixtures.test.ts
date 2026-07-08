@@ -2,7 +2,6 @@ import path from "node:path";
 import { Glob } from "bun";
 import { asNormalizedPath } from "../src/brands";
 import ComponentParser from "../src/ComponentParser";
-import Writer from "../src/writer/Writer";
 import { writeTsDefinition } from "../src/writer/writer-ts-definitions";
 
 const folder = path.join(process.cwd(), "tests", "fixtures");
@@ -16,7 +15,6 @@ for await (const file of new Glob("**/input.svelte").scan(folder)) {
 }
 
 const parser = new ComponentParser();
-const writer = new Writer({ parser: "typescript", printWidth: 120 });
 const files = Array.from(fixtures_map.keys());
 
 const getMetadata = (fixture: { filePath: string; source: string }) => {
@@ -59,7 +57,7 @@ describe("fixtures (TypeScript)", async () => {
       throw new Error(`Source not found for: ${filePath}`);
     }
     const { dir, metadata, parsed_component } = getMetadata({ filePath, source });
-    const api_ts = await writer.format(writeTsDefinition({ ...metadata, ...parsed_component }));
+    const api_ts = writeTsDefinition({ ...metadata, ...parsed_component });
 
     // Snapshot the output; if the test fails, output has changed.
     expect(api_ts).toMatchSnapshot();

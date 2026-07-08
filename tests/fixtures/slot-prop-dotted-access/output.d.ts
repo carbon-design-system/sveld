@@ -4,12 +4,12 @@ export type SlotPropDottedAccessProps = {
   /**
    * @default { x: 0, y: 0 }
    */
-  point?: { x: number; y: number };
+  point?: {
+    x: number;
+    y: number
+  };
 
-  children?: (
-    this: void,
-    ...args: [
-      {
+  children?: (this: void, ...args: [{
         a: string;
         b: string;
         c: number;
@@ -19,9 +19,7 @@ export type SlotPropDottedAccessProps = {
         g: Array<string>;
         h: any;
         i: number;
-      },
-    ]
-  ) => void;
+      }]) => void;
 };
 
 export default class SlotPropDottedAccess extends SvelteComponentTyped<

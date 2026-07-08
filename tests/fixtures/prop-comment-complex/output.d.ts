@@ -27,11 +27,19 @@ export type PropCommentComplexProps = {
    */
   icon?: any;
 
-  children?: (this: void, ...args: [{ text: string; icon: any }]) => void;
+  children?: (this: void, ...args: [{
+        text: string;
+        icon: any;
+      }]) => void;
 };
 
 export default class PropCommentComplex extends SvelteComponentTyped<
   PropCommentComplexProps,
   Record<string, any>,
-  { default: { text: string; icon: any } }
+  {
+    default: {
+      text: string;
+      icon: any;
+    };
+  }
 > {}

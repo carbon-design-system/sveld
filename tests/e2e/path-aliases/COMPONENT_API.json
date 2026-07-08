@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "generator": {
     "name": "sveld",
-    "version": "0.32.8",
+    "version": "0.34.1",
     "svelteVersion": "5.56.3"
   },
   "total": 2,
@@ -11,8 +11,14 @@
       "moduleName": "Button",
       "filePath": "src/lib/components/Button.svelte",
       "source": {
-        "start": { "line": 1, "column": 0 },
-        "end": { "line": 16, "column": 0 }
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 16,
+          "column": 0
+        }
       },
       "syntaxMode": "legacy",
       "scriptLanguage": "js",
@@ -35,8 +41,14 @@
           "constant": false,
           "reactive": false,
           "source": {
-            "start": { "line": 5, "column": 2 },
-            "end": { "line": 5, "column": 31 }
+            "start": {
+              "line": 5,
+              "column": 2
+            },
+            "end": {
+              "line": 5,
+              "column": 31
+            }
           }
         },
         {
@@ -57,8 +69,14 @@
           "constant": false,
           "reactive": false,
           "source": {
-            "start": { "line": 10, "column": 2 },
-            "end": { "line": 10, "column": 29 }
+            "start": {
+              "line": 10,
+              "column": 2
+            },
+            "end": {
+              "line": 10,
+              "column": 29
+            }
           }
         }
       ],
@@ -73,8 +91,14 @@
       "moduleName": "Input",
       "filePath": "src/lib/components/Input.svelte",
       "source": {
-        "start": { "line": 1, "column": 0 },
-        "end": { "line": 14, "column": 0 }
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 14,
+          "column": 0
+        }
       },
       "syntaxMode": "legacy",
       "scriptLanguage": "js",
@@ -86,15 +110,25 @@
           "type": "string",
           "typeSource": "default",
           "value": "\"\"",
-          "defaultValue": { "raw": "\"\"", "kind": "literal", "value": "" },
+          "defaultValue": {
+            "raw": "\"\"",
+            "kind": "literal",
+            "value": ""
+          },
           "isFunction": false,
           "isFunctionDeclaration": false,
           "isRequired": false,
           "constant": false,
           "reactive": false,
           "source": {
-            "start": { "line": 5, "column": 2 },
-            "end": { "line": 5, "column": 30 }
+            "start": {
+              "line": 5,
+              "column": 2
+            },
+            "end": {
+              "line": 5,
+              "column": 30
+            }
           }
         },
         {
@@ -104,15 +138,25 @@
           "type": "string",
           "typeSource": "default",
           "value": "\"\"",
-          "defaultValue": { "raw": "\"\"", "kind": "literal", "value": "" },
+          "defaultValue": {
+            "raw": "\"\"",
+            "kind": "literal",
+            "value": ""
+          },
           "isFunction": false,
           "isFunctionDeclaration": false,
           "isRequired": false,
           "constant": false,
           "reactive": true,
           "source": {
-            "start": { "line": 10, "column": 2 },
-            "end": { "line": 10, "column": 24 }
+            "start": {
+              "line": 10,
+              "column": 2
+            },
+            "end": {
+              "line": 10,
+              "column": 24
+            }
           }
         }
       ],

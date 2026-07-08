@@ -115,7 +115,7 @@
       "type": "() => Options",
       "name": "Factory",
       "description": "A factory that produces an `Options` value.",
-      "ts": "type Factory = () => Options"
+      "ts": "type Factory = () => Options;"
     }
   ],
   "generics": null,

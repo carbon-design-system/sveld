@@ -72,7 +72,7 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "{ headers: ReadonlyArray<DataTableHeader<Row>>, rows: ReadonlyArray<Row> }",
+      "slot_props": "{\n  headers: ReadonlyArray<DataTableHeader<Row>>;\n  rows: ReadonlyArray<Row>;\n}",
       "source": {
         "start": {
           "line": 17,
@@ -95,12 +95,12 @@
     {
       "type": "Exclude<keyof Row, \"id\">",
       "name": "DataTableKey<Row>",
-      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \"id\">"
+      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \"id\">;"
     },
     {
       "type": "{ key: DataTableKey<Row>; value: string; }",
-      "name": "DataTableHeader<Row=DataTableRow>",
-      "ts": "interface DataTableHeader<Row=DataTableRow> { key: DataTableKey<Row>; value: string; }"
+      "name": "DataTableHeader<Row = DataTableRow>",
+      "ts": "interface DataTableHeader<Row = DataTableRow> { key: DataTableKey<Row>; value: string; }"
     }
   ],
   "generics": [

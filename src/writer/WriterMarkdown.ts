@@ -10,7 +10,7 @@ interface MarkdownOptions {
 export type { AppendType };
 
 /**
- * Markdown writer with Prettier formatting and optional append callbacks.
+ * Markdown writer with optional append callbacks.
  *
  * @example
  * ```ts
@@ -28,7 +28,7 @@ export default class WriterMarkdown extends Writer {
   private markdownBase: MarkdownWriterBaseImpl;
 
   constructor(options: MarkdownOptions) {
-    super({ parser: "markdown", printWidth: 80 });
+    super();
     this.onAppend = options.onAppend;
     this.markdownBase = new MarkdownWriterBaseImpl();
   }

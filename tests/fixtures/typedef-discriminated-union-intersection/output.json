@@ -57,17 +57,17 @@
     {
       "type": "Base & { kind: \"user\"; name: string }",
       "name": "User",
-      "ts": "type User = Base & { kind: \"user\"; name: string }"
+      "ts": "type User = Base & { kind: \"user\"; name: string };"
     },
     {
       "type": "Base & { kind: \"post\"; title: string; body: string }",
       "name": "Post",
-      "ts": "type Post = Base & { kind: \"post\"; title: string; body: string }"
+      "ts": "type Post = Base & { kind: \"post\"; title: string; body: string };"
     },
     {
       "type": "User | Post",
       "name": "Entity",
-      "ts": "type Entity = User | Post"
+      "ts": "type Entity = User | Post;"
     }
   ],
   "generics": null,

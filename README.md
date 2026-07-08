@@ -443,7 +443,6 @@ sveld({
 When building the library, TypeScript definitions are emitted to the `types` folder by default.
 
 Customize the output folder using the `typesOptions.outDir` option.
-Use `typesOptions.printWidth` to control Prettier wrapping for generated `.d.ts` files. The default is `80`.
 
 The following example emits the output to the `dist` folder:
 
@@ -451,7 +450,6 @@ The following example emits the output to the `dist` folder:
 sveld({
 +  typesOptions: {
 +    outDir: 'dist',
-+    printWidth: 80
 +  }
 })
 ```
@@ -639,8 +637,12 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
 - **`glob`** (boolean, optional): Enable glob mode to analyze all `*.svelte` files.
 - **`documentExports`** (boolean, optional): Include consts, functions, and types from the entry barrel in JSON (`exports`) and Markdown ("Exports"). Off by default. See [Documenting Entry Exports](#documenting-entry-exports).
 - **`types`** (boolean, optional, default: `true`): Generate TypeScript definitions.
-- **`typesOptions`** (object, optional): Options for TypeScript definition generation, including `outDir`, `preamble`, `printWidth`, and `format`.
+<<<<<<< HEAD
+- **`typesOptions`** (object, optional): Options for TypeScript definition generation, including `outDir`, `preamble`, and `format`.
   - **`format`** (`"class"` | `"component"`, optional, default: `"class"`): `.d.ts` output shape. `"class"` extends `SvelteComponentTyped`; `"component"` emits the Svelte 5 `Component` type. Also available as `--types-format`. See [`.d.ts` output format](#dts-output-format-typesoptionsformat).
+=======
+- **`typesOptions`** (object, optional): Options for TypeScript definition generation, including `outDir` and `preamble`.
+>>>>>>> 0724225 (feat(writer)!: remove prettier entirely)
 - **`json`** (boolean, optional): Generate component documentation in JSON format.
 - **`jsonOptions`** (object, optional): Options for JSON output.
 - **`markdown`** (boolean, optional): Generate component documentation in Markdown format.

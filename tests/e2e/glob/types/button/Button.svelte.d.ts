@@ -8,9 +8,7 @@ export declare function computeTreeLeafDepth(): any;
 /**
  * Finds the nearest parent tree node
  */
-export declare function findParentTreeNode(
-  node: HTMLElement,
-): null | HTMLElement;
+export declare function findParentTreeNode(node: HTMLElement): null | HTMLElement;
 
 type $RestProps = SvelteHTMLElements["button"];
 

@@ -98,18 +98,18 @@
       "type": "(value: string, index: number) => void",
       "name": "OnChange",
       "description": "Callback fired when the value changes.",
-      "ts": "type OnChange = (value: string, index: number) => void"
+      "ts": "type OnChange = (value: string, index: number) => void;"
     },
     {
       "type": "(a: any, b: any) => number",
       "name": "Comparator",
-      "ts": "type Comparator = (a: any, b: any) => number"
+      "ts": "type Comparator = (a: any, b: any) => number;"
     },
     {
       "type": "() => void",
       "name": "OnClose",
       "description": "No-arg callback.",
-      "ts": "type OnClose = () => void"
+      "ts": "type OnClose = () => void;"
     }
   ],
   "generics": null,

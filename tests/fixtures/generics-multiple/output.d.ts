@@ -12,10 +12,7 @@ export interface DataTableHeader<Row = DataTableRow, Header = DataTableRow> {
   value: Header;
 }
 
-export type GenericsMultipleProps<
-  Row extends DataTableRow = DataTableRow,
-  Header extends DataTableRow = DataTableRow,
-> = {
+export type GenericsMultipleProps<Row extends DataTableRow = DataTableRow, Header extends DataTableRow = DataTableRow> = {
   /**
    * @default []
    */
@@ -26,17 +23,19 @@ export type GenericsMultipleProps<
    */
   rows?: ReadonlyArray<Row>;
 
-  children?: (
-    this: void,
-    ...args: [{ headers: ReadonlyArray<DataTableHeader<Row, Header>>; rows: ReadonlyArray<Row> }]
-  ) => void;
+  children?: (this: void, ...args: [{
+        headers: ReadonlyArray<DataTableHeader<Row, Header>>;
+        rows: ReadonlyArray<Row>;
+      }]) => void;
 };
 
-export default class GenericsMultiple<
-  Row extends DataTableRow = DataTableRow,
-  Header extends DataTableRow = DataTableRow,
-> extends SvelteComponentTyped<
-  GenericsMultipleProps<Row, Header>,
+export default class GenericsMultiple<Row extends DataTableRow = DataTableRow, Header extends DataTableRow = DataTableRow> extends SvelteComponentTyped<
+  GenericsMultipleProps<Row,Header>,
   Record<string, any>,
-  { default: { headers: ReadonlyArray<DataTableHeader<Row, Header>>; rows: ReadonlyArray<Row> } }
+  {
+    default: {
+      headers: ReadonlyArray<DataTableHeader<Row, Header>>;
+      rows: ReadonlyArray<Row>;
+    };
+  }
 > {}

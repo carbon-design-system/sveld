@@ -6,11 +6,23 @@ export type DefaultSlotWithPropsProps = {
    */
   items?: string[];
 
-  children?: (this: void, ...args: [{ item: string; index: number; isFirst: boolean; isLast: boolean }]) => void;
+  children?: (this: void, ...args: [{
+        item: string;
+        index: number;
+        isFirst: boolean;
+        isLast: boolean;
+      }]) => void;
 };
 
 export default class DefaultSlotWithProps extends SvelteComponentTyped<
   DefaultSlotWithPropsProps,
   Record<string, any>,
-  { default: { item: string; index: number; isFirst: boolean; isLast: boolean } }
+  {
+    default: {
+      item: string;
+      index: number;
+      isFirst: boolean;
+      isLast: boolean;
+    };
+  }
 > {}

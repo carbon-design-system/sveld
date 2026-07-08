@@ -50,7 +50,7 @@
     {
       "type": "{ kind: \"leaf\"; value: number } | { kind: \"node\"; children: Tree[] }",
       "name": "Tree",
-      "ts": "type Tree = { kind: \"leaf\"; value: number } | { kind: \"node\"; children: Tree[] }"
+      "ts": "type Tree = { kind: \"leaf\"; value: number } | { kind: \"node\"; children: Tree[] };"
     }
   ],
   "generics": null,

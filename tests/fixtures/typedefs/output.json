@@ -74,7 +74,7 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "{ prop1: MyTypedef, prop2: MyTypedefArray }",
+      "slot_props": "{\n  prop1: MyTypedef;\n  prop2: MyTypedefArray;\n}",
       "source": {
         "start": {
           "line": 15,
@@ -97,7 +97,7 @@
     {
       "type": "MyTypedef[]",
       "name": "MyTypedefArray",
-      "ts": "type MyTypedefArray = MyTypedef[]"
+      "ts": "type MyTypedefArray = MyTypedef[];"
     }
   ],
   "generics": null,

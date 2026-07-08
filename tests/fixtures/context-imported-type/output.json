@@ -35,7 +35,7 @@
     {
       "type": "{\n  open: () => void;\n  close: () => void;\n}",
       "name": "ModalAPI",
-      "ts": "type ModalAPI = {\n  open: () => void;\n  close: () => void;\n}"
+      "ts": "type ModalAPI = {\n  open: () => void;\n  close: () => void;\n};"
     }
   ],
   "generics": null,

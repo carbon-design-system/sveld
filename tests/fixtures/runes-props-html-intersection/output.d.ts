@@ -1,5 +1,6 @@
 import { SvelteComponentTyped } from "svelte";
-import type { HTMLButtonAttributes, SvelteHTMLElements } from "svelte/elements";
+import type { SvelteHTMLElements } from "svelte/elements";
+import type { HTMLButtonAttributes } from "svelte/elements";
 
 type $RestProps = SvelteHTMLElements["button"];
 

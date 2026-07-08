@@ -86,7 +86,7 @@
   "events": [],
   "typedefs": [],
   "generics": [
-    "Value,Icon",
+    "Value, Icon",
     "Value extends string = string, Icon = any"
   ],
   "contexts": [

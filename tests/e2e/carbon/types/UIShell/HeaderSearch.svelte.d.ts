@@ -40,10 +40,10 @@ type $Props = {
    */
   selectedResultIndex?: number;
 
-  children?: (
-    this: void,
-    ...args: [{ result: HeaderSearchResult; index: number }]
-  ) => void;
+  children?: (this: void, ...args: [{
+        result: HeaderSearchResult;
+        index: number
+      }]) => void;
 
   [key: `data-${string}`]: unknown;
 };
@@ -62,10 +62,15 @@ export default class HeaderSearch extends SvelteComponentTyped<
     input: WindowEventMap["input"];
     keydown: WindowEventMap["keydown"];
     select: CustomEvent<{
-      value: string;
-      selectedResultIndex: number;
-      selectedResult: HeaderSearchResult;
-    }>;
+        value: string;
+        selectedResultIndex: number;
+        selectedResult: HeaderSearchResult
+      }>;
   },
-  { default: { result: HeaderSearchResult; index: number } }
+  {
+    default: {
+      result: HeaderSearchResult;
+      index: number
+    };
+  }
 > {}

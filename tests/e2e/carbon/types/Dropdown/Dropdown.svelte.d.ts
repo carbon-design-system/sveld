@@ -140,12 +140,6 @@ export type DropdownProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class Dropdown extends SvelteComponentTyped<
   DropdownProps,
-  {
-    select: CustomEvent<{
-      selectedId: DropdownItemId;
-      selectedIndex: number;
-      selectedItem: DropdownItem;
-    }>;
-  },
+  { select: CustomEvent<{ selectedId: DropdownItemId, selectedIndex: number, selectedItem: DropdownItem }> },
   Record<string, never>
 > {}

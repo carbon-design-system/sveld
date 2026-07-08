@@ -7,7 +7,7 @@ import { SvelteComponentTyped } from "svelte";
 export interface Options {
   id: string;
   size: "sm" | "md" | "lg";
-  disabled: boolean;
+  disabled: boolean
 }
 
 /**

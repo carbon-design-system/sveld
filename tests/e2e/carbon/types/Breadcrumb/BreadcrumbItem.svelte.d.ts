@@ -16,10 +16,12 @@ type $Props = {
    */
   isCurrentPage?: boolean;
 
-  children?: (
-    this: void,
-    ...args: [{ props?: { ["aria-current"]?: string; class: "bx--link" } }]
-  ) => void;
+  children?: (this: void, ...args: [{
+        props?: {
+          ["aria-current"]?: string;
+          class: "bx--link";
+        }
+      }]) => void;
 
   [key: `data-${string}`]: unknown;
 };
@@ -34,5 +36,12 @@ export default class BreadcrumbItem extends SvelteComponentTyped<
     mouseleave: WindowEventMap["mouseleave"];
     mouseover: WindowEventMap["mouseover"];
   },
-  { default: { props?: { ["aria-current"]?: string; class: "bx--link" } } }
+  {
+    default: {
+      props?: {
+        ["aria-current"]?: string;
+        class: "bx--link";
+      }
+    };
+  }
 > {}

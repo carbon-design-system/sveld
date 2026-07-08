@@ -124,8 +124,11 @@
       }
     },
     {
-      "includes": ["**/tests/fixtures/**/*.json"],
+      "includes": ["**/tests/fixtures/**/*.json", "**/tests/fixtures/**/*.d.ts"],
       "formatter": {
+        "enabled": false
+      },
+      "assist": {
         "enabled": false
       }
     },

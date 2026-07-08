@@ -5,7 +5,7 @@ export type RenamedPropsProps = {
    * Just your average CSS class string.
    * @default "test"
    */
-  class?: string | null;
+  class?: string|null;
 };
 
 export default class RenamedProps extends SvelteComponentTyped<

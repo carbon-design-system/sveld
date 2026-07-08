@@ -69,7 +69,7 @@
     {
       "type": "any",
       "name": "DataTableRowId",
-      "ts": "type DataTableRowId = any"
+      "ts": "type DataTableRowId = any;"
     }
   ],
   "generics": [

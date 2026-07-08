@@ -53,10 +53,12 @@ type $Props = {
    */
   padding?: boolean;
 
-  children?: (
-    this: void,
-    ...args: [{ props: { class: string; [key: string]: any } }]
-  ) => void;
+  children?: (this: void, ...args: [{
+        props: {
+          class: string;
+          [key: string]: any;
+        }
+      }]) => void;
 
   [key: `data-${string}`]: unknown;
 };
@@ -66,5 +68,12 @@ export type GridProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class Grid extends SvelteComponentTyped<
   GridProps,
   Record<string, any>,
-  { default: { props: { class: string; [key: string]: any } } }
+  {
+    default: {
+      props: {
+        class: string;
+        [key: string]: any;
+      }
+    };
+  }
 > {}

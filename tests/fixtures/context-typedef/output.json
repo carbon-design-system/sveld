@@ -35,7 +35,7 @@
     {
       "type": "{\n  id: string;\n  label: string;\n  disabled?: boolean;\n}",
       "name": "TabData",
-      "ts": "type TabData = {\n  id: string;\n  label: string;\n  disabled?: boolean;\n}"
+      "ts": "type TabData = {\n  id: string;\n  label: string;\n  disabled?: boolean;\n};"
     }
   ],
   "generics": null,

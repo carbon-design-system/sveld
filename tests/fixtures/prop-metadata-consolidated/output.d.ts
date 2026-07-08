@@ -30,7 +30,7 @@ export type PropMetadataConsolidatedProps = {
   /**
    * @default { size: "md", count: 2 }
    */
-  objectDefault?: { size: "md"; count: 2 };
+  objectDefault?: { size: "md", count: 2 };
 
   callbackDefault?: (value: any) => any;
 

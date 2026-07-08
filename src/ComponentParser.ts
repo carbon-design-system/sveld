@@ -1202,7 +1202,7 @@ export default class ComponentParser {
    */
   accumulateGeneric(name: string, constraint: string): void {
     if (this.ctx.generics) {
-      this.ctx.generics = [`${this.ctx.generics[0]},${name}`, `${this.ctx.generics[1]}, ${constraint}`];
+      this.ctx.generics = [`${this.ctx.generics[0]}, ${name}`, `${this.ctx.generics[1]}, ${constraint}`];
     } else {
       this.ctx.generics = [name, constraint];
     }
@@ -2214,7 +2214,16 @@ export default class ComponentParser {
             new_props.push(`${key}: ${slot_props[key].value}`);
           }
 
-          const formatted_slot_props = new_props.length === 0 ? "Record<string, never>" : `{ ${new_props.join(", ")} }`;
+          // With more than one destructured prop, always break onto separate
+          // lines (matching how an `interface` body is never collapsed)
+          // rather than leave it up to whether the combined line happens to
+          // fit under the formatter's width.
+          const formatted_slot_props =
+            new_props.length === 0
+              ? "Record<string, never>"
+              : new_props.length === 1
+                ? `{ ${new_props[0]} }`
+                : `{\n  ${new_props.join(";\n  ")};\n}`;
 
           return { ...slot, slot_props: formatted_slot_props };
         } catch (_e) {

@@ -1,14 +1,7 @@
 import { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
-type $RestProps = SvelteHTMLElements["abbr"] &
-  SvelteHTMLElements["code"] &
-  SvelteHTMLElements["em"] &
-  SvelteHTMLElements["strong"] &
-  SvelteHTMLElements["mark"] &
-  SvelteHTMLElements["kbd"] &
-  SvelteHTMLElements["samp"] &
-  SvelteHTMLElements["var"];
+type $RestProps = SvelteHTMLElements["abbr"] & SvelteHTMLElements["code"] & SvelteHTMLElements["em"] & SvelteHTMLElements["strong"] & SvelteHTMLElements["mark"] & SvelteHTMLElements["kbd"] & SvelteHTMLElements["samp"] & SvelteHTMLElements["var"];
 
 type $Props = {
   /**

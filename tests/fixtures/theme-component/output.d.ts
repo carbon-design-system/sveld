@@ -37,8 +37,8 @@ export default class ThemeComponent extends SvelteComponentTyped<
   ThemeComponentProps,
   {
     update: CustomEvent<{
-      theme: CarbonTheme;
-    }>;
+        theme: CarbonTheme;
+      }>;
   },
   { default: { theme: CarbonTheme } }
 > {}

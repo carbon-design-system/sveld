@@ -1,64 +1,52 @@
-import Writer, { createTypeScriptWriter } from "../src/writer/Writer";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import Writer, { createJsonWriter, createTypeScriptWriter } from "../src/writer/Writer";
 
 describe("Writer", () => {
-  beforeEach(() => {
-    // Suppress Prettier console errors
-    global.console.error = jest.fn();
+  let dir: string;
+
+  beforeEach(async () => {
+    dir = await mkdtemp(join(tmpdir(), "sveld-writer-"));
   });
 
-  test("TypeScript", async () => {
-    const consoleError = jest.spyOn(console, "error");
-    const writer = new Writer({ parser: "typescript", printWidth: 120 });
-
-    expect(await writer.format("interface I {a:boolean}")).toEqual("interface I {\n  a: boolean;\n}\n");
-    expect(consoleError).toHaveBeenCalledTimes(0);
-    // Invalid JSON should emit Prettier parsing error
-    expect(await writer.format("a:boolean}")).toEqual("a:boolean}");
-    expect(consoleError).toHaveBeenCalledTimes(1);
+  afterEach(async () => {
+    await rm(dir, { recursive: true, force: true });
   });
 
-  test("TypeScript writer default print width matches generated definitions", async () => {
+  test("writes raw content as-is, without formatting", async () => {
+    const writer = new Writer();
+    const filePath = join(dir, "index.d.ts");
+
+    await writer.write(filePath, "export type Props={a:boolean}");
+
+    expect(await readFile(filePath, "utf-8")).toBe("export type Props={a:boolean}");
+  });
+
+  test("creates missing parent directories", async () => {
+    const writer = new Writer();
+    const filePath = join(dir, "nested", "deep", "index.d.ts");
+
+    await writer.write(filePath, "content");
+
+    expect(await readFile(filePath, "utf-8")).toBe("content");
+  });
+
+  test("createJsonWriter writes raw content as-is", async () => {
+    const writer = createJsonWriter();
+    const filePath = join(dir, "data.json");
+
+    await writer.write(filePath, '{"a":null}');
+
+    expect(await readFile(filePath, "utf-8")).toBe('{"a":null}');
+  });
+
+  test("createTypeScriptWriter writes raw content as-is", async () => {
     const writer = createTypeScriptWriter();
+    const filePath = join(dir, "index.d.ts");
 
-    expect(
-      await writer.format(
-        "export type Props = { first: string; second: string; third: string; fourth: string; fifth: string };",
-      ),
-    ).toBe(
-      "export type Props = {\n  first: string;\n  second: string;\n  third: string;\n  fourth: string;\n  fifth: string;\n};\n",
-    );
-  });
+    await writer.write(filePath, "export type Props = {};");
 
-  test("JSON", async () => {
-    const consoleError = jest.spyOn(console, "error");
-    const writer = new Writer({ parser: "json", printWidth: 80 });
-
-    expect(await writer.format("{a:null}")).toEqual('{ "a": null }\n');
-
-    expect(consoleError).toHaveBeenCalledTimes(0);
-    // Invalid JSON should emit Prettier parsing error
-    expect(await writer.format("a:null")).toEqual("a:null");
-    expect(consoleError).toHaveBeenCalledTimes(1);
-  });
-
-  test("Markdown", async () => {
-    const writer = new Writer({ parser: "markdown", printWidth: 80 });
-
-    expect(await writer.format("## text")).toEqual("## text\n");
-    // @ts-expect-error
-    expect(await writer.format({ a: null })).toEqual({ a: null });
-  });
-
-  test("format handles non-string inputs", async () => {
-    const writer = new Writer({ parser: "json", printWidth: 80 });
-
-    // @ts-expect-error
-    expect(await writer.format({ complex: "object" })).toEqual({ complex: "object" });
-    // @ts-expect-error
-    expect(await writer.format(123)).toEqual(123);
-    // @ts-expect-error
-    expect(await writer.format(null)).toEqual(null);
-    // @ts-expect-error
-    expect(await writer.format(undefined)).toEqual(undefined);
+    expect(await readFile(filePath, "utf-8")).toBe("export type Props = {};");
   });
 });

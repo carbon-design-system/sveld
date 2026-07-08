@@ -54,6 +54,6 @@ describe("parseGenericsAttribute", () => {
   test("parses multiple generics, one containing a comma in its constraint", () => {
     expect(
       parseGenericsAttribute("Row extends DataTableRow = DataTableRow, K extends keyof Map<string, Row> = never"),
-    ).toEqual(["Row,K", "Row extends DataTableRow = DataTableRow, K extends keyof Map<string, Row> = never"]);
+    ).toEqual(["Row, K", "Row extends DataTableRow = DataTableRow, K extends keyof Map<string, Row> = never"]);
   });
 });

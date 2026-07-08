@@ -23,5 +23,9 @@ export default class JsdocTypeParams extends SvelteComponentTyped<
    *  // Select node without expanding or focusing
    *  treeView.showNode("node-3", { expand: false, focus: false });
    */
-  showNode: (id: TreeNodeId, options?: { expand?: boolean; select?: boolean; focus?: boolean }) => void;
+  showNode: (id: TreeNodeId, options?: {
+      expand?: boolean;
+      select?: boolean;
+      focus?: boolean
+    }) => void;
 }

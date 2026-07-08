@@ -9,8 +9,30 @@ import type {
 } from "../ComponentParser";
 import type { ParserContext } from "./context";
 import { addDispatchedEvent, buildEventDetailFromProperties } from "./events";
+import { splitTopLevelCommas } from "./generics";
 import { addSlot } from "./slots";
 import { sourceRangeFromCommentTag } from "./source-position";
+
+const GENERIC_DEFAULT_EQUALS_REGEX = /\s*=\s*/;
+
+/**
+ * Normalizes spacing in a `@typedef`/`@callback` tag's generic suffix, as
+ * literally written by the author (e.g. `Name<Row=DataTableRow,Header=Foo>`),
+ * to `Name<Row = DataTableRow, Header = Foo>` — matching how every other
+ * generic parameter list sveld emits is spaced.
+ */
+function normalizeGenericNameSpacing(name: string): string {
+  const openIndex = name.indexOf("<");
+  if (openIndex === -1 || !name.endsWith(">")) return name;
+
+  const base = name.slice(0, openIndex);
+  const params = name.slice(openIndex + 1, -1);
+  const normalizedParams = splitTopLevelCommas(params)
+    .map((param) => param.trim().replace(GENERIC_DEFAULT_EQUALS_REGEX, " = "))
+    .join(", ");
+
+  return `${base}<${normalizedParams}>`;
+}
 
 /** True when a slice between an AST comment end and a node start is only whitespace. */
 const ONLY_WHITESPACE_REGEX = /^\s*$/;
@@ -518,15 +540,15 @@ export function parseCustomTypes(ctx: ParserContext, parser: ComponentParser) {
 
         if (typedefProperties.length > 0) {
           typedefType = buildEventDetailFromProperties(typedefProperties, undefined, true);
-          typedefTs = `type ${currentTypedefName} = ${typedefType}`;
+          typedefTs = `type ${currentTypedefName} = ${typedefType};`;
         } else if (currentTypedefType) {
           typedefType = currentTypedefType;
           typedefTs = isSingleObjectLiteral(typedefType)
             ? `interface ${currentTypedefName} ${typedefType}`
-            : `type ${currentTypedefName} = ${typedefType}`;
+            : `type ${currentTypedefName} = ${typedefType};`;
         } else {
           typedefType = "{}";
-          typedefTs = `type ${currentTypedefName} = ${typedefType}`;
+          typedefTs = `type ${currentTypedefName} = ${typedefType};`;
         }
 
         ctx.typedefs.set(currentTypedefName, {
@@ -553,7 +575,7 @@ export function parseCustomTypes(ctx: ParserContext, parser: ComponentParser) {
           .join(", ");
         const returnType = callbackReturnType || "void";
         const callbackType = `(${params}) => ${returnType}`;
-        const callbackTs = `type ${currentCallbackName} = ${callbackType}`;
+        const callbackTs = `type ${currentCallbackName} = ${callbackType};`;
 
         ctx.typedefs.set(currentCallbackName, {
           type: callbackType,
@@ -680,7 +702,7 @@ export function parseCustomTypes(ctx: ParserContext, parser: ComponentParser) {
         case "typedef": {
           finalizeTypedef();
 
-          currentTypedefName = name;
+          currentTypedefName = normalizeGenericNameSpacing(name);
           currentTypedefType = type;
           const inlineTypedefDesc = cleanDescription(getInlineTagDescription(tagSource));
           currentTypedefDescription = inlineTypedefDesc || precedingDescription;
@@ -694,7 +716,7 @@ export function parseCustomTypes(ctx: ParserContext, parser: ComponentParser) {
         case "callback": {
           finalizeCallback();
 
-          currentCallbackName = name;
+          currentCallbackName = normalizeGenericNameSpacing(name);
           const inlineCallbackDesc = cleanDescription(getInlineTagDescription(tagSource));
           currentCallbackDescription = inlineCallbackDesc || precedingDescription;
           if (!currentCallbackDescription && isFirstTag && !commentDescriptionUsed && commentDescription) {

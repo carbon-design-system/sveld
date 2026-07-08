@@ -80,12 +80,12 @@
     {
       "type": "{\n  /** User identifier */\n  id: string;\n  /** User display name */\n  name: string;\n}",
       "name": "UserConfig",
-      "ts": "type UserConfig = {\n  /** User identifier */\n  id: string;\n  /** User display name */\n  name: string;\n}"
+      "ts": "type UserConfig = {\n  /** User identifier */\n  id: string;\n  /** User display name */\n  name: string;\n};"
     },
     {
       "type": "{\n  /** Theme identifier */\n  id: string;\n  /** Theme display name */\n  name: string;\n}",
       "name": "ThemeConfig",
-      "ts": "type ThemeConfig = {\n  /** Theme identifier */\n  id: string;\n  /** Theme display name */\n  name: string;\n}"
+      "ts": "type ThemeConfig = {\n  /** Theme identifier */\n  id: string;\n  /** Theme display name */\n  name: string;\n};"
     }
   ],
   "generics": null,

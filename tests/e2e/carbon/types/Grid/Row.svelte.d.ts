@@ -47,10 +47,12 @@ type $Props = {
    */
   padding?: boolean;
 
-  children?: (
-    this: void,
-    ...args: [{ props: { class: string; [key: string]: any } }]
-  ) => void;
+  children?: (this: void, ...args: [{
+        props: {
+          class: string;
+          [key: string]: any;
+        }
+      }]) => void;
 
   [key: `data-${string}`]: unknown;
 };
@@ -60,5 +62,12 @@ export type RowProps = Omit<$RestProps, keyof $Props> & $Props;
 export default class Row extends SvelteComponentTyped<
   RowProps,
   Record<string, any>,
-  { default: { props: { class: string; [key: string]: any } } }
+  {
+    default: {
+      props: {
+        class: string;
+        [key: string]: any;
+      }
+    };
+  }
 > {}

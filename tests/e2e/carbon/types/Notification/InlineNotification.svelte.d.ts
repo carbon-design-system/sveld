@@ -8,13 +8,7 @@ type $Props = {
    * Specify the kind of notification
    * @default "error"
    */
-  kind?:
-    | "error"
-    | "info"
-    | "info-square"
-    | "success"
-    | "warning"
-    | "warning-alt";
+  kind?: "error" | "info" | "info-square" | "success" | "warning" | "warning-alt";
 
   /**
    * Set to `true` to use the low contrast variant
@@ -76,5 +70,8 @@ export default class InlineNotification extends SvelteComponentTyped<
     mouseleave: WindowEventMap["mouseleave"];
     mouseover: WindowEventMap["mouseover"];
   },
-  { default: Record<string, never>; actions: Record<string, never> }
+  {
+    default: Record<string, never>;
+    actions: Record<string, never>;
+  }
 > {}

@@ -41,7 +41,10 @@ export type ExplicitDefaultNoDuplicateProps = {
    * Component configuration.
    * @default { theme: "dark", density: "compact" }
    */
-  config?: { theme: string; density: string };
+  config?: {
+    theme: string;
+    density: string
+  };
 
   /**
    * List of items.

@@ -2,23 +2,14 @@ import { SvelteComponentTyped } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 import type { ButtonSkeletonProps } from "./ButtonSkeleton.svelte";
 
-type $RestProps = SvelteHTMLElements["button"] &
-  SvelteHTMLElements["a"] &
-  SvelteHTMLElements["div"];
+type $RestProps = SvelteHTMLElements["button"] & SvelteHTMLElements["a"] & SvelteHTMLElements["div"];
 
 type $Props = {
   /**
    * Specify the kind of button.
    * @default "primary"
    */
-  kind?:
-    | "primary"
-    | "secondary"
-    | "tertiary"
-    | "ghost"
-    | "danger"
-    | "danger-tertiary"
-    | "danger-ghost";
+  kind?: "primary" | "secondary" | "tertiary" | "ghost" | "danger" | "danger-tertiary" | "danger-ghost";
 
   /**
    * Specify the size of button.
@@ -127,10 +118,7 @@ type $Props = {
    */
   ref?: null | HTMLAnchorElement | HTMLButtonElement;
 
-  children?: (
-    this: void,
-    ...args: [
-      {
+  children?: (this: void, ...args: [{
         props: {
           role: "button";
           type?: string;
@@ -139,20 +127,13 @@ type $Props = {
           href?: string;
           class: string;
           [key: string]: any;
-        };
-      },
-    ]
-  ) => void;
+        }
+      }]) => void;
 
   [key: `data-${string}`]: unknown;
 };
 
-export type ButtonProps = Omit<
-  $RestProps,
-  keyof ($Props & ButtonSkeletonProps)
-> &
-  $Props &
-  ButtonSkeletonProps;
+export type ButtonProps = Omit<$RestProps, keyof ($Props & ButtonSkeletonProps)> & $Props & ButtonSkeletonProps;
 
 export default class Button extends SvelteComponentTyped<
   ButtonProps,
@@ -174,7 +155,7 @@ export default class Button extends SvelteComponentTyped<
         href?: string;
         class: string;
         [key: string]: any;
-      };
+      }
     };
     icon: { style: undefined | string };
   }

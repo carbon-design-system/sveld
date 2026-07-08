@@ -448,7 +448,7 @@ describe("ComponentParser", () => {
 
     const result = parser.parseSvelteComponent(source, diagnostics);
     const slot = result.slots.find((s) => s.default);
-    expect(slot?.slot_props).toBe("{ a: string, b: number }");
+    expect(slot?.slot_props).toBe("{\n  a: string;\n  b: number;\n}");
   });
 
   test("dotted access does not override @slot JSDoc types", () => {

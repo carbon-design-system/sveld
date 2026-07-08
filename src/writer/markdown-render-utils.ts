@@ -62,6 +62,9 @@ function renderExports(document: MarkdownDocument, entryExports: EntryExports) {
     );
   }
 
+  // "raw" appends (the table rows above) don't trailing-break themselves, so
+  // without this the divider would butt directly against the last row.
+  document.append("raw", "\n");
   document.append("divider");
 }
 
@@ -73,6 +76,8 @@ function renderSectionIfNotEmpty<TItem>(
 ) {
   if (items.length > 0) {
     renderFn();
+    // Blank line after the table so the next heading isn't glued to its last row.
+    document.append("raw", "\n");
   } else {
     document.append("p", emptyMessage ?? "None.");
   }

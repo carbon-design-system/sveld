@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "generator": {
     "name": "sveld",
-    "version": "0.32.8",
+    "version": "0.34.1",
     "svelteVersion": "5.56.3"
   },
   "total": 4,
@@ -11,8 +11,14 @@
       "moduleName": "Button",
       "filePath": "src/Button.svelte",
       "source": {
-        "start": { "line": 1, "column": 0 },
-        "end": { "line": 19, "column": 0 }
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 19,
+          "column": 0
+        }
       },
       "syntaxMode": "legacy",
       "scriptLanguage": "js",
@@ -34,8 +40,14 @@
           "constant": false,
           "reactive": false,
           "source": {
-            "start": { "line": 3, "column": 2 },
-            "end": { "line": 3, "column": 29 }
+            "start": {
+              "line": 3,
+              "column": 2
+            },
+            "end": {
+              "line": 3,
+              "column": 29
+            }
           }
         },
         {
@@ -45,15 +57,25 @@
           "type": "boolean",
           "typeSource": "default",
           "value": "false",
-          "defaultValue": { "raw": "false", "kind": "literal", "value": false },
+          "defaultValue": {
+            "raw": "false",
+            "kind": "literal",
+            "value": false
+          },
           "isFunction": false,
           "isFunctionDeclaration": false,
           "isRequired": false,
           "constant": false,
           "reactive": false,
           "source": {
-            "start": { "line": 8, "column": 2 },
-            "end": { "line": 8, "column": 29 }
+            "start": {
+              "line": 8,
+              "column": 2
+            },
+            "end": {
+              "line": 8,
+              "column": 29
+            }
           }
         }
       ],
@@ -65,8 +87,14 @@
           "fallback": "Click me",
           "slot_props": "Record<string, never>",
           "source": {
-            "start": { "line": 17, "column": 2 },
-            "end": { "line": 17, "column": 23 }
+            "start": {
+              "line": 17,
+              "column": 2
+            },
+            "end": {
+              "line": 17,
+              "column": 23
+            }
           }
         }
       ],
@@ -76,22 +104,37 @@
           "name": "click",
           "element": "button",
           "source": {
-            "start": { "line": 15, "column": 2 },
-            "end": { "line": 15, "column": 10 }
+            "start": {
+              "line": 15,
+              "column": 2
+            },
+            "end": {
+              "line": 15,
+              "column": 10
+            }
           }
         }
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "button" },
+      "rest_props": {
+        "type": "Element",
+        "name": "button"
+      },
       "contexts": []
     },
     {
       "moduleName": "Link",
       "filePath": "src/Link.svelte",
       "source": {
-        "start": { "line": 1, "column": 0 },
-        "end": { "line": 7, "column": 0 }
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 7,
+          "column": 0
+        }
       },
       "syntaxMode": "legacy",
       "props": [],
@@ -103,8 +146,14 @@
           "fallback": "Link text",
           "slot_props": "Record<string, never>",
           "source": {
-            "start": { "line": 5, "column": 3 },
-            "end": { "line": 5, "column": 25 }
+            "start": {
+              "line": 5,
+              "column": 3
+            },
+            "end": {
+              "line": 5,
+              "column": 25
+            }
           }
         }
       ],
@@ -114,22 +163,37 @@
           "name": "click",
           "element": "a",
           "source": {
-            "start": { "line": 4, "column": 2 },
-            "end": { "line": 4, "column": 10 }
+            "start": {
+              "line": 4,
+              "column": 2
+            },
+            "end": {
+              "line": 4,
+              "column": 10
+            }
           }
         }
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "a" },
+      "rest_props": {
+        "type": "Element",
+        "name": "a"
+      },
       "contexts": []
     },
     {
       "moduleName": "Quote",
       "filePath": "src/Quote.svelte",
       "source": {
-        "start": { "line": 1, "column": 0 },
-        "end": { "line": 10, "column": 0 }
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 10,
+          "column": 0
+        }
       },
       "syntaxMode": "legacy",
       "scriptLanguage": "js",
@@ -140,15 +204,25 @@
           "type": "string",
           "typeSource": "default",
           "value": "\"\"",
-          "defaultValue": { "raw": "\"\"", "kind": "literal", "value": "" },
+          "defaultValue": {
+            "raw": "\"\"",
+            "kind": "literal",
+            "value": ""
+          },
           "isFunction": false,
           "isFunctionDeclaration": false,
           "isRequired": false,
           "constant": false,
           "reactive": false,
           "source": {
-            "start": { "line": 2, "column": 2 },
-            "end": { "line": 2, "column": 24 }
+            "start": {
+              "line": 2,
+              "column": 2
+            },
+            "end": {
+              "line": 2,
+              "column": 24
+            }
           }
         },
         {
@@ -157,15 +231,25 @@
           "type": "string",
           "typeSource": "default",
           "value": "\"\"",
-          "defaultValue": { "raw": "\"\"", "kind": "literal", "value": "" },
+          "defaultValue": {
+            "raw": "\"\"",
+            "kind": "literal",
+            "value": ""
+          },
           "isFunction": false,
           "isFunctionDeclaration": false,
           "isRequired": false,
           "constant": false,
           "reactive": false,
           "source": {
-            "start": { "line": 3, "column": 2 },
-            "end": { "line": 3, "column": 25 }
+            "start": {
+              "line": 3,
+              "column": 2
+            },
+            "end": {
+              "line": 3,
+              "column": 25
+            }
           }
         }
       ],
@@ -177,23 +261,38 @@
           "fallback": "{quote}",
           "slot_props": "Record<string, never>",
           "source": {
-            "start": { "line": 7, "column": 2 },
-            "end": { "line": 7, "column": 22 }
+            "start": {
+              "line": 7,
+              "column": 2
+            },
+            "end": {
+              "line": 7,
+              "column": 22
+            }
           }
         }
       ],
       "events": [],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "Element", "name": "blockquote" },
+      "rest_props": {
+        "type": "Element",
+        "name": "blockquote"
+      },
       "contexts": []
     },
     {
       "moduleName": "SecondaryButton",
       "filePath": "src/SecondaryButton.svelte",
       "source": {
-        "start": { "line": 1, "column": 0 },
-        "end": { "line": 15, "column": 0 }
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 15,
+          "column": 0
+        }
       },
       "syntaxMode": "legacy",
       "scriptLanguage": "js",
@@ -204,15 +303,25 @@
           "type": "boolean",
           "typeSource": "default",
           "value": "true",
-          "defaultValue": { "raw": "true", "kind": "literal", "value": true },
+          "defaultValue": {
+            "raw": "true",
+            "kind": "literal",
+            "value": true
+          },
           "isFunction": false,
           "isFunctionDeclaration": false,
           "isRequired": false,
           "constant": true,
           "reactive": false,
           "source": {
-            "start": { "line": 4, "column": 2 },
-            "end": { "line": 4, "column": 32 }
+            "start": {
+              "line": 4,
+              "column": 2
+            },
+            "end": {
+              "line": 4,
+              "column": 32
+            }
           }
         }
       ],
@@ -224,8 +333,14 @@
           "fallback": "Click me",
           "slot_props": "Record<string, never>",
           "source": {
-            "start": { "line": 13, "column": 2 },
-            "end": { "line": 13, "column": 23 }
+            "start": {
+              "line": 13,
+              "column": 2
+            },
+            "end": {
+              "line": 13,
+              "column": 23
+            }
           }
         }
       ],
@@ -235,14 +350,23 @@
           "name": "click",
           "element": "Button",
           "source": {
-            "start": { "line": 11, "column": 2 },
-            "end": { "line": 11, "column": 10 }
+            "start": {
+              "line": 11,
+              "column": 2
+            },
+            "end": {
+              "line": 11,
+              "column": 10
+            }
           }
         }
       ],
       "typedefs": [],
       "generics": null,
-      "rest_props": { "type": "InlineComponent", "name": "Button" },
+      "rest_props": {
+        "type": "InlineComponent",
+        "name": "Button"
+      },
       "extends": {
         "interface": "ButtonProps",
         "import": "\"./Button.svelte\""
