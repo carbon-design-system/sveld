@@ -2,7 +2,14 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { generateBundle, stripTopLevelStyleBlock } from "../src/bundle";
+import ComponentParser from "../src/ComponentParser";
 import { TypeResolver } from "../src/resolve-types";
+
+const BUTTON = `<script>
+  export let label = "button";
+</script>
+
+<button>{label}</button>`;
 
 /** Imports an opaque whole-object props type; a resolveTypes candidate. */
 const PROPS_IMPORTED_COMPONENT = `<script lang="ts">
@@ -54,6 +61,42 @@ function makeFakeResolver() {
     dispose: jest.fn(async () => {}),
   };
 }
+
+describe("generateBundle in-run parse dedupe", () => {
+  let dir: string;
+  let parseSpy: ReturnType<typeof jest.spyOn>;
+
+  beforeEach(() => {
+    dir = mkdtempSync(path.join(tmpdir(), "sveld-bundle-dedupe-"));
+    writeFileSync(path.join(dir, "Button.svelte"), BUTTON);
+    writeFileSync(path.join(dir, "entry.js"), 'export { default as Button } from "./Button.svelte";\n');
+    parseSpy = jest.spyOn(ComponentParser.prototype, "parseSvelteComponent");
+  });
+
+  afterEach(() => {
+    parseSpy.mockRestore();
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("a component that is both exported and glob-discovered is parsed exactly once per run", async () => {
+    const result = await generateBundle(path.join(dir, "entry.js"), true);
+
+    expect(parseSpy).toHaveBeenCalledTimes(1);
+    expect(result.components.has("Button")).toBe(true);
+    expect(result.allComponentsForTypes.has("Button")).toBe(true);
+  });
+
+  test("dedupes the same way when the on-disk cache is enabled", async () => {
+    const cacheFile = path.join(dir, ".cache", "parse-cache.json");
+    const result = await generateBundle(path.join(dir, "entry.js"), true, {
+      cache: cacheFile,
+    });
+
+    expect(parseSpy).toHaveBeenCalledTimes(1);
+    expect(result.components.has("Button")).toBe(true);
+    expect(result.allComponentsForTypes.has("Button")).toBe(true);
+  });
+});
 
 describe("generateBundle shares one TypeResolver across resolveTypes and checkExamples", () => {
   let dir: string;

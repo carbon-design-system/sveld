@@ -102,6 +102,17 @@ export interface ProcessComponentOptions {
   onParseError?: (error: ComponentParseError) => void;
   /** When set, reuse a component's previous parse if its content hash is unchanged. */
   cache?: ParseCache;
+  /** Resolved file path -> sha256, computed once up front so it isn't re-hashed per pass. */
+  hashes?: Map<string, string>;
+  /**
+   * In-run memo of freshly parsed components, keyed by resolved file path and
+   * shared across the exported and all-components passes so a component that
+   * appears in both is only parsed once. Only fresh parses are stored here
+   * (never disk-cache hits), and an entry is cleared wherever the disk cache
+   * is invalidated so the `@extends` dependency-invalidation flow still forces
+   * a re-parse.
+   */
+  memo?: Map<string, ParsedComponent>;
 }
 
 const STYLE_TAG_REGEX = /<style.+?<\/style>/gims;
@@ -114,7 +125,9 @@ export function stripTopLevelStyleBlock(source: string) {
   if (!source.includes("<style")) return source;
 
   try {
-    const parsed = parseSvelte(source, { modern: false }) as { css?: { start?: number; end?: number } };
+    const parsed = parseSvelte(source, { modern: false }) as {
+      css?: { start?: number; end?: number };
+    };
     const start = parsed.css?.start;
     const end = parsed.css?.end;
 
@@ -180,7 +193,10 @@ export function collectComponents(input: string, glob: boolean, documentExports 
   const allComponents: ParsedExports = { ...exports };
 
   if (glob) {
-    for (const matchedFile of globSync(["**/*.svelte"], { cwd: rootDir, absolute: true })) {
+    for (const matchedFile of globSync(["**/*.svelte"], {
+      cwd: rootDir,
+      absolute: true,
+    })) {
       const file = resolve(matchedFile);
       const moduleName = parse(file).name.replace(HYPHEN_REGEX, "");
       const source = asRelativeSourcePath(normalizeSeparators(`./${relative(rootDir, file)}`));
@@ -270,11 +286,14 @@ export function processComponent(
 
     const normalizedFilePath = normalizeSeparators(filePath);
 
-    const hash = options.cache ? hashSource(source) : undefined;
-    const cached = hash === undefined ? null : options.cache?.get(resolvedPath, hash);
+    const memoized = options.memo?.get(resolvedPath);
+    const hash = options.hashes?.get(resolvedPath);
+    const cached = memoized === undefined ? (hash === undefined ? null : options.cache?.get(resolvedPath, hash)) : null;
 
     let parsed: ParsedComponent;
-    if (cached) {
+    if (memoized !== undefined) {
+      parsed = memoized;
+    } else if (cached) {
       parsed = cached;
     } else {
       const parser = new ComponentParser();
@@ -295,13 +314,21 @@ export function processComponent(
 
         const message = error instanceof Error ? error.message : String(error);
         const stack = error instanceof Error ? error.stack : undefined;
-        options.onParseError?.({ filePath: normalizedFilePath, moduleName, message, stack });
+        options.onParseError?.({
+          filePath: normalizedFilePath,
+          moduleName,
+          message,
+          stack,
+        });
         return null;
       }
 
       if (hash !== undefined) {
         options.cache?.set(resolvedPath, hash, parsed);
       }
+      // Only fresh parses are memoized; a disk-cache hit isn't guaranteed to
+      // still be valid for a component invalidated later in the same run.
+      options.memo?.set(resolvedPath, parsed);
     }
 
     return {
@@ -392,11 +419,15 @@ export async function generateBundle(
 
   // Files that changed or were never cached. Used to invalidate @extends dependents.
   const misses = new Set<string>();
+  // Resolved path -> sha256, hashed once per run instead of once per pass.
+  const hashes = new Map<string, string>();
   if (cache) {
     for (const filePath of uniqueFilePaths) {
       const source = fileMap.get(filePath);
       if (source === null || source === undefined) continue;
-      if (!cache.has(filePath, hashSource(source))) {
+      const hash = hashSource(source);
+      hashes.set(filePath, hash);
+      if (!cache.has(filePath, hash)) {
         misses.add(filePath);
       }
     }
@@ -404,13 +435,16 @@ export async function generateBundle(
 
   /**
    * Dedupe by file path: the same component is parsed once for the exported
-   * set and once for the all-components set.
+   * set and once for the all-components set, via the in-run memo below.
    */
   const parseErrors = new Map<string, ComponentParseError>();
+  const memo = new Map<string, ParsedComponent>();
   const processOptions: ProcessComponentOptions = {
     failFast: options.failFast === true,
     onParseError: (error) => parseErrors.set(error.filePath, error),
     cache,
+    hashes,
+    memo,
   };
 
   /**
@@ -442,6 +476,7 @@ export async function generateBundle(
     for (const filePath of affected) {
       if (misses.has(filePath)) continue;
       cache.invalidate(filePath);
+      memo.delete(filePath);
     }
 
     for (const entry of exportEntries) {
