@@ -21,6 +21,7 @@
     "lint": "biome lint .",
     "lint:fix": "biome check --write --unsafe .",
     "build": "bun scripts/build.ts",
+    "bench": "bun scripts/bench.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

@@ -42,6 +42,7 @@ bun install
 | `bun run typecheck` | `tsc --noEmit` over `src/` and `tests/`. |
 | `bun run test:fixtures-types` | Type-check the generated fixture outputs (`tests/fixtures/**`). |
 | `bun run test:e2e` | Link sveld into the downstream packages under `tests/e2e/` and build each. |
+| `bun run bench` | Time the parse/write pipeline against the carbon e2e fixture. Flags: `--runs <n>`, `--cache`, `--entry <path>`. Output goes to a temp dir; compare medians from one invocation, not absolute times across sessions. |
 | `bunx biome check --write <paths>` | Lint and format. Scope to what you changed. |
 | `bun run lint` / `bun run format` | Biome lint / format across the repo. |
 
