@@ -200,17 +200,17 @@ describe("diagnostics helpers", () => {
 });
 
 describe("sveld() strict mode", () => {
-  // `getSvelteEntry` resolves `input` against `process.cwd()`, so the fixture
+  // `getSvelteEntry` resolves `entry` against `process.cwd()`, so the fixture
   // lives under cwd and is referenced by its relative directory name.
   let absoluteDir: string;
   let relativeDir: string;
   let previousExitCode: typeof process.exitCode;
-  let warnSpy: ReturnType<typeof jest.spyOn>;
+  let errorSpy: ReturnType<typeof jest.spyOn>;
 
   beforeEach(() => {
     previousExitCode = process.exitCode;
     process.exitCode = undefined;
-    warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+    errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
     jest.spyOn(console, "log").mockImplementation(() => {});
     absoluteDir = mkdtempSync(join(process.cwd(), "sveld-diagnostics-"));
     relativeDir = basename(absoluteDir);
@@ -227,30 +227,37 @@ describe("sveld() strict mode", () => {
     jest.restoreAllMocks();
   });
 
+  // `errorSpy` wraps the process-wide `console.error`, which other test files also spy on
+  // concurrently under `bun test --parallel`. Assert on message content rather than call
+  // count/order so unrelated, interleaved calls don't produce false positives/negatives.
+  const summaryCalls = (spy: ReturnType<typeof jest.spyOn>) =>
+    spy.mock.calls
+      .map((call: unknown[]) => String(call[0]))
+      .filter((message: string) => message.includes("unresolved types found"));
+
   test("returns the aggregated diagnostics array and stays non-failing by default", async () => {
     // Bun ignores `process.exitCode = undefined` once a numeric code has been
     // set earlier in the process, so assert against the pre-call value rather
     // than an unreachable literal `undefined`.
     const exitCodeBefore = process.exitCode;
-    const { diagnostics } = await sveld({ input: relativeDir, glob: true, types: false });
+    const { diagnostics } = await sveld({ entry: relativeDir, glob: true, types: false });
 
     expect(diagnostics.some((d) => d.kind === "event-no-source" && d.name === "phantom")).toBe(true);
     expect(process.exitCode).toBe(exitCodeBefore);
-    expect(warnSpy).not.toHaveBeenCalled();
+    expect(summaryCalls(errorSpy)).toHaveLength(0);
   });
 
-  test("reportDiagnostics: true prints the summary", async () => {
-    await sveld({ input: relativeDir, glob: true, types: false, reportDiagnostics: true });
+  test("reportDiagnostics: true prints the summary to console.error", async () => {
+    await sveld({ entry: relativeDir, glob: true, types: false, reportDiagnostics: true });
 
-    expect(warnSpy).toHaveBeenCalled();
-    expect(String(warnSpy.mock.calls[0]?.[0])).toContain("unresolved types found");
+    expect(summaryCalls(errorSpy).length).toBeGreaterThan(0);
   });
 
   test("strict: true sets a non-zero exit code when diagnostics exist", async () => {
-    const { diagnostics } = await sveld({ input: relativeDir, glob: true, types: false, strict: true });
+    const { diagnostics } = await sveld({ entry: relativeDir, glob: true, types: false, strict: true });
 
     expect(diagnostics.length).toBeGreaterThan(0);
     expect(process.exitCode).toBe(1);
-    expect(warnSpy).toHaveBeenCalled();
+    expect(summaryCalls(errorSpy).length).toBeGreaterThan(0);
   });
 });

@@ -508,14 +508,16 @@ The CLI exits non-zero on any fatal error (an unreadable entry, a config file th
 
 You can also call `sveld` from Node.js. See [Requirements](#requirements) for supported Node versions and the ESM-only constraint.
 
-If no `input` is specified, `sveld` infers the entry point based on the `package.json#svelte` field. If no entry point can be resolved, `sveld()` throws with an actionable message (previously it resolved to `{ diagnostics: [] }` and generated nothing).
+If no `entry` is specified, `sveld` infers the entry point based on the `package.json#svelte` field. If no entry point can be resolved, `sveld()` throws with an actionable message (previously it resolved to `{ diagnostics: [] }` and generated nothing).
+
+> `input` was renamed to `entry` to match the CLI, plugin, and config. Calls passing `input` throw with a message pointing at `entry`.
 
 ```js
 import { sveld } from "sveld";
 import pkg from "./package.json" with { type: "json" };
 
 const { diagnostics } = await sveld({
-  input: "./src/index.js",
+  entry: "./src/index.js",
   glob: true,
   markdown: true,
   markdownOptions: {

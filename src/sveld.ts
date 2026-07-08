@@ -4,14 +4,7 @@ import { getSvelteEntry } from "./get-svelte-entry";
 import { loadConfig, mergeConfig, type SveldRuntimeOptions } from "./load-config";
 import { generateBundle, toGenerateBundleOptions, writeOutput } from "./plugin";
 
-interface SveldOptions extends Omit<SveldRuntimeOptions, "entry"> {
-  /**
-   * Specify the input to the uncompiled Svelte source.
-   * If no value is provided, `sveld` will attempt to infer
-   * the entry point from the `package.json#svelte` field.
-   */
-  input?: string;
-}
+type SveldOptions = SveldRuntimeOptions;
 
 /**
  * Result of a programmatic `sveld` run.
@@ -29,7 +22,7 @@ interface SveldResult {
  * @example
  * ```ts
  * await sveld({
- *   input: "./src",
+ *   entry: "./src",
  *   types: true,
  *   json: true,
  *   markdown: true,
@@ -38,12 +31,16 @@ interface SveldResult {
  * ```
  */
 export async function sveld(opts?: SveldOptions): Promise<SveldResult> {
-  const { input: inputOverride, ...runtimeOpts } = opts ?? {};
+  if (opts && "input" in opts) {
+    throw new Error("sveld: the `input` option was renamed to `entry`.");
+  }
+
+  const { entry: entryOverride, ...runtimeOpts } = opts ?? {};
   const fileConfig = await loadConfig();
-  const input = getSvelteEntry(inputOverride ?? fileConfig.entry);
+  const input = getSvelteEntry(entryOverride ?? fileConfig.entry);
   if (input === null) {
     throw new Error(
-      'sveld: could not resolve a Svelte entry point. Set package.json#svelte, or pass the "input" option.',
+      'sveld: could not resolve a Svelte entry point. Set package.json#svelte, or pass the "entry" option.',
     );
   }
   const merged = mergeConfig<SveldRuntimeOptions>(fileConfig, runtimeOpts, { entry: input });
@@ -63,7 +60,7 @@ export async function sveld(opts?: SveldOptions): Promise<SveldResult> {
   const shouldReport = merged.reportDiagnostics || merged.strict;
 
   if (shouldReport && diagnostics.length > 0) {
-    console.warn(formatDiagnosticsSummary(diagnostics));
+    console.error(formatDiagnosticsSummary(diagnostics));
   }
 
   if (merged.strict && diagnostics.length > 0) {
