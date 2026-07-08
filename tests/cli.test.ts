@@ -186,6 +186,49 @@ describe("cli() unknown flag", () => {
   });
 });
 
+describe("cli() --cache", () => {
+  let dir: string;
+  let previousCwd: string;
+  let previousArgv: string[];
+
+  beforeEach(() => {
+    previousCwd = process.cwd();
+    previousArgv = process.argv;
+    process.exitCode = 0;
+    dir = mkdtempSync(join(tmpdir(), "sveld-cli-cache-"));
+    process.chdir(dir);
+    mkdirSync(join(dir, "src"), { recursive: true });
+    writeFileSync(
+      join(dir, "src", "Button.svelte"),
+      '<script>\n  export let label = "";\n</script>\n<button>{label}</button>\n',
+    );
+    writeFileSync(join(dir, "src", "index.js"), 'export { default as Button } from "./Button.svelte";\n');
+  });
+
+  afterEach(() => {
+    process.chdir(previousCwd);
+    process.argv = previousArgv;
+    process.exitCode = 0;
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("is on by default: a plain run creates the default cache file", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js"];
+
+    await cli(process);
+
+    expect(existsSync(join(dir, "src", "node_modules", ".cache", "sveld", "parse-cache.json"))).toBe(true);
+  });
+
+  test("--cache=false reaches generateBundle as false and creates no cache file", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--cache=false"];
+
+    await cli(process);
+
+    expect(existsSync(join(dir, "src", "node_modules", ".cache"))).toBe(false);
+  });
+});
+
 describe("cli() --types-format merges with config file typesOptions", () => {
   let dir: string;
   let previousCwd: string;

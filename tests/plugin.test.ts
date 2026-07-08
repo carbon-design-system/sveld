@@ -67,7 +67,7 @@ describe("generateBundle", () => {
     jest.spyOn(fs, "lstatSync").mockReturnValue({ isFile: () => false } as fs.Stats);
     const readFileSyncSpy = jest.spyOn(fs, "readFileSync");
 
-    const result = await generateBundle(mockInput, false);
+    const result = await generateBundle(mockInput, false, { cache: false });
 
     // Should NOT attempt to read directory as file
     expect(readFileSyncSpy).not.toHaveBeenCalledWith(mockInput, "utf-8");
@@ -79,7 +79,7 @@ describe("generateBundle", () => {
 
     jest.spyOn(fs, "lstatSync").mockReturnValue({ isFile: () => false } as fs.Stats);
 
-    const result = await generateBundle(mockInput, true);
+    const result = await generateBundle(mockInput, true, { cache: false });
 
     // Should not crash and should populate exports from glob-discovered components
     expect(result.exports).toBeDefined();
@@ -90,12 +90,12 @@ describe("generateBundle", () => {
     const entryFile = path.join(process.cwd(), "tests", "fixtures-entry-exports", "entry.js");
 
     test("does not document entry exports by default", async () => {
-      const result = await generateBundle(entryFile, false);
+      const result = await generateBundle(entryFile, false, { cache: false });
       expect(result.entryExports).toEqual([]);
     });
 
     test("documents non-component entry exports when enabled", async () => {
-      const result = await generateBundle(entryFile, false, { documentExports: true });
+      const result = await generateBundle(entryFile, false, { documentExports: true, cache: false });
       const byName = new Map(result.entryExports.map((entry) => [entry.name, entry]));
 
       // Components are excluded from the entry exports collection.

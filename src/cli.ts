@@ -29,7 +29,7 @@ Options:
   --markdown            Generate component documentation in Markdown format
   --custom-elements     Generate a Custom Elements Manifest (custom-elements.json)
   --fail-fast           Abort the run when a single component fails to parse
-  --cache[=<path>]      Persist parsed output and skip re-parsing unchanged files (default path: node_modules/.cache/sveld/parse-cache.json)
+  --cache[=<path>]      Persist parsed output and skip re-parsing unchanged files (on by default, default path: node_modules/.cache/sveld/parse-cache.json; pass --cache=false to disable)
   --resolve-types       Expand opaque imported $props() types into JSON (alias: --resolveTypes, deprecated)
   --check-examples      Compile-check @example blocks against the TypeScript program (alias: --checkExamples, deprecated)
   --report-diagnostics  Print unresolved-type diagnostics to stderr
@@ -88,8 +88,8 @@ function parseCliFlag(arg: string): CliFlagResult {
     case "entry":
       return typeof value === "string" ? { kind: "option", option: { entry: value } } : { kind: "option", option: {} };
     case "cache":
-      // Bare `--cache` enables the default cache location; `--cache=<path>`
-      // overrides it; `--cache=false` disables it.
+      // The cache is on by default; bare `--cache` re-affirms the default
+      // location, `--cache=<path>` overrides it, and `--cache=false` disables it.
       if (value === "false") return { kind: "option", option: { cache: false } };
       return { kind: "option", option: { cache: typeof value === "string" ? value : true } };
     case "check":
