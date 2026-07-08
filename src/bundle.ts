@@ -107,7 +107,12 @@ export interface ProcessComponentOptions {
 const STYLE_TAG_REGEX = /<style.+?<\/style>/gims;
 const HYPHEN_REGEX = /-/g;
 
-function stripTopLevelStyleBlock(source: string) {
+export function stripTopLevelStyleBlock(source: string) {
+  // A component without "<style" cannot have a top-level style block; skip the
+  // locate-and-strip parse entirely. False positives (the substring inside a
+  // string, comment, or nested markup) just take the existing parse path.
+  if (!source.includes("<style")) return source;
+
   try {
     const parsed = parseSvelte(source, { modern: false }) as { css?: { start?: number; end?: number } };
     const start = parsed.css?.start;

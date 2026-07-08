@@ -1,7 +1,7 @@
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { generateBundle } from "../src/bundle";
+import { generateBundle, stripTopLevelStyleBlock } from "../src/bundle";
 import { TypeResolver } from "../src/resolve-types";
 
 /** Imports an opaque whole-object props type; a resolveTypes candidate. */
@@ -20,7 +20,7 @@ const PROPS_TYPES = `export interface Props {
 }
 `;
 
-/** A plain-TS \`@example\` block; a checkExamples candidate. */
+/** A plain-TS `@example` block; a checkExamples candidate. */
 const EXAMPLE_CHECK_COMPONENT = `<script>
   /**
    * @param {string} value
@@ -36,7 +36,7 @@ const EXAMPLE_CHECK_COMPONENT = `<script>
 </script>
 `;
 
-/** Neither an imported whole-props type nor an \`@example\` block: no candidates. */
+/** Neither an imported whole-props type nor an `@example` block: no candidates. */
 const PLAIN_COMPONENT = `<script>
   /** @type {string} */
   export let label = "ok";
@@ -77,7 +77,10 @@ describe("generateBundle shares one TypeResolver across resolveTypes and checkEx
     const fakeResolver = makeFakeResolver();
     createSpy = jest.spyOn(TypeResolver, "create").mockResolvedValue(fakeResolver as unknown as TypeResolver);
 
-    await generateBundle(path.join(dir, "index.ts"), true, { resolveTypes: true, checkExamples: true });
+    await generateBundle(path.join(dir, "index.ts"), true, {
+      resolveTypes: true,
+      checkExamples: true,
+    });
 
     expect(createSpy).toHaveBeenCalledTimes(1);
     expect(fakeResolver.expandAll).toHaveBeenCalledTimes(1);
@@ -92,7 +95,10 @@ describe("generateBundle shares one TypeResolver across resolveTypes and checkEx
     const fakeResolver = makeFakeResolver();
     createSpy = jest.spyOn(TypeResolver, "create").mockResolvedValue(fakeResolver as unknown as TypeResolver);
 
-    await generateBundle(path.join(dir, "index.ts"), true, { resolveTypes: true, checkExamples: true });
+    await generateBundle(path.join(dir, "index.ts"), true, {
+      resolveTypes: true,
+      checkExamples: true,
+    });
 
     expect(createSpy).not.toHaveBeenCalled();
   });
@@ -117,5 +123,46 @@ describe("generateBundle shares one TypeResolver across resolveTypes and checkEx
 
     const exampleCheck = result.allComponentsForTypes.get("ExampleCheck");
     expect(exampleCheck?.diagnostics ?? []).toEqual([]);
+  });
+});
+
+describe("stripTopLevelStyleBlock", () => {
+  test("returns the identical source when it has no <style> substring", () => {
+    const source = `<script>
+  export let label = "hello";
+</script>
+
+<span>{label}</span>`;
+
+    expect(stripTopLevelStyleBlock(source)).toBe(source);
+  });
+
+  test("strips a top-level <style> block", () => {
+    const source = `<script>
+  export let label = "hello";
+</script>
+
+<span>{label}</span>
+
+<style>
+  span {
+    color: red;
+  }
+</style>`;
+
+    const result = stripTopLevelStyleBlock(source);
+
+    expect(result).not.toContain("<style");
+    expect(result).toContain("<span>{label}</span>");
+  });
+
+  test("still parses when <style> only appears inside a string", () => {
+    const source = `<script>
+  const s = "<style>";
+</script>
+
+<span>{s}</span>`;
+
+    expect(stripTopLevelStyleBlock(source)).toBe(source);
   });
 });
