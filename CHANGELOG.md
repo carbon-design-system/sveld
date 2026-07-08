@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.35.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.35.0) - 2026-07-08
+
+**Breaking Changes**
+
+- rename `sveld()` `input` option to `entry` (9b070f5, #343)
+- remove Prettier from the write pipeline (16.6× faster `.d.ts` output) (4084d96, #341)
+- fail loudly when the Svelte entry cannot be resolved (2f4c15b)
+
+**Features**
+
+- enable the parse cache by default (63b96fa, #347)
+- add Svelte 5 `Component` output format for `.d.ts` (a35007d, #342)
+- support the `generics` script attribute (13898f4, #340)
+- emit Custom Elements Manifest output (39f07ff, #336)
+- add `--help` / `--version`, kebab-case flags, and unknown-flag errors to the CLI (f2e79a8, #337)
+- attach source positions to diagnostics (cd162b5, #330)
+- report skipped `{@render}` syntax in diagnostics; remove dead `verbose` option (4635df1)
+- detect `$host().dispatchEvent(...)` as a dispatched event (7b3db33)
+- parse each component once per run (c9036b1, #348)
+- skip style-strip parse when source has no `<style>` tag (fa693dd, #344)
+- share one `TypeResolver` across `resolveTypes` and `checkExamples` (11367c8, #346)
+- drop the discarded Rollup bundle step from the CLI (bfaee92)
+
+**Fixes**
+
+- type `strict`, `reportDiagnostics`, and `check` in `SveldConfig` (5cf82f7, #339)
+- await `writeOutput` so disk writes finish before callers return (dff83fb, #338)
+- escape generic names before building word-boundary regex (cbde275, #332)
+- exit non-zero when the CLI crashes (a446576, #328)
+
 ## [0.34.1](https://github.com/carbon-design-system/sveld/releases/tag/v0.34.1) - 2026-06-30
 
 **Fixes**
