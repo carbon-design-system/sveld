@@ -1,8 +1,9 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { generateBundle } from "../src/bundle";
 import ComponentParser from "../src/ComponentParser";
+import { DEFAULT_CACHE_FILE } from "../src/parse-cache";
 
 const BUTTON = `<script>
   /** @restProps {button} */
@@ -109,5 +110,39 @@ describe("parse cache", () => {
     } finally {
       rmSync(otherDir, { recursive: true, force: true });
     }
+  });
+});
+
+describe("cache default", () => {
+  let dir: string;
+  let parseSpy: ReturnType<typeof jest.spyOn>;
+
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), "sveld-parse-cache-default-"));
+    writeFileSync(join(dir, "Standalone.svelte"), STANDALONE);
+    parseSpy = jest.spyOn(ComponentParser.prototype, "parseSvelteComponent");
+  });
+
+  afterEach(() => {
+    parseSpy.mockRestore();
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("with no cache option, writes to the default path and hits it on the next run", async () => {
+    await generateBundle(dir, true);
+
+    expect(existsSync(join(dir, DEFAULT_CACHE_FILE))).toBe(true);
+
+    parseSpy.mockClear();
+    const second = await generateBundle(dir, true);
+
+    expect(parseSpy).not.toHaveBeenCalled();
+    expect(second.allComponentsForTypes.has("Standalone")).toBe(true);
+  });
+
+  test("cache: false disables the cache entirely", async () => {
+    await generateBundle(dir, true, { cache: false });
+
+    expect(existsSync(join(dir, DEFAULT_CACHE_FILE))).toBe(false);
   });
 });

@@ -65,8 +65,9 @@ export interface GenerateBundleOptions {
   documentExports?: boolean;
   /**
    * Cache parsed component output to disk. Unchanged files skip re-parsing on
-   * later runs. `true` uses `node_modules/.cache/sveld/parse-cache.json`; a
-   * string sets a custom path. Off by default.
+   * later runs. On by default, writing to
+   * `node_modules/.cache/sveld/parse-cache.json`; a string sets a custom path.
+   * Pass `false` to disable.
    */
   cache?: boolean | string;
   /**
@@ -382,7 +383,9 @@ export async function generateBundle(
   const components: ComponentDocs = new Map();
   const allComponentsForTypes: ComponentDocs = new Map();
 
-  const cache = options.cache ? new ParseCache(resolveCacheFilePath(rootDir, options.cache)) : undefined;
+  // `cache` is on by default; only an explicit `false` disables it.
+  const cache =
+    options.cache === false ? undefined : new ParseCache(resolveCacheFilePath(rootDir, options.cache ?? true));
 
   // Files that changed or were never cached. Used to invalidate @extends dependents.
   const misses = new Set<string>();

@@ -284,13 +284,13 @@ Without `resolveTypes`, JSON lists no props. With it, each field shows up with `
 
 ### Persistent parse cache (`cache`)
 
-By default, every component is re-parsed on every run. With `cache`, parsed output is written to disk and reused when the source file has not changed. That applies across runs, including CI on a fresh checkout.
+Parsed output is written to disk and reused when the source file has not changed, on by default. That applies across runs, including CI on a fresh checkout.
 
 ```ts
-await sveld({ json: true, cache: true });
+await sveld({ json: true });
 ```
 
-`cache: true` writes to `node_modules/.cache/sveld/parse-cache.json`. Pass a string to use a different location, e.g. `cache: ".cache/sveld.json"`. Also available as `--cache` / `--cache=<path>` on the CLI.
+By default this writes to `node_modules/.cache/sveld/parse-cache.json`. Pass a string to use a different location, e.g. `cache: ".cache/sveld.json"`, or `cache: false` to disable it. Also available as `--cache` / `--cache=<path>` / `--cache=false` on the CLI.
 
 If a component [`@extendProps`](#extendprops) / [`@extends`](#extendprops) another file, it is re-parsed when that dependency changes, same as in [`watch`](#available-options) mode. Bumping the `sveld` or Svelte version clears the cache.
 
@@ -648,7 +648,7 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
 - **`watch`** (boolean, optional, default: `false`): Regenerate output incrementally when `.svelte` source changes during `vite dev` / `vite build --watch`. Only the changed component and the components that depend on it via [`@extendProps`](#extendprops) / `@extends` are re-parsed, rather than rebuilding every component. Without this option, the plugin only runs during `vite build`.
 - **`failFast`** (boolean, optional, default: `false`): Abort the entire run when a single component fails to parse. By default, parse failures are collected as diagnostics (and reported to `stderr`) so the remaining components still emit their output. Also available as the `--fail-fast` CLI flag.
 - **`resolveTypes`** (boolean, optional, default: `false`): Load the TypeScript program to expand opaque imported whole-object `$props()` types into JSON. Also available as `--resolve-types` (`--resolveTypes` remains as a deprecated alias). See [Opt-in semantic resolution](#opt-in-semantic-resolution-resolvetypes).
-- **`cache`** (boolean | string, optional, default: `false`): Write parsed component output to disk and skip re-parsing unchanged files on later runs. `true` uses `node_modules/.cache/sveld/parse-cache.json`; a string sets a custom path. Also available as `--cache` / `--cache=<path>`. See [Persistent parse cache](#persistent-parse-cache-cache).
+- **`cache`** (boolean | string, optional, default: `true`): Write parsed component output to disk and skip re-parsing unchanged files on later runs. On by default, writing to `node_modules/.cache/sveld/parse-cache.json`; a string sets a custom path; pass `false` to disable. Also available as `--cache` / `--cache=<path>` / `--cache=false`. See [Persistent parse cache](#persistent-parse-cache-cache).
 - **`checkExamples`** (boolean, optional, default: `false`): Run plain TS/JS `@example` blocks through the TypeScript program. Broken ones get an `example-compile-error` diagnostic. Also available as `--check-examples` (`--checkExamples` remains as a deprecated alias). See [Compile-checked `@example` blocks](#compile-checked-example-blocks-checkexamples).
 - **`reportDiagnostics`** (boolean, optional, default: `false`): Print unresolved-type diagnostics to stderr (CLI) or `console.warn` (programmatic API). Also available as `--report-diagnostics`. See [Type inference diagnostics](#type-inference-diagnostics).
 - **`strict`** (boolean, optional, default: `false`): Exit with code `1` when diagnostics exist. Implies `reportDiagnostics`. Also available as `--strict`. See [Type inference diagnostics](#type-inference-diagnostics).
