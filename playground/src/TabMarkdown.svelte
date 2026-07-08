@@ -2,35 +2,20 @@
   export let parsed_component = {};
   export let moduleName = "";
 
-  import pluginMarkdown from "prettier/plugins/markdown";
-  import { format } from "prettier/standalone";
   import markdownLang from "svelte-highlight/languages/markdown";
   import { writeMarkdownCore as writeMarkdown } from "../../src/writer/writer-markdown-core";
   import CodeHighlighter from "./CodeHighlighter.svelte";
 
-  let markdown = "";
   let code = "";
 
   $: {
     try {
       const components = new Map([[moduleName, { ...parsed_component, moduleName }]]);
-      markdown = writeMarkdown(components);
+      code = writeMarkdown(components);
     } catch (error) {
       console.log(error);
-      markdown = "";
+      code = "";
     }
-  }
-  $: {
-    format(markdown, {
-      parser: "markdown",
-      plugins: [pluginMarkdown],
-    })
-      .then((formatted) => {
-        code = formatted;
-      })
-      .catch((error) => {
-        console.log(error);
-      });
   }
 </script>
 
