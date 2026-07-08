@@ -94,6 +94,26 @@ describe("parse cache", () => {
     expect(reparsedPaths.sort()).toEqual(["./Button.svelte", "./SecondaryButton.svelte"].sort());
   });
 
+  test("editing an @extendProps target invalidates its exported dependent exactly once, even though the dependent is also discovered via glob", async () => {
+    const entry = join(dir, "entry.js");
+    writeFileSync(entry, 'export { default as SecondaryButton } from "./SecondaryButton.svelte";\n');
+
+    // SecondaryButton is now both exported (via the barrel) and glob-discovered,
+    // so it lands in both the exported and all-components passes.
+    await generateBundle(entry, true, { cache: cacheFile });
+    parseSpy.mockClear();
+
+    writeFileSync(join(dir, "Button.svelte"), BUTTON.replace("primary = false", "primary = true"));
+    const result = await generateBundle(entry, true, { cache: cacheFile });
+
+    const calls = parseSpy.mock.calls as unknown as Array<[string, { filePath: string }]>;
+    const reparsedPaths = calls.map(([, diagnostics]) => diagnostics.filePath);
+    // The dependent must be re-parsed once, not once per pass.
+    expect(reparsedPaths.sort()).toEqual(["./Button.svelte", "./SecondaryButton.svelte"].sort());
+    expect(result.components.has("SecondaryButton")).toBe(true);
+    expect(result.allComponentsForTypes.has("SecondaryButton")).toBe(true);
+  });
+
   test("a stale cache from an unrelated project root doesn't leak into a new one", async () => {
     const otherDir = mkdtempSync(join(tmpdir(), "sveld-parse-cache-other-"));
     writeFileSync(join(otherDir, "Standalone.svelte"), STANDALONE);
