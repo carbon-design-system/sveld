@@ -16,6 +16,7 @@ import { hashSource, ParseCache, resolveCacheFilePath } from "./parse-cache";
 import { type EntryExports, parseEntryExports } from "./parse-entry-exports";
 import { type ParsedExports, parseExports } from "./parse-exports";
 import { normalizeSeparators } from "./path";
+import type { TypeResolver } from "./resolve-types";
 
 export interface ComponentDocApi extends ParsedComponent {
   filePath: NormalizedPath;
@@ -117,9 +118,16 @@ export interface ProcessComponentOptions {
 const STYLE_TAG_REGEX = /<style.+?<\/style>/gims;
 const HYPHEN_REGEX = /-/g;
 
-function stripTopLevelStyleBlock(source: string) {
+export function stripTopLevelStyleBlock(source: string) {
+  // A component without "<style" cannot have a top-level style block; skip the
+  // locate-and-strip parse entirely. False positives (the substring inside a
+  // string, comment, or nested markup) just take the existing parse path.
+  if (!source.includes("<style")) return source;
+
   try {
-    const parsed = parseSvelte(source, { modern: false }) as { css?: { start?: number; end?: number } };
+    const parsed = parseSvelte(source, { modern: false }) as {
+      css?: { start?: number; end?: number };
+    };
     const start = parsed.css?.start;
     const end = parsed.css?.end;
 
@@ -185,7 +193,10 @@ export function collectComponents(input: string, glob: boolean, documentExports 
   const allComponents: ParsedExports = { ...exports };
 
   if (glob) {
-    for (const matchedFile of globSync(["**/*.svelte"], { cwd: rootDir, absolute: true })) {
+    for (const matchedFile of globSync(["**/*.svelte"], {
+      cwd: rootDir,
+      absolute: true,
+    })) {
       const file = resolve(matchedFile);
       const moduleName = parse(file).name.replace(HYPHEN_REGEX, "");
       const source = asRelativeSourcePath(normalizeSeparators(`./${relative(rootDir, file)}`));
@@ -303,7 +314,12 @@ export function processComponent(
 
         const message = error instanceof Error ? error.message : String(error);
         const stack = error instanceof Error ? error.stack : undefined;
-        options.onParseError?.({ filePath: normalizedFilePath, moduleName, message, stack });
+        options.onParseError?.({
+          filePath: normalizedFilePath,
+          moduleName,
+          message,
+          stack,
+        });
         return null;
       }
 
@@ -480,17 +496,31 @@ export async function generateBundle(
   const errors = Array.from(parseErrors.values());
   reportParseErrors(errors);
 
-  if (options.resolveTypes) {
-    await resolveImportedPropTypes(components, rootDir, resolveComponentFilePath);
-  }
-
   cache?.save();
 
-  if (options.checkExamples) {
-    // Runs over allComponentsForTypes (not just exports): that's the map the
-    // diagnostics summary below is built from, so every discovered component's
-    // examples get checked and surfaced, not just the public barrel.
-    await checkComponentExamples(allComponentsForTypes, rootDir, resolveComponentFilePath);
+  // Runs checkExamples over allComponentsForTypes (not just exports): that's the
+  // map the diagnostics summary below is built from, so every discovered
+  // component's examples get checked and surfaced, not just the public barrel.
+  const resolveTypesCandidates = options.resolveTypes ? collectResolveTypesCandidates(components) : [];
+  const checkExamplesCandidates = options.checkExamples ? collectCheckExamplesCandidates(allComponentsForTypes) : [];
+
+  if (resolveTypesCandidates.length > 0 || checkExamplesCandidates.length > 0) {
+    // Both features load the TS server through the same TypeResolver; sharing
+    // one instance across them halves server startup and project load when
+    // both options are enabled instead of paying for it twice.
+    const { TypeResolver } = await import("./resolve-types");
+    const resolver = await TypeResolver.create(rootDir);
+
+    try {
+      if (resolveTypesCandidates.length > 0) {
+        await resolveImportedPropTypes(resolveTypesCandidates, resolver, resolveComponentFilePath);
+      }
+      if (checkExamplesCandidates.length > 0) {
+        await checkComponentExamples(checkExamplesCandidates, resolver, resolveComponentFilePath);
+      }
+    } finally {
+      await resolver?.dispose();
+    }
   }
 
   // Same file can land in both export and all-components passes; dedupe before returning.
@@ -508,15 +538,13 @@ export async function generateBundle(
   };
 }
 
-async function resolveImportedPropTypes(
-  components: ComponentDocs,
-  rootDir: string,
-  resolveComponentFilePath: ResolveComponentFilePath,
-): Promise<void> {
-  const candidates: Array<{
-    component: ComponentDocApi;
-    metadata: NonNullable<ReturnType<typeof getParsedComponentTypeScriptMetadata>>;
-  }> = [];
+interface ResolveTypesCandidate {
+  component: ComponentDocApi;
+  metadata: NonNullable<ReturnType<typeof getParsedComponentTypeScriptMetadata>>;
+}
+
+function collectResolveTypesCandidates(components: ComponentDocs): ResolveTypesCandidate[] {
+  const candidates: ResolveTypesCandidate[] = [];
 
   for (const component of components.values()) {
     const metadata = getParsedComponentTypeScriptMetadata(component);
@@ -524,36 +552,37 @@ async function resolveImportedPropTypes(
     candidates.push({ component, metadata });
   }
 
-  if (candidates.length === 0) return;
+  return candidates;
+}
 
-  const { TypeResolver } = await import("./resolve-types");
-  const resolver = await TypeResolver.create(rootDir);
+async function resolveImportedPropTypes(
+  candidates: ResolveTypesCandidate[],
+  resolver: TypeResolver | null,
+  resolveComponentFilePath: ResolveComponentFilePath,
+): Promise<void> {
   if (!resolver) return;
 
-  try {
-    const resolvedByModule = await resolver.expandAll(
-      candidates.map(({ component, metadata }) => ({
-        moduleName: component.moduleName,
-        metadata,
-        filePath: resolveComponentFilePath(component.filePath),
-      })),
-    );
+  const resolvedByModule = await resolver.expandAll(
+    candidates.map(({ component, metadata }) => ({
+      moduleName: component.moduleName,
+      metadata,
+      filePath: resolveComponentFilePath(component.filePath),
+    })),
+  );
 
-    for (const { component } of candidates) {
-      const resolved = resolvedByModule.get(component.moduleName);
-      if (resolved) applyResolvedProps(component, resolved);
-    }
-  } finally {
-    await resolver.dispose();
+  for (const { component } of candidates) {
+    const resolved = resolvedByModule.get(component.moduleName);
+    if (resolved) applyResolvedProps(component, resolved);
   }
 }
 
-async function checkComponentExamples(
-  components: ComponentDocs,
-  rootDir: string,
-  resolveComponentFilePath: ResolveComponentFilePath,
-): Promise<void> {
-  const candidates: Array<{ component: ComponentDocApi; sources: ReturnType<typeof collectExampleSources> }> = [];
+interface CheckExamplesCandidate {
+  component: ComponentDocApi;
+  sources: ReturnType<typeof collectExampleSources>;
+}
+
+function collectCheckExamplesCandidates(components: ComponentDocs): CheckExamplesCandidate[] {
+  const candidates: CheckExamplesCandidate[] = [];
 
   for (const component of components.values()) {
     const sources = collectExampleSources(component);
@@ -561,41 +590,41 @@ async function checkComponentExamples(
     candidates.push({ component, sources });
   }
 
-  if (candidates.length === 0) return;
+  return candidates;
+}
 
-  const { TypeResolver } = await import("./resolve-types");
-  const resolver = await TypeResolver.create(rootDir);
+async function checkComponentExamples(
+  candidates: CheckExamplesCandidate[],
+  resolver: TypeResolver | null,
+  resolveComponentFilePath: ResolveComponentFilePath,
+): Promise<void> {
   if (!resolver) return;
 
-  try {
-    const diagnosticsByModule = await resolver.checkExamples(
-      candidates.map(({ component, sources }) => ({
-        moduleName: component.moduleName,
-        filePath: resolveComponentFilePath(component.filePath),
-        sources,
-      })),
-    );
+  const diagnosticsByModule = await resolver.checkExamples(
+    candidates.map(({ component, sources }) => ({
+      moduleName: component.moduleName,
+      filePath: resolveComponentFilePath(component.filePath),
+      sources,
+    })),
+  );
 
-    for (const { component, sources } of candidates) {
-      const found = diagnosticsByModule.get(component.moduleName);
-      if (!found || found.length === 0) continue;
+  for (const { component, sources } of candidates) {
+    const found = diagnosticsByModule.get(component.moduleName);
+    if (!found || found.length === 0) continue;
 
-      const sourceById = new Map(sources.map((source) => [source.id, source.source]));
+    const sourceById = new Map(sources.map((source) => [source.id, source.source]));
 
-      const diagnostics = component.diagnostics ?? [];
-      for (const item of found) {
-        const source = sourceById.get(item.id);
-        diagnostics.push({
-          component: component.filePath,
-          kind: "example-compile-error",
-          name: item.name,
-          message: item.message,
-          ...(source ? { source } : {}),
-        });
-      }
-      component.diagnostics = diagnostics;
+    const diagnostics = component.diagnostics ?? [];
+    for (const item of found) {
+      const source = sourceById.get(item.id);
+      diagnostics.push({
+        component: component.filePath,
+        kind: "example-compile-error",
+        name: item.name,
+        message: item.message,
+        ...(source ? { source } : {}),
+      });
     }
-  } finally {
-    await resolver.dispose();
+    component.diagnostics = diagnostics;
   }
 }
