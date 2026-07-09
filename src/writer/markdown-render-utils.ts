@@ -86,6 +86,14 @@ function renderSectionIfNotEmpty<TItem>(
 function renderComponent(document: MarkdownDocument, component: ComponentDocApi) {
   document.append("h2", `\`${component.moduleName}\``);
 
+  // Prop/slot types can reference the component's own type parameters (e.g. `Row`
+  // from `<script generics="Row extends DataTableRow">`). Markdown has no declaration
+  // context like the generated `.d.ts` does, so without this the name would appear
+  // in the tables below with nothing in the document defining what it means.
+  if (component.generics) {
+    document.append("p", `**Type parameters:** ${formatPropType(`<${component.generics[1]}>`)}`);
+  }
+
   if (component.typedefs.length > 0) {
     document.append("h3", "Types").append(
       "raw",
