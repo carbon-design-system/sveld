@@ -6,6 +6,7 @@ import {
   collectComponents,
   collectSvelteFilePaths,
   type GenerateBundleResult,
+  globComponentSources,
   type ProcessComponentOptions,
   processComponent,
   readFileMap,
@@ -53,9 +54,11 @@ export interface SveldBundle {
  * @param documentExports - Record consts, functions, and types from the entry barrel
  */
 export async function createSveldBundle(input: string, glob: boolean, documentExports = false): Promise<SveldBundle> {
-  // Discover sources once. The export/source maps only change when the entry
-  // file or the set of files on disk changes; for a single edit they are stable.
-  const { exports, allComponents, resolveComponentFilePath } = collectComponents(input, glob, documentExports);
+  // Discover sources once. The export map only changes when the entry file
+  // changes; for a single edit it is stable. `allComponents` (glob-discovered)
+  // can grow as files are added on disk, so it and its entry list are
+  // refreshed in `update()` below.
+  const { exports, allComponents, rootDir, resolveComponentFilePath } = collectComponents(input, glob, documentExports);
 
   // Entry exports only change when the barrel changes; resolve once.
   const entryExports: EntryExports =
@@ -141,6 +144,21 @@ export async function createSveldBundle(input: string, glob: boolean, documentEx
 
     if (changed.length === 0) {
       return { result: buildResult(), reparsed: [] };
+    }
+
+    // Re-glob so components created since the last update (or the initial
+    // parse) are tracked. Files already known just get their `source` refreshed.
+    if (glob) {
+      for (const { moduleName, source } of globComponentSources(rootDir)) {
+        const existing = allComponents[moduleName];
+        if (existing) {
+          existing.source = source;
+        } else {
+          const newEntry = { source, default: false };
+          allComponents[moduleName] = newEntry;
+          allComponentEntries.push([moduleName, newEntry]);
+        }
+      }
     }
 
     const affected = expandAffected(changed, reverseDeps);

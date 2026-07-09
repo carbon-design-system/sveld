@@ -158,6 +158,22 @@ export interface CollectedComponents {
   resolveComponentFilePath: ResolveComponentFilePath;
 }
 
+/** A `.svelte` file discovered on disk, before it's merged into `exports`/`allComponents`. */
+export interface GlobbedComponentSource {
+  moduleName: string;
+  source: ReturnType<typeof asRelativeSourcePath>;
+}
+
+/** Globs every `.svelte` file under `rootDir`, resolving each to its module name and source path. */
+export function globComponentSources(rootDir: string): GlobbedComponentSource[] {
+  return globSync(["**/*.svelte"], { cwd: rootDir, absolute: true }).map((matchedFile) => {
+    const file = resolve(matchedFile);
+    const moduleName = parse(file).name.replace(HYPHEN_REGEX, "");
+    const source = asRelativeSourcePath(normalizeSeparators(`./${relative(rootDir, file)}`));
+    return { moduleName, source };
+  });
+}
+
 /**
  * Discovers component sources for an entry point without parsing them.
  *
@@ -194,14 +210,7 @@ export function collectComponents(input: string, glob: boolean, documentExports 
   const allComponents: ParsedExports = { ...exports };
 
   if (glob) {
-    for (const matchedFile of globSync(["**/*.svelte"], {
-      cwd: rootDir,
-      absolute: true,
-    })) {
-      const file = resolve(matchedFile);
-      const moduleName = parse(file).name.replace(HYPHEN_REGEX, "");
-      const source = asRelativeSourcePath(normalizeSeparators(`./${relative(rootDir, file)}`));
-
+    for (const { moduleName, source } of globComponentSources(rootDir)) {
       if (exports[moduleName]) {
         exports[moduleName].source = source;
       }

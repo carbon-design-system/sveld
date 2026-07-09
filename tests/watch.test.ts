@@ -74,6 +74,18 @@ describe("watch mode (createSveldBundle)", () => {
     expect(reparsed).toEqual([standalonePath]);
   });
 
+  test("picks up a newly created component file", async () => {
+    const bundle = await createSveldBundle(dir, true);
+
+    const newPath = resolve(dir, "NewOne.svelte");
+    writeFileSync(newPath, `<script>\n  export let label = "new";\n</script>\n\n<span>{label}</span>`);
+
+    const { result, reparsed } = await bundle.update([newPath]);
+
+    expect(reparsed).toContain(newPath);
+    expect(result.allComponentsForTypes.has("NewOne")).toBe(true);
+  });
+
   test("ignores non-svelte changes", async () => {
     const bundle = await createSveldBundle(dir, true);
     const { reparsed } = await bundle.update([resolve(dir, "README.md")]);
