@@ -33,6 +33,23 @@ const getMetadata = (fixture: { filePath: string; source: string }) => {
   return { dir, metadata, parsed_component };
 };
 
+// Each fixture owns its expected output as a committed file alongside its
+// input.svelte, instead of a shared snapshot file. This keeps regressions
+// scoped to the fixture that changed and avoids merge conflicts between
+// unrelated fixture updates.
+const expectMatchesFixtureFile = async (outputPath: string, actual: string) => {
+  const file = Bun.file(outputPath);
+  const expected = (await file.exists()) ? await file.text() : null;
+
+  // Always write the current output so the diff is visible in `git diff`;
+  // if this is an intentional change, review and commit the updated file.
+  await Bun.write(outputPath, actual);
+
+  if (expected !== null) {
+    expect(actual).toBe(expected);
+  }
+};
+
 describe("fixtures (JSON)", async () => {
   test.each(files)("%p", async (filePath) => {
     const source = fixtures_map.get(filePath);
@@ -42,11 +59,7 @@ describe("fixtures (JSON)", async () => {
     const { dir, parsed_component } = getMetadata({ filePath, source });
     const api_json = `${JSON.stringify(parsed_component, null, 2)}\n`;
 
-    // Snapshot the output; if the test fails, output has changed.
-    expect(api_json).toMatchSnapshot();
-
-    // Still write to disk to manually assert types as needed.
-    await Bun.write(path.join(folder, dir, "output.json"), api_json);
+    await expectMatchesFixtureFile(path.join(folder, dir, "output.json"), api_json);
   });
 });
 
@@ -62,12 +75,7 @@ describe("fixtures (TypeScript)", async () => {
     const api_ts_class = writeTsDefinition(component, { format: "class" });
     const api_ts_component = writeTsDefinition(component, { format: "component" });
 
-    // Snapshot the output; if the test fails, output has changed.
-    expect(api_ts_class).toMatchSnapshot();
-    expect(api_ts_component).toMatchSnapshot();
-
-    // Still write to disk to manually assert types as needed.
-    await Bun.write(path.join(folder, dir, "output-class.d.ts"), api_ts_class);
-    await Bun.write(path.join(folder, dir, "output-component.d.ts"), api_ts_component);
+    await expectMatchesFixtureFile(path.join(folder, dir, "output-class.d.ts"), api_ts_class);
+    await expectMatchesFixtureFile(path.join(folder, dir, "output-component.d.ts"), api_ts_component);
   });
 });
