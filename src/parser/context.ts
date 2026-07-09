@@ -34,7 +34,6 @@ export interface ParserContext {
    */
   runesOptionOverride?: boolean;
 
-  sourceLinesCache?: string[];
   sourceLineStartOffsetsCache?: number[];
 
   rest_props?: RestProps;
@@ -92,7 +91,7 @@ export interface ParserContext {
   readonly typedefs: Map<string, TypeDef>;
   variableInfoCache: Map<string, { type: string; description?: string }>;
 
-  /** True after a whole-source scan populates {@link variableInfoCache}. */
+  /** True after the per-component variable/JSDoc symbol table has populated {@link variableInfoCache}. */
   variableInfoCacheBuilt: boolean;
 }
 
@@ -104,7 +103,6 @@ export function createParserContext(): ParserContext {
     source: undefined,
     parsed: undefined,
     runesOptionOverride: undefined,
-    sourceLinesCache: undefined,
     sourceLineStartOffsetsCache: undefined,
     rest_props: undefined,
     extends: undefined,

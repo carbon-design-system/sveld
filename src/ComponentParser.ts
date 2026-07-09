@@ -1,4 +1,3 @@
-import { parse as parseComment } from "comment-parser";
 import type {
   AssignmentExpression,
   CallExpression,
@@ -31,7 +30,7 @@ import { parseSetContextCall } from "./parser/contexts";
 import { recordDiagnostic } from "./parser/diagnostics";
 import { addDispatchedEvent, literalDetailToTypeText, parseHostDispatchEventCall } from "./parser/events";
 import { parseGenericsAttribute } from "./parser/generics";
-import { getCommentTags, parseCustomTypes, processNodeJSDoc } from "./parser/jsdoc";
+import { parseCustomTypes, processNodeJSDoc } from "./parser/jsdoc";
 import { addProp, processInitializer } from "./parser/props";
 import { maybeSetRestProps } from "./parser/rest-props";
 import { detectSyntaxMode } from "./parser/runes-detection";
@@ -53,10 +52,8 @@ import { sourceAtPos, sourceRangeFromNode, sourceRangeFromOffsets } from "./pars
 import { buildTypeScriptMetadata } from "./parser/type-resolution";
 import { stripTypeCastWrappers } from "./parser/typescript-casts";
 import { assignValueOrUndefined } from "./parser/utils";
+import { buildVariableJsDocTable } from "./parser/variable-jsdoc";
 import { parse } from "./svelte-parse";
-
-/** Matches `const`/`let`/`function` declarations for JSDoc association. */
-const VAR_DECLARATION_REGEX = /(?:const|let|function)\s+(\w+)\s*[=(]/;
 
 export { assignValueOrUndefined as assignValue };
 
@@ -756,66 +753,6 @@ export default class ComponentParser {
     return type.trim();
   }
 
-  private buildVariableInfoCache() {
-    if (!this.ctx.source) return;
-
-    if (!this.ctx.sourceLinesCache) {
-      this.ctx.sourceLinesCache = this.ctx.source.split("\n");
-    }
-    const lines = this.ctx.sourceLinesCache;
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-
-      const varMatch = line.match(VAR_DECLARATION_REGEX);
-      if (varMatch) {
-        const varName = varMatch[1];
-
-        for (let j = i - 1; j >= 0; j--) {
-          const prevLine = lines[j].trim();
-
-          if (prevLine && !prevLine.startsWith("*") && !prevLine.startsWith("/*") && !prevLine.startsWith("//")) {
-            break;
-          }
-
-          if (prevLine.startsWith("/**")) {
-            const commentLines: string[] = [];
-            for (let k = j; k < i; k++) {
-              commentLines.push(lines[k]);
-            }
-            const commentBlock = commentLines.join("\n");
-
-            const parsed = parseComment(commentBlock, { spacing: "preserve" });
-            const { type: typeTag, description } = getCommentTags(parsed);
-            if (typeTag) {
-              this.ctx.variableInfoCache.set(varName, {
-                type: this.aliasType(typeTag.type),
-                description: description || typeTag.description,
-              });
-            }
-            break;
-          }
-        }
-      }
-    }
-  }
-
-  private static readonly VAR_NAME_REGEX_CACHE = new Map<string, [RegExp, RegExp, RegExp]>();
-
-  private static getVarNameRegexes(varName: string): [RegExp, RegExp, RegExp] {
-    let cached = ComponentParser.VAR_NAME_REGEX_CACHE.get(varName);
-    if (!cached) {
-      const escaped = varName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      cached = [
-        new RegExp(`const\\s+${escaped}\\s*=`),
-        new RegExp(`let\\s+${escaped}\\s*=`),
-        new RegExp(`function\\s+${escaped}\\s*\\(`),
-      ];
-      ComponentParser.VAR_NAME_REGEX_CACHE.set(varName, cached);
-    }
-    return cached;
-  }
-
   /**
    * @example
    * ```ts
@@ -840,7 +777,7 @@ export default class ComponentParser {
     }
 
     if (!this.ctx.variableInfoCacheBuilt) {
-      this.buildVariableInfoCache();
+      this.ctx.variableInfoCache = buildVariableJsDocTable(this.ctx, this);
       this.ctx.variableInfoCacheBuilt = true;
     }
 
@@ -854,56 +791,7 @@ export default class ComponentParser {
       };
     }
 
-    if (cached) {
-      return cached;
-    }
-
-    if (!this.ctx.source) return null;
-
-    if (!this.ctx.sourceLinesCache) {
-      this.ctx.sourceLinesCache = this.ctx.source.split("\n");
-    }
-    const lines = this.ctx.sourceLinesCache;
-
-    const [constRegex, letRegex, funcRegex] = ComponentParser.getVarNameRegexes(varName);
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-
-      const constMatch = line.match(constRegex);
-      const letMatch = line.match(letRegex);
-      const funcMatch = line.match(funcRegex);
-
-      if (constMatch || letMatch || funcMatch) {
-        for (let j = i - 1; j >= 0; j--) {
-          const prevLine = lines[j].trim();
-
-          if (prevLine && !prevLine.startsWith("*") && !prevLine.startsWith("/*") && !prevLine.startsWith("//")) {
-            break;
-          }
-
-          if (prevLine.startsWith("/**")) {
-            const commentLines: string[] = [];
-            for (let k = j; k < i; k++) {
-              commentLines.push(lines[k]);
-            }
-            const commentBlock = commentLines.join("\n");
-
-            const parsed = parseComment(commentBlock, { spacing: "preserve" });
-            const { type: typeTag, description } = getCommentTags(parsed);
-            if (typeTag) {
-              return {
-                type: this.aliasType(typeTag.type),
-                description: description || typeTag.description,
-              };
-            }
-            break;
-          }
-        }
-      }
-    }
-
-    return null;
+    return cached ?? null;
   }
 
   accumulateGeneric(name: string, constraint: string): void {
