@@ -27,6 +27,7 @@
     "lint:fix": "biome check --write --unsafe .",
     "build": "bun scripts/build.ts",
     "bench": "bun scripts/bench.ts",
+    "bench:cache": "bun scripts/bench.ts --cache",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
