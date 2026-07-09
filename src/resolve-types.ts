@@ -104,18 +104,63 @@ export class TypeResolver {
     });
 
     try {
-      const entries = await Promise.all(
-        Array.from(
-          virtualFiles,
-          async ([virtualFile, target]): Promise<[string, ResolvedComponentProp[]]> => [
-            target.moduleName,
-            await this.resolveFile(snapshot, virtualFile),
-          ],
-        ),
+      // Every virtual file belongs to the same `openProject` snapshot, so the
+      // project (and its checker) is shared; look it up once instead of once
+      // per file. Each lookup and each unbatched checker call below is a
+      // round trip to the native TS server process, so cutting call count
+      // matters far more here than in an in-process compiler API.
+      const [firstFile] = virtualFiles.keys();
+      const project = await snapshot.getDefaultProjectForFile(firstFile);
+      if (!project) return results;
+      const checker = project.checker;
+
+      // Phase 1: per-file type-at-position + properties-of-type (no batch API; different files/types).
+      const perFile = await Promise.all(
+        Array.from(virtualFiles, async ([virtualFile, target]) => {
+          const content = this.overlay.get(virtualFile);
+          if (!content) return null;
+          const position = bindingPosition(content);
+          const type = await checker.getTypeAtPosition(virtualFile, position);
+          if (!type) return null;
+          const properties: TS[] = await checker.getPropertiesOfType(type);
+          const symbols = properties.filter((symbol: TS) => symbol.name && !symbol.name.startsWith("__"));
+          return { moduleName: target.moduleName, symbols };
+        }),
       );
-      for (const [moduleName, props] of entries) {
-        results.set(moduleName, props);
-      }
+
+      // Phase 2: batch getTypeOfSymbol across every prop of every component in one round trip.
+      const allSymbols: TS[] = [];
+      const owner: number[] = [];
+      perFile.forEach((entry, fileIndex) => {
+        if (!entry) return;
+        for (const symbol of entry.symbols) {
+          allSymbols.push(symbol);
+          owner.push(fileIndex);
+        }
+      });
+      const propTypes: TS[] = allSymbols.length > 0 ? await checker.getTypeOfSymbol(allSymbols) : [];
+
+      // Phase 3: typeToString has no batch overload; fire concurrently.
+      const typeTexts = await Promise.all(
+        propTypes.map((propType) => (propType ? checker.typeToString(propType) : Promise.resolve("any"))),
+      );
+
+      const byFile = new Map<number, ResolvedComponentProp[]>();
+      allSymbols.forEach((symbol, i) => {
+        const isOptional = (symbol.flags & this.symbolFlags.Optional) !== 0;
+        let typeText = typeTexts[i];
+        if (isOptional) typeText = typeText.replace(TRAILING_UNDEFINED, "");
+        const list = byFile.get(owner[i]) ?? [];
+        list.push({ name: symbol.name, type: typeText, isRequired: !isOptional });
+        byFile.set(owner[i], list);
+      });
+
+      perFile.forEach((entry, fileIndex) => {
+        if (!entry) return;
+        const resolved = byFile.get(fileIndex) ?? [];
+        resolved.sort((a, b) => a.name.localeCompare(b.name));
+        results.set(entry.moduleName, resolved);
+      });
     } finally {
       await snapshot.dispose?.();
     }
@@ -153,11 +198,12 @@ export class TypeResolver {
     });
 
     try {
+      const [firstExample] = examples;
+      const project = await snapshot.getDefaultProjectForFile(firstExample.file);
+      if (!project) return results;
+
       await Promise.all(
         examples.map(async ({ moduleName, source, file }) => {
-          const project = await snapshot.getDefaultProjectForFile(file);
-          if (!project) return;
-
           const [syntactic, semantic]: [TS[], TS[]] = await Promise.all([
             project.program.getSyntacticDiagnostics(file),
             project.program.getSemanticDiagnostics(file),
@@ -188,38 +234,6 @@ export class TypeResolver {
   async dispose(): Promise<void> {
     this.overlay.clear();
     await this.api?.close?.();
-  }
-
-  private async resolveFile(snapshot: TS, virtualFile: string): Promise<ResolvedComponentProp[]> {
-    const content = this.overlay.get(virtualFile);
-    if (!content) return [];
-
-    const project = await snapshot.getDefaultProjectForFile(virtualFile);
-    if (!project) return [];
-
-    const checker = project.checker;
-    const position = bindingPosition(content);
-    const type = await checker.getTypeAtPosition(virtualFile, position);
-    if (!type) return [];
-
-    const properties: TS[] = await checker.getPropertiesOfType(type);
-
-    const resolved = await Promise.all(
-      properties
-        // Skip synthetic/internal members.
-        .filter((symbol: TS) => symbol.name && !symbol.name.startsWith("__"))
-        .map(async (symbol: TS): Promise<ResolvedComponentProp> => {
-          const propType = await checker.getTypeOfSymbol(symbol);
-          const isOptional = (symbol.flags & this.symbolFlags.Optional) !== 0;
-          let typeText = propType ? await checker.typeToString(propType) : "any";
-          if (isOptional) typeText = typeText.replace(TRAILING_UNDEFINED, "");
-
-          return { name: symbol.name, type: typeText, isRequired: !isOptional };
-        }),
-    );
-
-    resolved.sort((a, b) => a.name.localeCompare(b.name));
-    return resolved;
   }
 
   private createFileSystem() {
