@@ -1,5 +1,4 @@
 import type { FunctionDeclaration, VariableDeclaration } from "estree";
-import type { compile } from "svelte/compiler";
 import type {
   ComponentContext,
   ComponentElement,
@@ -36,11 +35,14 @@ export interface ParserContext {
   /** Raw source code of the Svelte component being parsed */
   source?: string;
 
-  /** Compiled Svelte code containing extracted variables and AST */
-  compiled?: ReturnType<typeof compile>;
-
   /** Parsed abstract syntax tree from the Svelte compiler */
   parsed?: LegacyAstRoot;
+
+  /**
+   * Explicit `<svelte:options runes={...} />` value, resolved during the modern-mode parse for
+   * runes prop type metadata. When present, overrides rune-reference detection.
+   */
+  runesOptionOverride?: boolean;
 
   /** Cached `ctx.source` split on newlines */
   sourceLinesCache?: string[];
@@ -188,8 +190,8 @@ export function createParserContext(): ParserContext {
     syntaxMode: "legacy",
     scriptLanguage: undefined,
     source: undefined,
-    compiled: undefined,
     parsed: undefined,
+    runesOptionOverride: undefined,
     sourceLinesCache: undefined,
     sourceLineStartOffsetsCache: undefined,
 

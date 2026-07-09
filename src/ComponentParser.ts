@@ -15,7 +15,7 @@ import type {
 } from "estree";
 import type { Node } from "estree-walker";
 import { walk } from "estree-walker";
-import { compile, parse } from "svelte/compiler";
+import { parse } from "svelte/compiler";
 import {
   isCallExpressionNamed,
   isIdentifier,
@@ -34,6 +34,7 @@ import { parseGenericsAttribute } from "./parser/generics";
 import { getCommentTags, parseCustomTypes, processNodeJSDoc } from "./parser/jsdoc";
 import { addProp, processInitializer } from "./parser/props";
 import { maybeSetRestProps } from "./parser/rest-props";
+import { detectSyntaxMode } from "./parser/runes-detection";
 import {
   buildRunesPropTypeMetadata,
   normalizeRunesCallbackProps,
@@ -50,6 +51,7 @@ import {
 import { addSlot, buildSlotPropsFromObjectExpression, extractRenderTagInfo } from "./parser/slots";
 import { sourceAtPos, sourceRangeFromNode, sourceRangeFromOffsets } from "./parser/source-position";
 import { buildTypeScriptMetadata } from "./parser/type-resolution";
+import { stripTypeCastWrappers } from "./parser/typescript-casts";
 
 /**
  * Regular expression for matching variable declarations.
@@ -1365,23 +1367,24 @@ export default class ComponentParser {
     buildRunesPropTypeMetadata(this, this.ctx);
 
     /**
-     * Parse once - compile() internally calls parse(), so we can extract the AST from it.
-     * This avoids parsing the source twice for better performance.
+     * Parse once - compile()'s analyze phase roughly doubles the compiler cost per component but
+     * sveld only ever consumed its AST and its runes-metadata flag, so call parse() directly and
+     * determine the syntax mode locally instead.
      */
-    const compiled = compile(cleanedSource, {
-      generate: false,
-      modernAst: false,
-    });
-    this.ctx.compiled = compiled;
-    this.ctx.syntaxMode = compiled.metadata.runes ? "runes" : "legacy";
+    this.ctx.parsed = parse(cleanedSource, { modern: false }) as LegacyAstRoot;
 
     /**
-     * Reuse the AST from compilation instead of parsing again.
-     * The compile result includes the parsed AST, so we use that if available,
-     * otherwise fall back to parsing directly.
+     * compile() strips TS-only wrapper expressions (`as`/`satisfies`/`!`/type assertions/explicit
+     * generic instantiation) before exposing its AST; parse() alone leaves them in place. Only
+     * TS-tagged scripts can contain them, so skip the walk entirely for plain JS components.
      */
-    this.ctx.parsed =
-      (compiled.ast as LegacyAstRoot | undefined) || (parse(cleanedSource, { modern: false }) as LegacyAstRoot);
+    if (this.ctx.scriptLanguage === "ts") {
+      stripTypeCastWrappers(this.ctx.parsed.module);
+      stripTypeCastWrappers(this.ctx.parsed.instance);
+      stripTypeCastWrappers(this.ctx.parsed.html);
+    }
+
+    this.ctx.syntaxMode = detectSyntaxMode(this.ctx);
 
     parseCustomTypes(this.ctx, this);
 

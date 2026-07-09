@@ -232,11 +232,12 @@ export function buildRunesPropTypeMetadata(parser: ComponentParser, ctx: ParserC
       };
     };
     module?: ModernScriptNode;
-    options?: { customElement?: { tag?: string } } | null;
+    options?: { customElement?: { tag?: string }; runes?: boolean } | null;
   };
 
   ctx.scriptLanguage = parser.resolveScriptLanguage(modernParsed);
   ctx.customElementTag = modernParsed.options?.customElement?.tag;
+  ctx.runesOptionOverride = modernParsed.options?.runes;
   ctx.scriptGenericsAttribute = parser.resolveScriptGenericsAttribute(modernParsed);
   const body = modernParsed.instance?.content?.body ?? [];
 
