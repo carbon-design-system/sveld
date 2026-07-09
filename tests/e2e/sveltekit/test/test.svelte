@@ -1,4 +1,4 @@
-<script lang="ts">
+<script>
   import Button, { Button as Button2 } from "../src/lib";
 </script>
 
