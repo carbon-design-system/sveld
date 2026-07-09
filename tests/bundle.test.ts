@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { generateBundle, stripTopLevelStyleBlock } from "../src/bundle";
 import ComponentParser from "../src/ComponentParser";
+import { loadParserStack } from "../src/parser-stack";
 import { TypeResolver } from "../src/resolve-types";
 
 const BUTTON = `<script>
@@ -170,6 +171,10 @@ describe("generateBundle shares one TypeResolver across resolveTypes and checkEx
 });
 
 describe("stripTopLevelStyleBlock", () => {
+  beforeAll(async () => {
+    await loadParserStack();
+  });
+
   test("returns the identical source when it has no <style> substring", () => {
     const source = `<script>
   export let label = "hello";

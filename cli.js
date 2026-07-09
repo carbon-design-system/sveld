@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import("./lib/index.js")
+import("./lib/cli-entry.js")
   .then(({ cli }) => cli(process))
   .catch((error) => {
     console.error(error);

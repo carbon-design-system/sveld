@@ -27,6 +27,9 @@ async function buildEntry(entrypoint: string, target: "node" | "browser") {
     // them so dependencies (estree-walker, and the pruned svelte parser
     // imported by src/svelte-parse.ts) ship inside `lib`.
     packages: "bundle",
+    // Emit the parser stack (behind `./parser-stack`'s dynamic import) as its
+    // own chunk instead of inlining it, so a fully cached CLI run never loads it.
+    splitting: true,
   });
 
   if (!result.success) {
@@ -44,12 +47,13 @@ async function buildEntry(entrypoint: string, target: "node" | "browser") {
 }
 
 async function buildProject() {
-  const [node, browser] = await Promise.all([
+  const [node, cliEntry, browser] = await Promise.all([
     buildEntry("./src/index.ts", "node"),
+    buildEntry("./src/cli-entry.ts", "node"),
     buildEntry("./src/browser.ts", "browser"),
   ]);
 
-  if (!node || !browser) return;
+  if (!node || !cliEntry || !browser) return;
 
   await emitTypeDeclarations();
   console.log("✓ Build completed");

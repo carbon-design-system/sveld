@@ -2,12 +2,9 @@ import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { version as sveldVersion } from "../package.json";
-import {
-  PARSED_COMPONENT_TYPE_SCRIPT_METADATA,
-  type ParsedComponent,
-  type ParsedComponentTypeScriptMetadata,
-} from "./ComponentParser";
-import { VERSION as svelteVersion } from "./svelte-parse";
+import type { ParsedComponent, ParsedComponentTypeScriptMetadata } from "./ComponentParser";
+import { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "./parsed-component-metadata";
+import { VERSION as svelteVersion } from "./svelte-version";
 
 /** Bumped whenever the on-disk cache shape changes in a way old caches can't read. */
 const CACHE_FORMAT_VERSION = 1;

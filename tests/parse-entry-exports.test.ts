@@ -12,8 +12,8 @@ function byName(exports: EntryExport[], name: string): EntryExport {
 }
 
 describe("parseEntryExports", () => {
-  test("documents re-exported consts, functions, and types", () => {
-    const exports = parseEntryExports(entryFile);
+  test("documents re-exported consts, functions, and types", async () => {
+    const exports = await parseEntryExports(entryFile);
     const names = exports.map((entry) => entry.name);
 
     // Components are documented separately and excluded here.
@@ -32,8 +32,8 @@ describe("parseEntryExports", () => {
     );
   });
 
-  test("documents a re-exported const with its value and JSDoc", () => {
-    const exports = parseEntryExports(entryFile);
+  test("documents a re-exported const with its value and JSDoc", async () => {
+    const exports = await parseEntryExports(entryFile);
 
     expect(byName(exports, "VERSION")).toMatchObject({
       name: "VERSION",
@@ -45,8 +45,8 @@ describe("parseEntryExports", () => {
     });
   });
 
-  test("copies an explicit const type annotation verbatim", () => {
-    const exports = parseEntryExports(entryFile);
+  test("copies an explicit const type annotation verbatim", async () => {
+    const exports = await parseEntryExports(entryFile);
 
     expect(byName(exports, "MAX_RETRIES")).toMatchObject({
       name: "MAX_RETRIES",
@@ -56,8 +56,8 @@ describe("parseEntryExports", () => {
     });
   });
 
-  test("documents a re-exported function declaration as a signature", () => {
-    const exports = parseEntryExports(entryFile);
+  test("documents a re-exported function declaration as a signature", async () => {
+    const exports = await parseEntryExports(entryFile);
 
     expect(byName(exports, "clamp")).toMatchObject({
       name: "clamp",
@@ -68,8 +68,8 @@ describe("parseEntryExports", () => {
     });
   });
 
-  test("documents a re-exported arrow function const", () => {
-    const exports = parseEntryExports(entryFile);
+  test("documents a re-exported arrow function const", async () => {
+    const exports = await parseEntryExports(entryFile);
 
     expect(byName(exports, "invertTheme")).toMatchObject({
       name: "invertTheme",
@@ -82,13 +82,13 @@ describe("parseEntryExports", () => {
     });
   });
 
-  test("leaves the description undefined when there is no adjacent JSDoc", () => {
-    const exports = parseEntryExports(entryFile);
+  test("leaves the description undefined when there is no adjacent JSDoc", async () => {
+    const exports = await parseEntryExports(entryFile);
     expect(byName(exports, "MAX_RETRIES").description).toBeUndefined();
   });
 
-  test("documents a re-exported type alias verbatim", () => {
-    const exports = parseEntryExports(entryFile);
+  test("documents a re-exported type alias verbatim", async () => {
+    const exports = await parseEntryExports(entryFile);
 
     expect(byName(exports, "Theme")).toMatchObject({
       name: "Theme",
@@ -98,8 +98,8 @@ describe("parseEntryExports", () => {
     });
   });
 
-  test("documents a re-exported interface", () => {
-    const exports = parseEntryExports(entryFile);
+  test("documents a re-exported interface", async () => {
+    const exports = await parseEntryExports(entryFile);
     const themeConfig = byName(exports, "ThemeConfig");
 
     expect(themeConfig.kind).toBe("interface");
@@ -108,8 +108,8 @@ describe("parseEntryExports", () => {
     expect(themeConfig.type).toContain("persist: boolean");
   });
 
-  test("documents an inline const declaration on the entry", () => {
-    const exports = parseEntryExports(entryFile);
+  test("documents an inline const declaration on the entry", async () => {
+    const exports = await parseEntryExports(entryFile);
 
     expect(byName(exports, "DEFAULT_THEME")).toMatchObject({
       name: "DEFAULT_THEME",
@@ -120,8 +120,8 @@ describe("parseEntryExports", () => {
     });
   });
 
-  test("sorts exports alphabetically and resolves source paths", () => {
-    const exports = parseEntryExports(entryFile);
+  test("sorts exports alphabetically and resolves source paths", async () => {
+    const exports = await parseEntryExports(entryFile);
 
     const sorted = [...exports].sort((a, b) => a.name.localeCompare(b.name));
     expect(exports).toEqual(sorted);
@@ -132,7 +132,7 @@ describe("parseEntryExports", () => {
     expect(byName(exports, "DEFAULT_THEME").source).toBe("./index.ts");
   });
 
-  test("warns and skips a re-exported module the underlying parser can't handle, instead of throwing", () => {
+  test("warns and skips a re-exported module the underlying parser can't handle, instead of throwing", async () => {
     // Not written under tests/fixtures-entry-exports because the redeclaration
     // below (valid to acorn-typescript, rejected by tsc/biome) would otherwise
     // trip up `tsc --noEmit` and `biome lint`, which both cover tests/**/*.
@@ -156,7 +156,7 @@ describe("parseEntryExports", () => {
 
       const warn = jest.spyOn(console, "warn").mockImplementation(() => undefined);
 
-      const exports = parseEntryExports(path.join(dir, "index.ts"));
+      const exports = await parseEntryExports(path.join(dir, "index.ts"));
 
       // The unaffected module's exports still come through.
       expect(byName(exports, "VERSION")).toMatchObject({ name: "VERSION", kind: "const" });
