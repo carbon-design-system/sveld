@@ -165,6 +165,13 @@ export interface ParsedComponentTypeScriptMetadata {
   canonicalPropNames: string[];
   localTypeDeclarations: string[];
   typeImportStatements: string[];
+  /**
+   * Whether `canonicalPropsType` mentions one of the component's own
+   * `<script generics="...">` parameters (e.g. `Props<T>`). The semantic
+   * resolver has no binding for `T`, so `resolveTypes` must leave this
+   * component's props as their AST-derived text rather than expand them.
+   */
+  referencesComponentGenerics?: boolean;
 }
 
 export const PARSED_COMPONENT_TYPE_SCRIPT_METADATA = Symbol("sveld.parsedComponentTypeScriptMetadata");

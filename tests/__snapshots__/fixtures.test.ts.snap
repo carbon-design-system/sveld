@@ -14926,6 +14926,35 @@ exports[`fixtures (JSON) "context-template-tag/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "runes-whole-props-generic-resolve-types/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 15,
+      "column": 0
+    }
+  },
+  "syntaxMode": "runes",
+  "scriptLanguage": "ts",
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": [
+    "T",
+    "T extends Identifiable"
+  ],
+  "contexts": [],
+  "diagnostics": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "runes-whole-props-imported/input.svelte" 1`] = `
 "{
   "source": {
@@ -22218,6 +22247,26 @@ export default class ContextTemplateTag<Row extends DataTableRow = DataTableRow>
   ContextTemplateTagProps<Row>,
   Record<string, any>,
   { default: Record<string, never> }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "runes-whole-props-generic-resolve-types/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { Props } from "./types";
+
+interface Identifiable {
+  id: string;
+}
+
+type $Props<T extends Identifiable> = Props<T>;
+
+export type RunesWholePropsGenericResolveTypesProps<T extends Identifiable> = $Props<T>;
+
+export default class RunesWholePropsGenericResolveTypes<T extends Identifiable> extends SvelteComponentTyped<
+  RunesWholePropsGenericResolveTypesProps<T>,
+  Record<string, any>,
+  Record<string, never>
 > {}
 "
 `;
