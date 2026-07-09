@@ -5,11 +5,11 @@
       "column": 0
     },
     "end": {
-      "line": 16,
+      "line": 15,
       "column": 0
     }
   },
-  "syntaxMode": "legacy",
+  "syntaxMode": "runes",
   "scriptLanguage": "js",
   "props": [],
   "moduleExports": [],
@@ -17,15 +17,16 @@
   "events": [
     {
       "type": "dispatched",
-      "name": "change",
+      "name": "click",
+      "detail": "1",
       "source": {
         "start": {
-          "line": 8,
+          "line": 5,
           "column": 4
         },
         "end": {
-          "line": 8,
-          "column": 43
+          "line": 5,
+          "column": 66
         }
       }
     }
@@ -33,5 +34,6 @@
   "typedefs": [],
   "generics": null,
   "contexts": [],
+  "customElementTag": "my-el",
   "diagnostics": []
 }

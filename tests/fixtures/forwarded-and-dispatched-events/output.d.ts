@@ -4,6 +4,6 @@ export type ForwardedAndDispatchedEventsProps = Record<string, never>;
 
 export default class ForwardedAndDispatchedEvents extends SvelteComponentTyped<
   ForwardedAndDispatchedEventsProps,
-  { change: WindowEventMap["change"] },
+  { change: CustomEvent<any> },
   Record<string, never>
 > {}
