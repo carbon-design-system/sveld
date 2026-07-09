@@ -20,42 +20,58 @@
  * `svelte/compiler`'s across every fixture, so a svelte upgrade that changes
  * this internal shape fails CI instead of silently shipping wrong output.
  */
-// @ts-expect-error - internal svelte module, no published types
-
 import { walk as zimmerframeWalk } from "zimmerframe";
+// @ts-expect-error - internal svelte module, no published types
 import { convert } from "../node_modules/svelte/src/compiler/legacy.js";
 // @ts-expect-error - internal svelte module, no published types
 import { parse as parseFragment } from "../node_modules/svelte/src/compiler/phases/1-parse/index.js";
 // @ts-expect-error - internal svelte module, no published types
 import { reset as resetCompilerState } from "../node_modules/svelte/src/compiler/state.js";
 // @ts-expect-error - internal svelte module, no published types
-import { VERSION } from "../node_modules/svelte/src/version.js";
+import { VERSION as VERSION_RAW } from "../node_modules/svelte/src/version.js";
+
+/**
+ * The pre-strip AST shape svelte's parser produces internally, before `metadata` (an
+ * implementation detail not part of svelte's public `AST.SvelteNode` types) is removed.
+ * `[key: string]: unknown` keeps this assignable from real parser output without `any`,
+ * and satisfies zimmerframe's `T extends { type: string }` walk constraint.
+ */
+interface InternalAstNode {
+  type: string;
+  metadata?: unknown;
+  [key: string]: unknown;
+}
+
+interface InternalAstRoot extends InternalAstNode {
+  options?: {
+    attributes?: Array<InternalAstNode & { value?: InternalAstNode | InternalAstNode[] }>;
+  };
+}
 
 function removeByteOrderMark(source: string): string {
   return source.charCodeAt(0) === 0xfeff ? source.slice(1) : source;
 }
 
-/** Mirrors `svelte/compiler`'s own internal `to_public_ast`, which is equally loosely typed. */
-// biome-ignore lint/suspicious/noExplicitAny: mirrors upstream svelte's untyped AST-shape-agnostic cleanup
-function toPublicAst(source: string, ast: any, modern: boolean | undefined): unknown {
-  if (modern) {
-    // biome-ignore lint/suspicious/noExplicitAny: same as above
-    const clean = (node: any) => {
-      // biome-ignore lint/performance/noDelete: mirrors upstream svelte, which removes (not nulls) the property
-      delete node.metadata;
-    };
+function stripMetadata(node: InternalAstNode): void {
+  // biome-ignore lint/performance/noDelete: mirrors upstream svelte, which removes (not nulls) the property
+  delete node.metadata;
+}
 
+/** Mirrors `svelte/compiler`'s own internal `to_public_ast`. */
+function toPublicAst(source: string, ast: InternalAstRoot, modern: boolean | undefined): unknown {
+  if (modern) {
     for (const attribute of ast.options?.attributes ?? []) {
-      clean(attribute);
-      clean(attribute.value);
-      if (Array.isArray(attribute.value)) {
-        attribute.value.forEach(clean);
+      stripMetadata(attribute);
+      if (attribute.value) {
+        for (const value of Array.isArray(attribute.value) ? attribute.value : [attribute.value]) {
+          stripMetadata(value);
+        }
       }
     }
 
     return zimmerframeWalk(ast, null, {
-      _(node: unknown, { next }: { next: () => void }) {
-        clean(node);
+      _(node, { next }) {
+        stripMetadata(node);
         next();
       },
     });
@@ -67,8 +83,8 @@ function toPublicAst(source: string, ast: any, modern: boolean | undefined): unk
 export function parse(source: string, { modern, loose }: { modern?: boolean; loose?: boolean } = {}): unknown {
   const cleaned = removeByteOrderMark(source);
   resetCompilerState({ warning: () => false, filename: undefined });
-  const ast = parseFragment(cleaned, loose);
+  const ast: InternalAstRoot = parseFragment(cleaned, loose);
   return toPublicAst(cleaned, ast, modern);
 }
 
-export { VERSION };
+export const VERSION: string = VERSION_RAW;

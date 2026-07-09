@@ -18,7 +18,11 @@ import { parse as shimParse, VERSION as shimVersion } from "../src/svelte-parse"
 const root = path.join(process.cwd(), "tests");
 const files: string[] = [];
 
+// e2e fixture projects (tests/e2e/*) install real node_modules, which can contain
+// thousands of unrelated third-party .svelte files (e.g. an icon library) - scope
+// this to sveld's own fixtures, not whatever happens to be installed alongside them.
 for await (const file of new Glob("**/*.svelte").scan(root)) {
+  if (file.includes("node_modules")) continue;
   files.push(path.join(root, file));
 }
 
