@@ -182,7 +182,7 @@ export function collectComponents(input: string, glob: boolean, documentExports 
   if (isFile) {
     const entry = readFileSync(input, "utf-8");
     try {
-      exports = parseExports(entry, rootDir);
+      exports = parseExports(entry, rootDir, new Set([resolve(input)]));
     } catch (error) {
       // Without documentExports, throw. With it, warn and continue.
       if (!documentExports) throw error;
