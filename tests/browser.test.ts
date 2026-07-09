@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import {
   asNormalizedPath,
   buildComponentApiDocument,
@@ -55,7 +55,11 @@ function collectRelativeImportGraph(entryFile: string): Map<string, string> {
       // Imports of non-`.ts` files (e.g. `../../package.json`) already carry their extension.
       const hasExtension = FILE_EXTENSION_REGEX.test(specifier);
       const resolved = resolve(dirname(file), hasExtension ? specifier : `${specifier}.ts`);
-      if (!resolved.startsWith(`${SRC_ROOT}/`)) continue;
+      // Cross-platform "is resolved inside SRC_ROOT" check: a plain string prefix
+      // comparison breaks on Windows, where path.resolve produces backslash-separated
+      // paths but a hardcoded "/" separator never matches them.
+      const relativeToSrcRoot = relative(SRC_ROOT, resolved);
+      if (relativeToSrcRoot.startsWith("..") || isAbsolute(relativeToSrcRoot)) continue;
       if (!files.has(resolved)) queue.push(resolved);
     }
   }
