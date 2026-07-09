@@ -11,6 +11,11 @@
       "types": "./lib/index.d.ts",
       "import": "./lib/index.js",
       "default": "./lib/index.js"
+    },
+    "./browser": {
+      "types": "./lib/browser.d.ts",
+      "import": "./lib/browser.js",
+      "default": "./lib/browser.js"
     }
   },
   "scripts": {

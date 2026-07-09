@@ -15,7 +15,7 @@
   import Json from "carbon-icons-svelte/lib/Json.svelte";
   import TextCreation from "carbon-icons-svelte/lib/TextCreation.svelte";
   import { type Component, onMount } from "svelte";
-  import ComponentParser from "../../src/ComponentParser";
+  import { ComponentParser } from "../../src/browser";
   import data from "./data";
   import Header from "./Header.svelte";
   import TabContentOverlay from "./TabContentOverlay.svelte";

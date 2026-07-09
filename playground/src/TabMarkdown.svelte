@@ -3,7 +3,7 @@
   export let moduleName = "";
 
   import markdownLang from "svelte-highlight/languages/markdown";
-  import { writeMarkdownCore as writeMarkdown } from "../../src/writer/writer-markdown-core";
+  import { writeMarkdownCore as writeMarkdown } from "../../src/browser";
   import CodeHighlighter from "./CodeHighlighter.svelte";
 
   let code = "";
