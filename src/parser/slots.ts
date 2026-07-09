@@ -175,6 +175,11 @@ function assignValueOrUndefined(value?: "" | string) {
   return value === undefined || value === "" ? undefined : value;
 }
 
+/** Like {@link assignValueOrUndefined}, but also accepts a structured {@link SlotProps} map. */
+function assignSlotPropsOrUndefined(value?: string | SlotProps) {
+  return value === undefined || value === "" ? undefined : value;
+}
+
 /** Merge or add a slot. Empty `slot_name` is the default slot. */
 export function addSlot(
   ctx: ParserContext,
@@ -188,7 +193,7 @@ export function addSlot(
     source,
   }: {
     slot_name?: string;
-    slot_props?: string;
+    slot_props?: string | SlotProps;
     slot_fallback?: string;
     slot_description?: string;
     slot_deprecated?: DeprecatedValue;
@@ -199,7 +204,7 @@ export function addSlot(
   const default_slot = slot_name === undefined || slot_name === "";
   const name: string | null = default_slot ? DEFAULT_SLOT_NAME : (slot_name ?? "");
   const fallback = assignValueOrUndefined(slot_fallback);
-  const props = assignValueOrUndefined(slot_props);
+  const props = assignSlotPropsOrUndefined(slot_props);
   const description = slot_description?.trim() || undefined;
 
   if (ctx.slots.has(name)) {

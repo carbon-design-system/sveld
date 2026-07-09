@@ -353,6 +353,9 @@ const COMPONENT_COMMENT_REGEX = /^@component/;
  */
 const CARRIAGE_RETURN_REGEX = /\r/g;
 
+/** Matches a JSDoc `@slot`/`@snippet` type of an empty object literal, e.g. `{{}}` or `{{ }}`. */
+const EMPTY_OBJECT_TYPE_REGEX = /^\{\s*\}$/;
+
 /**
  * Regular expression for matching newline and carriage return characters.
  *
@@ -411,6 +414,18 @@ export interface SlotPropValue {
 }
 
 export type SlotProps = Record<string, SlotPropValue>;
+
+/**
+ * Internal representation of {@link ComponentSlot} used while parsing.
+ *
+ * `slot_props` is either raw TS type text (from a JSDoc `@slot`/`@snippet` tag,
+ * used as-is) or a structured {@link SlotProps} map (from template parsing,
+ * formatted into TS type text once at the end of the parse). Keeping it
+ * structured until then avoids a JSON.stringify/JSON.parse round-trip per slot.
+ */
+export type InternalComponentSlot = Omit<ComponentSlot, "slot_props"> & {
+  slot_props?: string | SlotProps;
+};
 
 /**
  * Event that is forwarded from a child component or element.
@@ -1110,6 +1125,11 @@ export default class ComponentParser {
       };
     }
 
+    if (!this.ctx.variableInfoCacheBuilt) {
+      this.buildVariableInfoCache();
+      this.ctx.variableInfoCacheBuilt = true;
+    }
+
     const cached = this.ctx.variableInfoCache.get(varName);
     if (cached) {
       return cached;
@@ -1343,8 +1363,6 @@ export default class ComponentParser {
     this.ctx.parsed =
       (compiled.ast as LegacyAstRoot | undefined) || (parse(cleanedSource, { modern: false }) as LegacyAstRoot);
 
-    this.ctx.sourceLinesCache = this.ctx.source.split("\n");
-    this.buildVariableInfoCache();
     parseCustomTypes(this.ctx, this);
 
     if (this.ctx.parsed?.module) {
@@ -1903,7 +1921,7 @@ export default class ComponentParser {
 
           addSlot(this.ctx, {
             slot_name,
-            slot_props: JSON.stringify(slot_props, null, 2),
+            slot_props,
             slot_fallback: fallback,
             source: sourceRangeFromNode(this.ctx, node),
           });
@@ -1913,9 +1931,9 @@ export default class ComponentParser {
           const renderTag = node as { expression?: unknown };
           const renderInfo = extractRenderTagInfo(this.ctx, renderTag.expression);
           if (renderInfo) {
-            let slot_props: string | undefined;
+            let slot_props: SlotProps | undefined;
             if (renderInfo.arguments.length === 0) {
-              slot_props = JSON.stringify({}, null, 2);
+              slot_props = {};
             } else if (
               renderInfo.arguments.length === 1 &&
               typeof renderInfo.arguments[0] === "object" &&
@@ -1923,10 +1941,10 @@ export default class ComponentParser {
               "type" in renderInfo.arguments[0] &&
               renderInfo.arguments[0].type === "ObjectExpression"
             ) {
-              slot_props = JSON.stringify(
-                buildSlotPropsFromObjectExpression(this.ctx, this, renderInfo.arguments[0] as ObjectExpression),
-                null,
-                2,
+              slot_props = buildSlotPropsFromObjectExpression(
+                this.ctx,
+                this,
+                renderInfo.arguments[0] as ObjectExpression,
               );
             } else if (renderInfo.arguments.length === 1) {
               /**
@@ -2198,37 +2216,44 @@ export default class ComponentParser {
 
     const processedSlots = ComponentParser.mapToArray(this.ctx.slots)
       .map((slot) => {
-        try {
-          if (!slot.slot_props) {
-            return slot;
-          }
-          const slot_props: SlotProps = JSON.parse(slot.slot_props);
-          const new_props: string[] = [];
-
-          for (const key of Object.keys(slot_props)) {
-            if (slot_props[key].replace && slot_props[key].value !== undefined) {
-              slot_props[key].value = this.getPropTypeByLocalOrPublic(slot_props[key].value);
-            }
-
-            if (slot_props[key].value === undefined) slot_props[key].value = "any";
-            new_props.push(`${key}: ${slot_props[key].value}`);
-          }
-
-          // With more than one destructured prop, always break onto separate
-          // lines (matching how an `interface` body is never collapsed)
-          // rather than leave it up to whether the combined line happens to
-          // fit under the formatter's width.
-          const formatted_slot_props =
-            new_props.length === 0
-              ? "Record<string, never>"
-              : new_props.length === 1
-                ? `{ ${new_props[0]} }`
-                : `{\n  ${new_props.join(";\n  ")};\n}`;
-
-          return { ...slot, slot_props: formatted_slot_props };
-        } catch (_e) {
-          return slot;
+        // A `string` here is already-formatted TS type text from a JSDoc
+        // `@slot`/`@snippet` tag; only a structured `SlotProps` map (from
+        // template parsing) needs formatting into TS type text. An empty
+        // object literal is normalized the same way an empty structured
+        // map is, below.
+        if (!slot.slot_props) {
+          return slot as ComponentSlot;
         }
+        if (typeof slot.slot_props === "string") {
+          return EMPTY_OBJECT_TYPE_REGEX.test(slot.slot_props)
+            ? { ...slot, slot_props: "Record<string, never>" }
+            : (slot as ComponentSlot);
+        }
+
+        const slot_props = slot.slot_props;
+        const new_props: string[] = [];
+
+        for (const key of Object.keys(slot_props)) {
+          if (slot_props[key].replace && slot_props[key].value !== undefined) {
+            slot_props[key].value = this.getPropTypeByLocalOrPublic(slot_props[key].value);
+          }
+
+          if (slot_props[key].value === undefined) slot_props[key].value = "any";
+          new_props.push(`${key}: ${slot_props[key].value}`);
+        }
+
+        // With more than one destructured prop, always break onto separate
+        // lines (matching how an `interface` body is never collapsed)
+        // rather than leave it up to whether the combined line happens to
+        // fit under the formatter's width.
+        const formatted_slot_props =
+          new_props.length === 0
+            ? "Record<string, never>"
+            : new_props.length === 1
+              ? `{ ${new_props[0]} }`
+              : `{\n  ${new_props.join(";\n  ")};\n}`;
+
+        return { ...slot, slot_props: formatted_slot_props };
       })
       .sort((a, b) => {
         const aName = a.name ?? "";
