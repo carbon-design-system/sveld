@@ -16,7 +16,13 @@ import type {
 import type { Node } from "estree-walker";
 import { walk } from "estree-walker";
 import { compile, parse } from "svelte/compiler";
-import { isCallExpressionNamed, isIdentifier, isLiteral, isMemberExpression } from "./ast-guards";
+import {
+  isCallExpressionNamed,
+  isIdentifier,
+  isLiteral,
+  isMemberExpression,
+  unwrapTypeCastExpression,
+} from "./ast-guards";
 import type { SveldDiagnostic } from "./diagnostics";
 import { getElementByTag } from "./element-tag-map";
 import { resolveMemberExpressionType } from "./parser/bindings";
@@ -1655,7 +1661,7 @@ export default class ComponentParser {
             "type" in parent &&
             parent.type === "Program" &&
             (node as VariableDeclaration).declarations.some((declarator) =>
-              isCallExpressionNamed(declarator.init, "$props"),
+              isCallExpressionNamed(unwrapTypeCastExpression(declarator.init), "$props"),
             )
           ) {
             parseRunesPropsDeclaration(this, this.ctx, node as VariableDeclaration);

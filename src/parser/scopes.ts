@@ -8,7 +8,7 @@ import type {
   VariableDeclaration,
   VariableDeclarator,
 } from "estree";
-import { isCallExpressionNamed, isVariableDeclaration } from "../ast-guards";
+import { isCallExpressionNamed, isVariableDeclaration, unwrapTypeCastExpression } from "../ast-guards";
 import type ComponentParser from "../ComponentParser";
 import type { LexicalScope, ScopeBinding, ScopeBindingKind } from "../ComponentParser";
 import type { ParserContext } from "./context";
@@ -182,7 +182,7 @@ export function declareVariableDeclaration(
   const variableDeclaration = declaration;
 
   for (const declarator of variableDeclaration.declarations) {
-    if (allowRunesProps && isCallExpressionNamed(declarator.init, "$props")) {
+    if (allowRunesProps && isCallExpressionNamed(unwrapTypeCastExpression(declarator.init), "$props")) {
       for (const binding of extractRunesScopeBindings(parser, variableDeclaration, declarator)) {
         declareScopeBinding(
           binding.kind === "prop" ? lexicalScope : varScope,
