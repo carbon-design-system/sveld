@@ -135,6 +135,10 @@ export type ModernRunesTypeNode = {
   typeName?: unknown;
   types?: ModernRunesTypeNode[];
   members?: ModernRunesTypeMember[];
+  /** Declaration-side `<T, U = Default>` (interfaces/type aliases). */
+  typeParameters?: { params?: Array<{ name?: string }> };
+  /** Reference-side `<string, number>` concrete arguments (`TSTypeReference`). */
+  typeArguments?: { params?: ModernRunesTypeNode[] };
 };
 
 export type ModernRunesTypeMember = {
