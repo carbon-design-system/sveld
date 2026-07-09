@@ -50,8 +50,16 @@ function parseConfig(configPath: string): TSConfig | null {
 
   try {
     const content = readFileSync(configPath, "utf-8");
-    const jsonContent = content.replace(COMMENT_PATTERN, "");
-    const config: TSConfig = parseTsConfig(JSON.parse(jsonContent));
+    // Parse raw JSON first: naive comment stripping treats `/*` inside strings
+    // (e.g. tsconfig `"$lib/*"`) as a block comment and corrupts the file.
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(content);
+    } catch {
+      const jsonContent = content.replace(COMMENT_PATTERN, "");
+      parsed = JSON.parse(jsonContent);
+    }
+    const config: TSConfig = parseTsConfig(parsed);
 
     if (config.extends) {
       const baseConfigPath = isAbsolute(config.extends) ? config.extends : resolve(dirname(configPath), config.extends);

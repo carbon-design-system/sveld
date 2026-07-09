@@ -272,6 +272,27 @@ describe("resolvePathAlias", () => {
     expect(result).toBe("./src/lib/components/Button.svelte");
   });
 
+  test("parses valid tsconfig without stripping /* inside strings", () => {
+    setupTestDir({
+      "tsconfig.json": `{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "$lib": ["./src/lib"],
+      "$lib/*": ["./src/lib/*"]
+    }
+  },
+  "include": ["src/**/*", "test/**/*", "types/**/*"]
+}`,
+    });
+
+    const subDir = join(TEST_DIR, "src");
+    mkdirSync(subDir, { recursive: true });
+
+    const result = resolvePathAlias("$lib/components/Button.svelte", subDir);
+    expect(result).toBe("./lib/components/Button.svelte");
+  });
+
   test("uses first mapping when multiple are defined", () => {
     setupTestDir({
       "tsconfig.json": {
