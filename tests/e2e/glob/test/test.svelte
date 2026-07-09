@@ -1,4 +1,4 @@
-<script lang="ts">
+<script>
   import { Button } from "../types";
   import Button2 from "../types/button/Button.svelte";
 </script>
