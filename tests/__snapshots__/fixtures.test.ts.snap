@@ -23145,3 +23145,60 @@ export default class SlotDescriptionHyphensInline extends SvelteComponentTyped<
 > {}
 "
 `;
+
+exports[`fixtures (JSON) "slot-plain-text-attribute-prop/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 5,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{ color: \\"red\\" }",
+      "source": {
+        "start": {
+          "line": 4,
+          "column": 0
+        },
+        "end": {
+          "line": 4,
+          "column": 20
+        }
+      }
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
+"
+`;
+
+exports[`fixtures (TypeScript) "slot-plain-text-attribute-prop/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type SlotPlainTextAttributePropProps = {
+  children?: (this: void, ...args: [{ color: "red" }]) => void;
+};
+
+export default class SlotPlainTextAttributeProp extends SvelteComponentTyped<
+  SlotPlainTextAttributePropProps,
+  Record<string, any>,
+  { default: { color: "red" } }
+> {}
+"
+`;

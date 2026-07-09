@@ -1901,7 +1901,7 @@ export default class ComponentParser {
                 const { type, expression, raw, start, end } = firstValue;
 
                 if (type === "Text" && raw !== undefined) {
-                  slot_prop_value.value = raw;
+                  slot_prop_value.value = JSON.stringify(raw);
                 } else if (
                   type === "AttributeShorthand" &&
                   expression &&
@@ -1914,7 +1914,9 @@ export default class ComponentParser {
 
                 if (expression && typeof expression === "object" && "type" in expression) {
                   if (expression.type === "Literal" && "value" in expression) {
-                    slot_prop_value.value = String((expression as Literal).value);
+                    const literalValue = (expression as Literal).value;
+                    slot_prop_value.value =
+                      typeof literalValue === "string" ? JSON.stringify(literalValue) : String(literalValue);
                   } else if (expression.type === "MemberExpression") {
                     slot_prop_value.value = resolveMemberExpressionType(this.ctx, this, expression);
                   } else if (expression.type !== "Identifier") {
