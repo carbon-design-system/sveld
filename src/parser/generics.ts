@@ -20,7 +20,7 @@ export function splitTopLevelCommas(value: string): string[] {
   for (let i = 0; i < value.length; i++) {
     const char = value[i];
     if (char === "<" || char === "(" || char === "[" || char === "{") depth++;
-    else if (char === ">" || char === ")" || char === "]" || char === "}") depth--;
+    else if (char === ">" || char === ")" || char === "]" || char === "}") depth = Math.max(depth - 1, 0);
     else if (char === "," && depth === 0) {
       parts.push(value.slice(start, i));
       start = i + 1;
