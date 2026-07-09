@@ -1511,6 +1511,179 @@ describe("ComponentParser", () => {
     warn.mockRestore();
   });
 
+  describe("findVariableTypeAndDescription's JSDoc symbol table", () => {
+    test("resolves a JSDoc'd variable whose name is on a different line than its keyword", () => {
+      const parser = new ComponentParser();
+      const source = `
+        <script>
+          import { setContext } from "svelte";
+          /**
+           * @type {number}
+           */
+          const
+            count = 0;
+          setContext("counter", { count });
+        </script>
+      `;
+
+      const result = parser.parseSvelteComponent(source, diagnostics);
+      expect(result.contexts?.[0].properties[0]).toMatchObject({ name: "count", type: "number" });
+    });
+
+    test("does not mistake comment-like text inside a string literal for a real comment", () => {
+      const parser = new ComponentParser();
+      const source = `
+        <script>
+          import { setContext } from "svelte";
+          const trap = "look: /* not a real comment";
+          /**
+           * @type {number}
+           */
+          const value = 42;
+          setContext("k", { value });
+        </script>
+      `;
+
+      const result = parser.parseSvelteComponent(source, diagnostics);
+      expect(result.contexts?.[0].properties[0]).toMatchObject({ name: "value", type: "number" });
+    });
+
+    test("does not mistake a declaration-like string literal for a real declaration", () => {
+      const parser = new ComponentParser();
+      const source = `
+        <script>
+          import { setContext } from "svelte";
+          const noise = "const value = 1";
+          /**
+           * @type {string}
+           */
+          const value = "real";
+          setContext("k", { value });
+        </script>
+      `;
+
+      const result = parser.parseSvelteComponent(source, diagnostics);
+      expect(result.contexts?.[0].properties[0]).toMatchObject({ name: "value", type: "string" });
+    });
+
+    test("a trailing same-line comment on a prior statement doesn't block the next declaration's own JSDoc", () => {
+      const parser = new ComponentParser();
+      const source = `
+        <script>
+          import { setContext } from "svelte";
+          const a = 1; // trailing note about a, not JSDoc
+          /**
+           * @type {number}
+           */
+          const value = 2;
+          setContext("k", { value });
+        </script>
+      `;
+
+      const result = parser.parseSvelteComponent(source, diagnostics);
+      expect(result.contexts?.[0].properties[0]).toMatchObject({ name: "value", type: "number" });
+    });
+
+    test("resolves a JSDoc'd `export const` from a module script", () => {
+      const parser = new ComponentParser();
+      const source = `
+        <script context="module">
+          /**
+           * Shared default count
+           * @type {number}
+           */
+          export const defaultCount = 0;
+        </script>
+        <script>
+          import { setContext } from "svelte";
+          setContext("k", { defaultCount });
+        </script>
+      `;
+
+      const result = parser.parseSvelteComponent(source, diagnostics);
+      expect(result.contexts?.[0].properties[0]).toMatchObject({
+        name: "defaultCount",
+        type: "number",
+        description: "Shared default count",
+      });
+    });
+
+    test("resolves a JSDoc'd arrow-function const", () => {
+      const parser = new ComponentParser();
+      const source = `
+        <script>
+          import { setContext } from "svelte";
+          /**
+           * Closes the modal
+           * @type {() => void}
+           */
+          const close = () => {};
+          setContext("k", { close });
+        </script>
+      `;
+
+      const result = parser.parseSvelteComponent(source, diagnostics);
+      expect(result.contexts?.[0].properties[0]).toMatchObject({
+        name: "close",
+        type: "() => void",
+        description: "Closes the modal",
+      });
+    });
+
+    test("tolerates a blank line between the JSDoc block and the declaration", () => {
+      const parser = new ComponentParser();
+      const source = `
+        <script>
+          import { setContext } from "svelte";
+          /**
+           * @type {number}
+           */
+
+          const value = 5;
+          setContext("k", { value });
+        </script>
+      `;
+
+      const result = parser.parseSvelteComponent(source, diagnostics);
+      expect(result.contexts?.[0].properties[0]).toMatchObject({ name: "value", type: "number" });
+    });
+
+    test("attaches only the closest of two preceding JSDoc blocks", () => {
+      const parser = new ComponentParser();
+      const source = `
+        <script>
+          import { setContext } from "svelte";
+          /**
+           * @type {string}
+           */
+          /**
+           * @type {number}
+           */
+          const value = 5;
+          setContext("k", { value });
+        </script>
+      `;
+
+      const result = parser.parseSvelteComponent(source, diagnostics);
+      expect(result.contexts?.[0].properties[0]).toMatchObject({ name: "value", type: "number" });
+    });
+
+    test("a plain (non-JSDoc) block comment does not supply a type", () => {
+      const parser = new ComponentParser();
+      const source = `
+        <script>
+          import { setContext } from "svelte";
+          /* @type {string} */
+          const value = 5;
+          setContext("k", { value });
+        </script>
+      `;
+
+      const result = parser.parseSvelteComponent(source, diagnostics);
+      expect(result.contexts?.[0].properties[0]).toMatchObject({ name: "value", type: "any" });
+    });
+  });
+
   test('ignores the generics script attribute without lang="ts" and reports syntax-skipped', () => {
     const parser = new ComponentParser();
     const source = `
