@@ -3,7 +3,7 @@
   export let moduleName = "";
 
   import json from "svelte-highlight/languages/json";
-  import { buildCustomElementsManifest } from "../../src/writer/writer-custom-elements-core";
+  import { buildCustomElementsManifest } from "../../src/browser";
   import CodeHighlighter from "./CodeHighlighter.svelte";
 
   let manifest = { schemaVersion: "1.0.0", modules: [] };

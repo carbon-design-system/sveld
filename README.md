@@ -132,6 +132,7 @@ export default class Button extends SvelteComponentTyped<
   - [CLI](#cli)
   - [CI: API-drift checks (`--check`)](#ci-api-drift-checks---check)
   - [Node.js](#nodejs)
+  - [Browser](#browser)
   - [Config File](#config-file)
   - [Publishing to NPM](#publishing-to-npm)
 - [Available Options](#available-options)
@@ -567,6 +568,51 @@ sveld({
   },
 });
 ```
+
+### Browser
+
+`sveld/browser` is a Node-free subpath export for running `sveld` client-side — e.g. an in-browser Svelte playground or REPL that parses whatever `.svelte` source the user typed and renders docs for it live. It bundles with Vite, esbuild, webpack, or Rollup without a `node:fs`/`node:path` polyfill.
+
+It covers parsing one component's source and rendering that result to any output format `sveld` supports (JSON, Markdown, `.d.ts`, Custom Elements Manifest). It does not cover project-wide glob scanning, the config file, or the CLI/Vite plugin (`sveld()`/`pluginSveld()`) — those walk the filesystem and only make sense in Node. Use the main `sveld` entry point for those.
+
+```ts
+import {
+  asNormalizedPath,
+  ComponentParser,
+  buildComponentApiDocument,
+  writeMarkdownCore,
+  writeTsDefinition,
+  buildCustomElementsManifest,
+} from "sveld/browser";
+
+const parser = new ComponentParser();
+const moduleName = "Button";
+const filePath = "Button.svelte";
+const parsed = parser.parseSvelteComponent(source, { moduleName, filePath });
+
+// `parseSvelteComponent` returns component metadata only; add `moduleName`
+// and `filePath` yourself to match the `ComponentDocApi` shape the writers expect.
+const component = { ...parsed, moduleName, filePath: asNormalizedPath(filePath) };
+const components = new Map([[moduleName, component]]);
+
+// JSON
+const jsonDoc = buildComponentApiDocument(components);
+
+// Markdown
+const markdown = writeMarkdownCore(components);
+
+// TypeScript definitions (per component)
+const dts = writeTsDefinition(jsonDoc.components[0]);
+
+// Custom Elements Manifest
+const cem = buildCustomElementsManifest(components, {
+  resolveModulePath: (component) => component.filePath,
+});
+```
+
+`ComponentParser` is stateful but reusable across parses — call `parseSvelteComponent` again on the same instance for the next component instead of constructing a new one each time.
+
+See [`playground/`](playground) in this repo for a working example: it parses Svelte source typed into an editor and renders JSON, Markdown, TypeScript, and Custom Elements Manifest tabs, all client-side.
 
 ### Config File
 

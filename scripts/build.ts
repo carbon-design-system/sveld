@@ -15,12 +15,12 @@ async function emitTypeDeclarations() {
   }
 }
 
-async function buildProject() {
+async function buildEntry(entrypoint: string, target: "node" | "browser") {
   const result = await build({
-    entrypoints: ["./src/index.ts"],
+    entrypoints: [entrypoint],
     outdir: "./lib",
     format: "esm",
-    target: "node",
+    target,
     minify: true,
     sourcemap: false,
     // Default Bun behavior treats `node_modules` imports as external; bundle
@@ -29,15 +29,26 @@ async function buildProject() {
   });
 
   if (!result.success) {
-    console.error("Build failed");
+    console.error(`Build failed for ${entrypoint}`);
     for (const log of result.logs) {
       console.error(log);
     }
     if (!isWatchMode) {
       process.exit(1);
     }
-    return;
+    return false;
   }
+
+  return true;
+}
+
+async function buildProject() {
+  const [node, browser] = await Promise.all([
+    buildEntry("./src/index.ts", "node"),
+    buildEntry("./src/browser.ts", "browser"),
+  ]);
+
+  if (!node || !browser) return;
 
   await emitTypeDeclarations();
   console.log("✓ Build completed");
