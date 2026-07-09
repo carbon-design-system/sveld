@@ -1,4 +1,4 @@
-<script lang="ts">
+<script>
   import { Button, Link, Quote } from "../types";
   import Header from "../types/nested/Header.svelte";
 </script>
