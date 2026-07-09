@@ -24,8 +24,11 @@ async function buildEntry(entrypoint: string, target: "node" | "browser") {
     minify: true,
     sourcemap: false,
     // Default Bun behavior treats `node_modules` imports as external; bundle
-    // them so `svelte/compiler` (and `estree-walker`) ship inside `lib`.
+    // them so dependencies like `estree-walker` ship inside `lib`. `svelte`
+    // is excluded below since it's a peer dependency resolved from the
+    // consumer's node_modules.
     packages: "bundle",
+    external: ["svelte"],
   });
 
   if (!result.success) {
