@@ -1,6 +1,6 @@
 # Component Index
 
-> 1 component exported from single-component@0.0.1.
+> 1 components exported from single-component@0.0.1.
 
 ## Components
 
