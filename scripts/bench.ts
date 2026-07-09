@@ -102,7 +102,10 @@ async function benchOnce(input: string, cacheFile: string | undefined, outDir: s
   mkdirSync(outDir, { recursive: true });
 
   const start = performance.now();
-  const result = await generateBundle(input, true, { cache: cacheFile });
+  // generateBundle enables the on-disk parse cache unless `cache` is explicitly
+  // false, so an undefined cacheFile must be mapped to false or the "cache off"
+  // runs silently read the warm cache in node_modules/.cache/sveld/.
+  const result = await generateBundle(input, true, { cache: cacheFile ?? false });
   const parsed = performance.now();
 
   // Every writer resolves its output paths against process.cwd(); run the
