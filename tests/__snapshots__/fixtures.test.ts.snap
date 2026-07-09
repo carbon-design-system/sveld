@@ -8159,6 +8159,54 @@ exports[`fixtures (JSON) "forwarded-events-typed/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "runes-callback-prop-ts-type-no-default/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 8,
+      "column": 0
+    }
+  },
+  "syntaxMode": "runes",
+  "scriptLanguage": "ts",
+  "props": [
+    {
+      "name": "measure",
+      "kind": "let",
+      "type": "(node: HTMLElement) => Attachment",
+      "typeSource": "typescript",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 4,
+          "column": 8
+        },
+        "end": {
+          "line": 4,
+          "column": 15
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "prop-default-identifier-jsdoc/input.svelte" 1`] = `
 "{
   "source": {
@@ -9294,7 +9342,7 @@ exports[`fixtures (JSON) "runes-attachment-factory/input.svelte" 1`] = `
       "kind": "let",
       "type": "(text: string) => Attachment",
       "typeSource": "typescript",
-      "isFunction": false,
+      "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
@@ -20133,6 +20181,22 @@ export default class ForwardedEventsTyped extends SvelteComponentTyped<
     /** Fired when the button receives focus */
     focus: WindowEventMap["focus"];
   },
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "runes-callback-prop-ts-type-no-default/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { Attachment } from "svelte/attachments";
+
+type $Props = { measure?: (node: HTMLElement) => Attachment };
+
+export type RunesCallbackPropTsTypeNoDefaultProps = $Props;
+
+export default class RunesCallbackPropTsTypeNoDefault extends SvelteComponentTyped<
+  RunesCallbackPropTsTypeNoDefaultProps,
+  Record<string, any>,
   Record<string, never>
 > {}
 "
