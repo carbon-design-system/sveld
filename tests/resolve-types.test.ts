@@ -6,12 +6,24 @@ import { TypeResolver } from "../src/resolve-types";
 const FIXTURE_DIR = path.join(process.cwd(), "tests", "fixtures", "runes-whole-props-imported");
 const COMPONENT_PATH = path.join(FIXTURE_DIR, "input.svelte");
 
+const UNION_FIXTURE_DIR = path.join(process.cwd(), "tests", "fixtures", "runes-whole-props-union-resolve-types");
+const UNION_COMPONENT_PATH = path.join(UNION_FIXTURE_DIR, "input.svelte");
+
 async function parseFixture() {
   const source = await Bun.file(COMPONENT_PATH).text();
   const parser = new ComponentParser();
   return parser.parseSvelteComponent(source, {
     moduleName: "RunesWholePropsImported",
     filePath: asNormalizedPath(COMPONENT_PATH),
+  });
+}
+
+async function parseUnionFixture() {
+  const source = await Bun.file(UNION_COMPONENT_PATH).text();
+  const parser = new ComponentParser();
+  return parser.parseSvelteComponent(source, {
+    moduleName: "RunesWholePropsUnionResolveTypes",
+    filePath: asNormalizedPath(UNION_COMPONENT_PATH),
   });
 }
 
@@ -56,5 +68,36 @@ describe("opt-in TypeScript semantic resolution", () => {
       isRequired: true,
       typeSource: "typescript",
     });
+  }, 30_000);
+
+  test("resolveTypes preserves variant-only properties from a discriminated union whole-props type", async () => {
+    const parsed = await parseUnionFixture();
+    const metadata = getParsedComponentTypeScriptMetadata(parsed);
+    if (!metadata?.canonicalPropsType) throw new Error("fixture missing canonical props type");
+
+    const resolver = await TypeResolver.create(UNION_FIXTURE_DIR);
+    expect(resolver).not.toBeNull();
+    if (!resolver) return;
+
+    try {
+      const resolved = await resolver.expandAll([
+        {
+          moduleName: "RunesWholePropsUnionResolveTypes",
+          metadata,
+          filePath: UNION_COMPONENT_PATH,
+        },
+      ]);
+
+      applyResolvedProps(parsed, resolved.get("RunesWholePropsUnionResolveTypes") ?? []);
+    } finally {
+      await resolver.dispose();
+    }
+
+    const byName = Object.fromEntries(parsed.props.map((prop) => [prop.name, prop]));
+    expect(Object.keys(byName).sort()).toEqual(["duration", "kind", "target"]);
+
+    expect(byName.kind).toMatchObject({ type: '"click" | "hover"', isRequired: true, typeSource: "typescript" });
+    expect(byName.target).toMatchObject({ type: "string", isRequired: false, typeSource: "typescript" });
+    expect(byName.duration).toMatchObject({ type: "number", isRequired: false, typeSource: "typescript" });
   }, 30_000);
 });

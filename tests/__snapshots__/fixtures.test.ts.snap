@@ -10196,6 +10196,48 @@ exports[`fixtures (JSON) "required/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "slot-plain-text-attribute-prop/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 5,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{ color: \\"red\\" }",
+      "source": {
+        "start": {
+          "line": 4,
+          "column": 0
+        },
+        "end": {
+          "line": 4,
+          "column": 20
+        }
+      }
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "dispatched-events-string-literal-detail/input.svelte" 1`] = `
 "{
   "source": {
@@ -12378,6 +12420,32 @@ exports[`fixtures (JSON) "non-literal-defaults/input.svelte" 1`] = `
       }
     }
   ]
+}
+"
+`;
+
+exports[`fixtures (JSON) "runes-whole-props-union-resolve-types/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 8,
+      "column": 0
+    }
+  },
+  "syntaxMode": "runes",
+  "scriptLanguage": "ts",
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
 }
 "
 `;
@@ -20760,6 +20828,21 @@ export default class Required extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "slot-plain-text-attribute-prop/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type SlotPlainTextAttributePropProps = {
+  children?: (this: void, ...args: [{ color: "red" }]) => void;
+};
+
+export default class SlotPlainTextAttributeProp extends SvelteComponentTyped<
+  SlotPlainTextAttributePropProps,
+  Record<string, any>,
+  { default: { color: "red" } }
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "dispatched-events-string-literal-detail/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -21351,6 +21434,22 @@ export type NonLiteralDefaultsProps = {
 
 export default class NonLiteralDefaults extends SvelteComponentTyped<
   NonLiteralDefaultsProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "runes-whole-props-union-resolve-types/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+import type { Props } from "./types";
+
+type $Props = Props;
+
+export type RunesWholePropsUnionResolveTypesProps = $Props;
+
+export default class RunesWholePropsUnionResolveTypes extends SvelteComponentTyped<
+  RunesWholePropsUnionResolveTypesProps,
   Record<string, any>,
   Record<string, never>
 > {}
@@ -23206,63 +23305,6 @@ export default class SlotDescriptionHyphensInline extends SvelteComponentTyped<
     /** Row id maps to server-side UUID v4 (not v1-v3). */
     item: { id: string };
   }
-> {}
-"
-`;
-
-exports[`fixtures (JSON) "slot-plain-text-attribute-prop/input.svelte" 1`] = `
-"{
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 5,
-      "column": 0
-    }
-  },
-  "syntaxMode": "legacy",
-  "scriptLanguage": "js",
-  "props": [],
-  "moduleExports": [],
-  "slots": [
-    {
-      "name": null,
-      "default": true,
-      "slot_props": "{ color: \\"red\\" }",
-      "source": {
-        "start": {
-          "line": 4,
-          "column": 0
-        },
-        "end": {
-          "line": 4,
-          "column": 20
-        }
-      }
-    }
-  ],
-  "events": [],
-  "typedefs": [],
-  "generics": null,
-  "contexts": [],
-  "diagnostics": []
-}
-"
-`;
-
-exports[`fixtures (TypeScript) "slot-plain-text-attribute-prop/input.svelte" 1`] = `
-"import { SvelteComponentTyped } from "svelte";
-
-export type SlotPlainTextAttributePropProps = {
-  children?: (this: void, ...args: [{ color: "red" }]) => void;
-};
-
-export default class SlotPlainTextAttributeProp extends SvelteComponentTyped<
-  SlotPlainTextAttributePropProps,
-  Record<string, any>,
-  { default: { color: "red" } }
 > {}
 "
 `;
