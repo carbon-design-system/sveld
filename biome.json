@@ -133,6 +133,12 @@
       }
     },
     {
+      "includes": ["**/tests/fixtures/fuzz-generics-arrow-type-comma/input.svelte"],
+      "formatter": {
+        "enabled": false
+      }
+    },
+    {
       "includes": ["**/*.svg"],
       "formatter": {
         "enabled": false
