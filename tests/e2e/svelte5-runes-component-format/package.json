@@ -10,10 +10,10 @@
     "build": "vite build && svelte-check --workspace test"
   },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^7.0.0",
-    "svelte": "^5.55.0",
-    "svelte-check": "^4.0.0",
-    "typescript": "^5.7.0",
-    "vite": "^8.0.3"
+    "@sveltejs/vite-plugin-svelte": "^7.2.0",
+    "svelte": "^5.56.4",
+    "svelte-check": "^4.7.2",
+    "typescript": "^6.0.3",
+    "vite": "^8.1.4"
   }
 }
