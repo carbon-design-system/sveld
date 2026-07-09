@@ -1,0 +1,86 @@
+import type { Component } from "svelte";
+
+export type Position = "top-left" | "top-right" | "bottom-left" | "bottom-right";
+
+export type NonLiteralDefaultsProps = {
+  /**
+   * Position of the element
+   * @default "top-left"
+   */
+  position?: Position;
+
+  /**
+   * Theme mode
+   * @default "bottom-right"
+   */
+  theme?: string;
+
+  /**
+   * Numeric constant with Infinity
+   * @default Number.POSITIVE_INFINITY
+   */
+  maxValue?: number;
+
+  /**
+   * Negative infinity constant
+   * @default Number.NEGATIVE_INFINITY
+   */
+  minValue?: number;
+
+  /**
+   * Maximum safe integer
+   * @default Number.MAX_SAFE_INTEGER
+   */
+  maxSafeInt?: number;
+
+  /**
+   * Minimum safe integer
+   * @default Number.MIN_SAFE_INTEGER
+   */
+  minSafeInt?: number;
+
+  /**
+   * Maximum numeric value
+   * @default Number.MAX_VALUE
+   */
+  maxNumber?: number;
+
+  /**
+   * Minimum numeric value
+   * @default Number.MIN_VALUE
+   */
+  minNumber?: number;
+
+  /**
+   * Math constant PI
+   * @default Math.PI
+   */
+  pi?: number;
+
+  /**
+   * Math constant E
+   * @default Math.E
+   */
+  e?: number;
+
+  /**
+   * Optional handler with undefined
+   * @default undefined
+   */
+  handler?: undefined;
+
+  /**
+   * Append to element
+   * @default document.body
+   */
+  appendTo?: HTMLElement;
+};
+
+export type NonLiteralDefaultsExports = Record<string, never>;
+
+declare const NonLiteralDefaults: Component<
+  NonLiteralDefaultsProps,
+  NonLiteralDefaultsExports,
+  ""
+>;
+export default NonLiteralDefaults;

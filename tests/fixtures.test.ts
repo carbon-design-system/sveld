@@ -57,12 +57,17 @@ describe("fixtures (TypeScript)", async () => {
       throw new Error(`Source not found for: ${filePath}`);
     }
     const { dir, metadata, parsed_component } = getMetadata({ filePath, source });
-    const api_ts = writeTsDefinition({ ...metadata, ...parsed_component });
+    const component = { ...metadata, ...parsed_component };
+
+    const api_ts_class = writeTsDefinition(component, { format: "class" });
+    const api_ts_component = writeTsDefinition(component, { format: "component" });
 
     // Snapshot the output; if the test fails, output has changed.
-    expect(api_ts).toMatchSnapshot();
+    expect(api_ts_class).toMatchSnapshot();
+    expect(api_ts_component).toMatchSnapshot();
 
     // Still write to disk to manually assert types as needed.
-    await Bun.write(path.join(folder, dir, "output.d.ts"), api_ts);
+    await Bun.write(path.join(folder, dir, "output-class.d.ts"), api_ts_class);
+    await Bun.write(path.join(folder, dir, "output-component.d.ts"), api_ts_component);
   });
 });

@@ -1,0 +1,38 @@
+import type { Component } from "svelte";
+
+export type PropCommentsProps = {
+  /**
+   * This is a comment.
+   * @see https://github.com/
+   * @deprecated this prop will be removed in the next major release.
+   * @default true
+   */
+  prop?: boolean | string;
+
+  /**
+   * @see https://github.com/
+   * @default true
+   */
+  prop1?: boolean;
+
+  /**
+   * This is a comment.
+   * @default true
+   */
+  prop2?: boolean | string;
+
+  children?: (this: void, ...args: [{
+        prop: boolean | string;
+        prop1: boolean;
+        prop2: boolean | string;
+      }]) => void;
+};
+
+export type PropCommentsExports = Record<string, never>;
+
+declare const PropComments: Component<
+  PropCommentsProps,
+  PropCommentsExports,
+  ""
+>;
+export default PropComments;
