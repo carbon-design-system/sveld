@@ -8,8 +8,8 @@ import type {
   ComponentInlineElement,
   ComponentProp,
   ComponentPropBindings,
-  ComponentSlot,
   Extends,
+  InternalComponentSlot,
   LegacyAstRoot,
   LexicalScope,
   LocalTypeDeclaration,
@@ -138,7 +138,7 @@ export interface ParserContext {
   // --- slots ---
 
   /** Map of component slots keyed by slot name (null for default slot) */
-  readonly slots: Map<string | null, ComponentSlot>;
+  readonly slots: Map<string | null, InternalComponentSlot>;
 
   /** Tracks prop locals that are used as snippet/render props */
   readonly snippetPropLocals: Set<string>;
@@ -176,6 +176,9 @@ export interface ParserContext {
 
   /** Memoized `findVariableTypeAndDescription` results */
   variableInfoCache: Map<string, { type: string; description?: string }>;
+
+  /** Whether {@link variableInfoCache} has been populated by a whole-source scan yet */
+  variableInfoCacheBuilt: boolean;
 }
 
 /** Fresh {@link ParserContext}. Keep in sync with new fields on {@link ParserContext}. */
@@ -240,5 +243,6 @@ export function createParserContext(): ParserContext {
     contexts: new Map(),
     typedefs: new Map(),
     variableInfoCache: new Map(),
+    variableInfoCacheBuilt: false,
   };
 }
