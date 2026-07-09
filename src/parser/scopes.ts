@@ -8,8 +8,6 @@ import type {
   VariableDeclaration,
   VariableDeclarator,
 } from "estree";
-import type { Node } from "estree-walker";
-import { walk } from "estree-walker";
 import { isCallExpressionNamed, isVariableDeclaration } from "../ast-guards";
 import type ComponentParser from "../ComponentParser";
 import type { LexicalScope, ScopeBinding, ScopeBindingKind } from "../ComponentParser";
@@ -317,83 +315,102 @@ export function collectComponentScopeDeclarations(parser: ComponentParser, ctx: 
   }
 }
 
-/** Walks the component AST, declaring bindings for every nested lexical/function scope it encounters. */
-export function collectNestedScopeDeclarations(parser: ComponentParser, ctx: ParserContext, componentRoot: Node) {
-  const varScopeStack: LexicalScope[] = [ctx.componentScope];
-
-  walk(componentRoot, {
-    enter: (node) => {
-      if (!isScopeOwner(node)) return;
-
-      const scope = getOrCreateScope(ctx, node as unknown as object);
-      const currentVarScope = varScopeStack[varScopeStack.length - 1] ?? ctx.componentScope;
-      const nodeType = String(node.type);
-
-      switch (nodeType) {
-        case "FunctionDeclaration":
-        case "FunctionExpression":
-        case "ArrowFunctionExpression":
-          declareFunctionLikeScopeBindings(
-            node as FunctionExpression | ArrowFunctionExpression | FunctionDeclaration,
-            scope,
-          );
-          break;
-        case "BlockStatement":
-          collectDirectBlockDeclarations(parser, (node as { body?: unknown }).body, scope, currentVarScope);
-          break;
-        case "CatchClause":
-          if ("param" in node) {
-            for (const identifier of collectPatternIdentifiers((node as { param?: Pattern }).param)) {
-              declareScopeBinding(scope, identifier, { kind: "local" });
-            }
-          }
-          break;
-        case "EachBlock": {
-          const eachBlock = node as { context?: Pattern; index?: Identifier | string };
-          for (const identifier of collectPatternIdentifiers(eachBlock.context)) {
-            declareScopeBinding(scope, identifier, { kind: "local" });
-          }
-          if (typeof eachBlock.index === "string") {
-            declareScopeBinding(scope, eachBlock.index, { kind: "local" });
-          } else if (eachBlock.index && "name" in eachBlock.index) {
-            declareScopeBinding(scope, eachBlock.index.name, { kind: "local" });
-          }
-          break;
-        }
-        case "ThenBlock":
-          if ("value" in node) {
-            for (const identifier of collectPatternIdentifiers((node as { value?: Pattern }).value)) {
-              declareScopeBinding(scope, identifier, { kind: "local" });
-            }
-          }
-          break;
-        case "CatchBlock":
-          if ("error" in node) {
-            for (const identifier of collectPatternIdentifiers((node as { error?: Pattern }).error)) {
-              declareScopeBinding(scope, identifier, { kind: "local" });
-            }
-          }
-          break;
-      }
-
-      if (isFunctionScopeOwner(node)) {
-        varScopeStack.push(scope);
-      }
-    },
-    leave: (node) => {
-      if (isFunctionScopeOwner(node)) {
-        varScopeStack.pop();
-      }
-    },
-  });
-}
-
-/** Rebuilds `ctx.componentScope` / `ctx.scopeDeclarations` / `ctx.activeScopes` from scratch for `componentRoot`. */
-export function buildScopeDeclarations(parser: ComponentParser, ctx: ParserContext, componentRoot: Node) {
+/**
+ * Resets `ctx.componentScope` / `ctx.scopeDeclarations` / `ctx.activeScopes` and declares the
+ * top-level `<script>` bindings. Does not walk the component tree; nested scope declarations are
+ * built incrementally by {@link enterNestedScopeDeclarationNode} inside the caller's own traversal
+ * of `componentRoot` (fused with prop/slot/event extraction there rather than walked separately).
+ */
+export function initComponentScope(parser: ComponentParser, ctx: ParserContext) {
   ctx.componentScope.clear();
   ctx.scopeDeclarations = new WeakMap();
   ctx.activeScopes.length = 0;
 
   collectComponentScopeDeclarations(parser, ctx, ctx.parsed?.instance);
-  collectNestedScopeDeclarations(parser, ctx, componentRoot);
+}
+
+/** Mutable stack tracking the enclosing `var`-hoisting scope while walking `componentRoot`. */
+export type ScopeWalkState = { varScopeStack: LexicalScope[] };
+
+/** Creates the scope-walk state for a fresh traversal of `componentRoot`, seeded with `ctx.componentScope`. */
+export function createScopeWalkState(ctx: ParserContext): ScopeWalkState {
+  return { varScopeStack: [ctx.componentScope] };
+}
+
+/**
+ * Per-node `enter` step of the (formerly standalone) nested-scope-declaration walk. Declares
+ * bindings for `node` if it's a scope owner and pushes it as the active `var` scope for its
+ * descendants. Must be called during the same top-down traversal of `componentRoot` that
+ * {@link leaveNestedScopeDeclarationNode} tears down, and before any logic that reads
+ * `ctx.scopeDeclarations` for `node` itself (its own scope is only created here, on entry).
+ */
+export function enterNestedScopeDeclarationNode(
+  parser: ComponentParser,
+  ctx: ParserContext,
+  state: ScopeWalkState,
+  node: unknown,
+) {
+  if (!isScopeOwner(node)) return;
+
+  const scope = getOrCreateScope(ctx, node as unknown as object);
+  const currentVarScope = state.varScopeStack[state.varScopeStack.length - 1] ?? ctx.componentScope;
+  const nodeType = String((node as { type: string }).type);
+
+  switch (nodeType) {
+    case "FunctionDeclaration":
+    case "FunctionExpression":
+    case "ArrowFunctionExpression":
+      declareFunctionLikeScopeBindings(
+        node as FunctionExpression | ArrowFunctionExpression | FunctionDeclaration,
+        scope,
+      );
+      break;
+    case "BlockStatement":
+      collectDirectBlockDeclarations(parser, (node as { body?: unknown }).body, scope, currentVarScope);
+      break;
+    case "CatchClause":
+      if ("param" in (node as object)) {
+        for (const identifier of collectPatternIdentifiers((node as { param?: Pattern }).param)) {
+          declareScopeBinding(scope, identifier, { kind: "local" });
+        }
+      }
+      break;
+    case "EachBlock": {
+      const eachBlock = node as { context?: Pattern; index?: Identifier | string };
+      for (const identifier of collectPatternIdentifiers(eachBlock.context)) {
+        declareScopeBinding(scope, identifier, { kind: "local" });
+      }
+      if (typeof eachBlock.index === "string") {
+        declareScopeBinding(scope, eachBlock.index, { kind: "local" });
+      } else if (eachBlock.index && "name" in eachBlock.index) {
+        declareScopeBinding(scope, eachBlock.index.name, { kind: "local" });
+      }
+      break;
+    }
+    case "ThenBlock":
+      if ("value" in (node as object)) {
+        for (const identifier of collectPatternIdentifiers((node as { value?: Pattern }).value)) {
+          declareScopeBinding(scope, identifier, { kind: "local" });
+        }
+      }
+      break;
+    case "CatchBlock":
+      if ("error" in (node as object)) {
+        for (const identifier of collectPatternIdentifiers((node as { error?: Pattern }).error)) {
+          declareScopeBinding(scope, identifier, { kind: "local" });
+        }
+      }
+      break;
+  }
+
+  if (isFunctionScopeOwner(node)) {
+    state.varScopeStack.push(scope);
+  }
+}
+
+/** Per-node `leave` step counterpart to {@link enterNestedScopeDeclarationNode}. */
+export function leaveNestedScopeDeclarationNode(state: ScopeWalkState, node: unknown) {
+  if (isFunctionScopeOwner(node)) {
+    state.varScopeStack.pop();
+  }
 }
