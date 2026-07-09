@@ -120,9 +120,7 @@ const STYLE_TAG_REGEX = /<style.+?<\/style>/gims;
 const HYPHEN_REGEX = /-/g;
 
 export function stripTopLevelStyleBlock(source: string) {
-  // A component without "<style" cannot have a top-level style block; skip the
-  // locate-and-strip parse entirely. False positives (the substring inside a
-  // string, comment, or nested markup) just take the existing parse path.
+  // Skip compiler parse when no `<style>`; false positives in strings/comments fall through to regex.
   if (!source.includes("<style")) return source;
 
   try {
@@ -138,7 +136,7 @@ export function stripTopLevelStyleBlock(source: string) {
 
     return `${source.slice(0, start)}${source.slice(end)}`;
   } catch {
-    // Fall back to the previous regex behavior if the source cannot be parsed.
+    // Regex fallback when the compiler cannot parse the source.
     return source.replace(STYLE_TAG_REGEX, "");
   }
 }
@@ -336,8 +334,7 @@ export function processComponent(
       if (hash !== undefined) {
         options.cache?.set(resolvedPath, hash, parsed);
       }
-      // Only fresh parses are memoized; a disk-cache hit isn't guaranteed to
-      // still be valid for a component invalidated later in the same run.
+      // Memoize fresh parses only; disk-cache hits may be invalidated later in the same run.
       options.memo?.set(resolvedPath, parsed);
     }
 
@@ -351,7 +348,6 @@ export function processComponent(
   return null;
 }
 
-/** Collects the resolved, absolute paths of all `.svelte` entries. */
 export function collectSvelteFilePaths(
   entriesList: Array<Array<[string, ParsedExports[string]]>>,
   resolveComponentFilePath: ResolveComponentFilePath,
@@ -367,7 +363,6 @@ export function collectSvelteFilePaths(
   return uniqueFilePaths;
 }
 
-/** Reports collected component parse errors to stderr. No-op when empty. */
 export function reportParseErrors(errors: ComponentParseError[]): void {
   if (errors.length === 0) return;
   console.error(`sveld: failed to parse ${errors.length} component(s):`);
@@ -429,9 +424,7 @@ export async function generateBundle(
   const cache =
     options.cache === false ? undefined : new ParseCache(resolveCacheFilePath(rootDir, options.cache ?? true));
 
-  // Files that changed or were never cached. Used to invalidate @extends dependents.
   const misses = new Set<string>();
-  // Resolved path -> sha256, hashed once per run instead of once per pass.
   const hashes = new Map<string, string>();
   if (cache) {
     for (const filePath of uniqueFilePaths) {
@@ -510,16 +503,12 @@ export async function generateBundle(
 
   cache?.save();
 
-  // Runs checkExamples over allComponentsForTypes (not just exports): that's the
-  // map the diagnostics summary below is built from, so every discovered
-  // component's examples get checked and surfaced, not just the public barrel.
+  // checkExamples runs over all discovered components, not just barrel exports.
   const resolveTypesCandidates = options.resolveTypes ? collectResolveTypesCandidates(components) : [];
   const checkExamplesCandidates = options.checkExamples ? collectCheckExamplesCandidates(allComponentsForTypes) : [];
 
   if (resolveTypesCandidates.length > 0 || checkExamplesCandidates.length > 0) {
-    // Both features load the TS server through the same TypeResolver; sharing
-    // one instance across them halves server startup and project load when
-    // both options are enabled instead of paying for it twice.
+    // Share one TypeResolver when both resolveTypes and checkExamples are enabled.
     const { TypeResolver } = await import("./resolve-types");
     const resolver = await TypeResolver.create(rootDir);
 
@@ -535,7 +524,7 @@ export async function generateBundle(
     }
   }
 
-  // Same file can land in both export and all-components passes; dedupe before returning.
+  // Dedupe diagnostics from export and all-components passes.
   const diagnostics = dedupeDiagnostics(
     Array.from(allComponentsForTypes.values()).flatMap((component) => component.diagnostics ?? []),
   );

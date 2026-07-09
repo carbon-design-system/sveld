@@ -29,24 +29,6 @@ function withNormalizedFilePaths(components: ComponentDocApi[], inputDir: string
   }));
 }
 
-/**
- * Writes individual JSON files for each component.
- *
- * Creates a separate `.api.json` file for each component in the
- * specified output directory. Used when `outDir` is specified.
- *
- * @param components - Map of component documentation
- * @param options - Write options including output directory
- *
- * @example
- * ```ts
- * await writeJsonComponents(components, {
- *   inputDir: "./src",
- *   outDir: "./dist"
- * });
- * // Creates: dist/Button.api.json, dist/Input.api.json, etc.
- * ```
- */
 async function writeJsonComponents(components: ComponentDocs, options: WriteJsonOptions) {
   const document = buildComponentApiDocument(components);
   const output = withNormalizedFilePaths(document.components, options.inputDir);
@@ -61,24 +43,6 @@ async function writeJsonComponents(components: ComponentDocs, options: WriteJson
   );
 }
 
-/**
- * Writes component documentation to a single JSON file.
- *
- * Creates a JSON file containing all components with metadata.
- * Used when `outDir` is not specified.
- *
- * @param components - Map of component documentation
- * @param options - Write options including output file path
- *
- * @example
- * ```ts
- * await writeJsonLocal(components, {
- *   inputDir: "./src",
- *   outFile: "components.api.json"
- * });
- * // Creates: components.api.json with all component docs
- * ```
- */
 async function writeJsonLocal(components: ComponentDocs, options: WriteJsonOptions) {
   const document = buildComponentApiDocument(components, { entryExports: options.entryExports });
   const output: ComponentApiDocument = {
@@ -94,25 +58,15 @@ async function writeJsonLocal(components: ComponentDocs, options: WriteJsonOptio
 }
 
 /**
- * Writes component documentation to JSON format.
- *
- * Can write either:
- * - Individual JSON files per component (when `outDir` is specified)
- * - A single combined JSON file (when only `outFile` is specified)
- *
- * @param components - Map of component documentation to write
- * @param options - Write options including output directory or file
- * @returns A promise that resolves when all files have been written
- *
  * @example
  * ```ts
- * // Write individual files:
+ * // Per-component files:
  * await writeJson(components, {
  *   inputDir: "./src",
  *   outDir: "./dist"
  * });
  *
- * // Write single file:
+ * // Single combined file:
  * await writeJson(components, {
  *   inputDir: "./src",
  *   outFile: "components.api.json"

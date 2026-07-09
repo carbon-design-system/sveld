@@ -47,7 +47,6 @@ export function isCallExpressionNamed(node: unknown, calleeName: string): node i
   return !!node.callee && isObject(node.callee) && node.callee.type === "Identifier" && node.callee.name === calleeName;
 }
 
-/** Unwraps `expr as Type` / `expr satisfies Type`, returning the innermost expression. */
 export function unwrapTypeCastExpression(node: unknown): unknown {
   if (
     isObject(node) &&
@@ -60,7 +59,6 @@ export function unwrapTypeCastExpression(node: unknown): unknown {
   return node;
 }
 
-/** The type node from `expr as Type` / `expr satisfies Type`, if `node` is such a cast. */
 export function getTypeCastAnnotation(node: unknown): unknown {
   if (
     isObject(node) &&

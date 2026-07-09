@@ -22,7 +22,6 @@ const TYPE_CAST_WRAPPER_TYPES = new Set([
   "TSInstantiationExpression",
 ]);
 
-/** In-place: replaces every `expr as T` / `expr satisfies T` / `expr!` / `<T>expr` / `expr<T>` with `expr`. */
 export function stripTypeCastWrappers(root: unknown): void {
   if (!root || typeof root !== "object") return;
 

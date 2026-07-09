@@ -6,20 +6,10 @@ import { formatGeneratedTypeScript } from "./format-generated-ts";
 const ANY_TYPE = "any";
 const EMPTY_STR = "";
 
-/**
- * Empty events type definition.
- *
- * Svelte 4 is not compatible with `{}` type, so we use `Record<string, any>`
- * instead for empty event objects.
- */
+/** Svelte 4 rejects `{}`; use `Record<string, any>` for empty events. */
 const EMPTY_EVENTS = "Record<string, any>";
 
-/**
- * Empty object type definition.
- *
- * Avoids `{}` type per Biome linter rule `noBannedTypes`.
- * Uses `Record<string, never>` to represent an empty object type.
- */
+/** Avoids banned `{}` type; use `Record<string, never>` for empty objects. */
 const EMPTY_OBJECT = "Record<string, never>";
 
 const CLAMP_KEY_REGEX = /(-|\s+|:)/;
@@ -51,26 +41,16 @@ function stripConstModifierForTypeAlias(constraint: string): string {
   return constraint.replace(LEADING_CONST_MODIFIER_REGEX, "");
 }
 
-/**
- * Formats a description for use in multi-line comment blocks.
- * Replaces newlines with comment-formatted newlines.
- */
 function formatDescriptionForComment(description: string | undefined): string | undefined {
   if (!description) return undefined;
   return description.replace(NEWLINE_TO_COMMENT_REGEX, "\n* ");
 }
 
-/**
- * Formats a single-line JSDoc comment.
- */
 function formatSingleLineComment(description: string | undefined): string {
   if (!description) return "";
   return `/** ${description} */`;
 }
 
-/**
- * Formats a multi-line JSDoc comment with proper newline handling.
- */
 function formatMultiLineComment(description: string | undefined): string {
   if (!description) return "";
   return `/**\n * ${description.replace(NEWLINE_TO_COMMENT_REGEX, "\n * ")}\n */`;
@@ -129,7 +109,6 @@ function formatSlotJsDoc(
   return `/**\n * ${lines.join("\n * ")}\n */`;
 }
 
-/** Renders structured JSDoc tags as `* @tag ...\n` lines for `wrapCommentInJSDoc`. */
 function formatTagCommentLines(tags?: Array<{ name: string; body: string }>): string {
   const tagLines = expandJsDocTagLines(tags);
   if (tagLines.length === 0) return "";
@@ -193,23 +172,15 @@ function computeReferencedGenerics(generics: ComponentDocApi["generics"], text: 
 }
 
 /**
- * Generates TypeScript type definitions for component contexts.
- *
- * Creates exported type definitions for each context, including generic
- * type parameters when contexts reference component generics. Handles
- * empty context objects by using `Record<string, never>`.
+ * Exported context type definitions for a component.
  *
  * @param def - Component documentation containing contexts and generics
  * @returns TypeScript type definition string, or empty string if no contexts
  *
  * @example
  * ```ts
- * // Input: contexts with generic reference
- * // Output:
  * // export type ModalContext<T> = {
- * //   /** Open the modal *\/
  * //   open: () => void;
- * //   /** Close the modal *\/
  * //   close: () => void;
  * // };
  * ```
@@ -312,25 +283,15 @@ function wrapCommentInJSDoc(commentLines: string): string {
 }
 
 /**
- * Generates TypeScript prop definitions for a component.
- *
- * Creates the `$Props` type definition including:
- * - Regular props from component declarations
- * - Snippet props for slots (Svelte 5 compatibility)
- * - Rest props handling for elements/components
- * - Generic type parameters
- * - Extends interface merging
+ * Generates the `$Props` type for a component.
  *
  * @param def - Component documentation containing props, slots, rest_props, etc.
  * @returns An object with the props type name and the generated type definition
  *
  * @example
  * ```ts
- * // Generates:
  * // type $Props<T extends string = "default"> = {
- * //   /** The count value *\/
  * //   count?: number;
- * //   /** Header slot *\/
  * //   header?: (this: void, ...args: [{ title: string }]) => void;
  * //   children?: (this: void) => void;
  * // };
@@ -512,7 +473,6 @@ function genPropDef(
         extend_tag_map = "HTMLAttributes<HTMLElement>";
       }
     } else {
-      // Map element names to their SvelteHTMLElements types
       extend_tag_map = def.rest_props.name
         .split("|")
         .map((name) => {
@@ -523,10 +483,8 @@ function genPropDef(
     }
 
     /**
-     * Components that extend HTML elements should allow for `data-*` attributes.
+     * Preserve `data-*` attrs for Svelte 3 HTML-extending components.
      * @see https://github.com/sveltejs/language-tools/issues/1825
-     *
-     * Even though Svelte 4 does this automatically, we need to preserve this for Svelte 3.
      */
 
     /**
@@ -630,35 +588,13 @@ function genSlotDef(def: Pick<ComponentDocApi, "slots">) {
     })
     .join("\n");
 
-  // With more than one slot, always break onto separate lines (matching how
-  // an `interface` body is never collapsed) rather than leave it up to
-  // whether the combined line happens to fit under the formatter's width.
+  // Force multiline when count > 1 (matches interface body formatting).
   return def.slots.length === 1 ? `{${slotDefs}}` : `{\n${slotDefs}\n}`;
 }
 
-/**
- * Returns the type name for mapping standard DOM events.
- *
- * lib.dom.d.ts should map event types by name using WindowEventMap.
- * This function returns the type name for that mapping.
- *
- * @returns The type name "WindowEventMap"
- */
-const mapEvent = () => {
-  return "WindowEventMap";
-};
+const mapEvent = () => "WindowEventMap";
 
-/**
- * Standard DOM events that should use WindowEventMap for type inference.
- *
- * These events are standard browser events that have well-defined types
- * in the DOM type definitions. Using WindowEventMap provides better
- * type safety than generic CustomEvent types.
- */
 const STANDARD_DOM_EVENTS = new Set([
-  /**
-   * Mouse events - pointer interactions with the mouse.
-   */
   "click",
   "dblclick",
   "mousedown",
@@ -670,15 +606,9 @@ const STANDARD_DOM_EVENTS = new Set([
   "mouseleave",
   "contextmenu",
   "wheel",
-  /**
-   * Keyboard events - key press interactions.
-   */
   "keydown",
   "keyup",
   "keypress",
-  /**
-   * Form events - form element interactions.
-   */
   "submit",
   "change",
   "input",
@@ -688,16 +618,10 @@ const STANDARD_DOM_EVENTS = new Set([
   "focusout",
   "reset",
   "select",
-  /**
-   * Touch events - touch screen interactions.
-   */
   "touchstart",
   "touchend",
   "touchmove",
   "touchcancel",
-  /**
-   * Drag events - drag and drop interactions.
-   */
   "drag",
   "dragstart",
   "dragend",
@@ -705,9 +629,6 @@ const STANDARD_DOM_EVENTS = new Set([
   "dragenter",
   "dragleave",
   "drop",
-  /**
-   * Pointer events - unified pointer interactions (mouse, touch, pen).
-   */
   "pointerdown",
   "pointerup",
   "pointermove",
@@ -718,9 +639,6 @@ const STANDARD_DOM_EVENTS = new Set([
   "pointercancel",
   "gotpointercapture",
   "lostpointercapture",
-  /**
-   * Media events - audio/video element events.
-   */
   "play",
   "pause",
   "ended",
@@ -744,9 +662,6 @@ const STANDARD_DOM_EVENTS = new Set([
   "loadstart",
   "progress",
   "loadend",
-  /**
-   * Animation/Transition events - CSS animation and transition events.
-   */
   "animationstart",
   "animationend",
   "animationiteration",
@@ -755,9 +670,6 @@ const STANDARD_DOM_EVENTS = new Set([
   "transitionend",
   "transitionrun",
   "transitioncancel",
-  /**
-   * Other events - miscellaneous browser events.
-   */
   "scroll",
   "resize",
   "load",
@@ -776,10 +688,6 @@ function createDispatchedEventType(detail: string = ANY_TYPE) {
   return `CustomEvent<${detail}>`;
 }
 
-/**
- * Check if an event name is a standard DOM event that exists in WindowEventMap.
- * Standard DOM events should use WindowEventMap for better type inference.
- */
 function isStandardDomEvent(eventName: string): boolean {
   return STANDARD_DOM_EVENTS.has(eventName);
 }
@@ -832,9 +740,7 @@ function genEventDef(def: Pick<ComponentDocApi, "events">) {
     })
     .join("");
 
-  // With more than one event, always break onto separate lines (matching how
-  // an `interface` body is never collapsed) rather than leave it up to
-  // whether the combined line happens to fit under the formatter's width.
+  // Force multiline when count > 1 (matches interface body formatting).
   return def.events.length === 1 ? `{${events_map}}` : `{\n${events_map}}`;
 }
 
@@ -871,20 +777,11 @@ function generateFunctionType(prop: {
   params?: Array<{ name: string; type: string; optional?: boolean }>;
   returnType?: string;
 }): string {
-  /**
-   * Check if this is the default function type (would be overridden by `@type` or params/returns).
-   * The default `() => any` type is a placeholder that should be replaced with more specific types.
-   */
   const isDefaultFunctionType = prop.type === "() => any";
 
-  /**
-   * If `@type` tag provides a custom function signature (contains => and is not the default),
-   * use it (highest priority). This allows explicit function type annotations.
-   */
   if (prop.type && FUNCTION_TYPE_REGEX.test(prop.type) && !isDefaultFunctionType) {
     return prop.type;
   } else if (prop.params && prop.params.length > 0) {
-    // Build signature from `@param` tags (most detailed from JSDoc annotations)
     const paramStrings = prop.params.map((param) => {
       const optional = param.optional ? "?" : "";
       return `${param.name}${optional}: ${param.type}`;
@@ -893,13 +790,8 @@ function generateFunctionType(prop: {
     const returnType = prop.returnType || ANY_TYPE;
     return `(${paramsString}) => ${returnType}`;
   } else if (prop.returnType) {
-    // Only `@returns` is present without `@param`
     return `() => ${prop.returnType}`;
   } else {
-    /**
-     * Fall back to current prop.type.
-     * If no JSDoc annotations are present, use the inferred type.
-     */
     return prop.type || ANY_TYPE;
   }
 }
@@ -1067,7 +959,6 @@ function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">) {
          */
         type_def = `export declare const ${prop.name}: ${prop.type || ANY_TYPE};\n`;
       } else if (prop.params && prop.params.length > 0) {
-        // Build signature from `@param` tags (highest priority for functions)
         const paramStrings = prop.params.map((param) => {
           const optional = param.optional ? "?" : "";
           return `${param.name}${optional}: ${param.type}`;
@@ -1076,7 +967,6 @@ function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">) {
         const returnType = prop.returnType || ANY_TYPE;
         type_def = `export declare function ${prop.name}(${paramsString}): ${returnType};`;
       } else if (prop.returnType) {
-        // Only `@returns` is present without `@param`
         type_def = `export declare function ${prop.name}(): ${prop.returnType};`;
       } else if (is_function && prop.type && !isDefaultFunctionType) {
         /**
@@ -1115,7 +1005,6 @@ function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">) {
     .join("\n");
 }
 
-/** Line length under which a class shell with no accessors can stay on one line. */
 const COMPONENT_SHELL_INLINE_WIDTH = 120;
 
 function genComponentShell(def: {

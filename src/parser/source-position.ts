@@ -1,7 +1,6 @@
 import type { SourcePosition, SourceRange } from "../ComponentParser";
 import type { ParserContext } from "./context";
 
-/** Collapse newlines in source slices. */
 const NEWLINE_CR_REGEX = /[\r\n]+/g;
 
 /**
@@ -24,7 +23,6 @@ export function getSourceLineStartOffsets(ctx: ParserContext) {
   return offsets;
 }
 
-/** Converts a 0-based source offset into a 1-based line / 0-based column {@link SourcePosition}. */
 export function sourcePositionFromOffset(ctx: ParserContext, offset: number): SourcePosition | undefined {
   if (!ctx.source || offset < 0 || offset > ctx.source.length) return undefined;
 
@@ -52,7 +50,6 @@ export function sourcePositionFromOffset(ctx: ParserContext, offset: number): So
   return undefined;
 }
 
-/** Converts a pair of 0-based source offsets into a {@link SourceRange}. */
 export function sourceRangeFromOffsets(
   ctx: ParserContext,
   start: number | undefined,
@@ -70,7 +67,6 @@ export function sourceRangeFromOffsets(
   };
 }
 
-/** Converts an AST node's `start`/`end` offsets into a {@link SourceRange}. */
 export function sourceRangeFromNode(ctx: ParserContext, node: unknown) {
   if (!node || typeof node !== "object") return undefined;
   const start = "start" in node && typeof node.start === "number" ? node.start : undefined;
@@ -123,7 +119,6 @@ export function sourceAtPos(ctx: ParserContext, start: number, end: number) {
   return ctx.source?.slice(start, end);
 }
 
-/** Source text for an expression, newlines collapsed to one line. */
 export function sourceForExpression(ctx: ParserContext, node: unknown) {
   if (!node || typeof node !== "object") return undefined;
   const start = "start" in node && typeof node.start === "number" ? node.start : undefined;

@@ -10,8 +10,6 @@ interface MarkdownOptions {
 export type { AppendType };
 
 /**
- * Markdown writer with optional append callbacks.
- *
  * @example
  * ```ts
  * const writer = new WriterMarkdown({

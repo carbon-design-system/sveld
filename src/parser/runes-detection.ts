@@ -210,10 +210,7 @@ function getScriptProgramBody(script: unknown): unknown[] | undefined {
  * mode if any rune name is referenced - and not shadowed by a local declaration of the same name -
  * anywhere in the module script, instance script, or template.
  *
- * Known simplification: svelte also force-enables runes mode on top-level `await` (blocking awaits
- * outside of any function). No sveld fixture exercises that path, so it's intentionally not
- * replicated here; a component relying solely on top-level `await` to opt into runes mode (with no
- * other rune usage and no explicit `svelte:options`) would be misdetected as legacy.
+ * Mirrors svelte analyze runes detection. Omitted: top-level `await` forces runes (no fixture).
  */
 export function detectSyntaxMode(ctx: ParserContext): SyntaxMode {
   if (ctx.runesOptionOverride !== undefined) {

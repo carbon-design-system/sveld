@@ -13,8 +13,6 @@ export interface WriteMarkdownOptions {
 }
 
 /**
- * Renders component docs to markdown and optionally writes `outFile`.
- *
  * @example
  * ```ts
  * const markdown = await writeMarkdown(components, {
