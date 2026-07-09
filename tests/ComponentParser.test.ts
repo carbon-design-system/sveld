@@ -64,6 +64,111 @@ describe("ComponentParser", () => {
     expect(result).not.toHaveProperty("scriptLanguage");
   });
 
+  test("detects runes syntax from a bare rune reference with no $props()", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        let count = $state(0);
+      </script>
+
+      <button onclick={() => count++}>{count}</button>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+
+    expect(result.syntaxMode).toBe("runes");
+  });
+
+  test("explicit <svelte:options runes={true} /> forces runes mode", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <svelte:options runes={true} />
+      <script>
+        export let label;
+      </script>
+
+      <button>{label}</button>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+
+    expect(result.syntaxMode).toBe("runes");
+  });
+
+  test("explicit <svelte:options runes={false} /> forces legacy mode", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <svelte:options runes={false} />
+      <script>
+        /** a plain local function that happens to share a rune's name */
+        function describe() {
+          return "legacy";
+        }
+      </script>
+
+      <button>{describe()}</button>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+
+    expect(result.syntaxMode).toBe("legacy");
+  });
+
+  test("a local declaration shadowing a rune name does not trigger runes mode", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        export let value;
+
+        function render() {
+          const $state = value * 2;
+          return $state;
+        }
+      </script>
+
+      <button>{render()}</button>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+
+    expect(result.syntaxMode).toBe("legacy");
+  });
+
+  test("resolves a prop default wrapped in `as const`", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script lang="ts">
+        export let type = "button" as const;
+      </script>
+
+      <button {type} />
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    const prop = result.props.find((prop) => prop.name === "type");
+
+    expect(prop?.type).toBe("string");
+    expect(prop?.typeSource).toBe("default");
+    expect(prop?.defaultValue).toMatchObject({ kind: "literal", value: "button" });
+  });
+
+  test("resolves a prop default wrapped in `satisfies` and a non-null assertion", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script lang="ts">
+        export let count = (5 satisfies number)!;
+      </script>
+
+      <button>{count}</button>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    const prop = result.props.find((prop) => prop.name === "count");
+
+    expect(prop?.type).toBe("number");
+    expect(prop?.defaultValue).toMatchObject({ kind: "literal", value: 5 });
+  });
+
   test("parses basic component exports", () => {
     const parser = new ComponentParser();
     const source = `  
