@@ -4183,6 +4183,49 @@ exports[`fixtures (JSON) "binary-expression-numeric/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "dispatched-and-forwarded-same-event-name-host-dispatch/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 15,
+      "column": 0
+    }
+  },
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "click",
+      "detail": "1",
+      "source": {
+        "start": {
+          "line": 5,
+          "column": 4
+        },
+        "end": {
+          "line": 5,
+          "column": 66
+        }
+      }
+    }
+  ],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "customElementTag": "my-el",
+  "diagnostics": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "typedef-branded-types/input.svelte" 1`] = `
 "{
   "source": {
@@ -5482,6 +5525,47 @@ exports[`fixtures (JSON) "mixed-events/input.svelte" 1`] = `
         "end": {
           "line": 13,
           "column": 37
+        }
+      }
+    }
+  ],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "dispatched-and-forwarded-same-event-name/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 16,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "click",
+      "source": {
+        "start": {
+          "line": 6,
+          "column": 4
+        },
+        "end": {
+          "line": 6,
+          "column": 31
         }
       }
     }
@@ -17078,9 +17162,8 @@ exports[`fixtures (JSON) "forwarded-and-dispatched-events/input.svelte" 1`] = `
   "slots": [],
   "events": [
     {
-      "type": "forwarded",
+      "type": "dispatched",
       "name": "change",
-      "element": "input",
       "source": {
         "start": {
           "line": 8,
@@ -19061,6 +19144,19 @@ export default class BinaryExpressionNumeric extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "dispatched-and-forwarded-same-event-name-host-dispatch/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type DispatchedAndForwardedSameEventNameHostDispatchProps = Record<string, never>;
+
+export default class DispatchedAndForwardedSameEventNameHostDispatch extends SvelteComponentTyped<
+  DispatchedAndForwardedSameEventNameHostDispatchProps,
+  { click: CustomEvent<1> },
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "typedef-branded-types/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -19440,6 +19536,19 @@ export default class MixedEvents extends SvelteComponentTyped<
     blur: FocusEvent | CustomEvent<FocusEvent>;
     "custom-focus": CustomEvent<FocusEvent | number>;
   },
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "dispatched-and-forwarded-same-event-name/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+export type DispatchedAndForwardedSameEventNameProps = Record<string, never>;
+
+export default class DispatchedAndForwardedSameEventName extends SvelteComponentTyped<
+  DispatchedAndForwardedSameEventNameProps,
+  { click: CustomEvent<any> },
   Record<string, never>
 > {}
 "
@@ -23101,7 +23210,7 @@ export type ForwardedAndDispatchedEventsProps = Record<string, never>;
 
 export default class ForwardedAndDispatchedEvents extends SvelteComponentTyped<
   ForwardedAndDispatchedEventsProps,
-  { change: WindowEventMap["change"] },
+  { change: CustomEvent<any> },
   Record<string, never>
 > {}
 "

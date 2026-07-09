@@ -34,8 +34,25 @@ export function addDispatchedEvent(
 
   const default_detail = !has_argument && !detail ? "null" : assignValueOrUndefined(detail);
   const event_description = description;
-  if (ctx.events.has(name)) {
-    const existing_event = ctx.events.get(name) as DispatchedEvent;
+  const existing_event = ctx.events.get(name);
+  if (existing_event?.type === "forwarded") {
+    /**
+     * A dispatched event always takes precedence over a forwarded event of the same
+     * name, regardless of which was detected first during the walk (forwarding is
+     * recorded as soon as the template is visited, while createEventDispatcher()
+     * dispatches are only resolved after the whole walk completes). Non-conflicting
+     * metadata from the forwarded event is preserved as a fallback.
+     */
+    ctx.events.set(name, {
+      type: "dispatched",
+      name,
+      detail: default_detail,
+      description: event_description || existing_event.description,
+      deprecated: deprecated ?? existing_event.deprecated,
+      tags: tags ?? existing_event.tags,
+      source: source || existing_event.source,
+    });
+  } else if (existing_event) {
     const merged_tags = existing_event.tags ?? tags;
     ctx.events.set(name, {
       ...existing_event,
