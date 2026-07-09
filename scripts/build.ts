@@ -15,9 +15,9 @@ async function emitTypeDeclarations() {
   }
 }
 
-async function buildEntry(entrypoint: string, target: "node" | "browser") {
+async function buildEntry(entrypoints: string[], target: "node" | "browser") {
   const result = await build({
-    entrypoints: [entrypoint],
+    entrypoints,
     outdir: "./lib",
     format: "esm",
     target,
@@ -29,11 +29,13 @@ async function buildEntry(entrypoint: string, target: "node" | "browser") {
     packages: "bundle",
     // Emit the parser stack (behind `./parser-stack`'s dynamic import) as its
     // own chunk instead of inlining it, so a fully cached CLI run never loads it.
+    // index.ts and cli-entry.ts share this dynamic import, so building them
+    // together lets Bun dedupe the chunk instead of emitting it twice.
     splitting: true,
   });
 
   if (!result.success) {
-    console.error(`Build failed for ${entrypoint}`);
+    console.error(`Build failed for ${entrypoints.join(", ")}`);
     for (const log of result.logs) {
       console.error(log);
     }
@@ -47,13 +49,12 @@ async function buildEntry(entrypoint: string, target: "node" | "browser") {
 }
 
 async function buildProject() {
-  const [node, cliEntry, browser] = await Promise.all([
-    buildEntry("./src/index.ts", "node"),
-    buildEntry("./src/cli-entry.ts", "node"),
-    buildEntry("./src/browser.ts", "browser"),
+  const [node, browser] = await Promise.all([
+    buildEntry(["./src/index.ts", "./src/cli-entry.ts"], "node"),
+    buildEntry(["./src/browser.ts"], "browser"),
   ]);
 
-  if (!node || !cliEntry || !browser) return;
+  if (!node || !browser) return;
 
   await emitTypeDeclarations();
   console.log("✓ Build completed");
