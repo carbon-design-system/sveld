@@ -1,6 +1,6 @@
 import type { AssignmentPattern, Identifier, Property, VariableDeclaration, VariableDeclarator } from "estree";
 import { parse } from "svelte/compiler";
-import { isCallExpressionNamed } from "../ast-guards";
+import { getTypeCastAnnotation, isCallExpressionNamed, unwrapTypeCastExpression } from "../ast-guards";
 import type ComponentParser from "../ComponentParser";
 import type {
   ModernRunesTypeMember,
@@ -20,6 +20,7 @@ import {
   getRunesPropsDeclarationMetadata,
   getRunesPropTypeMetadata,
   getTypeAnnotationText,
+  getTypeNodeText,
   getTypeReferenceName,
 } from "./type-resolution";
 
@@ -262,24 +263,30 @@ export function buildRunesPropTypeMetadata(parser: ComponentParser, ctx: ParserC
     if (!statement || typeof statement !== "object" || !("declarations" in statement)) continue;
 
     for (const declarator of statement.declarations ?? []) {
-      if (!isCallExpressionNamed(declarator.init, "$props")) continue;
-      const canonicalType = getTypeAnnotationText(ctx, declarator.id?.typeAnnotation);
+      if (!isCallExpressionNamed(unwrapTypeCastExpression(declarator.init), "$props")) continue;
+
+      // `let props = $props() as Props` / `... satisfies Props` carry their type on the
+      // initializer rather than on `declarator.id`, so fall back to that when there's no
+      // explicit `: Props` annotation on the binding itself.
+      const castTypeNode = declarator.id?.typeAnnotation
+        ? undefined
+        : (getTypeCastAnnotation(declarator.init) as ModernRunesTypeNode | undefined);
+      const effectiveTypeNode = declarator.id?.typeAnnotation?.typeAnnotation ?? castTypeNode;
+
+      const canonicalType = declarator.id?.typeAnnotation
+        ? getTypeAnnotationText(ctx, declarator.id.typeAnnotation)
+        : getTypeNodeText(ctx, castTypeNode as { start?: number; end?: number } | undefined);
       const metadata = buildRunesPropTypeMetadataMap(
         parser,
         ctx,
-        declarator.id?.typeAnnotation?.typeAnnotation,
+        effectiveTypeNode,
         new Map(
           Array.from(ctx.localTypeDeclarationsByName.entries(), ([name, declaration]) => [name, declaration.node]),
         ),
       );
       const referencedImportedTypes = new Set<string>();
       const referencedLocalTypes = new Set<string>();
-      collectReferencedTypeDependencies(
-        ctx,
-        declarator.id?.typeAnnotation?.typeAnnotation,
-        referencedImportedTypes,
-        referencedLocalTypes,
-      );
+      collectReferencedTypeDependencies(ctx, effectiveTypeNode, referencedImportedTypes, referencedLocalTypes);
       collectGenericsAttributeTypeDependencies(ctx, referencedImportedTypes, referencedLocalTypes);
 
       if (declarator.start !== undefined) {
@@ -301,7 +308,7 @@ export function buildRunesPropTypeMetadata(parser: ComponentParser, ctx: ParserC
 /** Top-level `$props()` declarations in runes components. */
 export function parseRunesPropsDeclaration(parser: ComponentParser, ctx: ParserContext, node: VariableDeclaration) {
   for (const declarator of node.declarations) {
-    if (!isCallExpressionNamed(declarator.init, "$props")) continue;
+    if (!isCallExpressionNamed(unwrapTypeCastExpression(declarator.init), "$props")) continue;
 
     if (declarator.id.type === "Identifier") {
       ctx.wholePropsLocals.add(declarator.id.name);

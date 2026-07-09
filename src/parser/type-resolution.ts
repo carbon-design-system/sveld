@@ -91,6 +91,14 @@ export function getTypeAnnotationText(
   return sourceAtPos(ctx, start + 1, end)?.trim();
 }
 
+/** Returns the trimmed source text spanned by a bare type node (no leading `:`), if positions are available. */
+export function getTypeNodeText(ctx: ParserContext, typeNode: { start?: number; end?: number } | undefined) {
+  const start = typeNode?.start;
+  const end = typeNode?.end;
+  if (start === undefined || end === undefined) return undefined;
+  return sourceAtPos(ctx, start, end)?.trim();
+}
+
 /** Collect imported and local type names referenced by a type AST node. */
 export function collectReferencedTypeDependencies(
   ctx: ParserContext,

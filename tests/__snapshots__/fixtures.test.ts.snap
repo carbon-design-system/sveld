@@ -2647,6 +2647,75 @@ exports[`fixtures (JSON) "context-generics-dollar-name/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "runes-props-as-cast/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 10,
+      "column": 0
+    }
+  },
+  "syntaxMode": "runes",
+  "scriptLanguage": "ts",
+  "props": [
+    {
+      "name": "item",
+      "kind": "let",
+      "type": "string",
+      "typeSource": "typescript",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 4
+        },
+        "end": {
+          "line": 3,
+          "column": 17
+        }
+      }
+    },
+    {
+      "name": "disabled",
+      "kind": "let",
+      "type": "boolean",
+      "typeSource": "typescript",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 4,
+          "column": 4
+        },
+        "end": {
+          "line": 4,
+          "column": 23
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "runes-uncontrolled-state-prop/input.svelte" 1`] = `
 "{
   "source": {
@@ -10039,6 +10108,75 @@ exports[`fixtures (JSON) "input-events/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "runes-props-satisfies-cast/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 10,
+      "column": 0
+    }
+  },
+  "syntaxMode": "runes",
+  "scriptLanguage": "ts",
+  "props": [
+    {
+      "name": "item",
+      "kind": "let",
+      "type": "string",
+      "typeSource": "typescript",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 4
+        },
+        "end": {
+          "line": 3,
+          "column": 17
+        }
+      }
+    },
+    {
+      "name": "disabled",
+      "kind": "let",
+      "type": "boolean",
+      "typeSource": "typescript",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 4,
+          "column": 4
+        },
+        "end": {
+          "line": 4,
+          "column": 23
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "required/input.svelte" 1`] = `
 "{
   "source": {
@@ -10229,6 +10367,75 @@ exports[`fixtures (JSON) "slot-plain-text-attribute-prop/input.svelte" 1`] = `
       }
     }
   ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
+"
+`;
+
+exports[`fixtures (JSON) "runes-props-as-cast-destructured/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 6,
+      "column": 0
+    }
+  },
+  "syntaxMode": "runes",
+  "scriptLanguage": "ts",
+  "props": [
+    {
+      "name": "value",
+      "kind": "let",
+      "type": "number",
+      "typeSource": "typescript",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 2,
+          "column": 8
+        },
+        "end": {
+          "line": 2,
+          "column": 13
+        }
+      }
+    },
+    {
+      "name": "label",
+      "kind": "let",
+      "type": "string",
+      "typeSource": "typescript",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 2,
+          "column": 15
+        },
+        "end": {
+          "line": 2,
+          "column": 20
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
   "events": [],
   "typedefs": [],
   "generics": null,
@@ -18622,6 +18829,26 @@ export default class ContextGenericsDollarName<Value$Type extends string> extend
 "
 `;
 
+exports[`fixtures (TypeScript) "runes-props-as-cast/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+interface Props {
+  item: string;
+  disabled?: boolean;
+}
+
+type $Props = Props;
+
+export type RunesPropsAsCastProps = $Props;
+
+export default class RunesPropsAsCast extends SvelteComponentTyped<
+  RunesPropsAsCastProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "runes-uncontrolled-state-prop/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -20807,6 +21034,26 @@ export default class InputEvents extends SvelteComponentTyped<
 "
 `;
 
+exports[`fixtures (TypeScript) "runes-props-satisfies-cast/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+interface Props {
+  item: string;
+  disabled?: boolean;
+}
+
+type $Props = Props;
+
+export type RunesPropsSatisfiesCastProps = $Props;
+
+export default class RunesPropsSatisfiesCast extends SvelteComponentTyped<
+  RunesPropsSatisfiesCastProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
 exports[`fixtures (TypeScript) "required/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
@@ -20868,6 +21115,24 @@ export default class SlotPlainTextAttributeProp extends SvelteComponentTyped<
   SlotPlainTextAttributePropProps,
   Record<string, any>,
   { default: { color: "red" } }
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "runes-props-as-cast-destructured/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+type $Props = {
+  value: number;
+  label?: string
+};
+
+export type RunesPropsAsCastDestructuredProps = $Props;
+
+export default class RunesPropsAsCastDestructured extends SvelteComponentTyped<
+  RunesPropsAsCastDestructuredProps,
+  Record<string, any>,
+  Record<string, never>
 > {}
 "
 `;
