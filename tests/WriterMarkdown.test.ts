@@ -195,6 +195,71 @@ describe("WriterMarkdown", () => {
     expect(output).toContain("| footer | No | -- | -- | -- |");
   });
 
+  test("defines the component's type parameters for generic components", () => {
+    const output = writeMarkdownCore(
+      new Map([
+        [
+          "DataTable",
+          {
+            filePath: asNormalizedPath("DataTable.svelte"),
+            moduleName: "DataTable",
+            syntaxMode: "runes",
+            props: [
+              {
+                name: "rows",
+                kind: "let",
+                constant: false,
+                type: "ReadonlyArray<Row>",
+                isFunction: false,
+                isFunctionDeclaration: false,
+                isRequired: true,
+                reactive: false,
+              },
+            ],
+            moduleExports: [],
+            slots: [],
+            events: [],
+            typedefs: [],
+            generics: ["Row", "Row extends DataTableRow = DataTableRow"],
+            rest_props: undefined,
+            contexts: [],
+          },
+        ],
+      ]),
+    );
+
+    expect(output).toMatchSnapshot();
+    // `Row` is used in the prop type below; without this line it would be an
+    // undefined name floating in the document.
+    expect(output).toContain("**Type parameters:** <code><Row extends DataTableRow = DataTableRow></code>");
+    expect(output).toContain("| rows | Yes | <code>let</code> | No | -- | <code>ReadonlyArray<Row></code> | -- | -- |");
+  });
+
+  test("omits the type parameters line for non-generic components", () => {
+    const output = writeMarkdownCore(
+      new Map([
+        [
+          "Example",
+          {
+            filePath: asNormalizedPath("Example.svelte"),
+            moduleName: "Example",
+            syntaxMode: "legacy",
+            props: [],
+            moduleExports: [],
+            slots: [],
+            events: [],
+            typedefs: [],
+            generics: null,
+            rest_props: undefined,
+            contexts: [],
+          },
+        ],
+      ]),
+    );
+
+    expect(output).not.toContain("Type parameters");
+  });
+
   test("badges deprecated props, events, and slots", () => {
     const output = writeMarkdownCore(
       new Map([

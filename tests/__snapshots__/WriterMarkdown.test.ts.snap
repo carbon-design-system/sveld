@@ -59,3 +59,33 @@ None.
 
 "
 `;
+
+exports[`WriterMarkdown defines the component's type parameters for generic components 1`] = `
+"# Component Index
+
+## Components
+
+- [\`DataTable\`](#datatable)
+
+---
+
+## \`DataTable\`
+
+**Type parameters:** <code><Row extends DataTableRow = DataTableRow></code>
+
+### Props
+
+| Prop name | Required | Kind | Reactive | Binding | Type | Default value | Description |
+| :- | :- | :- | :- | :- | :- | :- | :- |
+| rows | Yes | <code>let</code> | No | -- | <code>ReadonlyArray<Row></code> | -- | -- |
+
+### Slots
+
+None.
+
+### Events
+
+None.
+
+"
+`;
