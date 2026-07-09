@@ -27,8 +27,6 @@ import { convert } from "../node_modules/svelte/src/compiler/legacy.js";
 import { parse as parseFragment } from "../node_modules/svelte/src/compiler/phases/1-parse/index.js";
 // @ts-expect-error - internal svelte module, no published types
 import { reset as resetCompilerState } from "../node_modules/svelte/src/compiler/state.js";
-// @ts-expect-error - internal svelte module, no published types
-import { VERSION as VERSION_RAW } from "../node_modules/svelte/src/version.js";
 
 /**
  * The pre-strip AST shape svelte's parser produces internally, before `metadata` (an
@@ -86,5 +84,3 @@ export function parse(source: string, { modern, loose }: { modern?: boolean; loo
   const ast: InternalAstRoot = parseFragment(cleaned, loose);
   return toPublicAst(cleaned, ast, modern);
 }
-
-export const VERSION: string = VERSION_RAW;

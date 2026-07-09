@@ -1,7 +1,8 @@
 import path from "node:path";
 import { Glob } from "bun";
 import { parse as realParse, VERSION as realVersion } from "svelte/compiler";
-import { parse as shimParse, VERSION as shimVersion } from "../src/svelte-parse";
+import { parse as shimParse } from "../src/svelte-parse";
+import { VERSION as shimVersion } from "../src/svelte-version";
 
 /**
  * src/svelte-parse.ts reimplements svelte/compiler's `parse` and `VERSION`

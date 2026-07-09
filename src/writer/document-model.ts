@@ -1,7 +1,7 @@
 import { name as packageName, version as packageVersion } from "../../package.json";
 import type { EntryExports } from "../parse-entry-exports";
 import type { ComponentDocApi, ComponentDocs } from "../plugin";
-import { VERSION as svelteVersion } from "../svelte-parse";
+import { VERSION as svelteVersion } from "../svelte-version";
 
 export const COMPONENT_API_SCHEMA_VERSION = 1;
 

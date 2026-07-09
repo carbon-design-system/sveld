@@ -3,20 +3,17 @@ import { readFile } from "node:fs/promises";
 import { dirname, isAbsolute, parse, relative, resolve } from "node:path";
 import { globSync } from "tinyglobby";
 import { asRelativeSourcePath, type NormalizedPath } from "./brands";
-import ComponentParser, {
-  applyResolvedProps,
-  getParsedComponentTypeScriptMetadata,
-  type ParsedComponent,
-} from "./ComponentParser";
+import type { ParsedComponent } from "./ComponentParser";
 import { buildReverseDeps, expandAffected } from "./dependency-graph";
 import { dedupeDiagnostics, type SveldDiagnostic } from "./diagnostics";
 import { collectExampleSources } from "./example-check";
 import { hashSource, ParseCache, resolveCacheFilePath } from "./parse-cache";
 import { type EntryExports, parseEntryExports } from "./parse-entry-exports";
 import { type ParsedExports, parseExports } from "./parse-exports";
+import { applyResolvedProps, getParsedComponentTypeScriptMetadata } from "./parsed-component-metadata";
+import { getParserStack, loadParserStack } from "./parser-stack";
 import { normalizeSeparators } from "./path";
 import type { TypeResolver } from "./resolve-types";
-import { parse as parseSvelte } from "./svelte-parse";
 
 export interface ComponentDocApi extends ParsedComponent {
   filePath: NormalizedPath;
@@ -124,7 +121,7 @@ export function stripTopLevelStyleBlock(source: string) {
   if (!source.includes("<style")) return source;
 
   try {
-    const parsed = parseSvelte(source, { modern: false }) as {
+    const parsed = getParserStack().parseSvelte(source, { modern: false }) as {
       css?: { start?: number; end?: number };
     };
     const start = parsed.css?.start;
@@ -304,7 +301,7 @@ export function processComponent(
     } else if (cached) {
       parsed = cached;
     } else {
-      const parser = new ComponentParser();
+      const parser = new (getParserStack().ComponentParser)();
       try {
         parsed = parser.parseSvelteComponent(stripTopLevelStyleBlock(source), {
           moduleName,
@@ -409,7 +406,7 @@ export async function generateBundle(
 
   // File entry only; directory inputs have no barrel.
   const entryExports: EntryExports =
-    documentExports && lstatSync(input).isFile() ? parseEntryExports(resolve(input)) : [];
+    documentExports && lstatSync(input).isFile() ? await parseEntryExports(resolve(input)) : [];
 
   const exportEntries = Object.entries(exports);
   const allComponentEntries = Object.entries(allComponents);
@@ -436,6 +433,13 @@ export async function generateBundle(
         misses.add(filePath);
       }
     }
+  }
+
+  // Without a cache every component is parsed fresh; with one, only load the
+  // parser stack when at least one component actually needs (re)parsing, so
+  // a fully cached run skips it entirely.
+  if (uniqueFilePaths.size > 0 && (!cache || misses.size > 0)) {
+    await loadParserStack();
   }
 
   /**

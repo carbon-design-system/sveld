@@ -1,8 +1,8 @@
 import { existsSync, lstatSync, readFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
+import { getParserStack, loadParserStack } from "./parser-stack";
 import { normalizeSeparators } from "./path";
 import { resolvePathAliasAbsolute } from "./resolve-alias";
-import { parse } from "./svelte-parse";
 
 /** One named export from the entry barrel (not a `.svelte` component). */
 export interface EntryExport {
@@ -257,7 +257,7 @@ function parseModule(filePath: string): { source: ModuleSource; body: AstNode[] 
   const text = `<script lang="ts">\n${raw}\n</script>`;
 
   try {
-    const ast = parse(text, { modern: true }) as { instance?: { content?: { body?: unknown } } };
+    const ast = getParserStack().parseSvelte(text, { modern: true }) as { instance?: { content?: { body?: unknown } } };
     const body = asNodeArray(ast.instance?.content?.body);
     return { source: { text, filePath, dir: dirname(filePath) }, body };
   } catch (error) {
@@ -408,11 +408,13 @@ function collectModuleExports(filePath: string, ctx: ResolveContext): InternalEx
  * @example
  * ```ts
  * // entry: export { VERSION } from "./constants"; export type { Theme } from "./types";
- * parseEntryExports("/abs/src/index.ts");
+ * await parseEntryExports("/abs/src/index.ts");
  * // [{ name: "Theme", kind: "type", isTypeOnly: true, ... }, { name: "VERSION", kind: "const", ... }]
  * ```
  */
-export function parseEntryExports(entryFile: string): EntryExports {
+export async function parseEntryExports(entryFile: string): Promise<EntryExports> {
+  await loadParserStack();
+
   const resolved = resolve(entryFile);
   const entryDir = dirname(resolved);
   const collected = collectModuleExports(resolved, { cache: new Map(), computing: new Set() });

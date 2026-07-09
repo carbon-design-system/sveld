@@ -16,6 +16,7 @@ import { buildReverseDeps, expandAffected } from "./dependency-graph";
 import { dedupeDiagnostics } from "./diagnostics";
 import { type EntryExports, parseEntryExports } from "./parse-entry-exports";
 import type { ParsedExports } from "./parse-exports";
+import { loadParserStack } from "./parser-stack";
 
 const SVELTE_EXT_REGEX = /\.svelte$/;
 
@@ -58,13 +59,17 @@ export async function createSveldBundle(input: string, glob: boolean, documentEx
   const { exports, allComponents, rootDir, resolveComponentFilePath } = collectComponents(input, glob, documentExports);
 
   const entryExports: EntryExports =
-    documentExports && lstatSync(input).isFile() ? parseEntryExports(resolve(input)) : [];
+    documentExports && lstatSync(input).isFile() ? await parseEntryExports(resolve(input)) : [];
 
   const exportEntries = Object.entries(exports);
   const allComponentEntries = Object.entries(allComponents);
 
   const components: ComponentDocs = new Map();
   const allComponentsForTypes: ComponentDocs = new Map();
+
+  // Watch mode always parses (it has no on-disk cache integration), so load
+  // the parser stack unconditionally up front rather than per-component.
+  await loadParserStack();
 
   // Diagnostics keyed by normalized path so incremental updates can clear them.
   const parseErrors = new Map<string, ComponentParseError>();

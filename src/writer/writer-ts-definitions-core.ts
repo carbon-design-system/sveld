@@ -1,4 +1,5 @@
-import { type DeprecatedValue, getParsedComponentTypeScriptMetadata } from "../ComponentParser";
+import type { DeprecatedValue } from "../ComponentParser";
+import { getParsedComponentTypeScriptMetadata } from "../parsed-component-metadata";
 import { splitTopLevelCommas } from "../parser/generics";
 import type { ComponentDocApi } from "../plugin";
 import { formatGeneratedTypeScript } from "./format-generated-ts";
