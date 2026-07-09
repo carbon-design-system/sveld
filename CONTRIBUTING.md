@@ -41,7 +41,7 @@ bun install
 | `bun run build` | Bundle `src/index.ts` to `lib/` and emit `.d.ts`. Add `-w` / `--watch` for watch mode. |
 | `bun run typecheck` | `tsc --noEmit` over `src/` and `tests/`. |
 | `bun run test:fixtures-types` | Type-check the generated fixture outputs (`tests/fixtures/**`). |
-| `bun run test:e2e` | Link sveld into the downstream packages under `tests/e2e/` and build each. |
+| `bun run test:e2e` | Link sveld into the downstream packages under `tests/e2e/`, run `sveld` (or `build` for Vite fixtures), and `typecheck` generated types where configured. |
 | `bun run bench` | Time the parse/write pipeline against the carbon e2e fixture. Flags: `--runs <n>`, `--cache`, `--entry <path>`. Output goes to a temp dir; compare medians from one invocation, not absolute times across sessions. |
 | `bunx biome check --write <paths>` | Lint and format. Scope to what you changed. |
 | `bun run lint` / `bun run format` | Biome lint / format across the repo. |
@@ -126,7 +126,7 @@ Name cases after the behavior under test, grouping by feature prefix to match th
 
 ### End-to-end tests
 
-[`tests/test-e2e.ts`](tests/test-e2e.ts) (`bun run test:e2e`) `bun link`s the locally built sveld into each project under `tests/e2e/`, installs, and runs that project's `build`. These are real downstream consumers — `single-export`, `multi-export`, `glob`, `path-aliases`, `sveltekit`, `svelte5-legacy`, `svelte5-runes`, and a large `carbon` fixture mirroring carbon-components-svelte. A failure means generated types don't compile in a real project. Build sveld first (`bun run build`) so the link resolves the current code. CI does not run the e2e suite; run it locally when changing output shape or export resolution.
+[`tests/test-e2e.ts`](tests/test-e2e.ts) (`bun run test:e2e`) `bun link`s the locally built sveld into each project under `tests/e2e/`, installs, and runs that project's `sveld` script (modernized fixtures) or `build` (Vite-based fixtures). When a project defines `typecheck`, the harness also runs `tsc` against generated `types/`. These are real downstream consumers — `single-export`, `multi-export`, `glob`, `path-aliases`, `sveltekit`, `svelte5-legacy`, `svelte5-runes`, and a large `carbon` fixture mirroring carbon-components-svelte. A failure means generated types don't compile in a real project. Build sveld first (`bun run build`) so the link resolves the current code. CI does not run the e2e suite; run it locally when changing output shape or export resolution.
 
 ### Svelte version coverage
 
