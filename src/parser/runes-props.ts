@@ -180,6 +180,7 @@ export function buildRunesPropTypeMetadataMap(
 export function buildRunesPropTypeMetadata(parser: ComponentParser, ctx: ParserContext) {
   ctx.runesPropsDeclarationMetadataByDeclaratorStart.clear();
   ctx.explicitPropTypesByName.clear();
+  ctx.explicitVariableTypesByName.clear();
   ctx.typeImportBindingsByLocalName.clear();
   ctx.localTypeDeclarationsByName.clear();
   ctx.typedRunesPropsDeclarations.length = 0;
@@ -296,6 +297,14 @@ export function buildRunesPropTypeMetadata(parser: ComponentParser, ctx: ParserC
         const explicitType = getTypeAnnotationText(ctx, declarator.id.typeAnnotation);
         if (explicitType) {
           ctx.explicitPropTypesByName.set(declarator.id.name, explicitType);
+        }
+      }
+    } else if (statement.type === "VariableDeclaration") {
+      for (const declarator of statement.declarations ?? []) {
+        if (declarator.id?.type !== "Identifier" || !declarator.id.name) continue;
+        const explicitType = getTypeAnnotationText(ctx, declarator.id.typeAnnotation);
+        if (explicitType) {
+          ctx.explicitVariableTypesByName.set(declarator.id.name, explicitType);
         }
       }
     }

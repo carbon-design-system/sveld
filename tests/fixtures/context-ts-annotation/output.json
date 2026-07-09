@@ -1,0 +1,62 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 13,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "ts",
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>",
+      "source": {
+        "start": {
+          "line": 12,
+          "column": 0
+        },
+        "end": {
+          "line": 12,
+          "column": 8
+        }
+      }
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "app",
+      "typeName": "AppContext",
+      "properties": [
+        {
+          "name": "ctx",
+          "type": "{ theme: string }",
+          "optional": false
+        }
+      ]
+    },
+    {
+      "key": "legacy",
+      "typeName": "LegacyContext",
+      "properties": [
+        {
+          "name": "jsdocCtx",
+          "type": "{ label: string }",
+          "description": "",
+          "optional": false
+        }
+      ]
+    }
+  ],
+  "diagnostics": []
+}

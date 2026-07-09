@@ -63,6 +63,7 @@ export interface ParserContext {
   readonly runesPropsDeclarationMetadataByDeclaratorStart: Map<number, RunesPropsDeclarationMetadata>;
   readonly typedRunesPropsDeclarations: RunesPropsDeclarationMetadata[];
   readonly explicitPropTypesByName: Map<string, string>;
+  readonly explicitVariableTypesByName: Map<string, string>;
   readonly typeImportBindingsByLocalName: Map<string, TypeImportBinding>;
   readonly localTypeDeclarationsByName: Map<string, LocalTypeDeclaration>;
   readonly wholePropsLocals: Set<string>;
@@ -123,6 +124,7 @@ export function createParserContext(): ParserContext {
     runesPropsDeclarationMetadataByDeclaratorStart: new Map(),
     typedRunesPropsDeclarations: [],
     explicitPropTypesByName: new Map(),
+    explicitVariableTypesByName: new Map(),
     typeImportBindingsByLocalName: new Map(),
     localTypeDeclarationsByName: new Map(),
     wholePropsLocals: new Set(),
