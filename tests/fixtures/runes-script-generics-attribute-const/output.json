@@ -5,7 +5,7 @@
       "column": 0
     },
     "end": {
-      "line": 6,
+      "line": 9,
       "column": 0
     }
   },
@@ -24,11 +24,11 @@
       "reactive": false,
       "source": {
         "start": {
-          "line": 2,
+          "line": 5,
           "column": 8
         },
         "end": {
-          "line": 2,
+          "line": 5,
           "column": 13
         }
       }
@@ -42,11 +42,11 @@
       "slot_props": "Record<string, never>",
       "source": {
         "start": {
-          "line": 5,
+          "line": 8,
           "column": 0
         },
         "end": {
-          "line": 5,
+          "line": 8,
           "column": 8
         }
       }
