@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.35.1](https://github.com/carbon-design-system/sveld/releases/tag/v0.35.1) - 2026-07-09
+
+**Features**
+
+- add `sveld/browser` entry point for in-browser usage (ae71c6f, #359)
+- replace `compile` with `parse` and native runes detection (~2.5–3× faster parse) (3f19d15, #369)
+- fuse per-component AST walks into shared traversals (361f8a3, #349)
+- avoid JSON round-trips and per-node allocations in parser hot paths (a7bafcc, #350)
+- batch `TypeResolver` checker calls to cut RPC round trips (eb36493, #351)
+
+**Fixes**
+
+- read Svelte version from `svelte/compiler`, not `svelte/package.json` (cffbc81, #371)
+- parse tsconfig JSON before stripping comments in `resolve-alias` (b9a8567)
+- clamp bracket depth in `splitTopLevelCommas` (cfd7d0a, #352)
+- strip `const` modifier from type alias declaration sites (4382cd9)
+- strip `const`/`in`/`out` modifiers from generics usage-site names (53d46a9)
+- substitute generic type arguments in runes prop types (16446d0, #364)
+- make dispatched events consistently win over forwarded (e426468, #356)
+- recognize `$props()` wrapped in `as`/`satisfies` casts (54739fc, #358)
+- stop fabricating types for props parameterized by a component's own generic in `resolveTypes` (753458f, #362)
+- break circular `export *` cycles in `parseExports` (dce23bb, #357)
+- preserve variant-only properties in union whole-props resolution (20d5cfc, #361)
+- re-glob on update in `watch` mode so new component files are picked up (9f7b4e2, #355)
+- warn instead of silently dropping unparseable re-exports in `parse-entry-exports` (17da997, #360)
+- set `isFunction` for TS-typed callback props with no default (2ab8c57, #363)
+- quote string-literal slot attribute prop types (599a9f5, #353)
+
 ## [0.35.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.35.0) - 2026-07-08
 
 **Breaking Changes**
