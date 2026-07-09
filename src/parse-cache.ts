@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
-import { version as svelteVersion } from "svelte/package.json";
+import { VERSION as svelteVersion } from "svelte/compiler";
 import { version as sveldVersion } from "../package.json";
 import {
   PARSED_COMPONENT_TYPE_SCRIPT_METADATA,
