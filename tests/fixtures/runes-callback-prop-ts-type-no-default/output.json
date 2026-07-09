@@ -13,9 +13,9 @@
   "scriptLanguage": "ts",
   "props": [
     {
-      "name": "createTooltip",
+      "name": "measure",
       "kind": "let",
-      "type": "(text: string) => Attachment",
+      "type": "(node: HTMLElement) => Attachment",
       "typeSource": "typescript",
       "isFunction": true,
       "isFunctionDeclaration": false,
@@ -29,7 +29,7 @@
         },
         "end": {
           "line": 4,
-          "column": 21
+          "column": 15
         }
       }
     }

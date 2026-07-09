@@ -394,7 +394,8 @@ export function parseRunesPropsDeclaration(parser: ComponentParser, ctx: ParserC
         !!propertyJSDoc?.params?.length ||
         propertyJSDoc?.returnType !== undefined ||
         propertyJSDoc?.type?.includes("=>") ||
-        !!inheritedType?.includes("=>");
+        !!inheritedType?.includes("=>") ||
+        !!typeMetadata?.type?.includes("=>");
       const type = typeMetadata?.type ?? propertyJSDoc?.type ?? inheritedType ?? inferredType;
       const typeSource = parser.resolveTypeSource({
         hasTypeScriptType: typeMetadata?.type !== undefined,
