@@ -5,16 +5,27 @@ await $`bun link`;
 
 let hasError = false;
 
-for await (const dir of $`find tests/e2e -maxdepth 1`.lines()) {
+for await (const dir of $`find tests/e2e -maxdepth 1 -mindepth 1 -type d`.lines()) {
+  const packageJsonPath = `${dir}/package.json`;
+  if (!(await Bun.file(packageJsonPath).exists())) continue;
+
   try {
     await $`cd ${dir} && rm -rf types`;
     await $`cd ${dir} && bun link ${name}`;
     await $`cd ${dir} && bun install`;
 
-    const result = await $`cd ${dir} && bun run build`;
+    const pkg = await Bun.file(packageJsonPath).json();
+    const script = pkg.scripts?.sveld ? "sveld" : "build";
+    if (!pkg.scripts?.[script]) {
+      console.error(`Missing "${script}" script in ${dir}`);
+      hasError = true;
+      continue;
+    }
+
+    const result = await $`cd ${dir} && bun run ${script}`;
 
     if (result.exitCode !== 0) {
-      console.error(`Build failed in ${dir}`);
+      console.error(`${script} failed in ${dir}`);
       hasError = true;
     }
   } catch (error) {

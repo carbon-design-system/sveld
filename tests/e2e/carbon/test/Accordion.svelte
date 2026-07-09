@@ -1,4 +1,4 @@
-<script lang="ts">
+<script>
   import { Accordion, AccordionItem, Checkbox, DataTable } from "../types";
   import Button from "../types/Button/Button.svelte";
 </script>
