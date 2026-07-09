@@ -54,7 +54,7 @@ The pipeline, end to end:
 
 1. **Resolve the entry point.** [`get-svelte-entry.ts`](src/get-svelte-entry.ts) takes an explicit entry or falls back to `package.json#svelte`.
 2. **Parse exports.** [`parse-exports.ts`](src/parse-exports.ts) reads the barrel (for example `src/index.js`) to learn which components are public and under what names; [`create-exports.ts`](src/create-exports.ts) builds the export map. With `glob: true`, every `.svelte` file under the entry directory is discovered instead.
-3. **Parse each component.** [`ComponentParser.ts`](src/ComponentParser.ts) is the core. It compiles the component with `svelte/compiler`, walks the ESTree AST with `estree-walker`, and reads JSDoc with `comment-parser` to extract props, events, slots, typedefs, generics, contexts, and rest props into a `ParsedComponent`.
+3. **Parse each component.** [`ComponentParser.ts`](src/ComponentParser.ts) is the core. It parses the component via [`svelte-parse.ts`](src/svelte-parse.ts) (see that file for why it isn't just `import { parse } from "svelte/compiler"`), walks the ESTree AST with `estree-walker`, and reads JSDoc with `comment-parser` to extract props, events, slots, typedefs, generics, contexts, and rest props into a `ParsedComponent`.
 4. **Write output.** The `writer/` modules turn `ParsedComponent` into artifacts:
    - [`writer-ts-definitions.ts`](src/writer/writer-ts-definitions.ts) + [`writer-ts-definitions-core.ts`](src/writer/writer-ts-definitions-core.ts) → `.d.ts` extending `SvelteComponentTyped`.
    - [`writer-json.ts`](src/writer/writer-json.ts) → `COMPONENT_API.json` (carries a `schemaVersion`).

@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import {
   asNormalizedPath,
   buildComponentApiDocument,
@@ -24,11 +24,19 @@ function stripBlockComments(source: string): string {
   return source.replace(/\/\*[\s\S]*?\*\//g, "");
 }
 
+const SRC_ROOT = join(__dirname, "..", "src");
+
 /**
  * Walks every module reachable from `src/browser.ts` via relative imports
  * and asserts none of them import a `node:*` built-in. Bare specifiers
  * (npm packages like `svelte/compiler`) are out of scope; they're expected
  * to be browser-safe on their own and get bundled by the consumer's tool.
+ * Relative imports that escape `src/` (e.g. `svelte-parse.ts` reaching
+ * directly into `node_modules/svelte/src/...`) are equally out of scope:
+ * they're still third-party package internals, just reached without a bare
+ * specifier, and third-party source isn't shaped for this regex-based walk
+ * (e.g. svelte's own source contains string templates like `from './${n}'`
+ * in error-message text, which aren't real import statements).
  */
 function collectRelativeImportGraph(entryFile: string): Map<string, string> {
   const files = new Map<string, string>();
@@ -47,6 +55,11 @@ function collectRelativeImportGraph(entryFile: string): Map<string, string> {
       // Imports of non-`.ts` files (e.g. `../../package.json`) already carry their extension.
       const hasExtension = FILE_EXTENSION_REGEX.test(specifier);
       const resolved = resolve(dirname(file), hasExtension ? specifier : `${specifier}.ts`);
+      // Cross-platform "is resolved inside SRC_ROOT" check: a plain string prefix
+      // comparison breaks on Windows, where path.resolve produces backslash-separated
+      // paths but a hardcoded "/" separator never matches them.
+      const relativeToSrcRoot = relative(SRC_ROOT, resolved);
+      if (relativeToSrcRoot.startsWith("..") || isAbsolute(relativeToSrcRoot)) continue;
       if (!files.has(resolved)) queue.push(resolved);
     }
   }

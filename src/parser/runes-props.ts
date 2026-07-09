@@ -1,5 +1,4 @@
 import type { AssignmentPattern, Identifier, Property, VariableDeclaration, VariableDeclarator } from "estree";
-import { parse } from "svelte/compiler";
 import { getTypeCastAnnotation, isCallExpressionNamed, unwrapTypeCastExpression } from "../ast-guards";
 import type ComponentParser from "../ComponentParser";
 import type {
@@ -10,6 +9,7 @@ import type {
   RunesPropTypeMetadata,
   TypeImportBinding,
 } from "../ComponentParser";
+import { parse } from "../svelte-parse";
 import type { ParserContext } from "./context";
 import { collectGenericsAttributeTypeDependencies } from "./generics";
 import { processLeadingCommentsJSDoc, processNodeJSDoc } from "./jsdoc";
