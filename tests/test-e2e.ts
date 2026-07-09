@@ -27,6 +27,15 @@ for await (const dir of $`find tests/e2e -maxdepth 1 -mindepth 1 -type d`.lines(
     if (result.exitCode !== 0) {
       console.error(`${script} failed in ${dir}`);
       hasError = true;
+      continue;
+    }
+
+    if (pkg.scripts?.typecheck) {
+      const typecheck = await $`cd ${dir} && bun run typecheck`;
+      if (typecheck.exitCode !== 0) {
+        console.error(`typecheck failed in ${dir}`);
+        hasError = true;
+      }
     }
   } catch (error) {
     console.error(`Error in ${dir}:`, error);
