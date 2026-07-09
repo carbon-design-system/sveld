@@ -203,12 +203,106 @@ The following applies only to maintainers.
 
 [`publish-to-npm.yml`](.github/workflows/publish-to-npm.yml) publishes to NPM with [provenance](https://docs.npmjs.com/generating-provenance-statements) when a tag starting with `v` is pushed. It installs, runs `bun run build`, prunes with `bunx culls`, and runs `npm publish --provenance --access public`.
 
-To cut a release, bump the version in `package.json`, update [`CHANGELOG.md`](CHANGELOG.md), commit with the version as the message, tag, and push the tag:
+#### Versioning
+
+| Bump | When |
+| --- | --- |
+| **Patch** (`0.35.1`) | Bug fixes, performance, and correctness; no intentional API breaks |
+| **Minor** (`0.35.0`) | New features; breaking changes go in **Breaking Changes** if any |
+| **Major** | Large incompatible shifts (rare; follow existing [`CHANGELOG.md`](CHANGELOG.md) precedent) |
+
+#### Checklist
+
+1. Confirm the last published tag (for example `v0.35.1`).
+2. List commits since that tag:
+
+   ```sh
+   git log v0.35.1..HEAD --format="%h %s" --no-merges
+   ```
+
+3. Curate changelog entries (see below).
+4. Bump [`package.json`](package.json) — `"version": "X.Y.Z"`.
+5. Add a new `## [X.Y.Z](https://github.com/carbon-design-system/sveld/releases/tag/vX.Y.Z) - YYYY-MM-DD` section at the top of [`CHANGELOG.md`](CHANGELOG.md).
+6. Write [`releases/vX.Y.Z.md`](releases/v0.35.1.md) — short GitHub release body (`# sveld vX.Y.Z` plus bullet lists).
+7. Write [`release-X.Y.Z.md`](release-0.35.1.md) — same bullets, a `---` divider, then narrative `##` sections for notable themes (breaking changes, performance, new surfaces).
+8. Commit, tag, and push (see [Publish](#publish)).
+9. Create the GitHub release — paste `release-X.Y.Z.md` into the release body (use `releases/vX.Y.Z.md` for a minimal patch). NPM publishes when the tag lands.
+
+#### Changelog curation
+
+**Include** user-facing commits:
+
+- `feat`, `fix`, and `perf`
+- Breaking changes (`!` in the commit subject) under **Breaking Changes**
+- Attribution: `(shortHash, #N)` when the commit references a PR; `(shortHash)` otherwise
+
+**Exclude** internal work:
+
+- `test(...)`, `chore(...)`, and `refactor(...)` unless the behavior change is user-visible
+- `docs(readme)` unless the release is docs-only
+- Dev-only script or bench tweaks
+- E2e fixture modernization and snapshot harness refactors
+
+**Section order** in [`CHANGELOG.md`](CHANGELOG.md):
+
+1. **Breaking Changes** (omit the section when none)
+2. **Features** (performance items go here, not a separate section)
+3. **Fixes**
+
+**Bullet format** — lowercase lead-in, backtick code identifiers, one line per commit:
+
+```markdown
+## [0.34.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.34.0) - 2026-06-30
+
+**Features**
+
+- add persistent cross-run parse cache (`cache` option) (c258eae, #320)
+- add `sveld --check` API-drift gate and semver classifier (7b3c175, #323)
+
+**Fixes**
+
+- keep `@template` generic when a referencing prop shares its `@slot` block (3d3b715, #319)
+```
+
+Combine commits only when the same PR was split across multiple commits.
+
+#### Release notes files
+
+| File | Purpose |
+| --- | --- |
+| [`releases/vX.Y.Z.md`](releases/v0.35.1.md) | Minimal body for GitHub — title plus **Breaking Changes** / **Features** / **Fixes** bullets |
+| [`release-X.Y.Z.md`](release-0.35.1.md) | Full notes — same bullets, then themed narrative sections after `---` |
+
+For `release-X.Y.Z.md`, group by theme rather than by commit (`## Performance`, `## Breaking changes`, and so on). Call out breaking changes and performance gains with concrete numbers when the commits provide them. End with **Upgrade notes** (migration steps and `npm i -D sveld@X.Y.Z`). Keep prose short; use paragraphs and bullet lists; no emoji.
+
+Example skeleton:
+
+```markdown
+**Features**
+
+- ...
+
+**Fixes**
+
+- ...
+
+---
+
+## Performance
+
+...
+
+## Upgrade notes
+
+...
+```
+
+#### Publish
 
 ```sh
-git commit -am "v0.32.9"
-git tag v0.32.9
-git push origin v0.32.9
+git commit -am "vX.Y.Z"
+git tag vX.Y.Z
+git push origin vX.Y.Z
 ```
 
 A successful workflow publishes the new version to NPM.
