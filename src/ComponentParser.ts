@@ -845,6 +845,15 @@ export default class ComponentParser {
     }
 
     const cached = this.ctx.variableInfoCache.get(varName);
+
+    const explicitType = this.ctx.explicitVariableTypesByName.get(varName);
+    if (explicitType) {
+      return {
+        type: explicitType,
+        description: cached?.description,
+      };
+    }
+
     if (cached) {
       return cached;
     }
