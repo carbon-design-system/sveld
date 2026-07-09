@@ -16,6 +16,7 @@
   import TextCreation from "carbon-icons-svelte/lib/TextCreation.svelte";
   import { type Component, onMount } from "svelte";
   import { ComponentParser } from "../../src/browser";
+  import CodeEditor from "./CodeEditor.svelte";
   import data from "./data";
   import Header from "./Header.svelte";
   import TabContentOverlay from "./TabContentOverlay.svelte";
@@ -28,32 +29,41 @@
   };
 
   let selectedId = data[0].moduleName;
-  let codeEditor: Component | undefined;
-  let tabTypeScript: Component<TabProps> | undefined;
-  let tabJson: Component<TabProps> | undefined;
-  let tabMarkdown: Component<TabProps> | undefined;
-  let tabCustomElements: Component<TabProps> | undefined;
+  let selectedTab = 0;
+  let tabComponents: Array<Component<TabProps> | undefined> = [];
+  let tabLoading: boolean[] = [];
+
+  async function loadTabModule(index: number) {
+    switch (index) {
+      case 0:
+        return import("./TabTypeScript.svelte");
+      case 1:
+        return import("./TabJson.svelte");
+      case 2:
+        return import("./TabMarkdown.svelte");
+      case 3:
+        return import("./TabCustomElements.svelte");
+      default:
+        throw new Error(`Unknown tab index: ${index}`);
+    }
+  }
+
+  async function ensureTabLoaded(index: number) {
+    if (tabComponents[index] || tabLoading[index]) return;
+
+    tabLoading[index] = true;
+
+    const importee = await loadTabModule(index);
+    tabComponents[index] = importee.default;
+    tabComponents = [...tabComponents];
+  }
+
+  function handleTabChange(event: CustomEvent<number>) {
+    ensureTabLoaded(event.detail);
+  }
 
   onMount(() => {
-    import("./CodeEditor.svelte").then((importee) => {
-      codeEditor = importee.default;
-    });
-
-    import("./TabTypeScript.svelte").then((importee) => {
-      tabTypeScript = importee.default;
-    });
-
-    import("./TabJson.svelte").then((importee) => {
-      tabJson = importee.default;
-    });
-
-    import("./TabMarkdown.svelte").then((importee) => {
-      tabMarkdown = importee.default;
-    });
-
-    import("./TabCustomElements.svelte").then((importee) => {
-      tabCustomElements = importee.default;
-    });
+    ensureTabLoaded(0);
   });
 
   $: selected = data.find((datum) => datum.moduleName === selectedId);
@@ -102,14 +112,7 @@
             selectedId = e.detail.selectedId;
           }}
         />
-        {#if codeEditor}
-          <svelte:component
-            this={codeEditor}
-            bind:code={value}
-          />
-        {:else}
-          <InlineLoading style="margin: var(--cds-spacing-05)" />
-        {/if}
+        <CodeEditor bind:code={value} />
       </Column>
       <Column
         xlg={9}
@@ -120,6 +123,8 @@
         <Tabs
           type="container"
           id="output"
+          bind:selected={selectedTab}
+          on:change={handleTabChange}
         >
           <Tab
             label="TypeScript"
@@ -145,47 +150,55 @@
               <TabContentOverlay title="Parse error"> {parse_error} </TabContentOverlay>
             {/if}
             <TabContent>
-              {#if tabTypeScript}
-                <svelte:component
-                  this={tabTypeScript}
-                  {parsed_component}
-                  {moduleName}
-                />
-              {:else}
-                <InlineLoading style="margin: var(--cds-spacing-05)" />
+              {#if selectedTab === 0}
+                {#if tabComponents[0]}
+                  <svelte:component
+                    this={tabComponents[0]}
+                    {parsed_component}
+                    {moduleName}
+                  />
+                {:else}
+                  <InlineLoading style="margin: var(--cds-spacing-05)" />
+                {/if}
               {/if}
             </TabContent>
             <TabContent>
-              {#if tabJson}
-                <svelte:component
-                  this={tabJson}
-                  {parsed_component}
-                  {moduleName}
-                />
-              {:else}
-                <InlineLoading style="margin: var(--cds-spacing-05)" />
+              {#if selectedTab === 1}
+                {#if tabComponents[1]}
+                  <svelte:component
+                    this={tabComponents[1]}
+                    {parsed_component}
+                    {moduleName}
+                  />
+                {:else}
+                  <InlineLoading style="margin: var(--cds-spacing-05)" />
+                {/if}
               {/if}
             </TabContent>
             <TabContent>
-              {#if tabMarkdown}
-                <svelte:component
-                  this={tabMarkdown}
-                  {parsed_component}
-                  {moduleName}
-                />
-              {:else}
-                <InlineLoading style="margin: var(--cds-spacing-05)" />
+              {#if selectedTab === 2}
+                {#if tabComponents[2]}
+                  <svelte:component
+                    this={tabComponents[2]}
+                    {parsed_component}
+                    {moduleName}
+                  />
+                {:else}
+                  <InlineLoading style="margin: var(--cds-spacing-05)" />
+                {/if}
               {/if}
             </TabContent>
             <TabContent>
-              {#if tabCustomElements}
-                <svelte:component
-                  this={tabCustomElements}
-                  {parsed_component}
-                  {moduleName}
-                />
-              {:else}
-                <InlineLoading style="margin: var(--cds-spacing-05)" />
+              {#if selectedTab === 3}
+                {#if tabComponents[3]}
+                  <svelte:component
+                    this={tabComponents[3]}
+                    {parsed_component}
+                    {moduleName}
+                  />
+                {:else}
+                  <InlineLoading style="margin: var(--cds-spacing-05)" />
+                {/if}
               {/if}
             </TabContent>
           </div>
