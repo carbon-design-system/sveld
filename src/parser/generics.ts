@@ -4,6 +4,7 @@ import { collectReferencedTypeDependencies } from "./type-resolution";
 
 const LEADING_IDENTIFIER_REGEX = /^[A-Za-z_$][\w$]*/;
 const IDENTIFIER_REGEX = /[A-Za-z_$][\w$]*/g;
+const LEADING_TYPE_PARAM_MODIFIER_REGEX = /^(?:const|in|out)\s+/;
 
 /**
  * Splits a string on top-level commas, ignoring commas nested inside
@@ -42,7 +43,13 @@ export function parseGenericsAttribute(value: string): ComponentGenerics {
 
   if (constraints.length === 0) return null;
 
-  const names = constraints.map((constraint) => constraint.match(LEADING_IDENTIFIER_REGEX)?.[0] ?? constraint);
+  const names = constraints.map((constraint) => {
+    let usageSite = constraint;
+    while (LEADING_TYPE_PARAM_MODIFIER_REGEX.test(usageSite)) {
+      usageSite = usageSite.replace(LEADING_TYPE_PARAM_MODIFIER_REGEX, "");
+    }
+    return usageSite.match(LEADING_IDENTIFIER_REGEX)?.[0] ?? constraint;
+  });
 
   return [names.join(", "), constraints.join(", ")];
 }
