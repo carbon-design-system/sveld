@@ -34,11 +34,11 @@ async function writeJsonComponents(components: ComponentDocs, options: WriteJson
   const output = withNormalizedFilePaths(document.components, options.inputDir);
 
   await Promise.all(
-    output.map((c) => {
+    output.map(async (c) => {
       const outFile = path.resolve(path.join(options.outDir || "", `${c.moduleName}.api.json`));
       const writer = createJsonWriter();
-      console.log(`created "${outFile}".`);
-      return writer.write(outFile, `${JSON.stringify(c, null, 2)}\n`);
+      const wasWritten = await writer.write(outFile, `${JSON.stringify(c, null, 2)}\n`);
+      console.log(`${wasWritten ? "created" : "unchanged"} "${outFile}".`);
     }),
   );
 }

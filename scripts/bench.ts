@@ -7,6 +7,9 @@
  *   bun run bench --runs 5
  *   bun run bench --cache          # scratch parse cache: run 1 cold, later runs warm
  *   bun run bench --entry <path>   # benchmark another entry point (glob discovery)
+ *   bun run bench --reuse-outdir   # write every run into the same out dir, so
+ *                                  # run 1 populates it and runs 2+ exercise the
+ *                                  # writer's skip-unchanged-file path
  *
  * All output (types/JSON/Markdown and the parse cache) is written to a temp
  * directory, so benchmarking never touches a fixture's committed files.
@@ -28,6 +31,7 @@ interface BenchArgs {
   runs: number;
   cache: boolean;
   entry: string;
+  reuseOutDir: boolean;
 }
 
 interface RunTiming {
@@ -37,7 +41,7 @@ interface RunTiming {
 }
 
 function parseArgs(argv: string[]): BenchArgs {
-  const args: BenchArgs = { runs: DEFAULT_RUNS, cache: false, entry: DEFAULT_ENTRY };
+  const args: BenchArgs = { runs: DEFAULT_RUNS, cache: false, entry: DEFAULT_ENTRY, reuseOutDir: false };
 
   for (let i = 0; i < argv.length; i++) {
     const flag = argv[i];
@@ -54,6 +58,9 @@ function parseArgs(argv: string[]): BenchArgs {
       case "--cache":
         args.cache = true;
         break;
+      case "--reuse-outdir":
+        args.reuseOutDir = true;
+        break;
       case "--entry": {
         const value = argv[++i];
         if (value === undefined) {
@@ -64,7 +71,7 @@ function parseArgs(argv: string[]): BenchArgs {
         break;
       }
       default:
-        console.error(`bench: unknown flag "${flag}". Flags: --runs <n>, --cache, --entry <path>.`);
+        console.error(`bench: unknown flag "${flag}". Flags: --runs <n>, --cache, --entry <path>, --reuse-outdir.`);
         process.exit(1);
     }
   }
@@ -128,14 +135,19 @@ const args = parseArgs(process.argv.slice(2));
 const workDir = mkdtempSync(join(tmpdir(), "sveld-bench-"));
 const cacheFile = args.cache ? join(workDir, "parse-cache.json") : undefined;
 const cacheLabel = args.cache ? "cache on (run 1 cold, later runs warm)" : "cache off";
+// With --reuse-outdir every run writes into the same directory, so run 1
+// populates it and runs 2+ exercise the writer's skip-unchanged-file path.
+// Without it, each run gets its own fresh temp dir and every write is a miss.
+const sharedOutDir = args.reuseOutDir ? join(workDir, "out") : undefined;
+const outDirLabel = args.reuseOutDir ? ", reuse outdir" : "";
 
-console.log(`sveld bench: ${relative(process.cwd(), args.entry)} — ${args.runs} run(s), ${cacheLabel}`);
+console.log(`sveld bench: ${relative(process.cwd(), args.entry)} — ${args.runs} run(s), ${cacheLabel}${outDirLabel}`);
 
 const timings: RunTiming[] = [];
 try {
   for (let run = 1; run <= args.runs; run++) {
     // biome-ignore lint/performance/noAwaitInLoops: runs must execute sequentially so each phase is timed in isolation.
-    const timing = await benchOnce(args.entry, cacheFile, join(workDir, `run-${run}`));
+    const timing = await benchOnce(args.entry, cacheFile, sharedOutDir ?? join(workDir, `run-${run}`));
     timings.push(timing);
     console.log(`run ${run}  ${formatTiming(timing)}`);
   }
