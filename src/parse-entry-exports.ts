@@ -1,8 +1,8 @@
 import { existsSync, lstatSync, readFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
-import { parse } from "svelte/compiler";
 import { normalizeSeparators } from "./path";
 import { resolvePathAliasAbsolute } from "./resolve-alias";
+import { parse } from "./svelte-parse";
 
 /** One named export from the entry barrel (not a `.svelte` component). */
 export interface EntryExport {

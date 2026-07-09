@@ -15,7 +15,6 @@ import type {
 } from "estree";
 import type { Node } from "estree-walker";
 import { walk } from "estree-walker";
-import { parse } from "svelte/compiler";
 import {
   isCallExpressionNamed,
   isIdentifier,
@@ -52,6 +51,7 @@ import { addSlot, buildSlotPropsFromObjectExpression, extractRenderTagInfo } fro
 import { sourceAtPos, sourceRangeFromNode, sourceRangeFromOffsets } from "./parser/source-position";
 import { buildTypeScriptMetadata } from "./parser/type-resolution";
 import { stripTypeCastWrappers } from "./parser/typescript-casts";
+import { parse } from "./svelte-parse";
 
 /**
  * Regular expression for matching variable declarations.

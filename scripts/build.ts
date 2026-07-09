@@ -24,7 +24,8 @@ async function buildEntry(entrypoint: string, target: "node" | "browser") {
     minify: true,
     sourcemap: false,
     // Default Bun behavior treats `node_modules` imports as external; bundle
-    // them so `svelte/compiler` (and `estree-walker`) ship inside `lib`.
+    // them so dependencies (estree-walker, and the pruned svelte parser
+    // imported by src/svelte-parse.ts) ship inside `lib`.
     packages: "bundle",
   });
 

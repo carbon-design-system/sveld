@@ -1,7 +1,6 @@
 import { lstatSync, readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { dirname, isAbsolute, parse, relative, resolve } from "node:path";
-import { parse as parseSvelte } from "svelte/compiler";
 import { globSync } from "tinyglobby";
 import { asRelativeSourcePath, type NormalizedPath } from "./brands";
 import ComponentParser, {
@@ -17,6 +16,7 @@ import { type EntryExports, parseEntryExports } from "./parse-entry-exports";
 import { type ParsedExports, parseExports } from "./parse-exports";
 import { normalizeSeparators } from "./path";
 import type { TypeResolver } from "./resolve-types";
+import { parse as parseSvelte } from "./svelte-parse";
 
 export interface ComponentDocApi extends ParsedComponent {
   filePath: NormalizedPath;
