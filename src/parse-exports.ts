@@ -67,8 +67,12 @@ function parseProgram(source: string): ProgramNode {
  * //   App: { source: "./App.svelte", default: true }
  * // }
  * ```
+ *
+ * @param resolving - Absolute paths currently being resolved on this call
+ *   stack, used to break `export *` cycles between files that re-export
+ *   each other. Callers should not pass this; it is threaded internally.
  */
-export function parseExports(source: string, dir: string) {
+export function parseExports(source: string, dir: string, resolving: Set<string> = new Set()) {
   let ast = astCache.get(source);
 
   if (!ast) {
@@ -103,8 +107,13 @@ export function parseExports(source: string, dir: string) {
           }
       }
 
+      if (resolving.has(file_path)) continue;
+      resolving.add(file_path);
+
       const export_file = readFileSync(file_path, "utf-8");
-      const exports = parseExports(export_file, dirname(file_path));
+      const exports = parseExports(export_file, dirname(file_path), resolving);
+
+      resolving.delete(file_path);
 
       for (const [key, value] of Object.entries(exports)) {
         const source = asRelativeSourcePath(normalizeSeparators(`./${join(node.source.value, value.source)}`));

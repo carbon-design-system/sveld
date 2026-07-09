@@ -1,6 +1,27 @@
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { parseExports } from "../src/parse-exports";
 
 describe("parseExports", () => {
+  test("circular `export *` between two barrel files does not overflow the stack", () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "sveld-parse-exports-circular-"));
+
+    try {
+      writeFileSync(path.join(dir, "A.js"), `export * from "./B.js";\nexport { helper } from "./helper.js";\n`);
+      writeFileSync(path.join(dir, "B.js"), `export * from "./A.js";\nexport { other } from "./other.js";\n`);
+      writeFileSync(path.join(dir, "helper.js"), "export const helper = 1;\n");
+      writeFileSync(path.join(dir, "other.js"), "export const other = 2;\n");
+
+      const source = `export * from "./B.js";\nexport { helper } from "./helper.js";\n`;
+
+      const result = parseExports(source, dir);
+      expect(Object.keys(result).sort()).toEqual(["helper", "other"]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   test("single default export", () => {
     const source = `export { default } from "./Component.svelte";`;
 
