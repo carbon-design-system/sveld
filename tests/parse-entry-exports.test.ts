@@ -1,3 +1,5 @@
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { type EntryExport, parseEntryExports } from "../src/parse-entry-exports";
 
@@ -128,5 +130,44 @@ describe("parseEntryExports", () => {
     expect(byName(exports, "clamp").source).toBe("./utils.ts");
     expect(byName(exports, "Theme").source).toBe("./types.ts");
     expect(byName(exports, "DEFAULT_THEME").source).toBe("./index.ts");
+  });
+
+  test("warns and skips a re-exported module the underlying parser can't handle, instead of throwing", () => {
+    // Not written under tests/fixtures-entry-exports because the redeclaration
+    // below (valid to acorn-typescript, rejected by tsc/biome) would otherwise
+    // trip up `tsc --noEmit` and `biome lint`, which both cover tests/**/*.
+    const dir = mkdtempSync(path.join(tmpdir(), "sveld-entry-exports-parse-failure-"));
+    try {
+      writeFileSync(path.join(dir, "types.ts"), 'export type Theme = "light" | "dark";\n');
+      writeFileSync(
+        path.join(dir, "theme.ts"),
+        [
+          'import type { Theme } from "./types";',
+          "",
+          'export const Theme: { current: Theme } = { current: "light" };',
+          "",
+        ].join("\n"),
+      );
+      writeFileSync(path.join(dir, "other.ts"), 'export const VERSION = "1.0.0";\n');
+      writeFileSync(
+        path.join(dir, "index.ts"),
+        ['export { Theme } from "./theme";', 'export { VERSION } from "./other";', ""].join("\n"),
+      );
+
+      const warn = jest.spyOn(console, "warn").mockImplementation(() => undefined);
+
+      const exports = parseEntryExports(path.join(dir, "index.ts"));
+
+      // The unaffected module's exports still come through.
+      expect(byName(exports, "VERSION")).toMatchObject({ name: "VERSION", kind: "const" });
+
+      // The module the parser can't handle contributes no type info, but the
+      // failure is surfaced instead of failing silently.
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining("theme.ts"));
+
+      warn.mockRestore();
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });
