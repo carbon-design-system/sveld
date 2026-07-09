@@ -17962,7 +17962,7 @@ exports[`fixtures (JSON) "runes-script-generics-attribute-const/input.svelte" 1`
       "column": 0
     },
     "end": {
-      "line": 6,
+      "line": 9,
       "column": 0
     }
   },
@@ -17981,11 +17981,11 @@ exports[`fixtures (JSON) "runes-script-generics-attribute-const/input.svelte" 1`
       "reactive": false,
       "source": {
         "start": {
-          "line": 2,
+          "line": 5,
           "column": 8
         },
         "end": {
-          "line": 2,
+          "line": 5,
           "column": 13
         }
       }
@@ -17999,11 +17999,11 @@ exports[`fixtures (JSON) "runes-script-generics-attribute-const/input.svelte" 1`
       "slot_props": "Record<string, never>",
       "source": {
         "start": {
-          "line": 5,
+          "line": 8,
           "column": 0
         },
         "end": {
-          "line": 5,
+          "line": 8,
           "column": 8
         }
       }
@@ -23807,11 +23807,11 @@ export default class RunesTypedProps extends SvelteComponentTyped<
 exports[`fixtures (TypeScript) "runes-script-generics-attribute-const/input.svelte" 1`] = `
 "import { SvelteComponentTyped } from "svelte";
 
-type $Props<const T extends readonly string[]> = { items: T } & {
+type $Props<T extends readonly string[]> = { items: T } & {
   children?: (this: void) => void;
 };
 
-export type RunesScriptGenericsAttributeConstProps<const T extends readonly string[]> = $Props<T>;
+export type RunesScriptGenericsAttributeConstProps<T extends readonly string[]> = $Props<T>;
 
 export default class RunesScriptGenericsAttributeConst<const T extends readonly string[]> extends SvelteComponentTyped<
   RunesScriptGenericsAttributeConstProps<T>,

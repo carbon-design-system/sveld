@@ -36,6 +36,20 @@ const PRESERVED_SNIPPET_IMPORT_REGEX = /import\s+type\s+[^;]*\bSnippet\b[^;]*fro
 // Matches regex metacharacters that must be escaped before interpolating
 // a user-authored generic name into a RegExp.
 const REGEX_METACHARS = /[.*+?^${}()|[\]\\]/g;
+const LEADING_CONST_MODIFIER_REGEX = /^const\s+/;
+
+/**
+ * Strips a leading `const` type-parameter modifier from a single generic
+ * constraint (e.g. `"const T extends readonly string[]"` -> `"T extends
+ * readonly string[]"`). `const` is only legal on function, method, and class
+ * type parameters (TS1277) - a `type X<const T> = ...` alias declaration is a
+ * syntax error, even though `class X<const T>` is fine. Callers that build a
+ * `type`/`export type` declaration must strip it; callers that build a class
+ * declaration or interface method/construct signature must not.
+ */
+function stripConstModifierForTypeAlias(constraint: string): string {
+  return constraint.replace(LEADING_CONST_MODIFIER_REGEX, "");
+}
 
 /**
  * Formats a description for use in multi-line comment blocks.
@@ -173,7 +187,7 @@ function computeReferencedGenerics(generics: ComponentDocApi["generics"], text: 
   if (referenced.length === 0) return { declSuffix: EMPTY_STR, refSuffix: EMPTY_STR };
 
   return {
-    declSuffix: `<${referenced.map(({ constraint }) => constraint).join(", ")}>`,
+    declSuffix: `<${referenced.map(({ constraint }) => stripConstModifierForTypeAlias(constraint)).join(", ")}>`,
     refSuffix: `<${referenced.map(({ name }) => name).join(", ")}>`,
   };
 }
@@ -242,7 +256,10 @@ export function getContextDefs(def: Pick<ComponentDocApi, "contexts" | "generics
         .filter(({ name }) => context.properties.some((prop) => referencesGeneric(prop.type, name)))
         .map(({ constraint }) => constraint);
 
-      const genericSuffix = referencedConstraints.length > 0 ? `<${referencedConstraints.join(", ")}>` : "";
+      const genericSuffix =
+        referencedConstraints.length > 0
+          ? `<${referencedConstraints.map(stripConstModifierForTypeAlias).join(", ")}>`
+          : "";
 
       /**
        * Use Record<string, never> for empty context objects instead of {}.
@@ -447,7 +464,11 @@ function genPropDef(
    * Full constraints for type definitions (e.g., `type $Props<T extends Foo = Bar>`).
    * Includes the full generic constraint with extends and default.
    */
-  const genericsName = def.generics ? `<${def.generics[1]}>` : "";
+  const genericsName = def.generics
+    ? `<${splitTopLevelCommas(def.generics[1])
+        .map((constraint) => stripConstModifierForTypeAlias(constraint.trim()))
+        .join(", ")}>`
+    : "";
   /**
    * Names only for type references (e.g., `keyof $Props<T>`).
    * Just the generic parameter name without constraints.
