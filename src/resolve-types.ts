@@ -45,12 +45,14 @@ const EXAMPLE_CODE_START_LINE = 2;
 export class TypeResolver {
   private readonly api: TS;
   private readonly symbolFlags: TS;
+  private readonly typeFlags: TS;
   private readonly tsconfigPath: string;
   private readonly overlay = new Map<string, string>();
 
-  private constructor(api: TS, symbolFlags: TS, tsconfigPath: string) {
+  private constructor(api: TS, symbolFlags: TS, typeFlags: TS, tsconfigPath: string) {
     this.api = api;
     this.symbolFlags = symbolFlags;
+    this.typeFlags = typeFlags;
     this.tsconfigPath = tsconfigPath;
   }
 
@@ -76,7 +78,7 @@ export class TypeResolver {
       return null;
     }
 
-    const resolver = new TypeResolver(null, mod.SymbolFlags, tsconfigPath);
+    const resolver = new TypeResolver(null, mod.SymbolFlags, mod.TypeFlags, tsconfigPath);
     const api = new mod.API({ cwd, fs: resolver.createFileSystem() });
     // biome-ignore lint/suspicious/noExplicitAny: assign after fs closure is created.
     (resolver as any).api = api;
@@ -115,6 +117,10 @@ export class TypeResolver {
       const checker = project.checker;
 
       // Phase 1: per-file type-at-position + properties-of-type (no batch API; different files/types).
+      // `getPropertiesOfType` on a union type only returns properties shared by every
+      // constituent, so a discriminated union like `ClickEvent | HoverEvent` would silently
+      // drop `target`/`duration`. Walk each constituent too and fold in the variant-only
+      // properties, marking them optional since no single instance is guaranteed to have them.
       const perFile = await Promise.all(
         Array.from(virtualFiles, async ([virtualFile, target]) => {
           const content = this.overlay.get(virtualFile);
@@ -122,21 +128,45 @@ export class TypeResolver {
           const position = bindingPosition(content);
           const type = await checker.getTypeAtPosition(virtualFile, position);
           if (!type) return null;
-          const properties: TS[] = await checker.getPropertiesOfType(type);
-          const symbols = properties.filter((symbol: TS) => symbol.name && !symbol.name.startsWith("__"));
-          return { moduleName: target.moduleName, symbols };
+
+          const groups = new Map<string, { name: string; symbols: TS[]; forceOptional: boolean }>();
+          const sharedProperties: TS[] = await checker.getPropertiesOfType(type);
+          for (const symbol of sharedProperties) {
+            if (!symbol.name || symbol.name.startsWith("__")) continue;
+            groups.set(symbol.name, { name: symbol.name, symbols: [symbol], forceOptional: false });
+          }
+
+          const isUnion = (type.flags & this.typeFlags.Union) !== 0;
+          if (isUnion) {
+            const constituents: TS[] = await type.getTypes();
+            const perConstituentProperties = await Promise.all(
+              constituents.map((constituent) => checker.getPropertiesOfType(constituent)),
+            );
+            for (const constituentProperties of perConstituentProperties) {
+              for (const symbol of constituentProperties) {
+                if (!symbol.name || symbol.name.startsWith("__") || groups.has(symbol.name)) continue;
+                const existing = groups.get(symbol.name);
+                if (existing) existing.symbols.push(symbol);
+                else groups.set(symbol.name, { name: symbol.name, symbols: [symbol], forceOptional: true });
+              }
+            }
+          }
+
+          return { moduleName: target.moduleName, groups: Array.from(groups.values()) };
         }),
       );
 
-      // Phase 2: batch getTypeOfSymbol across every prop of every component in one round trip.
+      // Phase 2: batch getTypeOfSymbol across every prop occurrence of every component in one round trip.
       const allSymbols: TS[] = [];
-      const owner: number[] = [];
+      const owner: Array<{ fileIndex: number; groupIndex: number }> = [];
       perFile.forEach((entry, fileIndex) => {
         if (!entry) return;
-        for (const symbol of entry.symbols) {
-          allSymbols.push(symbol);
-          owner.push(fileIndex);
-        }
+        entry.groups.forEach((group, groupIndex) => {
+          for (const symbol of group.symbols) {
+            allSymbols.push(symbol);
+            owner.push({ fileIndex, groupIndex });
+          }
+        });
       });
       const propTypes: TS[] = allSymbols.length > 0 ? await checker.getTypeOfSymbol(allSymbols) : [];
 
@@ -145,19 +175,29 @@ export class TypeResolver {
         propTypes.map((propType) => (propType ? checker.typeToString(propType) : Promise.resolve("any"))),
       );
 
-      const byFile = new Map<number, ResolvedComponentProp[]>();
+      const textsByGroup = new Map<number, Map<number, string[]>>();
       allSymbols.forEach((symbol, i) => {
+        const { fileIndex, groupIndex } = owner[i];
         const isOptional = (symbol.flags & this.symbolFlags.Optional) !== 0;
         let typeText = typeTexts[i];
         if (isOptional) typeText = typeText.replace(TRAILING_UNDEFINED, "");
-        const list = byFile.get(owner[i]) ?? [];
-        list.push({ name: symbol.name, type: typeText, isRequired: !isOptional });
-        byFile.set(owner[i], list);
+        const fileGroups = textsByGroup.get(fileIndex) ?? new Map<number, string[]>();
+        const texts = fileGroups.get(groupIndex) ?? [];
+        texts.push(typeText);
+        fileGroups.set(groupIndex, texts);
+        textsByGroup.set(fileIndex, fileGroups);
       });
 
       perFile.forEach((entry, fileIndex) => {
         if (!entry) return;
-        const resolved = byFile.get(fileIndex) ?? [];
+        const fileGroups = textsByGroup.get(fileIndex);
+        const resolved: ResolvedComponentProp[] = entry.groups.map((group, groupIndex) => {
+          const texts = fileGroups?.get(groupIndex) ?? [];
+          const isRequired = !(
+            group.forceOptional || group.symbols.some((symbol) => (symbol.flags & this.symbolFlags.Optional) !== 0)
+          );
+          return { name: group.name, type: Array.from(new Set(texts)).join(" | "), isRequired };
+        });
         resolved.sort((a, b) => a.name.localeCompare(b.name));
         results.set(entry.moduleName, resolved);
       });
