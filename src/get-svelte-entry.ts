@@ -5,7 +5,6 @@ import { parsePackageJson } from "./validate";
 
 export type { SvelteEntryPoint };
 
-/** Resolve the Svelte entry from `entryPoint` or `package.json#svelte`. */
 export function getSvelteEntry(entryPoint?: string): SvelteEntryPoint | null {
   if (entryPoint) {
     const entry_path = join(process.cwd(), entryPoint);

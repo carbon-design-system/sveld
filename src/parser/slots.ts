@@ -4,11 +4,10 @@ import type { DeprecatedValue, JsDocPassthroughTag, SlotProps, SlotPropValue, So
 import { resolveMemberExpressionType } from "./bindings";
 import type { ParserContext } from "./context";
 import { sourceAtPos } from "./source-position";
+import { assignValueOrUndefined } from "./utils";
 
-/** Sentinel used for the default (unnamed) slot's key in `ctx.slots`. */
 const DEFAULT_SLOT_NAME = null;
 
-/** Infer a slot prop value/type from an expression (identifier, literal, member access, or source text). */
 export function inferSlotPropValueFromExpression(
   ctx: ParserContext,
   parser: ComponentParser,
@@ -43,7 +42,6 @@ export function inferSlotPropValueFromExpression(
   return slot_prop_value;
 }
 
-/** Slot props from an object expression, e.g. `{@render mySnippet({ foo: 1 })}`. */
 export function buildSlotPropsFromObjectExpression(
   ctx: ParserContext,
   parser: ComponentParser,
@@ -62,7 +60,6 @@ export function buildSlotPropsFromObjectExpression(
   return slot_props;
 }
 
-/** Snippet prop behind `{@render children()}` or `{@render props.children()}`. */
 export function resolveRenderTagPropReference(
   ctx: ParserContext,
   callee: unknown,
@@ -130,7 +127,6 @@ export function resolveRenderTagPropReference(
   };
 }
 
-/** Callee and arguments from a `{@render ...}` expression (unwraps `ChainExpression` first). */
 export function extractRenderTagInfo(
   ctx: ParserContext,
   expression: unknown,
@@ -170,17 +166,10 @@ export function extractRenderTagInfo(
   };
 }
 
-/** Returns `value`, or `undefined` when it's `undefined` or the empty string. */
-function assignValueOrUndefined(value?: "" | string) {
-  return value === undefined || value === "" ? undefined : value;
-}
-
-/** Like {@link assignValueOrUndefined}, but also accepts a structured {@link SlotProps} map. */
 function assignSlotPropsOrUndefined(value?: string | SlotProps) {
   return value === undefined || value === "" ? undefined : value;
 }
 
-/** Merge or add a slot. Empty `slot_name` is the default slot. */
 export function addSlot(
   ctx: ParserContext,
   {

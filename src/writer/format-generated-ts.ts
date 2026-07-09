@@ -2,24 +2,19 @@ const INDENT_UNIT = "  ";
 const CLOSER_START_REGEX = /^[}\])>]/;
 const OPENERS = new Set(["{", "(", "["]);
 const CLOSERS = new Set(["}", ")", "]"]);
-// A conservative single-line budget for collapsing a short `{...}` block back
-// onto one line; deliberately ignores the surrounding indentation context
-// (unknown at this point in the pipeline), so it errs on the short side.
+// Conservative width for collapsing `{...}` onto one line; ignores surrounding indent.
 const INLINE_WIDTH_BUDGET = 120;
-// An `interface X { ... }` body always expands, regardless of width or
-// source formatting (unlike a plain `{...}` type literal).
+// `interface` bodies always expand, unlike plain `{...}` type literals.
 const INTERFACE_HEADER_REGEX = /\binterface\s+[A-Za-z_$][\w$]*(\s*<[^{};]*>)?\s*$/;
 const TRAILING_TAB_SPACE_REGEX = /[ \t]+$/;
 const TRAILING_WHITESPACE_REGEX = /\s+$/;
 const OPENS_BLOCK_AT_END_REGEX = /[{([]$/;
 const WHITESPACE_CHAR_REGEX = /\s/;
 
-/** Whether `text` ends with an `interface Name<...> ` header, right before its body. */
 function endsWithInterfaceHeader(text: string): boolean {
   return INTERFACE_HEADER_REGEX.test(text.slice(-200));
 }
 
-/** Joins content onto one line, collapsing whitespace runs outside quotes. */
 function flattenToOneLine(content: string): string {
   let out = "";
   let quote: "double" | "single" | "template" | null = null;
@@ -183,19 +178,9 @@ function expandStatements(raw: string): string {
         continue;
       }
 
-      // An `interface` body always expands, matching Prettier, regardless of
-      // width. A comment can't be safely joined onto one line either. Anything
-      // else was single-line as authored (no newline directly after `{`) and
-      // gets a shot at staying that way if it's short enough — dropping a
-      // lone trailing `;`, the way Prettier omits the final separator when a
-      // type literal prints on one line.
+      // Expand interface bodies always; collapse other single-line `{...}` blocks under INLINE_WIDTH_BUDGET.
       if (!content.includes("/*") && raw[i + 1] !== "\n" && !endsWithInterfaceHeader(out)) {
-        // Recurse first so nested `{...}` blocks (e.g. `CustomEvent<{ ... }>`)
-        // get their own collapse-or-expand decision instead of being copied
-        // through untouched as part of this span's raw content. If a nested
-        // block decided to expand (e.g. a generated multi-member type the
-        // caller deliberately authored as multi-line), don't flatten that
-        // decision back out just because the outer span would otherwise fit.
+        // Recurse so nested blocks get their own collapse decision.
         const normalized = expandStatements(content).trim();
         if (!normalized.includes("\n")) {
           const body = normalized.endsWith(";") ? normalized.slice(0, -1) : normalized;
@@ -236,7 +221,6 @@ function expandStatements(raw: string): string {
   return out;
 }
 
-/** Collapses runs of plain spaces down to one, leaving quoted content untouched. */
 function collapseSpaces(line: string): string {
   let out = "";
   let quote: "double" | "single" | "template" | null = null;
@@ -347,7 +331,6 @@ function reindent(text: string): string {
   return out.join("\n");
 }
 
-/** Trims trailing whitespace and caps consecutive blank lines at one. */
 function tidyBlankLines(text: string): string {
   const lines = text.split("\n").map((line) => line.replace(TRAILING_TAB_SPACE_REGEX, ""));
   const out: string[] = [];

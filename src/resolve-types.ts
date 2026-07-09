@@ -23,9 +23,7 @@ export interface ExampleCheckDiagnostic {
   message: string;
 }
 
-// The opt-in resolution path talks to the TypeScript 7 native preview through
-// its (currently unstable) async client/server API. We type it structurally so
-// the default AST-only build never needs the `typescript` types.
+// Structural types for `typescript/unstable/async` so AST-only builds skip the `typescript` package.
 // biome-ignore lint/suspicious/noExplicitAny: native-preview API is loaded lazily and typed structurally.
 type TS = any;
 
@@ -35,7 +33,6 @@ const TRAILING_UNDEFINED = / \| undefined$/;
 const NON_FILENAME_CHAR_REGEX = /[^A-Za-z0-9_-]/g;
 const NON_IDENTIFIER_CHAR_REGEX = /[^A-Za-z0-9_$]/g;
 const LEADING_DIGIT_REGEX = /^[0-9]/;
-/** Line 1 of an example virtual file is always the declaration; the example body starts on line 2. */
 const EXAMPLE_CODE_START_LINE = 2;
 
 /**
@@ -93,12 +90,7 @@ export class TypeResolver {
     const virtualFiles = new Map<string, ResolveTarget>();
     for (const target of targets) {
       if (!target.metadata.canonicalPropsType) continue;
-      // The whole-props type references the component's own <script generics>
-      // parameter (e.g. `Props<T>`). The virtual module below has no binding
-      // for that generic, so the checker would treat it as an unresolved
-      // identifier and fabricate concrete-looking types (conditional types
-      // collapse to a union of both branches, `keyof T` becomes `string |
-      // number | symbol`, etc). Leave these props as their AST-derived text.
+      // Skip when props type references component generics; the virtual module has no binding for `T`.
       if (target.metadata.referencesComponentGenerics) continue;
       const virtualFile = this.virtualFileName(target.filePath, target.moduleName);
       this.overlay.set(virtualFile, buildVirtualModule(target.metadata));
@@ -113,21 +105,13 @@ export class TypeResolver {
     });
 
     try {
-      // Every virtual file belongs to the same `openProject` snapshot, so the
-      // project (and its checker) is shared; look it up once instead of once
-      // per file. Each lookup and each unbatched checker call below is a
-      // round trip to the native TS server process, so cutting call count
-      // matters far more here than in an in-process compiler API.
+      // One project lookup per snapshot; each checker call is a round trip to the TS server.
       const [firstFile] = virtualFiles.keys();
       const project = await snapshot.getDefaultProjectForFile(firstFile);
       if (!project) return results;
       const checker = project.checker;
 
-      // Phase 1: per-file type-at-position + properties-of-type (no batch API; different files/types).
-      // `getPropertiesOfType` on a union type only returns properties shared by every
-      // constituent, so a discriminated union like `ClickEvent | HoverEvent` would silently
-      // drop `target`/`duration`. Walk each constituent too and fold in the variant-only
-      // properties, marking them optional since no single instance is guaranteed to have them.
+      // Phase 1: per-file type lookup. Union constituents need separate walks or variant-only props are dropped.
       const perFile = await Promise.all(
         Array.from(virtualFiles, async ([virtualFile, target]) => {
           const content = this.overlay.get(virtualFile);
@@ -163,7 +147,7 @@ export class TypeResolver {
         }),
       );
 
-      // Phase 2: batch getTypeOfSymbol across every prop occurrence of every component in one round trip.
+      // Phase 2: batch getTypeOfSymbol in one round trip.
       const allSymbols: TS[] = [];
       const owner: Array<{ fileIndex: number; groupIndex: number }> = [];
       perFile.forEach((entry, fileIndex) => {
@@ -177,7 +161,7 @@ export class TypeResolver {
       });
       const propTypes: TS[] = allSymbols.length > 0 ? await checker.getTypeOfSymbol(allSymbols) : [];
 
-      // Phase 3: typeToString has no batch overload; fire concurrently.
+      // Phase 3: typeToString has no batch API; run concurrently.
       const typeTexts = await Promise.all(
         propTypes.map((propType) => (propType ? checker.typeToString(propType) : Promise.resolve("any"))),
       );
@@ -301,13 +285,9 @@ export class TypeResolver {
             const full = path.join(directoryName, entry);
             try {
               (statSync(full).isDirectory() ? directories : files).push(entry);
-            } catch {
-              // Ignore unreadable entries.
-            }
+            } catch {}
           }
-        } catch {
-          // Directory only exists virtually.
-        }
+        } catch {}
 
         for (const file of extras) {
           const base = path.basename(file);
@@ -340,20 +320,17 @@ function buildVirtualModule(metadata: ParsedComponentTypeScriptMetadata): string
   ].join("\n");
 }
 
-/** Sanitizes a documented symbol's name into a valid binding identifier (e.g. a slot named `"header-icon"`). */
 function declarationIdentifier(name: string): string {
   const sanitized = name.replace(NON_IDENTIFIER_CHAR_REGEX, "_");
   if (sanitized === "" || LEADING_DIGIT_REGEX.test(sanitized)) return `_${sanitized}`;
   return sanitized;
 }
 
-/** One example, in its own virtual file: a typed binding for the symbol, then the example body. */
 function buildExampleModule(source: ExampleCheckSource): string {
   const binding = declarationIdentifier(source.name);
   return `const ${binding} = null as unknown as (${source.type});\n${source.code}\n`;
 }
 
-/** Converts a diagnostic's character offset into a line number relative to the example body. */
 function formatExampleDiagnostic(diagnostic: TS, content: string): { line: number; text: string } {
   const pos: number = diagnostic.pos ?? 0;
   const virtualLine = content.slice(0, pos).split("\n").length;
@@ -361,7 +338,6 @@ function formatExampleDiagnostic(diagnostic: TS, content: string): { line: numbe
   return { line, text: String(diagnostic.text ?? "").trim() };
 }
 
-/** Offset of the props binding identifier on the trailing `declare const` line. */
 function bindingPosition(content: string): number {
   const declareIndex = content.lastIndexOf("declare const");
   return content.indexOf(VIRTUAL_PROPS_BINDING, declareIndex) + 2;

@@ -54,13 +54,9 @@ export interface SveldBundle {
  * @param documentExports - Record consts, functions, and types from the entry barrel
  */
 export async function createSveldBundle(input: string, glob: boolean, documentExports = false): Promise<SveldBundle> {
-  // Discover sources once. The export map only changes when the entry file
-  // changes; for a single edit it is stable. `allComponents` (glob-discovered)
-  // can grow as files are added on disk, so it and its entry list are
-  // refreshed in `update()` below.
+  // Export map is stable per edit; re-glob `allComponents` in `update()` when files are added.
   const { exports, allComponents, rootDir, resolveComponentFilePath } = collectComponents(input, glob, documentExports);
 
-  // Entry exports only change when the barrel changes; resolve once.
   const entryExports: EntryExports =
     documentExports && lstatSync(input).isFile() ? parseEntryExports(resolve(input)) : [];
 
@@ -70,8 +66,7 @@ export async function createSveldBundle(input: string, glob: boolean, documentEx
   const components: ComponentDocs = new Map();
   const allComponentsForTypes: ComponentDocs = new Map();
 
-  // Parse diagnostics, keyed by normalized file path so they survive across
-  // incremental updates and can be cleared when a file is re-parsed cleanly.
+  // Diagnostics keyed by normalized path so incremental updates can clear them.
   const parseErrors = new Map<string, ComponentParseError>();
   const processOptions: ProcessComponentOptions = {
     onParseError: (error) => parseErrors.set(error.filePath, error),
@@ -104,8 +99,7 @@ export async function createSveldBundle(input: string, glob: boolean, documentEx
     reportParseErrors(buildResult().errors);
   }
 
-  // Dependency graph derived from the full parse; rebuilt after every update so
-  // that newly added/removed `@extends` edges stay accurate.
+  // Rebuilt after every update so `@extends` edges stay current.
   let reverseDeps = buildReverseDeps(allComponentsForTypes, resolveComponentFilePath);
 
   /**
@@ -128,7 +122,7 @@ export async function createSveldBundle(input: string, glob: boolean, documentEx
         target.set(result.moduleName, result);
         reparsed.add(resolvedPath);
       } else {
-        // Source vanished or failed to parse: drop the stale entry.
+        // Drop stale entry when the source vanished or failed to parse.
         for (const [moduleName, api] of target) {
           if (resolveComponentFilePath(api.filePath) === resolvedPath) {
             target.delete(moduleName);
@@ -146,8 +140,7 @@ export async function createSveldBundle(input: string, glob: boolean, documentEx
       return { result: buildResult(), reparsed: [] };
     }
 
-    // Re-glob so components created since the last update (or the initial
-    // parse) are tracked. Files already known just get their `source` refreshed.
+    // Pick up components created since the last parse.
     if (glob) {
       for (const { moduleName, source } of globComponentSources(rootDir)) {
         const existing = allComponents[moduleName];
@@ -163,8 +156,7 @@ export async function createSveldBundle(input: string, glob: boolean, documentEx
 
     const affected = expandAffected(changed, reverseDeps);
 
-    // Clear stale diagnostics for the files we are about to re-parse; any that
-    // still fail will be re-recorded below.
+    // Clear diagnostics for files about to be re-parsed.
     for (const [filePath, error] of parseErrors) {
       if (affected.has(resolveComponentFilePath(error.filePath))) {
         parseErrors.delete(filePath);
@@ -182,7 +174,7 @@ export async function createSveldBundle(input: string, glob: boolean, documentEx
       reparsed.add(path);
     }
 
-    // Refresh the dependency graph from the up-to-date parse.
+    // Refresh the dependency graph after re-parsing.
     reverseDeps = buildReverseDeps(allComponentsForTypes, resolveComponentFilePath);
 
     const result = buildResult();

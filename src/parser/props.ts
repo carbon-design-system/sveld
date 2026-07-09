@@ -27,11 +27,10 @@ import type {
 } from "../ComponentParser";
 import type { ParserContext } from "./context";
 import { sourceAtPos, sourceForExpression } from "./source-position";
+import { assignValueOrUndefined } from "./utils";
 
-/** Collapse newlines when stringifying expression source text. */
 const NEWLINE_CR_REGEX = /[\r\n]+/g;
 
-/** Merge a prop into `ctx.props`, or add it if missing. */
 export function addProp(parser: ComponentParser, ctx: ParserContext, prop_name: string, data: ComponentProp) {
   if (assignValueOrUndefined(prop_name) === undefined) return;
   parser.trackPropLocalName(prop_name);
@@ -48,12 +47,6 @@ export function addProp(parser: ComponentParser, ctx: ParserContext, prop_name: 
   }
 }
 
-/** Returns `value`, or `undefined` when it's `undefined` or the empty string. */
-function assignValueOrUndefined(value?: "" | string) {
-  return value === undefined || value === "" ? undefined : value;
-}
-
-/** Read value, type, and function-ness from a prop initializer expression. */
 export function processInitializer(
   parser: ComponentParser,
   ctx: ParserContext,
@@ -113,7 +106,6 @@ export function processInitializer(
       value = sourceAtPos(ctx, unaryExpr.start, unaryExpr.end);
     }
     if (unaryExpr.argument) {
-      // If the argument is another UnaryExpression, recursively resolve the type
       if (
         typeof unaryExpr.argument === "object" &&
         "type" in unaryExpr.argument &&
@@ -122,7 +114,6 @@ export function processInitializer(
         const nestedResult = processInitializer(parser, ctx, unaryExpr.argument);
         type = nestedResult.type;
       } else if (typeof unaryExpr.argument === "object" && "value" in unaryExpr.argument) {
-        // Direct literal argument
         type = typeof (unaryExpr.argument as Literal).value;
       }
     }
@@ -136,7 +127,6 @@ export function processInitializer(
     ) {
       value = sourceAtPos(ctx, newExpr.start, newExpr.end);
     }
-    // Infer type from callee if it's an Identifier (e.g., new Date() -> Date)
     if (
       newExpr.callee &&
       typeof newExpr.callee === "object" &&
@@ -144,7 +134,6 @@ export function processInitializer(
       newExpr.callee.type === "Identifier"
     ) {
       const calleeName = (newExpr.callee as Identifier).name;
-      // Common built-in constructors
       if (calleeName === "Date") {
         type = "Date";
       } else if (calleeName === "Map") {
@@ -162,7 +151,6 @@ export function processInitializer(
       } else if (calleeName === "Error") {
         type = "Error";
       } else {
-        // For other constructors, use the constructor name as the type
         type = calleeName;
       }
     }

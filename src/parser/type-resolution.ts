@@ -26,24 +26,15 @@ function typeTextReferencesGenerics(typeText: string, generics: ComponentGeneric
   return false;
 }
 
-/**
- * Looks up the modern-runes `$props()` declaration metadata recorded for the
- * declarator starting at `declaratorStart`, if any.
- */
 export function getRunesPropsDeclarationMetadata(ctx: ParserContext, declaratorStart: number | undefined) {
   if (declaratorStart === undefined) return undefined;
   return ctx.runesPropsDeclarationMetadataByDeclaratorStart.get(declaratorStart);
 }
 
-/**
- * Looks up the per-prop type metadata (optionality, source range, type text)
- * for `propName` within the `$props()` declaration starting at `declaratorStart`.
- */
 export function getRunesPropTypeMetadata(ctx: ParserContext, declaratorStart: number | undefined, propName: string) {
   return getRunesPropsDeclarationMetadata(ctx, declaratorStart)?.props.get(propName);
 }
 
-/** Rightmost name from a type reference (`Foo` or `NS.Foo`). */
 export function getTypeReferenceName(typeName: unknown): string | undefined {
   if (!typeName || typeof typeName !== "object" || !("type" in typeName)) return undefined;
 
@@ -65,7 +56,6 @@ export function getTypeReferenceName(typeName: unknown): string | undefined {
   return undefined;
 }
 
-/** Leftmost name from a type reference, for import/local lookup. */
 export function getTypeDependencyName(typeName: unknown): string | undefined {
   if (!typeName || typeof typeName !== "object" || !("type" in typeName)) return undefined;
 
@@ -80,7 +70,6 @@ export function getTypeDependencyName(typeName: unknown): string | undefined {
   return undefined;
 }
 
-/** Returns the trimmed source text spanned by a type annotation node, if positions are available. */
 export function getTypeAnnotationText(
   ctx: ParserContext,
   typeAnnotation: { start?: number; end?: number } | undefined,
@@ -91,7 +80,6 @@ export function getTypeAnnotationText(
   return sourceAtPos(ctx, start + 1, end)?.trim();
 }
 
-/** Returns the trimmed source text spanned by a bare type node (no leading `:`), if positions are available. */
 export function getTypeNodeText(ctx: ParserContext, typeNode: { start?: number; end?: number } | undefined) {
   const start = typeNode?.start;
   const end = typeNode?.end;
@@ -99,7 +87,6 @@ export function getTypeNodeText(ctx: ParserContext, typeNode: { start?: number; 
   return sourceAtPos(ctx, start, end)?.trim();
 }
 
-/** Collect imported and local type names referenced by a type AST node. */
 export function collectReferencedTypeDependencies(
   ctx: ParserContext,
   typeNode: ModernRunesTypeNode | undefined,
@@ -241,7 +228,6 @@ export function collectReferencedTypeDependencies(
   }
 }
 
-/** Emit `import type` statements for referenced type names, grouped by module. */
 export function buildTypeImportStatements(ctx: ParserContext, referencedImportedTypes: Set<string>) {
   const groupedImports = new Map<
     string,
@@ -292,7 +278,6 @@ export function buildTypeImportStatements(ctx: ParserContext, referencedImported
     });
 }
 
-/** `ParsedComponentTypeScriptMetadata` for a single typed `$props()` declaration, if any. */
 export function buildTypeScriptMetadata(ctx: ParserContext): ParsedComponentTypeScriptMetadata | undefined {
   if (ctx.typedRunesPropsDeclarations.length !== 1) return undefined;
 

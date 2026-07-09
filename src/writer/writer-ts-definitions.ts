@@ -24,14 +24,6 @@ export {
 } from "./writer-ts-definitions-core";
 
 /**
- * Options for writing TypeScript definition files.
- *
- * @property outDir - The output directory where `.d.ts` files will be written
- * @property inputDir - The input directory containing source components
- * @property preamble - Text to prepend to the main `index.d.ts` file
- * @property exports - Parsed export information for generating the index file
- * @property format - `"class"` (default) or `"component"`; see {@link WriteTsDefinitionOptions}
- *
  * @example
  * ```ts
  * const options: WriteTsDefinitionsOptions = {
@@ -50,34 +42,15 @@ export interface WriteTsDefinitionsOptions extends WriteTsDefinitionOptions {
 }
 
 /**
- * Writes TypeScript definition files for all parsed Svelte components.
- *
- * Generates individual `.d.ts` files for each component and a main `index.d.ts`
- * file that exports all components. Uses a TypeScript writer to handle file
- * I/O operations efficiently.
- *
- * @param components - Map of component module names to their parsed documentation
- * @param options - Configuration options for writing definitions
- * @returns A promise that resolves when all files have been written
- *
  * @example
  * ```ts
- * const components = new Map([
- *   ["Button", { filePath: "Button.svelte", props: [...], ... }],
- *   ["Input", { filePath: "Input.svelte", props: [...], ... }]
- * ]);
- *
  * await writeTsDefinitions(components, {
  *   outDir: "./dist",
  *   inputDir: "./src",
  *   preamble: "// Generated\n",
  *   exports: { ... }
  * });
- *
- * // Creates:
- * // - dist/Button.d.ts
- * // - dist/Input.d.ts
- * // - dist/index.d.ts
+ * // Creates dist/Button.d.ts, dist/Input.d.ts, dist/index.d.ts
  * ```
  */
 export default async function writeTsDefinitions(components: ComponentDocs, options: WriteTsDefinitionsOptions) {

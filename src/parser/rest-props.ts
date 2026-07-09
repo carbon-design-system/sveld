@@ -1,7 +1,6 @@
 import type { ComponentElement, RestProps } from "../ComponentParser";
 import type { ParserContext } from "./context";
 
-/** {@link RestProps} for the parent of a `{...$$restProps}` spread. */
 export function createRestPropsFromParent(parent: unknown): RestProps {
   if (!parent || typeof parent !== "object" || !("type" in parent)) return undefined;
 
@@ -34,7 +33,6 @@ export function createRestPropsFromParent(parent: unknown): RestProps {
   return restProps;
 }
 
-/** Record the first `{...$$restProps}` target on `ctx.rest_props`. */
 export function maybeSetRestProps(ctx: ParserContext, parent: unknown) {
   if (ctx.rest_props !== undefined) return;
 

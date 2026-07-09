@@ -4,7 +4,6 @@ import type { ParserContext } from "./context";
 /** Matches a single word character; used to reject partial-name matches in {@link extractPropertyType}. */
 const WORD_CHAR_REGEX = /\w/;
 
-/** Pull `propName`'s type out of an object type string like `{ value: string; other: number }`. */
 export function extractPropertyType(typeStr: string, propName: string): string | undefined {
   const trimmed = typeStr.trim();
   if (!trimmed.startsWith("{") || !trimmed.endsWith("}")) return undefined;
@@ -44,7 +43,6 @@ export function extractPropertyType(typeStr: string, propName: string): string |
   return undefined;
 }
 
-/** Resolve `obj.prop` by looking up `obj`'s type and calling {@link extractPropertyType}. */
 export function resolveMemberExpressionType(
   ctx: ParserContext,
   parser: ComponentParser,

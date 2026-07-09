@@ -51,28 +51,13 @@ import { addSlot, buildSlotPropsFromObjectExpression, extractRenderTagInfo } fro
 import { sourceAtPos, sourceRangeFromNode, sourceRangeFromOffsets } from "./parser/source-position";
 import { buildTypeScriptMetadata } from "./parser/type-resolution";
 import { stripTypeCastWrappers } from "./parser/typescript-casts";
+import { assignValueOrUndefined } from "./parser/utils";
 import { parse } from "./svelte-parse";
 
-/**
- * Regular expression for matching variable declarations.
- *
- * Matches `const`, `let`, or `function` declarations and captures the variable name.
- * Used to find variable declarations when searching for JSDoc comments.
- *
- * @example
- * ```ts
- * // Matches:
- * // "const count = 0"     -> captures "count"
- * // "let name = 'test'"   -> captures "name"
- * // "function foo() {}"   -> captures "foo"
- * ```
- */
+/** Matches `const`/`let`/`function` declarations for JSDoc association. */
 const VAR_DECLARATION_REGEX = /(?:const|let|function)\s+(\w+)\s*[=(]/;
 
-/** Returns `value`, or `undefined` when it's `undefined` or the empty string. */
-export function assignValue(value?: "" | string) {
-  return value === undefined || value === "" ? undefined : value;
-}
+export { assignValueOrUndefined as assignValue };
 
 /** Structured JSDoc tag (e.g. `{ name: "since", body: "1.2.0" }`). */
 export interface JsDocPassthroughTag {
@@ -264,174 +249,105 @@ export type ModernScriptNode = {
   attributes?: ModernScriptAttribute[];
 };
 
-/**
- * Diagnostic information for component parsing.
- *
- * Used to provide context about the component being parsed for error
- * messages and logging.
- */
 interface ComponentParserDiagnostics {
-  /** The module/component name (e.g., "Button", "App") */
   moduleName: string;
-  /** The file path to the component (e.g., "./Button.svelte") */
   filePath: string;
 }
 
 export type ComponentPropBinding = "readonly" | "writable";
 
-/**
- * Parameter information for function props.
- *
- * Extracted from JSDoc `@param` tags to provide detailed function signatures.
- */
+/** Function prop parameter from JSDoc `@param` tags. */
 export interface ComponentPropParam {
-  /** The parameter name */
+  /** Parameter name. */
   name: string;
-  /** The parameter type (e.g., "string", "number", "CustomType") */
+  /** Parameter type (e.g. `"string"`, `"CustomType"`). */
   type: string;
-  /** Optional description from JSDoc */
+  /** From JSDoc `@param`. */
   description?: string;
-  /** Whether the parameter is optional */
+  /** True when optional. */
   optional?: boolean;
 }
 
-/**
- * Component prop definition extracted from Svelte component.
- *
- * Represents a single prop that can be passed to the component, including
- * its type, default value, description, and metadata about whether it's
- * required, reactive, or a function.
- */
+/** A parsed component prop. */
 export interface ComponentProp {
-  /** The prop name as declared in the component */
+  /** Public prop name. */
   name: string;
-  /** The declaration kind: "let" (required), "const" (optional with default), or "function" */
+  /** `"let"` (required), `"const"` (default), or `"function"`. */
   kind: "let" | "const" | "function";
-  /** Whether this prop is declared as `const` (has a default value) */
+  /** True when declared with `const`. */
   constant: boolean;
-  /** The TypeScript type of the prop (e.g., "string", "number | string") */
+  /** TypeScript type text. */
   type?: string;
-  /** Conservative provenance for the prop type */
+  /** Conservative provenance for the prop type. */
   typeSource?: ComponentPropTypeSource;
-  /** Local variable name, emitted when it differs from the public prop name */
+  /** Local binding when it differs from the public name. */
   localName?: string;
-  /** The default value as a string representation of the source code */
+  /** Default value as source text. */
   value?: string;
-  /** Structured default value metadata for docs UIs */
+  /** Structured default value metadata for docs UIs. */
   defaultValue?: ComponentPropDefaultValue;
-  /** Description extracted from JSDoc comments */
+  /** From JSDoc. */
   description?: string;
-  /** Function parameters (for function props) extracted from `@param` tags */
+  /** From JSDoc `@param` on function props. */
   params?: ComponentPropParam[];
-  /** Return type (for function props) extracted from `@returns` tag */
+  /** From JSDoc `@returns` on function props. */
   returnType?: string;
-  /** Whether this prop is a function (arrow function or function expression) */
+  /** True for arrow/function-expression props. */
   isFunction: boolean;
-  /** Whether this prop is a function declaration (not an expression) */
+  /** True for `function` declarations. */
   isFunctionDeclaration: boolean;
-  /** Whether this prop is required (no default value, declared with `let`) */
+  /** True when declared with `let` and no default. */
   isRequired: boolean;
-  /** Whether this prop is reactive (can change and trigger reactivity) */
+  /** True when reactive. */
   reactive: boolean;
-  /** Explicit author-documented binding direction from `@bindable` JSDoc */
+  /** Binding direction from `@bindable` JSDoc. */
   binding?: ComponentPropBinding;
-  /** True when the prop is explicitly declared with Svelte 5 `$bindable()` */
+  /** True when declared with Svelte 5 `$bindable()`. */
   bindable?: true;
   /** From `@deprecated` JSDoc. */
   deprecated?: DeprecatedValue;
-  /** Structured `@since` / `@example` tags, in source order. */
+  /** `@since` / `@example` tags in source order. */
   tags?: JsDocPassthroughTag[];
-  /** Source range for the prop declaration, when available */
+  /** Source range when available. */
   source?: SourceRange;
 }
 
-/**
- * Default slot name constant.
- *
- * Used to represent the default (unnamed) slot in Svelte components.
- * The default slot is accessed without a name attribute.
- */
 const DEFAULT_SLOT_NAME = null;
 
-/**
- * Regular expression for matching component comment markers.
- *
- * Matches HTML comments that start with `@component` in the template.
- * Used to extract component-level descriptions.
- *
- * @example
- * ```ts
- * // Matches:
- * // "<!-- @component This is a button component -->"
- * ```
- */
+/** Matches `@component` in HTML comments. */
 const COMPONENT_COMMENT_REGEX = /^@component/;
 
-/**
- * Regular expression for matching carriage return characters.
- *
- * Global regex for removing `\r` characters from strings.
- * Used to normalize line endings when processing component comments.
- */
 const CARRIAGE_RETURN_REGEX = /\r/g;
 
 /** Matches a JSDoc `@slot`/`@snippet` type of an empty object literal, e.g. `{{}}` or `{{ }}`. */
 const EMPTY_OBJECT_TYPE_REGEX = /^\{\s*\}$/;
 
-/**
- * Regular expression for matching newline and carriage return characters.
- *
- * Global regex for matching all newline variations (`\n`, `\r\n`, `\r`).
- * Used to normalize or replace newlines in source code strings.
- *
- * @example
- * ```ts
- * // Matches:
- * // "\n"     -> newline
- * // "\r\n"   -> Windows line ending
- * // "\r"     -> carriage return
- * ```
- */
 const _NEWLINE_CR_REGEX = /[\r\n]+/g;
 
-/**
- * Component slot definition.
- *
- * Represents a slot that can be used to pass content into the component.
- * Includes information about slot props, fallback content, and descriptions.
- */
 export interface ComponentSlot {
-  /** The slot name (null or undefined for default slot) */
+  /** Slot name (`null` for the default slot). */
   name?: string | null;
-  /** Whether this is the default slot */
+  /** True for the default slot. */
   default: boolean;
-  /** Fallback content to display when slot is not provided */
+  /** Fallback content when the slot is empty. */
   fallback?: string;
-  /** TypeScript type definition for slot props (e.g., "{ title: string }") */
+  /** Slot props as TypeScript type text. */
   slot_props?: string;
-  /** Description extracted from JSDoc `@slot` or `@snippet` tags */
+  /** From JSDoc `@slot` or `@snippet`. */
   description?: string;
   /** From `@deprecated` JSDoc. */
   deprecated?: DeprecatedValue;
-  /**
-   * JSDoc tags that appeared after the prose description and before `@slot` / `@snippet`
-   * (e.g. `@example`), in source order.
-   */
+  /** Tags between the description and `@slot`/`@snippet` (e.g. `@example`), in source order. */
   tags?: JsDocPassthroughTag[];
-  /** Source range for the slot/snippet declaration or documentation tag, when available */
+  /** Source range when available. */
   source?: SourceRange;
 }
 
-/**
- * Slot prop value definition.
- *
- * Used internally to track slot prop types and whether they should be
- * replaced with prop type references.
- */
+/** Slot prop type text or a reference to resolve at finalize time. */
 export interface SlotPropValue {
-  /** The prop type value or reference */
+  /** Type text or reference. */
   value?: string;
-  /** Whether this value should be replaced with a prop type reference */
+  /** True to replace with a prop type reference. */
   replace: boolean;
 }
 
@@ -449,63 +365,48 @@ export type InternalComponentSlot = Omit<ComponentSlot, "slot_props"> & {
   slot_props?: string | SlotProps;
 };
 
-/**
- * Event that is forwarded from a child component or element.
- *
- * Forwarded events are those that use `on:eventname` syntax without
- * a handler, passing the event through to the parent.
- */
+/** Event forwarded with `on:eventname` and no handler. */
 export interface ForwardedEvent {
-  /** Always "forwarded" for forwarded events */
+  /** Discriminator: `"forwarded"`. */
   type: "forwarded";
-  /** The event name (e.g., "click", "change") */
+  /** Event name. */
   name: string;
-  /** The element or component that forwards this event */
+  /** Element or component that forwards the event. */
   element: ComponentInlineElement | ComponentElement;
-  /** Description extracted from JSDoc `@event` tags */
+  /** From JSDoc `@event`. */
   description?: string;
   /** From `@deprecated` JSDoc. */
   deprecated?: DeprecatedValue;
-  /** The detail type if explicitly specified in `@event` tag */
+  /** Detail type from `@event`. */
   detail?: string;
-  /** Structured `@since` / `@example` tags, in source order. */
+  /** `@since` / `@example` tags in source order. */
   tags?: JsDocPassthroughTag[];
-  /** Source range for the forwarded event declaration or documentation tag, when available */
+  /** Source range when available. */
   source?: SourceRange;
 }
 
-/**
- * Event that is dispatched by the component.
- *
- * Dispatched events are those created with `createEventDispatcher()` and
- * dispatched via `dispatch("eventname", detail)`, or dispatched from a custom
- * element via `$host().dispatchEvent(new CustomEvent("eventname", { detail }))`.
- */
+/** Event from `createEventDispatcher()`, `dispatch()`, or `$host().dispatchEvent()`. */
 export interface DispatchedEvent {
-  /** Always "dispatched" for dispatched events */
+  /** Discriminator: `"dispatched"`. */
   type: "dispatched";
-  /** The event name (e.g., "click", "change") */
+  /** Event name. */
   name: string;
-  /** The detail type (e.g., "{ value: string }", "null", "CustomEvent<...>") */
+  /** Detail type text. */
   detail?: string;
-  /** Description extracted from JSDoc `@event` tags */
+  /** From JSDoc `@event`. */
   description?: string;
   /** From `@deprecated` JSDoc. */
   deprecated?: DeprecatedValue;
-  /** Structured `@since` / `@example` tags, in source order. */
+  /** `@since` / `@example` tags in source order. */
   tags?: JsDocPassthroughTag[];
-  /** Source range for the dispatched event call or documentation tag, when available */
+  /** Source range when available. */
   source?: SourceRange;
 }
 
 export type ComponentEvent = ForwardedEvent | DispatchedEvent;
 
 /**
- * Serialized version of {@link ForwardedEvent} for JSON output.
- *
- * This interface maintains backward compatibility by serializing the `element`
- * property as a string instead of an object. The element name is extracted
- * from the {@link ComponentInlineElement} or {@link ComponentElement} object.
+ * Serialized {@link ForwardedEvent} for JSON output. `element` is a string, not an object.
  *
  * @example
  * ```ts
@@ -517,57 +418,44 @@ export type ComponentEvent = ForwardedEvent | DispatchedEvent;
  * ```
  */
 export interface SerializedForwardedEvent {
-  /** Always "forwarded" for forwarded events */
+  /** Discriminator: `"forwarded"`. */
   type: "forwarded";
-  /** The event name (e.g., "click", "change") */
+  /** Event name. */
   name: string;
-  /**
-   * Serialized as string for JSON backward compatibility.
-   * In the internal API, this is an object, but for JSON output it's a string.
-   */
+  /** Element name as a string for JSON output. */
   element: string;
-  /** Description extracted from JSDoc `@event` tags */
+  /** From JSDoc `@event`. */
   description?: string;
   /** From `@deprecated` JSDoc. */
   deprecated?: DeprecatedValue;
-  /** The detail type if explicitly specified in `@event` tag */
+  /** Detail type from `@event`. */
   detail?: string;
-  /** Structured `@since` / `@example` tags, in source order. */
+  /** `@since` / `@example` tags in source order. */
   tags?: JsDocPassthroughTag[];
-  /** Source range for the forwarded event declaration or documentation tag, when available */
+  /** Source range when available. */
   source?: SourceRange;
 }
 
 export type SerializedComponentEvent = SerializedForwardedEvent | DispatchedEvent;
 
-/**
- * Type definition extracted from JSDoc `@typedef` tags.
- *
- * Represents custom types defined in component comments that can be
- * referenced by props, events, and other type annotations.
- */
+/** JSDoc `@typedef` extracted as a named type. */
 export interface TypeDef {
-  /** The type string representation (e.g., "{ x: number; y: number }") */
+  /** Type text (e.g. `"{ x: number; y: number }"`). */
   type: string;
-  /** The type name (e.g., "Point", "User") */
+  /** Type name. */
   name: string;
-  /** Description extracted from JSDoc comments */
+  /** From JSDoc. */
   description?: string;
-  /** The full TypeScript type definition string (e.g., "type Point = { x: number; y: number }") */
+  /** Full `type` alias declaration text. */
   ts: string;
 }
 
 export type ComponentGenerics = [name: string, type: string] | null;
 
-/**
- * Represents an inline Svelte component element.
- *
- * Used to identify which component forwards an event or accepts rest props.
- */
 export interface ComponentInlineElement {
-  /** Always "InlineComponent" for component elements */
+  /** Discriminator: `"InlineComponent"`. */
   type: "InlineComponent";
-  /** The component name (e.g., "Button", "Modal") */
+  /** Component name. */
   name: string;
 }
 
@@ -575,10 +463,7 @@ export interface ComponentElement {
   type: "Element";
   name: string;
   /**
-   * For `svelte:element`, stores the hardcoded element tag if `this` is a literal string.
-   *
-   * When `svelte:element` is used with a static tag (e.g., `svelte:element this="div"`),
-   * this property contains the tag name. If the tag is dynamic, this property is undefined.
+   * Static tag for `svelte:element this="div"`. Undefined when `this` is dynamic.
    *
    * @example
    * ```svelte
@@ -592,22 +477,17 @@ export interface ComponentElement {
    * ```
    */
   thisValue?: string;
-  /** Inline or block description from the `@restProps` JSDoc tag */
+  /** From `@restProps` JSDoc. */
   description?: string;
 }
 
 export type RestProps = undefined | ComponentInlineElement | ComponentElement;
 
-/**
- * Interface extension information from JSDoc `@extends` tag.
- *
- * Allows components to extend external TypeScript interfaces for
- * better type safety and code reuse.
- */
+/** JSDoc `@extends` target. */
 export interface Extends {
-  /** The interface name to extend (e.g., "ButtonProps") */
+  /** Interface name (e.g. `"ButtonProps"`). */
   interface: string;
-  /** The import path for the interface (e.g., "./types" or "carbon-components-svelte") */
+  /** Import path (e.g. `"./types"`). */
   import: string;
 }
 
@@ -615,45 +495,31 @@ export interface ComponentPropBindings {
   elements: string[];
 }
 
-/**
- * Property definition for a component context.
- *
- * Represents a single property in a context object created with `setContext`.
- */
 export interface ComponentContextProp {
-  /** The property name */
+  /** Property name. */
   name: string;
-  /** The property type (inferred from JSDoc or variable types) */
+  /** Property type text. */
   type: string;
-  /** Description extracted from JSDoc comments on the variable */
+  /** From JSDoc. */
   description?: string;
-  /** Whether the property is optional */
+  /** True when optional. */
   optional: boolean;
 }
 
-/**
- * Component context definition.
- *
- * Represents a context created with `setContext(key, value)` that can be
- * accessed by child components via `getContext(key)`.
- */
+/** Context from `setContext(key, value)`. */
 export interface ComponentContext {
-  /** The context key (e.g., "modal", "tabs") */
+  /** Context key from `setContext`. */
   key: string;
-  /** The generated TypeScript type name (e.g., "ModalContext", "TabsContext") */
+  /** Generated type name (e.g. `"ModalContext"`). */
   typeName: string;
-  /** Description extracted from JSDoc comments */
+  /** From JSDoc. */
   description?: string;
-  /** Properties available in this context */
+  /** Context object properties. */
   properties: ComponentContextProp[];
 }
 
 /**
- * Complete parsed component metadata.
- *
- * This is the main return type from {@link ComponentParser.parseSvelteComponent}.
- * Contains all extracted information about a Svelte component including props,
- * slots, events, types, and more.
+ * Complete parsed component metadata from {@link ComponentParser.parseSvelteComponent}.
  *
  * @example
  * ```ts
@@ -663,51 +529,38 @@ export interface ComponentContext {
  *   filePath: "./Button.svelte"
  * });
  *
- * // Access component metadata:
- * parsed.props        // Array of component props
- * parsed.slots        // Array of component slots
- * parsed.events       // Array of component events
- * parsed.typedefs     // Array of custom type definitions
- * parsed.contexts     // Array of context definitions
+ * parsed.props;
+ * parsed.slots;
+ * parsed.events;
+ * parsed.typedefs;
+ * parsed.contexts;
  * ```
  */
 export interface ParsedComponent {
-  /** Source range for the component source that was parsed */
+  /** Source range of the parsed file. */
   source?: SourceRange;
-  /** Whether the component uses legacy or runes syntax according to compiler metadata */
   syntaxMode: SyntaxMode;
-  /** Language used by the instance or module script when it can be determined */
   scriptLanguage?: ScriptLanguage;
-  /** Component props that can be passed to the component */
   props: ComponentProp[];
-  /** Exports from `<script context="module">` block */
+  /** Exports from `<script context="module">`. */
   moduleExports: ComponentProp[];
-  /** Slots available in the component template */
   slots: ComponentSlot[];
-  /** Events that the component can dispatch or forward (serialized for JSON/API output) */
+  /** Serialized events for JSON/API output. */
   events: SerializedComponentEvent[];
-  /** Custom type definitions from JSDoc `@typedef` tags */
   typedefs: TypeDef[];
-  /** Generic type parameters (e.g., `[name: "T", type: "string"]`) or null */
   generics: null | ComponentGenerics;
-  /** Rest props configuration (which elements/components accept rest props) */
   rest_props: RestProps;
-  /** Interface extension from JSDoc `@extends` tag */
   extends?: Extends;
-  /** Component-level description from `@component` HTML comment */
+  /** From `@component` HTML comment. */
   componentComment?: string;
-  /** Source range for the `@component` HTML comment, when available */
   componentCommentSource?: SourceRange;
-  /** Contexts created with `setContext` in the component */
   contexts?: ComponentContext[];
-  /** Custom-element tag name from `<svelte:options customElement="x-foo" />` (or the object form's `tag`), when present */
   customElementTag?: string;
   /**
    * Type guesses from this parse (unknown props, `any` contexts, orphan `@event` tags).
-   * Set on every {@link ComponentParser.parseSvelteComponent} call.
    */
   diagnostics?: SveldDiagnostic[];
-  /** Internal writer-only TypeScript metadata. Not serialized to JSON. */
+  /** Writer-only TypeScript metadata. Not serialized to JSON. */
   [PARSED_COMPONENT_TYPE_SCRIPT_METADATA]?: ParsedComponentTypeScriptMetadata;
 }
 
@@ -793,7 +646,7 @@ export default class ComponentParser {
   }
 
   private static assignValue(value?: "" | string) {
-    return assignValue(value);
+    return assignValueOrUndefined(value);
   }
 
   private resolvePublicPropName(name: string) {
@@ -830,28 +683,6 @@ export default class ComponentParser {
     return undefined;
   }
 
-  /**
-   * Checks if a MemberExpression represents a well-known numeric constant.
-   *
-   * Identifies constants from the Number and Math objects that should be
-   * typed as `number` rather than their literal values.
-   *
-   * @param memberExpr - The AST node to check
-   * @returns True if the expression is a recognized numeric constant
-   *
-   * @example
-   * ```ts
-   * // Recognized constants:
-   * Number.POSITIVE_INFINITY  // true
-   * Number.MAX_VALUE          // true
-   * Math.PI                   // true
-   * Math.E                    // true
-   *
-   * // Not recognized:
-   * Custom.CONSTANT           // false
-   * Number.UNKNOWN            // false
-   * ```
-   */
   isNumericConstant(memberExpr: unknown): boolean {
     if (!memberExpr || typeof memberExpr !== "object" || !("type" in memberExpr)) return false;
     if (memberExpr.type !== "MemberExpression") return false;
@@ -900,9 +731,6 @@ export default class ComponentParser {
     return "unknown";
   }
 
-  /**
-   * Look up JSDoc on a local variable declaration by name.
-   */
   resolveLocalVarJSDoc(name: string) {
     for (const decl of this.ctx.vars) {
       const matches = decl.declarations.some(
@@ -927,27 +755,6 @@ export default class ComponentParser {
     return undefined;
   }
 
-  /**
-   * Adds or merges a module export to the moduleExports map.
-   *
-   * Similar to {@link addProp}, but for exported values from the module script.
-   * If an export with the same name already exists, the new data is merged
-   * with the existing export.
-   *
-   * @param prop_name - The name of the exported value
-   * @param data - The export data to add or merge
-   *
-   * @example
-   * ```ts
-   * // For: export const API_URL = "https://api.example.com"
-   * addModuleExport("API_URL", {
-   *   name: "API_URL",
-   *   kind: "const",
-   *   type: "string",
-   *   value: '"https://api.example.com"'
-   * })
-   * ```
-   */
   private addModuleExport(prop_name: string, data: ComponentProp) {
     if (ComponentParser.assignValue(prop_name) === undefined) return;
 
@@ -964,19 +771,10 @@ export default class ComponentParser {
   }
 
   /**
-   * Normalizes type strings by aliasing common patterns.
-   *
-   * Converts `*` to `any` (common JSDoc wildcard) and trims whitespace
-   * from type annotations.
-   *
-   * @param type - The type string to normalize
-   * @returns The normalized type string
-   *
    * @example
    * ```ts
-   * aliasType("*")        // Returns: "any"
-   * aliasType(" string ") // Returns: "string"
-   * aliasType("number")   // Returns: "number"
+   * aliasType("*"); // "any"
+   * aliasType(" string "); // "string"
    * ```
    */
   aliasType(type: string): string {
@@ -984,26 +782,6 @@ export default class ComponentParser {
     return type.trim();
   }
 
-  /**
-   * Builds a cache of variable type information from JSDoc comments.
-   *
-   * Scans the source code for variable declarations and extracts type information
-   * from preceding JSDoc comments. This cache is used to infer types for context
-   * properties and other variable references.
-   *
-   * @example
-   * ```ts
-   * // Source code:
-   * /**
-   *  * @type {string}
-   *  * The user's name
-   *  *\/
-   * const userName = "John";
-   *
-   * // Cache entry:
-   * // { "userName": { type: "string", description: "The user's name" } }
-   * ```
-   */
   private buildVariableInfoCache() {
     if (!this.ctx.source) return;
 
@@ -1015,47 +793,24 @@ export default class ComponentParser {
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
 
-      /**
-       * Match variable declarations (const, let, function) to find variables
-       * that might have JSDoc type annotations.
-       */
       const varMatch = line.match(VAR_DECLARATION_REGEX);
       if (varMatch) {
         const varName = varMatch[1];
 
-        /**
-         * Look backwards for JSDoc comment preceding this variable declaration.
-         * Comments must be immediately before the declaration with no non-comment
-         * lines in between.
-         */
         for (let j = i - 1; j >= 0; j--) {
           const prevLine = lines[j].trim();
 
-          /**
-           * Stop if we hit a non-comment, non-empty line - the comment is too far away.
-           */
           if (prevLine && !prevLine.startsWith("*") && !prevLine.startsWith("/*") && !prevLine.startsWith("//")) {
             break;
           }
 
-          /**
-           * Found start of JSDoc comment - extract the entire comment block
-           * and parse it to get type and description information.
-           */
           if (prevLine.startsWith("/**")) {
-            /**
-             * Extract the JSDoc comment block from start to the line before the variable.
-             */
             const commentLines: string[] = [];
             for (let k = j; k < i; k++) {
               commentLines.push(lines[k]);
             }
             const commentBlock = commentLines.join("\n");
 
-            /**
-             * Parse the JSDoc to extract `@type` tag and description.
-             * Store in cache for later lookup.
-             */
             const parsed = parseComment(commentBlock, { spacing: "preserve" });
             const { type: typeTag, description } = getCommentTags(parsed);
             if (typeTag) {
@@ -1071,36 +826,8 @@ export default class ComponentParser {
     }
   }
 
-  /**
-   * Cache for compiled regex patterns for variable name matching.
-   *
-   * Stores three regex patterns (const, let, function) per variable name
-   * to avoid recreating them on each lookup. Improves performance when
-   * searching for the same variable multiple times.
-   */
   private static readonly VAR_NAME_REGEX_CACHE = new Map<string, [RegExp, RegExp, RegExp]>();
 
-  /**
-   * Gets or creates cached regex patterns for matching variable declarations.
-   *
-   * Creates three regex patterns for matching const, let, and function declarations
-   * of a specific variable name. The patterns are cached to avoid recreating them
-   * for the same variable name.
-   *
-   * @param varName - The variable name to create regex patterns for
-   * @returns A tuple of three RegExp objects for const, let, and function patterns
-   *
-   * @example
-   * ```ts
-   * getVarNameRegexes("count")
-   * // Returns:
-   * // [
-   * //   /\bconst\s+count\s*=/,
-   * //   /\blet\s+count\s*=/,
-   * //   /\bfunction\s+count\s*\(/
-   * // ]
-   * ```
-   */
   private static getVarNameRegexes(varName: string): [RegExp, RegExp, RegExp] {
     let cached = ComponentParser.VAR_NAME_REGEX_CACHE.get(varName);
     if (!cached) {
@@ -1116,26 +843,17 @@ export default class ComponentParser {
   }
 
   /**
-   * Finds the type and description for a variable by searching for its JSDoc comment.
-   *
-   * First checks the cache built by {@link buildVariableInfoCache}. If not found,
-   * searches the source code directly for the variable declaration and its
-   * preceding JSDoc comment.
-   *
-   * @param varName - The variable name to look up
-   * @returns The type and description if found, null otherwise
-   *
    * @example
    * ```ts
-   * // Source:
-   * /**
-   *  * @type {number}
-   *  * The count value
-   *  *\/
-   * const count = 0;
+   * // Given:
+   * // /**
+   * //  * @type {number}
+   * //  * The count value
+   * //  *\/
+   * // const count = 0;
    *
-   * findVariableTypeAndDescription("count")
-   * // Returns: { type: "number", description: "The count value" }
+   * findVariableTypeAndDescription("count");
+   * // { type: "number", description: "The count value" }
    * ```
    */
   findVariableTypeAndDescription(varName: string): { type: string; description?: string } | null {
@@ -1157,10 +875,6 @@ export default class ComponentParser {
       return cached;
     }
 
-    /**
-     * Search through the source code directly for JSDoc comments.
-     * This is a fallback when the variable wasn't found in the cache.
-     */
     if (!this.ctx.source) return null;
 
     if (!this.ctx.sourceLinesCache) {
@@ -1173,44 +887,25 @@ export default class ComponentParser {
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
 
-      /**
-       * Check if this line declares our variable.
-       * Match patterns like: const varName = ..., let varName = ..., function varName
-       */
       const constMatch = line.match(constRegex);
       const letMatch = line.match(letRegex);
       const funcMatch = line.match(funcRegex);
 
       if (constMatch || letMatch || funcMatch) {
-        /**
-         * Look backwards for JSDoc comment preceding this variable declaration.
-         */
         for (let j = i - 1; j >= 0; j--) {
           const prevLine = lines[j].trim();
 
-          /**
-           * Stop if we hit a non-comment, non-empty line - the comment is too far away.
-           */
           if (prevLine && !prevLine.startsWith("*") && !prevLine.startsWith("/*") && !prevLine.startsWith("//")) {
             break;
           }
 
-          /**
-           * Found start of JSDoc comment - extract and parse it.
-           */
           if (prevLine.startsWith("/**")) {
-            /**
-             * Extract the JSDoc comment block from start to the line before the variable.
-             */
             const commentLines: string[] = [];
             for (let k = j; k < i; k++) {
               commentLines.push(lines[k]);
             }
             const commentBlock = commentLines.join("\n");
 
-            /**
-             * Parse the JSDoc to extract `@type` tag and description.
-             */
             const parsed = parseComment(commentBlock, { spacing: "preserve" });
             const { type: typeTag, description } = getCommentTags(parsed);
             if (typeTag) {
@@ -1228,20 +923,6 @@ export default class ComponentParser {
     return null;
   }
 
-  /**
-   * Cleans up all parser state, resetting the instance for reuse.
-   *
-   * Clears all maps, caches, and resets all state variables to their initial
-   * values. Should be called before parsing a new component or when the
-   * parser instance needs to be reset.
-   *
-   * @example
-   * ```ts
-   * parser.parseSvelteComponent(source1, diagnostics1);
-   * parser.cleanup(); // Reset state
-   * parser.parseSvelteComponent(source2, diagnostics2); // Fresh parse
-   * ```
-   */
   accumulateGeneric(name: string, constraint: string): void {
     if (this.ctx.generics) {
       this.ctx.generics = [`${this.ctx.generics[0]}, ${name}`, `${this.ctx.generics[1]}, ${constraint}`];
@@ -1250,76 +931,27 @@ export default class ComponentParser {
     }
   }
 
+  /**
+   * Resets parser state for reuse between parses.
+   *
+   * @example
+   * ```ts
+   * parser.parseSvelteComponent(source1, diagnostics1);
+   * parser.cleanup();
+   * parser.parseSvelteComponent(source2, diagnostics2);
+   * ```
+   */
   public cleanup() {
     this.ctx = createParserContext();
   }
 
-  /**
-   * Pre-compiled regex for matching script blocks in Svelte components.
-   *
-   * Matches `<script>` tags and their content, capturing the opening tag,
-   * script content, and closing tag. Global and case-insensitive flags
-   * allow matching multiple script blocks.
-   *
-   * @example
-   * ```ts
-   * // Matches:
-   * // "<script>const x = 1;</script>"
-   * // "<script lang='ts'>...</script>"
-   * ```
-   */
   private static readonly SCRIPT_BLOCK_REGEX = /(<script[^>]*>)([\s\S]*?)(<\/script>)/gi;
 
-  /**
-   * Pre-compiled regex for matching TypeScript directive comments.
-   *
-   * Matches TypeScript directive comments like ts-ignore, ts-expect-error,
-   * etc. Used to remove these directives from script blocks before JSDoc parsing.
-   *
-   * @example
-   * ```ts
-   * // Matches:
-   * // "// ts-ignore"
-   * // "// ts-expect-error: reason"
-   * // "// ts-nocheck"
-   * ```
-   */
   private static readonly TS_DIRECTIVE_REGEX = /\/\/\s*@ts-[^\n\r]*/g;
 
-  /**
-   * Strips TypeScript directive comments from script blocks only.
-   *
-   * Removes TypeScript directive comments (e.g., ts-ignore, ts-expect-error directives)
-   * from within `<script>` blocks to prevent them from interfering with JSDoc parsing.
-   * Directives outside script blocks are left untouched.
-   *
-   * @param source - The Svelte component source code
-   * @returns The source code with TypeScript directives removed from script blocks
-   *
-   * @example
-   * ```ts
-   * // Input (with TypeScript directive):
-   * <script>
-   *   const x: string = 123; // directive removed
-   * </script>
-   *
-   * // Output (directive stripped):
-   * <script>
-   *   const x: string = 123;
-   * </script>
-   * ```
-   */
   private static stripTypeScriptDirectivesFromScripts(source: string): string {
-    /**
-     * Find all script blocks and strip directives only from within them.
-     * Note: Need to reset lastIndex for global regex to ensure consistent matching.
-     */
     ComponentParser.SCRIPT_BLOCK_REGEX.lastIndex = 0;
     return source.replace(ComponentParser.SCRIPT_BLOCK_REGEX, (_match, openTag, scriptContent, closeTag) => {
-      /**
-       * Remove TypeScript directives from script content only.
-       * Preserves the script tags and other content outside script blocks.
-       */
       ComponentParser.TS_DIRECTIVE_REGEX.lastIndex = 0;
       const cleanedContent = scriptContent.replace(ComponentParser.TS_DIRECTIVE_REGEX, "");
       return openTag + cleanedContent + closeTag;
@@ -1327,24 +959,6 @@ export default class ComponentParser {
   }
 
   /**
-   * Parses a Svelte component and extracts all component metadata.
-   *
-   * This is the main entry point that orchestrates the entire parsing process:
-   * 1. Cleans up previous state
-   * 2. Strips TypeScript directives that might interfere with JSDoc
-   * 3. Compiles the component to get the AST
-   * 4. Collects reactive variables
-   * 5. Builds variable type cache
-   * 6. Parses custom types from JSDoc comments
-   * 7. Walks the AST to extract props, slots, events, bindings, and contexts
-   * 8. Post-processes events to distinguish dispatched vs forwarded
-   * 9. Processes props with bindings and slots with prop references
-   * 10. Returns the complete parsed component structure
-   *
-   * @param source - The Svelte component source code
-   * @param diagnostics - Diagnostic information (module name and file path)
-   * @returns A ParsedComponent object containing all extracted metadata
-   *
    * @example
    * ```ts
    * const parser = new ComponentParser();
@@ -1352,16 +966,12 @@ export default class ComponentParser {
    *   moduleName: "Button",
    *   filePath: "./Button.svelte"
    * });
-   * // Returns: { props: [...], slots: [...], events: [...], ... }
+   * // { props, slots, events, typedefs, ... }
    * ```
    */
   public parseSvelteComponent(source: string, diagnostics: ComponentParserDiagnostics): ParsedComponent {
     this.cleanup();
     this.ctx.componentFilePath = diagnostics.filePath;
-    /**
-     * Strip TypeScript directives from script blocks only to prevent interference with JSDoc.
-     * TypeScript directive comments can break JSDoc parsing if not removed.
-     */
     const cleanedSource = ComponentParser.stripTypeScriptDirectivesFromScripts(source);
     this.ctx.source = cleanedSource;
     buildRunesPropTypeMetadata(this, this.ctx);
@@ -1400,18 +1010,10 @@ export default class ComponentParser {
       walk(this.ctx.parsed?.module as unknown as Node, {
         enter: (node) => {
           if (node.type === "ExportNamedDeclaration") {
-            /**
-             * Skip re-exports (e.g., export { A, B } from 'library').
-             * These don't have declarations in the current file, so we can't extract metadata.
-             */
             if (node.declaration == null) {
               return;
             }
 
-            /**
-             * Handle both VariableDeclaration and FunctionDeclaration exports.
-             * Both can be exported from the module script and need type extraction.
-             */
             if (!node.declaration || typeof node.declaration !== "object" || !("type" in node.declaration)) {
               return;
             }
@@ -1556,14 +1158,7 @@ export default class ComponentParser {
 
     walk(componentRoot, {
       enter: (node, parent, _prop) => {
-        /**
-         * Declares nested scope bindings for `node` (if it's a scope owner) before anything
-         * below reads `ctx.scopeDeclarations` for it. This fuses what was previously a separate
-         * full walk (scope analysis) into this traversal: a node's own scope only ever depends
-         * on its ancestors and itself, never on siblings or descendants, so building it here
-         * on entry and consuming it immediately after is equivalent to building the whole map
-         * in a prior pass.
-         */
+        // Fuse scope declaration into this walk (see enterNestedScopeDeclarationNode).
         enterNestedScopeDeclarationNode(this, this.ctx, scopeWalkState, node);
 
         const nodeScope = this.ctx.scopeDeclarations.get(node as unknown as object);
@@ -1638,11 +1233,7 @@ export default class ComponentParser {
           }
         }
 
-        /**
-         * Check for Spread node (Svelte-specific AST node type).
-         * Note: Spread is a Svelte-specific type not in estree, so we check the string value.
-         * This handles `{...$$restProps}` spread syntax in component templates.
-         */
+        // Svelte Spread nodes: `{...$$restProps}` and rest-prop locals.
         if (node && typeof node === "object" && "type" in node && String(node.type) === "Spread") {
           const spreadNode = node as { type: string; expression?: { name?: string } };
           if (
@@ -1676,17 +1267,10 @@ export default class ComponentParser {
         }
 
         if (node.type === "ExportNamedDeclaration") {
-          /**
-           * Handle export {} - empty export statement, nothing to extract.
-           */
           if (node.declaration == null && node.specifiers.length === 0) {
             return;
           }
 
-          /**
-           * Handle renamed exports (e.g., export { localName as exportedName }).
-           * We need to find the original declaration and use the exported name as the prop name.
-           */
           let prop_name: string;
           if (node.declaration == null && node.specifiers[0]?.type === "ExportSpecifier") {
             const specifier = node.specifiers[0];
@@ -1700,11 +1284,7 @@ export default class ComponentParser {
                 : undefined;
             if (!localName || !exportedName) return;
             let declaration: VariableDeclaration | undefined;
-            /**
-             * Search through all variable declarations for this variable.
-             * Limitation: the variable must have been declared before the export
-             * since we're walking the AST in order.
-             */
+            // Walk is in order; the local binding must appear before this export.
             for (const varDecl of Array.from(this.ctx.vars)) {
               if (
                 varDecl.declarations.some(
@@ -1724,18 +1304,10 @@ export default class ComponentParser {
             prop_name = exportedName;
           }
 
-          /**
-           * Skip re-exports (e.g., export { A, B } from 'library').
-           * These don't have declarations in the current file.
-           */
           if (node.declaration == null) {
             return;
           }
 
-          /**
-           * Handle both VariableDeclaration and FunctionDeclaration.
-           * Both can be exported as props from the component.
-           */
           if (!node.declaration || typeof node.declaration !== "object" || !("type" in node.declaration)) {
             return;
           }
@@ -1869,10 +1441,6 @@ export default class ComponentParser {
           });
         }
 
-        /**
-         * Check for Comment node (Svelte-specific AST node type).
-         * Looks for HTML comments in the template that start with `@component`.
-         */
         if (node && typeof node === "object" && "type" in node && String(node.type) === "Comment") {
           const commentNode = node as { data?: string };
           const data: string = commentNode?.data?.trim() ?? "";
@@ -1883,11 +1451,6 @@ export default class ComponentParser {
           }
         }
 
-        /**
-         * Check for Slot node (Svelte-specific AST node type).
-         * Extracts slot definitions from the template, including named slots,
-         * slot props, and fallback content.
-         */
         if (node && typeof node === "object" && "type" in node && String(node.type) === "Slot") {
           const slotNode = node as {
             attributes?: Array<{
@@ -2022,11 +1585,7 @@ export default class ComponentParser {
           }
         }
 
-        /**
-         * Check for EventHandler node (Svelte-specific AST node type).
-         * Handles event forwarding syntax like `<Component on:click />` or `<button on:click />`.
-         * When an event handler has no expression, it means the event is being forwarded.
-         */
+        // Bare `on:event` handlers forward events; dispatched events win and are reconciled after the walk.
         if (node && typeof node === "object" && "type" in node && String(node.type) === "EventHandler") {
           const eventHandlerNode = node as { expression?: unknown; name?: string };
           if (eventHandlerNode.expression == null && eventHandlerNode.name) {
@@ -2034,33 +1593,19 @@ export default class ComponentParser {
               const parentName = typeof parent.name === "string" ? parent.name : undefined;
               const parentType = "type" in parent ? String(parent.type) : undefined;
               if (parentName && parentType) {
-                /**
-                 * Determine if parent is InlineComponent or Element.
-                 * This tells us whether the event is forwarded from a component or native element.
-                 */
                 const element: ComponentInlineElement | ComponentElement =
                   parentType === "InlineComponent"
                     ? { type: "InlineComponent", name: parentName }
                     : { type: "Element", name: parentName };
 
-                /**
-                 * Track that this event is forwarded (we'll use this info later).
-                 * This helps distinguish between dispatched and forwarded events during post-processing.
-                 */
                 this.ctx.forwardedEvents.set(eventHandlerNode.name, element);
 
                 const existing_event = this.ctx.events.get(eventHandlerNode.name);
 
-                /**
-                 * Check if this event has a JSDoc description from `@event` tags.
-                 */
                 const event_description = this.ctx.eventDescriptions.get(eventHandlerNode.name);
                 const event_deprecated = existing_event?.deprecated;
 
                 if (!existing_event) {
-                  /**
-                   * Add new forwarded event to the events map.
-                   */
                   this.ctx.events.set(eventHandlerNode.name, {
                     type: "forwarded",
                     name: eventHandlerNode.name,
@@ -2070,9 +1615,6 @@ export default class ComponentParser {
                     source: sourceRangeFromNode(this.ctx, node),
                   });
                 } else if (existing_event.type === "forwarded" && event_description && !existing_event.description) {
-                  /**
-                   * Event is already forwarded, just add the description if it wasn't set before.
-                   */
                   this.ctx.events.set(eventHandlerNode.name, {
                     ...existing_event,
                     description: event_description,
@@ -2080,21 +1622,13 @@ export default class ComponentParser {
                     source: existing_event.source || sourceRangeFromNode(this.ctx, node),
                   });
                 }
-                /**
-                 * Note: if event is dispatched, we don't overwrite it here.
-                 * We'll handle @event JSDoc on forwarded events after the walk completes
-                 * to correctly convert dispatched events that are actually forwarded.
-                 */
               }
             }
           }
         }
 
         /**
-         * Check for Binding node (Svelte-specific AST node type).
-         * Any prop used in a legacy `bind:*` expression should be treated as reactive.
-         * `bind:this` on HTML elements additionally changes the prop type to include
-         * the bound element type.
+         * Legacy `bind:*` marks props reactive; `bind:this` on elements also narrows the prop type.
          */
         if (
           parent &&
@@ -2176,14 +1710,7 @@ export default class ComponentParser {
       }
     }
 
-    /**
-     * Post-process events: convert dispatched events from @event JSDoc to forwarded events
-     * if they are actually forwarded and not dispatched via createEventDispatcher.
-     *
-     * This handles the case where an event is documented with @event but is actually
-     * forwarded via `on:eventname` syntax rather than dispatched. We need to check
-     * which events are actually dispatched and convert the rest to forwarded events.
-     */
+    // Reconcile `@event` JSDoc with actual dispatch vs `on:` forwarding.
     const actuallyDispatchedEvents = new Set<string>(hostDispatchedEventNames);
     if (dispatcher_name !== undefined) {
       for (const callee of callees) {
@@ -2200,10 +1727,6 @@ export default class ComponentParser {
 
     this.ctx.forwardedEvents.forEach((element, eventName) => {
       const event = this.ctx.events.get(eventName);
-      /**
-       * If event is marked as dispatched but is NOT actually dispatched, convert it to forwarded.
-       * This happens when @event JSDoc is used but the event is actually forwarded via on: syntax.
-       */
       if (event && event.type === "dispatched" && !actuallyDispatchedEvents.has(eventName)) {
         const event_description = this.ctx.eventDescriptions.get(eventName);
         const forwardedEvent: ForwardedEvent = {
@@ -2215,11 +1738,7 @@ export default class ComponentParser {
           tags: event.tags,
           source: event.source,
         };
-        /**
-         * Preserve detail type if it was explicitly set in `@event` tag.
-         * Note: "null" is a valid explicit type (e.g., `@event {null} eventname`).
-         * Only skip if detail is truly undefined or the string "undefined".
-         */
+        // Keep explicit `@event` detail types, including `null`.
         if (event.detail !== undefined && event.detail !== "undefined") {
           forwardedEvent.detail = event.detail;
         }
@@ -2261,11 +1780,7 @@ export default class ComponentParser {
 
     const processedSlots = ComponentParser.mapToArray(this.ctx.slots)
       .map((slot) => {
-        // A `string` here is already-formatted TS type text from a JSDoc
-        // `@slot`/`@snippet` tag; only a structured `SlotProps` map (from
-        // template parsing) needs formatting into TS type text. An empty
-        // object literal is normalized the same way an empty structured
-        // map is, below.
+        // JSDoc `@slot`/`@snippet` tags are already TS type text; template parsing yields a SlotProps map.
         if (!slot.slot_props) {
           return slot as ComponentSlot;
         }
@@ -2287,10 +1802,7 @@ export default class ComponentParser {
           new_props.push(`${key}: ${slot_props[key].value}`);
         }
 
-        // With more than one destructured prop, always break onto separate
-        // lines (matching how an `interface` body is never collapsed)
-        // rather than leave it up to whether the combined line happens to
-        // fit under the formatter's width.
+        // Force multiline when count > 1 (matches interface body formatting).
         const formatted_slot_props =
           new_props.length === 0
             ? "Record<string, never>"
@@ -2338,11 +1850,7 @@ export default class ComponentParser {
     }
 
     const moduleExportsArray = ComponentParser.mapToArray(this.ctx.moduleExports);
-    /**
-     * Transform events for JSON serialization: convert element object to string for backward compatibility.
-     * The internal representation uses element objects, but JSON output uses strings for compatibility
-     * with older versions of sveld and external tools.
-     */
+    // Forwarded events keep element objects internally; JSON output uses element name strings.
     const eventsArray = ComponentParser.mapToArray(this.ctx.events)
       .map((event): SerializedComponentEvent => {
         switch (event.type) {

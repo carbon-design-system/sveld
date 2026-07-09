@@ -13,13 +13,11 @@ import type ComponentParser from "../ComponentParser";
 import type { LexicalScope, ScopeBinding, ScopeBindingKind } from "../ComponentParser";
 import type { ParserContext } from "./context";
 
-/** Declares `name` into `scope` unless it's empty/already bound (first declaration wins). */
 export function declareScopeBinding(scope: LexicalScope, name: string, binding: ScopeBinding) {
   if (!name || scope.has(name)) return;
   scope.set(name, binding);
 }
 
-/** Resolves `name` to its public prop name by walking active scopes innermost-first. */
 export function resolveIdentifierToReactiveProp(ctx: ParserContext, name: string) {
   for (let i = ctx.activeScopes.length - 1; i >= 0; i -= 1) {
     const binding = ctx.activeScopes[i]?.get(name);

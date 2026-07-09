@@ -3,13 +3,8 @@ import { isIdentifier, isLiteral, isNewExpressionNamed, isObjectExpression } fro
 import type { DispatchedEvent } from "../ComponentParser";
 import type { ParserContext } from "./context";
 import { sourceRangeFromNode } from "./source-position";
+import { assignValueOrUndefined } from "./utils";
 
-/** Returns `value`, or `undefined` when it's `undefined` or the empty string. */
-function assignValueOrUndefined(value?: "" | string) {
-  return value === undefined || value === "" ? undefined : value;
-}
-
-/** Render a literal event-detail value (from a `dispatch()`/`CustomEvent` argument) as TS type text, quoting strings. */
 export function literalDetailToTypeText(value: unknown): string {
   return typeof value === "string" ? JSON.stringify(value) : String(value);
 }
@@ -111,7 +106,6 @@ export function parseHostDispatchEventCall(ctx: ParserContext, dispatchEventCall
   return String(eventName);
 }
 
-/** Build an inline object type (with optional JSDoc per property) for event details or typedefs. */
 export function buildEventDetailFromProperties(
   properties: Array<{ name: string; type: string; description?: string; optional?: boolean; default?: string }>,
   _eventName?: string,

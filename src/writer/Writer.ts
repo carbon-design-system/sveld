@@ -1,31 +1,12 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { parse } from "node:path";
 
-/**
- * Base writer class for file system operations.
- *
- * Automatically creates directories as needed before writing.
- *
- * @example
- * ```ts
- * const writer = new Writer();
- * await writer.write("./dist/index.d.ts", "export type Props = {};");
- * ```
- */
 export default class Writer {
   /**
-   * Writes content to a file.
-   *
-   * Creates the directory structure if needed, then writes the content
-   * to the specified file path.
-   *
-   * @param filePath - The path where the file should be written
-   * @param raw - The content to write
-   *
    * @example
    * ```ts
-   * await writer.write("./dist/index.d.ts", "export type Props={}");
-   * // Creates ./dist/index.d.ts with the given content
+   * const writer = new Writer();
+   * await writer.write("./dist/index.d.ts", "export type Props = {};");
    * ```
    */
   public async write(filePath: string, raw: string) {
@@ -35,10 +16,6 @@ export default class Writer {
 }
 
 /**
- * Creates a Writer instance for JSON files.
- *
- * @returns A Writer instance
- *
  * @example
  * ```ts
  * const writer = createJsonWriter();
@@ -50,14 +27,10 @@ export function createJsonWriter(): Writer {
 }
 
 /**
- * Creates a Writer instance for TypeScript files.
- *
- * @returns A Writer instance
- *
  * @example
  * ```ts
  * const writer = createTypeScriptWriter();
- * await writer.write("index.d.ts", "export type Props={};");
+ * await writer.write("index.d.ts", "export type Props = {};");
  * ```
  */
 export function createTypeScriptWriter(): Writer {

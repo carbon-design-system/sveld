@@ -12,6 +12,7 @@ import { addDispatchedEvent, buildEventDetailFromProperties } from "./events";
 import { splitTopLevelCommas } from "./generics";
 import { addSlot } from "./slots";
 import { sourceRangeFromCommentTag } from "./source-position";
+import { assignValueOrUndefined } from "./utils";
 
 const GENERIC_DEFAULT_EQUALS_REGEX = /\s*=\s*/;
 
@@ -34,13 +35,10 @@ function normalizeGenericNameSpacing(name: string): string {
   return `${base}<${normalizedParams}>`;
 }
 
-/** True when a slice between an AST comment end and a node start is only whitespace. */
 const ONLY_WHITESPACE_REGEX = /^\s*$/;
 
-/** Trailing semicolon on a typedef source slice before brace matching. */
 const TRAILING_SEMICOLON_REGEX = /;$/;
 
-/** Strip a leading `-` from inline `@slot` / `@snippet` descriptions. */
 const DESCRIPTION_DASH_PREFIX_REGEX = /^-\s*/;
 
 function cleanDescription(description: string | undefined): string | undefined {
@@ -133,11 +131,6 @@ function isSingleObjectLiteral(source: string): boolean {
   return depth === 0;
 }
 
-/** Returns `value`, or `undefined` when it's `undefined` or the empty string. */
-function assignValue(value?: "" | string) {
-  return value === undefined || value === "" ? undefined : value;
-}
-
 export function formatComment(comment: string) {
   let formatted_comment = comment;
 
@@ -152,7 +145,6 @@ export function formatComment(comment: string) {
   return formatted_comment;
 }
 
-/** Split JSDoc tags into type/param/returns/passthrough buckets. */
 export function getCommentTags(parsed: ReturnType<typeof parseComment>) {
   const tags = parsed[0]?.tags ?? [];
   const excludedTags = new Set([
@@ -217,7 +209,6 @@ export function getCommentTags(parsed: ReturnType<typeof parseComment>) {
   };
 }
 
-/** Last leading comment (JSDoc when present). TypeScript directives are stripped first. */
 export function findJSDocComment(leadingComments: unknown[]): { value: string } | undefined {
   if (!leadingComments || leadingComments.length === 0) return undefined;
   const comment = leadingComments[leadingComments.length - 1];
@@ -279,7 +270,6 @@ export function processLeadingCommentsJSDoc(
   return processNodeJSDoc(ctx, parser, node);
 }
 
-/** Parse adjacent JSDoc into type, params, returns, description, and passthrough tags. */
 export function processJSDocComment(
   parser: ComponentParser,
   leadingComments: unknown[],
@@ -335,7 +325,7 @@ export function processJSDocComment(
 
   if (returnsTag) returnType = parser.aliasType(returnsTag.type);
 
-  const formattedDescription = assignValue(commentDescription?.trim());
+  const formattedDescription = assignValueOrUndefined(commentDescription?.trim());
   if (formattedDescription || additionalTags.length > 0) {
     const descriptionParts: string[] = [];
     if (formattedDescription) {
@@ -359,7 +349,6 @@ export function processJSDocComment(
   return { type, params, returnType, description, binding, deprecated, tags };
 }
 
-/** Scan source JSDoc for events, typedefs, callbacks, slots, extends, and generics. */
 export function parseCustomTypes(ctx: ParserContext, parser: ComponentParser) {
   if (!ctx.source) return;
   let commentSearchOffset = 0;
@@ -554,7 +543,7 @@ export function parseCustomTypes(ctx: ParserContext, parser: ComponentParser) {
         ctx.typedefs.set(currentTypedefName, {
           type: typedefType,
           name: currentTypedefName,
-          description: assignValue(currentTypedefDescription),
+          description: assignValueOrUndefined(currentTypedefDescription),
           ts: typedefTs,
         });
 
@@ -580,7 +569,7 @@ export function parseCustomTypes(ctx: ParserContext, parser: ComponentParser) {
         ctx.typedefs.set(currentCallbackName, {
           type: callbackType,
           name: currentCallbackName,
-          description: assignValue(currentCallbackDescription),
+          description: assignValueOrUndefined(currentCallbackDescription),
           ts: callbackTs,
         });
 

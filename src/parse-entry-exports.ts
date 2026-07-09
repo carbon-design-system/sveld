@@ -23,9 +23,7 @@ export type EntryExports = EntryExport[];
 /** Extensions probed when resolving a bare module specifier to a file. */
 const CANDIDATE_EXTENSIONS = [".ts", ".mts", ".cts", ".tsx", ".js", ".mjs", ".cjs", ".jsx", ".d.ts"];
 
-/** Splits a JSDoc comment body into lines. */
 const NEWLINE_REGEX = /\r?\n/;
-/** Strips leading whitespace and asterisks from a JSDoc line. */
 const JSDOC_LINE_PREFIX_REGEX = /^\s*\*+/;
 
 /** Minimal AST node shape exposed by the Svelte/acorn-typescript parser. */
@@ -104,11 +102,8 @@ function resolveModuleFile(specifier: string, fromDir: string): string | null {
   return null;
 }
 
-/** Reads and cleans the JSDoc block immediately preceding `start`, if any. */
 function leadingJsDoc(text: string, start: number): string | undefined {
-  // Only a JSDoc block directly adjacent to the declaration (separated by
-  // whitespace alone) documents it. Anchor to the nearest `*/` so earlier
-  // comments and intervening code are never absorbed.
+  // JSDoc must sit directly above the declaration (whitespace only); anchor on nearest `*/`.
   const before = text.slice(0, start).trimEnd();
   if (!before.endsWith("*/")) return undefined;
 
@@ -126,20 +121,17 @@ function leadingJsDoc(text: string, start: number): string | undefined {
   return description.join(" ") || undefined;
 }
 
-/** Slices the verbatim source text spanned by a node. */
 function textOf(source: ModuleSource, node: AstNode | undefined): string | undefined {
   if (!node) return undefined;
   return source.text.slice(node.start, node.end);
 }
 
-/** Extracts the annotated type text from a `TSTypeAnnotation`, if present. */
 function annotationText(source: ModuleSource, annotated: AstNode | undefined): string | undefined {
   const annotation = asNode(annotated?.typeAnnotation);
   if (annotation?.type !== "TSTypeAnnotation") return undefined;
   return textOf(source, asNode(annotation.typeAnnotation));
 }
 
-/** Builds a callable type signature from a function-like node. */
 function buildSignature(source: ModuleSource, fn: AstNode): string {
   const params = asNodeArray(fn.params)
     .map((param) => textOf(source, param) ?? "")
@@ -151,7 +143,6 @@ function buildSignature(source: ModuleSource, fn: AstNode): string {
   return `(${params})${returnType ? ` => ${returnType}` : ""}`;
 }
 
-/** Infers a primitive type name from a literal initializer. */
 function inferLiteralType(init: AstNode): string | undefined {
   if (init.type === "Literal") {
     const value = init.value;
@@ -163,7 +154,6 @@ function inferLiteralType(init: AstNode): string | undefined {
   return undefined;
 }
 
-/** Pull type text from a declaration node. */
 function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocStart: number): InternalExport[] {
   const declFile = source.filePath;
   const description = leadingJsDoc(source.text, jsdocStart);
@@ -277,7 +267,6 @@ function parseModule(filePath: string): { source: ModuleSource; body: AstNode[] 
   }
 }
 
-/** Finds the module a local name was imported from, if any. */
 function findImportSource(body: AstNode[], name: string): { specifier: string; importedName: string } | null {
   for (const node of body) {
     if (node.type !== "ImportDeclaration") continue;
