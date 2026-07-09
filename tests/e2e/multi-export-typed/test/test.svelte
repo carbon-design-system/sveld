@@ -1,4 +1,4 @@
-<script lang="ts">
+<script>
   import { Button, Link, Quote } from "../src";
 </script>
 

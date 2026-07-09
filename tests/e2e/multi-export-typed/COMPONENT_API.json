@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "generator": {
     "name": "sveld",
-    "version": "0.34.1",
+    "version": "0.35.0",
     "svelteVersion": "5.56.3"
   },
   "total": 4,
