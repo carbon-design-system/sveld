@@ -17954,6 +17954,73 @@ exports[`fixtures (JSON) "runes-typed-props/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "runes-script-generics-attribute-const/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 6,
+      "column": 0
+    }
+  },
+  "syntaxMode": "runes",
+  "scriptLanguage": "ts",
+  "props": [
+    {
+      "name": "items",
+      "kind": "let",
+      "type": "T",
+      "typeSource": "typescript",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 2,
+          "column": 8
+        },
+        "end": {
+          "line": 2,
+          "column": 13
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>",
+      "source": {
+        "start": {
+          "line": 5,
+          "column": 0
+        },
+        "end": {
+          "line": 5,
+          "column": 8
+        }
+      }
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": [
+    "T",
+    "const T extends readonly string[]"
+  ],
+  "contexts": [],
+  "diagnostics": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "generics/input.svelte" 1`] = `
 "{
   "source": {
@@ -23733,6 +23800,23 @@ export default class RunesTypedProps extends SvelteComponentTyped<
   RunesTypedPropsProps,
   Record<string, any>,
   Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "runes-script-generics-attribute-const/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+type $Props<const T extends readonly string[]> = { items: T } & {
+  children?: (this: void) => void;
+};
+
+export type RunesScriptGenericsAttributeConstProps<const T extends readonly string[]> = $Props<T>;
+
+export default class RunesScriptGenericsAttributeConst<const T extends readonly string[]> extends SvelteComponentTyped<
+  RunesScriptGenericsAttributeConstProps<T>,
+  Record<string, any>,
+  { default: Record<string, never> }
 > {}
 "
 `;
