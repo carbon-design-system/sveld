@@ -93,6 +93,13 @@ export class TypeResolver {
     const virtualFiles = new Map<string, ResolveTarget>();
     for (const target of targets) {
       if (!target.metadata.canonicalPropsType) continue;
+      // The whole-props type references the component's own <script generics>
+      // parameter (e.g. `Props<T>`). The virtual module below has no binding
+      // for that generic, so the checker would treat it as an unresolved
+      // identifier and fabricate concrete-looking types (conditional types
+      // collapse to a union of both branches, `keyof T` becomes `string |
+      // number | symbol`, etc). Leave these props as their AST-derived text.
+      if (target.metadata.referencesComponentGenerics) continue;
       const virtualFile = this.virtualFileName(target.filePath, target.moduleName);
       this.overlay.set(virtualFile, buildVirtualModule(target.metadata));
       virtualFiles.set(virtualFile, target);

@@ -9,6 +9,9 @@ const COMPONENT_PATH = path.join(FIXTURE_DIR, "input.svelte");
 const UNION_FIXTURE_DIR = path.join(process.cwd(), "tests", "fixtures", "runes-whole-props-union-resolve-types");
 const UNION_COMPONENT_PATH = path.join(UNION_FIXTURE_DIR, "input.svelte");
 
+const GENERIC_FIXTURE_DIR = path.join(process.cwd(), "tests", "fixtures", "runes-whole-props-generic-resolve-types");
+const GENERIC_COMPONENT_PATH = path.join(GENERIC_FIXTURE_DIR, "input.svelte");
+
 async function parseFixture() {
   const source = await Bun.file(COMPONENT_PATH).text();
   const parser = new ComponentParser();
@@ -24,6 +27,15 @@ async function parseUnionFixture() {
   return parser.parseSvelteComponent(source, {
     moduleName: "RunesWholePropsUnionResolveTypes",
     filePath: asNormalizedPath(UNION_COMPONENT_PATH),
+  });
+}
+
+async function parseGenericFixture() {
+  const source = await Bun.file(GENERIC_COMPONENT_PATH).text();
+  const parser = new ComponentParser();
+  return parser.parseSvelteComponent(source, {
+    moduleName: "RunesWholePropsGenericResolveTypes",
+    filePath: asNormalizedPath(GENERIC_COMPONENT_PATH),
   });
 }
 
@@ -99,5 +111,39 @@ describe("opt-in TypeScript semantic resolution", () => {
     expect(byName.kind).toMatchObject({ type: '"click" | "hover"', isRequired: true, typeSource: "typescript" });
     expect(byName.target).toMatchObject({ type: "string", isRequired: false, typeSource: "typescript" });
     expect(byName.duration).toMatchObject({ type: "number", isRequired: false, typeSource: "typescript" });
+  }, 30_000);
+
+  test("resolveTypes leaves a whole-props type parameterized by the component's own generic unexpanded", async () => {
+    const parsed = await parseGenericFixture();
+    const metadata = getParsedComponentTypeScriptMetadata(parsed);
+    if (!metadata?.canonicalPropsType) throw new Error("fixture missing canonical props type");
+
+    expect(metadata.canonicalPropsType).toBe("Props<T>");
+    expect(metadata.referencesComponentGenerics).toBe(true);
+
+    const resolver = await TypeResolver.create(GENERIC_FIXTURE_DIR);
+    expect(resolver).not.toBeNull();
+    if (!resolver) return;
+
+    try {
+      const resolved = await resolver.expandAll([
+        {
+          moduleName: "RunesWholePropsGenericResolveTypes",
+          metadata,
+          filePath: GENERIC_COMPONENT_PATH,
+        },
+      ]);
+
+      // No entry: the resolver must not fabricate types for a generic it
+      // can't bind, rather than guessing at (and getting wrong) unions.
+      expect(resolved.has("RunesWholePropsGenericResolveTypes")).toBe(false);
+
+      applyResolvedProps(parsed, resolved.get("RunesWholePropsGenericResolveTypes") ?? []);
+    } finally {
+      await resolver.dispose();
+    }
+
+    // Falls back to the same opaque, AST-derived shape the default path produces.
+    expect(parsed.props).toEqual([]);
   }, 30_000);
 });

@@ -1,6 +1,30 @@
-import type { LocalTypeDeclaration, ModernRunesTypeNode, ParsedComponentTypeScriptMetadata } from "../ComponentParser";
+import type {
+  ComponentGenerics,
+  LocalTypeDeclaration,
+  ModernRunesTypeNode,
+  ParsedComponentTypeScriptMetadata,
+} from "../ComponentParser";
 import type { ParserContext } from "./context";
 import { sourceAtPos } from "./source-position";
+
+const GENERIC_TYPE_TEXT_IDENTIFIER_REGEX = /[A-Za-z_$][\w$]*/g;
+
+/**
+ * Whether `typeText` (e.g. a canonical `$props()` type like `Props<T>`)
+ * mentions one of `generics`' own parameter names as a bare identifier.
+ * Used to detect whole-props types parameterized by the component's own
+ * generic, which the semantic type resolver can't safely expand: it has no
+ * binding for the generic in its virtual module, so TypeScript treats it as
+ * an unresolved identifier and fabricates concrete-looking types instead.
+ */
+function typeTextReferencesGenerics(typeText: string, generics: ComponentGenerics): boolean {
+  if (!generics) return false;
+  const names = new Set(generics[0].split(",").map((name) => name.trim()));
+  for (const [name] of typeText.matchAll(GENERIC_TYPE_TEXT_IDENTIFIER_REGEX)) {
+    if (names.has(name)) return true;
+  }
+  return false;
+}
 
 /**
  * Looks up the modern-runes `$props()` declaration metadata recorded for the
@@ -278,5 +302,6 @@ export function buildTypeScriptMetadata(ctx: ParserContext): ParsedComponentType
     canonicalPropNames: Array.from(typedDeclaration.props.keys()).sort(),
     localTypeDeclarations,
     typeImportStatements: buildTypeImportStatements(ctx, typedDeclaration.referencedImportedTypes),
+    referencesComponentGenerics: typeTextReferencesGenerics(typedDeclaration.canonicalType, ctx.generics),
   };
 }
