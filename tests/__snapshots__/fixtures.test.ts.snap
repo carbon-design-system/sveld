@@ -16953,6 +16953,75 @@ exports[`fixtures (JSON) "typedef-type-predicate/input.svelte" 1`] = `
 "
 `;
 
+exports[`fixtures (JSON) "runes-generic-interface-type-args/input.svelte" 1`] = `
+"{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 13,
+      "column": 0
+    }
+  },
+  "syntaxMode": "runes",
+  "scriptLanguage": "ts",
+  "props": [
+    {
+      "name": "value",
+      "kind": "let",
+      "type": "string",
+      "typeSource": "typescript",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 6,
+          "column": 8
+        },
+        "end": {
+          "line": 6,
+          "column": 13
+        }
+      }
+    },
+    {
+      "name": "onchange",
+      "kind": "let",
+      "type": "(v: string) => void",
+      "typeSource": "typescript",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 6,
+          "column": 15
+        },
+        "end": {
+          "line": 6,
+          "column": 23
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
+"
+`;
+
 exports[`fixtures (JSON) "slots-spread/input.svelte" 1`] = `
 "{
   "source": {
@@ -23293,6 +23362,26 @@ export type TypedefTypePredicateProps = {
 
 export default class TypedefTypePredicate extends SvelteComponentTyped<
   TypedefTypePredicateProps,
+  Record<string, any>,
+  Record<string, never>
+> {}
+"
+`;
+
+exports[`fixtures (TypeScript) "runes-generic-interface-type-args/input.svelte" 1`] = `
+"import { SvelteComponentTyped } from "svelte";
+
+interface Props<T> {
+  value: T;
+  onchange?: (v: T) => void;
+}
+
+type $Props = Props<string>;
+
+export type RunesGenericInterfaceTypeArgsProps = $Props;
+
+export default class RunesGenericInterfaceTypeArgs extends SvelteComponentTyped<
+  RunesGenericInterfaceTypeArgsProps,
   Record<string, any>,
   Record<string, never>
 > {}

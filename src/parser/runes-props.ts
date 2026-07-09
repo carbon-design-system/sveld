@@ -24,6 +24,41 @@ import {
   getTypeReferenceName,
 } from "./type-resolution";
 
+/** Any identifier-shaped token, used to substitute type-parameter names within a type's source text. */
+const IDENTIFIER_TOKEN_REGEX = /[A-Za-z_$][\w$]*/g;
+
+/**
+ * Maps a referenced interface/type-alias's own type-parameter names (`Props<T>`) to the
+ * concrete type-argument source text supplied at the reference site (`Props<string>`).
+ */
+function buildTypeParameterSubstitutions(
+  ctx: ParserContext,
+  declaration: ModernRunesTypeNode,
+  reference: ModernRunesTypeNode,
+): Map<string, string> {
+  const substitutions = new Map<string, string>();
+  const typeParams = declaration.typeParameters?.params;
+  const typeArgs = reference.typeArguments?.params;
+  if (!typeParams?.length || !typeArgs?.length) return substitutions;
+
+  for (let index = 0; index < typeParams.length; index++) {
+    const paramName = typeParams[index]?.name;
+    const argNode = typeArgs[index];
+    if (!paramName || argNode?.start === undefined || argNode?.end === undefined) continue;
+
+    const argText = sourceAtPos(ctx, argNode.start, argNode.end)?.trim();
+    if (argText) substitutions.set(paramName, argText);
+  }
+
+  return substitutions;
+}
+
+/** Replaces bare occurrences of substituted type-parameter names within a type's source text. */
+function substituteTypeParameters(type: string, substitutions: Map<string, string>): string {
+  if (substitutions.size === 0) return type;
+  return type.replace(IDENTIFIER_TOKEN_REGEX, (token) => substitutions.get(token) ?? token);
+}
+
 /** Flatten a runes `$props()` type node into prop name -> metadata, following local aliases and intersections. */
 export function buildRunesPropTypeMetadataMap(
   parser: ComponentParser,
@@ -95,8 +130,14 @@ export function buildRunesPropTypeMetadataMap(
       );
       visitedTypeNames.delete(typeName);
 
+      const substitutions = buildTypeParameterSubstitutions(ctx, declaration, typeNode);
       for (const [propName, memberMetadata] of nestedMetadata) {
-        metadata.set(propName, memberMetadata);
+        metadata.set(
+          propName,
+          substitutions.size === 0
+            ? memberMetadata
+            : { ...memberMetadata, type: substituteTypeParameters(memberMetadata.type, substitutions) },
+        );
       }
       break;
     }
