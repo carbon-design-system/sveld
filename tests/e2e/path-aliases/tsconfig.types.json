@@ -5,15 +5,10 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "verbatimModuleSyntax": true,
-    "sourceMap": true,
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "baseUrl": ".",
-    "paths": {
-      "$lib": ["./src/lib"],
-      "$lib/*": ["./src/lib/*"]
-    }
+    "types": []
   },
-  "include": ["src/**/*", "test/**/*", "types/**/*"]
+  "include": ["types/**/*.d.ts"]
 }
