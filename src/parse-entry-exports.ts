@@ -270,7 +270,9 @@ function parseModule(filePath: string): { source: ModuleSource; body: AstNode[] 
     const ast = parse(text, { modern: true }) as { instance?: { content?: { body?: unknown } } };
     const body = asNodeArray(ast.instance?.content?.body);
     return { source: { text, filePath, dir: dirname(filePath) }, body };
-  } catch {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn(`Warning: Failed to parse entry export module ${filePath}: ${message}`);
     return null;
   }
 }
