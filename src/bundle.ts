@@ -1,7 +1,7 @@
-import { lstatSync, readFileSync } from "node:fs";
+import type { Dirent } from "node:fs";
+import { lstatSync, readdirSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { readFile } from "node:fs/promises";
-import { dirname, isAbsolute, parse, relative, resolve } from "node:path";
-import { globSync } from "tinyglobby";
+import { dirname, isAbsolute, join, parse, relative, resolve } from "node:path";
 import { asRelativeSourcePath, type NormalizedPath } from "./brands";
 import type { ParsedComponent } from "./ComponentParser";
 import { buildReverseDeps, expandAffected } from "./dependency-graph";
@@ -159,10 +159,43 @@ export interface GlobbedComponentSource {
   source: ReturnType<typeof asRelativeSourcePath>;
 }
 
+/**
+ * Recursively collects absolute paths of every `.svelte` file under `dir`.
+ *
+ * Skips dotfiles/dot-directories and follows symlinked directories, guarding
+ * against symlink cycles via a set of visited real paths. Tolerates a
+ * missing `dir` (returns no matches) instead of throwing.
+ */
+function findSvelteFiles(dir: string, results: string[] = [], visited = new Set<string>()): string[] {
+  let entries: Dirent[];
+  try {
+    const real = realpathSync(dir);
+    if (visited.has(real)) return results;
+    visited.add(real);
+    entries = readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return results;
+  }
+
+  for (const entry of entries) {
+    if (entry.name.startsWith(".")) continue;
+    const entryPath = join(dir, entry.name);
+    const stat = entry.isSymbolicLink() ? statSync(entryPath, { throwIfNoEntry: false }) : entry;
+    if (!stat) continue; // Broken symlink.
+
+    if (stat.isDirectory()) {
+      findSvelteFiles(entryPath, results, visited);
+    } else if (stat.isFile() && entry.name.endsWith(".svelte")) {
+      results.push(entryPath);
+    }
+  }
+
+  return results;
+}
+
 /** Globs every `.svelte` file under `rootDir`, resolving each to its module name and source path. */
 export function globComponentSources(rootDir: string): GlobbedComponentSource[] {
-  return globSync(["**/*.svelte"], { cwd: rootDir, absolute: true }).map((matchedFile) => {
-    const file = resolve(matchedFile);
+  return findSvelteFiles(rootDir).map((file) => {
     const moduleName = parse(file).name.replace(HYPHEN_REGEX, "");
     const source = asRelativeSourcePath(normalizeSeparators(`./${relative(rootDir, file)}`));
     return { moduleName, source };

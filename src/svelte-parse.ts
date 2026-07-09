@@ -20,7 +20,6 @@
  * `svelte/compiler`'s across every fixture, so a svelte upgrade that changes
  * this internal shape fails CI instead of silently shipping wrong output.
  */
-import { walk as zimmerframeWalk } from "zimmerframe";
 // @ts-expect-error - internal svelte module, no published types
 import { convert } from "../node_modules/svelte/src/compiler/legacy.js";
 // @ts-expect-error - internal svelte module, no published types
@@ -55,6 +54,32 @@ function stripMetadata(node: InternalAstNode): void {
   delete node.metadata;
 }
 
+/**
+ * Recursively strips `metadata` from every AST node reachable from `node`.
+ *
+ * Mirrors zimmerframe's `walk()` traversal rule: a value is only visited (and
+ * only has its own children recursed into) when it's an object carrying a
+ * `type` string. A child without `type` is left alone and its descendants
+ * are not visited, even if they themselves carry `type` - this is why
+ * `toPublicAst` below special-cases `ast.options.attributes` before calling
+ * this, since `options` itself has no `type`.
+ */
+function stripMetadataDeep(node: unknown): void {
+  if (!node || typeof node !== "object" || typeof (node as InternalAstNode).type !== "string") return;
+  stripMetadata(node as InternalAstNode);
+
+  for (const key in node as InternalAstNode) {
+    if (key === "type") continue;
+    const child = (node as Record<string, unknown>)[key];
+    if (!child || typeof child !== "object") continue;
+    if (Array.isArray(child)) {
+      for (const item of child) stripMetadataDeep(item);
+    } else {
+      stripMetadataDeep(child);
+    }
+  }
+}
+
 /** Mirrors `svelte/compiler`'s own internal `to_public_ast`. */
 function toPublicAst(source: string, ast: InternalAstRoot, modern: boolean | undefined): unknown {
   if (modern) {
@@ -67,12 +92,8 @@ function toPublicAst(source: string, ast: InternalAstRoot, modern: boolean | und
       }
     }
 
-    return zimmerframeWalk(ast, null, {
-      _(node, { next }) {
-        stripMetadata(node);
-        next();
-      },
-    });
+    stripMetadataDeep(ast);
+    return ast;
   }
 
   return convert(source, ast);
