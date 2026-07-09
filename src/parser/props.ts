@@ -402,6 +402,12 @@ export function inferReturnTypeFromNode(
 /**
  * Walk a block body and collect each `return`'s argument, skipping nested
  * functions. Bare `return;` becomes `null`.
+ *
+ * Not fused with the componentRoot walk: this runs from `processInitializer`, called
+ * synchronously while the outer walk is still on the ancestor `ExportNamedDeclaration`/
+ * `VariableDeclaration` node, so it needs the inferred type before the outer walk would
+ * otherwise reach these descendant statements. Deferring it to ride along with the outer
+ * traversal would mean computing prop types in a second pass instead of inline.
  */
 export function collectReturnArguments(body: unknown): unknown[] {
   const returnArgs: unknown[] = [];

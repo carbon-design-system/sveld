@@ -34,7 +34,10 @@ import {
   parseRunesPropsDeclaration,
 } from "./parser/runes-props";
 import {
-  buildScopeDeclarations,
+  createScopeWalkState,
+  enterNestedScopeDeclarationNode,
+  initComponentScope,
+  leaveNestedScopeDeclarationNode,
   markReactivePropsFromMutationTarget,
   resolveIdentifierToReactiveProp,
 } from "./parser/scopes";
@@ -1347,6 +1350,14 @@ export default class ComponentParser {
     this.buildVariableInfoCache();
     parseCustomTypes(this.ctx, this);
 
+    /**
+     * Not fused with the componentRoot walk below: `module` (`<script context="module">`) is a
+     * disjoint AST rooted separately from `instance`/`html`, not a subtree reachable from either,
+     * so there is no shared root to traverse once. Wrapping both in one synthetic root would
+     * require branch-tracking to keep module-export handling (addModuleExport) from firing on
+     * instance-level exports (addProp) and vice versa, for a pass that most components skip
+     * entirely (module scripts are rare) - not worth the added complexity here.
+     */
     if (this.ctx.parsed?.module) {
       walk(this.ctx.parsed?.module as unknown as Node, {
         enter: (node) => {
@@ -1501,11 +1512,22 @@ export default class ComponentParser {
       html: this.ctx.parsed.html,
     } as unknown as Node;
 
-    buildScopeDeclarations(this, this.ctx, componentRoot);
+    initComponentScope(this, this.ctx);
     this.ctx.activeScopes.push(this.ctx.componentScope);
+    const scopeWalkState = createScopeWalkState(this.ctx);
 
     walk(componentRoot, {
       enter: (node, parent, _prop) => {
+        /**
+         * Declares nested scope bindings for `node` (if it's a scope owner) before anything
+         * below reads `ctx.scopeDeclarations` for it. This fuses what was previously a separate
+         * full walk (scope analysis) into this traversal: a node's own scope only ever depends
+         * on its ancestors and itself, never on siblings or descendants, so building it here
+         * on entry and consuming it immediately after is equivalent to building the whole map
+         * in a prior pass.
+         */
+        enterNestedScopeDeclarationNode(this, this.ctx, scopeWalkState, node);
+
         const nodeScope = this.ctx.scopeDeclarations.get(node as unknown as object);
         if (nodeScope) {
           this.ctx.activeScopes.push(nodeScope);
@@ -2086,6 +2108,7 @@ export default class ComponentParser {
         if (this.ctx.scopeDeclarations.has(node as unknown as object)) {
           this.ctx.activeScopes.pop();
         }
+        leaveNestedScopeDeclarationNode(scopeWalkState, node);
       },
     });
 
