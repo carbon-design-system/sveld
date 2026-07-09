@@ -1,4 +1,4 @@
-<script lang="ts">
+<script>
   import { Button, Link, Quote, SecondaryButton } from "../";
   import Button2 from "../types/button/button.svelte";
 </script>
