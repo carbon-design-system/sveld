@@ -132,12 +132,103 @@ describe("parseCliOptions", () => {
     expect(parseCliOptions(["--format"])).toEqual({ kind: "options", options: {} });
   });
 
-  test("unknown flag surfaces as an unknown result", () => {
-    expect(parseCliOptions(["--markdwon"])).toEqual({ kind: "unknown", arg: "--markdwon" });
+  test("unknown flag surfaces as an unknown result with a typo suggestion", () => {
+    expect(parseCliOptions(["--markdwon"])).toEqual({ kind: "unknown", arg: "--markdwon", suggestion: "markdown" });
+  });
+
+  test("a close typo of a deprecated alias suggests the canonical spelling", () => {
+    expect(parseCliOptions(["--resolvTypes"])).toEqual({
+      kind: "unknown",
+      arg: "--resolvTypes",
+      suggestion: "resolve-types",
+    });
+  });
+
+  test("a distant unknown flag surfaces with no suggestion", () => {
+    expect(parseCliOptions(["--xyz123garbage"])).toEqual({ kind: "unknown", arg: "--xyz123garbage" });
   });
 
   test("a positional argument surfaces as an unknown result", () => {
     expect(parseCliOptions(["foo"])).toEqual({ kind: "unknown", arg: "foo" });
+  });
+
+  test("a positional argument after a boolean flag hints at the space-separated form", () => {
+    expect(parseCliOptions(["--json", "true"])).toEqual({
+      kind: "unknown",
+      arg: "true",
+      positionalHint: true,
+    });
+  });
+
+  test("--entry accepts its value as the next argument", () => {
+    expect(parseCliOptions(["--entry", "src/index.js"])).toEqual({
+      kind: "options",
+      options: { entry: "src/index.js" },
+    });
+  });
+
+  test("--cache accepts its value as the next argument", () => {
+    expect(parseCliOptions(["--cache", ".cache/sveld.json"])).toEqual({
+      kind: "options",
+      options: { cache: ".cache/sveld.json" },
+    });
+  });
+
+  test("--check accepts its value as the next argument", () => {
+    expect(parseCliOptions(["--check", "api-snapshot.json"])).toEqual({
+      kind: "options",
+      options: { check: "api-snapshot.json" },
+    });
+  });
+
+  test("--types-format accepts its value as the next argument", () => {
+    expect(parseCliOptions(["--types-format", "component"])).toEqual({
+      kind: "options",
+      options: { typesOptions: { format: "component" } },
+    });
+  });
+
+  test("space-separated and = forms combine across multiple flags", () => {
+    expect(parseCliOptions(["--entry", "src/index.js", "--json", "--cache=.cache/sveld.json"])).toEqual({
+      kind: "options",
+      options: { entry: "src/index.js", json: true, cache: ".cache/sveld.json" },
+    });
+  });
+
+  test("--entry followed by another flag falls back to a usage error naming the flag", () => {
+    expect(parseCliOptions(["--entry", "--json"])).toEqual({
+      kind: "usage-error",
+      message: "sveld: --entry requires a value (pass --entry=<value> or --entry <value>).",
+    });
+  });
+
+  test("--types-format followed by another flag falls back to a usage error naming the flag", () => {
+    expect(parseCliOptions(["--types-format", "--json"])).toEqual({
+      kind: "usage-error",
+      message: "sveld: --types-format requires a value (pass --types-format=<value> or --types-format <value>).",
+    });
+  });
+
+  test("--cache followed by another flag falls back to the default cache location", () => {
+    expect(parseCliOptions(["--cache", "--json"])).toEqual({
+      kind: "options",
+      options: { cache: true, json: true },
+    });
+  });
+
+  test("--check followed by another flag falls back to the default snapshot path", () => {
+    expect(parseCliOptions(["--check", "--json"])).toEqual({
+      kind: "options",
+      options: { check: true, json: true },
+    });
+  });
+
+  test("boolean flags never consume a following argument as a value", () => {
+    expect(parseCliOptions(["--json", "COMPONENT.md"])).toEqual({
+      kind: "unknown",
+      arg: "COMPONENT.md",
+      positionalHint: true,
+    });
   });
 
   test("--help short-circuits before later flags are parsed", () => {
@@ -224,7 +315,7 @@ describe("cli() unknown flag", () => {
     await cli(process);
 
     expect(process.exitCode).toBe(1);
-    expect(errorSpy).toHaveBeenCalledWith("Unknown flag: --markdwon");
+    expect(errorSpy).toHaveBeenCalledWith("Unknown flag: --markdwon Did you mean --markdown?");
     expect(existsSync(join(dir, "types"))).toBe(false);
     expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(false);
   });
@@ -270,6 +361,50 @@ describe("cli() --cache", () => {
     await cli(process);
 
     expect(existsSync(join(dir, "src", "node_modules", ".cache"))).toBe(false);
+  });
+
+  test("--entry accepts its value as a space-separated argument", async () => {
+    process.argv = ["bun", "cli.js", "--entry", "src/index.js"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(0);
+    expect(existsSync(join(dir, "types", "Button.svelte.d.ts"))).toBe(true);
+  });
+});
+
+describe("cli() --entry followed by another flag", () => {
+  let dir: string;
+  let previousCwd: string;
+  let previousArgv: string[];
+  let errorSpy: ReturnType<typeof jest.spyOn>;
+
+  beforeEach(() => {
+    previousCwd = process.cwd();
+    previousArgv = process.argv;
+    process.exitCode = 0;
+    dir = mkdtempSync(join(tmpdir(), "sveld-cli-entry-flag-"));
+    process.chdir(dir);
+    errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    process.chdir(previousCwd);
+    process.argv = previousArgv;
+    process.exitCode = 0;
+    rmSync(dir, { recursive: true, force: true });
+    jest.restoreAllMocks();
+  });
+
+  test("sets exitCode 1 and reports a usage error naming --entry", async () => {
+    process.argv = ["bun", "cli.js", "--entry", "--json"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(1);
+    expect(errorSpy).toHaveBeenCalledWith("sveld: --entry requires a value (pass --entry=<value> or --entry <value>).");
+    expect(existsSync(join(dir, "types"))).toBe(false);
+    expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(false);
   });
 });
 
