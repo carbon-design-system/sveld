@@ -13,6 +13,7 @@ import { parse } from "../svelte-parse";
 import type { ParserContext } from "./context";
 import { collectGenericsAttributeTypeDependencies } from "./generics";
 import { processLeadingCommentsJSDoc, processNodeJSDoc } from "./jsdoc";
+import { resolvePropTypeAndDocs } from "./prop-shared";
 import { addProp, processInitializer, unwrapBindableInitializer } from "./props";
 import { sourceAtPos, sourceRangeFromNode } from "./source-position";
 import {
@@ -445,25 +446,27 @@ export function parseRunesPropsDeclaration(parser: ComponentParser, ctx: ParserC
       );
       const { init: unwrappedInit, bindable } = unwrapBindableInitializer(init);
       const initResult = unwrappedInit == null ? { isFunction: false } : processInitializer(parser, ctx, unwrappedInit);
-      const { value, type: inferredType, isFunction, defaultValue } = initResult;
+      const { value, type: inferredType, isFunction: initializerIsFunction, defaultValue } = initResult;
+      // Only trust the identifier default's own JSDoc type when nothing more explicit already
+      // won; an explicit TS/JSDoc type on the prop itself must not be overridden by it.
       const inheritedType =
         typeMetadata?.type === undefined && propertyJSDoc?.type === undefined ? initResult.resolvedType : undefined;
-      const isFunctionFromJSDoc =
-        !!propertyJSDoc?.params?.length ||
-        propertyJSDoc?.returnType !== undefined ||
-        propertyJSDoc?.type?.includes("=>") ||
-        !!inheritedType?.includes("=>") ||
-        !!typeMetadata?.type?.includes("=>");
-      const type = typeMetadata?.type ?? propertyJSDoc?.type ?? inheritedType ?? inferredType;
-      const typeSource = parser.resolveTypeSource({
-        hasTypeScriptType: typeMetadata?.type !== undefined,
-        hasJSDocType:
-          propertyJSDoc?.type !== undefined ||
-          propertyJSDoc?.params !== undefined ||
-          propertyJSDoc?.returnType !== undefined ||
-          inheritedType !== undefined,
-        inferredType,
-        finalType: type,
+
+      const { type, typeSource, description, params, returnType, isFunction } = resolvePropTypeAndDocs({
+        explicitType: typeMetadata?.type,
+        typeSeed: inferredType,
+        inferredTypeForSource: inferredType,
+        jsdocType: propertyJSDoc?.type,
+        jsdocDescription: propertyJSDoc?.description,
+        jsdocParams: propertyJSDoc?.params,
+        jsdocReturnType: propertyJSDoc?.returnType,
+        resolvedType: inheritedType,
+        resolvedDescription: initResult.resolvedDescription,
+        resolvedParams: initResult.resolvedParams,
+        resolvedReturnType: initResult.resolvedReturnType,
+        initializerIsFunction,
+        isFunctionDeclaration: false,
+        inferIsFunctionFromTypeSignature: true,
       });
 
       if (bindable) {
@@ -474,7 +477,7 @@ export function parseRunesPropsDeclaration(parser: ComponentParser, ctx: ParserC
         name: propName,
         ...(localName === propName ? {} : { localName }),
         kind: "let",
-        description: propertyJSDoc?.description ?? initResult.resolvedDescription,
+        description,
         binding: propertyJSDoc?.binding,
         deprecated: propertyJSDoc?.deprecated,
         tags: propertyJSDoc?.tags,
@@ -483,9 +486,9 @@ export function parseRunesPropsDeclaration(parser: ComponentParser, ctx: ParserC
         typeSource,
         value,
         defaultValue,
-        params: propertyJSDoc?.params ?? initResult.resolvedParams,
-        returnType: propertyJSDoc?.returnType ?? initResult.resolvedReturnType,
-        isFunction: Boolean(isFunction || isFunctionFromJSDoc),
+        params,
+        returnType,
+        isFunction,
         isFunctionDeclaration: false,
         isRequired: unwrappedInit == null && typeMetadata?.optional !== true,
         constant: false,

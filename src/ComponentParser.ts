@@ -31,6 +31,7 @@ import { recordDiagnostic } from "./parser/diagnostics";
 import { addDispatchedEvent, literalDetailToTypeText, parseHostDispatchEventCall } from "./parser/events";
 import { parseGenericsAttribute } from "./parser/generics";
 import { parseCustomTypes, processNodeJSDoc } from "./parser/jsdoc";
+import { resolvePropTypeAndDocs } from "./parser/prop-shared";
 import { addProp, processInitializer } from "./parser/props";
 import { maybeSetRestProps } from "./parser/rest-props";
 import { detectSyntaxMode } from "./parser/runes-detection";
@@ -239,7 +240,31 @@ export interface ComponentPropParam {
   optional?: boolean;
 }
 
-/** A parsed component prop. */
+/**
+ * A parsed component prop: the shared internal IR that every prop front-end
+ * (legacy `<script context="module">` exports, legacy instance
+ * `export let`/`export function`, and runes `$props()` destructuring)
+ * produces via {@link resolvePropTypeAndDocs}, then hands to `addProp`. The
+ * three front-ends differ only in how they extract the raw signals (type
+ * text, JSDoc, initializer shape) from their respective AST shapes; the
+ * decisions below are shared and, outside the two documented mode
+ * differences, identical across modes.
+ *
+ * - `typeSource` precedence: an explicit TypeScript annotation always wins,
+ *   then JSDoc (`@type`/`@param`/`@returns`), then a type resolved from an
+ *   identifier default's own JSDoc, and only then a bare inferred/initializer
+ *   type. See {@link resolveTypeSource}.
+ * - JSDoc-vs-TS merge: `type`/`params`/`returnType`/`description` each
+ *   independently prefer their JSDoc-sourced value over the identifier
+ *   default's resolved value; an explicit TypeScript type additionally beats
+ *   JSDoc for `type` only.
+ * - Mode difference (preserved, not converged): legacy `export let`/
+ *   `export function` never infers `isFunction` from a function-shaped type
+ *   text; runes `$props()` does (`inferIsFunctionFromTypeSignature`).
+ * - Mode difference (preserved, not converged): legacy falls back to a
+ *   matching `@typedef`'s own description when the prop has none; runes does
+ *   not pass `typedefs` to {@link resolvePropTypeAndDocs} today.
+ */
 export interface ComponentProp {
   /** Public prop name. */
   name: string;
@@ -249,31 +274,38 @@ export interface ComponentProp {
   constant: boolean;
   /** TypeScript type text. */
   type?: string;
-  /** Conservative provenance for the prop type. */
+  /** Conservative provenance for the prop type. See the precedence rule on {@link ComponentProp}. */
   typeSource?: ComponentPropTypeSource;
   /** Local binding when it differs from the public name. */
   localName?: string;
-  /** Default value as source text. */
+  /** Default value as source text; unset when the prop has no initializer/default. */
   value?: string;
-  /** Structured default value metadata for docs UIs. */
+  /** Structured default value metadata for docs UIs; set alongside `value` from the same initializer. */
   defaultValue?: ComponentPropDefaultValue;
-  /** From JSDoc. */
+  /** From JSDoc, or a matching `@typedef`'s own description (legacy only; see {@link ComponentProp}). */
   description?: string;
   /** From JSDoc `@param` on function props. */
   params?: ComponentPropParam[];
   /** From JSDoc `@returns` on function props. */
   returnType?: string;
-  /** True for arrow/function-expression props. */
+  /**
+   * True for arrow/function-expression initializers and bare `function`
+   * declarations in every mode; additionally true for a function-shaped
+   * type/JSDoc signature in runes only (see {@link ComponentProp}).
+   */
   isFunction: boolean;
   /** True for `function` declarations. */
   isFunctionDeclaration: boolean;
   /** True when declared with `let` and no default. */
   isRequired: boolean;
-  /** True when reactive. */
+  /**
+   * True when the prop is mutated locally (legacy, inferred from assignment/
+   * binding targets) or declared with `$bindable()` (runes).
+   */
   reactive: boolean;
   /** Binding direction from `@bindable` JSDoc. */
   binding?: ComponentPropBinding;
-  /** True when declared with Svelte 5 `$bindable()`. */
+  /** True when declared with Svelte 5 `$bindable()` (runes only). */
   bindable?: true;
   /** From `@deprecated` JSDoc. */
   deprecated?: DeprecatedValue;
@@ -512,8 +544,9 @@ export interface ParsedComponent {
   source?: SourceRange;
   syntaxMode: SyntaxMode;
   scriptLanguage?: ScriptLanguage;
+  /** Instance-level props (`export let`/`export function`, or runes `$props()`). See {@link ComponentProp} for the shared IR these are built from. */
   props: ComponentProp[];
-  /** Exports from `<script context="module">`. */
+  /** Exports from `<script context="module">`. Same {@link ComponentProp} shape as `props`, resolved through the same shared decisions. */
   moduleExports: ComponentProp[];
   slots: ComponentSlot[];
   /** Serialized events for JSON/API output. */
@@ -682,24 +715,6 @@ export default class ComponentParser {
     }
 
     return false;
-  }
-
-  resolveTypeSource({
-    hasTypeScriptType,
-    hasJSDocType,
-    inferredType,
-    finalType,
-  }: {
-    hasTypeScriptType?: boolean;
-    hasJSDocType?: boolean;
-    inferredType?: string;
-    finalType?: string;
-  }): ComponentPropTypeSource {
-    if (hasTypeScriptType) return "typescript";
-    if (hasJSDocType) return "jsdoc";
-    if (inferredType !== undefined) return "default";
-    if (finalType !== undefined) return "inferred";
-    return "unknown";
   }
 
   resolveLocalVarJSDoc(name: string) {
@@ -891,16 +906,13 @@ export default class ComponentParser {
 
             let prop_name: string;
             let kind: "let" | "const" | "function";
-            let description: string | undefined;
             let isFunctionDeclaration = false;
             let value: string | undefined;
-            let type: string | undefined;
+            let typeSeed: string | undefined;
             let explicitType: string | undefined;
-            let isFunction = false;
-            let params: ComponentPropParam[] | undefined;
-            let returnType: string | undefined;
+            let initializerIsFunction = false;
             let defaultValue: ComponentPropDefaultValue | undefined;
-            let inferredType: string | undefined;
+            let inferredTypeForSource: string | undefined;
             let resolvedJSDoc:
               | Pick<
                   ProcessedInitializer,
@@ -914,8 +926,8 @@ export default class ComponentParser {
               prop_name = funcDecl.id.name;
               kind = "function";
               value = undefined;
-              type = "() => any";
-              isFunction = true;
+              typeSeed = "() => any";
+              initializerIsFunction = true;
               isFunctionDeclaration = true;
             } else if (node.declaration.type === "VariableDeclaration") {
               const varDecl = node.declaration as VariableDeclaration;
@@ -934,59 +946,31 @@ export default class ComponentParser {
               prop_name = localPropName;
               kind = variableDeclarationKindToComponentPropKind(varDecl.kind);
               const initResult = init == null ? { isFunction: false } : processInitializer(this, this.ctx, init);
-              ({ value, type: inferredType, isFunction, defaultValue } = initResult);
+              ({ value, type: typeSeed, isFunction: initializerIsFunction, defaultValue } = initResult);
+              inferredTypeForSource = typeSeed;
               resolvedJSDoc = initResult;
               explicitType = this.getExplicitPropType(localPropName);
-              type = explicitType ?? inferredType;
             } else {
               return;
             }
 
             const jsdocInfo = processNodeJSDoc(this.ctx, this, node);
-            if (jsdocInfo) {
-              if (jsdocInfo.type && explicitType === undefined) type = jsdocInfo.type;
-              params = jsdocInfo.params;
-              returnType = jsdocInfo.returnType;
-              if (jsdocInfo.description) description = jsdocInfo.description;
-            }
 
-            if (explicitType === undefined && jsdocInfo?.type === undefined && resolvedJSDoc?.resolvedType) {
-              type = resolvedJSDoc.resolvedType;
-            }
-            if (description === undefined && resolvedJSDoc?.resolvedDescription) {
-              description = resolvedJSDoc.resolvedDescription;
-            }
-            if (params === undefined && resolvedJSDoc?.resolvedParams) params = resolvedJSDoc.resolvedParams;
-            if (returnType === undefined && resolvedJSDoc?.resolvedReturnType)
-              returnType = resolvedJSDoc.resolvedReturnType;
-
-            // Merge returnType into type for function declarations if not overridden by @type
-            if (isFunctionDeclaration && type === "() => any" && returnType) {
-              if (params && params.length > 0) {
-                const paramStrings = params.map((param) => {
-                  const optional = param.optional ? "?" : "";
-                  return `${param.name}${optional}: ${param.type}`;
-                });
-                const paramsString = paramStrings.join(", ");
-                type = `(${paramsString}) => ${returnType}`;
-              } else {
-                type = `() => ${returnType}`;
-              }
-            }
-
-            if (!description && type && this.ctx.typedefs.has(type)) {
-              description = this.ctx.typedefs.get(type)?.description;
-            }
-
-            const typeSource = this.resolveTypeSource({
-              hasTypeScriptType: explicitType !== undefined,
-              hasJSDocType:
-                jsdocInfo?.type !== undefined ||
-                jsdocInfo?.params !== undefined ||
-                jsdocInfo?.returnType !== undefined ||
-                resolvedJSDoc?.resolvedType !== undefined,
-              inferredType,
-              finalType: type,
+            const { type, typeSource, description, params, returnType, isFunction } = resolvePropTypeAndDocs({
+              explicitType,
+              typeSeed,
+              inferredTypeForSource,
+              jsdocType: jsdocInfo?.type,
+              jsdocDescription: jsdocInfo?.description,
+              jsdocParams: jsdocInfo?.params,
+              jsdocReturnType: jsdocInfo?.returnType,
+              resolvedType: resolvedJSDoc?.resolvedType,
+              resolvedDescription: resolvedJSDoc?.resolvedDescription,
+              resolvedParams: resolvedJSDoc?.resolvedParams,
+              resolvedReturnType: resolvedJSDoc?.resolvedReturnType,
+              initializerIsFunction,
+              isFunctionDeclaration,
+              typedefs: this.ctx.typedefs,
             });
 
             this.addModuleExport(prop_name, {
@@ -1184,18 +1168,15 @@ export default class ComponentParser {
           }
 
           let kind: "let" | "const" | "function";
-          let description: undefined | string;
           let isFunctionDeclaration = false;
           let value: string | undefined;
-          let type: string | undefined;
+          let typeSeed: string | undefined;
           let explicitType: string | undefined;
-          let isFunction = false;
-          let params: ComponentPropParam[] | undefined;
-          let returnType: string | undefined;
+          let initializerIsFunction = false;
           let isRequired = false;
           let localName: string | undefined;
           let defaultValue: ComponentPropDefaultValue | undefined;
-          let inferredType: string | undefined;
+          let inferredTypeForSource: string | undefined;
           let resolvedJSDoc:
             | Pick<
                 ProcessedInitializer,
@@ -1210,8 +1191,8 @@ export default class ComponentParser {
             localName = funcDecl.id.name;
             kind = "function";
             value = undefined;
-            type = "() => any";
-            isFunction = true;
+            typeSeed = "() => any";
+            initializerIsFunction = true;
             isFunctionDeclaration = true;
             isRequired = false;
           } else if (node.declaration.type === "VariableDeclaration") {
@@ -1235,58 +1216,30 @@ export default class ComponentParser {
             kind = variableDeclarationKindToComponentPropKind(varDecl.kind);
             isRequired = kind === "let" && init == null;
             const initResult = init == null ? { isFunction: false } : processInitializer(this, this.ctx, init);
-            ({ value, type: inferredType, isFunction, defaultValue } = initResult);
+            ({ value, type: typeSeed, isFunction: initializerIsFunction, defaultValue } = initResult);
+            inferredTypeForSource = typeSeed;
             resolvedJSDoc = initResult;
-            type = explicitType ?? inferredType;
           } else {
             return;
           }
 
           const jsdocInfo = processNodeJSDoc(this.ctx, this, node);
-          if (jsdocInfo) {
-            if (jsdocInfo.type && explicitType === undefined) type = jsdocInfo.type;
-            params = jsdocInfo.params;
-            returnType = jsdocInfo.returnType;
-            if (jsdocInfo.description) description = jsdocInfo.description;
-          }
 
-          if (explicitType === undefined && jsdocInfo?.type === undefined && resolvedJSDoc?.resolvedType) {
-            type = resolvedJSDoc.resolvedType;
-          }
-          if (description === undefined && resolvedJSDoc?.resolvedDescription) {
-            description = resolvedJSDoc.resolvedDescription;
-          }
-          if (params === undefined && resolvedJSDoc?.resolvedParams) params = resolvedJSDoc.resolvedParams;
-          if (returnType === undefined && resolvedJSDoc?.resolvedReturnType)
-            returnType = resolvedJSDoc.resolvedReturnType;
-
-          // Merge returnType into type for function declarations if not overridden by @type
-          if (isFunctionDeclaration && type === "() => any" && returnType) {
-            if (params && params.length > 0) {
-              const paramStrings = params.map((param) => {
-                const optional = param.optional ? "?" : "";
-                return `${param.name}${optional}: ${param.type}`;
-              });
-              const paramsString = paramStrings.join(", ");
-              type = `(${paramsString}) => ${returnType}`;
-            } else {
-              type = `() => ${returnType}`;
-            }
-          }
-
-          if (!description && type && this.ctx.typedefs.has(type)) {
-            description = this.ctx.typedefs.get(type)?.description;
-          }
-
-          const typeSource = this.resolveTypeSource({
-            hasTypeScriptType: explicitType !== undefined,
-            hasJSDocType:
-              jsdocInfo?.type !== undefined ||
-              jsdocInfo?.params !== undefined ||
-              jsdocInfo?.returnType !== undefined ||
-              resolvedJSDoc?.resolvedType !== undefined,
-            inferredType,
-            finalType: type,
+          const { type, typeSource, description, params, returnType, isFunction } = resolvePropTypeAndDocs({
+            explicitType,
+            typeSeed,
+            inferredTypeForSource,
+            jsdocType: jsdocInfo?.type,
+            jsdocDescription: jsdocInfo?.description,
+            jsdocParams: jsdocInfo?.params,
+            jsdocReturnType: jsdocInfo?.returnType,
+            resolvedType: resolvedJSDoc?.resolvedType,
+            resolvedDescription: resolvedJSDoc?.resolvedDescription,
+            resolvedParams: resolvedJSDoc?.resolvedParams,
+            resolvedReturnType: resolvedJSDoc?.resolvedReturnType,
+            initializerIsFunction,
+            isFunctionDeclaration,
+            typedefs: this.ctx.typedefs,
           });
 
           addProp(this, this.ctx, prop_name, {
