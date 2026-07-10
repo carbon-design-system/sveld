@@ -41,6 +41,9 @@ Generate TypeScript definitions and component documentation for a Svelte
 library. With no flags, only TypeScript definitions are generated for the
 entry resolved from package.json#svelte.
 
+--entry, --cache, --check, and --types-format accept their value as
+--flag=value or as a separate --flag value argument.
+
 Options:
   --entry=<path>        Entry point to uncompiled Svelte source (default: package.json "svelte" field)
   --glob                Analyze all *.svelte files instead of the entry barrel
@@ -75,7 +78,8 @@ type CliFlagResult =
   | { kind: "option"; option: Partial<CliOptions> }
   | { kind: "help" }
   | { kind: "version" }
-  | { kind: "unknown"; arg: string };
+  | { kind: "unknown"; arg: string; suggestion?: string }
+  | { kind: "usage-error"; message: string };
 
 /** Maps deprecated camelCase flag spellings to their canonical kebab-case form. */
 const FLAG_ALIASES: Record<string, string> = {
@@ -83,16 +87,138 @@ const FLAG_ALIASES: Record<string, string> = {
   checkExamples: "check-examples",
 };
 
-function parseCliFlag(arg: string): CliFlagResult {
-  if (!arg.startsWith("--")) {
-    return { kind: "unknown", arg };
+/** Every recognized canonical flag name, used to suggest a fix for a typo'd flag. */
+const KNOWN_FLAGS = [
+  "help",
+  "version",
+  "glob",
+  "types",
+  "json",
+  "markdown",
+  "quiet",
+  "stdout",
+  "custom-elements",
+  "strict",
+  "report-diagnostics",
+  "resolve-types",
+  "check-examples",
+  "fail-fast",
+  "entry",
+  "cache",
+  "check",
+  "types-format",
+  "format",
+];
+
+/** Candidate spellings for typo suggestions: canonical flags plus deprecated aliases. */
+const FLAG_SUGGESTION_CANDIDATES = [...KNOWN_FLAGS, ...Object.keys(FLAG_ALIASES)];
+
+/** Boolean flags that never consume a following argument as a value. */
+const BOOLEAN_FLAGS = new Set([
+  "glob",
+  "types",
+  "json",
+  "markdown",
+  "quiet",
+  "custom-elements",
+  "strict",
+  "report-diagnostics",
+  "resolve-types",
+  "check-examples",
+  "fail-fast",
+]);
+
+/** Value-taking flags that also accept their value as the next argument. */
+const SPACE_SEPARATED_VALUE_FLAGS = new Set(["entry", "cache", "check", "types-format"]);
+
+/** Of those, the flags that error (rather than falling back to a bare default) when no value is given. */
+const REQUIRES_VALUE_FLAGS = new Set(["entry", "types-format"]);
+
+/** Largest edit distance for which a typo suggestion is still offered. */
+const MAX_SUGGESTION_DISTANCE = 3;
+
+/** Classic Levenshtein edit distance between two strings. */
+function levenshteinDistance(a: string, b: string): number {
+  const rows = a.length + 1;
+  const columns = b.length + 1;
+  const distances: number[][] = Array.from({ length: rows }, () => new Array<number>(columns).fill(0));
+
+  for (let i = 0; i < rows; i++) distances[i][0] = i;
+  for (let j = 0; j < columns; j++) distances[0][j] = j;
+
+  for (let i = 1; i < rows; i++) {
+    for (let j = 1; j < columns; j++) {
+      const substitutionCost = a[i - 1] === b[j - 1] ? 0 : 1;
+      distances[i][j] = Math.min(
+        distances[i - 1][j] + 1,
+        distances[i][j - 1] + 1,
+        distances[i - 1][j - 1] + substitutionCost,
+      );
+    }
   }
 
+  return distances[rows - 1][columns - 1];
+}
+
+/** Closest known flag (canonical spelling) to an unrecognized raw flag name, or undefined if none is close enough. */
+function suggestFlag(rawFlag: string): string | undefined {
+  let closest: string | undefined;
+  let closestDistance = Number.POSITIVE_INFINITY;
+
+  for (const candidate of FLAG_SUGGESTION_CANDIDATES) {
+    const distance = levenshteinDistance(rawFlag, candidate);
+
+    if (distance < closestDistance) {
+      closest = candidate;
+      closestDistance = distance;
+    }
+  }
+
+  if (closest === undefined || closestDistance > MAX_SUGGESTION_DISTANCE) {
+    return undefined;
+  }
+
+  return FLAG_ALIASES[closest] ?? closest;
+}
+
+/**
+ * Parses one `--flag` argument, given the raw next argument so value-taking
+ * flags can decide whether to consume it as a space-separated value. `arg`
+ * is assumed to start with `--`; positional (non-flag) arguments are handled
+ * by the caller. Returns the resolved canonical flag name alongside the
+ * result so the caller can track flag-adjacent parsing state (for example,
+ * whether the previous flag was boolean) without re-parsing `arg`.
+ */
+function parseCliFlag(
+  arg: string,
+  rawNextArg: string | undefined,
+): { result: CliFlagResult; consumedNext: boolean; flag: string } {
   const eqIndex = arg.indexOf("=");
   const rawFlag = eqIndex === -1 ? arg.slice(2) : arg.slice(2, eqIndex);
-  const value = eqIndex === -1 ? true : arg.slice(eqIndex + 1);
   const flag = FLAG_ALIASES[rawFlag] ?? rawFlag;
+  let value: string | boolean = eqIndex === -1 ? true : arg.slice(eqIndex + 1);
+  let consumedNext = false;
 
+  if (eqIndex === -1 && SPACE_SEPARATED_VALUE_FLAGS.has(flag)) {
+    if (rawNextArg !== undefined && !rawNextArg.startsWith("--")) {
+      value = rawNextArg;
+      consumedNext = true;
+    } else if (REQUIRES_VALUE_FLAGS.has(flag)) {
+      return {
+        result: {
+          kind: "usage-error",
+          message: `sveld: --${flag} requires a value (pass --${flag}=<value> or --${flag} <value>).`,
+        },
+        consumedNext: false,
+        flag,
+      };
+    }
+  }
+
+  return { result: parseCliFlagValue(flag, value, arg, rawFlag), consumedNext, flag };
+}
+
+function parseCliFlagValue(flag: string, value: string | boolean, arg: string, rawFlag: string): CliFlagResult {
   switch (flag) {
     case "help":
       return { kind: "help" };
@@ -146,7 +272,7 @@ function parseCliFlag(arg: string): CliFlagResult {
         ? { kind: "option", option: { format: value as "text" | "json" } }
         : { kind: "option", option: {} };
     default:
-      return { kind: "unknown", arg };
+      return { kind: "unknown", arg, suggestion: suggestFlag(rawFlag) };
   }
 }
 
@@ -155,19 +281,32 @@ export type CliParseResult =
   | { kind: "options"; options: CliOptions }
   | { kind: "help" }
   | { kind: "version" }
-  | { kind: "unknown"; arg: string };
+  | { kind: "unknown"; arg: string; suggestion?: string; positionalHint?: boolean }
+  | { kind: "usage-error"; message: string };
 
 export function parseCliOptions(argv: string[]): CliParseResult {
   const options: CliOptions = {};
+  let previousFlagWasBoolean = false;
 
-  for (const arg of argv) {
-    const result = parseCliFlag(arg);
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+
+    if (!arg.startsWith("--")) {
+      return { kind: "unknown", arg, positionalHint: previousFlagWasBoolean ? true : undefined };
+    }
+
+    const { result, consumedNext, flag } = parseCliFlag(arg, argv[i + 1]);
 
     if (result.kind !== "option") {
       return result;
     }
 
     Object.assign(options, result.option);
+    previousFlagWasBoolean = BOOLEAN_FLAGS.has(flag);
+
+    if (consumedNext) {
+      i++;
+    }
   }
 
   return { kind: "options", options };
@@ -196,8 +335,24 @@ export async function cli(process: NodeJS.Process) {
     return;
   }
 
+  if (parsed.kind === "usage-error") {
+    console.error(parsed.message);
+    process.exitCode = EXIT_CODES.USAGE_ERROR;
+    return;
+  }
+
   if (parsed.kind === "unknown") {
-    console.error(`Unknown flag: ${parsed.arg}`);
+    let message = `Unknown flag: ${parsed.arg}`;
+
+    if (parsed.suggestion) {
+      message += ` Did you mean --${parsed.suggestion}?`;
+    }
+
+    if (parsed.positionalHint) {
+      message += " (values are passed as --flag=value or --flag value)";
+    }
+
+    console.error(message);
     console.error("Run sveld --help for a list of available flags.");
     process.exitCode = EXIT_CODES.USAGE_ERROR;
     return;
