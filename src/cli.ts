@@ -31,7 +31,7 @@ Options:
   --custom-elements     Generate a Custom Elements Manifest (custom-elements.json)
   --fail-fast           Abort the run when a single component fails to parse
   --quiet               Suppress progress logs (errors, the diagnostics summary, and the --check report are unaffected)
-  --stdout              Print the document from exactly one of --json, --markdown, or --custom-elements to stdout and write nothing to disk (rejects --types and --check)
+  --stdout[=json|ndjson] Print the document from exactly one of --json, --markdown, or --custom-elements to stdout and write nothing to disk (rejects --types and --check); --stdout=ndjson prints one JSON object per component per line and requires --json
   --cache[=<path>]      Persist parsed output and skip re-parsing unchanged files (on by default, default path: node_modules/.cache/sveld/parse-cache.json; pass --cache=false to disable)
   --resolve-types       Expand opaque imported $props() types into JSON (alias: --resolveTypes, deprecated)
   --check-examples      Compile-check @example blocks against the TypeScript program (alias: --checkExamples, deprecated)
@@ -76,8 +76,14 @@ function parseCliFlag(arg: string): CliFlagResult {
     case "json":
     case "markdown":
     case "quiet":
-    case "stdout":
       return { kind: "option", option: { [flag]: value === true || value === "true" } };
+    case "stdout":
+      // Bare `--stdout` (or `--stdout=true`) keeps the single-document
+      // default; `--stdout=json`/`--stdout=ndjson` select the format
+      // explicitly. Any other value is validated (and rejected) in `cli()`.
+      if (value === true || value === "true") return { kind: "option", option: { stdout: true } };
+      if (value === "false") return { kind: "option", option: { stdout: false } };
+      return { kind: "option", option: { stdout: value as "json" | "ndjson" } };
     case "custom-elements":
       return { kind: "option", option: { customElements: value === true || value === "true" } };
     case "strict":
@@ -177,10 +183,22 @@ export async function cli(process: NodeJS.Process) {
   }
 
   if (options.stdout) {
+    if (options.stdout !== true && options.stdout !== "json" && options.stdout !== "ndjson") {
+      console.error(`sveld: --stdout must be "json" or "ndjson"; got "${options.stdout}".`);
+      process.exitCode = 1;
+      return;
+    }
+
     const selectedOutputs = [options.json, options.markdown, options.customElements].filter(Boolean).length;
 
     if (selectedOutputs !== 1) {
       console.error("sveld: --stdout requires exactly one of --json, --markdown, or --custom-elements.");
+      process.exitCode = 1;
+      return;
+    }
+
+    if (options.stdout === "ndjson" && !options.json) {
+      console.error("sveld: --stdout=ndjson is only valid with --json.");
       process.exitCode = 1;
       return;
     }

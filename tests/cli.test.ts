@@ -105,6 +105,14 @@ describe("parseCliOptions", () => {
     expect(parseCliOptions(["--stdout=false"])).toEqual({ kind: "options", options: { stdout: false } });
   });
 
+  test("--stdout=json sets stdout to json", () => {
+    expect(parseCliOptions(["--stdout=json"])).toEqual({ kind: "options", options: { stdout: "json" } });
+  });
+
+  test("--stdout=ndjson sets stdout to ndjson", () => {
+    expect(parseCliOptions(["--stdout=ndjson"])).toEqual({ kind: "options", options: { stdout: "ndjson" } });
+  });
+
   test("--types-format=component sets typesOptions.format", () => {
     expect(parseCliOptions(["--types-format=component"])).toEqual({
       kind: "options",
@@ -474,5 +482,96 @@ describe("cli() --stdout", () => {
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("--stdout cannot be combined with --check"));
     expect(stdoutSpy).not.toHaveBeenCalled();
     expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(false);
+  });
+
+  test("--stdout=yaml errors and generates nothing", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--stdout=yaml"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(1);
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('--stdout must be "json" or "ndjson"'));
+    expect(stdoutSpy).not.toHaveBeenCalled();
+  });
+
+  test("--markdown --stdout=ndjson errors and generates nothing", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--markdown", "--stdout=ndjson"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(1);
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("--stdout=ndjson is only valid with --json"));
+    expect(stdoutSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe("cli() --stdout=ndjson", () => {
+  let dir: string;
+  let previousCwd: string;
+  let previousArgv: string[];
+  let stdoutSpy: ReturnType<typeof jest.spyOn>;
+
+  beforeEach(() => {
+    previousCwd = process.cwd();
+    previousArgv = process.argv;
+    process.exitCode = 0;
+    dir = mkdtempSync(join(tmpdir(), "sveld-cli-stdout-ndjson-"));
+    process.chdir(dir);
+    mkdirSync(join(dir, "src"), { recursive: true });
+    writeFileSync(
+      join(dir, "src", "Button.svelte"),
+      '<script>\n  export let label = "";\n</script>\n<button>{label}</button>\n',
+    );
+    writeFileSync(
+      join(dir, "src", "Alert.svelte"),
+      '<script>\n  export let message = "";\n</script>\n<div>{message}</div>\n',
+    );
+    writeFileSync(
+      join(dir, "src", "index.js"),
+      'export { default as Button } from "./Button.svelte";\nexport { default as Alert } from "./Alert.svelte";\n',
+    );
+    jest.spyOn(console, "error").mockImplementation(() => {});
+    stdoutSpy = jest.spyOn(process.stdout, "write").mockImplementation(() => true);
+  });
+
+  afterEach(() => {
+    process.chdir(previousCwd);
+    process.argv = previousArgv;
+    process.exitCode = 0;
+    rmSync(dir, { recursive: true, force: true });
+    jest.restoreAllMocks();
+  });
+
+  test("--json --stdout=ndjson prints one JSON object per component per line, in document order", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--stdout=ndjson"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(0);
+    expect(stdoutSpy).toHaveBeenCalledTimes(1);
+
+    const printed = stdoutSpy.mock.calls[0][0] as string;
+    const lines = printed.trimEnd().split("\n");
+    expect(lines).toHaveLength(2);
+
+    const documentArgv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--stdout"];
+    process.argv = documentArgv;
+    stdoutSpy.mockClear();
+    await cli(process);
+    const document = JSON.parse(stdoutSpy.mock.calls[0][0] as string);
+
+    expect(lines.map((line) => JSON.parse(line))).toEqual(document.components);
+    expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(false);
+  });
+
+  test("--json --stdout=json keeps the single-document behavior", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--stdout=json"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(0);
+    expect(stdoutSpy).toHaveBeenCalledTimes(1);
+    const printed = JSON.parse(stdoutSpy.mock.calls[0][0] as string);
+    expect(printed).toMatchObject({ schemaVersion: 1, total: 2 });
   });
 });

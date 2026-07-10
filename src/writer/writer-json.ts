@@ -62,6 +62,21 @@ export function renderJsonDocument(
   return `${JSON.stringify(output, null, 2)}\n`;
 }
 
+/**
+ * Renders one minified JSON object per exported component per line (NDJSON),
+ * in the same order as `renderJsonDocument`'s `components` array. Used by the
+ * CLI's `--stdout=ndjson` mode.
+ */
+export function renderJsonLines(
+  components: ComponentDocs,
+  options: Pick<WriteJsonOptions, "inputDir" | "entryExports">,
+): string {
+  const document = buildComponentApiDocument(components, { entryExports: options.entryExports });
+  const output = withNormalizedFilePaths(document.components, options.inputDir);
+
+  return `${output.map((c) => JSON.stringify(c)).join("\n")}\n`;
+}
+
 async function writeJsonLocal(components: ComponentDocs, options: WriteJsonOptions) {
   const raw = renderJsonDocument(components, options);
   const output_path = path.join(process.cwd(), options.outFile);
