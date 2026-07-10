@@ -1,3 +1,5 @@
+import { readdirSync, rmSync } from "node:fs";
+import { join } from "node:path";
 import { $ } from "bun";
 import { name } from "../package.json";
 
@@ -10,7 +12,12 @@ for await (const dir of $`find tests/e2e -maxdepth 1 -mindepth 1 -type d`.lines(
   if (!(await Bun.file(packageJsonPath).exists())) continue;
 
   try {
-    await $`cd ${dir} && rm -rf types`;
+    rmSync(join(dir, "types"), { recursive: true, force: true });
+    for (const entry of readdirSync(dir)) {
+      if (entry.startsWith("types-")) {
+        rmSync(join(dir, entry), { recursive: true, force: true });
+      }
+    }
     await $`cd ${dir} && bun link ${name}`;
     await $`cd ${dir} && bun install`;
 

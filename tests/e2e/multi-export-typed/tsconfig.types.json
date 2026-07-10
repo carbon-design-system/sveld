@@ -10,5 +10,5 @@
     "skipLibCheck": true,
     "types": []
   },
-  "include": ["types/**/*.d.ts"]
+  "include": ["types/**/*.d.ts", "types-minimal/**/*.d.ts"]
 }

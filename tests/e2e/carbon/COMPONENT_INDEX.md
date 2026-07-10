@@ -758,6 +758,8 @@ None.
 
 ## `DataTable`
 
+**Type parameters:** <code><Row extends DataTableRow = DataTableRow></code>
+
 ### Types
 
 ```ts
