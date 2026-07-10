@@ -16,7 +16,7 @@ import type { ComponentProp, ComponentSlot, SerializedComponentEvent } from "../
 import { setQuiet } from "../src/logger";
 import type { ComponentDocs } from "../src/plugin";
 import type { CemModule } from "../src/writer/writer-custom-elements";
-import writeCustomElements from "../src/writer/writer-custom-elements";
+import writeCustomElements, { renderCustomElementsManifest } from "../src/writer/writer-custom-elements";
 import { mockComponentDocApi } from "./test-brands";
 
 function mockProp(name: string, overrides?: Partial<ComponentProp>): ComponentProp {
@@ -115,6 +115,23 @@ describe("writeCustomElements", () => {
     try {
       await writeCustomElements(components, { inputDir: "src", outFile });
       expect(errorSpy).not.toHaveBeenCalled();
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  test("renderCustomElementsManifest matches the document writeCustomElements writes to disk", async () => {
+    const components: ComponentDocs = new Map([["Alpha", mockComponentDocApi("Alpha", "Alpha.svelte")]]);
+    const rendered = renderCustomElementsManifest(components, { inputDir: "src" });
+
+    const tempDir = await mkdtemp(path.join(process.cwd(), ".tmp-sveld-cem-render-"));
+    const outFile = path.relative(process.cwd(), path.join(tempDir, "custom-elements.json"));
+
+    try {
+      await writeCustomElements(components, { inputDir: "src", outFile });
+      const written = readFileSync(path.join(tempDir, "custom-elements.json"), "utf-8");
+
+      expect(rendered).toBe(written);
     } finally {
       rmSync(tempDir, { recursive: true, force: true });
     }

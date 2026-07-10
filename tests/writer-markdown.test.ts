@@ -1,9 +1,9 @@
-import { rmSync } from "node:fs";
+import { readFileSync, rmSync } from "node:fs";
 import { mkdtemp } from "node:fs/promises";
 import path from "node:path";
 import { setQuiet } from "../src/logger";
 import type { ComponentDocs } from "../src/plugin";
-import writeMarkdown from "../src/writer/writer-markdown";
+import writeMarkdown, { renderMarkdownDocument } from "../src/writer/writer-markdown";
 import { mockComponentDocApi } from "./test-brands";
 
 describe("writeMarkdown", () => {
@@ -51,5 +51,22 @@ describe("writeMarkdown", () => {
     await writeMarkdown(components, { outFile: "unused.md", write: false });
 
     expect(errorSpy).not.toHaveBeenCalled();
+  });
+
+  test("renderMarkdownDocument matches the document writeMarkdown writes to disk", async () => {
+    const components: ComponentDocs = new Map([["Button", mockComponentDocApi("Button", "Button.svelte")]]);
+    const rendered = renderMarkdownDocument(components, {});
+
+    const tempDir = await mkdtemp(path.join(process.cwd(), ".tmp-sveld-md-render-"));
+    const outFile = path.relative(process.cwd(), path.join(tempDir, "COMPONENT_INDEX.md"));
+
+    try {
+      await writeMarkdown(components, { outFile });
+      const written = readFileSync(path.join(tempDir, "COMPONENT_INDEX.md"), "utf-8");
+
+      expect(rendered).toBe(written);
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
   });
 });

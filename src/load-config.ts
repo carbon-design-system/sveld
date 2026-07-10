@@ -23,6 +23,12 @@ export interface SveldRuntimeOptions extends PluginSveldOptions {
   check?: boolean | string;
   /** Suppress writer progress logs (`created "..."` / `unchanged "..."`). */
   quiet?: boolean;
+  /**
+   * Print the single selected `json` / `markdown` / `customElements` document
+   * to stdout instead of writing it to disk. Requires exactly one of those
+   * three outputs; CLI-only (the Vite plugin ignores it).
+   */
+  stdout?: boolean;
 }
 
 /**

@@ -11,9 +11,9 @@ import { createSveldBundle, type SveldBundle } from "./watch";
 // Side-effect import: registers the built-in "json"/"markdown"/"types"/"custom-elements" writers.
 import "./writer/built-in-writers";
 import { getWriter } from "./writer/registry";
-import type { WriteCustomElementsOptions } from "./writer/writer-custom-elements";
-import type { WriteJsonOptions } from "./writer/writer-json";
-import type { WriteMarkdownOptions } from "./writer/writer-markdown";
+import { renderCustomElementsManifest, type WriteCustomElementsOptions } from "./writer/writer-custom-elements";
+import { renderJsonDocument, type WriteJsonOptions } from "./writer/writer-json";
+import { renderMarkdownDocument, type WriteMarkdownOptions } from "./writer/writer-markdown";
 import type { WriteTsDefinitionsOptions } from "./writer/writer-ts-definitions";
 
 export type {
@@ -263,4 +263,41 @@ export async function writeOutput(result: GenerateBundleResult, opts: PluginSvel
   });
 
   await Promise.all(additionalWrites);
+}
+
+/**
+ * Prints the single selected `json` / `markdown` / `customElements` document
+ * to stdout instead of writing it to disk. CLI-only: the caller (`cli()`) is
+ * responsible for enforcing that exactly one of those three options is set
+ * before calling this.
+ */
+export async function writeStdout(result: GenerateBundleResult, opts: PluginSveldOptions, input: string) {
+  const inputDir = dirname(input);
+
+  if (opts?.json) {
+    const rendered = renderJsonDocument(result.components, {
+      ...opts?.jsonOptions,
+      inputDir,
+      entryExports: result.entryExports,
+    } satisfies Pick<WriteJsonOptions, "inputDir" | "entryExports">);
+    process.stdout.write(rendered);
+    return;
+  }
+
+  if (opts?.markdown) {
+    const rendered = renderMarkdownDocument(result.components, {
+      ...opts?.markdownOptions,
+      entryExports: result.entryExports,
+    } satisfies Pick<WriteMarkdownOptions, "entryExports" | "onAppend">);
+    process.stdout.write(rendered);
+    return;
+  }
+
+  if (opts?.customElements) {
+    const rendered = renderCustomElementsManifest(result.components, {
+      ...opts?.customElementsOptions,
+      inputDir,
+    } satisfies Pick<WriteCustomElementsOptions, "inputDir">);
+    process.stdout.write(rendered);
+  }
 }

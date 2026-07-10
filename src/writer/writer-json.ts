@@ -44,16 +44,29 @@ async function writeJsonComponents(components: ComponentDocs, options: WriteJson
   );
 }
 
-async function writeJsonLocal(components: ComponentDocs, options: WriteJsonOptions) {
+/**
+ * Renders the single combined JSON document (the same shape written to
+ * `COMPONENT_API.json`) without touching disk. Used by both `writeJsonLocal`
+ * and the CLI's `--stdout` mode so the two channels can't drift.
+ */
+export function renderJsonDocument(
+  components: ComponentDocs,
+  options: Pick<WriteJsonOptions, "inputDir" | "entryExports">,
+): string {
   const document = buildComponentApiDocument(components, { entryExports: options.entryExports });
   const output: ComponentApiDocument = {
     ...document,
     components: withNormalizedFilePaths(document.components, options.inputDir),
   };
 
+  return `${JSON.stringify(output, null, 2)}\n`;
+}
+
+async function writeJsonLocal(components: ComponentDocs, options: WriteJsonOptions) {
+  const raw = renderJsonDocument(components, options);
   const output_path = path.join(process.cwd(), options.outFile);
   const writer = createJsonWriter();
-  await writer.write(output_path, `${JSON.stringify(output, null, 2)}\n`);
+  await writer.write(output_path, raw);
 
   info(`created "${options.outFile}".`);
 }
