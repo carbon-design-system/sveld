@@ -654,7 +654,7 @@ describe("cli() --format with --check", () => {
 
     writeFileSync(
       join(dir, "src", "Button.svelte"),
-      '<script>\n  export let label;\n</script>\n<button>{label}</button>\n',
+      "<script>\n  export let label;\n</script>\n<button>{label}</button>\n",
     );
   });
 
@@ -735,14 +735,7 @@ describe("cli() --format with --report-diagnostics", () => {
   });
 
   test("--format=json prints the diagnostics as JSON to stderr", async () => {
-    process.argv = [
-      "bun",
-      "cli.js",
-      "--entry=src/index.js",
-      "--types=false",
-      "--report-diagnostics",
-      "--format=json",
-    ];
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--report-diagnostics", "--format=json"];
 
     await cli(process);
 
@@ -750,9 +743,7 @@ describe("cli() --format with --report-diagnostics", () => {
     expect(stderrSpy).toHaveBeenCalledTimes(1);
     const printed = JSON.parse(stderrSpy.mock.calls[0][0] as string);
     expect(printed.kind).toBe("diagnostics");
-    expect(printed.diagnostics).toContainEqual(
-      expect.objectContaining({ kind: "event-no-source", name: "phantom" }),
-    );
+    expect(printed.diagnostics).toContainEqual(expect.objectContaining({ kind: "event-no-source", name: "phantom" }));
   });
 
   test("--format=text keeps the text summary on stderr (default behavior unchanged)", async () => {
@@ -766,14 +757,7 @@ describe("cli() --format with --report-diagnostics", () => {
 
   test("--format=json with no diagnostics prints nothing, same as text", async () => {
     writeFileSync(join(dir, "src", "Phantom.svelte"), "<script></script>\n<button>Click</button>\n");
-    process.argv = [
-      "bun",
-      "cli.js",
-      "--entry=src/index.js",
-      "--types=false",
-      "--report-diagnostics",
-      "--format=json",
-    ];
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--report-diagnostics", "--format=json"];
 
     await cli(process);
 

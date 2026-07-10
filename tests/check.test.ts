@@ -368,7 +368,15 @@ describe("formatCheckReportJson", () => {
       snapshotExists: true,
       snapshotFile: "COMPONENT_API.json",
       bump: "major" as const,
-      changes: [{ component: "Button", kind: "prop" as const, name: "href", bump: "major" as const, message: 'prop "href" removed' }],
+      changes: [
+        {
+          component: "Button",
+          kind: "prop" as const,
+          name: "href",
+          bump: "major" as const,
+          message: 'prop "href" removed',
+        },
+      ],
     };
 
     const json = formatCheckReportJson(result);
