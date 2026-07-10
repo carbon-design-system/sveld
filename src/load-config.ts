@@ -21,6 +21,8 @@ export interface SveldRuntimeOptions extends PluginSveldOptions {
    * string for a custom snapshot path.
    */
   check?: boolean | string;
+  /** Suppress writer progress logs (`created "..."` / `unchanged "..."`). */
+  quiet?: boolean;
 }
 
 /**

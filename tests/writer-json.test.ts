@@ -3,6 +3,7 @@ import { mkdtemp } from "node:fs/promises";
 import path from "node:path";
 import { version as svelteVersion } from "svelte/package.json";
 import { name as packageName, version as packageVersion } from "../package.json";
+import { setQuiet } from "../src/logger";
 import type { ComponentDocApi, ComponentDocs } from "../src/plugin";
 import writeJson from "../src/writer/writer-json";
 import { mockComponentDocApi } from "./test-brands";
@@ -12,11 +13,14 @@ function createComponent(moduleName: string, filePath: string) {
 }
 
 describe("writeJson", () => {
+  let errorSpy: ReturnType<typeof jest.spyOn>;
+
   beforeEach(() => {
-    jest.spyOn(console, "log").mockImplementation(() => {});
+    errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
   });
 
   afterEach(() => {
+    setQuiet(false);
     jest.restoreAllMocks();
   });
 
@@ -104,6 +108,41 @@ describe("writeJson", () => {
         },
         { name: "Theme", kind: "type", type: '"light" | "dark"', isTypeOnly: true, source: "./types.ts" },
       ]);
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  test("prints the progress line to stderr", async () => {
+    const tempDir = await mkdtemp(path.join(process.cwd(), ".tmp-sveld-json-"));
+    const outFile = path.relative(process.cwd(), path.join(tempDir, "COMPONENT_API.json"));
+
+    try {
+      await writeJson(new Map([["Alpha", createComponent("Alpha", "Alpha.svelte")]]), {
+        input: "src",
+        inputDir: "src",
+        outFile,
+      });
+
+      expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining(`created "${outFile}".`));
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  test("suppresses the progress line when quiet mode is on", async () => {
+    setQuiet(true);
+    const tempDir = await mkdtemp(path.join(process.cwd(), ".tmp-sveld-json-"));
+    const outFile = path.relative(process.cwd(), path.join(tempDir, "COMPONENT_API.json"));
+
+    try {
+      await writeJson(new Map([["Alpha", createComponent("Alpha", "Alpha.svelte")]]), {
+        input: "src",
+        inputDir: "src",
+        outFile,
+      });
+
+      expect(errorSpy).not.toHaveBeenCalled();
     } finally {
       rmSync(tempDir, { recursive: true, force: true });
     }

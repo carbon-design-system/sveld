@@ -13,6 +13,7 @@ import { readFileSync, rmSync } from "node:fs";
 import { mkdtemp } from "node:fs/promises";
 import path from "node:path";
 import type { ComponentProp, ComponentSlot, SerializedComponentEvent } from "../src/ComponentParser";
+import { setQuiet } from "../src/logger";
 import type { ComponentDocs } from "../src/plugin";
 import type { CemModule } from "../src/writer/writer-custom-elements";
 import writeCustomElements from "../src/writer/writer-custom-elements";
@@ -60,11 +61,14 @@ async function runWriter(components: ComponentDocs): Promise<{ module: CemModule
 }
 
 describe("writeCustomElements", () => {
+  let errorSpy: ReturnType<typeof jest.spyOn>;
+
   beforeEach(() => {
-    jest.spyOn(console, "log").mockImplementation(() => {});
+    errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
   });
 
   afterEach(() => {
+    setQuiet(false);
     jest.restoreAllMocks();
   });
 
@@ -84,6 +88,33 @@ describe("writeCustomElements", () => {
       // Deterministic ordering: sorted alphabetically by moduleName, same as the JSON writer.
       expect(manifest.modules.map((m: CemModule) => m.declarations[0].name)).toEqual(["Alpha", "Zeta"]);
       expect(manifest.modules[0].kind).toBe("javascript-module");
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  test("prints the progress line to stderr", async () => {
+    const tempDir = await mkdtemp(path.join(process.cwd(), ".tmp-sveld-cem-"));
+    const outFile = path.relative(process.cwd(), path.join(tempDir, "custom-elements.json"));
+    const components: ComponentDocs = new Map([["Alpha", mockComponentDocApi("Alpha", "Alpha.svelte")]]);
+
+    try {
+      await writeCustomElements(components, { inputDir: "src", outFile });
+      expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining(`created "${outFile}".`));
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  test("suppresses the progress line when quiet mode is on", async () => {
+    setQuiet(true);
+    const tempDir = await mkdtemp(path.join(process.cwd(), ".tmp-sveld-cem-"));
+    const outFile = path.relative(process.cwd(), path.join(tempDir, "custom-elements.json"));
+    const components: ComponentDocs = new Map([["Alpha", mockComponentDocApi("Alpha", "Alpha.svelte")]]);
+
+    try {
+      await writeCustomElements(components, { inputDir: "src", outFile });
+      expect(errorSpy).not.toHaveBeenCalled();
     } finally {
       rmSync(tempDir, { recursive: true, force: true });
     }

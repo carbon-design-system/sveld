@@ -6,6 +6,7 @@ import { type CheckResult, formatCheckReport, resolveCheckSnapshotFile, runCheck
 import { formatDiagnosticsSummary } from "./diagnostics";
 import { getSvelteEntry } from "./get-svelte-entry";
 import { loadConfig, mergeConfig, type SveldRuntimeOptions } from "./load-config";
+import { setQuiet } from "./logger";
 import { normalizeSeparators } from "./path";
 import { generateBundle, toGenerateBundleOptions, writeOutput } from "./plugin";
 
@@ -29,6 +30,7 @@ Options:
   --markdown            Generate component documentation in Markdown format
   --custom-elements     Generate a Custom Elements Manifest (custom-elements.json)
   --fail-fast           Abort the run when a single component fails to parse
+  --quiet               Suppress progress logs (errors, the diagnostics summary, and the --check report are unaffected)
   --cache[=<path>]      Persist parsed output and skip re-parsing unchanged files (on by default, default path: node_modules/.cache/sveld/parse-cache.json; pass --cache=false to disable)
   --resolve-types       Expand opaque imported $props() types into JSON (alias: --resolveTypes, deprecated)
   --check-examples      Compile-check @example blocks against the TypeScript program (alias: --checkExamples, deprecated)
@@ -72,6 +74,7 @@ function parseCliFlag(arg: string): CliFlagResult {
     case "types":
     case "json":
     case "markdown":
+    case "quiet":
       return { kind: "option", option: { [flag]: value === true || value === "true" } };
     case "custom-elements":
       return { kind: "option", option: { customElements: value === true || value === "true" } };
@@ -170,6 +173,8 @@ export async function cli(process: NodeJS.Process) {
   if (fileConfig.typesOptions || cliOptions.typesOptions) {
     options.typesOptions = { ...fileConfig.typesOptions, ...cliOptions.typesOptions };
   }
+
+  setQuiet(options.quiet === true);
 
   const resolvedEntry = getSvelteEntry(options.entry);
   let input: string;
