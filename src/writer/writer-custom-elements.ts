@@ -22,6 +22,8 @@ export type {
 export interface WriteCustomElementsOptions {
   inputDir: string;
   outFile: string;
+  /** Report the resolved path instead of writing. Set by `sveld --dry-run`. */
+  dryRun?: boolean;
 }
 
 /**
@@ -60,8 +62,8 @@ export default async function writeCustomElements(components: ComponentDocs, opt
   const raw = renderCustomElementsManifest(components, options);
 
   const output_path = path.join(process.cwd(), options.outFile);
-  const writer = createJsonWriter();
+  const writer = createJsonWriter({ dryRun: options.dryRun });
   await writer.write(output_path, raw);
 
-  info(`created "${options.outFile}".`);
+  if (!options.dryRun) info(`created "${options.outFile}".`);
 }

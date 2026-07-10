@@ -52,6 +52,7 @@ Options:
   --markdown            Generate component documentation in Markdown format
   --custom-elements     Generate a Custom Elements Manifest (custom-elements.json)
   --fail-fast           Abort the run when a single component fails to parse
+  --dry-run             Resolve, parse, and print "would write" lines for each output file instead of writing anything (including the parse cache)
   --quiet               Suppress progress logs (errors, the diagnostics summary, and the --check report are unaffected)
   --stdout[=json|ndjson] Print the document from exactly one of --json, --markdown, or --custom-elements to stdout and write nothing to disk (rejects --types and --check); --stdout=ndjson prints one JSON object per component per line and requires --json
   --cache[=<path>]      Persist parsed output and skip re-parsing unchanged files (on by default, default path: node_modules/.cache/sveld/parse-cache.json; pass --cache=false to disable)
@@ -249,6 +250,8 @@ function parseCliFlagValue(flag: string, value: string | boolean, arg: string, r
       return { kind: "option", option: { checkExamples: value === true || value === "true" } };
     case "fail-fast":
       return { kind: "option", option: { failFast: value === true || value === "true" } };
+    case "dry-run":
+      return { kind: "option", option: { dryRun: value === true || value === "true" } };
     case "entry":
       return typeof value === "string" ? { kind: "option", option: { entry: value } } : { kind: "option", option: {} };
     case "cache":

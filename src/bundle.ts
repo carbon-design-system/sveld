@@ -75,10 +75,18 @@ export interface GenerateBundleOptions {
    * Off by default. Requires `typescript`.
    */
   checkExamples?: boolean;
+  /**
+   * Parse as usual (so cache reads and real errors still apply) but skip
+   * persisting the parse cache to disk. Set by the CLI's `--dry-run`.
+   */
+  dryRun?: boolean;
 }
 
 export function toGenerateBundleOptions(
-  opts?: Pick<GenerateBundleOptions, "failFast" | "resolveTypes" | "documentExports" | "cache" | "checkExamples">,
+  opts?: Pick<
+    GenerateBundleOptions,
+    "failFast" | "resolveTypes" | "documentExports" | "cache" | "checkExamples" | "dryRun"
+  >,
 ): GenerateBundleOptions {
   return {
     failFast: opts?.failFast,
@@ -86,6 +94,7 @@ export function toGenerateBundleOptions(
     documentExports: opts?.documentExports === true,
     cache: opts?.cache,
     checkExamples: opts?.checkExamples === true,
+    dryRun: opts?.dryRun === true,
   };
 }
 
@@ -538,7 +547,8 @@ export async function generateBundle(
   const errors = Array.from(parseErrors.values());
   reportParseErrors(errors);
 
-  cache?.save();
+  // Dry runs must not persist cache state from a run that wrote nothing else.
+  if (!options.dryRun) cache?.save();
 
   // checkExamples runs over all discovered components, not just barrel exports.
   const resolveTypesCandidates = options.resolveTypes ? collectResolveTypesCandidates(components) : [];

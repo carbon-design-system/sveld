@@ -12,6 +12,8 @@ export interface WriteMarkdownOptions {
   /** Entry-barrel exports when `documentExports` is on. */
   entryExports?: EntryExports;
   onAppend?: (type: AppendType, document: WriterMarkdown, components: ComponentDocs) => void;
+  /** Report the resolved path instead of writing. Set by `sveld --dry-run`. */
+  dryRun?: boolean;
 }
 
 /**
@@ -52,8 +54,8 @@ export default async function writeMarkdown(components: ComponentDocs, options: 
 
   if (write) {
     const outFile = join(process.cwd(), options.outFile);
-    await new Writer().write(outFile, rendered);
-    info(`created "${options.outFile}".`);
+    await new Writer({ dryRun: options.dryRun }).write(outFile, rendered);
+    if (!options.dryRun) info(`created "${options.outFile}".`);
   }
 
   return rendered;
