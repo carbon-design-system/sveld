@@ -1,5 +1,6 @@
 import { join } from "node:path";
 import { convertSvelteExt, createExports } from "../create-exports";
+import { info } from "../logger";
 import type { ParsedExports } from "../parse-exports";
 import type { ComponentDocs } from "../plugin";
 import { buildComponentApiDocument } from "./document-model";
@@ -66,5 +67,5 @@ export default async function writeTsDefinitions(components: ComponentDocs, opti
 
   await Promise.all([...writePromises, writer.write(ts_base_path, `${indexDTs}\n`)]);
 
-  console.log("created TypeScript definitions.");
+  info("created TypeScript definitions.");
 }

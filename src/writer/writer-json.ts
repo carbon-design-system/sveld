@@ -1,4 +1,5 @@
 import path from "node:path";
+import { info } from "../logger";
 import type { EntryExports } from "../parse-entry-exports";
 import { normalizeSeparators } from "../path";
 import type { ComponentDocApi, ComponentDocs } from "../plugin";
@@ -38,7 +39,7 @@ async function writeJsonComponents(components: ComponentDocs, options: WriteJson
       const outFile = path.resolve(path.join(options.outDir || "", `${c.moduleName}.api.json`));
       const writer = createJsonWriter();
       const wasWritten = await writer.write(outFile, `${JSON.stringify(c, null, 2)}\n`);
-      console.log(`${wasWritten ? "created" : "unchanged"} "${outFile}".`);
+      info(`${wasWritten ? "created" : "unchanged"} "${outFile}".`);
     }),
   );
 }
@@ -54,7 +55,7 @@ async function writeJsonLocal(components: ComponentDocs, options: WriteJsonOptio
   const writer = createJsonWriter();
   await writer.write(output_path, `${JSON.stringify(output, null, 2)}\n`);
 
-  console.log(`created "${options.outFile}".`);
+  info(`created "${options.outFile}".`);
 }
 
 /**

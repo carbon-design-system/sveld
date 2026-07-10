@@ -1,4 +1,5 @@
 import { join } from "node:path";
+import { info } from "../logger";
 import type { EntryExports } from "../parse-entry-exports";
 import type { ComponentDocs } from "../plugin";
 import { renderComponentsToMarkdown } from "./markdown-render-utils";
@@ -37,7 +38,7 @@ export default async function writeMarkdown(components: ComponentDocs, options: 
   if (write) {
     const outFile = join(process.cwd(), options.outFile);
     await document.write(outFile, document.end());
-    console.log(`created "${options.outFile}".`);
+    info(`created "${options.outFile}".`);
   }
 
   return document.end();

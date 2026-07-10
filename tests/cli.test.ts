@@ -2,10 +2,26 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { cli, parseCliOptions } from "../src/cli";
+import { setQuiet } from "../src/logger";
 
 describe("parseCliOptions", () => {
   test("--fail-fast enables failFast", () => {
     expect(parseCliOptions(["--fail-fast"])).toEqual({ kind: "options", options: { failFast: true } });
+  });
+
+  test("--quiet enables quiet", () => {
+    expect(parseCliOptions(["--quiet"])).toEqual({ kind: "options", options: { quiet: true } });
+  });
+
+  test("--quiet=false disables quiet", () => {
+    expect(parseCliOptions(["--quiet=false"])).toEqual({ kind: "options", options: { quiet: false } });
+  });
+
+  test("quiet is absent by default", () => {
+    expect(parseCliOptions(["--glob", "--types"])).toEqual({
+      kind: "options",
+      options: { glob: true, types: true },
+    });
   });
 
   test("--fail-fast=false disables failFast", () => {
@@ -226,6 +242,77 @@ describe("cli() --cache", () => {
     await cli(process);
 
     expect(existsSync(join(dir, "src", "node_modules", ".cache"))).toBe(false);
+  });
+});
+
+describe("cli() --quiet", () => {
+  let dir: string;
+  let previousCwd: string;
+  let previousArgv: string[];
+  let errorSpy: ReturnType<typeof jest.spyOn>;
+
+  beforeEach(() => {
+    previousCwd = process.cwd();
+    previousArgv = process.argv;
+    process.exitCode = 0;
+    dir = mkdtempSync(join(tmpdir(), "sveld-cli-quiet-"));
+    process.chdir(dir);
+    mkdirSync(join(dir, "src"), { recursive: true });
+    writeFileSync(
+      join(dir, "src", "Button.svelte"),
+      '<script>\n  export let label = "";\n</script>\n<button>{label}</button>\n',
+    );
+    writeFileSync(join(dir, "src", "index.js"), 'export { default as Button } from "./Button.svelte";\n');
+    errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    process.chdir(previousCwd);
+    process.argv = previousArgv;
+    process.exitCode = 0;
+    setQuiet(false);
+    rmSync(dir, { recursive: true, force: true });
+    jest.restoreAllMocks();
+  });
+
+  test("a plain run prints writer progress lines to stderr", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--markdown", "--custom-elements"];
+
+    await cli(process);
+
+    expect(errorSpy).toHaveBeenCalledWith("created TypeScript definitions.");
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('created "COMPONENT_API.json".'));
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('created "COMPONENT_INDEX.md".'));
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('created "custom-elements.json".'));
+  });
+
+  test("--quiet suppresses writer progress lines but still writes output files", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--markdown", "--custom-elements", "--quiet"];
+
+    await cli(process);
+
+    expect(errorSpy).not.toHaveBeenCalled();
+    expect(existsSync(join(dir, "types", "Button.svelte.d.ts"))).toBe(true);
+    expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(true);
+    expect(existsSync(join(dir, "COMPONENT_INDEX.md"))).toBe(true);
+    expect(existsSync(join(dir, "custom-elements.json"))).toBe(true);
+  });
+
+  test("quiet: true in the config file suppresses progress lines", async () => {
+    writeFileSync(join(dir, "sveld.config.js"), "export default { quiet: true };\n");
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json"];
+
+    await cli(process);
+
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
+
+  test("--quiet does not suppress the fallback-entry warning", async () => {
+    process.argv = ["bun", "cli.js", "--quiet"];
+
+    await cli(process);
+
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('falling back to "src/index.js"'));
   });
 });
 

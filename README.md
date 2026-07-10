@@ -471,7 +471,9 @@ npx sveld --json --markdown
 
 If no entry point can be resolved (no `package.json#svelte` field and no `--entry`), the CLI exits `1` and prints the reason to `stderr`. If `src/index.js` happens to exist relative to your working directory, sveld falls back to it and prints a one-line note asking you to set `package.json#svelte` (or `--entry`) instead of relying on the fallback.
 
-Flags are kebab-case: `--entry`, `--glob`, `--types`, `--json`, `--markdown`, `--fail-fast`, `--cache`, `--resolve-types`, `--check-examples`, `--report-diagnostics`, `--strict`, `--check`, `--types-format`. The camelCase spellings `--resolveTypes` and `--checkExamples` still work as deprecated aliases for compatibility with existing scripts. An unrecognized flag (e.g. `--markdwon`) prints `Unknown flag: --markdwon` to `stderr`, exits `1`, and skips generation; sveld takes no positional arguments, so any non-flag argument errors the same way.
+Flags are kebab-case: `--entry`, `--glob`, `--types`, `--json`, `--markdown`, `--fail-fast`, `--cache`, `--resolve-types`, `--check-examples`, `--report-diagnostics`, `--strict`, `--check`, `--types-format`, `--quiet`. The camelCase spellings `--resolveTypes` and `--checkExamples` still work as deprecated aliases for compatibility with existing scripts. An unrecognized flag (e.g. `--markdwon`) prints `Unknown flag: --markdwon` to `stderr`, exits `1`, and skips generation; sveld takes no positional arguments, so any non-flag argument errors the same way.
+
+Writer progress lines (`created "..."` / `unchanged "..."`) print to `stderr`, keeping `stdout` reserved for machine-readable data. Pass `--quiet` (or `quiet: true` in `sveld.config.*`) to suppress them; it does not suppress error messages, the diagnostics summary (`--report-diagnostics` / `--strict`), or the `--check` report.
 
 Run `npx sveld --help` for the full flag list with descriptions, or `npx sveld --version` to print the installed version.
 
@@ -699,6 +701,7 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
 - **`reportDiagnostics`** (boolean, optional, default: `false`): Print unresolved-type diagnostics to stderr (CLI) or `console.warn` (programmatic API). Also available as `--report-diagnostics`. See [Type inference diagnostics](#type-inference-diagnostics).
 - **`strict`** (boolean, optional, default: `false`): Exit with code `1` when diagnostics exist. Implies `reportDiagnostics`. Also available as `--strict`. See [Type inference diagnostics](#type-inference-diagnostics).
 - **`check`** (boolean | string, optional, default: `false`): Diff the parsed component API against a committed snapshot and assign a semver bump to each change. `true` uses the `json` writer's `outFile` (or `COMPONENT_API.json`); a string sets a custom snapshot path. Also available as `--check` / `--check=<path>`. On the CLI this exits `1` on a breaking change; from `sveld()` it's returned on `SveldResult.check` for you to act on. See [CI: API-drift checks (`--check`)](#ci-api-drift-checks---check).
+- **`quiet`** (boolean, optional, default: `false`): Suppress writer progress logs (`created "..."` / `unchanged "..."`), which print to `stderr` by default. Does not suppress error messages, the diagnostics summary, or the `--check` report. Also available as `--quiet`.
 
 By default, only TypeScript definitions are generated.
 

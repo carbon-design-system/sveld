@@ -1,4 +1,5 @@
 import path from "node:path";
+import { info } from "../logger";
 import { normalizeSeparators } from "../path";
 import type { ComponentDocApi, ComponentDocs } from "../plugin";
 import { createJsonWriter } from "./Writer";
@@ -48,5 +49,5 @@ export default async function writeCustomElements(components: ComponentDocs, opt
   const writer = createJsonWriter();
   await writer.write(output_path, `${JSON.stringify(manifest, null, 2)}\n`);
 
-  console.log(`created "${options.outFile}".`);
+  info(`created "${options.outFile}".`);
 }

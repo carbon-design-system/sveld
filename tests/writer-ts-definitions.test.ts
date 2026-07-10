@@ -1,8 +1,18 @@
+import { rmSync } from "node:fs";
+import { mkdtemp } from "node:fs/promises";
+import path from "node:path";
 import { asNormalizedPath } from "../src/brands";
 import type { ParsedComponent } from "../src/ComponentParser";
 import { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "../src/ComponentParser";
-import type { ComponentDocApi } from "../src/plugin";
-import { formatTsProps, getContextDefs, getTypeDefs, writeTsDefinition } from "../src/writer/writer-ts-definitions";
+import { setQuiet } from "../src/logger";
+import type { ComponentDocApi, ComponentDocs } from "../src/plugin";
+import writeTsDefinitions, {
+  formatTsProps,
+  getContextDefs,
+  getTypeDefs,
+  writeTsDefinition,
+} from "../src/writer/writer-ts-definitions";
+import { mockComponentDocApi, mockParsedExports } from "./test-brands";
 
 const DEFAULT_SLOT_SNIPPET_PROP_REGEX = /default\?\s*:\s*\(\)\s*=>\s*void/;
 
@@ -978,5 +988,57 @@ export default Button;`,
     expect(output).toContain("getSelected: () => Row[];");
     expect(output).toContain("props: GenericTreeProps<Row>");
     expect(output).toContain("} & GenericTreeExports<Row>;");
+  });
+});
+
+describe("writeTsDefinitions", () => {
+  let errorSpy: ReturnType<typeof jest.spyOn>;
+
+  beforeEach(() => {
+    errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    setQuiet(false);
+    jest.restoreAllMocks();
+  });
+
+  test("prints the progress line to stderr", async () => {
+    const tempDir = await mkdtemp(path.join(process.cwd(), ".tmp-sveld-ts-defs-"));
+    const outDir = path.relative(process.cwd(), tempDir);
+    const components: ComponentDocs = new Map([["Button", mockComponentDocApi("Button", "Button.svelte")]]);
+
+    try {
+      await writeTsDefinitions(components, {
+        outDir,
+        inputDir: "src",
+        preamble: "",
+        exports: mockParsedExports({}),
+      });
+
+      expect(errorSpy).toHaveBeenCalledWith("created TypeScript definitions.");
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  test("suppresses the progress line when quiet mode is on", async () => {
+    setQuiet(true);
+    const tempDir = await mkdtemp(path.join(process.cwd(), ".tmp-sveld-ts-defs-"));
+    const outDir = path.relative(process.cwd(), tempDir);
+    const components: ComponentDocs = new Map([["Button", mockComponentDocApi("Button", "Button.svelte")]]);
+
+    try {
+      await writeTsDefinitions(components, {
+        outDir,
+        inputDir: "src",
+        preamble: "",
+        exports: mockParsedExports({}),
+      });
+
+      expect(errorSpy).not.toHaveBeenCalled();
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
   });
 });
