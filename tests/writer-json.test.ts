@@ -5,7 +5,7 @@ import { version as svelteVersion } from "svelte/package.json";
 import { name as packageName, version as packageVersion } from "../package.json";
 import { setQuiet } from "../src/logger";
 import type { ComponentDocApi, ComponentDocs } from "../src/plugin";
-import writeJson from "../src/writer/writer-json";
+import writeJson, { renderJsonDocument } from "../src/writer/writer-json";
 import { mockComponentDocApi } from "./test-brands";
 
 function createComponent(moduleName: string, filePath: string) {
@@ -146,5 +146,40 @@ describe("writeJson", () => {
     } finally {
       rmSync(tempDir, { recursive: true, force: true });
     }
+  });
+});
+
+describe("renderJsonDocument", () => {
+  test("matches the document writeJson writes to disk, without touching disk", async () => {
+    const components: ComponentDocs = new Map([
+      ["Zeta", createComponent("Zeta", "Zeta.svelte")],
+      ["Alpha", createComponent("Alpha", "Alpha.svelte")],
+    ]);
+
+    const rendered = renderJsonDocument(components, { inputDir: "src" });
+
+    const tempDir = await mkdtemp(path.join(process.cwd(), ".tmp-sveld-json-render-"));
+    const outFile = path.relative(process.cwd(), path.join(tempDir, "COMPONENT_API.json"));
+
+    try {
+      await writeJson(components, { input: "src", inputDir: "src", outFile });
+      const written = readFileSync(path.join(tempDir, "COMPONENT_API.json"), "utf-8");
+
+      expect(rendered).toBe(written);
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  test("includes schemaVersion and generator metadata", () => {
+    const components: ComponentDocs = new Map([["Alpha", createComponent("Alpha", "Alpha.svelte")]]);
+
+    const rendered = JSON.parse(renderJsonDocument(components, { inputDir: "src" }));
+
+    expect(rendered).toMatchObject({
+      schemaVersion: 1,
+      generator: { name: packageName, version: packageVersion, svelteVersion },
+      total: 1,
+    });
   });
 });

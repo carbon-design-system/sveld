@@ -97,6 +97,14 @@ describe("parseCliOptions", () => {
     expect(parseCliOptions(["--strict"])).toEqual({ kind: "options", options: { strict: true } });
   });
 
+  test("--stdout enables stdout", () => {
+    expect(parseCliOptions(["--stdout"])).toEqual({ kind: "options", options: { stdout: true } });
+  });
+
+  test("--stdout=false disables stdout", () => {
+    expect(parseCliOptions(["--stdout=false"])).toEqual({ kind: "options", options: { stdout: false } });
+  });
+
   test("--types-format=component sets typesOptions.format", () => {
     expect(parseCliOptions(["--types-format=component"])).toEqual({
       kind: "options",
@@ -351,5 +359,120 @@ describe("cli() --types-format merges with config file typesOptions", () => {
     const outputPath = join(dir, "custom-types", "Button.svelte.d.ts");
     expect(existsSync(outputPath)).toBe(true);
     expect(readFileSync(outputPath, "utf-8")).toContain("declare const Button: Component<");
+  });
+});
+
+describe("cli() --stdout", () => {
+  let dir: string;
+  let previousCwd: string;
+  let previousArgv: string[];
+  let errorSpy: ReturnType<typeof jest.spyOn>;
+  let stdoutSpy: ReturnType<typeof jest.spyOn>;
+
+  beforeEach(() => {
+    previousCwd = process.cwd();
+    previousArgv = process.argv;
+    process.exitCode = 0;
+    dir = mkdtempSync(join(tmpdir(), "sveld-cli-stdout-"));
+    process.chdir(dir);
+    mkdirSync(join(dir, "src"), { recursive: true });
+    writeFileSync(
+      join(dir, "src", "Button.svelte"),
+      '<script>\n  export let label = "";\n</script>\n<button>{label}</button>\n',
+    );
+    writeFileSync(join(dir, "src", "index.js"), 'export { default as Button } from "./Button.svelte";\n');
+    errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    stdoutSpy = jest.spyOn(process.stdout, "write").mockImplementation(() => true);
+  });
+
+  afterEach(() => {
+    process.chdir(previousCwd);
+    process.argv = previousArgv;
+    process.exitCode = 0;
+    rmSync(dir, { recursive: true, force: true });
+    jest.restoreAllMocks();
+  });
+
+  test("--json --stdout prints the combined JSON document to stdout and writes nothing to disk", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--stdout"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(0);
+    expect(stdoutSpy).toHaveBeenCalledTimes(1);
+    const printed = JSON.parse(stdoutSpy.mock.calls[0][0] as string);
+    expect(printed).toMatchObject({ schemaVersion: 1, total: 1 });
+    expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(false);
+    expect(existsSync(join(dir, "types"))).toBe(false);
+  });
+
+  test("--markdown --stdout prints the Markdown document to stdout and writes nothing to disk", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--markdown", "--stdout"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(0);
+    expect(stdoutSpy).toHaveBeenCalledTimes(1);
+    expect(stdoutSpy.mock.calls[0][0]).toContain("Button");
+    expect(existsSync(join(dir, "COMPONENT_INDEX.md"))).toBe(false);
+    expect(existsSync(join(dir, "types"))).toBe(false);
+  });
+
+  test("--custom-elements --stdout prints the manifest to stdout and writes nothing to disk", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--custom-elements", "--stdout"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(0);
+    expect(stdoutSpy).toHaveBeenCalledTimes(1);
+    const printed = JSON.parse(stdoutSpy.mock.calls[0][0] as string);
+    expect(printed.schemaVersion).toBe("1.0.0");
+    expect(existsSync(join(dir, "custom-elements.json"))).toBe(false);
+    expect(existsSync(join(dir, "types"))).toBe(false);
+  });
+
+  test("--stdout with no document-producing output errors and generates nothing", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--stdout"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(1);
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("--stdout requires exactly one of"));
+    expect(stdoutSpy).not.toHaveBeenCalled();
+    expect(existsSync(join(dir, "types"))).toBe(false);
+  });
+
+  test("--json --markdown --stdout errors and generates nothing", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--markdown", "--stdout"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(1);
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("--stdout requires exactly one of"));
+    expect(stdoutSpy).not.toHaveBeenCalled();
+    expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(false);
+    expect(existsSync(join(dir, "COMPONENT_INDEX.md"))).toBe(false);
+  });
+
+  test("--json --types --stdout errors and generates nothing", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--types", "--stdout"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(1);
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("--stdout cannot be combined with --types"));
+    expect(stdoutSpy).not.toHaveBeenCalled();
+    expect(existsSync(join(dir, "types"))).toBe(false);
+  });
+
+  test("--json --check --stdout errors and generates nothing", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--check", "--stdout"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(1);
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("--stdout cannot be combined with --check"));
+    expect(stdoutSpy).not.toHaveBeenCalled();
+    expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(false);
   });
 });

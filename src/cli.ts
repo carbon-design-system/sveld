@@ -8,7 +8,7 @@ import { getSvelteEntry } from "./get-svelte-entry";
 import { loadConfig, mergeConfig, type SveldRuntimeOptions } from "./load-config";
 import { setQuiet } from "./logger";
 import { normalizeSeparators } from "./path";
-import { generateBundle, toGenerateBundleOptions, writeOutput } from "./plugin";
+import { generateBundle, toGenerateBundleOptions, writeOutput, writeStdout } from "./plugin";
 
 /** Relative fallback entry used only when entry resolution otherwise fails. */
 const FALLBACK_ENTRY = "src/index.js";
@@ -31,6 +31,7 @@ Options:
   --custom-elements     Generate a Custom Elements Manifest (custom-elements.json)
   --fail-fast           Abort the run when a single component fails to parse
   --quiet               Suppress progress logs (errors, the diagnostics summary, and the --check report are unaffected)
+  --stdout              Print the document from exactly one of --json, --markdown, or --custom-elements to stdout and write nothing to disk (rejects --types and --check)
   --cache[=<path>]      Persist parsed output and skip re-parsing unchanged files (on by default, default path: node_modules/.cache/sveld/parse-cache.json; pass --cache=false to disable)
   --resolve-types       Expand opaque imported $props() types into JSON (alias: --resolveTypes, deprecated)
   --check-examples      Compile-check @example blocks against the TypeScript program (alias: --checkExamples, deprecated)
@@ -75,6 +76,7 @@ function parseCliFlag(arg: string): CliFlagResult {
     case "json":
     case "markdown":
     case "quiet":
+    case "stdout":
       return { kind: "option", option: { [flag]: value === true || value === "true" } };
     case "custom-elements":
       return { kind: "option", option: { customElements: value === true || value === "true" } };
@@ -174,6 +176,28 @@ export async function cli(process: NodeJS.Process) {
     options.typesOptions = { ...fileConfig.typesOptions, ...cliOptions.typesOptions };
   }
 
+  if (options.stdout) {
+    const selectedOutputs = [options.json, options.markdown, options.customElements].filter(Boolean).length;
+
+    if (selectedOutputs !== 1) {
+      console.error("sveld: --stdout requires exactly one of --json, --markdown, or --custom-elements.");
+      process.exitCode = 1;
+      return;
+    }
+
+    if (options.types === true) {
+      console.error("sveld: --stdout cannot be combined with --types; type definitions span multiple files.");
+      process.exitCode = 1;
+      return;
+    }
+
+    if (options.check) {
+      console.error("sveld: --stdout cannot be combined with --check; both write their document to stdout.");
+      process.exitCode = 1;
+      return;
+    }
+  }
+
   setQuiet(options.quiet === true);
 
   const resolvedEntry = getSvelteEntry(options.entry);
@@ -201,7 +225,11 @@ export async function cli(process: NodeJS.Process) {
     });
   }
 
-  await writeOutput(result, options, input);
+  if (options.stdout) {
+    await writeStdout(result, options, input);
+  } else {
+    await writeOutput(result, options, input);
+  }
 
   const { diagnostics } = result;
   const shouldReport = options.reportDiagnostics || options.strict;

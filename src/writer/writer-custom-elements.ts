@@ -33,6 +33,22 @@ function normalizedModulePath(component: ComponentDocApi, inputDir: string): str
 }
 
 /**
+ * Renders the Custom Elements Manifest document without touching disk. Used
+ * by both `writeCustomElements` and the CLI's `--stdout` mode so the two
+ * channels can't drift.
+ */
+export function renderCustomElementsManifest(
+  components: ComponentDocs,
+  options: Pick<WriteCustomElementsOptions, "inputDir">,
+): string {
+  const manifest = buildCustomElementsManifest(components, {
+    resolveModulePath: (component) => normalizedModulePath(component, options.inputDir),
+  });
+
+  return `${JSON.stringify(manifest, null, 2)}\n`;
+}
+
+/**
  * Writes component documentation as a Custom Elements Manifest
  * (schemaVersion "1.0.0"). Components without a `customElementTag` (i.e. not
  * compiled with `<svelte:options customElement="..." />`) still emit a plain
@@ -41,13 +57,11 @@ function normalizedModulePath(component: ComponentDocApi, inputDir: string): str
  * `tagName`, `attributes`, and `events`.
  */
 export default async function writeCustomElements(components: ComponentDocs, options: WriteCustomElementsOptions) {
-  const manifest = buildCustomElementsManifest(components, {
-    resolveModulePath: (component) => normalizedModulePath(component, options.inputDir),
-  });
+  const raw = renderCustomElementsManifest(components, options);
 
   const output_path = path.join(process.cwd(), options.outFile);
   const writer = createJsonWriter();
-  await writer.write(output_path, `${JSON.stringify(manifest, null, 2)}\n`);
+  await writer.write(output_path, raw);
 
   info(`created "${options.outFile}".`);
 }
