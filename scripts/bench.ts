@@ -22,6 +22,7 @@ import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, relative, resolve } from "node:path";
 import { generateBundle } from "../src/bundle";
+import { setQuiet } from "../src/logger";
 import { writeOutput } from "../src/plugin";
 
 const DEFAULT_ENTRY = join(import.meta.dir, "..", "tests", "e2e", "carbon", "src", "index.js");
@@ -92,19 +93,6 @@ function formatTiming(timing: RunTiming): string {
   return `${parse}  ${write}  ${total}`;
 }
 
-/**
- * The writers log one "created ..." line per emitted file (160+ per run on
- * the carbon fixture), which would drown the timing output. Errors still go
- * to `console.error`, so parse failures remain visible.
- */
-function silenceLogs(): () => void {
-  const original = console.log;
-  console.log = () => {};
-  return () => {
-    console.log = original;
-  };
-}
-
 async function benchOnce(input: string, cacheFile: string | undefined, outDir: string): Promise<RunTiming> {
   mkdirSync(outDir, { recursive: true });
 
@@ -119,11 +107,15 @@ async function benchOnce(input: string, cacheFile: string | undefined, outDir: s
   // write phase from the scratch directory so nothing lands in the fixture.
   const originalCwd = process.cwd();
   process.chdir(outDir);
-  const restoreLogs = silenceLogs();
+  // The writers log one "created ..." line per emitted file (160+ per run on
+  // the carbon fixture), which would drown the timing output. Errors still go
+  // to `console.error` directly (not through the logger), so parse failures
+  // remain visible.
+  setQuiet(true);
   try {
     await writeOutput(result, { types: true, json: true, markdown: true }, input);
   } finally {
-    restoreLogs();
+    setQuiet(false);
     process.chdir(originalCwd);
   }
   const written = performance.now();
