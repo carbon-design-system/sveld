@@ -795,7 +795,10 @@ describe("cli() exit codes", () => {
   });
 
   test("sets exitCode 2 and prints the error to stderr when --fail-fast rethrows a parse failure", async () => {
-    writeFileSync(join(dir, "src", "Broken.svelte"), "<script>\n  export let label = ;\n</script>\n<button>{label}</button>\n");
+    writeFileSync(
+      join(dir, "src", "Broken.svelte"),
+      "<script>\n  export let label = ;\n</script>\n<button>{label}</button>\n",
+    );
     writeFileSync(join(dir, "src", "index.js"), 'export { default as Broken } from "./Broken.svelte";\n');
     process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--json", "--fail-fast"];
 
