@@ -477,6 +477,8 @@ Writer progress lines (`created "..."` / `unchanged "..."`) print to `stderr`, k
 
 Pass `--stdout` alongside exactly one of `--json`, `--markdown`, or `--custom-elements` to print that single document to `stdout` instead of writing it to disk, e.g. `sveld --json --stdout | jq '.components[].moduleName'`. Zero or more than one of those three flags, `--types`, or `--check` combined with `--stdout` is a usage error that prints to `stderr` and exits `1` without generating anything; the default `.d.ts` generation is skipped in `--stdout` mode since type definitions span multiple files.
 
+`--stdout=ndjson` (only valid with `--json`) prints one minified JSON object per exported component per line instead of the single combined document, in the same order as the combined document's `components` array, e.g. `sveld --json --stdout=ndjson | jq -c 'select(.props | length > 0)'`. Lines are only written after the run completes (component records are only final after cross-component resolution), so this is a line-oriented serialization format, not incremental streaming. Bare `--stdout` (or `--stdout=json`) keeps the single-document behavior; any other value is a usage error.
+
 Run `npx sveld --help` for the full flag list with descriptions, or `npx sveld --version` to print the installed version.
 
 ### CI: API-drift checks (`--check`)

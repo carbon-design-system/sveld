@@ -12,7 +12,7 @@ import { createSveldBundle, type SveldBundle } from "./watch";
 import "./writer/built-in-writers";
 import { getWriter } from "./writer/registry";
 import { renderCustomElementsManifest, type WriteCustomElementsOptions } from "./writer/writer-custom-elements";
-import { renderJsonDocument, type WriteJsonOptions } from "./writer/writer-json";
+import { renderJsonDocument, renderJsonLines, type WriteJsonOptions } from "./writer/writer-json";
 import { renderMarkdownDocument, type WriteMarkdownOptions } from "./writer/writer-markdown";
 import type { WriteTsDefinitionsOptions } from "./writer/writer-ts-definitions";
 
@@ -271,15 +271,25 @@ export async function writeOutput(result: GenerateBundleResult, opts: PluginSvel
  * responsible for enforcing that exactly one of those three options is set
  * before calling this.
  */
-export async function writeStdout(result: GenerateBundleResult, opts: PluginSveldOptions, input: string) {
+export async function writeStdout(
+  result: GenerateBundleResult,
+  opts: PluginSveldOptions & { stdout?: boolean | "json" | "ndjson" },
+  input: string,
+) {
   const inputDir = dirname(input);
 
   if (opts?.json) {
-    const rendered = renderJsonDocument(result.components, {
+    const jsonOptions = {
       ...opts?.jsonOptions,
       inputDir,
       entryExports: result.entryExports,
-    } satisfies Pick<WriteJsonOptions, "inputDir" | "entryExports">);
+    } satisfies Pick<WriteJsonOptions, "inputDir" | "entryExports">;
+
+    const rendered =
+      opts.stdout === "ndjson"
+        ? renderJsonLines(result.components, jsonOptions)
+        : renderJsonDocument(result.components, jsonOptions);
+
     process.stdout.write(rendered);
     return;
   }

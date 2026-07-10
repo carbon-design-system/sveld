@@ -26,9 +26,11 @@ export interface SveldRuntimeOptions extends PluginSveldOptions {
   /**
    * Print the single selected `json` / `markdown` / `customElements` document
    * to stdout instead of writing it to disk. Requires exactly one of those
-   * three outputs; CLI-only (the Vite plugin ignores it).
+   * three outputs; CLI-only (the Vite plugin ignores it). `"ndjson"` is only
+   * valid with `json` and prints one minified JSON object per component per
+   * line instead of the single combined document.
    */
-  stdout?: boolean;
+  stdout?: boolean | "json" | "ndjson";
 }
 
 /**
