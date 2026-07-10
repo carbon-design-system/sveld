@@ -37,6 +37,12 @@ export interface SveldRuntimeOptions extends PluginSveldOptions {
    * are unchanged, the check report on stdout and diagnostics on stderr.
    */
   format?: "text" | "json";
+  /**
+   * Resolve the entry, load config, and parse components as usual, but print
+   * `would write "<path>"` for each output file to stdout instead of writing
+   * it (including the parse cache). CLI-only; the Vite plugin ignores it.
+   */
+  dryRun?: boolean;
 }
 
 /**

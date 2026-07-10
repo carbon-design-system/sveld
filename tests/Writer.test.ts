@@ -1,6 +1,8 @@
+import { existsSync } from "node:fs";
 import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { normalizeSeparators } from "../src/path";
 import Writer, { createJsonWriter, createTypeScriptWriter } from "../src/writer/Writer";
 
 describe("Writer", () => {
@@ -79,5 +81,52 @@ describe("Writer", () => {
 
     await expect(writer.write(filePath, "new content")).resolves.toBe(true);
     expect(await readFile(filePath, "utf-8")).toBe("new content");
+  });
+
+  describe("dryRun", () => {
+    let logSpy: ReturnType<typeof jest.spyOn>;
+
+    beforeEach(() => {
+      logSpy = jest.spyOn(console, "log").mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    test("prints a would-write line instead of touching disk", async () => {
+      const writer = new Writer({ dryRun: true });
+      const filePath = join(dir, "index.d.ts");
+
+      await expect(writer.write(filePath, "content")).resolves.toBe(true);
+
+      expect(existsSync(filePath)).toBe(false);
+      expect(logSpy).toHaveBeenCalledWith(`would write "${normalizeSeparators(filePath)}"`);
+    });
+
+    test("prints a would-write line even when the file already exists with the same content", async () => {
+      const filePath = join(dir, "index.d.ts");
+      await writeFile(filePath, "content");
+
+      const writer = new Writer({ dryRun: true });
+      await expect(writer.write(filePath, "content")).resolves.toBe(true);
+
+      expect(logSpy).toHaveBeenCalledWith(`would write "${normalizeSeparators(filePath)}"`);
+    });
+
+    test("createJsonWriter and createTypeScriptWriter forward dryRun", async () => {
+      const jsonWriter = createJsonWriter({ dryRun: true });
+      const tsWriter = createTypeScriptWriter({ dryRun: true });
+      const jsonPath = join(dir, "data.json");
+      const tsPath = join(dir, "index.d.ts");
+
+      await jsonWriter.write(jsonPath, "{}");
+      await tsWriter.write(tsPath, "export type Props = {};");
+
+      expect(existsSync(jsonPath)).toBe(false);
+      expect(existsSync(tsPath)).toBe(false);
+      expect(logSpy).toHaveBeenCalledWith(`would write "${normalizeSeparators(jsonPath)}"`);
+      expect(logSpy).toHaveBeenCalledWith(`would write "${normalizeSeparators(tsPath)}"`);
+    });
   });
 });

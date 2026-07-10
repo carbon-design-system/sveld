@@ -13,6 +13,8 @@ export interface WriteJsonOptions {
   outDir?: string;
   /** Entry-barrel exports when `documentExports` is on. */
   entryExports?: EntryExports;
+  /** Report resolved paths instead of writing. Set by `sveld --dry-run`. */
+  dryRun?: boolean;
 }
 
 /**
@@ -37,9 +39,9 @@ async function writeJsonComponents(components: ComponentDocs, options: WriteJson
   await Promise.all(
     output.map(async (c) => {
       const outFile = path.resolve(path.join(options.outDir || "", `${c.moduleName}.api.json`));
-      const writer = createJsonWriter();
+      const writer = createJsonWriter({ dryRun: options.dryRun });
       const wasWritten = await writer.write(outFile, `${JSON.stringify(c, null, 2)}\n`);
-      info(`${wasWritten ? "created" : "unchanged"} "${outFile}".`);
+      if (!options.dryRun) info(`${wasWritten ? "created" : "unchanged"} "${outFile}".`);
     }),
   );
 }
@@ -80,10 +82,10 @@ export function renderJsonLines(
 async function writeJsonLocal(components: ComponentDocs, options: WriteJsonOptions) {
   const raw = renderJsonDocument(components, options);
   const output_path = path.join(process.cwd(), options.outFile);
-  const writer = createJsonWriter();
+  const writer = createJsonWriter({ dryRun: options.dryRun });
   await writer.write(output_path, raw);
 
-  info(`created "${options.outFile}".`);
+  if (!options.dryRun) info(`created "${options.outFile}".`);
 }
 
 /**

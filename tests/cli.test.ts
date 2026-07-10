@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { cli, parseCliOptions } from "../src/cli";
 import { setQuiet } from "../src/logger";
+import { normalizeSeparators } from "../src/path";
 
 describe("parseCliOptions", () => {
   test("--fail-fast enables failFast", () => {
@@ -26,6 +27,21 @@ describe("parseCliOptions", () => {
 
   test("--fail-fast=false disables failFast", () => {
     expect(parseCliOptions(["--fail-fast=false"])).toEqual({ kind: "options", options: { failFast: false } });
+  });
+
+  test("--dry-run enables dryRun", () => {
+    expect(parseCliOptions(["--dry-run"])).toEqual({ kind: "options", options: { dryRun: true } });
+  });
+
+  test("--dry-run=false disables dryRun", () => {
+    expect(parseCliOptions(["--dry-run=false"])).toEqual({ kind: "options", options: { dryRun: false } });
+  });
+
+  test("dryRun is absent by default", () => {
+    expect(parseCliOptions(["--glob", "--types"])).toEqual({
+      kind: "options",
+      options: { glob: true, types: true },
+    });
   });
 
   test("failFast is absent by default", () => {
@@ -405,6 +421,122 @@ describe("cli() --entry followed by another flag", () => {
     expect(errorSpy).toHaveBeenCalledWith("sveld: --entry requires a value (pass --entry=<value> or --entry <value>).");
     expect(existsSync(join(dir, "types"))).toBe(false);
     expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(false);
+  });
+});
+
+describe("cli() --dry-run", () => {
+  let dir: string;
+  let previousCwd: string;
+  let previousArgv: string[];
+  let errorSpy: ReturnType<typeof jest.spyOn>;
+  let logSpy: ReturnType<typeof jest.spyOn>;
+
+  beforeEach(() => {
+    previousCwd = process.cwd();
+    previousArgv = process.argv;
+    process.exitCode = 0;
+    dir = mkdtempSync(join(tmpdir(), "sveld-cli-dry-run-"));
+    process.chdir(dir);
+    mkdirSync(join(dir, "src"), { recursive: true });
+    writeFileSync(
+      join(dir, "src", "Button.svelte"),
+      '<script>\n  export let label = "";\n</script>\n<button>{label}</button>\n',
+    );
+    writeFileSync(join(dir, "src", "index.js"), 'export { default as Button } from "./Button.svelte";\n');
+    errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    logSpy = jest.spyOn(console, "log").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    process.chdir(previousCwd);
+    process.argv = previousArgv;
+    process.exitCode = 0;
+    rmSync(dir, { recursive: true, force: true });
+    jest.restoreAllMocks();
+  });
+
+  test("writes nothing to disk, including the parse cache", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--markdown", "--custom-elements", "--dry-run"];
+
+    await cli(process);
+
+    expect(existsSync(join(dir, "types"))).toBe(false);
+    expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(false);
+    expect(existsSync(join(dir, "COMPONENT_INDEX.md"))).toBe(false);
+    expect(existsSync(join(dir, "custom-elements.json"))).toBe(false);
+    expect(existsSync(join(dir, "src", "node_modules", ".cache"))).toBe(false);
+  });
+
+  test("prints one would-write line per output file, matching a real run's paths", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--markdown", "--custom-elements", "--dry-run"];
+
+    await cli(process);
+
+    const cwd = process.cwd();
+    const printed = logSpy.mock.calls.map((call: unknown[]) => call[0]);
+    expect(printed).toContain(`would write "${normalizeSeparators(join("types", "Button.svelte.d.ts"))}"`);
+    expect(printed).toContain(`would write "${normalizeSeparators(join(cwd, "types", "index.d.ts"))}"`);
+    expect(printed).toContain(`would write "${normalizeSeparators(join(cwd, "COMPONENT_API.json"))}"`);
+    expect(printed).toContain(`would write "${normalizeSeparators(join(cwd, "COMPONENT_INDEX.md"))}"`);
+    expect(printed).toContain(`would write "${normalizeSeparators(join(cwd, "custom-elements.json"))}"`);
+
+    // Now run for real and confirm the exact same paths land on disk.
+    logSpy.mockClear();
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--markdown", "--custom-elements"];
+    await cli(process);
+
+    expect(existsSync(join(dir, "types", "Button.svelte.d.ts"))).toBe(true);
+    expect(existsSync(join(dir, "types", "index.d.ts"))).toBe(true);
+    expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(true);
+    expect(existsSync(join(dir, "COMPONENT_INDEX.md"))).toBe(true);
+    expect(existsSync(join(dir, "custom-elements.json"))).toBe(true);
+  });
+
+  test("prints per-component .api.json paths when jsonOptions.outDir is set", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--dry-run", "--types=false"];
+    writeFileSync(join(dir, "sveld.config.js"), 'export default { jsonOptions: { outDir: "api" } };\n');
+
+    await cli(process);
+
+    const printed = logSpy.mock.calls.map((call: unknown[]) => call[0]);
+    expect(printed).toContain(`would write "${normalizeSeparators(join(process.cwd(), "api", "Button.api.json"))}"`);
+    expect(existsSync(join(dir, "api"))).toBe(false);
+  });
+
+  test("parse errors still surface", async () => {
+    writeFileSync(
+      join(dir, "src", "Broken.svelte"),
+      "<script>\n  export let label = ;\n</script>\n<button>{label}</button>\n",
+    );
+    writeFileSync(
+      join(dir, "src", "index.js"),
+      'export { default as Button } from "./Button.svelte";\nexport { default as Broken } from "./Broken.svelte";\n',
+    );
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--dry-run", "--fail-fast"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(2);
+    expect(errorSpy).toHaveBeenCalled();
+    expect(logSpy).not.toHaveBeenCalledWith(expect.stringContaining("would write"));
+  });
+
+  test("--check still reads the snapshot and reports as in a real run", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--json"];
+    await cli(process);
+    logSpy.mockClear();
+
+    writeFileSync(
+      join(dir, "src", "Button.svelte"),
+      "<script>\n  export let label;\n</script>\n<button>{label}</button>\n",
+    );
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--check", "--dry-run"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(3);
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("Suggested semver bump: major."));
+    expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(true);
   });
 });
 

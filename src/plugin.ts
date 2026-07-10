@@ -194,8 +194,13 @@ function runBuiltInWriter(
  * // Generates: types/*.d.ts, COMPONENT_API.json, COMPONENT_INDEX.md
  * ```
  */
-export async function writeOutput(result: GenerateBundleResult, opts: PluginSveldOptions, input: string) {
+export async function writeOutput(
+  result: GenerateBundleResult,
+  opts: PluginSveldOptions & { dryRun?: boolean },
+  input: string,
+) {
   const inputDir = dirname(input);
+  const dryRun = opts?.dryRun === true;
 
   if (opts?.types !== false) {
     /**
@@ -209,6 +214,7 @@ export async function writeOutput(result: GenerateBundleResult, opts: PluginSvel
       ...opts?.typesOptions,
       exports: result.exports,
       inputDir,
+      dryRun,
     } satisfies WriteTsDefinitionsOptions);
   }
 
@@ -224,6 +230,7 @@ export async function writeOutput(result: GenerateBundleResult, opts: PluginSvel
       input,
       inputDir,
       entryExports: result.entryExports,
+      dryRun,
     } satisfies WriteJsonOptions);
   }
 
@@ -237,6 +244,7 @@ export async function writeOutput(result: GenerateBundleResult, opts: PluginSvel
       outFile: "COMPONENT_INDEX.md",
       ...opts?.markdownOptions,
       entryExports: result.entryExports,
+      dryRun,
     } satisfies WriteMarkdownOptions);
   }
 
@@ -249,6 +257,7 @@ export async function writeOutput(result: GenerateBundleResult, opts: PluginSvel
       outFile: "custom-elements.json",
       ...opts?.customElementsOptions,
       inputDir,
+      dryRun,
     } satisfies WriteCustomElementsOptions);
   }
 

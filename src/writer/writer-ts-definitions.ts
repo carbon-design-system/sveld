@@ -40,6 +40,8 @@ export interface WriteTsDefinitionsOptions extends WriteTsDefinitionOptions {
   inputDir: string;
   preamble: string;
   exports: ParsedExports;
+  /** Report resolved paths instead of writing. Set by `sveld --dry-run`. */
+  dryRun?: boolean;
 }
 
 /**
@@ -56,7 +58,7 @@ export interface WriteTsDefinitionsOptions extends WriteTsDefinitionOptions {
  */
 export default async function writeTsDefinitions(components: ComponentDocs, options: WriteTsDefinitionsOptions) {
   const ts_base_path = join(process.cwd(), options.outDir, "index.d.ts");
-  const writer = createTypeScriptWriter();
+  const writer = createTypeScriptWriter({ dryRun: options.dryRun });
   const indexDTs = options.preamble + createExports(options.exports);
 
   const document = buildComponentApiDocument(components);
@@ -67,5 +69,5 @@ export default async function writeTsDefinitions(components: ComponentDocs, opti
 
   await Promise.all([...writePromises, writer.write(ts_base_path, `${indexDTs}\n`)]);
 
-  info("created TypeScript definitions.");
+  if (!options.dryRun) info("created TypeScript definitions.");
 }
