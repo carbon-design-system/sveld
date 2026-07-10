@@ -120,6 +120,18 @@ describe("parseCliOptions", () => {
     });
   });
 
+  test("--format=json sets format to json", () => {
+    expect(parseCliOptions(["--format=json"])).toEqual({ kind: "options", options: { format: "json" } });
+  });
+
+  test("--format=text sets format to text", () => {
+    expect(parseCliOptions(["--format=text"])).toEqual({ kind: "options", options: { format: "text" } });
+  });
+
+  test("a bare --format is ignored", () => {
+    expect(parseCliOptions(["--format"])).toEqual({ kind: "options", options: {} });
+  });
+
   test("unknown flag surfaces as an unknown result", () => {
     expect(parseCliOptions(["--markdwon"])).toEqual({ kind: "unknown", arg: "--markdwon" });
   });
@@ -573,5 +585,183 @@ describe("cli() --stdout=ndjson", () => {
     expect(stdoutSpy).toHaveBeenCalledTimes(1);
     const printed = JSON.parse(stdoutSpy.mock.calls[0][0] as string);
     expect(printed).toMatchObject({ schemaVersion: 1, total: 2 });
+  });
+});
+
+describe("cli() --format usage error", () => {
+  let dir: string;
+  let previousCwd: string;
+  let previousArgv: string[];
+  let errorSpy: ReturnType<typeof jest.spyOn>;
+
+  beforeEach(() => {
+    previousCwd = process.cwd();
+    previousArgv = process.argv;
+    process.exitCode = 0;
+    dir = mkdtempSync(join(tmpdir(), "sveld-cli-format-error-"));
+    process.chdir(dir);
+    mkdirSync(join(dir, "src"), { recursive: true });
+    writeFileSync(join(dir, "src", "Button.svelte"), "<script></script>\n<button>Click</button>\n");
+    writeFileSync(join(dir, "src", "index.js"), 'export { default as Button } from "./Button.svelte";\n');
+    errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    process.chdir(previousCwd);
+    process.argv = previousArgv;
+    process.exitCode = 0;
+    rmSync(dir, { recursive: true, force: true });
+    jest.restoreAllMocks();
+  });
+
+  test("--format=yaml errors and generates nothing", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--format=yaml"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(1);
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('--format must be "text" or "json"; got "yaml"'));
+    expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(false);
+    expect(existsSync(join(dir, "types"))).toBe(false);
+  });
+});
+
+describe("cli() --format with --check", () => {
+  let dir: string;
+  let previousCwd: string;
+  let previousArgv: string[];
+  let stdoutSpy: ReturnType<typeof jest.spyOn>;
+  let logSpy: ReturnType<typeof jest.spyOn>;
+
+  beforeEach(async () => {
+    previousCwd = process.cwd();
+    previousArgv = process.argv;
+    process.exitCode = 0;
+    dir = mkdtempSync(join(tmpdir(), "sveld-cli-format-check-"));
+    process.chdir(dir);
+    mkdirSync(join(dir, "src"), { recursive: true });
+    writeFileSync(join(dir, "src", "index.js"), 'export { default as Button } from "./Button.svelte";\n');
+    jest.spyOn(console, "error").mockImplementation(() => {});
+    stdoutSpy = jest.spyOn(process.stdout, "write").mockImplementation(() => true);
+    logSpy = jest.spyOn(console, "log").mockImplementation(() => {});
+
+    // Snapshot a prop-less Button, then add a required prop so `--check` has a breaking change to report.
+    writeFileSync(join(dir, "src", "Button.svelte"), "<script></script>\n<button>Click</button>\n");
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--json"];
+    await cli(process);
+    stdoutSpy.mockClear();
+    logSpy.mockClear();
+
+    writeFileSync(
+      join(dir, "src", "Button.svelte"),
+      "<script>\n  export let label;\n</script>\n<button>{label}</button>\n",
+    );
+  });
+
+  afterEach(() => {
+    process.chdir(previousCwd);
+    process.argv = previousArgv;
+    process.exitCode = 0;
+    rmSync(dir, { recursive: true, force: true });
+    jest.restoreAllMocks();
+  });
+
+  test("--format=json prints the CheckResult as JSON to stdout", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--check", "--format=json"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(1);
+    expect(logSpy).not.toHaveBeenCalled();
+    expect(stdoutSpy).toHaveBeenCalledTimes(1);
+    const printed = JSON.parse(stdoutSpy.mock.calls[0][0] as string);
+    expect(printed.kind).toBe("check-report");
+    expect(printed.bump).toBe("major");
+    expect(printed.changes).toContainEqual(
+      expect.objectContaining({ component: "Button", kind: "prop", name: "label", bump: "major" }),
+    );
+  });
+
+  test("--format=text keeps the text report on stdout (default behavior unchanged)", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--check", "--format=text"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(1);
+    expect(stdoutSpy).not.toHaveBeenCalled();
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('[BREAKING] prop "label" added (required)'));
+  });
+
+  test("omitting --format keeps the text report on stdout", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--check"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(1);
+    expect(stdoutSpy).not.toHaveBeenCalled();
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("Suggested semver bump: major."));
+  });
+});
+
+describe("cli() --format with --report-diagnostics", () => {
+  let dir: string;
+  let previousCwd: string;
+  let previousArgv: string[];
+  let stderrSpy: ReturnType<typeof jest.spyOn>;
+  let errorSpy: ReturnType<typeof jest.spyOn>;
+
+  beforeEach(() => {
+    previousCwd = process.cwd();
+    previousArgv = process.argv;
+    process.exitCode = 0;
+    dir = mkdtempSync(join(tmpdir(), "sveld-cli-format-diagnostics-"));
+    process.chdir(dir);
+    mkdirSync(join(dir, "src"), { recursive: true });
+    writeFileSync(
+      join(dir, "src", "Phantom.svelte"),
+      "<script>\n  /** @event {CustomEvent<null>} phantom */\n  export let label;\n</script>\n<button>{label}</button>\n",
+    );
+    writeFileSync(join(dir, "src", "index.js"), 'export { default as Phantom } from "./Phantom.svelte";\n');
+    errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    stderrSpy = jest.spyOn(process.stderr, "write").mockImplementation(() => true);
+  });
+
+  afterEach(() => {
+    process.chdir(previousCwd);
+    process.argv = previousArgv;
+    process.exitCode = 0;
+    rmSync(dir, { recursive: true, force: true });
+    jest.restoreAllMocks();
+  });
+
+  test("--format=json prints the diagnostics as JSON to stderr", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--report-diagnostics", "--format=json"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(0);
+    expect(stderrSpy).toHaveBeenCalledTimes(1);
+    const printed = JSON.parse(stderrSpy.mock.calls[0][0] as string);
+    expect(printed.kind).toBe("diagnostics");
+    expect(printed.diagnostics).toContainEqual(expect.objectContaining({ kind: "event-no-source", name: "phantom" }));
+  });
+
+  test("--format=text keeps the text summary on stderr (default behavior unchanged)", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--report-diagnostics", "--format=text"];
+
+    await cli(process);
+
+    expect(stderrSpy).not.toHaveBeenCalled();
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("unresolved type"));
+  });
+
+  test("--format=json with no diagnostics prints nothing, same as text", async () => {
+    writeFileSync(join(dir, "src", "Phantom.svelte"), "<script></script>\n<button>Click</button>\n");
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--report-diagnostics", "--format=json"];
+
+    await cli(process);
+
+    expect(stderrSpy).not.toHaveBeenCalled();
+    expect(errorSpy).not.toHaveBeenCalled();
   });
 });

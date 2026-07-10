@@ -31,6 +31,12 @@ export interface SveldRuntimeOptions extends PluginSveldOptions {
    * line instead of the single combined document.
    */
   stdout?: boolean | "json" | "ndjson";
+  /**
+   * Output format for the `--check` report and the `--report-diagnostics` /
+   * `--strict` diagnostics summary: `"text"` (default) or `"json"`. Channels
+   * are unchanged, the check report on stdout and diagnostics on stderr.
+   */
+  format?: "text" | "json";
 }
 
 /**

@@ -1,7 +1,12 @@
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
 import ComponentParser from "../src/ComponentParser";
-import { dedupeDiagnostics, formatDiagnosticsSummary, type SveldDiagnostic } from "../src/diagnostics";
+import {
+  dedupeDiagnostics,
+  formatDiagnosticsSummary,
+  formatDiagnosticsSummaryJson,
+  type SveldDiagnostic,
+} from "../src/diagnostics";
 import { sveld } from "../src/sveld";
 
 const parseContext = { moduleName: "TestComponent", filePath: "./TestComponent.svelte" };
@@ -196,6 +201,19 @@ describe("diagnostics helpers", () => {
 
     expect(summary).toContain("- prop fallback");
     expect(summary).not.toContain("prop fallback (");
+  });
+
+  test("formatDiagnosticsSummaryJson serializes the diagnostics list with a kind discriminator", () => {
+    const diagnostics = [make({ name: "value", message: "prop fallback" })];
+
+    const json = formatDiagnosticsSummaryJson(diagnostics);
+
+    expect(json.endsWith("\n")).toBe(true);
+    expect(JSON.parse(json)).toEqual({ kind: "diagnostics", diagnostics });
+  });
+
+  test("formatDiagnosticsSummaryJson serializes an empty list", () => {
+    expect(JSON.parse(formatDiagnosticsSummaryJson([]))).toEqual({ kind: "diagnostics", diagnostics: [] });
   });
 });
 

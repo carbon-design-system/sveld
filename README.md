@@ -471,13 +471,15 @@ npx sveld --json --markdown
 
 If no entry point can be resolved (no `package.json#svelte` field and no `--entry`), the CLI exits `1` and prints the reason to `stderr`. If `src/index.js` happens to exist relative to your working directory, sveld falls back to it and prints a one-line note asking you to set `package.json#svelte` (or `--entry`) instead of relying on the fallback.
 
-Flags are kebab-case: `--entry`, `--glob`, `--types`, `--json`, `--markdown`, `--fail-fast`, `--cache`, `--resolve-types`, `--check-examples`, `--report-diagnostics`, `--strict`, `--check`, `--types-format`, `--quiet`, `--stdout`. The camelCase spellings `--resolveTypes` and `--checkExamples` still work as deprecated aliases for compatibility with existing scripts. An unrecognized flag (e.g. `--markdwon`) prints `Unknown flag: --markdwon` to `stderr`, exits `1`, and skips generation; sveld takes no positional arguments, so any non-flag argument errors the same way.
+Flags are kebab-case: `--entry`, `--glob`, `--types`, `--json`, `--markdown`, `--fail-fast`, `--cache`, `--resolve-types`, `--check-examples`, `--report-diagnostics`, `--strict`, `--check`, `--types-format`, `--quiet`, `--stdout`, `--format`. The camelCase spellings `--resolveTypes` and `--checkExamples` still work as deprecated aliases for compatibility with existing scripts. An unrecognized flag (e.g. `--markdwon`) prints `Unknown flag: --markdwon` to `stderr`, exits `1`, and skips generation; sveld takes no positional arguments, so any non-flag argument errors the same way.
 
 Writer progress lines (`created "..."` / `unchanged "..."`) print to `stderr`, keeping `stdout` reserved for machine-readable data. Pass `--quiet` (or `quiet: true` in `sveld.config.*`) to suppress them; it does not suppress error messages, the diagnostics summary (`--report-diagnostics` / `--strict`), or the `--check` report.
 
 Pass `--stdout` alongside exactly one of `--json`, `--markdown`, or `--custom-elements` to print that single document to `stdout` instead of writing it to disk, e.g. `sveld --json --stdout | jq '.components[].moduleName'`. Zero or more than one of those three flags, `--types`, or `--check` combined with `--stdout` is a usage error that prints to `stderr` and exits `1` without generating anything; the default `.d.ts` generation is skipped in `--stdout` mode since type definitions span multiple files.
 
 `--stdout=ndjson` (only valid with `--json`) prints one minified JSON object per exported component per line instead of the single combined document, in the same order as the combined document's `components` array, e.g. `sveld --json --stdout=ndjson | jq -c 'select(.props | length > 0)'`. Lines are only written after the run completes (component records are only final after cross-component resolution), so this is a line-oriented serialization format, not incremental streaming. Bare `--stdout` (or `--stdout=json`) keeps the single-document behavior; any other value is a usage error.
+
+`--format=json` switches the `--check` report and the `--report-diagnostics` / `--strict` diagnostics summary from prose to JSON, so scripts and agents don't have to regex the text output, e.g. `sveld --json --check --format=json | jq '.bump'`. Channels are unchanged: the check report prints to `stdout` and the diagnostics summary to `stderr`, same as the text format. The default remains `--format=text`; an unrecognized value (e.g. `--format=yaml`) is a usage error that prints to `stderr` and exits `1` without generating anything.
 
 Run `npx sveld --help` for the full flag list with descriptions, or `npx sveld --version` to print the installed version.
 
@@ -508,6 +510,8 @@ Removed props, events, or slots, and props that become required, are breaking (`
 Use `--check=<path>` to diff against a snapshot at a custom location (defaults to `jsonOptions.outFile`, or `COMPONENT_API.json`).
 
 The CLI exits non-zero on any fatal error (an unreadable entry, a config file that throws, etc.), not just on `--strict`/`--check` findings, so it's safe to use either flag as a CI gate.
+
+Pass `--format=json` for a machine-readable report on `stdout` instead of the prose above, e.g. `sveld --check --format=json | jq '.bump'` or `sveld --check --format=json | jq '.changes[] | select(.bump == "major")'`.
 
 ### Node.js
 

@@ -1,9 +1,11 @@
 export { default as ComponentParser, type SerializedComponentEvent } from "./ComponentParser";
 export {
   type ApiChange,
+  type CheckReportJson,
   type CheckResult,
   diffApiDocuments,
   formatCheckReport,
+  formatCheckReportJson,
   runCheck,
   type SemverBump,
 } from "./check";
