@@ -2,8 +2,14 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import pkg from "../package.json" with { type: "json" };
 import { asSvelteEntryPoint } from "./brands";
-import { type CheckResult, formatCheckReport, resolveCheckSnapshotFile, runCheck } from "./check";
-import { formatDiagnosticsSummary } from "./diagnostics";
+import {
+  type CheckResult,
+  formatCheckReport,
+  formatCheckReportJson,
+  resolveCheckSnapshotFile,
+  runCheck,
+} from "./check";
+import { formatDiagnosticsSummary, formatDiagnosticsSummaryJson } from "./diagnostics";
 import { getSvelteEntry } from "./get-svelte-entry";
 import { loadConfig, mergeConfig, type SveldRuntimeOptions } from "./load-config";
 import { setQuiet } from "./logger";
@@ -39,6 +45,7 @@ Options:
   --strict              Exit with code 1 when diagnostics exist (implies --report-diagnostics)
   --types-format=<format>  ".d.ts" output format: "class" (default) or "component" (Svelte 5 Component<...>)
   --check[=<path>]      Diff the parsed API against a committed snapshot; exit 1 on a breaking change (default path: COMPONENT_API.json)
+  --format=<text|json>  Output format for the --check report and the diagnostics summary (default: text)
   --help                Print this help message and exit
   --version             Print the installed sveld version and exit
 `;
@@ -111,6 +118,12 @@ function parseCliFlag(arg: string): CliFlagResult {
     case "types-format":
       return typeof value === "string"
         ? { kind: "option", option: { typesOptions: { format: value as "class" | "component" } } }
+        : { kind: "option", option: {} };
+    case "format":
+      // The value is validated in `cli()` once it can be reported as a usage
+      // error (`--format=yaml`); a bare `--format` is silently ignored.
+      return typeof value === "string"
+        ? { kind: "option", option: { format: value as "text" | "json" } }
         : { kind: "option", option: {} };
     default:
       return { kind: "unknown", arg };
@@ -216,6 +229,12 @@ export async function cli(process: NodeJS.Process) {
     }
   }
 
+  if (options.format !== undefined && options.format !== "text" && options.format !== "json") {
+    console.error(`sveld: --format must be "text" or "json"; got "${options.format}".`);
+    process.exitCode = 1;
+    return;
+  }
+
   setQuiet(options.quiet === true);
 
   const resolvedEntry = getSvelteEntry(options.entry);
@@ -253,11 +272,19 @@ export async function cli(process: NodeJS.Process) {
   const shouldReport = options.reportDiagnostics || options.strict;
 
   if (shouldReport && diagnostics.length > 0) {
-    console.error(formatDiagnosticsSummary(diagnostics));
+    if (options.format === "json") {
+      process.stderr.write(formatDiagnosticsSummaryJson(diagnostics));
+    } else {
+      console.error(formatDiagnosticsSummary(diagnostics));
+    }
   }
 
   if (checkResult) {
-    console.log(formatCheckReport(checkResult));
+    if (options.format === "json") {
+      process.stdout.write(formatCheckReportJson(checkResult));
+    } else {
+      console.log(formatCheckReport(checkResult));
+    }
     if (checkResult.bump === "major") {
       process.exitCode = 1;
     }

@@ -104,3 +104,15 @@ export function formatDiagnosticsSummary(diagnostics: SveldDiagnostic[]): string
 
   return lines.join("\n");
 }
+
+/** `SveldDiagnostic[]`, serialized for stream consumers with a `kind` discriminator. */
+export interface DiagnosticsJson {
+  kind: "diagnostics";
+  diagnostics: SveldDiagnostic[];
+}
+
+/** Serializes deduped diagnostics as JSON, for `--format=json --report-diagnostics` / `--strict`. */
+export function formatDiagnosticsSummaryJson(diagnostics: SveldDiagnostic[]): string {
+  const document: DiagnosticsJson = { kind: "diagnostics", diagnostics };
+  return `${JSON.stringify(document, null, 2)}\n`;
+}

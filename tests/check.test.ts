@@ -3,7 +3,7 @@ import { mkdtemp } from "node:fs/promises";
 import path from "node:path";
 import { version as svelteVersion } from "svelte/package.json";
 import { name as packageName, version as packageVersion } from "../package.json";
-import { diffApiDocuments, formatCheckReport, runCheck } from "../src/check";
+import { diffApiDocuments, formatCheckReport, formatCheckReportJson, runCheck } from "../src/check";
 import type { ComponentDocApi, ComponentDocs } from "../src/plugin";
 import type { ComponentApiDocument } from "../src/writer/document-model";
 import { mockComponentDocApi } from "./test-brands";
@@ -359,5 +359,27 @@ describe("formatCheckReport", () => {
     expect(report).toContain('[BREAKING] prop "href" removed');
     expect(report).toContain("Card");
     expect(report).toContain('[additive] component "Card" added');
+  });
+});
+
+describe("formatCheckReportJson", () => {
+  test("serializes the CheckResult with a kind discriminator", () => {
+    const result = {
+      snapshotExists: true,
+      snapshotFile: "COMPONENT_API.json",
+      bump: "major" as const,
+      changes: [{ component: "Button", kind: "prop" as const, name: "href", bump: "major" as const, message: 'prop "href" removed' }],
+    };
+
+    const json = formatCheckReportJson(result);
+
+    expect(json.endsWith("\n")).toBe(true);
+    expect(JSON.parse(json)).toEqual({ kind: "check-report", ...result });
+  });
+
+  test("serializes a missing snapshot the same as any other result", () => {
+    const result = { snapshotExists: false, snapshotFile: "COMPONENT_API.json", changes: [], bump: "none" as const };
+
+    expect(JSON.parse(formatCheckReportJson(result))).toEqual({ kind: "check-report", ...result });
   });
 });

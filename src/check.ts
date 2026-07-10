@@ -437,3 +437,12 @@ export function formatCheckReport(result: CheckResult): string {
 
   return lines.join("\n");
 }
+
+/** `CheckResult`, serialized for stream consumers with a `kind` discriminator. */
+export type CheckReportJson = CheckResult & { kind: "check-report" };
+
+/** Serializes a `CheckResult` as JSON, for `--format=json --check`. */
+export function formatCheckReportJson(result: CheckResult): string {
+  const document: CheckReportJson = { kind: "check-report", ...result };
+  return `${JSON.stringify(document, null, 2)}\n`;
+}
