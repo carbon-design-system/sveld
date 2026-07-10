@@ -1,18 +1,19 @@
 {
-  "name": "multi-export-typed",
+  "name": "svelte5-vite",
   "version": "0.0.1",
   "private": true,
   "type": "module",
   "svelte": "./src/index.js",
   "types": "./types/index.d.ts",
   "scripts": {
-    "sveld": "sveld && bun run-minimal.ts",
     "svelte-check": "svelte-check --workspace test",
-    "typecheck": "tsc --project tsconfig.types.json"
+    "build": "vite build --config vite.class.config.js && vite build && svelte-check --workspace test"
   },
   "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^7.2.0",
     "svelte": "^5.56.4",
     "svelte-check": "^4.7.2",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vite": "^8.1.4"
   }
 }

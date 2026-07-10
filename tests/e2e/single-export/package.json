@@ -6,7 +6,7 @@
   "svelte": "./component/index.js",
   "types": "./types/index.d.ts",
   "scripts": {
-    "sveld": "sveld",
+    "sveld": "sveld && bun run-default-only.ts",
     "svelte-check": "svelte-check --workspace test",
     "typecheck": "tsc --project tsconfig.types.json"
   },

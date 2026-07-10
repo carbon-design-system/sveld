@@ -126,11 +126,11 @@ Name cases after the behavior under test, grouping by feature prefix to match th
 
 ### End-to-end tests
 
-[`tests/test-e2e.ts`](tests/test-e2e.ts) (`bun run test:e2e`) `bun link`s the locally built sveld into each project under `tests/e2e/`, installs, and runs that project's `sveld` script (modernized fixtures) or `build` (Vite-based fixtures). When a project defines `typecheck`, the harness also runs `tsc` against generated `types/`. These are real downstream consumers — `single-export`, `multi-export`, `glob`, `path-aliases`, `sveltekit`, `svelte5-legacy`, `svelte5-runes`, and a large `carbon` fixture mirroring carbon-components-svelte. A failure means generated types don't compile in a real project. Build sveld first (`bun run build`) so the link resolves the current code. CI does not run the e2e suite; run it locally when changing output shape or export resolution.
+[`tests/test-e2e.ts`](tests/test-e2e.ts) (`bun run test:e2e`) `bun link`s the locally built sveld into each project under `tests/e2e/`, installs, and runs that project's `sveld` script (CLI fixtures) or `build` (Vite-based fixtures). When a project defines `typecheck`, the harness also runs `tsc` against generated `types/`. These are real downstream consumers — `single-export`, `multi-export`, `multi-export-typed`, `glob`, `path-aliases`, `sveltekit`, `svelte5-vite`, and a large `carbon` fixture mirroring carbon-components-svelte. A failure means generated types don't compile in a real project. Build sveld first (`bun run build`) so the link resolves the current code. CI does not run the e2e suite; run it locally when changing output shape or export resolution.
 
 ### Svelte version coverage
 
-A change to props, events, slots, or context handling should be exercised across the modes it affects: legacy `export let` / `<slot>` / `$$restProps`, and runes `$props()` / `$bindable()` / `{@render}` / snippets / callback props. The fixture families and the `svelte5-legacy` vs `svelte5-runes` e2e projects exist to keep both paths honest.
+A change to props, events, slots, or context handling should be exercised across the modes it affects: legacy `export let` / `<slot>` / `$$restProps`, and runes `$props()` / `$bindable()` / `{@render}` / snippets / callback props. The fixture families and the `svelte5-vite` e2e project (legacy + runes via the Vite plugin, both `class` and `component` `.d.ts` formats) exist to keep both paths honest. `single-export` also runs a second pass for `export { default } from` entry barrels; `multi-export-typed` runs a minimal-config types-only pass.
 
 ## Build
 

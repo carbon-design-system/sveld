@@ -185,11 +185,11 @@ describe("component API JSON schema", () => {
   });
 
   test("keeps representative combined output and focused fixture coverage", () => {
-    const api = readJson("tests/e2e/svelte5-runes/COMPONENT_API.json");
+    const api = readJson("tests/e2e/svelte5-vite/COMPONENT_API.json");
 
     expect(api.schemaVersion).toBe(1);
     expect(objectProperty(api, "generator")).toMatchObject({ name: "sveld" });
-    expect(api.total).toBe(2);
+    expect(api.total).toBe(3);
 
     const components = arrayProperty(api, "components");
     const runesButton = findObjectByProperty(components, "moduleName", "RunesButton");
@@ -198,7 +198,7 @@ describe("component API JSON schema", () => {
 
     expect(valueProp).toMatchObject({
       bindable: true,
-      typeSource: "default",
+      typeSource: "typescript",
       defaultValue: {
         raw: '"ready"',
         kind: "literal",

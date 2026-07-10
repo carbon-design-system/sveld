@@ -1,0 +1,31 @@
+<script lang="ts">
+  import { LegacyPanel, RunesButton, RunesGenericList } from "../types-class";
+
+  interface Todo {
+    id: number;
+    label: string;
+  }
+
+  const todos: Todo[] = [{ id: 1, label: "Write generics support" }];
+
+  let value = $state("ready");
+</script>
+
+<RunesButton
+  label="Click me"
+  bind:value
+  onclick={(event: MouseEvent) => console.log(event.clientX)}
+  onpress={(pressedValue: string) => console.log(pressedValue.toUpperCase())}
+/>
+
+<LegacyPanel
+  title="Settings"
+  on:close={(event: CustomEvent<{ reason: string }>) => console.log(event.detail.reason)}
+  on:click={(event: MouseEvent) => console.log(event.clientX)}
+/>
+
+<RunesGenericList items={todos}>
+  {#snippet row(todo)}
+    <span>{todo.label}</span>
+  {/snippet}
+</RunesGenericList>

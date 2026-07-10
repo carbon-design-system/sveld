@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "generator": {
     "name": "sveld",
-    "version": "0.35.0",
+    "version": "0.35.2",
     "svelteVersion": "5.56.3"
   },
-  "total": 4,
+  "total": 5,
   "components": [
     {
       "moduleName": "Button",
@@ -141,6 +141,44 @@
         "type": "Element",
         "name": "button"
       },
+      "contexts": []
+    },
+    {
+      "moduleName": "Card",
+      "filePath": "src/components/Card.svelte",
+      "source": {
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 2,
+          "column": 0
+        }
+      },
+      "syntaxMode": "legacy",
+      "props": [],
+      "moduleExports": [],
+      "slots": [
+        {
+          "name": null,
+          "default": true,
+          "slot_props": "Record<string, never>",
+          "source": {
+            "start": {
+              "line": 1,
+              "column": 0
+            },
+            "end": {
+              "line": 1,
+              "column": 8
+            }
+          }
+        }
+      ],
+      "events": [],
+      "typedefs": [],
+      "generics": null,
       "contexts": []
     },
     {

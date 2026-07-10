@@ -1,5 +1,6 @@
 <script>
-  import { Button, Link, Quote } from "../src";
+  import { Button, Link, Quote, SecondaryButton } from "../src";
+  import SecondaryButtonFile from "../types/SecondaryButton.svelte";
 </script>
 
 <Button
@@ -19,3 +20,6 @@
 >
 
 <Quote author={"author"} />
+
+<SecondaryButton primary={false} />
+<SecondaryButtonFile primary={false} />

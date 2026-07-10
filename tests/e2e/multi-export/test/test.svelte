@@ -1,5 +1,5 @@
 <script>
-  import { Button, Link, Quote } from "../types";
+  import { Button, Card, Link, Quote } from "../types";
   import Header from "../types/nested/Header.svelte";
 </script>
 
@@ -22,3 +22,5 @@
 <Quote author={"author"} />
 
 <Header>Test</Header>
+
+<Card>Card content</Card>
