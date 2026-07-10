@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.35.2](https://github.com/carbon-design-system/sveld/releases/tag/v0.35.2) - 2026-07-09
+
+**Features**
+
+- bundle a pruned svelte parser instead of the full `svelte/compiler` import (1c417db, #372)
+- lazy-load the parser stack so cached CLI runs skip it entirely (649d5d2, #375)
+- skip writing output files whose content is unchanged (64de536, #374)
+- memoize `buildComponentApiDocument()` when json, markdown, and custom-elements run together (7c2338b, #376)
+- inline `tinyglobby` and `zimmerframe` to shrink the bundle (adb155b, #380)
+
+**Fixes**
+
+- resolve TS type annotations for context values (446cc50, #379)
+- emit component type parameter signatures in Markdown docs (06e865c, #378)
+
 ## [0.35.1](https://github.com/carbon-design-system/sveld/releases/tag/v0.35.1) - 2026-07-09
 
 **Features**
