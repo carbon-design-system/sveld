@@ -19,6 +19,19 @@ import { generateBundle, toGenerateBundleOptions, writeOutput, writeStdout } fro
 /** Relative fallback entry used only when entry resolution otherwise fails. */
 const FALLBACK_ENTRY = "src/index.js";
 
+/**
+ * Documented exit code contract so scripts can branch on failure kind
+ * without parsing output. When more than one applies in a single run, the
+ * lowest code wins (1 beats 2 beats 3 beats 4).
+ */
+const EXIT_CODES = {
+  SUCCESS: 0,
+  USAGE_ERROR: 1,
+  GENERATION_FAILURE: 2,
+  BREAKING_CHANGE: 3,
+  DIAGNOSTICS: 4,
+} as const;
+
 /** CLI options: identical surface to the shared runtime options. */
 type CliOptions = SveldRuntimeOptions;
 
@@ -48,6 +61,13 @@ Options:
   --format=<text|json>  Output format for the --check report and the diagnostics summary (default: text)
   --help                Print this help message and exit
   --version             Print the installed sveld version and exit
+
+Exit codes:
+  0  success
+  1  usage or configuration error
+  2  generation failure
+  3  breaking API change detected by --check
+  4  diagnostics present under --strict
 `;
 
 /** Discriminated result of parsing a single CLI argument, kept side-effect free. */
@@ -179,7 +199,7 @@ export async function cli(process: NodeJS.Process) {
   if (parsed.kind === "unknown") {
     console.error(`Unknown flag: ${parsed.arg}`);
     console.error("Run sveld --help for a list of available flags.");
-    process.exitCode = 1;
+    process.exitCode = EXIT_CODES.USAGE_ERROR;
     return;
   }
 
@@ -198,7 +218,7 @@ export async function cli(process: NodeJS.Process) {
   if (options.stdout) {
     if (options.stdout !== true && options.stdout !== "json" && options.stdout !== "ndjson") {
       console.error(`sveld: --stdout must be "json" or "ndjson"; got "${options.stdout}".`);
-      process.exitCode = 1;
+      process.exitCode = EXIT_CODES.USAGE_ERROR;
       return;
     }
 
@@ -206,32 +226,32 @@ export async function cli(process: NodeJS.Process) {
 
     if (selectedOutputs !== 1) {
       console.error("sveld: --stdout requires exactly one of --json, --markdown, or --custom-elements.");
-      process.exitCode = 1;
+      process.exitCode = EXIT_CODES.USAGE_ERROR;
       return;
     }
 
     if (options.stdout === "ndjson" && !options.json) {
       console.error("sveld: --stdout=ndjson is only valid with --json.");
-      process.exitCode = 1;
+      process.exitCode = EXIT_CODES.USAGE_ERROR;
       return;
     }
 
     if (options.types === true) {
       console.error("sveld: --stdout cannot be combined with --types; type definitions span multiple files.");
-      process.exitCode = 1;
+      process.exitCode = EXIT_CODES.USAGE_ERROR;
       return;
     }
 
     if (options.check) {
       console.error("sveld: --stdout cannot be combined with --check; both write their document to stdout.");
-      process.exitCode = 1;
+      process.exitCode = EXIT_CODES.USAGE_ERROR;
       return;
     }
   }
 
   if (options.format !== undefined && options.format !== "text" && options.format !== "json") {
     console.error(`sveld: --format must be "text" or "json"; got "${options.format}".`);
-    process.exitCode = 1;
+    process.exitCode = EXIT_CODES.USAGE_ERROR;
     return;
   }
 
@@ -248,24 +268,32 @@ export async function cli(process: NodeJS.Process) {
     );
     input = asSvelteEntryPoint(normalizeSeparators(FALLBACK_ENTRY));
   } else {
-    process.exitCode = 1;
+    process.exitCode = EXIT_CODES.USAGE_ERROR;
     return;
   }
 
-  const result = await generateBundle(input, options.glob === true, toGenerateBundleOptions(options));
-
-  // Read the committed snapshot before `writeOutput` can overwrite it.
+  let result: Awaited<ReturnType<typeof generateBundle>>;
   let checkResult: CheckResult | undefined;
-  if (options.check) {
-    checkResult = await runCheck(result.components, resolveCheckSnapshotFile(options), {
-      entryExports: result.entryExports,
-    });
-  }
 
-  if (options.stdout) {
-    await writeStdout(result, options, input);
-  } else {
-    await writeOutput(result, options, input);
+  try {
+    result = await generateBundle(input, options.glob === true, toGenerateBundleOptions(options));
+
+    // Read the committed snapshot before `writeOutput` can overwrite it.
+    if (options.check) {
+      checkResult = await runCheck(result.components, resolveCheckSnapshotFile(options), {
+        entryExports: result.entryExports,
+      });
+    }
+
+    if (options.stdout) {
+      await writeStdout(result, options, input);
+    } else {
+      await writeOutput(result, options, input);
+    }
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exitCode = EXIT_CODES.GENERATION_FAILURE;
+    return;
   }
 
   const { diagnostics } = result;
@@ -285,12 +313,20 @@ export async function cli(process: NodeJS.Process) {
     } else {
       console.log(formatCheckReport(checkResult));
     }
-    if (checkResult.bump === "major") {
-      process.exitCode = 1;
-    }
+  }
+
+  // Lowest applicable code wins (3 beats 4); every failure is still reported above.
+  let exitCode: number | undefined;
+
+  if (checkResult?.bump === "major") {
+    exitCode = EXIT_CODES.BREAKING_CHANGE;
   }
 
   if (options.strict && diagnostics.length > 0) {
-    process.exitCode = 1;
+    exitCode = exitCode === undefined ? EXIT_CODES.DIAGNOSTICS : Math.min(exitCode, EXIT_CODES.DIAGNOSTICS);
+  }
+
+  if (exitCode !== undefined) {
+    process.exitCode = exitCode;
   }
 }

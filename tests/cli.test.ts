@@ -671,7 +671,7 @@ describe("cli() --format with --check", () => {
 
     await cli(process);
 
-    expect(process.exitCode).toBe(1);
+    expect(process.exitCode).toBe(3);
     expect(logSpy).not.toHaveBeenCalled();
     expect(stdoutSpy).toHaveBeenCalledTimes(1);
     const printed = JSON.parse(stdoutSpy.mock.calls[0][0] as string);
@@ -687,7 +687,7 @@ describe("cli() --format with --check", () => {
 
     await cli(process);
 
-    expect(process.exitCode).toBe(1);
+    expect(process.exitCode).toBe(3);
     expect(stdoutSpy).not.toHaveBeenCalled();
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('[BREAKING] prop "label" added (required)'));
   });
@@ -697,7 +697,7 @@ describe("cli() --format with --check", () => {
 
     await cli(process);
 
-    expect(process.exitCode).toBe(1);
+    expect(process.exitCode).toBe(3);
     expect(stdoutSpy).not.toHaveBeenCalled();
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("Suggested semver bump: major."));
   });
@@ -763,5 +763,93 @@ describe("cli() --format with --report-diagnostics", () => {
 
     expect(stderrSpy).not.toHaveBeenCalled();
     expect(errorSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe("cli() exit codes", () => {
+  let dir: string;
+  let previousCwd: string;
+  let previousArgv: string[];
+  let errorSpy: ReturnType<typeof jest.spyOn>;
+  let stdoutSpy: ReturnType<typeof jest.spyOn>;
+  let logSpy: ReturnType<typeof jest.spyOn>;
+
+  beforeEach(() => {
+    previousCwd = process.cwd();
+    previousArgv = process.argv;
+    process.exitCode = 0;
+    dir = mkdtempSync(join(tmpdir(), "sveld-cli-exit-codes-"));
+    process.chdir(dir);
+    mkdirSync(join(dir, "src"), { recursive: true });
+    errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    stdoutSpy = jest.spyOn(process.stdout, "write").mockImplementation(() => true);
+    logSpy = jest.spyOn(console, "log").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    process.chdir(previousCwd);
+    process.argv = previousArgv;
+    process.exitCode = 0;
+    rmSync(dir, { recursive: true, force: true });
+    jest.restoreAllMocks();
+  });
+
+  test("sets exitCode 2 and prints the error to stderr when --fail-fast rethrows a parse failure", async () => {
+    writeFileSync(
+      join(dir, "src", "Broken.svelte"),
+      "<script>\n  export let label = ;\n</script>\n<button>{label}</button>\n",
+    );
+    writeFileSync(join(dir, "src", "index.js"), 'export { default as Broken } from "./Broken.svelte";\n');
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--json", "--fail-fast"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(2);
+    expect(errorSpy).toHaveBeenCalled();
+    expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(false);
+  });
+
+  test("sets exitCode 4 when diagnostics exist under --strict without --check", async () => {
+    writeFileSync(
+      join(dir, "src", "Phantom.svelte"),
+      "<script>\n  /** @event {CustomEvent<null>} phantom */\n  export let label;\n</script>\n<button>{label}</button>\n",
+    );
+    writeFileSync(join(dir, "src", "index.js"), 'export { default as Phantom } from "./Phantom.svelte";\n');
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--json", "--strict"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(4);
+  });
+
+  test("exits 3 (not 4) when a --check breaking change and --strict diagnostics both apply in one run", async () => {
+    writeFileSync(join(dir, "src", "Button.svelte"), "<script></script>\n<button>Click</button>\n");
+    writeFileSync(
+      join(dir, "src", "Phantom.svelte"),
+      "<script>\n  /** @event {CustomEvent<null>} phantom */\n  export let label;\n</script>\n<button>{label}</button>\n",
+    );
+    writeFileSync(
+      join(dir, "src", "index.js"),
+      'export { default as Button } from "./Button.svelte";\nexport { default as Phantom } from "./Phantom.svelte";\n',
+    );
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--json"];
+    await cli(process);
+    stdoutSpy.mockClear();
+    logSpy.mockClear();
+    errorSpy.mockClear();
+
+    // Add a required prop to Button so `--check` has a breaking change to report,
+    // alongside Phantom's pre-existing diagnostic.
+    writeFileSync(
+      join(dir, "src", "Button.svelte"),
+      "<script>\n  export let label;\n</script>\n<button>{label}</button>\n",
+    );
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--check", "--strict"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(3);
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("Suggested semver bump: major."));
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("unresolved type"));
   });
 });
