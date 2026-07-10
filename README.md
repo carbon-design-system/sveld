@@ -130,6 +130,7 @@ export default class Button extends SvelteComponentTyped<
   - [Installation](#installation)
   - [Vite](#vite)
   - [CLI](#cli)
+  - [Exit codes](#exit-codes)
   - [CI: API-drift checks (`--check`)](#ci-api-drift-checks---check)
   - [Node.js](#nodejs)
   - [Browser](#browser)
@@ -375,7 +376,7 @@ By default, nothing is printed. Opt in when you are working on types or want CI 
 await sveld({ json: true, reportDiagnostics: true });
 ```
 
-Use `strict: true` (or `--strict`) to exit with code `1` when diagnostics exist. `strict` implies `reportDiagnostics`, so CI always shows why the run failed.
+Use `strict: true` (or `--strict`) to exit with code `4` when diagnostics exist. `strict` implies `reportDiagnostics`, so CI always shows why the run failed.
 
 ```ts
 await sveld({ json: true, strict: true });
@@ -483,9 +484,21 @@ Pass `--stdout` alongside exactly one of `--json`, `--markdown`, or `--custom-el
 
 Run `npx sveld --help` for the full flag list with descriptions, or `npx sveld --version` to print the installed version.
 
+### Exit codes
+
+| Code | Meaning |
+|------|---------|
+| `0` | Success |
+| `1` | Usage or configuration error (unknown flag, bad flag value, unresolvable entry) |
+| `2` | Generation failure (a component failed to parse under `--fail-fast`, or an unrecoverable pipeline error) |
+| `3` | Breaking API change detected by `--check` |
+| `4` | Diagnostics present under `--strict` |
+
+Every failure is still reported to its usual channel even when more than one applies in a single run (e.g. a breaking change under `--check` alongside diagnostics under `--strict`); the process exits with the lowest applicable code. All failure codes are nonzero, so existing `if sveld; then ...` and `set -e` scripts that only check for success keep working unmodified.
+
 ### CI: API-drift checks (`--check`)
 
-`--check` diffs the parsed component API against a committed `COMPONENT_API.json` snapshot, assigns a semver bump to each change, and exits `1` when it finds a breaking change.
+`--check` diffs the parsed component API against a committed `COMPONENT_API.json` snapshot, assigns a semver bump to each change, and exits `3` when it finds a breaking change.
 
 1. Generate and commit the snapshot once: `npx sveld --json`, then commit `COMPONENT_API.json`.
 2. Add `npx sveld --check` to CI:
@@ -509,7 +522,7 @@ Removed props, events, or slots, and props that become required, are breaking (`
 
 Use `--check=<path>` to diff against a snapshot at a custom location (defaults to `jsonOptions.outFile`, or `COMPONENT_API.json`).
 
-The CLI exits non-zero on any fatal error (an unreadable entry, a config file that throws, etc.), not just on `--strict`/`--check` findings, so it's safe to use either flag as a CI gate.
+The CLI exits non-zero on any fatal error (an unreadable entry, a config file that throws, etc.), not just on `--strict`/`--check` findings, so it's safe to use either flag as a CI gate. See [Exit codes](#exit-codes) for how these are differentiated.
 
 Pass `--format=json` for a machine-readable report on `stdout` instead of the prose above, e.g. `sveld --check --format=json | jq '.bump'` or `sveld --check --format=json | jq '.changes[] | select(.bump == "major")'`.
 
@@ -707,8 +720,8 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
 - **`cache`** (boolean | string, optional, default: `true`): Write parsed component output to disk and skip re-parsing unchanged files on later runs. On by default, writing to `node_modules/.cache/sveld/parse-cache.json`; a string sets a custom path; pass `false` to disable. Also available as `--cache` / `--cache=<path>` / `--cache=false`. See [Persistent parse cache](#persistent-parse-cache-cache).
 - **`checkExamples`** (boolean, optional, default: `false`): Run plain TS/JS `@example` blocks through the TypeScript program. Broken ones get an `example-compile-error` diagnostic. Also available as `--check-examples` (`--checkExamples` remains as a deprecated alias). See [Compile-checked `@example` blocks](#compile-checked-example-blocks-checkexamples).
 - **`reportDiagnostics`** (boolean, optional, default: `false`): Print unresolved-type diagnostics to stderr (CLI) or `console.warn` (programmatic API). Also available as `--report-diagnostics`. See [Type inference diagnostics](#type-inference-diagnostics).
-- **`strict`** (boolean, optional, default: `false`): Exit with code `1` when diagnostics exist. Implies `reportDiagnostics`. Also available as `--strict`. See [Type inference diagnostics](#type-inference-diagnostics).
-- **`check`** (boolean | string, optional, default: `false`): Diff the parsed component API against a committed snapshot and assign a semver bump to each change. `true` uses the `json` writer's `outFile` (or `COMPONENT_API.json`); a string sets a custom snapshot path. Also available as `--check` / `--check=<path>`. On the CLI this exits `1` on a breaking change; from `sveld()` it's returned on `SveldResult.check` for you to act on. See [CI: API-drift checks (`--check`)](#ci-api-drift-checks---check).
+- **`strict`** (boolean, optional, default: `false`): Exit with code `4` when diagnostics exist. Implies `reportDiagnostics`. Also available as `--strict`. See [Type inference diagnostics](#type-inference-diagnostics).
+- **`check`** (boolean | string, optional, default: `false`): Diff the parsed component API against a committed snapshot and assign a semver bump to each change. `true` uses the `json` writer's `outFile` (or `COMPONENT_API.json`); a string sets a custom snapshot path. Also available as `--check` / `--check=<path>`. On the CLI this exits `3` on a breaking change; from `sveld()` it's returned on `SveldResult.check` for you to act on. See [CI: API-drift checks (`--check`)](#ci-api-drift-checks---check).
 - **`quiet`** (boolean, optional, default: `false`): Suppress writer progress logs (`created "..."` / `unchanged "..."`), which print to `stderr` by default. Does not suppress error messages, the diagnostics summary, or the `--check` report. Also available as `--quiet`.
 
 By default, only TypeScript definitions are generated.
