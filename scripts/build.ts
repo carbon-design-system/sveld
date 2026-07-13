@@ -1,14 +1,24 @@
 import { watch } from "node:fs";
+import { resolve } from "node:path";
 import { $, build } from "bun";
+import { bundleDts } from "./bundle-dts";
 
 const isWatchMode = process.argv.includes("-w") || process.argv.includes("--watch");
+const root = process.cwd();
 
 await $`rm -rf lib; mkdir lib`;
 
 async function emitTypeDeclarations() {
-  const result = await $`tsc --project tsconfig.build.json`.quiet();
-  if (result.exitCode !== 0) {
-    console.error(result.stderr.toString());
+  try {
+    await bundleDts({
+      root,
+      entries: [
+        { name: "index", source: resolve(root, "src/index.ts"), outFile: resolve(root, "lib/index.d.ts") },
+        { name: "browser", source: resolve(root, "src/browser.ts"), outFile: resolve(root, "lib/browser.d.ts") },
+      ],
+    });
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : error);
     if (!isWatchMode) {
       process.exit(1);
     }

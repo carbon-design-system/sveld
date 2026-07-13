@@ -134,7 +134,7 @@ A change to props, events, slots, or context handling should be exercised across
 
 ## Build
 
-[`scripts/build.ts`](scripts/build.ts) (`bun run build`) removes `lib/`, bundles `src/index.ts` with `Bun.build` (minified ESM, Node target), then runs `tsc --project tsconfig.build.json` to emit declarations. `lib/` is gitignored and is never committed. `bun run build -w` rebuilds on changes under `src/`.
+[`scripts/build.ts`](scripts/build.ts) (`bun run build`) removes `lib/`, bundles `src/index.ts` / `src/cli-entry.ts` / `src/browser.ts` with `Bun.build` (minified ESM), then rolls public types into only `lib/index.d.ts` and `lib/browser.d.ts` via [`scripts/bundle-dts.ts`](scripts/bundle-dts.ts) (TypeScript 6 Compiler API from `@typescript/typescript6`; intermediate per-file `.d.ts` stay in memory). `lib/` is gitignored and is never committed. `bun run build -w` rebuilds on changes under `src/`.
 
 The published binary is [`cli.js`](cli.js), which dynamically imports the built `lib/index.js` and calls `cli`.
 
