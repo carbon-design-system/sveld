@@ -4,7 +4,7 @@ import { info } from "../logger";
 import type { ParsedExports } from "../parse-exports";
 import type { ComponentDocs } from "../plugin";
 import { buildComponentApiDocument } from "./document-model";
-import { createTypeScriptWriter } from "./Writer";
+import Writer from "./Writer";
 import { type WriteTsDefinitionOptions, writeTsDefinition } from "./writer-ts-definitions-core";
 
 /**
@@ -58,7 +58,7 @@ export interface WriteTsDefinitionsOptions extends WriteTsDefinitionOptions {
  */
 export default async function writeTsDefinitions(components: ComponentDocs, options: WriteTsDefinitionsOptions) {
   const ts_base_path = join(process.cwd(), options.outDir, "index.d.ts");
-  const writer = createTypeScriptWriter({ dryRun: options.dryRun });
+  const writer = new Writer({ dryRun: options.dryRun });
   const indexDTs = options.preamble + createExports(options.exports);
 
   const document = buildComponentApiDocument(components);

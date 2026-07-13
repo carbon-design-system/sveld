@@ -1,10 +1,10 @@
 import path from "node:path";
 import { info } from "../logger";
 import type { EntryExports } from "../parse-entry-exports";
-import { normalizeSeparators } from "../path";
+import { formatJsonOutput, normalizeComponentFilePath } from "../path";
 import type { ComponentDocApi, ComponentDocs } from "../plugin";
 import { buildComponentApiDocument, type ComponentApiDocument } from "./document-model";
-import { createJsonWriter } from "./Writer";
+import Writer from "./Writer";
 
 export interface WriteJsonOptions {
   input: string;
@@ -28,7 +28,7 @@ export interface WriteJsonOptions {
 function withNormalizedFilePaths(components: ComponentDocApi[], inputDir: string): ComponentDocApi[] {
   return components.map((component) => ({
     ...component,
-    filePath: normalizeSeparators(path.join(inputDir, path.normalize(component.filePath))),
+    filePath: normalizeComponentFilePath(component.filePath, inputDir),
   }));
 }
 
@@ -39,8 +39,8 @@ async function writeJsonComponents(components: ComponentDocs, options: WriteJson
   await Promise.all(
     output.map(async (c) => {
       const outFile = path.resolve(path.join(options.outDir || "", `${c.moduleName}.api.json`));
-      const writer = createJsonWriter({ dryRun: options.dryRun });
-      const wasWritten = await writer.write(outFile, `${JSON.stringify(c, null, 2)}\n`);
+      const writer = new Writer({ dryRun: options.dryRun });
+      const wasWritten = await writer.write(outFile, formatJsonOutput(c));
       if (!options.dryRun) info(`${wasWritten ? "created" : "unchanged"} "${outFile}".`);
     }),
   );
@@ -61,7 +61,7 @@ export function renderJsonDocument(
     components: withNormalizedFilePaths(document.components, options.inputDir),
   };
 
-  return `${JSON.stringify(output, null, 2)}\n`;
+  return formatJsonOutput(output);
 }
 
 /**
@@ -82,7 +82,7 @@ export function renderJsonLines(
 async function writeJsonLocal(components: ComponentDocs, options: WriteJsonOptions) {
   const raw = renderJsonDocument(components, options);
   const output_path = path.join(process.cwd(), options.outFile);
-  const writer = createJsonWriter({ dryRun: options.dryRun });
+  const writer = new Writer({ dryRun: options.dryRun });
   await writer.write(output_path, raw);
 
   if (!options.dryRun) info(`created "${options.outFile}".`);
