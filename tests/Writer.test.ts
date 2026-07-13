@@ -3,7 +3,7 @@ import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { normalizeSeparators } from "../src/path";
-import Writer, { createJsonWriter, createTypeScriptWriter } from "../src/writer/Writer";
+import Writer from "../src/writer/Writer";
 
 describe("Writer", () => {
   let dir: string;
@@ -32,24 +32,6 @@ describe("Writer", () => {
     await writer.write(filePath, "content");
 
     expect(await readFile(filePath, "utf-8")).toBe("content");
-  });
-
-  test("createJsonWriter writes raw content as-is", async () => {
-    const writer = createJsonWriter();
-    const filePath = join(dir, "data.json");
-
-    await writer.write(filePath, '{"a":null}');
-
-    expect(await readFile(filePath, "utf-8")).toBe('{"a":null}');
-  });
-
-  test("createTypeScriptWriter writes raw content as-is", async () => {
-    const writer = createTypeScriptWriter();
-    const filePath = join(dir, "index.d.ts");
-
-    await writer.write(filePath, "export type Props = {};");
-
-    expect(await readFile(filePath, "utf-8")).toBe("export type Props = {};");
   });
 
   test("returns true and writes when the file doesn't exist yet", async () => {
@@ -112,21 +94,6 @@ describe("Writer", () => {
       await expect(writer.write(filePath, "content")).resolves.toBe(true);
 
       expect(logSpy).toHaveBeenCalledWith(`would write "${normalizeSeparators(filePath)}"`);
-    });
-
-    test("createJsonWriter and createTypeScriptWriter forward dryRun", async () => {
-      const jsonWriter = createJsonWriter({ dryRun: true });
-      const tsWriter = createTypeScriptWriter({ dryRun: true });
-      const jsonPath = join(dir, "data.json");
-      const tsPath = join(dir, "index.d.ts");
-
-      await jsonWriter.write(jsonPath, "{}");
-      await tsWriter.write(tsPath, "export type Props = {};");
-
-      expect(existsSync(jsonPath)).toBe(false);
-      expect(existsSync(tsPath)).toBe(false);
-      expect(logSpy).toHaveBeenCalledWith(`would write "${normalizeSeparators(jsonPath)}"`);
-      expect(logSpy).toHaveBeenCalledWith(`would write "${normalizeSeparators(tsPath)}"`);
     });
   });
 });

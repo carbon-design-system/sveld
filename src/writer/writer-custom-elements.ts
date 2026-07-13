@@ -1,8 +1,8 @@
 import path from "node:path";
 import { info } from "../logger";
-import { normalizeSeparators } from "../path";
+import { formatJsonOutput, normalizeComponentFilePath } from "../path";
 import type { ComponentDocApi, ComponentDocs } from "../plugin";
-import { createJsonWriter } from "./Writer";
+import Writer from "./Writer";
 import { buildCustomElementsManifest } from "./writer-custom-elements-core";
 
 export type {
@@ -27,14 +27,6 @@ export interface WriteCustomElementsOptions {
 }
 
 /**
- * Normalizes `filePath` to be resolvable from `cwd`, matching the JSON
- * writer's convention so `custom-elements.json` is self-describing.
- */
-function normalizedModulePath(component: ComponentDocApi, inputDir: string): string {
-  return normalizeSeparators(path.join(inputDir, path.normalize(component.filePath)));
-}
-
-/**
  * Renders the Custom Elements Manifest document without touching disk. Used
  * by both `writeCustomElements` and the CLI's `--stdout` mode so the two
  * channels can't drift.
@@ -44,10 +36,10 @@ export function renderCustomElementsManifest(
   options: Pick<WriteCustomElementsOptions, "inputDir">,
 ): string {
   const manifest = buildCustomElementsManifest(components, {
-    resolveModulePath: (component) => normalizedModulePath(component, options.inputDir),
+    resolveModulePath: (component: ComponentDocApi) => normalizeComponentFilePath(component.filePath, options.inputDir),
   });
 
-  return `${JSON.stringify(manifest, null, 2)}\n`;
+  return formatJsonOutput(manifest);
 }
 
 /**
@@ -62,7 +54,7 @@ export default async function writeCustomElements(components: ComponentDocs, opt
   const raw = renderCustomElementsManifest(components, options);
 
   const output_path = path.join(process.cwd(), options.outFile);
-  const writer = createJsonWriter({ dryRun: options.dryRun });
+  const writer = new Writer({ dryRun: options.dryRun });
   await writer.write(output_path, raw);
 
   if (!options.dryRun) info(`created "${options.outFile}".`);

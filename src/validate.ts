@@ -1,13 +1,11 @@
-export function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
+import { isObject } from "./ast-guards";
 
 export interface ParsedPackageJson {
   svelte?: string;
 }
 
 export function parsePackageJson(value: unknown): ParsedPackageJson {
-  if (!isRecord(value)) {
+  if (!isObject(value)) {
     return {};
   }
 
@@ -24,7 +22,7 @@ export interface ParsedTsConfig {
 }
 
 export function parseTsConfig(value: unknown): ParsedTsConfig {
-  if (!isRecord(value)) {
+  if (!isObject(value)) {
     return {};
   }
 
@@ -34,14 +32,14 @@ export function parseTsConfig(value: unknown): ParsedTsConfig {
     result.extends = value.extends;
   }
 
-  if (isRecord(value.compilerOptions)) {
+  if (isObject(value.compilerOptions)) {
     const compilerOptions: NonNullable<ParsedTsConfig["compilerOptions"]> = {};
 
     if (typeof value.compilerOptions.baseUrl === "string") {
       compilerOptions.baseUrl = value.compilerOptions.baseUrl;
     }
 
-    if (isRecord(value.compilerOptions.paths)) {
+    if (isObject(value.compilerOptions.paths)) {
       const paths: Record<string, string[]> = {};
       for (const [key, mappings] of Object.entries(value.compilerOptions.paths)) {
         if (Array.isArray(mappings) && mappings.every((entry) => typeof entry === "string")) {

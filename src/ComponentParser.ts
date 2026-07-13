@@ -56,8 +56,6 @@ import { assignValueOrUndefined } from "./parser/utils";
 import { buildVariableJsDocTable } from "./parser/variable-jsdoc";
 import { parse } from "./svelte-parse";
 
-export { assignValueOrUndefined as assignValue };
-
 /** Structured JSDoc tag (e.g. `{ name: "since", body: "1.2.0" }`). */
 export interface JsDocPassthroughTag {
   name: string;
@@ -649,10 +647,6 @@ export default class ComponentParser {
     return { value, source };
   }
 
-  private static assignValue(value?: "" | string) {
-    return assignValueOrUndefined(value);
-  }
-
   private resolvePublicPropName(name: string) {
     return this.ctx.propLocalToPublicName.get(name) ?? name;
   }
@@ -742,7 +736,7 @@ export default class ComponentParser {
   }
 
   private addModuleExport(prop_name: string, data: ComponentProp) {
-    if (ComponentParser.assignValue(prop_name) === undefined) return;
+    if (assignValueOrUndefined(prop_name) === undefined) return;
 
     if (this.ctx.moduleExports.has(prop_name)) {
       const existing_slot = this.ctx.moduleExports.get(prop_name);

@@ -46,25 +46,3 @@ export default class Writer {
     return true;
   }
 }
-
-/**
- * @example
- * ```ts
- * const writer = createJsonWriter();
- * await writer.write("data.json", JSON.stringify({ key: "value" }));
- * ```
- */
-export function createJsonWriter(options?: WriterOptions): Writer {
-  return new Writer(options);
-}
-
-/**
- * @example
- * ```ts
- * const writer = createTypeScriptWriter();
- * await writer.write("index.d.ts", "export type Props = {};");
- * ```
- */
-export function createTypeScriptWriter(options?: WriterOptions): Writer {
-  return new Writer(options);
-}

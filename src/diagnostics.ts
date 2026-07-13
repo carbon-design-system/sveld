@@ -1,4 +1,5 @@
 import type { SourceRange } from "./ComponentParser";
+import { formatJsonOutput } from "./path";
 
 /**
  * Why sveld could not pin a type during parsing.
@@ -114,5 +115,5 @@ export interface DiagnosticsJson {
 /** Serializes deduped diagnostics as JSON, for `--format=json --report-diagnostics` / `--strict`. */
 export function formatDiagnosticsSummaryJson(diagnostics: SveldDiagnostic[]): string {
   const document: DiagnosticsJson = { kind: "diagnostics", diagnostics };
-  return `${JSON.stringify(document, null, 2)}\n`;
+  return formatJsonOutput(document);
 }

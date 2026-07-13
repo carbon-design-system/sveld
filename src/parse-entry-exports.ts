@@ -1,5 +1,6 @@
 import { existsSync, lstatSync, readFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
+import { isIdentifier } from "./ast-guards";
 import { getParserStack, loadParserStack } from "./parser-stack";
 import { normalizeSeparators } from "./path";
 import { resolvePathAliasAbsolute } from "./resolve-alias";
@@ -66,8 +67,7 @@ function asNodeArray(value: unknown): AstNode[] {
 }
 
 function identifierName(node: AstNode | undefined): string | undefined {
-  if (node && node.type === "Identifier" && typeof node.name === "string") return node.name as string;
-  return undefined;
+  return isIdentifier(node) ? node.name : undefined;
 }
 
 /**

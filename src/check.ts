@@ -3,6 +3,7 @@ import path from "node:path";
 import type { ComponentDocApi, ComponentDocs } from "./bundle";
 import type { SveldRuntimeOptions } from "./load-config";
 import type { EntryExports } from "./parse-entry-exports";
+import { formatJsonOutput } from "./path";
 import {
   buildComponentApiDocument,
   COMPONENT_API_SCHEMA_VERSION,
@@ -444,5 +445,5 @@ export type CheckReportJson = CheckResult & { kind: "check-report" };
 /** Serializes a `CheckResult` as JSON, for `--format=json --check`. */
 export function formatCheckReportJson(result: CheckResult): string {
   const document: CheckReportJson = { kind: "check-report", ...result };
-  return `${JSON.stringify(document, null, 2)}\n`;
+  return formatJsonOutput(document);
 }

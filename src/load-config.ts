@@ -1,8 +1,8 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
+import { isObject } from "./ast-guards";
 import type { PluginSveldOptions } from "./plugin";
-import { isRecord } from "./validate";
 
 /**
  * Options shared by the config file, the CLI, and the programmatic `sveld()`
@@ -108,7 +108,7 @@ export async function loadConfigFrom(configPath: string): Promise<SveldConfig> {
 
   const config = mod.default;
 
-  if (!isRecord(config) || Array.isArray(config)) {
+  if (!isObject(config) || Array.isArray(config)) {
     throw new Error(
       `sveld: config file "${configPath}" must export a configuration object as its default export. ` +
         "Did you forget `export default defineConfig({ ... })`?",

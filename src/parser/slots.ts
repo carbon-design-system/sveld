@@ -166,10 +166,6 @@ export function extractRenderTagInfo(
   };
 }
 
-function assignSlotPropsOrUndefined(value?: string | SlotProps) {
-  return value === undefined || value === "" ? undefined : value;
-}
-
 export function addSlot(
   ctx: ParserContext,
   {
@@ -193,7 +189,7 @@ export function addSlot(
   const default_slot = slot_name === undefined || slot_name === "";
   const name: string | null = default_slot ? DEFAULT_SLOT_NAME : (slot_name ?? "");
   const fallback = assignValueOrUndefined(slot_fallback);
-  const props = assignSlotPropsOrUndefined(slot_props);
+  const props = slot_props === undefined || slot_props === "" ? undefined : slot_props;
   const description = slot_description?.trim() || undefined;
 
   if (ctx.slots.has(name)) {
