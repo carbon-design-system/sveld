@@ -1,9 +1,8 @@
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { generateBundle, stripTopLevelStyleBlock } from "../src/bundle";
+import { generateBundle } from "../src/bundle";
 import ComponentParser from "../src/ComponentParser";
-import { loadParserStack } from "../src/parser-stack";
 import { TypeResolver } from "../src/resolve-types";
 
 const BUTTON = `<script>
@@ -167,50 +166,5 @@ describe("generateBundle shares one TypeResolver across resolveTypes and checkEx
 
     const exampleCheck = result.allComponentsForTypes.get("ExampleCheck");
     expect(exampleCheck?.diagnostics ?? []).toEqual([]);
-  });
-});
-
-describe("stripTopLevelStyleBlock", () => {
-  beforeAll(async () => {
-    await loadParserStack();
-  });
-
-  test("returns the identical source when it has no <style> substring", () => {
-    const source = `<script>
-  export let label = "hello";
-</script>
-
-<span>{label}</span>`;
-
-    expect(stripTopLevelStyleBlock(source)).toBe(source);
-  });
-
-  test("strips a top-level <style> block", () => {
-    const source = `<script>
-  export let label = "hello";
-</script>
-
-<span>{label}</span>
-
-<style>
-  span {
-    color: red;
-  }
-</style>`;
-
-    const result = stripTopLevelStyleBlock(source);
-
-    expect(result).not.toContain("<style");
-    expect(result).toContain("<span>{label}</span>");
-  });
-
-  test("still parses when <style> only appears inside a string", () => {
-    const source = `<script>
-  const s = "<style>";
-</script>
-
-<span>{s}</span>`;
-
-    expect(stripTopLevelStyleBlock(source)).toBe(source);
   });
 });

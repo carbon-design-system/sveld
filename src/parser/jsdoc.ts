@@ -349,14 +349,18 @@ export function processJSDocComment(
   return { type, params, returnType, description, binding, deprecated, tags };
 }
 
-export function parseCustomTypes(ctx: ParserContext, parser: ComponentParser) {
-  if (!ctx.source) return;
+export function parseCustomTypes(
+  ctx: ParserContext,
+  parser: ComponentParser,
+  scanSource: string | undefined = ctx.source,
+) {
+  if (!scanSource) return;
   let commentSearchOffset = 0;
-  for (const { tags, description: commentDescription, source: blockSource } of parseComment(ctx.source, {
+  for (const { tags, description: commentDescription, source: blockSource } of parseComment(scanSource, {
     spacing: "preserve",
   })) {
     const blockText = blockSource.map((line) => line.source).join("\n");
-    const blockStartOffset = ctx.source.indexOf(blockText, commentSearchOffset);
+    const blockStartOffset = scanSource.indexOf(blockText, commentSearchOffset);
     const commentBlockStartOffset = blockStartOffset === -1 ? undefined : blockStartOffset;
     if (blockStartOffset !== -1) {
       commentSearchOffset = blockStartOffset + blockText.length;
