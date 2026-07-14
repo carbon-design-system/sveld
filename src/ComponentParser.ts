@@ -54,7 +54,7 @@ import { buildTypeScriptMetadata } from "./parser/type-resolution";
 import { stripTypeCastWrappers } from "./parser/typescript-casts";
 import { assignValueOrUndefined } from "./parser/utils";
 import { buildVariableJsDocTable } from "./parser/variable-jsdoc";
-import { parse } from "./svelte-parse";
+import { parseModernAndLegacy } from "./svelte-parse";
 
 /** Structured JSDoc tag (e.g. `{ name: "since", body: "1.2.0" }`). */
 export interface JsDocPassthroughTag {
@@ -854,14 +854,16 @@ export default class ComponentParser {
     this.ctx.componentFilePath = diagnostics.filePath;
     const cleanedSource = ComponentParser.stripTypeScriptDirectivesFromScripts(source);
     this.ctx.source = cleanedSource;
-    buildRunesPropTypeMetadata(this, this.ctx);
 
     /**
-     * Parse once - compile()'s analyze phase roughly doubles the compiler cost per component but
-     * sveld only ever consumed its AST and its runes-metadata flag, so call parse() directly and
-     * determine the syntax mode locally instead.
+     * One `parseFragment` call backs both AST views (see `parseModernAndLegacy`): the modern
+     * view feeds `buildRunesPropTypeMetadata` (type imports, local types, `$props()` metadata),
+     * the legacy view backs the main walk below. Two independent `parse()` calls used to re-lex
+     * and re-parse the same source from scratch for each mode.
      */
-    this.ctx.parsed = parse(cleanedSource, { modern: false }) as LegacyAstRoot;
+    const { modern: modernParsed, legacy: legacyParsed } = parseModernAndLegacy(cleanedSource);
+    buildRunesPropTypeMetadata(this, this.ctx, modernParsed);
+    this.ctx.parsed = legacyParsed as LegacyAstRoot;
 
     /**
      * compile() strips TS-only wrapper expressions (`as`/`satisfies`/`!`/type assertions/explicit
