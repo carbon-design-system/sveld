@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.36.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.36.0) - 2026-07-14
+
+**Features**
+
+- add `--stdout` to emit one of `--json`, `--markdown`, or `--custom-elements` to stdout (f8fc9f9, #384)
+- support `--stdout=ndjson` for per-component JSON lines (adc19eb, #385)
+- add `--format=json` for check and diagnostics output (d669ea2, #386)
+- differentiate CLI exit codes by failure kind (c910f4f, #387)
+- accept space-separated flag values and suggest corrections for unknown flags (2ac26eb, #388)
+- add `--dry-run` to preview outputs without writing (55e92c8, #389)
+- route progress logs to stderr and add `--quiet` (00c7dc3)
+- roll public types into single entry `.d.ts` files (9d0751a)
+- parse each component once instead of twice (d2ed0b4, #392)
+- stop re-parsing components to strip the style block (a6723a0, #393)
+
 ## [0.35.2](https://github.com/carbon-design-system/sveld/releases/tag/v0.35.2) - 2026-07-09
 
 **Features**
