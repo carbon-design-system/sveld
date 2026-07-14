@@ -82,6 +82,7 @@ export interface LegacyAstRoot {
   module?: Node;
   html?: Node;
   instance?: Node;
+  css?: { start?: number; end?: number };
 }
 
 export interface SourcePosition {
@@ -878,7 +879,24 @@ export default class ComponentParser {
 
     this.ctx.syntaxMode = detectSyntaxMode(this.ctx);
 
-    parseCustomTypes(this.ctx, this);
+    /**
+     * `parseCustomTypes` scans the raw source text for `/** *\/`-style comment blocks
+     * (via `comment-parser`), which has no notion of Svelte's markup structure - a
+     * `/** ... *\/`-shaped comment inside a top-level `<style>` block would otherwise be
+     * misread as a JSDoc block and could produce a spurious typedef/event/etc. Blank out
+     * the style block's own text (same length, so it doesn't shift any offsets) for this
+     * scan only; `this.ctx.source` itself stays the untouched parsed source so every other
+     * offset computation (source ranges, `sourceAtPos`, ...) is unaffected.
+     */
+    const cssBlock = this.ctx.parsed.css;
+    const scanSource =
+      cssBlock?.start !== undefined && cssBlock?.end !== undefined
+        ? cleanedSource.slice(0, cssBlock.start) +
+          " ".repeat(cssBlock.end - cssBlock.start) +
+          cleanedSource.slice(cssBlock.end)
+        : cleanedSource;
+
+    parseCustomTypes(this.ctx, this, scanSource);
 
     /**
      * Not fused with the componentRoot walk below: `module` (`<script context="module">`) is a

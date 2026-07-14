@@ -122,30 +122,7 @@ export interface ProcessComponentOptions {
   memo?: Map<string, ParsedComponent>;
 }
 
-const STYLE_TAG_REGEX = /<style.+?<\/style>/gims;
 const HYPHEN_REGEX = /-/g;
-
-export function stripTopLevelStyleBlock(source: string) {
-  // Skip compiler parse when no `<style>`; false positives in strings/comments fall through to regex.
-  if (!source.includes("<style")) return source;
-
-  try {
-    const parsed = getParserStack().parseSvelte(source, { modern: false }) as {
-      css?: { start?: number; end?: number };
-    };
-    const start = parsed.css?.start;
-    const end = parsed.css?.end;
-
-    if (start === undefined || end === undefined) {
-      return source;
-    }
-
-    return `${source.slice(0, start)}${source.slice(end)}`;
-  } catch {
-    // Regex fallback when the compiler cannot parse the source.
-    return source.replace(STYLE_TAG_REGEX, "");
-  }
-}
 
 /**
  * Discovered component sources for an entry point, before parsing.
@@ -288,9 +265,11 @@ export async function readFileMap(filePaths: Iterable<string>): Promise<Map<stri
 /**
  * Parses a single component entry into its documentation API.
  *
- * Reads the component contents from `fileMap`, removes top-level styles for
- * metadata parsing, and parses it to extract component metadata. Returns `null`
- * for non-Svelte entries or files that could not be read.
+ * Reads the component contents from `fileMap` and parses it to extract
+ * component metadata (a top-level `<style>` block, if present, is masked out
+ * of the text scanned for JSDoc comments inside `ComponentParser`, without a
+ * separate parse). Returns `null` for non-Svelte entries or files that could
+ * not be read.
  *
  * A component that throws while parsing is captured via `options.onParseError`
  * (and `null` is returned) so callers can continue with the rest, unless
@@ -345,7 +324,7 @@ export function processComponent(
     } else {
       const parser = new (getParserStack().ComponentParser)();
       try {
-        parsed = parser.parseSvelteComponent(stripTopLevelStyleBlock(source), {
+        parsed = parser.parseSvelteComponent(source, {
           moduleName,
           filePath: normalizedFilePath,
         });

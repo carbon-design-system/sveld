@@ -1,0 +1,58 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 25,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "real",
+      "kind": "let",
+      "type": "RealTypedef",
+      "typeSource": "jsdoc",
+      "value": "{ name: \"hello\" }",
+      "defaultValue": {
+        "raw": "{ name: \"hello\" }",
+        "kind": "object",
+        "value": {
+          "name": "hello"
+        }
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 8,
+          "column": 2
+        },
+        "end": {
+          "line": 8,
+          "column": 38
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{\n  name: string;\n}",
+      "name": "RealTypedef",
+      "ts": "type RealTypedef = {\n  name: string;\n};"
+    }
+  ],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
