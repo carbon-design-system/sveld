@@ -9,7 +9,6 @@ import type {
   RunesPropTypeMetadata,
   TypeImportBinding,
 } from "../ComponentParser";
-import { parse } from "../svelte-parse";
 import type { ParserContext } from "./context";
 import { collectGenericsAttributeTypeDependencies } from "./generics";
 import { processLeadingCommentsJSDoc, processNodeJSDoc } from "./jsdoc";
@@ -174,49 +173,25 @@ export function buildRunesPropTypeMetadataMap(
   return metadata;
 }
 
-/**
- * Re-parse `ctx.source` in modern AST mode before the legacy walk: type imports,
- * local types, explicit `export let` annotations, and `$props()` metadata.
- */
-export function buildRunesPropTypeMetadata(parser: ComponentParser, ctx: ParserContext) {
-  ctx.runesPropsDeclarationMetadataByDeclaratorStart.clear();
-  ctx.explicitPropTypesByName.clear();
-  ctx.explicitVariableTypesByName.clear();
-  ctx.typeImportBindingsByLocalName.clear();
-  ctx.localTypeDeclarationsByName.clear();
-  ctx.typedRunesPropsDeclarations.length = 0;
-  if (!ctx.source) return;
-
-  const modernParsed = parse(ctx.source, { modern: true }) as {
-    instance?: ModernScriptNode & {
-      content?: {
-        body?: Array<{
+/** The modern-AST shape `buildRunesPropTypeMetadata` reads from. */
+export type ModernParsedRoot = {
+  instance?: ModernScriptNode & {
+    content?: {
+      body?: Array<{
+        type?: string;
+        start?: number;
+        end?: number;
+        importKind?: string;
+        source?: { value?: string };
+        specifiers?: Array<{
           type?: string;
-          start?: number;
-          end?: number;
           importKind?: string;
-          source?: { value?: string };
-          specifiers?: Array<{
-            type?: string;
-            importKind?: string;
-            local?: { name?: string };
-            imported?: { type?: string; name?: string; value?: string };
-          }>;
-          id?: { name?: string };
-          declaration?: {
-            type?: string;
-            declarations?: Array<{
-              id?: {
-                type?: string;
-                name?: string;
-                typeAnnotation?: {
-                  start?: number;
-                  end?: number;
-                  typeAnnotation?: ModernRunesTypeNode;
-                };
-              };
-            }>;
-          };
+          local?: { name?: string };
+          imported?: { type?: string; name?: string; value?: string };
+        }>;
+        id?: { name?: string };
+        declaration?: {
+          type?: string;
           declarations?: Array<{
             id?: {
               type?: string;
@@ -227,15 +202,44 @@ export function buildRunesPropTypeMetadata(parser: ComponentParser, ctx: ParserC
                 typeAnnotation?: ModernRunesTypeNode;
               };
             };
-            init?: unknown;
-            start?: number;
           }>;
+        };
+        declarations?: Array<{
+          id?: {
+            type?: string;
+            name?: string;
+            typeAnnotation?: {
+              start?: number;
+              end?: number;
+              typeAnnotation?: ModernRunesTypeNode;
+            };
+          };
+          init?: unknown;
+          start?: number;
         }>;
-      };
+      }>;
     };
-    module?: ModernScriptNode;
-    options?: { customElement?: { tag?: string }; runes?: boolean } | null;
   };
+  module?: ModernScriptNode;
+  options?: { customElement?: { tag?: string }; runes?: boolean } | null;
+};
+
+/**
+ * Reads type imports, local types, explicit `export let` annotations, and
+ * `$props()` metadata off `modernParsed` (the modern-mode AST for the same
+ * source as `ctx.parsed`, parsed once alongside it by the caller - see
+ * `parseModernAndLegacy` in `../svelte-parse`).
+ */
+export function buildRunesPropTypeMetadata(parser: ComponentParser, ctx: ParserContext, modernParsedRoot: unknown) {
+  ctx.runesPropsDeclarationMetadataByDeclaratorStart.clear();
+  ctx.explicitPropTypesByName.clear();
+  ctx.explicitVariableTypesByName.clear();
+  ctx.typeImportBindingsByLocalName.clear();
+  ctx.localTypeDeclarationsByName.clear();
+  ctx.typedRunesPropsDeclarations.length = 0;
+  if (!ctx.source) return;
+
+  const modernParsed = modernParsedRoot as ModernParsedRoot;
 
   ctx.scriptLanguage = parser.resolveScriptLanguage(modernParsed);
   ctx.customElementTag = modernParsed.options?.customElement?.tag;

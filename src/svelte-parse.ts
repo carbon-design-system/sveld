@@ -105,3 +105,45 @@ export function parse(source: string, { modern, loose }: { modern?: boolean; loo
   const ast: InternalAstRoot = parseFragment(cleaned, loose);
   return toPublicAst(cleaned, ast, modern);
 }
+
+/**
+ * Deep-clones a plain JSON-shaped value (objects/arrays/primitives only - the
+ * AST has neither, as `tests/svelte-parse-shim.test.ts`'s `JSON.stringify`
+ * round-trip already confirms). Plain recursion beats the built-in
+ * `structuredClone`: that API's general-purpose serialization handles many
+ * types this data never contains, and empirically costs about as much as a
+ * fresh `parseFragment` call on ASTs this shape - which would have defeated
+ * the whole point of cloning instead of re-parsing.
+ */
+function cloneAst<T>(value: T): T {
+  if (value === null || typeof value !== "object") return value;
+  if (Array.isArray(value)) return value.map(cloneAst) as T;
+  const out = {} as T;
+  for (const key in value) out[key] = cloneAst(value[key]);
+  return out;
+}
+
+/**
+ * Produces both the modern and legacy AST for the same source from a single
+ * `parseFragment` call, instead of sveld's former two independent `parse()`
+ * calls (one per mode) that each re-lexed and re-parsed the source from
+ * scratch. `convert()` (the legacy path) restructures its input in place, so
+ * it must run on a clone - the modern view is derived first, directly off
+ * the original `parseFragment` output, and only that (already
+ * metadata-stripped, so cheaper to copy) result gets cloned for `convert()`.
+ * `convert()` only ever deletes `.metadata`, never reads it, so pre-stripping
+ * before conversion doesn't change its output (see `tests/svelte-parse-shim.test.ts`,
+ * which byte-compares both branches of this function against the real compiler).
+ */
+export function parseModernAndLegacy(
+  source: string,
+  { loose }: { loose?: boolean } = {},
+): { modern: unknown; legacy: unknown } {
+  const cleaned = removeByteOrderMark(source);
+  resetCompilerState({ warning: () => false, filename: undefined });
+  const ast: InternalAstRoot = parseFragment(cleaned, loose);
+  const modern = toPublicAst(cleaned, ast, true);
+  const legacyInput = cloneAst(modern) as InternalAstRoot;
+  const legacy = toPublicAst(cleaned, legacyInput, false);
+  return { modern, legacy };
+}
