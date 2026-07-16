@@ -9,7 +9,7 @@ jobs:
   build:
     strategy:
       matrix:
-        node: [22]
+        node: [24]
         os: [ubuntu-latest, windows-latest, macos-15]
 
     runs-on: ${{ matrix.os }}
