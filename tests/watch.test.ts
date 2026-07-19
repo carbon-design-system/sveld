@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import pluginSveld from "../src/plugin";
@@ -84,6 +84,29 @@ describe("watch mode (createSveldBundle)", () => {
 
     expect(reparsed).toContain(newPath);
     expect(result.allComponentsForTypes.has("NewOne")).toBe(true);
+  });
+
+  test("picks up a deleted component file", async () => {
+    const bundle = await createSveldBundle(dir, true);
+
+    const standalonePath = resolve(dir, "Standalone.svelte");
+    unlinkSync(standalonePath);
+
+    const { result } = await bundle.update([standalonePath]);
+
+    expect(result.allComponentsForTypes.has("Standalone")).toBe(false);
+  });
+
+  test("deleting an @extendProps dependency reparses its dependent without crashing", async () => {
+    const bundle = await createSveldBundle(dir, true);
+
+    const buttonPath = resolve(dir, "Button.svelte");
+    unlinkSync(buttonPath);
+
+    const { result, reparsed } = await bundle.update([buttonPath]);
+
+    expect(reparsed).toContain(resolve(dir, "SecondaryButton.svelte"));
+    expect(result.allComponentsForTypes.has("Button")).toBe(false);
   });
 
   test("ignores non-svelte changes", async () => {
