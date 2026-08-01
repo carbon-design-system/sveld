@@ -7,7 +7,7 @@ import { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "./parsed-component-metada
 import { VERSION as svelteVersion } from "./svelte-version";
 
 /** Bumped whenever the on-disk cache shape changes in a way old caches can't read. */
-const CACHE_FORMAT_VERSION = 1;
+const CACHE_FORMAT_VERSION = 2;
 
 /** Default on-disk location for the persistent parse cache, relative to the project root. */
 export const DEFAULT_CACHE_FILE = join("node_modules", ".cache", "sveld", "parse-cache.json");
@@ -23,6 +23,11 @@ interface ParseCacheEntry {
    * on `parsed` through a disk round-trip.
    */
   typeScriptMetadata?: ParsedComponentTypeScriptMetadata;
+  /**
+   * Generated `.d.ts` text for this entry's `hash`, keyed additionally by the
+   * effective `types-format` option since that changes the output shape.
+   */
+  generatedText?: { format: string; text: string };
 }
 
 interface ParseCacheFile {
@@ -117,6 +122,29 @@ export class ParseCache {
   /** Skip cache for `resolvedPath` this run (e.g. an @extends dependent). */
   invalidate(resolvedPath: string): void {
     this.blocked.add(resolvedPath);
+  }
+
+  /**
+   * Returns the cached generated `.d.ts` text for `resolvedPath`, if this
+   * run's parse entry for it (a fresh parse or a hash-verified hit — see
+   * `get()`/`set()`) already carries text generated for `format`.
+   */
+  getGeneratedText(resolvedPath: string, format: string): string | undefined {
+    const entry = this.next.get(resolvedPath);
+    if (entry?.generatedText === undefined || entry.generatedText.format !== format) return undefined;
+    return entry.generatedText.text;
+  }
+
+  /**
+   * Records generated `.d.ts` text against this run's parse entry for
+   * `resolvedPath`. No-op if that entry hasn't been recorded via `get()`/`set()`
+   * (shouldn't happen: the write phase only runs after every component has
+   * been parsed).
+   */
+  setGeneratedText(resolvedPath: string, format: string, text: string): void {
+    const entry = this.next.get(resolvedPath);
+    if (entry === undefined) return;
+    entry.generatedText = { format, text };
   }
 
   /** Persists this run's cache entries back to disk. */

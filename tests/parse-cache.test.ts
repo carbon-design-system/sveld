@@ -1,9 +1,10 @@
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { join, relative, resolve } from "node:path";
 import { generateBundle } from "../src/bundle";
 import ComponentParser from "../src/ComponentParser";
 import { DEFAULT_CACHE_FILE } from "../src/parse-cache";
+import writeTsDefinitions from "../src/writer/writer-ts-definitions";
 
 const BUTTON = `<script>
   /** @restProps {button} */
@@ -130,6 +131,82 @@ describe("parse cache", () => {
     } finally {
       rmSync(otherDir, { recursive: true, force: true });
     }
+  });
+});
+
+describe("generated .d.ts text cache", () => {
+  let dir: string;
+  let outDirAbs: string;
+  let outDir: string;
+  let cacheFile: string;
+
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), "sveld-text-cache-"));
+    // writeTsDefinitions joins its index.d.ts path onto process.cwd() regardless
+    // of whether outDir is already absolute, so (as elsewhere in this test suite)
+    // outDir must be relative to cwd or writes land under a bogus cwd-nested path.
+    outDirAbs = mkdtempSync(join(process.cwd(), ".tmp-sveld-text-cache-out-"));
+    outDir = relative(process.cwd(), outDirAbs);
+    cacheFile = join(dir, ".cache", "parse-cache.json");
+    writeFileSync(join(dir, "Button.svelte"), BUTTON);
+    writeFileSync(join(dir, "SecondaryButton.svelte"), SECONDARY_BUTTON);
+    writeFileSync(join(dir, "Standalone.svelte"), STANDALONE);
+  });
+
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true });
+    rmSync(outDirAbs, { recursive: true, force: true });
+  });
+
+  test("a component whose @extendProps target changed is regenerated, not served stale cached text", async () => {
+    const secondaryButtonPath = resolve(dir, "SecondaryButton.svelte");
+    const standalonePath = resolve(dir, "Standalone.svelte");
+
+    const first = await generateBundle(dir, true, { cache: cacheFile });
+    await writeTsDefinitions(first.allComponentsForTypes, {
+      outDir,
+      inputDir: dir,
+      preamble: "",
+      exports: first.exports,
+      cache: first.cache,
+      resolvedPathByModule: first.resolvedPathByModule,
+    });
+    first.cache?.save();
+
+    // Both components' generated text is now cached against the first run's parse.
+    expect(first.cache?.getGeneratedText(secondaryButtonPath, "class")).toBeDefined();
+    expect(first.cache?.getGeneratedText(standalonePath, "class")).toBeDefined();
+
+    writeFileSync(join(dir, "Button.svelte"), BUTTON.replace("primary = false", "primary = true"));
+    const second = await generateBundle(dir, true, { cache: cacheFile });
+
+    // SecondaryButton depends on Button via @extendProps, so it's invalidated
+    // and reparsed even though its own source didn't change; its fresh parse
+    // entry must not carry over the stale cached text.
+    expect(second.cache?.getGeneratedText(secondaryButtonPath, "class")).toBeUndefined();
+    // Standalone is unrelated and still a parse-cache hit, so its previously
+    // cached text is legitimately reused.
+    expect(second.cache?.getGeneratedText(standalonePath, "class")).toBeDefined();
+  });
+
+  test("--types-format switch doesn't serve a component's other-format cached text", async () => {
+    const buttonPath = resolve(dir, "Button.svelte");
+
+    const first = await generateBundle(dir, true, { cache: cacheFile });
+    await writeTsDefinitions(first.allComponentsForTypes, {
+      outDir,
+      inputDir: dir,
+      preamble: "",
+      exports: first.exports,
+      format: "class",
+      cache: first.cache,
+      resolvedPathByModule: first.resolvedPathByModule,
+    });
+    first.cache?.save();
+
+    const second = await generateBundle(dir, true, { cache: cacheFile });
+    expect(second.cache?.getGeneratedText(buttonPath, "class")).toBeDefined();
+    expect(second.cache?.getGeneratedText(buttonPath, "component")).toBeUndefined();
   });
 });
 

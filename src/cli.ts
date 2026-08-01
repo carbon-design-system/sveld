@@ -447,6 +447,9 @@ export async function cli(process: NodeJS.Process) {
       await writeStdout(result, options, input);
     } else {
       await writeOutput(result, options, input);
+      // Persists any generated `.d.ts` text writeOutput just cached, on top
+      // of the parse-only save generateBundle() already did.
+      if (!options.dryRun) result.cache?.save();
     }
   } catch (error) {
     console.error(error instanceof Error ? error.message : String(error));
