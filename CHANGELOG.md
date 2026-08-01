@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.36.1](https://github.com/carbon-design-system/sveld/releases/tag/v0.36.1) - 2026-07-31
+
+**Features**
+
+- cache generated `.d.ts` text across runs (84a57ac)
+- stop rescanning the output buffer while formatting `.d.ts` (c5c4d86)
+
+**Fixes**
+
+- resolve the Svelte version through `svelte/package.json` instead of an internal module path (af84645, #394)
+
 ## [0.36.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.36.0) - 2026-07-14
 
 **Features**
