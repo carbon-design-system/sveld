@@ -46,6 +46,19 @@ export interface GenerateBundleResult {
   errors: ComponentParseError[];
   /** Unknown props, `any` contexts, and orphan `@event` tags across the bundle. */
   diagnostics: SveldDiagnostic[];
+  /**
+   * @internal The parse cache instance for this run (undefined when the parse
+   * cache is disabled). Exposed so the write phase can layer a generated-text
+   * cache on top of it (see `writeTsDefinitions`) and persist the addition
+   * with a second `save()` after writing.
+   */
+  cache?: ParseCache;
+  /**
+   * @internal moduleName -> resolved source path, matching `cache`'s entry
+   * identity, so the write phase can key its text cache lookups without
+   * redoing path-alias resolution. Undefined when the parse cache is disabled.
+   */
+  resolvedPathByModule?: Map<string, string>;
 }
 
 export interface GenerateBundleOptions {
@@ -441,6 +454,10 @@ export async function generateBundle(
   // `cache` is on by default; only an explicit `false` disables it.
   const cache =
     options.cache === false ? undefined : new ParseCache(resolveCacheFilePath(rootDir, options.cache ?? true));
+  // moduleName -> resolved source path, so the write phase can key a
+  // generated-text cache against the same identity as `cache` without
+  // redoing path-alias resolution. Only worth building when there's a cache.
+  const resolvedPathByModule = cache ? new Map<string, string>() : undefined;
 
   const misses = new Set<string>();
   const hashes = new Map<string, string>();
@@ -495,7 +512,10 @@ export async function generateBundle(
    */
   for (const entry of allComponentEntries) {
     const result = processComponent(entry, allComponentEntries, fileMap, resolveComponentFilePath, processOptions);
-    if (result) allComponentsForTypes.set(result.moduleName, result);
+    if (result) {
+      allComponentsForTypes.set(result.moduleName, result);
+      resolvedPathByModule?.set(result.moduleName, resolveComponentFilePath(entry[1].source));
+    }
   }
 
   if (cache && misses.size > 0) {
@@ -519,7 +539,10 @@ export async function generateBundle(
       const resolvedPath = resolveComponentFilePath(entry[1].source);
       if (!affected.has(resolvedPath) || misses.has(resolvedPath)) continue;
       const result = processComponent(entry, allComponentEntries, fileMap, resolveComponentFilePath, processOptions);
-      if (result) allComponentsForTypes.set(result.moduleName, result);
+      if (result) {
+        allComponentsForTypes.set(result.moduleName, result);
+        resolvedPathByModule?.set(result.moduleName, resolvedPath);
+      }
     }
   }
 
@@ -562,6 +585,8 @@ export async function generateBundle(
     allComponentsForTypes,
     errors,
     diagnostics,
+    cache,
+    resolvedPathByModule,
   };
 }
 

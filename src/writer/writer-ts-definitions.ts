@@ -1,6 +1,7 @@
 import { join } from "node:path";
 import { convertSvelteExt, createExports } from "../create-exports";
 import { info } from "../logger";
+import type { ParseCache } from "../parse-cache";
 import type { ParsedExports } from "../parse-exports";
 import type { ComponentDocs } from "../plugin";
 import { buildComponentApiDocument } from "./document-model";
@@ -42,6 +43,14 @@ export interface WriteTsDefinitionsOptions extends WriteTsDefinitionOptions {
   exports: ParsedExports;
   /** Report resolved paths instead of writing. Set by `sveld --dry-run`. */
   dryRun?: boolean;
+  /**
+   * @internal Reuses generated `.d.ts` text across runs for components whose
+   * source (and the effective `format` option) hasn't changed. Requires
+   * `resolvedPathByModule` to key lookups; both come from `GenerateBundleResult`.
+   */
+  cache?: ParseCache;
+  /** @internal See `cache`. */
+  resolvedPathByModule?: Map<string, string>;
 }
 
 /**
@@ -62,9 +71,17 @@ export default async function writeTsDefinitions(components: ComponentDocs, opti
   const indexDTs = options.preamble + createExports(options.exports);
 
   const document = buildComponentApiDocument(components);
+  // Must match the default `writeTsDefinition` assumes for `options.format === undefined`.
+  const cacheFormatKey = options.format ?? "class";
   const writePromises = document.components.map(async (component) => {
     const ts_filepath = convertSvelteExt(join(options.outDir, component.filePath));
-    await writer.write(ts_filepath, writeTsDefinition(component, { format: options.format }));
+    const resolvedPath = options.resolvedPathByModule?.get(component.moduleName);
+    let text = resolvedPath ? options.cache?.getGeneratedText(resolvedPath, cacheFormatKey) : undefined;
+    if (text === undefined) {
+      text = writeTsDefinition(component, { format: options.format });
+      if (resolvedPath) options.cache?.setGeneratedText(resolvedPath, cacheFormatKey, text);
+    }
+    await writer.write(ts_filepath, text);
   });
 
   await Promise.all([...writePromises, writer.write(ts_base_path, `${indexDTs}\n`)]);

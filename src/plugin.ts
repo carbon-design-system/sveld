@@ -151,7 +151,12 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
     },
     async writeBundle() {
       if (watch) return;
-      if (input != null) await writeOutput(result, opts || {}, input);
+      if (input != null) {
+        await writeOutput(result, opts || {}, input);
+        // Persists any generated `.d.ts` text writeOutput just cached, on top
+        // of the parse-only save generateBundle() already did.
+        result.cache?.save();
+      }
     },
     handleHotUpdate(ctx) {
       scheduleUpdate(ctx.file);
@@ -215,6 +220,8 @@ export async function writeOutput(
       exports: result.exports,
       inputDir,
       dryRun,
+      cache: result.cache,
+      resolvedPathByModule: result.resolvedPathByModule,
     } satisfies WriteTsDefinitionsOptions);
   }
 
