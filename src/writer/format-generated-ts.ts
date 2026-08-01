@@ -15,6 +15,24 @@ function endsWithInterfaceHeader(text: string): boolean {
   return INTERFACE_HEADER_REGEX.test(text.slice(-200));
 }
 
+const INTERFACE_HEADER_TAIL_LENGTH = 200;
+
+// Reconstructs just enough of the accumulated buffer's tail to answer
+// `endsWithInterfaceHeader`, without joining the whole (potentially huge)
+// output array. `out` entries are always either a single character or a
+// short fixed string, so walking backwards a few entries is enough.
+function tailString(out: string[], maxLen: number): string {
+  let result = "";
+  for (let i = out.length - 1; i >= 0 && result.length < maxLen; i--) {
+    result = out[i] + result;
+  }
+  return result.length > maxLen ? result.slice(-maxLen) : result;
+}
+
+function popTrailing(out: string[], regex: RegExp): void {
+  while (out.length > 0 && regex.test(out[out.length - 1])) out.pop();
+}
+
 function flattenToOneLine(content: string): string {
   let out = "";
   let quote: "double" | "single" | "template" | null = null;
@@ -114,7 +132,7 @@ function findMatchingClose(raw: string, openIndex: number): number {
  * object types read best on one line).
  */
 function expandStatements(raw: string): string {
-  let out = "";
+  const out: string[] = [];
   let state: "normal" | "double" | "single" | "template" | "blockComment" = "normal";
 
   for (let i = 0; i < raw.length; i++) {
@@ -122,19 +140,19 @@ function expandStatements(raw: string): string {
     const prev = raw[i - 1];
 
     if (state === "blockComment") {
-      out += c;
+      out.push(c);
       if (prev === "*" && c === "/") state = "normal";
       continue;
     }
 
     if (state === "double" || state === "single") {
-      out += c;
+      out.push(c);
       if (c === (state === "double" ? '"' : "'") && prev !== "\\") state = "normal";
       continue;
     }
 
     if (state === "template") {
-      out += c;
+      out.push(c);
       if (c === "`" && prev !== "\\") state = "normal";
       continue;
     }
@@ -142,22 +160,22 @@ function expandStatements(raw: string): string {
     // state === "normal"
     if (c === "/" && raw[i + 1] === "*") {
       state = "blockComment";
-      out += c;
+      out.push(c);
       continue;
     }
     if (c === '"') {
       state = "double";
-      out += c;
+      out.push(c);
       continue;
     }
     if (c === "'") {
       state = "single";
-      out += c;
+      out.push(c);
       continue;
     }
     if (c === "`") {
       state = "template";
-      out += c;
+      out.push(c);
       continue;
     }
 
@@ -165,7 +183,7 @@ function expandStatements(raw: string): string {
       const closeIndex = findMatchingClose(raw, i);
 
       if (closeIndex === -1) {
-        out += c;
+        out.push(c);
         continue;
       }
 
@@ -173,35 +191,39 @@ function expandStatements(raw: string): string {
 
       if (content.trim() === "") {
         // Empty block; keep braces adjacent instead of splitting across lines.
-        out += "{}";
+        out.push("{}");
         i = closeIndex;
         continue;
       }
 
       // Expand interface bodies always; collapse other single-line `{...}` blocks under INLINE_WIDTH_BUDGET.
-      if (!content.includes("/*") && raw[i + 1] !== "\n" && !endsWithInterfaceHeader(out)) {
+      if (
+        !content.includes("/*") &&
+        raw[i + 1] !== "\n" &&
+        !endsWithInterfaceHeader(tailString(out, INTERFACE_HEADER_TAIL_LENGTH))
+      ) {
         // Recurse so nested blocks get their own collapse decision.
         const normalized = expandStatements(content).trim();
         if (!normalized.includes("\n")) {
           const body = normalized.endsWith(";") ? normalized.slice(0, -1) : normalized;
           const candidate = `{ ${flattenToOneLine(body)} }`;
           if (candidate.length <= INLINE_WIDTH_BUDGET) {
-            out += candidate;
+            out.push(candidate);
             i = closeIndex;
             continue;
           }
         }
       }
 
-      out += c;
-      if (raw[i + 1] !== "\n") out += "\n";
+      out.push(c);
+      if (raw[i + 1] !== "\n") out.push("\n");
       continue;
     }
 
     if (c === "}") {
-      out = out.replace(TRAILING_TAB_SPACE_REGEX, "");
-      if (!out.endsWith("\n")) out += "\n";
-      out += c;
+      popTrailing(out, TRAILING_TAB_SPACE_REGEX);
+      if (out[out.length - 1] !== "\n") out.push("\n");
+      out.push(c);
       continue;
     }
 
@@ -209,16 +231,16 @@ function expandStatements(raw: string): string {
       // A `;` always terminates whatever precedes it; attach it directly
       // rather than let it dangle alone on a line (which the generator's
       // own templates sometimes leave a blank line or two before).
-      out = out.replace(TRAILING_WHITESPACE_REGEX, "");
-      out += ";";
-      if (raw[i + 1] !== "\n") out += "\n";
+      popTrailing(out, TRAILING_WHITESPACE_REGEX);
+      out.push(";");
+      if (raw[i + 1] !== "\n") out.push("\n");
       continue;
     }
 
-    out += c;
+    out.push(c);
   }
 
-  return out;
+  return out.join("");
 }
 
 function collapseSpaces(line: string): string {
