@@ -17,6 +17,7 @@
       "kind": "let",
       "type": "(...args: any[]) => any",
       "typeSource": "default",
+      "value": "() => {}",
       "defaultValue": {
         "raw": "() => {}",
         "kind": "function"
@@ -42,6 +43,7 @@
       "kind": "const",
       "type": "(...args: any[]) => any",
       "typeSource": "default",
+      "value": "() => {}",
       "defaultValue": {
         "raw": "() => {}",
         "kind": "function"

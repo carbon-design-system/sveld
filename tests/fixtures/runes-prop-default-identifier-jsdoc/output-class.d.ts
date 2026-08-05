@@ -29,23 +29,30 @@ export type RunesPropDefaultIdentifierJsdocProps = {
 
   /**
    * Determine if an item should be filtered given the current value.
+   * @default () => true
    */
   shouldFilterItem?: (item: string, value: string) => boolean;
 
+  /**
+   * @default (value) => String(value)
+   */
   format?: (value: any) => string;
 
   /**
    * Render the message shown when there are no items.
+   * @default () => "No results"
    */
   renderEmpty?: (...args: any[]) => string;
 
   /**
    * Resolve the unique key for an item.
+   * @default () => ""
    */
   getKey?: (item: string, index: number) => string;
 
   /**
    * Translate a label to the active locale.
+   * @default (key) => key
    */
   translate?: (key: string) => string;
 };

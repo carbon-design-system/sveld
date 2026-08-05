@@ -94,7 +94,6 @@ describe("writerTsDefinition", () => {
           name: "fn",
           kind: "function",
           type: "() => {     localBool = !localBool;   }",
-          value: "() => {     localBool = !localBool;   }",
           isFunction: true,
           isFunctionDeclaration: false,
           isRequired: false,

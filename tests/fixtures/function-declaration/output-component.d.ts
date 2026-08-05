@@ -1,6 +1,9 @@
 import type { Component } from "svelte";
 
 export type FunctionDeclarationProps = {
+  /**
+   * @default () => {}
+   */
   fnA?: (...args: any[]) => any;
 };
 

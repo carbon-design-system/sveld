@@ -93,7 +93,7 @@ export function processInitializer(
 
     if (init.type === "ArrowFunctionExpression" || init.type === "FunctionExpression") {
       type = inferFunctionTypeFromNode(init as ArrowFunctionExpression | FunctionExpression);
-      value = undefined;
+      value = conciseFunctionDefaultText(ctx, init as ArrowFunctionExpression | FunctionExpression);
     }
   } else if (init.type === "UnaryExpression") {
     const unaryExpr = init as UnaryExpression;
@@ -185,9 +185,10 @@ export function processInitializer(
         const resolvedJSDoc = parser.resolveLocalVarJSDoc(ident.name);
         const funcNode = ctx.funcDecls.get(ident.name);
         return {
-          value: undefined,
+          value: funcNode ? conciseFunctionDefaultText(ctx, funcNode) : undefined,
           type: undefined,
           isFunction: true,
+          defaultValue: funcNode ? classifyDefaultValue(parser, ctx, funcNode) : undefined,
           resolvedType: resolvedJSDoc?.type ?? buildFunctionTypeFromParts(resolvedJSDoc, funcNode),
           resolvedDescription: resolvedJSDoc?.description,
           resolvedParams: resolvedJSDoc?.params,
@@ -467,6 +468,74 @@ export function unwrapBindableInitializer(init: unknown): { init?: unknown; bind
   };
 }
 
+/**
+ * Source text of a function default's parameter list, verbatim (names only
+ * matter for a value default; `inferParamsFromNode`'s `: any` annotations
+ * are for the prop's *type*, not this).
+ */
+function paramsSourceText(
+  ctx: ParserContext,
+  node: FunctionDeclaration | FunctionExpression | ArrowFunctionExpression,
+): string {
+  const params = node.params;
+  if (!Array.isArray(params) || params.length === 0) return "";
+  const first = params[0] as { start?: number };
+  const last = params[params.length - 1] as { end?: number };
+  if (typeof first.start !== "number" || typeof last.end !== "number") return "";
+  return sourceAtPos(ctx, first.start, last.end) ?? "";
+}
+
+/**
+ * A concise arrow-shorthand default value for a function default (e.g.
+ * `() => true`, `(value) => String(value)`), or `undefined` when the body
+ * isn't trivial enough to show without clutter. Only an expression-bodied
+ * arrow, an empty block, or a block with exactly one `return <expr>;`
+ * qualify; anything with side effects, control flow, or multiple statements
+ * is intentionally omitted from `@default` (see #203).
+ */
+function conciseFunctionDefaultText(
+  ctx: ParserContext,
+  node: FunctionDeclaration | FunctionExpression | ArrowFunctionExpression,
+): string | undefined {
+  // Generators can't be represented as an arrow shorthand without losing
+  // `function*`/`yield` semantics; leave those to the description instead.
+  if (node.generator) return undefined;
+
+  const body = node.body;
+  if (!body || typeof body !== "object" || !("type" in body)) return undefined;
+
+  const params = paramsSourceText(ctx, node);
+  const asyncPrefix = node.async ? "async " : "";
+
+  // An object-literal arrow body needs parens (`() => ({ a: 1 })`) or it
+  // reads as a block statement instead of an expression.
+  const arrowBody = (expr: unknown, exprText: string) =>
+    expr && typeof expr === "object" && "type" in expr && expr.type === "ObjectExpression" ? `(${exprText})` : exprText;
+
+  if (body.type !== "BlockStatement") {
+    const exprText = sourceForExpression(ctx, body);
+    return exprText === undefined ? undefined : `${asyncPrefix}(${params}) => ${arrowBody(body, exprText)}`;
+  }
+
+  const statements = (body as { body: unknown[] }).body;
+  if (statements.length === 0) {
+    return `${asyncPrefix}(${params}) => {}`;
+  }
+
+  if (statements.length === 1) {
+    const stmt = statements[0];
+    if (stmt && typeof stmt === "object" && "type" in stmt && stmt.type === "ReturnStatement") {
+      const arg = (stmt as { argument?: unknown }).argument;
+      if (arg) {
+        const exprText = sourceForExpression(ctx, arg);
+        if (exprText !== undefined) return `${asyncPrefix}(${params}) => ${arrowBody(arg, exprText)}`;
+      }
+    }
+  }
+
+  return undefined;
+}
+
 function classifyDefaultValue(
   parser: ComponentParser,
   ctx: ParserContext,
@@ -484,7 +553,11 @@ function classifyDefaultValue(
     kind = "array";
   } else if (init.type === "ObjectExpression") {
     kind = "object";
-  } else if (init.type === "ArrowFunctionExpression" || init.type === "FunctionExpression") {
+  } else if (
+    init.type === "ArrowFunctionExpression" ||
+    init.type === "FunctionExpression" ||
+    init.type === "FunctionDeclaration"
+  ) {
     kind = "function";
   }
 

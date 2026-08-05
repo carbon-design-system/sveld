@@ -67,6 +67,7 @@
       "kind": "let",
       "type": "(id: string) => { id: string; created: Date }",
       "typeSource": "jsdoc",
+      "value": "(id) => ({ id, created: new Date() })",
       "defaultValue": {
         "raw": "(id) => ({ id, created: new Date() })",
         "kind": "function"

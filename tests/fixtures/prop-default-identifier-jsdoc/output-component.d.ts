@@ -34,24 +34,34 @@ export type PropDefaultIdentifierJsdocProps = {
   label?: string;
 
   /**
-   * Determine if an item should be filtered given the current value.
+   * Determine if an item should be filtered given the current combobox value.
+   * When `typeahead` is enabled and no custom function is provided,
+   * the default case-insensitive prefix matching is used.
+   * When a custom function is provided, it is used even with `typeahead`.
+   * @default () => true
    */
   shouldFilterItem?: (item: string, value: string) => boolean;
 
+  /**
+   * @default (value) => String(value)
+   */
   format?: (value: any) => string;
 
   /**
    * Render the message shown when there are no items.
+   * @default () => "No results"
    */
   renderEmpty?: (...args: any[]) => string;
 
   /**
    * Resolve the unique key for an item.
+   * @default () => ""
    */
   getKey?: (item: string, index: number) => string;
 
   /**
    * Translate a label to the active locale.
+   * @default (key) => key
    */
   translate?: (key: string) => string;
 };

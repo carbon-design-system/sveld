@@ -69,6 +69,7 @@
       "kind": "let",
       "type": "(id: number) => Promise<boolean>",
       "typeSource": "jsdoc",
+      "value": "async (id) => id > 0",
       "defaultValue": {
         "raw": "async (id) => id > 0",
         "kind": "function"

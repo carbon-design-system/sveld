@@ -336,15 +336,19 @@ function genPropDef(
 
       const descriptionHasDefault = DESCRIPTION_DEFAULT_TAG_REGEX.test(prop.description ?? "");
 
+      /**
+       * Function props only get `@default` when a concise value was inferred
+       * (a trivial single-expression body, e.g. `() => true` - see
+       * `conciseFunctionDefaultText`); anything more elaborate is omitted so
+       * docs aren't cluttered with function bodies (#203). An explicit
+       * `@default` in the description always wins either way.
+       */
+      const suppressDefault = descriptionHasDefault || (prop.isFunction && prop.value === undefined);
+
       const prop_comments = [
         createPropComment(prop.description, prop.deprecated, prop.tags),
         addCommentLine(prop.constant, "@constant"),
-        /**
-         * Don't add @default for functions - they don't have meaningful default values.
-         * Function props are callbacks, not values with defaults.
-         * Also skip if the description already contains an explicit @default annotation.
-         */
-        prop.isFunction || descriptionHasDefault ? null : `* @default ${defaultValue}\n`,
+        suppressDefault ? null : `* @default ${defaultValue}\n`,
       ]
         .filter(Boolean)
         .join("");

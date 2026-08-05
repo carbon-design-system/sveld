@@ -181,6 +181,7 @@
       "kind": "let",
       "type": "(value: any) => any",
       "typeSource": "default",
+      "value": "(value: string) => value.toUpperCase()",
       "defaultValue": {
         "raw": "(value: string) => value.toUpperCase()",
         "kind": "function"

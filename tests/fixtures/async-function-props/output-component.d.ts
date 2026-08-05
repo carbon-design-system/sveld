@@ -1,6 +1,9 @@
 import type { Component } from "svelte";
 
 export type AsyncFunctionPropsProps = {
+  /**
+   * @default async (id) => id > 0
+   */
   validate?: (id: number) => Promise<boolean>;
 };
 

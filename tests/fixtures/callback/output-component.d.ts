@@ -15,13 +15,18 @@ export type OnClose = () => void;
 export type CallbackProps = {
   /**
    * Callback fired when the value changes.
+   * @default (value, index) => {}
    */
   onChange?: OnChange;
 
+  /**
+   * @default (a, b) => a - b
+   */
   comparator?: Comparator;
 
   /**
    * No-arg callback.
+   * @default () => {}
    */
   onClose?: OnClose;
 };

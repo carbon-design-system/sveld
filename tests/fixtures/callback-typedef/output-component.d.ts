@@ -10,6 +10,9 @@ export type CallbackTypedefProps = {
    */
   direction?: SortDirection;
 
+  /**
+   * @default (a, b, direction) => 0
+   */
   sort?: SortFn;
 };
 
