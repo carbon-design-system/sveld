@@ -68,6 +68,7 @@
       "description": "A local utility function for formatting",
       "type": "(value: any) => string",
       "typeSource": "jsdoc",
+      "value": "(value) => String(value)",
       "defaultValue": {
         "raw": "(value) => String(value)",
         "kind": "function"

@@ -32,6 +32,9 @@ export type PropMetadataConsolidatedProps = {
    */
   objectDefault?: { size: "md", count: 2 };
 
+  /**
+   * @default (value: string) => value.toUpperCase()
+   */
   callbackDefault?: (value: any) => any;
 
   /**

@@ -131,6 +131,11 @@
       "description": "Determine if an item should be filtered given the current value.",
       "type": "(item: string, value: string) => boolean",
       "typeSource": "jsdoc",
+      "value": "() => true",
+      "defaultValue": {
+        "raw": "function defaultShouldFilter() {     return true;   }",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -152,6 +157,11 @@
       "kind": "let",
       "type": "(value: any) => string",
       "typeSource": "jsdoc",
+      "value": "(value) => String(value)",
+      "defaultValue": {
+        "raw": "function defaultFormat(value) {     return String(value);   }",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -174,6 +184,11 @@
       "description": "Render the message shown when there are no items.",
       "type": "(...args: any[]) => string",
       "typeSource": "jsdoc",
+      "value": "() => \"No results\"",
+      "defaultValue": {
+        "raw": "function defaultRenderEmpty() {     return \"No results\";   }",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -196,6 +211,11 @@
       "description": "Resolve the unique key for an item.",
       "type": "(item: string, index: number) => string",
       "typeSource": "jsdoc",
+      "value": "() => \"\"",
+      "defaultValue": {
+        "raw": "function defaultGetKey() {     return \"\";   }",
+        "kind": "function"
+      },
       "params": [
         {
           "name": "item",
@@ -233,6 +253,11 @@
       "description": "Translate a label to the active locale.",
       "type": "(key: string) => string",
       "typeSource": "jsdoc",
+      "value": "(key) => key",
+      "defaultValue": {
+        "raw": "function defaultTranslate(key) {     return key;   }",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,

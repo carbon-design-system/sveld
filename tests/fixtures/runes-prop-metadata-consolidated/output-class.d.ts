@@ -26,6 +26,9 @@ export type RunesPropMetadataConsolidatedProps = {
    */
   options?: { dense: true };
 
+  /**
+   * @default () => {}
+   */
   onaction?: (...args: any[]) => any;
 
   /**

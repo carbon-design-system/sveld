@@ -18,6 +18,7 @@
       "description": "Custom filter function.\n@default () => true",
       "type": "(item: string, value: string) => boolean",
       "typeSource": "jsdoc",
+      "value": "() => true",
       "defaultValue": {
         "raw": "() => true",
         "kind": "function"
@@ -156,6 +157,7 @@
       "description": "Click handler.",
       "type": "(e: MouseEvent) => void",
       "typeSource": "jsdoc",
+      "value": "() => {}",
       "defaultValue": {
         "raw": "() => {}",
         "kind": "function"

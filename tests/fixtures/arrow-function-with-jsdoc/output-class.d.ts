@@ -5,6 +5,9 @@ export type ArrowFunctionWithJsdocProps = {
 
   processItems?: (items: string[], callback: (item: string, index: number) => void) => Promise<void>;
 
+  /**
+   * @default (id) => ({ id, created: new Date() })
+   */
   createRecord?: (id: string) => {
     id: string;
     created: Date

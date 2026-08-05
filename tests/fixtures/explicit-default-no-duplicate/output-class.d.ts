@@ -34,6 +34,7 @@ export type ExplicitDefaultNoDuplicateProps = {
 
   /**
    * Click handler.
+   * @default () => {}
    */
   onClick?: (e: MouseEvent) => void;
 

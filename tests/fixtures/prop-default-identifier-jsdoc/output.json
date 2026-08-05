@@ -5,7 +5,7 @@
       "column": 0
     },
     "end": {
-      "line": 92,
+      "line": 95,
       "column": 0
     }
   },
@@ -159,9 +159,14 @@
     {
       "name": "shouldFilterItem",
       "kind": "let",
-      "description": "Determine if an item should be filtered given the current value.",
+      "description": "Determine if an item should be filtered given the current combobox value.\nWhen `typeahead` is enabled and no custom function is provided,\nthe default case-insensitive prefix matching is used.\nWhen a custom function is provided, it is used even with `typeahead`.",
       "type": "(item: string, value: string) => boolean",
       "typeSource": "jsdoc",
+      "value": "() => true",
+      "defaultValue": {
+        "raw": "function defaultShouldFilter() {     return true;   }",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -169,11 +174,11 @@
       "reactive": false,
       "source": {
         "start": {
-          "line": 49,
+          "line": 52,
           "column": 2
         },
         "end": {
-          "line": 49,
+          "line": 52,
           "column": 52
         }
       }
@@ -183,6 +188,11 @@
       "kind": "let",
       "type": "(value: any) => string",
       "typeSource": "jsdoc",
+      "value": "(value) => String(value)",
+      "defaultValue": {
+        "raw": "function defaultFormat(value) {     return String(value);   }",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -190,11 +200,11 @@
       "reactive": false,
       "source": {
         "start": {
-          "line": 55,
+          "line": 58,
           "column": 2
         },
         "end": {
-          "line": 55,
+          "line": 58,
           "column": 36
         }
       }
@@ -205,6 +215,11 @@
       "description": "Render the message shown when there are no items.",
       "type": "(...args: any[]) => string",
       "typeSource": "jsdoc",
+      "value": "() => \"No results\"",
+      "defaultValue": {
+        "raw": "function defaultRenderEmpty() {     return \"No results\";   }",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -212,11 +227,11 @@
       "reactive": false,
       "source": {
         "start": {
-          "line": 62,
+          "line": 65,
           "column": 2
         },
         "end": {
-          "line": 62,
+          "line": 65,
           "column": 46
         }
       }
@@ -227,6 +242,11 @@
       "description": "Resolve the unique key for an item.",
       "type": "(item: string, index: number) => string",
       "typeSource": "jsdoc",
+      "value": "() => \"\"",
+      "defaultValue": {
+        "raw": "function defaultGetKey() {     return \"\";   }",
+        "kind": "function"
+      },
       "params": [
         {
           "name": "item",
@@ -249,11 +269,11 @@
       "reactive": false,
       "source": {
         "start": {
-          "line": 74,
+          "line": 77,
           "column": 2
         },
         "end": {
-          "line": 74,
+          "line": 77,
           "column": 36
         }
       }
@@ -264,6 +284,11 @@
       "description": "Translate a label to the active locale.",
       "type": "(key: string) => string",
       "typeSource": "jsdoc",
+      "value": "(key) => key",
+      "defaultValue": {
+        "raw": "function defaultTranslate(key) {     return key;   }",
+        "kind": "function"
+      },
       "isFunction": true,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -271,11 +296,11 @@
       "reactive": false,
       "source": {
         "start": {
-          "line": 85,
+          "line": 88,
           "column": 2
         },
         "end": {
-          "line": 85,
+          "line": 88,
           "column": 42
         }
       }

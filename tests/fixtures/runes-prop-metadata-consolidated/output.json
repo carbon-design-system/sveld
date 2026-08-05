@@ -153,6 +153,7 @@
       "kind": "let",
       "type": "(...args: any[]) => any",
       "typeSource": "default",
+      "value": "() => {}",
       "defaultValue": {
         "raw": "() => {}",
         "kind": "function"

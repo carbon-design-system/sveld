@@ -39,7 +39,10 @@
   export let label = DEFAULT_LABEL;
 
   /**
-   * Determine if an item should be filtered given the current value.
+   * Determine if an item should be filtered given the current combobox value.
+   * When `typeahead` is enabled and no custom function is provided,
+   * the default case-insensitive prefix matching is used.
+   * When a custom function is provided, it is used even with `typeahead`.
    * @type {(item: string, value: string) => boolean}
    */
   function defaultShouldFilter() {

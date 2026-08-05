@@ -154,6 +154,7 @@
       "kind": "const",
       "type": "(...args: any[]) => any",
       "typeSource": "default",
+      "value": "() => {}",
       "defaultValue": {
         "raw": "() => {}",
         "kind": "function"
@@ -179,6 +180,7 @@
       "kind": "const",
       "type": "(...args: any[]) => any",
       "typeSource": "default",
+      "value": "() => () => {}",
       "defaultValue": {
         "raw": "() => () => {}",
         "kind": "function"
@@ -204,6 +206,7 @@
       "kind": "const",
       "type": "() => () => false",
       "typeSource": "jsdoc",
+      "value": "() => () => false",
       "defaultValue": {
         "raw": "() => () => false",
         "kind": "function"

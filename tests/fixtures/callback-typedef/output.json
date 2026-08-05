@@ -44,6 +44,7 @@
       "kind": "let",
       "type": "SortFn",
       "typeSource": "jsdoc",
+      "value": "(a, b, direction) => 0",
       "defaultValue": {
         "raw": "(a, b, direction) => 0",
         "kind": "function"

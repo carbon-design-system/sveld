@@ -18,6 +18,7 @@
       "description": "Callback fired when the value changes.",
       "type": "OnChange",
       "typeSource": "jsdoc",
+      "value": "(value, index) => {}",
       "defaultValue": {
         "raw": "(value, index) => {}",
         "kind": "function"
@@ -43,6 +44,7 @@
       "kind": "let",
       "type": "Comparator",
       "typeSource": "jsdoc",
+      "value": "(a, b) => a - b",
       "defaultValue": {
         "raw": "(a, b) => a - b",
         "kind": "function"
@@ -69,6 +71,7 @@
       "description": "No-arg callback.",
       "type": "OnClose",
       "typeSource": "jsdoc",
+      "value": "() => {}",
       "defaultValue": {
         "raw": "() => {}",
         "kind": "function"
