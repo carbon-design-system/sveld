@@ -39,11 +39,11 @@ describe("opt-in @example compile checking", () => {
     if (!resolver) return;
 
     try {
-      const diagnosticsByModule = await resolver.checkExamples([
+      const diagnosticsByFilePath = await resolver.checkExamples([
         { moduleName: "ExampleCheck", filePath: COMPONENT_PATH, sources },
       ]);
 
-      const diagnostics = diagnosticsByModule.get("ExampleCheck") ?? [];
+      const diagnostics = diagnosticsByFilePath.get(COMPONENT_PATH) ?? [];
       const byId = Object.fromEntries(diagnostics.map((d) => [d.id, d]));
 
       expect(byId["prop:formatValue"]).toBeUndefined();

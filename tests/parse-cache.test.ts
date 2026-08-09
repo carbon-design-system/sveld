@@ -1,10 +1,16 @@
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, relative, resolve } from "node:path";
+import type { ComponentDocApi, ComponentDocs } from "../src/bundle";
 import { generateBundle } from "../src/bundle";
 import ComponentParser from "../src/ComponentParser";
 import { DEFAULT_CACHE_FILE } from "../src/parse-cache";
 import writeTsDefinitions from "../src/writer/writer-ts-definitions";
+
+/** Look up `allComponentsForTypes` by filePath; moduleName is not unique. */
+function byModuleName(components: ComponentDocs, moduleName: string): ComponentDocApi | undefined {
+  return Array.from(components.values()).find((component) => component.moduleName === moduleName);
+}
 
 const BUTTON = `<script>
   /** @restProps {button} */
@@ -66,8 +72,8 @@ describe("parse cache", () => {
     expect(Array.from(second.allComponentsForTypes.keys()).sort()).toEqual(
       Array.from(first.allComponentsForTypes.keys()).sort(),
     );
-    expect(second.allComponentsForTypes.get("Button")?.props.map((p) => p.name)).toEqual(
-      first.allComponentsForTypes.get("Button")?.props.map((p) => p.name),
+    expect(byModuleName(second.allComponentsForTypes, "Button")?.props.map((p) => p.name)).toEqual(
+      byModuleName(first.allComponentsForTypes, "Button")?.props.map((p) => p.name),
     );
   });
 
@@ -79,7 +85,7 @@ describe("parse cache", () => {
     const result = await generateBundle(dir, true, { cache: cacheFile });
 
     expect(parseSpy).toHaveBeenCalledTimes(1);
-    expect(result.allComponentsForTypes.get("Standalone")?.props.find((p) => p.name === "label")?.value).toBe(
+    expect(byModuleName(result.allComponentsForTypes, "Standalone")?.props.find((p) => p.name === "label")?.value).toBe(
       '"changed"',
     );
   });
@@ -113,7 +119,7 @@ describe("parse cache", () => {
     // The dependent must be re-parsed once, not once per pass.
     expect(reparsedPaths.sort()).toEqual(["./Button.svelte", "./SecondaryButton.svelte"].sort());
     expect(result.components.has("SecondaryButton")).toBe(true);
-    expect(result.allComponentsForTypes.has("SecondaryButton")).toBe(true);
+    expect(byModuleName(result.allComponentsForTypes, "SecondaryButton")).toBeDefined();
   });
 
   test("a stale cache from an unrelated project root doesn't leak into a new one", async () => {
@@ -127,7 +133,7 @@ describe("parse cache", () => {
       const result = await generateBundle(otherDir, true, { cache: cacheFile });
 
       expect(parseSpy).toHaveBeenCalledTimes(1);
-      expect(result.allComponentsForTypes.has("Standalone")).toBe(true);
+      expect(byModuleName(result.allComponentsForTypes, "Standalone")).toBeDefined();
     } finally {
       rmSync(otherDir, { recursive: true, force: true });
     }
@@ -169,7 +175,7 @@ describe("generated .d.ts text cache", () => {
       preamble: "",
       exports: first.exports,
       cache: first.cache,
-      resolvedPathByModule: first.resolvedPathByModule,
+      resolvedPathByFilePath: first.resolvedPathByFilePath,
     });
     first.cache?.save();
 
@@ -200,7 +206,7 @@ describe("generated .d.ts text cache", () => {
       exports: first.exports,
       format: "class",
       cache: first.cache,
-      resolvedPathByModule: first.resolvedPathByModule,
+      resolvedPathByFilePath: first.resolvedPathByFilePath,
     });
     first.cache?.save();
 
@@ -234,7 +240,7 @@ describe("cache default", () => {
     const second = await generateBundle(dir, true);
 
     expect(parseSpy).not.toHaveBeenCalled();
-    expect(second.allComponentsForTypes.has("Standalone")).toBe(true);
+    expect(byModuleName(second.allComponentsForTypes, "Standalone")).toBeDefined();
   });
 
   test("cache: false disables the cache entirely", async () => {

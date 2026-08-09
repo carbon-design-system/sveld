@@ -1,7 +1,13 @@
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import type { ComponentDocApi, ComponentDocs } from "../src/bundle";
 import { generateBundle } from "../src/plugin";
+
+/** Look up `allComponentsForTypes` by filePath; moduleName is not unique. */
+function byModuleName(components: ComponentDocs, moduleName: string): ComponentDocApi | undefined {
+  return Array.from(components.values()).find((component) => component.moduleName === moduleName);
+}
 
 const VALID_COMPONENT = `<script>
   /** @type {string} */
@@ -39,9 +45,9 @@ describe("generateBundle per-component error isolation", () => {
     const result = await generateBundle(dir, true);
 
     // The valid component is parsed and present in the output.
-    expect(result.allComponentsForTypes.has("Valid")).toBe(true);
+    expect(byModuleName(result.allComponentsForTypes, "Valid")).toBeDefined();
     // The broken component is absent from the output but recorded as an error.
-    expect(result.allComponentsForTypes.has("Broken")).toBe(false);
+    expect(byModuleName(result.allComponentsForTypes, "Broken")).toBeUndefined();
     expect(result.errors).toHaveLength(1);
 
     const [error] = result.errors;
@@ -74,7 +80,7 @@ describe("generateBundle per-component error isolation", () => {
     const result = await generateBundle(dir, true);
 
     expect(result.errors).toHaveLength(0);
-    expect(result.allComponentsForTypes.has("Valid")).toBe(true);
+    expect(byModuleName(result.allComponentsForTypes, "Valid")).toBeDefined();
     expect(errorSpy).not.toHaveBeenCalled();
   });
 });
