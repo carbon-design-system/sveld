@@ -32,13 +32,46 @@ function withNormalizedFilePaths(components: ComponentDocApi[], inputDir: string
   }));
 }
 
+const SVELTE_EXT_REGEX = /\.svelte$/;
+
+/**
+ * JSON output file name for one component.
+ *
+ * Two `--glob`-discovered components can share a `moduleName` across
+ * directories, e.g. `Menu/Menu.svelte` and `icons/Menu.svelte`. Writing
+ * both to `${moduleName}.api.json` would silently overwrite one. On
+ * collision, name the file from the source path and warn once per colliding
+ * name. Unique names keep `${moduleName}.api.json`.
+ */
+function jsonFileName(component: ComponentDocApi, hasCollision: boolean, warnedModuleNames: Set<string>): string {
+  if (!hasCollision) return `${component.moduleName}.api.json`;
+
+  if (!warnedModuleNames.has(component.moduleName)) {
+    warnedModuleNames.add(component.moduleName);
+    console.warn(
+      `Warning: multiple components named "${component.moduleName}" found. ` +
+        "Their JSON files are keyed by source path instead of name to avoid overwriting each other.",
+    );
+  }
+
+  return component.filePath.replace(SVELTE_EXT_REGEX, ".api.json");
+}
+
 async function writeJsonComponents(components: ComponentDocs, options: WriteJsonOptions) {
   const document = buildComponentApiDocument(components);
   const output = withNormalizedFilePaths(document.components, options.inputDir);
 
+  const moduleNameCounts = new Map<string, number>();
+  for (const component of output) {
+    moduleNameCounts.set(component.moduleName, (moduleNameCounts.get(component.moduleName) ?? 0) + 1);
+  }
+  const warnedModuleNames = new Set<string>();
+
   await Promise.all(
     output.map(async (c) => {
-      const outFile = path.resolve(path.join(options.outDir || "", `${c.moduleName}.api.json`));
+      const hasCollision = (moduleNameCounts.get(c.moduleName) ?? 0) > 1;
+      const fileName = jsonFileName(c, hasCollision, warnedModuleNames);
+      const outFile = path.resolve(path.join(options.outDir || "", fileName));
       const writer = new Writer({ dryRun: options.dryRun });
       const wasWritten = await writer.write(outFile, formatJsonOutput(c));
       if (!options.dryRun) info(`${wasWritten ? "created" : "unchanged"} "${outFile}".`);
