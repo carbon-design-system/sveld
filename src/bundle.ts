@@ -708,7 +708,9 @@ async function resolveImportedPropTypes(
 ): Promise<void> {
   if (!resolver) return;
 
-  const resolvedByModule = await resolver.expandAll(
+  // Keyed by resolved filePath, not moduleName: two components discovered via
+  // `--glob` can share a basename, and moduleName alone isn't unique.
+  const resolvedByFilePath = await resolver.expandAll(
     candidates.map(({ component, metadata }) => ({
       moduleName: component.moduleName,
       metadata,
@@ -717,7 +719,7 @@ async function resolveImportedPropTypes(
   );
 
   for (const { component } of candidates) {
-    const resolved = resolvedByModule.get(component.moduleName);
+    const resolved = resolvedByFilePath.get(resolveComponentFilePath(component.filePath));
     if (resolved) applyResolvedProps(component, resolved);
   }
 }
