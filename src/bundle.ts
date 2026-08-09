@@ -163,7 +163,7 @@ export interface CollectedComponents {
 }
 
 /** A `.svelte` file discovered on disk, before it's merged into `exports`/`allComponentEntries`. */
-export interface GlobbedComponentSource {
+interface GlobbedComponentSource {
   moduleName: string;
   source: ReturnType<typeof asRelativeSourcePath>;
 }
@@ -208,7 +208,7 @@ function findSvelteFiles(dir: string, results: string[] = [], visited = new Set<
  * Sorted by `source` so walk order does not depend on `readdirSync`, which
  * varies by OS.
  */
-export function globComponentSources(rootDir: string): GlobbedComponentSource[] {
+function globComponentSources(rootDir: string): GlobbedComponentSource[] {
   return findSvelteFiles(rootDir)
     .map((file) => {
       const moduleName = parse(file).name.replace(HYPHEN_REGEX, "");

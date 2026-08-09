@@ -18,7 +18,7 @@ const EXPORT_DEFAULT_RE = /^export\s+default\b/;
 const EXPORT_DEFAULT_PREFIX_RE = /^export\s+default\s+/;
 const EXPORT_PREFIX_RE = /^export\s+/;
 
-export type EntryName = keyof typeof ENTRY_TO_SUBPATH;
+type EntryName = keyof typeof ENTRY_TO_SUBPATH;
 
 export interface BundleDtsEntry {
   name: EntryName;

@@ -1,7 +1,7 @@
 import type { ComponentElement, RestProps } from "../ComponentParser";
 import type { ParserContext } from "./context";
 
-export function createRestPropsFromParent(parent: unknown): RestProps {
+function createRestPropsFromParent(parent: unknown): RestProps {
   if (!parent || typeof parent !== "object" || !("type" in parent)) return undefined;
 
   const parentType = String(parent.type);

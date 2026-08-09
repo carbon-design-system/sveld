@@ -107,7 +107,7 @@ export function formatDiagnosticsSummary(diagnostics: SveldDiagnostic[]): string
 }
 
 /** `SveldDiagnostic[]`, serialized for stream consumers with a `kind` discriminator. */
-export interface DiagnosticsJson {
+interface DiagnosticsJson {
   kind: "diagnostics";
   diagnostics: SveldDiagnostic[];
 }

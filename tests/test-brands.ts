@@ -1,8 +1,8 @@
-import { asNormalizedPath, asRelativeSourcePath, type NormalizedPath, type RelativeSourcePath } from "../src/brands";
+import { asNormalizedPath, asRelativeSourcePath, type RelativeSourcePath } from "../src/brands";
 import type { ParsedExports } from "../src/parse-exports";
 import type { ComponentDocApi } from "../src/plugin";
 
-export function mockRelativeSourcePath(source: string): RelativeSourcePath {
+function mockRelativeSourcePath(source: string): RelativeSourcePath {
   return asRelativeSourcePath(source);
 }
 
@@ -38,5 +38,3 @@ export function mockComponentDocApi(
     ...overrides,
   };
 }
-
-export type { NormalizedPath, RelativeSourcePath };

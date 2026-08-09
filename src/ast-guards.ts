@@ -1,8 +1,5 @@
 import type {
-  ArrowFunctionExpression,
   CallExpression,
-  FunctionDeclaration,
-  FunctionExpression,
   Identifier,
   Literal,
   MemberExpression,
@@ -35,7 +32,7 @@ export function isObjectExpression(node: unknown): node is ObjectExpression {
   return isObject(node) && node.type === "ObjectExpression" && Array.isArray(node.properties);
 }
 
-export function isCallExpression(node: unknown): node is CallExpression {
+function isCallExpression(node: unknown): node is CallExpression {
   return isObject(node) && node.type === "CallExpression";
 }
 
@@ -71,7 +68,7 @@ export function getTypeCastAnnotation(node: unknown): unknown {
   return undefined;
 }
 
-export function isNewExpression(node: unknown): node is NewExpression {
+function isNewExpression(node: unknown): node is NewExpression {
   return isObject(node) && node.type === "NewExpression";
 }
 
@@ -81,16 +78,4 @@ export function isNewExpressionNamed(node: unknown, calleeName: string): node is
   }
 
   return !!node.callee && isObject(node.callee) && node.callee.type === "Identifier" && node.callee.name === calleeName;
-}
-
-export function isFunctionDeclaration(node: unknown): node is FunctionDeclaration {
-  return isObject(node) && node.type === "FunctionDeclaration";
-}
-
-export function isFunctionExpression(node: unknown): node is FunctionExpression {
-  return isObject(node) && node.type === "FunctionExpression";
-}
-
-export function isArrowFunctionExpression(node: unknown): node is ArrowFunctionExpression {
-  return isObject(node) && node.type === "ArrowFunctionExpression";
 }

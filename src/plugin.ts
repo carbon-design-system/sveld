@@ -17,24 +17,8 @@ import { renderJsonDocument, renderJsonLines, type WriteJsonOptions } from "./wr
 import { renderMarkdownDocument, type WriteMarkdownOptions } from "./writer/writer-markdown";
 import type { WriteTsDefinitionsOptions } from "./writer/writer-ts-definitions";
 
-export type {
-  CollectedComponents,
-  ComponentDocApi,
-  ComponentDocs,
-  ComponentParseError,
-  GenerateBundleOptions,
-  GenerateBundleResult,
-  ResolveComponentFilePath,
-} from "./bundle";
-export {
-  collectComponents,
-  collectSvelteFilePaths,
-  generateBundle,
-  processComponent,
-  readFileMap,
-  reportParseErrors,
-  toGenerateBundleOptions,
-} from "./bundle";
+export type { ComponentDocApi, ComponentDocs, GenerateBundleResult } from "./bundle";
+export { generateBundle, toGenerateBundleOptions } from "./bundle";
 
 export interface PluginSveldOptions extends Pick<GenerateBundleOptions, "resolveTypes" | "cache" | "checkExamples"> {
   /**

@@ -13,7 +13,7 @@ import type ComponentParser from "../ComponentParser";
 import type { LexicalScope, ScopeBinding, ScopeBindingKind } from "../ComponentParser";
 import type { ParserContext } from "./context";
 
-export function declareScopeBinding(scope: LexicalScope, name: string, binding: ScopeBinding) {
+function declareScopeBinding(scope: LexicalScope, name: string, binding: ScopeBinding) {
   if (!name || scope.has(name)) return;
   scope.set(name, binding);
 }
@@ -101,14 +101,14 @@ export function isScopeOwner(node: unknown) {
 }
 
 /** True for node types that introduce a new `var`-hoisting (function) scope. */
-export function isFunctionScopeOwner(node: unknown) {
+function isFunctionScopeOwner(node: unknown) {
   if (!node || typeof node !== "object" || !("type" in node)) return false;
   const type = String(node.type);
   return type === "FunctionDeclaration" || type === "FunctionExpression" || type === "ArrowFunctionExpression";
 }
 
 /** Returns the scope map for `node`, creating and caching an empty one on first access. */
-export function getOrCreateScope(ctx: ParserContext, node: object) {
+function getOrCreateScope(ctx: ParserContext, node: object) {
   let scope = ctx.scopeDeclarations.get(node);
   if (!scope) {
     scope = new Map();
@@ -118,7 +118,7 @@ export function getOrCreateScope(ctx: ParserContext, node: object) {
 }
 
 /** Scope bindings from `const { a, b: c } = $props()`. Destructured props are `prop`; rest is `local`. */
-export function extractRunesScopeBindings(
+function extractRunesScopeBindings(
   parser: ComponentParser,
   _node: VariableDeclaration,
   declarator: VariableDeclarator,
@@ -164,7 +164,7 @@ export function extractRunesScopeBindings(
 }
 
 /** Declares bindings for every declarator in a `var`/`let`/`const` declaration into the appropriate scope. */
-export function declareVariableDeclaration(
+function declareVariableDeclaration(
   parser: ComponentParser,
   declaration: unknown,
   lexicalScope: LexicalScope,
@@ -205,7 +205,7 @@ export function declareVariableDeclaration(
 }
 
 /** Declares a function-like node's own name (if any) and its parameter bindings into `scope`. */
-export function declareFunctionLikeScopeBindings(
+function declareFunctionLikeScopeBindings(
   node: FunctionExpression | ArrowFunctionExpression | FunctionDeclaration,
   scope: LexicalScope,
 ) {
@@ -221,7 +221,7 @@ export function declareFunctionLikeScopeBindings(
 }
 
 /** Declares top-level `var`/`function`/`class` bindings directly within a block's statement list. */
-export function collectDirectBlockDeclarations(
+function collectDirectBlockDeclarations(
   parser: ComponentParser,
   body: unknown,
   lexicalScope: LexicalScope,
@@ -251,7 +251,7 @@ export function collectDirectBlockDeclarations(
 }
 
 /** Declares all component-instance-level (`<script>`) bindings into `ctx.componentScope`. */
-export function collectComponentScopeDeclarations(parser: ComponentParser, ctx: ParserContext, instance: unknown) {
+function collectComponentScopeDeclarations(parser: ComponentParser, ctx: ParserContext, instance: unknown) {
   if (!instance || typeof instance !== "object") return;
 
   const program =

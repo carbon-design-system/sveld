@@ -10,7 +10,7 @@ const SURROUNDING_QUOTES_REGEX = /^(['"])(.*)\1$/;
  * or `null` when it doesn't point at a local `.svelte` file (e.g. it references
  * an external package interface like `carbon-components-svelte`).
  */
-export function resolveExtendsDependency(api: ComponentDocApi, componentPath: string): string | null {
+function resolveExtendsDependency(api: ComponentDocApi, componentPath: string): string | null {
   const raw = api.extends?.import;
   if (raw === undefined) return null;
   // `extends.import` is stored verbatim from the JSDoc tag, including any

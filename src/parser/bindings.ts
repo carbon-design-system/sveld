@@ -4,7 +4,7 @@ import type { ParserContext } from "./context";
 /** Matches a single word character; used to reject partial-name matches in {@link extractPropertyType}. */
 const WORD_CHAR_REGEX = /\w/;
 
-export function extractPropertyType(typeStr: string, propName: string): string | undefined {
+function extractPropertyType(typeStr: string, propName: string): string | undefined {
   const trimmed = typeStr.trim();
   if (!trimmed.startsWith("{") || !trimmed.endsWith("}")) return undefined;
 

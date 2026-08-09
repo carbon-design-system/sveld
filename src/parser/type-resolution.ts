@@ -56,7 +56,7 @@ export function getTypeReferenceName(typeName: unknown): string | undefined {
   return undefined;
 }
 
-export function getTypeDependencyName(typeName: unknown): string | undefined {
+function getTypeDependencyName(typeName: unknown): string | undefined {
   if (!typeName || typeof typeName !== "object" || !("type" in typeName)) return undefined;
 
   if (typeName.type === "Identifier" && "name" in typeName && typeof typeName.name === "string") {
@@ -228,7 +228,7 @@ export function collectReferencedTypeDependencies(
   }
 }
 
-export function buildTypeImportStatements(ctx: ParserContext, referencedImportedTypes: Set<string>) {
+function buildTypeImportStatements(ctx: ParserContext, referencedImportedTypes: Set<string>) {
   const groupedImports = new Map<
     string,
     { default: string[]; named: Array<{ imported?: string; local: string }>; namespace: string[] }

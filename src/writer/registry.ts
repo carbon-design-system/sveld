@@ -16,7 +16,7 @@ import type { ComponentDocs } from "../plugin";
  * instead, or on `moduleName` only after checking for a collision (see
  * `writer-json.ts`'s `outDir` mode for that pattern).
  */
-export type WriterComponentSet = "exported" | "all";
+type WriterComponentSet = "exported" | "all";
 
 /**
  * A pluggable output format. Built-in writers (`json`, `markdown`, `types`)

@@ -23,7 +23,7 @@ export function formatPropType(type?: string) {
   return `<code>${type.replace(PIPE_REGEX, "&#124;")}</code>`;
 }
 
-export function escapeHtml(text: string) {
+function escapeHtml(text: string) {
   return text.replace(LT_REGEX, "&lt;").replace(GT_REGEX, "&gt;");
 }
 

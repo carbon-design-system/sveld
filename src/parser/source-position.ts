@@ -8,7 +8,7 @@ export const NEWLINE_CR_REGEX = /[\r\n]+/g;
  * Returns (and lazily computes/caches on `ctx`) the 0-based source offset for
  * the start of each line in `ctx.source`.
  */
-export function getSourceLineStartOffsets(ctx: ParserContext) {
+function getSourceLineStartOffsets(ctx: ParserContext) {
   if (ctx.sourceLineStartOffsetsCache) return ctx.sourceLineStartOffsetsCache;
 
   const offsets = [0];
@@ -24,7 +24,7 @@ export function getSourceLineStartOffsets(ctx: ParserContext) {
   return offsets;
 }
 
-export function sourcePositionFromOffset(ctx: ParserContext, offset: number): SourcePosition | undefined {
+function sourcePositionFromOffset(ctx: ParserContext, offset: number): SourcePosition | undefined {
   if (!ctx.source || offset < 0 || offset > ctx.source.length) return undefined;
 
   const offsets = getSourceLineStartOffsets(ctx);
