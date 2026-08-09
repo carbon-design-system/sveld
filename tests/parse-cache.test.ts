@@ -180,8 +180,8 @@ describe("generated .d.ts text cache", () => {
     first.cache?.save();
 
     // Both components' generated text is now cached against the first run's parse.
-    expect(first.cache?.getGeneratedText(secondaryButtonPath, "class")).toBeDefined();
-    expect(first.cache?.getGeneratedText(standalonePath, "class")).toBeDefined();
+    expect(first.cache?.getGeneratedText(secondaryButtonPath, "class:export-types")).toBeDefined();
+    expect(first.cache?.getGeneratedText(standalonePath, "class:export-types")).toBeDefined();
 
     writeFileSync(join(dir, "Button.svelte"), BUTTON.replace("primary = false", "primary = true"));
     const second = await generateBundle(dir, true, { cache: cacheFile });
@@ -189,10 +189,10 @@ describe("generated .d.ts text cache", () => {
     // SecondaryButton depends on Button via @extendProps, so it's invalidated
     // and reparsed even though its own source didn't change; its fresh parse
     // entry must not carry over the stale cached text.
-    expect(second.cache?.getGeneratedText(secondaryButtonPath, "class")).toBeUndefined();
+    expect(second.cache?.getGeneratedText(secondaryButtonPath, "class:export-types")).toBeUndefined();
     // Standalone is unrelated and still a parse-cache hit, so its previously
     // cached text is legitimately reused.
-    expect(second.cache?.getGeneratedText(standalonePath, "class")).toBeDefined();
+    expect(second.cache?.getGeneratedText(standalonePath, "class:export-types")).toBeDefined();
   });
 
   test("--types-format switch doesn't serve a component's other-format cached text", async () => {
@@ -211,8 +211,28 @@ describe("generated .d.ts text cache", () => {
     first.cache?.save();
 
     const second = await generateBundle(dir, true, { cache: cacheFile });
-    expect(second.cache?.getGeneratedText(buttonPath, "class")).toBeDefined();
-    expect(second.cache?.getGeneratedText(buttonPath, "component")).toBeUndefined();
+    expect(second.cache?.getGeneratedText(buttonPath, "class:export-types")).toBeDefined();
+    expect(second.cache?.getGeneratedText(buttonPath, "component:export-types")).toBeUndefined();
+  });
+
+  test("exportTypes switch doesn't serve a component's other-exportTypes cached text", async () => {
+    const buttonPath = resolve(dir, "Button.svelte");
+
+    const first = await generateBundle(dir, true, { cache: cacheFile });
+    await writeTsDefinitions(first.allComponentsForTypes, {
+      outDir,
+      inputDir: dir,
+      preamble: "",
+      exports: first.exports,
+      exportTypes: true,
+      cache: first.cache,
+      resolvedPathByFilePath: first.resolvedPathByFilePath,
+    });
+    first.cache?.save();
+
+    const second = await generateBundle(dir, true, { cache: cacheFile });
+    expect(second.cache?.getGeneratedText(buttonPath, "class:export-types")).toBeDefined();
+    expect(second.cache?.getGeneratedText(buttonPath, "class:no-export-types")).toBeUndefined();
   });
 });
 

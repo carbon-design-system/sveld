@@ -71,14 +71,14 @@ export default async function writeTsDefinitions(components: ComponentDocs, opti
   const indexDTs = options.preamble + createExports(options.exports);
 
   const document = buildComponentApiDocument(components);
-  // Must match the default `writeTsDefinition` assumes for `options.format === undefined`.
-  const cacheFormatKey = options.format ?? "class";
+  // Must match the defaults `writeTsDefinition` assumes for `options.format`/`options.exportTypes === undefined`.
+  const cacheFormatKey = `${options.format ?? "class"}:${options.exportTypes === false ? "no-export-types" : "export-types"}`;
   const writePromises = document.components.map(async (component) => {
     const ts_filepath = convertSvelteExt(join(options.outDir, component.filePath));
     const resolvedPath = options.resolvedPathByFilePath?.get(component.filePath);
     let text = resolvedPath ? options.cache?.getGeneratedText(resolvedPath, cacheFormatKey) : undefined;
     if (text === undefined) {
-      text = writeTsDefinition(component, { format: options.format });
+      text = writeTsDefinition(component, { format: options.format, exportTypes: options.exportTypes });
       if (resolvedPath) options.cache?.setGeneratedText(resolvedPath, cacheFormatKey, text);
     }
     await writer.write(ts_filepath, text);

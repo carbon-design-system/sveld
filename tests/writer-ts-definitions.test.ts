@@ -990,6 +990,113 @@ export default Button;`,
   });
 });
 
+describe("writeTsDefinition with exportTypes: false", () => {
+  test('"class" format exports only the component; the Props type stays local', () => {
+    const component_api = mockComponentDocApi("Button", "./src/Button.svelte", {
+      props: [
+        {
+          name: "label",
+          kind: "let",
+          type: "string",
+          value: '""',
+          isFunction: false,
+          isFunctionDeclaration: false,
+          isRequired: false,
+          constant: false,
+          reactive: false,
+        },
+      ],
+    });
+
+    const output = writeTsDefinition(component_api, { exportTypes: false });
+    expect(output).toContain("type ButtonProps = {");
+    expect(output).not.toContain("export type ButtonProps");
+    expect(output).toContain("export default class Button extends SvelteComponentTyped<");
+  });
+
+  test('"component" format exports only the component; Props and Exports types stay local', () => {
+    const component_api = mockComponentDocApi("Button", "./src/Button.svelte", {
+      syntaxMode: "runes",
+      props: [
+        {
+          name: "increment",
+          kind: "function",
+          type: "() => any",
+          isFunction: true,
+          isFunctionDeclaration: true,
+          isRequired: false,
+          constant: false,
+          reactive: false,
+        },
+      ],
+    });
+
+    const output = writeTsDefinition(component_api, { format: "component", exportTypes: false });
+    expect(output).toContain("type ButtonProps = Record<string, never>;");
+    expect(output).not.toContain("export type ButtonProps");
+    expect(output).toContain("type ButtonExports = {");
+    expect(output).not.toContain("export type ButtonExports");
+    expect(output).toContain("declare const Button: Component<");
+    expect(output).toContain("export default Button;");
+  });
+
+  test("typedefs and context types are declared without export", () => {
+    const component_api = mockComponentDocApi("Modal", "./src/Modal.svelte", {
+      typedefs: [
+        {
+          type: "{ [key: string]: boolean; }",
+          name: "MyTypedef",
+          ts: "interface MyTypedef { [key: string]: boolean; }",
+        },
+      ],
+      contexts: [
+        {
+          key: "simple-modal",
+          typeName: "SimpleModalContext",
+          properties: [{ name: "close", type: "() => void", optional: false }],
+        },
+      ],
+    });
+
+    const output = writeTsDefinition(component_api, { exportTypes: false });
+    expect(output).toContain("interface MyTypedef {");
+    expect(output).not.toContain("export interface MyTypedef");
+    expect(output).toContain("type SimpleModalContext = {");
+    expect(output).not.toContain("export type SimpleModalContext");
+  });
+
+  test("module exports (script context=module) stay exported regardless", () => {
+    const component_api = mockComponentDocApi("TestComponent", "./src/TestComponent.svelte", {
+      moduleExports: [
+        {
+          name: "computeDepth",
+          kind: "function",
+          type: "() => any",
+          isFunction: true,
+          isFunctionDeclaration: true,
+          isRequired: false,
+          constant: false,
+          reactive: false,
+          returnType: "number",
+        },
+      ],
+    });
+
+    const output = writeTsDefinition(component_api, { exportTypes: false });
+    expect(output).toContain("export declare function computeDepth(): number;");
+  });
+
+  test("getTypeDefs and getContextDefs omit export when passed exportTypes: false directly", () => {
+    expect(getTypeDefs({ typedefs: [{ type: "boolean", name: "Flag", ts: "type Flag = boolean;" }] }, false)).toEqual(
+      "type Flag = boolean;",
+    );
+
+    expect(
+      getContextDefs({ contexts: [{ key: "k", typeName: "KContext", properties: [] }], generics: null }, false),
+    ).toEqual("type KContext = Record<string, never>;");
+  });
+});
+
 describe("writeTsDefinitions", () => {
   let errorSpy: ReturnType<typeof jest.spyOn>;
 

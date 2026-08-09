@@ -121,12 +121,13 @@ export function formatTsProps(props?: string) {
   return `${props}\n`;
 }
 
-export function getTypeDefs(def: Pick<ComponentDocApi, "typedefs">) {
+export function getTypeDefs(def: Pick<ComponentDocApi, "typedefs">, exportTypes = true) {
   if (def.typedefs.length === 0) return EMPTY_STR;
+  const exportKeyword = exportTypes ? "export " : "";
   return def.typedefs
     .map((typedef) => {
       const typedefComment = typedef.description ? `${formatMultiLineComment(typedef.description)}\n` : "";
-      return `${typedefComment}export ${typedef.ts}`;
+      return `${typedefComment}${exportKeyword}${typedef.ts}`;
     })
     .join("\n\n");
 }
@@ -186,8 +187,9 @@ function computeReferencedGenerics(generics: ComponentDocApi["generics"], text: 
  * // };
  * ```
  */
-export function getContextDefs(def: Pick<ComponentDocApi, "contexts" | "generics">) {
+export function getContextDefs(def: Pick<ComponentDocApi, "contexts" | "generics">, exportTypes = true) {
   if (!def.contexts || def.contexts.length === 0) return EMPTY_STR;
+  const exportKeyword = exportTypes ? "export " : "";
 
   /**
    * Pair each generic name with its constraint declaration so the context type
@@ -238,10 +240,10 @@ export function getContextDefs(def: Pick<ComponentDocApi, "contexts" | "generics
        * This complies with Biome linter rules and Svelte 4 compatibility.
        */
       if (context.properties.length === 0) {
-        return `${contextComment}export type ${context.typeName} = Record<string, never>;`;
+        return `${contextComment}${exportKeyword}type ${context.typeName} = Record<string, never>;`;
       }
 
-      return `${contextComment}export type ${context.typeName}${genericSuffix} = {\n  ${props}\n};`;
+      return `${contextComment}${exportKeyword}type ${context.typeName}${genericSuffix} = {\n  ${props}\n};`;
     })
     .join("\n\n");
 }
@@ -310,7 +312,10 @@ function genPropDef(
      */
     events?: ComponentDocApi["events"];
   },
+  exportTypes = true,
 ) {
+  const exportKeyword = exportTypes ? "export " : "";
+
   /**
    * Collect existing prop names to avoid conflicts with snippet props.
    * Snippet props are generated for slots, but shouldn't conflict with
@@ -530,7 +535,7 @@ function genPropDef(
     };`
     }
 
-    export type ${props_name}${genericsName} = Omit<$RestProps, keyof $Props${genericsNameRef}> & $Props${genericsNameRef};
+    ${exportKeyword}type ${props_name}${genericsName} = Omit<$RestProps, keyof $Props${genericsNameRef}> & $Props${genericsNameRef};
   `;
     } else {
       prop_def = `
@@ -548,7 +553,7 @@ function genPropDef(
     };`
     }
 
-    export type ${props_name}${genericsName} = Omit<$RestProps, keyof ($Props${genericsNameRef} & ${def.extends.interface})> & $Props${genericsNameRef} & ${def.extends.interface};
+    ${exportKeyword}type ${props_name}${genericsName} = Omit<$RestProps, keyof ($Props${genericsNameRef} & ${def.extends.interface})> & $Props${genericsNameRef} & ${def.extends.interface};
   `;
     }
   } else {
@@ -559,16 +564,16 @@ function genPropDef(
      */
     if (props.trim() === "" && def.extends === undefined && !def.canonicalPropsType) {
       prop_def = `
-    export type ${props_name}${genericsName} = ${EMPTY_OBJECT};
+    ${exportKeyword}type ${props_name}${genericsName} = ${EMPTY_OBJECT};
   `;
     } else if (def.canonicalPropsType) {
       prop_def = `
     ${basePropsDef}
-    export type ${props_name}${genericsName} = ${def.extends === undefined ? "" : `${def.extends.interface} & `}$Props${genericsNameRef};
+    ${exportKeyword}type ${props_name}${genericsName} = ${def.extends === undefined ? "" : `${def.extends.interface} & `}$Props${genericsNameRef};
   `;
     } else {
       prop_def = `
-    export type ${props_name}${genericsName} = ${def.extends === undefined ? "" : `${def.extends.interface} & `} {
+    ${exportKeyword}type ${props_name}${genericsName} = ${def.extends === undefined ? "" : `${def.extends.interface} & `} {
       ${props}
     };
   `;
@@ -826,12 +831,17 @@ function genAccessors(def: Pick<ComponentDocApi, "props">) {
  * `exports_ref` is the corresponding reference form (e.g. `FooExports<Row>`)
  * for use at the call site.
  */
-function genExportsDef(def: Pick<ComponentDocApi, "props" | "moduleName" | "generics">) {
+function genExportsDef(def: Pick<ComponentDocApi, "props" | "moduleName" | "generics">, exportTypes = true) {
   const exports_name = `${def.moduleName}Exports`;
   const accessors = genAccessors({ props: def.props });
+  const exportKeyword = exportTypes ? "export " : "";
 
   if (accessors.trim() === "") {
-    return { exports_name, exports_ref: exports_name, exports_def: `export type ${exports_name} = ${EMPTY_OBJECT};` };
+    return {
+      exports_name,
+      exports_ref: exports_name,
+      exports_def: `${exportKeyword}type ${exports_name} = ${EMPTY_OBJECT};`,
+    };
   }
 
   const { declSuffix, refSuffix } = computeReferencedGenerics(def.generics, accessors);
@@ -839,7 +849,7 @@ function genExportsDef(def: Pick<ComponentDocApi, "props" | "moduleName" | "gene
   return {
     exports_name,
     exports_ref: `${exports_name}${refSuffix}`,
-    exports_def: `export type ${exports_name}${declSuffix} = {${accessors}\n  };`,
+    exports_def: `${exportKeyword}type ${exports_name}${declSuffix} = {${accessors}\n  };`,
   };
 }
 
@@ -1048,6 +1058,17 @@ export interface WriteTsDefinitionOptions {
    * parameter (see `genGenericComponentDeclaration`).
    */
   format?: "class" | "component";
+  /**
+   * By default, supporting types generated alongside the component (the
+   * `<Name>Props` type, `<Name>Exports` type, `@typedef`s, and context types)
+   * are all exported. Set to `false` to export only the component's own type
+   * (the `class`/`declare const` shell) and declare everything else without
+   * `export`, keeping the `.d.ts` public surface to just the component itself.
+   * Module exports (from `<script context="module">`) mirror the source's own
+   * `export` statements and are unaffected.
+   * @default true
+   */
+  exportTypes?: boolean;
 }
 
 export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsDefinitionOptions) {
@@ -1069,29 +1090,33 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
 
   const useComponentFormat = options?.format === "component";
   const isGenericComponent = generics !== null;
+  const exportTypes = options?.exportTypes ?? true;
 
-  const { props_name, prop_def } = genPropDef({
-    moduleName,
-    props,
-    rest_props,
-    extends: _extends,
-    generics,
-    slots,
-    canonicalPropNames: new Set(typeScriptMetadata?.canonicalPropNames ?? []),
-    canonicalPropsType: typeScriptMetadata?.canonicalPropsType,
-    events: useComponentFormat && syntaxMode === "legacy" ? events : undefined,
-  });
+  const { props_name, prop_def } = genPropDef(
+    {
+      moduleName,
+      props,
+      rest_props,
+      extends: _extends,
+      generics,
+      slots,
+      canonicalPropNames: new Set(typeScriptMetadata?.canonicalPropNames ?? []),
+      canonicalPropsType: typeScriptMetadata?.canonicalPropsType,
+      events: useComponentFormat && syntaxMode === "legacy" ? events : undefined,
+    },
+    exportTypes,
+  );
 
   const generic = generics ? `<${generics[1]}>` : "";
   const genericProps = generics ? `${props_name}<${generics[0]}>` : props_name;
   const moduleExportsDef = genModuleExports({ moduleExports });
-  const typeDefs = getTypeDefs({ typedefs });
-  const contextDefs = getContextDefs({ contexts, generics });
+  const typeDefs = getTypeDefs({ typedefs }, exportTypes);
+  const contextDefs = getContextDefs({ contexts, generics }, exportTypes);
   const preservedTypeImports = (typeScriptMetadata?.typeImportStatements ?? []).join("\n");
   const preservedLocalTypeDeclarations = (typeScriptMetadata?.localTypeDeclarations ?? []).join("\n\n");
 
   const { exports_ref, exports_def } = useComponentFormat
-    ? genExportsDef({ props, moduleName, generics })
+    ? genExportsDef({ props, moduleName, generics }, exportTypes)
     : { exports_ref: EMPTY_STR, exports_def: EMPTY_STR };
   const bindings = useComponentFormat ? genBindingsUnion({ props }) : EMPTY_STR;
 

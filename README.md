@@ -121,6 +121,7 @@ export default class Button extends SvelteComponentTyped<
 - [Approach](#approach)
 - [Features](#features)
   - [`.d.ts` output format (`typesOptions.format`)](#dts-output-format-typesoptionsformat)
+  - [Restricting `.d.ts` exports (`typesOptions.exportTypes`)](#restricting-dts-exports-typesoptionsexporttypes)
   - [Opt-in semantic resolution (`resolveTypes`)](#opt-in-semantic-resolution-resolvetypes)
   - [Persistent parse cache (`cache`)](#persistent-parse-cache-cache)
   - [Compile-checked `@example` blocks (`checkExamples`)](#compile-checked-example-blocks-checkexamples)
@@ -253,6 +254,30 @@ export default GenericList;
 ```
 
 Both signatures carry their own generic parameter (not the `const` itself), so `Item` is inferred per usage site, e.g. `<GenericList items={numbers} />` infers `Item` from `numbers`. The `new` signature is the one place `"component"` format still touches a legacy type (`SvelteComponent`/`ComponentConstructorOptions`, not the deprecated `SvelteComponentTyped`): the Svelte language server resolves generic inference for `<Comp prop={...} />` template usage through `new`, not the plain call signature, confirmed by comparing against `@sveltejs/package`'s own generated output for the same component. Omitting it silently breaks inference instead of erroring, so it stays in even though it means one legacy import for generic components.
+
+### Restricting `.d.ts` exports (`typesOptions.exportTypes`)
+
+By default, every supporting type sveld generates alongside a component — the `<Name>Props` type, the `<Name>Exports` type (`"component"` format), `@typedef`s, and context types — is exported, so consumers can import them directly (e.g. `import type { ButtonProps } from "my-library"`).
+
+Set `typesOptions.exportTypes: false` to keep the `.d.ts` public surface to just the component itself: every supporting type is still generated (the component's own declaration still references it), but declared without `export`, so it's inaccessible from outside the file.
+
+```ts
+await sveld({ types: true, typesOptions: { exportTypes: false } });
+```
+
+```ts
+import { SvelteComponentTyped } from "svelte";
+
+type ButtonProps = { label?: string };
+
+export default class Button extends SvelteComponentTyped<
+  ButtonProps,
+  { click: WindowEventMap["click"] },
+  { default: Record<string, never> }
+> {}
+```
+
+Exports from `<script context="module">` are unaffected — they mirror `export` statements the component source itself already declares, not a type sveld invented, so they keep whatever export shape the source gives them.
 
 ### Opt-in semantic resolution (`resolveTypes`)
 
@@ -708,8 +733,9 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
 - **`glob`** (boolean, optional): Enable glob mode to analyze all `*.svelte` files.
 - **`documentExports`** (boolean, optional): Include consts, functions, and types from the entry barrel in JSON (`exports`) and Markdown ("Exports"). Off by default. See [Documenting Entry Exports](#documenting-entry-exports).
 - **`types`** (boolean, optional, default: `true`): Generate TypeScript definitions.
-- **`typesOptions`** (object, optional): Options for TypeScript definition generation, including `outDir`, `preamble`, and `format`.
+- **`typesOptions`** (object, optional): Options for TypeScript definition generation, including `outDir`, `preamble`, `format`, and `exportTypes`.
   - **`format`** (`"class"` | `"component"`, optional, default: `"class"`): `.d.ts` output shape. `"class"` extends `SvelteComponentTyped`; `"component"` emits the Svelte 5 `Component` type. Also available as `--types-format`. See [`.d.ts` output format](#dts-output-format-typesoptionsformat).
+  - **`exportTypes`** (boolean, optional, default: `true`): Export every supporting type sveld generates (`<Name>Props`, `<Name>Exports`, `@typedef`s, context types). Set to `false` to declare them without `export`, so only the component's own type stays part of the `.d.ts` public surface. See [Restricting `.d.ts` exports](#restricting-dts-exports-typesoptionsexporttypes).
 - **`json`** (boolean, optional): Generate component documentation in JSON format.
 - **`jsonOptions`** (object, optional): Options for JSON output.
 - **`markdown`** (boolean, optional): Generate component documentation in Markdown format.
