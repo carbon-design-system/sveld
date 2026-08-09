@@ -131,7 +131,7 @@ function isSingleObjectLiteral(source: string): boolean {
   return depth === 0;
 }
 
-export function formatComment(comment: string) {
+function formatComment(comment: string) {
   let formatted_comment = comment;
 
   if (!formatted_comment.startsWith("/*")) {
@@ -209,13 +209,13 @@ export function getCommentTags(parsed: ReturnType<typeof parseComment>) {
   };
 }
 
-export function findJSDocComment(leadingComments: unknown[]): { value: string } | undefined {
+function findJSDocComment(leadingComments: unknown[]): { value: string } | undefined {
   if (!leadingComments || leadingComments.length === 0) return undefined;
   const comment = leadingComments[leadingComments.length - 1];
   return comment && typeof comment === "object" && "value" in comment ? (comment as { value: string }) : undefined;
 }
 
-export function findAdjacentJSDocComment(
+function findAdjacentJSDocComment(
   ctx: ParserContext,
   leadingComments: unknown[] | undefined,
   nodeStart: number | undefined,
@@ -270,7 +270,7 @@ export function processLeadingCommentsJSDoc(
   return processNodeJSDoc(ctx, parser, node);
 }
 
-export function processJSDocComment(
+function processJSDocComment(
   parser: ComponentParser,
   leadingComments: unknown[],
 ):

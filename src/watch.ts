@@ -22,7 +22,7 @@ import { loadParserStack } from "./parser-stack";
 import { SVELTE_EXT_REGEX } from "./path";
 
 /** Result of an incremental update. */
-export interface SveldBundleUpdate {
+interface SveldBundleUpdate {
   /** The full, updated bundle result (all components, with the affected ones re-parsed). */
   result: GenerateBundleResult;
   /**

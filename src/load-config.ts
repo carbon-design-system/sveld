@@ -52,7 +52,7 @@ export interface SveldRuntimeOptions extends PluginSveldOptions {
 export type SveldConfig = SveldRuntimeOptions;
 
 /** Config file names probed at the project root. First existing file wins. */
-export const CONFIG_FILE_NAMES = ["sveld.config.js", "sveld.config.mjs", "sveld.config.ts"] as const;
+const CONFIG_FILE_NAMES = ["sveld.config.js", "sveld.config.mjs", "sveld.config.ts"] as const;
 
 /**
  * Identity helper that fully types a `sveld` config object.

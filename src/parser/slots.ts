@@ -8,7 +8,7 @@ import { assignValueOrUndefined } from "./utils";
 
 const DEFAULT_SLOT_NAME = null;
 
-export function inferSlotPropValueFromExpression(
+function inferSlotPropValueFromExpression(
   ctx: ParserContext,
   parser: ComponentParser,
   expression: unknown,
@@ -60,7 +60,7 @@ export function buildSlotPropsFromObjectExpression(
   return slot_props;
 }
 
-export function resolveRenderTagPropReference(
+function resolveRenderTagPropReference(
   ctx: ParserContext,
   callee: unknown,
 ): { publicName: string; trackingName: string } | null {

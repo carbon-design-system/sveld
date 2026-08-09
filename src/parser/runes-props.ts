@@ -60,7 +60,7 @@ function substituteTypeParameters(type: string, substitutions: Map<string, strin
 }
 
 /** Flatten a runes `$props()` type node into prop name -> metadata, following local aliases and intersections. */
-export function buildRunesPropTypeMetadataMap(
+function buildRunesPropTypeMetadataMap(
   parser: ComponentParser,
   ctx: ParserContext,
   typeNode: ModernRunesTypeNode | undefined,
@@ -174,7 +174,7 @@ export function buildRunesPropTypeMetadataMap(
 }
 
 /** The modern-AST shape `buildRunesPropTypeMetadata` reads from. */
-export type ModernParsedRoot = {
+type ModernParsedRoot = {
   instance?: ModernScriptNode & {
     content?: {
       body?: Array<{

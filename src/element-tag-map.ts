@@ -133,7 +133,7 @@ const tag_map = {
 
 type ElementTag = keyof typeof tag_map;
 
-export function isElementTag(element: string): element is ElementTag {
+function isElementTag(element: string): element is ElementTag {
   return element in tag_map;
 }
 

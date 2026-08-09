@@ -12,14 +12,14 @@ import { sourceRangeFromNode } from "./source-position";
 const CONTEXT_KEY_SPLIT_REGEX = /[-_.:/\s]+/;
 
 /** Turn `simple-modal` into `SimpleModalContext`. */
-export function generateContextTypeName(key: string): string {
+function generateContextTypeName(key: string): string {
   const parts = key.split(CONTEXT_KEY_SPLIT_REGEX);
   const capitalized = parts.map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join("");
   return `${capitalized}Context`;
 }
 
 /** Build a {@link ComponentContext} from an object literal or variable reference. */
-export function parseContextValue(
+function parseContextValue(
   ctx: ParserContext,
   parser: ComponentParser,
   node: Node,
@@ -138,7 +138,7 @@ export function parseContextValue(
 }
 
 /** Static description from `Symbol()` / `Symbol.for()`, or `""` when unknown. Returns `null` for other calls. */
-export function resolveSymbolKeyDescription(node: CallExpression | NewExpression): string | null {
+function resolveSymbolKeyDescription(node: CallExpression | NewExpression): string | null {
   const callee = node.callee;
   if (!callee || typeof callee !== "object" || !("type" in callee)) return null;
 
@@ -170,7 +170,7 @@ export function resolveSymbolKeyDescription(node: CallExpression | NewExpression
  * Accepts literals, static templates, `const` chains (depth 5), and `Symbol()`.
  * Description-less symbols fall back to the binding name.
  */
-export function resolveContextKey(ctx: ParserContext, keyArg: unknown, depth = 0): string | null {
+function resolveContextKey(ctx: ParserContext, keyArg: unknown, depth = 0): string | null {
   if (!keyArg || typeof keyArg !== "object" || !("type" in keyArg)) return null;
   const node = keyArg as Expression;
 

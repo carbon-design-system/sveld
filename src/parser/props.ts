@@ -235,7 +235,7 @@ export function processInitializer(
  * Look up a local variable's initializer AST node by name.
  * Returns the init node if found, or undefined.
  */
-export function resolveLocalVarInitializer(ctx: ParserContext, name: string): unknown | undefined {
+function resolveLocalVarInitializer(ctx: ParserContext, name: string): unknown | undefined {
   for (const decl of ctx.vars) {
     for (const declarator of decl.declarations) {
       if (
@@ -288,7 +288,7 @@ export function resolveConstInitializer(ctx: ParserContext, name: string): unkno
  * If JSDoc has no params or return either, try the function `node`, then
  * `(...args: any[]) => any`.
  */
-export function buildFunctionTypeFromParts(
+function buildFunctionTypeFromParts(
   jsdoc?: { params?: ComponentPropParam[]; returnType?: string },
   node?: FunctionDeclaration | FunctionExpression | ArrowFunctionExpression,
 ): string {
@@ -313,9 +313,7 @@ export function buildFunctionTypeFromParts(
  * A default's body is a weak signal for the prop contract. We only read
  * named params and literal returns. Everything else becomes `any`.
  */
-export function inferFunctionTypeFromNode(
-  node: FunctionDeclaration | FunctionExpression | ArrowFunctionExpression,
-): string {
+function inferFunctionTypeFromNode(node: FunctionDeclaration | FunctionExpression | ArrowFunctionExpression): string {
   return `(${inferParamsFromNode(node)}) => ${inferReturnTypeFromNode(node)}`;
 }
 
@@ -323,7 +321,7 @@ export function inferFunctionTypeFromNode(
  * Turn params into `name: any`, or use `...args: any[]` when arity is unclear:
  * no params, destructuring, rest, or defaults.
  */
-export function inferParamsFromNode(node: FunctionDeclaration | FunctionExpression | ArrowFunctionExpression): string {
+function inferParamsFromNode(node: FunctionDeclaration | FunctionExpression | ArrowFunctionExpression): string {
   const params = node.params;
   if (!Array.isArray(params) || params.length === 0) {
     return "...args: any[]";
@@ -352,9 +350,7 @@ export function inferParamsFromNode(node: FunctionDeclaration | FunctionExpressi
  * the same primitive. Bare `return;`, no returns, identifiers, calls,
  * objects, ternaries, async, or generators all become `any`.
  */
-export function inferReturnTypeFromNode(
-  node: FunctionDeclaration | FunctionExpression | ArrowFunctionExpression,
-): string {
+function inferReturnTypeFromNode(node: FunctionDeclaration | FunctionExpression | ArrowFunctionExpression): string {
   if (node.async || node.generator) {
     return "any";
   }
@@ -396,7 +392,7 @@ export function inferReturnTypeFromNode(
  * otherwise reach these descendant statements. Deferring it to ride along with the outer
  * traversal would mean computing prop types in a second pass instead of inline.
  */
-export function collectReturnArguments(body: unknown): unknown[] {
+function collectReturnArguments(body: unknown): unknown[] {
   const returnArgs: unknown[] = [];
   walk(body as Node, {
     enter(node) {
@@ -420,7 +416,7 @@ export function collectReturnArguments(body: unknown): unknown[] {
  * Map one return expression to `string`, `number`, or `boolean`, or `null`
  * if it isn't a literal, template literal, or `String`/`Number`/`Boolean` call.
  */
-export function inferReturnPrimitive(expr: unknown): "string" | "number" | "boolean" | null {
+function inferReturnPrimitive(expr: unknown): "string" | "number" | "boolean" | null {
   if (!expr || typeof expr !== "object" || !("type" in expr)) {
     return null;
   }
