@@ -1,7 +1,7 @@
 import { parse as parseComment } from "comment-parser";
 import type ComponentParser from "../ComponentParser";
 import type { ParserContext } from "./context";
-import { getCommentTags } from "./jsdoc";
+import { getCommentTags, ONLY_WHITESPACE_REGEX } from "./jsdoc";
 
 interface ScriptComment {
   /** Offset (into the full component source) right after the closing delimiter. */
@@ -16,8 +16,6 @@ interface TopLevelDeclaration {
   /** Offset of the declaration's (or, for `export`, the export statement's) first token. */
   start: number;
 }
-
-const WHITESPACE_ONLY_REGEX = /^\s*$/;
 
 function skipStringLiteral(source: string, start: number, quote: string): number {
   let i = start + 1;
@@ -162,7 +160,7 @@ function findAttachedComment(comments: ScriptComment[], declStart: number, sourc
   for (const comment of comments) {
     if (comment.end > declStart) break;
     if (!comment.isJsDoc) continue;
-    if (!WHITESPACE_ONLY_REGEX.test(source.slice(comment.end, declStart))) continue;
+    if (!ONLY_WHITESPACE_REGEX.test(source.slice(comment.end, declStart))) continue;
     attached = comment;
   }
 

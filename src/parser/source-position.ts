@@ -1,7 +1,8 @@
 import type { SourcePosition, SourceRange } from "../ComponentParser";
 import type { ParserContext } from "./context";
 
-const NEWLINE_CR_REGEX = /[\r\n]+/g;
+/** Matches one or more consecutive `\r`/`\n` so multiline source can collapse to a single space. */
+export const NEWLINE_CR_REGEX = /[\r\n]+/g;
 
 /**
  * Returns (and lazily computes/caches on `ctx`) the 0-based source offset for

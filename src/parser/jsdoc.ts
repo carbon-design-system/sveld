@@ -35,7 +35,7 @@ function normalizeGenericNameSpacing(name: string): string {
   return `${base}<${normalizedParams}>`;
 }
 
-const ONLY_WHITESPACE_REGEX = /^\s*$/;
+export const ONLY_WHITESPACE_REGEX = /^\s*$/;
 
 const TRAILING_SEMICOLON_REGEX = /;$/;
 
