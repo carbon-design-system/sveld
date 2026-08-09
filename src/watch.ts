@@ -19,8 +19,7 @@ import { dedupeDiagnostics } from "./diagnostics";
 import { type EntryExports, parseEntryExports } from "./parse-entry-exports";
 import type { ParsedExports } from "./parse-exports";
 import { loadParserStack } from "./parser-stack";
-
-const SVELTE_EXT_REGEX = /\.svelte$/;
+import { SVELTE_EXT_REGEX } from "./path";
 
 /** Result of an incremental update. */
 export interface SveldBundleUpdate {

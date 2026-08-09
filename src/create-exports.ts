@@ -1,6 +1,5 @@
 import type { ParsedExports } from "./parse-exports";
-
-const SVELTE_EXT_REGEX = /\.svelte$/;
+import { SVELTE_EXT_REGEX } from "./path";
 
 /**
  * Builds export statements from parsed export metadata.

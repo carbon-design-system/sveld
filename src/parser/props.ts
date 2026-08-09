@@ -26,10 +26,8 @@ import type {
   ProcessedInitializer,
 } from "../ComponentParser";
 import type { ParserContext } from "./context";
-import { sourceAtPos, sourceForExpression } from "./source-position";
+import { NEWLINE_CR_REGEX, sourceAtPos, sourceForExpression } from "./source-position";
 import { assignValueOrUndefined } from "./utils";
-
-const NEWLINE_CR_REGEX = /[\r\n]+/g;
 
 export function addProp(parser: ComponentParser, ctx: ParserContext, prop_name: string, data: ComponentProp) {
   if (assignValueOrUndefined(prop_name) === undefined) return;

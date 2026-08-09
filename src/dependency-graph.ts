@@ -1,7 +1,6 @@
 import { dirname, resolve } from "node:path";
 import type { ComponentDocApi, ComponentDocs, ResolveComponentFilePath } from "./bundle";
-
-const SVELTE_EXT_REGEX = /\.svelte$/;
+import { SVELTE_EXT_REGEX } from "./path";
 
 /** Strips matching surrounding single/double quotes from an import specifier. */
 const SURROUNDING_QUOTES_REGEX = /^(['"])(.*)\1$/;

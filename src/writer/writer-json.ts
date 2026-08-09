@@ -1,4 +1,5 @@
 import path from "node:path";
+import { removeSvelteExt } from "../create-exports";
 import { info } from "../logger";
 import type { EntryExports } from "../parse-entry-exports";
 import { formatJsonOutput, normalizeComponentFilePath } from "../path";
@@ -32,8 +33,6 @@ function withNormalizedFilePaths(components: ComponentDocApi[], inputDir: string
   }));
 }
 
-const SVELTE_EXT_REGEX = /\.svelte$/;
-
 /**
  * JSON output file name for one component.
  *
@@ -54,7 +53,7 @@ function jsonFileName(component: ComponentDocApi, hasCollision: boolean, warnedM
     );
   }
 
-  return component.filePath.replace(SVELTE_EXT_REGEX, ".api.json");
+  return `${removeSvelteExt(component.filePath)}.api.json`;
 }
 
 async function writeJsonComponents(components: ComponentDocs, options: WriteJsonOptions) {

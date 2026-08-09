@@ -7,6 +7,7 @@ import {
   toGenerateBundleOptions,
 } from "./bundle";
 import { getSvelteEntry } from "./get-svelte-entry";
+import { SVELTE_EXT_REGEX } from "./path";
 import { createSveldBundle, type SveldBundle } from "./watch";
 // Side-effect import: registers the built-in "json"/"markdown"/"types"/"custom-elements" writers.
 import "./writer/built-in-writers";
@@ -94,8 +95,6 @@ interface SveldPlugin {
 
 /** Debounce window (ms) for coalescing rapid file changes into one regeneration. */
 const WATCH_DEBOUNCE_MS = 50;
-
-const SVELTE_EXT_REGEX = /\.svelte$/;
 
 export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
   const watch = opts?.watch === true;

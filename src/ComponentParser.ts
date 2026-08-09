@@ -324,8 +324,6 @@ const CARRIAGE_RETURN_REGEX = /\r/g;
 /** Matches a JSDoc `@slot`/`@snippet` type of an empty object literal, e.g. `{{}}` or `{{ }}`. */
 const EMPTY_OBJECT_TYPE_REGEX = /^\{\s*\}$/;
 
-const _NEWLINE_CR_REGEX = /[\r\n]+/g;
-
 export interface ComponentSlot {
   /** Slot name (`null` for the default slot). */
   name?: string | null;
