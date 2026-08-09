@@ -82,7 +82,13 @@ export class TypeResolver {
     return resolver;
   }
 
-  /** Resolves every target in one program snapshot. */
+  /**
+   * Resolves every target in one program snapshot.
+   *
+   * Keyed by `filePath`, not `moduleName`: two components discovered via
+   * `--glob` can share a basename (e.g. `Menu/Menu.svelte` and
+   * `icons/Menu.svelte`), and `moduleName` alone is not unique.
+   */
   async expandAll(targets: ResolveTarget[]): Promise<Map<string, ResolvedComponentProp[]>> {
     const results = new Map<string, ResolvedComponentProp[]>();
     if (targets.length === 0) return results;
@@ -143,7 +149,7 @@ export class TypeResolver {
             }
           }
 
-          return { moduleName: target.moduleName, groups: Array.from(groups.values()) };
+          return { filePath: target.filePath, groups: Array.from(groups.values()) };
         }),
       );
 
@@ -190,7 +196,7 @@ export class TypeResolver {
           return { name: group.name, type: Array.from(new Set(texts)).join(" | "), isRequired };
         });
         resolved.sort((a, b) => a.name.localeCompare(b.name));
-        results.set(entry.moduleName, resolved);
+        results.set(entry.filePath, resolved);
       });
     } finally {
       await snapshot.dispose?.();

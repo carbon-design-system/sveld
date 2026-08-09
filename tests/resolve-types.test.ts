@@ -65,7 +65,7 @@ describe("opt-in TypeScript semantic resolution", () => {
         },
       ]);
 
-      applyResolvedProps(parsed, resolved.get("RunesWholePropsImported") ?? []);
+      applyResolvedProps(parsed, resolved.get(COMPONENT_PATH) ?? []);
     } finally {
       await resolver.dispose();
     }
@@ -100,7 +100,7 @@ describe("opt-in TypeScript semantic resolution", () => {
         },
       ]);
 
-      applyResolvedProps(parsed, resolved.get("RunesWholePropsUnionResolveTypes") ?? []);
+      applyResolvedProps(parsed, resolved.get(UNION_COMPONENT_PATH) ?? []);
     } finally {
       await resolver.dispose();
     }
@@ -136,14 +136,45 @@ describe("opt-in TypeScript semantic resolution", () => {
 
       // No entry: the resolver must not fabricate types for a generic it
       // can't bind, rather than guessing at (and getting wrong) unions.
-      expect(resolved.has("RunesWholePropsGenericResolveTypes")).toBe(false);
+      expect(resolved.has(GENERIC_COMPONENT_PATH)).toBe(false);
 
-      applyResolvedProps(parsed, resolved.get("RunesWholePropsGenericResolveTypes") ?? []);
+      applyResolvedProps(parsed, resolved.get(GENERIC_COMPONENT_PATH) ?? []);
     } finally {
       await resolver.dispose();
     }
 
     // Falls back to the same opaque, AST-derived shape the default path produces.
     expect(parsed.props).toEqual([]);
+  }, 30_000);
+
+  test("expandAll keys results by filePath so two targets sharing a moduleName resolve independently", async () => {
+    const importedParsed = await parseFixture();
+    const importedMetadata = getParsedComponentTypeScriptMetadata(importedParsed);
+    if (!importedMetadata?.canonicalPropsType) throw new Error("fixture missing canonical props type");
+
+    const unionParsed = await parseUnionFixture();
+    const unionMetadata = getParsedComponentTypeScriptMetadata(unionParsed);
+    if (!unionMetadata?.canonicalPropsType) throw new Error("fixture missing canonical props type");
+
+    const resolver = await TypeResolver.create(FIXTURE_DIR);
+    expect(resolver).not.toBeNull();
+    if (!resolver) return;
+
+    try {
+      // Simulates two `--glob`-discovered `.svelte` files sharing a basename
+      // in different directories (e.g. `Menu/Menu.svelte` and `icons/Menu.svelte`).
+      const resolved = await resolver.expandAll([
+        { moduleName: "Duplicate", metadata: importedMetadata, filePath: COMPONENT_PATH },
+        { moduleName: "Duplicate", metadata: unionMetadata, filePath: UNION_COMPONENT_PATH },
+      ]);
+
+      applyResolvedProps(importedParsed, resolved.get(COMPONENT_PATH) ?? []);
+      applyResolvedProps(unionParsed, resolved.get(UNION_COMPONENT_PATH) ?? []);
+    } finally {
+      await resolver.dispose();
+    }
+
+    expect(importedParsed.props.map((prop) => prop.name).sort()).toEqual(["disabled", "href", "variant"]);
+    expect(unionParsed.props.map((prop) => prop.name).sort()).toEqual(["duration", "kind", "target"]);
   }, 30_000);
 });
