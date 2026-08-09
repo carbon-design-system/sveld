@@ -46,11 +46,11 @@ export interface WriteTsDefinitionsOptions extends WriteTsDefinitionOptions {
   /**
    * @internal Reuses generated `.d.ts` text across runs for components whose
    * source (and the effective `format` option) hasn't changed. Requires
-   * `resolvedPathByModule` to key lookups; both come from `GenerateBundleResult`.
+   * `resolvedPathByFilePath` to key lookups; both come from `GenerateBundleResult`.
    */
   cache?: ParseCache;
-  /** @internal See `cache`. */
-  resolvedPathByModule?: Map<string, string>;
+  /** @internal See `cache`. Lookups use `component.filePath`. */
+  resolvedPathByFilePath?: Map<string, string>;
 }
 
 /**
@@ -75,7 +75,7 @@ export default async function writeTsDefinitions(components: ComponentDocs, opti
   const cacheFormatKey = options.format ?? "class";
   const writePromises = document.components.map(async (component) => {
     const ts_filepath = convertSvelteExt(join(options.outDir, component.filePath));
-    const resolvedPath = options.resolvedPathByModule?.get(component.moduleName);
+    const resolvedPath = options.resolvedPathByFilePath?.get(component.filePath);
     let text = resolvedPath ? options.cache?.getGeneratedText(resolvedPath, cacheFormatKey) : undefined;
     if (text === undefined) {
       text = writeTsDefinition(component, { format: options.format });

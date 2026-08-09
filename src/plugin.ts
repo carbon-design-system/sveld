@@ -221,7 +221,7 @@ export async function writeOutput(
       inputDir,
       dryRun,
       cache: result.cache,
-      resolvedPathByModule: result.resolvedPathByModule,
+      resolvedPathByFilePath: result.resolvedPathByFilePath,
     } satisfies WriteTsDefinitionsOptions);
   }
 

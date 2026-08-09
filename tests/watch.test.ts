@@ -1,8 +1,14 @@
 import { mkdtempSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import type { ComponentDocApi, ComponentDocs } from "../src/bundle";
 import pluginSveld from "../src/plugin";
 import { createSveldBundle } from "../src/watch";
+
+/** Look up `allComponentsForTypes` by filePath; moduleName is not unique. */
+function byModuleName(components: ComponentDocs, moduleName: string): ComponentDocApi | undefined {
+  return Array.from(components.values()).find((component) => component.moduleName === moduleName);
+}
 
 const BUTTON = `<script>
   /** @restProps {button} */
@@ -44,7 +50,7 @@ describe("watch mode (createSveldBundle)", () => {
 
   test("initial bundle parses every component", async () => {
     const bundle = await createSveldBundle(dir, true);
-    const names = Array.from(bundle.result.allComponentsForTypes.keys()).sort();
+    const names = Array.from(bundle.result.allComponentsForTypes.values(), (c) => c.moduleName).sort();
     expect(names).toEqual(["Button", "SecondaryButton", "Standalone"]);
   });
 
@@ -83,7 +89,7 @@ describe("watch mode (createSveldBundle)", () => {
     const { result, reparsed } = await bundle.update([newPath]);
 
     expect(reparsed).toContain(newPath);
-    expect(result.allComponentsForTypes.has("NewOne")).toBe(true);
+    expect(byModuleName(result.allComponentsForTypes, "NewOne")).toBeDefined();
   });
 
   test("picks up a deleted component file", async () => {
@@ -94,7 +100,7 @@ describe("watch mode (createSveldBundle)", () => {
 
     const { result } = await bundle.update([standalonePath]);
 
-    expect(result.allComponentsForTypes.has("Standalone")).toBe(false);
+    expect(byModuleName(result.allComponentsForTypes, "Standalone")).toBeUndefined();
   });
 
   test("deleting an @extendProps dependency reparses its dependent without crashing", async () => {
@@ -106,7 +112,7 @@ describe("watch mode (createSveldBundle)", () => {
     const { result, reparsed } = await bundle.update([buttonPath]);
 
     expect(reparsed).toContain(resolve(dir, "SecondaryButton.svelte"));
-    expect(result.allComponentsForTypes.has("Button")).toBe(false);
+    expect(byModuleName(result.allComponentsForTypes, "Button")).toBeUndefined();
   });
 
   test("ignores non-svelte changes", async () => {
@@ -122,7 +128,7 @@ describe("watch mode (createSveldBundle)", () => {
     writeFileSync(buttonPath, BUTTON.replace("export let primary = false;", "export let danger = false;"));
 
     const { result } = await bundle.update([buttonPath]);
-    const button = result.allComponentsForTypes.get("Button");
+    const button = byModuleName(result.allComponentsForTypes, "Button");
     const propNames = button?.props.map((p) => p.name) ?? [];
     expect(propNames).toContain("danger");
     expect(propNames).not.toContain("primary");

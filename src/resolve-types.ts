@@ -209,15 +209,17 @@ export class TypeResolver {
    * depend on the rest of the component's types.
    */
   async checkExamples(targets: ExampleCheckTarget[]): Promise<Map<string, ExampleCheckDiagnostic[]>> {
+    // Keyed by `filePath`. Glob can find two components with the same
+    // basename, so `moduleName` alone is not unique.
     const results = new Map<string, ExampleCheckDiagnostic[]>();
     if (targets.length === 0) return results;
 
-    const examples: Array<{ moduleName: string; source: ExampleCheckSource; file: string }> = [];
+    const examples: Array<{ filePath: string; source: ExampleCheckSource; file: string }> = [];
     for (const target of targets) {
       for (const source of target.sources) {
         const file = this.exampleFileName(target.filePath, target.moduleName, source.id);
         this.overlay.set(file, buildExampleModule(source));
-        examples.push({ moduleName: target.moduleName, source, file });
+        examples.push({ filePath: target.filePath, source, file });
       }
     }
 
@@ -234,7 +236,7 @@ export class TypeResolver {
       if (!project) return results;
 
       await Promise.all(
-        examples.map(async ({ moduleName, source, file }) => {
+        examples.map(async ({ filePath, source, file }) => {
           const [syntactic, semantic]: [TS[], TS[]] = await Promise.all([
             project.program.getSyntacticDiagnostics(file),
             project.program.getSemanticDiagnostics(file),
@@ -249,9 +251,9 @@ export class TypeResolver {
             .map((entry) => `Line ${entry.line}: ${entry.text}`)
             .join("\n");
 
-          const list = results.get(moduleName) ?? [];
+          const list = results.get(filePath) ?? [];
           list.push({ id: source.id, name: source.name, message });
-          results.set(moduleName, list);
+          results.set(filePath, list);
         }),
       );
     } finally {

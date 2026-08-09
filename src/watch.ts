@@ -1,12 +1,14 @@
 import { lstatSync } from "node:fs";
 import { resolve } from "node:path";
 import {
+  type ComponentDocApi,
   type ComponentDocs,
   type ComponentParseError,
   collectComponents,
   collectSvelteFilePaths,
+  createGlobMergeState,
   type GenerateBundleResult,
-  globComponentSources,
+  mergeGlobbedComponents,
   type ProcessComponentOptions,
   processComponent,
   readFileMap,
@@ -55,14 +57,21 @@ export interface SveldBundle {
  * @param documentExports - Record consts, functions, and types from the entry barrel
  */
 export async function createSveldBundle(input: string, glob: boolean, documentExports = false): Promise<SveldBundle> {
-  // Export map is stable per edit; re-glob `allComponents` in `update()` when files are added.
-  const { exports, allComponents, rootDir, resolveComponentFilePath } = collectComponents(input, glob, documentExports);
+  // Export map is stable per edit; re-glob `allComponentEntries` in `update()` when files are added.
+  const { exports, allComponentEntries, rootDir, resolveComponentFilePath } = collectComponents(
+    input,
+    glob,
+    documentExports,
+  );
 
   const entryExports: EntryExports =
     documentExports && lstatSync(input).isFile() ? await parseEntryExports(resolve(input)) : [];
 
   const exportEntries = Object.entries(exports);
-  const allComponentEntries = Object.entries(allComponents);
+
+  // Dedupes re-glob adds in `update()` by resolved path, including when two
+  // components share a basename.
+  const globMergeState = createGlobMergeState(allComponentEntries, resolveComponentFilePath);
 
   const components: ComponentDocs = new Map();
   const allComponentsForTypes: ComponentDocs = new Map();
@@ -99,7 +108,7 @@ export async function createSveldBundle(input: string, glob: boolean, documentEx
     }
     for (const entry of allComponentEntries) {
       const result = processComponent(entry, allComponentEntries, fileMap, resolveComponentFilePath, processOptions);
-      if (result) allComponentsForTypes.set(result.moduleName, result);
+      if (result) allComponentsForTypes.set(result.filePath, result);
     }
     reportParseErrors(buildResult().errors);
   }
@@ -110,9 +119,14 @@ export async function createSveldBundle(input: string, glob: boolean, documentEx
   /**
    * Re-parses only the entries whose resolved source is in `affected`, writing
    * results back into `target`. Returns the set of paths that were re-parsed.
+   *
+   * `keyFor` chooses the map key. `components` uses `moduleName` from the
+   * barrel export. `allComponentsForTypes` uses `filePath` so two globbed
+   * components that share a basename stay distinct.
    */
   const reparseInto = (
     target: ComponentDocs,
+    keyFor: (result: ComponentDocApi) => string,
     entries: Array<[string, ParsedExports[string]]>,
     affected: Set<string>,
     fileMap: Map<string, string | null>,
@@ -124,13 +138,13 @@ export async function createSveldBundle(input: string, glob: boolean, documentEx
 
       const result = processComponent(entry, entries, fileMap, resolveComponentFilePath, processOptions);
       if (result) {
-        target.set(result.moduleName, result);
+        target.set(keyFor(result), result);
         reparsed.add(resolvedPath);
       } else {
         // Drop stale entry when the source vanished or failed to parse.
-        for (const [moduleName, api] of target) {
+        for (const [key, api] of target) {
           if (resolveComponentFilePath(api.filePath) === resolvedPath) {
-            target.delete(moduleName);
+            target.delete(key);
           }
         }
       }
@@ -147,16 +161,7 @@ export async function createSveldBundle(input: string, glob: boolean, documentEx
 
     // Pick up components created since the last parse.
     if (glob) {
-      for (const { moduleName, source } of globComponentSources(rootDir)) {
-        const existing = allComponents[moduleName];
-        if (existing) {
-          existing.source = source;
-        } else {
-          const newEntry = { source, default: false };
-          allComponents[moduleName] = newEntry;
-          allComponentEntries.push([moduleName, newEntry]);
-        }
-      }
+      mergeGlobbedComponents(rootDir, exports, allComponentEntries, resolveComponentFilePath, globMergeState);
     }
 
     const affected = expandAffected(changed, reverseDeps);
@@ -172,10 +177,16 @@ export async function createSveldBundle(input: string, glob: boolean, documentEx
     const fileMap = await readFileMap(affected);
 
     const reparsed = new Set<string>();
-    for (const path of reparseInto(components, exportEntries, affected, fileMap)) {
+    for (const path of reparseInto(components, (result) => result.moduleName, exportEntries, affected, fileMap)) {
       reparsed.add(path);
     }
-    for (const path of reparseInto(allComponentsForTypes, allComponentEntries, affected, fileMap)) {
+    for (const path of reparseInto(
+      allComponentsForTypes,
+      (result) => result.filePath,
+      allComponentEntries,
+      affected,
+      fileMap,
+    )) {
       reparsed.add(path);
     }
 

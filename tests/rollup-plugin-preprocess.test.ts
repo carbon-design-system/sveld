@@ -1,8 +1,14 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import type { ComponentDocApi, ComponentDocs } from "../src/bundle";
 import { generateBundle } from "../src/plugin";
 import { writeTsDefinition } from "../src/writer/writer-ts-definitions";
+
+/** Look up `allComponentsForTypes` by filePath; moduleName is not unique. */
+function byModuleName(components: ComponentDocs, moduleName: string): ComponentDocApi | undefined {
+  return Array.from(components.values()).find((component) => component.moduleName === moduleName);
+}
 
 describe("metadata source preservation", () => {
   test("preserves TypeScript annotations while stripping only the top-level style block", async () => {
@@ -33,7 +39,7 @@ describe("metadata source preservation", () => {
       );
 
       const result = await generateBundle(componentDir, true);
-      const component = result.allComponentsForTypes.get("Button");
+      const component = byModuleName(result.allComponentsForTypes, "Button");
 
       expect(component).toBeDefined();
       expect(component?.props.find((prop) => prop.name === "message")?.type).toBe("string");

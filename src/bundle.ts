@@ -54,11 +54,13 @@ export interface GenerateBundleResult {
    */
   cache?: ParseCache;
   /**
-   * @internal moduleName -> resolved source path, matching `cache`'s entry
-   * identity, so the write phase can key its text cache lookups without
-   * redoing path-alias resolution. Undefined when the parse cache is disabled.
+   * @internal filePath -> resolved source path, matching `cache` entry
+   * identity so the write phase can look up text cache without redoing
+   * path-alias resolution. Uses filePath because moduleName is not unique
+   * when two components share a basename. Undefined when the parse cache
+   * is disabled.
    */
-  resolvedPathByModule?: Map<string, string>;
+  resolvedPathByFilePath?: Map<string, string>;
 }
 
 export interface GenerateBundleOptions {
@@ -140,19 +142,20 @@ const HYPHEN_REGEX = /-/g;
 /**
  * Discovered component sources for an entry point, before parsing.
  *
- * `exports` holds explicitly exported components (used for JSON/Markdown);
- * `allComponents` additionally includes glob-discovered components (used for
- * `.d.ts` generation). `resolveComponentFilePath` maps a component `source`
- * to its absolute path on disk.
+ * `exports` holds explicitly exported components for JSON/Markdown.
+ * `allComponentEntries` is a flat list that also includes glob-discovered
+ * components for `.d.ts` generation. A map keyed by `moduleName` would drop
+ * one of two `.svelte` files that share a basename. `resolveComponentFilePath`
+ * maps a component `source` to its absolute path on disk.
  */
 export interface CollectedComponents {
   exports: ParsedExports;
-  allComponents: ParsedExports;
+  allComponentEntries: Array<[string, ParsedExports[string]]>;
   rootDir: string;
   resolveComponentFilePath: ResolveComponentFilePath;
 }
 
-/** A `.svelte` file discovered on disk, before it's merged into `exports`/`allComponents`. */
+/** A `.svelte` file discovered on disk, before it's merged into `exports`/`allComponentEntries`. */
 export interface GlobbedComponentSource {
   moduleName: string;
   source: ReturnType<typeof asRelativeSourcePath>;
@@ -192,13 +195,110 @@ function findSvelteFiles(dir: string, results: string[] = [], visited = new Set<
   return results;
 }
 
-/** Globs every `.svelte` file under `rootDir`, resolving each to its module name and source path. */
+/**
+ * Globs every `.svelte` file under `rootDir`, resolving each to its module name and source path.
+ *
+ * Sorted by `source` so walk order does not depend on `readdirSync`, which
+ * varies by OS.
+ */
 export function globComponentSources(rootDir: string): GlobbedComponentSource[] {
-  return findSvelteFiles(rootDir).map((file) => {
-    const moduleName = parse(file).name.replace(HYPHEN_REGEX, "");
-    const source = asRelativeSourcePath(normalizeSeparators(`./${relative(rootDir, file)}`));
-    return { moduleName, source };
-  });
+  return findSvelteFiles(rootDir)
+    .map((file) => {
+      const moduleName = parse(file).name.replace(HYPHEN_REGEX, "");
+      const source = asRelativeSourcePath(normalizeSeparators(`./${relative(rootDir, file)}`));
+      return { moduleName, source };
+    })
+    .sort((a, b) => a.source.localeCompare(b.source));
+}
+
+/** True when an export `source` still needs glob resolution, like `export { X } from "./dir"`. */
+function isUnresolvedBarrelSource(source: string): boolean {
+  return parse(source).ext !== ".svelte";
+}
+
+/** Whether `candidateSource` is a file located under the directory `dirSource` points at. */
+function isWithinSourceDir(dirSource: string, candidateSource: string): boolean {
+  const dir = dirSource.endsWith("/") ? dirSource : `${dirSource}/`;
+  return candidateSource.startsWith(dir);
+}
+
+/**
+ * State shared across {@link mergeGlobbedComponents} calls. Dedupes by
+ * resolved path, and warns once per colliding basename. Watch mode keeps
+ * one instance across re-globs; a one-shot build creates one and drops it.
+ */
+export interface GlobMergeState {
+  seenPaths: Set<string>;
+  seenModuleNamePaths: Map<string, string>;
+  warnedModuleNames: Set<string>;
+}
+
+export function createGlobMergeState(
+  entries: Array<[string, ParsedExports[string]]>,
+  resolveComponentFilePath: ResolveComponentFilePath,
+): GlobMergeState {
+  return {
+    seenPaths: new Set(entries.map(([, entry]) => resolveComponentFilePath(entry.source))),
+    seenModuleNamePaths: new Map(
+      entries.map(([moduleName, entry]) => [moduleName, resolveComponentFilePath(entry.source)]),
+    ),
+    warnedModuleNames: new Set(),
+  };
+}
+
+/**
+ * Merges every glob-discovered `.svelte` file under `rootDir` into `exports`
+ * and `allComponentEntries`.
+ *
+ * When a barrel export still points at a directory, like
+ * `export { Button } from "./button"`, match it to the glob hit under that
+ * directory with the same basename.
+ *
+ * Other glob hits each get their own `allComponentEntries` row, tracked in
+ * `state` by resolved file path. Files that share a basename both stay in
+ * `.d.ts` output. A colliding basename is logged once.
+ *
+ * Safe to call again with the same `state`. Watch mode re-globs on every
+ * edit and skips paths already seen.
+ */
+export function mergeGlobbedComponents(
+  rootDir: string,
+  exports: ParsedExports,
+  allComponentEntries: Array<[string, ParsedExports[string]]>,
+  resolveComponentFilePath: ResolveComponentFilePath,
+  state: GlobMergeState,
+): void {
+  for (const { moduleName, source } of globComponentSources(rootDir)) {
+    const resolvedPath = resolveComponentFilePath(source);
+
+    const exportEntry = exports[moduleName];
+    if (exportEntry && isUnresolvedBarrelSource(exportEntry.source) && isWithinSourceDir(exportEntry.source, source)) {
+      // Same object sits in `allComponentEntries`, so updating `source` is
+      // enough. Swap the old directory path out of `state.seenPaths` for the
+      // resolved file path, or the next pass treats it as a basename collision.
+      state.seenPaths.delete(resolveComponentFilePath(exportEntry.source));
+      exportEntry.source = source;
+      state.seenPaths.add(resolvedPath);
+      state.seenModuleNamePaths.set(moduleName, resolvedPath);
+      continue;
+    }
+
+    if (state.seenPaths.has(resolvedPath)) continue;
+    state.seenPaths.add(resolvedPath);
+
+    const priorPath = state.seenModuleNamePaths.get(moduleName);
+    if (priorPath === undefined) {
+      state.seenModuleNamePaths.set(moduleName, resolvedPath);
+    } else if (priorPath !== resolvedPath && !state.warnedModuleNames.has(moduleName)) {
+      state.warnedModuleNames.add(moduleName);
+      console.warn(
+        `Warning: multiple components named "${moduleName}" found (${normalizeSeparators(relative(rootDir, priorPath))} and ${normalizeSeparators(relative(rootDir, resolvedPath))}). ` +
+          "Both are included in TypeScript definitions, but only one can be the named export.",
+      );
+    }
+
+    allComponentEntries.push([moduleName, { source, default: false }]);
+  }
 }
 
 /**
@@ -234,23 +334,14 @@ export function collectComponents(input: string, glob: boolean, documentExports 
     }
   }
 
-  const allComponents: ParsedExports = { ...exports };
+  const allComponentEntries: Array<[string, ParsedExports[string]]> = Object.entries(exports);
 
   if (glob) {
-    for (const { moduleName, source } of globComponentSources(rootDir)) {
-      if (exports[moduleName]) {
-        exports[moduleName].source = source;
-      }
-
-      if (allComponents[moduleName]) {
-        allComponents[moduleName].source = source;
-      } else {
-        allComponents[moduleName] = { source, default: false };
-      }
-    }
+    const state = createGlobMergeState(allComponentEntries, resolveComponentFilePath);
+    mergeGlobbedComponents(rootDir, exports, allComponentEntries, resolveComponentFilePath, state);
   }
 
-  return { exports, allComponents, rootDir, resolveComponentFilePath };
+  return { exports, allComponentEntries, rootDir, resolveComponentFilePath };
 }
 
 /**
@@ -436,14 +527,17 @@ export async function generateBundle(
   options: GenerateBundleOptions = {},
 ): Promise<GenerateBundleResult> {
   const documentExports = options.documentExports === true;
-  const { exports, allComponents, rootDir, resolveComponentFilePath } = collectComponents(input, glob, documentExports);
+  const { exports, allComponentEntries, rootDir, resolveComponentFilePath } = collectComponents(
+    input,
+    glob,
+    documentExports,
+  );
 
   // File entry only; directory inputs have no barrel.
   const entryExports: EntryExports =
     documentExports && lstatSync(input).isFile() ? await parseEntryExports(resolve(input)) : [];
 
   const exportEntries = Object.entries(exports);
-  const allComponentEntries = Object.entries(allComponents);
 
   const uniqueFilePaths = collectSvelteFilePaths([exportEntries, allComponentEntries], resolveComponentFilePath);
   const fileMap = await readFileMap(uniqueFilePaths);
@@ -454,10 +548,10 @@ export async function generateBundle(
   // `cache` is on by default; only an explicit `false` disables it.
   const cache =
     options.cache === false ? undefined : new ParseCache(resolveCacheFilePath(rootDir, options.cache ?? true));
-  // moduleName -> resolved source path, so the write phase can key a
-  // generated-text cache against the same identity as `cache` without
-  // redoing path-alias resolution. Only worth building when there's a cache.
-  const resolvedPathByModule = cache ? new Map<string, string>() : undefined;
+  // filePath -> resolved source path for the write-phase text cache, keyed
+  // like `cache` so path-alias resolution is not redone. filePath stays
+  // unique when two components share a basename. Built only when caching.
+  const resolvedPathByFilePath = cache ? new Map<string, string>() : undefined;
 
   const misses = new Set<string>();
   const hashes = new Map<string, string>();
@@ -513,8 +607,8 @@ export async function generateBundle(
   for (const entry of allComponentEntries) {
     const result = processComponent(entry, allComponentEntries, fileMap, resolveComponentFilePath, processOptions);
     if (result) {
-      allComponentsForTypes.set(result.moduleName, result);
-      resolvedPathByModule?.set(result.moduleName, resolveComponentFilePath(entry[1].source));
+      allComponentsForTypes.set(result.filePath, result);
+      resolvedPathByFilePath?.set(result.filePath, resolveComponentFilePath(entry[1].source));
     }
   }
 
@@ -540,8 +634,8 @@ export async function generateBundle(
       if (!affected.has(resolvedPath) || misses.has(resolvedPath)) continue;
       const result = processComponent(entry, allComponentEntries, fileMap, resolveComponentFilePath, processOptions);
       if (result) {
-        allComponentsForTypes.set(result.moduleName, result);
-        resolvedPathByModule?.set(result.moduleName, resolvedPath);
+        allComponentsForTypes.set(result.filePath, result);
+        resolvedPathByFilePath?.set(result.filePath, resolvedPath);
       }
     }
   }
@@ -586,7 +680,7 @@ export async function generateBundle(
     errors,
     diagnostics,
     cache,
-    resolvedPathByModule,
+    resolvedPathByFilePath,
   };
 }
 
@@ -652,7 +746,9 @@ async function checkComponentExamples(
 ): Promise<void> {
   if (!resolver) return;
 
-  const diagnosticsByModule = await resolver.checkExamples(
+  // Keyed by resolved filePath, not moduleName: two components discovered via
+  // `--glob` can share a basename, and moduleName alone isn't unique.
+  const diagnosticsByFilePath = await resolver.checkExamples(
     candidates.map(({ component, sources }) => ({
       moduleName: component.moduleName,
       filePath: resolveComponentFilePath(component.filePath),
@@ -661,7 +757,7 @@ async function checkComponentExamples(
   );
 
   for (const { component, sources } of candidates) {
-    const found = diagnosticsByModule.get(component.moduleName);
+    const found = diagnosticsByFilePath.get(resolveComponentFilePath(component.filePath));
     if (!found || found.length === 0) continue;
 
     const sourceById = new Map(sources.map((source) => [source.id, source.source]));

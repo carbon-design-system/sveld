@@ -1,9 +1,14 @@
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { generateBundle } from "../src/bundle";
+import { type ComponentDocApi, type ComponentDocs, generateBundle } from "../src/bundle";
 import ComponentParser from "../src/ComponentParser";
 import { TypeResolver } from "../src/resolve-types";
+
+/** Look up `allComponentsForTypes` by filePath; moduleName is not unique. */
+function byModuleName(components: ComponentDocs, moduleName: string): ComponentDocApi | undefined {
+  return Array.from(components.values()).find((component) => component.moduleName === moduleName);
+}
 
 const BUTTON = `<script>
   export let label = "button";
@@ -83,7 +88,7 @@ describe("generateBundle in-run parse dedupe", () => {
 
     expect(parseSpy).toHaveBeenCalledTimes(1);
     expect(result.components.has("Button")).toBe(true);
-    expect(result.allComponentsForTypes.has("Button")).toBe(true);
+    expect(byModuleName(result.allComponentsForTypes, "Button")).toBeDefined();
   });
 
   test("dedupes the same way when the on-disk cache is enabled", async () => {
@@ -94,7 +99,7 @@ describe("generateBundle in-run parse dedupe", () => {
 
     expect(parseSpy).toHaveBeenCalledTimes(1);
     expect(result.components.has("Button")).toBe(true);
-    expect(result.allComponentsForTypes.has("Button")).toBe(true);
+    expect(byModuleName(result.allComponentsForTypes, "Button")).toBeDefined();
   });
 });
 
@@ -164,7 +169,7 @@ describe("generateBundle shares one TypeResolver across resolveTypes and checkEx
     const propsImported = result.components.get("PropsImported");
     expect(propsImported?.props).toEqual([]);
 
-    const exampleCheck = result.allComponentsForTypes.get("ExampleCheck");
+    const exampleCheck = byModuleName(result.allComponentsForTypes, "ExampleCheck");
     expect(exampleCheck?.diagnostics ?? []).toEqual([]);
   });
 });
