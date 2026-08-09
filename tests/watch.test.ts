@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import type { ComponentDocApi, ComponentDocs } from "../src/bundle";
@@ -90,6 +90,29 @@ describe("watch mode (createSveldBundle)", () => {
 
     expect(reparsed).toContain(newPath);
     expect(byModuleName(result.allComponentsForTypes, "NewOne")).toBeDefined();
+  });
+
+  test("picks up a newly created component that shares a basename with an existing one", async () => {
+    const bundle = await createSveldBundle(dir, true);
+
+    // Same shape as the collision #402 fixed for the one-shot `generateBundle`
+    // path, but exercised through the incremental `mergeGlobbedComponents`
+    // call in `update()`, which has its own dedupe/collision-warning state.
+    mkdirSync(join(dir, "nested"));
+    const newPath = resolve(dir, "nested", "Button.svelte");
+    writeFileSync(newPath, `<script>\n  export let size = "small";\n</script>\n\n<button>{size}</button>`);
+
+    const { result, reparsed } = await bundle.update([newPath]);
+
+    expect(reparsed).toContain(newPath);
+
+    const buttons = Array.from(result.allComponentsForTypes.values()).filter((c) => c.moduleName === "Button");
+    expect(buttons).toHaveLength(2);
+
+    const original = buttons.find((c) => !c.filePath.includes("nested"));
+    const added = buttons.find((c) => c.filePath.includes("nested"));
+    expect(original?.props.map((p) => p.name)).toEqual(["primary"]);
+    expect(added?.props.map((p) => p.name)).toEqual(["size"]);
   });
 
   test("picks up a deleted component file", async () => {

@@ -37,7 +37,14 @@ export interface GenerateBundleResult {
   exports: ParsedExports;
   /** Entry-barrel exports other than components. Empty when `documentExports` is off. */
   entryExports: EntryExports;
+  /** Keyed by `moduleName`, unique here because it comes from the entry barrel's export names. */
   components: ComponentDocs;
+  /**
+   * Every `--glob`-discovered `.svelte` file, keyed by resolved `filePath`
+   * rather than `moduleName`: two files in different directories can share a
+   * basename. See `WriterComponentSet` in `writer/registry.ts` for what this
+   * means for a custom writer that receives this map.
+   */
   allComponentsForTypes: ComponentDocs;
   /**
    * Components that failed to parse. Empty unless `failFast` is disabled and
