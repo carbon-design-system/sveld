@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.36.3](https://github.com/carbon-design-system/sveld/releases/tag/v0.36.3) - 2026-08-09
+
+**Fixes**
+
+- keep both components when `--glob` finds duplicate basenames (88559a6, #402)
+- key resolved prop types by `filePath`, not `moduleName` (4117642, #403)
+- key colliding JSON output files by source path (bfe104b, #404)
+
 ## [0.36.2](https://github.com/carbon-design-system/sveld/releases/tag/v0.36.2) - 2026-08-08
 
 **Fixes**
