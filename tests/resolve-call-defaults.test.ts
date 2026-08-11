@@ -217,8 +217,7 @@ describe("cross-file CallExpression prop-default resolution", () => {
       "string",
     );
 
-    // Second run is a full parse-cache hit; must still load the parser stack for the
-    // call-default pass instead of throwing from getParserStack().
+    // Warm cache: still need the parser stack for the call-default pass.
     const second = await generateBundle(path.join(dir, "index.js"), true, { cache: cacheFile });
     const prop = byModuleName(second.allComponentsForTypes, "Cached")?.props.find((p) => p.name === "id");
     expect(prop?.type).toBe("string");
@@ -295,7 +294,7 @@ describe("cross-file CallExpression prop-default resolution", () => {
 
     const result = await generateBundle(path.join(dir, "index.js"), true);
     const prop = byModuleName(result.allComponentsForTypes, "BodyInfer")?.props.find((p) => p.name === "id");
-    // Template-literal return → string via cross-file literal inference.
+    // Template return → string via cross-file literal inference.
     expect(prop?.type).toBe("string");
   });
 

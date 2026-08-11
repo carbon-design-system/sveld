@@ -37,10 +37,9 @@ interface AstNode {
 }
 
 /**
- * Internal export record that tracks the absolute declaring file, plus a
- * `returnType` for function-valued exports - used by `resolve-call-defaults.ts`
- * to resolve a `CallExpression` prop default's callee return type. Not part
- * of the public `EntryExport` shape (see `parseEntryExports`, which strips it).
+ * Internal export with absolute `declFile` plus optional `returnType` for
+ * function-valued exports (used by `resolve-call-defaults.ts`). Stripped
+ * before public `EntryExport` output in `parseEntryExports`.
  */
 export interface InternalExport extends Omit<EntryExport, "source"> {
   declFile: string;
@@ -128,7 +127,7 @@ function leadingJsDoc(text: string, start: number): string | undefined {
   return description.join(" ") || undefined;
 }
 
-/** Same anchor as {@link leadingJsDoc}, but returns the raw `/** ... *\/` block instead of just the description. */
+/** Like {@link leadingJsDoc}, but returns the full `/** ... *\/` block. */
 function leadingJsDocBlock(text: string, start: number): string | undefined {
   const before = text.slice(0, start).trimEnd();
   if (!before.endsWith("*/")) return undefined;
@@ -152,10 +151,8 @@ function annotationText(source: ModuleSource, annotated: AstNode | undefined): s
 }
 
 /**
- * A function/arrow/`TSDeclareFunction` node's own TS return-type annotation
- * text (`): T`), if any. Distinct from {@link annotationText}: a function's
- * return type lives on its own `returnType` property, not `typeAnnotation`
- * (which annotates a binding, e.g. a variable or parameter).
+ * Function/arrow/`TSDeclareFunction` return annotation text (`): T`).
+ * Lives on `returnType`, not `typeAnnotation` (that annotates bindings).
  */
 function functionReturnAnnotationText(source: ModuleSource, fn: AstNode): string | undefined {
   const returnAnnotation = asNode(fn.returnType);
@@ -183,7 +180,7 @@ function inferLiteralType(init: AstNode): string | undefined {
   return undefined;
 }
 
-/** Trailing return type from a callable type annotation (`() => string` → `string`). */
+/** Trailing return from a callable type (`() => string` → `string`). */
 function returnTypeFromCallableTypeText(type: string | undefined): string | undefined {
   if (!type) return undefined;
   const idx = type.lastIndexOf("=>");
@@ -193,9 +190,8 @@ function returnTypeFromCallableTypeText(type: string | undefined): string | unde
 }
 
 /**
- * Literal-only return inference for a function/arrow AST node (mirrors
- * same-file `inferReturnTypeFromNode` in props.ts). Template literals and
- * string/number/boolean literals only; anything else → undefined.
+ * Literal-only return inference for a function/arrow (same idea as
+ * `inferReturnTypeFromNode` in props.ts). string/number/boolean/template only.
  */
 function inferAstLiteralReturnType(fn: AstNode): string | undefined {
   if (fn.async || fn.generator) return undefined;
@@ -235,7 +231,7 @@ function collectAstReturnArguments(body: AstNode, out: Array<AstNode | null>): v
       out.push(asNode(statement.argument) ?? null);
       continue;
     }
-    // Shallow walk into nested blocks (if/for/while bodies) without entering nested functions.
+    // Nested blocks (if/for/while) without entering nested functions.
     if (statement.type === "BlockStatement") {
       collectAstReturnArguments(statement, out);
       continue;
@@ -291,8 +287,7 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
     return results;
   }
 
-  // `TSDeclareFunction`: an ambient/bodyless signature, as written in a `.d.ts`
-  // file (`export function uniqueId(prefix?: string): string;`).
+  // Ambient signature in a `.d.ts`: `export function uniqueId(prefix?: string): string;`
   if (declaration.type === "FunctionDeclaration" || declaration.type === "TSDeclareFunction") {
     const name = identifierName(asNode(declaration.id));
     if (!name) return [];
@@ -539,7 +534,7 @@ export async function parseEntryExports(entryFile: string): Promise<EntryExports
 
   const byName = new Map<string, EntryExport>();
   for (const entry of collected) {
-    // `returnType` is internal, for `resolve-call-defaults.ts` only - not part of the public shape.
+    // Drop internal returnType; public EntryExport does not expose it.
     const { declFile, returnType: _returnType, ...rest } = entry;
     const source = normalizeSeparators(`./${relative(entryDir, declFile)}`);
     byName.set(entry.name, { ...rest, source });

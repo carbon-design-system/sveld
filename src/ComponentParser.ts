@@ -150,7 +150,7 @@ export interface TypeImportBinding {
   specifierType: "default" | "named" | "namespace";
 }
 
-/** A named *value* import binding (`import { x } from "..."`), tracked for cross-file call-default resolution. */
+/** Named value import (`import { x } from "..."`) keyed for cross-file call-default lookup. */
 export interface ValueImportBinding {
   localName: string;
   importedName: string;
@@ -158,12 +158,10 @@ export interface ValueImportBinding {
 }
 
 /**
- * A prop whose default is a `CallExpression` (`export let id = uniqueId()`) sveld could not
- * resolve a return type for during AST-local parsing. When `importSource` is set, the callee
- * came from a named import and a later, Node-only pass (`resolve-call-defaults.ts`, run from
- * `bundle.ts`) can still resolve it by reading the target module. Without `importSource` the
- * callee is a same-file function with no derivable return type, or an unknown identifier - no
- * further resolution is possible, but the candidate is kept so the diagnostic can name the callee.
+ * Prop default is a `CallExpression` whose return type we could not resolve in-parser
+ * (`export let id = uniqueId()`). With `importSource`, `resolve-call-defaults.ts` (from
+ * `generateBundle`) can still read the target module. Without it, keep the candidate so
+ * the diagnostic can name the callee.
  */
 export interface PendingCallDefaultCandidate {
   propName: string;
@@ -191,7 +189,7 @@ export interface ParsedComponentTypeScriptMetadata {
    * component's props as their AST-derived text rather than expand them.
    */
   referencesComponentGenerics?: boolean;
-  /** Props with an unresolved `CallExpression` default, for `resolve-call-defaults.ts` to pick up. */
+  /** Unresolved CallExpression defaults for the cross-file pass in `generateBundle`. */
   pendingCallDefaultCandidates?: PendingCallDefaultCandidate[];
 }
 
@@ -234,10 +232,9 @@ export interface ProcessedInitializer {
   resolvedParams?: ComponentPropParam[];
   resolvedReturnType?: string;
   /**
-   * Set when the initializer is a `CallExpression` whose callee return type
-   * could not be resolved during AST-local parsing (see
-   * {@link PendingCallDefaultCandidate}). The caller fills in `propName`/
-   * `location` and records it on {@link ParserContext.pendingCallDefaultCandidates}.
+   * CallExpression default with no in-parser return type
+   * ({@link PendingCallDefaultCandidate}). Caller adds `propName`/`location`
+   * onto {@link ParserContext.pendingCallDefaultCandidates}.
    */
   pendingCallDefault?: Omit<PendingCallDefaultCandidate, "propName" | "location">;
 }
@@ -940,9 +937,8 @@ export default class ComponentParser {
     if (this.ctx.parsed?.module) {
       walk(this.ctx.parsed?.module as unknown as Node, {
         enter: (node) => {
-          // Module bindings are in scope for the instance script. Track the same
-          // import/function/var leads the instance walk does so CallExpression
-          // prop defaults (often in the instance script) can resolve them.
+          // Module script is in scope for instance. Record imports/funcs/vars
+          // the same way so instance CallExpression defaults can see them.
           if (node.type === "ImportDeclaration") {
             collectValueImportBindings(this.ctx, node as unknown as ImportDeclarationNode);
           }
@@ -1805,8 +1801,7 @@ export default class ComponentParser {
     for (const prop of processedProps) {
       if (prop.typeSource === "unknown") {
         const callDefault = pendingCallDefaultsByLocation.props.get(prop.name);
-        // A `CallExpression` default's type never stays `undefined`: the writer would render
-        // the literal string `id?: undefined;`, which is worse than `any` for consumers.
+        // Never leave type unset: the writer would emit `id?: undefined;`.
         if (callDefault) prop.type = "any";
 
         const message = callDefault

@@ -169,23 +169,19 @@ export function processInitializer(
         ? (callee as Identifier).name
         : undefined;
 
-    // `$derived(expr)`/`$state(expr)` wrap a value; the rune call itself has no
-    // meaningful "return type" of its own - the prop's type is whatever `expr` is.
-    // Unwrap and recurse into the argument (mirrors `unwrapBindableInitializer`'s
-    // treatment of `$bindable(...)`), keeping the rune call's own source text as
-    // `value`/`@default`.
+    // `$derived`/`$state` wrap a value. Unwrap like `$bindable`, keep the rune
+    // call text as `@default`.
     if ((calleeName === "$derived" || calleeName === "$state") && callExpr.arguments.length === 1 && depth < 5) {
       const inner = processInitializer(parser, ctx, callExpr.arguments[0], depth + 1);
       return { ...inner, value, defaultValue };
     }
 
-    // A callee that's a same-file function (declaration or const/arrow) or a named
-    // value import may resolve to a return type below.
+    // Same-file function/const-arrow, or a named value import.
     if (calleeName) {
       const sameFileReturnType = resolveSameFileCallReturnType(parser, ctx, calleeName);
       if (sameFileReturnType) {
-        // Value props from CallExpression defaults: only `resolvedType`. Setting
-        // `resolvedReturnType` would leak onto `prop.returnType` for non-functions.
+        // Value prop: only resolvedType. resolvedReturnType would show up on
+        // prop.returnType even when isFunction is false.
         return {
           value,
           type: undefined,
@@ -215,9 +211,8 @@ export function processInitializer(
       }
     }
 
-    // Unresolved: unknown identifier, member call (`x.y()`), IIFE, etc. Still tag as a
-    // pending call default so the finalize pass falls back to `any` - never the literal
-    // string "undefined" for the prop's type - regardless of the callee's shape.
+    // Unknown callee, member call, IIFE, etc. Still pending so finalize uses
+    // "any" instead of the literal type "undefined".
     return {
       value,
       type: undefined,
@@ -346,7 +341,7 @@ export function resolveConstInitializer(ctx: ParserContext, name: string): unkno
   return undefined;
 }
 
-/** Source text of a call's callee (e.g. `now.toISOString`), for a diagnostic naming it. Falls back to `"call"`. */
+/** Callee source text for diagnostics (`now.toISOString`). Falls back to `"call"`. */
 function calleeDisplayText(ctx: ParserContext, callee: unknown): string {
   if (
     callee &&
@@ -362,13 +357,10 @@ function calleeDisplayText(ctx: ParserContext, callee: unknown): string {
 }
 
 /**
- * Return type for a same-file `CallExpression` default's callee (e.g.
- * `export let id = uniqueId()` where `uniqueId` is declared in this file as a
- * `function` or as `const uniqueId = () => …`). Tries, in order: the callee's
- * own JSDoc `@returns`, its TS return-type annotation, then a literal-only
- * inference over its `return` statements (see {@link inferReturnTypeFromNode}).
- * Returns `undefined` - not `"any"` - when none of these give a confident
- * answer, so the caller can tell "no lead" apart from "resolved to any".
+ * Return type for a same-file call default (`export let id = uniqueId()`).
+ * Order: JSDoc `@returns`, TS return annotation, binding `() => T`, then
+ * literal returns via {@link inferReturnTypeFromNode}. Returns `undefined`
+ * (not `"any"`) when nothing confident turns up.
  */
 function resolveSameFileCallReturnType(
   parser: ComponentParser,
@@ -391,12 +383,12 @@ function resolveSameFileCallReturnType(
   return inferred === "any" ? undefined : inferred;
 }
 
-/** True when `name` is a local `const`/`let` whose initializer is an arrow or function expression. */
+/** Local const/let whose initializer is an arrow or function expression. */
 function isLocalFunctionValuedBinding(ctx: ParserContext, name: string): boolean {
   return localFunctionValuedInitializer(ctx, name) !== undefined;
 }
 
-/** Arrow/function-expression initializer for a local binding, if any. */
+/** Arrow or function-expression initializer for a local binding. */
 function localFunctionValuedInitializer(
   ctx: ParserContext,
   name: string,
@@ -410,8 +402,7 @@ function localFunctionValuedInitializer(
 }
 
 /**
- * Return type from a binding-level annotation like `const f: () => string = …`
- * (the arrow itself may omit `): string`).
+ * Return type from `const f: () => string = ...` when the arrow omits `): string`.
  */
 function bindingCallableReturnTypeText(ctx: ParserContext, name: string): string | undefined {
   for (const decl of ctx.vars) {
@@ -439,7 +430,7 @@ function bindingCallableReturnTypeText(ctx: ParserContext, name: string): string
   return undefined;
 }
 
-/** Trailing return type from a callable type annotation text (`() => string` → `string`). */
+/** Trailing return from a callable type (`() => string` → `string`). */
 function returnTypeFromCallableTypeText(type: string | undefined): string | undefined {
   if (!type) return undefined;
   const idx = type.lastIndexOf("=>");
@@ -448,7 +439,7 @@ function returnTypeFromCallableTypeText(type: string | undefined): string | unde
   return ret || undefined;
 }
 
-/** Source text of a function's explicit TS return-type annotation (`): T`), if any. */
+/** Explicit TS return annotation text on a function (`): T`). */
 function functionReturnTypeAnnotationText(
   ctx: ParserContext,
   node: FunctionDeclaration | FunctionExpression | ArrowFunctionExpression,

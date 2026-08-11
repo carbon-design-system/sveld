@@ -680,10 +680,9 @@ export async function generateBundle(
     }
   }
 
-  // AST/JSDoc-text only (no tsc), so - unlike resolveTypes - this always runs, keyed on
-  // whatever `pendingCallDefaultCandidates` parsing found; a no-op when there are none.
-  // Fully cached component runs skip `loadParserStack()` above, but this pass still parses
-  // sibling modules via `getParserStack()` — load here whenever there is work to do.
+  // AST/JSDoc only (no tsc). Always runs when parsing left pending candidates.
+  // Warm-cache runs skip loadParserStack above, but this pass still needs it to
+  // parse sibling modules.
   const callDefaultCandidates = collectCallDefaultCandidates(allComponentsForTypes);
   if (callDefaultCandidates.length > 0) {
     await loadParserStack();
@@ -720,7 +719,7 @@ interface CallDefaultCandidateGroup {
   candidates: PendingCallDefaultCandidate[];
 }
 
-/** Components with at least one `CallExpression` prop default whose callee came from a named import. */
+/** Components that have a CallExpression prop default from a named import. */
 function collectCallDefaultCandidates(components: ComponentDocs): CallDefaultCandidateGroup[] {
   const groups: CallDefaultCandidateGroup[] = [];
 
@@ -736,10 +735,9 @@ function collectCallDefaultCandidates(components: ComponentDocs): CallDefaultCan
 }
 
 /**
- * Patches `component.props`/`component.moduleExports` with each resolution, and either drops
- * the parse-time `prop-unknown-type` diagnostic (resolved) or replaces it with a more specific
- * one (still unresolved - see {@link describeCallDefaultFailure}). Guarded on `typeSource ===
- * "unknown"`: an explicit JSDoc `@type` on the same prop always wins and must not be overwritten.
+ * Apply each resolution onto props/moduleExports. Drop or rewrite the
+ * parse-time `prop-unknown-type` diagnostic. Skip when `typeSource !==
+ * "unknown"` so an explicit `@type` keeps winning.
  */
 function applyCallDefaultResolutions(component: ComponentDocApi, resolutions: CallDefaultResolution[]): void {
   for (const { candidate, type, failureReason } of resolutions) {

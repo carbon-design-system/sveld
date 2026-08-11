@@ -1,6 +1,6 @@
 import type { ParserContext } from "./context";
 
-/** Minimal shape of an `ImportDeclaration` node from the Svelte/acorn-typescript AST. */
+/** `ImportDeclaration` fields we read from the Svelte/acorn-typescript AST. */
 export interface ImportDeclarationNode {
   type: "ImportDeclaration";
   importKind?: "type" | "value";
@@ -14,11 +14,8 @@ export interface ImportDeclarationNode {
 }
 
 /**
- * Tracks named *value* imports (`import { x } from "..."`) by local binding
- * name, so a `CallExpression` prop default calling `x()` can later be
- * resolved cross-file (see `resolve-call-defaults.ts`). Type-only imports
- * (`import type { x }` / `import { type x }`) are skipped; they can't be
- * called at runtime, so they never appear as a prop default's callee.
+ * Record named value imports by local name for later cross-file call-default
+ * resolution. Skips type-only imports; those are not runtime callees.
  */
 export function collectValueImportBindings(ctx: ParserContext, node: ImportDeclarationNode): void {
   const source = node.source?.value;

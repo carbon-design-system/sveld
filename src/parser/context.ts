@@ -60,9 +60,9 @@ export interface ParserContext {
   readonly reactive_vars: Set<string>;
   readonly funcDecls: Map<string, FunctionDeclaration>;
   readonly vars: Set<VariableDeclaration>;
-  /** Named value imports (`import { x } from "..."`) by local binding name, for cross-file call-default resolution. */
+  /** Named value imports by local name, for cross-file call-default lookup. */
   readonly valueImportBindingsByLocalName: Map<string, ValueImportBinding>;
-  /** Props whose `CallExpression` default couldn't be resolved during AST-local parsing. */
+  /** CallExpression defaults that still need a return type after AST parsing. */
   readonly pendingCallDefaultCandidates: PendingCallDefaultCandidate[];
 
   readonly runesPropsDeclarationMetadataByDeclaratorStart: Map<number, RunesPropsDeclarationMetadata>;
