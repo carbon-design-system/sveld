@@ -145,6 +145,25 @@ function formatComment(comment: string) {
   return formatted_comment;
 }
 
+/** `"*"` becomes `"any"`, otherwise trimmed. Pure counterpart of {@link ComponentParser.aliasType}. */
+export function aliasType(type: string): string {
+  if (type === "*") return "any";
+  return type.trim();
+}
+
+/**
+ * Reads just the `@returns`/`@return` type off a raw JSDoc comment's text
+ * (e.g. `"* @returns {string} the id\n "`, with or without the `/**`/`*\/`
+ * delimiters). No `ComponentParser`/`ParserContext` dependency, so
+ * `parse-entry-exports.ts` can reuse it while parsing an arbitrary sibling
+ * module - not component source, so it has no parser/context of its own.
+ */
+export function extractJsDocReturnType(commentValue: string): string | undefined {
+  const comment = parseComment(formatComment(commentValue), { spacing: "preserve" });
+  const { returns: returnsTag } = getCommentTags(comment);
+  return returnsTag ? aliasType(returnsTag.type) : undefined;
+}
+
 export function getCommentTags(parsed: ReturnType<typeof parseComment>) {
   const tags = parsed[0]?.tags ?? [];
   const excludedTags = new Set([

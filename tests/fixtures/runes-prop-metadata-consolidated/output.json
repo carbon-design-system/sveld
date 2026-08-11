@@ -177,12 +177,14 @@
     {
       "name": "computed",
       "kind": "let",
-      "typeSource": "unknown",
+      "type": "string",
+      "typeSource": "jsdoc",
       "value": "createDefault()",
       "defaultValue": {
         "raw": "createDefault()",
         "kind": "expression"
       },
+      "returnType": "string",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -240,22 +242,6 @@
         "end": {
           "line": 9,
           "column": 22
-        }
-      }
-    },
-    {
-      "component": "runes-prop-metadata-consolidated/input.svelte",
-      "kind": "prop-unknown-type",
-      "name": "computed",
-      "message": "Prop \"computed\" type could not be inferred; falling back to \"any\".",
-      "source": {
-        "start": {
-          "line": 13,
-          "column": 4
-        },
-        "end": {
-          "line": 13,
-          "column": 30
         }
       }
     },

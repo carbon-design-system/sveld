@@ -34,7 +34,7 @@ export type RunesPropMetadataConsolidatedProps = {
   /**
    * @default createDefault()
    */
-  computed?: undefined;
+  computed?: string;
 
   /**
    * @default undefined

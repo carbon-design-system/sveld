@@ -455,6 +455,13 @@ export function parseRunesPropsDeclaration(parser: ComponentParser, ctx: ParserC
       // won; an explicit TS/JSDoc type on the prop itself must not be overridden by it.
       const inheritedType =
         typeMetadata?.type === undefined && propertyJSDoc?.type === undefined ? initResult.resolvedType : undefined;
+      if (initResult.pendingCallDefault) {
+        ctx.pendingCallDefaultCandidates.push({
+          propName,
+          location: "props",
+          ...initResult.pendingCallDefault,
+        });
+      }
 
       const { type, typeSource, description, params, returnType, isFunction } = resolvePropTypeAndDocs({
         explicitType: typeMetadata?.type,

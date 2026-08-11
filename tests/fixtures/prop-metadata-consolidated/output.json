@@ -205,12 +205,14 @@
     {
       "name": "callDefault",
       "kind": "let",
-      "typeSource": "unknown",
+      "type": "string",
+      "typeSource": "jsdoc",
       "value": "makeDefault()",
       "defaultValue": {
         "raw": "makeDefault()",
         "kind": "expression"
       },
+      "returnType": "string",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
@@ -307,22 +309,6 @@
   "generics": null,
   "contexts": [],
   "diagnostics": [
-    {
-      "component": "prop-metadata-consolidated/input.svelte",
-      "kind": "prop-unknown-type",
-      "name": "callDefault",
-      "message": "Prop \"callDefault\" type could not be inferred; falling back to \"any\".",
-      "source": {
-        "start": {
-          "line": 21,
-          "column": 2
-        },
-        "end": {
-          "line": 21,
-          "column": 41
-        }
-      }
-    },
     {
       "component": "prop-metadata-consolidated/input.svelte",
       "kind": "prop-unknown-type",

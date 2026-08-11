@@ -1,6 +1,7 @@
 import { existsSync, lstatSync, readFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { isIdentifier } from "./ast-guards";
+import { extractJsDocReturnType } from "./parser/jsdoc";
 import { getParserStack, loadParserStack } from "./parser-stack";
 import { normalizeSeparators } from "./path";
 import { resolvePathAliasAbsolute } from "./resolve-alias";
@@ -35,9 +36,15 @@ interface AstNode {
   [key: string]: unknown;
 }
 
-/** Internal export record that tracks the absolute declaring file. */
-interface InternalExport extends Omit<EntryExport, "source"> {
+/**
+ * Internal export record that tracks the absolute declaring file, plus a
+ * `returnType` for function-valued exports - used by `resolve-call-defaults.ts`
+ * to resolve a `CallExpression` prop default's callee return type. Not part
+ * of the public `EntryExport` shape (see `parseEntryExports`, which strips it).
+ */
+export interface InternalExport extends Omit<EntryExport, "source"> {
   declFile: string;
+  returnType?: string;
 }
 
 /** Parsed-source context shared while walking a single module. */
@@ -51,7 +58,7 @@ interface ModuleSource {
 }
 
 /** Resolution state shared across the recursive module walk. */
-interface ResolveContext {
+export interface ResolveContext {
   /** Memoized exports per file so repeated lookups stay cheap. */
   cache: Map<string, InternalExport[]>;
   /** Files currently being resolved, used to break import cycles. */
@@ -81,7 +88,7 @@ function identifierName(node: AstNode | undefined): string | undefined {
  * resolveModuleFile("./utils", "/abs/src") // "/abs/src/utils.ts"
  * ```
  */
-function resolveModuleFile(specifier: string, fromDir: string): string | null {
+export function resolveModuleFile(specifier: string, fromDir: string): string | null {
   const aliased = resolvePathAliasAbsolute(specifier, fromDir);
   const base = resolve(fromDir, aliased);
 
@@ -121,6 +128,18 @@ function leadingJsDoc(text: string, start: number): string | undefined {
   return description.join(" ") || undefined;
 }
 
+/** Same anchor as {@link leadingJsDoc}, but returns the raw `/** ... *\/` block instead of just the description. */
+function leadingJsDocBlock(text: string, start: number): string | undefined {
+  const before = text.slice(0, start).trimEnd();
+  if (!before.endsWith("*/")) return undefined;
+
+  const close = before.length - 2;
+  const open = before.lastIndexOf("/**", close);
+  if (open === -1) return undefined;
+
+  return before.slice(open, close + 2);
+}
+
 function textOf(source: ModuleSource, node: AstNode | undefined): string | undefined {
   if (!node) return undefined;
   return source.text.slice(node.start, node.end);
@@ -132,14 +151,24 @@ function annotationText(source: ModuleSource, annotated: AstNode | undefined): s
   return textOf(source, asNode(annotation.typeAnnotation));
 }
 
+/**
+ * A function/arrow/`TSDeclareFunction` node's own TS return-type annotation
+ * text (`): T`), if any. Distinct from {@link annotationText}: a function's
+ * return type lives on its own `returnType` property, not `typeAnnotation`
+ * (which annotates a binding, e.g. a variable or parameter).
+ */
+function functionReturnAnnotationText(source: ModuleSource, fn: AstNode): string | undefined {
+  const returnAnnotation = asNode(fn.returnType);
+  return returnAnnotation?.type === "TSTypeAnnotation"
+    ? textOf(source, asNode(returnAnnotation.typeAnnotation))
+    : undefined;
+}
+
 function buildSignature(source: ModuleSource, fn: AstNode): string {
   const params = asNodeArray(fn.params)
     .map((param) => textOf(source, param) ?? "")
     .join(", ");
-  // Functions and arrows expose their return type via `returnType`.
-  const returnAnnotation = asNode(fn.returnType);
-  const returnType =
-    returnAnnotation?.type === "TSTypeAnnotation" ? textOf(source, asNode(returnAnnotation.typeAnnotation)) : undefined;
+  const returnType = functionReturnAnnotationText(source, fn);
   return `(${params})${returnType ? ` => ${returnType}` : ""}`;
 }
 
@@ -157,6 +186,8 @@ function inferLiteralType(init: AstNode): string | undefined {
 function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocStart: number): InternalExport[] {
   const declFile = source.filePath;
   const description = leadingJsDoc(source.text, jsdocStart);
+  const rawJsDoc = leadingJsDocBlock(source.text, jsdocStart);
+  const jsDocReturnType = rawJsDoc ? extractJsDocReturnType(rawJsDoc) : undefined;
 
   if (declaration.type === "VariableDeclaration") {
     const kind = (declaration.kind as "const" | "let" | "var") ?? "const";
@@ -169,28 +200,40 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
 
       let type = annotationText(source, id);
       let value: string | undefined;
+      let returnType: string | undefined;
       const init = asNode(declarator.init);
 
       if (init) {
         if (init.type === "ArrowFunctionExpression" || init.type === "FunctionExpression") {
           if (!type) type = buildSignature(source, init);
+          returnType = functionReturnAnnotationText(source, init) ?? jsDocReturnType;
         } else {
           value = textOf(source, init);
           if (!type) type = inferLiteralType(init);
         }
       }
 
-      results.push({ name, kind, type, value, description, declFile, isTypeOnly: false });
+      results.push({ name, kind, type, value, returnType, description, declFile, isTypeOnly: false });
     }
 
     return results;
   }
 
-  if (declaration.type === "FunctionDeclaration") {
+  // `TSDeclareFunction`: an ambient/bodyless signature, as written in a `.d.ts`
+  // file (`export function uniqueId(prefix?: string): string;`).
+  if (declaration.type === "FunctionDeclaration" || declaration.type === "TSDeclareFunction") {
     const name = identifierName(asNode(declaration.id));
     if (!name) return [];
     return [
-      { name, kind: "function", type: buildSignature(source, declaration), description, declFile, isTypeOnly: false },
+      {
+        name,
+        kind: "function",
+        type: buildSignature(source, declaration),
+        returnType: functionReturnAnnotationText(source, declaration) ?? jsDocReturnType,
+        description,
+        declFile,
+        isTypeOnly: false,
+      },
     ];
   }
 
@@ -290,7 +333,7 @@ function findImportSource(body: AstNode[], name: string): { specifier: string; i
  *
  * Walks `export ... from` and `export *` chains. Skips `.svelte` re-exports.
  */
-function collectModuleExports(filePath: string, ctx: ResolveContext): InternalExport[] {
+export function collectModuleExports(filePath: string, ctx: ResolveContext): InternalExport[] {
   const cached = ctx.cache.get(filePath);
   if (cached) return cached;
   // A module currently being resolved is part of an import cycle.
@@ -421,7 +464,8 @@ export async function parseEntryExports(entryFile: string): Promise<EntryExports
 
   const byName = new Map<string, EntryExport>();
   for (const entry of collected) {
-    const { declFile, ...rest } = entry;
+    // `returnType` is internal, for `resolve-call-defaults.ts` only - not part of the public shape.
+    const { declFile, returnType: _returnType, ...rest } = entry;
     const source = normalizeSeparators(`./${relative(entryDir, declFile)}`);
     byName.set(entry.name, { ...rest, source });
   }

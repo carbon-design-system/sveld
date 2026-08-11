@@ -4,7 +4,7 @@ export type RunesDerivedPropDefaultProps = {
   /**
    * @default $derived(now.toISOString())
    */
-  label?: undefined;
+  label?: any;
 };
 
 export default class RunesDerivedPropDefault extends SvelteComponentTyped<

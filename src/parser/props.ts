@@ -162,6 +162,67 @@ export function processInitializer(
     ) {
       value = sourceAtPos(ctx, callExpr.start, callExpr.end);
     }
+
+    const callee = callExpr.callee;
+    const calleeName =
+      callee && typeof callee === "object" && "type" in callee && callee.type === "Identifier"
+        ? (callee as Identifier).name
+        : undefined;
+
+    // `$derived(expr)`/`$state(expr)` wrap a value; the rune call itself has no
+    // meaningful "return type" of its own - the prop's type is whatever `expr` is.
+    // Unwrap and recurse into the argument (mirrors `unwrapBindableInitializer`'s
+    // treatment of `$bindable(...)`), keeping the rune call's own source text as
+    // `value`/`@default`.
+    if ((calleeName === "$derived" || calleeName === "$state") && callExpr.arguments.length === 1 && depth < 5) {
+      const inner = processInitializer(parser, ctx, callExpr.arguments[0], depth + 1);
+      return { ...inner, value, defaultValue };
+    }
+
+    // A callee that's a same-file function or a named value import may resolve to a
+    // return type below.
+    if (calleeName) {
+      if (ctx.funcDecls.has(calleeName)) {
+        const sameFileReturnType = resolveSameFileCallReturnType(parser, ctx, calleeName);
+        if (sameFileReturnType) {
+          return {
+            value,
+            type: undefined,
+            isFunction: false,
+            defaultValue,
+            resolvedType: sameFileReturnType,
+            resolvedReturnType: sameFileReturnType,
+          };
+        }
+        return { value, type: undefined, isFunction: false, defaultValue, pendingCallDefault: { calleeName } };
+      }
+
+      const importBinding = ctx.valueImportBindingsByLocalName.get(calleeName);
+      if (importBinding) {
+        return {
+          value,
+          type: undefined,
+          isFunction: false,
+          defaultValue,
+          pendingCallDefault: {
+            calleeName,
+            importSource: importBinding.source,
+            importedName: importBinding.importedName,
+          },
+        };
+      }
+    }
+
+    // Unresolved: unknown identifier, member call (`x.y()`), IIFE, etc. Still tag as a
+    // pending call default so the finalize pass falls back to `any` - never the literal
+    // string "undefined" for the prop's type - regardless of the callee's shape.
+    return {
+      value,
+      type: undefined,
+      isFunction: false,
+      defaultValue,
+      pendingCallDefault: { calleeName: calleeName ?? calleeDisplayText(ctx, callee) },
+    };
   } else if (init.type === "Identifier") {
     const ident = init as Identifier;
     if (depth < 5) {
@@ -281,6 +342,61 @@ export function resolveConstInitializer(ctx: ParserContext, name: string): unkno
     }
   }
   return undefined;
+}
+
+/** Source text of a call's callee (e.g. `now.toISOString`), for a diagnostic naming it. Falls back to `"call"`. */
+function calleeDisplayText(ctx: ParserContext, callee: unknown): string {
+  if (
+    callee &&
+    typeof callee === "object" &&
+    "start" in callee &&
+    "end" in callee &&
+    typeof callee.start === "number" &&
+    typeof callee.end === "number"
+  ) {
+    return sourceAtPos(ctx, callee.start, callee.end) ?? "call";
+  }
+  return "call";
+}
+
+/**
+ * Return type for a same-file `CallExpression` default's callee (e.g.
+ * `export let id = uniqueId()` where `uniqueId` is declared in this file).
+ * Tries, in order: the callee's own JSDoc `@returns`, its TS return-type
+ * annotation, then a literal-only inference over its `return` statements
+ * (see {@link inferReturnTypeFromNode}). Returns `undefined` - not `"any"` -
+ * when none of these give a confident answer, so the caller can tell "no
+ * lead" apart from "resolved to any".
+ */
+function resolveSameFileCallReturnType(
+  parser: ComponentParser,
+  ctx: ParserContext,
+  calleeName: string,
+): string | undefined {
+  const resolvedJSDoc = parser.resolveLocalVarJSDoc(calleeName);
+  if (resolvedJSDoc?.returnType) return resolvedJSDoc.returnType;
+
+  const funcNode = ctx.funcDecls.get(calleeName);
+  if (!funcNode) return undefined;
+
+  const tsReturnType = functionReturnTypeAnnotationText(ctx, funcNode);
+  if (tsReturnType) return tsReturnType;
+
+  const inferred = inferReturnTypeFromNode(funcNode);
+  return inferred === "any" ? undefined : inferred;
+}
+
+/** Source text of a function declaration's explicit TS return-type annotation (`): T`), if any. */
+function functionReturnTypeAnnotationText(ctx: ParserContext, node: FunctionDeclaration): string | undefined {
+  const returnType = (
+    node as unknown as { returnType?: { type?: string; typeAnnotation?: { start?: number; end?: number } } }
+  ).returnType;
+  if (returnType?.type !== "TSTypeAnnotation") return undefined;
+
+  const annotation = returnType.typeAnnotation;
+  if (!annotation || typeof annotation.start !== "number" || typeof annotation.end !== "number") return undefined;
+
+  return sourceAtPos(ctx, annotation.start, annotation.end);
 }
 
 /**
