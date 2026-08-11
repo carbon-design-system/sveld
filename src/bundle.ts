@@ -682,8 +682,11 @@ export async function generateBundle(
 
   // AST/JSDoc-text only (no tsc), so - unlike resolveTypes - this always runs, keyed on
   // whatever `pendingCallDefaultCandidates` parsing found; a no-op when there are none.
+  // Fully cached component runs skip `loadParserStack()` above, but this pass still parses
+  // sibling modules via `getParserStack()` — load here whenever there is work to do.
   const callDefaultCandidates = collectCallDefaultCandidates(allComponentsForTypes);
   if (callDefaultCandidates.length > 0) {
+    await loadParserStack();
     const callDefaultResolveContext = createCallDefaultResolveContext();
     for (const { component, candidates } of callDefaultCandidates) {
       const resolutions = resolveCallDefaultCandidates(

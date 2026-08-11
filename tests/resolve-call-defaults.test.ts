@@ -197,4 +197,151 @@ describe("cross-file CallExpression prop-default resolution", () => {
 
     expect(prop?.type).toBe("string");
   });
+
+  test("fully cached second run still resolves import call defaults", async () => {
+    const cacheFile = path.join(dir, "parse-cache.json");
+    writeFileSync(path.join(dir, "utils.js"), UNIQUE_ID_WITH_JSDOC);
+    writeFileSync(
+      path.join(dir, "Cached.svelte"),
+      `<script>
+  import { uniqueId } from "./utils.js";
+  export let id = uniqueId();
+</script>
+<div {id} />
+`,
+    );
+    writeFileSync(path.join(dir, "index.js"), `export { default as Cached } from "./Cached.svelte";\n`);
+
+    const first = await generateBundle(path.join(dir, "index.js"), true, { cache: cacheFile });
+    expect(byModuleName(first.allComponentsForTypes, "Cached")?.props.find((p) => p.name === "id")?.type).toBe(
+      "string",
+    );
+
+    // Second run is a full parse-cache hit; must still load the parser stack for the
+    // call-default pass instead of throwing from getParserStack().
+    const second = await generateBundle(path.join(dir, "index.js"), true, { cache: cacheFile });
+    const prop = byModuleName(second.allComponentsForTypes, "Cached")?.props.find((p) => p.name === "id");
+    expect(prop?.type).toBe("string");
+  });
+
+  test("module-script named import resolves an instance CallExpression default", async () => {
+    writeFileSync(path.join(dir, "utils.js"), UNIQUE_ID_WITH_JSDOC);
+    writeFileSync(
+      path.join(dir, "ModuleImport.svelte"),
+      `<script context="module">
+  import { uniqueId } from "./utils.js";
+</script>
+<script>
+  export let id = uniqueId();
+</script>
+<div {id} />
+`,
+    );
+    writeFileSync(path.join(dir, "index.js"), `export { default as ModuleImport } from "./ModuleImport.svelte";\n`);
+
+    const result = await generateBundle(path.join(dir, "index.js"), true);
+    const prop = byModuleName(result.allComponentsForTypes, "ModuleImport")?.props.find((p) => p.name === "id");
+    expect(prop?.type).toBe("string");
+  });
+
+  test("same-file const arrow callee resolves via literal return", async () => {
+    writeFileSync(
+      path.join(dir, "ConstArrow.svelte"),
+      `<script>
+  const uniqueId = () => "x";
+  export let id = uniqueId();
+</script>
+<div {id} />
+`,
+    );
+    writeFileSync(path.join(dir, "index.js"), `export { default as ConstArrow } from "./ConstArrow.svelte";\n`);
+
+    const result = await generateBundle(path.join(dir, "index.js"), true);
+    const prop = byModuleName(result.allComponentsForTypes, "ConstArrow")?.props.find((p) => p.name === "id");
+    expect(prop?.type).toBe("string");
+    expect(prop?.returnType).toBeUndefined();
+  });
+
+  test("renamed named import resolves via importedName", async () => {
+    writeFileSync(path.join(dir, "utils.js"), UNIQUE_ID_WITH_JSDOC);
+    writeFileSync(
+      path.join(dir, "Renamed.svelte"),
+      `<script>
+  import { uniqueId as makeId } from "./utils.js";
+  export let id = makeId();
+</script>
+<div {id} />
+`,
+    );
+    writeFileSync(path.join(dir, "index.js"), `export { default as Renamed } from "./Renamed.svelte";\n`);
+
+    const result = await generateBundle(path.join(dir, "index.js"), true);
+    const prop = byModuleName(result.allComponentsForTypes, "Renamed")?.props.find((p) => p.name === "id");
+    expect(prop?.type).toBe("string");
+  });
+
+  test("cross-file function without JSDoc/.d.ts still infers a literal return", async () => {
+    writeFileSync(path.join(dir, "utils.js"), UNIQUE_ID_NO_JSDOC);
+    writeFileSync(
+      path.join(dir, "BodyInfer.svelte"),
+      `<script>
+  import { uniqueId } from "./utils.js";
+  export let id = uniqueId();
+</script>
+<div {id} />
+`,
+    );
+    writeFileSync(path.join(dir, "index.js"), `export { default as BodyInfer } from "./BodyInfer.svelte";\n`);
+
+    const result = await generateBundle(path.join(dir, "index.js"), true);
+    const prop = byModuleName(result.allComponentsForTypes, "BodyInfer")?.props.find((p) => p.name === "id");
+    // Template-literal return → string via cross-file literal inference.
+    expect(prop?.type).toBe("string");
+  });
+
+  test("binding-annotated const export supplies returnType for call defaults", async () => {
+    writeFileSync(path.join(dir, "utils.ts"), `export const uniqueId: () => string = () => "x";\n`);
+    writeFileSync(
+      path.join(dir, "BindingType.svelte"),
+      `<script lang="ts">
+  import { uniqueId } from "./utils";
+  export let id = uniqueId();
+</script>
+<div {id} />
+`,
+    );
+    writeFileSync(path.join(dir, "index.js"), `export { default as BindingType } from "./BindingType.svelte";\n`);
+
+    const result = await generateBundle(path.join(dir, "index.js"), true);
+    const prop = byModuleName(result.allComponentsForTypes, "BindingType")?.props.find((p) => p.name === "id");
+    expect(prop?.type).toBe("string");
+  });
+
+  test("export found but no resolvable return type falls back to any", async () => {
+    writeFileSync(
+      path.join(dir, "utils.js"),
+      `export function uniqueId(prefix = "ccs") {
+  return Math.random();
+}
+`,
+    );
+    writeFileSync(
+      path.join(dir, "NoReturn.svelte"),
+      `<script>
+  import { uniqueId } from "./utils.js";
+  export let id = uniqueId();
+</script>
+<div {id} />
+`,
+    );
+    writeFileSync(path.join(dir, "index.js"), `export { default as NoReturn } from "./NoReturn.svelte";\n`);
+
+    const result = await generateBundle(path.join(dir, "index.js"), true);
+    const component = byModuleName(result.allComponentsForTypes, "NoReturn");
+    const prop = component?.props.find((p) => p.name === "id");
+    expect(prop?.type).toBe("any");
+    expect(component?.diagnostics?.find((d) => d.name === "id")?.message).toContain(
+      "return type could not be resolved",
+    );
+  });
 });

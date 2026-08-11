@@ -940,6 +940,24 @@ export default class ComponentParser {
     if (this.ctx.parsed?.module) {
       walk(this.ctx.parsed?.module as unknown as Node, {
         enter: (node) => {
+          // Module bindings are in scope for the instance script. Track the same
+          // import/function/var leads the instance walk does so CallExpression
+          // prop defaults (often in the instance script) can resolve them.
+          if (node.type === "ImportDeclaration") {
+            collectValueImportBindings(this.ctx, node as unknown as ImportDeclarationNode);
+          }
+
+          if (node.type === "FunctionDeclaration") {
+            const funcDecl = node as unknown as FunctionDeclaration;
+            if (funcDecl.id?.name) {
+              this.ctx.funcDecls.set(funcDecl.id.name, funcDecl);
+            }
+          }
+
+          if (node.type === "VariableDeclaration") {
+            this.ctx.vars.add(node as unknown as VariableDeclaration);
+          }
+
           if (node.type === "ExportNamedDeclaration") {
             if (node.declaration == null) {
               return;

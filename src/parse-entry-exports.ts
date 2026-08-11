@@ -183,6 +183,74 @@ function inferLiteralType(init: AstNode): string | undefined {
   return undefined;
 }
 
+/** Trailing return type from a callable type annotation (`() => string` → `string`). */
+function returnTypeFromCallableTypeText(type: string | undefined): string | undefined {
+  if (!type) return undefined;
+  const idx = type.lastIndexOf("=>");
+  if (idx === -1) return undefined;
+  const ret = type.slice(idx + 2).trim();
+  return ret || undefined;
+}
+
+/**
+ * Literal-only return inference for a function/arrow AST node (mirrors
+ * same-file `inferReturnTypeFromNode` in props.ts). Template literals and
+ * string/number/boolean literals only; anything else → undefined.
+ */
+function inferAstLiteralReturnType(fn: AstNode): string | undefined {
+  if (fn.async || fn.generator) return undefined;
+
+  const body = asNode(fn.body);
+  if (!body) return undefined;
+
+  const returnArgs: Array<AstNode | null> = [];
+  if (body.type === "BlockStatement") {
+    collectAstReturnArguments(body, returnArgs);
+    if (returnArgs.length === 0) return undefined;
+  } else {
+    returnArgs.push(body);
+  }
+
+  let inferred: string | undefined;
+  for (const arg of returnArgs) {
+    if (!arg) return undefined;
+    const primitive = inferLiteralType(arg);
+    if (!primitive) return undefined;
+    if (inferred === undefined) inferred = primitive;
+    else if (inferred !== primitive) return undefined;
+  }
+  return inferred;
+}
+
+function collectAstReturnArguments(body: AstNode, out: Array<AstNode | null>): void {
+  for (const statement of asNodeArray(body.body)) {
+    if (
+      statement.type === "FunctionDeclaration" ||
+      statement.type === "FunctionExpression" ||
+      statement.type === "ArrowFunctionExpression"
+    ) {
+      continue;
+    }
+    if (statement.type === "ReturnStatement") {
+      out.push(asNode(statement.argument) ?? null);
+      continue;
+    }
+    // Shallow walk into nested blocks (if/for/while bodies) without entering nested functions.
+    if (statement.type === "BlockStatement") {
+      collectAstReturnArguments(statement, out);
+      continue;
+    }
+    const consequent = asNode(statement.consequent);
+    if (consequent?.type === "BlockStatement") collectAstReturnArguments(consequent, out);
+    else if (consequent?.type === "ReturnStatement") out.push(asNode(consequent.argument) ?? null);
+    const alternate = asNode(statement.alternate);
+    if (alternate?.type === "BlockStatement") collectAstReturnArguments(alternate, out);
+    else if (alternate?.type === "ReturnStatement") out.push(asNode(alternate.argument) ?? null);
+    const blockBody = asNode(statement.body);
+    if (blockBody?.type === "BlockStatement") collectAstReturnArguments(blockBody, out);
+  }
+}
+
 function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocStart: number): InternalExport[] {
   const declFile = source.filePath;
   const description = leadingJsDoc(source.text, jsdocStart);
@@ -206,7 +274,11 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
       if (init) {
         if (init.type === "ArrowFunctionExpression" || init.type === "FunctionExpression") {
           if (!type) type = buildSignature(source, init);
-          returnType = functionReturnAnnotationText(source, init) ?? jsDocReturnType;
+          returnType =
+            functionReturnAnnotationText(source, init) ??
+            jsDocReturnType ??
+            returnTypeFromCallableTypeText(type) ??
+            inferAstLiteralReturnType(init);
         } else {
           value = textOf(source, init);
           if (!type) type = inferLiteralType(init);
@@ -229,7 +301,10 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
         name,
         kind: "function",
         type: buildSignature(source, declaration),
-        returnType: functionReturnAnnotationText(source, declaration) ?? jsDocReturnType,
+        returnType:
+          functionReturnAnnotationText(source, declaration) ??
+          jsDocReturnType ??
+          inferAstLiteralReturnType(declaration),
         description,
         declFile,
         isTypeOnly: false,

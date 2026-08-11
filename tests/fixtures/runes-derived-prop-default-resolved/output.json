@@ -22,7 +22,6 @@
         "raw": "$derived(uniqueId())",
         "kind": "expression"
       },
-      "returnType": "string",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,

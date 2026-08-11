@@ -179,21 +179,23 @@ export function processInitializer(
       return { ...inner, value, defaultValue };
     }
 
-    // A callee that's a same-file function or a named value import may resolve to a
-    // return type below.
+    // A callee that's a same-file function (declaration or const/arrow) or a named
+    // value import may resolve to a return type below.
     if (calleeName) {
-      if (ctx.funcDecls.has(calleeName)) {
-        const sameFileReturnType = resolveSameFileCallReturnType(parser, ctx, calleeName);
-        if (sameFileReturnType) {
-          return {
-            value,
-            type: undefined,
-            isFunction: false,
-            defaultValue,
-            resolvedType: sameFileReturnType,
-            resolvedReturnType: sameFileReturnType,
-          };
-        }
+      const sameFileReturnType = resolveSameFileCallReturnType(parser, ctx, calleeName);
+      if (sameFileReturnType) {
+        // Value props from CallExpression defaults: only `resolvedType`. Setting
+        // `resolvedReturnType` would leak onto `prop.returnType` for non-functions.
+        return {
+          value,
+          type: undefined,
+          isFunction: false,
+          defaultValue,
+          resolvedType: sameFileReturnType,
+        };
+      }
+
+      if (ctx.funcDecls.has(calleeName) || isLocalFunctionValuedBinding(ctx, calleeName)) {
         return { value, type: undefined, isFunction: false, defaultValue, pendingCallDefault: { calleeName } };
       }
 
@@ -361,12 +363,12 @@ function calleeDisplayText(ctx: ParserContext, callee: unknown): string {
 
 /**
  * Return type for a same-file `CallExpression` default's callee (e.g.
- * `export let id = uniqueId()` where `uniqueId` is declared in this file).
- * Tries, in order: the callee's own JSDoc `@returns`, its TS return-type
- * annotation, then a literal-only inference over its `return` statements
- * (see {@link inferReturnTypeFromNode}). Returns `undefined` - not `"any"` -
- * when none of these give a confident answer, so the caller can tell "no
- * lead" apart from "resolved to any".
+ * `export let id = uniqueId()` where `uniqueId` is declared in this file as a
+ * `function` or as `const uniqueId = () => …`). Tries, in order: the callee's
+ * own JSDoc `@returns`, its TS return-type annotation, then a literal-only
+ * inference over its `return` statements (see {@link inferReturnTypeFromNode}).
+ * Returns `undefined` - not `"any"` - when none of these give a confident
+ * answer, so the caller can tell "no lead" apart from "resolved to any".
  */
 function resolveSameFileCallReturnType(
   parser: ComponentParser,
@@ -376,18 +378,81 @@ function resolveSameFileCallReturnType(
   const resolvedJSDoc = parser.resolveLocalVarJSDoc(calleeName);
   if (resolvedJSDoc?.returnType) return resolvedJSDoc.returnType;
 
-  const funcNode = ctx.funcDecls.get(calleeName);
+  const funcNode = ctx.funcDecls.get(calleeName) ?? localFunctionValuedInitializer(ctx, calleeName);
   if (!funcNode) return undefined;
 
   const tsReturnType = functionReturnTypeAnnotationText(ctx, funcNode);
   if (tsReturnType) return tsReturnType;
 
+  const bindingReturnType = bindingCallableReturnTypeText(ctx, calleeName);
+  if (bindingReturnType) return bindingReturnType;
+
   const inferred = inferReturnTypeFromNode(funcNode);
   return inferred === "any" ? undefined : inferred;
 }
 
-/** Source text of a function declaration's explicit TS return-type annotation (`): T`), if any. */
-function functionReturnTypeAnnotationText(ctx: ParserContext, node: FunctionDeclaration): string | undefined {
+/** True when `name` is a local `const`/`let` whose initializer is an arrow or function expression. */
+function isLocalFunctionValuedBinding(ctx: ParserContext, name: string): boolean {
+  return localFunctionValuedInitializer(ctx, name) !== undefined;
+}
+
+/** Arrow/function-expression initializer for a local binding, if any. */
+function localFunctionValuedInitializer(
+  ctx: ParserContext,
+  name: string,
+): FunctionExpression | ArrowFunctionExpression | undefined {
+  const init = resolveLocalVarInitializer(ctx, name);
+  if (!init || typeof init !== "object" || !("type" in init)) return undefined;
+  if (init.type === "ArrowFunctionExpression" || init.type === "FunctionExpression") {
+    return init as ArrowFunctionExpression | FunctionExpression;
+  }
+  return undefined;
+}
+
+/**
+ * Return type from a binding-level annotation like `const f: () => string = …`
+ * (the arrow itself may omit `): string`).
+ */
+function bindingCallableReturnTypeText(ctx: ParserContext, name: string): string | undefined {
+  for (const decl of ctx.vars) {
+    for (const declarator of decl.declarations) {
+      const id = declarator.id;
+      if (
+        !id ||
+        typeof id !== "object" ||
+        !("type" in id) ||
+        id.type !== "Identifier" ||
+        !("name" in id) ||
+        id.name !== name
+      ) {
+        continue;
+      }
+      const annotation = (
+        id as unknown as { typeAnnotation?: { type?: string; typeAnnotation?: { start?: number; end?: number } } }
+      ).typeAnnotation;
+      if (annotation?.type !== "TSTypeAnnotation") return undefined;
+      const typeNode = annotation.typeAnnotation;
+      if (!typeNode || typeof typeNode.start !== "number" || typeof typeNode.end !== "number") return undefined;
+      return returnTypeFromCallableTypeText(sourceAtPos(ctx, typeNode.start, typeNode.end));
+    }
+  }
+  return undefined;
+}
+
+/** Trailing return type from a callable type annotation text (`() => string` → `string`). */
+function returnTypeFromCallableTypeText(type: string | undefined): string | undefined {
+  if (!type) return undefined;
+  const idx = type.lastIndexOf("=>");
+  if (idx === -1) return undefined;
+  const ret = type.slice(idx + 2).trim();
+  return ret || undefined;
+}
+
+/** Source text of a function's explicit TS return-type annotation (`): T`), if any. */
+function functionReturnTypeAnnotationText(
+  ctx: ParserContext,
+  node: FunctionDeclaration | FunctionExpression | ArrowFunctionExpression,
+): string | undefined {
   const returnType = (
     node as unknown as { returnType?: { type?: string; typeAnnotation?: { start?: number; end?: number } } }
   ).returnType;

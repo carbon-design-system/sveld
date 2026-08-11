@@ -184,7 +184,6 @@
         "raw": "createDefault()",
         "kind": "expression"
       },
-      "returnType": "string",
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
