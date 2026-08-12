@@ -132,12 +132,41 @@ export function getTypeDefs(def: Pick<ComponentDocApi, "typedefs">) {
 }
 
 /**
+ * Compiled word-boundary regexes for `referencesGeneric`, keyed by generic
+ * name. A component declares only a handful of generics, so this cache stays
+ * small; it just avoids recompiling the same RegExp on every prop/generic
+ * pairing checked for a component.
+ */
+const referencesGenericRegexCache = new Map<string, RegExp>();
+
+/**
  * Returns whether a property type references a generic type parameter by name,
  * matching on word boundaries so `Value` doesn't match `ValueType`.
  */
 function referencesGeneric(propType: string, name: string): boolean {
-  const escapedName = name.replace(REGEX_METACHARS, "\\$&");
-  return new RegExp(`\\b${escapedName}\\b`).test(propType);
+  let regex = referencesGenericRegexCache.get(name);
+  if (regex === undefined) {
+    const escapedName = name.replace(REGEX_METACHARS, "\\$&");
+    regex = new RegExp(`\\b${escapedName}\\b`);
+    referencesGenericRegexCache.set(name, regex);
+  }
+  return regex.test(propType);
+}
+
+/**
+ * `splitTopLevelCommas` is called with the same `generics[1]` constraint
+ * string from a few sites (`getGenericParams`, `getContextDefs`, and the
+ * `$Props` generics suffix below) while generating a single component, so a
+ * single last-input memo avoids re-splitting the same string repeatedly.
+ */
+let lastSplitTopLevelCommasInput: string | undefined;
+let lastSplitTopLevelCommasResult: string[] = [];
+function splitTopLevelCommasMemo(input: string): string[] {
+  if (input !== lastSplitTopLevelCommasInput) {
+    lastSplitTopLevelCommasInput = input;
+    lastSplitTopLevelCommasResult = splitTopLevelCommas(input);
+  }
+  return lastSplitTopLevelCommasResult;
 }
 
 /**
@@ -150,7 +179,7 @@ function getGenericParams(generics: ComponentDocApi["generics"]): Array<{ name: 
   if (generics === null) return [];
   return generics[0].split(",").map((name, index) => ({
     name: name.trim(),
-    constraint: (splitTopLevelCommas(generics[1] ?? "")[index] ?? name).trim(),
+    constraint: (splitTopLevelCommasMemo(generics[1] ?? "")[index] ?? name).trim(),
   }));
 }
 
@@ -204,7 +233,7 @@ export function getContextDefs(def: Pick<ComponentDocApi, "contexts" | "generics
       ? []
       : def.generics[0].split(",").map((name, index) => ({
           name: name.trim(),
-          constraint: (splitTopLevelCommas(def.generics?.[1] ?? "")[index] ?? name).trim(),
+          constraint: (splitTopLevelCommasMemo(def.generics?.[1] ?? "")[index] ?? name).trim(),
         }));
 
   return def.contexts
@@ -312,57 +341,63 @@ function genPropDef(
   },
 ) {
   /**
+   * Props that render as regular `$Props` members, i.e. everything except
+   * accessor-style exports (`export function ...` / `export const ...`),
+   * which are handled separately by `genAccessors`. Computed once and reused
+   * below instead of re-filtering `def.props` at each use site.
+   */
+  const nonAccessorProps = def.props.filter((prop) => !prop.isFunctionDeclaration && prop.kind !== "const");
+
+  /**
    * Collect existing prop names to avoid conflicts with snippet props.
    * Snippet props are generated for slots, but shouldn't conflict with
    * actual component props.
    */
   const existingPropNames = new Set([
-    ...def.props.filter((prop) => !prop.isFunctionDeclaration && prop.kind !== "const").map((prop) => prop.name),
+    ...nonAccessorProps.map((prop) => prop.name),
     ...Array.from(def.canonicalPropNames ?? []),
   ]);
 
-  const initial_props = def.props
-    .filter((prop) => !prop.isFunctionDeclaration && prop.kind !== "const")
-    .map((prop) => {
-      let defaultValue = prop.value;
+  const initial_props = nonAccessorProps.map((prop) => {
+    let defaultValue = prop.value;
 
-      if (typeof prop.value === "string") {
-        defaultValue = prop.value.replace(WHITESPACE_REGEX, " ");
-      }
+    if (typeof prop.value === "string") {
+      defaultValue = prop.value.replace(WHITESPACE_REGEX, " ");
+    }
 
-      if (prop.value === undefined) {
-        defaultValue = "undefined";
-      }
+    if (prop.value === undefined) {
+      defaultValue = "undefined";
+    }
 
-      const descriptionHasDefault = DESCRIPTION_DEFAULT_TAG_REGEX.test(prop.description ?? "");
+    const descriptionHasDefault = DESCRIPTION_DEFAULT_TAG_REGEX.test(prop.description ?? "");
 
-      /**
-       * Function props only get `@default` when a concise value was inferred
-       * (a trivial single-expression body, e.g. `() => true` - see
-       * `conciseFunctionDefaultText`); anything more elaborate is omitted so
-       * docs aren't cluttered with function bodies (#203). An explicit
-       * `@default` in the description always wins either way.
-       */
-      const suppressDefault = descriptionHasDefault || (prop.isFunction && prop.value === undefined);
+    /**
+     * Function props only get `@default` when a concise value was inferred
+     * (a trivial single-expression body, e.g. `() => true` - see
+     * `conciseFunctionDefaultText`); anything more elaborate is omitted so
+     * docs aren't cluttered with function bodies (#203). An explicit
+     * `@default` in the description always wins either way.
+     */
+    const suppressDefault = descriptionHasDefault || (prop.isFunction && prop.value === undefined);
 
-      const prop_comments = [
-        createPropComment(prop.description, prop.deprecated, prop.tags),
-        addCommentLine(prop.constant, "@constant"),
-        suppressDefault ? null : `* @default ${defaultValue}\n`,
-      ]
-        .filter(Boolean)
-        .join("");
+    const prop_comments = [
+      createPropComment(prop.description, prop.deprecated, prop.tags),
+      addCommentLine(prop.constant, "@constant"),
+      suppressDefault ? null : `* @default ${defaultValue}\n`,
+    ]
+      .filter(Boolean)
+      .join("");
 
-      const prop_value = prop.constant && !prop.isFunction ? prop.value : prop.type;
+    const prop_value = prop.constant && !prop.isFunction ? prop.value : prop.type;
 
-      return `
+    return `
       ${wrapCommentInJSDoc(prop_comments)}
       ${prop.name}${prop.isRequired ? "" : "?"}: ${prop_value};`;
-    });
+  });
 
   const extra_initial_props = def.canonicalPropsType
     ? initial_props.filter((_, index) => {
-        const prop = def.props.filter((item) => !item.isFunctionDeclaration && item.kind !== "const")[index];
+        const prop = nonAccessorProps[index];
         return prop ? !(def.canonicalPropNames?.has(prop.name) ?? false) : true;
       })
     : initial_props;
@@ -431,7 +466,7 @@ function genPropDef(
    * Includes the full generic constraint with extends and default.
    */
   const genericsName = def.generics
-    ? `<${splitTopLevelCommas(def.generics[1])
+    ? `<${splitTopLevelCommasMemo(def.generics[1])
         .map((constraint) => stripConstModifierForTypeAlias(constraint.trim()))
         .join(", ")}>`
     : "";
@@ -1097,9 +1132,12 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
 
   const snippetImportNeeded =
     !PRESERVED_SNIPPET_IMPORT_REGEX.test(preservedTypeImports) &&
-    SNIPPET_TYPE_REFERENCE_REGEX.test(
-      `${prop_def}\n${moduleExportsDef}\n${typeDefs}\n${contextDefs}\n${preservedLocalTypeDeclarations}\n${exports_def}`,
-    );
+    (SNIPPET_TYPE_REFERENCE_REGEX.test(prop_def) ||
+      SNIPPET_TYPE_REFERENCE_REGEX.test(moduleExportsDef) ||
+      SNIPPET_TYPE_REFERENCE_REGEX.test(typeDefs) ||
+      SNIPPET_TYPE_REFERENCE_REGEX.test(contextDefs) ||
+      SNIPPET_TYPE_REFERENCE_REGEX.test(preservedLocalTypeDeclarations) ||
+      SNIPPET_TYPE_REFERENCE_REGEX.test(exports_def));
 
   /**
    * Determine imports needed for rest_props.
