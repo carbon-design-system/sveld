@@ -59,7 +59,7 @@ import {
   type ImportDeclarationNode,
 } from "./parser/value-imports";
 import { buildVariableJsDocTable } from "./parser/variable-jsdoc";
-import { parseModernAndLegacy } from "./svelte-parse";
+import { parseModern } from "./svelte-parse";
 
 /** Structured JSDoc tag (e.g. `{ name: "since", body: "1.2.0" }`). */
 export interface JsDocPassthroughTag {
@@ -889,14 +889,18 @@ export default class ComponentParser {
     this.ctx.source = cleanedSource;
 
     /**
-     * One `parseFragment` call backs both AST views (see `parseModernAndLegacy`): the modern
-     * view feeds `buildRunesPropTypeMetadata` (type imports, local types, `$props()` metadata),
-     * the legacy view backs the main walk below. Two independent `parse()` calls used to re-lex
-     * and re-parse the same source from scratch for each mode.
+     * One `parseFragment` call backs both AST views (see `parseModern`): the modern view feeds
+     * `buildRunesPropTypeMetadata` (type imports, local types, `$props()` metadata) first, and
+     * only once that's fully consumed does `intoLegacy()` convert the same tree in place for the
+     * main walk below - `convert()` restructures its input in place, so calling it any earlier
+     * would corrupt the modern view still being read. Two independent `parse()` calls used to
+     * re-lex and re-parse the same source from scratch for each mode; an earlier version of this
+     * ran both conversions upfront and deep-cloned the modern AST to give `convert()` a safe
+     * input, which this ordering makes unnecessary.
      */
-    const { modern: modernParsed, legacy: legacyParsed } = parseModernAndLegacy(cleanedSource);
+    const { modern: modernParsed, intoLegacy } = parseModern(cleanedSource);
     buildRunesPropTypeMetadata(this, this.ctx, modernParsed);
-    this.ctx.parsed = legacyParsed as LegacyAstRoot;
+    this.ctx.parsed = intoLegacy() as LegacyAstRoot;
 
     /**
      * compile() strips TS-only wrapper expressions (`as`/`satisfies`/`!`/type assertions/explicit
