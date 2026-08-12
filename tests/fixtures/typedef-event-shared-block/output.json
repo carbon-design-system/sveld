@@ -97,12 +97,12 @@
       "slot_props": "Record<string, never>",
       "source": {
         "start": {
-          "line": 31,
-          "column": 12
+          "line": 26,
+          "column": 5
         },
         "end": {
-          "line": 31,
-          "column": 28
+          "line": 26,
+          "column": 21
         }
       }
     },
@@ -129,12 +129,12 @@
       "description": "description",
       "source": {
         "start": {
-          "line": 31,
-          "column": 13
+          "line": 27,
+          "column": 5
         },
         "end": {
-          "line": 32,
-          "column": 9
+          "line": 27,
+          "column": 45
         }
       }
     }
@@ -162,12 +162,12 @@
       "description": "Event fired when item is dequeued from the queue",
       "source": {
         "start": {
-          "line": 31,
-          "column": 9
+          "line": 23,
+          "column": 5
         },
         "end": {
-          "line": 32,
-          "column": 1
+          "line": 24,
+          "column": 40
         }
       }
     },
@@ -178,12 +178,12 @@
       "description": "Event fired when queue is updated",
       "source": {
         "start": {
-          "line": 31,
-          "column": 7
+          "line": 21,
+          "column": 5
         },
         "end": {
-          "line": 32,
-          "column": 12
+          "line": 22,
+          "column": 53
         }
       }
     },
@@ -194,12 +194,12 @@
       "description": "Event fired when size changes",
       "source": {
         "start": {
-          "line": 20,
-          "column": 6
+          "line": 15,
+          "column": 5
         },
         "end": {
-          "line": 20,
-          "column": 19
+          "line": 15,
+          "column": 18
         }
       }
     },
@@ -209,12 +209,12 @@
       "detail": "null",
       "source": {
         "start": {
-          "line": 20,
-          "column": 7
+          "line": 16,
+          "column": 5
         },
         "end": {
-          "line": 20,
-          "column": 20
+          "line": 16,
+          "column": 18
         }
       }
     }
@@ -242,12 +242,12 @@
       "message": "@event \"resize\" has no matching dispatch or callback prop.",
       "source": {
         "start": {
-          "line": 20,
-          "column": 6
+          "line": 15,
+          "column": 5
         },
         "end": {
-          "line": 20,
-          "column": 19
+          "line": 15,
+          "column": 18
         }
       }
     },
@@ -258,12 +258,12 @@
       "message": "@event \"scroll\" has no matching dispatch or callback prop.",
       "source": {
         "start": {
-          "line": 20,
-          "column": 7
+          "line": 16,
+          "column": 5
         },
         "end": {
-          "line": 20,
-          "column": 20
+          "line": 16,
+          "column": 18
         }
       }
     },
@@ -274,12 +274,12 @@
       "message": "@event \"queue\" has no matching dispatch or callback prop.",
       "source": {
         "start": {
-          "line": 31,
-          "column": 7
+          "line": 21,
+          "column": 5
         },
         "end": {
-          "line": 32,
-          "column": 12
+          "line": 22,
+          "column": 53
         }
       }
     },
@@ -290,12 +290,12 @@
       "message": "@event \"dequeue\" has no matching dispatch or callback prop.",
       "source": {
         "start": {
-          "line": 31,
-          "column": 9
+          "line": 23,
+          "column": 5
         },
         "end": {
-          "line": 32,
-          "column": 1
+          "line": 24,
+          "column": 40
         }
       }
     }

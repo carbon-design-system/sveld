@@ -1,5 +1,5 @@
-import { parse as parseComment } from "comment-parser";
 import type ComponentParser from "../ComponentParser";
+import { parseComments } from "./comment-parser";
 import type { ParserContext } from "./context";
 import { getCommentTags, ONLY_WHITESPACE_REGEX } from "./jsdoc";
 
@@ -201,7 +201,7 @@ export function buildVariableJsDocTable(
     const comment = findAttachedComment(allComments, declaration.start, ctx.source);
     if (!comment) continue;
 
-    const parsed = parseComment(comment.text, { spacing: "preserve" });
+    const parsed = parseComments(comment.text);
     const { type: typeTag, description } = getCommentTags(parsed);
     if (!typeTag) continue;
 

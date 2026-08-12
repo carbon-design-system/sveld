@@ -22,12 +22,12 @@
       "description": "Clear button clicked with no data",
       "source": {
         "start": {
-          "line": 7,
+          "line": 5,
           "column": 5
         },
         "end": {
-          "line": 10,
-          "column": 43
+          "line": 5,
+          "column": 60
         }
       },
       "detail": "null"
@@ -39,12 +39,12 @@
       "description": "Search query changed",
       "source": {
         "start": {
-          "line": 8,
+          "line": 6,
           "column": 5
         },
         "end": {
-          "line": 10,
-          "column": 39
+          "line": 6,
+          "column": 50
         }
       },
       "detail": "string"
