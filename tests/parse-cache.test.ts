@@ -1,10 +1,10 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, relative, resolve } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
 import type { ComponentDocApi, ComponentDocs } from "../src/bundle";
 import { generateBundle } from "../src/bundle";
 import ComponentParser from "../src/ComponentParser";
-import { DEFAULT_CACHE_FILE } from "../src/parse-cache";
+import { DEFAULT_CACHE_FILE, hashSource, resolveGlobalCacheFilePath } from "../src/parse-cache";
 import writeTsDefinitions from "../src/writer/writer-ts-definitions";
 
 /** Look up `allComponentsForTypes` by filePath; moduleName is not unique. */
@@ -122,15 +122,19 @@ describe("parse cache", () => {
     expect(byModuleName(result.allComponentsForTypes, "SecondaryButton")).toBeDefined();
   });
 
-  test("a stale cache from an unrelated project root doesn't leak into a new one", async () => {
+  test("a stale local cache from an unrelated project root doesn't leak into a new one", async () => {
     const otherDir = mkdtempSync(join(tmpdir(), "sveld-parse-cache-other-"));
     writeFileSync(join(otherDir, "Standalone.svelte"), STANDALONE);
 
     try {
-      await generateBundle(dir, true, { cache: cacheFile });
+      // globalCache: false isolates this to the path-keyed local layer: the
+      // two projects share literal fixture content, so with the global,
+      // content-hash-keyed layer enabled this would be (correctly) a hit —
+      // see the "global parse cache" describe block below for that case.
+      await generateBundle(dir, true, { cache: cacheFile, globalCache: false });
       parseSpy.mockClear();
 
-      const result = await generateBundle(otherDir, true, { cache: cacheFile });
+      const result = await generateBundle(otherDir, true, { cache: cacheFile, globalCache: false });
 
       expect(parseSpy).toHaveBeenCalledTimes(1);
       expect(byModuleName(result.allComponentsForTypes, "Standalone")).toBeDefined();
@@ -247,5 +251,123 @@ describe("cache default", () => {
     await generateBundle(dir, true, { cache: false });
 
     expect(existsSync(join(dir, DEFAULT_CACHE_FILE))).toBe(false);
+  });
+});
+
+describe("global parse cache", () => {
+  let dir: string;
+  let cacheFile: string;
+  let parseSpy: ReturnType<typeof jest.spyOn>;
+
+  beforeEach(() => {
+    // The per-test XDG_CACHE_HOME sandbox (tests/setup-global-cache-sandbox.ts)
+    // is what makes it safe for these tests to exercise real cross-project
+    // sharing: it's scoped to just this test, so it can neither leak into
+    // nor be polluted by any other test or the real machine's ~/.cache.
+    dir = mkdtempSync(join(tmpdir(), "sveld-global-cache-"));
+    cacheFile = join(dir, ".cache", "parse-cache.json");
+    writeFileSync(join(dir, "Button.svelte"), BUTTON);
+    writeFileSync(join(dir, "SecondaryButton.svelte"), SECONDARY_BUTTON);
+    writeFileSync(join(dir, "Standalone.svelte"), STANDALONE);
+    parseSpy = jest.spyOn(ComponentParser.prototype, "parseSvelteComponent");
+  });
+
+  afterEach(() => {
+    parseSpy.mockRestore();
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("a component parsed in one project is served to an unrelated project via the global cache", async () => {
+    await generateBundle(dir, true, { cache: cacheFile });
+
+    const otherDir = mkdtempSync(join(tmpdir(), "sveld-global-cache-other-"));
+    writeFileSync(join(otherDir, "Standalone.svelte"), STANDALONE);
+
+    try {
+      parseSpy.mockClear();
+      // A fresh local cache path in an unrelated project directory: the only
+      // way this can hit is via the global, content-hash-keyed layer.
+      const otherCacheFile = join(otherDir, ".cache", "parse-cache.json");
+      const result = await generateBundle(otherDir, true, { cache: otherCacheFile });
+
+      expect(parseSpy).not.toHaveBeenCalled();
+      expect(byModuleName(result.allComponentsForTypes, "Standalone")?.props.map((p) => p.name)).toEqual(["label"]);
+    } finally {
+      rmSync(otherDir, { recursive: true, force: true });
+    }
+  });
+
+  test("--global-cache=false / globalCache: false disables the global layer", async () => {
+    await generateBundle(dir, true, { cache: cacheFile, globalCache: false });
+
+    expect(existsSync(resolveGlobalCacheFilePath())).toBe(false);
+  });
+
+  test("a component using @extendProps is never written to the global cache, unlike its non-extending sibling", async () => {
+    await generateBundle(dir, true, { cache: cacheFile });
+
+    const globalFile = JSON.parse(readFileSync(resolveGlobalCacheFilePath(), "utf-8"));
+    const secondaryButtonHash = hashSource(SECONDARY_BUTTON);
+    const buttonHash = hashSource(BUTTON);
+    const standaloneHash = hashSource(STANDALONE);
+
+    // SecondaryButton's parsed output depends on Button's content (via
+    // @extendProps), which the global cache's own-source-hash key can't
+    // account for, so it must be excluded even though it parsed cleanly.
+    expect(globalFile.entries[secondaryButtonHash]).toBeUndefined();
+    // Button and Standalone don't reach outside their own source, so both
+    // are safe to share and should be present.
+    expect(globalFile.entries[buttonHash]).toBeDefined();
+    expect(globalFile.entries[standaloneHash]).toBeDefined();
+  });
+
+  test("generated .d.ts text never leaks into the global cache file", async () => {
+    const outDirAbs = mkdtempSync(join(process.cwd(), ".tmp-sveld-global-cache-text-out-"));
+    const outDir = relative(process.cwd(), outDirAbs);
+
+    try {
+      const first = await generateBundle(dir, true, { cache: cacheFile });
+      await writeTsDefinitions(first.allComponentsForTypes, {
+        outDir,
+        inputDir: dir,
+        preamble: "",
+        exports: first.exports,
+        cache: first.cache,
+        resolvedPathByFilePath: first.resolvedPathByFilePath,
+      });
+      first.cache?.save();
+
+      const globalFile = JSON.parse(readFileSync(resolveGlobalCacheFilePath(), "utf-8"));
+      const entries = Object.values(globalFile.entries) as Array<{ generatedText?: unknown }>;
+      expect(entries.length).toBeGreaterThan(0);
+      for (const entry of entries) {
+        expect(entry.generatedText).toBeUndefined();
+      }
+    } finally {
+      rmSync(outDirAbs, { recursive: true, force: true });
+    }
+  });
+
+  test("a fully cache-hit run doesn't rewrite the global cache file", async () => {
+    await generateBundle(dir, true, { cache: cacheFile });
+    const globalCacheFilePath = resolveGlobalCacheFilePath();
+    const mtimeAfterFirstRun = statSync(globalCacheFilePath).mtimeMs;
+
+    // A second run in the same project is a 100% local-cache hit, so it
+    // should never need to touch (re-read/re-merge/re-write) the global file.
+    await generateBundle(dir, true, { cache: cacheFile });
+
+    expect(statSync(globalCacheFilePath).mtimeMs).toBe(mtimeAfterFirstRun);
+  });
+
+  test("a corrupt global cache file doesn't fail the run", async () => {
+    const globalCacheFilePath = resolveGlobalCacheFilePath();
+    mkdirSync(dirname(globalCacheFilePath), { recursive: true });
+    writeFileSync(globalCacheFilePath, "{ not valid json");
+
+    const result = await generateBundle(dir, true, { cache: cacheFile });
+
+    expect(parseSpy).toHaveBeenCalled();
+    expect(byModuleName(result.allComponentsForTypes, "Standalone")).toBeDefined();
   });
 });

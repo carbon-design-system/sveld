@@ -56,6 +56,7 @@ Options:
   --quiet               Suppress progress logs (errors, the diagnostics summary, and the --check report are unaffected)
   --stdout[=json|ndjson] Print the document from exactly one of --json, --markdown, or --custom-elements to stdout and write nothing to disk (rejects --types and --check); --stdout=ndjson prints one JSON object per component per line and requires --json
   --cache[=<path>]      Persist parsed output and skip re-parsing unchanged files (on by default, default path: node_modules/.cache/sveld/parse-cache.json; pass --cache=false to disable)
+  --global-cache        Also share parsed output across projects via a machine-wide cache (~/.cache/sveld, or $XDG_CACHE_HOME/sveld); on by default whenever --cache is enabled, pass --global-cache=false to disable just this layer
   --resolve-types       Expand opaque imported $props() types into JSON (alias: --resolveTypes, deprecated)
   --check-examples      Compile-check @example blocks against the TypeScript program (alias: --checkExamples, deprecated)
   --report-diagnostics  Print unresolved-type diagnostics to stderr
@@ -106,6 +107,7 @@ const KNOWN_FLAGS = [
   "fail-fast",
   "entry",
   "cache",
+  "global-cache",
   "check",
   "types-format",
   "format",
@@ -127,6 +129,7 @@ const BOOLEAN_FLAGS = new Set([
   "resolve-types",
   "check-examples",
   "fail-fast",
+  "global-cache",
 ]);
 
 /** Value-taking flags that also accept their value as the next argument. */
@@ -259,6 +262,11 @@ function parseCliFlagValue(flag: string, value: string | boolean, arg: string, r
       // location, `--cache=<path>` overrides it, and `--cache=false` disables it.
       if (value === "false") return { kind: "option", option: { cache: false } };
       return { kind: "option", option: { cache: typeof value === "string" ? value : true } };
+    case "global-cache":
+      // The global (machine-wide, content-hash-keyed) cache layer is on by
+      // default whenever --cache is enabled; --global-cache=false disables
+      // just this layer.
+      return { kind: "option", option: { globalCache: value === true || value === "true" } };
     case "check":
       // Bare `--check` diffs against the default snapshot path;
       // `--check=<path>` overrides it; `--check=false` disables it.

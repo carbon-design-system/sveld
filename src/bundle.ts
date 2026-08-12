@@ -7,7 +7,7 @@ import type { ParsedComponent, PendingCallDefaultCandidate } from "./ComponentPa
 import { buildReverseDeps, expandAffected } from "./dependency-graph";
 import { dedupeDiagnostics, type SveldDiagnostic } from "./diagnostics";
 import { collectExampleSources } from "./example-check";
-import { hashSource, ParseCache, resolveCacheFilePath } from "./parse-cache";
+import { hashSource, ParseCache, resolveCacheFilePath, resolveGlobalCacheFilePath } from "./parse-cache";
 import { type EntryExports, parseEntryExports } from "./parse-entry-exports";
 import { type ParsedExports, parseExports } from "./parse-exports";
 import { applyResolvedProps, getParsedComponentTypeScriptMetadata } from "./parsed-component-metadata";
@@ -97,6 +97,15 @@ export interface GenerateBundleOptions {
    */
   cache?: boolean | string;
   /**
+   * Layer a second, machine-wide cache (`~/.cache/sveld`, or
+   * `$XDG_CACHE_HOME/sveld`) on top of `cache`, keyed by content hash instead
+   * of file path, so a fresh clone/worktree can still hit a component some
+   * other project already parsed with the same toolchain. On by default
+   * whenever `cache` is enabled; pass `false` to disable just this layer.
+   * No-op when `cache` is `false`.
+   */
+  globalCache?: boolean;
+  /**
    * Run plain TS/JS `@example` blocks on props, module exports, slots, and
    * events through the TypeScript program. Broken examples become
    * `example-compile-error` diagnostics. Svelte/HTML markup is skipped.
@@ -113,7 +122,7 @@ export interface GenerateBundleOptions {
 export function toGenerateBundleOptions(
   opts?: Pick<
     GenerateBundleOptions,
-    "failFast" | "resolveTypes" | "documentExports" | "cache" | "checkExamples" | "dryRun"
+    "failFast" | "resolveTypes" | "documentExports" | "cache" | "globalCache" | "checkExamples" | "dryRun"
   >,
 ): GenerateBundleOptions {
   return {
@@ -121,6 +130,7 @@ export function toGenerateBundleOptions(
     resolveTypes: opts?.resolveTypes === true,
     documentExports: opts?.documentExports === true,
     cache: opts?.cache,
+    globalCache: opts?.globalCache,
     checkExamples: opts?.checkExamples === true,
     dryRun: opts?.dryRun === true,
   };
@@ -558,9 +568,15 @@ export async function generateBundle(
   const components: ComponentDocs = new Map();
   const allComponentsForTypes: ComponentDocs = new Map();
 
-  // `cache` is on by default; only an explicit `false` disables it.
+  // `cache` is on by default; only an explicit `false` disables it. The
+  // global layer follows suit unless explicitly opted out via `globalCache: false`.
   const cache =
-    options.cache === false ? undefined : new ParseCache(resolveCacheFilePath(rootDir, options.cache ?? true));
+    options.cache === false
+      ? undefined
+      : new ParseCache(
+          resolveCacheFilePath(rootDir, options.cache ?? true),
+          options.globalCache === false ? undefined : resolveGlobalCacheFilePath(),
+        );
   // filePath -> resolved source path for the write-phase text cache, keyed
   // like `cache` so path-alias resolution is not redone. filePath stays
   // unique when two components share a basename. Built only when caching.

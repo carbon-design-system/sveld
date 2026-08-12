@@ -66,6 +66,17 @@ describe("parseCliOptions", () => {
     expect(parseCliOptions(["--cache=false"])).toEqual({ kind: "options", options: { cache: false } });
   });
 
+  test("--global-cache enables the global cache layer", () => {
+    expect(parseCliOptions(["--global-cache"])).toEqual({ kind: "options", options: { globalCache: true } });
+  });
+
+  test("--global-cache=false disables just the global cache layer", () => {
+    expect(parseCliOptions(["--global-cache=false"])).toEqual({
+      kind: "options",
+      options: { globalCache: false },
+    });
+  });
+
   test("--check enables the default snapshot check", () => {
     expect(parseCliOptions(["--check"])).toEqual({ kind: "options", options: { check: true } });
   });

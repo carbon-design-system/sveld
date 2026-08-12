@@ -122,7 +122,7 @@ export default class Button extends SvelteComponentTyped<
 - [Features](#features)
   - [`.d.ts` output format (`typesOptions.format`)](#dts-output-format-typesoptionsformat)
   - [Opt-in semantic resolution (`resolveTypes`)](#opt-in-semantic-resolution-resolvetypes)
-  - [Persistent parse cache (`cache`)](#persistent-parse-cache-cache)
+  - [Persistent parse cache (`cache`, `globalCache`)](#persistent-parse-cache-cache-globalcache)
   - [Compile-checked `@example` blocks (`checkExamples`)](#compile-checked-example-blocks-checkexamples)
   - [Type inference diagnostics](#type-inference-diagnostics)
 - [Requirements](#requirements)
@@ -132,6 +132,7 @@ export default class Button extends SvelteComponentTyped<
   - [CLI](#cli)
   - [Exit codes](#exit-codes)
   - [CI: API-drift checks (`--check`)](#ci-api-drift-checks---check)
+  - [CI: priming the cache](#ci-priming-the-cache)
   - [Node.js](#nodejs)
   - [Browser](#browser)
   - [Config File](#config-file)
@@ -284,9 +285,9 @@ Without `resolveTypes`, JSON lists no props. With it, each field shows up with `
 
 **Performance.** Off by default. This is the only path that loads TypeScript. It needs `typescript` and a `tsconfig.json`, runs slower than the AST-only pipeline, and gets slower as your types grow. Use it only when you need expanded JSON. `.d.ts` output is unchanged.
 
-### Persistent parse cache (`cache`)
+### Persistent parse cache (`cache`, `globalCache`)
 
-Parsed output is written to disk and reused when the source file has not changed, on by default. That applies across runs, including CI on a fresh checkout.
+Parsed output is written to disk and reused when the source file has not changed, on by default. That applies across runs within the same checkout — not a fresh one, since `node_modules/.cache` doesn't survive a clean clone or most CI checkouts unless restored (see [CI: priming the cache](#ci-priming-the-cache) below).
 
 ```ts
 await sveld({ json: true });
@@ -295,6 +296,8 @@ await sveld({ json: true });
 By default this writes to `node_modules/.cache/sveld/parse-cache.json`. Pass a string to use a different location, e.g. `cache: ".cache/sveld.json"`, or `cache: false` to disable it. Also available as `--cache` / `--cache=<path>` / `--cache=false` on the CLI.
 
 If a component [`@extendProps`](#extendprops) / [`@extends`](#extendprops) another file, it is re-parsed when that dependency changes, same as in [`watch`](#available-options) mode. Bumping the `sveld` or Svelte version clears the cache.
+
+Alongside it, a second cache layer is shared machine-wide across every project, worktree, and clone: `~/.cache/sveld/parse-cache.json` (or `$XDG_CACHE_HOME/sveld/parse-cache.json` if set). Unlike the project-local cache above, which is keyed by file path, this one is keyed by the source file's content hash, so a component with byte-identical source hits it regardless of which project parsed it first — including a component's first-ever parse in a brand-new clone. A component that reaches outside its own source via `@extendProps`/`@extends` is never written to it, since its parsed output isn't a pure function of its own hash. It's on by default whenever `cache` is enabled; pass `globalCache: false` (or `--global-cache=false`) to disable just this layer. Both layers are best-effort: a read-only or missing home directory never fails a run.
 
 ### Compile-checked `@example` blocks (`checkExamples`)
 
@@ -472,7 +475,7 @@ npx sveld --json --markdown
 
 If no entry point can be resolved (no `package.json#svelte` field and no `--entry`), the CLI exits `1` and prints the reason to `stderr`. If `src/index.js` happens to exist relative to your working directory, sveld falls back to it and prints a one-line note asking you to set `package.json#svelte` (or `--entry`) instead of relying on the fallback.
 
-Flags are kebab-case: `--entry`, `--glob`, `--types`, `--json`, `--markdown`, `--fail-fast`, `--dry-run`, `--cache`, `--resolve-types`, `--check-examples`, `--report-diagnostics`, `--strict`, `--check`, `--types-format`, `--quiet`, `--stdout`, `--format`. The camelCase spellings `--resolveTypes` and `--checkExamples` still work as deprecated aliases for compatibility with existing scripts. `--entry`, `--cache`, `--check`, and `--types-format` take their value either as `--flag=value` or as a separate `--flag value` argument (`sveld --entry src/index.js` and `sveld --entry=src/index.js` are equivalent); if the next argument starts with `--` it's not consumed as a value, so `--cache` and `--check` fall back to their default location and `--entry` and `--types-format` report a usage error naming the flag. Boolean flags (`--json`, `--glob`, `--strict`, and the like) never consume a following argument. An unrecognized flag (e.g. `--markdwon`) prints `Unknown flag: --markdwon` to `stderr`, exits `1`, and skips generation; when a close match exists it appends a suggestion, e.g. `Unknown flag: --markdwon Did you mean --markdown?`. sveld takes no positional arguments, so any non-flag argument errors the same way.
+Flags are kebab-case: `--entry`, `--glob`, `--types`, `--json`, `--markdown`, `--fail-fast`, `--dry-run`, `--cache`, `--global-cache`, `--resolve-types`, `--check-examples`, `--report-diagnostics`, `--strict`, `--check`, `--types-format`, `--quiet`, `--stdout`, `--format`. The camelCase spellings `--resolveTypes` and `--checkExamples` still work as deprecated aliases for compatibility with existing scripts. `--entry`, `--cache`, `--check`, and `--types-format` take their value either as `--flag=value` or as a separate `--flag value` argument (`sveld --entry src/index.js` and `sveld --entry=src/index.js` are equivalent); if the next argument starts with `--` it's not consumed as a value, so `--cache` and `--check` fall back to their default location and `--entry` and `--types-format` report a usage error naming the flag. Boolean flags (`--json`, `--glob`, `--strict`, and the like) never consume a following argument. An unrecognized flag (e.g. `--markdwon`) prints `Unknown flag: --markdwon` to `stderr`, exits `1`, and skips generation; when a close match exists it appends a suggestion, e.g. `Unknown flag: --markdwon Did you mean --markdown?`. sveld takes no positional arguments, so any non-flag argument errors the same way.
 
 Writer progress lines (`created "..."` / `unchanged "..."`) print to `stderr`, keeping `stdout` reserved for machine-readable data. Pass `--quiet` (or `quiet: true` in `sveld.config.*`) to suppress them; it does not suppress error messages, the diagnostics summary (`--report-diagnostics` / `--strict`), or the `--check` report.
 
@@ -527,6 +530,29 @@ Use `--check=<path>` to diff against a snapshot at a custom location (defaults t
 The CLI exits non-zero on any fatal error (an unreadable entry, a config file that throws, etc.), not just on `--strict`/`--check` findings, so it's safe to use either flag as a CI gate. See [Exit codes](#exit-codes) for how these are differentiated.
 
 Pass `--format=json` for a machine-readable report on `stdout` instead of the prose above, e.g. `sveld --check --format=json | jq '.bump'` or `sveld --check --format=json | jq '.changes[] | select(.bump == "major")'`.
+
+### CI: priming the cache
+
+Both cache layers described in [Persistent parse cache](#persistent-parse-cache-cache-globalcache) start empty on a fresh CI checkout, so the first run after a cache miss pays full parse cost regardless of how many previous runs happened elsewhere. Restoring the relevant directory as a CI cache/artifact turns that into a warm run.
+
+- The project-local cache (`node_modules/.cache/sveld/`) is only useful if it's restored keyed to something that tracks source changes (e.g. a lockfile hash) — otherwise it's rarely a hit on a fresh checkout, since any changed `.svelte` file invalidates just that file, but the whole cache is still empty on the very first restore.
+- The global cache (`~/.cache/sveld/`, or `$XDG_CACHE_HOME/sveld/` if set) is more effective to prime for CI specifically because it's shared: once any job on the runner (this repo, a different repo, a previous branch) has parsed a component, every other job benefits, including the very first checkout of a new PR.
+
+Either way, include the cache format/toolchain version in the cache key so a `sveld` or Svelte upgrade — which invalidates the cache's contents on read regardless — also invalidates the CI artifact cleanly instead of restoring dead weight. `npx sveld --version` prints the `sveld` version; pair it with your locked `svelte` version.
+
+Example with `actions/cache` (GitHub Actions):
+
+```yaml
+- name: Restore sveld global parse cache
+  uses: actions/cache@v4
+  with:
+    path: ~/.cache/sveld
+    key: sveld-global-cache-${{ runner.os }}-${{ hashFiles('**/bun.lock') }}
+    restore-keys: |
+      sveld-global-cache-${{ runner.os }}-
+```
+
+`hashFiles('**/bun.lock')` (or your lockfile) changes whenever `sveld`/`svelte` versions bump, so a version change naturally lands on a fresh cache entry; the `restore-keys` fallback still seeds from the most recent cache of a prior lockfile state so the first run after a version bump isn't fully cold either — it degrades to "reparse whatever the version bump actually invalidates," which is the cache's own `toolchainVersion` check, not the CI key.
 
 ### Node.js
 
@@ -719,7 +745,8 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
 - **`watch`** (boolean, optional, default: `false`): Regenerate output incrementally when `.svelte` source changes during `vite dev` / `vite build --watch`. Only the changed component and the components that depend on it via [`@extendProps`](#extendprops) / `@extends` are re-parsed, rather than rebuilding every component. Without this option, the plugin only runs during `vite build`.
 - **`failFast`** (boolean, optional, default: `false`): Abort the entire run when a single component fails to parse. By default, parse failures are collected as diagnostics (and reported to `stderr`) so the remaining components still emit their output. Also available as the `--fail-fast` CLI flag.
 - **`resolveTypes`** (boolean, optional, default: `false`): Load the TypeScript program to expand opaque imported whole-object `$props()` types into JSON. Also available as `--resolve-types` (`--resolveTypes` remains as a deprecated alias). See [Opt-in semantic resolution](#opt-in-semantic-resolution-resolvetypes).
-- **`cache`** (boolean | string, optional, default: `true`): Write parsed component output to disk and skip re-parsing unchanged files on later runs. On by default, writing to `node_modules/.cache/sveld/parse-cache.json`; a string sets a custom path; pass `false` to disable. Also available as `--cache` / `--cache=<path>` / `--cache=false`. See [Persistent parse cache](#persistent-parse-cache-cache).
+- **`cache`** (boolean | string, optional, default: `true`): Write parsed component output to disk and skip re-parsing unchanged files on later runs. On by default, writing to `node_modules/.cache/sveld/parse-cache.json`; a string sets a custom path; pass `false` to disable. Also available as `--cache` / `--cache=<path>` / `--cache=false`. See [Persistent parse cache](#persistent-parse-cache-cache-globalcache).
+- **`globalCache`** (boolean, optional, default: `true`): Also share parsed output across every project/worktree/clone via a machine-wide, content-hash-keyed cache at `~/.cache/sveld/parse-cache.json` (`$XDG_CACHE_HOME/sveld/parse-cache.json` if set). On by default whenever `cache` is enabled; pass `false` to disable just this layer. No-op when `cache` is `false`. Also available as `--global-cache` / `--global-cache=false`. See [Persistent parse cache](#persistent-parse-cache-cache-globalcache).
 - **`checkExamples`** (boolean, optional, default: `false`): Run plain TS/JS `@example` blocks through the TypeScript program. Broken ones get an `example-compile-error` diagnostic. Also available as `--check-examples` (`--checkExamples` remains as a deprecated alias). See [Compile-checked `@example` blocks](#compile-checked-example-blocks-checkexamples).
 - **`reportDiagnostics`** (boolean, optional, default: `false`): Print unresolved-type diagnostics to stderr (CLI) or `console.warn` (programmatic API). Also available as `--report-diagnostics`. See [Type inference diagnostics](#type-inference-diagnostics).
 - **`strict`** (boolean, optional, default: `false`): Exit with code `4` when diagnostics exist. Implies `reportDiagnostics`. Also available as `--strict`. See [Type inference diagnostics](#type-inference-diagnostics).
