@@ -1,4 +1,3 @@
-import { parse as parseComment } from "comment-parser";
 import type ComponentParser from "../ComponentParser";
 import type {
   ComponentPropBinding,
@@ -7,6 +6,8 @@ import type {
   JsDocPassthroughTag,
   SourceRange,
 } from "../ComponentParser";
+import type { JSDocComment } from "./comment-parser";
+import { parseComments } from "./comment-parser";
 import type { ParserContext } from "./context";
 import { addDispatchedEvent, buildEventDetailFromProperties } from "./events";
 import { splitTopLevelCommas } from "./generics";
@@ -48,44 +49,18 @@ function cleanDescription(description: string | undefined): string | undefined {
 }
 
 /**
- * Returns the description text that appears on the same line as the tag itself,
- * ignoring continuation lines that `comment-parser` aggregated into the tag's
- * `description` field. Continuation lines belong to the next tag (or the
- * enclosing event/typedef) and must not pollute the tag's own JSDoc.
+ * Returns the description text that appears on the same line as the tag itself, ignoring
+ * continuation lines that `parseComments` aggregated into the tag's `description` field.
+ * Continuation lines belong to the next tag (or the enclosing event/typedef) and must not
+ * pollute the tag's own JSDoc.
  */
-function getInlineTagDescription(tagSource: { tokens: { description?: string } }[] | undefined): string | undefined {
-  if (!tagSource || tagSource.length === 0) return undefined;
-  return tagSource[0].tokens.description;
+function getInlineTagDescription(tagLines: Array<{ content: string }> | undefined): string | undefined {
+  if (!tagLines || tagLines.length === 0) return undefined;
+  return tagLines[0].content;
 }
 
 /** `@since` and `@example` are kept out of prose descriptions and exposed as `tags` instead. */
 const IDE_PASSTHROUGH_TAGS = new Set(["since", "example"]);
-
-type JsDocSourceTokens = {
-  tag?: string;
-  name?: string;
-  postName?: string;
-  description?: string;
-  postDelimiter?: string;
-  end?: string;
-};
-
-/** Rebuilds a tag body from `comment-parser` source lines (needed for multi-line `@example`). */
-function getPassthroughTagBodyFromSource(tagSource: Array<{ tokens: JsDocSourceTokens }> | undefined): string {
-  if (!tagSource || tagSource.length === 0) return "";
-  const parts: string[] = [];
-  for (const line of tagSource) {
-    const t = line.tokens;
-    if ((t.end ?? "").trim() === "*/") break;
-    if (t.tag) {
-      const inline = `${t.name ?? ""}${t.postName ?? ""}${t.description ?? ""}`.trimEnd();
-      if (inline) parts.push(inline);
-    } else {
-      parts.push(`${t.postDelimiter ?? ""}${t.description ?? ""}`);
-    }
-  }
-  return parts.join("\n");
-}
 
 function deprecatedValueFromBody(body: string): DeprecatedValue {
   const message = body.trim();
@@ -157,12 +132,12 @@ export function aliasType(type: string): string {
  * component parser context.
  */
 export function extractJsDocReturnType(commentValue: string): string | undefined {
-  const comment = parseComment(formatComment(commentValue), { spacing: "preserve" });
+  const comment = parseComments(formatComment(commentValue));
   const { returns: returnsTag } = getCommentTags(comment);
   return returnsTag ? aliasType(returnsTag.type) : undefined;
 }
 
-export function getCommentTags(parsed: ReturnType<typeof parseComment>) {
+export function getCommentTags(parsed: JSDocComment[]) {
   const tags = parsed[0]?.tags ?? [];
   const excludedTags = new Set([
     "type",
@@ -306,9 +281,7 @@ function processJSDocComment(
   const jsdoc_comment = findJSDocComment(leadingComments);
   if (!jsdoc_comment) return undefined;
 
-  const comment = parseComment(formatComment(jsdoc_comment.value), {
-    spacing: "preserve",
-  });
+  const comment = parseComments(formatComment(jsdoc_comment.value));
 
   const {
     type: typeTag,
@@ -359,7 +332,7 @@ function processJSDocComment(
     passthroughTags.length > 0
       ? passthroughTags.map((tag) => ({
           name: tag.tag,
-          body: getPassthroughTagBodyFromSource(tag.source),
+          body: tag.raw,
         }))
       : undefined;
 
@@ -372,17 +345,7 @@ export function parseCustomTypes(
   scanSource: string | undefined = ctx.source,
 ) {
   if (!scanSource) return;
-  let commentSearchOffset = 0;
-  for (const { tags, description: commentDescription, source: blockSource } of parseComment(scanSource, {
-    spacing: "preserve",
-  })) {
-    const blockText = blockSource.map((line) => line.source).join("\n");
-    const blockStartOffset = scanSource.indexOf(blockText, commentSearchOffset);
-    const commentBlockStartOffset = blockStartOffset === -1 ? undefined : blockStartOffset;
-    if (blockStartOffset !== -1) {
-      commentSearchOffset = blockStartOffset + blockText.length;
-    }
-
+  for (const { tags, description: commentDescription, lines: blockLines } of parseComments(scanSource)) {
     let currentEventName: string | undefined;
     let currentEventType: string | undefined;
     let currentEventDescription: string | undefined;
@@ -429,18 +392,20 @@ export function parseCustomTypes(
     /** Lines already used as preceding-description for another tag. */
     const consumedDescriptionLines = new Set<number>();
     for (const tagInfo of tags) {
-      if (tagInfo.source && tagInfo.source.length > 0) {
-        tagLineNumbers.add(tagInfo.source[0].number);
+      if (tagInfo.lines.length > 0) {
+        tagLineNumbers.add(tagInfo.lines[0].number);
       }
     }
-    for (const line of blockSource) {
-      if (!line.tokens.tag && line.tokens.description && line.tokens.description.trim() !== "}") {
-        lineDescriptions.set(line.number, line.tokens.description);
+    for (const line of blockLines) {
+      // A line whose only remaining content is a lone "}" is the tail of a multi-line `{...}`
+      // type, not prose - it must not get attributed to any tag as a description.
+      if (!line.tag && line.content && line.content.trim() !== "}") {
+        lineDescriptions.set(line.number, line.content);
       }
     }
 
-    /** Description lines immediately above a tag (not continuation lines from `comment-parser`). */
-    const getPrecedingDescription = (tagSource: typeof blockSource): string | undefined => {
+    /** Description lines immediately above a tag (not continuation lines the tag's own body absorbed). */
+    const getPrecedingDescription = (tagSource: typeof blockLines): string | undefined => {
       if (!tagSource || tagSource.length === 0) return undefined;
       const tagLineNumber = tagSource[0].number;
 
@@ -448,7 +413,7 @@ export function parseCustomTypes(
       const claimedLineNums: number[] = [];
       let foundDescriptionBlock = false;
 
-      for (let lineNum = tagLineNumber - 1; lineNum >= 1; lineNum--) {
+      for (let lineNum = tagLineNumber - 1; lineNum >= 0; lineNum--) {
         if (tagLineNumbers.has(lineNum)) {
           break;
         }
@@ -459,10 +424,8 @@ export function parseCustomTypes(
           claimedLineNums.unshift(lineNum);
           foundDescriptionBlock = true;
         } else if (foundDescriptionBlock) {
-          const sourceLine = blockSource.find((l) => l.number === lineNum);
-          const isBlank =
-            !sourceLine ||
-            (!sourceLine.tokens.tag && (!sourceLine.tokens.description || sourceLine.tokens.description.trim() === ""));
+          const sourceLine = blockLines[lineNum];
+          const isBlank = !sourceLine || (!sourceLine.tag && (!sourceLine.content || sourceLine.content.trim() === ""));
           if (!isBlank) {
             break;
           }
@@ -492,7 +455,7 @@ export function parseCustomTypes(
         if (currentEventTagLine !== undefined) {
           let scopeBoundaryLine: number | undefined;
           for (const t of tags) {
-            const tLine = t.source?.[0]?.number;
+            const tLine = t.lines[0]?.number;
             if (typeof tLine !== "number") continue;
             if (tLine <= currentEventTagLine) continue;
             if (t.tag === "property" || t.tag === "type") continue;
@@ -608,7 +571,16 @@ export function parseCustomTypes(
     const blockHasSlotOrSnippetTag = tags.some((t) => t.tag === "slot" || t.tag === "snippet");
     const blockHasExtendsTag = tags.some((t) => t.tag === "extends" || t.tag === "extendProps");
 
-    for (const { tag, type: tagType, name, description, optional, default: defaultValue, source: tagSource } of tags) {
+    for (const {
+      tag,
+      type: tagType,
+      name,
+      description,
+      optional,
+      default: defaultValue,
+      raw,
+      lines: tagSource,
+    } of tags) {
       const type = parser.aliasType(tagType);
       const precedingDescription = getPrecedingDescription(tagSource);
 
@@ -655,7 +627,7 @@ export function parseCustomTypes(
             slot_description: slotDesc || undefined,
             slot_deprecated: pendingDeprecated,
             slot_tags: pendingTags.length > 0 ? [...pendingTags] : undefined,
-            source: sourceRangeFromCommentTag(ctx, blockSource, tagSource, commentBlockStartOffset),
+            source: sourceRangeFromCommentTag(ctx, tagSource),
           });
           pendingTags.length = 0;
           pendingDeprecated = undefined;
@@ -666,14 +638,14 @@ export function parseCustomTypes(
 
           currentEventName = name;
           currentEventType = type;
-          currentEventTagLine = tagSource && tagSource.length > 0 ? tagSource[0].number : undefined;
+          currentEventTagLine = tagSource.length > 0 ? tagSource[0].number : undefined;
           const inlineEventDesc = cleanDescription(getInlineTagDescription(tagSource));
           currentEventDescription = inlineEventDesc || precedingDescription;
           if (!currentEventDescription && isFirstTag && !commentDescriptionUsed && commentDescription) {
             currentEventDescription = commentDescription;
             commentDescriptionUsed = true;
           }
-          currentEventSource = sourceRangeFromCommentTag(ctx, blockSource, tagSource, commentBlockStartOffset);
+          currentEventSource = sourceRangeFromCommentTag(ctx, tagSource);
           if (isFirstTag) isFirstTag = false;
           break;
         }
@@ -782,7 +754,7 @@ export function parseCustomTypes(
           {
             const passthroughTag = {
               name: tag,
-              body: getPassthroughTagBodyFromSource(tagSource),
+              body: raw,
             };
             if (currentEventName !== undefined && IDE_PASSTHROUGH_TAGS.has(tag)) {
               currentEventTags.push(passthroughTag);

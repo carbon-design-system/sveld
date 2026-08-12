@@ -1,7 +1,7 @@
 /**
  * Lazily loads the parser stack (`ComponentParser` and the pruned svelte
  * parser in `./svelte-parse`, which together pull in acorn,
- * `@sveltejs/acorn-typescript`, comment-parser, and estree-walker) behind a
+ * `@sveltejs/acorn-typescript`, and estree-walker) behind a
  * dynamic import.
  *
  * A fully cached run never needs to parse a single component, so it never

@@ -184,12 +184,12 @@
       "detail": "{\n  theme: CarbonTheme;\n}",
       "source": {
         "start": {
-          "line": 26,
-          "column": 8
+          "line": 19,
+          "column": 5
         },
         "end": {
-          "line": 26,
-          "column": 21
+          "line": 19,
+          "column": 18
         }
       }
     }
@@ -211,12 +211,12 @@
       "message": "@event \"update\" has no matching dispatch or callback prop.",
       "source": {
         "start": {
-          "line": 26,
-          "column": 8
+          "line": 19,
+          "column": 5
         },
         "end": {
-          "line": 26,
-          "column": 21
+          "line": 19,
+          "column": 18
         }
       }
     }

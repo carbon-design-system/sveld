@@ -76,42 +76,30 @@ export function sourceRangeFromNode(ctx: ParserContext, node: unknown) {
 }
 
 /**
- * Computes the {@link SourceRange} for a JSDoc tag within a parsed comment
- * block, given the block's own source lines and starting offset.
+ * Computes the {@link SourceRange} for a JSDoc tag, given that tag's own comment lines (each
+ * already carrying its absolute offset in the source - see `./comment-parser.ts`).
  */
 export function sourceRangeFromCommentTag(
   ctx: ParserContext,
-  blockSource: Array<{ number: number; source: string }>,
-  tagSource: Array<{ number: number; source: string; tokens: { tag?: string } }> | undefined,
-  blockStartOffset: number | undefined,
+  tagLines: Array<{ start: number; raw: string; tag?: string }> | undefined,
 ): SourceRange | undefined {
-  if (!tagSource || tagSource.length === 0 || blockStartOffset === undefined) return undefined;
+  if (!tagLines || tagLines.length === 0) return undefined;
 
-  const relevantTagSource = [...tagSource];
-  while (relevantTagSource.length > 1) {
-    const lastLine = relevantTagSource[relevantTagSource.length - 1];
-    if (lastLine.tokens.tag || !lastLine.source.trim().endsWith("*/")) break;
-    relevantTagSource.pop();
+  // A trailing line that's purely the block's closing `*/` (not itself a tag boundary) isn't
+  // part of this tag's own text - drop it before computing the range's end.
+  const relevantLines = [...tagLines];
+  while (relevantLines.length > 1) {
+    const lastLine = relevantLines[relevantLines.length - 1];
+    if (lastLine.tag !== undefined || !lastLine.raw.trim().endsWith("*/")) break;
+    relevantLines.pop();
   }
 
-  let tagLineOffset = blockStartOffset;
-  for (let index = 0; index < relevantTagSource[0].number - 1; index++) {
-    tagLineOffset += blockSource[index]?.source.length ?? 0;
-    tagLineOffset += 1;
-  }
+  const firstLine = relevantLines[0];
+  const tagColumn = firstLine.raw.indexOf(`@${firstLine.tag ?? ""}`);
+  const start = firstLine.start + Math.max(tagColumn, 0);
 
-  const tagLine = relevantTagSource[0];
-  const tagColumn = tagLine.source.indexOf(tagLine.tokens.tag ?? "");
-  const start = tagLineOffset + Math.max(tagColumn, 0);
-
-  let end = blockStartOffset;
-  const lastLine = relevantTagSource[relevantTagSource.length - 1];
-  const lastLineNumber = lastLine.number;
-  for (let index = 0; index < lastLineNumber - 1; index++) {
-    end += blockSource[index]?.source.length ?? 0;
-    end += 1;
-  }
-  end += lastLine.source.length;
+  const lastLine = relevantLines[relevantLines.length - 1];
+  const end = lastLine.start + lastLine.raw.length;
 
   return sourceRangeFromOffsets(ctx, start, end);
 }

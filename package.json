@@ -36,7 +36,6 @@
     "@types/jest": "^30.0.0",
     "@typescript/typescript6": "^6.0.2",
     "acorn": "^8.18.0",
-    "comment-parser": "^1.4.7",
     "culls": "^0.2.0",
     "estree-walker": "^3.0.3",
     "svelte": "^5.56.8",

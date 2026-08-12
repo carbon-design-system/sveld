@@ -64,11 +64,11 @@
       "element": "FileUploaderButton",
       "source": {
         "start": {
-          "line": 11,
+          "line": 8,
           "column": 5
         },
         "end": {
-          "line": 11,
+          "line": 8,
           "column": 40
         }
       },
