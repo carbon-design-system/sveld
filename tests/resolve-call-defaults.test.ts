@@ -198,6 +198,129 @@ describe("cross-file CallExpression prop-default resolution", () => {
     expect(prop?.type).toBe("string");
   });
 
+  test("F: import after the export let (carbon-components-svelte props-then-imports style)", async () => {
+    writeFileSync(path.join(dir, "utils.js"), UNIQUE_ID_WITH_JSDOC);
+    writeFileSync(
+      path.join(dir, "ImportAfter.svelte"),
+      `<script>
+  export let id = uniqueId();
+
+  import { uniqueId } from "./utils.js";
+</script>
+<div {id} />
+`,
+    );
+    writeFileSync(path.join(dir, "index.js"), `export { default as ImportAfter } from "./ImportAfter.svelte";\n`);
+
+    const result = await generateBundle(path.join(dir, "index.js"), true);
+    const component = byModuleName(result.allComponentsForTypes, "ImportAfter");
+    const prop = component?.props.find((p) => p.name === "id");
+
+    expect(prop?.type).toBe("string");
+    expect(component?.diagnostics?.some((d) => d.name === "id")).toBe(false);
+  });
+
+  test("F: a late import among other imports still resolves", async () => {
+    writeFileSync(path.join(dir, "utils.js"), UNIQUE_ID_WITH_JSDOC);
+    writeFileSync(
+      path.join(dir, "LateAmongOthers.svelte"),
+      `<script>
+  export let label = "";
+  export let id = uniqueId();
+  import { createEventDispatcher } from "svelte";
+  import { uniqueId } from "./utils.js";
+</script>
+<div {id} />
+`,
+    );
+    writeFileSync(
+      path.join(dir, "index.js"),
+      `export { default as LateAmongOthers } from "./LateAmongOthers.svelte";\n`,
+    );
+
+    const result = await generateBundle(path.join(dir, "index.js"), true);
+    const prop = byModuleName(result.allComponentsForTypes, "LateAmongOthers")?.props.find((p) => p.name === "id");
+    expect(prop?.type).toBe("string");
+  });
+
+  test("F: a renamed import after the export let still resolves via importedName", async () => {
+    writeFileSync(path.join(dir, "utils.js"), UNIQUE_ID_WITH_JSDOC);
+    writeFileSync(
+      path.join(dir, "RenamedAfter.svelte"),
+      `<script>
+  export let id = makeId();
+
+  import { uniqueId as makeId } from "./utils.js";
+</script>
+<div {id} />
+`,
+    );
+    writeFileSync(path.join(dir, "index.js"), `export { default as RenamedAfter } from "./RenamedAfter.svelte";\n`);
+
+    const result = await generateBundle(path.join(dir, "index.js"), true);
+    const prop = byModuleName(result.allComponentsForTypes, "RenamedAfter")?.props.find((p) => p.name === "id");
+    expect(prop?.type).toBe("string");
+  });
+
+  test("F: an import after the export let that cannot be resolved still falls back to any", async () => {
+    writeFileSync(
+      path.join(dir, "Unresolvable2.svelte"),
+      `<script>
+  export let id = uniqueId();
+
+  import { uniqueId } from "./does-not-exist.js";
+</script>
+<div {id} />
+`,
+    );
+    writeFileSync(path.join(dir, "index.js"), `export { default as Unresolvable2 } from "./Unresolvable2.svelte";\n`);
+
+    const result = await generateBundle(path.join(dir, "index.js"), true);
+    const prop = byModuleName(result.allComponentsForTypes, "Unresolvable2")?.props.find((p) => p.name === "id");
+    expect(prop?.type).toBe("any");
+  });
+
+  test("F: explicit JSDoc @type still wins when the import comes after the export let", async () => {
+    writeFileSync(path.join(dir, "utils.js"), UNIQUE_ID_WITH_JSDOC);
+    writeFileSync(
+      path.join(dir, "ExplicitAfter.svelte"),
+      `<script>
+  /** @type {"a" | "b"} */
+  export let id = uniqueId();
+
+  import { uniqueId } from "./utils.js";
+</script>
+<div {id} />
+`,
+    );
+    writeFileSync(path.join(dir, "index.js"), `export { default as ExplicitAfter } from "./ExplicitAfter.svelte";\n`);
+
+    const result = await generateBundle(path.join(dir, "index.js"), true);
+    const prop = byModuleName(result.allComponentsForTypes, "ExplicitAfter")?.props.find((p) => p.name === "id");
+    expect(prop?.type).toBe('"a" | "b"');
+    expect(prop?.typeSource).toBe("jsdoc");
+  });
+
+  test("F: a same-file function declared after the export let still resolves", async () => {
+    writeFileSync(
+      path.join(dir, "SameFileAfter.svelte"),
+      `<script>
+  export let id = uniqueId();
+
+  function uniqueId() {
+    return "x";
+  }
+</script>
+<div {id} />
+`,
+    );
+    writeFileSync(path.join(dir, "index.js"), `export { default as SameFileAfter } from "./SameFileAfter.svelte";\n`);
+
+    const result = await generateBundle(path.join(dir, "index.js"), true);
+    const prop = byModuleName(result.allComponentsForTypes, "SameFileAfter")?.props.find((p) => p.name === "id");
+    expect(prop?.type).toBe("string");
+  });
+
   test("fully cached second run still resolves import call defaults", async () => {
     const cacheFile = path.join(dir, "parse-cache.json");
     writeFileSync(path.join(dir, "utils.js"), UNIQUE_ID_WITH_JSDOC);

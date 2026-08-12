@@ -53,7 +53,11 @@ import { sourceAtPos, sourceRangeFromNode, sourceRangeFromOffsets } from "./pars
 import { buildTypeScriptMetadata } from "./parser/type-resolution";
 import { stripTypeCastWrappers } from "./parser/typescript-casts";
 import { assignValueOrUndefined } from "./parser/utils";
-import { collectValueImportBindings, type ImportDeclarationNode } from "./parser/value-imports";
+import {
+  collectHoistedScriptBindings,
+  collectValueImportBindings,
+  type ImportDeclarationNode,
+} from "./parser/value-imports";
 import { buildVariableJsDocTable } from "./parser/variable-jsdoc";
 import { parseModernAndLegacy } from "./svelte-parse";
 
@@ -926,6 +930,23 @@ export default class ComponentParser {
 
     parseCustomTypes(this.ctx, this, scanSource);
 
+    const componentRoot = {
+      type: "ComponentRoot",
+      instance: this.ctx.parsed.instance,
+      html: this.ctx.parsed.html,
+    } as unknown as Node;
+
+    /**
+     * Imports and function declarations hoist, so `export let id = uniqueId()` must
+     * resolve even when the import or `function uniqueId()` comes later in the script.
+     * See #410. Pre-scan module and instance so those bindings exist before prop defaults run.
+     *
+     * Skip `componentRoot`. Imports and function declarations never appear in `html`,
+     * so walking markup here would re-traverse the largest part of the AST for nothing.
+     */
+    collectHoistedScriptBindings(this.ctx, this.ctx.parsed?.module as unknown as Node | undefined);
+    collectHoistedScriptBindings(this.ctx, this.ctx.parsed?.instance as unknown as Node | undefined);
+
     /**
      * Not fused with the componentRoot walk below: `module` (`<script context="module">`) is a
      * disjoint AST rooted separately from `instance`/`html`, not a subtree reachable from either,
@@ -1071,11 +1092,6 @@ export default class ComponentParser {
     const hostLocalNames = new Set<string>();
     const hostDispatchedEventNames = new Set<string>();
     const callees: { name: string; arguments: Array<Expression | unknown>; source?: SourceRange }[] = [];
-    const componentRoot = {
-      type: "ComponentRoot",
-      instance: this.ctx.parsed.instance,
-      html: this.ctx.parsed.html,
-    } as unknown as Node;
 
     initComponentScope(this, this.ctx);
     this.ctx.activeScopes.push(this.ctx.componentScope);
