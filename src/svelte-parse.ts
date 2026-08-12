@@ -128,9 +128,17 @@ export function parseModern(
   const cleaned = removeByteOrderMark(source);
   resetCompilerState({ warning: () => false, filename: undefined });
   const ast: InternalAstRoot = parseFragment(cleaned, loose);
-  const modern = toPublicAst(cleaned, ast, true);
+  /**
+   * Unlike the public `parse()`, the modern view here skips `toPublicAst`'s
+   * metadata stripping: its only consumer (`buildRunesPropTypeMetadata`)
+   * extracts strings and offsets and never touches `metadata`, and the legacy
+   * conversion below runs `convert()` on the raw parser output exactly like
+   * upstream's own legacy branch of `to_public_ast` (convert deletes
+   * `metadata` itself, and never reads it). Skipping the strip avoids a full
+   * extra AST walk per component.
+   */
   return {
-    modern,
-    intoLegacy: () => toPublicAst(cleaned, modern as InternalAstRoot, false),
+    modern: ast,
+    intoLegacy: () => toPublicAst(cleaned, ast, false),
   };
 }
