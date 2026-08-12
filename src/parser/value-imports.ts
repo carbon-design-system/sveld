@@ -1,3 +1,6 @@
+import type { FunctionDeclaration } from "estree";
+import type { Node } from "estree-walker";
+import { walk } from "estree-walker";
 import type { ParserContext } from "./context";
 
 /** `ImportDeclaration` fields we read from the Svelte/acorn-typescript AST. */
@@ -33,4 +36,29 @@ export function collectValueImportBindings(ctx: ParserContext, node: ImportDecla
 
     ctx.valueImportBindingsByLocalName.set(localName, { localName, importedName, source });
   }
+}
+
+/**
+ * Collect imports and function declarations from a script root before prop defaults run.
+ * Both hoist, so `export let id = uniqueId()` still resolves when the import or
+ * `function uniqueId()` appears later, the pattern carbon-components-svelte uses.
+ * The main walk records the same bindings again into keyed maps; that is fine.
+ */
+export function collectHoistedScriptBindings(ctx: ParserContext, root: Node | undefined): void {
+  if (!root) return;
+
+  walk(root, {
+    enter(node) {
+      if (node.type === "ImportDeclaration") {
+        collectValueImportBindings(ctx, node as unknown as ImportDeclarationNode);
+      }
+
+      if (node.type === "FunctionDeclaration") {
+        const funcDecl = node as unknown as FunctionDeclaration;
+        if (funcDecl.id?.name) {
+          ctx.funcDecls.set(funcDecl.id.name, funcDecl);
+        }
+      }
+    },
+  });
 }
