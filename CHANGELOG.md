@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.36.5](https://github.com/carbon-design-system/sveld/releases/tag/v0.36.5) - 2026-08-11
+
+**Features**
+
+- convert the legacy AST in place instead of cloning (bbd6b6b)
+- skip the metadata strip on the internal parse path (7cb7167)
+- cache repeated work in `.d.ts` generation (271b528)
+
+**Fixes**
+
+- resolve prop defaults that use later imports or functions (4a4601b, #410)
+
 ## [0.36.4](https://github.com/carbon-design-system/sveld/releases/tag/v0.36.4) - 2026-08-11
 
 **Fixes**
