@@ -145,6 +145,23 @@ function formatComment(comment: string) {
   return formatted_comment;
 }
 
+/** Map JSDoc `"*"` to `"any"`; otherwise trim. Same rules as {@link ComponentParser.aliasType}. */
+export function aliasType(type: string): string {
+  if (type === "*") return "any";
+  return type.trim();
+}
+
+/**
+ * `@returns`/`@return` type from raw JSDoc text (with or without `/**` delimiters).
+ * Standalone so `parse-entry-exports.ts` can read sibling modules without a
+ * component parser context.
+ */
+export function extractJsDocReturnType(commentValue: string): string | undefined {
+  const comment = parseComment(formatComment(commentValue), { spacing: "preserve" });
+  const { returns: returnsTag } = getCommentTags(comment);
+  return returnsTag ? aliasType(returnsTag.type) : undefined;
+}
+
 export function getCommentTags(parsed: ReturnType<typeof parseComment>) {
   const tags = parsed[0]?.tags ?? [];
   const excludedTags = new Set([

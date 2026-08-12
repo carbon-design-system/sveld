@@ -279,10 +279,21 @@ function buildTypeImportStatements(ctx: ParserContext, referencedImportedTypes: 
 }
 
 export function buildTypeScriptMetadata(ctx: ParserContext): ParsedComponentTypeScriptMetadata | undefined {
-  if (ctx.typedRunesPropsDeclarations.length !== 1) return undefined;
+  const pendingCallDefaultCandidates =
+    ctx.pendingCallDefaultCandidates.length > 0 ? ctx.pendingCallDefaultCandidates.slice() : undefined;
+
+  if (ctx.typedRunesPropsDeclarations.length !== 1) {
+    return pendingCallDefaultCandidates
+      ? { canonicalPropNames: [], localTypeDeclarations: [], typeImportStatements: [], pendingCallDefaultCandidates }
+      : undefined;
+  }
 
   const [typedDeclaration] = ctx.typedRunesPropsDeclarations;
-  if (!typedDeclaration.canonicalType) return undefined;
+  if (!typedDeclaration.canonicalType) {
+    return pendingCallDefaultCandidates
+      ? { canonicalPropNames: [], localTypeDeclarations: [], typeImportStatements: [], pendingCallDefaultCandidates }
+      : undefined;
+  }
 
   const localTypeDeclarations = Array.from(typedDeclaration.referencedLocalTypes)
     .map((typeName) => ctx.localTypeDeclarationsByName.get(typeName))
@@ -296,5 +307,6 @@ export function buildTypeScriptMetadata(ctx: ParserContext): ParsedComponentType
     localTypeDeclarations,
     typeImportStatements: buildTypeImportStatements(ctx, typedDeclaration.referencedImportedTypes),
     referencesComponentGenerics: typeTextReferencesGenerics(typedDeclaration.canonicalType, ctx.generics),
+    ...(pendingCallDefaultCandidates ? { pendingCallDefaultCandidates } : {}),
   };
 }

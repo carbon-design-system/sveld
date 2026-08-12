@@ -3,7 +3,7 @@ import { lstatSync, readdirSync, readFileSync, realpathSync, statSync } from "no
 import { readFile } from "node:fs/promises";
 import { dirname, isAbsolute, join, parse, relative, resolve } from "node:path";
 import { asRelativeSourcePath, type NormalizedPath } from "./brands";
-import type { ParsedComponent } from "./ComponentParser";
+import type { ParsedComponent, PendingCallDefaultCandidate } from "./ComponentParser";
 import { buildReverseDeps, expandAffected } from "./dependency-graph";
 import { dedupeDiagnostics, type SveldDiagnostic } from "./diagnostics";
 import { collectExampleSources } from "./example-check";
@@ -13,6 +13,12 @@ import { type ParsedExports, parseExports } from "./parse-exports";
 import { applyResolvedProps, getParsedComponentTypeScriptMetadata } from "./parsed-component-metadata";
 import { getParserStack, loadParserStack } from "./parser-stack";
 import { normalizeSeparators } from "./path";
+import {
+  type CallDefaultResolution,
+  createCallDefaultResolveContext,
+  describeCallDefaultFailure,
+  resolveCallDefaultCandidates,
+} from "./resolve-call-defaults";
 import type { TypeResolver } from "./resolve-types";
 
 export interface ComponentDocApi extends ParsedComponent {
@@ -674,6 +680,23 @@ export async function generateBundle(
     }
   }
 
+  // AST/JSDoc only (no tsc). Always runs when parsing left pending candidates.
+  // Warm-cache runs skip loadParserStack above, but this pass still needs it to
+  // parse sibling modules.
+  const callDefaultCandidates = collectCallDefaultCandidates(allComponentsForTypes);
+  if (callDefaultCandidates.length > 0) {
+    await loadParserStack();
+    const callDefaultResolveContext = createCallDefaultResolveContext();
+    for (const { component, candidates } of callDefaultCandidates) {
+      const resolutions = resolveCallDefaultCandidates(
+        resolveComponentFilePath(component.filePath),
+        candidates,
+        callDefaultResolveContext,
+      );
+      applyCallDefaultResolutions(component, resolutions);
+    }
+  }
+
   // Dedupe diagnostics from export and all-components passes.
   const diagnostics = dedupeDiagnostics(
     Array.from(allComponentsForTypes.values()).flatMap((component) => component.diagnostics ?? []),
@@ -689,6 +712,57 @@ export async function generateBundle(
     cache,
     resolvedPathByFilePath,
   };
+}
+
+interface CallDefaultCandidateGroup {
+  component: ComponentDocApi;
+  candidates: PendingCallDefaultCandidate[];
+}
+
+/** Components that have a CallExpression prop default from a named import. */
+function collectCallDefaultCandidates(components: ComponentDocs): CallDefaultCandidateGroup[] {
+  const groups: CallDefaultCandidateGroup[] = [];
+
+  for (const component of components.values()) {
+    const candidates = getParsedComponentTypeScriptMetadata(component)?.pendingCallDefaultCandidates?.filter(
+      (candidate) => candidate.importSource !== undefined,
+    );
+    if (!candidates || candidates.length === 0) continue;
+    groups.push({ component, candidates });
+  }
+
+  return groups;
+}
+
+/**
+ * Apply each resolution onto props/moduleExports. Drop or rewrite the
+ * parse-time `prop-unknown-type` diagnostic. Skip when `typeSource !==
+ * "unknown"` so an explicit `@type` keeps winning.
+ */
+function applyCallDefaultResolutions(component: ComponentDocApi, resolutions: CallDefaultResolution[]): void {
+  for (const { candidate, type, failureReason } of resolutions) {
+    const list = candidate.location === "props" ? component.props : component.moduleExports;
+    const prop = list.find((entry) => entry.name === candidate.propName);
+    if (prop?.typeSource !== "unknown") continue;
+
+    if (type) {
+      prop.type = type;
+      prop.typeSource = "typescript";
+      if (candidate.location === "props") {
+        component.diagnostics = (component.diagnostics ?? []).filter(
+          (diagnostic) => !(diagnostic.kind === "prop-unknown-type" && diagnostic.name === candidate.propName),
+        );
+      }
+      continue;
+    }
+
+    if (candidate.location === "props" && failureReason) {
+      const existing = component.diagnostics?.find(
+        (diagnostic) => diagnostic.kind === "prop-unknown-type" && diagnostic.name === candidate.propName,
+      );
+      if (existing) existing.message = describeCallDefaultFailure(candidate, failureReason);
+    }
+  }
 }
 
 interface ResolveTypesCandidate {

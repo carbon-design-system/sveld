@@ -40,7 +40,7 @@ export type PropMetadataConsolidatedProps = {
   /**
    * @default makeDefault()
    */
-  callDefault?: undefined;
+  callDefault?: string;
 
   /**
    * @default Number.MAX_VALUE

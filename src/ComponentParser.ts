@@ -53,6 +53,7 @@ import { sourceAtPos, sourceRangeFromNode, sourceRangeFromOffsets } from "./pars
 import { buildTypeScriptMetadata } from "./parser/type-resolution";
 import { stripTypeCastWrappers } from "./parser/typescript-casts";
 import { assignValueOrUndefined } from "./parser/utils";
+import { collectValueImportBindings, type ImportDeclarationNode } from "./parser/value-imports";
 import { buildVariableJsDocTable } from "./parser/variable-jsdoc";
 import { parseModernAndLegacy } from "./svelte-parse";
 
@@ -149,6 +150,27 @@ export interface TypeImportBinding {
   specifierType: "default" | "named" | "namespace";
 }
 
+/** Named value import (`import { x } from "..."`) keyed for cross-file call-default lookup. */
+export interface ValueImportBinding {
+  localName: string;
+  importedName: string;
+  source: string;
+}
+
+/**
+ * Prop default is a `CallExpression` whose return type we could not resolve in-parser
+ * (`export let id = uniqueId()`). With `importSource`, `resolve-call-defaults.ts` (from
+ * `generateBundle`) can still read the target module. Without it, keep the candidate so
+ * the diagnostic can name the callee.
+ */
+export interface PendingCallDefaultCandidate {
+  propName: string;
+  location: "props" | "moduleExports";
+  calleeName: string;
+  importSource?: string;
+  importedName?: string;
+}
+
 export interface LocalTypeDeclaration {
   code: string;
   node: ModernRunesTypeNode;
@@ -167,6 +189,8 @@ export interface ParsedComponentTypeScriptMetadata {
    * component's props as their AST-derived text rather than expand them.
    */
   referencesComponentGenerics?: boolean;
+  /** Unresolved CallExpression defaults for the cross-file pass in `generateBundle`. */
+  pendingCallDefaultCandidates?: PendingCallDefaultCandidate[];
 }
 
 export {
@@ -207,6 +231,12 @@ export interface ProcessedInitializer {
   resolvedDescription?: string;
   resolvedParams?: ComponentPropParam[];
   resolvedReturnType?: string;
+  /**
+   * CallExpression default with no in-parser return type
+   * ({@link PendingCallDefaultCandidate}). Caller adds `propName`/`location`
+   * onto {@link ParserContext.pendingCallDefaultCandidates}.
+   */
+  pendingCallDefault?: Omit<PendingCallDefaultCandidate, "propName" | "location">;
 }
 
 type ModernScriptAttribute = {
@@ -907,6 +937,23 @@ export default class ComponentParser {
     if (this.ctx.parsed?.module) {
       walk(this.ctx.parsed?.module as unknown as Node, {
         enter: (node) => {
+          // Module script is in scope for instance. Record imports/funcs/vars
+          // the same way so instance CallExpression defaults can see them.
+          if (node.type === "ImportDeclaration") {
+            collectValueImportBindings(this.ctx, node as unknown as ImportDeclarationNode);
+          }
+
+          if (node.type === "FunctionDeclaration") {
+            const funcDecl = node as unknown as FunctionDeclaration;
+            if (funcDecl.id?.name) {
+              this.ctx.funcDecls.set(funcDecl.id.name, funcDecl);
+            }
+          }
+
+          if (node.type === "VariableDeclaration") {
+            this.ctx.vars.add(node as unknown as VariableDeclaration);
+          }
+
           if (node.type === "ExportNamedDeclaration") {
             if (node.declaration == null) {
               return;
@@ -928,7 +975,11 @@ export default class ComponentParser {
             let resolvedJSDoc:
               | Pick<
                   ProcessedInitializer,
-                  "resolvedType" | "resolvedDescription" | "resolvedParams" | "resolvedReturnType"
+                  | "resolvedType"
+                  | "resolvedDescription"
+                  | "resolvedParams"
+                  | "resolvedReturnType"
+                  | "pendingCallDefault"
                 >
               | undefined;
 
@@ -962,6 +1013,13 @@ export default class ComponentParser {
               inferredTypeForSource = typeSeed;
               resolvedJSDoc = initResult;
               explicitType = this.getExplicitPropType(localPropName);
+              if (resolvedJSDoc.pendingCallDefault) {
+                this.ctx.pendingCallDefaultCandidates.push({
+                  propName: localPropName,
+                  location: "moduleExports",
+                  ...resolvedJSDoc.pendingCallDefault,
+                });
+              }
             } else {
               return;
             }
@@ -1118,6 +1176,10 @@ export default class ComponentParser {
           }
         }
 
+        if (node.type === "ImportDeclaration") {
+          collectValueImportBindings(this.ctx, node as unknown as ImportDeclarationNode);
+        }
+
         if (node.type === "VariableDeclaration") {
           this.ctx.vars.add(node as unknown as VariableDeclaration);
           if (
@@ -1192,7 +1254,7 @@ export default class ComponentParser {
           let resolvedJSDoc:
             | Pick<
                 ProcessedInitializer,
-                "resolvedType" | "resolvedDescription" | "resolvedParams" | "resolvedReturnType"
+                "resolvedType" | "resolvedDescription" | "resolvedParams" | "resolvedReturnType" | "pendingCallDefault"
               >
             | undefined;
 
@@ -1231,6 +1293,13 @@ export default class ComponentParser {
             ({ value, type: typeSeed, isFunction: initializerIsFunction, defaultValue } = initResult);
             inferredTypeForSource = typeSeed;
             resolvedJSDoc = initResult;
+            if (resolvedJSDoc.pendingCallDefault) {
+              this.ctx.pendingCallDefaultCandidates.push({
+                propName: prop_name,
+                location: "props",
+                ...resolvedJSDoc.pendingCallDefault,
+              });
+            }
           } else {
             return;
           }
@@ -1720,15 +1789,34 @@ export default class ComponentParser {
     const typedefsArray = ComponentParser.mapToArray(this.ctx.typedefs);
     const contextsArray = ComponentParser.mapToArray(this.ctx.contexts);
 
+    const pendingCallDefaultsByLocation = {
+      props: new Map(
+        this.ctx.pendingCallDefaultCandidates.filter((c) => c.location === "props").map((c) => [c.propName, c]),
+      ),
+      moduleExports: new Map(
+        this.ctx.pendingCallDefaultCandidates.filter((c) => c.location === "moduleExports").map((c) => [c.propName, c]),
+      ),
+    };
+
     for (const prop of processedProps) {
       if (prop.typeSource === "unknown") {
-        recordDiagnostic(
-          this.ctx,
-          "prop-unknown-type",
-          prop.name,
-          `Prop "${prop.name}" type could not be inferred; falling back to "${prop.type ?? "any"}".`,
-          prop.source,
-        );
+        const callDefault = pendingCallDefaultsByLocation.props.get(prop.name);
+        // Never leave type unset: the writer would emit `id?: undefined;`.
+        if (callDefault) prop.type = "any";
+
+        const message = callDefault
+          ? callDefault.importSource
+            ? `Prop "${prop.name}" default calls "${callDefault.calleeName}()" imported from "${callDefault.importSource}"; falling back to "any" pending cross-file resolution.`
+            : `Prop "${prop.name}" default calls "${callDefault.calleeName}()", but its return type could not be inferred; falling back to "any".`
+          : `Prop "${prop.name}" type could not be inferred; falling back to "${prop.type ?? "any"}".`;
+
+        recordDiagnostic(this.ctx, "prop-unknown-type", prop.name, message, prop.source);
+      }
+    }
+
+    for (const moduleExport of moduleExportsArray) {
+      if (moduleExport.typeSource === "unknown" && pendingCallDefaultsByLocation.moduleExports.has(moduleExport.name)) {
+        moduleExport.type = "any";
       }
     }
 

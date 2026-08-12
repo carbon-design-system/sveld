@@ -162,6 +162,64 @@ export function processInitializer(
     ) {
       value = sourceAtPos(ctx, callExpr.start, callExpr.end);
     }
+
+    const callee = callExpr.callee;
+    const calleeName =
+      callee && typeof callee === "object" && "type" in callee && callee.type === "Identifier"
+        ? (callee as Identifier).name
+        : undefined;
+
+    // `$derived`/`$state` wrap a value. Unwrap like `$bindable`, keep the rune
+    // call text as `@default`.
+    if ((calleeName === "$derived" || calleeName === "$state") && callExpr.arguments.length === 1 && depth < 5) {
+      const inner = processInitializer(parser, ctx, callExpr.arguments[0], depth + 1);
+      return { ...inner, value, defaultValue };
+    }
+
+    // Same-file function/const-arrow, or a named value import.
+    if (calleeName) {
+      const sameFileReturnType = resolveSameFileCallReturnType(parser, ctx, calleeName);
+      if (sameFileReturnType) {
+        // Value prop: only resolvedType. resolvedReturnType would show up on
+        // prop.returnType even when isFunction is false.
+        return {
+          value,
+          type: undefined,
+          isFunction: false,
+          defaultValue,
+          resolvedType: sameFileReturnType,
+        };
+      }
+
+      if (ctx.funcDecls.has(calleeName) || isLocalFunctionValuedBinding(ctx, calleeName)) {
+        return { value, type: undefined, isFunction: false, defaultValue, pendingCallDefault: { calleeName } };
+      }
+
+      const importBinding = ctx.valueImportBindingsByLocalName.get(calleeName);
+      if (importBinding) {
+        return {
+          value,
+          type: undefined,
+          isFunction: false,
+          defaultValue,
+          pendingCallDefault: {
+            calleeName,
+            importSource: importBinding.source,
+            importedName: importBinding.importedName,
+          },
+        };
+      }
+    }
+
+    // Unknown callee, member call, IIFE, etc. Still pending so finalize uses
+    // "any" instead of the literal type "undefined".
+    return {
+      value,
+      type: undefined,
+      isFunction: false,
+      defaultValue,
+      pendingCallDefault: { calleeName: calleeName ?? calleeDisplayText(ctx, callee) },
+    };
   } else if (init.type === "Identifier") {
     const ident = init as Identifier;
     if (depth < 5) {
@@ -281,6 +339,120 @@ export function resolveConstInitializer(ctx: ParserContext, name: string): unkno
     }
   }
   return undefined;
+}
+
+/** Callee source text for diagnostics (`now.toISOString`). Falls back to `"call"`. */
+function calleeDisplayText(ctx: ParserContext, callee: unknown): string {
+  if (
+    callee &&
+    typeof callee === "object" &&
+    "start" in callee &&
+    "end" in callee &&
+    typeof callee.start === "number" &&
+    typeof callee.end === "number"
+  ) {
+    return sourceAtPos(ctx, callee.start, callee.end) ?? "call";
+  }
+  return "call";
+}
+
+/**
+ * Return type for a same-file call default (`export let id = uniqueId()`).
+ * Order: JSDoc `@returns`, TS return annotation, binding `() => T`, then
+ * literal returns via {@link inferReturnTypeFromNode}. Returns `undefined`
+ * (not `"any"`) when nothing confident turns up.
+ */
+function resolveSameFileCallReturnType(
+  parser: ComponentParser,
+  ctx: ParserContext,
+  calleeName: string,
+): string | undefined {
+  const resolvedJSDoc = parser.resolveLocalVarJSDoc(calleeName);
+  if (resolvedJSDoc?.returnType) return resolvedJSDoc.returnType;
+
+  const funcNode = ctx.funcDecls.get(calleeName) ?? localFunctionValuedInitializer(ctx, calleeName);
+  if (!funcNode) return undefined;
+
+  const tsReturnType = functionReturnTypeAnnotationText(ctx, funcNode);
+  if (tsReturnType) return tsReturnType;
+
+  const bindingReturnType = bindingCallableReturnTypeText(ctx, calleeName);
+  if (bindingReturnType) return bindingReturnType;
+
+  const inferred = inferReturnTypeFromNode(funcNode);
+  return inferred === "any" ? undefined : inferred;
+}
+
+/** Local const/let whose initializer is an arrow or function expression. */
+function isLocalFunctionValuedBinding(ctx: ParserContext, name: string): boolean {
+  return localFunctionValuedInitializer(ctx, name) !== undefined;
+}
+
+/** Arrow or function-expression initializer for a local binding. */
+function localFunctionValuedInitializer(
+  ctx: ParserContext,
+  name: string,
+): FunctionExpression | ArrowFunctionExpression | undefined {
+  const init = resolveLocalVarInitializer(ctx, name);
+  if (!init || typeof init !== "object" || !("type" in init)) return undefined;
+  if (init.type === "ArrowFunctionExpression" || init.type === "FunctionExpression") {
+    return init as ArrowFunctionExpression | FunctionExpression;
+  }
+  return undefined;
+}
+
+/**
+ * Return type from `const f: () => string = ...` when the arrow omits `): string`.
+ */
+function bindingCallableReturnTypeText(ctx: ParserContext, name: string): string | undefined {
+  for (const decl of ctx.vars) {
+    for (const declarator of decl.declarations) {
+      const id = declarator.id;
+      if (
+        !id ||
+        typeof id !== "object" ||
+        !("type" in id) ||
+        id.type !== "Identifier" ||
+        !("name" in id) ||
+        id.name !== name
+      ) {
+        continue;
+      }
+      const annotation = (
+        id as unknown as { typeAnnotation?: { type?: string; typeAnnotation?: { start?: number; end?: number } } }
+      ).typeAnnotation;
+      if (annotation?.type !== "TSTypeAnnotation") return undefined;
+      const typeNode = annotation.typeAnnotation;
+      if (!typeNode || typeof typeNode.start !== "number" || typeof typeNode.end !== "number") return undefined;
+      return returnTypeFromCallableTypeText(sourceAtPos(ctx, typeNode.start, typeNode.end));
+    }
+  }
+  return undefined;
+}
+
+/** Trailing return from a callable type (`() => string` → `string`). */
+function returnTypeFromCallableTypeText(type: string | undefined): string | undefined {
+  if (!type) return undefined;
+  const idx = type.lastIndexOf("=>");
+  if (idx === -1) return undefined;
+  const ret = type.slice(idx + 2).trim();
+  return ret || undefined;
+}
+
+/** Explicit TS return annotation text on a function (`): T`). */
+function functionReturnTypeAnnotationText(
+  ctx: ParserContext,
+  node: FunctionDeclaration | FunctionExpression | ArrowFunctionExpression,
+): string | undefined {
+  const returnType = (
+    node as unknown as { returnType?: { type?: string; typeAnnotation?: { start?: number; end?: number } } }
+  ).returnType;
+  if (returnType?.type !== "TSTypeAnnotation") return undefined;
+
+  const annotation = returnType.typeAnnotation;
+  if (!annotation || typeof annotation.start !== "number" || typeof annotation.end !== "number") return undefined;
+
+  return sourceAtPos(ctx, annotation.start, annotation.end);
 }
 
 /**

@@ -4,7 +4,7 @@ export type RunesDerivedPropDefaultProps = {
   /**
    * @default $derived(now.toISOString())
    */
-  label?: undefined;
+  label?: any;
 };
 
 export type RunesDerivedPropDefaultExports = Record<string, never>;

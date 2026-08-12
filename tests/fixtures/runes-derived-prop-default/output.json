@@ -15,6 +15,7 @@
     {
       "name": "label",
       "kind": "let",
+      "type": "any",
       "typeSource": "unknown",
       "value": "$derived(now.toISOString())",
       "defaultValue": {
@@ -49,7 +50,7 @@
       "component": "runes-derived-prop-default/input.svelte",
       "kind": "prop-unknown-type",
       "name": "label",
-      "message": "Prop \"label\" type could not be inferred; falling back to \"any\".",
+      "message": "Prop \"label\" default calls \"now.toISOString()\", but its return type could not be inferred; falling back to \"any\".",
       "source": {
         "start": {
           "line": 5,

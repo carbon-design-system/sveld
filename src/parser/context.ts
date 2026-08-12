@@ -12,6 +12,7 @@ import type {
   LegacyAstRoot,
   LexicalScope,
   LocalTypeDeclaration,
+  PendingCallDefaultCandidate,
   RestProps,
   RunesPropsDeclarationMetadata,
   ScriptLanguage,
@@ -19,6 +20,7 @@ import type {
   SyntaxMode,
   TypeDef,
   TypeImportBinding,
+  ValueImportBinding,
 } from "../ComponentParser";
 import type { SveldDiagnostic } from "../diagnostics";
 
@@ -58,6 +60,10 @@ export interface ParserContext {
   readonly reactive_vars: Set<string>;
   readonly funcDecls: Map<string, FunctionDeclaration>;
   readonly vars: Set<VariableDeclaration>;
+  /** Named value imports by local name, for cross-file call-default lookup. */
+  readonly valueImportBindingsByLocalName: Map<string, ValueImportBinding>;
+  /** CallExpression defaults that still need a return type after AST parsing. */
+  readonly pendingCallDefaultCandidates: PendingCallDefaultCandidate[];
 
   readonly runesPropsDeclarationMetadataByDeclaratorStart: Map<number, RunesPropsDeclarationMetadata>;
   readonly typedRunesPropsDeclarations: RunesPropsDeclarationMetadata[];
@@ -119,6 +125,8 @@ export function createParserContext(): ParserContext {
     reactive_vars: new Set(),
     funcDecls: new Map(),
     vars: new Set(),
+    valueImportBindingsByLocalName: new Map(),
+    pendingCallDefaultCandidates: [],
     runesPropsDeclarationMetadataByDeclaratorStart: new Map(),
     typedRunesPropsDeclarations: [],
     explicitPropTypesByName: new Map(),
