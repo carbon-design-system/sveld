@@ -208,6 +208,20 @@ describe("parseCliOptions", () => {
     });
   });
 
+  test("--global-cache false accepts its value as the next argument, same as --cache false", () => {
+    expect(parseCliOptions(["--global-cache", "false"])).toEqual({
+      kind: "options",
+      options: { globalCache: false },
+    });
+  });
+
+  test("--global-cache followed by another flag falls back to the default (enabled)", () => {
+    expect(parseCliOptions(["--global-cache", "--json"])).toEqual({
+      kind: "options",
+      options: { globalCache: true, json: true },
+    });
+  });
+
   test("--types-format accepts its value as the next argument", () => {
     expect(parseCliOptions(["--types-format", "component"])).toEqual({
       kind: "options",

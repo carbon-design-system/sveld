@@ -41,8 +41,8 @@ Generate TypeScript definitions and component documentation for a Svelte
 library. With no flags, only TypeScript definitions are generated for the
 entry resolved from package.json#svelte.
 
---entry, --cache, --check, and --types-format accept their value as
---flag=value or as a separate --flag value argument.
+--entry, --cache, --global-cache, --check, and --types-format accept their
+value as --flag=value or as a separate --flag value argument.
 
 Options:
   --entry=<path>        Entry point to uncompiled Svelte source (default: package.json "svelte" field)
@@ -129,11 +129,10 @@ const BOOLEAN_FLAGS = new Set([
   "resolve-types",
   "check-examples",
   "fail-fast",
-  "global-cache",
 ]);
 
 /** Value-taking flags that also accept their value as the next argument. */
-const SPACE_SEPARATED_VALUE_FLAGS = new Set(["entry", "cache", "check", "types-format"]);
+const SPACE_SEPARATED_VALUE_FLAGS = new Set(["entry", "cache", "global-cache", "check", "types-format"]);
 
 /** Of those, the flags that error (rather than falling back to a bare default) when no value is given. */
 const REQUIRES_VALUE_FLAGS = new Set(["entry", "types-format"]);

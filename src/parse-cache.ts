@@ -19,11 +19,29 @@ export const DEFAULT_CACHE_FILE = join("node_modules", ".cache", "sveld", "parse
  * other project already parsed with the same toolchain. Keyed purely by
  * content hash (see `ParseCache`'s global layer), unlike the project-local
  * cache which is keyed by file path.
+ *
+ * The file name itself is partitioned by `currentToolchainVersion()`, so two
+ * worktrees on different sveld/Svelte versions (the upgrade case worktrees
+ * exist for) get separate files instead of taking turns wiping each other's
+ * entries every time either one writes (the stale-toolchain branch in
+ * `readCacheFile` resets in memory, and a naive merge-then-write would
+ * persist that reset, discarding the other version's entries).
+ *
+ * @throws if `homedir()` can't determine a home directory (no `$HOME` /
+ * `$USERPROFILE` and no resolvable passwd entry) and `$XDG_CACHE_HOME` isn't
+ * set either. Callers must treat that as "disable the global layer," not let
+ * it fail the run — see the try/catch around this call in `bundle.ts`.
  */
 export function resolveGlobalCacheFilePath(): string {
   const xdgCacheHome = process.env.XDG_CACHE_HOME;
   const cacheHome = xdgCacheHome !== undefined && xdgCacheHome.trim() !== "" ? xdgCacheHome : join(homedir(), ".cache");
-  return join(cacheHome, "sveld", "parse-cache.json");
+  return join(cacheHome, "sveld", `parse-cache-${sanitizeForFilename(currentToolchainVersion())}.json`);
+}
+
+/** Replaces characters that are reserved/unsafe in a file name on any major OS with `_`. */
+function sanitizeForFilename(value: string): string {
+  // biome-ignore lint/suspicious/noControlCharactersInRegex: deliberately stripping control characters from a filename component
+  return value.replace(/[\\/:*?"<>|\x00-\x1f]/g, "_");
 }
 
 /** Hard cap on the global cache's entry count; oldest entries are culled past this. */
@@ -78,7 +96,13 @@ function readCacheFile(cacheFilePath: string): ParseCacheFile {
   try {
     const raw = readFileSync(cacheFilePath, "utf-8");
     const parsed = JSON.parse(raw) as ParseCacheFile;
-    if (parsed.formatVersion !== CACHE_FORMAT_VERSION || parsed.toolchainVersion !== currentToolchainVersion()) {
+    if (
+      parsed.formatVersion !== CACHE_FORMAT_VERSION ||
+      parsed.toolchainVersion !== currentToolchainVersion() ||
+      typeof parsed.entries !== "object" ||
+      parsed.entries === null ||
+      Array.isArray(parsed.entries)
+    ) {
       return emptyCacheFile();
     }
     return parsed;
@@ -86,6 +110,24 @@ function readCacheFile(cacheFilePath: string): ParseCacheFile {
     // Missing, unreadable, or corrupt cache file: start fresh.
     return emptyCacheFile();
   }
+}
+
+/**
+ * Validates an `entries[key]` lookup before trusting it as a hit. `readCacheFile`
+ * only checks the file-level shape (`entries` itself); a single malformed
+ * entry — hand-edited, from a future/foreign cache format, or a rare
+ * concurrent-writer race — must not crash the run just because it parsed as
+ * valid JSON. This is the only place `entry.parsed` is dereferenced after a
+ * lookup, on purpose: every caller goes through here first.
+ */
+function isValidCacheHit(entry: unknown, hash: string): entry is ParseCacheEntry {
+  if (typeof entry !== "object" || entry === null) return false;
+  const candidate = entry as Partial<ParseCacheEntry>;
+  return typeof candidate.hash === "string" && candidate.hash === hash && isPlainObject(candidate.parsed);
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 /** Writes `file` to `cacheFilePath` via write-tmp+rename so a concurrent reader never sees a torn file. */
@@ -153,7 +195,13 @@ export class ParseCache {
   private readonly blocked = new Set<string>();
 
   private readonly globalCacheFilePath: string | undefined;
-  private readonly globalFile: ParseCacheFile | undefined;
+  /**
+   * Lazily populated on the first local miss — `undefined` means either "the
+   * global layer is disabled" (`globalCacheFilePath` unset) or "not read
+   * yet." A fully local-hit run must never read this file at all, so the
+   * constructor does not touch it; see `loadGlobalFile`.
+   */
+  private globalFile: ParseCacheFile | undefined;
   /** Entries this run has confirmed are safe to (re-)persist into the global cache, keyed by hash. */
   private readonly nextGlobal = new Map<string, ParseCacheEntry>();
 
@@ -161,16 +209,24 @@ export class ParseCache {
     this.cacheFilePath = cacheFilePath;
     this.file = readCacheFile(cacheFilePath);
     this.globalCacheFilePath = globalCacheFilePath;
-    this.globalFile = globalCacheFilePath === undefined ? undefined : readCacheFile(globalCacheFilePath);
+  }
+
+  /** Reads and memoizes the global cache file on first use; a no-op once loaded, and never called when disabled. */
+  private loadGlobalFile(): ParseCacheFile | undefined {
+    if (this.globalCacheFilePath === undefined) return undefined;
+    if (this.globalFile === undefined) {
+      this.globalFile = readCacheFile(this.globalCacheFilePath);
+    }
+    return this.globalFile;
   }
 
   /** True when `get()` would return a hit for `resolvedPath` and `hash`. */
   has(resolvedPath: string, hash: string): boolean {
     if (this.blocked.has(resolvedPath)) return false;
-    const local = this.file.entries[resolvedPath];
-    if (local !== undefined && local.hash === hash) return true;
-    const global = this.globalFile?.entries[hash];
-    return global !== undefined && global.hash === hash;
+    if (isValidCacheHit(this.file.entries[resolvedPath], hash)) return true;
+    // Only consult (and thereby load) the global file on a local miss, so a
+    // fully warm run never reads it.
+    return isValidCacheHit(this.loadGlobalFile()?.entries[hash], hash);
   }
 
   /** Returns the cached parse for `resolvedPath` when its content hash still matches. */
@@ -178,21 +234,37 @@ export class ParseCache {
     if (this.blocked.has(resolvedPath)) return null;
 
     const local = this.file.entries[resolvedPath];
-    const entry = local !== undefined && local.hash === hash ? local : this.globalFile?.entries[hash];
-    if (entry === undefined || entry.hash !== hash) return null;
+    if (isValidCacheHit(local, hash)) {
+      // Keep the entry for save() even if nothing else touches it this run.
+      this.next.set(resolvedPath, local);
+      if (local.typeScriptMetadata !== undefined) {
+        local.parsed[PARSED_COMPONENT_TYPE_SCRIPT_METADATA] = local.typeScriptMetadata;
+      }
+      return local.parsed;
+    }
 
-    // Keep the entry for save() even if nothing else touches it this run.
-    // This also backfills a global-only hit into the project-local cache;
-    // it deliberately does NOT re-promote to the global cache too (see
+    const global = this.loadGlobalFile()?.entries[hash];
+    if (!isValidCacheHit(global, hash)) return null;
+
+    // Two different local paths can hash to the same global entry (identical
+    // source bytes), so this must be a fresh copy per path, not the shared
+    // global-file object — otherwise `setGeneratedText` on one path (or the
+    // symbol-keyed metadata reattachment below) leaks into the other.
+    // Deliberately does NOT re-promote to the global cache too (see
     // `promoteToGlobal`) — a hit means the entry is already there, and
     // rewriting the global file on every run, including fully-warm ones,
     // would cost exactly the I/O this cache exists to avoid.
-    this.next.set(resolvedPath, entry);
-
-    if (entry.typeScriptMetadata !== undefined) {
-      entry.parsed[PARSED_COMPONENT_TYPE_SCRIPT_METADATA] = entry.typeScriptMetadata;
+    const copy: ParseCacheEntry = {
+      hash,
+      parsed: structuredClone(global.parsed),
+      typeScriptMetadata:
+        global.typeScriptMetadata === undefined ? undefined : structuredClone(global.typeScriptMetadata),
+    };
+    this.next.set(resolvedPath, copy);
+    if (copy.typeScriptMetadata !== undefined) {
+      copy.parsed[PARSED_COMPONENT_TYPE_SCRIPT_METADATA] = copy.typeScriptMetadata;
     }
-    return entry.parsed;
+    return copy.parsed;
   }
 
   /** Records a freshly parsed component so it can be reused on a future run. */
@@ -215,14 +287,25 @@ export class ParseCache {
    * Skips components whose parsed output depends on another file's content
    * (`@extendProps`/`@extends`) — unsafe to key on this file's own hash alone.
    *
-   * Stores a copy, not `entry` itself: `next`'s copy of this same logical
-   * entry is later mutated in place by `setGeneratedText` with
-   * project-relative import paths that must never leak into a shared cache.
+   * `structuredClone`s `parsed`/`typeScriptMetadata` rather than storing
+   * `entry`'s own references: this same logical entry, reachable via `next`,
+   * is later mutated in place — `setGeneratedText`, but also (outside this
+   * class) `resolveTypes` and call-default resolution, both of which run
+   * after `generateBundle`'s own `save()` and push/patch `parsed.props`
+   * in place using data scoped to *this* project (siblings, tsconfig). A
+   * second `save()` (CLI/plugin, after `writeOutput`) must not carry that
+   * project-specific mutation into a cache another project's fresh checkout
+   * will hash-hit into.
    */
   private promoteToGlobal(hash: string, entry: ParseCacheEntry): void {
-    if (this.globalFile === undefined) return;
+    if (this.globalCacheFilePath === undefined) return;
     if (entry.parsed.extends !== undefined) return;
-    this.nextGlobal.set(hash, { hash, parsed: entry.parsed, typeScriptMetadata: entry.typeScriptMetadata });
+    this.nextGlobal.set(hash, {
+      hash,
+      parsed: structuredClone(entry.parsed),
+      typeScriptMetadata:
+        entry.typeScriptMetadata === undefined ? undefined : structuredClone(entry.typeScriptMetadata),
+    });
   }
 
   /** Skip cache for `resolvedPath` this run (e.g. an @extends dependent). */
@@ -253,7 +336,14 @@ export class ParseCache {
     entry.generatedText = { format, text };
   }
 
-  /** Persists this run's cache entries back to disk (project-local, plus the global layer if enabled). */
+  /**
+   * Persists this run's cache entries back to disk (project-local, plus the
+   * global layer if enabled). Safe to call more than once in a run (the CLI
+   * and the Vite plugin both do, to persist generated `.d.ts` text cached
+   * after `writeOutput`) — `nextGlobal` is cleared after every global write
+   * so a later call can't re-persist the same (by then possibly
+   * project-mutated, see `promoteToGlobal`) entries a second time.
+   */
   save(): void {
     writeCacheFileAtomic(this.cacheFilePath, {
       formatVersion: CACHE_FORMAT_VERSION,
@@ -263,6 +353,7 @@ export class ParseCache {
 
     if (this.globalCacheFilePath !== undefined && this.nextGlobal.size > 0) {
       saveGlobalCacheFile(this.globalCacheFilePath, this.nextGlobal);
+      this.nextGlobal.clear();
     }
   }
 }

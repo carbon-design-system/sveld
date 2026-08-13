@@ -517,6 +517,22 @@ export function reportParseErrors(errors: ComponentParseError[]): void {
 }
 
 /**
+ * `resolveGlobalCacheFilePath()` calls `os.homedir()`, which throws when
+ * neither `$HOME`/`$USERPROFILE` nor a passwd lookup can determine a home
+ * directory (some minimal/sandboxed containers). The global cache is
+ * documented as best-effort and must never fail a run over this, so a
+ * failure here just disables the layer instead of propagating.
+ */
+function resolveGlobalCacheFilePathSafely(options: Pick<GenerateBundleOptions, "globalCache">): string | undefined {
+  if (options.globalCache === false) return undefined;
+  try {
+    return resolveGlobalCacheFilePath();
+  } catch {
+    return undefined;
+  }
+}
+
+/**
  * Generates component documentation bundle from Svelte source files.
  *
  * Parses exports, discovers components (optionally via glob), and processes
@@ -573,10 +589,7 @@ export async function generateBundle(
   const cache =
     options.cache === false
       ? undefined
-      : new ParseCache(
-          resolveCacheFilePath(rootDir, options.cache ?? true),
-          options.globalCache === false ? undefined : resolveGlobalCacheFilePath(),
-        );
+      : new ParseCache(resolveCacheFilePath(rootDir, options.cache ?? true), resolveGlobalCacheFilePathSafely(options));
   // filePath -> resolved source path for the write-phase text cache, keyed
   // like `cache` so path-alias resolution is not redone. filePath stays
   // unique when two components share a basename. Built only when caching.

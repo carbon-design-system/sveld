@@ -1,10 +1,16 @@
+// biome-ignore lint/performance/noNamespaceImport: needed for jest.spyOn
+import * as nodeFs from "node:fs";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+// biome-ignore lint/performance/noNamespaceImport: needed for jest.spyOn
+import * as nodeOs from "node:os";
 import { tmpdir } from "node:os";
 import { dirname, join, relative, resolve } from "node:path";
+import { version as sveldVersion } from "../package.json";
 import type { ComponentDocApi, ComponentDocs } from "../src/bundle";
 import { generateBundle } from "../src/bundle";
 import ComponentParser from "../src/ComponentParser";
 import { DEFAULT_CACHE_FILE, hashSource, resolveGlobalCacheFilePath } from "../src/parse-cache";
+import { VERSION as svelteVersion } from "../src/svelte-version";
 import writeTsDefinitions from "../src/writer/writer-ts-definitions";
 
 /** Look up `allComponentsForTypes` by filePath; moduleName is not unique. */
@@ -369,5 +375,118 @@ describe("global parse cache", () => {
 
     expect(parseSpy).toHaveBeenCalled();
     expect(byModuleName(result.allComponentsForTypes, "Standalone")).toBeDefined();
+  });
+
+  test("a global cache file with entries: null doesn't crash the run", async () => {
+    const globalCacheFilePath = resolveGlobalCacheFilePath();
+    mkdirSync(dirname(globalCacheFilePath), { recursive: true });
+    // Well-formed JSON with a matching formatVersion/toolchainVersion (so
+    // readCacheFile's version check alone doesn't already discard it) but a
+    // shape that `entries[hash]` can't be indexed into directly: that must
+    // not throw mid-run without a guard.
+    writeFileSync(
+      globalCacheFilePath,
+      JSON.stringify({ formatVersion: 2, toolchainVersion: `${sveldVersion}+svelte@${svelteVersion}`, entries: null }),
+    );
+
+    const result = await generateBundle(dir, true, { cache: cacheFile });
+
+    expect(byModuleName(result.allComponentsForTypes, "Standalone")).toBeDefined();
+  });
+
+  test("a fully cache-hit run never reads the global cache file", async () => {
+    await generateBundle(dir, true, { cache: cacheFile });
+
+    const globalCacheFilePath = resolveGlobalCacheFilePath();
+    const readSpy = jest.spyOn(nodeFs, "readFileSync");
+    readSpy.mockClear();
+    try {
+      await generateBundle(dir, true, { cache: cacheFile });
+      const globalReads = readSpy.mock.calls.filter((call) => call[0] === globalCacheFilePath);
+      expect(globalReads).toHaveLength(0);
+    } finally {
+      readSpy.mockRestore();
+    }
+  });
+
+  test("a homedir() throw disables the global layer instead of failing the run", async () => {
+    const savedXdgCacheHome = process.env.XDG_CACHE_HOME;
+    // Force resolveGlobalCacheFilePath's homedir() fallback path.
+    delete process.env.XDG_CACHE_HOME;
+    const homedirSpy = jest.spyOn(nodeOs, "homedir").mockImplementation(() => {
+      throw new Error("no home directory");
+    });
+
+    try {
+      const result = await generateBundle(dir, true, { cache: cacheFile });
+      expect(byModuleName(result.allComponentsForTypes, "Standalone")).toBeDefined();
+    } finally {
+      homedirSpy.mockRestore();
+      if (savedXdgCacheHome !== undefined) process.env.XDG_CACHE_HOME = savedXdgCacheHome;
+    }
+  });
+
+  test("the global cache file name is partitioned by toolchain version", () => {
+    // Two worktrees on different sveld/Svelte versions must resolve to
+    // different files, so neither one's writes can wipe the other's entries
+    // (see the mismatched-toolchain branch in readCacheFile).
+    expect(resolveGlobalCacheFilePath()).toContain(sveldVersion);
+  });
+
+  test("a second save() after downstream mutation (resolveTypes / call-default resolution) doesn't leak into the global cache", async () => {
+    const first = await generateBundle(dir, true, { cache: cacheFile });
+
+    // Simulate what applyResolvedProps/applyCallDefaultResolutions do after
+    // generateBundle's own save(): mutate the props array in place. It's the
+    // same array reference the cache captured, since processComponent's
+    // `{ ...parsed }` spread is shallow.
+    const standalone = byModuleName(first.allComponentsForTypes, "Standalone");
+    standalone?.props.push({
+      name: "injected",
+      kind: "let",
+      constant: false,
+      type: "string",
+      typeSource: "typescript",
+      isFunction: false,
+      isFunctionDeclaration: false,
+      isRequired: false,
+      reactive: false,
+    });
+
+    // The CLI/plugin call save() again after writeOutput; that second call
+    // must not persist the mutation into the machine-wide cache.
+    first.cache?.save();
+
+    const globalFile = JSON.parse(readFileSync(resolveGlobalCacheFilePath(), "utf-8"));
+    const standaloneHash = hashSource(STANDALONE);
+    const cachedProps = globalFile.entries[standaloneHash].parsed.props as Array<{ name: string }>;
+    expect(cachedProps.some((prop) => prop.name === "injected")).toBe(false);
+  });
+
+  test("two local paths that hash-hit the same global entry don't share generated text", async () => {
+    // Seed the global cache with Standalone's entry from this project first.
+    await generateBundle(dir, true, { cache: cacheFile });
+
+    const otherDir = mkdtempSync(join(tmpdir(), "sveld-global-cache-aliasing-"));
+    writeFileSync(join(otherDir, "Foo.svelte"), STANDALONE);
+    writeFileSync(join(otherDir, "Bar.svelte"), STANDALONE);
+
+    try {
+      const otherCacheFile = join(otherDir, ".cache", "parse-cache.json");
+      const result = await generateBundle(otherDir, true, { cache: otherCacheFile });
+      const cache = result.cache;
+      expect(cache).toBeDefined();
+
+      const fooPath = resolve(otherDir, "Foo.svelte");
+      const barPath = resolve(otherDir, "Bar.svelte");
+
+      cache?.setGeneratedText(fooPath, "class", "export class Foo {}");
+      cache?.setGeneratedText(barPath, "class", "export class Bar {}");
+
+      expect(cache?.getGeneratedText(fooPath, "class")).toBe("export class Foo {}");
+      expect(cache?.getGeneratedText(barPath, "class")).toBe("export class Bar {}");
+    } finally {
+      rmSync(otherDir, { recursive: true, force: true });
+    }
   });
 });
