@@ -13,10 +13,12 @@ function getSourceLineStartOffsets(ctx: ParserContext) {
 
   const offsets = [0];
   if (ctx.source) {
-    for (let index = 0; index < ctx.source.length; index++) {
-      if (ctx.source[index] === "\n") {
-        offsets.push(index + 1);
-      }
+    // `indexOf` is a native scan; a per-character comparison loop re-does that
+    // scan one JS-level charCodeAt call at a time.
+    let index = ctx.source.indexOf("\n");
+    while (index !== -1) {
+      offsets.push(index + 1);
+      index = ctx.source.indexOf("\n", index + 1);
     }
   }
 
