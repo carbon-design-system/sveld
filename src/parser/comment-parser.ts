@@ -7,11 +7,12 @@
  * optional `{type}`, an optional `name`/`[name=default]`, and the remaining description text -
  * covering exactly the JSDoc grammar `./jsdoc.ts` and `./variable-jsdoc.ts` read.
  *
- * Two things this intentionally does NOT support, because nothing in sveld's grammar uses them:
- * quoted literal tag names (`@borrows "a" as "b"`) and bare `name=default` without brackets
- * (every default in sveld's own JSDoc, e.g. `@template [T=string]`, uses `[...]`). Parsing here
- * is best-effort rather than abort-on-malformed-input: an unpaired `[` or `{` just falls back to
- * treating the text as plain description rather than dropping the tag's other fields.
+ * One thing this intentionally does NOT support, because nothing in sveld's grammar uses it: bare
+ * `name=default` without brackets (every default in sveld's own JSDoc, e.g. `@template
+ * [T=string]`, uses `[...]`). A name may still be wrapped in matching quotes (e.g. `@event
+ * "change"`); the quotes are stripped so it matches the same key as its unquoted form. Parsing
+ * here is best-effort rather than abort-on-malformed-input: an unpaired `[` or `{` just falls
+ * back to treating the text as plain description rather than dropping the tag's other fields.
  *
  * Indentation after the `*` gutter is preserved (not trimmed) so multi-line tag bodies - most
  * importantly `@example` code blocks - keep their original formatting. Each line also keeps its
@@ -254,6 +255,13 @@ function extractName(line: CommentLine): { name: string; optional: boolean; defa
     name = parts[0].trim();
     if (parts.length > 1) defaultValue = parts.slice(1).join("=").trim();
     if (!name) return null;
+  }
+
+  // A name may be wrapped in matching quotes (e.g. `@event "change"`) to mark it as a literal -
+  // JSDoc convention, not part of sveld's own grammar. Unwrap it so a quoted name matches the
+  // same key as its unquoted form (e.g. an inferred `dispatch("change", ...)` event name).
+  if (name.length > 1 && (name[0] === '"' || name[0] === "'") && name[name.length - 1] === name[0]) {
+    name = name.slice(1, -1);
   }
 
   line.content = source.slice(consumed).replace(LEADING_WS_REGEX, "");

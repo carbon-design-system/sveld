@@ -756,6 +756,30 @@ describe("ComponentParser", () => {
     expect(result.events[0].name).toBe("click");
   });
 
+  test("merges a quoted @event name with the matching dispatch() call", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /**
+         * @event {{ selected: boolean }} "change"
+         */
+        import { createEventDispatcher } from 'svelte';
+        const dispatch = createEventDispatcher();
+
+        function toggle() {
+          dispatch('change', { selected: true });
+        }
+      </script>
+
+      <button on:click={toggle}>Toggle</button>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.events).toHaveLength(1);
+    expect(result.events[0].name).toBe("change");
+    expect(result.events[0].detail).toBe("{ selected: boolean }");
+  });
+
   test("handles component comments", () => {
     const parser = new ComponentParser();
     const source = `
