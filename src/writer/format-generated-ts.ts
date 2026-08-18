@@ -33,6 +33,52 @@ function popTrailing(out: string[], regex: RegExp): void {
   while (out.length > 0 && regex.test(out[out.length - 1])) out.pop();
 }
 
+/**
+ * Fast-path check for the `{...}` collapse decision below: content with no
+ * nested `{` and 2+ statement-terminating `;` outside quotes is guaranteed
+ * to expand onto multiple lines (each such `;` forces a following newline
+ * once the character scan reaches it), so the speculative recursive
+ * `expandStatements` call that exists only to answer "would this collapse?"
+ * can be skipped for this common flat multi-member case (e.g. a `{ id:
+ * string; value: string; meta?: Record<string, unknown> }` object literal
+ * repeated across many prop types) instead of running - and discarding - a
+ * full recursive pass over the same content. A single trailing `;` (one
+ * member) is deliberately left to the general path since it may still
+ * collapse; content with a nested `{` is also left to the general path,
+ * since a collapsing inner block can change the outer decision.
+ */
+function hasMultipleFlatStatements(content: string): boolean {
+  if (content.includes("{")) return false;
+
+  let quote: "double" | "single" | "template" | null = null;
+  let semicolons = 0;
+
+  for (let i = 0; i < content.length; i++) {
+    const c = content[i];
+    const prev = content[i - 1];
+
+    if (quote) {
+      if (
+        (quote === "double" && c === '"' && prev !== "\\") ||
+        (quote === "single" && c === "'" && prev !== "\\") ||
+        (quote === "template" && c === "`" && prev !== "\\")
+      ) {
+        quote = null;
+      }
+      continue;
+    }
+
+    if (c === '"' || c === "'" || c === "`") {
+      quote = c === '"' ? "double" : c === "'" ? "single" : "template";
+      continue;
+    }
+
+    if (c === ";" && ++semicolons >= 2) return true;
+  }
+
+  return false;
+}
+
 function flattenToOneLine(content: string): string {
   let out = "";
   let quote: "double" | "single" | "template" | null = null;
@@ -200,6 +246,7 @@ function expandStatements(raw: string): string {
       if (
         !content.includes("/*") &&
         raw[i + 1] !== "\n" &&
+        !hasMultipleFlatStatements(content) &&
         !endsWithInterfaceHeader(tailString(out, INTERFACE_HEADER_TAIL_LENGTH))
       ) {
         // Recurse so nested blocks get their own collapse decision.
