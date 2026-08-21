@@ -29,6 +29,7 @@
     "bench": "bun scripts/bench.ts",
     "bench:cache": "bun scripts/bench.ts --cache",
     "bench:mitata": "bun scripts/bench-mitata.ts",
+    "fuzz": "bun scripts/fuzz-parser.ts",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
