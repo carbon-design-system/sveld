@@ -107,9 +107,11 @@
             "noBannedTypes": "off"
           },
           "suspicious": {
+            "noDoubleEquals": "off",
             "noExplicitAny": "off"
           },
           "style": {
+            "noNonNullAssertion": "off",
             "noUnusedTemplateLiteral": "off",
             "useTemplate": "off"
           },
@@ -133,7 +135,11 @@
       }
     },
     {
-      "includes": ["**/tests/fixtures/fuzz-generics-arrow-type-comma/input.svelte"],
+      "includes": [
+        "**/tests/fixtures/fuzz-generics-arrow-type-comma/input.svelte",
+        "**/tests/fixtures/template-expression-shapes/input.svelte",
+        "**/tests/fixtures/template-expression-shapes-ts/input.svelte"
+      ],
       "formatter": {
         "enabled": false
       }
