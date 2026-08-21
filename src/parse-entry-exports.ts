@@ -377,7 +377,7 @@ function parseModule(filePath: string): { source: ModuleSource; body: AstNode[] 
   const text = `<script lang="ts">\n${raw}\n</script>`;
 
   try {
-    const ast = getParserStack().parseSvelte(text, { modern: true }) as { instance?: { content?: { body?: unknown } } };
+    const ast = getParserStack().parseSvelte(text) as { instance?: { content?: { body?: unknown } } };
     const body = asNodeArray(ast.instance?.content?.body);
     return { source: { text, filePath, dir: dirname(filePath) }, body };
   } catch (error) {
