@@ -1,0 +1,42 @@
+name: svelte canary
+
+# Early warning for the hand-rolled parser (src/template-parse/): svelte
+# ships new template syntax in minor releases (<svelte:boundary> in 5.3,
+# {@attach} in 5.29), so this runs the shim compare, unit tests, and the
+# differential fuzzer against the newest svelte@latest, ahead of the
+# lockfile pin. The npm `next` dist-tag is stale (pre-5.0), so `latest`
+# is the real frontier. Scheduled and manual only; never blocks PRs.
+
+on:
+  schedule:
+    # Mondays 06:00 UTC
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+jobs:
+  canary:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        with:
+          bun-version-file: .bun-version
+
+      - name: Install dependencies
+        run: bun ci
+
+      - name: Upgrade to the newest svelte
+        run: |
+          bun add --dev svelte@latest
+          echo "svelte version:"
+          grep '"version"' node_modules/svelte/package.json
+
+      - name: Parser shim compare
+        run: bun test svelte-template-parse-shim
+
+      - name: Full unit tests
+        run: bun run test
+
+      - name: Differential fuzz
+        run: bun run fuzz --iterations 300
