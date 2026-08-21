@@ -33,9 +33,9 @@ async function buildEntry(entrypoints: string[], target: "node" | "browser") {
     target,
     minify: true,
     sourcemap: false,
-    // Default Bun behavior treats `node_modules` imports as external; bundle
-    // them so dependencies (estree-walker, and the pruned svelte parser
-    // imported by src/svelte-parse.ts) ship inside `lib`.
+    // Default Bun treats `node_modules` as external. Bundle them so
+    // estree-walker, acorn, `@sveltejs/acorn-typescript`, and zimmerframe
+    // ship inside `lib`.
     packages: "bundle",
     // Emit the parser stack (behind `./parser-stack`'s dynamic import) as its
     // own chunk instead of inlining it, so a fully cached CLI run never loads it.

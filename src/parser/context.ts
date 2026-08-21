@@ -9,9 +9,9 @@ import type {
   ComponentPropBindings,
   Extends,
   InternalComponentSlot,
-  LegacyAstRoot,
   LexicalScope,
   LocalTypeDeclaration,
+  ModernAstRoot,
   PendingCallDefaultCandidate,
   PendingContextKeyCandidate,
   RestProps,
@@ -30,7 +30,7 @@ export interface ParserContext {
   syntaxMode: SyntaxMode;
   scriptLanguage?: ScriptLanguage;
   source?: string;
-  parsed?: LegacyAstRoot;
+  parsed?: ModernAstRoot;
 
   /**
    * Explicit `<svelte:options runes={...} />` value. When set, overrides rune-reference detection.

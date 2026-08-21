@@ -1,19 +1,15 @@
 /**
- * Lazily loads the parser stack (`ComponentParser` and the pruned svelte
- * parser in `./svelte-parse`, which together pull in acorn,
- * `@sveltejs/acorn-typescript`, and estree-walker) behind a
- * dynamic import.
+ * Lazily loads `ComponentParser` and the template parser behind a dynamic
+ * import. Those pull in acorn, `@sveltejs/acorn-typescript`, and zimmerframe.
  *
- * A fully cached run never needs to parse a single component, so it never
- * has to pay for evaluating any of that. Callers that are about to parse
- * (`bundle.ts`, `parse-entry-exports.ts`, `watch.ts`) await
- * `loadParserStack()` once up front, then read the resolved stack back
- * synchronously via `getParserStack()` for the rest of the (otherwise
- * synchronous) parse path. The load happens at most once per process.
+ * A fully cached run never parses, so it never evaluates any of that.
+ * Callers about to parse (`bundle.ts`, `parse-entry-exports.ts`, `watch.ts`)
+ * await `loadParserStack()` once, then read it back with `getParserStack()`.
+ * The load happens at most once per process.
  */
 export interface ParserStack {
   ComponentParser: typeof import("./ComponentParser").default;
-  parseSvelte: typeof import("./svelte-parse").parse;
+  parseSvelte: typeof import("./svelte-template-parse").parse;
 }
 
 let resolved: ParserStack | null = null;
@@ -22,7 +18,7 @@ let pending: Promise<ParserStack> | null = null;
 export function loadParserStack(): Promise<ParserStack> {
   if (resolved) return Promise.resolve(resolved);
   if (!pending) {
-    pending = Promise.all([import("./ComponentParser"), import("./svelte-parse")]).then(
+    pending = Promise.all([import("./ComponentParser"), import("./svelte-template-parse")]).then(
       ([componentParserModule, svelteParseModule]) => {
         resolved = { ComponentParser: componentParserModule.default, parseSvelte: svelteParseModule.parse };
         return resolved;
@@ -32,7 +28,7 @@ export function loadParserStack(): Promise<ParserStack> {
   return pending;
 }
 
-/** Reads back the stack resolved by a prior, already-awaited `loadParserStack()` call. */
+/** The stack from a prior, already-awaited `loadParserStack()` call. */
 export function getParserStack(): ParserStack {
   if (!resolved) {
     throw new Error("sveld: internal error, parser stack read before loadParserStack() resolved.");
