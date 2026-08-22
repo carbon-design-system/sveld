@@ -1,6 +1,6 @@
 import type { ArrowFunctionExpression, CallExpression, Expression, FunctionExpression, NewExpression } from "estree";
 import type { Node } from "estree-walker";
-import { isIdentifier, isLiteral, isObjectExpression } from "../ast-guards";
+import { isIdentifier, isLiteral, isObjectExpression, resolveStaticStringLiteral } from "../ast-guards";
 import type ComponentParser from "../ComponentParser";
 import type { ComponentContext, ComponentContextProp } from "../ComponentParser";
 import type { ParserContext } from "./context";
@@ -12,7 +12,7 @@ import { sourceRangeFromNode } from "./source-position";
 const CONTEXT_KEY_SPLIT_REGEX = /[-_.:/\s]+/;
 
 /** Turn `simple-modal` into `SimpleModalContext`. */
-function generateContextTypeName(key: string): string {
+export function generateContextTypeName(key: string): string {
   const parts = key.split(CONTEXT_KEY_SPLIT_REGEX);
   const capitalized = parts.map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join("");
   return `${capitalized}Context`;
@@ -165,35 +165,37 @@ function resolveSymbolKeyDescription(node: CallExpression | NewExpression): stri
   return "";
 }
 
+/** How a `setContext` key expression resolved. */
+type ContextKeyResolution =
+  | { kind: "resolved"; key: string }
+  /** Named import. Resolved later by reading the other file. */
+  | { kind: "pending"; importSource: string; importedName: string }
+  | { kind: "unresolved" };
+
 /**
- * Resolve a `setContext` key to the string used in `{PascalCase}Context`.
- * Accepts literals, static templates, `const` chains (depth 5), and `Symbol()`.
- * Description-less symbols fall back to the binding name.
+ * Resolve a `setContext` key. Literals, static templates, local `const`
+ * chains (depth 5), and `Symbol()` become `{ kind: "resolved" }`. A
+ * `Symbol()` with no description uses the binding name. A named import is
+ * `{ kind: "pending" }` so `generateBundle` can read the other file.
  */
-function resolveContextKey(ctx: ParserContext, keyArg: unknown, depth = 0): string | null {
-  if (!keyArg || typeof keyArg !== "object" || !("type" in keyArg)) return null;
+function resolveContextKey(ctx: ParserContext, keyArg: unknown, depth = 0): ContextKeyResolution {
+  if (!keyArg || typeof keyArg !== "object" || !("type" in keyArg)) return { kind: "unresolved" };
   const node = keyArg as Expression;
 
-  if (node.type === "Literal") {
-    return typeof node.value === "string" ? node.value : node.value == null ? null : String(node.value);
-  }
-
-  if (node.type === "TemplateLiteral") {
-    /** Static template only; interpolated templates return null. */
-    if (node.quasis?.length === 1) {
-      const cooked = node.quasis[0].value.cooked;
-      return cooked == null ? null : cooked;
-    }
-    return null;
+  if (node.type === "Literal" || node.type === "TemplateLiteral") {
+    const value = resolveStaticStringLiteral(node);
+    return value == null ? { kind: "unresolved" } : { kind: "resolved", key: value };
   }
 
   if (node.type === "CallExpression" || node.type === "NewExpression") {
-    return resolveSymbolKeyDescription(node);
+    const description = resolveSymbolKeyDescription(node);
+    return description == null ? { kind: "unresolved" } : { kind: "resolved", key: description };
   }
 
   if (node.type === "Identifier") {
     /** Follow const bindings, same 5-level cap as @default. */
-    if (depth >= 5) return null;
+    if (depth >= 5) return { kind: "unresolved" };
+
     const resolvedInit = resolveConstInitializer(ctx, node.name);
     if (resolvedInit && typeof resolvedInit === "object" && "type" in resolvedInit) {
       const init = resolvedInit as Expression;
@@ -202,17 +204,23 @@ function resolveContextKey(ctx: ParserContext, keyArg: unknown, depth = 0): stri
         (init.type === "CallExpression" || init.type === "NewExpression") &&
         resolveSymbolKeyDescription(init) === ""
       ) {
-        return node.name;
+        return { kind: "resolved", key: node.name };
       }
       return resolveContextKey(ctx, init, depth + 1);
     }
-    return null;
+
+    const importBinding = ctx.valueImportBindingsByLocalName.get(node.name);
+    if (importBinding) {
+      return { kind: "pending", importSource: importBinding.source, importedName: importBinding.importedName };
+    }
+
+    return { kind: "unresolved" };
   }
 
-  return null;
+  return { kind: "unresolved" };
 }
 
-/** Parse `setContext(key, value)` when the key resolves statically. */
+/** Parse `setContext(key, value)`. Imported keys go to `pendingContextKeyCandidates`. */
 export function parseSetContextCall(ctx: ParserContext, parser: ComponentParser, node: Node, _parent?: Node) {
   if (!node || typeof node !== "object" || !("type" in node) || node.type !== "CallExpression") {
     return;
@@ -221,9 +229,9 @@ export function parseSetContextCall(ctx: ParserContext, parser: ComponentParser,
   const keyArg = callExpr.arguments[0];
   if (!keyArg) return;
 
-  const contextKey = resolveContextKey(ctx, keyArg);
+  const resolution = resolveContextKey(ctx, keyArg);
 
-  if (!contextKey) {
+  if (resolution.kind === "unresolved" || (resolution.kind === "resolved" && !resolution.key)) {
     const location = ctx.componentFilePath ? ` in ${ctx.componentFilePath}` : "";
     console.warn(
       `Warning: Could not resolve setContext key${location}. Use a string literal, const-bound string, or Symbol(). Skipping context type generation.`,
@@ -234,6 +242,21 @@ export function parseSetContextCall(ctx: ParserContext, parser: ComponentParser,
   const valueArg = callExpr.arguments[1];
   if (!valueArg) return;
 
+  if (resolution.kind === "pending") {
+    /** Properties come from the local value. The key is resolved later. */
+    const contextInfo = parseContextValue(ctx, parser, valueArg, "");
+    if (contextInfo) {
+      ctx.pendingContextKeyCandidates.push({
+        importSource: resolution.importSource,
+        importedName: resolution.importedName,
+        properties: contextInfo.properties,
+        description: contextInfo.description,
+      });
+    }
+    return;
+  }
+
+  const contextKey = resolution.key;
   const contextInfo = parseContextValue(ctx, parser, valueArg, contextKey);
   if (contextInfo && !ctx.contexts.has(contextKey)) {
     ctx.contexts.set(contextKey, contextInfo);

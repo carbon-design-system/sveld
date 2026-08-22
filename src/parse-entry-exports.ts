@@ -1,6 +1,6 @@
 import { existsSync, lstatSync, readFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
-import { isIdentifier } from "./ast-guards";
+import { isIdentifier, resolveStaticStringLiteral } from "./ast-guards";
 import { extractJsDocReturnType } from "./parser/jsdoc";
 import { getParserStack, loadParserStack } from "./parser-stack";
 import { normalizeSeparators } from "./path";
@@ -44,6 +44,11 @@ interface AstNode {
 export interface InternalExport extends Omit<EntryExport, "source"> {
   declFile: string;
   returnType?: string;
+  /**
+   * String from a literal or static-template initializer.
+   * `resolve-context-keys.ts` uses this when a `setContext` key is imported.
+   */
+  literalValue?: string;
 }
 
 /** Parsed-source context shared while walking a single module. */
@@ -265,6 +270,7 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
       let type = annotationText(source, id);
       let value: string | undefined;
       let returnType: string | undefined;
+      let literalValue: string | undefined;
       const init = asNode(declarator.init);
 
       if (init) {
@@ -278,10 +284,11 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
         } else {
           value = textOf(source, init);
           if (!type) type = inferLiteralType(init);
+          literalValue = resolveStaticStringLiteral(init) ?? undefined;
         }
       }
 
-      results.push({ name, kind, type, value, returnType, description, declFile, isTypeOnly: false });
+      results.push({ name, kind, type, value, returnType, literalValue, description, declFile, isTypeOnly: false });
     }
 
     return results;

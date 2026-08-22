@@ -3,7 +3,7 @@ import { lstatSync, readdirSync, readFileSync, realpathSync, statSync } from "no
 import { readFile } from "node:fs/promises";
 import { dirname, isAbsolute, join, parse, relative, resolve } from "node:path";
 import { asRelativeSourcePath, type NormalizedPath } from "./brands";
-import type { ParsedComponent, PendingCallDefaultCandidate } from "./ComponentParser";
+import type { ParsedComponent, PendingCallDefaultCandidate, PendingContextKeyCandidate } from "./ComponentParser";
 import { buildReverseDeps, expandAffected } from "./dependency-graph";
 import { dedupeDiagnostics, type SveldDiagnostic } from "./diagnostics";
 import { collectExampleSources } from "./example-check";
@@ -11,6 +11,7 @@ import { hashSource, ParseCache, resolveCacheFilePath } from "./parse-cache";
 import { type EntryExports, parseEntryExports } from "./parse-entry-exports";
 import { type ParsedExports, parseExports } from "./parse-exports";
 import { applyResolvedProps, getParsedComponentTypeScriptMetadata } from "./parsed-component-metadata";
+import { generateContextTypeName } from "./parser/contexts";
 import { getParserStack, loadParserStack } from "./parser-stack";
 import { normalizeSeparators } from "./path";
 import {
@@ -19,6 +20,7 @@ import {
   describeCallDefaultFailure,
   resolveCallDefaultCandidates,
 } from "./resolve-call-defaults";
+import { type ContextKeyResolution, resolveContextKeyCandidates } from "./resolve-context-keys";
 import type { TypeResolver } from "./resolve-types";
 
 export interface ComponentDocApi extends ParsedComponent {
@@ -684,16 +686,26 @@ export async function generateBundle(
   // Warm-cache runs skip loadParserStack above, but this pass still needs it to
   // parse sibling modules.
   const callDefaultCandidates = collectCallDefaultCandidates(allComponentsForTypes);
-  if (callDefaultCandidates.length > 0) {
+  const contextKeyCandidates = collectContextKeyCandidates(allComponentsForTypes);
+  if (callDefaultCandidates.length > 0 || contextKeyCandidates.length > 0) {
     await loadParserStack();
-    const callDefaultResolveContext = createCallDefaultResolveContext();
+    // Both passes share this cache and cycle set.
+    const crossFileResolveContext = createCallDefaultResolveContext();
     for (const { component, candidates } of callDefaultCandidates) {
       const resolutions = resolveCallDefaultCandidates(
         resolveComponentFilePath(component.filePath),
         candidates,
-        callDefaultResolveContext,
+        crossFileResolveContext,
       );
       applyCallDefaultResolutions(component, resolutions);
+    }
+    for (const { component, candidates } of contextKeyCandidates) {
+      const resolutions = resolveContextKeyCandidates(
+        resolveComponentFilePath(component.filePath),
+        candidates,
+        crossFileResolveContext,
+      );
+      applyContextKeyResolutions(component, resolutions);
     }
   }
 
@@ -762,6 +774,51 @@ function applyCallDefaultResolutions(component: ComponentDocApi, resolutions: Ca
       );
       if (existing) existing.message = describeCallDefaultFailure(candidate, failureReason);
     }
+  }
+}
+
+interface ContextKeyCandidateGroup {
+  component: ComponentDocApi;
+  candidates: PendingContextKeyCandidate[];
+}
+
+/** Components with a `setContext` key bound to a named import. */
+function collectContextKeyCandidates(components: ComponentDocs): ContextKeyCandidateGroup[] {
+  const groups: ContextKeyCandidateGroup[] = [];
+
+  for (const component of components.values()) {
+    const candidates = getParsedComponentTypeScriptMetadata(component)?.pendingContextKeyCandidates;
+    if (!candidates || candidates.length === 0) continue;
+    groups.push({ component, candidates });
+  }
+
+  return groups;
+}
+
+/**
+ * Append each resolved context to `component.contexts`. Unresolved keys
+ * get the same warning `parseSetContextCall` prints for a local miss.
+ */
+function applyContextKeyResolutions(component: ComponentDocApi, resolutions: ContextKeyResolution[]): void {
+  for (const { candidate, key } of resolutions) {
+    if (!key) {
+      console.warn(
+        `Warning: Could not resolve setContext key in ${component.filePath}. Use a string literal, const-bound string, or Symbol(). Skipping context type generation.`,
+      );
+      continue;
+    }
+
+    if (component.contexts?.some((existing) => existing.key === key)) continue;
+
+    component.contexts = [
+      ...(component.contexts ?? []),
+      {
+        key,
+        typeName: generateContextTypeName(key),
+        description: candidate.description,
+        properties: candidate.properties,
+      },
+    ];
   }
 }
 
