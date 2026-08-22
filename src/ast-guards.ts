@@ -79,3 +79,28 @@ export function isNewExpressionNamed(node: unknown, calleeName: string): node is
 
   return !!node.callee && isObject(node.callee) && node.callee.type === "Identifier" && node.callee.name === calleeName;
 }
+
+/**
+ * String value of a `Literal` or a template with no interpolation.
+ * `1` becomes `"1"`. Returns `null` for `null` literals, interpolated
+ * templates, and anything else.
+ */
+export function resolveStaticStringLiteral(node: unknown): string | null {
+  if (!isObject(node) || typeof node.type !== "string") return null;
+
+  if (node.type === "Literal") {
+    const value = (node as { value?: unknown }).value;
+    if (typeof value === "string") return value;
+    return value == null ? null : String(value);
+  }
+
+  if (node.type === "TemplateLiteral") {
+    const quasis = (node as { quasis?: Array<{ value?: { cooked?: string | null } }> }).quasis;
+    if (quasis?.length === 1) {
+      const cooked = quasis[0]?.value?.cooked;
+      return cooked == null ? null : cooked;
+    }
+  }
+
+  return null;
+}

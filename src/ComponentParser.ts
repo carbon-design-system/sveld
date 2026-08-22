@@ -175,6 +175,18 @@ export interface PendingCallDefaultCandidate {
   importedName?: string;
 }
 
+/**
+ * Named-import `setContext` key (`import { KEY } from "./mod.js"`).
+ * `generateBundle` reads the other file via `resolve-context-keys.ts`.
+ * Properties and description are already filled in from the value argument.
+ */
+export interface PendingContextKeyCandidate {
+  importSource: string;
+  importedName: string;
+  properties: ComponentContextProp[];
+  description?: string;
+}
+
 export interface LocalTypeDeclaration {
   code: string;
   node: ModernRunesTypeNode;
@@ -195,6 +207,8 @@ export interface ParsedComponentTypeScriptMetadata {
   referencesComponentGenerics?: boolean;
   /** Unresolved CallExpression defaults for the cross-file pass in `generateBundle`. */
   pendingCallDefaultCandidates?: PendingCallDefaultCandidate[];
+  /** Unresolved `setContext` import keys for the cross-file pass in `generateBundle`. */
+  pendingContextKeyCandidates?: PendingContextKeyCandidate[];
 }
 
 export {

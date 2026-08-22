@@ -13,6 +13,7 @@ import type {
   LexicalScope,
   LocalTypeDeclaration,
   PendingCallDefaultCandidate,
+  PendingContextKeyCandidate,
   RestProps,
   RunesPropsDeclarationMetadata,
   ScriptLanguage,
@@ -64,6 +65,8 @@ export interface ParserContext {
   readonly valueImportBindingsByLocalName: Map<string, ValueImportBinding>;
   /** CallExpression defaults that still need a return type after AST parsing. */
   readonly pendingCallDefaultCandidates: PendingCallDefaultCandidate[];
+  /** Named-import `setContext` keys that need a string value after AST parsing. */
+  readonly pendingContextKeyCandidates: PendingContextKeyCandidate[];
 
   readonly runesPropsDeclarationMetadataByDeclaratorStart: Map<number, RunesPropsDeclarationMetadata>;
   readonly typedRunesPropsDeclarations: RunesPropsDeclarationMetadata[];
@@ -127,6 +130,7 @@ export function createParserContext(): ParserContext {
     vars: new Set(),
     valueImportBindingsByLocalName: new Map(),
     pendingCallDefaultCandidates: [],
+    pendingContextKeyCandidates: [],
     runesPropsDeclarationMetadataByDeclaratorStart: new Map(),
     typedRunesPropsDeclarations: [],
     explicitPropTypesByName: new Map(),

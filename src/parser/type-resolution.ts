@@ -281,17 +281,25 @@ function buildTypeImportStatements(ctx: ParserContext, referencedImportedTypes: 
 export function buildTypeScriptMetadata(ctx: ParserContext): ParsedComponentTypeScriptMetadata | undefined {
   const pendingCallDefaultCandidates =
     ctx.pendingCallDefaultCandidates.length > 0 ? ctx.pendingCallDefaultCandidates.slice() : undefined;
+  const pendingContextKeyCandidates =
+    ctx.pendingContextKeyCandidates.length > 0 ? ctx.pendingContextKeyCandidates.slice() : undefined;
+  const pendingCrossFileCandidates = {
+    ...(pendingCallDefaultCandidates ? { pendingCallDefaultCandidates } : {}),
+    ...(pendingContextKeyCandidates ? { pendingContextKeyCandidates } : {}),
+  };
+  const hasPendingCrossFileCandidates =
+    pendingCallDefaultCandidates !== undefined || pendingContextKeyCandidates !== undefined;
 
   if (ctx.typedRunesPropsDeclarations.length !== 1) {
-    return pendingCallDefaultCandidates
-      ? { canonicalPropNames: [], localTypeDeclarations: [], typeImportStatements: [], pendingCallDefaultCandidates }
+    return hasPendingCrossFileCandidates
+      ? { canonicalPropNames: [], localTypeDeclarations: [], typeImportStatements: [], ...pendingCrossFileCandidates }
       : undefined;
   }
 
   const [typedDeclaration] = ctx.typedRunesPropsDeclarations;
   if (!typedDeclaration.canonicalType) {
-    return pendingCallDefaultCandidates
-      ? { canonicalPropNames: [], localTypeDeclarations: [], typeImportStatements: [], pendingCallDefaultCandidates }
+    return hasPendingCrossFileCandidates
+      ? { canonicalPropNames: [], localTypeDeclarations: [], typeImportStatements: [], ...pendingCrossFileCandidates }
       : undefined;
   }
 
@@ -307,6 +315,6 @@ export function buildTypeScriptMetadata(ctx: ParserContext): ParsedComponentType
     localTypeDeclarations,
     typeImportStatements: buildTypeImportStatements(ctx, typedDeclaration.referencedImportedTypes),
     referencesComponentGenerics: typeTextReferencesGenerics(typedDeclaration.canonicalType, ctx.generics),
-    ...(pendingCallDefaultCandidates ? { pendingCallDefaultCandidates } : {}),
+    ...pendingCrossFileCandidates,
   };
 }
