@@ -226,14 +226,10 @@ type ModernParsedRoot = {
 
 /**
  * Reads type imports, local types, explicit `export let` annotations, and
- * `$props()` metadata off `modernParsed` (the modern-mode AST derived from the
- * same `parseFragment` call as `ctx.parsed`, before that tree is converted in
- * place into the legacy shape - see `parseModern` in `../svelte-parse`). Must
- * run to completion before the caller converts `modernParsed` into legacy:
- * `localTypeDeclarationsByName` entries retain a live `node` reference into
- * this tree (read synchronously by `collectReferencedTypeDependencies` and
- * `collectGenericsAttributeTypeDependencies` during this call only - nothing
- * reads `.node` afterwards, only the pre-extracted `.code` string).
+ * `$props()` metadata off `modernParsedRoot`. Same tree the caller assigns
+ * to `ctx.parsed`. `localTypeDeclarationsByName` holds a live `node` from
+ * this tree, read only during this call. After that, only the extracted
+ * `.code` string is used.
  */
 export function buildRunesPropTypeMetadata(parser: ComponentParser, ctx: ParserContext, modernParsedRoot: unknown) {
   ctx.runesPropsDeclarationMetadataByDeclaratorStart.clear();

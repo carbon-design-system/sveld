@@ -1,5 +1,5 @@
 /**
- * Fuzzes the Svelte component parsing pipeline by mutating fixture sources.
+ * Fuzzes `src/template-parse/` by mutating fixture sources.
  *
  * Each trial runs in its own child (`fuzz-trial.ts`) with a wall-clock kill
  * timeout and a CPU `ulimit`. Do not run trials in-process or in parallel. The
@@ -9,7 +9,7 @@
  * Operators hit markup grammar: truncation, bracket imbalance, directive
  * mangling, deep `{#if}`/`{#each}` nesting, `{#snippet}` generics and params.
  * JSDoc and script-side cases already live in
- * `tests/svelte-parse-shim.test.ts` and `tests/fixtures.test.ts`.
+ * `tests/svelte-template-parse-shim.test.ts` and `tests/fixtures.test.ts`.
  *
  * A hang or crash is always a finding. A thrown error is a finding only if
  * `svelte/compiler` accepts the same source. If both parsers reject, skip it.

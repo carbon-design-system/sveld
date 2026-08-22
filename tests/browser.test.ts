@@ -29,14 +29,9 @@ const SRC_ROOT = join(__dirname, "..", "src");
 /**
  * Walks every module reachable from `src/browser.ts` via relative imports
  * and asserts none of them import a `node:*` built-in. Bare specifiers
- * (npm packages like `svelte/compiler`) are out of scope; they're expected
- * to be browser-safe on their own and get bundled by the consumer's tool.
- * Relative imports that escape `src/` (e.g. `svelte-parse.ts` reaching
- * directly into `node_modules/svelte/src/...`) are equally out of scope:
- * they're still third-party package internals, just reached without a bare
- * specifier, and third-party source isn't shaped for this regex-based walk
- * (e.g. svelte's own source contains string templates like `from './${n}'`
- * in error-message text, which aren't real import statements).
+ * (`svelte/compiler`, `acorn`, `@sveltejs/acorn-typescript`) are out of
+ * scope. They're expected to be browser-safe and bundled by the consumer.
+ * Nothing in `src/` currently imports outside `src/`.
  */
 function collectRelativeImportGraph(entryFile: string): Map<string, string> {
   const files = new Map<string, string>();

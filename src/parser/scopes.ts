@@ -81,7 +81,16 @@ export function markReactivePropsFromMutationTarget(
   }
 }
 
-/** True for AST/Svelte node types that introduce a new lexical scope. */
+/**
+ * True for node types that introduce a new lexical scope.
+ *
+ * Modern AST puts `{:then}` / `{:catch}` bindings on `AwaitBlock` itself,
+ * not on separate `ThenBlock`/`CatchBlock` children. Both patterns share
+ * one AwaitBlock-wide scope. Walking `pending` or `catch` will see the
+ * `then` binding too. That only bites if someone names an await binding
+ * the same as a prop and relies on cross-branch shadowing. Not worth
+ * three scope objects for one block.
+ */
 export function isScopeOwner(node: unknown) {
   if (!node || typeof node !== "object" || !("type" in node)) return false;
 
@@ -92,8 +101,7 @@ export function isScopeOwner(node: unknown) {
     case "ArrowFunctionExpression":
     case "CatchClause":
     case "EachBlock":
-    case "ThenBlock":
-    case "CatchBlock":
+    case "AwaitBlock":
       return true;
     default:
       return false;
@@ -385,20 +393,16 @@ export function enterNestedScopeDeclarationNode(
       }
       break;
     }
-    case "ThenBlock":
-      if ("value" in (node as object)) {
-        for (const identifier of collectPatternIdentifiers((node as { value?: Pattern }).value)) {
-          declareScopeBinding(scope, identifier, { kind: "local" });
-        }
+    case "AwaitBlock": {
+      const awaitBlock = node as { value?: Pattern | null; error?: Pattern | null };
+      for (const identifier of collectPatternIdentifiers(awaitBlock.value)) {
+        declareScopeBinding(scope, identifier, { kind: "local" });
+      }
+      for (const identifier of collectPatternIdentifiers(awaitBlock.error)) {
+        declareScopeBinding(scope, identifier, { kind: "local" });
       }
       break;
-    case "CatchBlock":
-      if ("error" in (node as object)) {
-        for (const identifier of collectPatternIdentifiers((node as { error?: Pattern }).error)) {
-          declareScopeBinding(scope, identifier, { kind: "local" });
-        }
-      }
-      break;
+    }
   }
 
   if (isFunctionScopeOwner(node)) {

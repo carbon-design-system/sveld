@@ -98,12 +98,12 @@ function collectScopeOwnerNames(node: unknown): Set<string> {
       }
       break;
     }
-    case "ThenBlock":
-      collectPatternIdentifiers((node as { value?: Pattern }).value, names);
+    case "AwaitBlock": {
+      const awaitBlock = node as { value?: Pattern | null; error?: Pattern | null };
+      collectPatternIdentifiers(awaitBlock.value, names);
+      collectPatternIdentifiers(awaitBlock.error, names);
       break;
-    case "CatchBlock":
-      collectPatternIdentifiers((node as { error?: Pattern }).error, names);
-      break;
+    }
   }
 
   return names;
@@ -184,7 +184,7 @@ function scanForRuneReference(root: unknown, baseScope: ScopeStack): boolean {
   return found;
 }
 
-/** Legacy AST script nodes wrap their `Program` in `.content`; mirrors the shape check in `scopes.ts`. */
+/** `<script>` / `<script module>` wrap their `Program` in `.content`. Same shape check as `scopes.ts`. */
 function getScriptProgramBody(script: unknown): unknown[] | undefined {
   if (!script || typeof script !== "object") return undefined;
 
@@ -229,7 +229,7 @@ export function detectSyntaxMode(ctx: ParserContext): SyntaxMode {
   const runes =
     scanForRuneReference(root.module, [moduleScope]) ||
     scanForRuneReference(root.instance, [moduleScope, instanceScope]) ||
-    scanForRuneReference(root.html, [moduleScope, instanceScope]);
+    scanForRuneReference(root.fragment, [moduleScope, instanceScope]);
 
   return runes ? "runes" : "legacy";
 }

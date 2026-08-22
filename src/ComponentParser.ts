@@ -28,6 +28,7 @@ import { resolveMemberExpressionType } from "./parser/bindings";
 import { createParserContext, type ParserContext } from "./parser/context";
 import { parseSetContextCall } from "./parser/contexts";
 import { recordDiagnostic } from "./parser/diagnostics";
+import { isComponentLikeType, isElementLikeType } from "./parser/element-kind";
 import { addDispatchedEvent, literalDetailToTypeText, parseHostDispatchEventCall } from "./parser/events";
 import { parseGenericsAttribute } from "./parser/generics";
 import { parseCustomTypes, processNodeJSDoc } from "./parser/jsdoc";
@@ -59,7 +60,7 @@ import {
   type ImportDeclarationNode,
 } from "./parser/value-imports";
 import { buildVariableJsDocTable } from "./parser/variable-jsdoc";
-import { parseModern } from "./svelte-parse";
+import { parse as parseModernAst } from "./svelte-template-parse";
 
 /** Structured JSDoc tag (e.g. `{ name: "since", body: "1.2.0" }`). */
 export interface JsDocPassthroughTag {
@@ -83,9 +84,10 @@ function variableDeclarationKindToComponentPropKind(kind: VariableDeclaration["k
   return kind;
 }
 
-export interface LegacyAstRoot {
+/** The modern AST `Root` that `ctx.parsed` holds. */
+export interface ModernAstRoot {
   module?: Node;
-  html?: Node;
+  fragment?: Node & { nodes?: Node[] };
   instance?: Node;
   css?: { start?: number; end?: number };
 }
@@ -903,18 +905,12 @@ export default class ComponentParser {
     this.ctx.source = cleanedSource;
 
     /**
-     * One `parseFragment` call backs both AST views (see `parseModern`): the modern view feeds
-     * `buildRunesPropTypeMetadata` (type imports, local types, `$props()` metadata) first, and
-     * only once that's fully consumed does `intoLegacy()` convert the same tree in place for the
-     * main walk below - `convert()` restructures its input in place, so calling it any earlier
-     * would corrupt the modern view still being read. Two independent `parse()` calls used to
-     * re-lex and re-parse the same source from scratch for each mode; an earlier version of this
-     * ran both conversions upfront and deep-cloned the modern AST to give `convert()` a safe
-     * input, which this ordering makes unnecessary.
+     * One modern-AST parse feeds both `buildRunesPropTypeMetadata` and the
+     * main walk. There's no conversion step in between, so order doesn't matter.
      */
-    const { modern: modernParsed, intoLegacy } = parseModern(cleanedSource);
+    const modernParsed = parseModernAst(cleanedSource);
     buildRunesPropTypeMetadata(this, this.ctx, modernParsed);
-    this.ctx.parsed = intoLegacy() as LegacyAstRoot;
+    this.ctx.parsed = modernParsed as unknown as ModernAstRoot;
 
     /**
      * compile() strips TS-only wrapper expressions (`as`/`satisfies`/`!`/type assertions/explicit
@@ -924,7 +920,7 @@ export default class ComponentParser {
     if (this.ctx.scriptLanguage === "ts") {
       stripTypeCastWrappers(this.ctx.parsed.module);
       stripTypeCastWrappers(this.ctx.parsed.instance);
-      stripTypeCastWrappers(this.ctx.parsed.html);
+      stripTypeCastWrappers(this.ctx.parsed.fragment);
     }
 
     this.ctx.syntaxMode = detectSyntaxMode(this.ctx);
@@ -951,7 +947,7 @@ export default class ComponentParser {
     const componentRoot = {
       type: "ComponentRoot",
       instance: this.ctx.parsed.instance,
-      html: this.ctx.parsed.html,
+      fragment: this.ctx.parsed.fragment,
     } as unknown as Node;
 
     /**
@@ -959,8 +955,8 @@ export default class ComponentParser {
      * resolve even when the import or `function uniqueId()` comes later in the script.
      * See #410. Pre-scan module and instance so those bindings exist before prop defaults run.
      *
-     * Skip `componentRoot`. Imports and function declarations never appear in `html`,
-     * so walking markup here would re-traverse the largest part of the AST for nothing.
+     * Skip `componentRoot`. Imports and function declarations never appear in the template
+     * fragment, so walking markup here would re-traverse the largest part of the AST for nothing.
      */
     collectHoistedScriptBindings(this.ctx, this.ctx.parsed?.module as unknown as Node | undefined);
     collectHoistedScriptBindings(this.ctx, this.ctx.parsed?.instance as unknown as Node | undefined);
@@ -1192,8 +1188,8 @@ export default class ComponentParser {
           }
         }
 
-        // Svelte Spread nodes: `{...$$restProps}` and rest-prop locals.
-        if (node && typeof node === "object" && "type" in node && String(node.type) === "Spread") {
+        // Svelte spread attribute nodes: `{...$$restProps}` and rest-prop locals.
+        if (node && typeof node === "object" && "type" in node && String(node.type) === "SpreadAttribute") {
           const spreadNode = node as { type: string; expression?: { name?: string } };
           if (
             spreadNode.expression?.name === "$$restProps" ||
@@ -1390,22 +1386,24 @@ export default class ComponentParser {
           }
         }
 
-        if (node && typeof node === "object" && "type" in node && String(node.type) === "Slot") {
+        if (node && typeof node === "object" && "type" in node && String(node.type) === "SlotElement") {
+          type AttributeValueChunk = {
+            type?: string;
+            expression?: unknown;
+            raw?: string;
+            start?: number;
+            end?: number;
+            data?: string;
+          };
           const slotNode = node as {
             attributes?: Array<{
               name?: string;
-              value?: Array<{
-                type?: string;
-                expression?: unknown;
-                raw?: string;
-                start?: number;
-                end?: number;
-                data?: string;
-              }>;
+              value?: true | AttributeValueChunk | AttributeValueChunk[];
             }>;
-            children?: Array<{ start?: number; end?: number }>;
+            fragment?: { nodes?: Array<{ start?: number; end?: number }> };
           };
-          const slot_name = slotNode.attributes?.find((attr) => attr.name === "name")?.value?.[0]?.data;
+          const nameAttributeValue = slotNode.attributes?.find((attr) => attr.name === "name")?.value;
+          const slot_name = (Array.isArray(nameAttributeValue) ? nameAttributeValue[0] : undefined)?.data;
 
           const slot_props = (slotNode.attributes || [])
             .filter((attr) => attr.name !== "name")
@@ -1416,19 +1414,27 @@ export default class ComponentParser {
               };
 
               const value = attr.value;
-              if (value === undefined) return slot_props;
+              if (value === undefined || value === true) return slot_props;
 
-              if (value[0]) {
-                const firstValue = value[0];
+              // Quoted or multi-chunk values are an array. A single expression
+              // (`name={expr}` or `{name}`) is unwrapped. Modern AST doesn't
+              // distinguish those two.
+              const firstValue = Array.isArray(value) ? value[0] : value;
+
+              if (firstValue) {
                 const { type, expression, raw, start, end } = firstValue;
 
                 if (type === "Text" && raw !== undefined) {
                   slot_prop_value.value = JSON.stringify(raw);
                 } else if (
-                  type === "AttributeShorthand" &&
+                  !Array.isArray(value) &&
+                  type === "ExpressionTag" &&
                   expression &&
                   typeof expression === "object" &&
-                  "name" in expression
+                  "type" in expression &&
+                  expression.type === "Identifier" &&
+                  "name" in expression &&
+                  expression.name === attr.name
                 ) {
                   slot_prop_value.value = (expression as Identifier).name;
                   slot_prop_value.replace = true;
@@ -1457,7 +1463,7 @@ export default class ComponentParser {
               return slot_props;
             }, {});
 
-          const fallback = (slotNode.children as TemplateNode[] | undefined)
+          const fallback = (slotNode.fragment?.nodes as TemplateNode[] | undefined)
             ?.map(({ start, end }) => {
               if (start === undefined || end === undefined) return "";
               return sourceAtPos(this.ctx, start, end) ?? "";
@@ -1525,17 +1531,16 @@ export default class ComponentParser {
         }
 
         // Bare `on:event` handlers forward events; dispatched events win and are reconciled after the walk.
-        if (node && typeof node === "object" && "type" in node && String(node.type) === "EventHandler") {
+        if (node && typeof node === "object" && "type" in node && String(node.type) === "OnDirective") {
           const eventHandlerNode = node as { expression?: unknown; name?: string };
           if (eventHandlerNode.expression == null && eventHandlerNode.name) {
             if (parent != null && typeof parent === "object" && "name" in parent) {
               const parentName = typeof parent.name === "string" ? parent.name : undefined;
               const parentType = "type" in parent ? String(parent.type) : undefined;
               if (parentName && parentType) {
-                const element: ComponentInlineElement | ComponentElement =
-                  parentType === "InlineComponent"
-                    ? { type: "InlineComponent", name: parentName }
-                    : { type: "Element", name: parentName };
+                const element: ComponentInlineElement | ComponentElement = isComponentLikeType(parentType)
+                  ? { type: "InlineComponent", name: parentName }
+                  : { type: "Element", name: parentName };
 
                 this.ctx.forwardedEvents.set(eventHandlerNode.name, element);
 
@@ -1567,17 +1572,17 @@ export default class ComponentParser {
         }
 
         /**
-         * Legacy `bind:*` marks props reactive; `bind:this` on elements also narrows the prop type.
+         * `bind:*` marks props reactive; `bind:this` on elements also narrows the prop type.
          */
         if (
           parent &&
           typeof parent === "object" &&
           "type" in parent &&
-          (String(parent.type) === "Element" || String(parent.type) === "InlineComponent") &&
+          (isElementLikeType(String(parent.type)) || isComponentLikeType(String(parent.type))) &&
           node &&
           typeof node === "object" &&
           "type" in node &&
-          String(node.type) === "Binding"
+          String(node.type) === "BindDirective"
         ) {
           const bindingNode = node as { name?: string; expression?: { name?: string } };
           if (bindingNode.expression?.name) {
@@ -1588,7 +1593,7 @@ export default class ComponentParser {
           }
 
           if (
-            String(parent.type) === "Element" &&
+            isElementLikeType(String(parent.type)) &&
             bindingNode.name === "this" &&
             bindingNode.expression?.name &&
             "name" in parent &&
