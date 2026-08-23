@@ -123,6 +123,11 @@ function tokenizeLine(text: string, isOpeningLine: boolean): { indent: string; s
 
 /** Finds every `/** ... *\/` block in `source`, tokenizing each line's gutter as it goes. */
 function findCommentBlocks(source: string): Array<{ start: number; lines: CommentLine[] }> {
+  // Every block starts with `/**`. If that substring is absent, skip
+  // splitting the source into lines. `/***` starts with the same three
+  // characters, so this can't miss an ignore-block either.
+  if (!source.includes(BLOCK_OPEN)) return [];
+
   const blocks: Array<{ start: number; lines: CommentLine[] }> = [];
   const physicalLines = splitSourceLines(source);
 
