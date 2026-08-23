@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.36.10](https://github.com/carbon-design-system/sveld/releases/tag/v0.36.10) - 2026-08-23
+
+**Features**
+
+- replace svelte's internal parser with a hand-rolled one (cf4f0e0, #422)
+
 ## [0.36.9](https://github.com/carbon-design-system/sveld/releases/tag/v0.36.9) - 2026-08-22
 
 **Fixes**
