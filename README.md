@@ -3,6 +3,8 @@
 [![NPM][npm]][npm-url]
 ![npm downloads to date](https://img.shields.io/npm/dt/sveld?color=262626&style=for-the-badge)
 
+**[Try it live in the browser playground →][playground-url]** — paste a `.svelte` component and see the generated TypeScript, JSON, Markdown, and Custom Elements Manifest output, no install required.
+
 `sveld` generates TypeScript definitions and component documentation (Markdown/JSON) for Svelte components. It statically analyzes props, events, slots, module exports, context, and `$$restProps`. Add types with [JSDoc](https://jsdoc.app/) when inference is not enough.
 
 The goal is to get third-party Svelte libraries working with the Svelte Language Server and TypeScript with minimal effort from the author. Generated `.d.ts` files give you autocomplete in VS Code and other IDEs.
@@ -637,7 +639,7 @@ const cem = buildCustomElementsManifest(components, {
 
 `ComponentParser` is stateful but reusable across parses — call `parseSvelteComponent` again on the same instance for the next component instead of constructing a new one each time.
 
-See [`playground/`](playground) in this repo for a working example: it parses Svelte source typed into an editor and renders JSON, Markdown, TypeScript, and Custom Elements Manifest tabs, all client-side.
+See [`playground/`](playground) in this repo for a working example: it parses Svelte source typed into an editor and renders JSON, Markdown, TypeScript, and Custom Elements Manifest tabs, all client-side. A deployed build is live at **[sveld.onrender.com][playground-url]**.
 
 ### Config File
 
@@ -3024,3 +3026,4 @@ See [contributing guidelines](CONTRIBUTING.md).
 
 [npm]: https://img.shields.io/npm/v/sveld.svg?color=262626&style=for-the-badge
 [npm-url]: https://npmjs.com/package/sveld
+[playground-url]: https://sveld.onrender.com
