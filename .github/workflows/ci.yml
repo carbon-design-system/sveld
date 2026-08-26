@@ -35,6 +35,9 @@ jobs:
       - name: Type check fixtures
         run: bun run test:fixtures-types
 
+      - name: Run e2e tests
+        run: bun run test:e2e
+
       - name: Deploy docs
         # Only trigger deploy if previous steps pass on main branch.
         # Only fire once per branch push.

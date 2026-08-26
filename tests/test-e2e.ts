@@ -7,8 +7,14 @@ await $`bun link`;
 
 let hasError = false;
 
-for await (const dir of $`find tests/e2e -maxdepth 1 -mindepth 1 -type d`.lines()) {
+const e2eRoot = "tests/e2e";
+const dirs = readdirSync(e2eRoot, { withFileTypes: true })
+  .filter((entry) => entry.isDirectory())
+  .map((entry) => join(e2eRoot, entry.name));
+
+for (const dir of dirs) {
   const packageJsonPath = `${dir}/package.json`;
+  // biome-ignore lint/performance/noAwaitInLoops: each example links/installs/builds into a shared bun link registry, so they must run one at a time.
   if (!(await Bun.file(packageJsonPath).exists())) continue;
 
   try {
