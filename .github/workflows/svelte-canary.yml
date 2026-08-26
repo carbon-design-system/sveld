@@ -17,6 +17,10 @@ jobs:
   canary:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      issues: write
+
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
@@ -40,3 +44,29 @@ jobs:
 
       - name: Differential fuzz
         run: bun run fuzz --iterations 300
+
+      - name: Open or update issue on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          TITLE="svelte canary failed"
+          BODY="The svelte canary workflow failed.
+
+          This usually means a new svelte release changed template syntax
+          that src/template-parse/ does not yet handle (or shifted output
+          in a way the shim compare/fuzzer caught). See
+          .github/workflows/svelte-canary.yml for context.
+
+          Failed run: ${RUN_URL}"
+
+          existing=$(gh issue list --repo "${{ github.repository }}" \
+            --state open --limit 100 --json number,title \
+            --jq '.[] | select(.title == "'"$TITLE"'") | .number' | head -n1)
+
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --repo "${{ github.repository }}" --body "$BODY"
+          else
+            gh issue create --repo "${{ github.repository }}" --title "$TITLE" --body "$BODY"
+          fi
