@@ -9,10 +9,14 @@ import WriterMarkdown, { type AppendType } from "./WriterMarkdown";
 export interface WriteMarkdownOptions {
   write?: boolean;
   outFile: string;
-  /** Entry-barrel exports when `documentExports` is on. */
+  /**
+   * @internal Entry-barrel exports when `documentExports` is on. Always
+   * computed from the parsed bundle and injected by the caller; setting it
+   * via `markdownOptions` has no effect.
+   */
   entryExports?: EntryExports;
   onAppend?: (type: AppendType, document: WriterMarkdown, components: ComponentDocs) => void;
-  /** Report the resolved path instead of writing. Set by `sveld --dry-run`. */
+  /** @internal Report the resolved path instead of writing. Always set by the caller from `sveld --dry-run`. */
   dryRun?: boolean;
 }
 
