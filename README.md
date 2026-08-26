@@ -147,12 +147,17 @@ export default class Button extends SvelteComponentTyped<
   - [@type](#type)
   - [@default](#default)
   - [@typedef](#typedef)
+  - [@property](#property)
   - [@callback](#callback)
   - [@slot / @snippet](#slot--snippet)
     - [Extra JSDoc tags before `@slot`](#extra-jsdoc-tags-before-slot)
     - [Svelte 5 Snippet Compatibility](#svelte-5-snippet-compatibility)
   - [@event](#event)
   - [@deprecated](#deprecated)
+  - [@since](#since)
+  - [@see](#see)
+  - [@link](#link)
+  - [@example](#example)
   - [Context API](#context-api)
   - [@restProps](#restprops)
   - [@extendProps](#extendprops)
@@ -1357,7 +1362,7 @@ The `@typedef` tag defines a shared type used multiple times in a component. All
 
 #### Using `@property` for complex typedefs
 
-For complex object types, use `@property` to document individual fields. That gives per-property tooltips in the IDE.
+For complex object types, use `@property` to document individual fields. That gives per-property tooltips in the IDE. See the [`@property`](#property) reference for the tag's valid contexts.
 
 **Signature:**
 
@@ -1754,6 +1759,35 @@ function render(value: unknown, props: ComponentProps) {
 }
 ```
 
+### `@property`
+
+`@property` documents one field of an object. `sveld` only reads it in two places: directly inside a `@typedef {object}` block, and directly inside an `@event` block (after an explicit `@type {object}`, or with no `@type` at all — `sveld` builds the detail type from the collected `@property` entries). It has no effect anywhere else.
+
+**Valid contexts:**
+
+| Context | Behavior |
+| :- | :- |
+| After `@typedef {object} Name`, in the same comment block | Builds `Name`'s fields. See [Using `@property` for complex typedefs](#using-property-for-complex-typedefs). |
+| After `@event eventname`, in the same comment block | Builds the event's detail type. See [Using `@property` for complex event details](#using-property-for-complex-event-details). |
+| A plain prop with no `@typedef`/`@type {object}` | Not structured. Folded into the prop's description as literal text (`@property name - description`). |
+| Before a `@slot` / `@snippet` line | Dropped entirely — no structured output, and unlike other unrecognized tags in that position, it is not folded into the slot's description either. |
+| Inside `@callback` | Not read. Use `@param` for callback parameters instead. |
+
+**Signature:**
+
+```js
+/**
+ * @typedef {object} TypeName
+ * @property {Type} propertyName - Property description
+ *
+ * @event eventname
+ * @type {object}
+ * @property {Type} propertyName - Property description
+ */
+```
+
+Both forms support the same modifiers as typedef properties elsewhere in this doc: optional properties (`[name]`), default values (`[name=value]`), and nested/discriminated-union shapes. See the linked sections above for full signatures and worked examples with generated output.
+
 ### `@callback`
 
 The `@callback` tag defines a function type with `@param` and `@returns`, following the [TypeScript JSDoc `@callback` spec](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html#callback). Like `@typedef`, callbacks are exported from the generated `.d.ts`.
@@ -2141,7 +2175,7 @@ export default class Component extends SvelteComponentTyped<
 
 #### Using `@property` for complex event details
 
-For events with complex object payloads, use `@property` to document individual fields. The main comment becomes the event description.
+For events with complex object payloads, use `@property` to document individual fields. The main comment becomes the event description. See the [`@property`](#property) reference for the tag's valid contexts.
 
 This is the idiomatic way to describe each field of an event detail. An inline object literal such as `@event {{ items: string[]; added: string[] }} change` types the payload but cannot carry per-field descriptions, since a nested block comment would terminate the host JSDoc. Declare the detail with `@type {object}` and `@property` instead to document every field.
 
@@ -2415,6 +2449,174 @@ label?: string;
 ```json
 { "name": "label", "deprecated": "Use the `text` prop instead." }
 ```
+
+### `@since`
+
+`@since` records the version a prop, event, or slot was introduced. `sveld` does not validate or parse the version text — whatever follows the tag is copied through as-is.
+
+**Valid contexts:**
+
+- **Prop / module export** — captured as a structured tag: JSON adds a `tags: [{ "name": "since", "body": "..." }]` array on the prop (kept separate from `description`), and the generated `.d.ts` emits `@since ...` as its own JSDoc line above `@default`. **Not rendered in the Markdown table** — the Markdown props/events renderers only read `description`, not `tags` (only the slots renderer does; see [extra tags before `@slot`](#extra-jsdoc-tags-before-slot)).
+- **`@event`** — same structured behavior as props, but only when `@since` is placed **after** the `@event` line in the same comment block (matching the [`@deprecated`](#deprecated) rule for events). Placed before `@event`, it is silently dropped.
+- **`@slot` / `@snippet`** — placed before the `@slot`/`@snippet` line, alongside the description. Fully surfaced in JSON, `.d.ts`, *and* the Markdown table. See [extra tags before `@slot`](#extra-jsdoc-tags-before-slot).
+- **`@typedef`** — **not supported.** A `@since` before `@typedef` produces no output anywhere; it is silently dropped.
+- **`@component` comments** — passed through verbatim as part of the raw HTML comment text. See [@component comments](#component-comments).
+
+**Example:**
+
+```svelte
+<script>
+  /**
+   * A width prop.
+   * @since 1.2.0
+   * @type {number}
+   */
+  let { width = 0 } = $props();
+</script>
+```
+
+Output (`.d.ts`):
+
+```ts
+export type ScratchProps = {
+  /**
+   * A width prop.
+   * @since 1.2.0
+   * @default 0
+   */
+  width?: number;
+};
+```
+
+Output (JSON, relevant slice):
+
+```json
+{ "name": "width", "description": "A width prop.", "tags": [{ "name": "since", "body": "1.2.0" }] }
+```
+
+The Markdown table for the same prop shows only `A width prop.` in the Description column — `@since` does not appear there.
+
+### `@see`
+
+`@see` adds a reference link or citation. Like `@since`, `sveld` does not resolve or validate the target — it is free text.
+
+**Valid contexts:**
+
+- **Prop / module export** — `@see` is *not* one of the small set of tags `sveld` structures specially, so it is folded verbatim into the prop's `description` as an extra line (`@see ...`) rather than getting its own `tags` entry. Because it lives in `description`, it *does* show up everywhere `description` is used: JSON, `.d.ts`, and the Markdown table.
+- **`@event`** — **not supported in either position** (before or after `@event`). A `@see` tag near an `@event` block is silently dropped in both JSON and `.d.ts`.
+- **`@slot` / `@snippet`** — placed before `@slot`/`@snippet`, alongside the description: fully supported in JSON, `.d.ts`, and Markdown, same as `@since`. See [extra tags before `@slot`](#extra-jsdoc-tags-before-slot).
+- **`@typedef`** — **not supported.** Dropped silently, same as `@since`.
+- **`@component` comments** — passed through verbatim, same as `@since`.
+
+**Example:**
+
+```svelte
+<script>
+  /**
+   * A width prop.
+   * @see https://example.com/width-docs
+   * @type {number}
+   */
+  let { width = 0 } = $props();
+</script>
+```
+
+Output (`.d.ts`):
+
+```ts
+export type ScratchProps = {
+  /**
+   * A width prop.
+   * @see https://example.com/width-docs
+   * @default 0
+   */
+  width?: number;
+};
+```
+
+Output (Markdown props table Description column):
+
+```
+A width prop.<br />@see https://example.com/width-docs
+```
+
+### `@link`
+
+`{@link target}` (optionally `{@link target|display text}`) is an inline JSDoc tag used inside prose, not a block-level tag like the others on this page. `sveld`'s comment parser only treats a *line* as starting a new tag when it begins with `@` — `{@link ...}` always starts with `{`, so it's never intercepted. It is always literal text.
+
+**Valid contexts:** anywhere free-form description text is read — prop and module export descriptions, event descriptions, slot descriptions, typedef descriptions, `@component` HTML comments, and `@example` bodies. In every case `sveld` copies it through unchanged, with no link resolution or target validation, into JSON `description`, `.d.ts` JSDoc, and Markdown.
+
+**Example:**
+
+```svelte
+<script>
+  /**
+   * The element's width in pixels. See {@link https://example.com/width|width docs}.
+   * @type {number}
+   */
+  let { width = 0 } = $props();
+</script>
+```
+
+Output (`.d.ts`):
+
+```ts
+export type ScratchProps = {
+  /**
+   * The element's width in pixels. See {@link https://example.com/width|width docs}.
+   * @default 0
+   */
+  width?: number;
+};
+```
+
+The same literal string appears unchanged in JSON `description` and in the Markdown table's Description column.
+
+### `@example`
+
+`@example` has two related uses: as a plain JSDoc tag whose body is copied into generated output, and — with `checkExamples: true` — as input to sveld's compile-checker for plain TS/JS example code. This section covers the tag itself; see [Compile-checked `@example` blocks (`checkExamples`)](#compile-checked-example-blocks-checkexamples) for the type-checking feature.
+
+`@example` shares its underlying mechanism with `@since` (both are in the small set of tags `sveld` treats as structured "IDE passthrough" tags), so the valid contexts are the same:
+
+- **Prop / module export (including functions)** — structured `tags` entry in JSON, its own `@example` block in `.d.ts`. **Not rendered in the Markdown table**, same gap as `@since`.
+- **`@event`** — only when placed **after** the `@event` line in the same block, same rule as `@since`.
+- **`@slot` / `@snippet`** — placed before `@slot`/`@snippet`: fully supported in JSON, `.d.ts`, and Markdown. See [extra tags before `@slot`](#extra-jsdoc-tags-before-slot).
+- **`@typedef`** — **not supported**, dropped silently, same as `@since`.
+- **`@component` comments** — passed through verbatim; this is already how the [`@component` comments](#component-comments) example on this page uses `@example`.
+
+**Example:**
+
+```svelte
+<script>
+  /**
+   * Formats a value.
+   * @param {string} value
+   * @returns {string}
+   * @example
+   * ```js
+   * formatValue("ok");
+   * ```
+   */
+  export function formatValue(value) {
+    return value;
+  }
+</script>
+```
+
+Output (`.d.ts`):
+
+```ts
+/**
+ * Formats a value.
+ * @example
+ *  ```js
+ *  formatValue("ok");
+ *  ```
+ */
+formatValue: (value: string) => string;
+```
+
+`@param`/`@returns` are consumed into the function's type signature rather than kept as separate JSDoc lines. The Markdown table shows only `Formats a value.` in the Description column — the `@example` block does not appear there.
 
 ### Context API
 
