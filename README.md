@@ -141,6 +141,11 @@ export default class Button extends SvelteComponentTyped<
 - [JSON Output](#json-output)
 - [Custom Elements Manifest](#custom-elements-manifest)
   - [Consuming the manifest](#consuming-the-manifest)
+- [Custom Writers](#custom-writers)
+  - [The `OutputWriter` contract](#the-outputwriter-contract)
+  - [Registering a writer](#registering-a-writer)
+  - [Running it via the plugin](#running-it-via-the-plugin)
+  - [Worked example: a minimal `llms.txt` writer](#worked-example-a-minimal-llmstxt-writer)
 - [API Reference](#api-reference)
   - [reactive](#reactive)
   - [binding](#binding)
@@ -930,6 +935,139 @@ With that in place:
 - The [VS Code custom elements extension](https://marketplace.visualstudio.com/items?itemName=BendingSpoons.vscode-custom-elements) and JetBrains IDEs pick it up automatically, giving tag name, attribute, and slot completion/hover in HTML and Svelte templates.
 - [Storybook](https://storybook.js.org/docs/api/doc-blocks/doc-block-argtypes#extracting-argtypes) for web components reads the manifest to auto-generate `argTypes` (controls, docs tables) for `customElement`-compiled components, once you point it at the file (e.g. `setCustomElementsManifest` from `@storybook/web-components`, or `customElements: "custom-elements.json"` in `.storybook/main.js`).
 - Any other tool built against the [Custom Elements Manifest spec](https://github.com/webcomponents/custom-elements-manifest) (API viewers, doc generators, linters) can read the file directly without sveld-specific integration.
+
+## Custom Writers
+
+`json`, `markdown`, `types`, and `custom-elements` are all built on the same
+extensibility point: a small writer registry that third parties can use to
+add new output formats without a core PR. This is a stable, public part of
+sveld's API — the four built-in writers register through it in
+`src/writer/built-in-writers.ts`, there is no separate "internal" path.
+
+### The `OutputWriter` contract
+
+```ts
+interface OutputWriter<TOptions = unknown> {
+  name: string;
+  /** Which component set this writer expects. @default "exported" */
+  componentSet?: "exported" | "all";
+  write(components: ComponentDocs, options: TOptions): Promise<unknown> | unknown;
+}
+```
+
+- **`name`** is how the plugin's `additionalWriters` option (and anything else
+  that calls `getWriter`) looks the writer up. Pick something that won't
+  collide with `types` / `json` / `markdown` / `custom-elements` or another
+  third-party writer.
+- **`componentSet`** picks which map `write` receives:
+  - `"exported"` (the default) — components reachable from the entry barrel,
+    keyed by `moduleName`. This is what `json` / `markdown` /
+    `custom-elements` use.
+  - `"all"` — every `--glob`-discovered `.svelte` file, keyed by resolved
+    `filePath` instead of `moduleName` (two files in different directories
+    can share a basename). This is what `types` uses.
+- **`write`** receives a `ComponentDocs` (`Map<string, ComponentDocApi>`) —
+  the same `ComponentDocApi` shape documented in [JSON Output](#json-output).
+  Don't iterate the raw map yourself; call `buildComponentApiDocument(components, { entryExports })`
+  (also exported from `sveld`) to get the sorted, `diagnostics`-stripped,
+  schema-versioned document the built-in writers build from. It's memoized
+  per `components` map, so calling it more than once in one run is free.
+
+### Registering a writer
+
+```ts
+import { registerWriter } from "sveld";
+
+registerWriter({
+  name: "my-format",
+  write(components, options) {
+    // ...
+  },
+});
+```
+
+`registerWriter` is a side effect — call it once, before the plugin or CLI
+runs, e.g. at the top of `vite.config.ts` or `sveld.config.ts`, or in a file
+either of those imports.
+
+### Running it via the plugin
+
+```ts
+// vite.config.ts
+import sveld from "sveld";
+import "./writers/my-format"; // calls registerWriter as a side effect
+
+export default {
+  plugins: [
+    sveld({
+      additionalWriters: {
+        "my-format": { outFile: "MY_FORMAT.txt" },
+      },
+    }),
+  ],
+};
+```
+
+`additionalWriters` is keyed by the writer's registered `name`; the value is
+whatever options object that writer's `write` expects. An unknown name logs a
+warning and is skipped rather than failing the build. Registered writers run
+alongside whichever built-in outputs (`types` / `json` / `markdown` /
+`customElements`) are also enabled, and the same option is available from the
+programmatic Node API and from `sveld.config.ts` (`additionalWriters` lives on
+the options shared by all three entry points).
+
+### Worked example: a minimal `llms.txt` writer
+
+A plain-text, one-file-per-library summary — the kind of thing
+[llms.txt](https://llmstxt.org)-aware tools look for — is a good demo because
+it needs nothing beyond `ComponentApiDocument`.
+
+```ts
+// writers/llms-writer.ts
+import { writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { buildComponentApiDocument, registerWriter } from "sveld";
+
+interface LlmsWriterOptions {
+  outFile?: string;
+}
+
+registerWriter<LlmsWriterOptions>({
+  name: "llms-demo",
+  componentSet: "exported",
+  write(components, options = {}) {
+    const document = buildComponentApiDocument(components);
+
+    const sections = document.components.map((component) => {
+      const props = component.props.map((prop) => `${prop.name}: ${prop.type ?? "unknown"}`).join(", ");
+      return `## ${component.moduleName}\n\nProps: ${props || "none"}`;
+    });
+
+    const rendered = ["# My Library", "", "> Auto-generated component reference.", "", ...sections].join("\n\n");
+
+    writeFileSync(join(process.cwd(), options.outFile ?? "llms.txt"), rendered);
+  },
+});
+```
+
+```ts
+// vite.config.ts
+import sveld from "sveld";
+import "./writers/llms-writer";
+
+export default {
+  plugins: [
+    sveld({
+      additionalWriters: {
+        "llms-demo": { outFile: "llms.txt" },
+      },
+    }),
+  ],
+};
+```
+
+Running a build now produces an `llms.txt` alongside the usual output, with
+one section per exported component.
 
 ## API Reference
 
