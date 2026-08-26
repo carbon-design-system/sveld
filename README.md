@@ -7,9 +7,7 @@
 
 The goal is to get third-party Svelte libraries working with the Svelte Language Server and TypeScript with minimal effort from the author. Generated `.d.ts` files give you autocomplete in VS Code and other IDEs.
 
-[Carbon Components Svelte](https://github.com/carbon-design-system/carbon-components-svelte) uses this library to auto-generate component types and API metadata.
-
-`sveld` uses the Svelte 5 compiler to parse `.svelte` files. That single parse path powers docgen and TypeScript output for Svelte 3, Svelte 4, and Svelte 5 without runes (`export let`, `<slot>`, `$$restProps`, …). It also covers Svelte 5 Runes (`$props()`, `$bindable()`, `{@render ...}`, callback props such as `onclick`, …).
+`sveld` uses its own parser (not the Svelte compiler) for `.svelte` files. That single parse path powers docgen and TypeScript output for Svelte 3, Svelte 4, and Svelte 5 without runes (`export let`, `<slot>`, `$$restProps`, …). It also covers Svelte 5 Runes (`$props()`, `$bindable()`, `{@render ...}`, callback props such as `onclick`, …).
 
 For `lang="ts"` components, `sveld` keeps source-level prop type annotations when it can, instead of forcing JSDoc. That covers legacy `export let` props, typed `$props()` destructuring, typed whole-object `$props()` captures, local `interface`/`type` declarations, and imported type references in emitted `.d.ts` files.
 
@@ -17,7 +15,16 @@ By default, generated `.d.ts` files extend `SvelteComponentTyped` from `svelte`,
 
 ## When to use sveld
 
-SvelteKit's library tooling (`svelte-package`) and `svelte2tsx` already emit `.d.ts` files for SvelteKit-based projects, so start there if that's your setup. `sveld` targets JS-first Svelte libraries: components authored in plain JavaScript with JSDoc rather than `lang="ts"`, where you still want full editor types without adopting TypeScript. It also covers cases `svelte-package` doesn't: generating JSON and Markdown component docs from the same source as the types, checking for API drift between releases (`--check`), and deriving richer types from JSDoc tags (`@typedef`, `@callback`, `@slot`, context types) than plain type inference produces.
+Svelte component library authors usually need two things to stay in sync: editor-grade TypeScript types for consumers, and human-readable documentation (props, events, slots) for a docs site, changelog, or AI-assisted tooling. Maintaining both by hand from the same components drifts quickly; generating both from one parse of the same source doesn't.
+
+**Use `sveld`** when you're authoring a JSDoc-first Svelte component library — plain JavaScript or `lang="ts"` — and want `.d.ts`, [JSON](#json-output) (published schema, so downstream tooling can consume it directly), Markdown, and a [Custom Elements Manifest](#custom-elements-manifest) generated from one pass over your components, plus API-drift checks between releases (`--check`). `sveld` parses `.svelte` files with its own parser rather than depending on the Svelte compiler at runtime, about 2.5-3x faster than compiling through `svelte/compiler`. A browser-safe build, `sveld/browser`, also runs the same parser and writers client-side (e.g. an in-browser REPL), without a Node dependency.
+
+**Consider an alternative** when your needs are narrower:
+- Only need editor types for a SvelteKit project? `svelte-package` and [`svelte2tsx`](https://github.com/sveltejs/language-tools) (the engine behind the Svelte Language Server) already generate `.d.ts` files for you.
+- Only need Storybook autodocs for Svelte components? Storybook now generates its own Svelte docgen via `svelte2tsx` ([storybookjs/storybook#29423](https://github.com/storybookjs/storybook/pull/29423), shipped in Storybook 8.4), replacing the unmaintained `sveltedoc-parser` it used before — a separate docgen tool is likely redundant.
+- Shipping framework-agnostic custom elements with no Svelte-specific docs? [`@custom-elements-manifest/analyzer`](https://github.com/open-wc/custom-elements-manifest) targets that directly.
+
+[Carbon Components Svelte](https://github.com/carbon-design-system/carbon-components-svelte) is sveld's largest production user: it runs `sveld` across 90+ components to generate `.d.ts` files and JSON/Markdown docs, and feeds that JSON into its `llms.txt`/`llms-full.txt` generation.
 
 ---
 
