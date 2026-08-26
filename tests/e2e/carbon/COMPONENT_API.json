@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "generator": {
     "name": "sveld",
-    "version": "0.35.2",
-    "svelteVersion": "5.56.3"
+    "version": "0.36.10",
+    "svelteVersion": "5.56.10"
   },
   "total": 156,
   "components": [
@@ -3975,6 +3975,7 @@
           "description": "Override the display of a combobox item",
           "type": "(item: ComboBoxItem) => string",
           "typeSource": "jsdoc",
+          "value": "(item) => item.text || item.id",
           "defaultValue": {
             "raw": "(item) => item.text || item.id",
             "kind": "function"
@@ -4308,6 +4309,7 @@
           "description": "Determine if an item should be filtered given the current combobox value",
           "type": "(item: ComboBoxItem, value: string) => boolean",
           "typeSource": "jsdoc",
+          "value": "() => true",
           "defaultValue": {
             "raw": "() => true",
             "kind": "function"
@@ -7831,6 +7833,7 @@
           "description": "Override the display of a dropdown item\n@required",
           "type": "(item: DropdownItem) => string",
           "typeSource": "jsdoc",
+          "value": "(item) => item.text || item.id",
           "defaultValue": {
             "raw": "(item) => item.text || item.id",
             "kind": "function"
@@ -10010,6 +10013,7 @@
           "description": "Override the default behavior of validating uploaded files\nThe default behavior does not validate files",
           "type": "(files: FileList) => FileList",
           "typeSource": "jsdoc",
+          "value": "(files) => files",
           "defaultValue": {
             "raw": "(files) => files",
             "kind": "function"
@@ -11945,7 +11949,7 @@
           "column": 0
         },
         "end": {
-          "line": 89,
+          "line": 103,
           "column": 0
         }
       },
@@ -12182,7 +12186,7 @@
           "column": 0
         },
         "end": {
-          "line": 36,
+          "line": 44,
           "column": 0
         }
       },
@@ -12320,7 +12324,7 @@
           "column": 0
         },
         "end": {
-          "line": 147,
+          "line": 235,
           "column": 0
         }
       },
@@ -13169,7 +13173,7 @@
           "column": 0
         },
         "end": {
-          "line": 6,
+          "line": 21,
           "column": 0
         }
       },
@@ -13360,7 +13364,7 @@
           "column": 0
         },
         "end": {
-          "line": 178,
+          "line": 311,
           "column": 0
         }
       },
@@ -15288,6 +15292,7 @@
           "description": "Override the default translation ids",
           "type": "(id: ListBoxFieldTranslationId) => string",
           "typeSource": "jsdoc",
+          "value": "(id) => defaultTranslations[id]",
           "defaultValue": {
             "raw": "(id) => defaultTranslations[id]",
             "kind": "function"
@@ -15684,6 +15689,7 @@
           "description": "Override the default translation ids",
           "type": "(id: ListBoxMenuIconTranslationId) => string",
           "typeSource": "jsdoc",
+          "value": "(id) => defaultTranslations[id]",
           "defaultValue": {
             "raw": "(id) => defaultTranslations[id]",
             "kind": "function"
@@ -15992,6 +15998,7 @@
           "description": "Override the default translation ids",
           "type": "(id: ListBoxSelectionTranslationId) => string",
           "typeSource": "jsdoc",
+          "value": "(id) => defaultTranslations[id]",
           "defaultValue": {
             "raw": "(id) => defaultTranslations[id]",
             "kind": "function"
@@ -17698,6 +17705,7 @@
           "description": "Override the display of a multiselect item",
           "type": "(item: MultiSelectItem) => string",
           "typeSource": "jsdoc",
+          "value": "(item) => item.text || item.id",
           "defaultValue": {
             "raw": "(item) => item.text || item.id",
             "kind": "function"
@@ -17919,6 +17927,7 @@
           "description": "Override the filtering logic\nThe default filtering is an exact string comparison",
           "type": "(item: MultiSelectItem, value: string) => string",
           "typeSource": "jsdoc",
+          "value": "(item, value) => item.text.toLowerCase().includes(value.toLowerCase())",
           "defaultValue": {
             "raw": "(item, value) => item.text.toLowerCase().includes(value.toLowerCase())",
             "kind": "function"
@@ -18057,6 +18066,7 @@
           "description": "Override the sorting logic\nThe default sorting compare the item text value",
           "type": "((a: MultiSelectItem, b: MultiSelectItem) => MultiSelectItem) | (() => void)",
           "typeSource": "jsdoc",
+          "value": "(a, b) => a.text.localeCompare(b.text, locale, { numeric: true })",
           "defaultValue": {
             "raw": "(a, b) => a.text.localeCompare(b.text, locale, { numeric: true })",
             "kind": "function"
@@ -19583,6 +19593,7 @@
           "description": "Override the default translation ids",
           "type": "(id: NumberInputTranslationId) => string",
           "typeSource": "jsdoc",
+          "value": "(id) => defaultTranslations[id]",
           "defaultValue": {
             "raw": "(id) => defaultTranslations[id]",
             "kind": "function"
@@ -21254,6 +21265,7 @@
           "description": "Override the item text",
           "type": "(min: number, max: number) => string",
           "typeSource": "jsdoc",
+          "value": "(min, max) => `${min}–${max} items`",
           "defaultValue": {
             "raw": "(min, max) => `${min}–${max} items`",
             "kind": "function"
@@ -21280,6 +21292,7 @@
           "description": "Override the item range text",
           "type": "(min: number, max: number, total: number) => string",
           "typeSource": "jsdoc",
+          "value": "(min, max, total) => `${min}–${max} of ${total} items`",
           "defaultValue": {
             "raw": "(min, max, total) => `${min}–${max} of ${total} items`",
             "kind": "function"
@@ -21448,6 +21461,7 @@
           "description": "Override the page text",
           "type": "(page: number) => string",
           "typeSource": "jsdoc",
+          "value": "(page) => `page ${page}`",
           "defaultValue": {
             "raw": "(page) => `page ${page}`",
             "kind": "function"
@@ -21474,6 +21488,7 @@
           "description": "Override the page range text",
           "type": "(current: number, total: number) => string",
           "typeSource": "jsdoc",
+          "value": "(_current, total) => `of ${total} page${total === 1 ? \"\" : \"s\"}`",
           "defaultValue": {
             "raw": "(_current, total) => `of ${total} page${total === 1 ? \"\" : \"s\"}`",
             "kind": "function"
@@ -30577,6 +30592,7 @@
           "description": "Override the default id translations",
           "type": "() => string",
           "typeSource": "jsdoc",
+          "value": "() => \"\"",
           "defaultValue": {
             "raw": "() => \"\"",
             "kind": "function"
@@ -35780,6 +35796,7 @@
           "description": "Override the total items selected text",
           "type": "(totalSelected: number) => string",
           "typeSource": "jsdoc",
+          "value": "(totalSelected) => `${totalSelected} item${totalSelected === 1 ? \"\" : \"s\"} selected`",
           "defaultValue": {
             "raw": "(totalSelected) => `${totalSelected} item${totalSelected === 1 ? \"\" : \"s\"} selected`",
             "kind": "function"
