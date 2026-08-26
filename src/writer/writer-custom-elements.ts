@@ -20,9 +20,10 @@ export type {
 } from "./writer-custom-elements-core";
 
 export interface WriteCustomElementsOptions {
+  /** @internal Resolved from `entry` and always injected by the caller (`plugin.ts`); not user-configurable via `customElementsOptions`. */
   inputDir: string;
   outFile: string;
-  /** Report the resolved path instead of writing. Set by `sveld --dry-run`. */
+  /** @internal Report the resolved path instead of writing. Always set by the caller from `sveld --dry-run`. */
   dryRun?: boolean;
 }
 

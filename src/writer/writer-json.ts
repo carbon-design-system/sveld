@@ -8,13 +8,19 @@ import { buildComponentApiDocument, type ComponentApiDocument } from "./document
 import Writer from "./Writer";
 
 export interface WriteJsonOptions {
+  /** @internal Unused by this writer; kept for backward compatibility. Always set by the caller. */
   input: string;
+  /** @internal Resolved from `entry` and always injected by the caller (`plugin.ts`); not user-configurable via `jsonOptions`. */
   inputDir: string;
   outFile: string;
   outDir?: string;
-  /** Entry-barrel exports when `documentExports` is on. */
+  /**
+   * @internal Entry-barrel exports when `documentExports` is on. Always
+   * computed from the parsed bundle and injected by the caller; setting it
+   * via `jsonOptions` has no effect.
+   */
   entryExports?: EntryExports;
-  /** Report resolved paths instead of writing. Set by `sveld --dry-run`. */
+  /** @internal Report resolved paths instead of writing. Always set by the caller from `sveld --dry-run`. */
   dryRun?: boolean;
 }
 

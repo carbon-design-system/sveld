@@ -38,10 +38,12 @@ export {
  */
 export interface WriteTsDefinitionsOptions extends WriteTsDefinitionOptions {
   outDir: string;
+  /** @internal Resolved from `entry` and always injected by the caller (`plugin.ts`); not user-configurable via `typesOptions`. */
   inputDir: string;
   preamble: string;
+  /** @internal Always computed from the parsed bundle and injected by the caller; not user-configurable via `typesOptions`. */
   exports: ParsedExports;
-  /** Report resolved paths instead of writing. Set by `sveld --dry-run`. */
+  /** @internal Report resolved paths instead of writing. Always set by the caller from `sveld --dry-run`. */
   dryRun?: boolean;
   /**
    * @internal Reuses generated `.d.ts` text across runs for components whose
