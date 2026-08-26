@@ -708,14 +708,22 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
 - **`glob`** (boolean, optional): Enable glob mode to analyze all `*.svelte` files.
 - **`documentExports`** (boolean, optional): Include consts, functions, and types from the entry barrel in JSON (`exports`) and Markdown ("Exports"). Off by default. See [Documenting Entry Exports](#documenting-entry-exports).
 - **`types`** (boolean, optional, default: `true`): Generate TypeScript definitions.
-- **`typesOptions`** (object, optional): Options for TypeScript definition generation, including `outDir`, `preamble`, and `format`.
+- **`typesOptions`** (object, optional): Options for TypeScript definition generation.
+  - **`outDir`** (string, optional, default: `"types"`): Output directory for generated `.d.ts` files, relative to the project root.
+  - **`preamble`** (string, optional, default: `""`): Raw text prepended to the top of the generated `index.d.ts` barrel file, before the `export * from "./..."` lines. Useful for license headers or lint-disable comments. See [`typesOptions.preamble`](#typesoptionspreamble) below.
   - **`format`** (`"class"` | `"component"`, optional, default: `"class"`): `.d.ts` output shape. `"class"` extends `SvelteComponentTyped`; `"component"` emits the Svelte 5 `Component` type. Also available as `--types-format`. See [`.d.ts` output format](#dts-output-format-typesoptionsformat).
 - **`json`** (boolean, optional): Generate component documentation in JSON format.
 - **`jsonOptions`** (object, optional): Options for JSON output.
+  - **`outFile`** (string, optional, default: `"COMPONENT_API.json"`): Path (relative to the project root) for the single combined JSON document. Ignored when `outDir` is set.
+  - **`outDir`** (string, optional): Emit one JSON file per component (`<ComponentName>.api.json`) into this directory instead of a single combined file. See [`jsonOptions.outDir`](#jsonoptionsoutdir).
 - **`markdown`** (boolean, optional): Generate component documentation in Markdown format.
 - **`markdownOptions`** (object, optional): Options for Markdown output.
+  - **`outFile`** (string, optional, default: `"COMPONENT_INDEX.md"`): Path (relative to the project root) for the generated Markdown file.
+  - **`write`** (boolean, optional, default: `true`): Set to `false` to render the Markdown document without writing it to disk.
+  - **`onAppend`** (function, optional): Callback invoked every time a heading, quote, paragraph, divider, or raw block is appended to the document. Lets you inject extra content, e.g. a summary line under the title. See [`markdownOptions.onAppend`](#markdownoptionsonappend) below.
 - **`customElements`** (boolean, optional): Generate a [Custom Elements Manifest](#custom-elements-manifest) (`custom-elements.json`). Also available as the `--custom-elements` CLI flag.
-- **`customElementsOptions`** (object, optional): Options for Custom Elements Manifest output, including `outFile`.
+- **`customElementsOptions`** (object, optional): Options for Custom Elements Manifest output.
+  - **`outFile`** (string, optional, default: `"custom-elements.json"`): Path (relative to the project root) for the generated manifest file.
 - **`watch`** (boolean, optional, default: `false`): Regenerate output incrementally when `.svelte` source changes during `vite dev` / `vite build --watch`. Only the changed component and the components that depend on it via [`@extendProps`](#extendprops) / `@extends` are re-parsed, rather than rebuilding every component. Without this option, the plugin only runs during `vite build`.
 - **`failFast`** (boolean, optional, default: `false`): Abort the entire run when a single component fails to parse. By default, parse failures are collected as diagnostics (and reported to `stderr`) so the remaining components still emit their output. Also available as the `--fail-fast` CLI flag.
 - **`resolveTypes`** (boolean, optional, default: `false`): Load the TypeScript program to expand opaque imported whole-object `$props()` types into JSON. Also available as `--resolve-types` (`--resolveTypes` remains as a deprecated alias). See [Opt-in semantic resolution](#opt-in-semantic-resolution-resolvetypes).
@@ -736,6 +744,56 @@ sveld({
 +  markdown: true,
 +  json: true,
 })
+```
+
+#### `typesOptions.preamble`
+
+Use `typesOptions.preamble` to prepend raw text to the generated `types/index.d.ts` barrel file — for example, a license header that should ship with every published `.d.ts` file.
+
+```js
+sveld({
+  types: true,
+  typesOptions: {
+    preamble: "// Copyright (c) 2026 Acme Inc. All rights reserved.\n\n",
+  },
+});
+```
+
+```ts
+// types/index.d.ts
+// Copyright (c) 2026 Acme Inc. All rights reserved.
+
+export { default as Button } from "./Button.svelte";
+```
+
+`preamble` only affects the barrel file (`index.d.ts`); per-component `.d.ts` files are untouched.
+
+#### `markdownOptions.onAppend`
+
+`markdownOptions.onAppend` fires on every heading, quote, paragraph, divider, and raw block written to the Markdown document, and receives the block's `type`, the in-progress `WriterMarkdown` document, and the full component map. Use it to inject extra content, e.g. a summary line under the `h1` title.
+
+```js
+import pkg from "./package.json" with { type: "json" };
+
+sveld({
+  markdown: true,
+  markdownOptions: {
+    onAppend: (type, document, components) => {
+      if (type === "h1") {
+        document.append(
+          "quote",
+          `${components.size} components exported from ${pkg.name}@${pkg.version}.`,
+        );
+      }
+    },
+  },
+});
+```
+
+```md
+# Component Index
+
+> 1 components exported from sveld-scratch@1.0.0.
 ```
 
 ## Documenting Entry Exports
