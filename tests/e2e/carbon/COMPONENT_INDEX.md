@@ -608,7 +608,7 @@ export interface ComboBoxItem { id: string; text: string; }
 | value | No | <code>let</code> | Yes | -- | <code>string</code> | <code>""</code> | Specify the selected combobox value |
 | selectedIndex | No | <code>let</code> | Yes | -- | <code>number</code> | <code>-1</code> | Set the selected item by value index |
 | items | No | <code>let</code> | No | -- | <code>ComboBoxItem[]</code> | <code>[]</code> | Set the combobox items |
-| itemToString | No | <code>let</code> | No | -- | <code>(item: ComboBoxItem) => string</code> | -- | Override the display of a combobox item |
+| itemToString | No | <code>let</code> | No | -- | <code>(item: ComboBoxItem) => string</code> | <code>(item) => item.text &#124;&#124; item.id</code> | Override the display of a combobox item |
 | size | No | <code>let</code> | No | -- | <code>"sm" &#124; "xl"</code> | <code>undefined</code> | Set the size of the combobox |
 | disabled | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to disable the combobox |
 | titleText | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the title text of the combobox |
@@ -617,7 +617,7 @@ export interface ComboBoxItem { id: string; text: string; }
 | invalidText | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the invalid state text |
 | invalid | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to indicate an invalid state |
 | light | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to enable the light variant |
-| shouldFilterItem | No | <code>let</code> | No | -- | <code>(item: ComboBoxItem, value: string) => boolean</code> | -- | Determine if an item should be filtered given the current combobox value |
+| shouldFilterItem | No | <code>let</code> | No | -- | <code>(item: ComboBoxItem, value: string) => boolean</code> | <code>() => true</code> | Determine if an item should be filtered given the current combobox value |
 | translateWithId | No | <code>let</code> | No | -- | <code>(id: any) => string</code> | <code>undefined</code> | Override the default translation ids |
 | id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the list box component |
 | name | No | <code>let</code> | No | -- | <code>string</code> | <code>undefined</code> | Specify a name attribute for the input |
@@ -968,7 +968,7 @@ export interface DropdownItem { id: DropdownItemId; text: DropdownItemText; }
 | open | No | <code>let</code> | Yes | -- | <code>boolean</code> | <code>false</code> | Set to `true` to open the dropdown |
 | selectedIndex | No | <code>let</code> | Yes | -- | <code>number</code> | <code>-1</code> | Specify the selected item index |
 | items | No | <code>let</code> | No | -- | <code>DropdownItem[]</code> | <code>[]</code> | Set the dropdown items |
-| itemToString | No | <code>let</code> | No | -- | <code>(item: DropdownItem) => string</code> | -- | Override the display of a dropdown item<br />@required |
+| itemToString | No | <code>let</code> | No | -- | <code>(item: DropdownItem) => string</code> | <code>(item) => item.text &#124;&#124; item.id</code> | Override the display of a dropdown item<br />@required |
 | type | No | <code>let</code> | No | -- | <code>"default" &#124; "inline"</code> | <code>"default"</code> | Specify the type of dropdown |
 | size | No | <code>let</code> | No | -- | <code>"sm" &#124; "lg" &#124; "xl"</code> | <code>undefined</code> | Specify the size of the dropdown field |
 | light | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to enable the light variant |
@@ -1145,7 +1145,7 @@ None.
 | ref | No | <code>let</code> | Yes | -- | <code>null &#124; HTMLInputElement</code> | <code>null</code> | Obtain a reference to the input HTML element |
 | accept | No | <code>let</code> | No | -- | <code>string[]</code> | <code>[]</code> | Specify the accepted file types |
 | multiple | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to allow multiple files |
-| validateFiles | No | <code>let</code> | No | -- | <code>(files: FileList) => FileList</code> | -- | Override the default behavior of validating uploaded files<br />The default behavior does not validate files |
+| validateFiles | No | <code>let</code> | No | -- | <code>(files: FileList) => FileList</code> | <code>(files) => files</code> | Override the default behavior of validating uploaded files<br />The default behavior does not validate files |
 | labelText | No | <code>let</code> | No | -- | <code>string</code> | <code>"Add file"</code> | Specify the label text |
 | role | No | <code>let</code> | No | -- | <code>string</code> | <code>"button"</code> | Specify the `role` attribute of the drop container |
 | disabled | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to disable the input |
@@ -1829,7 +1829,7 @@ export type ListBoxFieldTranslationId = "close" | "open";
 | role | No | <code>let</code> | No | -- | <code>string</code> | <code>"combobox"</code> | Specify the role attribute |
 | tabindex | No | <code>let</code> | No | -- | <code>string</code> | <code>"-1"</code> | Specify the tabindex |
 | translationIds | No | <code>const</code> | No | -- | <code>{ close: "close", open: "open" }</code> | <code>{ close: "close", open: "open" }</code> | Default translation ids |
-| translateWithId | No | <code>let</code> | No | -- | <code>(id: ListBoxFieldTranslationId) => string</code> | -- | Override the default translation ids |
+| translateWithId | No | <code>let</code> | No | -- | <code>(id: ListBoxFieldTranslationId) => string</code> | <code>(id) => defaultTranslations[id]</code> | Override the default translation ids |
 | id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the top-level element |
 
 ### Slots
@@ -1884,7 +1884,7 @@ export type ListBoxMenuIconTranslationId = "close" | "open";
 | :- | :- | :- | :- | :- | :- | :- | :- |
 | open | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to open the list box menu icon |
 | translationIds | No | <code>const</code> | No | -- | <code>{ close: "close", open: "open" }</code> | <code>{ close: "close", open: "open" }</code> | Default translation ids |
-| translateWithId | No | <code>let</code> | No | -- | <code>(id: ListBoxMenuIconTranslationId) => string</code> | -- | Override the default translation ids |
+| translateWithId | No | <code>let</code> | No | -- | <code>(id: ListBoxMenuIconTranslationId) => string</code> | <code>(id) => defaultTranslations[id]</code> | Override the default translation ids |
 
 ### Slots
 
@@ -1935,7 +1935,7 @@ export type ListBoxSelectionTranslationId = "clearAll" | "clearSelection";
 | selectionCount | No | <code>let</code> | No | -- | <code>any</code> | <code>undefined</code> | Specify the number of selected items |
 | disabled | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to disable the list box selection |
 | translationIds | No | <code>const</code> | No | -- | <code>{     clearAll: "clearAll",     clearSelection: "clearSelection",   }</code> | <code>{     clearAll: "clearAll",     clearSelection: "clearSelection",   }</code> | Default translation ids |
-| translateWithId | No | <code>let</code> | No | -- | <code>(id: ListBoxSelectionTranslationId) => string</code> | -- | Override the default translation ids |
+| translateWithId | No | <code>let</code> | No | -- | <code>(id: ListBoxSelectionTranslationId) => string</code> | <code>(id) => defaultTranslations[id]</code> | Override the default translation ids |
 
 ### Slots
 
@@ -2124,17 +2124,17 @@ export interface MultiSelectItem { id: MultiSelectItemId; text: MultiSelectItemT
 | value | No | <code>let</code> | Yes | -- | <code>string</code> | <code>""</code> | Specify the multiselect value |
 | selectedIds | No | <code>let</code> | Yes | -- | <code>MultiSelectItemId[]</code> | <code>[]</code> | Set the selected ids |
 | items | No | <code>let</code> | Yes | -- | <code>MultiSelectItem[]</code> | <code>[]</code> | Set the multiselect items |
-| itemToString | No | <code>let</code> | No | -- | <code>(item: MultiSelectItem) => string</code> | -- | Override the display of a multiselect item |
+| itemToString | No | <code>let</code> | No | -- | <code>(item: MultiSelectItem) => string</code> | <code>(item) => item.text &#124;&#124; item.id</code> | Override the display of a multiselect item |
 | size | No | <code>let</code> | No | -- | <code>"sm" &#124; "lg" &#124; "xl"</code> | <code>undefined</code> | Set the size of the combobox |
 | type | No | <code>let</code> | No | -- | <code>"default" &#124; "inline"</code> | <code>"default"</code> | Specify the type of multiselect |
 | selectionFeedback | No | <code>let</code> | No | -- | <code>"top" &#124; "fixed" &#124; "top-after-reopen"</code> | <code>"top-after-reopen"</code> | Specify the selection feedback after selecting items |
 | disabled | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to disable the dropdown |
 | filterable | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to filter items |
-| filterItem | No | <code>let</code> | No | -- | <code>(item: MultiSelectItem, value: string) => string</code> | -- | Override the filtering logic<br />The default filtering is an exact string comparison |
+| filterItem | No | <code>let</code> | No | -- | <code>(item: MultiSelectItem, value: string) => string</code> | <code>(item, value) => item.text.toLowerCase().includes(value.toLowerCase())</code> | Override the filtering logic<br />The default filtering is an exact string comparison |
 | light | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to enable the light variant |
 | locale | No | <code>let</code> | No | -- | <code>string</code> | <code>"en"</code> | Specify the locale |
 | placeholder | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the placeholder text |
-| sortItem | No | <code>let</code> | No | -- | <code>((a: MultiSelectItem, b: MultiSelectItem) => MultiSelectItem) &#124; (() => void)</code> | -- | Override the sorting logic<br />The default sorting compare the item text value |
+| sortItem | No | <code>let</code> | No | -- | <code>((a: MultiSelectItem, b: MultiSelectItem) => MultiSelectItem) &#124; (() => void)</code> | <code>(a, b) => a.text.localeCompare(b.text, locale, { numeric: true })</code> | Override the sorting logic<br />The default sorting compare the item text value |
 | translateWithId | No | <code>let</code> | No | -- | <code>(id: any) => string</code> | <code>undefined</code> | Override the default translation ids |
 | titleText | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the title text |
 | useTitleInItem | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to pass the item to `itemToString` in the checkbox |
@@ -2276,7 +2276,7 @@ export type NumberInputTranslationId = "increment" | "decrement";
 | helperText | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the helper text |
 | label | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the label text |
 | hideLabel | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to visually hide the label text |
-| translateWithId | No | <code>let</code> | No | -- | <code>(id: NumberInputTranslationId) => string</code> | -- | Override the default translation ids |
+| translateWithId | No | <code>let</code> | No | -- | <code>(id: NumberInputTranslationId) => string</code> | <code>(id) => defaultTranslations[id]</code> | Override the default translation ids |
 | translationIds | No | <code>const</code> | No | -- | <code>{ increment: "increment"; decrement: "decrement" }</code> | <code>{     increment: "increment",     decrement: "decrement",   }</code> | Default translation ids |
 | id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the input element |
 | name | No | <code>let</code> | No | -- | <code>string</code> | <code>undefined</code> | Specify a name attribute for the input |
@@ -2443,14 +2443,14 @@ None.
 | forwardText | No | <code>let</code> | No | -- | <code>string</code> | <code>"Next page"</code> | Specify the forward button text |
 | backwardText | No | <code>let</code> | No | -- | <code>string</code> | <code>"Previous page"</code> | Specify the backward button text |
 | itemsPerPageText | No | <code>let</code> | No | -- | <code>string</code> | <code>"Items per page:"</code> | Specify the items per page text |
-| itemText | No | <code>let</code> | No | -- | <code>(min: number, max: number) => string</code> | -- | Override the item text |
-| itemRangeText | No | <code>let</code> | No | -- | <code>(min: number, max: number, total: number) => string</code> | -- | Override the item range text |
+| itemText | No | <code>let</code> | No | -- | <code>(min: number, max: number) => string</code> | <code>(min, max) => \`${min}–${max} items\`</code> | Override the item text |
+| itemRangeText | No | <code>let</code> | No | -- | <code>(min: number, max: number, total: number) => string</code> | <code>(min, max, total) => \`${min}–${max} of ${total} items\`</code> | Override the item range text |
 | pageInputDisabled | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to disable the page input |
 | pageSizeInputDisabled | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to disable the page size input |
 | pageSizes | No | <code>let</code> | No | -- | <code>number[]</code> | <code>[10]</code> | Specify the available page sizes |
 | pagesUnknown | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` if the number of pages is unknown |
-| pageText | No | <code>let</code> | No | -- | <code>(page: number) => string</code> | -- | Override the page text |
-| pageRangeText | No | <code>let</code> | No | -- | <code>(current: number, total: number) => string</code> | -- | Override the page range text |
+| pageText | No | <code>let</code> | No | -- | <code>(page: number) => string</code> | <code>(page) => \`page ${page}\`</code> | Override the page text |
+| pageRangeText | No | <code>let</code> | No | -- | <code>(current: number, total: number) => string</code> | <code>(_current, total) => \`of ${total} page${total === 1 ? "" : "s"}\`</code> | Override the page range text |
 | id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the top-level element |
 
 ### Slots
@@ -3513,7 +3513,7 @@ None.
 | Prop name | Required | Kind | Reactive | Binding | Type | Default value | Description |
 | :- | :- | :- | :- | :- | :- | :- | :- |
 | scope | No | <code>let</code> | No | -- | <code>string</code> | <code>"col"</code> | Specify the `scope` attribute |
-| translateWithId | No | <code>let</code> | No | -- | <code>() => string</code> | -- | Override the default id translations |
+| translateWithId | No | <code>let</code> | No | -- | <code>() => string</code> | <code>() => ""</code> | Override the default id translations |
 | id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the top-level element |
 
 ### Slots
@@ -4052,7 +4052,7 @@ None.
 
 | Prop name | Required | Kind | Reactive | Binding | Type | Default value | Description |
 | :- | :- | :- | :- | :- | :- | :- | :- |
-| formatTotalSelected | No | <code>let</code> | No | -- | <code>(totalSelected: number) => string</code> | -- | Override the total items selected text |
+| formatTotalSelected | No | <code>let</code> | No | -- | <code>(totalSelected: number) => string</code> | <code>(totalSelected) => \`${totalSelected} item${totalSelected === 1 ? "" : "s"} selected\`</code> | Override the total items selected text |
 
 ### Slots
 

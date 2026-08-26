@@ -6,6 +6,7 @@ type $RestProps = SvelteHTMLElements["div"];
 type $Props = {
   /**
    * Override the total items selected text
+   * @default (totalSelected) => `${totalSelected} item${totalSelected === 1 ? "" : "s"} selected`
    */
   formatTotalSelected?: (totalSelected: number) => string;
 
