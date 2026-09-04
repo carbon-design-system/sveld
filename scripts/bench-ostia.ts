@@ -1,8 +1,8 @@
 /**
- * Statistically rigorous microbenchmarks for sveld's hot paths, using mitata
- * (warmup, batching, outlier-aware percentiles) rather than the wall-clock
- * medians in `scripts/bench.ts` (which times the full pipeline / stages of
- * one real invocation instead of many statistically-sampled iterations).
+ * Statistically rigorous microbenchmarks for sveld's hot paths, using ostia
+ * (warmup, batching, outlier-aware stats) rather than the wall-clock medians
+ * in `scripts/bench.ts` (which times the full pipeline / stages of one real
+ * invocation instead of many statistically-sampled iterations).
  *
  * Covers, from a real fixture (the carbon e2e fixture, ~160 components):
  *   - parse: parseSvelteComponent on a small/medium/large real component
@@ -26,18 +26,19 @@
  * `readCacheFile`) — both are one-shot per run, not per-file hot paths.
  *
  * Usage:
- *   bun run bench:mitata
- *   bun run bench:mitata --filter parse   # mitata's built-in name filter (regex)
+ *   bun run bench:ostia
+ *   bun run bench:ostia -- --time-budget 1000 --min-samples 50
+ *   bun run bench:ostia -- --filter parse   # ostia's name filter (regex, substring match)
  *
  * To establish a baseline and check whether a change actually helped:
- *   bun run bench:mitata > /tmp/before.txt
+ *   bun run bench:ostia > /tmp/before.txt
  *   ...make a change...
- *   bun run bench:mitata > /tmp/after.txt
+ *   bun run bench:ostia > /tmp/after.txt
  *   diff /tmp/before.txt /tmp/after.txt
  */
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { bench, do_not_optimize, group, run } from "mitata";
+import { group, task } from "ostia";
 import { generateBundle } from "../src/bundle";
 import { setQuiet } from "../src/logger";
 import { hashSource, ParseCache } from "../src/parse-cache";
@@ -132,25 +133,21 @@ const pathologicalSource = buildPathologicalComponent(200, 20);
 
 group("parse: single component", () => {
   for (const [size, sample] of Object.entries(SAMPLES)) {
-    bench(`parseSvelteComponent (${size}, ${sample.moduleName})`, () => {
+    task(`parseSvelteComponent (${size}, ${sample.moduleName})`, () => {
       const parser = new ComponentParser();
-      do_not_optimize(
-        parser.parseSvelteComponent(sources[size as keyof typeof SAMPLES], {
-          moduleName: sample.moduleName,
-          filePath: sample.file,
-        }),
-      );
+      return parser.parseSvelteComponent(sources[size as keyof typeof SAMPLES], {
+        moduleName: sample.moduleName,
+        filePath: sample.file,
+      });
     });
   }
 
-  bench("parseSvelteComponent (pathological, 200 wide-union props)", () => {
+  task("parseSvelteComponent (pathological, 200 wide-union props)", () => {
     const parser = new ComponentParser();
-    do_not_optimize(
-      parser.parseSvelteComponent(pathologicalSource, {
-        moduleName: "Pathological",
-        filePath: pathologicalFilePath,
-      }),
-    );
+    return parser.parseSvelteComponent(pathologicalSource, {
+      moduleName: "Pathological",
+      filePath: pathologicalFilePath,
+    });
   });
 });
 
@@ -162,14 +159,14 @@ const templateHeavySource = buildTemplateHeavyComponent(150, 8);
 
 group("parse: template parser only (src/template-parse/)", () => {
   for (const [size, sample] of Object.entries(SAMPLES)) {
-    bench(`parse [template-parse] (${size}, ${sample.moduleName})`, () => {
-      do_not_optimize(parseTemplate(sources[size as keyof typeof SAMPLES]));
-    });
+    task(`parse [template-parse] (${size}, ${sample.moduleName})`, () =>
+      parseTemplate(sources[size as keyof typeof SAMPLES]),
+    );
   }
 
-  bench("parse [template-parse] (markup-heavy, 150 elements x 8 nested blocks)", () => {
-    do_not_optimize(parseTemplate(templateHeavySource));
-  });
+  task("parse [template-parse] (markup-heavy, 150 elements x 8 nested blocks)", () =>
+    parseTemplate(templateHeavySource),
+  );
 });
 
 // Run the real pipeline once (quietly) to source real ComponentDocApi
@@ -199,25 +196,21 @@ const pathologicalDoc = buildComponentApiDocument(new Map([[pathologicalFilePath
 group("write: types (single component)", () => {
   for (const [size, doc] of Object.entries(docsBySize)) {
     if (!doc) continue;
-    bench(`writeTsDefinition (${size}, ${doc.moduleName})`, () => {
-      do_not_optimize(writeTsDefinition(doc));
-    });
+    task(`writeTsDefinition (${size}, ${doc.moduleName})`, () => writeTsDefinition(doc));
   }
 
   if (pathologicalDoc) {
-    bench("writeTsDefinition (pathological, 200 wide-union props)", () => {
-      do_not_optimize(writeTsDefinition(pathologicalDoc));
-    });
+    task("writeTsDefinition (pathological, 200 wide-union props)", () => writeTsDefinition(pathologicalDoc));
   }
 });
 
 group("write: document model", () => {
-  bench(`buildComponentApiDocument (${document.components.length} components)`, () => {
+  task(`buildComponentApiDocument (${document.components.length} components)`, () => {
     // buildComponentApiDocument caches by `components` Map identity; wrap the
     // same entries in a fresh Map each iteration so this measures the real
     // sort/strip cost instead of a cache hit after the first sample.
     const fresh = new Map(pipelineResult.allComponentsForTypes);
-    do_not_optimize(buildComponentApiDocument(fresh));
+    return buildComponentApiDocument(fresh);
   });
 });
 
@@ -226,50 +219,38 @@ group("write: document model", () => {
 // this measures the same render cost as a real run without touching disk.
 const inputDir = dirname(ENTRY);
 group("write: json/markdown (full fixture)", () => {
-  bench(`renderJsonDocument (${document.components.length} components)`, () => {
-    do_not_optimize(
-      renderJsonDocument(pipelineResult.components, { inputDir, entryExports: pipelineResult.entryExports }),
-    );
-  });
+  task(`renderJsonDocument (${document.components.length} components)`, () =>
+    renderJsonDocument(pipelineResult.components, { inputDir, entryExports: pipelineResult.entryExports }),
+  );
 
-  bench(`renderMarkdownDocument (${document.components.length} components)`, () => {
-    do_not_optimize(renderMarkdownDocument(pipelineResult.components, { entryExports: pipelineResult.entryExports }));
-  });
+  task(`renderMarkdownDocument (${document.components.length} components)`, () =>
+    renderMarkdownDocument(pipelineResult.components, { entryExports: pipelineResult.entryExports }),
+  );
 });
 
 // hashSource runs once per file on every invocation (parse-cache hit or not),
 // so its cost scales with fixture size regardless of cache state.
 group("cache: hashSource", () => {
   for (const [size, source] of Object.entries(sources)) {
-    bench(`hashSource (${size})`, () => {
-      do_not_optimize(hashSource(source));
-    });
+    task(`hashSource (${size})`, () => hashSource(source));
   }
 });
 
 group("cache: ParseCache.get", () => {
-  const warmCache = new ParseCache(join(FIXTURE_DIR, ".bench-mitata-cache.json"));
+  const warmCache = new ParseCache(join(FIXTURE_DIR, ".bench-ostia-cache.json"));
   const hitPath = SAMPLES.medium.file;
   const hitHash = hashSource(sources.medium);
   warmCache.set(hitPath, hitHash, pipelineResult.allComponentsForTypes.get(hitPath) ?? pathologicalParsed);
 
-  bench("get (hit)", () => {
-    do_not_optimize(warmCache.get(hitPath, hitHash));
-  });
+  task("get (hit)", () => warmCache.get(hitPath, hitHash));
 
-  bench("get (miss, unknown path)", () => {
-    do_not_optimize(warmCache.get("/nonexistent/path.svelte", hitHash));
-  });
+  task("get (miss, unknown path)", () => warmCache.get("/nonexistent/path.svelte", hitHash));
 
-  bench("get (miss, stale hash)", () => {
-    do_not_optimize(warmCache.get(hitPath, "stale-hash"));
-  });
+  task("get (miss, stale hash)", () => warmCache.get(hitPath, "stale-hash"));
 });
 
 group("pipeline: full carbon fixture", () => {
-  bench(`generateBundle (${document.components.length} components, no cache)`, async () => {
-    do_not_optimize(await generateBundle(ENTRY, true, { cache: false }));
-  });
+  task(`generateBundle (${document.components.length} components, no cache)`, () =>
+    generateBundle(ENTRY, true, { cache: false }),
+  );
 });
-
-await run();
