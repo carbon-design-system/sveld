@@ -41,7 +41,7 @@
     "acorn": "^8.18.0",
     "culls": "^0.2.0",
     "estree-walker": "^3.0.3",
-    "ostia": "^0.1.7",
+    "ostia": "0.2.0",
     "svelte": "^5.56.10",
     "typescript": "^7.0.2",
     "zimmerframe": "1.1.4"

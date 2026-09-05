@@ -27,7 +27,7 @@
  *
  * Usage:
  *   bun run bench:ostia
- *   bun run bench:ostia -- --time-budget 1000 --min-samples 50
+ *   bun run bench:ostia -- --budget 1000 --min-samples 50
  *   bun run bench:ostia -- --filter parse   # ostia's name filter (regex, substring match)
  *
  * To establish a baseline and check whether a change actually helped:
