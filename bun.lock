@@ -13,7 +13,7 @@
         "acorn": "^8.18.0",
         "culls": "^0.2.0",
         "estree-walker": "^3.0.3",
-        "ostia": "^0.1.3",
+        "ostia": "^0.1.7",
         "svelte": "^5.56.10",
         "typescript": "^7.0.2",
         "zimmerframe": "1.1.4",
@@ -193,7 +193,7 @@
 
     "magic-string": ["magic-string@0.30.21", "", { "dependencies": { "@jridgewell/sourcemap-codec": "^1.5.5" } }, "sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ=="],
 
-    "ostia": ["ostia@0.1.3", "", { "bin": { "ostia": "cli.js" } }, "sha512-Z0+oyEVk20s6UCM6D2heavwB8kLfMG+qhwr0ZN1KB/Cp4Syt95aLiWyku/Oq16X72mau7OGvqAUDciHLr0YrAg=="],
+    "ostia": ["ostia@0.1.7", "", { "bin": { "ostia": "cli.js" } }, "sha512-TVrDTh9H/1xzROyNYQONNfIyT9w8Ki/1RDhJ3Awj8KB0tN8Qbnktqwt0cdElQLiP3TFuq6sTJ4XjTZS05PIDhg=="],
 
     "picocolors": ["picocolors@1.1.1", "", {}, "sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA=="],
 
