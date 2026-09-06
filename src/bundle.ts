@@ -183,10 +183,17 @@ interface GlobbedComponentSource {
  * against symlink cycles via a set of visited real paths. Tolerates a
  * missing `dir` (returns no matches) instead of throwing.
  */
-function findSvelteFiles(dir: string, results: string[] = [], visited = new Set<string>()): string[] {
+function findSvelteFiles(
+  dir: string,
+  results: string[] = [],
+  visited = new Set<string>(),
+  /** `dir`'s real path when the caller already knows it (see the recursion below). */
+  knownRealDir?: string,
+): string[] {
   let entries: Dirent[];
+  let real: string;
   try {
-    const real = realpathSync(dir);
+    real = knownRealDir ?? realpathSync(dir);
     if (visited.has(real)) return results;
     visited.add(real);
     entries = readdirSync(dir, { withFileTypes: true });
@@ -197,11 +204,15 @@ function findSvelteFiles(dir: string, results: string[] = [], visited = new Set<
   for (const entry of entries) {
     if (entry.name.startsWith(".")) continue;
     const entryPath = join(dir, entry.name);
-    const stat = entry.isSymbolicLink() ? statSync(entryPath, { throwIfNoEntry: false }) : entry;
+    const isSymbolicLink = entry.isSymbolicLink();
+    const stat = isSymbolicLink ? statSync(entryPath, { throwIfNoEntry: false }) : entry;
     if (!stat) continue; // Broken symlink.
 
     if (stat.isDirectory()) {
-      findSvelteFiles(entryPath, results, visited);
+      // A non-symlink child of a directory whose real path is `real` has real
+      // path `real/name`: no `realpathSync` syscall needed. Only symlinked
+      // directories can point elsewhere and must be resolved.
+      findSvelteFiles(entryPath, results, visited, isSymbolicLink ? undefined : join(real, entry.name));
     } else if (stat.isFile() && entry.name.endsWith(".svelte")) {
       results.push(entryPath);
     }
@@ -329,8 +340,17 @@ export function collectComponents(input: string, glob: boolean, documentExports 
   const isFile = lstatSync(input).isFile();
   const dir = isFile ? dirname(input) : input;
   const rootDir = resolve(dir);
-  const resolveComponentFilePath: ResolveComponentFilePath = (filePath) =>
-    isAbsolute(filePath) ? resolve(filePath) : resolve(rootDir, filePath);
+  // Memoized: the same `source` is resolved several times per run (glob
+  // merge, file-path collection, per-component processing, cache lookup).
+  const resolvedPaths = new Map<string, string>();
+  const resolveComponentFilePath: ResolveComponentFilePath = (filePath) => {
+    let resolved = resolvedPaths.get(filePath);
+    if (resolved === undefined) {
+      resolved = isAbsolute(filePath) ? resolve(filePath) : resolve(rootDir, filePath);
+      resolvedPaths.set(filePath, resolved);
+    }
+    return resolved;
+  };
 
   /**
    * Only parse exports if input is a file.
