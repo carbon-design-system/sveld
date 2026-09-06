@@ -45,6 +45,7 @@ import {
   createScopeWalkState,
   enterNestedScopeDeclarationNode,
   initComponentScope,
+  isScopeOwner,
   leaveNestedScopeDeclarationNode,
   markReactivePropsFromMutationTarget,
   resolveIdentifierToReactiveProp,
@@ -879,6 +880,10 @@ export default class ComponentParser {
   private static readonly TS_DIRECTIVE_REGEX = /\/\/\s*@ts-[^\n\r]*/g;
 
   private static stripTypeScriptDirectivesFromScripts(source: string): string {
+    // Every directive contains `@ts-`; without it there's nothing to strip,
+    // so skip the script-block regex replace (and the source copy it makes).
+    if (!source.includes("@ts-")) return source;
+
     ComponentParser.SCRIPT_BLOCK_REGEX.lastIndex = 0;
     return source.replace(ComponentParser.SCRIPT_BLOCK_REGEX, (_match, openTag, scriptContent, closeTag) => {
       ComponentParser.TS_DIRECTIVE_REGEX.lastIndex = 0;
@@ -1105,7 +1110,9 @@ export default class ComponentParser {
     let dispatcher_name: undefined | string;
     const hostLocalNames = new Set<string>();
     const hostDispatchedEventNames = new Set<string>();
-    const callees: { name: string; arguments: Array<Expression | unknown>; source?: SourceRange }[] = [];
+    // Source ranges are resolved lazily below: only calls to the dispatcher
+    // need one, and most components' call expressions aren't dispatches.
+    const callees: { name: string; arguments: Array<Expression | unknown>; node: CallExpression }[] = [];
 
     initComponentScope(this, this.ctx);
     this.ctx.activeScopes.push(this.ctx.componentScope);
@@ -1114,12 +1121,16 @@ export default class ComponentParser {
     walk(componentRoot, {
       enter: (node, parent, _prop) => {
         // Fuse scope declaration into this walk (see enterNestedScopeDeclarationNode).
-        enterNestedScopeDeclarationNode(this, this.ctx, scopeWalkState, node);
-
-        const nodeScope = this.ctx.scopeDeclarations.get(node as unknown as object);
+        // Only scope-owner nodes get a scope, so the returned scope is the
+        // same one a `scopeDeclarations.get(node)` lookup would find.
+        const nodeScope = enterNestedScopeDeclarationNode(this, this.ctx, scopeWalkState, node);
         if (nodeScope) {
           this.ctx.activeScopes.push(nodeScope);
         }
+
+        // Svelte template node types aren't in estree's `Node["type"]` union;
+        // read the type once as a plain string for the markup checks below.
+        const type: string = node.type;
 
         if (node.type === "AssignmentExpression") {
           markReactivePropsFromMutationTarget(this.ctx, (node as AssignmentExpression).left);
@@ -1170,7 +1181,7 @@ export default class ComponentParser {
             callees.push({
               name: calleeName,
               arguments: callExpr.arguments,
-              source: sourceRangeFromNode(this.ctx, callExpr),
+              node: callExpr,
             });
           }
 
@@ -1189,7 +1200,7 @@ export default class ComponentParser {
         }
 
         // Svelte spread attribute nodes: `{...$$restProps}` and rest-prop locals.
-        if (node && typeof node === "object" && "type" in node && String(node.type) === "SpreadAttribute") {
+        if (type === "SpreadAttribute") {
           const spreadNode = node as { type: string; expression?: { name?: string } };
           if (
             spreadNode.expression?.name === "$$restProps" ||
@@ -1376,7 +1387,7 @@ export default class ComponentParser {
           });
         }
 
-        if (node && typeof node === "object" && "type" in node && String(node.type) === "Comment") {
+        if (type === "Comment") {
           const commentNode = node as { data?: string };
           const data: string = commentNode?.data?.trim() ?? "";
 
@@ -1386,7 +1397,7 @@ export default class ComponentParser {
           }
         }
 
-        if (node && typeof node === "object" && "type" in node && String(node.type) === "SlotElement") {
+        if (type === "SlotElement") {
           type AttributeValueChunk = {
             type?: string;
             expression?: unknown;
@@ -1479,7 +1490,7 @@ export default class ComponentParser {
           });
         }
 
-        if (node && typeof node === "object" && "type" in node && String(node.type) === "RenderTag") {
+        if (type === "RenderTag") {
           const renderTag = node as { expression?: unknown };
           const renderInfo = extractRenderTagInfo(this.ctx, renderTag.expression);
           if (renderInfo) {
@@ -1531,7 +1542,7 @@ export default class ComponentParser {
         }
 
         // Bare `on:event` handlers forward events; dispatched events win and are reconciled after the walk.
-        if (node && typeof node === "object" && "type" in node && String(node.type) === "OnDirective") {
+        if (type === "OnDirective") {
           const eventHandlerNode = node as { expression?: unknown; name?: string };
           if (eventHandlerNode.expression == null && eventHandlerNode.name) {
             if (parent != null && typeof parent === "object" && "name" in parent) {
@@ -1575,14 +1586,11 @@ export default class ComponentParser {
          * `bind:*` marks props reactive; `bind:this` on elements also narrows the prop type.
          */
         if (
+          type === "BindDirective" &&
           parent &&
           typeof parent === "object" &&
           "type" in parent &&
-          (isElementLikeType(String(parent.type)) || isComponentLikeType(String(parent.type))) &&
-          node &&
-          typeof node === "object" &&
-          "type" in node &&
-          String(node.type) === "BindDirective"
+          (isElementLikeType(String(parent.type)) || isComponentLikeType(String(parent.type)))
         ) {
           const bindingNode = node as { name?: string; expression?: { name?: string } };
           if (bindingNode.expression?.name) {
@@ -1623,10 +1631,12 @@ export default class ComponentParser {
         }
       },
       leave: (node) => {
-        if (this.ctx.scopeDeclarations.has(node as unknown as object)) {
+        // Scopes exist exactly for scope-owner nodes (see `enter` above), and
+        // function-scope owners are a subset, so one type check covers both.
+        if (isScopeOwner(node)) {
           this.ctx.activeScopes.pop();
+          leaveNestedScopeDeclarationNode(scopeWalkState, node);
         }
-        leaveNestedScopeDeclarationNode(scopeWalkState, node);
       },
     });
 
@@ -1647,7 +1657,7 @@ export default class ComponentParser {
               name: String(event_name),
               detail: event_detail == null ? "" : literalDetailToTypeText(event_detail),
               has_argument: Boolean(event_argument),
-              source: callee.source,
+              source: sourceRangeFromNode(this.ctx, callee.node),
             });
           }
         }

@@ -69,9 +69,18 @@ export function markReactivePropsFromMutationTarget(
   ctx: ParserContext,
   target: Pattern | Expression | null | undefined,
 ) {
-  const identifiers = collectPatternIdentifiers(target);
+  if (!target || typeof target !== "object" || !("type" in target)) return;
 
-  if (!identifiers) return;
+  // `x = ...` / `x++`: by far the most common target; skip the Set allocation.
+  if (target.type === "Identifier") {
+    const publicPropName = resolveIdentifierToReactiveProp(ctx, target.name);
+    if (publicPropName) {
+      ctx.reactive_vars.add(publicPropName);
+    }
+    return;
+  }
+
+  const identifiers = collectPatternIdentifiers(target);
 
   for (const identifier of identifiers) {
     const publicPropName = resolveIdentifierToReactiveProp(ctx, identifier);
@@ -355,8 +364,8 @@ export function enterNestedScopeDeclarationNode(
   ctx: ParserContext,
   state: ScopeWalkState,
   node: unknown,
-) {
-  if (!isScopeOwner(node)) return;
+): LexicalScope | undefined {
+  if (!isScopeOwner(node)) return undefined;
 
   const scope = getOrCreateScope(ctx, node as unknown as object);
   const currentVarScope = state.varScopeStack[state.varScopeStack.length - 1] ?? ctx.componentScope;
@@ -408,6 +417,8 @@ export function enterNestedScopeDeclarationNode(
   if (isFunctionScopeOwner(node)) {
     state.varScopeStack.push(scope);
   }
+
+  return scope;
 }
 
 /** Per-node `leave` step counterpart to {@link enterNestedScopeDeclarationNode}. */
