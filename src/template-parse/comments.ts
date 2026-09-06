@@ -112,8 +112,28 @@ function walkAndAttach(
   // Nothing left to attach. Skip walking the rest of this script AST.
   if (cursor.index >= comments.length) return;
 
-  for (const child of childNodes(node)) {
-    walkAndAttach(child, node, comments, cursor, source);
+  // Direct object/array-of-node children that have a `.type`, same walk rule
+  // as zimmerframe, visited in place rather than collected into an array
+  // first. `Object.keys` instead of `for...in`: acorn nodes don't put
+  // enumerable properties on the prototype. Stops as soon as every comment
+  // is claimed (the trailing-comment step below is a no-op by then).
+  const keys = Object.keys(node);
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+    if (key === "type" || key === "leadingComments") continue;
+    const value = node[key];
+    if (!value || typeof value !== "object") continue;
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        if (item && typeof item === "object" && typeof (item as WalkableNode).type === "string") {
+          walkAndAttach(item as WalkableNode, node, comments, cursor, source);
+          if (cursor.index >= comments.length) return;
+        }
+      }
+    } else if (typeof (value as WalkableNode).type === "string") {
+      walkAndAttach(value as WalkableNode, node, comments, cursor, source);
+      if (cursor.index >= comments.length) return;
+    }
   }
 
   // Claim trailing comments the same way svelte does, so they aren't left
@@ -142,26 +162,4 @@ function walkAndAttach(
 
 function isLastOf(list: unknown[] | undefined, node: unknown): boolean {
   return !!list && list.indexOf(node) === list.length - 1;
-}
-
-/** Direct object/array-of-node children that have a `.type`. Same walk rule as zimmerframe. */
-function childNodes(node: WalkableNode): WalkableNode[] {
-  const children: WalkableNode[] = [];
-  // `Object.keys` instead of `for...in`. Acorn nodes don't put enumerable
-  // properties on the prototype, and this runs once per node.
-  for (const key of Object.keys(node)) {
-    if (key === "type" || key === "leadingComments") continue;
-    const value = node[key];
-    if (!value || typeof value !== "object") continue;
-    if (Array.isArray(value)) {
-      for (const item of value) {
-        if (item && typeof item === "object" && typeof (item as WalkableNode).type === "string") {
-          children.push(item as WalkableNode);
-        }
-      }
-    } else if (typeof (value as WalkableNode).type === "string") {
-      children.push(value as WalkableNode);
-    }
-  }
-  return children;
 }

@@ -179,7 +179,16 @@ function getDirectiveType(name: string): AST.Directive["type"] | false {
 }
 
 /** Text/ExpressionTag chunks until `done()`. From svelte's `read_sequence` in `state/element.js`. */
-function readSequence(state: TemplateParserState, done: () => boolean): Array<AST.Text | AST.ExpressionTag> {
+function readSequence(
+  state: TemplateParserState,
+  done: () => boolean,
+  /**
+   * For quoted attribute values: the quote's char code. `done` is then just
+   * "at that quote", so the text between `{` tags and the closing quote can be
+   * skipped in one scan instead of one `done()` call per character.
+   */
+  quoteCode?: number,
+): Array<AST.Text | AST.ExpressionTag> {
   let currentChunk: AST.Text = { start: state.index, end: -1, type: "Text", raw: "", data: "" };
   const chunks: Array<AST.Text | AST.ExpressionTag> = [];
 
@@ -215,7 +224,17 @@ function readSequence(state: TemplateParserState, done: () => boolean): Array<AS
       chunks.push({ type: "ExpressionTag", start: expressionStart, end: state.index, expression });
       currentChunk = { start: state.index, end: -1, type: "Text", raw: "", data: "" };
     } else {
-      state.index++;
+      let index = state.index + 1;
+      if (quoteCode !== undefined) {
+        // Plain text up to the next `{` or closing quote.
+        const source = state.source;
+        while (index < source.length) {
+          const code = source.charCodeAt(index);
+          if (code === 123 /* { */ || code === quoteCode) break;
+          index++;
+        }
+      }
+      state.index = index;
     }
   }
 
@@ -230,10 +249,14 @@ function readAttributeValue(
     return [{ start: state.index - 1, end: state.index - 1, type: "Text", raw: "", data: "" }];
   }
 
-  const value = readSequence(state, () => {
-    if (quoteMark) return state.match(quoteMark);
-    return !!state.matchRegex(REGEX_INVALID_UNQUOTED_ATTRIBUTE_VALUE);
-  });
+  const value = readSequence(
+    state,
+    () => {
+      if (quoteMark) return state.match(quoteMark);
+      return !!state.matchRegex(REGEX_INVALID_UNQUOTED_ATTRIBUTE_VALUE);
+    },
+    quoteMark === null ? undefined : quoteMark.charCodeAt(0),
+  );
 
   if (value.length === 0 && !quoteMark) {
     throw new Error("sveld: expected attribute value");
