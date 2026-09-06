@@ -43,10 +43,10 @@ bun install
 | `bun run test:fixtures-types` | Type-check the generated fixture outputs (`tests/fixtures/**`). |
 | `bun run test:e2e` | Link sveld into the downstream packages under `tests/e2e/`, run `sveld` (or `build` for Vite fixtures), and `typecheck` generated types where configured. |
 | `bun run bench` | Time the parse/write pipeline against the carbon e2e fixture. Flags: `--runs <n>`, `--cache`, `--entry <path>`. Output goes to a temp dir; compare medians from one invocation, not absolute times across sessions. |
-| `bunx biome check --write <paths>` | Lint and format. Scope to what you changed. |
-| `bun run lint` / `bun run format` | Biome lint / format across the repo. |
+| `bun run lint:fix:changed` | Lint, format, and organize imports for files changed vs `main` (`biome check --write --unsafe --changed`). Use this while iterating. |
+| `bun run lint` / `bun run format` / `bun run lint:fix` | Biome lint / format / full fix across the repo. |
 
-Scope test and lint runs to what you touched. The full suite and a repo-wide `biome` pass are slow and surface unrelated noise.
+Scope test and lint runs to what you touched. The full test suite and a repo-wide `biome` pass surface unrelated noise.
 
 ## How sveld works
 
