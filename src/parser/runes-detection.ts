@@ -57,6 +57,43 @@ function isValueReference(node: { type: string }, parent: { type: string } | und
   }
 }
 
+const RUNE_NAME_LIST = Array.from(RUNE_NAMES);
+
+/** ASCII `[A-Za-z0-9_$]`: a rune name touching one of these is part of a longer identifier (e.g. `$$props`). */
+function isAsciiIdentifierChar(code: number): boolean {
+  return (
+    (code >= 48 && code <= 57) ||
+    (code >= 65 && code <= 90) ||
+    (code >= 97 && code <= 122) ||
+    code === 95 /* _ */ ||
+    code === 36 /* $ */
+  );
+}
+
+/**
+ * Cheap textual pre-check: false only when no rune name appears in `source`
+ * as a standalone token (not glued to other ASCII identifier characters, as
+ * in `$$props`), and no `\u` escape could be spelling one. Any other case,
+ * including a rune name inside a string or comment, falls back to the walk.
+ */
+function mayContainRuneReference(source: string): boolean {
+  if (source.includes("\\u")) return true;
+  for (const name of RUNE_NAME_LIST) {
+    let index = source.indexOf(name);
+    while (index !== -1) {
+      // `charCodeAt(-1)` / past-the-end is NaN, which counts as a boundary.
+      if (
+        !isAsciiIdentifierChar(source.charCodeAt(index - 1)) &&
+        !isAsciiIdentifierChar(source.charCodeAt(index + name.length))
+      ) {
+        return true;
+      }
+      index = source.indexOf(name, index + 1);
+    }
+  }
+  return false;
+}
+
 type ScopeStack = Array<Set<string>>;
 
 function isShadowed(name: string, scopeStack: ScopeStack): boolean {
@@ -219,6 +256,13 @@ export function detectSyntaxMode(ctx: ParserContext): SyntaxMode {
 
   const root = ctx.parsed;
   if (!root) return "legacy";
+
+  // An `Identifier` named `$state` etc. can only come from that text in the
+  // source, so a component whose text has no rune name can't be in runes
+  // mode. Skips three full AST walks for every legacy component. (A `\u`
+  // escape could spell a rune name without the literal substring, so fall
+  // back to the walk when one is present.)
+  if (ctx.source !== undefined && !mayContainRuneReference(ctx.source)) return "legacy";
 
   const moduleScope = new Set<string>();
   collectDirectBlockNames(getScriptProgramBody(root.module), moduleScope);
