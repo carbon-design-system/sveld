@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.36.11](https://github.com/carbon-design-system/sveld/releases/tag/v0.36.11) - 2026-09-06
+
+**Features**
+
+- rewrite generated-TS formatter as slice-based passes (dc92c32)
+- skip runes AST walks when no rune name is in the source (41b5eac)
+- find JSDoc blocks with `indexOf` instead of splitting source (8b796a6)
+- trim per-node work in the main component walk (578c4db)
+- avoid `realpathSync` per directory and memoize path resolution (4ffbdb8)
+- scan quoted attribute text in one loop (730feaa)
+
 ## [0.36.10](https://github.com/carbon-design-system/sveld/releases/tag/v0.36.10) - 2026-08-23
 
 **Features**
