@@ -25,6 +25,7 @@
     "format": "biome format --write .",
     "lint": "biome lint .",
     "lint:fix": "biome check --write --unsafe .",
+    "lint:fix:changed": "biome check --write --unsafe --changed --no-errors-on-unmatched",
     "build": "bun scripts/build.ts",
     "bench": "bun scripts/bench.ts",
     "bench:cache": "bun scripts/bench.ts --cache",
