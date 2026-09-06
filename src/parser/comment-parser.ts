@@ -67,38 +67,30 @@ export interface JSDocComment {
 }
 
 const BLOCK_OPEN = "/**";
-const BLOCK_OPEN_IGNORE = "/***";
 const GUTTER = "*";
 const BLOCK_CLOSE = "*/";
 const FENCE = "```";
 
-const NEWLINE_REGEX = /\n/;
-const TRAILING_CR_REGEX = /\r$/;
 const LEADING_WS_REGEX = /^\s+/;
 const WHITESPACE_CHAR_REGEX = /\s/;
 const TAG_SECTION_START_REGEX = /^@[^\s/]+(?=\s|$)/;
 const TAG_PREFIX_REGEX = /^@(\S+)\s*/;
 
-interface PhysicalLine {
-  /** `\r`-stripped text of this line. */
-  text: string;
-  /** Absolute character offset where this line begins in the scanned source. */
-  start: number;
-}
-
-function splitSourceLines(source: string): PhysicalLine[] {
-  const lines: PhysicalLine[] = [];
-  let offset = 0;
-  for (const segment of source.split(NEWLINE_REGEX)) {
-    lines.push({ text: segment.replace(TRAILING_CR_REGEX, ""), start: offset });
-    offset += segment.length + 1;
+/** Length of the leading `\s` run in `text`; same set of characters as `LEADING_WS_REGEX`. */
+function leadingWhitespaceLength(text: string): number {
+  let index = 0;
+  while (index < text.length) {
+    const code = text.charCodeAt(index);
+    // Fast checks for space/tab/CR/LF; anything else goes through the regex's `\s` class.
+    if (code !== 32 && code !== 9 && code !== 13 && code !== 10 && !WHITESPACE_CHAR_REGEX.test(text[index])) break;
+    index++;
   }
-  return lines;
+  return index;
 }
 
 /** Strips the comment gutter from one physical line, splitting what's left into `indent`/`separator` + `content`. */
 function tokenizeLine(text: string, isOpeningLine: boolean): { indent: string; separator: string; content: string } {
-  let rest = text.replace(LEADING_WS_REGEX, "");
+  let rest = text.slice(leadingWhitespaceLength(text));
   let hasMarker = false;
 
   if (isOpeningLine) {
@@ -109,7 +101,7 @@ function tokenizeLine(text: string, isOpeningLine: boolean): { indent: string; s
     hasMarker = true;
   }
 
-  const separator = rest.match(LEADING_WS_REGEX)?.[0] ?? "";
+  const separator = rest.slice(0, leadingWhitespaceLength(rest));
   rest = rest.slice(separator.length);
 
   const trimmedEnd = rest.trimEnd();
@@ -121,34 +113,62 @@ function tokenizeLine(text: string, isOpeningLine: boolean): { indent: string; s
   return { indent, separator, content };
 }
 
-/** Finds every `/** ... *\/` block in `source`, tokenizing each line's gutter as it goes. */
+/** `\r`-stripped text of the physical line spanning `[lineStart, lineEnd)`. */
+function physicalLineText(source: string, lineStart: number, lineEnd: number): string {
+  const end = lineEnd > lineStart && source.charCodeAt(lineEnd - 1) === 13 /* \r */ ? lineEnd - 1 : lineEnd;
+  return source.slice(lineStart, end);
+}
+
+/**
+ * Finds every `/** ... *\/` block in `source`, tokenizing each line's gutter as it goes.
+ *
+ * Jumps between `/**` occurrences with `indexOf` and only materializes the lines inside a block,
+ * rather than splitting the whole source (mostly markup and code) into per-line objects. A block
+ * opens on a line whose first non-whitespace text is `/**` (but not `/***`), and closes on the
+ * first line from there whose trimmed text ends with `*\/`; a block still open at end of input is
+ * dropped.
+ */
 function findCommentBlocks(source: string): Array<{ start: number; lines: CommentLine[] }> {
-  // Every block starts with `/**`. If that substring is absent, skip
-  // splitting the source into lines. `/***` starts with the same three
-  // characters, so this can't miss an ignore-block either.
-  if (!source.includes(BLOCK_OPEN)) return [];
-
   const blocks: Array<{ start: number; lines: CommentLine[] }> = [];
-  const physicalLines = splitSourceLines(source);
+  let searchFrom = 0;
 
-  let current: CommentLine[] | null = null;
-  let blockStart = 0;
+  while (true) {
+    const openIndex = source.indexOf(BLOCK_OPEN, searchFrom);
+    if (openIndex === -1) break;
 
-  for (const line of physicalLines) {
-    if (current === null) {
-      const trimmed = line.text.replace(LEADING_WS_REGEX, "");
-      if (!trimmed.startsWith(BLOCK_OPEN) || trimmed.startsWith(BLOCK_OPEN_IGNORE)) continue;
-      current = [];
-      blockStart = line.start + (line.text.length - trimmed.length);
+    const lineStart = source.lastIndexOf("\n", openIndex - 1) + 1;
+    if (
+      source.charCodeAt(openIndex + BLOCK_OPEN.length) === 42 /* `*`: this is `/***`, an ignore-block */ ||
+      source.slice(lineStart, openIndex).trim() !== ""
+    ) {
+      searchFrom = openIndex + 1;
+      continue;
     }
 
-    const { indent, separator, content } = tokenizeLine(line.text, current.length === 0);
-    current.push({ raw: line.text, start: line.start, number: current.length, indent, separator, content });
+    const lines: CommentLine[] = [];
+    let currentLineStart = lineStart;
+    let closed = false;
 
-    if (line.text.trimEnd().endsWith(BLOCK_CLOSE)) {
-      blocks.push({ start: blockStart, lines: current });
-      current = null;
+    while (currentLineStart <= source.length) {
+      const newlineIndex = source.indexOf("\n", currentLineStart);
+      const lineEnd = newlineIndex === -1 ? source.length : newlineIndex;
+      const text = physicalLineText(source, currentLineStart, lineEnd);
+
+      const { indent, separator, content } = tokenizeLine(text, lines.length === 0);
+      lines.push({ raw: text, start: currentLineStart, number: lines.length, indent, separator, content });
+
+      if (text.trimEnd().endsWith(BLOCK_CLOSE)) {
+        closed = true;
+        searchFrom = lineEnd;
+        break;
+      }
+      if (newlineIndex === -1) break;
+      currentLineStart = newlineIndex + 1;
     }
+
+    // Unterminated block: nothing after it can open another one.
+    if (!closed) break;
+    blocks.push({ start: openIndex, lines });
   }
 
   return blocks;
@@ -173,10 +193,21 @@ function splitIntoSections(lines: CommentLine[]): CommentLine[][] {
     } else {
       sections[sections.length - 1].push(line);
     }
-    if (line.content.split(FENCE).length % 2 === 0) fenced = !fenced;
+    if (countOccurrences(line.content, FENCE) % 2 === 1) fenced = !fenced;
   }
 
   return sections;
+}
+
+/** Number of non-overlapping `needle` occurrences in `text`; no per-line `split` allocation. */
+function countOccurrences(text: string, needle: string): number {
+  let count = 0;
+  let index = text.indexOf(needle);
+  while (index !== -1) {
+    count++;
+    index = text.indexOf(needle, index + needle.length);
+  }
+  return count;
 }
 
 function joinLines(lines: CommentLine[]): string {
