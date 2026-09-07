@@ -141,11 +141,12 @@ export default class Button extends SvelteComponentTyped<
 - [JSON Output](#json-output)
 - [Custom Elements Manifest](#custom-elements-manifest)
   - [Consuming the manifest](#consuming-the-manifest)
+- [llms.txt Output](#llmstxt-output)
 - [Custom Writers](#custom-writers)
   - [The `OutputWriter` contract](#the-outputwriter-contract)
   - [Registering a writer](#registering-a-writer)
   - [Running it via the plugin](#running-it-via-the-plugin)
-  - [Worked example: a minimal `llms.txt` writer](#worked-example-a-minimal-llmstxt-writer)
+  - [Worked example: a `components.txt` name-list writer](#worked-example-a-componentstxt-name-list-writer)
 - [API Reference](#api-reference)
   - [reactive](#reactive)
   - [binding](#binding)
@@ -494,7 +495,7 @@ npx sveld --json --markdown
 
 If no entry point can be resolved (no `package.json#svelte` field and no `--entry`), the CLI exits `1` and prints the reason to `stderr`. If `src/index.js` happens to exist relative to your working directory, sveld falls back to it and prints a one-line note asking you to set `package.json#svelte` (or `--entry`) instead of relying on the fallback.
 
-Flags are kebab-case: `--entry`, `--glob`, `--types`, `--json`, `--markdown`, `--custom-elements`, `--fail-fast`, `--dry-run`, `--cache`, `--resolve-types`, `--check-examples`, `--report-diagnostics`, `--strict`, `--check`, `--types-format`, `--quiet`, `--stdout`, `--format`. The camelCase spellings `--resolveTypes` and `--checkExamples` still work as deprecated aliases for compatibility with existing scripts. `--entry`, `--cache`, `--check`, and `--types-format` take their value either as `--flag=value` or as a separate `--flag value` argument (`sveld --entry src/index.js` and `sveld --entry=src/index.js` are equivalent); if the next argument starts with `--` it's not consumed as a value, so `--cache` and `--check` fall back to their default location and `--entry` and `--types-format` report a usage error naming the flag. Boolean flags (`--json`, `--glob`, `--strict`, and the like) never consume a following argument. An unrecognized flag (e.g. `--markdwon`) prints `Unknown flag: --markdwon` to `stderr`, exits `1`, and skips generation; when a close match exists it appends a suggestion, e.g. `Unknown flag: --markdwon Did you mean --markdown?`. sveld takes no positional arguments, so any non-flag argument errors the same way.
+Flags are kebab-case: `--entry`, `--glob`, `--types`, `--json`, `--markdown`, `--custom-elements`, `--llms`, `--fail-fast`, `--dry-run`, `--cache`, `--resolve-types`, `--check-examples`, `--report-diagnostics`, `--strict`, `--check`, `--types-format`, `--quiet`, `--stdout`, `--format`. The camelCase spellings `--resolveTypes` and `--checkExamples` still work as deprecated aliases for compatibility with existing scripts. `--entry`, `--cache`, `--check`, and `--types-format` take their value either as `--flag=value` or as a separate `--flag value` argument (`sveld --entry src/index.js` and `sveld --entry=src/index.js` are equivalent); if the next argument starts with `--` it's not consumed as a value, so `--cache` and `--check` fall back to their default location and `--entry` and `--types-format` report a usage error naming the flag. Boolean flags (`--json`, `--glob`, `--strict`, and the like) never consume a following argument. An unrecognized flag (e.g. `--markdwon`) prints `Unknown flag: --markdwon` to `stderr`, exits `1`, and skips generation; when a close match exists it appends a suggestion, e.g. `Unknown flag: --markdwon Did you mean --markdown?`. sveld takes no positional arguments, so any non-flag argument errors the same way.
 
 Writer progress lines (`created "..."` / `unchanged "..."`) print to `stderr`, keeping `stdout` reserved for machine-readable data. Pass `--quiet` (or `quiet: true` in `sveld.config.*`) to suppress them; it does not suppress error messages, the diagnostics summary (`--report-diagnostics` / `--strict`), or the `--check` report.
 
@@ -762,6 +763,12 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
 - **`customElements`** (boolean, optional): Generate a [Custom Elements Manifest](#custom-elements-manifest) (`custom-elements.json`). Also available as the `--custom-elements` CLI flag.
 - **`customElementsOptions`** (object, optional): Options for Custom Elements Manifest output.
   - **`outFile`** (string, optional, default: `"custom-elements.json"`): Path (relative to the project root) for the generated manifest file.
+- **`llms`** (boolean, optional): Generate an [`llms.txt` / `llms-full.txt`](#llmstxt-output) pair. Also available as the `--llms` CLI flag.
+- **`llmsOptions`** (object, optional): Options for `llms.txt` / `llms-full.txt` output.
+  - **`outDir`** (string, optional): Directory (relative to the project root) both files are written into. Defaults to the project root.
+  - **`linkBase`** (string, optional, default: `""`): Prefixed to each component's link in `llms.txt`.
+  - **`title`** (string, optional, default: the `"name"` field from `package.json`): The `# <title>` heading both files start with.
+  - **`summary`** (string, optional, default: the `"description"` field from `package.json`): The `> <summary>` blockquote under the title.
 - **`config`** (boolean | string, optional, default: `false`): Load `sveld.config.{js,mjs,ts}` and merge it with these options; these options win when a key is set in both. `true` resolves the config from the Vite project root (or `process.cwd()` outside Vite); a string is an explicit path to the config file. See [Config File](#config-file).
 - **`watch`** (boolean, optional, default: `false`): Regenerate output incrementally when relevant source changes during `vite dev` / `vite build --watch`. A reparse is triggered by: editing a component; editing the entry barrel itself, which adds/removes the corresponding component; or editing a non-`.svelte` file a component depends on via [`@extendProps`](#extendprops) / `@extends` or a typedef `import("./x")` reference. Only the affected components are re-parsed, rather than rebuilding every component. Overlapping regenerations are queued, never run concurrently. Without this option, the plugin only runs during `vite build`.
 - **`failFast`** (boolean, optional, default: `false`): Abort the entire run when a single component fails to parse. By default, parse failures are collected as diagnostics (and reported to `stderr`) so the remaining components still emit their output. Also available as the `--fail-fast` CLI flag.
@@ -1038,6 +1045,25 @@ With that in place:
 - [Storybook](https://storybook.js.org/docs/api/doc-blocks/doc-block-argtypes#extracting-argtypes) for web components reads the manifest to auto-generate `argTypes` (controls, docs tables) for `customElement`-compiled components, once you point it at the file (e.g. `setCustomElementsManifest` from `@storybook/web-components`, or `customElements: "custom-elements.json"` in `.storybook/main.js`).
 - Any other tool built against the [Custom Elements Manifest spec](https://github.com/webcomponents/custom-elements-manifest) (API viewers, doc generators, linters) can read the file directly without sveld-specific integration.
 
+## llms.txt Output
+
+Set `llms: true` to emit an [`llms.txt`](https://llmstxt.org) / `llms-full.txt` pair: `llms.txt` is an index of every exported component (one link plus a one-line summary each), and `llms-full.txt` is the flattened full reference (every component's Props, Bindings, Events, Slots/Snippets, Typedefs, and Module exports, as terse Markdown tables).
+
+```diff
+sveld({
++  llms: true,
+})
+```
+
+- **`llms`** (boolean, optional): Generate `llms.txt` and `llms-full.txt`. Also available as the `--llms` CLI flag.
+- **`llmsOptions`** (object, optional):
+  - **`outDir`** (string, optional): Directory (relative to the project root) both files are written into. Defaults to the project root.
+  - **`linkBase`** (string, optional, default: `""`): Prefixed to each component's link in `llms.txt`, e.g. `[Button](<linkBase>/Button)`. Set this to your published docs site's base path.
+  - **`title`** (string, optional, default: the `"name"` field from `package.json`): The `# <title>` heading both files start with.
+  - **`summary`** (string, optional, default: the `"description"` field from `package.json`): The `> <summary>` blockquote under the title. Omitted when neither is set.
+
+Each component's one-line summary in `llms.txt` is the first sentence of its [`@component` comment](#component-comments), falling back to `"Component"`. Set `documentExports: true` to also list entry-barrel exports (consts, functions, types) in `llms.txt` under an `## Exports` heading.
+
 ## Custom Writers
 
 `json`, `markdown`, `types`, and `custom-elements` are all built on the same
@@ -1118,36 +1144,28 @@ alongside whichever built-in outputs (`types` / `json` / `markdown` /
 programmatic Node API and from `sveld.config.ts` (`additionalWriters` lives on
 the options shared by all three entry points).
 
-### Worked example: a minimal `llms.txt` writer
+### Worked example: a `components.txt` name-list writer
 
-A plain-text, one-file-per-library summary — the kind of thing
-[llms.txt](https://llmstxt.org)-aware tools look for — is a good demo because
-it needs nothing beyond `ComponentApiDocument`.
+Looking for an `llms.txt` writer specifically? Sveld ships one — see [llms.txt Output](#llmstxt-output). This example is a much smaller custom writer, just to show the pattern: a plain-text list of exported component names, needing nothing beyond `ComponentApiDocument`.
 
 ```ts
-// writers/llms-writer.ts
+// writers/components-txt-writer.ts
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { buildComponentApiDocument, registerWriter } from "sveld";
 
-interface LlmsWriterOptions {
+interface ComponentsTxtWriterOptions {
   outFile?: string;
 }
 
-registerWriter<LlmsWriterOptions>({
-  name: "llms-demo",
+registerWriter<ComponentsTxtWriterOptions>({
+  name: "components-txt",
   componentSet: "exported",
   write(components, options = {}) {
     const document = buildComponentApiDocument(components);
+    const rendered = document.components.map((component) => component.moduleName).join("\n");
 
-    const sections = document.components.map((component) => {
-      const props = component.props.map((prop) => `${prop.name}: ${prop.type ?? "unknown"}`).join(", ");
-      return `## ${component.moduleName}\n\nProps: ${props || "none"}`;
-    });
-
-    const rendered = ["# My Library", "", "> Auto-generated component reference.", "", ...sections].join("\n\n");
-
-    writeFileSync(join(process.cwd(), options.outFile ?? "llms.txt"), rendered);
+    writeFileSync(join(process.cwd(), options.outFile ?? "components.txt"), rendered);
   },
 });
 ```
@@ -1155,21 +1173,21 @@ registerWriter<LlmsWriterOptions>({
 ```ts
 // vite.config.ts
 import sveld from "sveld";
-import "./writers/llms-writer";
+import "./writers/components-txt-writer";
 
 export default {
   plugins: [
     sveld({
       additionalWriters: {
-        "llms-demo": { outFile: "llms.txt" },
+        "components-txt": { outFile: "components.txt" },
       },
     }),
   ],
 };
 ```
 
-Running a build now produces an `llms.txt` alongside the usual output, with
-one section per exported component.
+Running a build now produces a `components.txt` alongside the usual output,
+listing one exported component name per line.
 
 ## API Reference
 
