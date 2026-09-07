@@ -18,6 +18,7 @@ import { resolvePropTypeAndDocs } from "./prop-shared";
 import { addProp, processInitializer, unwrapBindableInitializer } from "./props";
 import { sourceAtPos, sourceRangeFromNode } from "./source-position";
 import {
+  buildEnumLocalTypeDeclarationCode,
   collectReferencedTypeDependencies,
   getRunesPropsDeclarationMetadata,
   getRunesPropTypeMetadata,
@@ -298,6 +299,19 @@ export function buildRunesPropTypeMetadata(parser: ComponentParser, ctx: ParserC
     ) {
       ctx.localTypeDeclarationsByName.set(statement.id.name, {
         code: sourceAtPos(ctx, statement.start, statement.end)?.trim() ?? "",
+        node: statement as ModernRunesTypeNode,
+        start: statement.start,
+      });
+    }
+
+    if (
+      statement.type === "TSEnumDeclaration" &&
+      statement.id?.name &&
+      statement.start !== undefined &&
+      statement.end !== undefined
+    ) {
+      ctx.localTypeDeclarationsByName.set(statement.id.name, {
+        code: buildEnumLocalTypeDeclarationCode(ctx, statement) ?? "",
         node: statement as ModernRunesTypeNode,
         start: statement.start,
       });
