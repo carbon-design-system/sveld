@@ -9,6 +9,7 @@ import type {
 import type { JSDocComment } from "./comment-parser";
 import { parseComments } from "./comment-parser";
 import type { ParserContext } from "./context";
+import { recordSveldIgnore } from "./diagnostics";
 import { addDispatchedEvent, buildEventDetailFromProperties } from "./events";
 import { splitTopLevelCommas } from "./generics";
 import { addSlot } from "./slots";
@@ -163,6 +164,7 @@ export function getCommentTags(parsed: JSDocComment[]) {
   let deprecated: DeprecatedValue | undefined;
   const additionalTags: typeof tags = [];
   const passthroughTags: typeof tags = [];
+  const ignoreCodes: string[] = [];
 
   for (const tag of tags) {
     if (tag.tag === "type") {
@@ -173,6 +175,8 @@ export function getCommentTags(parsed: JSDocComment[]) {
       returnsTag = tag;
     } else if (tag.tag === "deprecated") {
       deprecated ??= deprecatedValueFromParts(tag.name, tag.description);
+    } else if (tag.tag === "sveld-ignore") {
+      ignoreCodes.push(tag.name);
     } else if (IDE_PASSTHROUGH_TAGS.has(tag.tag)) {
       passthroughTags.push(tag);
     } else if (tag.tag === "bindable") {
@@ -197,6 +201,7 @@ export function getCommentTags(parsed: JSDocComment[]) {
     deprecated,
     additional: additionalTags,
     passthrough: passthroughTags,
+    ignore: ignoreCodes,
     description: parsed[0]?.description,
   };
 }
@@ -274,6 +279,8 @@ function processJSDocComment(
       binding?: ComponentPropBinding;
       deprecated?: DeprecatedValue;
       tags?: JsDocPassthroughTag[];
+      /** `@sveld-ignore <code>` codes from this comment; `""` means "ignore anything for this symbol". */
+      sveldIgnore?: string[];
     }
   | undefined {
   if (!leadingComments) return undefined;
@@ -291,6 +298,7 @@ function processJSDocComment(
     deprecated,
     additional: additionalTags,
     passthrough: passthroughTags,
+    ignore: ignoreCodes,
     description: commentDescription,
   } = getCommentTags(comment);
 
@@ -336,7 +344,16 @@ function processJSDocComment(
         }))
       : undefined;
 
-  return { type, params, returnType, description, binding, deprecated, tags };
+  return {
+    type,
+    params,
+    returnType,
+    description,
+    binding,
+    deprecated,
+    tags,
+    sveldIgnore: ignoreCodes.length > 0 ? ignoreCodes : undefined,
+  };
 }
 
 export function parseCustomTypes(
@@ -421,6 +438,7 @@ export function parseCustomTypes(
     let currentEventSource: SourceRange | undefined;
     let currentEventTagLine: number | undefined;
     let currentEventTags: JsDocPassthroughTag[] = [];
+    let currentEventIgnores: string[] = [];
     const eventProperties: Array<{
       name: string;
       type: string;
@@ -563,6 +581,7 @@ export function parseCustomTypes(
         ctx.eventDescriptions.set(currentEventName, currentEventDescription);
         ctx.jsDocEventNames.add(currentEventName);
         ctx.jsDocEventSources.set(currentEventName, currentEventSource);
+        recordSveldIgnore(ctx, "event-no-source", currentEventName, currentEventIgnores);
         eventProperties.length = 0;
         currentEventName = undefined;
         currentEventType = undefined;
@@ -571,6 +590,7 @@ export function parseCustomTypes(
         currentEventSource = undefined;
         currentEventTagLine = undefined;
         currentEventTags = [];
+        currentEventIgnores = [];
       }
     };
 
@@ -822,6 +842,11 @@ export function parseCustomTypes(
           }
           break;
         }
+        case "sveld-ignore":
+          if (currentEventName !== undefined) {
+            currentEventIgnores.push(name);
+          }
+          break;
         case "enum":
         case "class":
         case "implements":

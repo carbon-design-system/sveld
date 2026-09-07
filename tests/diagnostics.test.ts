@@ -2,6 +2,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
 import ComponentParser from "../src/ComponentParser";
 import {
+  applyDiagnosticIgnores,
   createDiagnostic,
   dedupeDiagnostics,
   failingDiagnostics,
@@ -124,6 +125,93 @@ describe("ComponentParser diagnostics", () => {
     expect(props.map((p) => p.name)).toContain("title");
   });
 
+  test("@sveld-ignore on a prop's JSDoc suppresses its prop-unknown-type diagnostic", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /**
+         * @sveld-ignore sveld/prop-unknown-type
+         */
+        export let value;
+      </script>
+    `;
+
+    const { diagnostics } = parser.parseSvelteComponent(source, parseContext);
+    const propDiagnostic = diagnostics?.find((d) => d.kind === "prop-unknown-type");
+
+    expect(propDiagnostic).toMatchObject({ kind: "prop-unknown-type", name: "value", ignored: true });
+  });
+
+  test("@sveld-ignore with a different code does not suppress the diagnostic", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /**
+         * @sveld-ignore sveld/context-any-type
+         */
+        export let value;
+      </script>
+    `;
+
+    const { diagnostics } = parser.parseSvelteComponent(source, parseContext);
+    const propDiagnostic = diagnostics?.find((d) => d.kind === "prop-unknown-type");
+
+    expect(propDiagnostic?.ignored).toBeFalsy();
+  });
+
+  test("a bare @sveld-ignore (no code) suppresses any diagnostic for that symbol", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /** @sveld-ignore */
+        export let value;
+      </script>
+    `;
+
+    const { diagnostics } = parser.parseSvelteComponent(source, parseContext);
+    const propDiagnostic = diagnostics?.find((d) => d.kind === "prop-unknown-type");
+
+    expect(propDiagnostic?.ignored).toBe(true);
+  });
+
+  test("@sveld-ignore next to an @event tag suppresses its event-no-source diagnostic", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /**
+         * @event {CustomEvent<null>} phantom
+         * @sveld-ignore sveld/event-no-source
+         */
+        export let label;
+      </script>
+      <button>{label}</button>
+    `;
+
+    const { diagnostics } = parser.parseSvelteComponent(source, parseContext);
+    const eventDiagnostic = diagnostics?.find((d) => d.kind === "event-no-source");
+
+    expect(eventDiagnostic).toMatchObject({ kind: "event-no-source", name: "phantom", ignored: true });
+  });
+
+  test("@sveld-ignore on a context variable's JSDoc suppresses its context-any-type diagnostic", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        import { setContext } from "svelte";
+        /**
+         * @sveld-ignore sveld/context-any-type
+         */
+        let store;
+        setContext("plain", store);
+      </script>
+    `;
+
+    const { diagnostics } = parser.parseSvelteComponent(source, parseContext);
+    const contextDiagnostic = diagnostics?.find((d) => d.kind === "context-any-type");
+
+    expect(contextDiagnostic).toMatchObject({ kind: "context-any-type", name: "store", ignored: true });
+  });
+
   test("the generics script attribute wins over @generics/@template JSDoc tags, flagged as syntax-skipped", () => {
     const parser = new ComponentParser();
     const source = `
@@ -240,6 +328,71 @@ describe("diagnostics helpers", () => {
 
     expect(summary).toContain("prop fallback [sveld/prop-unknown-type]");
   });
+
+  test("formatDiagnosticsSummary counts ignored diagnostics without including them in the total", () => {
+    const summary = formatDiagnosticsSummary([
+      make({ name: "a", message: "kept" }),
+      make({ name: "b", message: "dropped", ignored: true }),
+    ]);
+
+    expect(summary).toContain("1 unresolved type found (1 ignored).");
+    expect(summary).toContain("kept");
+    expect(summary).not.toContain("dropped");
+  });
+
+  test("formatDiagnosticsSummary reports an all-ignored run distinctly from a clean one", () => {
+    const summary = formatDiagnosticsSummary([make({ ignored: true })]);
+
+    expect(summary).toBe("sveld: all types resolved (1 ignored).");
+  });
+});
+
+describe("applyDiagnosticIgnores", () => {
+  const make = (overrides: Partial<SveldDiagnosticInput>): SveldDiagnostic =>
+    createDiagnostic({
+      component: "./Legacy/Button.svelte",
+      kind: "prop-unknown-type",
+      name: "value",
+      message: "message",
+      ...overrides,
+    });
+
+  test("returns the input unchanged when there are no matchers", () => {
+    const diagnostics = [make({})];
+    expect(applyDiagnosticIgnores(diagnostics, undefined)).toBe(diagnostics);
+    expect(applyDiagnosticIgnores(diagnostics, [])).toBe(diagnostics);
+  });
+
+  test("matches on code", () => {
+    const [result] = applyDiagnosticIgnores([make({})], [{ code: "sveld/prop-unknown-type" }]);
+    expect(result.ignored).toBe(true);
+  });
+
+  test("matches on name", () => {
+    const [result] = applyDiagnosticIgnores([make({ name: "other" })], [{ name: "value" }]);
+    expect(result.ignored).toBeFalsy();
+  });
+
+  test("matches component with a glob", () => {
+    const [result] = applyDiagnosticIgnores([make({})], [{ component: "./Legacy/**" }]);
+    expect(result.ignored).toBe(true);
+  });
+
+  test("a non-matching glob does not ignore", () => {
+    const [result] = applyDiagnosticIgnores([make({})], [{ component: "./Modern/**" }]);
+    expect(result.ignored).toBeFalsy();
+  });
+
+  test("every set field on a matcher must match", () => {
+    const diagnostics = [make({})];
+    const [result] = applyDiagnosticIgnores(diagnostics, [{ code: "sveld/prop-unknown-type", name: "nope" }]);
+    expect(result.ignored).toBeFalsy();
+  });
+
+  test("preserves an already-ignored diagnostic when no matcher applies", () => {
+    const [result] = applyDiagnosticIgnores([make({ ignored: true })], [{ name: "nope" }]);
+    expect(result.ignored).toBe(true);
+  });
 });
 
 describe("failingDiagnostics", () => {
@@ -343,7 +496,7 @@ describe("sveld() strict mode", () => {
     expect(summaryCalls(errorSpy).length).toBeGreaterThan(0);
   });
 
-  test("format: 'json' prints the diagnostics summary as JSON to stderr instead of text", async () => {
+test("format: 'json' prints the diagnostics summary as JSON to stderr instead of text", async () => {
     await sveld({ entry: relativeDir, glob: true, types: false, reportDiagnostics: true, format: "json" });
 
     expect(summaryCalls(errorSpy)).toHaveLength(0);
@@ -351,5 +504,44 @@ describe("sveld() strict mode", () => {
     const printed = JSON.parse(stderrSpy.mock.calls[0][0] as string);
     expect(printed.kind).toBe("diagnostics");
     expect(printed.diagnostics).toContainEqual(expect.objectContaining({ kind: "event-no-source", name: "phantom" }));
+  });
+
+  test("diagnostics.ignore marks the matching diagnostic ignored without touching the rest", async () => {
+    const { diagnostics } = await sveld({
+      entry: relativeDir,
+      glob: true,
+      types: false,
+      diagnostics: { ignore: [{ name: "phantom" }] },
+    });
+
+    expect(diagnostics.find((d) => d.name === "phantom")?.ignored).toBe(true);
+    expect(diagnostics.find((d) => d.name === "label")?.ignored).toBeFalsy();
+  });
+
+  test("diagnostics.ignore covering every diagnostic in the run clears strict: true", async () => {
+    // `label` has no type annotation (a separate prop-unknown-type diagnostic
+    // alongside phantom's event-no-source), so both names need a matcher.
+    const { diagnostics, exitCode } = await sveld({
+      entry: relativeDir,
+      glob: true,
+      types: false,
+      strict: true,
+      diagnostics: { ignore: [{ name: "phantom" }, { name: "label" }] },
+    });
+
+    expect(diagnostics.every((d) => d.ignored)).toBe(true);
+    expect(exitCode).toBe(0);
+  });
+
+  test("diagnostics.ignore with a non-matching matcher still fails strict: true", async () => {
+    const { exitCode } = await sveld({
+      entry: relativeDir,
+      glob: true,
+      types: false,
+      strict: true,
+      diagnostics: { ignore: [{ name: "not-phantom" }] },
+    });
+
+    expect(exitCode).toBe(4);
   });
 });

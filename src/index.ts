@@ -12,6 +12,7 @@ export {
 export { cli } from "./cli";
 export {
   DIAGNOSTIC_CODES,
+  type DiagnosticIgnoreMatcher,
   type SveldDiagnostic,
   type SveldDiagnosticKind,
   type SveldDiagnosticSeverity,

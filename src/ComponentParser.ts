@@ -27,7 +27,7 @@ import { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "./parsed-component-metada
 import { resolveMemberExpressionType } from "./parser/bindings";
 import { createParserContext, type ParserContext } from "./parser/context";
 import { parseSetContextCall } from "./parser/contexts";
-import { recordDiagnostic } from "./parser/diagnostics";
+import { recordDiagnostic, recordSveldIgnore } from "./parser/diagnostics";
 import { isComponentLikeType, isElementLikeType } from "./parser/element-kind";
 import {
   addDispatchedEvent,
@@ -1469,6 +1469,8 @@ export default class ComponentParser {
               isFunctionDeclaration,
               typedefs: this.ctx.typedefs,
             });
+
+            recordSveldIgnore(this.ctx, "prop-unknown-type", prop_name, jsdocInfo?.sveldIgnore);
 
             addProp(this, this.ctx, prop_name, {
               name: prop_name,

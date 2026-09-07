@@ -5,7 +5,13 @@ import { dirname, isAbsolute, join, parse, relative, resolve } from "node:path";
 import { asRelativeSourcePath, type NormalizedPath } from "./brands";
 import type { ParsedComponent, PendingCallDefaultCandidate, PendingContextKeyCandidate } from "./ComponentParser";
 import { buildReverseDeps, expandAffected } from "./dependency-graph";
-import { createDiagnostic, dedupeDiagnostics, type SveldDiagnostic } from "./diagnostics";
+import {
+  applyDiagnosticIgnores,
+  createDiagnostic,
+  type DiagnosticIgnoreMatcher,
+  dedupeDiagnostics,
+  type SveldDiagnostic,
+} from "./diagnostics";
 import { collectExampleSources } from "./example-check";
 import { hashSource, ParseCache, resolveCacheFilePath } from "./parse-cache";
 import { type EntryExports, parseEntryExports } from "./parse-entry-exports";
@@ -110,12 +116,20 @@ export interface GenerateBundleOptions {
    * persisting the parse cache to disk. Set by the CLI's `--dry-run`.
    */
   dryRun?: boolean;
+  /**
+   * `ignore`: diagnostics matching at least one `{ code?, component?, name? }`
+   * matcher are marked `ignored` (an omitted field matches anything;
+   * `component` is a glob). Ignored diagnostics still appear in
+   * `SveldResult.diagnostics` and are counted in the text summary, but never
+   * fail `--strict` / `--strict=errors`.
+   */
+  diagnostics?: { ignore?: DiagnosticIgnoreMatcher[] };
 }
 
 export function toGenerateBundleOptions(
   opts?: Pick<
     GenerateBundleOptions,
-    "failFast" | "resolveTypes" | "documentExports" | "cache" | "checkExamples" | "dryRun"
+    "failFast" | "resolveTypes" | "documentExports" | "cache" | "checkExamples" | "dryRun" | "diagnostics"
   >,
 ): GenerateBundleOptions {
   return {
@@ -125,6 +139,7 @@ export function toGenerateBundleOptions(
     cache: opts?.cache,
     checkExamples: opts?.checkExamples === true,
     dryRun: opts?.dryRun === true,
+    diagnostics: opts?.diagnostics,
   };
 }
 
@@ -768,8 +783,9 @@ export async function generateBundle(
   }
 
   // Dedupe diagnostics from export and all-components passes.
-  const diagnostics = dedupeDiagnostics(
-    Array.from(allComponentsForTypes.values()).flatMap((component) => component.diagnostics ?? []),
+  const diagnostics = applyDiagnosticIgnores(
+    dedupeDiagnostics(Array.from(allComponentsForTypes.values()).flatMap((component) => component.diagnostics ?? [])),
+    options.diagnostics?.ignore,
   );
 
   return {

@@ -125,6 +125,9 @@ export default class Button extends SvelteComponentTyped<
   - [Persistent parse cache (`cache`)](#persistent-parse-cache-cache)
   - [Compile-checked `@example` blocks (`checkExamples`)](#compile-checked-example-blocks-checkexamples)
   - [Type inference diagnostics](#type-inference-diagnostics)
+    - [Diagnostic codes](#diagnostic-codes)
+    - [Severity and `--strict=errors`](#severity-and---stricterrors)
+    - [Ignoring diagnostics](#ignoring-diagnostics)
 - [Requirements](#requirements)
 - [Usage](#usage)
   - [Installation](#installation)
@@ -427,6 +430,49 @@ npx sveld --json --strict=errors
 ```ts
 await sveld({ json: true, strict: "errors" });
 ```
+
+#### Ignoring diagnostics
+
+Two ways to suppress a diagnostic without disabling `strict` for the whole run. Either way, the diagnostic still appears in `SveldResult.diagnostics` (with `ignored: true`) and is still counted in the text summary (`sveld: 2 unresolved types found (1 ignored).`), but never fails `--strict` / `--strict=errors`.
+
+**Config matchers** (`diagnostics.ignore`, an array of `{ code?, component?, name? }`): every field you set on a matcher must match for it to apply; an omitted field matches anything. `component` is a glob (`*` within a path segment, `**` across segments):
+
+```ts
+// sveld.config.js
+export default defineConfig({
+  diagnostics: {
+    ignore: [
+      // Every prop-unknown-type diagnostic under legacy/.
+      { code: "sveld/prop-unknown-type", component: "./legacy/**" },
+      // One named symbol, anywhere.
+      { name: "internalOnly" },
+    ],
+  },
+});
+```
+
+**Inline `@sveld-ignore <code>`**, on the same JSDoc comment as the prop, `@event` tag, or context variable it applies to:
+
+```svelte
+<script>
+  /**
+   * @sveld-ignore sveld/prop-unknown-type
+   */
+  export let value;
+</script>
+```
+
+```svelte
+<script>
+  /**
+   * @event {CustomEvent<null>} legacyEvent
+   * @sveld-ignore sveld/event-no-source
+   */
+  export let label;
+</script>
+```
+
+A bare `@sveld-ignore` (no code) suppresses every diagnostic for that symbol.
 
 ## Requirements
 
@@ -801,6 +847,7 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
 - **`checkExamples`** (boolean, optional, default: `false`): Run plain TS/JS `@example` blocks through the TypeScript program. Broken ones get an `example-compile-error` diagnostic. Also available as `--check-examples` (`--checkExamples` remains as a deprecated alias). See [Compile-checked `@example` blocks](#compile-checked-example-blocks-checkexamples).
 - **`reportDiagnostics`** (boolean, optional, default: `false`): Print unresolved-type diagnostics to stderr (CLI) or `console.warn` (programmatic API). Also available as `--report-diagnostics`. See [Type inference diagnostics](#type-inference-diagnostics).
 - **`strict`** (`boolean | "errors"`, optional, default: `false`): Exit with code `4` when diagnostics exist. Implies `reportDiagnostics`. `"errors"` fails only on `severity: "error"` diagnostics, letting `warning` ones through. Also available as `--strict` / `--strict=errors`. See [Type inference diagnostics](#type-inference-diagnostics).
+- **`diagnostics.ignore`** (`Array<{ code?: string; component?: string; name?: string }>`, optional): Marks matching diagnostics `ignored` — they're still reported and counted, but never fail `strict`. `component` is a glob; an omitted field on a matcher matches anything. No CLI flag; config-file or `sveld()` only. See [Ignoring diagnostics](#ignoring-diagnostics).
 - **`check`** (boolean | string, optional, default: `false`): Diff the parsed component API against a committed snapshot and assign a semver bump to each change. `true` uses the `json` writer's `outFile` (or `COMPONENT_API.json`); a string sets a custom snapshot path. Also available as `--check` / `--check=<path>`. On the CLI this exits `3` on a breaking change; from `sveld()` it's returned on `SveldResult.check` for you to act on. See [CI: API-drift checks (`--check`)](#ci-api-drift-checks---check).
 - **`quiet`** (boolean, optional, default: `false`): Suppress writer progress logs (`created "..."` / `unchanged "..."`), which print to `stderr` by default. Does not suppress error messages, the diagnostics summary, or the `--check` report. Also available as `--quiet`.
 - **`dryRun`** (boolean, optional, default: `false`): Resolve the entry, load config, and parse components through the real pipeline, then print `would write "<path>"` to `stdout` for each output file instead of writing it, including the parse cache. Diagnostics, `strict`, and `check` behave as in a real run. CLI-only via `--dry-run`; the Vite plugin does not expose this option.

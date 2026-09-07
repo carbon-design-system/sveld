@@ -11,6 +11,7 @@ import type {
   TypeImportBinding,
 } from "../ComponentParser";
 import type { ParserContext } from "./context";
+import { recordSveldIgnore } from "./diagnostics";
 import { addDispatchedEvent } from "./events";
 import { collectGenericsAttributeTypeDependencies } from "./generics";
 import { processLeadingCommentsJSDoc, processNodeJSDoc } from "./jsdoc";
@@ -505,6 +506,8 @@ export function parseRunesPropsDeclaration(parser: ComponentParser, ctx: ParserC
       if (bindable) {
         ctx.reactive_vars.add(propName);
       }
+
+      recordSveldIgnore(ctx, "prop-unknown-type", propName, propertyJSDoc?.sveldIgnore);
 
       addProp(parser, ctx, propName, {
         name: propName,
