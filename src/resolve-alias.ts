@@ -173,9 +173,7 @@ export function resolveAliasLookup(importPath: string, fromDir: string): AliasLo
   const configDir = dirname(configPath);
   const resolvedBaseUrl = resolve(configDir, baseUrl);
 
-  const patterns = Object.entries(paths).sort(
-    ([a], [b]) => patternPrefixLength(b) - patternPrefixLength(a),
-  );
+  const patterns = Object.entries(paths).sort(([a], [b]) => patternPrefixLength(b) - patternPrefixLength(a));
 
   for (const [pattern, mappings] of patterns) {
     const match = importPath.match(getPatternRegex(pattern));
