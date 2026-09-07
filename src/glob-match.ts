@@ -1,5 +1,5 @@
 /** Characters that need escaping when dropped literally into a `RegExp` source string. */
-const REGEXP_SPECIAL_CHARS = ".+^${}()|[]\\";
+const REGEXP_SPECIAL_CHARS = ".+^$()[]{}|\\";
 
 /**
  * Minimal glob matcher for `diagnostics.ignore[].component` patterns: `*`

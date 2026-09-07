@@ -5,6 +5,10 @@ import { cli, parseCliOptions } from "../src/cli";
 import { setQuiet } from "../src/logger";
 import { normalizeSeparators } from "../src/path";
 
+const GITHUB_EVENT_NO_SOURCE_WARNING_REGEX =
+  /::warning file=\.\/Phantom\.svelte,line=\d+,col=\d+,title=sveld sveld\/event-no-source::/;
+const GITHUB_BREAKING_CHANGE_ERROR_REGEX = /^::error file=Phantom,title=sveld breaking change::/;
+
 describe("parseCliOptions", () => {
   test("--fail-fast enables failFast", () => {
     expect(parseCliOptions(["--fail-fast"])).toEqual({ kind: "options", options: { failFast: true } });
@@ -964,7 +968,9 @@ describe("cli() --format usage error", () => {
     await cli(process);
 
     expect(process.exitCode).toBe(1);
-    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('--format must be "text" or "json"; got "yaml"'));
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('--format must be "text", "json", or "github"; got "yaml"'),
+    );
     expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(false);
     expect(existsSync(join(dir, "types"))).toBe(false);
   });
@@ -1107,6 +1113,116 @@ describe("cli() --format with --report-diagnostics", () => {
 
     expect(stderrSpy).not.toHaveBeenCalled();
     expect(errorSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe("cli() --format=github", () => {
+  let dir: string;
+  let previousCwd: string;
+  let previousArgv: string[];
+  let previousStepSummary: string | undefined;
+  let errorSpy: ReturnType<typeof jest.spyOn>;
+  let logSpy: ReturnType<typeof jest.spyOn>;
+
+  beforeEach(() => {
+    previousCwd = process.cwd();
+    previousArgv = process.argv;
+    previousStepSummary = process.env.GITHUB_STEP_SUMMARY;
+    delete process.env.GITHUB_STEP_SUMMARY;
+    process.exitCode = 0;
+    dir = mkdtempSync(join(tmpdir(), "sveld-cli-format-github-"));
+    process.chdir(dir);
+    mkdirSync(join(dir, "src"), { recursive: true });
+    writeFileSync(
+      join(dir, "src", "Phantom.svelte"),
+      "<script>\n  /** @event {CustomEvent<null>} phantom */\n  export let label;\n</script>\n<button>{label}</button>\n",
+    );
+    writeFileSync(join(dir, "src", "index.js"), 'export { default as Phantom } from "./Phantom.svelte";\n');
+    errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    logSpy = jest.spyOn(console, "log").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    process.chdir(previousCwd);
+    process.argv = previousArgv;
+    process.exitCode = 0;
+    if (previousStepSummary === undefined) delete process.env.GITHUB_STEP_SUMMARY;
+    else process.env.GITHUB_STEP_SUMMARY = previousStepSummary;
+    rmSync(dir, { recursive: true, force: true });
+    jest.restoreAllMocks();
+  });
+
+  test("prints a ::warning workflow command for a warning-severity diagnostic", async () => {
+    process.argv = [
+      "bun",
+      "cli.js",
+      "--entry=src/index.js",
+      "--types=false",
+      "--report-diagnostics",
+      "--format=github",
+    ];
+
+    await cli(process);
+
+    const printed = errorSpy.mock.calls.map((call: unknown[]) => String(call[0])).join("\n");
+    expect(printed).toMatch(GITHUB_EVENT_NO_SOURCE_WARNING_REGEX);
+  });
+
+  test("appends a Markdown table to GITHUB_STEP_SUMMARY when it is set", async () => {
+    const summaryFile = join(dir, "step-summary.md");
+    writeFileSync(summaryFile, "");
+    process.env.GITHUB_STEP_SUMMARY = summaryFile;
+    process.argv = [
+      "bun",
+      "cli.js",
+      "--entry=src/index.js",
+      "--types=false",
+      "--report-diagnostics",
+      "--format=github",
+    ];
+
+    await cli(process);
+
+    const summary = readFileSync(summaryFile, "utf-8");
+    expect(summary).toContain("### sveld diagnostics");
+    expect(summary).toContain("sveld/event-no-source");
+  });
+
+  test("does not touch GITHUB_STEP_SUMMARY when there is nothing to report", async () => {
+    const summaryFile = join(dir, "step-summary.md");
+    writeFileSync(summaryFile, "");
+    process.env.GITHUB_STEP_SUMMARY = summaryFile;
+    writeFileSync(join(dir, "src", "Phantom.svelte"), "<script></script>\n<button>Click</button>\n");
+    process.argv = [
+      "bun",
+      "cli.js",
+      "--entry=src/index.js",
+      "--types=false",
+      "--report-diagnostics",
+      "--format=github",
+    ];
+
+    await cli(process);
+
+    expect(readFileSync(summaryFile, "utf-8")).toBe("");
+  });
+
+  test("prints a ::error workflow command for a breaking --check change", async () => {
+    writeFileSync(join(dir, "src", "Phantom.svelte"), "<script></script>\n<button>Click</button>\n");
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--json"];
+    await cli(process);
+    logSpy.mockClear();
+
+    writeFileSync(
+      join(dir, "src", "Phantom.svelte"),
+      "<script>\n  export let label;\n</script>\n<button>{label}</button>\n",
+    );
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--check", "--format=github"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(3);
+    expect(logSpy).toHaveBeenCalledWith(expect.stringMatching(GITHUB_BREAKING_CHANGE_ERROR_REGEX));
   });
 });
 

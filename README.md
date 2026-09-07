@@ -577,6 +577,12 @@ Pass `--stdout` alongside exactly one of `--json`, `--markdown`, or `--custom-el
 
 `--format=json` switches the `--check` report and the `--report-diagnostics` / `--strict` diagnostics summary from prose to JSON, so scripts and agents don't have to regex the text output, e.g. `sveld --json --check --format=json | jq '.bump'`. Channels are unchanged: the check report prints to `stdout` and the diagnostics summary to `stderr`, same as the text format. The default remains `--format=text`; an unrecognized value (e.g. `--format=yaml`) is a usage error that prints to `stderr` and exits `1` without generating anything.
 
+`--format=github` prints [GitHub Actions workflow commands](https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions) instead: `::warning`/`::error` for each diagnostic (by `severity`) and `::error` for each breaking `--check` change, annotating the offending line directly in the PR's "Files changed" tab. Ignored diagnostics and non-`major` `--check` changes produce no annotation. When the `GITHUB_STEP_SUMMARY` env var is set (GitHub Actions sets it automatically), sveld also appends a Markdown table mirroring the same rows to that file, so the job summary shows them even for someone not reviewing the diff. A minimal workflow step:
+
+```yaml
+- run: npx sveld --json --check --report-diagnostics --strict=errors --format=github
+```
+
 Run `npx sveld --help` for the full flag list with descriptions, or `npx sveld --version` to print the installed version.
 
 Pass `--glob` with a directory as `--entry` (no barrel file) to document every `.svelte` file under it directly, with no re-export needed: each component's sanitized filename becomes its module name in JSON, Markdown, and the generated `index.d.ts`, in addition to the per-component `.d.ts` every `--glob` run already produces. This is the same set `mergeGlobbedComponents` discovers when `--glob` is combined with a file entry; a directory entry just has no barrel to layer it onto.

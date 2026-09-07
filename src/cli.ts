@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { appendFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import pkg from "../package.json" with { type: "json" };
 import { asSvelteEntryPoint } from "./brands";
@@ -11,6 +11,12 @@ import {
 } from "./check";
 import { failingDiagnostics, formatDiagnosticsSummary, formatDiagnosticsSummaryJson } from "./diagnostics";
 import { getSvelteEntry } from "./get-svelte-entry";
+import {
+  formatCheckGitHub,
+  formatCheckGitHubSummary,
+  formatDiagnosticsGitHub,
+  formatDiagnosticsGitHubSummary,
+} from "./github-annotations";
 import { closestMatch } from "./levenshtein";
 import { loadConfig, mergeConfig, type SveldRuntimeOptions, validateOptions } from "./load-config";
 import { setQuiet } from "./logger";
@@ -65,7 +71,7 @@ Options:
   --strict[=errors]     Exit with code 4 when diagnostics exist (implies --report-diagnostics); --strict=errors only fails on error-severity diagnostics
   --types-format=<format>  ".d.ts" output format: "class" (default) or "component" (Svelte 5 Component<...>)
   --check[=<path>]      Diff the parsed API against a committed snapshot; exit 3 on a breaking change (default path: COMPONENT_API.json)
-  --format=<text|json>  Output format for the --check report and the diagnostics summary (default: text)
+  --format=<text|json|github>  Output format for the --check report and the diagnostics summary (default: text); "github" prints GitHub Actions ::error/::warning lines and appends a GITHUB_STEP_SUMMARY table when that env var is set
   --help                Print this help message and exit
   --version             Print the installed sveld version and exit
 
@@ -244,7 +250,7 @@ function parseCliFlagValue(flag: string, value: string | boolean, arg: string, r
       // The value is validated in `cli()` once it can be reported as a usage
       // error (`--format=yaml`); a bare `--format` is silently ignored.
       return typeof value === "string"
-        ? { kind: "option", option: { format: value as "text" | "json" } }
+        ? { kind: "option", option: { format: value as "text" | "json" | "github" } }
         : { kind: "option", option: {} };
     default:
       return { kind: "unknown", arg, suggestion: suggestFlag(rawFlag) };
@@ -372,8 +378,13 @@ export async function cli(process: NodeJS.Process) {
     }
   }
 
-  if (options.format !== undefined && options.format !== "text" && options.format !== "json") {
-    console.error(`sveld: --format must be "text" or "json"; got "${options.format}".`);
+  if (
+    options.format !== undefined &&
+    options.format !== "text" &&
+    options.format !== "json" &&
+    options.format !== "github"
+  ) {
+    console.error(`sveld: --format must be "text", "json", or "github"; got "${options.format}".`);
     process.exitCode = EXIT_CODES.USAGE_ERROR;
     return;
   }
@@ -440,10 +451,16 @@ export async function cli(process: NodeJS.Process) {
 
   const { diagnostics } = result;
   const shouldReport = options.reportDiagnostics || options.strict;
+  const stepSummaryParts: string[] = [];
 
   if (shouldReport && diagnostics.length > 0) {
     if (options.format === "json") {
       process.stderr.write(formatDiagnosticsSummaryJson(diagnostics));
+    } else if (options.format === "github") {
+      const annotations = formatDiagnosticsGitHub(diagnostics);
+      if (annotations) console.error(annotations);
+      const summary = formatDiagnosticsGitHubSummary(diagnostics);
+      if (summary) stepSummaryParts.push(summary);
     } else {
       console.error(formatDiagnosticsSummary(diagnostics));
     }
@@ -452,9 +469,18 @@ export async function cli(process: NodeJS.Process) {
   if (checkResult) {
     if (options.format === "json") {
       process.stdout.write(formatCheckReportJson(checkResult));
+    } else if (options.format === "github") {
+      const annotations = formatCheckGitHub(checkResult);
+      if (annotations) console.log(annotations);
+      const summary = formatCheckGitHubSummary(checkResult);
+      if (summary) stepSummaryParts.push(summary);
     } else {
       console.log(formatCheckReport(checkResult));
     }
+  }
+
+  if (options.format === "github" && stepSummaryParts.length > 0 && process.env.GITHUB_STEP_SUMMARY) {
+    appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${stepSummaryParts.join("\n\n")}\n`);
   }
 
   // Lowest applicable code wins (3 beats 4); every failure is still reported above.
