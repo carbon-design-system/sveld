@@ -2007,6 +2007,19 @@ export default class ComponentParser {
       );
     }
 
+    /**
+     * `{...$$restProps}` spread only onto components: sveld can't type another
+     * component's rest-prop shape, and no `@restProps` tag supplied one manually.
+     */
+    if (this.ctx.rest_props?.type === "InlineComponent") {
+      recordDiagnostic(
+        this.ctx,
+        "rest-props-unresolved",
+        "$$restProps",
+        `$$restProps is only spread onto component "${this.ctx.rest_props.name}"; sveld cannot infer its rest-prop type. Spread onto a plain element or add an @restProps tag.`,
+      );
+    }
+
     const parsedComponent: ParsedComponent = {
       source: sourceRangeFromOffsets(this.ctx, 0, this.ctx.source?.length),
       syntaxMode: this.ctx.syntaxMode,

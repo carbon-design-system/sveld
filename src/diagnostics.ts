@@ -9,13 +9,15 @@ import { matchesGlob } from "./glob-match";
  * - `event-no-source`: `@event` with no dispatch, forward, or callback prop.
  * - `example-compile-error`: an `@example` block failed to type-check (opt-in, `checkExamples`).
  * - `syntax-skipped`: `$props()`/`{@render}` syntax the parser can't model; omitted from output.
+ * - `rest-props-unresolved`: every `{...$$restProps}` target was a component, so `$RestProps` couldn't be typed.
  */
 export type SveldDiagnosticKind =
   | "prop-unknown-type"
   | "context-any-type"
   | "event-no-source"
   | "example-compile-error"
-  | "syntax-skipped";
+  | "syntax-skipped"
+  | "rest-props-unresolved";
 
 /** `"error"` fails `--strict=errors`; `"warning"` only fails plain `--strict`. */
 export type SveldDiagnosticSeverity = "error" | "warning";
@@ -32,6 +34,7 @@ export const DIAGNOSTIC_CODES: Record<SveldDiagnosticKind, string> = {
   "event-no-source": "sveld/event-no-source",
   "example-compile-error": "sveld/example-compile-error",
   "syntax-skipped": "sveld/syntax-skipped",
+  "rest-props-unresolved": "sveld/rest-props-unresolved",
 };
 
 /**
@@ -45,6 +48,7 @@ export const DIAGNOSTIC_SEVERITIES: Record<SveldDiagnosticKind, SveldDiagnosticS
   "event-no-source": "warning",
   "example-compile-error": "error",
   "syntax-skipped": "error",
+  "rest-props-unresolved": "warning",
 };
 
 /**
@@ -141,6 +145,7 @@ const KIND_LABELS: Record<SveldDiagnosticKind, string> = {
   "event-no-source": "@event tags with no dispatch or callback",
   "example-compile-error": "@example blocks that failed to compile",
   "syntax-skipped": "Component syntax sveld skipped",
+  "rest-props-unresolved": "$$restProps spread only onto components",
 };
 
 const KIND_ORDER: SveldDiagnosticKind[] = [
@@ -149,6 +154,7 @@ const KIND_ORDER: SveldDiagnosticKind[] = [
   "event-no-source",
   "example-compile-error",
   "syntax-skipped",
+  "rest-props-unresolved",
 ];
 
 /**

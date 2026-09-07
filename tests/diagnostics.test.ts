@@ -236,6 +236,36 @@ describe("ComponentParser diagnostics", () => {
     expect(conflictDiagnostic?.severity).toBe("error");
     expect(conflictDiagnostic?.code).toBe("sveld/syntax-skipped");
   });
+
+  test("flags $$restProps spread only onto a component as rest-props-unresolved", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+      </script>
+      <Button {...$$restProps} />
+    `;
+
+    const { diagnostics, rest_props } = parser.parseSvelteComponent(source, parseContext);
+    const restPropsDiagnostic = diagnostics?.find((d) => d.kind === "rest-props-unresolved");
+
+    expect(restPropsDiagnostic).toMatchObject({ kind: "rest-props-unresolved", name: "$$restProps" });
+    expect(rest_props).toMatchObject({ type: "InlineComponent", name: "Button" });
+  });
+
+  test("prefers a later plain-element $$restProps target over an earlier component target", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+      </script>
+      <Button {...$$restProps} />
+      <div {...$$restProps} />
+    `;
+
+    const { diagnostics, rest_props } = parser.parseSvelteComponent(source, parseContext);
+
+    expect(rest_props).toMatchObject({ type: "Element", name: "div" });
+    expect(diagnostics?.some((d) => d.kind === "rest-props-unresolved")).toBe(false);
+  });
 });
 
 describe("diagnostics helpers", () => {
