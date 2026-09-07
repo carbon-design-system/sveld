@@ -153,6 +153,23 @@ export interface ProcessComponentOptions {
 }
 
 const HYPHEN_REGEX = /-/g;
+const INVALID_MODULE_NAME_CHAR_REGEX = /[^A-Za-z0-9_$]/g;
+const LEADING_DIGIT_REGEX = /^[0-9]/;
+
+/**
+ * Sanitizes a `moduleName` derived from a file name into a valid identifier:
+ * strips characters `.d.ts` can't emit in a declaration name (e.g. the `.`
+ * in `my.component.svelte`) and prefixes `_` when the result would start
+ * with a digit (e.g. `3d-model.svelte`). Warns when it had to rename.
+ */
+function sanitizeModuleName(rawModuleName: string): string {
+  const stripped = rawModuleName.replace(INVALID_MODULE_NAME_CHAR_REGEX, "");
+  const sanitized = LEADING_DIGIT_REGEX.test(stripped) ? `_${stripped}` : stripped;
+  if (sanitized !== rawModuleName) {
+    console.warn(`Warning: "${rawModuleName}" is not a valid identifier; using "${sanitized}" instead.`);
+  }
+  return sanitized;
+}
 
 /**
  * Discovered component sources for an entry point, before parsing.
@@ -230,7 +247,7 @@ function findSvelteFiles(
 function globComponentSources(rootDir: string): GlobbedComponentSource[] {
   return findSvelteFiles(rootDir)
     .map((file) => {
-      const moduleName = parse(file).name.replace(HYPHEN_REGEX, "");
+      const moduleName = sanitizeModuleName(parse(file).name.replace(HYPHEN_REGEX, ""));
       const source = asRelativeSourcePath(normalizeSeparators(`./${relative(rootDir, file)}`));
       return { moduleName, source };
     })
