@@ -1,6 +1,6 @@
 # Contributing
 
-`sveld` statically analyzes Svelte components and generates TypeScript definitions (`.d.ts`), JSON (`COMPONENT_API.json`), and Markdown documentation. It parses each component once with the Svelte 5 compiler and walks the resulting AST; that single path powers output for Svelte 3, Svelte 4, Svelte 5 without runes, and Svelte 5 Runes. The public API surface is in [README.md](README.md) (JSDoc tags, options, output shapes) — that file is the source of truth for _what_ sveld supports. This file covers _how the code is built and changed_.
+`sveld` statically analyzes Svelte components and generates TypeScript definitions (`.d.ts`), JSON (`COMPONENT_API.json`), and Markdown documentation. It parses each component once with its own template parser (`src/template-parse/`) and walks the resulting AST; that single path powers output for Svelte 3, Svelte 4, Svelte 5 without runes, and Svelte 5 Runes. The public API surface is in [README.md](README.md) (JSDoc tags, options, output shapes) — that file is the source of truth for _what_ sveld supports. This file covers _how the code is built and changed_.
 
 If you're not sure what to build or how to approach a change, [file an issue](https://github.com/carbon-design-system/sveld/issues) before opening a PR.
 
@@ -54,7 +54,7 @@ The pipeline, end to end:
 
 1. **Resolve the entry point.** [`get-svelte-entry.ts`](src/get-svelte-entry.ts) takes an explicit entry or falls back to `package.json#svelte`.
 2. **Parse exports.** [`parse-exports.ts`](src/parse-exports.ts) reads the barrel (for example `src/index.js`) to learn which components are public and under what names; [`create-exports.ts`](src/create-exports.ts) builds the export map. With `glob: true`, every `.svelte` file under the entry directory is discovered instead.
-3. **Parse each component.** [`ComponentParser.ts`](src/ComponentParser.ts) is the core. It parses the component via [`svelte-parse.ts`](src/svelte-parse.ts) (see that file for why it isn't just `import { parse } from "svelte/compiler"`), walks the ESTree AST with `estree-walker`, and reads JSDoc with `comment-parser` to extract props, events, slots, typedefs, generics, contexts, and rest props into a `ParsedComponent`.
+3. **Parse each component.** [`ComponentParser.ts`](src/ComponentParser.ts) is the core. It parses the component via [`svelte-template-parse.ts`](src/svelte-template-parse.ts) (see that file for why it isn't just `import { parse } from "svelte/compiler"`), walks the ESTree AST with `estree-walker`, and reads JSDoc with sveld's own [`comment-parser.ts`](src/parser/comment-parser.ts) to extract props, events, slots, typedefs, generics, contexts, and rest props into a `ParsedComponent`.
 4. **Write output.** The `writer/` modules turn `ParsedComponent` into artifacts:
    - [`writer-ts-definitions.ts`](src/writer/writer-ts-definitions.ts) + [`writer-ts-definitions-core.ts`](src/writer/writer-ts-definitions-core.ts) → `.d.ts` extending `SvelteComponentTyped`.
    - [`writer-json.ts`](src/writer/writer-json.ts) → `COMPONENT_API.json` (carries a `schemaVersion`).
@@ -68,7 +68,7 @@ Orchestration and entry surfaces:
 
 Supporting modules: [`ast-guards.ts`](src/ast-guards.ts) (ESTree node type guards), [`element-tag-map.ts`](src/element-tag-map.ts) (HTML element → attribute/event maps for forwarded events and `$$restProps`), [`resolve-alias.ts`](src/resolve-alias.ts) (tsconfig/jsconfig path aliases), [`brands.ts`](src/brands.ts) and [`path.ts`](src/path.ts) (path types and normalization), [`validate.ts`](src/validate.ts) (`package.json` parsing).
 
-`ComponentParser.ts` is ~5.8k lines and does the heavy lifting; most feature work and bug fixes land there or in a writer. When a change spans both, the parser produces the metadata and the writer decides how it renders.
+`ComponentParser.ts` is ~1.9k lines and orchestrates the parse; most feature work and bug fixes land in [`src/parser/*.ts`](src/parser) (props, runes-props, events, slots, contexts, jsdoc, comment-parser, rest-props, generics, type-resolution, and more) or in a writer. When a change spans both, the parser produces the metadata and the writer decides how it renders.
 
 ## Conventions
 
@@ -102,16 +102,17 @@ This is the primary way parser and writer behavior is pinned. Each directory und
 
 ```
 tests/fixtures/<case-name>/
-  input.svelte    # the component to parse (you write this)
-  output.json     # parsed metadata (generated)
-  output.d.ts     # emitted TypeScript definition (generated)
+  input.svelte           # the component to parse (you write this)
+  output.json            # parsed metadata (generated)
+  output-class.d.ts      # emitted TypeScript definition, "class" format (generated)
+  output-component.d.ts  # emitted TypeScript definition, "component" format (generated)
 ```
 
-[`fixtures.test.ts`](tests/fixtures.test.ts) globs every `input.svelte`, parses it, and snapshots both the JSON metadata and the formatted `.d.ts` into [`tests/__snapshots__/fixtures.test.ts.snap`](tests/__snapshots__). It also writes `output.json` and `output.d.ts` next to the input so you can read the result directly and assert types against it. The directory name becomes the `moduleName` (kebab-case → PascalCase: `runes-props-basic` → `RunesPropsBasic`).
+[`fixtures.test.ts`](tests/fixtures.test.ts) globs every `input.svelte`, parses it, and rewrites `output.json`, `output-class.d.ts`, and `output-component.d.ts` next to the input on every run — there's no separate snapshot file, so `git diff` shows behavior changes directly. The test then asserts the freshly written content matches what was already committed, so a changed output fails until you review and commit it. The directory name becomes the `moduleName` (kebab-case → PascalCase: `runes-props-basic` → `RunesPropsBasic`).
 
-**To add a case:** create `tests/fixtures/<case-name>/input.svelte` and run `bun test fixtures`. [`bunfig.toml`](bunfig.toml) sets `updateSnapshots = "missing"`, so a brand-new snapshot is written automatically; an existing one that _changes_ fails the test. The committed `output.json` / `output.d.ts` are part of the change — review them, and confirm the `.d.ts` is what a consumer should see.
+**To add a case:** create `tests/fixtures/<case-name>/input.svelte` and run `bun test tests/fixtures.test.ts -t "<case-name>"`. The output files don't exist yet, so the test writes them and passes; review the generated `output.json` / `output-class.d.ts` / `output-component.d.ts`, confirm the `.d.ts` is what a consumer should see, and commit them as part of the change.
 
-**When you change the parser or a writer,** expect existing snapshots to move. Inspect every diff before regenerating; a snapshot change is a behavior change. Regenerate intentionally with `bun test --update-snapshots`, never as a reflex.
+**When you change the parser or a writer,** expect existing fixture outputs to move. There's no `--update-snapshots` step — run `bun test tests/fixtures.test.ts` once, inspect every diff with `git diff`, and commit only the changes that are an intentional result of your change.
 
 Name cases after the behavior under test, grouping by feature prefix to match the existing layout (`runes-*`, `context-*`, `typedef-*`, `slot-*`, `forwarded-events-*`, `dispatched-events-*`). Add a focused case per behavior rather than overloading one fixture. Cover the syntax modes a change touches — there are parallel `legacy-*` and `runes-*` families because the same feature must work in both.
 
@@ -126,7 +127,7 @@ Name cases after the behavior under test, grouping by feature prefix to match th
 
 ### End-to-end tests
 
-[`tests/test-e2e.ts`](tests/test-e2e.ts) (`bun run test:e2e`) `bun link`s the locally built sveld into each project under `tests/e2e/`, installs, and runs that project's `sveld` script (CLI fixtures) or `build` (Vite-based fixtures). When a project defines `typecheck`, the harness also runs `tsc` against generated `types/`. These are real downstream consumers — `single-export`, `multi-export`, `multi-export-typed`, `glob`, `path-aliases`, `sveltekit`, `svelte5-vite`, and a large `carbon` fixture mirroring carbon-components-svelte. A failure means generated types don't compile in a real project. Build sveld first (`bun run build`) so the link resolves the current code. CI does not run the e2e suite; run it locally when changing output shape or export resolution.
+[`tests/test-e2e.ts`](tests/test-e2e.ts) (`bun run test:e2e`) `bun link`s the locally built sveld into each project under `tests/e2e/`, installs, and runs that project's `sveld` script (CLI fixtures) or `build` (Vite-based fixtures). When a project defines `typecheck`, the harness also runs `tsc` against generated `types/`. These are real downstream consumers — `single-export`, `multi-export`, `multi-export-typed`, `glob`, `path-aliases`, `sveltekit`, `svelte5-vite`, and a large `carbon` fixture mirroring carbon-components-svelte. A failure means generated types don't compile in a real project. Build sveld first (`bun run build`) so the link resolves the current code. CI runs the e2e suite (`bun run test:e2e`) on all three OSes; run it locally too when changing output shape or export resolution.
 
 ### Svelte version coverage
 
@@ -148,7 +149,7 @@ bun install
 bun dev
 ```
 
-It imports the parser and writers from `../src` directly while pinning its own copies of `comment-parser` and `estree-walker` (see [`playground/vite.config.ts`](playground/vite.config.ts)), so source edits show up without a build step.
+It imports the parser and writers from `../src` directly (see [`playground/vite.config.ts`](playground/vite.config.ts)), so source edits show up without a build step.
 
 ## Continuous integration
 
@@ -159,6 +160,7 @@ It imports the parser and writers from `../src` directly while pinning its own c
 3. `bun run build`
 4. `bun run test`
 5. `bun run test:fixtures-types`
+6. `bun run test:e2e`
 
 Run those locally before pushing. The cross-platform matrix is why path normalization is non-negotiable — a separator bug passes on macOS and fails on Windows.
 
