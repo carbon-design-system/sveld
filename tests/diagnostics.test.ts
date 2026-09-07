@@ -271,11 +271,13 @@ describe("sveld() strict mode", () => {
     expect(summaryCalls(errorSpy).length).toBeGreaterThan(0);
   });
 
-  test("strict: true sets a non-zero exit code when diagnostics exist", async () => {
-    const { diagnostics } = await sveld({ entry: relativeDir, glob: true, types: false, strict: true });
+  test("strict: true returns exitCode 4 without touching process.exitCode", async () => {
+    const exitCodeBefore = process.exitCode;
+    const { diagnostics, exitCode } = await sveld({ entry: relativeDir, glob: true, types: false, strict: true });
 
     expect(diagnostics.length).toBeGreaterThan(0);
-    expect(process.exitCode).toBe(1);
+    expect(exitCode).toBe(4);
+    expect(process.exitCode).toBe(exitCodeBefore);
     expect(summaryCalls(errorSpy).length).toBeGreaterThan(0);
   });
 });

@@ -1,3 +1,4 @@
+import type { ComponentParseError } from "./bundle";
 import { type CheckResult, resolveCheckSnapshotFile, runCheck } from "./check";
 import { formatDiagnosticsSummary, type SveldDiagnostic } from "./diagnostics";
 import { getSvelteEntry } from "./get-svelte-entry";
@@ -9,11 +10,21 @@ type SveldOptions = SveldRuntimeOptions;
 /**
  * Result of a programmatic `sveld` run.
  */
-interface SveldResult {
+export interface SveldResult {
   /** Diagnostics from this run. */
   diagnostics: SveldDiagnostic[];
   /** Populated when `check` is enabled: the API diff against the committed snapshot. */
   check?: CheckResult;
+  /** Parse errors for components that failed to parse (empty unless `failFast` is disabled and a component errors). */
+  errors: ComponentParseError[];
+  /**
+   * Suggested process exit code for this run, using the same mapping as the
+   * CLI (a breaking `check` result wins over `strict` diagnostics): `0` on
+   * success, `3` on a breaking API change, `4` when `strict` diagnostics
+   * exist. `sveld()` never mutates `process.exitCode` itself; assign this
+   * value yourself if you want the process to exit non-zero.
+   */
+  exitCode: 0 | 3 | 4;
 }
 
 /**
@@ -66,9 +77,14 @@ export async function sveld(opts?: SveldOptions): Promise<SveldResult> {
     console.error(formatDiagnosticsSummary(diagnostics));
   }
 
-  if (merged.strict && diagnostics.length > 0) {
-    process.exitCode = 1;
+  // Lowest applicable code wins (3 beats 4), matching the CLI's exit-code contract.
+  let exitCode: 0 | 3 | 4 = 0;
+
+  if (checkResult?.bump === "major") {
+    exitCode = 3;
+  } else if (merged.strict && diagnostics.length > 0) {
+    exitCode = 4;
   }
 
-  return { diagnostics, check: checkResult };
+  return { diagnostics, check: checkResult, errors: result.errors, exitCode };
 }
