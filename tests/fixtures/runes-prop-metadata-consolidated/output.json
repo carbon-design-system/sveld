@@ -75,7 +75,7 @@
       "typeSource": "unknown",
       "isFunction": false,
       "isFunctionDeclaration": false,
-      "isRequired": true,
+      "isRequired": false,
       "constant": false,
       "reactive": true,
       "source": {

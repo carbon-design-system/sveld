@@ -11,7 +11,7 @@ export type RunesPropMetadataConsolidatedProps = {
    */
   value?: number;
 
-  open: any;
+  open?: any;
 
   /**
    * @default [1, 2]
