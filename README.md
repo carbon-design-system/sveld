@@ -2319,6 +2319,13 @@ export default class Component extends SvelteComponentTyped<
 > {}
 ```
 
+#### Detail inference without `@event`
+
+Without an `@event` tag or a typed dispatcher, `sveld` infers a dispatched event's detail type from the `dispatch()` call site itself:
+
+- A scalar literal argument narrows to its literal type: `dispatch("count", 5)` types the detail as `5`, not `number`. Use `@event` or a typed dispatcher (below) to widen it.
+- An object or array literal argument infers a structural type per field/element: `dispatch("save", { id })` types the detail as `{ id: string }` (resolving the `id` variable's own type), and `dispatch("items", [1, 2])` types it as `number[]`. Fields or elements sveld can't resolve fall back to `any` individually, not for the whole detail.
+
 #### Typed dispatchers
 
 `createEventDispatcher<T>()`'s generic argument (`lang="ts"`, or the JSDoc `/** @type {import('svelte').EventDispatcher<T>} */` cast form) works like an `@event` block for every member of `T`, including ones never actually dispatched in the file:

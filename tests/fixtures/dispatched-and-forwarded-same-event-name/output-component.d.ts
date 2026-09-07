@@ -1,7 +1,7 @@
 import type { Component } from "svelte";
 
 export type DispatchedAndForwardedSameEventNameProps = {
-  onclick?: (event: CustomEvent<any>) => void;
+  onclick?: (event: CustomEvent<{ x: number }>) => void;
 };
 
 export type DispatchedAndForwardedSameEventNameExports = Record<string, never>;

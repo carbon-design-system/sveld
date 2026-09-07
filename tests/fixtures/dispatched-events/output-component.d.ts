@@ -9,7 +9,7 @@ export type DispatchedEventsProps = {
 
   "ondestroy:component"?: (event: CustomEvent<null>) => void;
 
-  onhover?: (event: CustomEvent<any>) => void;
+  onhover?: (event: CustomEvent<{ h1: boolean }>) => void;
 };
 
 export type DispatchedEventsExports = Record<string, never>;

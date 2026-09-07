@@ -18,6 +18,7 @@
     {
       "type": "dispatched",
       "name": "click",
+      "detail": "{ x: number; }",
       "source": {
         "start": {
           "line": 6,

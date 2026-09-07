@@ -79,6 +79,7 @@
     {
       "type": "dispatched",
       "name": "hover",
+      "detail": "{ h1: boolean; }",
       "source": {
         "start": {
           "line": 16,

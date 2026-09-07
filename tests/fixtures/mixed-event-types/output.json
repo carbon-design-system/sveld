@@ -67,6 +67,7 @@
     {
       "type": "dispatched",
       "name": "submit",
+      "detail": "{ data: string; }",
       "source": {
         "start": {
           "line": 13,

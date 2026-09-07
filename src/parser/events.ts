@@ -1,9 +1,59 @@
-import type { CallExpression } from "estree";
+import type { ArrayExpression, CallExpression, ObjectExpression, Property } from "estree";
 import { isIdentifier, isLiteral, isNewExpressionNamed, isObjectExpression } from "../ast-guards";
+import type ComponentParser from "../ComponentParser";
 import type { DispatchedEvent } from "../ComponentParser";
 import type { ParserContext } from "./context";
 import { sourceRangeFromNode } from "./source-position";
 import { assignValueOrUndefined } from "./utils";
+
+/**
+ * Structurally infers a dispatched event's detail type from an object or array literal `dispatch()`
+ * argument (`{ id: string }`, `number[]`), resolving identifier property values through the
+ * existing variable-type lookup and falling back to `any` per property/element rather than for the
+ * whole detail. Returns `undefined` for anything else so callers keep their own scalar-literal
+ * narrowing (`dispatch("count", 5)` still types as `5`).
+ */
+export function deriveLiteralDetailType(parser: ComponentParser, node: unknown): string | undefined {
+  if (!node || typeof node !== "object" || !("type" in node)) return undefined;
+  if (isObjectExpression(node)) return buildObjectLiteralDetailType(parser, node);
+  if (node.type === "ArrayExpression") return buildArrayLiteralDetailType(parser, node as ArrayExpression);
+  return undefined;
+}
+
+function inferLiteralMemberType(parser: ComponentParser, node: unknown): string {
+  if (!node || typeof node !== "object" || !("type" in node)) return "any";
+  if (isIdentifier(node)) return parser.findVariableTypeAndDescription(node.name)?.type ?? "any";
+
+  if (isLiteral(node)) {
+    const value = node.value;
+    return value === null ? "null" : typeof value;
+  }
+
+  if (isObjectExpression(node)) return buildObjectLiteralDetailType(parser, node);
+  if (node.type === "ArrayExpression") return buildArrayLiteralDetailType(parser, node as ArrayExpression);
+
+  return "any";
+}
+
+function buildObjectLiteralDetailType(parser: ComponentParser, node: ObjectExpression): string {
+  const properties: Array<{ name: string; type: string }> = [];
+  for (const property of node.properties) {
+    if (property.type !== "Property" || property.computed) continue;
+    const name = parser.getPropertyName(property.key as Property["key"]);
+    if (!name) continue;
+    properties.push({ name, type: inferLiteralMemberType(parser, property.value) });
+  }
+  return buildEventDetailFromProperties(properties);
+}
+
+function buildArrayLiteralDetailType(parser: ComponentParser, node: ArrayExpression): string {
+  const elementTypes = new Set(
+    node.elements.filter((element) => element != null).map((element) => inferLiteralMemberType(parser, element)),
+  );
+  if (elementTypes.size === 0) return "any[]";
+  if (elementTypes.size === 1) return `${[...elementTypes][0]}[]`;
+  return `(${[...elementTypes].join(" | ")})[]`;
+}
 
 export function literalDetailToTypeText(value: unknown): string {
   return typeof value === "string" ? JSON.stringify(value) : String(value);
