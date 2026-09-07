@@ -34,9 +34,10 @@ describe("opt-in @example compile checking", () => {
     const parsed = await parseFixture();
     const sources = collectExampleSources(parsed);
 
-    const resolver = await TypeResolver.create(FIXTURE_DIR);
-    expect(resolver).not.toBeNull();
-    if (!resolver) return;
+    const created = await TypeResolver.create(FIXTURE_DIR);
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+    const resolver = created.resolver;
 
     try {
       const diagnosticsByFilePath = await resolver.checkExamples([

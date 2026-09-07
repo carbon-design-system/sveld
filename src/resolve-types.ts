@@ -1,4 +1,5 @@
-import { existsSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 import type { ParsedComponentTypeScriptMetadata, ResolvedComponentProp } from "./ComponentParser";
 import type { ExampleCheckSource } from "./example-check";
@@ -34,6 +35,63 @@ const NON_FILENAME_CHAR_REGEX = /[^A-Za-z0-9_-]/g;
 const NON_IDENTIFIER_CHAR_REGEX = /[^A-Za-z0-9_$]/g;
 const LEADING_DIGIT_REGEX = /^[0-9]/;
 const EXAMPLE_CODE_START_LINE = 2;
+const MIN_SUPPORTED_TS_MAJOR = 7;
+const REQUIREMENT_TEXT = `TypeScript ${MIN_SUPPORTED_TS_MAJOR} or later, which provides \`typescript/unstable/async\``;
+
+/** Outcome of loading the `typescript` package, before any tsconfig lookup. */
+export interface TypeScriptLoadResult {
+  installed: boolean;
+  version?: string;
+  module?: TS;
+}
+
+/** Structured failure reason for {@link TypeResolver.create}. */
+export type TypeResolverFailureReason = "not-installed" | "unsupported-version" | "no-tsconfig";
+
+export interface TypeResolverFailure {
+  ok: false;
+  reason: TypeResolverFailureReason;
+  message: string;
+}
+
+export interface TypeResolverSuccess {
+  ok: true;
+  resolver: TypeResolver;
+}
+
+export type TypeResolverCreateResult = TypeResolverSuccess | TypeResolverFailure;
+
+export interface TypeResolverCreateOptions {
+  /** Test seam: replaces the real `typescript` package lookup/import. */
+  importTs?: (cwd: string) => Promise<TypeScriptLoadResult>;
+}
+
+function isSupportedVersion(version: string | undefined): boolean {
+  if (!version) return false;
+  const major = Number.parseInt(version, 10);
+  return Number.isFinite(major) && major >= MIN_SUPPORTED_TS_MAJOR;
+}
+
+/** Resolves the installed `typescript` version from `cwd`'s module resolution, then imports the async API. */
+async function defaultImportTs(cwd: string): Promise<TypeScriptLoadResult> {
+  let version: string | undefined;
+  try {
+    const require = createRequire(path.join(cwd, "package.json"));
+    const pkgPath = require.resolve("typescript/package.json");
+    version = (JSON.parse(readFileSync(pkgPath, "utf8")) as { version?: string }).version;
+  } catch {
+    return { installed: false };
+  }
+
+  if (!isSupportedVersion(version)) return { installed: true, version };
+
+  try {
+    const module = await import("typescript/unstable/async");
+    return { installed: true, version, module };
+  } catch {
+    return { installed: true, version };
+  }
+}
 
 /**
  * Expands opaque imported `$props()` types using the project's TypeScript program.
@@ -55,31 +113,48 @@ export class TypeResolver {
 
   /**
    * Loads `typescript` and the nearest `tsconfig.json`.
-   * Returns `null` when either is missing.
+   *
+   * These features are explicitly opt-in, so a failure to start here is
+   * reported as a structured failure rather than swallowed: the caller
+   * decides whether that's fatal.
    */
-  static async create(cwd: string = process.cwd()): Promise<TypeResolver | null> {
+  static async create(
+    cwd: string = process.cwd(),
+    { importTs = defaultImportTs }: TypeResolverCreateOptions = {},
+  ): Promise<TypeResolverCreateResult> {
+    const loaded = await importTs(cwd);
+
+    if (!loaded.installed) {
+      return {
+        ok: false,
+        reason: "not-installed",
+        message: `requires the \`typescript\` package to be installed (${REQUIREMENT_TEXT}); none was found`,
+      };
+    }
+
+    if (!loaded.module) {
+      return {
+        ok: false,
+        reason: "unsupported-version",
+        message: `requires ${REQUIREMENT_TEXT}; found \`typescript@${loaded.version ?? "unknown"}\` installed, which does not expose that module`,
+      };
+    }
+
     const tsconfigPath = findTsConfig(cwd);
     if (!tsconfigPath) {
-      console.warn("Warning: `resolveTypes` could not locate a tsconfig.json. Skipping semantic resolution.");
-      return null;
+      return {
+        ok: false,
+        reason: "no-tsconfig",
+        message: `could not locate a tsconfig.json starting from "${cwd}"`,
+      };
     }
 
-    let mod: TS;
-    try {
-      mod = await import("typescript/unstable/async");
-    } catch (error) {
-      console.warn(
-        "Warning: `resolveTypes` requires the `typescript` package to be installed. Skipping semantic resolution.",
-        error,
-      );
-      return null;
-    }
-
+    const mod = loaded.module;
     const resolver = new TypeResolver(null, mod.SymbolFlags, mod.TypeFlags, tsconfigPath);
     const api = new mod.API({ cwd, fs: resolver.createFileSystem() });
     // biome-ignore lint/suspicious/noExplicitAny: assign after fs closure is created.
     (resolver as any).api = api;
-    return resolver;
+    return { ok: true, resolver };
   }
 
   /**

@@ -688,7 +688,17 @@ export async function generateBundle(
   if (resolveTypesCandidates.length > 0 || checkExamplesCandidates.length > 0) {
     // Share one TypeResolver when both resolveTypes and checkExamples are enabled.
     const { TypeResolver } = await import("./resolve-types");
-    const resolver = await TypeResolver.create(rootDir);
+    const created = await TypeResolver.create(rootDir);
+    if (!created.ok) {
+      const features = [
+        resolveTypesCandidates.length > 0 ? "resolveTypes" : null,
+        checkExamplesCandidates.length > 0 ? "checkExamples" : null,
+      ]
+        .filter((feature): feature is string => feature !== null)
+        .join(" and ");
+      throw new Error(`sveld: \`${features}\` ${created.message}.`);
+    }
+    const resolver = created.resolver;
 
     try {
       if (resolveTypesCandidates.length > 0) {
@@ -861,11 +871,9 @@ function collectResolveTypesCandidates(components: ComponentDocs): ResolveTypesC
 
 async function resolveImportedPropTypes(
   candidates: ResolveTypesCandidate[],
-  resolver: TypeResolver | null,
+  resolver: TypeResolver,
   resolveComponentFilePath: ResolveComponentFilePath,
 ): Promise<void> {
-  if (!resolver) return;
-
   // Keyed by resolved filePath, not moduleName: two components discovered via
   // `--glob` can share a basename, and moduleName alone isn't unique.
   const resolvedByFilePath = await resolver.expandAll(
@@ -901,11 +909,9 @@ function collectCheckExamplesCandidates(components: ComponentDocs): CheckExample
 
 async function checkComponentExamples(
   candidates: CheckExamplesCandidate[],
-  resolver: TypeResolver | null,
+  resolver: TypeResolver,
   resolveComponentFilePath: ResolveComponentFilePath,
 ): Promise<void> {
-  if (!resolver) return;
-
   // Keyed by resolved filePath, not moduleName: two components discovered via
   // `--glob` can share a basename, and moduleName alone isn't unique.
   const diagnosticsByFilePath = await resolver.checkExamples(
