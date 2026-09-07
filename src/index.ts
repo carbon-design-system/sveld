@@ -12,8 +12,8 @@ export {
 export { cli } from "./cli";
 export type { SveldDiagnostic, SveldDiagnosticKind } from "./diagnostics";
 export type { SvelteEntryPoint } from "./get-svelte-entry";
-export { defineConfig, type SveldConfig } from "./load-config";
+export { defineConfig, type SveldConfig, type SveldRuntimeOptions } from "./load-config";
 export { default } from "./plugin";
-export { sveld } from "./sveld";
+export { sveld, type SveldResult } from "./sveld";
 export { buildComponentApiDocument, type ComponentApiDocument } from "./writer/document-model";
 export { getWriter, listWriters, type OutputWriter, registerWriter } from "./writer/registry";

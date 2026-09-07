@@ -87,3 +87,87 @@ describe("sveld() check", () => {
     expect(result.check).toBeUndefined();
   });
 });
+
+describe("sveld() exitCode and errors", () => {
+  let absoluteDir: string;
+  let relativeDir: string;
+  let entry: string;
+  let previousExitCode: number | string | undefined;
+
+  beforeEach(() => {
+    absoluteDir = mkdtempSync(join(process.cwd(), "sveld-exitcode-"));
+    relativeDir = basename(absoluteDir);
+    entry = join(relativeDir, "index.js");
+    previousExitCode = process.exitCode;
+    process.exitCode = 0;
+    jest.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    process.exitCode = previousExitCode;
+    rmSync(absoluteDir, { recursive: true, force: true });
+    jest.restoreAllMocks();
+  });
+
+  test("never mutates process.exitCode, even with strict diagnostics", async () => {
+    writeFileSync(
+      join(absoluteDir, "Phantom.svelte"),
+      "<script>\n  /** @event {CustomEvent<null>} phantom */\n  export let label;\n</script>\n<button>{label}</button>\n",
+    );
+    writeFileSync(join(absoluteDir, "index.js"), 'export { default as Phantom } from "./Phantom.svelte";\n');
+
+    const result = await sveld({ entry, types: false, strict: true });
+
+    expect(process.exitCode).toBe(0);
+    expect(result.exitCode).toBe(4);
+  });
+
+  test("result.exitCode is 3 when --check finds a breaking change", async () => {
+    writeFileSync(join(absoluteDir, "Button.svelte"), "<script></script>\n<button>Click</button>\n");
+    writeFileSync(join(absoluteDir, "index.js"), 'export { default as Button } from "./Button.svelte";\n');
+    const snapshotFile = join(relativeDir, "COMPONENT_API.json");
+    const snapshot = buildComponentApiDocument(
+      new Map([["Button", mockComponentDocApi("Button", "Button.svelte", { props: [] })]]),
+    );
+    writeFileSync(join(absoluteDir, "COMPONENT_API.json"), JSON.stringify(snapshot));
+    writeFileSync(
+      join(absoluteDir, "Button.svelte"),
+      "<script>\n  export let label;\n</script>\n<button>{label}</button>\n",
+    );
+
+    const result = await sveld({ entry, types: false, check: snapshotFile });
+
+    expect(result.exitCode).toBe(3);
+  });
+
+  test("result.exitCode is 3 (not 4) when a breaking check and strict diagnostics both apply", async () => {
+    writeFileSync(
+      join(absoluteDir, "Phantom.svelte"),
+      "<script>\n  /** @event {CustomEvent<null>} phantom */\n  export let label;\n</script>\n<button>{label}</button>\n",
+    );
+    writeFileSync(join(absoluteDir, "index.js"), 'export { default as Phantom } from "./Phantom.svelte";\n');
+    const snapshotFile = join(relativeDir, "COMPONENT_API.json");
+    const snapshot = buildComponentApiDocument(
+      new Map([["Phantom", mockComponentDocApi("Phantom", "Phantom.svelte", { props: [] })]]),
+    );
+    writeFileSync(join(absoluteDir, "COMPONENT_API.json"), JSON.stringify(snapshot));
+
+    const result = await sveld({ entry, types: false, check: snapshotFile, strict: true });
+
+    expect(result.check?.bump).toBe("major");
+    expect(result.exitCode).toBe(3);
+  });
+
+  test("result.errors is populated for a component that fails to parse", async () => {
+    writeFileSync(
+      join(absoluteDir, "Broken.svelte"),
+      "<script>\n  export let label = ;\n</script>\n<button>{label}</button>\n",
+    );
+    writeFileSync(join(absoluteDir, "index.js"), 'export { default as Broken } from "./Broken.svelte";\n');
+
+    const result = await sveld({ entry, types: false });
+
+    expect(result.errors).toHaveLength(1);
+    expect(result.errors[0]).toEqual(expect.objectContaining({ filePath: expect.stringContaining("Broken.svelte") }));
+  });
+});

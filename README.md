@@ -573,19 +573,20 @@ const { diagnostics } = await sveld({
 });
 ```
 
-`diagnostics` is always populated; printing is opt-in via `reportDiagnostics` or `strict` (see [Type inference diagnostics](#type-inference-diagnostics)).
+`diagnostics` is always populated; printing is opt-in via `reportDiagnostics` or `strict` (see [Type inference diagnostics](#type-inference-diagnostics)). `errors` is always populated too: components that failed to parse, whether or not `failFast` is set.
 
-Pass `check: true` (or `check: "<path>"` for a custom snapshot location) to diff against a committed `COMPONENT_API.json`, the same way `--check` does on the CLI. The result lands on `SveldResult.check`; sveld does not print it or touch `process.exitCode` for you, so inspect and act on it yourself:
+Pass `check: true` (or `check: "<path>"` for a custom snapshot location) to diff against a committed `COMPONENT_API.json`, the same way `--check` does on the CLI. The result lands on `SveldResult.check`. `sveld()` never touches `process.exitCode` itself; it returns a suggested `exitCode` (`0`, `3` for a breaking `check` result, or `4` for `strict` diagnostics — the same mapping the CLI uses, `3` winning over `4`) so you can assign it yourself:
 
 ```js
 import { formatCheckReport } from "sveld";
 
-const { check } = await sveld({ json: true, check: true });
+const { check, exitCode } = await sveld({ json: true, check: true });
 
 if (check) {
   console.log(formatCheckReport(check));
-  if (check.bump === "major") process.exitCode = 1;
 }
+
+process.exitCode = exitCode;
 ```
 
 See [CI: API-drift checks (`--check`)](#ci-api-drift-checks---check) for how changes are classified.
