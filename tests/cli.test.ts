@@ -1119,4 +1119,39 @@ describe("cli() exit codes", () => {
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("Suggested semver bump: major."));
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("unresolved type"));
   });
+
+  test("sets exitCode 2 and names the requirement when --check-examples finds an incompatible typescript", async () => {
+    // Shadows the real `typescript` package for this project with a fake,
+    // pre-7 install so `TypeResolver.create`'s version check fails without
+    // touching the real dependency the rest of the suite relies on.
+    mkdirSync(join(dir, "node_modules", "typescript"), { recursive: true });
+    writeFileSync(
+      join(dir, "node_modules", "typescript", "package.json"),
+      JSON.stringify({ name: "typescript", version: "5.9.0" }),
+    );
+    writeFileSync(
+      join(dir, "src", "Documented.svelte"),
+      [
+        "<script>",
+        "  /**",
+        "   * @example",
+        "   * ```js",
+        '   * formatValue("ok");',
+        "   * ```",
+        "   */",
+        "  export function formatValue(value) {",
+        "    return value;",
+        "  }",
+        "</script>",
+      ].join("\n"),
+    );
+    writeFileSync(join(dir, "src", "index.js"), 'export { default as Documented } from "./Documented.svelte";\n');
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--json", "--check-examples"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(2);
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("TypeScript 7"));
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("5.9.0"));
+  });
 });

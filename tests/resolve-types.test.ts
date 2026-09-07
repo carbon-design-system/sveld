@@ -52,9 +52,10 @@ describe("opt-in TypeScript semantic resolution", () => {
     const metadata = getParsedComponentTypeScriptMetadata(parsed);
     if (!metadata?.canonicalPropsType) throw new Error("fixture missing canonical props type");
 
-    const resolver = await TypeResolver.create(FIXTURE_DIR);
-    expect(resolver).not.toBeNull();
-    if (!resolver) return;
+    const created = await TypeResolver.create(FIXTURE_DIR);
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+    const resolver = created.resolver;
 
     try {
       const resolved = await resolver.expandAll([
@@ -87,9 +88,10 @@ describe("opt-in TypeScript semantic resolution", () => {
     const metadata = getParsedComponentTypeScriptMetadata(parsed);
     if (!metadata?.canonicalPropsType) throw new Error("fixture missing canonical props type");
 
-    const resolver = await TypeResolver.create(UNION_FIXTURE_DIR);
-    expect(resolver).not.toBeNull();
-    if (!resolver) return;
+    const created = await TypeResolver.create(UNION_FIXTURE_DIR);
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+    const resolver = created.resolver;
 
     try {
       const resolved = await resolver.expandAll([
@@ -121,9 +123,10 @@ describe("opt-in TypeScript semantic resolution", () => {
     expect(metadata.canonicalPropsType).toBe("Props<T>");
     expect(metadata.referencesComponentGenerics).toBe(true);
 
-    const resolver = await TypeResolver.create(GENERIC_FIXTURE_DIR);
-    expect(resolver).not.toBeNull();
-    if (!resolver) return;
+    const created = await TypeResolver.create(GENERIC_FIXTURE_DIR);
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+    const resolver = created.resolver;
 
     try {
       const resolved = await resolver.expandAll([
@@ -156,9 +159,10 @@ describe("opt-in TypeScript semantic resolution", () => {
     const unionMetadata = getParsedComponentTypeScriptMetadata(unionParsed);
     if (!unionMetadata?.canonicalPropsType) throw new Error("fixture missing canonical props type");
 
-    const resolver = await TypeResolver.create(FIXTURE_DIR);
-    expect(resolver).not.toBeNull();
-    if (!resolver) return;
+    const created = await TypeResolver.create(FIXTURE_DIR);
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+    const resolver = created.resolver;
 
     try {
       // Simulates two `--glob`-discovered `.svelte` files sharing a basename
@@ -177,4 +181,42 @@ describe("opt-in TypeScript semantic resolution", () => {
     expect(importedParsed.props.map((prop) => prop.name).sort()).toEqual(["disabled", "href", "variant"]);
     expect(unionParsed.props.map((prop) => prop.name).sort()).toEqual(["duration", "kind", "target"]);
   }, 30_000);
+});
+
+describe("TypeResolver.create failure modes", () => {
+  test("reports not-installed when `typescript` cannot be found", async () => {
+    const result = await TypeResolver.create(FIXTURE_DIR, {
+      importTs: async () => ({ installed: false }),
+    });
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.reason).toBe("not-installed");
+    expect(result.message).toContain("typescript");
+    expect(result.message).toContain("TypeScript 7");
+  });
+
+  test("reports unsupported-version and names the installed version when below TypeScript 7", async () => {
+    const result = await TypeResolver.create(FIXTURE_DIR, {
+      importTs: async () => ({ installed: true, version: "5.9.0" }),
+    });
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.reason).toBe("unsupported-version");
+    expect(result.message).toContain("5.9.0");
+    expect(result.message).toContain("TypeScript 7");
+  });
+
+  test("reports no-tsconfig when TypeScript loads but no tsconfig.json is found", async () => {
+    const noTsconfigDir = path.parse(process.cwd()).root;
+    const result = await TypeResolver.create(noTsconfigDir, {
+      importTs: async () => ({ installed: true, version: "7.0.2", module: {} }),
+    });
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.reason).toBe("no-tsconfig");
+    expect(result.message).toContain("tsconfig.json");
+  });
 });

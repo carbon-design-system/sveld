@@ -292,7 +292,7 @@ Without `resolveTypes`, JSON lists no props. With it, each field shows up with `
 }
 ```
 
-**Performance.** Off by default. This is the only path that loads TypeScript. It needs `typescript` and a `tsconfig.json`, runs slower than the AST-only pipeline, and gets slower as your types grow. Use it only when you need expanded JSON. `.d.ts` output is unchanged.
+**Performance.** Off by default. This is one of the two paths that load TypeScript. It needs `typescript` 7+ and a `tsconfig.json` (see [Requirements](#requirements)); if either is missing, `resolveTypes` fails the run instead of silently producing empty props. It also runs slower than the AST-only pipeline and gets slower as your types grow. Use it only when you need expanded JSON. `.d.ts` output is unchanged.
 
 ### Persistent parse cache (`cache`)
 
@@ -343,7 +343,7 @@ Plain TS/JS only. Examples fenced as `svelte` or `html`, or bare markup like `<B
 
 The check is narrow on purpose. It catches renamed or removed symbols and wrong argument counts. It is not full type checking and never pulls in types sveld cannot see.
 
-Needs `typescript` and a `tsconfig.json`, same as `resolveTypes`. Use `--strict` (or the `strict` option) to fail CI when an example breaks.
+Needs `typescript` 7+ and a `tsconfig.json`, same as `resolveTypes` (see [Requirements](#requirements)); missing either fails the run rather than silently skipping every example. Use `--strict` (or the `strict` option) to fail CI when an example breaks.
 
 ### Type inference diagnostics
 
@@ -408,6 +408,7 @@ npx sveld --json --strict
 - Node 22+. CI tests against Node 22 on Linux, Windows, and macOS; earlier LTS versions are not verified.
 - `sveld` is ESM-only. `require("sveld")` does not work — use `import` or dynamic `import()`.
 - `sveld` bundles its own Svelte 5 compiler to parse `.svelte` files. Parsing does not depend on the Svelte version installed in your project, so Svelte 3 and Svelte 4 codebases parse the same way Svelte 5 codebases do — there is no compiler version to match up.
+- [`resolveTypes`](#opt-in-semantic-resolution-resolvetypes) and [`checkExamples`](#compile-checked-example-blocks-checkexamples) are optional and need `typescript` 7 or later (which provides `typescript/unstable/async`) plus a `tsconfig.json`. Everything else, including `.d.ts` generation, is AST-only and never loads TypeScript. If either is enabled and TypeScript can't be started (missing, too old, or no `tsconfig.json`), the run fails loudly: `sveld()` throws and the CLI exits `2` naming the requirement, rather than silently skipping the check.
 
 ## Usage
 

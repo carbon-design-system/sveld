@@ -5,6 +5,8 @@ import { type ComponentDocApi, type ComponentDocs, generateBundle } from "../src
 import ComponentParser from "../src/ComponentParser";
 import { TypeResolver } from "../src/resolve-types";
 
+const RESOLVER_FAILURE_MESSAGE_REGEX = /resolveTypes.*checkExamples.*tsconfig\.json/s;
+
 /** Look up `allComponentsForTypes` by filePath; moduleName is not unique. */
 function byModuleName(components: ComponentDocs, moduleName: string): ComponentDocApi | undefined {
   return Array.from(components.values()).find((component) => component.moduleName === moduleName);
@@ -123,7 +125,9 @@ describe("generateBundle shares one TypeResolver across resolveTypes and checkEx
     writeFileSync(path.join(dir, "ExampleCheck.svelte"), EXAMPLE_CHECK_COMPONENT);
 
     const fakeResolver = makeFakeResolver();
-    createSpy = jest.spyOn(TypeResolver, "create").mockResolvedValue(fakeResolver as unknown as TypeResolver);
+    createSpy = jest
+      .spyOn(TypeResolver, "create")
+      .mockResolvedValue({ ok: true, resolver: fakeResolver as unknown as TypeResolver });
 
     await generateBundle(path.join(dir, "index.ts"), true, {
       resolveTypes: true,
@@ -141,7 +145,9 @@ describe("generateBundle shares one TypeResolver across resolveTypes and checkEx
     writeFileSync(path.join(dir, "Plain.svelte"), PLAIN_COMPONENT);
 
     const fakeResolver = makeFakeResolver();
-    createSpy = jest.spyOn(TypeResolver, "create").mockResolvedValue(fakeResolver as unknown as TypeResolver);
+    createSpy = jest
+      .spyOn(TypeResolver, "create")
+      .mockResolvedValue({ ok: true, resolver: fakeResolver as unknown as TypeResolver });
 
     await generateBundle(path.join(dir, "index.ts"), true, {
       resolveTypes: true,
@@ -151,25 +157,25 @@ describe("generateBundle shares one TypeResolver across resolveTypes and checkEx
     expect(createSpy).not.toHaveBeenCalled();
   });
 
-  test("a null resolver (no tsconfig) leaves both features as graceful no-ops", async () => {
+  test("a failed resolver (no tsconfig) fails the run instead of silently skipping either feature", async () => {
     writeFileSync(path.join(dir, "index.ts"), BARREL);
     writeFileSync(path.join(dir, "PropsImported.svelte"), PROPS_IMPORTED_COMPONENT);
     writeFileSync(path.join(dir, "types.ts"), PROPS_TYPES);
     writeFileSync(path.join(dir, "ExampleCheck.svelte"), EXAMPLE_CHECK_COMPONENT);
 
-    createSpy = jest.spyOn(TypeResolver, "create").mockResolvedValue(null);
-
-    const result = await generateBundle(path.join(dir, "index.ts"), true, {
-      resolveTypes: true,
-      checkExamples: true,
+    createSpy = jest.spyOn(TypeResolver, "create").mockResolvedValue({
+      ok: false,
+      reason: "no-tsconfig",
+      message: 'could not locate a tsconfig.json starting from "/fake"',
     });
 
+    await expect(
+      generateBundle(path.join(dir, "index.ts"), true, {
+        resolveTypes: true,
+        checkExamples: true,
+      }),
+    ).rejects.toThrow(RESOLVER_FAILURE_MESSAGE_REGEX);
+
     expect(createSpy).toHaveBeenCalledTimes(1);
-
-    const propsImported = result.components.get("PropsImported");
-    expect(propsImported?.props).toEqual([]);
-
-    const exampleCheck = byModuleName(result.allComponentsForTypes, "ExampleCheck");
-    expect(exampleCheck?.diagnostics ?? []).toEqual([]);
   });
 });
