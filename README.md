@@ -499,6 +499,8 @@ Pass `--stdout` alongside exactly one of `--json`, `--markdown`, or `--custom-el
 
 Run `npx sveld --help` for the full flag list with descriptions, or `npx sveld --version` to print the installed version.
 
+Pass `--glob` with a directory as `--entry` (no barrel file) to document every `.svelte` file under it directly, with no re-export needed: each component's sanitized filename becomes its module name in JSON, Markdown, and the generated `index.d.ts`, in addition to the per-component `.d.ts` every `--glob` run already produces. This is the same set `mergeGlobbedComponents` discovers when `--glob` is combined with a file entry; a directory entry just has no barrel to layer it onto.
+
 ### Exit codes
 
 | Code | Meaning |

@@ -179,3 +179,25 @@ describe("generateBundle shares one TypeResolver across resolveTypes and checkEx
     expect(createSpy).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("generateBundle with a directory entry (no barrel) and --glob", () => {
+  let dir: string;
+
+  beforeEach(() => {
+    dir = mkdtempSync(path.join(tmpdir(), "sveld-bundle-dir-glob-"));
+    writeFileSync(path.join(dir, "Button.svelte"), BUTTON);
+  });
+
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("populates exports for JSON/Markdown, not just per-component .d.ts", async () => {
+    const result = await generateBundle(dir, true);
+
+    expect(Object.keys(result.exports)).toContain("Button");
+    expect(result.exports.Button?.default).toBe(true);
+    expect(result.components.has("Button")).toBe(true);
+    expect(byModuleName(result.allComponentsForTypes, "Button")).toBeDefined();
+  });
+});
