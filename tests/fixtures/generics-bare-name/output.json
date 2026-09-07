@@ -1,0 +1,47 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 11,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "value",
+      "kind": "let",
+      "type": "Item",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 7,
+          "column": 2
+        },
+        "end": {
+          "line": 7,
+          "column": 19
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": [
+    "Item",
+    "Item"
+  ],
+  "contexts": [],
+  "diagnostics": []
+}

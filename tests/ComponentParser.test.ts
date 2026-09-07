@@ -1535,6 +1535,69 @@ describe("ComponentParser", () => {
     warn.mockRestore();
   });
 
+  describe("@generics/@template JSDoc tags", () => {
+    test("falls back to the name for a bare @generics tag with no constraint", () => {
+      const parser = new ComponentParser();
+      const source = `
+        <script>
+          /**
+           * @generics Item
+           */
+
+          /** @type {Item} */
+          export let value;
+        </script>
+      `;
+
+      const result = parser.parseSvelteComponent(source, diagnostics);
+      expect(result.generics).toEqual(["Item", "Item"]);
+    });
+
+    test("warns when both @generics and @template declare the same name", () => {
+      const warn = jest.spyOn(console, "warn").mockImplementation(() => undefined);
+      const parser = new ComponentParser();
+      const source = `
+        <script>
+          /**
+           * @template {string} Row
+           * @generics {Row extends string = string} Row
+           */
+
+          /** @type {Row} */
+          export let value;
+        </script>
+      `;
+
+      const result = parser.parseSvelteComponent(source, diagnostics);
+      expect(result.generics).toEqual(["Row", "Row extends string = string"]);
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('Duplicate generic name "Row"'));
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining("Both @generics and @template tags are used"));
+
+      warn.mockRestore();
+    });
+
+    test("warns when a name repeats across two @generics tags", () => {
+      const warn = jest.spyOn(console, "warn").mockImplementation(() => undefined);
+      const parser = new ComponentParser();
+      const source = `
+        <script>
+          /**
+           * @generics {Row extends string = string} Row
+           * @generics {Row extends number = number} Row
+           */
+
+          /** @type {Row} */
+          export let value;
+        </script>
+      `;
+
+      parser.parseSvelteComponent(source, diagnostics);
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('Duplicate generic name "Row"'));
+
+      warn.mockRestore();
+    });
+  });
+
   describe("findVariableTypeAndDescription's JSDoc symbol table", () => {
     test("resolves a JSDoc'd variable whose name is on a different line than its keyword", () => {
       const parser = new ComponentParser();

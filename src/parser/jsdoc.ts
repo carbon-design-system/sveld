@@ -345,6 +345,47 @@ export function parseCustomTypes(
   scanSource: string | undefined = ctx.source,
 ) {
   if (!scanSource) return;
+  /** Cross-block bookkeeping for `@generics`/`@template` duplicate/mixed-tag warnings. */
+  let usedGenericsTag = false;
+  let usedTemplateTag = false;
+  let warnedMixedGenericsTags = false;
+  const seenGenericNames = new Set<string>();
+  const warnMixedGenericsTags = () => {
+    if (usedGenericsTag && usedTemplateTag && !warnedMixedGenericsTags) {
+      warnedMixedGenericsTags = true;
+      const location = ctx.componentFilePath ? ` in ${ctx.componentFilePath}` : "";
+      console.warn(
+        `Warning: Both @generics and @template tags are used to declare component generics${location}; their declarations are combined in the order encountered.`,
+      );
+    }
+  };
+  const warnAndTrackGenericName = (genericName: string) => {
+    const location = ctx.componentFilePath ? ` in ${ctx.componentFilePath}` : "";
+    if (seenGenericNames.has(genericName)) {
+      console.warn(`Warning: Duplicate generic name "${genericName}"${location}.`);
+    } else {
+      seenGenericNames.add(genericName);
+    }
+  };
+  /**
+   * Accumulates a `@generics`/`@template` declaration, replacing an earlier
+   * declaration in place when `declaredName` was already declared - so
+   * redeclaring the same generic (e.g. via both tags) updates its constraint
+   * instead of appending a second, invalid duplicate type parameter.
+   */
+  const accumulateOrReplaceGeneric = (declaredName: string, constraint: string) => {
+    if (ctx.generics) {
+      const names = splitTopLevelCommas(ctx.generics[0]).map((n) => n.trim());
+      const existingIndex = names.indexOf(declaredName.trim());
+      if (existingIndex !== -1) {
+        const constraints = splitTopLevelCommas(ctx.generics[1]).map((c) => c.trim());
+        constraints[existingIndex] = constraint;
+        ctx.generics = [ctx.generics[0], constraints.join(", ")];
+        return;
+      }
+    }
+    parser.accumulateGeneric(declaredName, constraint);
+  };
   for (const { tags, description: commentDescription, lines: blockLines } of parseComments(scanSource)) {
     let currentEventName: string | undefined;
     let currentEventType: string | undefined;
@@ -708,10 +749,19 @@ export function parseCustomTypes(
           if (isFirstTag) isFirstTag = false;
           break;
         }
-        case "generics":
-          ctx.generics = [name, type];
+        case "generics": {
+          // A bare `@generics Name` (no `{constraint}`) falls back to the name
+          // itself, mirroring `@template`'s unconstrained-parameter fallback.
+          const constraint = type || name;
+          for (const genericName of splitTopLevelCommas(name)) {
+            warnAndTrackGenericName(genericName.trim());
+          }
+          usedGenericsTag = true;
+          warnMixedGenericsTags();
+          accumulateOrReplaceGeneric(name, constraint);
           if (isFirstTag) isFirstTag = false;
           break;
+        }
         case "template": {
           // Build constraint from standard JSDoc @template syntax:
           //   @template T              → type="", name="T", default=undefined
@@ -727,7 +777,10 @@ export function parseCustomTypes(
             break;
           }
 
-          parser.accumulateGeneric(name, constraint);
+          warnAndTrackGenericName(name);
+          usedTemplateTag = true;
+          warnMixedGenericsTags();
+          accumulateOrReplaceGeneric(name, constraint);
           if (isFirstTag) isFirstTag = false;
           break;
         }
