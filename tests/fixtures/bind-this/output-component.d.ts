@@ -1,9 +1,6 @@
 import type { Component } from "svelte";
 
 export type BindThisProps = {
-  /**
-   * @default undefined
-   */
   ref: null | HTMLButtonElement;
 
   children?: (this: void) => void;

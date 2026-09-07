@@ -349,6 +349,8 @@ Needs `typescript` and a `tsconfig.json`, same as `resolveTypes`. Use `--strict`
 
 `sveld` collects unresolved-type diagnostics on every run: props that fall back to `any`, context values typed as `any`, `@event` tags with no dispatch or callback, `$props()`/`{@render}` syntax sveld can't model, and (when `checkExamples` is enabled) `example-compile-error`. They are always returned from the programmatic `sveld()` API in `SveldResult.diagnostics`. Each diagnostic carries an optional `source` range (the same `{ start: { line, column }, end: { line, column } }` shape as JSON output source ranges) whenever the parser holds a stable position for it.
 
+A prop with no type annotation, no `@type` JSDoc, and no initializer has nothing to infer a type or a default from: its JSON `type` stays absent (`"typeSource": "unknown"`), it triggers a `prop-unknown-type` diagnostic, and the emitted `.d.ts` types it as `any` with no `@default` line (rather than the literal type `undefined`).
+
 With `reportDiagnostics` or `strict`, the grouped summary looks like this:
 
 ```

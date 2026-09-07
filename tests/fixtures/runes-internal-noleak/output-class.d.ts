@@ -1,15 +1,9 @@
 import { SvelteComponentTyped } from "svelte";
 
 export type RunesInternalNoleakProps = {
-  /**
-   * @default undefined
-   */
-  value: undefined;
+  value: any;
 
-  /**
-   * @default undefined
-   */
-  onchange: undefined;
+  onchange: any;
 };
 
 export default class RunesInternalNoleak extends SvelteComponentTyped<

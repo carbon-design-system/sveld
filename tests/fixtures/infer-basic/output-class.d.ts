@@ -4,7 +4,7 @@ export type InferBasicProps = {
   /**
    * @default null
    */
-  ref?: undefined;
+  ref?: any;
 
   /**
    * @default true
@@ -16,10 +16,7 @@ export type InferBasicProps = {
    */
   propString?: string;
 
-  /**
-   * @default undefined
-   */
-  name: undefined;
+  name: any;
 
   /**
    * @default "" + Math.random().toString(36)

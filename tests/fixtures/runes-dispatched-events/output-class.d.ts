@@ -1,15 +1,9 @@
 import { SvelteComponentTyped } from "svelte";
 
 export type RunesDispatchedEventsProps = {
-  /**
-   * @default undefined
-   */
-  value: undefined;
+  value: any;
 
-  /**
-   * @default undefined
-   */
-  onchange: undefined;
+  onchange: any;
 };
 
 export default class RunesDispatchedEvents extends SvelteComponentTyped<

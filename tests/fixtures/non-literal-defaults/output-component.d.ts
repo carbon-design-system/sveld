@@ -67,7 +67,7 @@ export type NonLiteralDefaultsProps = {
    * Optional handler with undefined
    * @default undefined
    */
-  handler?: undefined;
+  handler?: any;
 
   /**
    * Append to element

@@ -17,7 +17,7 @@ export type ResolveDefaultChainedProps = {
    * Six levels deep: BEYOND -> Z -> Y -> X -> W -> V -> true. Exceeds the depth limit.
    * @default V
    */
-  deep6?: undefined;
+  deep6?: any;
 };
 
 export default class ResolveDefaultChained extends SvelteComponentTyped<

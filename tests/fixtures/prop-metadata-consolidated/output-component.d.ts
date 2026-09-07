@@ -1,9 +1,6 @@
 import type { Component } from "svelte";
 
 export type PropMetadataConsolidatedProps = {
-  /**
-   * @default undefined
-   */
   typed: string;
 
   /**
@@ -52,10 +49,7 @@ export type PropMetadataConsolidatedProps = {
    */
   expressionDefault?: number;
 
-  /**
-   * @default undefined
-   */
-  unknown: undefined;
+  unknown: any;
 };
 
 export type PropMetadataConsolidatedExports = Record<string, never>;

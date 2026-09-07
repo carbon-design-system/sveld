@@ -1,15 +1,9 @@
 import type { Component } from "svelte";
 
 export type RunesDispatchedEventsProps = {
-  /**
-   * @default undefined
-   */
-  value: undefined;
+  value: any;
 
-  /**
-   * @default undefined
-   */
-  onchange: undefined;
+  onchange: any;
 };
 
 export type RunesDispatchedEventsExports = Record<string, never>;

@@ -18,25 +18,21 @@ export type Factory = () => Options;
 export type TypedefUtilityTypesProps = {
   /**
    * A read-only subset of `Options`.
-   * @default undefined
    */
   summary: Pick<Options, "id" | "size">;
 
   /**
    * Everything in `Options` except `disabled`.
-   * @default undefined
    */
   editable: Omit<Options, "disabled">;
 
   /**
    * Derived from the factory's return type rather than restated.
-   * @default undefined
    */
   defaults: ReturnType<Factory>;
 
   /**
    * The resolved value of an async source.
-   * @default undefined
    */
   resolved: Awaited<Promise<Options>>;
 };

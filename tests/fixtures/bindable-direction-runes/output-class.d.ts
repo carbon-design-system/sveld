@@ -5,7 +5,7 @@ export type BindableDirectionRunesProps = {
    * Bind to the current value emitted by the component.
    * @default undefined
    */
-  size?: undefined;
+  size?: any;
 
   /**
    * Bind to state controlled by either the consumer or component.

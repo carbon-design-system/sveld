@@ -1,15 +1,9 @@
 import { SvelteComponentTyped } from "svelte";
 
 export type RunesSnippetDescriptionHyphensProps = {
-  /**
-   * @default undefined
-   */
-  row: undefined;
+  row: any;
 
-  /**
-   * @default undefined
-   */
-  col: undefined;
+  col: any;
 
   /**
    * First line documents `row-id` binding.

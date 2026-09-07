@@ -1,10 +1,7 @@
 import type { Component } from "svelte";
 
 export type RunesHostCustomElementProps = {
-  /**
-   * @default undefined
-   */
-  value: undefined;
+  value: any;
 };
 
 export type RunesHostCustomElementExports = Record<string, never>;
