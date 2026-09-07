@@ -13,8 +13,13 @@ import type { PluginSveldOptions } from "./plugin";
 export interface SveldRuntimeOptions extends PluginSveldOptions {
   /** Print unresolved-type diagnostics to stderr. */
   reportDiagnostics?: boolean;
-  /** Exit code 4 when diagnostics exist. Implies `reportDiagnostics`. */
-  strict?: boolean;
+  /**
+   * Exit code 4 when diagnostics exist. Implies `reportDiagnostics`. Pass
+   * `"errors"` to fail only on `severity: "error"` diagnostics
+   * (`example-compile-error`, `syntax-skipped`), letting warnings
+   * (`prop-unknown-type`, `context-any-type`, `event-no-source`) through.
+   */
+  strict?: boolean | "errors";
   /**
    * Diff the parsed component API against a committed snapshot (default:
    * the `json` writer's `outFile`, or `COMPONENT_API.json`) and assign a

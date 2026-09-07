@@ -1,6 +1,11 @@
 import type { ComponentParseError } from "./bundle";
 import { type CheckResult, resolveCheckSnapshotFile, runCheck } from "./check";
-import { formatDiagnosticsSummary, formatDiagnosticsSummaryJson, type SveldDiagnostic } from "./diagnostics";
+import {
+  failingDiagnostics,
+  formatDiagnosticsSummary,
+  formatDiagnosticsSummaryJson,
+  type SveldDiagnostic,
+} from "./diagnostics";
 import { getSvelteEntry } from "./get-svelte-entry";
 import { loadConfig, mergeConfig, type SveldRuntimeOptions, validateOptions } from "./load-config";
 import { setQuiet } from "./logger";
@@ -89,7 +94,7 @@ export async function sveld(opts?: SveldOptions): Promise<SveldResult> {
 
   if (checkResult?.bump === "major") {
     exitCode = 3;
-  } else if (merged.strict && diagnostics.length > 0) {
+  } else if (failingDiagnostics(diagnostics, merged.strict).length > 0) {
     exitCode = 4;
   }
 

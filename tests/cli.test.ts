@@ -121,6 +121,14 @@ describe("parseCliOptions", () => {
     expect(parseCliOptions(["--strict"])).toEqual({ kind: "options", options: { strict: true } });
   });
 
+  test("--strict=errors sets strict to errors", () => {
+    expect(parseCliOptions(["--strict=errors"])).toEqual({ kind: "options", options: { strict: "errors" } });
+  });
+
+  test("--strict=false disables strict", () => {
+    expect(parseCliOptions(["--strict=false"])).toEqual({ kind: "options", options: { strict: false } });
+  });
+
   test("--stdout enables stdout", () => {
     expect(parseCliOptions(["--stdout"])).toEqual({ kind: "options", options: { stdout: true } });
   });
@@ -1156,6 +1164,41 @@ describe("cli() exit codes", () => {
     await cli(process);
 
     expect(process.exitCode).toBe(4);
+  });
+
+  test("--strict=errors keeps exitCode 0 when only warning-severity diagnostics exist", async () => {
+    writeFileSync(
+      join(dir, "src", "Phantom.svelte"),
+      "<script>\n  /** @event {CustomEvent<null>} phantom */\n  export let label;\n</script>\n<button>{label}</button>\n",
+    );
+    writeFileSync(join(dir, "src", "index.js"), 'export { default as Phantom } from "./Phantom.svelte";\n');
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--json", "--strict=errors"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(0);
+  });
+
+  test("--strict=errors sets exitCode 4 when an error-severity diagnostic exists", async () => {
+    writeFileSync(
+      join(dir, "src", "Broken.svelte"),
+      "<script>\n  let { children, title } = $props();\n</script>\n<div>{title}{@render children(getProps())}</div>\n",
+    );
+    writeFileSync(join(dir, "src", "index.js"), 'export { default as Broken } from "./Broken.svelte";\n');
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--json", "--strict=errors"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(4);
+  });
+
+  test("--strict=oops is a usage error", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--strict=oops"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(1);
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('--strict must be "errors"'));
   });
 
   test("exits 3 (not 4) when a --check breaking change and --strict diagnostics both apply in one run", async () => {

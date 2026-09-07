@@ -128,7 +128,9 @@
           "line": 4,
           "column": 27
         }
-      }
+      },
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
     },
     {
       "component": "runes-non-identifier-prop-names/input.svelte",
@@ -144,7 +146,9 @@
           "line": 4,
           "column": 46
         }
-      }
+      },
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
     },
     {
       "component": "runes-non-identifier-prop-names/input.svelte",
@@ -160,7 +164,9 @@
           "line": 4,
           "column": 54
         }
-      }
+      },
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
     }
   ]
 }

@@ -147,7 +147,9 @@
           "line": 14,
           "column": 19
         }
-      }
+      },
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
     }
   ]
 }

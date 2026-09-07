@@ -322,7 +322,9 @@
           "line": 29,
           "column": 21
         }
-      }
+      },
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
     }
   ]
 }

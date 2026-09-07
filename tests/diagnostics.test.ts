@@ -2,10 +2,13 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
 import ComponentParser from "../src/ComponentParser";
 import {
+  createDiagnostic,
   dedupeDiagnostics,
+  failingDiagnostics,
   formatDiagnosticsSummary,
   formatDiagnosticsSummaryJson,
   type SveldDiagnostic,
+  type SveldDiagnosticInput,
 } from "../src/diagnostics";
 import { sveld } from "../src/sveld";
 
@@ -40,6 +43,8 @@ describe("ComponentParser diagnostics", () => {
     expect(propDiagnostic).toMatchObject({
       component: "./TestComponent.svelte",
       kind: "prop-unknown-type",
+      code: "sveld/prop-unknown-type",
+      severity: "warning",
       name: "value",
     });
     expect(typeof propDiagnostic?.message).toBe("string");
@@ -140,17 +145,20 @@ describe("ComponentParser diagnostics", () => {
     expect(generics).toEqual(["Row", "Row extends DataTableRow = DataTableRow"]);
     expect(conflictDiagnostic).toBeDefined();
     expect(conflictDiagnostic?.message).toContain("JSDoc declaration was ignored");
+    expect(conflictDiagnostic?.severity).toBe("error");
+    expect(conflictDiagnostic?.code).toBe("sveld/syntax-skipped");
   });
 });
 
 describe("diagnostics helpers", () => {
-  const make = (overrides: Partial<SveldDiagnostic>): SveldDiagnostic => ({
-    component: "./A.svelte",
-    kind: "prop-unknown-type",
-    name: "value",
-    message: "message",
-    ...overrides,
-  });
+  const make = (overrides: Partial<SveldDiagnosticInput>): SveldDiagnostic =>
+    createDiagnostic({
+      component: "./A.svelte",
+      kind: "prop-unknown-type",
+      name: "value",
+      message: "message",
+      ...overrides,
+    });
 
   test("dedupeDiagnostics removes records with the same component, kind, and name", () => {
     const deduped = dedupeDiagnostics([make({}), make({}), make({ name: "other" })]);
@@ -214,6 +222,58 @@ describe("diagnostics helpers", () => {
 
   test("formatDiagnosticsSummaryJson serializes an empty list", () => {
     expect(JSON.parse(formatDiagnosticsSummaryJson([]))).toEqual({ kind: "diagnostics", diagnostics: [] });
+  });
+
+  test("createDiagnostic fills in code and severity from kind", () => {
+    expect(make({ kind: "prop-unknown-type" })).toMatchObject({ code: "sveld/prop-unknown-type", severity: "warning" });
+    expect(make({ kind: "context-any-type" })).toMatchObject({ code: "sveld/context-any-type", severity: "warning" });
+    expect(make({ kind: "event-no-source" })).toMatchObject({ code: "sveld/event-no-source", severity: "warning" });
+    expect(make({ kind: "example-compile-error" })).toMatchObject({
+      code: "sveld/example-compile-error",
+      severity: "error",
+    });
+    expect(make({ kind: "syntax-skipped" })).toMatchObject({ code: "sveld/syntax-skipped", severity: "error" });
+  });
+
+  test("formatDiagnosticsSummary includes the code alongside the message", () => {
+    const summary = formatDiagnosticsSummary([make({ message: "prop fallback" })]);
+
+    expect(summary).toContain("prop fallback [sveld/prop-unknown-type]");
+  });
+});
+
+describe("failingDiagnostics", () => {
+  const warning = (overrides: Partial<SveldDiagnosticInput> = {}) =>
+    createDiagnostic({ component: "./A.svelte", kind: "prop-unknown-type", name: "value", message: "m", ...overrides });
+  const error = (overrides: Partial<SveldDiagnosticInput> = {}) =>
+    createDiagnostic({
+      component: "./A.svelte",
+      kind: "example-compile-error",
+      name: "value",
+      message: "m",
+      ...overrides,
+    });
+
+  test("returns nothing when strict is falsy", () => {
+    expect(failingDiagnostics([warning(), error()], undefined)).toEqual([]);
+    expect(failingDiagnostics([warning(), error()], false)).toEqual([]);
+  });
+
+  test("strict: true fails on both warnings and errors", () => {
+    const diagnostics = [warning(), error()];
+    expect(failingDiagnostics(diagnostics, true)).toEqual(diagnostics);
+  });
+
+  test('strict: "errors" fails only on error-severity diagnostics', () => {
+    const w = warning();
+    const e = error();
+    expect(failingDiagnostics([w, e], "errors")).toEqual([e]);
+  });
+
+  test("ignored diagnostics never fail strict, regardless of severity", () => {
+    const ignoredError = error({ ignored: true });
+    expect(failingDiagnostics([ignoredError], true)).toEqual([]);
+    expect(failingDiagnostics([ignoredError], "errors")).toEqual([]);
   });
 });
 

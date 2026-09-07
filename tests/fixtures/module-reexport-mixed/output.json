@@ -160,7 +160,9 @@
           "line": 27,
           "column": 18
         }
-      }
+      },
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
     },
     {
       "component": "module-reexport-mixed/input.svelte",
@@ -176,7 +178,9 @@
           "line": 30,
           "column": 26
         }
-      }
+      },
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
     }
   ]
 }

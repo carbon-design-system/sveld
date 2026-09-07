@@ -119,7 +119,9 @@
           "line": 7,
           "column": 20
         }
-      }
+      },
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
     }
   ]
 }
