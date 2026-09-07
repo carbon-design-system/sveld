@@ -541,8 +541,8 @@ export async function parseEntryExports(entryFile: string): Promise<EntryExports
 
   const byName = new Map<string, EntryExport>();
   for (const entry of collected) {
-    // Drop internal returnType; public EntryExport does not expose it.
-    const { declFile, returnType: _returnType, ...rest } = entry;
+    // Drop internal returnType/literalValue; public EntryExport does not expose them.
+    const { declFile, returnType: _returnType, literalValue: _literalValue, ...rest } = entry;
     const source = normalizeSeparators(`./${relative(entryDir, declFile)}`);
     byName.set(entry.name, { ...rest, source });
   }
