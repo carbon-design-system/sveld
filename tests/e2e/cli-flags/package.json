@@ -1,0 +1,23 @@
+{
+  "name": "cli-flags",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "svelte": "./component/index.js",
+  "scripts": {
+    "gen": "sveld --json --markdown --custom-elements",
+    "check-minor": "sveld --check=snapshots/minor-change.json --format=json",
+    "check-removed": "sveld --check=snapshots/removed-prop.json",
+    "strict": "sveld --strict",
+    "stdout-ndjson": "sveld --stdout=ndjson --json"
+  },
+  "e2e": {
+    "scripts": [
+      { "script": "gen" },
+      { "script": "check-minor", "expectStdout": "json" },
+      { "script": "check-removed", "expectExitCode": 3 },
+      { "script": "strict", "expectExitCode": 4 },
+      { "script": "stdout-ndjson", "expectStdout": "ndjson", "expectLines": 2 }
+    ]
+  }
+}

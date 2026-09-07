@@ -1,0 +1,220 @@
+{
+  "schemaVersion": 1,
+  "generator": {
+    "name": "sveld",
+    "version": "0.36.11",
+    "svelteVersion": "5.56.10"
+  },
+  "total": 2,
+  "components": [
+    {
+      "moduleName": "Badge",
+      "filePath": "component/Badge.svelte",
+      "source": {
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 7,
+          "column": 0
+        }
+      },
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
+      "props": [
+        {
+          "name": "color",
+          "kind": "let",
+          "deprecated": "Use `Tag` instead.",
+          "type": "string",
+          "typeSource": "default",
+          "value": "\"gray\"",
+          "defaultValue": {
+            "raw": "\"gray\"",
+            "kind": "literal",
+            "value": "gray"
+          },
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": false,
+          "constant": false,
+          "reactive": false,
+          "source": {
+            "start": {
+              "line": 3,
+              "column": 2
+            },
+            "end": {
+              "line": 3,
+              "column": 28
+            }
+          }
+        }
+      ],
+      "moduleExports": [],
+      "slots": [
+        {
+          "name": null,
+          "default": true,
+          "slot_props": "Record<string, never>",
+          "source": {
+            "start": {
+              "line": 6,
+              "column": 28
+            },
+            "end": {
+              "line": 6,
+              "column": 36
+            }
+          }
+        }
+      ],
+      "events": [],
+      "typedefs": [],
+      "generics": null,
+      "contexts": []
+    },
+    {
+      "moduleName": "Button",
+      "filePath": "component/Button.svelte",
+      "source": {
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 10,
+          "column": 0
+        }
+      },
+      "syntaxMode": "legacy",
+      "scriptLanguage": "js",
+      "props": [
+        {
+          "name": "label",
+          "kind": "let",
+          "type": "string",
+          "typeSource": "default",
+          "value": "\"Click\"",
+          "defaultValue": {
+            "raw": "\"Click\"",
+            "kind": "literal",
+            "value": "Click"
+          },
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": false,
+          "constant": false,
+          "reactive": false,
+          "source": {
+            "start": {
+              "line": 2,
+              "column": 2
+            },
+            "end": {
+              "line": 2,
+              "column": 29
+            }
+          }
+        },
+        {
+          "name": "value",
+          "kind": "let",
+          "typeSource": "unknown",
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": true,
+          "constant": false,
+          "reactive": false,
+          "source": {
+            "start": {
+              "line": 3,
+              "column": 2
+            },
+            "end": {
+              "line": 3,
+              "column": 19
+            }
+          }
+        },
+        {
+          "name": "variant",
+          "kind": "let",
+          "type": "string",
+          "typeSource": "default",
+          "value": "\"solid\"",
+          "defaultValue": {
+            "raw": "\"solid\"",
+            "kind": "literal",
+            "value": "solid"
+          },
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": false,
+          "constant": false,
+          "reactive": false,
+          "source": {
+            "start": {
+              "line": 4,
+              "column": 2
+            },
+            "end": {
+              "line": 4,
+              "column": 31
+            }
+          }
+        },
+        {
+          "name": "legacyFlag",
+          "kind": "let",
+          "type": "boolean",
+          "typeSource": "default",
+          "value": "false",
+          "defaultValue": {
+            "raw": "false",
+            "kind": "literal",
+            "value": false
+          },
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": false,
+          "constant": false,
+          "reactive": false,
+          "source": {
+            "start": {
+              "line": 5,
+              "column": 2
+            },
+            "end": {
+              "line": 5,
+              "column": 30
+            }
+          }
+        }
+      ],
+      "moduleExports": [],
+      "slots": [],
+      "events": [
+        {
+          "type": "forwarded",
+          "name": "click",
+          "element": "button",
+          "source": {
+            "start": {
+              "line": 7,
+              "column": 34
+            },
+            "end": {
+              "line": 7,
+              "column": 42
+            }
+          }
+        }
+      ],
+      "typedefs": [],
+      "generics": null,
+      "contexts": []
+    }
+  ]
+}

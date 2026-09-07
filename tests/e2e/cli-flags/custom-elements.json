@@ -1,0 +1,114 @@
+{
+  "schemaVersion": "1.0.0",
+  "modules": [
+    {
+      "kind": "javascript-module",
+      "path": "component/Badge.svelte",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "Badge",
+          "members": [
+            {
+              "kind": "field",
+              "name": "color",
+              "type": {
+                "text": "string"
+              },
+              "default": "\"gray\"",
+              "deprecated": "Use `Tag` instead."
+            }
+          ],
+          "attributes": [
+            {
+              "name": "color",
+              "fieldName": "color",
+              "type": {
+                "text": "string"
+              },
+              "default": "\"gray\""
+            }
+          ],
+          "events": [],
+          "slots": [
+            {
+              "name": ""
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "Badge",
+          "declaration": {
+            "name": "Badge",
+            "module": "component/Badge.svelte"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "component/Button.svelte",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "Button",
+          "members": [
+            {
+              "kind": "field",
+              "name": "label",
+              "type": {
+                "text": "string"
+              },
+              "default": "\"Click\""
+            },
+            {
+              "kind": "field",
+              "name": "value"
+            },
+            {
+              "kind": "field",
+              "name": "variant",
+              "type": {
+                "text": "string"
+              },
+              "default": "\"solid\""
+            }
+          ],
+          "attributes": [
+            {
+              "name": "label",
+              "fieldName": "label",
+              "type": {
+                "text": "string"
+              },
+              "default": "\"Click\""
+            },
+            {
+              "name": "variant",
+              "fieldName": "variant",
+              "type": {
+                "text": "string"
+              },
+              "default": "\"solid\""
+            }
+          ],
+          "events": [],
+          "slots": []
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "Button",
+          "declaration": {
+            "name": "Button",
+            "module": "component/Button.svelte"
+          }
+        }
+      ]
+    }
+  ]
+}
