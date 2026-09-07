@@ -249,7 +249,9 @@
           "line": 15,
           "column": 18
         }
-      }
+      },
+      "code": "sveld/event-no-source",
+      "severity": "warning"
     },
     {
       "component": "typedef-event-shared-block/input.svelte",
@@ -265,7 +267,9 @@
           "line": 16,
           "column": 18
         }
-      }
+      },
+      "code": "sveld/event-no-source",
+      "severity": "warning"
     },
     {
       "component": "typedef-event-shared-block/input.svelte",
@@ -281,7 +285,9 @@
           "line": 22,
           "column": 53
         }
-      }
+      },
+      "code": "sveld/event-no-source",
+      "severity": "warning"
     },
     {
       "component": "typedef-event-shared-block/input.svelte",
@@ -297,7 +303,9 @@
           "line": 24,
           "column": 40
         }
-      }
+      },
+      "code": "sveld/event-no-source",
+      "severity": "warning"
     }
   ]
 }

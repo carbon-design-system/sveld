@@ -227,7 +227,9 @@
           "line": 2,
           "column": 24
         }
-      }
+      },
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
     },
     {
       "component": "infer-basic/input.svelte",
@@ -243,7 +245,9 @@
           "line": 5,
           "column": 18
         }
-      }
+      },
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
     }
   ]
 }

@@ -242,7 +242,9 @@
           "line": 9,
           "column": 22
         }
-      }
+      },
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
     },
     {
       "component": "runes-prop-metadata-consolidated/input.svelte",
@@ -258,7 +260,9 @@
           "line": 14,
           "column": 8
         }
-      }
+      },
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
     }
   ]
 }

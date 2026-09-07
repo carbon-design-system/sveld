@@ -96,7 +96,9 @@
           "line": 5,
           "column": 25
         }
-      }
+      },
+      "code": "sveld/event-no-source",
+      "severity": "warning"
     }
   ]
 }

@@ -91,7 +91,9 @@
           "line": 7,
           "column": 11
         }
-      }
+      },
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
     },
     {
       "component": "runes-snippet-description-hyphens/input.svelte",
@@ -107,7 +109,9 @@
           "line": 7,
           "column": 16
         }
-      }
+      },
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
     }
   ]
 }

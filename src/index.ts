@@ -10,7 +10,12 @@ export {
   type SemverBump,
 } from "./check";
 export { cli } from "./cli";
-export type { SveldDiagnostic, SveldDiagnosticKind } from "./diagnostics";
+export {
+  DIAGNOSTIC_CODES,
+  type SveldDiagnostic,
+  type SveldDiagnosticKind,
+  type SveldDiagnosticSeverity,
+} from "./diagnostics";
 export type { SvelteEntryPoint } from "./get-svelte-entry";
 export { defineConfig, type SveldConfig, type SveldRuntimeOptions } from "./load-config";
 export { default } from "./plugin";

@@ -110,6 +110,14 @@ export interface ParserContext {
 
   /** True after the per-component variable/JSDoc symbol table has populated {@link variableInfoCache}. */
   variableInfoCacheBuilt: boolean;
+
+  /**
+   * `@sveld-ignore <code>` codes collected from a prop/`@event`/context
+   * variable's JSDoc, keyed by `"<kind>:<name>"`. Populated by
+   * `recordSveldIgnore` before the corresponding `recordDiagnostic` call, so
+   * that call can mark its diagnostic `ignored` automatically.
+   */
+  readonly sveldIgnoreDirectives: Map<string, Set<string>>;
 }
 
 /** Fresh {@link ParserContext}. Keep in sync with new fields on {@link ParserContext}. */
@@ -164,5 +172,6 @@ export function createParserContext(): ParserContext {
     typedefs: new Map(),
     variableInfoCache: new Map(),
     variableInfoCacheBuilt: false,
+    sveldIgnoreDirectives: new Map(),
   };
 }

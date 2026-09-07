@@ -74,7 +74,9 @@
           "line": 2,
           "column": 13
         }
-      }
+      },
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
     },
     {
       "component": "runes-internal-noleak/input.svelte",
@@ -90,7 +92,9 @@
           "line": 2,
           "column": 23
         }
-      }
+      },
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
     }
   ]
 }

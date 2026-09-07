@@ -95,7 +95,9 @@
           "line": 3,
           "column": 52
         }
-      }
+      },
+      "code": "sveld/syntax-skipped",
+      "severity": "error"
     }
   ]
 }

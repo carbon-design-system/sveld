@@ -218,7 +218,9 @@
           "line": 19,
           "column": 18
         }
-      }
+      },
+      "code": "sveld/event-no-source",
+      "severity": "warning"
     }
   ]
 }

@@ -9,7 +9,7 @@ import {
   resolveCheckSnapshotFile,
   runCheck,
 } from "./check";
-import { formatDiagnosticsSummary, formatDiagnosticsSummaryJson } from "./diagnostics";
+import { failingDiagnostics, formatDiagnosticsSummary, formatDiagnosticsSummaryJson } from "./diagnostics";
 import { getSvelteEntry } from "./get-svelte-entry";
 import { closestMatch } from "./levenshtein";
 import { loadConfig, mergeConfig, type SveldRuntimeOptions, validateOptions } from "./load-config";
@@ -62,7 +62,7 @@ Options:
   --resolve-types       Expand opaque imported $props() types into JSON (alias: --resolveTypes, deprecated)
   --check-examples      Compile-check @example blocks against the TypeScript program (alias: --checkExamples, deprecated)
   --report-diagnostics  Print unresolved-type diagnostics to stderr
-  --strict              Exit with code 4 when diagnostics exist (implies --report-diagnostics)
+  --strict[=errors]     Exit with code 4 when diagnostics exist (implies --report-diagnostics); --strict=errors only fails on error-severity diagnostics
   --types-format=<format>  ".d.ts" output format: "class" (default) or "component" (Svelte 5 Component<...>)
   --check[=<path>]      Diff the parsed API against a committed snapshot; exit 3 on a breaking change (default path: COMPONENT_API.json)
   --format=<text|json>  Output format for the --check report and the diagnostics summary (default: text)
@@ -209,7 +209,11 @@ function parseCliFlagValue(flag: string, value: string | boolean, arg: string, r
     case "llms":
       return { kind: "option", option: { llms: value === true || value === "true" } };
     case "strict":
-      return { kind: "option", option: { strict: value === true || value === "true" } };
+      // The value is validated in `cli()` once it can be reported as a usage
+      // error (`--strict=oops`); a bare `--strict` means `true`.
+      if (value === true || value === "true") return { kind: "option", option: { strict: true } };
+      if (value === "false") return { kind: "option", option: { strict: false } };
+      return { kind: "option", option: { strict: value as "errors" } };
     case "report-diagnostics":
       return { kind: "option", option: { reportDiagnostics: value === true || value === "true" } };
     case "resolve-types":
@@ -374,6 +378,17 @@ export async function cli(process: NodeJS.Process) {
     return;
   }
 
+  if (
+    options.strict !== undefined &&
+    options.strict !== true &&
+    options.strict !== false &&
+    options.strict !== "errors"
+  ) {
+    console.error(`sveld: --strict must be "errors" when given a value; got "${options.strict}".`);
+    process.exitCode = EXIT_CODES.USAGE_ERROR;
+    return;
+  }
+
   setQuiet(options.quiet === true);
 
   const resolvedEntry = getSvelteEntry(options.entry);
@@ -449,7 +464,7 @@ export async function cli(process: NodeJS.Process) {
     exitCode = EXIT_CODES.BREAKING_CHANGE;
   }
 
-  if (options.strict && diagnostics.length > 0) {
+  if (failingDiagnostics(diagnostics, options.strict).length > 0) {
     exitCode = exitCode === undefined ? EXIT_CODES.DIAGNOSTICS : Math.min(exitCode, EXIT_CODES.DIAGNOSTICS);
   }
 

@@ -359,20 +359,20 @@ sveld: 5 unresolved types found.
 
 Props without inferred types (1):
   ./icons/Add.svelte
-    - Prop "title" type could not be inferred; falling back to "any". (./icons/Add.svelte:4:2)
+    - Prop "title" type could not be inferred; falling back to "any". (./icons/Add.svelte:4:2) [sveld/prop-unknown-type]
 
 Context values typed as `any` (1):
   ./ThemeProvider.svelte
-    - Context "theme" variable "themeStore" has no type annotation; defaulted to "any". (./ThemeProvider.svelte:8:6)
+    - Context "theme" variable "themeStore" has no type annotation; defaulted to "any". (./ThemeProvider.svelte:8:6) [sveld/context-any-type]
 
 @event tags with no dispatch or callback (2):
   ./Modal.svelte
-    - @event "open" has no matching dispatch or callback prop. (./Modal.svelte:3:5)
-    - @event "close" has no matching dispatch or callback prop. (./Modal.svelte:4:5)
+    - @event "open" has no matching dispatch or callback prop. (./Modal.svelte:3:5) [sveld/event-no-source]
+    - @event "close" has no matching dispatch or callback prop. (./Modal.svelte:4:5) [sveld/event-no-source]
 
 Component syntax sveld skipped (1):
   ./Tabs.svelte
-    - {@render tabs(getTabProps())} argument is not a plain object literal; the render call was not mapped to slot metadata. (./Tabs.svelte:6:4)
+    - {@render tabs(getTabProps())} argument is not a plain object literal; the render call was not mapped to slot metadata. (./Tabs.svelte:6:4) [sveld/syntax-skipped]
 ```
 
 When `checkExamples` is also enabled, `@example` compile failures appear as a fifth group:
@@ -380,7 +380,7 @@ When `checkExamples` is also enabled, `@example` compile failures appear as a fi
 ```
 @example blocks that failed to compile (1):
   ./Component.svelte
-    - Line 1: Cannot find name 'formatValue'.
+    - Line 1: Cannot find name 'formatValue'. [sveld/example-compile-error]
 ```
 
 By default, nothing is printed. Opt in when you are working on types or want CI output:
@@ -403,6 +403,30 @@ npx sveld --json --strict
 ```
 
 `--check` is separate: it diffs `COMPONENT_API.json` for API drift and semver classification, not inference warnings.
+
+#### Diagnostic codes
+
+Every diagnostic carries a stable, namespaced `code` (`"sveld/<kind>"`) alongside the older `kind`, so CI config and `diagnostics.ignore` matchers (below) have something that won't shift if the human-readable `message` text changes:
+
+| Code | Severity | Fix |
+| --- | --- | --- |
+| `sveld/prop-unknown-type` | `warning` | Add a native TypeScript annotation, a `@type` JSDoc tag, or an initializer sveld can infer a type from. |
+| `sveld/context-any-type` | `warning` | Annotate the `setContext` value's declaration with `@type` or a native TypeScript type. |
+| `sveld/event-no-source` | `warning` | Dispatch the event (`createEventDispatcher`/`dispatch`), forward it (`on:name`), or add a matching `on<Name>` callback prop; otherwise remove the stale `@event` tag. |
+| `sveld/example-compile-error` | `error` | Fix the `@example` code block so it type-checks, or remove the broken example. |
+| `sveld/syntax-skipped` | `error` | Rewrite the flagged syntax in a form sveld can model (see the diagnostic's `message` for what was skipped). |
+
+#### Severity and `--strict=errors`
+
+Each diagnostic's `severity` is `"error"` (`example-compile-error`, `syntax-skipped` — sveld emitted broken or unmodeled output) or `"warning"` (`prop-unknown-type`, `context-any-type`, `event-no-source` — a type fell back to `any`). Plain `strict: true` / `--strict` fails on both, unchanged from before. Pass `strict: "errors"` (or `--strict=errors`) to fail CI only on `error`-severity diagnostics, letting `any`-fallback warnings through:
+
+```sh
+npx sveld --json --strict=errors
+```
+
+```ts
+await sveld({ json: true, strict: "errors" });
+```
 
 ## Requirements
 
@@ -776,7 +800,7 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
 - **`cache`** (boolean | string, optional, default: `true`): Write parsed component output to disk and skip re-parsing unchanged files on later runs. On by default, writing to `node_modules/.cache/sveld/parse-cache.json`; a string sets a custom path; pass `false` to disable. Also available as `--cache` / `--cache=<path>` / `--cache=false`. See [Persistent parse cache](#persistent-parse-cache-cache).
 - **`checkExamples`** (boolean, optional, default: `false`): Run plain TS/JS `@example` blocks through the TypeScript program. Broken ones get an `example-compile-error` diagnostic. Also available as `--check-examples` (`--checkExamples` remains as a deprecated alias). See [Compile-checked `@example` blocks](#compile-checked-example-blocks-checkexamples).
 - **`reportDiagnostics`** (boolean, optional, default: `false`): Print unresolved-type diagnostics to stderr (CLI) or `console.warn` (programmatic API). Also available as `--report-diagnostics`. See [Type inference diagnostics](#type-inference-diagnostics).
-- **`strict`** (boolean, optional, default: `false`): Exit with code `4` when diagnostics exist. Implies `reportDiagnostics`. Also available as `--strict`. See [Type inference diagnostics](#type-inference-diagnostics).
+- **`strict`** (`boolean | "errors"`, optional, default: `false`): Exit with code `4` when diagnostics exist. Implies `reportDiagnostics`. `"errors"` fails only on `severity: "error"` diagnostics, letting `warning` ones through. Also available as `--strict` / `--strict=errors`. See [Type inference diagnostics](#type-inference-diagnostics).
 - **`check`** (boolean | string, optional, default: `false`): Diff the parsed component API against a committed snapshot and assign a semver bump to each change. `true` uses the `json` writer's `outFile` (or `COMPONENT_API.json`); a string sets a custom snapshot path. Also available as `--check` / `--check=<path>`. On the CLI this exits `3` on a breaking change; from `sveld()` it's returned on `SveldResult.check` for you to act on. See [CI: API-drift checks (`--check`)](#ci-api-drift-checks---check).
 - **`quiet`** (boolean, optional, default: `false`): Suppress writer progress logs (`created "..."` / `unchanged "..."`), which print to `stderr` by default. Does not suppress error messages, the diagnostics summary, or the `--check` report. Also available as `--quiet`.
 - **`dryRun`** (boolean, optional, default: `false`): Resolve the entry, load config, and parse components through the real pipeline, then print `would write "<path>"` to `stdout` for each output file instead of writing it, including the parse cache. Diagnostics, `strict`, and `check` behave as in a real run. CLI-only via `--dry-run`; the Vite plugin does not expose this option.

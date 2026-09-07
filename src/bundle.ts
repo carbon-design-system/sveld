@@ -5,7 +5,7 @@ import { dirname, isAbsolute, join, parse, relative, resolve } from "node:path";
 import { asRelativeSourcePath, type NormalizedPath } from "./brands";
 import type { ParsedComponent, PendingCallDefaultCandidate, PendingContextKeyCandidate } from "./ComponentParser";
 import { buildReverseDeps, expandAffected } from "./dependency-graph";
-import { dedupeDiagnostics, type SveldDiagnostic } from "./diagnostics";
+import { createDiagnostic, dedupeDiagnostics, type SveldDiagnostic } from "./diagnostics";
 import { collectExampleSources } from "./example-check";
 import { hashSource, ParseCache, resolveCacheFilePath } from "./parse-cache";
 import { type EntryExports, parseEntryExports } from "./parse-entry-exports";
@@ -959,13 +959,15 @@ async function checkComponentExamples(
     const diagnostics = component.diagnostics ?? [];
     for (const item of found) {
       const source = sourceById.get(item.id);
-      diagnostics.push({
-        component: component.filePath,
-        kind: "example-compile-error",
-        name: item.name,
-        message: item.message,
-        ...(source ? { source } : {}),
-      });
+      diagnostics.push(
+        createDiagnostic({
+          component: component.filePath,
+          kind: "example-compile-error",
+          name: item.name,
+          message: item.message,
+          ...(source ? { source } : {}),
+        }),
+      );
     }
     component.diagnostics = diagnostics;
   }
