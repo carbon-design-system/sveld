@@ -7,6 +7,7 @@ import {
   toGenerateBundleOptions,
 } from "./bundle";
 import { getSvelteEntry } from "./get-svelte-entry";
+import { setQuiet } from "./logger";
 import { SVELTE_EXT_REGEX } from "./path";
 import { createSveldBundle, type SveldBundle } from "./watch";
 // Side-effect import: registers the built-in "json"/"markdown"/"types"/"custom-elements" writers.
@@ -27,6 +28,8 @@ export interface PluginSveldOptions extends Pick<GenerateBundleOptions, "resolve
    */
   entry?: string;
   glob?: boolean;
+  /** Suppress writer progress logs (`created "..."` / `unchanged "..."`). */
+  quiet?: boolean;
   /** Record consts, functions, and types from the entry barrel. Off by default. */
   documentExports?: boolean;
   types?: boolean;
@@ -125,6 +128,7 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
     apply: watch ? undefined : "build",
     enforce: "post",
     async buildStart() {
+      setQuiet(opts?.quiet === true);
       input = getSvelteEntry(opts?.entry);
       if (watch && input != null) {
         // Produce the initial output and prime the incremental bundle. This
