@@ -418,10 +418,11 @@ Every diagnostic carries a stable, namespaced `code` (`"sveld/<kind>"`) alongsid
 | `sveld/event-no-source` | `warning` | Dispatch the event (`createEventDispatcher`/`dispatch`), forward it (`on:name`), or add a matching `on<Name>` callback prop; otherwise remove the stale `@event` tag. |
 | `sveld/example-compile-error` | `error` | Fix the `@example` code block so it type-checks, or remove the broken example. |
 | `sveld/syntax-skipped` | `error` | Rewrite the flagged syntax in a form sveld can model (see the diagnostic's `message` for what was skipped). |
+| `sveld/rest-props-unresolved` | `warning` | Spread `$$restProps` onto a plain element (or `svelte:element`) instead of a component, or add an `@restProps` tag to type it manually. |
 
 #### Severity and `--strict=errors`
 
-Each diagnostic's `severity` is `"error"` (`example-compile-error`, `syntax-skipped` — sveld emitted broken or unmodeled output) or `"warning"` (`prop-unknown-type`, `context-any-type`, `event-no-source` — a type fell back to `any`). Plain `strict: true` / `--strict` fails on both, unchanged from before. Pass `strict: "errors"` (or `--strict=errors`) to fail CI only on `error`-severity diagnostics, letting `any`-fallback warnings through:
+Each diagnostic's `severity` is `"error"` (`example-compile-error`, `syntax-skipped` — sveld emitted broken or unmodeled output) or `"warning"` (`prop-unknown-type`, `context-any-type`, `event-no-source`, `rest-props-unresolved` — a type fell back to `any`). Plain `strict: true` / `--strict` fails on both, unchanged from before. Pass `strict: "errors"` (or `--strict=errors`) to fail CI only on `error`-severity diagnostics, letting `any`-fallback warnings through:
 
 ```sh
 npx sveld --json --strict=errors

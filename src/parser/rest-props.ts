@@ -35,10 +35,18 @@ function createRestPropsFromParent(parent: unknown): RestProps {
 }
 
 export function maybeSetRestProps(ctx: ParserContext, parent: unknown) {
-  if (ctx.rest_props !== undefined) return;
-
   const restProps = createRestPropsFromParent(parent);
-  if (restProps) {
+  if (!restProps) return;
+
+  if (ctx.rest_props === undefined) {
+    ctx.rest_props = restProps;
+    return;
+  }
+
+  // A plain element target is typeable; a component target is not. Prefer the
+  // first element target seen over an earlier component target, regardless of
+  // template order, so one untypeable spread doesn't shadow a typeable one.
+  if (ctx.rest_props.type === "InlineComponent" && restProps.type === "Element") {
     ctx.rest_props = restProps;
   }
 }
