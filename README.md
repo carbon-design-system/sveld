@@ -9,9 +9,9 @@ The goal is to get third-party Svelte libraries working with the Svelte Language
 
 [Carbon Components Svelte](https://github.com/carbon-design-system/carbon-components-svelte) uses this library to auto-generate component types and API metadata.
 
-`sveld` uses the Svelte 5 compiler to parse `.svelte` files. That single parse path powers docgen and TypeScript output for Svelte 3, Svelte 4, and Svelte 5 without runes (`export let`, `<slot>`, `$$restProps`, …). It also covers Svelte 5 Runes (`$props()`, `$bindable()`, `{@render ...}`, callback props such as `onclick`, …).
+`sveld` parses `.svelte` files with its own template parser (`src/template-parse/`), kept in parity with `svelte/compiler`'s parser by a differential test suite. That single parse path powers docgen and TypeScript output for Svelte 3, Svelte 4, and Svelte 5 without runes (`export let`, `<slot>`, `$$restProps`, …). It also covers Svelte 5 Runes (`$props()`, `$bindable()`, `{@render ...}`, callback props such as `onclick`, …).
 
-For `lang="ts"` components, `sveld` keeps source-level prop type annotations when it can, instead of forcing JSDoc. That covers legacy `export let` props, typed `$props()` destructuring, typed whole-object `$props()` captures, local `interface`/`type` declarations, and imported type references in emitted `.d.ts` files.
+For `lang="ts"` components, `sveld` keeps source-level prop type annotations when it can, instead of forcing JSDoc. That covers legacy `export let` props, typed `$props()` destructuring, typed whole-object `$props()` captures, and local `interface`/`type` declarations. Imported types are re-emitted as an `import type` only for a whole-object `$props()` annotation; per-prop annotations that reference an imported type are copied verbatim and may need a manual `import type` added to the generated `.d.ts`.
 
 By default, generated `.d.ts` files extend `SvelteComponentTyped` from `svelte`, so TypeScript and the Svelte Language Server work whether consumers use Svelte 3, Svelte 4, or Svelte 5. Set `typesOptions.format: "component"` to instead emit the Svelte 5 `Component` type; see [`typesOptions.format`](#typesoptionsformat).
 
@@ -176,7 +176,7 @@ export default class Button extends SvelteComponentTyped<
 
 ## Approach
 
-`sveld` uses the Svelte compiler to statically analyze exported components and emit docs for consumers.
+`sveld` statically analyzes exported components and emits docs for consumers. Template parsing runs through sveld's own parser rather than `svelte/compiler`; `svelte/compiler` is imported only for its types, and `svelte/package.json` is read for the installed Svelte version. A differential test (`tests/svelte-template-parse-shim.test.ts`) parses every fixture `.svelte` file with both parsers and asserts the resulting ASTs match, and a weekly `svelte-canary` workflow re-runs that comparison against `svelte@latest` ahead of the lockfile pin.
 
 It extracts:
 
@@ -405,9 +405,9 @@ npx sveld --json --strict
 
 ## Requirements
 
-- Node 22+. CI tests against Node 22 on Linux, Windows, and macOS; earlier LTS versions are not verified.
+- Node 22+. CI runs Node 24 on Linux, Windows, and macOS; earlier LTS versions are not verified. `sveld.config.ts` relies on Node's built-in type stripping to load, which is unflagged from Node 22.18 / 23.6 — on older Node 22 patch versions, use a `.js`/`.mjs` config instead.
 - `sveld` is ESM-only. `require("sveld")` does not work — use `import` or dynamic `import()`.
-- `sveld` bundles its own Svelte 5 compiler to parse `.svelte` files. Parsing does not depend on the Svelte version installed in your project, so Svelte 3 and Svelte 4 codebases parse the same way Svelte 5 codebases do — there is no compiler version to match up.
+- `sveld` bundles its own template parser to parse `.svelte` files, kept in parity with `svelte/compiler` (see [Approach](#approach)). Parsing does not depend on the Svelte version installed in your project, so Svelte 3 and Svelte 4 codebases parse the same way Svelte 5 codebases do — there is no compiler version to match up.
 - [`resolveTypes`](#opt-in-semantic-resolution-resolvetypes) and [`checkExamples`](#compile-checked-example-blocks-checkexamples) are optional and need `typescript` 7 or later (which provides `typescript/unstable/async`) plus a `tsconfig.json`. Everything else, including `.d.ts` generation, is AST-only and never loads TypeScript. If either is enabled and TypeScript can't be started (missing, too old, or no `tsconfig.json`), the run fails loudly: `sveld()` throws and the CLI exits `2` naming the requirement, rather than silently skipping the check.
 
 ## Usage
@@ -485,7 +485,7 @@ npx sveld --json --markdown
 
 If no entry point can be resolved (no `package.json#svelte` field and no `--entry`), the CLI exits `1` and prints the reason to `stderr`. If `src/index.js` happens to exist relative to your working directory, sveld falls back to it and prints a one-line note asking you to set `package.json#svelte` (or `--entry`) instead of relying on the fallback.
 
-Flags are kebab-case: `--entry`, `--glob`, `--types`, `--json`, `--markdown`, `--fail-fast`, `--dry-run`, `--cache`, `--resolve-types`, `--check-examples`, `--report-diagnostics`, `--strict`, `--check`, `--types-format`, `--quiet`, `--stdout`, `--format`. The camelCase spellings `--resolveTypes` and `--checkExamples` still work as deprecated aliases for compatibility with existing scripts. `--entry`, `--cache`, `--check`, and `--types-format` take their value either as `--flag=value` or as a separate `--flag value` argument (`sveld --entry src/index.js` and `sveld --entry=src/index.js` are equivalent); if the next argument starts with `--` it's not consumed as a value, so `--cache` and `--check` fall back to their default location and `--entry` and `--types-format` report a usage error naming the flag. Boolean flags (`--json`, `--glob`, `--strict`, and the like) never consume a following argument. An unrecognized flag (e.g. `--markdwon`) prints `Unknown flag: --markdwon` to `stderr`, exits `1`, and skips generation; when a close match exists it appends a suggestion, e.g. `Unknown flag: --markdwon Did you mean --markdown?`. sveld takes no positional arguments, so any non-flag argument errors the same way.
+Flags are kebab-case: `--entry`, `--glob`, `--types`, `--json`, `--markdown`, `--custom-elements`, `--fail-fast`, `--dry-run`, `--cache`, `--resolve-types`, `--check-examples`, `--report-diagnostics`, `--strict`, `--check`, `--types-format`, `--quiet`, `--stdout`, `--format`. The camelCase spellings `--resolveTypes` and `--checkExamples` still work as deprecated aliases for compatibility with existing scripts. `--entry`, `--cache`, `--check`, and `--types-format` take their value either as `--flag=value` or as a separate `--flag value` argument (`sveld --entry src/index.js` and `sveld --entry=src/index.js` are equivalent); if the next argument starts with `--` it's not consumed as a value, so `--cache` and `--check` fall back to their default location and `--entry` and `--types-format` report a usage error naming the flag. Boolean flags (`--json`, `--glob`, `--strict`, and the like) never consume a following argument. An unrecognized flag (e.g. `--markdwon`) prints `Unknown flag: --markdwon` to `stderr`, exits `1`, and skips generation; when a close match exists it appends a suggestion, e.g. `Unknown flag: --markdwon Did you mean --markdown?`. sveld takes no positional arguments, so any non-flag argument errors the same way.
 
 Writer progress lines (`created "..."` / `unchanged "..."`) print to `stderr`, keeping `stdout` reserved for machine-readable data. Pass `--quiet` (or `quiet: true` in `sveld.config.*`) to suppress them; it does not suppress error messages, the diagnostics summary (`--report-diagnostics` / `--strict`), or the `--check` report.
 
@@ -650,7 +650,7 @@ const cem = buildCustomElementsManifest(components, {
 
 `ComponentParser` is stateful but reusable across parses — call `parseSvelteComponent` again on the same instance for the next component instead of constructing a new one each time.
 
-See [`playground/`](playground) in this repo for a working example: it parses Svelte source typed into an editor and renders JSON, Markdown, TypeScript, and Custom Elements Manifest tabs, all client-side.
+See [`playground/`](playground) in this repo for a working example: it parses Svelte source typed into an editor and renders JSON, Markdown, TypeScript, and Custom Elements Manifest tabs, all client-side. Deployed at [sveld.onrender.com](https://sveld.onrender.com).
 
 ### Config File
 
