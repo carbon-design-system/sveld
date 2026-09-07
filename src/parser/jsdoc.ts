@@ -386,6 +386,33 @@ export function parseCustomTypes(
     }
     parser.accumulateGeneric(declaredName, constraint);
   };
+  /** `ctx.typedefs` holds both `@typedef` and `@callback` declarations, keyed by name; both finalizers share this check. */
+  const warnDuplicateTypedefName = (name: string) => {
+    if (ctx.typedefs.has(name)) {
+      const location = ctx.componentFilePath ? ` in ${ctx.componentFilePath}` : "";
+      console.warn(
+        `Warning: Duplicate typedef/callback name "${name}"${location}; the later declaration overwrites the earlier one.`,
+      );
+    }
+  };
+  /**
+   * Replaces an earlier `@property` with the same name instead of pushing a
+   * second entry - two properties with the same key would otherwise appear
+   * in the emitted object type.
+   */
+  const pushOrReplaceProperty = <T extends { name: string }>(list: T[], property: T, ownerName: string | undefined) => {
+    const existingIndex = list.findIndex((p) => p.name === property.name);
+    if (existingIndex !== -1) {
+      const location = ctx.componentFilePath ? ` in ${ctx.componentFilePath}` : "";
+      const owner = ownerName ? ` of "${ownerName}"` : "";
+      console.warn(
+        `Warning: Duplicate property "${property.name}"${owner}${location}; the later declaration overwrites the earlier one.`,
+      );
+      list[existingIndex] = property;
+    } else {
+      list.push(property);
+    }
+  };
   for (const { tags, description: commentDescription, lines: blockLines } of parseComments(scanSource)) {
     let currentEventName: string | undefined;
     let currentEventType: string | undefined;
@@ -565,6 +592,7 @@ export function parseCustomTypes(
           typedefTs = `type ${currentTypedefName} = ${typedefType};`;
         }
 
+        warnDuplicateTypedefName(currentTypedefName);
         ctx.typedefs.set(currentTypedefName, {
           type: typedefType,
           name: currentTypedefName,
@@ -591,6 +619,7 @@ export function parseCustomTypes(
         const callbackType = `(${params}) => ${returnType}`;
         const callbackTs = `type ${currentCallbackName} = ${callbackType};`;
 
+        warnDuplicateTypedefName(currentCallbackName);
         ctx.typedefs.set(currentCallbackName, {
           type: callbackType,
           name: currentCallbackName,
@@ -716,9 +745,9 @@ export function parseCustomTypes(
           };
 
           if (currentEventName !== undefined) {
-            eventProperties.push(propertyData);
+            pushOrReplaceProperty(eventProperties, propertyData, currentEventName);
           } else if (currentTypedefName !== undefined) {
-            typedefProperties.push(propertyData);
+            pushOrReplaceProperty(typedefProperties, propertyData, currentTypedefName);
           }
           break;
         }
