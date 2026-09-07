@@ -8,7 +8,6 @@ export default defineConfig({
     sveld({
       types: true,
       typesOptions: {
-        printWidth: 80,
         format: "component",
       },
       json: true,

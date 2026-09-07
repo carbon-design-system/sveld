@@ -1,4 +1,4 @@
-import { dirname } from "node:path";
+import { dirname, isAbsolute, resolve } from "node:path";
 import {
   type ComponentDocs,
   type GenerateBundleOptions,
@@ -7,8 +7,9 @@ import {
   toGenerateBundleOptions,
 } from "./bundle";
 import { getSvelteEntry } from "./get-svelte-entry";
+import { loadConfig, loadConfigFrom, mergeConfig, validateOptions } from "./load-config";
 import { setQuiet } from "./logger";
-import { SVELTE_EXT_REGEX } from "./path";
+import { WATCH_RELEVANT_EXT_REGEX } from "./path";
 import { createSveldBundle, type SveldBundle } from "./watch";
 // Side-effect import: registers the built-in "json"/"markdown"/"types"/"custom-elements" writers.
 import "./writer/built-in-writers";
@@ -27,6 +28,14 @@ export interface PluginSveldOptions extends Pick<GenerateBundleOptions, "resolve
    * If not provided, sveld will use the "svelte" field from package.json.
    */
   entry?: string;
+  /**
+   * Load `sveld.config.{js,mjs,ts}` and merge it with these options; these
+   * options win when a key is set in both. `true` resolves the config from
+   * the Vite project root (or `process.cwd()` if the plugin isn't running
+   * under Vite); a string is an explicit path to the config file itself.
+   * @default false
+   */
+  config?: boolean | string;
   glob?: boolean;
   /** Suppress writer progress logs (`created "..."` / `unchanged "..."`). */
   quiet?: boolean;
@@ -54,9 +63,11 @@ export interface PluginSveldOptions extends Pick<GenerateBundleOptions, "resolve
    */
   failFast?: boolean;
   /**
-   * Regenerate output incrementally when `.svelte` source changes during
-   * `vite dev` / `vite build --watch`. Only the changed component and the
-   * components that depend on it via `@extendProps` / `@extends` are re-parsed.
+   * Regenerate output incrementally when relevant source changes during
+   * `vite dev` / `vite build --watch`: a component, the entry barrel itself
+   * (adding/removing an export), or a non-`.svelte` file a component depends
+   * on via `@extendProps` / `@extends` or a typedef `import("./x")`
+   * reference. Only the affected components are re-parsed.
    * @default false
    */
   watch?: boolean;
@@ -72,10 +83,17 @@ interface RollupPluginContext {
   error(message: string): never;
 }
 
+/** Subset of Vite's resolved config, used only to locate the project root for `config` loading. */
+interface ResolvedViteConfig {
+  root: string;
+}
+
 interface SveldPlugin {
   name: string;
   apply?: "build" | "serve";
   enforce?: "pre" | "post";
+  /** Vite-only hook: captures the project root before `buildStart` runs. */
+  configResolved?(config: ResolvedViteConfig): void;
   buildStart(): void | Promise<void>;
   generateBundle(this: RollupPluginContext): Promise<void>;
   writeBundle(this: RollupPluginContext): Promise<void>;
@@ -92,30 +110,53 @@ const UNRESOLVED_ENTRY_MESSAGE =
 /** Debounce window (ms) for coalescing rapid file changes into one regeneration. */
 const WATCH_DEBOUNCE_MS = 50;
 
+/**
+ * Wraps an async `run` function so repeated calls execute strictly one after
+ * another: a call that arrives while a previous one is still in flight
+ * queues behind it instead of overlapping. Used to serialize watch-mode
+ * flushes, which mutate a shared `SveldBundle`'s internal state and would
+ * race if two ran concurrently.
+ */
+export function createSerialQueue(run: () => Promise<void>): () => void {
+  let pending: Promise<void> = Promise.resolve();
+  return () => {
+    pending = pending.then(run, run);
+  };
+}
+
 export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
   const watch = opts?.watch === true;
   let result: GenerateBundleResult;
   let input: string | null;
+  // Reassigned once in `buildStart` when `config` loading is enabled; every
+  // hook below reads options through this rather than `opts` directly so a
+  // loaded config file is visible everywhere.
+  let mergedOpts: PluginSveldOptions = opts ?? {};
+  let root: string | undefined;
 
   // Watch-mode state: a long-lived bundle that supports scoped re-parsing.
   let bundle: SveldBundle | null = null;
   let timer: ReturnType<typeof setTimeout> | undefined;
   const pending = new Set<string>();
 
-  const flush = async () => {
+  const runFlush = async () => {
     if (bundle == null || input == null || pending.size === 0) return;
     const changed = Array.from(pending);
     pending.clear();
     try {
       const { result: next } = await bundle.update(changed);
-      await writeOutput(next, opts || {}, input);
+      await writeOutput(next, mergedOpts, input);
     } catch (error) {
       console.error("sveld: failed to regenerate types in watch mode:", error);
     }
   };
 
+  // Queues flushes onto one another so a slow `bundle.update()` can't
+  // overlap with the next debounced flush and race on the bundle's shared state.
+  const flush = createSerialQueue(runFlush);
+
   const scheduleUpdate = (id: string) => {
-    if (!watch || bundle == null || !SVELTE_EXT_REGEX.test(id)) return;
+    if (!watch || bundle == null || !WATCH_RELEVANT_EXT_REGEX.test(id)) return;
     pending.add(id);
     clearTimeout(timer);
     timer = setTimeout(flush, WATCH_DEBOUNCE_MS);
@@ -127,15 +168,27 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
     // `apply` unset. Otherwise keep the original build-only behavior.
     apply: watch ? undefined : "build",
     enforce: "post",
+    configResolved(config) {
+      root = config.root;
+    },
     async buildStart() {
-      setQuiet(opts?.quiet === true);
-      input = getSvelteEntry(opts?.entry);
+      if (opts?.config) {
+        const cwd = root ?? process.cwd();
+        const fileConfig =
+          typeof opts.config === "string"
+            ? await loadConfigFrom(isAbsolute(opts.config) ? opts.config : resolve(cwd, opts.config))
+            : await loadConfig(cwd);
+        mergedOpts = mergeConfig<PluginSveldOptions>(fileConfig, opts);
+      }
+      validateOptions(mergedOpts);
+      setQuiet(mergedOpts.quiet === true);
+      input = getSvelteEntry(mergedOpts.entry);
       if (watch && input != null) {
         // Produce the initial output and prime the incremental bundle. This
         // covers both `vite dev` (where generateBundle/writeBundle never fire)
         // and `vite build --watch`.
-        bundle = await createSveldBundle(input, opts?.glob === true, opts?.documentExports === true);
-        await writeOutput(bundle.result, opts || {}, input);
+        bundle = await createSveldBundle(input, mergedOpts.glob === true, mergedOpts.documentExports === true);
+        await writeOutput(bundle.result, mergedOpts, input);
       }
     },
     async generateBundle() {
@@ -144,14 +197,14 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
       if (input == null) {
         this.error(UNRESOLVED_ENTRY_MESSAGE);
       }
-      result = await generateBundle(input, opts?.glob === true, toGenerateBundleOptions(opts));
+      result = await generateBundle(input, mergedOpts.glob === true, toGenerateBundleOptions(mergedOpts));
     },
     async writeBundle() {
       if (watch) return;
       if (input == null) {
         this.error(UNRESOLVED_ENTRY_MESSAGE);
       }
-      await writeOutput(result, opts || {}, input);
+      await writeOutput(result, mergedOpts, input);
       // Persists any generated `.d.ts` text writeOutput just cached, on top
       // of the parse-only save generateBundle() already did.
       result.cache?.save();

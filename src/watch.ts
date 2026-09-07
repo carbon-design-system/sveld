@@ -26,9 +26,10 @@ interface SveldBundleUpdate {
   /** The full, updated bundle result (all components, with the affected ones re-parsed). */
   result: GenerateBundleResult;
   /**
-   * Absolute paths of the components that were re-parsed: the changed files
-   * plus their transitive `@extendProps` / `@extends` dependents. Other
-   * components are reused from the previous parse.
+   * Absolute paths of the components that were re-parsed: the changed files,
+   * newly barrel-exported components, plus their transitive dependents via
+   * `@extendProps` / `@extends` or a typedef `import("./x")` reference.
+   * Other components are reused from the previous parse.
    */
   reparsed: string[];
 }
@@ -56,21 +57,28 @@ export interface SveldBundle {
  * @param documentExports - Record consts, functions, and types from the entry barrel
  */
 export async function createSveldBundle(input: string, glob: boolean, documentExports = false): Promise<SveldBundle> {
-  // Export map is stable per edit; re-glob `allComponentEntries` in `update()` when files are added.
-  const { exports, allComponentEntries, rootDir, resolveComponentFilePath } = collectComponents(
-    input,
-    glob,
-    documentExports,
-  );
+  const inputIsFile = lstatSync(input).isFile();
+  // Watched so editing the barrel (adding/removing/renaming an export) is
+  // picked up without restarting the dev server; `null` for a directory
+  // entry, which has no barrel to watch.
+  const resolvedInput = inputIsFile ? resolve(input) : null;
 
-  const entryExports: EntryExports =
-    documentExports && lstatSync(input).isFile() ? await parseEntryExports(resolve(input)) : [];
+  // Export map and `allComponentEntries` are re-collected in `update()` when
+  // the entry barrel itself changes; otherwise stable across edits (glob
+  // mode still re-globs `allComponentEntries` on every update, see below).
+  const initial = collectComponents(input, glob, documentExports);
+  const rootDir = initial.rootDir;
+  let exports = initial.exports;
+  let allComponentEntries = initial.allComponentEntries;
+  let resolveComponentFilePath = initial.resolveComponentFilePath;
 
-  const exportEntries = Object.entries(exports);
+  let entryExports: EntryExports = documentExports && inputIsFile ? await parseEntryExports(resolve(input)) : [];
+
+  let exportEntries = Object.entries(exports);
 
   // Dedupes re-glob adds in `update()` by resolved path, including when two
-  // components share a basename.
-  const globMergeState = createGlobMergeState(allComponentEntries, resolveComponentFilePath);
+  // components share a basename. Rebuilt whenever the entry barrel changes.
+  let globMergeState = createGlobMergeState(allComponentEntries, resolveComponentFilePath);
 
   const components: ComponentDocs = new Map();
   const allComponentsForTypes: ComponentDocs = new Map();
@@ -152,10 +160,42 @@ export async function createSveldBundle(input: string, glob: boolean, documentEx
   };
 
   const update = async (changedFilePaths: string[]): Promise<SveldBundleUpdate> => {
-    const changed = changedFilePaths.filter((path) => SVELTE_EXT_REGEX.test(path)).map((path) => resolve(path));
+    const resolvedChanged = changedFilePaths.map((path) => resolve(path));
 
-    if (changed.length === 0) {
+    if (resolvedChanged.length === 0) {
       return { result: buildResult(), reparsed: [] };
+    }
+
+    const entryChanged = resolvedInput !== null && resolvedChanged.includes(resolvedInput);
+    const addedComponentPaths: string[] = [];
+
+    if (entryChanged) {
+      // Re-run export collection on the entry barrel: a name that disappears
+      // is dropped from `components` outright (its file may still surface via
+      // `--glob`); a name that appears is treated as changed so the normal
+      // reparse path below parses it for the first time.
+      const recollected = collectComponents(input, glob, documentExports);
+      const oldNames = new Set(Object.keys(exports));
+      const newNames = new Set(Object.keys(recollected.exports));
+
+      for (const name of oldNames) {
+        if (!newNames.has(name)) components.delete(name);
+      }
+      for (const name of newNames) {
+        if (!oldNames.has(name)) {
+          addedComponentPaths.push(recollected.resolveComponentFilePath(recollected.exports[name].source));
+        }
+      }
+
+      exports = recollected.exports;
+      allComponentEntries = recollected.allComponentEntries;
+      resolveComponentFilePath = recollected.resolveComponentFilePath;
+      exportEntries = Object.entries(exports);
+      globMergeState = createGlobMergeState(allComponentEntries, resolveComponentFilePath);
+
+      if (documentExports && inputIsFile) {
+        entryExports = await parseEntryExports(resolve(input));
+      }
     }
 
     // Pick up components created since the last parse.
@@ -163,7 +203,16 @@ export async function createSveldBundle(input: string, glob: boolean, documentEx
       mergeGlobbedComponents(rootDir, exports, allComponentEntries, resolveComponentFilePath, globMergeState);
     }
 
-    const affected = expandAffected(changed, reverseDeps);
+    // Non-`.svelte` changes only matter when they're a known dependency
+    // target (an `@extendProps`/`@extends` file or a typedef `import(...)`
+    // target); anything else (README, CSS, ...) is ignored here.
+    const relevantChanged = resolvedChanged.filter((path) => SVELTE_EXT_REGEX.test(path) || reverseDeps.has(path));
+
+    if (relevantChanged.length === 0 && addedComponentPaths.length === 0) {
+      return { result: buildResult(), reparsed: [] };
+    }
+
+    const affected = expandAffected([...relevantChanged, ...addedComponentPaths], reverseDeps);
 
     // Clear diagnostics for files about to be re-parsed.
     for (const [filePath, error] of parseErrors) {

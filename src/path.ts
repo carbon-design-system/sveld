@@ -4,6 +4,13 @@ import type { NormalizedPath } from "./brands";
 /** Matches a trailing `.svelte` extension. Shared so every module tests/strips it the same way. */
 export const SVELTE_EXT_REGEX = /\.svelte$/;
 
+/**
+ * Extensions the watch mode plugin hooks react to: components themselves,
+ * the entry barrel (which may be `.js`/`.ts`), and `@extendProps`/`@extends`/
+ * typedef `import(...)` dependency targets, which are never `.svelte`.
+ */
+export const WATCH_RELEVANT_EXT_REGEX = /\.(?:svelte|[mc]?ts|[mc]?js)$/;
+
 export function normalizeSeparators(filePath: string): NormalizedPath {
   return (sep === "/" ? filePath : filePath.split(sep).join("/")) as NormalizedPath;
 }

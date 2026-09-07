@@ -1,11 +1,19 @@
 // biome-ignore lint/performance/noNamespaceImport: needed for jest.spyOn
 import * as fs from "node:fs";
+import { tmpdir } from "node:os";
 // biome-ignore lint/performance/noNamespaceImport: needed for jest.spyOn
 import * as path from "node:path";
 import type { ComponentDocs, GenerateBundleResult } from "../src/plugin";
 import pluginSveld, { generateBundle, writeOutput } from "../src/plugin";
 import { registerWriter } from "../src/writer/registry";
 import { mockComponentDocApi } from "./test-brands";
+
+/** Mock Rollup plugin context: throws (instead of `never`-returning) so `this.error(...)` surfaces as a rejected promise. */
+const errorContext = {
+  error: (message: string) => {
+    throw new Error(message);
+  },
+};
 
 describe("pluginSveld", () => {
   const mockCwd = "/mock/project";
@@ -214,5 +222,57 @@ describe("writeOutput additionalWriters", () => {
     );
 
     expect(received).toBe(components);
+  });
+});
+
+describe("pluginSveld config option", () => {
+  const BUTTON = `<script>\n  export let label = "button";\n</script>\n\n<button>{label}</button>`;
+
+  let dir: string;
+  let previousCwd: string;
+
+  beforeEach(() => {
+    dir = fs.mkdtempSync(path.join(tmpdir(), "sveld-plugin-config-"));
+    fs.writeFileSync(path.join(dir, "Button.svelte"), BUTTON);
+    previousCwd = process.cwd();
+    process.chdir(dir);
+  });
+
+  afterEach(() => {
+    process.chdir(previousCwd);
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  async function runBuild(plugin: ReturnType<typeof pluginSveld>) {
+    await plugin.buildStart();
+    await plugin.generateBundle.call(errorContext);
+    await plugin.writeBundle.call(errorContext);
+  }
+
+  test("config: false (the default) ignores a config file present in cwd", async () => {
+    fs.writeFileSync(path.join(dir, "sveld.config.mjs"), "export default { json: true };");
+    const plugin = pluginSveld({ entry: ".", glob: true, types: false });
+
+    await runBuild(plugin);
+
+    expect(fs.existsSync(path.join(dir, "COMPONENT_API.json"))).toBe(false);
+  });
+
+  test("config: true loads sveld.config.mjs and applies its options", async () => {
+    fs.writeFileSync(path.join(dir, "sveld.config.mjs"), "export default { json: true };");
+    const plugin = pluginSveld({ entry: ".", glob: true, types: false, config: true });
+
+    await runBuild(plugin);
+
+    expect(fs.existsSync(path.join(dir, "COMPONENT_API.json"))).toBe(true);
+  });
+
+  test("call-site options take precedence over the same key in the config file", async () => {
+    fs.writeFileSync(path.join(dir, "sveld.config.mjs"), "export default { json: true };");
+    const plugin = pluginSveld({ entry: ".", glob: true, types: false, config: true, json: false });
+
+    await runBuild(plugin);
+
+    expect(fs.existsSync(path.join(dir, "COMPONENT_API.json"))).toBe(false);
   });
 });
