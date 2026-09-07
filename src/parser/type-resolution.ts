@@ -3,6 +3,7 @@ import type {
   LocalTypeDeclaration,
   ModernRunesTypeNode,
   ParsedComponentTypeScriptMetadata,
+  TypeImportBinding,
 } from "../ComponentParser";
 import type { ParserContext } from "./context";
 import { sourceAtPos } from "./source-position";
@@ -144,7 +145,13 @@ export function collectReferencedTypeDependencies(
     case "TSTypeReference": {
       const dependencyName = getTypeDependencyName(typeNode.typeName);
       if (dependencyName) {
-        if (ctx.typeImportBindingsByLocalName.has(dependencyName)) {
+        // A value import used only in a type position (e.g. `import { Size } from` a sibling
+        // module, with no `type` modifier) still needs an `import type` line in the standalone
+        // `.d.ts`; the runtime import in the component's own script is untouched.
+        if (
+          ctx.typeImportBindingsByLocalName.has(dependencyName) ||
+          ctx.valueImportBindingsByLocalName.has(dependencyName)
+        ) {
           referencedImportedTypes.add(dependencyName);
         }
 
@@ -235,7 +242,18 @@ function buildTypeImportStatements(ctx: ParserContext, referencedImportedTypes: 
   >();
 
   for (const importedType of Array.from(referencedImportedTypes).sort()) {
-    const binding = ctx.typeImportBindingsByLocalName.get(importedType);
+    const typeBinding = ctx.typeImportBindingsByLocalName.get(importedType);
+    const valueBinding = typeBinding ? undefined : ctx.valueImportBindingsByLocalName.get(importedType);
+    const binding: TypeImportBinding | undefined =
+      typeBinding ??
+      (valueBinding
+        ? {
+            importedName: valueBinding.importedName,
+            localName: valueBinding.localName,
+            source: valueBinding.source,
+            specifierType: "named",
+          }
+        : undefined);
     if (!binding) continue;
 
     const group = groupedImports.get(binding.source) ?? { default: [], named: [], namespace: [] };
