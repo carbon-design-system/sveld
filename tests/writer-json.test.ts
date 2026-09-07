@@ -130,6 +130,21 @@ describe("writeJson", () => {
     }
   });
 
+  test("logs unchanged on a second identical write", async () => {
+    const tempDir = await mkdtemp(path.join(process.cwd(), ".tmp-sveld-json-"));
+    const outFile = path.relative(process.cwd(), path.join(tempDir, "COMPONENT_API.json"));
+    const components = new Map([["Alpha", createComponent("Alpha", "Alpha.svelte")]]);
+
+    try {
+      await writeJson(components, { input: "src", inputDir: "src", outFile });
+      errorSpy.mockClear();
+      await writeJson(components, { input: "src", inputDir: "src", outFile });
+      expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining(`unchanged "${outFile}".`));
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+
   test("suppresses the progress line when quiet mode is on", async () => {
     setQuiet(true);
     const tempDir = await mkdtemp(path.join(process.cwd(), ".tmp-sveld-json-"));

@@ -121,9 +121,9 @@ async function writeJsonLocal(components: ComponentDocs, options: WriteJsonOptio
   const raw = renderJsonDocument(components, options);
   const output_path = path.join(process.cwd(), options.outFile);
   const writer = new Writer({ dryRun: options.dryRun });
-  await writer.write(output_path, raw);
+  const wasWritten = await writer.write(output_path, raw);
 
-  if (!options.dryRun) info(`created "${options.outFile}".`);
+  if (!options.dryRun) info(`${wasWritten ? "created" : "unchanged"} "${options.outFile}".`);
 }
 
 /**
