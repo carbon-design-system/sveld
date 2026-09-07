@@ -3,7 +3,7 @@
    * @typedef {{ id: string | number; [key: string]: any; }} DataTableRow
    * @typedef {Exclude<keyof Row, "id">} DataTableKey<Row>
    * @typedef {{ key: DataTableKey<Row>; value: string; }} DataTableHeader<Row=DataTableRow>
-   * @template {DataTableRow} <Row extends DataTableRow = DataTableRow>
+   * @template {DataTableRow} Row
    * @generics {Row extends DataTableRow = DataTableRow} Row
    */
 
