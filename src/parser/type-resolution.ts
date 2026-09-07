@@ -288,6 +288,56 @@ export function trackAdditionalTypeDependencyNode(ctx: ParserContext, typeNode: 
   if (typeNode) ctx.additionalTypeDependencyNodes.push(typeNode);
 }
 
+/** The subset of a `TSEnumDeclaration`/`TSEnumMember` AST shape this module reads. */
+type EnumDeclarationNode = {
+  const?: boolean;
+  id?: { name?: string };
+  members?: Array<{ initializer?: { type?: string; value?: unknown } }>;
+};
+
+/**
+ * `const enum` members are inlined at compile time and, unlike interfaces/type
+ * aliases, can't be safely re-declared verbatim in a standalone `.d.ts`: many
+ * bundlers (esbuild, swc, Vite) reject `const enum` entirely under
+ * `isolatedModules`. When every member has a literal initializer, widen it to
+ * an equivalent literal union instead; otherwise the caller falls back to the
+ * verbatim declaration (best-effort, non-const enums always take that path).
+ */
+function buildConstEnumUnionTypeCode(enumStatement: EnumDeclarationNode): string | undefined {
+  if (!enumStatement.const) return undefined;
+  const name = enumStatement.id?.name;
+  if (!name) return undefined;
+
+  const literalTexts: string[] = [];
+  for (const member of enumStatement.members ?? []) {
+    const initializer = member.initializer;
+    if (initializer?.type !== "Literal") return undefined;
+    const value = initializer.value;
+    if (typeof value === "string") literalTexts.push(JSON.stringify(value));
+    else if (typeof value === "number") literalTexts.push(String(value));
+    else return undefined;
+  }
+  if (literalTexts.length === 0) return undefined;
+
+  return `type ${name} = ${literalTexts.join(" | ")};`;
+}
+
+/** Builds a `LocalTypeDeclaration`-ready `code` string for a top-level `enum`/`const enum`. */
+export function buildEnumLocalTypeDeclarationCode(
+  ctx: ParserContext,
+  enumStatement: EnumDeclarationNode & { start?: number; end?: number },
+): string | undefined {
+  const unionCode = buildConstEnumUnionTypeCode(enumStatement);
+  if (unionCode) return unionCode;
+
+  if (enumStatement.start === undefined || enumStatement.end === undefined) return undefined;
+  const verbatim = sourceAtPos(ctx, enumStatement.start, enumStatement.end)?.trim();
+  // Unlike `interface`/`type`, a bare top-level `enum` in a module `.d.ts` (one that already has
+  // an `import`/`export`) is a TS1046 error: enums emit a runtime value, so TS requires an
+  // explicit `declare` (or `export`) modifier the same way it would for a `class`/`function`/`let`.
+  return verbatim ? `declare ${verbatim}` : undefined;
+}
+
 export function buildTypeScriptMetadata(ctx: ParserContext): ParsedComponentTypeScriptMetadata | undefined {
   const pendingCallDefaultCandidates =
     ctx.pendingCallDefaultCandidates.length > 0 ? ctx.pendingCallDefaultCandidates.slice() : undefined;
