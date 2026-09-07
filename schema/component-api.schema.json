@@ -296,6 +296,10 @@
         "properties": {
           "type": "array",
           "items": { "$ref": "#/$defs/contextProperty" }
+        },
+        "hasUnresolvedSpread": {
+          "type": "boolean",
+          "description": "True when a {...spread} in the context's object literal couldn't be resolved; the generated type intersects with Record<string, any>."
         }
       }
     },

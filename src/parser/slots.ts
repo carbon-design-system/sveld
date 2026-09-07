@@ -1,9 +1,13 @@
 import type { CallExpression, Expression, Identifier, Literal, MemberExpression, ObjectExpression } from "estree";
+import { isIdentifier, isObjectExpression } from "../ast-guards";
 import type ComponentParser from "../ComponentParser";
 import type { DeprecatedValue, JsDocPassthroughTag, SlotProps, SlotPropValue, SourceRange } from "../ComponentParser";
 import { resolveMemberExpressionType } from "./bindings";
 import type { ParserContext } from "./context";
-import { sourceAtPos } from "./source-position";
+import { recordDiagnostic } from "./diagnostics";
+import { parseObjectTypeLiteralMembers } from "./object-type-literal";
+import { resolveConstInitializer } from "./props";
+import { sourceAtPos, sourceRangeFromNode } from "./source-position";
 import { assignValueOrUndefined } from "./utils";
 
 const DEFAULT_SLOT_NAME = null;
@@ -42,14 +46,60 @@ function inferSlotPropValueFromExpression(
   return slot_prop_value;
 }
 
+/**
+ * Resolves `{...identifier}` inside a `{@render x({...})}` argument to a
+ * property map: the spread-of-a-literal's own properties (recursively), or,
+ * when the identifier only has a resolvable JSDoc/native object-type
+ * annotation, that type's members. Returns `null` when neither resolves, so
+ * the caller can widen the slot's props to `Record<string, any>`.
+ */
+function resolveSlotSpreadShape(ctx: ParserContext, parser: ComponentParser, argument: unknown): SlotProps | null {
+  if (!isIdentifier(argument)) return null;
+
+  const initializer = resolveConstInitializer(ctx, argument.name);
+  if (isObjectExpression(initializer)) {
+    return buildSlotPropsFromObjectExpression(ctx, parser, initializer).slot_props;
+  }
+
+  const varInfo = parser.findVariableTypeAndDescription(argument.name);
+  if (!varInfo) return null;
+
+  const members = parseObjectTypeLiteralMembers(varInfo.type);
+  if (!members) return null;
+
+  const slot_props: SlotProps = {};
+  for (const member of members) {
+    slot_props[member.name] = { value: member.type, replace: false };
+  }
+  return slot_props;
+}
+
 export function buildSlotPropsFromObjectExpression(
   ctx: ParserContext,
   parser: ComponentParser,
   expression: ObjectExpression,
-): SlotProps {
+): { slot_props: SlotProps; hasUnresolvedSpread: boolean } {
   const slot_props: SlotProps = {};
+  let hasUnresolvedSpread = false;
 
   for (const property of expression.properties) {
+    if (property.type === "SpreadElement") {
+      const merged = resolveSlotSpreadShape(ctx, parser, property.argument);
+      if (merged) {
+        Object.assign(slot_props, merged);
+      } else {
+        hasUnresolvedSpread = true;
+        recordDiagnostic(
+          ctx,
+          "spread-unresolved",
+          "slot_props",
+          "Slot props spread a value sveld can't resolve; its shape is widened to \"Record<string, any>\".",
+          sourceRangeFromNode(ctx, property),
+        );
+      }
+      continue;
+    }
+
     if (property.type !== "Property" || property.computed) continue;
 
     const propName = parser.getPropertyName(property.key);
@@ -57,7 +107,7 @@ export function buildSlotPropsFromObjectExpression(
     slot_props[propName] = inferSlotPropValueFromExpression(ctx, parser, property.value);
   }
 
-  return slot_props;
+  return { slot_props, hasUnresolvedSpread };
 }
 
 function resolveRenderTagPropReference(
@@ -171,6 +221,7 @@ export function addSlot(
   {
     slot_name,
     slot_props,
+    slot_props_unresolved_spread,
     slot_fallback,
     slot_description,
     slot_deprecated,
@@ -179,6 +230,7 @@ export function addSlot(
   }: {
     slot_name?: string;
     slot_props?: string | SlotProps;
+    slot_props_unresolved_spread?: boolean;
     slot_fallback?: string;
     slot_description?: string;
     slot_deprecated?: DeprecatedValue;
@@ -200,6 +252,7 @@ export function addSlot(
         default: existing_slot.default ?? default_slot,
         fallback,
         slot_props: existing_slot.slot_props === undefined ? props : existing_slot.slot_props,
+        slot_props_unresolved_spread: existing_slot.slot_props_unresolved_spread || slot_props_unresolved_spread,
         description: existing_slot.description || description,
         deprecated: existing_slot.deprecated ?? slot_deprecated,
         tags: existing_slot.tags || slot_tags,
@@ -212,6 +265,7 @@ export function addSlot(
       default: default_slot,
       fallback,
       slot_props,
+      slot_props_unresolved_spread,
       description,
       deprecated: slot_deprecated,
       tags: slot_tags,

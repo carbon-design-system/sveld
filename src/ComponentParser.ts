@@ -424,6 +424,8 @@ export type SlotProps = Record<string, SlotPropValue>;
  */
 export type InternalComponentSlot = Omit<ComponentSlot, "slot_props"> & {
   slot_props?: string | SlotProps;
+  /** True when a `{...spread}` in the slot's props object couldn't be resolved; folded into `slot_props` text as `& Record<string, any>` before output. */
+  slot_props_unresolved_spread?: boolean;
 };
 
 /** Event forwarded with `on:eventname` and no handler. */
@@ -577,6 +579,8 @@ export interface ComponentContext {
   description?: string;
   /** Context object properties. */
   properties: ComponentContextProp[];
+  /** True when a `{...spread}` in the context's object literal couldn't be resolved; the generated type intersects with `Record<string, any>`. */
+  hasUnresolvedSpread?: boolean;
 }
 
 /**
@@ -1604,6 +1608,7 @@ export default class ComponentParser {
           const renderInfo = extractRenderTagInfo(this.ctx, renderTag.expression);
           if (renderInfo) {
             let slot_props: SlotProps | undefined;
+            let slot_props_unresolved_spread = false;
             if (renderInfo.arguments.length === 0) {
               slot_props = {};
             } else if (
@@ -1613,11 +1618,13 @@ export default class ComponentParser {
               "type" in renderInfo.arguments[0] &&
               renderInfo.arguments[0].type === "ObjectExpression"
             ) {
-              slot_props = buildSlotPropsFromObjectExpression(
+              const built = buildSlotPropsFromObjectExpression(
                 this.ctx,
                 this,
                 renderInfo.arguments[0] as ObjectExpression,
               );
+              slot_props = built.slot_props;
+              slot_props_unresolved_spread = built.hasUnresolvedSpread;
             } else if (renderInfo.arguments.length === 1) {
               /**
                * Multiple positional arguments (e.g. `{@render row(item, index)}`) are a
@@ -1640,6 +1647,7 @@ export default class ComponentParser {
               addSlot(this.ctx, {
                 slot_name,
                 slot_props,
+                slot_props_unresolved_spread: slot_props_unresolved_spread || undefined,
                 source: sourceRangeFromNode(this.ctx, node),
               });
             }
@@ -1855,14 +1863,16 @@ export default class ComponentParser {
 
     const processedSlots = ComponentParser.mapToArray(this.ctx.slots)
       .map((slot) => {
+        const { slot_props_unresolved_spread, ...publicSlot } = slot;
+
         // JSDoc `@slot`/`@snippet` tags are already TS type text; template parsing yields a SlotProps map.
         if (!slot.slot_props) {
-          return slot as ComponentSlot;
+          return publicSlot as ComponentSlot;
         }
         if (typeof slot.slot_props === "string") {
           return EMPTY_OBJECT_TYPE_REGEX.test(slot.slot_props)
-            ? { ...slot, slot_props: "Record<string, never>" }
-            : (slot as ComponentSlot);
+            ? { ...publicSlot, slot_props: "Record<string, never>" }
+            : (publicSlot as ComponentSlot);
         }
 
         const slot_props = slot.slot_props;
@@ -1877,15 +1887,19 @@ export default class ComponentParser {
           new_props.push(`${key}: ${slot_props[key].value}`);
         }
 
+        const widenSuffix = slot_props_unresolved_spread ? " & Record<string, any>" : "";
+
         // Force multiline when count > 1 (matches interface body formatting).
         const formatted_slot_props =
           new_props.length === 0
-            ? "Record<string, never>"
+            ? slot_props_unresolved_spread
+              ? "Record<string, any>"
+              : "Record<string, never>"
             : new_props.length === 1
-              ? `{ ${new_props[0]} }`
-              : `{\n  ${new_props.join(";\n  ")};\n}`;
+              ? `{ ${new_props[0]} }${widenSuffix}`
+              : `{\n  ${new_props.join(";\n  ")};\n}${widenSuffix}`;
 
-        return { ...slot, slot_props: formatted_slot_props };
+        return { ...publicSlot, slot_props: formatted_slot_props };
       })
       .sort((a, b) => {
         const aName = a.name ?? "";

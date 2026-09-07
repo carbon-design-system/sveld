@@ -266,10 +266,14 @@ export function getContextDefs(def: Pick<ComponentDocApi, "contexts" | "generics
        * This complies with Biome linter rules and Svelte 4 compatibility.
        */
       if (context.properties.length === 0) {
-        return `${contextComment}export type ${context.typeName} = Record<string, never>;`;
+        return context.hasUnresolvedSpread
+          ? `${contextComment}export type ${context.typeName} = Record<string, any>;`
+          : `${contextComment}export type ${context.typeName} = Record<string, never>;`;
       }
 
-      return `${contextComment}export type ${context.typeName}${genericSuffix} = {\n  ${props}\n};`;
+      const widenSuffix = context.hasUnresolvedSpread ? " & Record<string, any>" : "";
+
+      return `${contextComment}export type ${context.typeName}${genericSuffix} = {\n  ${props}\n}${widenSuffix};`;
     })
     .join("\n\n");
 }
