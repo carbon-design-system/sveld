@@ -402,15 +402,15 @@ export function parseCustomTypes(
    */
   const pushOrReplaceProperty = <T extends { name: string }>(list: T[], property: T, ownerName: string | undefined) => {
     const existingIndex = list.findIndex((p) => p.name === property.name);
-    if (existingIndex !== -1) {
+    if (existingIndex === -1) {
+      list.push(property);
+    } else {
       const location = ctx.componentFilePath ? ` in ${ctx.componentFilePath}` : "";
       const owner = ownerName ? ` of "${ownerName}"` : "";
       console.warn(
         `Warning: Duplicate property "${property.name}"${owner}${location}; the later declaration overwrites the earlier one.`,
       );
       list[existingIndex] = property;
-    } else {
-      list.push(property);
     }
   };
   for (const { tags, description: commentDescription, lines: blockLines } of parseComments(scanSource)) {
