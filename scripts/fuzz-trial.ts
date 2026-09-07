@@ -21,6 +21,11 @@ async function readStdin(): Promise<string> {
 
 const source = await readStdin();
 
+/** Test-only escape hatch so a smoke test can force a finding without a real crash. */
+if (process.env.SVELD_FUZZ_FORCE_CRASH === "1") {
+  process.exit(1);
+}
+
 let svelteAccepts = true;
 try {
   svelteParse(source, { modern: true });

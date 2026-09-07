@@ -18,13 +18,16 @@
  *   bun run fuzz
  *   bun run fuzz --iterations 500
  *   bun run fuzz --seed 12345
+ *   bun run fuzz --findings-dir /path/to/dir
+ *
+ * Exits non-zero when any finding is produced.
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { Glob } from "bun";
 
 const FIXTURES_DIR = path.join(import.meta.dir, "..", "tests", "fixtures");
-const FINDINGS_DIR = path.join(import.meta.dir, "..", ".context", "fuzz-findings");
+const DEFAULT_FINDINGS_DIR = path.join(import.meta.dir, "..", ".context", "fuzz-findings");
 const TRIAL_SCRIPT = path.join(import.meta.dir, "fuzz-trial.ts");
 const DEFAULT_ITERATIONS = 150;
 const SLOW_MS = 1000;
@@ -35,13 +38,15 @@ const MINIMIZE_TEST_CAP = 60;
 interface FuzzArgs {
   iterations: number;
   seed: number;
+  findingsDir: string;
 }
 
 function parseArgs(argv: string[]): FuzzArgs {
-  const args: FuzzArgs = { iterations: DEFAULT_ITERATIONS, seed: Date.now() };
+  const args: FuzzArgs = { iterations: DEFAULT_ITERATIONS, seed: Date.now(), findingsDir: DEFAULT_FINDINGS_DIR };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--iterations") args.iterations = Number(argv[++i]);
     else if (argv[i] === "--seed") args.seed = Number(argv[++i]);
+    else if (argv[i] === "--findings-dir") args.findingsDir = path.resolve(argv[++i]);
   }
   return args;
 }
@@ -468,7 +473,8 @@ async function main() {
   );
 
   if (findings.size > 0) {
-    mkdirSync(FINDINGS_DIR, { recursive: true });
+    mkdirSync(args.findingsDir, { recursive: true });
+    const findingPaths: string[] = [];
     for (const finding of findings.values()) {
       // biome-ignore lint/performance/noAwaitInLoops: sequential so minimizing doesn't multiply load
       const minimized = await minimizeFinding(finding);
@@ -476,13 +482,20 @@ async function main() {
         .replace(/[^a-zA-Z0-9]+/g, "-")
         .toLowerCase()
         .slice(0, 60);
-      const filePath = path.join(FINDINGS_DIR, `${slug}.svelte`);
+      const filePath = path.join(args.findingsDir, `${slug}.svelte`);
       writeFileSync(filePath, minimized);
+      findingPaths.push(filePath);
       console.log(`\n=== finding: ${finding.signature} ===`);
       console.log(`mutation: ${finding.tag}`);
       console.log(`message: ${finding.result.error?.message}`);
       console.log(`minimized source written to: ${path.relative(process.cwd(), filePath)}`);
     }
+
+    console.log(`\n${findings.size} finding(s):`);
+    for (const filePath of findingPaths) {
+      console.log(`  ${path.relative(process.cwd(), filePath)}`);
+    }
+    process.exitCode = 1;
   }
 }
 
