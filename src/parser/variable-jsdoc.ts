@@ -1,6 +1,7 @@
 import type ComponentParser from "../ComponentParser";
 import { parseComments } from "./comment-parser";
 import type { ParserContext } from "./context";
+import { recordSveldIgnore } from "./diagnostics";
 import { getCommentTags, ONLY_WHITESPACE_REGEX } from "./jsdoc";
 
 interface ScriptComment {
@@ -202,7 +203,10 @@ export function buildVariableJsDocTable(
     if (!comment) continue;
 
     const parsed = parseComments(comment.text);
-    const { type: typeTag, description } = getCommentTags(parsed);
+    const { type: typeTag, description, ignore: ignoreCodes } = getCommentTags(parsed);
+    if (ignoreCodes.length > 0) {
+      recordSveldIgnore(ctx, "context-any-type", declaration.name, ignoreCodes);
+    }
     if (!typeTag) continue;
 
     table.set(declaration.name, {

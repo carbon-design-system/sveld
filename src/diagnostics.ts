@@ -1,4 +1,5 @@
 import type { SourceRange } from "./ComponentParser";
+import { matchesGlob } from "./glob-match";
 
 /**
  * Why sveld could not pin a type during parsing.
@@ -98,6 +99,42 @@ export function failingDiagnostics(
   );
 }
 
+/**
+ * One `diagnostics.ignore` entry. Every set field must match for the
+ * matcher to apply; an omitted field matches anything. `component` is a
+ * glob (`*`/`**`/`?`) matched against the diagnostic's `component` path.
+ */
+export interface DiagnosticIgnoreMatcher {
+  code?: string;
+  component?: string;
+  name?: string;
+}
+
+function matchesIgnoreMatcher(diagnostic: SveldDiagnostic, matcher: DiagnosticIgnoreMatcher): boolean {
+  if (matcher.code !== undefined && matcher.code !== diagnostic.code) return false;
+  if (matcher.name !== undefined && matcher.name !== diagnostic.name) return false;
+  if (matcher.component !== undefined && !matchesGlob(matcher.component, diagnostic.component)) return false;
+  return true;
+}
+
+/**
+ * Marks every diagnostic matching at least one `diagnostics.ignore` matcher
+ * as `ignored`, on top of whatever inline `@sveld-ignore` tags already set.
+ * Never un-ignores a diagnostic; only ever adds the flag.
+ */
+export function applyDiagnosticIgnores(
+  diagnostics: SveldDiagnostic[],
+  matchers: DiagnosticIgnoreMatcher[] | undefined,
+): SveldDiagnostic[] {
+  if (!matchers || matchers.length === 0) return diagnostics;
+
+  return diagnostics.map((diagnostic) =>
+    diagnostic.ignored || matchers.some((matcher) => matchesIgnoreMatcher(diagnostic, matcher))
+      ? { ...diagnostic, ignored: true }
+      : diagnostic,
+  );
+}
+
 const KIND_LABELS: Record<SveldDiagnosticKind, string> = {
   "prop-unknown-type": "Props without inferred types",
   "context-any-type": "Context values typed as `any`",
@@ -136,16 +173,20 @@ export function dedupeDiagnostics(diagnostics: SveldDiagnostic[]): SveldDiagnost
  * Group diagnostics by kind and component for CLI output.
  */
 export function formatDiagnosticsSummary(diagnostics: SveldDiagnostic[]): string {
-  if (diagnostics.length === 0) {
-    return "sveld: all types resolved.";
+  const active = diagnostics.filter((diagnostic) => !diagnostic.ignored);
+  const ignoredCount = diagnostics.length - active.length;
+  const ignoredSuffix = ignoredCount > 0 ? ` (${ignoredCount} ignored)` : "";
+
+  if (active.length === 0) {
+    return `sveld: all types resolved${ignoredSuffix}.`;
   }
 
   const lines: string[] = [];
-  const total = diagnostics.length;
-  lines.push(`sveld: ${total} unresolved type${total === 1 ? "" : "s"} found.`);
+  const total = active.length;
+  lines.push(`sveld: ${total} unresolved type${total === 1 ? "" : "s"} found${ignoredSuffix}.`);
 
   for (const kind of KIND_ORDER) {
-    const forKind = diagnostics.filter((diagnostic) => diagnostic.kind === kind);
+    const forKind = active.filter((diagnostic) => diagnostic.kind === kind);
     if (forKind.length === 0) continue;
 
     lines.push("");

@@ -195,6 +195,7 @@ const KNOWN_TOP_LEVEL_KEYS = [
   "stdout",
   "format",
   "dryRun",
+  "diagnostics",
 ];
 
 /** Known keys inside each `*Options` object, keyed by the top-level option name. `additionalWriters` is userland-defined and not validated here. */
@@ -204,6 +205,7 @@ const KNOWN_NESTED_KEYS: Record<string, string[]> = {
   markdownOptions: ["write", "outFile", "entryExports", "onAppend", "dryRun"],
   customElementsOptions: ["outFile", "dryRun"],
   llmsOptions: ["outDir", "linkBase", "title", "summary", "entryExports", "dryRun"],
+  diagnostics: ["ignore"],
 };
 
 /** Prints a "did you mean" suggestion for an unrecognized option key. `prefix` namespaces nested keys, e.g. `"typesOptions"` for `typesOptions.printWidth`. */
