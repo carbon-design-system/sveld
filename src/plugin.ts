@@ -64,18 +64,27 @@ interface HotUpdateContext {
   file: string;
 }
 
+/** Subset of Rollup's plugin context that `generateBundle`/`writeBundle` rely on to fail the build. */
+interface RollupPluginContext {
+  error(message: string): never;
+}
+
 interface SveldPlugin {
   name: string;
   apply?: "build" | "serve";
   enforce?: "pre" | "post";
   buildStart(): void | Promise<void>;
-  generateBundle(): Promise<void>;
-  writeBundle(): Promise<void>;
+  generateBundle(this: RollupPluginContext): Promise<void>;
+  writeBundle(this: RollupPluginContext): Promise<void>;
   /** Vite dev-server HMR hook (serve mode). */
   handleHotUpdate?(ctx: HotUpdateContext): void;
   /** Rollup/Vite watch hook (build `--watch`). */
   watchChange?(id: string): void;
 }
+
+/** Message emitted (via `this.error`) when the entry point cannot be resolved. Matches `sveld()`'s thrown message. */
+const UNRESOLVED_ENTRY_MESSAGE =
+  'sveld: could not resolve a Svelte entry point. Set package.json#svelte, or pass the "entry" option.';
 
 /** Debounce window (ms) for coalescing rapid file changes into one regeneration. */
 const WATCH_DEBOUNCE_MS = 50;
@@ -128,18 +137,20 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
     async generateBundle() {
       // In watch mode the initial build happens in `buildStart`.
       if (watch) return;
-      if (input != null) {
-        result = await generateBundle(input, opts?.glob === true, toGenerateBundleOptions(opts));
+      if (input == null) {
+        this.error(UNRESOLVED_ENTRY_MESSAGE);
       }
+      result = await generateBundle(input, opts?.glob === true, toGenerateBundleOptions(opts));
     },
     async writeBundle() {
       if (watch) return;
-      if (input != null) {
-        await writeOutput(result, opts || {}, input);
-        // Persists any generated `.d.ts` text writeOutput just cached, on top
-        // of the parse-only save generateBundle() already did.
-        result.cache?.save();
+      if (input == null) {
+        this.error(UNRESOLVED_ENTRY_MESSAGE);
       }
+      await writeOutput(result, opts || {}, input);
+      // Persists any generated `.d.ts` text writeOutput just cached, on top
+      // of the parse-only save generateBundle() already did.
+      result.cache?.save();
     },
     handleHotUpdate(ctx) {
       scheduleUpdate(ctx.file);
