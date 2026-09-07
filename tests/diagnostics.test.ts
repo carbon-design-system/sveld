@@ -336,6 +336,52 @@ describe("ComponentParser diagnostics", () => {
     const defaultSlot = slots.find((s) => s.default);
     expect(defaultSlot?.slot_props).toContain("Record<string, any>");
   });
+
+  test("flags an instance-script export specifier re-exporting an imported binding", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        import { helper } from "./utils";
+        export { helper };
+      </script>
+    `;
+
+    const { diagnostics } = parser.parseSvelteComponent(source, parseContext);
+    const exportDiagnostic = diagnostics?.find((d) => d.kind === "export-unresolved");
+
+    expect(exportDiagnostic).toMatchObject({ kind: "export-unresolved", name: "helper" });
+  });
+
+  test("flags a module-script export specifier from another file", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script module>
+        export { helper } from "./utils";
+      </script>
+      <script>
+      </script>
+    `;
+
+    const { diagnostics } = parser.parseSvelteComponent(source, parseContext);
+    const exportDiagnostic = diagnostics?.find((d) => d.kind === "export-unresolved");
+
+    expect(exportDiagnostic).toMatchObject({ kind: "export-unresolved", name: "helper" });
+    expect(exportDiagnostic?.message).toContain('re-exports from "./utils"');
+  });
+
+  test("does not flag a specifier export resolving to a local declaration", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        let className = "test";
+        export { className as class };
+      </script>
+    `;
+
+    const { diagnostics } = parser.parseSvelteComponent(source, parseContext);
+
+    expect(diagnostics?.some((d) => d.kind === "export-unresolved")).toBe(false);
+  });
 });
 
 describe("diagnostics helpers", () => {

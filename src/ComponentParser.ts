@@ -1009,6 +1009,67 @@ export default class ComponentParser {
           }
 
           if (node.type === "ExportNamedDeclaration") {
+            if (node.declaration == null && node.specifiers.length === 0) {
+              return;
+            }
+
+            let moduleExportedName: string | undefined;
+            let isResolvedModuleSpecifierExport = false;
+            if (node.declaration == null && node.specifiers[0]?.type === "ExportSpecifier") {
+              const specifier = node.specifiers[0];
+              const localName =
+                specifier.local && typeof specifier.local === "object" && "name" in specifier.local
+                  ? (specifier.local as Identifier).name
+                  : undefined;
+              const exportedName =
+                specifier.exported && typeof specifier.exported === "object" && "name" in specifier.exported
+                  ? (specifier.exported as Identifier).name
+                  : undefined;
+              if (!localName || !exportedName) return;
+
+              let declaration: VariableDeclaration | undefined;
+              for (const varDecl of Array.from(this.ctx.vars)) {
+                if (
+                  varDecl.declarations.some(
+                    (decl) =>
+                      decl.id &&
+                      typeof decl.id === "object" &&
+                      "type" in decl.id &&
+                      decl.id.type === "Identifier" &&
+                      (decl.id as Identifier).name === localName,
+                  )
+                ) {
+                  declaration = varDecl;
+                  break;
+                }
+              }
+
+              if (!declaration) {
+                const source =
+                  "source" in node && node.source && typeof node.source === "object" && "value" in node.source
+                    ? node.source.value
+                    : undefined;
+                const reason =
+                  typeof source === "string"
+                    ? `it re-exports from "${source}"`
+                    : this.ctx.valueImportBindingsByLocalName.has(localName)
+                      ? "it re-exports an imported binding"
+                      : "no matching local declaration was found";
+                recordDiagnostic(
+                  this.ctx,
+                  "export-unresolved",
+                  exportedName,
+                  `export "${exportedName}" was skipped because ${reason}; sveld only resolves exports of a local declaration.`,
+                  sourceRangeFromNode(this.ctx, node),
+                );
+                return;
+              }
+
+              node.declaration = declaration;
+              moduleExportedName = exportedName;
+              isResolvedModuleSpecifierExport = true;
+            }
+
             if (node.declaration == null) {
               return;
             }
@@ -1060,8 +1121,11 @@ export default class ComponentParser {
             } else if (node.declaration.type === "VariableDeclaration") {
               const varDecl = node.declaration as VariableDeclaration;
               const kind = variableDeclarationKindToComponentPropKind(varDecl.kind);
+              const declaratorsToProcess = isResolvedModuleSpecifierExport
+                ? varDecl.declarations.slice(0, 1)
+                : varDecl.declarations;
 
-              for (const declarator of varDecl.declarations) {
+              for (const declarator of declaratorsToProcess) {
                 if (!declarator || typeof declarator !== "object" || !("id" in declarator)) {
                   continue;
                 }
@@ -1073,6 +1137,7 @@ export default class ComponentParser {
                 }
 
                 const localPropName = (id as Identifier).name;
+                const declaratorPropName = moduleExportedName ?? localPropName;
                 const initResult = init == null ? { isFunction: false } : processInitializer(this, this.ctx, init);
                 const { value, type: typeSeed, isFunction: initializerIsFunction, defaultValue } = initResult;
                 const resolvedJSDoc = initResult;
@@ -1085,7 +1150,7 @@ export default class ComponentParser {
                 }
 
                 declarators.push({
-                  prop_name: localPropName,
+                  prop_name: declaratorPropName,
                   kind,
                   isFunctionDeclaration: false,
                   value,
@@ -1334,6 +1399,27 @@ export default class ComponentParser {
             node.declaration = declaration;
             prop_name = exportedName;
             isResolvedSpecifierExport = true;
+
+            if (!declaration) {
+              const source =
+                "source" in node && node.source && typeof node.source === "object" && "value" in node.source
+                  ? node.source.value
+                  : undefined;
+              const reason =
+                typeof source === "string"
+                  ? `it re-exports from "${source}"`
+                  : this.ctx.valueImportBindingsByLocalName.has(localName)
+                    ? "it re-exports an imported binding"
+                    : "no matching local declaration was found";
+              recordDiagnostic(
+                this.ctx,
+                "export-unresolved",
+                exportedName,
+                `export "${exportedName}" was skipped because ${reason}; sveld only resolves exports of a local declaration.`,
+                sourceRangeFromNode(this.ctx, node),
+              );
+              return;
+            }
           }
 
           if (node.declaration == null) {

@@ -93,7 +93,7 @@ export function buildSlotPropsFromObjectExpression(
           ctx,
           "spread-unresolved",
           "slot_props",
-          "Slot props spread a value sveld can't resolve; its shape is widened to \"Record<string, any>\".",
+          'Slot props spread a value sveld can\'t resolve; its shape is widened to "Record<string, any>".',
           sourceRangeFromNode(ctx, property),
         );
       }
