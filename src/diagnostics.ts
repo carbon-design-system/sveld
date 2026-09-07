@@ -11,6 +11,7 @@ import { matchesGlob } from "./glob-match";
  * - `syntax-skipped`: `$props()`/`{@render}` syntax the parser can't model; omitted from output.
  * - `rest-props-unresolved`: every `{...$$restProps}` target was a component, so `$RestProps` couldn't be typed.
  * - `context-duplicate-key`: `setContext` called more than once with the same key; only the first call's shape is used.
+ * - `spread-unresolved`: a `{...spread}` in a context or slot-props object literal couldn't be resolved; widened to `Record<string, any>`.
  */
 export type SveldDiagnosticKind =
   | "prop-unknown-type"
@@ -19,7 +20,8 @@ export type SveldDiagnosticKind =
   | "example-compile-error"
   | "syntax-skipped"
   | "rest-props-unresolved"
-  | "context-duplicate-key";
+  | "context-duplicate-key"
+  | "spread-unresolved";
 
 /** `"error"` fails `--strict=errors`; `"warning"` only fails plain `--strict`. */
 export type SveldDiagnosticSeverity = "error" | "warning";
@@ -38,6 +40,7 @@ export const DIAGNOSTIC_CODES: Record<SveldDiagnosticKind, string> = {
   "syntax-skipped": "sveld/syntax-skipped",
   "rest-props-unresolved": "sveld/rest-props-unresolved",
   "context-duplicate-key": "sveld/context-duplicate-key",
+  "spread-unresolved": "sveld/spread-unresolved",
 };
 
 /**
@@ -53,6 +56,7 @@ export const DIAGNOSTIC_SEVERITIES: Record<SveldDiagnosticKind, SveldDiagnosticS
   "syntax-skipped": "error",
   "rest-props-unresolved": "warning",
   "context-duplicate-key": "warning",
+  "spread-unresolved": "warning",
 };
 
 /**
@@ -151,6 +155,7 @@ const KIND_LABELS: Record<SveldDiagnosticKind, string> = {
   "syntax-skipped": "Component syntax sveld skipped",
   "rest-props-unresolved": "$$restProps spread only onto components",
   "context-duplicate-key": "Duplicate setContext keys",
+  "spread-unresolved": "Unresolved spreads widened to Record<string, any>",
 };
 
 const KIND_ORDER: SveldDiagnosticKind[] = [
@@ -161,6 +166,7 @@ const KIND_ORDER: SveldDiagnosticKind[] = [
   "syntax-skipped",
   "rest-props-unresolved",
   "context-duplicate-key",
+  "spread-unresolved",
 ];
 
 /**

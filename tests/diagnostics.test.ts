@@ -283,6 +283,59 @@ describe("ComponentParser diagnostics", () => {
     expect(duplicateDiagnostic).toMatchObject({ kind: "context-duplicate-key", name: "ctx" });
     expect(contexts?.find((c) => c.key === "ctx")?.properties?.map((p) => p.name)).toEqual(["a"]);
   });
+
+  test("merges a setContext spread of a local object-literal const", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        import { setContext } from "svelte";
+        const base = { a: 1 };
+        setContext("ctx", { ...base, b: 2 });
+      </script>
+    `;
+
+    const { diagnostics, contexts } = parser.parseSvelteComponent(source, parseContext);
+
+    expect(diagnostics?.some((d) => d.kind === "spread-unresolved")).toBe(false);
+    const ctx = contexts?.find((c) => c.key === "ctx");
+    expect(ctx?.properties.map((p) => p.name)).toEqual(["a", "b"]);
+    expect(ctx?.hasUnresolvedSpread).toBeFalsy();
+  });
+
+  test("flags an unresolvable setContext spread and widens the context type", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        import { setContext } from "svelte";
+        setContext("ctx", { ...getRest(), b: 2 });
+      </script>
+    `;
+
+    const { diagnostics, contexts } = parser.parseSvelteComponent(source, parseContext);
+    const spreadDiagnostic = diagnostics?.find((d) => d.kind === "spread-unresolved");
+
+    expect(spreadDiagnostic).toMatchObject({ kind: "spread-unresolved", name: "ctx" });
+    const ctx = contexts?.find((c) => c.key === "ctx");
+    expect(ctx?.hasUnresolvedSpread).toBe(true);
+    expect(ctx?.properties.map((p) => p.name)).toEqual(["b"]);
+  });
+
+  test("flags an unresolvable spread in slot props from {@render} and widens", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        let { children } = $props();
+      </script>
+      {@render children({ ...getRest(), label: "x" })}
+    `;
+
+    const { diagnostics, slots } = parser.parseSvelteComponent(source, parseContext);
+    const spreadDiagnostic = diagnostics?.find((d) => d.kind === "spread-unresolved");
+
+    expect(spreadDiagnostic).toBeDefined();
+    const defaultSlot = slots.find((s) => s.default);
+    expect(defaultSlot?.slot_props).toContain("Record<string, any>");
+  });
 });
 
 describe("diagnostics helpers", () => {

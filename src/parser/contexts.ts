@@ -1,12 +1,136 @@
-import type { ArrowFunctionExpression, CallExpression, Expression, FunctionExpression, NewExpression } from "estree";
+import type {
+  ArrowFunctionExpression,
+  CallExpression,
+  Expression,
+  FunctionExpression,
+  NewExpression,
+  ObjectExpression,
+} from "estree";
 import type { Node } from "estree-walker";
 import { isIdentifier, isLiteral, isObjectExpression, resolveStaticStringLiteral } from "../ast-guards";
 import type ComponentParser from "../ComponentParser";
 import type { ComponentContext, ComponentContextProp } from "../ComponentParser";
 import type { ParserContext } from "./context";
 import { recordDiagnostic } from "./diagnostics";
+import { parseObjectTypeLiteralMembers } from "./object-type-literal";
 import { resolveConstInitializer } from "./props";
 import { sourceRangeFromNode } from "./source-position";
+
+/**
+ * Resolves `{...identifier}` inside a `setContext` object literal to a property
+ * list: either the spread-of-a-literal's own properties (recursively, so a chain
+ * of `const` object literals merges all the way down) or, when the identifier
+ * only has a resolvable JSDoc/native object-type annotation, that type's members.
+ * Returns `null` when neither resolves, so the caller can widen to `Record<string, any>`.
+ */
+function resolveSpreadShape(
+  ctx: ParserContext,
+  parser: ComponentParser,
+  argument: unknown,
+  key: string,
+): ComponentContextProp[] | null {
+  if (!isIdentifier(argument)) return null;
+
+  const initializer = resolveConstInitializer(ctx, argument.name);
+  if (isObjectExpression(initializer)) {
+    return parseContextObjectProperties(ctx, parser, initializer, key).properties;
+  }
+
+  const varInfo = parser.findVariableTypeAndDescription(argument.name);
+  if (!varInfo) return null;
+
+  const members = parseObjectTypeLiteralMembers(varInfo.type);
+  if (!members) return null;
+
+  return members.map((member) => ({
+    name: member.name,
+    type: member.type,
+    optional: member.optional,
+  }));
+}
+
+/** Build a context's property list from an object literal, merging or flagging spreads. */
+function parseContextObjectProperties(
+  ctx: ParserContext,
+  parser: ComponentParser,
+  objExpr: ObjectExpression,
+  key: string,
+): { properties: ComponentContextProp[]; hasUnresolvedSpread: boolean } {
+  const properties: ComponentContextProp[] = [];
+  let hasUnresolvedSpread = false;
+
+  for (const prop of objExpr.properties) {
+    if (prop.type === "SpreadElement") {
+      const merged = resolveSpreadShape(ctx, parser, prop.argument, key);
+      if (merged) {
+        properties.push(...merged);
+      } else {
+        hasUnresolvedSpread = true;
+        recordDiagnostic(
+          ctx,
+          "spread-unresolved",
+          key,
+          `Context "${key}" spreads a value sveld can't resolve; its shape is widened to "Record<string, any>".`,
+          sourceRangeFromNode(ctx, prop),
+        );
+      }
+      continue;
+    }
+
+    if (prop.type !== "Property") continue;
+
+    const propName = parser.getPropertyName(prop.key);
+    if (!propName) continue;
+
+    let propType = "any";
+    let propDescription: string | undefined;
+
+    if (isIdentifier(prop.value)) {
+      const varName = prop.value.name;
+      const varInfo = parser.findVariableTypeAndDescription(varName);
+      if (varInfo) {
+        propType = varInfo.type;
+        propDescription = varInfo.description;
+      } else {
+        recordDiagnostic(
+          ctx,
+          "context-any-type",
+          propName,
+          `Context "${key}" property "${propName}" has no type annotation; defaulted to "any".`,
+          sourceRangeFromNode(ctx, prop),
+        );
+      }
+    } else if (
+      prop.value &&
+      typeof prop.value === "object" &&
+      "type" in prop.value &&
+      (prop.value.type === "ArrowFunctionExpression" || prop.value.type === "FunctionExpression")
+    ) {
+      const funcExpr = prop.value as ArrowFunctionExpression | FunctionExpression;
+      const params =
+        funcExpr.params
+          ?.map((p) => {
+            if (isIdentifier(p)) {
+              return `${p.name || "arg"}: any`;
+            }
+            return "arg: any";
+          })
+          .join(", ") || "";
+      propType = `(${params}) => any`;
+    } else if (isLiteral(prop.value)) {
+      propType = prop.value.value == null ? "null" : typeof prop.value.value;
+    }
+
+    properties.push({
+      name: propName,
+      type: propType,
+      description: propDescription,
+      optional: false,
+    });
+  }
+
+  return { properties, hasUnresolvedSpread };
+}
 
 /** Split a `setContext` key on `-`, `_`, `.`, `:`, `/`, or whitespace for PascalCase naming. */
 const CONTEXT_KEY_SPLIT_REGEX = /[-_.:/\s]+/;
@@ -28,70 +152,18 @@ function parseContextValue(
   if (!node || typeof node !== "object" || !("type" in node)) return null;
 
   if (node.type === "ObjectExpression") {
-    const properties: ComponentContextProp[] = [];
     if (!isObjectExpression(node)) {
       return null;
     }
-    const objExpr = node;
 
-    for (const prop of objExpr.properties) {
-      if (prop.type !== "Property") continue;
-
-      const propName = parser.getPropertyName(prop.key);
-      if (!propName) continue;
-
-      let propType = "any";
-      let propDescription: string | undefined;
-
-      if (isIdentifier(prop.value)) {
-        const varName = prop.value.name;
-        const varInfo = parser.findVariableTypeAndDescription(varName);
-        if (varInfo) {
-          propType = varInfo.type;
-          propDescription = varInfo.description;
-        } else {
-          recordDiagnostic(
-            ctx,
-            "context-any-type",
-            propName,
-            `Context "${key}" property "${propName}" has no type annotation; defaulted to "any".`,
-            sourceRangeFromNode(ctx, prop),
-          );
-        }
-      } else if (
-        prop.value &&
-        typeof prop.value === "object" &&
-        "type" in prop.value &&
-        (prop.value.type === "ArrowFunctionExpression" || prop.value.type === "FunctionExpression")
-      ) {
-        const funcExpr = prop.value as ArrowFunctionExpression | FunctionExpression;
-        const params =
-          funcExpr.params
-            ?.map((p) => {
-              if (isIdentifier(p)) {
-                return `${p.name || "arg"}: any`;
-              }
-              return "arg: any";
-            })
-            .join(", ") || "";
-        propType = `(${params}) => any`;
-      } else if (isLiteral(prop.value)) {
-        propType = prop.value.value == null ? "null" : typeof prop.value.value;
-      }
-
-      properties.push({
-        name: propName,
-        type: propType,
-        description: propDescription,
-        optional: false,
-      });
-    }
+    const { properties, hasUnresolvedSpread } = parseContextObjectProperties(ctx, parser, node, key);
 
     return {
       key,
       typeName: generateContextTypeName(key),
       properties,
       description: undefined,
+      ...(hasUnresolvedSpread ? { hasUnresolvedSpread } : {}),
     };
   } else if (isIdentifier(node)) {
     const varName = node.name;
