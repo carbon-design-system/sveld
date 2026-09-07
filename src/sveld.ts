@@ -1,6 +1,6 @@
 import type { ComponentParseError } from "./bundle";
 import { type CheckResult, resolveCheckSnapshotFile, runCheck } from "./check";
-import { formatDiagnosticsSummary, type SveldDiagnostic } from "./diagnostics";
+import { formatDiagnosticsSummary, formatDiagnosticsSummaryJson, type SveldDiagnostic } from "./diagnostics";
 import { getSvelteEntry } from "./get-svelte-entry";
 import { loadConfig, mergeConfig, type SveldRuntimeOptions, validateOptions } from "./load-config";
 import { setQuiet } from "./logger";
@@ -77,7 +77,11 @@ export async function sveld(opts?: SveldOptions): Promise<SveldResult> {
   const shouldReport = merged.reportDiagnostics || merged.strict;
 
   if (shouldReport && diagnostics.length > 0) {
-    console.error(formatDiagnosticsSummary(diagnostics));
+    if (merged.format === "json") {
+      process.stderr.write(formatDiagnosticsSummaryJson(diagnostics));
+    } else {
+      console.error(formatDiagnosticsSummary(diagnostics));
+    }
   }
 
   // Lowest applicable code wins (3 beats 4), matching the CLI's exit-code contract.

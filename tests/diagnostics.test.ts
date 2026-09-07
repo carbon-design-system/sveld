@@ -224,12 +224,14 @@ describe("sveld() strict mode", () => {
   let relativeDir: string;
   let previousExitCode: typeof process.exitCode;
   let errorSpy: ReturnType<typeof jest.spyOn>;
+  let stderrSpy: ReturnType<typeof jest.spyOn>;
 
   beforeEach(() => {
     previousExitCode = process.exitCode;
     process.exitCode = undefined;
     errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
     jest.spyOn(console, "log").mockImplementation(() => {});
+    stderrSpy = jest.spyOn(process.stderr, "write").mockImplementation(() => true);
     absoluteDir = mkdtempSync(join(process.cwd(), "sveld-diagnostics-"));
     relativeDir = basename(absoluteDir);
     // Component with an @event tag that has no dispatch or callback prop.
@@ -279,5 +281,15 @@ describe("sveld() strict mode", () => {
     expect(exitCode).toBe(4);
     expect(process.exitCode).toBe(exitCodeBefore);
     expect(summaryCalls(errorSpy).length).toBeGreaterThan(0);
+  });
+
+  test("format: 'json' prints the diagnostics summary as JSON to stderr instead of text", async () => {
+    await sveld({ entry: relativeDir, glob: true, types: false, reportDiagnostics: true, format: "json" });
+
+    expect(summaryCalls(errorSpy)).toHaveLength(0);
+    expect(stderrSpy).toHaveBeenCalledTimes(1);
+    const printed = JSON.parse(stderrSpy.mock.calls[0][0] as string);
+    expect(printed.kind).toBe("diagnostics");
+    expect(printed.diagnostics).toContainEqual(expect.objectContaining({ kind: "event-no-source", name: "phantom" }));
   });
 });
