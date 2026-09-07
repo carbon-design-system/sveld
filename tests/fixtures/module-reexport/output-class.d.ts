@@ -5,7 +5,7 @@ export type ModuleReexportProps = {
    * Chart data to display
    * @default null
    */
-  data?: undefined;
+  data?: any;
 
   /**
    * Chart title

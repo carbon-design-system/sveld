@@ -4,7 +4,6 @@ export type TypedPropsProps = {
   /**
    * prop1 description 1
    * prop1 description 2
-   * @default undefined
    */
   prop1: string;
 
@@ -13,7 +12,7 @@ export type TypedPropsProps = {
    * prop2 description 2
    * @default null
    */
-  prop2?: undefined;
+  prop2?: any;
 
   /**
    * @default 4

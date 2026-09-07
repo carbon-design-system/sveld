@@ -4,10 +4,7 @@ import type { SvelteHTMLElements } from "svelte/elements";
 type $RestProps = SvelteHTMLElements["button"];
 
 type $Props = {
-  /**
-   * @default undefined
-   */
-  variant: undefined;
+  variant: any;
 
   [key: `data-${string}`]: unknown;
 };

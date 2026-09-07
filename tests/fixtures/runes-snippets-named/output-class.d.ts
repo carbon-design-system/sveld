@@ -1,10 +1,7 @@
 import { SvelteComponentTyped } from "svelte";
 
 export type RunesSnippetsNamedProps = {
-  /**
-   * @default undefined
-   */
-  item: undefined;
+  item: any;
 
   header?: (this: void, ...args: [{ title: any }]) => void;
 };

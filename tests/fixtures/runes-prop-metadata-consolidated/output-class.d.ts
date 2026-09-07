@@ -11,10 +11,7 @@ export type RunesPropMetadataConsolidatedProps = {
    */
   value?: number;
 
-  /**
-   * @default undefined
-   */
-  open: undefined;
+  open: any;
 
   /**
    * @default [1, 2]
@@ -36,10 +33,7 @@ export type RunesPropMetadataConsolidatedProps = {
    */
   computed?: string;
 
-  /**
-   * @default undefined
-   */
-  bare: undefined;
+  bare: any;
 };
 
 export default class RunesPropMetadataConsolidated extends SvelteComponentTyped<

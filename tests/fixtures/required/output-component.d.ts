@@ -14,14 +14,8 @@ export type RequiredProps = {
    */
   prop1?: boolean | string;
 
-  /**
-   * @default undefined
-   */
-  prop2: undefined;
+  prop2: any;
 
-  /**
-   * @default undefined
-   */
   prop3: boolean;
 
   children?: (this: void, ...args: [{

@@ -1,14 +1,8 @@
 import { SvelteComponentTyped } from "svelte";
 
 export type BindThisMultipleProps = {
-  /**
-   * @default undefined
-   */
   ref: null | HTMLButtonElement | HTMLHeadingElement;
 
-  /**
-   * @default undefined
-   */
   ref2: null | HTMLDivElement;
 
   /**

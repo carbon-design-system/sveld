@@ -1,10 +1,7 @@
 import type { Component } from "svelte";
 
 export type RunesPropsIdDefaultProps = {
-  /**
-   * @default undefined
-   */
-  label: undefined;
+  label: any;
 };
 
 export type RunesPropsIdDefaultExports = Record<string, never>;

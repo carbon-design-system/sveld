@@ -1,10 +1,7 @@
 import { SvelteComponentTyped } from "svelte";
 
 export type RunesPropsIdDefaultProps = {
-  /**
-   * @default undefined
-   */
-  label: undefined;
+  label: any;
 };
 
 export default class RunesPropsIdDefault extends SvelteComponentTyped<

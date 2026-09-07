@@ -14,9 +14,6 @@ export type ModuleNameProps = {
    */
   propString?: string;
 
-  /**
-   * @default undefined
-   */
   name?: string;
 
   /**

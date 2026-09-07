@@ -359,15 +359,7 @@ function genPropDef(
   ]);
 
   const initial_props = nonAccessorProps.map((prop) => {
-    let defaultValue = prop.value;
-
-    if (typeof prop.value === "string") {
-      defaultValue = prop.value.replace(WHITESPACE_REGEX, " ");
-    }
-
-    if (prop.value === undefined) {
-      defaultValue = "undefined";
-    }
+    const defaultValue = typeof prop.value === "string" ? prop.value.replace(WHITESPACE_REGEX, " ") : prop.value;
 
     const descriptionHasDefault = DESCRIPTION_DEFAULT_TAG_REGEX.test(prop.description ?? "");
 
@@ -376,9 +368,10 @@ function genPropDef(
      * (a trivial single-expression body, e.g. `() => true` - see
      * `conciseFunctionDefaultText`); anything more elaborate is omitted so
      * docs aren't cluttered with function bodies (#203). An explicit
-     * `@default` in the description always wins either way.
+     * `@default` in the description always wins either way. Props with no
+     * initializer at all never get a `@default` line.
      */
-    const suppressDefault = descriptionHasDefault || (prop.isFunction && prop.value === undefined);
+    const suppressDefault = descriptionHasDefault || prop.value === undefined;
 
     const prop_comments = [
       createPropComment(prop.description, prop.deprecated, prop.tags),
@@ -388,7 +381,7 @@ function genPropDef(
       .filter(Boolean)
       .join("");
 
-    const prop_value = prop.constant && !prop.isFunction ? prop.value : prop.type;
+    const prop_value = prop.constant && !prop.isFunction ? prop.value : prop.type || ANY_TYPE;
 
     return `
       ${wrapCommentInJSDoc(prop_comments)}

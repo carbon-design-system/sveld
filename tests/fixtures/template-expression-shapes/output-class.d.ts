@@ -27,7 +27,7 @@ type $Props = {
   /**
    * @default undefined
    */
-  label?: undefined;
+  label?: any;
 
   [key: `data-${string}`]: unknown;
 };

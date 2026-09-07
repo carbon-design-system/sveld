@@ -18,15 +18,14 @@ export declare function log(msg: string): void;
 export type ModuleReexportMixedProps = {
   /**
    * Item name to display
-   * @default undefined
    */
-  name: undefined;
+  name: any;
 
   /**
    * Optional item value
    * @default null
    */
-  value?: undefined;
+  value?: any;
 };
 
 export type ModuleReexportMixedExports = Record<string, never>;

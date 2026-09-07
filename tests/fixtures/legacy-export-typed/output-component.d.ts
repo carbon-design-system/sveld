@@ -1,9 +1,6 @@
 import type { Component } from "svelte";
 
 export type LegacyExportTypedProps = {
-  /**
-   * @default undefined
-   */
   title: string;
 
   /**

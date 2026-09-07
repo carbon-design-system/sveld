@@ -1,10 +1,7 @@
 import type { Component } from "svelte";
 
 export type RunesPropsBasicProps = {
-  /**
-   * @default undefined
-   */
-  title: undefined;
+  title: any;
 
   /**
    * @default 0

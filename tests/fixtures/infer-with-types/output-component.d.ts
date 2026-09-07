@@ -11,9 +11,6 @@ export type InferWithTypesProps = {
    */
   propString?: string;
 
-  /**
-   * @default undefined
-   */
   name: string;
 
   /**

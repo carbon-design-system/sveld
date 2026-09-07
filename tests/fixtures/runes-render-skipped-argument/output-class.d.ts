@@ -1,10 +1,7 @@
 import { SvelteComponentTyped } from "svelte";
 
 export type RunesRenderSkippedArgumentProps = {
-  /**
-   * @default undefined
-   */
-  title: undefined;
+  title: any;
 };
 
 export default class RunesRenderSkippedArgument extends SvelteComponentTyped<
