@@ -502,7 +502,7 @@ export function parseRunesPropsDeclaration(parser: ComponentParser, ctx: ParserC
         returnType,
         isFunction,
         isFunctionDeclaration: false,
-        isRequired: unwrappedInit == null && typeMetadata?.optional !== true,
+        isRequired: !bindable && unwrappedInit == null && typeMetadata?.optional !== true,
         constant: false,
         reactive: bindable,
         source: sourceRangeFromNode(ctx, property),
