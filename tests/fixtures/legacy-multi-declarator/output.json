@@ -1,0 +1,117 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 7,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "a",
+      "kind": "let",
+      "description": "Block description applies to every declarator below.",
+      "type": "number",
+      "typeSource": "default",
+      "value": "1",
+      "defaultValue": {
+        "raw": "1",
+        "kind": "literal",
+        "value": 1
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 2
+        },
+        "end": {
+          "line": 3,
+          "column": 29
+        }
+      }
+    },
+    {
+      "name": "b",
+      "kind": "let",
+      "description": "Block description applies to every declarator below.",
+      "type": "number",
+      "typeSource": "default",
+      "value": "2",
+      "defaultValue": {
+        "raw": "2",
+        "kind": "literal",
+        "value": 2
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 2
+        },
+        "end": {
+          "line": 3,
+          "column": 29
+        }
+      }
+    },
+    {
+      "name": "c",
+      "kind": "let",
+      "description": "Block description applies to every declarator below.",
+      "typeSource": "unknown",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 2
+        },
+        "end": {
+          "line": 3,
+          "column": 29
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "legacy-multi-declarator/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "c",
+      "message": "Prop \"c\" type could not be inferred; falling back to \"any\".",
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 2
+        },
+        "end": {
+          "line": 3,
+          "column": 29
+        }
+      }
+    }
+  ]
+}

@@ -1003,105 +1003,141 @@ export default class ComponentParser {
               return;
             }
 
-            let prop_name: string;
-            let kind: "let" | "const" | "function";
-            let isFunctionDeclaration = false;
-            let value: string | undefined;
-            let typeSeed: string | undefined;
-            let explicitType: string | undefined;
-            let initializerIsFunction = false;
-            let defaultValue: ComponentPropDefaultValue | undefined;
-            let inferredTypeForSource: string | undefined;
-            let resolvedJSDoc:
-              | Pick<
-                  ProcessedInitializer,
-                  | "resolvedType"
-                  | "resolvedDescription"
-                  | "resolvedParams"
-                  | "resolvedReturnType"
-                  | "pendingCallDefault"
-                >
-              | undefined;
+            type ModuleExportDeclarator = {
+              prop_name: string;
+              kind: "let" | "const" | "function";
+              isFunctionDeclaration: boolean;
+              value: string | undefined;
+              typeSeed: string | undefined;
+              explicitType: string | undefined;
+              initializerIsFunction: boolean;
+              defaultValue: ComponentPropDefaultValue | undefined;
+              inferredTypeForSource: string | undefined;
+              resolvedJSDoc:
+                | Pick<
+                    ProcessedInitializer,
+                    | "resolvedType"
+                    | "resolvedDescription"
+                    | "resolvedParams"
+                    | "resolvedReturnType"
+                    | "pendingCallDefault"
+                  >
+                | undefined;
+            };
+            const declarators: ModuleExportDeclarator[] = [];
 
             if (node.declaration.type === "FunctionDeclaration") {
               const funcDecl = node.declaration as { id?: { name?: string } };
               if (!funcDecl.id?.name) return;
-              prop_name = funcDecl.id.name;
-              kind = "function";
-              value = undefined;
-              typeSeed = "() => any";
-              initializerIsFunction = true;
-              isFunctionDeclaration = true;
+              declarators.push({
+                prop_name: funcDecl.id.name,
+                kind: "function",
+                isFunctionDeclaration: true,
+                value: undefined,
+                typeSeed: "() => any",
+                explicitType: undefined,
+                initializerIsFunction: true,
+                defaultValue: undefined,
+                inferredTypeForSource: undefined,
+                resolvedJSDoc: undefined,
+              });
             } else if (node.declaration.type === "VariableDeclaration") {
               const varDecl = node.declaration as VariableDeclaration;
-              const firstDeclarator = varDecl.declarations[0];
-              if (!firstDeclarator || typeof firstDeclarator !== "object" || !("id" in firstDeclarator)) {
-                return;
-              }
+              const kind = variableDeclarationKindToComponentPropKind(varDecl.kind);
 
-              const { id, init } = firstDeclarator as VariableDeclarator;
+              for (const declarator of varDecl.declarations) {
+                if (!declarator || typeof declarator !== "object" || !("id" in declarator)) {
+                  continue;
+                }
 
-              if (!id || typeof id !== "object" || !("name" in id)) {
-                return;
-              }
+                const { id, init } = declarator as VariableDeclarator;
 
-              const localPropName = (id as Identifier).name;
-              prop_name = localPropName;
-              kind = variableDeclarationKindToComponentPropKind(varDecl.kind);
-              const initResult = init == null ? { isFunction: false } : processInitializer(this, this.ctx, init);
-              ({ value, type: typeSeed, isFunction: initializerIsFunction, defaultValue } = initResult);
-              inferredTypeForSource = typeSeed;
-              resolvedJSDoc = initResult;
-              explicitType = this.getExplicitPropType(localPropName);
-              if (resolvedJSDoc.pendingCallDefault) {
-                this.ctx.pendingCallDefaultCandidates.push({
-                  propName: localPropName,
-                  location: "moduleExports",
-                  ...resolvedJSDoc.pendingCallDefault,
+                if (!id || typeof id !== "object" || !("name" in id)) {
+                  continue;
+                }
+
+                const localPropName = (id as Identifier).name;
+                const initResult = init == null ? { isFunction: false } : processInitializer(this, this.ctx, init);
+                const { value, type: typeSeed, isFunction: initializerIsFunction, defaultValue } = initResult;
+                const resolvedJSDoc = initResult;
+                if (resolvedJSDoc.pendingCallDefault) {
+                  this.ctx.pendingCallDefaultCandidates.push({
+                    propName: localPropName,
+                    location: "moduleExports",
+                    ...resolvedJSDoc.pendingCallDefault,
+                  });
+                }
+
+                declarators.push({
+                  prop_name: localPropName,
+                  kind,
+                  isFunctionDeclaration: false,
+                  value,
+                  typeSeed,
+                  explicitType: this.getExplicitPropType(localPropName),
+                  initializerIsFunction,
+                  defaultValue,
+                  inferredTypeForSource: typeSeed,
+                  resolvedJSDoc,
                 });
               }
+
+              if (declarators.length === 0) return;
             } else {
               return;
             }
 
             const jsdocInfo = processNodeJSDoc(this.ctx, this, node);
 
-            const { type, typeSource, description, params, returnType, isFunction } = resolvePropTypeAndDocs({
-              explicitType,
-              typeSeed,
-              inferredTypeForSource,
-              jsdocType: jsdocInfo?.type,
-              jsdocDescription: jsdocInfo?.description,
-              jsdocParams: jsdocInfo?.params,
-              jsdocReturnType: jsdocInfo?.returnType,
-              resolvedType: resolvedJSDoc?.resolvedType,
-              resolvedDescription: resolvedJSDoc?.resolvedDescription,
-              resolvedParams: resolvedJSDoc?.resolvedParams,
-              resolvedReturnType: resolvedJSDoc?.resolvedReturnType,
-              initializerIsFunction,
-              isFunctionDeclaration,
-              typedefs: this.ctx.typedefs,
-            });
-
-            this.addModuleExport(prop_name, {
-              name: prop_name,
+            for (const {
+              prop_name,
               kind,
-              description,
-              deprecated: jsdocInfo?.deprecated,
-              tags: jsdocInfo?.tags,
-              type,
-              typeSource,
-              value,
-              defaultValue,
-              params,
-              returnType,
-              isFunction,
               isFunctionDeclaration,
-              isRequired: false,
-              constant: kind === "const",
-              reactive: false,
-              source: sourceRangeFromNode(this.ctx, node),
-            });
+              value,
+              typeSeed,
+              explicitType,
+              initializerIsFunction,
+              defaultValue,
+              inferredTypeForSource,
+              resolvedJSDoc,
+            } of declarators) {
+              const { type, typeSource, description, params, returnType, isFunction } = resolvePropTypeAndDocs({
+                explicitType,
+                typeSeed,
+                inferredTypeForSource,
+                jsdocType: jsdocInfo?.type,
+                jsdocDescription: jsdocInfo?.description,
+                jsdocParams: jsdocInfo?.params,
+                jsdocReturnType: jsdocInfo?.returnType,
+                resolvedType: resolvedJSDoc?.resolvedType,
+                resolvedDescription: resolvedJSDoc?.resolvedDescription,
+                resolvedParams: resolvedJSDoc?.resolvedParams,
+                resolvedReturnType: resolvedJSDoc?.resolvedReturnType,
+                initializerIsFunction,
+                isFunctionDeclaration,
+                typedefs: this.ctx.typedefs,
+              });
+
+              this.addModuleExport(prop_name, {
+                name: prop_name,
+                kind,
+                description,
+                deprecated: jsdocInfo?.deprecated,
+                tags: jsdocInfo?.tags,
+                type,
+                typeSource,
+                value,
+                defaultValue,
+                params,
+                returnType,
+                isFunction,
+                isFunctionDeclaration,
+                isRequired: false,
+                constant: kind === "const",
+                reactive: false,
+                source: sourceRangeFromNode(this.ctx, node),
+              });
+            }
           }
         },
       });
@@ -1241,7 +1277,11 @@ export default class ComponentParser {
             return;
           }
 
-          let prop_name: string;
+          let prop_name: string | undefined;
+          // `export { local as exported }` resolves `prop_name` here and points `node.declaration`
+          // at the local variable's whole declaration; only that one declarator is exported below,
+          // not every declarator sharing the declaration.
+          let isResolvedSpecifierExport = false;
           if (node.declaration == null && node.specifiers[0]?.type === "ExportSpecifier") {
             const specifier = node.specifiers[0];
             const localName =
@@ -1272,6 +1312,7 @@ export default class ComponentParser {
             }
             node.declaration = declaration;
             prop_name = exportedName;
+            isResolvedSpecifierExport = true;
           }
 
           if (node.declaration == null) {
@@ -1282,109 +1323,156 @@ export default class ComponentParser {
             return;
           }
 
-          let kind: "let" | "const" | "function";
-          let isFunctionDeclaration = false;
-          let value: string | undefined;
-          let typeSeed: string | undefined;
-          let explicitType: string | undefined;
-          let initializerIsFunction = false;
-          let isRequired = false;
-          let localName: string | undefined;
-          let defaultValue: ComponentPropDefaultValue | undefined;
-          let inferredTypeForSource: string | undefined;
-          let resolvedJSDoc:
-            | Pick<
-                ProcessedInitializer,
-                "resolvedType" | "resolvedDescription" | "resolvedParams" | "resolvedReturnType" | "pendingCallDefault"
-              >
-            | undefined;
+          type InstancePropDeclarator = {
+            prop_name: string;
+            kind: "let" | "const" | "function";
+            isFunctionDeclaration: boolean;
+            value: string | undefined;
+            typeSeed: string | undefined;
+            explicitType: string | undefined;
+            initializerIsFunction: boolean;
+            isRequired: boolean;
+            localName: string | undefined;
+            defaultValue: ComponentPropDefaultValue | undefined;
+            inferredTypeForSource: string | undefined;
+            resolvedJSDoc:
+              | Pick<
+                  ProcessedInitializer,
+                  | "resolvedType"
+                  | "resolvedDescription"
+                  | "resolvedParams"
+                  | "resolvedReturnType"
+                  | "pendingCallDefault"
+                >
+              | undefined;
+          };
+          const declarators: InstancePropDeclarator[] = [];
 
           if (node.declaration.type === "FunctionDeclaration") {
             const funcDecl = node.declaration as { id?: { name?: string } };
             if (!funcDecl.id?.name) return;
             prop_name ??= funcDecl.id.name;
-            localName = funcDecl.id.name;
-            kind = "function";
-            value = undefined;
-            typeSeed = "() => any";
-            initializerIsFunction = true;
-            isFunctionDeclaration = true;
-            isRequired = false;
+            declarators.push({
+              prop_name,
+              kind: "function",
+              isFunctionDeclaration: true,
+              value: undefined,
+              typeSeed: "() => any",
+              explicitType: undefined,
+              initializerIsFunction: true,
+              isRequired: false,
+              localName: funcDecl.id.name,
+              defaultValue: undefined,
+              inferredTypeForSource: undefined,
+              resolvedJSDoc: undefined,
+            });
           } else if (node.declaration.type === "VariableDeclaration") {
             const varDecl = node.declaration as VariableDeclaration;
-            const firstDeclarator = varDecl.declarations[0];
-            if (!firstDeclarator || typeof firstDeclarator !== "object" || !("id" in firstDeclarator)) {
-              return;
-            }
+            const kind = variableDeclarationKindToComponentPropKind(varDecl.kind);
+            const declaratorsToProcess = isResolvedSpecifierExport
+              ? varDecl.declarations.slice(0, 1)
+              : varDecl.declarations;
 
-            const { id, init } = firstDeclarator as VariableDeclarator;
+            for (const declarator of declaratorsToProcess) {
+              if (!declarator || typeof declarator !== "object" || !("id" in declarator)) {
+                continue;
+              }
 
-            if (id && typeof id === "object" && "name" in id) {
+              const { id, init } = declarator as VariableDeclarator;
+              if (!id || typeof id !== "object" || !("name" in id)) {
+                continue;
+              }
+
               const localPropName = (id as Identifier).name;
-              localName = localPropName;
-              prop_name ??= localPropName;
-              explicitType = this.getExplicitPropType(localPropName);
-            } else {
-              return;
-            }
+              const declaratorPropName = prop_name ?? localPropName;
+              const isRequired = kind === "let" && init == null;
+              const initResult = init == null ? { isFunction: false } : processInitializer(this, this.ctx, init);
+              const { value, type: typeSeed, isFunction: initializerIsFunction, defaultValue } = initResult;
+              const resolvedJSDoc = initResult;
+              if (resolvedJSDoc.pendingCallDefault) {
+                this.ctx.pendingCallDefaultCandidates.push({
+                  propName: declaratorPropName,
+                  location: "props",
+                  ...resolvedJSDoc.pendingCallDefault,
+                });
+              }
 
-            kind = variableDeclarationKindToComponentPropKind(varDecl.kind);
-            isRequired = kind === "let" && init == null;
-            const initResult = init == null ? { isFunction: false } : processInitializer(this, this.ctx, init);
-            ({ value, type: typeSeed, isFunction: initializerIsFunction, defaultValue } = initResult);
-            inferredTypeForSource = typeSeed;
-            resolvedJSDoc = initResult;
-            if (resolvedJSDoc.pendingCallDefault) {
-              this.ctx.pendingCallDefaultCandidates.push({
-                propName: prop_name,
-                location: "props",
-                ...resolvedJSDoc.pendingCallDefault,
+              declarators.push({
+                prop_name: declaratorPropName,
+                kind,
+                isFunctionDeclaration: false,
+                value,
+                typeSeed,
+                explicitType: this.getExplicitPropType(localPropName),
+                initializerIsFunction,
+                isRequired,
+                localName: localPropName,
+                defaultValue,
+                inferredTypeForSource: typeSeed,
+                resolvedJSDoc,
               });
             }
+
+            if (declarators.length === 0) return;
           } else {
             return;
           }
 
           const jsdocInfo = processNodeJSDoc(this.ctx, this, node);
 
-          const { type, typeSource, description, params, returnType, isFunction } = resolvePropTypeAndDocs({
-            explicitType,
-            typeSeed,
-            inferredTypeForSource,
-            jsdocType: jsdocInfo?.type,
-            jsdocDescription: jsdocInfo?.description,
-            jsdocParams: jsdocInfo?.params,
-            jsdocReturnType: jsdocInfo?.returnType,
-            resolvedType: resolvedJSDoc?.resolvedType,
-            resolvedDescription: resolvedJSDoc?.resolvedDescription,
-            resolvedParams: resolvedJSDoc?.resolvedParams,
-            resolvedReturnType: resolvedJSDoc?.resolvedReturnType,
-            initializerIsFunction,
-            isFunctionDeclaration,
-            typedefs: this.ctx.typedefs,
-          });
-
-          addProp(this, this.ctx, prop_name, {
-            name: prop_name,
-            ...(localName !== undefined && localName !== prop_name ? { localName } : {}),
+          for (const {
+            prop_name,
             kind,
-            description,
-            binding: jsdocInfo?.binding,
-            deprecated: jsdocInfo?.deprecated,
-            tags: jsdocInfo?.tags,
-            type,
-            typeSource,
-            value,
-            defaultValue,
-            params,
-            returnType,
-            isFunction,
             isFunctionDeclaration,
+            value,
+            typeSeed,
+            explicitType,
+            initializerIsFunction,
             isRequired,
-            constant: kind === "const",
-            reactive: this.ctx.reactive_vars.has(prop_name),
-            source: sourceRangeFromNode(this.ctx, node),
-          });
+            localName,
+            defaultValue,
+            inferredTypeForSource,
+            resolvedJSDoc,
+          } of declarators) {
+            const { type, typeSource, description, params, returnType, isFunction } = resolvePropTypeAndDocs({
+              explicitType,
+              typeSeed,
+              inferredTypeForSource,
+              jsdocType: jsdocInfo?.type,
+              jsdocDescription: jsdocInfo?.description,
+              jsdocParams: jsdocInfo?.params,
+              jsdocReturnType: jsdocInfo?.returnType,
+              resolvedType: resolvedJSDoc?.resolvedType,
+              resolvedDescription: resolvedJSDoc?.resolvedDescription,
+              resolvedParams: resolvedJSDoc?.resolvedParams,
+              resolvedReturnType: resolvedJSDoc?.resolvedReturnType,
+              initializerIsFunction,
+              isFunctionDeclaration,
+              typedefs: this.ctx.typedefs,
+            });
+
+            addProp(this, this.ctx, prop_name, {
+              name: prop_name,
+              ...(localName !== undefined && localName !== prop_name ? { localName } : {}),
+              kind,
+              description,
+              binding: jsdocInfo?.binding,
+              deprecated: jsdocInfo?.deprecated,
+              tags: jsdocInfo?.tags,
+              type,
+              typeSource,
+              value,
+              defaultValue,
+              params,
+              returnType,
+              isFunction,
+              isFunctionDeclaration,
+              isRequired,
+              constant: kind === "const",
+              reactive: this.ctx.reactive_vars.has(prop_name),
+              source: sourceRangeFromNode(this.ctx, node),
+            });
+          }
         }
 
         if (type === "Comment") {
