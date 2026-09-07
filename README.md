@@ -2319,6 +2319,20 @@ export default class Component extends SvelteComponentTyped<
 > {}
 ```
 
+#### Typed dispatchers
+
+`createEventDispatcher<T>()`'s generic argument (`lang="ts"`, or the JSDoc `/** @type {import('svelte').EventDispatcher<T>} */` cast form) works like an `@event` block for every member of `T`, including ones never actually dispatched in the file:
+
+```svelte
+<script lang="ts">
+  import { createEventDispatcher } from "svelte";
+
+  const dispatch = createEventDispatcher<{ save: { id: string }; cancel: null }>();
+</script>
+```
+
+`T` may also be a reference to a local `type`/`interface`. An `@event` tag for the same name still overrides the generic's detail type.
+
 #### Using `@property` for complex event details
 
 For events with complex object payloads, use `@property` to document individual fields. The main comment becomes the event description. See the [`@property`](#property) reference for the tag's valid contexts.

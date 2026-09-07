@@ -40,6 +40,7 @@ import {
   buildRunesPropTypeMetadata,
   normalizeRunesCallbackProps,
   parseRunesPropsDeclaration,
+  registerTypedDispatcherEvents,
 } from "./parser/runes-props";
 import {
   createScopeWalkState,
@@ -1144,6 +1145,8 @@ export default class ComponentParser {
     }
 
     let dispatcher_name: undefined | string;
+    let dispatcherDeclaratorNode: unknown;
+    let dispatcherTypeArgument: ModernRunesTypeNode | undefined;
     const hostLocalNames = new Set<string>();
     const hostDispatchedEventNames = new Set<string>();
     // Source ranges are resolved lazily below: only calls to the dispatcher
@@ -1193,7 +1196,11 @@ export default class ComponentParser {
               "name" in parent.id
             ) {
               dispatcher_name = (parent.id as Identifier).name;
+              dispatcherDeclaratorNode = parent;
             }
+            dispatcherTypeArgument = (
+              callExpr as unknown as { typeArguments?: { params?: ModernRunesTypeNode[] } }
+            ).typeArguments?.params?.[0];
           }
 
           if (calleeName === "$host") {
@@ -1729,6 +1736,14 @@ export default class ComponentParser {
     });
 
     if (dispatcher_name !== undefined) {
+      registerTypedDispatcherEvents(
+        this,
+        this.ctx,
+        dispatcherTypeArgument,
+        dispatcher_name,
+        sourceRangeFromNode(this.ctx, dispatcherDeclaratorNode),
+      );
+
       for (const callee of callees) {
         if (callee.name === dispatcher_name) {
           const firstArg = callee.arguments[0];

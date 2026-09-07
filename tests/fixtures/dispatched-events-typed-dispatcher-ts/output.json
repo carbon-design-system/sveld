@@ -1,0 +1,53 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 12,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "ts",
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "cancel",
+      "detail": "null",
+      "source": {
+        "start": {
+          "line": 4,
+          "column": 65
+        },
+        "end": {
+          "line": 4,
+          "column": 77
+        }
+      }
+    },
+    {
+      "type": "dispatched",
+      "name": "save",
+      "detail": "{ id: string }",
+      "source": {
+        "start": {
+          "line": 7,
+          "column": 4
+        },
+        "end": {
+          "line": 7,
+          "column": 28
+        }
+      }
+    }
+  ],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}

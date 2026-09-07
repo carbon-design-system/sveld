@@ -7,9 +7,11 @@ import type {
   ModernScriptNode,
   RunesPropsDeclarationMetadata,
   RunesPropTypeMetadata,
+  SourceRange,
   TypeImportBinding,
 } from "../ComponentParser";
 import type { ParserContext } from "./context";
+import { addDispatchedEvent } from "./events";
 import { collectGenericsAttributeTypeDependencies } from "./generics";
 import { processLeadingCommentsJSDoc, processNodeJSDoc } from "./jsdoc";
 import { resolvePropTypeAndDocs } from "./prop-shared";
@@ -60,7 +62,7 @@ function substituteTypeParameters(type: string, substitutions: Map<string, strin
 }
 
 /** Flatten a runes `$props()` type node into prop name -> metadata, following local aliases and intersections. */
-function buildRunesPropTypeMetadataMap(
+export function buildRunesPropTypeMetadataMap(
   parser: ComponentParser,
   ctx: ParserContext,
   typeNode: ModernRunesTypeNode | undefined,
@@ -508,6 +510,116 @@ export function parseRunesPropsDeclaration(parser: ComponentParser, ctx: ParserC
         source: sourceRangeFromNode(ctx, property),
       });
     }
+  }
+}
+
+/** Balance-scans for `EventDispatcher<...>` and returns the generic argument's raw text (unparsed). */
+function extractEventDispatcherGenericText(typeText: string): string | undefined {
+  const marker = "EventDispatcher";
+  const markerIndex = typeText.indexOf(marker);
+  if (markerIndex === -1) return undefined;
+
+  let index = markerIndex + marker.length;
+  while (typeText[index] === " ") index++;
+  if (typeText[index] !== "<") return undefined;
+
+  let depth = 0;
+  const start = index;
+  for (; index < typeText.length; index++) {
+    if (typeText[index] === "<") depth++;
+    else if (typeText[index] === ">") {
+      depth--;
+      if (depth === 0) return typeText.slice(start + 1, index);
+    }
+  }
+  return undefined;
+}
+
+/** Splits a `{ a: X; b: Y }` type-literal body on top-level `;`/`,`, ignoring separators nested inside brackets. */
+function splitTypeLiteralMembers(body: string): string[] {
+  const members: string[] = [];
+  let depth = 0;
+  let start = 0;
+
+  for (let i = 0; i < body.length; i++) {
+    const char = body[i];
+    if (char === "{" || char === "(" || char === "[" || char === "<") depth++;
+    else if (char === "}" || char === ")" || char === "]" || char === ">") depth = Math.max(depth - 1, 0);
+    else if (depth === 0 && (char === ";" || char === ",")) {
+      members.push(body.slice(start, i));
+      start = i + 1;
+    }
+  }
+  members.push(body.slice(start));
+
+  return members.map((member) => member.trim()).filter((member) => member.length > 0);
+}
+
+const QUOTED_MEMBER_NAME_REGEX = /^["']|["']$/g;
+const OPTIONAL_MEMBER_NAME_SUFFIX_REGEX = /\?$/;
+const LEADING_BRACE_REGEX = /^\{/;
+const TRAILING_BRACE_REGEX = /\}$/;
+
+/** Splits a `name: Type` (or `name?: Type`) member on its top-level `:`. */
+function splitMemberNameAndType(member: string): { name: string; type: string } | undefined {
+  let depth = 0;
+  for (let i = 0; i < member.length; i++) {
+    const char = member[i];
+    if (char === "{" || char === "(" || char === "[" || char === "<") depth++;
+    else if (char === "}" || char === ")" || char === "]" || char === ">") depth = Math.max(depth - 1, 0);
+    else if (depth === 0 && char === ":") {
+      const name = member
+        .slice(0, i)
+        .trim()
+        .replace(OPTIONAL_MEMBER_NAME_SUFFIX_REGEX, "")
+        .replace(QUOTED_MEMBER_NAME_REGEX, "");
+      const type = member.slice(i + 1).trim();
+      if (!name || !type) return undefined;
+      return { name, type };
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Reads `createEventDispatcher<{...}>()`'s type argument (a `TSTypeLiteral`, or a reference to a
+ * local `type`/`interface`) and registers each member as a dispatched event, so events declared in
+ * the generic but never actually dispatched in the file still show up. Falls back to the JSDoc
+ * `/** @type {import('svelte').EventDispatcher<{...}>} *\/` cast form when there's no TS generic.
+ * An `@event` JSDoc tag for the same name still wins (`addDispatchedEvent` keeps its `detail`).
+ */
+export function registerTypedDispatcherEvents(
+  parser: ComponentParser,
+  ctx: ParserContext,
+  typeArgument: ModernRunesTypeNode | undefined,
+  dispatcherName: string,
+  fallbackSource: SourceRange | undefined,
+) {
+  if (typeArgument) {
+    const localTypeDeclarations = new Map(
+      Array.from(ctx.localTypeDeclarationsByName.entries(), ([name, declaration]) => [name, declaration.node]),
+    );
+    const members = buildRunesPropTypeMetadataMap(parser, ctx, typeArgument, localTypeDeclarations);
+    for (const [name, member] of members) {
+      addDispatchedEvent(ctx, { name, detail: member.type, has_argument: true, source: member.source });
+    }
+    return;
+  }
+
+  const jsdocType = parser.resolveLocalVarJSDoc(dispatcherName)?.type;
+  const genericText = jsdocType ? extractEventDispatcherGenericText(jsdocType) : undefined;
+  if (!genericText) return;
+
+  const body = genericText.trim().replace(LEADING_BRACE_REGEX, "").replace(TRAILING_BRACE_REGEX, "");
+  for (const rawMember of splitTypeLiteralMembers(body)) {
+    const parsedMember = splitMemberNameAndType(rawMember);
+    if (!parsedMember) continue;
+    addDispatchedEvent(ctx, {
+      name: parsedMember.name,
+      detail: parsedMember.type,
+      has_argument: true,
+      source: fallbackSource,
+    });
   }
 }
 
