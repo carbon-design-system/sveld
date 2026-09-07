@@ -1,6 +1,7 @@
 export { default as ComponentParser, type SerializedComponentEvent } from "./ComponentParser";
 export {
   type ApiChange,
+  CHECK_REPORT_SCHEMA_VERSION,
   type CheckReportJson,
   type CheckResult,
   diffApiDocuments,
@@ -12,7 +13,9 @@ export {
 export { cli } from "./cli";
 export {
   DIAGNOSTIC_CODES,
+  DIAGNOSTICS_SCHEMA_VERSION,
   type DiagnosticIgnoreMatcher,
+  type DiagnosticsJson,
   type SveldDiagnostic,
   type SveldDiagnosticKind,
   type SveldDiagnosticSeverity,

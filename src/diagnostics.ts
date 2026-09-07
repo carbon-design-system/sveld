@@ -213,14 +213,18 @@ export function formatDiagnosticsSummary(diagnostics: SveldDiagnostic[]): string
   return lines.join("\n");
 }
 
+/** Envelope schema version for {@link DiagnosticsJson}. Bump when the shape of `diagnostics` changes incompatibly. */
+export const DIAGNOSTICS_SCHEMA_VERSION = 1;
+
 /** `SveldDiagnostic[]`, serialized for stream consumers with a `kind` discriminator. */
-interface DiagnosticsJson {
+export interface DiagnosticsJson {
   kind: "diagnostics";
+  schemaVersion: typeof DIAGNOSTICS_SCHEMA_VERSION;
   diagnostics: SveldDiagnostic[];
 }
 
 /** Serializes deduped diagnostics as JSON, for `--format=json --report-diagnostics` / `--strict`. */
 export function formatDiagnosticsSummaryJson(diagnostics: SveldDiagnostic[]): string {
-  const document: DiagnosticsJson = { kind: "diagnostics", diagnostics };
+  const document: DiagnosticsJson = { kind: "diagnostics", schemaVersion: DIAGNOSTICS_SCHEMA_VERSION, diagnostics };
   return `${JSON.stringify(document, null, 2)}\n`;
 }

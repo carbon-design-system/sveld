@@ -439,11 +439,14 @@ export function formatCheckReport(result: CheckResult): string {
   return lines.join("\n");
 }
 
+/** Envelope schema version for {@link CheckReportJson}. Bump when the shape of `CheckResult` changes incompatibly. */
+export const CHECK_REPORT_SCHEMA_VERSION = 1;
+
 /** `CheckResult`, serialized for stream consumers with a `kind` discriminator. */
-export type CheckReportJson = CheckResult & { kind: "check-report" };
+export type CheckReportJson = CheckResult & { kind: "check-report"; schemaVersion: typeof CHECK_REPORT_SCHEMA_VERSION };
 
 /** Serializes a `CheckResult` as JSON, for `--format=json --check`. */
 export function formatCheckReportJson(result: CheckResult): string {
-  const document: CheckReportJson = { kind: "check-report", ...result };
+  const document: CheckReportJson = { kind: "check-report", schemaVersion: CHECK_REPORT_SCHEMA_VERSION, ...result };
   return formatJsonOutput(document);
 }
