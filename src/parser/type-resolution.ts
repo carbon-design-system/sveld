@@ -338,6 +338,60 @@ export function buildEnumLocalTypeDeclarationCode(
   return verbatim ? `declare ${verbatim}` : undefined;
 }
 
+/** A `FunctionDeclaration` param/return-type AST shape, read for accessor signature text. */
+export type FunctionDeclarationLike = {
+  params?: Array<{
+    type?: string;
+    name?: string;
+    optional?: boolean;
+    typeAnnotation?: { start?: number; end?: number; typeAnnotation?: ModernRunesTypeNode };
+    left?: { name?: string; typeAnnotation?: { start?: number; end?: number; typeAnnotation?: ModernRunesTypeNode } };
+    argument?: { name?: string };
+  }>;
+  returnType?: { start?: number; end?: number; typeAnnotation?: ModernRunesTypeNode };
+};
+
+/**
+ * Builds a `(params) => ReturnType` signature string from a `FunctionDeclaration`'s
+ * own TS annotations (params, defaults, rest, return type), for `export function`
+ * accessors in `lang="ts"` components. Untyped positions fall back to `any` rather
+ * than being dropped. Returns `hasAnnotations: false` when nothing was actually
+ * annotated, so the caller can prefer a JSDoc-derived signature instead.
+ */
+export function buildFunctionDeclarationSignature(
+  ctx: ParserContext,
+  funcDecl: FunctionDeclarationLike,
+): { signature: string; hasAnnotations: boolean } {
+  let hasAnnotations = false;
+  const paramTexts: string[] = [];
+
+  for (const param of funcDecl.params ?? []) {
+    if (param.type === "RestElement") {
+      const name = param.argument?.name ?? "rest";
+      const typeText = getTypeAnnotationText(ctx, param.typeAnnotation);
+      if (typeText) hasAnnotations = true;
+      trackAdditionalTypeDependencyNode(ctx, param.typeAnnotation?.typeAnnotation);
+      paramTexts.push(`...${name}: ${typeText ?? "any[]"}`);
+      continue;
+    }
+
+    const hasDefault = param.type === "AssignmentPattern";
+    const target = hasDefault ? param.left : param;
+    const name = target?.name ?? "arg";
+    const typeText = getTypeAnnotationText(ctx, target?.typeAnnotation);
+    if (typeText) hasAnnotations = true;
+    trackAdditionalTypeDependencyNode(ctx, target?.typeAnnotation?.typeAnnotation);
+    const optional = hasDefault || param.optional === true;
+    paramTexts.push(`${name}${optional ? "?" : ""}: ${typeText ?? "any"}`);
+  }
+
+  const returnTypeText = getTypeAnnotationText(ctx, funcDecl.returnType);
+  if (returnTypeText) hasAnnotations = true;
+  trackAdditionalTypeDependencyNode(ctx, funcDecl.returnType?.typeAnnotation);
+
+  return { signature: `(${paramTexts.join(", ")}) => ${returnTypeText ?? "any"}`, hasAnnotations };
+}
+
 export function buildTypeScriptMetadata(ctx: ParserContext): ParsedComponentTypeScriptMetadata | undefined {
   const pendingCallDefaultCandidates =
     ctx.pendingCallDefaultCandidates.length > 0 ? ctx.pendingCallDefaultCandidates.slice() : undefined;
