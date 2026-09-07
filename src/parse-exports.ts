@@ -1,10 +1,10 @@
-import { lstatSync, readdirSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { type Node, parse } from "acorn";
 import { asRelativeSourcePath, type RelativeSourcePath } from "./brands";
 import { resolveModuleFile } from "./parse-entry-exports";
 import { normalizeSeparators, SVELTE_EXT_REGEX } from "./path";
-import { resolvePathAlias, resolvePathAliasAbsolute } from "./resolve-alias";
+import { resolveAliasLookup, resolvePathAlias, UnresolvedModuleError } from "./resolve-alias";
 
 interface NodeImportDeclaration extends Node {
   type: "ImportDeclaration";
@@ -80,7 +80,7 @@ function resolveBarrelExports(
 
   resolving.add(targetFile);
   try {
-    return { dir, exports: parseExports(readFileSync(targetFile, "utf-8"), dir, resolving) };
+    return { dir, exports: parseExports(readFileSync(targetFile, "utf-8"), dir, resolving, targetFile) };
   } catch {
     return { dir, exports: {} };
   } finally {
@@ -105,8 +105,11 @@ function resolveBarrelExports(
  * @param resolving - Absolute paths currently being resolved on this call
  *   stack, used to break `export *` cycles between files that re-export
  *   each other. Callers should not pass this; it is threaded internally.
+ * @param fromFile - The file currently being parsed, used only to name the
+ *   source of an unresolved specifier in a thrown {@link UnresolvedModuleError}.
+ *   Callers should not pass this; it is threaded internally.
  */
-export function parseExports(source: string, dir: string, resolving: Set<string> = new Set()) {
+export function parseExports(source: string, dir: string, resolving: Set<string> = new Set(), fromFile: string = dir) {
   let ast = astCache.get(source);
 
   if (!ast) {
@@ -128,29 +131,28 @@ export function parseExports(source: string, dir: string, resolving: Set<string>
     } else if (node.type === "ExportAllDeclaration") {
       if (!node.source) continue;
 
-      const resolvedSource = resolvePathAliasAbsolute(node.source.value, dir);
-      let file_path = resolve(dir, resolvedSource);
+      const specifier = node.source.value;
+      const file_path = resolveModuleFile(specifier, dir);
 
-      if (!lstatSync(file_path).isFile()) {
-        const files = readdirSync(file_path);
-
-        for (const file of files)
-          if (file.includes("index")) {
-            file_path = join(file_path, file);
-            break;
-          }
+      if (!file_path) {
+        const lookup = resolveAliasLookup(specifier, dir);
+        throw new UnresolvedModuleError(
+          specifier,
+          fromFile,
+          lookup.unresolved ? lookup.searched : "no matching file or index found",
+        );
       }
 
       if (resolving.has(file_path)) continue;
       resolving.add(file_path);
 
       const export_file = readFileSync(file_path, "utf-8");
-      const exports = parseExports(export_file, dirname(file_path), resolving);
+      const exports = parseExports(export_file, dirname(file_path), resolving, file_path);
 
       resolving.delete(file_path);
 
       for (const [key, value] of Object.entries(exports)) {
-        const source = asRelativeSourcePath(normalizeSeparators(`./${join(node.source.value, value.source)}`));
+        const source = asRelativeSourcePath(normalizeSeparators(`./${join(specifier, value.source)}`));
         exports_by_identifier[key] = {
           ...value,
           source,
@@ -158,7 +160,16 @@ export function parseExports(source: string, dir: string, resolving: Set<string>
       }
     } else if (node.type === "ExportNamedDeclaration") {
       const sourceValue = node.source?.value;
-      const isBarrelChain = sourceValue !== undefined && !SVELTE_EXT_REGEX.test(sourceValue);
+      const isSvelteSource = sourceValue !== undefined && SVELTE_EXT_REGEX.test(sourceValue);
+
+      if (isSvelteSource) {
+        const lookup = resolveAliasLookup(sourceValue, dir);
+        if (lookup.unresolved) {
+          throw new UnresolvedModuleError(sourceValue, fromFile, lookup.searched);
+        }
+      }
+
+      const isBarrelChain = sourceValue !== undefined && !isSvelteSource;
       const chain = isBarrelChain ? resolveBarrelExports(sourceValue, dir, resolving) : undefined;
 
       if (chain === null) {

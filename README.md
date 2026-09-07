@@ -504,7 +504,7 @@ Run `npx sveld --help` for the full flag list with descriptions, or `npx sveld -
 | Code | Meaning |
 |------|---------|
 | `0` | Success |
-| `1` | Usage or configuration error (unknown flag, bad flag value, unresolvable entry) |
+| `1` | Usage or configuration error (unknown flag, bad flag value, unresolvable entry, unresolved re-export or path alias) |
 | `2` | Generation failure (a component failed to parse under `--fail-fast`, or an unrecoverable pipeline error) |
 | `3` | Breaking API change detected by `--check` |
 | `4` | Diagnostics present under `--strict` |
@@ -3416,6 +3416,8 @@ When only `@param` tags are present without `@returns`, the return type defaults
 **Generated types don't appear for consumers.** Check that the `types` folder is listed in `exports` and `files` in `package.json`. See [Publishing to NPM](#publishing-to-npm).
 
 **Output differs in CI.** Commit `COMPONENT_API.json` and run [`--check`](#ci-api-drift-checks---check) in CI so API drift fails the build instead of silently diverging.
+
+**`sveld: cannot resolve "..." from ...`.** An `export *` or a named re-export points at a module or path alias that doesn't resolve to a file on disk. Fix the specifier, or check the tsconfig/jsconfig `paths` entry it's supposed to match. This exits `1`; see [Exit codes](#exit-codes).
 
 **A path alias (`$lib`, `@components`, ...) isn't picked up.** sveld only reads aliases from `compilerOptions.paths` in the nearest `tsconfig.json` or `jsconfig.json`, found by walking up from the file doing the importing. Vite/SvelteKit alias config (`vite.config.*`, `svelte.config.*`) is not read directly — add the same aliases to `paths` so both tools agree. When a pattern has more than one mapping (`"$lib/*": ["./src/lib/*", "./lib/*"]`), sveld tries them in order and uses the first one that exists on disk, falling back to the first mapping if none do; among multiple matching patterns, the one with the longest non-wildcard prefix wins, regardless of declaration order (matching `tsc`).
 

@@ -3,6 +3,9 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { parseExports } from "../src/parse-exports";
 
+const UNRESOLVED_RELATIVE_PATH_REGEX = /cannot resolve "\.\/sveld-test-does-not-exist"/;
+const UNRESOLVED_ALIAS_REGEX = /cannot resolve "\$components\/Button\.svelte"/;
+
 describe("parseExports", () => {
   test("circular `export *` between two barrel files does not overflow the stack", () => {
     const dir = mkdtempSync(path.join(tmpdir(), "sveld-parse-exports-circular-"));
@@ -259,5 +262,17 @@ describe("parseExports", () => {
       Theme: { source: "./Theme/Theme.svelte", default: true },
       themes: { source: "./Theme/Theme.svelte", default: false },
     });
+  });
+
+  test("`export *` to a missing relative path throws a structured error instead of crashing raw", () => {
+    const source = `export * from "./sveld-test-does-not-exist";`;
+
+    expect(() => parseExports(source, "")).toThrow(UNRESOLVED_RELATIVE_PATH_REGEX);
+  });
+
+  test("named re-export with an unresolved alias throws a structured error", () => {
+    const source = `export { default as Button } from "$components/Button.svelte";`;
+
+    expect(() => parseExports(source, "")).toThrow(UNRESOLVED_ALIAS_REGEX);
   });
 });
