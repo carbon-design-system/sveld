@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { parseExports } from "../src/parse-exports";
@@ -112,13 +112,144 @@ describe("parseExports", () => {
     });
   });
 
-  test("multiple, non-default exports", () => {
-    const source = `export { Component, Component2 } from "./component";`;
+  test("multiple, non-default exports (target has no matching re-exports, falls back to literal source)", () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "sveld-parse-exports-flat-"));
 
-    expect(parseExports(source, "")).toEqual({
-      Component: { source: "./component", default: false },
-      Component2: { source: "./component", default: false },
-    });
+    try {
+      writeFileSync(path.join(dir, "component.js"), "export const Component = 1;\nexport const Component2 = 2;\n");
+
+      const source = `export { Component, Component2 } from "./component";`;
+
+      expect(parseExports(source, dir)).toEqual({
+        Component: { source: "./component", default: false },
+        Component2: { source: "./component", default: false },
+      });
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("target that is not parseable as plain JS (e.g. TypeScript syntax) falls back to literal source", () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "sveld-parse-exports-ts-target-"));
+
+    try {
+      writeFileSync(path.join(dir, "constants.ts"), "export const MAX_RETRIES: number = 5;\n");
+
+      const source = `export { MAX_RETRIES } from "./constants";`;
+
+      expect(parseExports(source, dir)).toEqual({
+        MAX_RETRIES: { source: "./constants", default: false },
+      });
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("two-level named chain through a directory barrel", () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "sveld-parse-exports-chain-"));
+
+    try {
+      const catDir = path.join(dir, "cat");
+      mkdirSync(catDir);
+      writeFileSync(path.join(catDir, "index.js"), `export { default as A } from "./A.svelte";\n`);
+
+      const source = `export { A } from "./cat";`;
+
+      expect(parseExports(source, dir)).toEqual({
+        A: { source: "./cat/A.svelte", default: true },
+      });
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("rename through a named chain", () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "sveld-parse-exports-chain-rename-"));
+
+    try {
+      const catDir = path.join(dir, "cat");
+      mkdirSync(catDir);
+      writeFileSync(path.join(catDir, "index.js"), `export { default as A } from "./A.svelte";\n`);
+
+      const source = `export { A as B } from "./cat";`;
+
+      expect(parseExports(source, dir)).toEqual({
+        B: { source: "./cat/A.svelte", default: true },
+      });
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("named chain by filename instead of directory", () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "sveld-parse-exports-chain-filename-"));
+
+    try {
+      const catDir = path.join(dir, "cat");
+      mkdirSync(catDir);
+      writeFileSync(path.join(catDir, "index.js"), `export { default as A } from "./A.svelte";\n`);
+
+      const source = `export { A } from "./cat/index.js";`;
+
+      expect(parseExports(source, dir)).toEqual({
+        A: { source: "./cat/A.svelte", default: true },
+      });
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("three-level named chain", () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "sveld-parse-exports-chain-three-"));
+
+    try {
+      const catDir = path.join(dir, "cat");
+      const dogDir = path.join(catDir, "dog");
+      mkdirSync(catDir);
+      mkdirSync(dogDir);
+      writeFileSync(path.join(dogDir, "index.js"), `export { default as A } from "./A.svelte";\n`);
+      writeFileSync(path.join(catDir, "index.js"), `export { A } from "./dog";\n`);
+
+      const source = `export { A } from "./cat";`;
+
+      expect(parseExports(source, dir)).toEqual({
+        A: { source: "./cat/dog/A.svelte", default: true },
+      });
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("cycle between two named-chain barrels terminates", () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "sveld-parse-exports-chain-cycle-"));
+
+    try {
+      const catDir = path.join(dir, "cat");
+      const dogDir = path.join(dir, "dog");
+      mkdirSync(catDir);
+      mkdirSync(dogDir);
+      writeFileSync(path.join(catDir, "index.js"), `export { A } from "../dog";\n`);
+      writeFileSync(path.join(dogDir, "index.js"), `export { A } from "../cat";\n`);
+
+      const source = `export { A } from "./cat";`;
+
+      expect(() => parseExports(source, dir)).not.toThrow();
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("unresolvable specifier warns and omits the entry", () => {
+    const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+
+    try {
+      const source = `export { A } from "./does-not-exist";`;
+
+      expect(parseExports(source, "")).toEqual({});
+      expect(warn).toHaveBeenCalled();
+    } finally {
+      warn.mockRestore();
+    }
   });
 
   test("mixed default and named export from same source", () => {

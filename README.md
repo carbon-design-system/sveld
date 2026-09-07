@@ -830,6 +830,8 @@ export type { Theme } from "./types";
 
 From that barrel, `sveld` documents `VERSION`, `clamp`, and `Theme`. `Button` still goes through the component path. Type text is copied from source, not resolved with `tsc`, same as the rest of the tool.
 
+Nested barrels are followed too: `export { X } from "./dir"`, where `./dir/index.js` itself re-exports `.svelte` files, resolves `X` to the underlying component without needing `--glob`.
+
 JSON adds `exports` and `totalExports`. Markdown adds an "Exports" section. Each item has `name`, `kind`, type text, optional JSDoc `description`, and `source`.
 
 ## JSON Output
