@@ -12,6 +12,7 @@ import type {
   LexicalScope,
   LocalTypeDeclaration,
   ModernAstRoot,
+  ModernRunesTypeNode,
   PendingCallDefaultCandidate,
   PendingContextKeyCandidate,
   RestProps,
@@ -74,6 +75,13 @@ export interface ParserContext {
   readonly explicitVariableTypesByName: Map<string, string>;
   readonly typeImportBindingsByLocalName: Map<string, TypeImportBinding>;
   readonly localTypeDeclarationsByName: Map<string, LocalTypeDeclaration>;
+  /**
+   * TS type nodes read outside the whole-object `$props()` path (legacy
+   * annotations, runes per-prop annotations, accessor signatures) whose
+   * imported/local dependencies still need pulling into the `.d.ts` — see
+   * {@link buildTypeScriptMetadata}.
+   */
+  readonly additionalTypeDependencyNodes: ModernRunesTypeNode[];
   readonly wholePropsLocals: Set<string>;
   readonly restPropLocals: Set<string>;
 
@@ -137,6 +145,7 @@ export function createParserContext(): ParserContext {
     explicitVariableTypesByName: new Map(),
     typeImportBindingsByLocalName: new Map(),
     localTypeDeclarationsByName: new Map(),
+    additionalTypeDependencyNodes: [],
     wholePropsLocals: new Set(),
     restPropLocals: new Set(),
     componentScope: new Map(),

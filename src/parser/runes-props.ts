@@ -24,6 +24,7 @@ import {
   getTypeAnnotationText,
   getTypeNodeText,
   getTypeReferenceName,
+  trackAdditionalTypeDependencyNode,
 } from "./type-resolution";
 
 /** Any identifier-shaped token, used to substitute type-parameter names within a type's source text. */
@@ -86,6 +87,8 @@ export function buildRunesPropTypeMetadataMap(
 
       const type = sourceAtPos(ctx, typeStart + 1, typeEnd)?.trim();
       if (!type) continue;
+
+      trackAdditionalTypeDependencyNode(ctx, member.typeAnnotation?.typeAnnotation);
 
       metadata.set(propName, {
         type,
@@ -239,6 +242,7 @@ export function buildRunesPropTypeMetadata(parser: ComponentParser, ctx: ParserC
   ctx.explicitVariableTypesByName.clear();
   ctx.typeImportBindingsByLocalName.clear();
   ctx.localTypeDeclarationsByName.clear();
+  ctx.additionalTypeDependencyNodes.length = 0;
   ctx.typedRunesPropsDeclarations.length = 0;
   if (!ctx.source) return;
 
@@ -305,6 +309,7 @@ export function buildRunesPropTypeMetadata(parser: ComponentParser, ctx: ParserC
         const explicitType = getTypeAnnotationText(ctx, declarator.id.typeAnnotation);
         if (explicitType) {
           ctx.explicitPropTypesByName.set(declarator.id.name, explicitType);
+          trackAdditionalTypeDependencyNode(ctx, declarator.id.typeAnnotation?.typeAnnotation);
         }
       }
     } else if (statement.type === "VariableDeclaration") {
