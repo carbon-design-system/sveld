@@ -374,6 +374,17 @@ export function collectComponents(input: string, glob: boolean, documentExports 
   if (glob) {
     const state = createGlobMergeState(allComponentEntries, resolveComponentFilePath);
     mergeGlobbedComponents(rootDir, exports, allComponentEntries, resolveComponentFilePath, state);
+
+    // A directory entry has no barrel to parse exports from (`exports` is
+    // still `{}` at this point), so without this every globbed component
+    // would be missing from JSON/Markdown output and the generated index
+    // `.d.ts`, even though a per-component `.d.ts` is still produced for
+    // each of them via `allComponentEntries`.
+    if (!isFile) {
+      exports = Object.fromEntries(
+        allComponentEntries.map(([moduleName, entry]) => [moduleName, { ...entry, default: true }]),
+      );
+    }
   }
 
   return { exports, allComponentEntries, rootDir, resolveComponentFilePath };
