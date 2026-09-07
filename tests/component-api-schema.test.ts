@@ -1,5 +1,9 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import Ajv2020 from "ajv/dist/2020";
+import { Glob } from "bun";
+import { asNormalizedPath, buildComponentApiDocument, type ComponentDocs, ComponentParser } from "../src/browser";
+import { parseEntryExports } from "../src/parse-entry-exports";
 
 type JsonObject = Record<string, unknown>;
 
@@ -228,5 +232,76 @@ describe("component API JSON schema", () => {
         value: 0,
       },
     });
+  });
+});
+
+// Representative directory-name prefixes chosen to cover every syntax mode
+// (runes/legacy), the typedef/context/slot metadata shapes, and entry-barrel
+// exports, without validating all ~90 fixtures on every run.
+const FIXTURE_PREFIXES = ["runes-", "legacy-", "typedef-", "context-", "slot-"];
+
+async function buildRepresentativeFixtureComponents(): Promise<ComponentDocs> {
+  const fixturesRoot = path.join(root, "tests", "fixtures");
+  const parser = new ComponentParser();
+  const components: ComponentDocs = new Map();
+
+  for await (const file of new Glob("**/input.svelte").scan(fixturesRoot)) {
+    const normalizedFile = file.replace(/\\/g, "/");
+    const dir = normalizedFile.slice(0, normalizedFile.length - "/input.svelte".length);
+    if (!FIXTURE_PREFIXES.some((prefix) => dir.startsWith(prefix))) continue;
+
+    const filePath = path.join(fixturesRoot, normalizedFile);
+    const source = readFileSync(filePath, "utf-8");
+    const parsed = parser.parseSvelteComponent(source, { filePath, moduleName: dir });
+    components.set(dir, { ...parsed, moduleName: dir, filePath: asNormalizedPath(filePath) });
+  }
+
+  return components;
+}
+
+describe("component API JSON schema validates real emitted output", () => {
+  const ajv = new Ajv2020({ strict: true, allErrors: true });
+  const schema = readJson("schema/component-api.schema.json");
+  const validate = ajv.compile(schema);
+
+  function expectValid(document: unknown) {
+    const valid = validate(document);
+    if (!valid) {
+      throw new Error(`Schema validation failed:\n${ajv.errorsText(validate.errors, { separator: "\n" })}`);
+    }
+    expect(valid).toBe(true);
+  }
+
+  test("validates the combined document for representative fixtures", async () => {
+    const components = await buildRepresentativeFixtureComponents();
+    expect(components.size).toBeGreaterThan(0);
+
+    const document = buildComponentApiDocument(components);
+    expectValid(document);
+  });
+
+  test("validates the document when entry-barrel exports are included", async () => {
+    const components = await buildRepresentativeFixtureComponents();
+    const entryExports = await parseEntryExports(path.join(root, "tests", "fixtures-entry-exports", "index.ts"));
+
+    const document = buildComponentApiDocument(components, { entryExports });
+    expect(document.exports).toBeDefined();
+    expectValid(document);
+  });
+
+  test("validates the committed svelte5-vite e2e COMPONENT_API.json", () => {
+    const api = readJson("tests/e2e/svelte5-vite/COMPONENT_API.json");
+    expectValid(api);
+  });
+
+  const carbonApiPath = "tests/e2e/carbon/COMPONENT_API.json";
+  const hasCarbonApi = existsSync(path.join(root, carbonApiPath));
+
+  test.skipIf(!hasCarbonApi)("validates the committed carbon e2e COMPONENT_API.json", () => {
+    if (!hasCarbonApi) {
+      console.warn(`Skipping: ${carbonApiPath} not found in the working tree.`);
+      return;
+    }
+    expectValid(readJson(carbonApiPath));
   });
 });
