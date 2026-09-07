@@ -58,7 +58,11 @@ import {
 } from "./parser/scopes";
 import { addSlot, buildSlotPropsFromObjectExpression, extractRenderTagInfo } from "./parser/slots";
 import { sourceAtPos, sourceRangeFromNode, sourceRangeFromOffsets } from "./parser/source-position";
-import { buildTypeScriptMetadata } from "./parser/type-resolution";
+import {
+  buildFunctionDeclarationSignature,
+  buildTypeScriptMetadata,
+  type FunctionDeclarationLike,
+} from "./parser/type-resolution";
 import { stripTypeCastWrappers } from "./parser/typescript-casts";
 import { assignValueOrUndefined } from "./parser/utils";
 import {
@@ -1033,15 +1037,17 @@ export default class ComponentParser {
             const declarators: ModuleExportDeclarator[] = [];
 
             if (node.declaration.type === "FunctionDeclaration") {
-              const funcDecl = node.declaration as { id?: { name?: string } };
+              const funcDecl = node.declaration as { id?: { name?: string } } & FunctionDeclarationLike;
               if (!funcDecl.id?.name) return;
+              const accessorSignature =
+                this.ctx.scriptLanguage === "ts" ? buildFunctionDeclarationSignature(this.ctx, funcDecl) : undefined;
               declarators.push({
                 prop_name: funcDecl.id.name,
                 kind: "function",
                 isFunctionDeclaration: true,
                 value: undefined,
-                typeSeed: "() => any",
-                explicitType: undefined,
+                typeSeed: accessorSignature?.hasAnnotations ? undefined : "() => any",
+                explicitType: accessorSignature?.hasAnnotations ? accessorSignature.signature : undefined,
                 initializerIsFunction: true,
                 defaultValue: undefined,
                 inferredTypeForSource: undefined,
@@ -1360,16 +1366,18 @@ export default class ComponentParser {
           const declarators: InstancePropDeclarator[] = [];
 
           if (node.declaration.type === "FunctionDeclaration") {
-            const funcDecl = node.declaration as { id?: { name?: string } };
+            const funcDecl = node.declaration as { id?: { name?: string } } & FunctionDeclarationLike;
             if (!funcDecl.id?.name) return;
             prop_name ??= funcDecl.id.name;
+            const accessorSignature =
+              this.ctx.scriptLanguage === "ts" ? buildFunctionDeclarationSignature(this.ctx, funcDecl) : undefined;
             declarators.push({
               prop_name,
               kind: "function",
               isFunctionDeclaration: true,
               value: undefined,
-              typeSeed: "() => any",
-              explicitType: undefined,
+              typeSeed: accessorSignature?.hasAnnotations ? undefined : "() => any",
+              explicitType: accessorSignature?.hasAnnotations ? accessorSignature.signature : undefined,
               initializerIsFunction: true,
               isRequired: false,
               localName: funcDecl.id.name,
