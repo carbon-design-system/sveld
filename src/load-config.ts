@@ -12,12 +12,12 @@ import type { PluginSveldOptions } from "./plugin";
 export interface SveldRuntimeOptions extends PluginSveldOptions {
   /** Print unresolved-type diagnostics to stderr. */
   reportDiagnostics?: boolean;
-  /** Exit code 1 when diagnostics exist. Implies `reportDiagnostics`. */
+  /** Exit code 4 when diagnostics exist. Implies `reportDiagnostics`. */
   strict?: boolean;
   /**
    * Diff the parsed component API against a committed snapshot (default:
    * the `json` writer's `outFile`, or `COMPONENT_API.json`) and assign a
-   * semver bump to each change. Exits `1` on a breaking change. Pass a
+   * semver bump to each change. Exits `3` on a breaking change. Pass a
    * string for a custom snapshot path.
    */
   check?: boolean | string;

@@ -59,9 +59,9 @@ Options:
   --resolve-types       Expand opaque imported $props() types into JSON (alias: --resolveTypes, deprecated)
   --check-examples      Compile-check @example blocks against the TypeScript program (alias: --checkExamples, deprecated)
   --report-diagnostics  Print unresolved-type diagnostics to stderr
-  --strict              Exit with code 1 when diagnostics exist (implies --report-diagnostics)
+  --strict              Exit with code 4 when diagnostics exist (implies --report-diagnostics)
   --types-format=<format>  ".d.ts" output format: "class" (default) or "component" (Svelte 5 Component<...>)
-  --check[=<path>]      Diff the parsed API against a committed snapshot; exit 1 on a breaking change (default path: COMPONENT_API.json)
+  --check[=<path>]      Diff the parsed API against a committed snapshot; exit 3 on a breaking change (default path: COMPONENT_API.json)
   --format=<text|json>  Output format for the --check report and the diagnostics summary (default: text)
   --help                Print this help message and exit
   --version             Print the installed sveld version and exit
