@@ -53,6 +53,38 @@ describe("pluginSveld", () => {
     expect(fs.existsSync).toHaveBeenCalledWith(`${mockCwd}/src/Override.svelte`);
     expect(fs.readFileSync).not.toHaveBeenCalled();
   });
+
+  test("generateBundle hook calls this.error when the entry cannot be resolved", async () => {
+    jest.spyOn(fs, "existsSync").mockReturnValue(false);
+
+    const plugin = pluginSveld();
+    await plugin.buildStart?.call({});
+
+    const errorSpy = jest.fn((message: string) => {
+      throw new Error(message);
+    });
+
+    await expect(plugin.generateBundle.call({ error: errorSpy })).rejects.toThrow(
+      "sveld: could not resolve a Svelte entry point",
+    );
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("sveld: could not resolve a Svelte entry point"));
+  });
+
+  test("writeBundle hook calls this.error when the entry cannot be resolved", async () => {
+    jest.spyOn(fs, "existsSync").mockReturnValue(false);
+
+    const plugin = pluginSveld();
+    await plugin.buildStart?.call({});
+
+    const errorSpy = jest.fn((message: string) => {
+      throw new Error(message);
+    });
+
+    await expect(plugin.writeBundle.call({ error: errorSpy })).rejects.toThrow(
+      "sveld: could not resolve a Svelte entry point",
+    );
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("sveld: could not resolve a Svelte entry point"));
+  });
 });
 
 describe("generateBundle", () => {
