@@ -328,4 +328,53 @@ describe("WriterMarkdown", () => {
       "| <s>change</s><br />**Deprecated**: Listen for `input` instead. | dispatched | -- | Fires on change. |",
     );
   });
+
+  test("escapes pipes in prop descriptions so they don't break the table", () => {
+    const output = writeMarkdownCore(
+      new Map([
+        [
+          "Example",
+          {
+            filePath: asNormalizedPath("Example.svelte"),
+            moduleName: "Example",
+            syntaxMode: "legacy",
+            props: [
+              {
+                name: "mode",
+                kind: "let",
+                constant: false,
+                description: 'Use "a | b" syntax.',
+                isFunction: false,
+                isFunctionDeclaration: false,
+                isRequired: false,
+                reactive: false,
+              },
+            ],
+            moduleExports: [],
+            slots: [],
+            events: [],
+            typedefs: [],
+            generics: null,
+            rest_props: undefined,
+            contexts: [],
+          },
+        ],
+      ]),
+    );
+
+    expect(output).toContain('Use "a &#124; b" syntax.');
+  });
+
+  test("TOC anchors match GitHub's heading slugger, including duplicate suffixes", () => {
+    const document = new WriterMarkdown({});
+    document.tableOfContents();
+    document.append("h2", "Button (legacy) v2");
+    document.append("h2", "Button (legacy) v2");
+    document.append("h2", "Button (legacy) v2");
+
+    const output = document.end();
+    expect(output).toContain("- [Button (legacy) v2](#button-legacy-v2)\n");
+    expect(output).toContain("- [Button (legacy) v2](#button-legacy-v2-1)");
+    expect(output).toContain("- [Button (legacy) v2](#button-legacy-v2-2)");
+  });
 });
