@@ -106,6 +106,21 @@ describe("writeCustomElements", () => {
     }
   });
 
+  test("logs unchanged on a second identical write", async () => {
+    const tempDir = await mkdtemp(path.join(process.cwd(), ".tmp-sveld-cem-"));
+    const outFile = path.relative(process.cwd(), path.join(tempDir, "custom-elements.json"));
+    const components: ComponentDocs = new Map([["Alpha", mockComponentDocApi("Alpha", "Alpha.svelte")]]);
+
+    try {
+      await writeCustomElements(components, { inputDir: "src", outFile });
+      errorSpy.mockClear();
+      await writeCustomElements(components, { inputDir: "src", outFile });
+      expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining(`unchanged "${outFile}".`));
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+
   test("suppresses the progress line when quiet mode is on", async () => {
     setQuiet(true);
     const tempDir = await mkdtemp(path.join(process.cwd(), ".tmp-sveld-cem-"));

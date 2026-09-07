@@ -58,8 +58,8 @@ export default async function writeMarkdown(components: ComponentDocs, options: 
 
   if (write) {
     const outFile = join(process.cwd(), options.outFile);
-    await new Writer({ dryRun: options.dryRun }).write(outFile, rendered);
-    if (!options.dryRun) info(`created "${options.outFile}".`);
+    const wasWritten = await new Writer({ dryRun: options.dryRun }).write(outFile, rendered);
+    if (!options.dryRun) info(`${wasWritten ? "created" : "unchanged"} "${options.outFile}".`);
   }
 
   return rendered;
