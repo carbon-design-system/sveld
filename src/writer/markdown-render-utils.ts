@@ -106,11 +106,11 @@ function renderComponent(document: MarkdownDocument, component: ComponentDocApi)
   document.append("h3", "Props");
   renderSectionIfNotEmpty(document, component.props, () => {
     document.append("raw", PROP_TABLE_HEADER);
-    const sortedProps = [...component.props].sort((a) => {
-      if (a.reactive) return -1;
-      if (a.constant) return 1;
-      return 0;
-    });
+    const rank = (prop: (typeof component.props)[number]) => (prop.reactive ? 0 : prop.constant ? 2 : 1);
+    const sortedProps = component.props
+      .map((prop, index) => ({ prop, index }))
+      .sort((a, b) => rank(a.prop) - rank(b.prop) || a.index - b.index)
+      .map(({ prop }) => prop);
     for (const prop of sortedProps) {
       document.append(
         "raw",

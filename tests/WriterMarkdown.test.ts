@@ -377,4 +377,87 @@ describe("WriterMarkdown", () => {
     expect(output).toContain("- [Button (legacy) v2](#button-legacy-v2-1)");
     expect(output).toContain("- [Button (legacy) v2](#button-legacy-v2-2)");
   });
+
+  test("prop table keeps reactive props first, constants last, declaration order otherwise", () => {
+    const output = writeMarkdownCore(
+      new Map([
+        [
+          "Example",
+          {
+            filePath: asNormalizedPath("Example.svelte"),
+            moduleName: "Example",
+            syntaxMode: "legacy",
+            props: [
+              {
+                name: "constantOne",
+                kind: "let",
+                constant: true,
+                isFunction: false,
+                isFunctionDeclaration: false,
+                isRequired: false,
+                reactive: false,
+              },
+              {
+                name: "regularOne",
+                kind: "let",
+                constant: false,
+                isFunction: false,
+                isFunctionDeclaration: false,
+                isRequired: false,
+                reactive: false,
+              },
+              {
+                name: "reactiveOne",
+                kind: "let",
+                constant: false,
+                isFunction: false,
+                isFunctionDeclaration: false,
+                isRequired: false,
+                reactive: true,
+              },
+              {
+                name: "regularTwo",
+                kind: "let",
+                constant: false,
+                isFunction: false,
+                isFunctionDeclaration: false,
+                isRequired: false,
+                reactive: false,
+              },
+              {
+                name: "reactiveTwo",
+                kind: "let",
+                constant: false,
+                isFunction: false,
+                isFunctionDeclaration: false,
+                isRequired: false,
+                reactive: true,
+              },
+              {
+                name: "constantTwo",
+                kind: "let",
+                constant: true,
+                isFunction: false,
+                isFunctionDeclaration: false,
+                isRequired: false,
+                reactive: false,
+              },
+            ],
+            moduleExports: [],
+            slots: [],
+            events: [],
+            typedefs: [],
+            generics: null,
+            rest_props: undefined,
+            contexts: [],
+          },
+        ],
+      ]),
+    );
+
+    const names = ["reactiveOne", "reactiveTwo", "regularOne", "regularTwo", "constantOne", "constantTwo"];
+    const positions = names.map((name) => output.indexOf(`| ${name} |`));
+    expect(positions.every((position) => position !== -1)).toBe(true);
+    expect(positions).toEqual([...positions].sort((a, b) => a - b));
+  });
 });
