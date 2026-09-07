@@ -10,7 +10,7 @@ export default class MixedEventTypes extends SvelteComponentTyped<
     customEvent: CustomEvent<number>;
     /** Input value changed (native forwarded event) */
     input: CustomEvent<string>;
-    submit: CustomEvent<any>;
+    submit: CustomEvent<{ data: string }>;
   },
   Record<string, never>
 > {}

@@ -29,7 +29,12 @@ import { createParserContext, type ParserContext } from "./parser/context";
 import { parseSetContextCall } from "./parser/contexts";
 import { recordDiagnostic } from "./parser/diagnostics";
 import { isComponentLikeType, isElementLikeType } from "./parser/element-kind";
-import { addDispatchedEvent, literalDetailToTypeText, parseHostDispatchEventCall } from "./parser/events";
+import {
+  addDispatchedEvent,
+  deriveLiteralDetailType,
+  literalDetailToTypeText,
+  parseHostDispatchEventCall,
+} from "./parser/events";
 import { parseGenericsAttribute } from "./parser/generics";
 import { parseCustomTypes, processNodeJSDoc } from "./parser/jsdoc";
 import { resolvePropTypeAndDocs } from "./parser/prop-shared";
@@ -1162,9 +1167,8 @@ export default class ComponentParser {
               dispatcher_name = (parent.id as Identifier).name;
               dispatcherDeclaratorNode = parent;
             }
-            dispatcherTypeArgument = (
-              callExpr as unknown as { typeArguments?: { params?: ModernRunesTypeNode[] } }
-            ).typeArguments?.params?.[0];
+            dispatcherTypeArgument = (callExpr as unknown as { typeArguments?: { params?: ModernRunesTypeNode[] } })
+              .typeArguments?.params?.[0];
           }
 
           if (calleeName === "$host") {
@@ -1662,15 +1666,19 @@ export default class ComponentParser {
           const event_name =
             firstArg && typeof firstArg === "object" && "value" in firstArg ? (firstArg as Literal).value : undefined;
           const event_argument = callee.arguments[1];
+          const structuralDetail = deriveLiteralDetailType(this, event_argument);
           const event_detail =
-            event_argument && typeof event_argument === "object" && "value" in event_argument
+            structuralDetail === undefined &&
+            event_argument &&
+            typeof event_argument === "object" &&
+            "value" in event_argument
               ? (event_argument as Literal).value
               : undefined;
 
           if (event_name != null) {
             addDispatchedEvent(this.ctx, {
               name: String(event_name),
-              detail: event_detail == null ? "" : literalDetailToTypeText(event_detail),
+              detail: structuralDetail ?? (event_detail == null ? "" : literalDetailToTypeText(event_detail)),
               has_argument: Boolean(event_argument),
               source: sourceRangeFromNode(this.ctx, callee.node),
             });

@@ -9,7 +9,7 @@ export type MixedEventTypesProps = {
   /** Input value changed (native forwarded event) */
   oninput?: (event: CustomEvent<string>) => void;
 
-  onsubmit?: (event: CustomEvent<any>) => void;
+  onsubmit?: (event: CustomEvent<{ data: string }>) => void;
 };
 
 export type MixedEventTypesExports = Record<string, never>;
