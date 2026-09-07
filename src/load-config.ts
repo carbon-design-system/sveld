@@ -175,6 +175,8 @@ const KNOWN_TOP_LEVEL_KEYS = [
   "markdownOptions",
   "customElements",
   "customElementsOptions",
+  "llms",
+  "llmsOptions",
   "additionalWriters",
   "failFast",
   "watch",
@@ -196,6 +198,7 @@ const KNOWN_NESTED_KEYS: Record<string, string[]> = {
   jsonOptions: ["input", "outFile", "outDir", "entryExports", "dryRun"],
   markdownOptions: ["write", "outFile", "entryExports", "onAppend", "dryRun"],
   customElementsOptions: ["outFile", "dryRun"],
+  llmsOptions: ["outDir", "linkBase", "title", "summary", "entryExports", "dryRun"],
 };
 
 /** Prints a "did you mean" suggestion for an unrecognized option key. `prefix` namespaces nested keys, e.g. `"typesOptions"` for `typesOptions.printWidth`. */

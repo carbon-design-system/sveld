@@ -2,6 +2,8 @@ import { isObject } from "./ast-guards";
 
 export interface ParsedPackageJson {
   svelte?: string;
+  name?: string;
+  description?: string;
 }
 
 export function parsePackageJson(value: unknown): ParsedPackageJson {
@@ -9,8 +11,11 @@ export function parsePackageJson(value: unknown): ParsedPackageJson {
     return {};
   }
 
-  const svelte = value.svelte;
-  return typeof svelte === "string" ? { svelte } : {};
+  const result: ParsedPackageJson = {};
+  if (typeof value.svelte === "string") result.svelte = value.svelte;
+  if (typeof value.name === "string") result.name = value.name;
+  if (typeof value.description === "string") result.description = value.description;
+  return result;
 }
 
 export interface ParsedTsConfig {

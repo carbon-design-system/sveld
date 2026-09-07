@@ -1,0 +1,126 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`renderLlmsDocuments llms.txt lists every component with a link and a one-line summary 1`] = `
+"# my-library
+
+> A component library.
+
+## Components
+
+- [DataTable](/DataTable): A table for displaying rows of data.
+- [Modal](/Modal): A modal dialog.
+- [Select](/Select): Component
+
+"
+`;
+
+exports[`renderLlmsDocuments llms.txt adds an Exports section when entryExports is set 1`] = `
+"# my-library
+
+> A component library.
+
+## Components
+
+- [DataTable](/DataTable): A table for displaying rows of data.
+- [Modal](/Modal): A modal dialog.
+- [Select](/Select): Component
+
+## Exports
+
+- \`VERSION\`: The current package version.
+- \`Theme\`: type
+
+"
+`;
+
+exports[`renderLlmsDocuments llms-full.txt renders per-component Props/Bindings/Events/Slots/Typedefs/Module exports 1`] = `
+"# my-library
+
+> A component library.
+
+## DataTable
+
+Type parameters: <code><Row extends DataTableRow></code>
+
+A table for displaying rows of data.
+
+Supports sorting and row selection.
+
+### Props
+
+| Name | Type | Default | Required | Description |
+| :- | :- | :- | :- | :- |
+| rows | <code>Row[]</code> | -- | Yes | The rows to display. |
+| selected | <code>Row &#124; null</code> | <code>null</code> | No | The currently selected row. |
+
+### Bindings
+
+| Name | Type | Default | Required | Description |
+| :- | :- | :- | :- | :- |
+| selected | <code>Row &#124; null</code> | <code>null</code> | No | The currently selected row. |
+
+### Snippets
+
+| Slot name | Default | Props | Fallback | Description |
+| :- | :- | :- | :- | :- |
+| row | No | <code>{ row: Row } </code> | -- | Custom row rendering. |
+
+## Modal
+
+A modal dialog.
+
+### Props
+
+| Name | Type | Default | Required | Description |
+| :- | :- | :- | :- | :- |
+| open | <code>boolean</code> | <code>false</code> | No | Whether the modal is open. |
+| size | <code>"sm" &#124; "md" &#124; "lg"</code> | <code>"md"</code> | No | Modal size. |
+
+### Bindings
+
+| Name | Type | Default | Required | Description |
+| :- | :- | :- | :- | :- |
+| open | <code>boolean</code> | <code>false</code> | No | Whether the modal is open. |
+
+### Events
+
+| Event name | Type | Detail | Description |
+| :- | :- | :- | :- |
+| close | dispatched | <code>null</code> | Fired when the modal closes. |
+| submit | forwarded | -- | Forwarded native submit event. |
+
+### Slots
+
+| Slot name | Default | Props | Fallback | Description |
+| :- | :- | :- | :- | :- |
+| -- | Yes | -- | -- | Modal body content. |
+| footer | No | -- | -- | Modal footer content. |
+
+## Select
+
+### Props
+
+| Name | Type | Default | Required | Description |
+| :- | :- | :- | :- | :- |
+| value | <code>SelectOption</code> | -- | No | The selected option. |
+
+### Typedefs
+
+\`\`\`ts
+/**
+ * An option in the select.
+ */
+export interface SelectOption {
+  label: string;
+  value: string;
+}
+\`\`\`
+
+### Module exports
+
+| Name | Type | Default | Required | Description |
+| :- | :- | :- | :- | :- |
+| DEFAULT_OPTION | <code>SelectOption</code> | <code>{ label: "None", value: "" }</code> | No | The default option. |
+
+"
+`;

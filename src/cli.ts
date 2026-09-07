@@ -53,6 +53,7 @@ Options:
   --json                Generate component documentation in JSON format
   --markdown            Generate component documentation in Markdown format
   --custom-elements     Generate a Custom Elements Manifest (custom-elements.json)
+  --llms                Generate an llms.txt / llms-full.txt pair (https://llmstxt.org)
   --fail-fast           Abort the run when a single component fails to parse
   --dry-run             Resolve, parse, and print "would write" lines for each output file instead of writing anything (including the parse cache)
   --quiet               Suppress progress logs (errors, the diagnostics summary, and the --check report are unaffected)
@@ -101,6 +102,7 @@ const KNOWN_FLAGS = [
   "quiet",
   "stdout",
   "custom-elements",
+  "llms",
   "strict",
   "report-diagnostics",
   "resolve-types",
@@ -125,6 +127,7 @@ const BOOLEAN_FLAGS = new Set([
   "markdown",
   "quiet",
   "custom-elements",
+  "llms",
   "strict",
   "report-diagnostics",
   "resolve-types",
@@ -203,6 +206,8 @@ function parseCliFlagValue(flag: string, value: string | boolean, arg: string, r
       return { kind: "option", option: { stdout: value as "json" | "ndjson" } };
     case "custom-elements":
       return { kind: "option", option: { customElements: value === true || value === "true" } };
+    case "llms":
+      return { kind: "option", option: { llms: value === true || value === "true" } };
     case "strict":
       return { kind: "option", option: { strict: value === true || value === "true" } };
     case "report-diagnostics":

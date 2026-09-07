@@ -4,11 +4,21 @@ import path from "node:path";
 import { getWriter, listWriters, type OutputWriter, registerWriter } from "../src/index";
 import type { ComponentDocs, GenerateBundleResult } from "../src/plugin";
 import { writeOutput } from "../src/plugin";
+// Side-effect import: registers the built-in "json"/"markdown"/"types"/"custom-elements"/"llms" writers.
+import "../src/writer/built-in-writers";
 import { mockComponentDocApi } from "./test-brands";
 
 interface PlainTextWriterOptions {
   outFile: string;
 }
+
+describe("built-in writers", () => {
+  test("registers json, markdown, types, custom-elements, and llms", () => {
+    const names = listWriters().map((writer) => writer.name);
+    expect(names).toEqual(expect.arrayContaining(["json", "markdown", "types", "custom-elements", "llms"]));
+    expect(getWriter("llms")?.componentSet).toBe("exported");
+  });
+});
 
 describe("custom writer registration (public API)", () => {
   test("registerWriter makes a writer discoverable via getWriter and listWriters", () => {
