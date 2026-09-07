@@ -164,6 +164,10 @@ describe("parseCliOptions", () => {
     expect(parseCliOptions(["--xyz123garbage"])).toEqual({ kind: "unknown", arg: "--xyz123garbage" });
   });
 
+  test("--dryrun suggests --dry-run", () => {
+    expect(parseCliOptions(["--dryrun"])).toEqual({ kind: "unknown", arg: "--dryrun", suggestion: "dry-run" });
+  });
+
   test("a positional argument surfaces as an unknown result", () => {
     expect(parseCliOptions(["foo"])).toEqual({ kind: "unknown", arg: "foo" });
   });
@@ -172,6 +176,14 @@ describe("parseCliOptions", () => {
     expect(parseCliOptions(["--json", "true"])).toEqual({
       kind: "unknown",
       arg: "true",
+      positionalHint: true,
+    });
+  });
+
+  test("a positional argument after --dry-run hints at the space-separated form", () => {
+    expect(parseCliOptions(["--dry-run", "foo"])).toEqual({
+      kind: "unknown",
+      arg: "foo",
       positionalHint: true,
     });
   });
