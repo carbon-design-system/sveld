@@ -15,6 +15,7 @@ import { loadConfig, mergeConfig, type SveldRuntimeOptions } from "./load-config
 import { setQuiet } from "./logger";
 import { normalizeSeparators } from "./path";
 import { generateBundle, toGenerateBundleOptions, writeOutput, writeStdout } from "./plugin";
+import { UnresolvedModuleError } from "./resolve-alias";
 
 /** Relative fallback entry used only when entry resolution otherwise fails. */
 const FALLBACK_ENTRY = "src/index.js";
@@ -454,6 +455,11 @@ export async function cli(process: NodeJS.Process) {
       if (!options.dryRun) result.cache?.save();
     }
   } catch (error) {
+    if (error instanceof UnresolvedModuleError) {
+      console.error(`sveld: ${error.message}`);
+      process.exitCode = EXIT_CODES.USAGE_ERROR;
+      return;
+    }
     console.error(error instanceof Error ? error.message : String(error));
     process.exitCode = EXIT_CODES.GENERATION_FAILURE;
     return;
