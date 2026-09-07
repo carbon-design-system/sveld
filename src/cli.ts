@@ -104,6 +104,7 @@ const KNOWN_FLAGS = [
   "resolve-types",
   "check-examples",
   "fail-fast",
+  "dry-run",
   "entry",
   "cache",
   "check",
@@ -127,6 +128,7 @@ const BOOLEAN_FLAGS = new Set([
   "resolve-types",
   "check-examples",
   "fail-fast",
+  "dry-run",
 ]);
 
 /** Value-taking flags that also accept their value as the next argument. */
