@@ -8,6 +8,7 @@ import {
   mergeConfig,
   resolveConfigPath,
   type SveldRuntimeOptions,
+  validateOptions,
 } from "../src/load-config";
 import type { PluginSveldOptions } from "../src/plugin";
 
@@ -154,5 +155,87 @@ describe("mergeConfig", () => {
       check: "snapshots/api.json",
       reportDiagnostics: true,
     });
+  });
+
+  test("deep-merges typesOptions instead of replacing it outright", () => {
+    const fileConfig: Partial<PluginSveldOptions> = { typesOptions: { outDir: "dist", preamble: "// license" } };
+    expect(mergeConfig(fileConfig, { typesOptions: { format: "component" } })).toEqual({
+      typesOptions: { outDir: "dist", preamble: "// license", format: "component" },
+    });
+  });
+
+  test("a later source's key inside typesOptions overrides the earlier one", () => {
+    const fileConfig: Partial<PluginSveldOptions> = { typesOptions: { format: "class" } };
+    expect(mergeConfig(fileConfig, { typesOptions: { format: "component" } })).toEqual({
+      typesOptions: { format: "component" },
+    });
+  });
+
+  test("deep-merges jsonOptions, markdownOptions, and customElementsOptions", () => {
+    const fileConfig: Partial<PluginSveldOptions> = {
+      jsonOptions: { outFile: "api.json" },
+      markdownOptions: { outFile: "index.md" },
+      customElementsOptions: { outFile: "ce.json" },
+    };
+    expect(
+      mergeConfig(fileConfig, {
+        jsonOptions: { outDir: "docs" },
+        markdownOptions: { write: false },
+        customElementsOptions: { dryRun: true },
+      }),
+    ).toEqual({
+      jsonOptions: { outFile: "api.json", outDir: "docs" },
+      markdownOptions: { outFile: "index.md", write: false },
+      customElementsOptions: { outFile: "ce.json", dryRun: true },
+    });
+  });
+
+  test("deep-merges additionalWriters at the writer-name level", () => {
+    const fileConfig: Partial<PluginSveldOptions> = { additionalWriters: { llms: { outFile: "llms.txt" } } };
+    expect(mergeConfig(fileConfig, { additionalWriters: { other: { outFile: "other.txt" } } })).toEqual({
+      additionalWriters: { llms: { outFile: "llms.txt" }, other: { outFile: "other.txt" } },
+    });
+  });
+
+  test("replaces arrays and functions instead of merging them", () => {
+    const onAppend = () => {};
+    const fileConfig: Partial<PluginSveldOptions> = { markdownOptions: { onAppend } };
+    const overriddenOnAppend = () => {};
+    expect(mergeConfig(fileConfig, { markdownOptions: { onAppend: overriddenOnAppend } })).toEqual({
+      markdownOptions: { onAppend: overriddenOnAppend },
+    });
+  });
+});
+
+describe("validateOptions", () => {
+  let warnSpy: ReturnType<typeof jest.spyOn>;
+
+  beforeEach(() => {
+    warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    warnSpy.mockRestore();
+  });
+
+  test("does not warn for known top-level and nested options", () => {
+    validateOptions({ json: true, typesOptions: { outDir: "dist", format: "component" } });
+    expect(warnSpy).not.toHaveBeenCalled();
+  });
+
+  test("warns about an unknown top-level key with a suggestion", () => {
+    validateOptions({ galob: true } as Partial<PluginSveldOptions>);
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('unknown option "galob"'));
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('Did you mean "glob"?'));
+  });
+
+  test("warns about an unknown key inside typesOptions with a suggestion", () => {
+    validateOptions({ typesOptions: { printWidth: 80 } } as unknown as Partial<PluginSveldOptions>);
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('unknown option "typesOptions.printWidth"'));
+  });
+
+  test("does not validate inside additionalWriters (userland-defined shape)", () => {
+    validateOptions({ additionalWriters: { llms: { anything: true } } });
+    expect(warnSpy).not.toHaveBeenCalled();
   });
 });

@@ -2,6 +2,7 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { isObject } from "./ast-guards";
+import { closestMatch } from "./levenshtein";
 import type { PluginSveldOptions } from "./plugin";
 
 /**
@@ -132,9 +133,100 @@ export async function loadConfig(cwd: string = process.cwd()): Promise<SveldConf
   return loadConfigFrom(configPath);
 }
 
-/** Shallow-merge option sources. Later sources override earlier ones. */
+/**
+ * Merge option sources. Later sources override earlier ones. Keys whose
+ * value is a plain object (e.g. `typesOptions`, `jsonOptions`,
+ * `markdownOptions`, `customElementsOptions`, `additionalWriters`) are
+ * merged one level deep instead of replaced outright, so setting one nested
+ * key from a later source doesn't drop sibling keys set by an earlier one.
+ * Arrays and functions always replace; they are never merged.
+ */
 export function mergeConfig<T extends PluginSveldOptions = PluginSveldOptions>(
   ...sources: Array<Partial<T> | undefined>
 ): Partial<T> {
-  return Object.assign({}, ...sources.filter(Boolean));
+  const merged: Record<string, unknown> = {};
+
+  for (const source of sources) {
+    if (!source) continue;
+
+    for (const [key, value] of Object.entries(source)) {
+      const existing = merged[key];
+      merged[key] =
+        isObject(existing) && !Array.isArray(existing) && isObject(value) && !Array.isArray(value)
+          ? { ...existing, ...value }
+          : value;
+    }
+  }
+
+  return merged as Partial<T>;
+}
+
+/** Top-level keys accepted anywhere in `PluginSveldOptions` / `SveldRuntimeOptions`. */
+const KNOWN_TOP_LEVEL_KEYS = [
+  "entry",
+  "glob",
+  "quiet",
+  "documentExports",
+  "types",
+  "typesOptions",
+  "json",
+  "jsonOptions",
+  "markdown",
+  "markdownOptions",
+  "customElements",
+  "customElementsOptions",
+  "additionalWriters",
+  "failFast",
+  "watch",
+  "config",
+  "resolveTypes",
+  "cache",
+  "checkExamples",
+  "reportDiagnostics",
+  "strict",
+  "check",
+  "stdout",
+  "format",
+  "dryRun",
+];
+
+/** Known keys inside each `*Options` object, keyed by the top-level option name. `additionalWriters` is userland-defined and not validated here. */
+const KNOWN_NESTED_KEYS: Record<string, string[]> = {
+  typesOptions: ["outDir", "preamble", "format", "exports", "dryRun", "cache", "resolvedPathByFilePath"],
+  jsonOptions: ["input", "outFile", "outDir", "entryExports", "dryRun"],
+  markdownOptions: ["write", "outFile", "entryExports", "onAppend", "dryRun"],
+  customElementsOptions: ["outFile", "dryRun"],
+};
+
+/** Prints a "did you mean" suggestion for an unrecognized option key. `prefix` namespaces nested keys, e.g. `"typesOptions"` for `typesOptions.printWidth`. */
+function warnUnknownKey(prefix: string | null, key: string, candidates: string[]): void {
+  const path = prefix === null ? key : `${prefix}.${key}`;
+  const suggestion = closestMatch(key, candidates);
+  const suggestionPath =
+    suggestion === undefined ? undefined : prefix === null ? suggestion : `${prefix}.${suggestion}`;
+  console.warn(`sveld: unknown option "${path}".${suggestionPath ? ` Did you mean "${suggestionPath}"?` : ""}`);
+}
+
+/**
+ * Warns (via `console.warn`) about unknown top-level option keys and unknown
+ * keys inside each `*Options` object. Never throws: an unrecognized option
+ * is surfaced as a hint, not a fatal error.
+ */
+export function validateOptions(options: Partial<PluginSveldOptions>): void {
+  for (const key of Object.keys(options)) {
+    if (!KNOWN_TOP_LEVEL_KEYS.includes(key)) {
+      warnUnknownKey(null, key, KNOWN_TOP_LEVEL_KEYS);
+    }
+  }
+
+  for (const [optionsKey, knownKeys] of Object.entries(KNOWN_NESTED_KEYS)) {
+    const nested = (options as Record<string, unknown>)[optionsKey];
+    if (!isObject(nested)) continue;
+
+    for (const key of Object.keys(nested)) {
+      if (!knownKeys.includes(key)) {
+        warnUnknownKey(optionsKey, key, knownKeys);
+      }
+    }
+  }
 }

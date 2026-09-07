@@ -11,7 +11,8 @@ import {
 } from "./check";
 import { formatDiagnosticsSummary, formatDiagnosticsSummaryJson } from "./diagnostics";
 import { getSvelteEntry } from "./get-svelte-entry";
-import { loadConfig, mergeConfig, type SveldRuntimeOptions } from "./load-config";
+import { closestMatch } from "./levenshtein";
+import { loadConfig, mergeConfig, type SveldRuntimeOptions, validateOptions } from "./load-config";
 import { setQuiet } from "./logger";
 import { normalizeSeparators } from "./path";
 import { generateBundle, toGenerateBundleOptions, writeOutput, writeStdout } from "./plugin";
@@ -138,51 +139,10 @@ const SPACE_SEPARATED_VALUE_FLAGS = new Set(["entry", "cache", "check", "types-f
 /** Of those, the flags that error (rather than falling back to a bare default) when no value is given. */
 const REQUIRES_VALUE_FLAGS = new Set(["entry", "types-format"]);
 
-/** Largest edit distance for which a typo suggestion is still offered. */
-const MAX_SUGGESTION_DISTANCE = 3;
-
-/** Classic Levenshtein edit distance between two strings. */
-function levenshteinDistance(a: string, b: string): number {
-  const rows = a.length + 1;
-  const columns = b.length + 1;
-  const distances: number[][] = Array.from({ length: rows }, () => new Array<number>(columns).fill(0));
-
-  for (let i = 0; i < rows; i++) distances[i][0] = i;
-  for (let j = 0; j < columns; j++) distances[0][j] = j;
-
-  for (let i = 1; i < rows; i++) {
-    for (let j = 1; j < columns; j++) {
-      const substitutionCost = a[i - 1] === b[j - 1] ? 0 : 1;
-      distances[i][j] = Math.min(
-        distances[i - 1][j] + 1,
-        distances[i][j - 1] + 1,
-        distances[i - 1][j - 1] + substitutionCost,
-      );
-    }
-  }
-
-  return distances[rows - 1][columns - 1];
-}
-
 /** Closest known flag (canonical spelling) to an unrecognized raw flag name, or undefined if none is close enough. */
 function suggestFlag(rawFlag: string): string | undefined {
-  let closest: string | undefined;
-  let closestDistance = Number.POSITIVE_INFINITY;
-
-  for (const candidate of FLAG_SUGGESTION_CANDIDATES) {
-    const distance = levenshteinDistance(rawFlag, candidate);
-
-    if (distance < closestDistance) {
-      closest = candidate;
-      closestDistance = distance;
-    }
-  }
-
-  if (closest === undefined || closestDistance > MAX_SUGGESTION_DISTANCE) {
-    return undefined;
-  }
-
-  return FLAG_ALIASES[closest] ?? closest;
+  const closest = closestMatch(rawFlag, FLAG_SUGGESTION_CANDIDATES);
+  return closest === undefined ? undefined : (FLAG_ALIASES[closest] ?? closest);
 }
 
 /**
@@ -367,14 +327,7 @@ export async function cli(process: NodeJS.Process) {
   const cliOptions = parsed.options;
   const fileConfig = await loadConfig();
   const options = mergeConfig<CliOptions>(fileConfig, cliOptions);
-
-  /**
-   * `mergeConfig` shallow-merges: `--types-format` alone would otherwise
-   * replace a config file's whole `typesOptions` object instead of adding to it.
-   */
-  if (fileConfig.typesOptions || cliOptions.typesOptions) {
-    options.typesOptions = { ...fileConfig.typesOptions, ...cliOptions.typesOptions };
-  }
+  validateOptions(options);
 
   if (options.stdout) {
     if (options.stdout !== true && options.stdout !== "json" && options.stdout !== "ndjson") {

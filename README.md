@@ -447,6 +447,15 @@ export default defineConfig({
 
 Since Vite uses Rollup for production builds, the same plugin works in Rollup configs.
 
+Unlike the CLI and the programmatic `sveld()` API, the plugin ignores `sveld.config.*` by default: pass `config: true` to load it and merge it with the options given here (these take precedence over the same key in the file), or a string to point at a specific config file.
+
+```ts
+sveld({
+  config: true,
+  json: true, // wins over `json` set in sveld.config.*
+});
+```
+
 By default, `sveld` uses the `"svelte"` field from your `package.json` to determine the entry point. You can override this by specifying an explicit `entry` option:
 
 ```js
@@ -657,7 +666,7 @@ See [`playground/`](playground) in this repo for a working example: it parses Sv
 
 ### Config File
 
-Put a `sveld.config.js`, `sveld.config.mjs`, or `sveld.config.ts` at your project root to set defaults for the CLI and the programmatic `sveld()` API.
+Put a `sveld.config.js`, `sveld.config.mjs`, or `sveld.config.ts` at your project root to set defaults for the CLI and the programmatic `sveld()` API. The Vite/Rollup plugin ignores it unless you opt in with the [`config`](#vite) option.
 
 Import `defineConfig` from `sveld` for typed options. Config files must use ESM syntax (`export default`).
 
@@ -688,6 +697,19 @@ export default {
   check: "snapshots/COMPONENT_API.json",
 };
 ```
+
+Merging is one level deep for object-valued options (`typesOptions`, `jsonOptions`, `markdownOptions`, `customElementsOptions`, `additionalWriters`): setting one nested key at the CLI or in `sveld()` doesn't drop sibling keys set in the config file. Arrays and functions (e.g. `markdownOptions.onAppend`) are replaced outright, never merged.
+
+```js
+// sveld.config.js
+export default {
+  typesOptions: { outDir: "dist", preamble: "// license" },
+};
+```
+
+`npx sveld --types-format=component` keeps `outDir` and `preamble` from the file and adds `format: "component"`, rather than replacing `typesOptions` entirely.
+
+An unrecognized option key (top-level, or inside a `*Options` object) is not an error: it prints a `console.warn` naming the key, with a "did you mean" suggestion when a known key is close enough.
 
 A bad config (syntax error, throws at load time, or no default-export object) fails with an error that names the file.
 
@@ -740,7 +762,8 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
 - **`customElements`** (boolean, optional): Generate a [Custom Elements Manifest](#custom-elements-manifest) (`custom-elements.json`). Also available as the `--custom-elements` CLI flag.
 - **`customElementsOptions`** (object, optional): Options for Custom Elements Manifest output.
   - **`outFile`** (string, optional, default: `"custom-elements.json"`): Path (relative to the project root) for the generated manifest file.
-- **`watch`** (boolean, optional, default: `false`): Regenerate output incrementally when `.svelte` source changes during `vite dev` / `vite build --watch`. Only the changed component and the components that depend on it via [`@extendProps`](#extendprops) / `@extends` are re-parsed, rather than rebuilding every component. Without this option, the plugin only runs during `vite build`.
+- **`config`** (boolean | string, optional, default: `false`): Load `sveld.config.{js,mjs,ts}` and merge it with these options; these options win when a key is set in both. `true` resolves the config from the Vite project root (or `process.cwd()` outside Vite); a string is an explicit path to the config file. See [Config File](#config-file).
+- **`watch`** (boolean, optional, default: `false`): Regenerate output incrementally when relevant source changes during `vite dev` / `vite build --watch`. A reparse is triggered by: editing a component; editing the entry barrel itself, which adds/removes the corresponding component; or editing a non-`.svelte` file a component depends on via [`@extendProps`](#extendprops) / `@extends` or a typedef `import("./x")` reference. Only the affected components are re-parsed, rather than rebuilding every component. Overlapping regenerations are queued, never run concurrently. Without this option, the plugin only runs during `vite build`.
 - **`failFast`** (boolean, optional, default: `false`): Abort the entire run when a single component fails to parse. By default, parse failures are collected as diagnostics (and reported to `stderr`) so the remaining components still emit their output. Also available as the `--fail-fast` CLI flag.
 - **`resolveTypes`** (boolean, optional, default: `false`): Load the TypeScript program to expand opaque imported whole-object `$props()` types into JSON. Also available as `--resolve-types` (`--resolveTypes` remains as a deprecated alias). See [Opt-in semantic resolution](#opt-in-semantic-resolution-resolvetypes).
 - **`cache`** (boolean | string, optional, default: `true`): Write parsed component output to disk and skip re-parsing unchanged files on later runs. On by default, writing to `node_modules/.cache/sveld/parse-cache.json`; a string sets a custom path; pass `false` to disable. Also available as `--cache` / `--cache=<path>` / `--cache=false`. See [Persistent parse cache](#persistent-parse-cache-cache).

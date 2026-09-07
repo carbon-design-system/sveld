@@ -2,7 +2,7 @@ import type { ComponentParseError } from "./bundle";
 import { type CheckResult, resolveCheckSnapshotFile, runCheck } from "./check";
 import { formatDiagnosticsSummary, type SveldDiagnostic } from "./diagnostics";
 import { getSvelteEntry } from "./get-svelte-entry";
-import { loadConfig, mergeConfig, type SveldRuntimeOptions } from "./load-config";
+import { loadConfig, mergeConfig, type SveldRuntimeOptions, validateOptions } from "./load-config";
 import { setQuiet } from "./logger";
 import { generateBundle, toGenerateBundleOptions, writeOutput } from "./plugin";
 
@@ -56,6 +56,7 @@ export async function sveld(opts?: SveldOptions): Promise<SveldResult> {
     );
   }
   const merged = mergeConfig<SveldRuntimeOptions>(fileConfig, runtimeOpts, { entry: input });
+  validateOptions(merged);
   setQuiet(merged.quiet === true);
   const result = await generateBundle(input, merged.glob === true, toGenerateBundleOptions(merged));
 
