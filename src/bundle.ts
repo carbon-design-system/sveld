@@ -1,7 +1,7 @@
 import type { Dirent } from "node:fs";
-import { lstatSync, readdirSync, readFileSync, realpathSync, statSync } from "node:fs";
+import { existsSync, lstatSync, readdirSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { readFile } from "node:fs/promises";
-import { dirname, isAbsolute, join, parse, relative, resolve } from "node:path";
+import { dirname, extname, isAbsolute, join, parse, relative, resolve } from "node:path";
 import { asRelativeSourcePath, type NormalizedPath } from "./brands";
 import type { ParsedComponent, PendingCallDefaultCandidate, PendingContextKeyCandidate } from "./ComponentParser";
 import { buildReverseDeps, expandAffected } from "./dependency-graph";
@@ -782,6 +782,8 @@ export async function generateBundle(
     }
   }
 
+  validateExtendsTargets(allComponentsForTypes, resolveComponentFilePath);
+
   // Dedupe diagnostics from export and all-components passes.
   const diagnostics = applyDiagnosticIgnores(
     dedupeDiagnostics(Array.from(allComponentsForTypes.values()).flatMap((component) => component.diagnostics ?? [])),
@@ -984,6 +986,109 @@ async function checkComponentExamples(
           ...(source ? { source } : {}),
         }),
       );
+    }
+    component.diagnostics = diagnostics;
+  }
+}
+
+const RESOLVABLE_EXTENDS_EXTENSIONS = [".ts", ".tsx", ".d.ts", ".svelte"];
+
+/** Strips a matching pair of quote characters from an `@extends`/`@extendProps` import specifier, stored verbatim. */
+function stripQuotes(text: string): string | undefined {
+  const trimmed = text.trim();
+  if (trimmed.length < 2) return undefined;
+  const first = trimmed[0];
+  const last = trimmed[trimmed.length - 1];
+  if ((first === '"' || first === "'" || first === "`") && first === last) {
+    return trimmed.slice(1, -1);
+  }
+  return undefined;
+}
+
+/** Resolves a relative/absolute `@extends` import specifier to a file on disk, trying common extensions. */
+function resolveExtendsTargetPath(fromAbsoluteFilePath: string, specifier: string): string | undefined {
+  const base = resolve(dirname(fromAbsoluteFilePath), specifier);
+  if (existsSync(base) && statSync(base).isFile()) return base;
+  if (extname(specifier) !== "") return undefined;
+
+  for (const ext of RESOLVABLE_EXTENDS_EXTENSIONS) {
+    const candidate = `${base}${ext}`;
+    if (existsSync(candidate)) return candidate;
+  }
+  return undefined;
+}
+
+/**
+ * Verifies every component's `@extends`/`@extendProps` target once all
+ * components have parsed: the referenced file must exist, and when it's a
+ * `.svelte` file in the bundle, the named interface must match that file's
+ * generated `<Name>Props`. Also flags an own prop that shares a name with a
+ * same-named prop of a different type on a bundled target, since `Base &
+ * $Props` silently collapses that prop to `never` in the generated type.
+ *
+ * Bare/package specifiers (not starting with `.` or `/`) aren't verifiable
+ * without a module resolver and are left alone.
+ */
+function validateExtendsTargets(components: ComponentDocs, resolveComponentFilePath: ResolveComponentFilePath): void {
+  const componentsByAbsolutePath = new Map(
+    Array.from(components.values()).map((component) => [resolveComponentFilePath(component.filePath), component]),
+  );
+
+  for (const component of components.values()) {
+    const extendsInfo = component.extends;
+    if (!extendsInfo) continue;
+
+    const specifier = stripQuotes(extendsInfo.import);
+    if (specifier === undefined || (!specifier.startsWith(".") && !specifier.startsWith("/"))) continue;
+
+    const fromAbsoluteFilePath = resolveComponentFilePath(component.filePath);
+    const targetPath = resolveExtendsTargetPath(fromAbsoluteFilePath, specifier);
+    const diagnostics = component.diagnostics ?? [];
+
+    if (targetPath === undefined) {
+      diagnostics.push(
+        createDiagnostic({
+          component: component.filePath,
+          kind: "extend-props-target-missing",
+          name: extendsInfo.interface,
+          message: `@extends/@extendProps target "${specifier}" was not found on disk.`,
+        }),
+      );
+      component.diagnostics = diagnostics;
+      continue;
+    }
+
+    // A real file outside the bundle (e.g. a hand-written .ts interface): file
+    // existence is all that's verifiable without a module resolver.
+    const target = componentsByAbsolutePath.get(targetPath);
+    if (!target) continue;
+
+    const expectedInterface = `${target.moduleName}Props`;
+    if (extendsInfo.interface !== expectedInterface) {
+      diagnostics.push(
+        createDiagnostic({
+          component: component.filePath,
+          kind: "extend-props-target-missing",
+          name: extendsInfo.interface,
+          message: `@extends/@extendProps names "${extendsInfo.interface}", but "${specifier}" generates "${expectedInterface}".`,
+        }),
+      );
+      component.diagnostics = diagnostics;
+      continue;
+    }
+
+    for (const ownProp of component.props) {
+      const baseProp = target.props.find((prop) => prop.name === ownProp.name);
+      if (baseProp && baseProp.type !== ownProp.type) {
+        diagnostics.push(
+          createDiagnostic({
+            component: component.filePath,
+            kind: "extend-props-override",
+            name: ownProp.name,
+            message: `Own prop "${ownProp.name}" (${ownProp.type}) overrides "${expectedInterface}"'s "${ownProp.name}" (${baseProp.type}).`,
+          }),
+        );
+      }
     }
     component.diagnostics = diagnostics;
   }

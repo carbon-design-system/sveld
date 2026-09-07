@@ -382,6 +382,25 @@ describe("ComponentParser diagnostics", () => {
 
     expect(diagnostics?.some((d) => d.kind === "export-unresolved")).toBe(false);
   });
+
+  test("flags a second @extends/@extendProps tag overwriting the first", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /**
+         * @extendProps {"./Button.svelte"} ButtonProps
+         * @extendProps {"./Link.svelte"} LinkProps
+         */
+        export let label = "";
+      </script>
+    `;
+
+    const { diagnostics, extends: extendsInfo } = parser.parseSvelteComponent(source, parseContext);
+    const duplicateDiagnostic = diagnostics?.find((d) => d.kind === "extend-props-duplicate");
+
+    expect(duplicateDiagnostic).toMatchObject({ kind: "extend-props-duplicate", name: "LinkProps" });
+    expect(extendsInfo?.interface).toBe("LinkProps");
+  });
 });
 
 describe("diagnostics helpers", () => {

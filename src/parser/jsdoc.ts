@@ -9,7 +9,7 @@ import type {
 import type { JSDocComment } from "./comment-parser";
 import { parseComments } from "./comment-parser";
 import type { ParserContext } from "./context";
-import { recordSveldIgnore } from "./diagnostics";
+import { recordDiagnostic, recordSveldIgnore } from "./diagnostics";
 import { addDispatchedEvent, buildEventDetailFromProperties } from "./events";
 import { splitTopLevelCommas } from "./generics";
 import { addSlot } from "./slots";
@@ -677,6 +677,15 @@ export function parseCustomTypes(
       switch (tag) {
         case "extends":
         case "extendProps":
+          if (ctx.extends !== undefined) {
+            recordDiagnostic(
+              ctx,
+              "extend-props-duplicate",
+              name,
+              `A second @extends/@extendProps tag ("${name}") overwrote the first ("${ctx.extends.interface}"); only one is used.`,
+              sourceRangeFromCommentTag(ctx, tagSource),
+            );
+          }
           ctx.extends = {
             interface: name,
             import: type,

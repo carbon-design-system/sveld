@@ -422,10 +422,13 @@ Every diagnostic carries a stable, namespaced `code` (`"sveld/<kind>"`) alongsid
 | `sveld/context-duplicate-key` | `warning` | Remove the duplicate `setContext` call, or give it a distinct key; only the first call's shape is used. |
 | `sveld/spread-unresolved` | `warning` | Spread a local object literal or a variable with a resolvable type instead; otherwise the spread widens the generated type to `Record<string, any>`. |
 | `sveld/export-unresolved` | `warning` | Export a local declaration directly instead of re-exporting an import or a binding from another file; sveld only resolves exports of a local declaration. |
+| `sveld/extend-props-target-missing` | `error` | Point `@extends`/`@extendProps` at a file that exists, and (for a bundled `.svelte` target) name its generated `<Name>Props` interface exactly. |
+| `sveld/extend-props-duplicate` | `warning` | Remove the extra `@extends`/`@extendProps` tag; only the last one is used. |
+| `sveld/extend-props-override` | `warning` | Rename the own prop, or accept that it intentionally overrides the `@extends` target's prop of the same name. |
 
 #### Severity and `--strict=errors`
 
-Each diagnostic's `severity` is `"error"` (`example-compile-error`, `syntax-skipped` — sveld emitted broken or unmodeled output) or `"warning"` (`prop-unknown-type`, `context-any-type`, `event-no-source`, `rest-props-unresolved`, `context-duplicate-key`, `spread-unresolved`, `export-unresolved` — a type fell back to `any`). Plain `strict: true` / `--strict` fails on both, unchanged from before. Pass `strict: "errors"` (or `--strict=errors`) to fail CI only on `error`-severity diagnostics, letting `any`-fallback warnings through:
+Each diagnostic's `severity` is `"error"` (`example-compile-error`, `syntax-skipped`, `extend-props-target-missing` — sveld emitted broken or unmodeled output) or `"warning"` (`prop-unknown-type`, `context-any-type`, `event-no-source`, `rest-props-unresolved`, `context-duplicate-key`, `spread-unresolved`, `export-unresolved`, `extend-props-duplicate`, `extend-props-override` — a type fell back to `any`). Plain `strict: true` / `--strict` fails on both, unchanged from before. Pass `strict: "errors"` (or `--strict=errors`) to fail CI only on `error`-severity diagnostics, letting `any`-fallback warnings through:
 
 ```sh
 npx sveld --json --strict=errors

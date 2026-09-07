@@ -201,3 +201,100 @@ describe("generateBundle with a directory entry (no barrel) and --glob", () => {
     expect(byModuleName(result.allComponentsForTypes, "Button")).toBeDefined();
   });
 });
+
+describe("generateBundle validates @extends/@extendProps targets", () => {
+  let dir: string;
+
+  const BASE = `<script>
+  /** @type {string} */
+  export let variant = "a";
+</script>
+`;
+
+  beforeEach(() => {
+    dir = mkdtempSync(path.join(tmpdir(), "sveld-bundle-extends-"));
+    writeFileSync(path.join(dir, "Base.svelte"), BASE);
+  });
+
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("flags an @extendProps target that isn't found on disk", async () => {
+    writeFileSync(
+      path.join(dir, "Missing.svelte"),
+      `<script>\n  /** @extendProps {"./NoSuchFile.svelte"} BaseProps */\n</script>\n`,
+    );
+
+    const result = await generateBundle(dir, true);
+    const component = byModuleName(result.allComponentsForTypes, "Missing");
+
+    expect(component?.diagnostics).toContainEqual(
+      expect.objectContaining({ kind: "extend-props-target-missing", name: "BaseProps" }),
+    );
+  });
+
+  test("flags an @extendProps interface name that doesn't match the target's generated Props name", async () => {
+    writeFileSync(
+      path.join(dir, "Mismatch.svelte"),
+      `<script>\n  /** @extendProps {"./Base.svelte"} WrongProps */\n</script>\n`,
+    );
+
+    const result = await generateBundle(dir, true);
+    const component = byModuleName(result.allComponentsForTypes, "Mismatch");
+
+    expect(component?.diagnostics).toContainEqual(
+      expect.objectContaining({ kind: "extend-props-target-missing", name: "WrongProps" }),
+    );
+  });
+
+  test("flags an own prop that collides with a same-named prop of a different type on the target", async () => {
+    writeFileSync(
+      path.join(dir, "Collide.svelte"),
+      `<script>
+  /** @extendProps {"./Base.svelte"} BaseProps */
+
+  /** @type {number} */
+  export let variant = 1;
+</script>
+`,
+    );
+
+    const result = await generateBundle(dir, true);
+    const component = byModuleName(result.allComponentsForTypes, "Collide");
+
+    expect(component?.diagnostics).toContainEqual(
+      expect.objectContaining({ kind: "extend-props-override", name: "variant" }),
+    );
+  });
+
+  test("does not flag a matching target with no colliding prop names", async () => {
+    writeFileSync(
+      path.join(dir, "Clean.svelte"),
+      `<script>
+  /** @extendProps {"./Base.svelte"} BaseProps */
+
+  /** @type {string} */
+  export let label = "ok";
+</script>
+`,
+    );
+
+    const result = await generateBundle(dir, true);
+    const component = byModuleName(result.allComponentsForTypes, "Clean");
+
+    expect(component?.diagnostics?.some((d) => d.kind.startsWith("extend-props-"))).toBeFalsy();
+  });
+
+  test("does not attempt to verify a bare/package import specifier", async () => {
+    writeFileSync(
+      path.join(dir, "External.svelte"),
+      `<script>\n  /** @extendProps {"svelte/elements"} HTMLAttributes */\n</script>\n`,
+    );
+
+    const result = await generateBundle(dir, true);
+    const component = byModuleName(result.allComponentsForTypes, "External");
+
+    expect(component?.diagnostics?.some((d) => d.kind.startsWith("extend-props-"))).toBeFalsy();
+  });
+});
