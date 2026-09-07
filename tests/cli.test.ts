@@ -1155,3 +1155,30 @@ describe("cli() exit codes", () => {
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("5.9.0"));
   });
 });
+
+describe("cli() --help", () => {
+  let previousArgv: string[];
+  let logSpy: ReturnType<typeof jest.spyOn>;
+
+  beforeEach(() => {
+    previousArgv = process.argv;
+    logSpy = jest.spyOn(console, "log").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    process.argv = previousArgv;
+    jest.restoreAllMocks();
+  });
+
+  test("documents the real exit codes for --strict and --check, not the stale code 1", async () => {
+    process.argv = ["bun", "cli.js", "--help"];
+
+    await cli(process);
+
+    const help = logSpy.mock.calls.map((call: unknown[]) => call[0]).join("\n");
+    expect(help).toContain("Exit with code 4");
+    expect(help).toContain("exit 3 on a breaking change");
+    expect(help).not.toContain("Exit with code 1 when diagnostics exist");
+    expect(help).not.toContain("exit 1 on a breaking change");
+  });
+});
