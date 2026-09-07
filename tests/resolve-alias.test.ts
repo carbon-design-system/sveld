@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
-import { clearConfigCache, resolvePathAlias, resolvePathAliasAbsolute } from "../src/resolve-alias";
+import { dirname, join } from "node:path";
+import { clearConfigCache, resolveAliasLookup, resolvePathAlias, resolvePathAliasAbsolute } from "../src/resolve-alias";
 
 const TEST_DIR = join(import.meta.dir, ".tmp-alias-test");
 
@@ -12,7 +12,7 @@ function setupTestDir(structure: Record<string, string | Record<string, unknown>
 
   for (const [path, content] of Object.entries(structure)) {
     const fullPath = join(TEST_DIR, path);
-    const dir = fullPath.substring(0, fullPath.lastIndexOf("/"));
+    const dir = dirname(fullPath);
 
     if (dir && !existsSync(dir)) {
       mkdirSync(dir, { recursive: true });
@@ -293,7 +293,7 @@ describe("resolvePathAlias", () => {
     expect(result).toBe("./lib/components/Button.svelte");
   });
 
-  test("uses first mapping when multiple are defined", () => {
+  test("uses first mapping when multiple are defined and neither exists on disk", () => {
     setupTestDir({
       "tsconfig.json": {
         compilerOptions: {
@@ -307,5 +307,68 @@ describe("resolvePathAlias", () => {
 
     const result = resolvePathAlias("$lib/components/Button.svelte", TEST_DIR);
     expect(result).toBe("./src/lib/components/Button.svelte");
+  });
+
+  test("falls back to a later mapping whose target exists on disk", () => {
+    setupTestDir({
+      "tsconfig.json": {
+        compilerOptions: {
+          baseUrl: ".",
+          paths: {
+            "$lib/*": ["./src/lib/*", "./lib/*"],
+          },
+        },
+      },
+      "lib/Button.svelte": "<div />",
+    });
+
+    const result = resolvePathAlias("$lib/Button.svelte", TEST_DIR);
+    expect(result).toBe("./lib/Button.svelte");
+  });
+
+  test("prefers the longest non-wildcard prefix over declaration order", () => {
+    setupTestDir({
+      "tsconfig.json": {
+        compilerOptions: {
+          baseUrl: ".",
+          paths: {
+            "$lib/*": ["./generic/*"],
+            "$lib/components/*": ["./special/*"],
+          },
+        },
+      },
+    });
+
+    const result = resolvePathAlias("$lib/components/Button.svelte", TEST_DIR);
+    expect(result).toBe("./special/Button.svelte");
+  });
+
+  test("reports an unresolved alias when no tsconfig/jsconfig exists", () => {
+    const result = resolveAliasLookup("$lib/Button.svelte", TEST_DIR);
+    expect(result.unresolved).toBe(true);
+    expect(result.resolved).toBe("$lib/Button.svelte");
+    expect(result.searched).toBe("no tsconfig/jsconfig paths found");
+  });
+
+  test("reports an unresolved alias when no paths pattern matches the specifier", () => {
+    setupTestDir({
+      "tsconfig.json": {
+        compilerOptions: {
+          baseUrl: ".",
+          paths: {
+            "$lib/*": ["./src/lib/*"],
+          },
+        },
+      },
+    });
+
+    const result = resolveAliasLookup("$missing/Button.svelte", TEST_DIR);
+    expect(result.unresolved).toBe(true);
+    expect(result.resolved).toBe("$missing/Button.svelte");
+  });
+
+  test("does not report a relative specifier as unresolved", () => {
+    const result = resolveAliasLookup("./Button.svelte", TEST_DIR);
+    expect(result.unresolved).toBe(false);
   });
 });

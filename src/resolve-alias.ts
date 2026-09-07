@@ -11,6 +11,39 @@ const pathPatternRegexCache = new Map<string, RegExp>();
 const COMMENT_PATTERN = /\/\*[\s\S]*?\*\/|\/\/.*/g;
 const REGEX_SPECIAL_CHARS = /[.+?^${}()|[\]\\]/g;
 
+/** Extensions probed when checking whether an alias mapping candidate exists on disk. */
+const ALIAS_CANDIDATE_EXTENSIONS = [".svelte", ".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs", ".d.ts"];
+
+/**
+ * Thrown when a module specifier (an `export *`/named re-export source, or a
+ * path alias) cannot be resolved to a file on disk.
+ */
+export class UnresolvedModuleError extends Error {
+  readonly specifier: string;
+  readonly fromFile: string;
+  readonly searched: string;
+
+  constructor(specifier: string, fromFile: string, searched: string) {
+    super(`cannot resolve "${specifier}" from ${fromFile || "."} (${searched})`);
+    this.name = "UnresolvedModuleError";
+    this.specifier = specifier;
+    this.fromFile = fromFile;
+    this.searched = searched;
+  }
+}
+
+/** True when `fullPath` (or `fullPath` plus a common module extension) exists on disk. */
+function pathAliasTargetExists(fullPath: string): boolean {
+  if (existsSync(fullPath)) return true;
+  return ALIAS_CANDIDATE_EXTENSIONS.some((ext) => existsSync(fullPath + ext));
+}
+
+/** Length of the literal (non-wildcard) prefix of a tsconfig `paths` pattern, for longest-prefix ordering. */
+function patternPrefixLength(pattern: string): number {
+  const wildcardIndex = pattern.indexOf("*");
+  return wildcardIndex === -1 ? pattern.length : wildcardIndex;
+}
+
 /** Clears cached tsconfig/jsconfig reads (tests and hot reload). */
 export function clearConfigCache() {
   configCache.clear();
@@ -89,6 +122,85 @@ function parseConfig(configPath: string): TSConfig | null {
   }
 }
 
+/** Result of looking up a specifier against tsconfig/jsconfig `paths`. */
+export interface AliasLookup {
+  /** Absolute path when resolved via an alias mapping; `importPath` unchanged otherwise. */
+  resolved: string;
+  /** True when `importPath` is a non-relative specifier that no `paths` entry matched. */
+  unresolved: boolean;
+  /** Human-readable description of what was searched, for error messages. */
+  searched: string;
+}
+
+function getPatternRegex(pattern: string): RegExp {
+  let regex = pathPatternRegexCache.get(pattern);
+  if (!regex) {
+    const escapedPattern = pattern
+      .split("*")
+      .map((part) => part.replace(REGEX_SPECIAL_CHARS, "\\$&"))
+      .join("(.*)");
+
+    regex = new RegExp(`^${escapedPattern}$`);
+    pathPatternRegexCache.set(pattern, regex);
+  }
+  return regex;
+}
+
+/**
+ * Resolve a tsconfig/jsconfig path alias, reporting whether resolution failed.
+ *
+ * Patterns are tried longest non-wildcard-prefix first (mirroring `tsc`), not
+ * JSON key order. Within a matched pattern, every mapping is tried in order
+ * and the first one that exists on disk wins; if none exist, the first
+ * mapping is returned as a best-effort guess.
+ */
+export function resolveAliasLookup(importPath: string, fromDir: string): AliasLookup {
+  if (importPath.startsWith(".") || importPath.startsWith("/")) {
+    return { resolved: importPath, unresolved: false, searched: "" };
+  }
+
+  const configPath = findConfig(fromDir);
+  if (!configPath) {
+    return { resolved: importPath, unresolved: true, searched: "no tsconfig/jsconfig paths found" };
+  }
+
+  const config = parseConfig(configPath);
+  if (!config?.compilerOptions?.paths) {
+    return { resolved: importPath, unresolved: true, searched: "no tsconfig/jsconfig paths found" };
+  }
+
+  const { baseUrl = ".", paths } = config.compilerOptions;
+  const configDir = dirname(configPath);
+  const resolvedBaseUrl = resolve(configDir, baseUrl);
+
+  const patterns = Object.entries(paths).sort(
+    ([a], [b]) => patternPrefixLength(b) - patternPrefixLength(a),
+  );
+
+  for (const [pattern, mappings] of patterns) {
+    const match = importPath.match(getPatternRegex(pattern));
+    if (!match) continue;
+
+    let firstCandidate: string | undefined;
+    for (const mapping of mappings) {
+      let resolvedPath = mapping;
+      for (let i = 1; i < match.length; i++) {
+        resolvedPath = resolvedPath.replace("*", match[i]);
+      }
+
+      const fullPath = resolve(resolvedBaseUrl, resolvedPath);
+      if (firstCandidate === undefined) firstCandidate = fullPath;
+      if (pathAliasTargetExists(fullPath)) {
+        return { resolved: fullPath, unresolved: false, searched: configPath };
+      }
+    }
+
+    return { resolved: firstCandidate ?? importPath, unresolved: false, searched: configPath };
+  }
+
+  return { resolved: importPath, unresolved: true, searched: `tsconfig paths (${configPath})` };
+}
+
 /**
  * Resolve a tsconfig/jsconfig path alias to an absolute filesystem path.
  *
@@ -103,54 +215,7 @@ function parseConfig(configPath: string): TSConfig | null {
  * ```
  */
 export function resolvePathAliasAbsolute(importPath: string, fromDir: string): string {
-  if (importPath.startsWith(".") || importPath.startsWith("/")) {
-    return importPath;
-  }
-
-  const configPath = findConfig(fromDir);
-  if (!configPath) {
-    return importPath;
-  }
-
-  const config = parseConfig(configPath);
-  if (!config?.compilerOptions?.paths) {
-    return importPath;
-  }
-
-  const { baseUrl = ".", paths } = config.compilerOptions;
-  const configDir = dirname(configPath);
-  const resolvedBaseUrl = resolve(configDir, baseUrl);
-
-  for (const [pattern, mappings] of Object.entries(paths)) {
-    let regex = pathPatternRegexCache.get(pattern);
-    if (!regex) {
-      const escapedPattern = pattern
-        .split("*")
-        .map((part) => part.replace(REGEX_SPECIAL_CHARS, "\\$&"))
-        .join("(.*)");
-
-      regex = new RegExp(`^${escapedPattern}$`);
-      pathPatternRegexCache.set(pattern, regex);
-    }
-
-    const match = importPath.match(regex);
-
-    if (match) {
-      const mapping = mappings[0];
-      if (!mapping) continue;
-
-      let resolvedPath = mapping;
-      for (let i = 1; i < match.length; i++) {
-        resolvedPath = resolvedPath.replace("*", match[i]);
-      }
-
-      const fullPath = resolve(resolvedBaseUrl, resolvedPath);
-
-      return fullPath;
-    }
-  }
-
-  return importPath;
+  return resolveAliasLookup(importPath, fromDir).resolved;
 }
 
 /**

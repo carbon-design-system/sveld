@@ -3418,6 +3418,8 @@ When only `@param` tags are present without `@returns`, the return type defaults
 
 **Output differs in CI.** Commit `COMPONENT_API.json` and run [`--check`](#ci-api-drift-checks---check) in CI so API drift fails the build instead of silently diverging.
 
+**A path alias (`$lib`, `@components`, ...) isn't picked up.** sveld only reads aliases from `compilerOptions.paths` in the nearest `tsconfig.json` or `jsconfig.json`, found by walking up from the file doing the importing. Vite/SvelteKit alias config (`vite.config.*`, `svelte.config.*`) is not read directly — add the same aliases to `paths` so both tools agree. When a pattern has more than one mapping (`"$lib/*": ["./src/lib/*", "./lib/*"]`), sveld tries them in order and uses the first one that exists on disk, falling back to the first mapping if none do; among multiple matching patterns, the one with the longest non-wildcard prefix wins, regardless of declaration order (matching `tsc`).
+
 ## Contributing
 
 See [contributing guidelines](CONTRIBUTING.md).
