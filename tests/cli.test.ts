@@ -95,6 +95,14 @@ describe("parseCliOptions", () => {
     expect(alias).toEqual(canonical);
   });
 
+  test("--llms enables llms", () => {
+    expect(parseCliOptions(["--llms"])).toEqual({ kind: "options", options: { llms: true } });
+  });
+
+  test("--llms=false disables llms", () => {
+    expect(parseCliOptions(["--llms=false"])).toEqual({ kind: "options", options: { llms: false } });
+  });
+
   test("--report-diagnostics enables reportDiagnostics", () => {
     expect(parseCliOptions(["--report-diagnostics"])).toEqual({
       kind: "options",
@@ -468,7 +476,16 @@ describe("cli() --dry-run", () => {
   });
 
   test("writes nothing to disk, including the parse cache", async () => {
-    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--markdown", "--custom-elements", "--dry-run"];
+    process.argv = [
+      "bun",
+      "cli.js",
+      "--entry=src/index.js",
+      "--json",
+      "--markdown",
+      "--custom-elements",
+      "--llms",
+      "--dry-run",
+    ];
 
     await cli(process);
 
@@ -476,11 +493,22 @@ describe("cli() --dry-run", () => {
     expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(false);
     expect(existsSync(join(dir, "COMPONENT_INDEX.md"))).toBe(false);
     expect(existsSync(join(dir, "custom-elements.json"))).toBe(false);
+    expect(existsSync(join(dir, "llms.txt"))).toBe(false);
+    expect(existsSync(join(dir, "llms-full.txt"))).toBe(false);
     expect(existsSync(join(dir, "src", "node_modules", ".cache"))).toBe(false);
   });
 
   test("prints one would-write line per output file, matching a real run's paths", async () => {
-    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--markdown", "--custom-elements", "--dry-run"];
+    process.argv = [
+      "bun",
+      "cli.js",
+      "--entry=src/index.js",
+      "--json",
+      "--markdown",
+      "--custom-elements",
+      "--llms",
+      "--dry-run",
+    ];
 
     await cli(process);
 
@@ -491,10 +519,12 @@ describe("cli() --dry-run", () => {
     expect(printed).toContain(`would write "${normalizeSeparators(join(cwd, "COMPONENT_API.json"))}"`);
     expect(printed).toContain(`would write "${normalizeSeparators(join(cwd, "COMPONENT_INDEX.md"))}"`);
     expect(printed).toContain(`would write "${normalizeSeparators(join(cwd, "custom-elements.json"))}"`);
+    expect(printed).toContain(`would write "${normalizeSeparators(join(cwd, "llms.txt"))}"`);
+    expect(printed).toContain(`would write "${normalizeSeparators(join(cwd, "llms-full.txt"))}"`);
 
     // Now run for real and confirm the exact same paths land on disk.
     logSpy.mockClear();
-    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--markdown", "--custom-elements"];
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--markdown", "--custom-elements", "--llms"];
     await cli(process);
 
     expect(existsSync(join(dir, "types", "Button.svelte.d.ts"))).toBe(true);
@@ -502,6 +532,8 @@ describe("cli() --dry-run", () => {
     expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(true);
     expect(existsSync(join(dir, "COMPONENT_INDEX.md"))).toBe(true);
     expect(existsSync(join(dir, "custom-elements.json"))).toBe(true);
+    expect(existsSync(join(dir, "llms.txt"))).toBe(true);
+    expect(existsSync(join(dir, "llms-full.txt"))).toBe(true);
   });
 
   test("prints per-component .api.json paths when jsonOptions.outDir is set", async () => {
@@ -595,7 +627,7 @@ describe("cli() --quiet", () => {
   });
 
   test("a plain run prints writer progress lines to stderr", async () => {
-    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--markdown", "--custom-elements"];
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--markdown", "--custom-elements", "--llms"];
 
     await cli(process);
 
@@ -603,10 +635,21 @@ describe("cli() --quiet", () => {
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('created "COMPONENT_API.json".'));
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('created "COMPONENT_INDEX.md".'));
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('created "custom-elements.json".'));
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('created "llms.txt".'));
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('created "llms-full.txt".'));
   });
 
   test("--quiet suppresses writer progress lines but still writes output files", async () => {
-    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--markdown", "--custom-elements", "--quiet"];
+    process.argv = [
+      "bun",
+      "cli.js",
+      "--entry=src/index.js",
+      "--json",
+      "--markdown",
+      "--custom-elements",
+      "--llms",
+      "--quiet",
+    ];
 
     await cli(process);
 
@@ -615,6 +658,8 @@ describe("cli() --quiet", () => {
     expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(true);
     expect(existsSync(join(dir, "COMPONENT_INDEX.md"))).toBe(true);
     expect(existsSync(join(dir, "custom-elements.json"))).toBe(true);
+    expect(existsSync(join(dir, "llms.txt"))).toBe(true);
+    expect(existsSync(join(dir, "llms-full.txt"))).toBe(true);
   });
 
   test("quiet: true in the config file suppresses progress lines", async () => {

@@ -16,6 +16,7 @@ import "./writer/built-in-writers";
 import { getWriter } from "./writer/registry";
 import { renderCustomElementsManifest, type WriteCustomElementsOptions } from "./writer/writer-custom-elements";
 import { renderJsonDocument, renderJsonLines, type WriteJsonOptions } from "./writer/writer-json";
+import type { WriteLlmsOptions } from "./writer/writer-llms";
 import { renderMarkdownDocument, type WriteMarkdownOptions } from "./writer/writer-markdown";
 import type { WriteTsDefinitionsOptions } from "./writer/writer-ts-definitions";
 
@@ -50,6 +51,9 @@ export interface PluginSveldOptions extends Pick<GenerateBundleOptions, "resolve
   /** Generate a Custom Elements Manifest (`custom-elements.json`, schemaVersion "1.0.0"). */
   customElements?: boolean;
   customElementsOptions?: Partial<Omit<WriteCustomElementsOptions, "inputDir">>;
+  /** Generate a first-party `llms.txt` / `llms-full.txt` pair (per https://llmstxt.org). */
+  llms?: boolean;
+  llmsOptions?: Partial<WriteLlmsOptions>;
   /**
    * Run additional, userland-registered writers (via `registerWriter` from
    * "sveld") beyond the built-in `json`/`markdown`/`types` outputs. Keyed by
@@ -220,7 +224,7 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
 
 /** Looks up a built-in writer by name; throws if `built-in-writers` never registered it. */
 function runBuiltInWriter(
-  name: "types" | "json" | "markdown" | "custom-elements",
+  name: "types" | "json" | "markdown" | "custom-elements" | "llms",
   components: ComponentDocs,
   options: unknown,
 ) {
@@ -317,6 +321,18 @@ export async function writeOutput(
       inputDir,
       dryRun,
     } satisfies WriteCustomElementsOptions);
+  }
+
+  if (opts?.llms) {
+    /**
+     * Use components (exported only) for llms.txt/llms-full.txt, matching
+     * the JSON/Markdown outputs' public-API-surface convention.
+     */
+    await runBuiltInWriter("llms", result.components, {
+      ...opts?.llmsOptions,
+      entryExports: result.entryExports,
+      dryRun,
+    } satisfies WriteLlmsOptions);
   }
 
   const additionalWrites = Object.entries(opts?.additionalWriters ?? {}).map(([name, writerOptions]) => {
