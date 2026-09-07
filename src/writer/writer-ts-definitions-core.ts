@@ -580,7 +580,7 @@ function genPropDef(
     };`
     }
 
-    export type ${props_name}${genericsName} = Omit<$RestProps, keyof ($Props${genericsNameRef} & ${def.extends.interface})> & $Props${genericsNameRef} & ${def.extends.interface};
+    export type ${props_name}${genericsName} = Omit<$RestProps, keyof ($Props${genericsNameRef} & ${def.extends.interface})> & Omit<${def.extends.interface}, keyof $Props${genericsNameRef}> & $Props${genericsNameRef};
   `;
     }
   } else {
@@ -596,13 +596,21 @@ function genPropDef(
     } else if (def.canonicalPropsType) {
       prop_def = `
     ${basePropsDef}
-    export type ${props_name}${genericsName} = ${def.extends === undefined ? "" : `${def.extends.interface} & `}$Props${genericsNameRef};
+    export type ${props_name}${genericsName} = ${def.extends === undefined ? "" : `Omit<${def.extends.interface}, keyof $Props${genericsNameRef}> & `}$Props${genericsNameRef};
+  `;
+    } else if (def.extends === undefined) {
+      prop_def = `
+    export type ${props_name}${genericsName} = {
+      ${props}
+    };
   `;
     } else {
       prop_def = `
-    export type ${props_name}${genericsName} = ${def.extends === undefined ? "" : `${def.extends.interface} & `} {
+    type $Props${genericsName} = {
       ${props}
     };
+
+    export type ${props_name}${genericsName} = Omit<${def.extends.interface}, keyof $Props${genericsNameRef}> & $Props${genericsNameRef};
   `;
     }
   }

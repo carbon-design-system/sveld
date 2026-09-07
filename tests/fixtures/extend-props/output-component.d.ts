@@ -15,7 +15,7 @@ type $Props = {
   [key: `data-${string}`]: unknown;
 };
 
-export type ExtendPropsProps = Omit<$RestProps, keyof ($Props & ButtonProps)> & $Props & ButtonProps;
+export type ExtendPropsProps = Omit<$RestProps, keyof ($Props & ButtonProps)> & Omit<ButtonProps, keyof $Props> & $Props;
 
 export type ExtendPropsExports = Record<string, never>;
 

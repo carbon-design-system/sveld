@@ -1,7 +1,7 @@
 import { SvelteComponentTyped } from "svelte";
 import type { ButtonProps } from "./Button.svelte";
 
-export type SlotExtendsTemplateProps<Icon = any> = ButtonProps & {
+type $Props<Icon = any> = {
   /**
    * @default undefined
    */
@@ -10,6 +10,8 @@ export type SlotExtendsTemplateProps<Icon = any> = ButtonProps & {
   /** Optional badge overlay. */
   badge?: (this: void) => void;
 };
+
+export type SlotExtendsTemplateProps<Icon = any> = Omit<ButtonProps, keyof $Props<Icon>> & $Props<Icon>;
 
 export default class SlotExtendsTemplate<Icon = any> extends SvelteComponentTyped<
   SlotExtendsTemplateProps<Icon>,
