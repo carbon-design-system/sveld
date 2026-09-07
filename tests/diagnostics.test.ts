@@ -266,6 +266,23 @@ describe("ComponentParser diagnostics", () => {
     expect(rest_props).toMatchObject({ type: "Element", name: "div" });
     expect(diagnostics?.some((d) => d.kind === "rest-props-unresolved")).toBe(false);
   });
+
+  test("flags a second setContext call with the same key, keeping the first's shape", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        import { setContext } from "svelte";
+        setContext("ctx", { a: 1 });
+        setContext("ctx", { b: 2 });
+      </script>
+    `;
+
+    const { diagnostics, contexts } = parser.parseSvelteComponent(source, parseContext);
+    const duplicateDiagnostic = diagnostics?.find((d) => d.kind === "context-duplicate-key");
+
+    expect(duplicateDiagnostic).toMatchObject({ kind: "context-duplicate-key", name: "ctx" });
+    expect(contexts?.find((c) => c.key === "ctx")?.properties?.map((p) => p.name)).toEqual(["a"]);
+  });
 });
 
 describe("diagnostics helpers", () => {

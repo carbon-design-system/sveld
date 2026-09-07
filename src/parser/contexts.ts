@@ -258,7 +258,18 @@ export function parseSetContextCall(ctx: ParserContext, parser: ComponentParser,
 
   const contextKey = resolution.key;
   const contextInfo = parseContextValue(ctx, parser, valueArg, contextKey);
-  if (contextInfo && !ctx.contexts.has(contextKey)) {
-    ctx.contexts.set(contextKey, contextInfo);
+  if (!contextInfo) return;
+
+  if (ctx.contexts.has(contextKey)) {
+    recordDiagnostic(
+      ctx,
+      "context-duplicate-key",
+      contextKey,
+      `setContext("${contextKey}", ...) was called more than once; only the first call's shape is used.`,
+      sourceRangeFromNode(ctx, node),
+    );
+    return;
   }
+
+  ctx.contexts.set(contextKey, contextInfo);
 }
