@@ -1,8 +1,9 @@
 import { lstatSync, readdirSync, readFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
 import { type Node, parse } from "acorn";
 import { asRelativeSourcePath, type RelativeSourcePath } from "./brands";
-import { normalizeSeparators } from "./path";
+import { resolveModuleFile } from "./parse-entry-exports";
+import { normalizeSeparators, SVELTE_EXT_REGEX } from "./path";
 import { resolvePathAlias, resolvePathAliasAbsolute } from "./resolve-alias";
 
 interface NodeImportDeclaration extends Node {
@@ -52,6 +53,39 @@ function parseProgram(source: string): ProgramNode {
     ecmaVersion: "latest",
     sourceType: "module",
   }) as ProgramNode;
+}
+
+/**
+ * Follows a re-export specifier that does not point directly at a `.svelte`
+ * file (e.g. `export { X } from "./barrel"`) to the module it resolves to,
+ * and parses that module's own exports.
+ *
+ * Returns `null` when the specifier cannot be resolved to a file at all, so
+ * callers can warn instead of recording a dangling source path. Returns an
+ * empty map (not `null`) when the target participates in an import cycle
+ * (mirroring the silent `export *` cycle guard below) or when it can't be
+ * parsed as plain JS (e.g. a TypeScript-only `documentExports` data module),
+ * so callers fall back to recording the literal specifier instead.
+ */
+function resolveBarrelExports(
+  specifier: string,
+  fromDir: string,
+  resolving: Set<string>,
+): { dir: string; exports: ParsedExports } | null {
+  const targetFile = resolveModuleFile(specifier, fromDir);
+  if (!targetFile) return null;
+
+  const dir = dirname(targetFile);
+  if (resolving.has(targetFile)) return { dir, exports: {} };
+
+  resolving.add(targetFile);
+  try {
+    return { dir, exports: parseExports(readFileSync(targetFile, "utf-8"), dir, resolving) };
+  } catch {
+    return { dir, exports: {} };
+  } finally {
+    resolving.delete(targetFile);
+  }
 }
 
 /**
@@ -123,24 +157,37 @@ export function parseExports(source: string, dir: string, resolving: Set<string>
         };
       }
     } else if (node.type === "ExportNamedDeclaration") {
+      const sourceValue = node.source?.value;
+      const isBarrelChain = sourceValue !== undefined && !SVELTE_EXT_REGEX.test(sourceValue);
+      const chain = isBarrelChain ? resolveBarrelExports(sourceValue, dir, resolving) : undefined;
+
+      if (chain === null) {
+        console.warn(
+          `sveld: could not resolve re-exported module "${sourceValue}" from barrel "${dir || "."}"; skipping.`,
+        );
+      }
+
       for (const specifier of node.specifiers) {
         const exported_name = specifier.exported.name;
         const local_name = specifier.local.name;
         const id = exported_name || local_name;
 
+        if (chain === null) continue;
+
+        const chained = chain?.exports[local_name];
+        const source: RelativeSourcePath = chained
+          ? asRelativeSourcePath(normalizeSeparators(`./${relative(dir, resolve(chain.dir, chained.source))}`))
+          : asRelativeSourcePath(resolvePathAlias(sourceValue ?? "", dir));
+        const isDefault = chained ? chained.default : local_name === "default";
+
         if (id in exports_by_identifier) {
-          if (node.type === "ExportNamedDeclaration") {
-            exports_by_identifier[id].mixed = true;
-          }
+          exports_by_identifier[id].mixed = true;
 
           if (!exports_by_identifier[id].source) {
-            exports_by_identifier[id].source = asRelativeSourcePath(resolvePathAlias(node.source?.value ?? "", dir));
+            exports_by_identifier[id].source = source;
           }
         } else {
-          exports_by_identifier[id] = {
-            source: asRelativeSourcePath(resolvePathAlias(node.source?.value ?? "", dir)),
-            default: local_name === "default",
-          };
+          exports_by_identifier[id] = { source, default: isDefault };
         }
       }
     } else if (node.type === "ImportDeclaration") {
