@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, relative, resolve } from "node:path";
 import type { ComponentDocApi, ComponentDocs } from "../src/bundle";
@@ -247,5 +247,41 @@ describe("cache default", () => {
     await generateBundle(dir, true, { cache: false });
 
     expect(existsSync(join(dir, DEFAULT_CACHE_FILE))).toBe(false);
+  });
+});
+
+describe("ParseCache.save() atomicity", () => {
+  let dir: string;
+  let cacheFile: string;
+  let parseSpy: ReturnType<typeof jest.spyOn>;
+
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), "sveld-parse-cache-atomic-"));
+    cacheFile = join(dir, ".cache", "parse-cache.json");
+    writeFileSync(join(dir, "Standalone.svelte"), STANDALONE);
+    parseSpy = jest.spyOn(ComponentParser.prototype, "parseSvelteComponent");
+  });
+
+  afterEach(() => {
+    parseSpy.mockRestore();
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("leaves no .tmp file behind and the cache loads on the next run", async () => {
+    await generateBundle(dir, true, { cache: cacheFile });
+
+    const entries = readdirSync(join(dir, ".cache"));
+    expect(entries.some((entry) => entry.endsWith(".tmp"))).toBe(false);
+
+    parseSpy.mockClear();
+    await generateBundle(dir, true, { cache: cacheFile });
+
+    expect(parseSpy).not.toHaveBeenCalled();
+  });
+
+  test("a rename failure (target occupied by a directory) falls back without failing generation", async () => {
+    mkdirSync(cacheFile, { recursive: true });
+
+    await expect(generateBundle(dir, true, { cache: cacheFile })).resolves.toBeDefined();
   });
 });
