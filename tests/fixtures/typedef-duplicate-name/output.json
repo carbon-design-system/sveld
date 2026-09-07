@@ -1,0 +1,50 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 17,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "config",
+      "kind": "let",
+      "type": "Config",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 13,
+          "column": 2
+        },
+        "end": {
+          "line": 13,
+          "column": 20
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{\n  /** Count */\n  count: number;\n}",
+      "name": "Config",
+      "ts": "type Config = {\n  /** Count */\n  count: number;\n};"
+    }
+  ],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
