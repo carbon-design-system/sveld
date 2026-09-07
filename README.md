@@ -405,7 +405,7 @@ npx sveld --json --strict
 
 ## Requirements
 
-- Node 22+. CI runs Node 24 on Linux, Windows, and macOS; earlier LTS versions are not verified. `sveld.config.ts` relies on Node's built-in type stripping to load, which is unflagged from Node 22.18 / 23.6 — on older Node 22 patch versions, use a `.js`/`.mjs` config instead.
+- Node 24+ (declared as `engines.node` in `package.json`; npm warns rather than blocking on an older Node). `sveld.config.ts` relies on Node's built-in type stripping to load, which is unflagged from Node 22.18 / 23.6 and so is always available at this floor. CI runs on Bun (see `.bun-version`) and does not pin a separate Node version.
 - `sveld` is ESM-only. `require("sveld")` does not work — use `import` or dynamic `import()`.
 - `sveld` bundles its own template parser to parse `.svelte` files, kept in parity with `svelte/compiler` (see [Approach](#approach)). Parsing does not depend on the Svelte version installed in your project, so Svelte 3 and Svelte 4 codebases parse the same way Svelte 5 codebases do — there is no compiler version to match up.
 - [`resolveTypes`](#opt-in-semantic-resolution-resolvetypes) and [`checkExamples`](#compile-checked-example-blocks-checkexamples) are optional and need `typescript` 7 or later (which provides `typescript/unstable/async`) plus a `tsconfig.json`. Everything else, including `.d.ts` generation, is AST-only and never loads TypeScript. If either is enabled and TypeScript can't be started (missing, too old, or no `tsconfig.json`), the run fails loudly: `sveld()` throws and the CLI exits `2` naming the requirement, rather than silently skipping the check.
