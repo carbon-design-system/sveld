@@ -16,7 +16,8 @@
       "types": "./lib/browser.d.ts",
       "import": "./lib/browser.js",
       "default": "./lib/browser.js"
-    }
+    },
+    "./schema/component-api.schema.json": "./schema/component-api.schema.json"
   },
   "scripts": {
     "test": "bun test --parallel",
@@ -52,7 +53,8 @@
   },
   "files": [
     "lib",
-    "cli.js"
+    "cli.js",
+    "schema"
   ],
   "repository": {
     "type": "git",

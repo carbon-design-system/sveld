@@ -847,6 +847,14 @@ component API. For stable output, generated `events` arrays are emitted in deter
 
 The JSON Schema lives on GitHub ([path to file](https://github.com/carbon-design-system/sveld/blob/main/schema/component-api.schema.json), [raw URL](https://raw.githubusercontent.com/carbon-design-system/sveld/main/schema/component-api.schema.json)). Use it to validate generated `COMPONENT_API.json` files. Optional fields may be missing when the parser has no stable source for that metadata.
 
+`sveld` also ships the schema as a package subpath, so you don't need network access to validate at build time:
+
+```ts
+import schema from "sveld/schema/component-api.schema.json" with { type: "json" };
+```
+
+`require.resolve("sveld/schema/component-api.schema.json")` works too. The `$id` in the schema still points at the `main` branch on GitHub for tooling that dereferences it by URL, but that URL always reflects the latest release; the copy packaged with your installed `sveld` version is the authoritative one for the output it produced.
+
 ```ts
 interface ComponentApiJson {
   schemaVersion: 1;
