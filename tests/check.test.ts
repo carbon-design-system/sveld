@@ -382,12 +382,18 @@ describe("formatCheckReportJson", () => {
     const json = formatCheckReportJson(result);
 
     expect(json.endsWith("\n")).toBe(true);
-    expect(JSON.parse(json)).toEqual({ kind: "check-report", ...result });
+    expect(JSON.parse(json)).toEqual({ kind: "check-report", schemaVersion: 1, ...result });
+  });
+
+  test("stamps the envelope with schemaVersion 1", () => {
+    const result = { snapshotExists: false, snapshotFile: "COMPONENT_API.json", changes: [], bump: "none" as const };
+
+    expect(JSON.parse(formatCheckReportJson(result)).schemaVersion).toBe(1);
   });
 
   test("serializes a missing snapshot the same as any other result", () => {
     const result = { snapshotExists: false, snapshotFile: "COMPONENT_API.json", changes: [], bump: "none" as const };
 
-    expect(JSON.parse(formatCheckReportJson(result))).toEqual({ kind: "check-report", ...result });
+    expect(JSON.parse(formatCheckReportJson(result))).toEqual({ kind: "check-report", schemaVersion: 1, ...result });
   });
 });

@@ -63,7 +63,9 @@ export function formatDiagnosticsGitHubSummary(diagnostics: SveldDiagnostic[]): 
   if (active.length === 0) return "";
 
   const rows = active.map((diagnostic) => {
-    const location = diagnostic.source ? `${diagnostic.component}:${diagnostic.source.start.line}` : diagnostic.component;
+    const location = diagnostic.source
+      ? `${diagnostic.component}:${diagnostic.source.start.line}`
+      : diagnostic.component;
     return `| ${diagnostic.severity} | ${diagnostic.code} | ${location} | ${diagnostic.message.replace(PIPE_REGEX, "\\|")} |`;
   });
 
@@ -85,7 +87,12 @@ function majorChanges(result: CheckResult): ApiChange[] {
 export function formatCheckGitHub(result: CheckResult): string {
   return majorChanges(result)
     .map((change) =>
-      annotationLine("error", "sveld breaking change", change.message, change.component === "*" ? undefined : change.component),
+      annotationLine(
+        "error",
+        "sveld breaking change",
+        change.message,
+        change.component === "*" ? undefined : change.component,
+      ),
     )
     .join("\n");
 }
@@ -99,5 +106,7 @@ export function formatCheckGitHubSummary(result: CheckResult): string {
     (change) => `| ${change.component} | ${change.kind} | ${change.message.replace(PIPE_REGEX, "\\|")} |`,
   );
 
-  return ["### sveld breaking changes", "", "| Component | Kind | Message |", "| --- | --- | --- |", ...rows].join("\n");
+  return ["### sveld breaking changes", "", "| Component | Kind | Message |", "| --- | --- | --- |", ...rows].join(
+    "\n",
+  );
 }

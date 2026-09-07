@@ -305,11 +305,19 @@ describe("diagnostics helpers", () => {
     const json = formatDiagnosticsSummaryJson(diagnostics);
 
     expect(json.endsWith("\n")).toBe(true);
-    expect(JSON.parse(json)).toEqual({ kind: "diagnostics", diagnostics });
+    expect(JSON.parse(json)).toEqual({ kind: "diagnostics", schemaVersion: 1, diagnostics });
   });
 
   test("formatDiagnosticsSummaryJson serializes an empty list", () => {
-    expect(JSON.parse(formatDiagnosticsSummaryJson([]))).toEqual({ kind: "diagnostics", diagnostics: [] });
+    expect(JSON.parse(formatDiagnosticsSummaryJson([]))).toEqual({
+      kind: "diagnostics",
+      schemaVersion: 1,
+      diagnostics: [],
+    });
+  });
+
+  test("formatDiagnosticsSummaryJson stamps the envelope with schemaVersion 1", () => {
+    expect(JSON.parse(formatDiagnosticsSummaryJson([])).schemaVersion).toBe(1);
   });
 
   test("createDiagnostic fills in code and severity from kind", () => {
@@ -496,7 +504,7 @@ describe("sveld() strict mode", () => {
     expect(summaryCalls(errorSpy).length).toBeGreaterThan(0);
   });
 
-test("format: 'json' prints the diagnostics summary as JSON to stderr instead of text", async () => {
+  test("format: 'json' prints the diagnostics summary as JSON to stderr instead of text", async () => {
     await sveld({ entry: relativeDir, glob: true, types: false, reportDiagnostics: true, format: "json" });
 
     expect(summaryCalls(errorSpy)).toHaveLength(0);
