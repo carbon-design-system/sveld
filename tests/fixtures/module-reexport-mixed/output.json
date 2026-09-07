@@ -148,6 +148,24 @@
   "diagnostics": [
     {
       "component": "module-reexport-mixed/input.svelte",
+      "kind": "export-unresolved",
+      "name": "External",
+      "message": "export \"External\" was skipped because it re-exports an imported binding; sveld only resolves exports of a local declaration.",
+      "source": {
+        "start": {
+          "line": 11,
+          "column": 2
+        },
+        "end": {
+          "line": 11,
+          "column": 22
+        }
+      },
+      "code": "sveld/export-unresolved",
+      "severity": "warning"
+    },
+    {
+      "component": "module-reexport-mixed/input.svelte",
       "kind": "prop-unknown-type",
       "name": "name",
       "message": "Prop \"name\" type could not be inferred; falling back to \"any\".",

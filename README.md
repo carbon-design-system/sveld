@@ -421,10 +421,11 @@ Every diagnostic carries a stable, namespaced `code` (`"sveld/<kind>"`) alongsid
 | `sveld/rest-props-unresolved` | `warning` | Spread `$$restProps` onto a plain element (or `svelte:element`) instead of a component, or add an `@restProps` tag to type it manually. |
 | `sveld/context-duplicate-key` | `warning` | Remove the duplicate `setContext` call, or give it a distinct key; only the first call's shape is used. |
 | `sveld/spread-unresolved` | `warning` | Spread a local object literal or a variable with a resolvable type instead; otherwise the spread widens the generated type to `Record<string, any>`. |
+| `sveld/export-unresolved` | `warning` | Export a local declaration directly instead of re-exporting an import or a binding from another file; sveld only resolves exports of a local declaration. |
 
 #### Severity and `--strict=errors`
 
-Each diagnostic's `severity` is `"error"` (`example-compile-error`, `syntax-skipped` — sveld emitted broken or unmodeled output) or `"warning"` (`prop-unknown-type`, `context-any-type`, `event-no-source`, `rest-props-unresolved`, `context-duplicate-key`, `spread-unresolved` — a type fell back to `any`). Plain `strict: true` / `--strict` fails on both, unchanged from before. Pass `strict: "errors"` (or `--strict=errors`) to fail CI only on `error`-severity diagnostics, letting `any`-fallback warnings through:
+Each diagnostic's `severity` is `"error"` (`example-compile-error`, `syntax-skipped` — sveld emitted broken or unmodeled output) or `"warning"` (`prop-unknown-type`, `context-any-type`, `event-no-source`, `rest-props-unresolved`, `context-duplicate-key`, `spread-unresolved`, `export-unresolved` — a type fell back to `any`). Plain `strict: true` / `--strict` fails on both, unchanged from before. Pass `strict: "errors"` (or `--strict=errors`) to fail CI only on `error`-severity diagnostics, letting `any`-fallback warnings through:
 
 ```sh
 npx sveld --json --strict=errors
