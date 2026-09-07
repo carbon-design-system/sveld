@@ -278,6 +278,16 @@ function buildTypeImportStatements(ctx: ParserContext, referencedImportedTypes: 
     });
 }
 
+/**
+ * Records a type node found outside the whole-object `$props()` path (legacy
+ * annotations, runes per-prop annotations, accessor signatures) so
+ * {@link buildTypeScriptMetadata} pulls its imported/local dependencies into
+ * the `.d.ts`, same as the whole-object case already does.
+ */
+export function trackAdditionalTypeDependencyNode(ctx: ParserContext, typeNode: ModernRunesTypeNode | undefined) {
+  if (typeNode) ctx.additionalTypeDependencyNodes.push(typeNode);
+}
+
 export function buildTypeScriptMetadata(ctx: ParserContext): ParsedComponentTypeScriptMetadata | undefined {
   const pendingCallDefaultCandidates =
     ctx.pendingCallDefaultCandidates.length > 0 ? ctx.pendingCallDefaultCandidates.slice() : undefined;
@@ -290,31 +300,38 @@ export function buildTypeScriptMetadata(ctx: ParserContext): ParsedComponentType
   const hasPendingCrossFileCandidates =
     pendingCallDefaultCandidates !== undefined || pendingContextKeyCandidates !== undefined;
 
-  if (ctx.typedRunesPropsDeclarations.length !== 1) {
+  const referencedImportedTypes = new Set<string>();
+  const referencedLocalTypes = new Set<string>();
+  for (const typeNode of ctx.additionalTypeDependencyNodes) {
+    collectReferencedTypeDependencies(ctx, typeNode, referencedImportedTypes, referencedLocalTypes);
+  }
+
+  const typedDeclaration =
+    ctx.typedRunesPropsDeclarations.length === 1 ? ctx.typedRunesPropsDeclarations[0] : undefined;
+  const canonicalType = typedDeclaration?.canonicalType;
+  if (typedDeclaration && canonicalType) {
+    for (const name of typedDeclaration.referencedImportedTypes) referencedImportedTypes.add(name);
+    for (const name of typedDeclaration.referencedLocalTypes) referencedLocalTypes.add(name);
+  }
+
+  if (!canonicalType && referencedImportedTypes.size === 0 && referencedLocalTypes.size === 0) {
     return hasPendingCrossFileCandidates
       ? { canonicalPropNames: [], localTypeDeclarations: [], typeImportStatements: [], ...pendingCrossFileCandidates }
       : undefined;
   }
 
-  const [typedDeclaration] = ctx.typedRunesPropsDeclarations;
-  if (!typedDeclaration.canonicalType) {
-    return hasPendingCrossFileCandidates
-      ? { canonicalPropNames: [], localTypeDeclarations: [], typeImportStatements: [], ...pendingCrossFileCandidates }
-      : undefined;
-  }
-
-  const localTypeDeclarations = Array.from(typedDeclaration.referencedLocalTypes)
+  const localTypeDeclarations = Array.from(referencedLocalTypes)
     .map((typeName) => ctx.localTypeDeclarationsByName.get(typeName))
     .filter((declaration): declaration is LocalTypeDeclaration => declaration !== undefined)
     .sort((a, b) => a.start - b.start)
     .map((declaration) => declaration.code);
 
   return {
-    canonicalPropsType: typedDeclaration.canonicalType,
-    canonicalPropNames: Array.from(typedDeclaration.props.keys()).sort(),
+    ...(canonicalType ? { canonicalPropsType: canonicalType } : {}),
+    canonicalPropNames: typedDeclaration && canonicalType ? Array.from(typedDeclaration.props.keys()).sort() : [],
     localTypeDeclarations,
-    typeImportStatements: buildTypeImportStatements(ctx, typedDeclaration.referencedImportedTypes),
-    referencesComponentGenerics: typeTextReferencesGenerics(typedDeclaration.canonicalType, ctx.generics),
+    typeImportStatements: buildTypeImportStatements(ctx, referencedImportedTypes),
+    referencesComponentGenerics: canonicalType ? typeTextReferencesGenerics(canonicalType, ctx.generics) : false,
     ...pendingCrossFileCandidates,
   };
 }
