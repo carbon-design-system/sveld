@@ -43,7 +43,7 @@ export function formatNameWithDeprecation(name: string, deprecated: DeprecatedVa
 
 export function formatPropDescription(description: string | undefined) {
   if (description === undefined || description.trim().length === 0) return MD_TYPE_UNDEFINED;
-  return escapeHtml(description).replace(NEWLINE_REGEX, "<br />");
+  return escapeHtml(description).replace(PIPE_REGEX, "&#124;").replace(NEWLINE_REGEX, "<br />");
 }
 
 export function formatSlotProps(props?: string) {

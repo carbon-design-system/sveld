@@ -1,4 +1,25 @@
-import { BACKTICK_REGEX, WHITESPACE_REGEX } from "./markdown-format-utils";
+import { BACKTICK_REGEX } from "./markdown-format-utils";
+
+const NON_SLUG_CHAR_REGEX = /[^\w\- ]+/g;
+const SLUG_SPACE_REGEX = /\s+/g;
+
+/**
+ * Mirrors GitHub's heading slugger: lowercase, strip backticks, drop any
+ * character that isn't a letter/number/space/hyphen/underscore, then turn
+ * spaces into hyphens. Duplicate anchors get `-1`, `-2`, ... suffixes,
+ * tracked via `seen`.
+ */
+function slugifyHeading(raw: string, seen: Map<string, number>): string {
+  const slug = raw
+    .toLowerCase()
+    .replace(BACKTICK_REGEX, "")
+    .replace(NON_SLUG_CHAR_REGEX, "")
+    .replace(SLUG_SPACE_REGEX, "-");
+
+  const count = seen.get(slug) ?? 0;
+  seen.set(slug, count + 1);
+  return count === 0 ? slug : `${slug}-${count}`;
+}
 
 export type AppendType = "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "quote" | "p" | "divider" | "raw";
 
@@ -77,11 +98,12 @@ export class MarkdownWriterBaseImpl implements MarkdownWriterBase {
 
   public end(): string {
     const source = this.sourceParts.join("");
+    const seenAnchors = new Map<string, number>();
     return source.replace(
       "<!-- __TOC__ -->",
       this.toc
         .map(({ indent, raw }) => {
-          return `${" ".repeat(indent)}- [${raw}](#${raw.toLowerCase().replace(BACKTICK_REGEX, "").replace(WHITESPACE_REGEX, "-")})`;
+          return `${" ".repeat(indent)}- [${raw}](#${slugifyHeading(raw, seenAnchors)})`;
         })
         .join("\n"),
     );
