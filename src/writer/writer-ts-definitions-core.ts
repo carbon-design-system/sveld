@@ -13,8 +13,7 @@ const EMPTY_EVENTS = "Record<string, any>";
 /** Avoids banned `{}` type; use `Record<string, never>` for empty objects. */
 const EMPTY_OBJECT = "Record<string, never>";
 
-const CLAMP_KEY_REGEX = /(-|\s+|:)/;
-const QUOTE_REGEX = /("|')/;
+const IDENTIFIER_REGEX = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 const CUSTOM_EVENT_REGEX = /CustomEvent/;
 const COMPONENT_NAME_REGEX = /^[A-Z]/;
 const NEWLINE_REGEX = /\n/;
@@ -275,12 +274,13 @@ export function getContextDefs(def: Pick<ComponentDocApi, "contexts" | "generics
     .join("\n\n");
 }
 
-function clampKey(key: string) {
-  if (CLAMP_KEY_REGEX.test(key)) {
-    return QUOTE_REGEX.test(key) ? key : `"${key}"`;
-  }
-
-  return key;
+/**
+ * Formats an object/type member key for emission in generated TypeScript:
+ * unquoted when it's a valid identifier, otherwise a JSON-quoted string
+ * literal (e.g. a Svelte 5 destructured prop `"data-foo"` or `"123abc"`).
+ */
+function formatKey(key: string): string {
+  return IDENTIFIER_REGEX.test(key) ? key : JSON.stringify(key);
 }
 
 function addCommentLine(value: string | boolean | undefined, returnValue?: string) {
@@ -385,7 +385,7 @@ function genPropDef(
 
     return `
       ${wrapCommentInJSDoc(prop_comments)}
-      ${prop.name}${prop.isRequired ? "" : "?"}: ${prop_value};`;
+      ${formatKey(prop.name)}${prop.isRequired ? "" : "?"}: ${prop_value};`;
   });
 
   const extra_initial_props = def.canonicalPropsType
@@ -407,7 +407,7 @@ function genPropDef(
     )
     .map((slot) => {
       const slotName = slot.name;
-      const key = clampKey(slotName);
+      const key = formatKey(slotName);
       const slotComment = formatSlotJsDoc(slot.description, slot.tags, slot.deprecated);
       const description = slotComment ? `${slotComment}\n      ` : "";
       /**
@@ -614,10 +614,10 @@ function genSlotDef(def: Pick<ComponentDocApi, "slots">) {
 
   const slotDefs = def.slots
     .map(({ name, slot_props, ...rest }) => {
-      const key = rest.default || name === null ? "default" : clampKey(name ?? "");
+      const key = rest.default || name === null ? "default" : formatKey(name ?? "");
       const slotDefComment = formatSlotJsDoc(rest.description, rest.tags, rest.deprecated);
       const description = slotDefComment ? `${slotDefComment}\n` : "";
-      return `${description}${clampKey(key)}: ${formatTsProps(slot_props)};`;
+      return `${description}${key}: ${formatTsProps(slot_props)};`;
     })
     .join("\n");
 
@@ -769,7 +769,7 @@ function genEventDef(def: Pick<ComponentDocApi, "events">) {
         description = `${eventComment}\n`;
       }
 
-      return `${description}${clampKey(event.name)}: ${computeEventTypeString(event)};\n`;
+      return `${description}${formatKey(event.name)}: ${computeEventTypeString(event)};\n`;
     })
     .join("");
 
@@ -796,7 +796,7 @@ function genEventCallbackProps(def: Pick<ComponentDocApi, "events">, existingPro
       }
 
       return `
-      ${description}${clampKey(propName)}?: (event: ${computeEventTypeString(event)}) => void;`;
+      ${description}${formatKey(propName)}?: (event: ${computeEventTypeString(event)}) => void;`;
     })
     .filter((entry): entry is string => entry !== undefined);
 }
@@ -839,7 +839,7 @@ function genAccessors(def: Pick<ComponentDocApi, "props">) {
 
       return `
     ${wrapCommentInJSDoc(prop_comments)}
-    ${prop.name}: ${functionType};`;
+    ${formatKey(prop.name)}: ${functionType};`;
     })
     .join("\n");
 }
@@ -879,7 +879,7 @@ function genExportsDef(def: Pick<ComponentDocApi, "props" | "moduleName" | "gene
 function genBindingsUnion(def: Pick<ComponentDocApi, "props">): string {
   const bindableNames = def.props
     .filter((prop) => prop.bindable === true || prop.binding === "writable")
-    .map((prop) => `"${prop.name}"`);
+    .map((prop) => JSON.stringify(prop.name));
 
   return bindableNames.length === 0 ? EMPTY_STR : bindableNames.join(" | ");
 }
