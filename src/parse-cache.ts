@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { version as sveldVersion } from "../package.json";
 import type { ParsedComponent, ParsedComponentTypeScriptMetadata } from "./ComponentParser";
@@ -147,7 +147,13 @@ export class ParseCache {
     entry.generatedText = { format, text };
   }
 
-  /** Persists this run's cache entries back to disk. */
+  /**
+   * Persists this run's cache entries back to disk. Writes to a pid-suffixed
+   * temp file and renames it over the target so concurrent sveld processes
+   * sharing a cache dir can't interleave writes into a truncated file; a
+   * failed rename (e.g. read-only cache dir) falls back to a direct write so
+   * generation never fails just because the cache couldn't be saved.
+   */
   save(): void {
     mkdirSync(dirname(this.cacheFilePath), { recursive: true });
     const file: ParseCacheFile = {
@@ -155,6 +161,17 @@ export class ParseCache {
       toolchainVersion: currentToolchainVersion(),
       entries: Object.fromEntries(this.next),
     };
-    writeFileSync(this.cacheFilePath, JSON.stringify(file));
+    const contents = JSON.stringify(file);
+    const tmpPath = `${this.cacheFilePath}.${process.pid}.tmp`;
+    try {
+      writeFileSync(tmpPath, contents);
+      renameSync(tmpPath, this.cacheFilePath);
+    } catch {
+      try {
+        writeFileSync(this.cacheFilePath, contents);
+      } catch {
+        // Cache dir is unwritable (e.g. read-only): skip persisting rather than fail generation.
+      }
+    }
   }
 }
