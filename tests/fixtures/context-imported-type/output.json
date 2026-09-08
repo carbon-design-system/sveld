@@ -38,6 +38,7 @@
       "ts": "type ModalAPI = {\n  open: () => void;\n  close: () => void;\n};"
     }
   ],
+  "reactiveStatementCount": 0,
   "generics": null,
   "contexts": [
     {

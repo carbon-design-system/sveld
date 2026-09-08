@@ -81,6 +81,7 @@
       "ts": "type SortFn = (a: any, b: any, direction: SortDirection) => number;"
     }
   ],
+  "reactiveStatementCount": 0,
   "generics": null,
   "contexts": [],
   "diagnostics": []

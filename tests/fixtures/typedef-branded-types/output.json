@@ -74,6 +74,7 @@
       "ts": "type Cents = number & { readonly __brand: \"Cents\" };"
     }
   ],
+  "reactiveStatementCount": 0,
   "generics": null,
   "contexts": [],
   "diagnostics": []

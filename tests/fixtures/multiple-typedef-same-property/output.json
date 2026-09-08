@@ -88,6 +88,7 @@
       "ts": "type ThemeConfig = {\n  /** Theme identifier */\n  id: string;\n  /** Theme display name */\n  name: string;\n};"
     }
   ],
+  "reactiveStatementCount": 0,
   "generics": null,
   "contexts": [],
   "diagnostics": []

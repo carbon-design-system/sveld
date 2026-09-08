@@ -50,6 +50,7 @@
       "ts": "interface PublicList { items: InternalCount[] }"
     }
   ],
+  "reactiveStatementCount": 0,
   "generics": null,
   "contexts": [],
   "diagnostics": [

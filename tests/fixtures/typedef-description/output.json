@@ -73,6 +73,7 @@
       "ts": "type StackScaleOrString = StackScale | string;"
     }
   ],
+  "reactiveStatementCount": 0,
   "generics": null,
   "contexts": [],
   "diagnostics": []

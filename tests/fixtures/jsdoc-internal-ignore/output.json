@@ -241,6 +241,7 @@
       "ts": "interface PublicLabel { label: string }"
     }
   ],
+  "reactiveStatementCount": 0,
   "generics": null,
   "contexts": [],
   "diagnostics": []

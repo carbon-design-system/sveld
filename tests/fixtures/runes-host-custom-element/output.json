@@ -82,6 +82,7 @@
     }
   ],
   "typedefs": [],
+  "reactiveStatementCount": 0,
   "generics": null,
   "contexts": [],
   "customElementTag": "my-widget",

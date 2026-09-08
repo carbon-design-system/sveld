@@ -70,6 +70,7 @@
       "ts": "type Entity = User | Post;"
     }
   ],
+  "reactiveStatementCount": 0,
   "generics": null,
   "contexts": [],
   "diagnostics": []

@@ -146,6 +146,7 @@ export default class Button extends SvelteComponentTyped<
 - [Custom Elements Manifest](#custom-elements-manifest)
   - [Consuming the manifest](#consuming-the-manifest)
 - [llms.txt Output](#llmstxt-output)
+- [Migration Report](#migration-report)
 - [Custom Writers](#custom-writers)
   - [The `OutputWriter` contract](#the-outputwriter-contract)
   - [Registering a writer](#registering-a-writer)
@@ -923,6 +924,9 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
   - **`linkBase`** (string, optional, default: `""`): Prefixed to each component's link in `llms.txt`.
   - **`title`** (string, optional, default: the `"name"` field from `package.json`): The `# <title>` heading both files start with.
   - **`summary`** (string, optional, default: the `"description"` field from `package.json`): The `> <summary>` blockquote under the title.
+- **`migrationReport`** (boolean, optional): Generate a [Svelte 5 migration readiness report](#migration-report) (`MIGRATION_REPORT.json` / `MIGRATION_REPORT.md`). Also available as the `--migration-report` CLI flag.
+- **`migrationReportOptions`** (object, optional): Options for migration report output.
+  - **`outDir`** (string, optional): Directory (relative to the project root) both files are written into. Defaults to the project root.
 - **`config`** (boolean | string, optional, default: `false`): Load `sveld.config.{js,mjs,ts}` and merge it with these options; these options win when a key is set in both. `true` resolves the config from the Vite project root (or `process.cwd()` outside Vite); a string is an explicit path to the config file. See [Config File](#config-file).
 - **`watch`** (boolean, optional, default: `false`): Regenerate output incrementally when relevant source changes during `vite dev` / `vite build --watch`. A reparse is triggered by: editing a component; editing the entry barrel itself, which adds/removes the corresponding component; or editing a non-`.svelte` file a component depends on via [`@extendProps`](#extendprops) / `@extends` or a typedef `import("./x")` reference. Only the affected components are re-parsed, rather than rebuilding every component. Overlapping regenerations are queued, never run concurrently. Without this option, the plugin only runs during `vite build`.
 - **`failFast`** (boolean, optional, default: `false`): Abort the entire run when a single component fails to parse. By default, parse failures are collected as diagnostics (and reported to `stderr`) so the remaining components still emit their output. Also available as the `--fail-fast` CLI flag.
@@ -1268,6 +1272,35 @@ sveld({
   - **`summary`** (string, optional, default: the `"description"` field from `package.json`): The `> <summary>` blockquote under the title. Omitted when neither is set.
 
 Each component's one-line summary in `llms.txt` is the first sentence of its [`@component` comment](#component-comments), falling back to `"Component"`. Set `documentExports: true` to also list entry-barrel exports (consts, functions, types) in `llms.txt` under an `## Exports` heading.
+
+## Migration Report
+
+Set `migrationReport: true` to emit `MIGRATION_REPORT.json` / `MIGRATION_REPORT.md`: a per-component Svelte 5 migration readiness heuristic, covering every discovered component (like `.d.ts` output, not just the exported public API surface).
+
+```diff
+sveld({
++  migrationReport: true,
+})
+```
+
+- **`migrationReport`** (boolean, optional): Generate `MIGRATION_REPORT.json` and `MIGRATION_REPORT.md`. Also available as the `--migration-report` CLI flag.
+- **`migrationReportOptions`** (object, optional):
+  - **`outDir`** (string, optional): Directory (relative to the project root) both files are written into. Defaults to the project root.
+
+Each component is scored `syntaxMode: "runes"` -> `100` (already migrated); `syntaxMode: "legacy"` -> `100` minus a weighted count of legacy patterns, capped at `0`:
+
+| Pattern | Field | Weight |
+| :- | :- | :- |
+| Legacy `export let` prop | `exportLet` | 2 |
+| Bare `on:event` forwarding | `onDirectives` | 4 |
+| `<slot>` declaration | `slots` | 5 |
+| `createEventDispatcher()` event | `createEventDispatcher` | 6 |
+| `$$restProps` usage | `restPropsLegacy` | 10 |
+| Top-level `$:` reactive statement | `reactiveStatements` | 3 |
+
+The Markdown report leads with a rollup line (component totals by `syntaxMode`, mean score), then one table of every component sorted by score ascending. The JSON report additionally lists the ten lowest-scoring components under `summary.lowestScoring`.
+
+The score is a **directional heuristic, not an authoritative migration cost estimate** - the same honesty as the [`reactive`](#reactive) field. It counts legacy patterns; it doesn't weigh how hard each one is to migrate in your specific component, so two components with the same score can take very different amounts of effort to convert. Use it to prioritize which components to look at first, not as a work estimate.
 
 ## Custom Writers
 

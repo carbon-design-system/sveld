@@ -207,6 +207,7 @@
       "ts": "type CarbonTheme = \"white\" | \"g10\" | \"g80\" | \"g90\" | \"g100\";"
     }
   ],
+  "reactiveStatementCount": 0,
   "generics": null,
   "contexts": [],
   "diagnostics": [

@@ -66,6 +66,7 @@ Options:
   --markdown            Generate component documentation in Markdown format
   --custom-elements     Generate a Custom Elements Manifest (custom-elements.json)
   --llms                Generate an llms.txt / llms-full.txt pair (https://llmstxt.org)
+  --migration-report    Generate a Svelte 5 migration readiness report (MIGRATION_REPORT.json / MIGRATION_REPORT.md)
   --fail-fast           Abort the run when a single component fails to parse
   --dry-run             Resolve, parse, and print "would write" lines for each output file instead of writing anything (including the parse cache)
   --quiet               Suppress progress logs (errors, the diagnostics summary, and the --check report are unaffected)
@@ -116,6 +117,7 @@ const KNOWN_FLAGS = [
   "stdout",
   "custom-elements",
   "llms",
+  "migration-report",
   "strict",
   "report-diagnostics",
   "resolve-types",
@@ -142,6 +144,7 @@ const BOOLEAN_FLAGS = new Set([
   "quiet",
   "custom-elements",
   "llms",
+  "migration-report",
   "strict",
   "report-diagnostics",
   "resolve-types",
@@ -222,6 +225,8 @@ function parseCliFlagValue(flag: string, value: string | boolean, arg: string, r
       return { kind: "option", option: { customElements: value === true || value === "true" } };
     case "llms":
       return { kind: "option", option: { llms: value === true || value === "true" } };
+    case "migration-report":
+      return { kind: "option", option: { migrationReport: value === true || value === "true" } };
     case "strict":
       // The value is validated in `cli()` once it can be reported as a usage
       // error (`--strict=oops`); a bare `--strict` means `true`.

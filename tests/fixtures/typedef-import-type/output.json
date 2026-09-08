@@ -134,6 +134,7 @@
       "ts": "interface TableContext { rows: import(\"svelte/store\").Writable<string[]>; selected: import(\"svelte/store\").Readable<number> }"
     }
   ],
+  "reactiveStatementCount": 0,
   "generics": null,
   "contexts": [],
   "diagnostics": []

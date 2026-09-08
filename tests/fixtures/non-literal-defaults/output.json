@@ -348,6 +348,7 @@
       "ts": "type Position = \"top-left\" | \"top-right\" | \"bottom-left\" | \"bottom-right\";"
     }
   ],
+  "reactiveStatementCount": 0,
   "generics": null,
   "contexts": [],
   "diagnostics": [

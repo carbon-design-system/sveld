@@ -44,6 +44,7 @@
       "ts": "type Config = {\n  /** Count */\n  count: number;\n};"
     }
   ],
+  "reactiveStatementCount": 0,
   "generics": null,
   "contexts": [],
   "diagnostics": [

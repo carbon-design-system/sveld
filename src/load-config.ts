@@ -221,6 +221,8 @@ const KNOWN_TOP_LEVEL_KEYS = [
   "customElementsOptions",
   "llms",
   "llmsOptions",
+  "migrationReport",
+  "migrationReportOptions",
   "additionalWriters",
   "failFast",
   "watch",
@@ -245,6 +247,7 @@ const KNOWN_NESTED_KEYS: Record<string, string[]> = {
   markdownOptions: ["write", "outFile", "entryExports", "onAppend", "dryRun"],
   customElementsOptions: ["outFile", "dryRun"],
   llmsOptions: ["outDir", "linkBase", "title", "summary", "entryExports", "dryRun"],
+  migrationReportOptions: ["outDir", "dryRun"],
   diagnostics: ["ignore"],
 };
 

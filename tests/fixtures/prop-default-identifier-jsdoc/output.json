@@ -310,6 +310,7 @@
   "slots": [],
   "events": [],
   "typedefs": [],
+  "reactiveStatementCount": 0,
   "generics": null,
   "contexts": [],
   "diagnostics": []

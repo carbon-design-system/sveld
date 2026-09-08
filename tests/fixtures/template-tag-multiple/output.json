@@ -103,6 +103,7 @@
       "ts": "interface DataTableHeader<Row = DataTableRow, Header = DataTableRow> { key: DataTableKey<Row>; value: Header; }"
     }
   ],
+  "reactiveStatementCount": 0,
   "generics": [
     "Row, Header",
     "Row extends DataTableRow = DataTableRow, Header extends DataTableRow = DataTableRow"

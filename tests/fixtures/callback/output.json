@@ -115,6 +115,7 @@
       "ts": "type OnClose = () => void;"
     }
   ],
+  "reactiveStatementCount": 0,
   "generics": null,
   "contexts": [],
   "diagnostics": []

@@ -85,6 +85,7 @@
       "ts": "type Status = { ok: true; data: number } | { ok: false; reason: string } | \"pending\";"
     }
   ],
+  "reactiveStatementCount": 0,
   "generics": null,
   "contexts": [],
   "diagnostics": []

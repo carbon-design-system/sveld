@@ -96,6 +96,7 @@
   ],
   "events": [],
   "typedefs": [],
+  "reactiveStatementCount": 0,
   "generics": [
     "Row, K",
     "Row extends DataTableRow = DataTableRow, K extends keyof Map<string, Row> = never"

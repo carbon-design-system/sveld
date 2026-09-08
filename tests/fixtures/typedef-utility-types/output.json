@@ -118,6 +118,7 @@
       "ts": "type Factory = () => Options;"
     }
   ],
+  "reactiveStatementCount": 0,
   "generics": null,
   "contexts": [],
   "diagnostics": []

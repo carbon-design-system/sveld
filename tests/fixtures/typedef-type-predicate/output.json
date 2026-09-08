@@ -73,6 +73,7 @@
       "ts": "type UserGuard = (value: unknown) => value is User;"
     }
   ],
+  "reactiveStatementCount": 0,
   "generics": null,
   "contexts": [],
   "diagnostics": []

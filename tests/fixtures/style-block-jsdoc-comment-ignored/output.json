@@ -52,6 +52,7 @@
       "ts": "type RealTypedef = {\n  name: string;\n};"
     }
   ],
+  "reactiveStatementCount": 0,
   "generics": null,
   "contexts": [],
   "diagnostics": []

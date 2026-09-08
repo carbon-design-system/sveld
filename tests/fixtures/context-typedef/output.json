@@ -38,6 +38,7 @@
       "ts": "type TabData = {\n  id: string;\n  label: string;\n  disabled?: boolean;\n};"
     }
   ],
+  "reactiveStatementCount": 0,
   "generics": null,
   "contexts": [
     {

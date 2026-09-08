@@ -40,7 +40,7 @@ import { parseCustomTypes, processNodeJSDoc } from "./parser/jsdoc";
 import { resolvePropTypeAndDocs } from "./parser/prop-shared";
 import { addProp, processInitializer } from "./parser/props";
 import { maybeSetRestProps } from "./parser/rest-props";
-import { detectSyntaxMode } from "./parser/runes-detection";
+import { countReactiveStatements, detectSyntaxMode } from "./parser/runes-detection";
 import {
   buildRunesPropTypeMetadata,
   normalizeRunesCallbackProps,
@@ -671,6 +671,8 @@ export interface ParsedComponent {
   /** Serialized events for JSON/API output. */
   events: SerializedComponentEvent[];
   typedefs: TypeDef[];
+  /** Count of top-level `$:` reactive-statement labels in the instance script. Always 0 in runes mode. */
+  reactiveStatementCount: number;
   generics: null | ComponentGenerics;
   rest_props: RestProps;
   extends?: Extends;
@@ -2269,6 +2271,7 @@ export default class ComponentParser {
       slots: processedSlots,
       events: eventsArray,
       typedefs: typedefsArray,
+      reactiveStatementCount: countReactiveStatements(this.ctx.parsed?.instance),
       generics: this.ctx.generics,
       rest_props: this.ctx.rest_props,
       extends: this.ctx.extends,

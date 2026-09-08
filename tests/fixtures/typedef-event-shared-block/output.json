@@ -232,6 +232,7 @@
       "ts": "type BreakpointValue = 320 | 672 | 1056 | 1312 | 1584;"
     }
   ],
+  "reactiveStatementCount": 1,
   "generics": null,
   "contexts": [],
   "diagnostics": [

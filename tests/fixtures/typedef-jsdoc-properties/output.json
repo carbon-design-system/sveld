@@ -130,6 +130,7 @@
       "ts": "interface SimpleType { id: number; label: string; }"
     }
   ],
+  "reactiveStatementCount": 0,
   "generics": null,
   "contexts": [],
   "diagnostics": []

@@ -94,6 +94,7 @@
       "ts": "interface MyTypedef { [key: string]: boolean; }"
     }
   ],
+  "reactiveStatementCount": 0,
   "generics": null,
   "contexts": [],
   "diagnostics": []

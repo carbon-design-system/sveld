@@ -76,6 +76,7 @@
     }
   ],
   "typedefs": [],
+  "reactiveStatementCount": 0,
   "generics": [
     "Icon",
     "Icon = any"
