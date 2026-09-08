@@ -508,10 +508,14 @@ export async function cli(process: NodeJS.Process) {
     appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${stepSummaryParts.join("\n\n")}\n`);
   }
 
-  // Lowest applicable code wins (3 beats 4); every failure is still reported above.
+  // Lowest applicable code wins (1 beats 3 beats 4); every failure is still reported above.
   let exitCode: number | undefined;
 
-  if (checkResult && bumpMeetsLevel(checkResult.bump, options.checkLevel ?? "major")) {
+  const hasSchemaMismatch = checkResult?.changes.some((change) => change.kind === "schema") ?? false;
+
+  if (hasSchemaMismatch) {
+    exitCode = EXIT_CODES.USAGE_ERROR;
+  } else if (checkResult && bumpMeetsLevel(checkResult.bump, options.checkLevel ?? "major")) {
     exitCode = EXIT_CODES.BREAKING_CHANGE;
   }
 

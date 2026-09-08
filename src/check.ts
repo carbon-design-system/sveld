@@ -26,7 +26,7 @@ export type CheckLevel = "major" | "minor" | "patch";
 export interface ApiChange {
   /** Component `moduleName` this change belongs to, or `"*"` for document-wide notices. */
   component: string;
-  kind: "component" | "prop" | "moduleExport" | "event" | "slot" | "shape";
+  kind: "component" | "prop" | "moduleExport" | "event" | "slot" | "shape" | "schema";
   /** Prop, event, slot, or shape-field name, when applicable. */
   name?: string;
   bump: SemverBump;
@@ -548,9 +548,9 @@ export async function runCheck(
       changes: [
         {
           component: "*",
-          kind: "shape",
+          kind: "schema",
           bump: "none",
-          message: `snapshot schemaVersion ${previous.schemaVersion} does not match the current schemaVersion ${COMPONENT_API_SCHEMA_VERSION}; skipping diff`,
+          message: `snapshot schemaVersion ${previous.schemaVersion} differs from ${COMPONENT_API_SCHEMA_VERSION}; regenerate the snapshot`,
         },
       ],
       bump: "none",
@@ -596,7 +596,8 @@ export function formatCheckReport(result: CheckResult): string {
     lines.push("");
     lines.push(`  ${component}`);
     for (const change of changes) {
-      lines.push(`    [${BUMP_LABELS[change.bump]}] ${change.message}`);
+      const label = change.kind === "schema" ? "schema" : BUMP_LABELS[change.bump];
+      lines.push(`    [${label}] ${change.message}`);
     }
   }
 
