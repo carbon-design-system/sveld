@@ -1317,6 +1317,31 @@ describe("cli() --format=github", () => {
     expect(process.exitCode).toBe(3);
     expect(logSpy).toHaveBeenCalledWith(expect.stringMatching(GITHUB_BREAKING_CHANGE_ERROR_REGEX));
   });
+
+  test("prints a ::error workflow command for a minor --check change under --check-level=minor", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--json"];
+    await cli(process);
+    logSpy.mockClear();
+
+    writeFileSync(
+      join(dir, "src", "Phantom.svelte"),
+      '<script>\n  /** @event {CustomEvent<null>} phantom */\n  export let label;\n  export let icon = "";\n</script>\n<button>{label}{icon}</button>\n',
+    );
+    process.argv = [
+      "bun",
+      "cli.js",
+      "--entry=src/index.js",
+      "--types=false",
+      "--check",
+      "--check-level=minor",
+      "--format=github",
+    ];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(3);
+    expect(logSpy).toHaveBeenCalledWith(expect.stringMatching(GITHUB_BREAKING_CHANGE_ERROR_REGEX));
+  });
 });
 
 describe("cli() exit codes", () => {

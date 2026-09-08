@@ -495,9 +495,9 @@ export async function cli(process: NodeJS.Process) {
     if (options.format === "json") {
       process.stdout.write(formatCheckReportJson(checkResult));
     } else if (options.format === "github") {
-      const annotations = formatCheckGitHub(checkResult);
+      const annotations = formatCheckGitHub(checkResult, options.checkLevel ?? "major");
       if (annotations) console.log(annotations);
-      const summary = formatCheckGitHubSummary(checkResult);
+      const summary = formatCheckGitHubSummary(checkResult, options.checkLevel ?? "major");
       if (summary) stepSummaryParts.push(summary);
     } else {
       console.log(formatCheckReport(checkResult));

@@ -1,4 +1,4 @@
-import type { ApiChange, CheckResult } from "./check";
+import { type ApiChange, bumpMeetsLevel, type CheckLevel, type CheckResult } from "./check";
 import type { SveldDiagnostic, SveldDiagnosticSeverity } from "./diagnostics";
 
 const PERCENT_REGEX = /%/g;
@@ -78,14 +78,14 @@ export function formatDiagnosticsGitHubSummary(diagnostics: SveldDiagnostic[]): 
   ].join("\n");
 }
 
-/** Only `major` (breaking) `--check` changes become GitHub error annotations; minor/patch/none are not CI-failing. */
-function majorChanges(result: CheckResult): ApiChange[] {
-  return result.changes.filter((change) => change.bump === "major");
+/** `--check` changes that meet or exceed `level` and become GitHub error annotations. */
+function failingChanges(result: CheckResult, level: CheckLevel): ApiChange[] {
+  return result.changes.filter((change) => bumpMeetsLevel(change.bump, level));
 }
 
-/** Breaking `--check` changes as GitHub Actions `::error` workflow commands. */
-export function formatCheckGitHub(result: CheckResult): string {
-  return majorChanges(result)
+/** `--check` changes at or above `level` as GitHub Actions `::error` workflow commands. */
+export function formatCheckGitHub(result: CheckResult, level: CheckLevel): string {
+  return failingChanges(result, level)
     .map((change) =>
       annotationLine(
         "error",
@@ -97,9 +97,9 @@ export function formatCheckGitHub(result: CheckResult): string {
     .join("\n");
 }
 
-/** Breaking `--check` changes as a `GITHUB_STEP_SUMMARY` Markdown table, mirroring `formatCheckGitHub`'s rows. */
-export function formatCheckGitHubSummary(result: CheckResult): string {
-  const changes = majorChanges(result);
+/** `--check` changes at or above `level` as a `GITHUB_STEP_SUMMARY` Markdown table, mirroring `formatCheckGitHub`'s rows. */
+export function formatCheckGitHubSummary(result: CheckResult, level: CheckLevel): string {
+  const changes = failingChanges(result, level);
   if (changes.length === 0) return "";
 
   const rows = changes.map(
