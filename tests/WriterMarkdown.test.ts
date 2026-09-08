@@ -612,4 +612,134 @@ describe("WriterMarkdown", () => {
     expect(withoutCss).not.toContain("CSS Parts");
     expect(withoutCss).not.toContain("CSS Custom Properties");
   });
+
+  test('renders a Module exports table for `<script context="module">` exports', () => {
+    const output = writeMarkdownCore(
+      new Map([
+        [
+          "Example",
+          {
+            filePath: asNormalizedPath("Example.svelte"),
+            moduleName: "Example",
+            syntaxMode: "legacy",
+            props: [],
+            moduleExports: [
+              {
+                name: "VERSION",
+                kind: "const",
+                constant: true,
+                type: "string",
+                description: "Package version.",
+                isFunction: false,
+                isFunctionDeclaration: false,
+                isRequired: false,
+                reactive: false,
+              },
+              {
+                name: "reset",
+                kind: "function",
+                constant: false,
+                isFunction: true,
+                isFunctionDeclaration: true,
+                isRequired: false,
+                reactive: false,
+                description: "Resets shared state.",
+              },
+            ],
+            slots: [],
+            events: [],
+            typedefs: [],
+            generics: null,
+            rest_props: undefined,
+            contexts: [],
+          },
+        ],
+      ]),
+    );
+
+    expect(output).toContain("### Module exports");
+    expect(output).toContain("| Name | Kind | Type | Description |");
+    expect(output).toContain("| VERSION | <code>const</code> | <code>string</code> | Package version. |");
+    expect(output).toContain("| reset | <code>function</code> | -- | Resets shared state. |");
+  });
+
+  test("omits the Module exports table when there are no module exports", () => {
+    const output = writeMarkdownCore(
+      new Map([
+        [
+          "Example",
+          {
+            filePath: asNormalizedPath("Example.svelte"),
+            moduleName: "Example",
+            syntaxMode: "legacy",
+            props: [],
+            moduleExports: [],
+            slots: [],
+            events: [],
+            typedefs: [],
+            generics: null,
+            rest_props: undefined,
+            contexts: [],
+          },
+        ],
+      ]),
+    );
+
+    expect(output).not.toContain("Module exports");
+  });
+
+  test("marks const and function-declaration props as accessor kind in the props table", () => {
+    const output = writeMarkdownCore(
+      new Map([
+        [
+          "Example",
+          {
+            filePath: asNormalizedPath("Example.svelte"),
+            moduleName: "Example",
+            syntaxMode: "runes",
+            props: [
+              {
+                name: "count",
+                kind: "const",
+                constant: true,
+                isFunction: false,
+                isFunctionDeclaration: false,
+                isRequired: false,
+                reactive: false,
+              },
+              {
+                name: "focus",
+                kind: "function",
+                constant: false,
+                isFunction: true,
+                isFunctionDeclaration: true,
+                isRequired: false,
+                reactive: false,
+              },
+              {
+                name: "label",
+                kind: "let",
+                constant: false,
+                isFunction: false,
+                isFunctionDeclaration: false,
+                isRequired: false,
+                reactive: false,
+              },
+            ],
+            moduleExports: [],
+            slots: [],
+            events: [],
+            typedefs: [],
+            generics: null,
+            rest_props: undefined,
+            contexts: [],
+          },
+        ],
+      ]),
+    );
+
+    expect(output).toContain("| count | No | <code>accessor</code> |");
+    expect(output).toContain("| focus | No | <code>accessor</code> |");
+    expect(output).toContain("| label | No | <code>let</code> |");
+  });
 });

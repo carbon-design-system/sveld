@@ -3768,6 +3768,8 @@ export default class Component extends SvelteComponentTyped<
 
 When only `@param` tags are present without `@returns`, the return type defaults to `any`. When only `@returns` is present without `@param`, the function signature is `() => returnType`.
 
+The Markdown writer marks the same exports (a `const`, or a real function declaration) with Kind `accessor` in the Props table, instead of their raw `const`/`function` kind, matching the `.d.ts` output above.
+
 ## Troubleshooting
 
 **A prop came out `any`.** Enable [`reportDiagnostics`](#type-inference-diagnostics) (or `strict` to fail CI) to see which props sveld couldn't infer, then tighten them with `@type` or a native TypeScript annotation.

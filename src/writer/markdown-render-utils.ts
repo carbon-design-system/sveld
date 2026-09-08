@@ -1,3 +1,4 @@
+import type { ComponentProp } from "../ComponentParser";
 import type { EntryExports } from "../parse-entry-exports";
 import type { ComponentDocApi, ComponentDocs } from "../plugin";
 import { buildComponentApiDocument } from "./document-model";
@@ -70,6 +71,30 @@ function renderExports(document: MarkdownDocument, entryExports: EntryExports) {
   document.append("divider");
 }
 
+/**
+ * `<script context="module">` exports whose `kind` puts them on the
+ * compiled component's static side as a getter (`const`) or method
+ * (a real function declaration), rather than a plain assignable field.
+ * Mirrors the `.d.ts` writer's `genAccessors` filter.
+ */
+function isAccessorProp(prop: ComponentProp): boolean {
+  return prop.kind === "const" || prop.isFunctionDeclaration;
+}
+
+function renderModuleExports(document: MarkdownDocument, moduleExports: ComponentProp[]) {
+  document.append("h3", "Module exports");
+  document.append("raw", EXPORT_TABLE_HEADER);
+  for (const moduleExport of moduleExports) {
+    document.append(
+      "raw",
+      `| ${formatNameWithDeprecation(moduleExport.name, moduleExport.deprecated)} | ${`<code>${moduleExport.kind}</code>`} | ${formatPropType(
+        moduleExport.type,
+      )} | ${formatDescriptionWithTags(moduleExport.description, moduleExport.tags)} |\n`,
+    );
+  }
+  document.append("raw", "\n");
+}
+
 function renderSectionIfNotEmpty<TItem>(
   document: MarkdownDocument,
   items: TItem[],
@@ -114,9 +139,10 @@ function renderComponent(document: MarkdownDocument, component: ComponentDocApi)
       .sort((a, b) => rank(a.prop) - rank(b.prop) || a.index - b.index)
       .map(({ prop }) => prop);
     for (const prop of sortedProps) {
+      const kind = isAccessorProp(prop) ? "accessor" : prop.kind;
       document.append(
         "raw",
-        `| ${formatNameWithDeprecation(prop.name, prop.deprecated)} | ${prop.isRequired ? "Yes" : "No"} | ${`<code>${prop.kind}</code>`} | ${
+        `| ${formatNameWithDeprecation(prop.name, prop.deprecated)} | ${prop.isRequired ? "Yes" : "No"} | ${`<code>${kind}</code>`} | ${
           prop.reactive ? "Yes" : "No"
         } | ${prop.binding ?? "--"} | ${formatPropType(prop.type)} | ${formatPropValue(prop.value)} | ${formatDescriptionWithTags(
           prop.description,
@@ -125,6 +151,10 @@ function renderComponent(document: MarkdownDocument, component: ComponentDocApi)
       );
     }
   });
+
+  if (component.moduleExports.length > 0) {
+    renderModuleExports(document, component.moduleExports);
+  }
 
   document.append("h3", "Slots");
   renderSectionIfNotEmpty(document, component.slots, () => {
