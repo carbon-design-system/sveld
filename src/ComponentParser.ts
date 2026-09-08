@@ -371,6 +371,8 @@ export interface ComponentProp {
   deprecated?: DeprecatedValue;
   /** `@since` / `@example` tags in source order. */
   tags?: JsDocPassthroughTag[];
+  /** True from `@ignore`/`@internal` JSDoc; excluded from every output by `buildComponentApiDocument`. */
+  internal?: boolean;
   /** Source range when available. */
   source?: SourceRange;
 }
@@ -400,6 +402,8 @@ export interface ComponentSlot {
   deprecated?: DeprecatedValue;
   /** Tags between the description and `@slot`/`@snippet` (e.g. `@example`), in source order. */
   tags?: JsDocPassthroughTag[];
+  /** True from `@ignore`/`@internal` JSDoc; excluded from every output by `buildComponentApiDocument`. */
+  internal?: boolean;
   /** Source range when available. */
   source?: SourceRange;
 }
@@ -444,6 +448,8 @@ export interface ForwardedEvent {
   detail?: string;
   /** `@since` / `@example` tags in source order. */
   tags?: JsDocPassthroughTag[];
+  /** True from `@ignore`/`@internal` JSDoc; excluded from every output by `buildComponentApiDocument`. */
+  internal?: boolean;
   /** Source range when available. */
   source?: SourceRange;
 }
@@ -462,6 +468,8 @@ export interface DispatchedEvent {
   deprecated?: DeprecatedValue;
   /** `@since` / `@example` tags in source order. */
   tags?: JsDocPassthroughTag[];
+  /** True from `@ignore`/`@internal` JSDoc; excluded from every output by `buildComponentApiDocument`. */
+  internal?: boolean;
   /** Source range when available. */
   source?: SourceRange;
 }
@@ -495,6 +503,8 @@ export interface SerializedForwardedEvent {
   detail?: string;
   /** `@since` / `@example` tags in source order. */
   tags?: JsDocPassthroughTag[];
+  /** True from `@ignore`/`@internal` JSDoc; excluded from every output by `buildComponentApiDocument`. */
+  internal?: boolean;
   /** Source range when available. */
   source?: SourceRange;
 }
@@ -513,6 +523,8 @@ export interface TypeDef {
   ts: string;
   /** Tags in the same block (e.g. `@since`, `@example`, `@see`), in source order. */
   tags?: JsDocPassthroughTag[];
+  /** True from `@ignore`/`@internal` JSDoc; excluded from every output by `buildComponentApiDocument`. */
+  internal?: boolean;
 }
 
 export type ComponentGenerics = [name: string, type: string] | null;
@@ -583,6 +595,8 @@ export interface ComponentContext {
   properties: ComponentContextProp[];
   /** True when a `{...spread}` in the context's object literal couldn't be resolved; the generated type intersects with `Record<string, any>`. */
   hasUnresolvedSpread?: boolean;
+  /** True from `@ignore`/`@internal` JSDoc on the `setContext` call; excluded from every output by `buildComponentApiDocument`. */
+  internal?: boolean;
 }
 
 /**
@@ -842,12 +856,13 @@ export default class ComponentParser {
    * // { type: "number", description: "The count value" }
    * ```
    */
-  findVariableTypeAndDescription(varName: string): { type: string; description?: string } | null {
+  findVariableTypeAndDescription(varName: string): { type: string; description?: string; internal?: boolean } | null {
     const prop = this.getPropByLocalOrPublic(varName);
     if (prop?.type) {
       return {
         type: prop.type,
         description: prop.description,
+        internal: prop.internal,
       };
     }
 
@@ -863,6 +878,7 @@ export default class ComponentParser {
       return {
         type: explicitType,
         description: cached?.description,
+        internal: cached?.internal,
       };
     }
 
@@ -1207,6 +1223,7 @@ export default class ComponentParser {
                 description,
                 deprecated: jsdocInfo?.deprecated,
                 tags: jsdocInfo?.tags,
+                ...(jsdocInfo?.internal ? { internal: true as const } : {}),
                 type,
                 typeSource,
                 value,
@@ -1572,6 +1589,7 @@ export default class ComponentParser {
               binding: jsdocInfo?.binding,
               deprecated: jsdocInfo?.deprecated,
               tags: jsdocInfo?.tags,
+              ...(jsdocInfo?.internal ? { internal: true as const } : {}),
               type,
               typeSource,
               value,
@@ -1764,6 +1782,7 @@ export default class ComponentParser {
 
                 const event_description = this.ctx.eventDescriptions.get(eventHandlerNode.name);
                 const event_deprecated = existing_event?.deprecated;
+                const event_internal = existing_event?.internal;
 
                 if (!existing_event) {
                   this.ctx.events.set(eventHandlerNode.name, {
@@ -1772,6 +1791,7 @@ export default class ComponentParser {
                     element: element,
                     description: event_description,
                     deprecated: event_deprecated,
+                    ...(event_internal ? { internal: true as const } : {}),
                     source: sourceRangeFromNode(this.ctx, node),
                   });
                 } else if (existing_event.type === "forwarded" && event_description && !existing_event.description) {
@@ -1779,6 +1799,7 @@ export default class ComponentParser {
                     ...existing_event,
                     description: event_description,
                     deprecated: existing_event.deprecated ?? event_deprecated,
+                    ...(existing_event.internal || event_internal ? { internal: true as const } : {}),
                     source: existing_event.source || sourceRangeFromNode(this.ctx, node),
                   });
                 }
@@ -1909,6 +1930,9 @@ export default class ComponentParser {
           tags: event.tags,
           source: event.source,
         };
+        if (event.internal) {
+          forwardedEvent.internal = true;
+        }
         // Keep explicit `@event` detail types, including `null`.
         if (event.detail !== undefined && event.detail !== "undefined") {
           forwardedEvent.detail = event.detail;

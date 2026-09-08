@@ -69,8 +69,9 @@ export function addDispatchedEvent(
     description,
     deprecated,
     tags,
+    internal,
     source,
-  }: Pick<DispatchedEvent, "name" | "description" | "deprecated" | "tags" | "source"> & {
+  }: Pick<DispatchedEvent, "name" | "description" | "deprecated" | "tags" | "internal" | "source"> & {
     detail: string;
     has_argument: boolean;
   },
@@ -95,6 +96,7 @@ export function addDispatchedEvent(
       description: event_description || existing_event.description,
       deprecated: deprecated ?? existing_event.deprecated,
       tags: tags ?? existing_event.tags,
+      ...(internal || existing_event.internal ? { internal: true as const } : {}),
       source: source || existing_event.source,
     });
   } else if (existing_event) {
@@ -105,6 +107,7 @@ export function addDispatchedEvent(
       description: existing_event.description || event_description,
       deprecated: existing_event.deprecated ?? deprecated,
       tags: merged_tags,
+      ...(existing_event.internal || internal ? { internal: true as const } : {}),
       source: source || existing_event.source,
     });
   } else {
@@ -115,6 +118,7 @@ export function addDispatchedEvent(
       description: event_description,
       deprecated,
       tags,
+      ...(internal ? { internal: true as const } : {}),
       source,
     });
   }

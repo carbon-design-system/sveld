@@ -2,7 +2,13 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import Ajv2020 from "ajv/dist/2020";
 import { Glob } from "bun";
-import { asNormalizedPath, buildComponentApiDocument, type ComponentDocs, ComponentParser } from "../src/browser";
+import {
+  asNormalizedPath,
+  buildComponentApiDocument,
+  type ComponentDocs,
+  ComponentParser,
+  writeTsDefinition,
+} from "../src/browser";
 import { parseEntryExports } from "../src/parse-entry-exports";
 
 type JsonObject = Record<string, unknown>;
@@ -244,6 +250,51 @@ describe("component API JSON schema", () => {
         value: 0,
       },
     });
+  });
+
+  test("@ignore/@internal excludes members from the built document and .d.ts, but not from the raw parse", () => {
+    const filePath = path.join(root, "tests", "fixtures", "jsdoc-internal-ignore", "input.svelte");
+    const source = readFileSync(filePath, "utf-8");
+    const parser = new ComponentParser();
+    const parsed = parser.parseSvelteComponent(source, { filePath, moduleName: "JsdocInternalIgnore" });
+    const component = { ...parsed, moduleName: "JsdocInternalIgnore", filePath: asNormalizedPath(filePath) };
+
+    // The raw ParsedComponent keeps every member, flagged `internal: true`.
+    expect(findObjectByProperty(component.props, "name", "debugId")).toMatchObject({ internal: true });
+    expect(findObjectByProperty(component.props, "name", "legacyFlag")).toMatchObject({ internal: true });
+    expect(findObjectByProperty(component.moduleExports, "name", "INTERNAL_CONST")).toMatchObject({
+      internal: true,
+    });
+    expect(findObjectByProperty(component.events, "name", "debug")).toMatchObject({ internal: true });
+    expect(findObjectByProperty(component.slots, "name", "debug-panel")).toMatchObject({ internal: true });
+    expect(findObjectByProperty(component.typedefs, "name", "InternalCount")).toMatchObject({ internal: true });
+
+    const components: ComponentDocs = new Map([["JsdocInternalIgnore", component]]);
+    const document = buildComponentApiDocument(components);
+    const filtered = document.components[0];
+
+    expect(filtered.props.map((p) => p.name)).not.toEqual(expect.arrayContaining(["debugId", "legacyFlag"]));
+    expect(filtered.moduleExports.map((e) => e.name)).not.toContain("INTERNAL_CONST");
+    expect(filtered.events.map((e) => e.name)).not.toContain("debug");
+    expect(filtered.slots.map((s) => s.name)).not.toContain("debug-panel");
+    expect(filtered.typedefs.map((t) => t.name)).not.toContain("InternalCount");
+
+    // Public members survive filtering untouched.
+    expect(filtered.props.map((p) => p.name)).toContain("label");
+    expect(filtered.moduleExports.map((e) => e.name)).toContain("PUBLIC_CONST");
+    expect(filtered.events.map((e) => e.name)).toContain("change");
+    expect(filtered.slots.map((s) => s.name)).toContain("badge");
+    expect(filtered.typedefs.map((t) => t.name)).toContain("PublicLabel");
+
+    const dts = writeTsDefinition(filtered, { format: "class" });
+    expect(dts).not.toContain("debugId");
+    expect(dts).not.toContain("legacyFlag");
+    expect(dts).not.toContain("INTERNAL_CONST");
+    expect(dts).not.toContain("debug-panel");
+    expect(dts).not.toContain("InternalCount");
+    expect(dts).not.toContain('"debug"');
+    expect(dts).toContain("label");
+    expect(dts).toContain("PublicLabel");
   });
 });
 

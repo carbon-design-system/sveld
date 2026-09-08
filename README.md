@@ -162,6 +162,7 @@ export default class Button extends SvelteComponentTyped<
     - [Extra JSDoc tags before `@slot`](#extra-jsdoc-tags-before-slot)
     - [Svelte 5 Snippet Compatibility](#svelte-5-snippet-compatibility)
   - [@event](#event)
+  - [@ignore / @internal](#ignore--internal)
   - [@deprecated](#deprecated)
   - [@since](#since)
   - [@see](#see)
@@ -2709,6 +2710,61 @@ export default class Component extends SvelteComponentTyped<
 ```
 
 Any free-text prose after the tags is attached to the event description, not to a property doc.
+
+### `@ignore` / `@internal`
+
+`@ignore` and `@internal` are equivalent aliases: either one excludes a prop, event, slot, typedef, module export, entry export, or context from every output — JSON, Markdown, `.d.ts`, and the Custom Elements Manifest. Use them for implementation details that would otherwise leak into the public API docs.
+
+The tag's position mirrors [`@deprecated`](#deprecated): before `@slot`/`@snippet`/`@typedef`/`@callback`, alongside the description, and after the `@event` line.
+
+```svelte
+<script>
+  /** The visible label. */
+  export let label = "";
+
+  /**
+   * Implementation detail; not part of the public API.
+   * @internal
+   */
+  export let debugId = "";
+
+  /**
+   * Fired when the value changes.
+   * @event {{ value: string }} change
+   */
+
+  /**
+   * Fired for internal diagnostics only.
+   * @event {{ reason: string }} debug
+   * @internal
+   */
+
+  /**
+   * @internal
+   * @slot {{}} debug-panel
+   */
+</script>
+```
+
+`debugId`, the `debug` event, and the `debug-panel` slot never appear in `COMPONENT_INDEX.md`, `COMPONENT_API.json`, the generated `.d.ts`, or the Custom Elements Manifest — as if they were never declared. Internally, the parser still records them (with an `internal: true` flag) on the raw parsed component; only `buildComponentApiDocument` — the shared step every writer runs through — filters them out, so a custom writer built on the raw parse result can still see them if it chooses to.
+
+For a context (`setContext(key, value)`), tag the JSDoc on the *value* variable, the same place its type annotation and description already live:
+
+```svelte
+<script>
+  /**
+   * @type {{ token: string }}
+   * @internal
+   */
+  let authContext = { token: "" };
+
+  setContext("auth", authContext);
+</script>
+```
+
+An inline object literal passed directly to `setContext` (no intermediate variable) has no JSDoc position of its own, so `@internal` isn't supported there.
+
+Because an internal member never appears in output, adding `@internal` to a previously-public prop, event, slot, or typedef is a breaking change for `--check` purposes (it disappears from the generated `.d.ts` just like an outright removal). Removing an already-`@internal` member, by contrast, is not breaking — it was never part of the committed public snapshot to begin with.
 
 ### `@deprecated`
 

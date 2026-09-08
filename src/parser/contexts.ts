@@ -181,6 +181,8 @@ function parseContextValue(
             optional: false,
           },
         ],
+        description: undefined,
+        ...(varInfo.internal ? { internal: true } : {}),
       };
     }
 

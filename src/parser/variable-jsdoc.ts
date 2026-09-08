@@ -177,8 +177,8 @@ function findAttachedComment(comments: ScriptComment[], declStart: number, sourc
 export function buildVariableJsDocTable(
   ctx: ParserContext,
   parser: ComponentParser,
-): Map<string, { type: string; description?: string }> {
-  const table = new Map<string, { type: string; description?: string }>();
+): Map<string, { type: string; description?: string; internal?: boolean }> {
+  const table = new Map<string, { type: string; description?: string; internal?: boolean }>();
   if (!ctx.source) return table;
 
   const scripts = [ctx.parsed?.module, ctx.parsed?.instance] as unknown as Array<
@@ -203,7 +203,7 @@ export function buildVariableJsDocTable(
     if (!comment) continue;
 
     const parsed = parseComments(comment.text);
-    const { type: typeTag, description, ignore: ignoreCodes } = getCommentTags(parsed);
+    const { type: typeTag, description, ignore: ignoreCodes, internal } = getCommentTags(parsed);
     if (ignoreCodes.length > 0) {
       recordSveldIgnore(ctx, "context-any-type", declaration.name, ignoreCodes);
     }
@@ -212,6 +212,7 @@ export function buildVariableJsDocTable(
     table.set(declaration.name, {
       type: parser.aliasType(typeTag.type),
       description: description || typeTag.description,
+      internal: internal || undefined,
     });
   }
 

@@ -42,10 +42,33 @@ export interface BuildComponentApiDocumentOptions {
  */
 const documentCache = new WeakMap<ComponentDocs, Map<EntryExports | undefined, ComponentApiDocument>>();
 
+/** Drops `@ignore`/`@internal`-tagged entries. The raw, unfiltered list lives on `ParsedComponent`. */
+function excludeInternal<T extends { internal?: boolean }>(items: T[]): T[] {
+  return items.some((item) => item.internal) ? items.filter((item) => !item.internal) : items;
+}
+
+/**
+ * Strips `@ignore`/`@internal` members from every list a component exposes, so no writer -
+ * Markdown, JSON, `.d.ts`, custom elements, `llms.txt` - has to filter independently. The raw,
+ * unfiltered `ParsedComponent` (props/events/slots/etc. still carrying `internal: true`) remains
+ * available to callers that read the parser output directly, e.g. `sveld --check`.
+ */
+function excludeInternalMembers(component: ComponentDocApi): ComponentDocApi {
+  return {
+    ...component,
+    props: excludeInternal(component.props),
+    moduleExports: excludeInternal(component.moduleExports),
+    slots: excludeInternal(component.slots),
+    events: excludeInternal(component.events),
+    typedefs: excludeInternal(component.typedefs),
+    ...(component.contexts ? { contexts: excludeInternal(component.contexts) } : {}),
+  };
+}
+
 /**
  * Builds the canonical document for a component collection: components
  * sorted alphabetically by `moduleName`, with the Node-only `diagnostics`
- * field stripped.
+ * field stripped and `@ignore`/`@internal` members excluded.
  */
 export function buildComponentApiDocument(
   components: ComponentDocs,
@@ -58,7 +81,7 @@ export function buildComponentApiDocument(
   const sorted = Array.from(components, ([, component]) => {
     // `diagnostics` is for the Node API only; rendered output skips it.
     const { diagnostics: _diagnostics, ...rest } = component;
-    return rest as ComponentDocApi;
+    return excludeInternalMembers(rest as ComponentDocApi);
   }).sort((a, b) => a.moduleName.localeCompare(b.moduleName));
 
   const document: ComponentApiDocument = {
@@ -72,9 +95,10 @@ export function buildComponentApiDocument(
     components: sorted,
   };
 
-  if (options.entryExports && options.entryExports.length > 0) {
-    document.totalExports = options.entryExports.length;
-    document.exports = options.entryExports;
+  const entryExports = options.entryExports ? excludeInternal(options.entryExports) : undefined;
+  if (entryExports && entryExports.length > 0) {
+    document.totalExports = entryExports.length;
+    document.exports = entryExports;
   }
 
   if (!byEntryExports) {
