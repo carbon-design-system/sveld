@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import {
   defineConfig,
+  expandStrictProfile,
   loadConfig,
   loadConfigFrom,
   mergeConfig,
@@ -203,6 +204,49 @@ describe("mergeConfig", () => {
     const overriddenOnAppend = () => {};
     expect(mergeConfig(fileConfig, { markdownOptions: { onAppend: overriddenOnAppend } })).toEqual({
       markdownOptions: { onAppend: overriddenOnAppend },
+    });
+  });
+});
+
+describe("expandStrictProfile", () => {
+  test("expands strict: 'ci' to strict, reportDiagnostics, check, and checkExamples", () => {
+    expect(expandStrictProfile({ strict: "ci" })).toEqual({
+      strict: true,
+      reportDiagnostics: true,
+      check: true,
+      checkExamples: true,
+    });
+  });
+
+  test("expands strict: 'local' to reportDiagnostics only, without enabling strict", () => {
+    expect(expandStrictProfile({ strict: "local" })).toEqual({ reportDiagnostics: true });
+  });
+
+  test("lets an explicit key on the same object opt back out of the profile", () => {
+    expect(expandStrictProfile({ strict: "ci", checkExamples: false })).toEqual({
+      strict: true,
+      reportDiagnostics: true,
+      check: true,
+      checkExamples: false,
+    });
+  });
+
+  test("passes through plain strict values unchanged", () => {
+    expect(expandStrictProfile({ strict: true, json: true })).toEqual({ strict: true, json: true });
+    expect(expandStrictProfile({ strict: "errors" })).toEqual({ strict: "errors" });
+    expect(expandStrictProfile({ strict: false })).toEqual({ strict: false });
+    expect(expandStrictProfile({ json: true })).toEqual({ json: true });
+  });
+
+  test("composes with mergeConfig: a later source's strict profile expands after merging", () => {
+    const fileConfig: Partial<SveldRuntimeOptions> = { strict: "local", json: true };
+    const merged = mergeConfig<SveldRuntimeOptions>(fileConfig, { strict: "ci" });
+    expect(expandStrictProfile(merged)).toEqual({
+      strict: true,
+      reportDiagnostics: true,
+      check: true,
+      checkExamples: true,
+      json: true,
     });
   });
 });

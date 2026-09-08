@@ -135,6 +135,7 @@ export default class Button extends SvelteComponentTyped<
   - [CLI](#cli)
   - [Exit codes](#exit-codes)
   - [CI: API-drift checks (`--check`)](#ci-api-drift-checks---check)
+  - [CI: strictness profiles (`--strict=ci`/`--strict=local`)](#ci-strictness-profiles---strictci---strictlocal)
   - [Node.js](#nodejs)
   - [Browser](#browser)
   - [Config File](#config-file)
@@ -672,6 +673,29 @@ The CLI exits non-zero on any fatal error (an unreadable entry, a config file th
 
 Pass `--format=json` for a machine-readable report on `stdout` instead of the prose above, e.g. `sveld --check --format=json | jq '.bump'` or `sveld --check --format=json | jq '.changes[] | select(.bump == "major")'`.
 
+### CI: strictness profiles (`--strict=ci`/`--strict=local`)
+
+CI and local runs usually want a different bundle of `strict`, `reportDiagnostics`, `check`, and `checkExamples` flags, previously assembled by hand. `--strict=ci`/`strict: "ci"` and `--strict=local`/`strict: "local"` are shorthands for two common bundles. Bare `--strict`/`strict: true` (and `--strict=errors`) are unchanged.
+
+`--strict=ci` expands to `{ strict: true, reportDiagnostics: true, check: true, checkExamples: true }` — the full gate for a CI job:
+
+```sh
+npx sveld --json --strict=ci
+```
+
+`--strict=local` expands to `{ reportDiagnostics: true }` — diagnostics printed for a developer to see, without failing the command or requiring a committed `COMPONENT_API.json` snapshot:
+
+```sh
+npx sveld --json --strict=local
+```
+
+The profile's keys are applied first, then any other key set alongside `strict` overrides it, so you can opt back out of one piece:
+
+```ts
+// Everything --strict=ci implies, except checkExamples.
+await sveld({ json: true, strict: "ci", checkExamples: false });
+```
+
 ### Node.js
 
 You can also call `sveld` from Node.js. See [Requirements](#requirements) for supported Node versions and the ESM-only constraint.
@@ -895,7 +919,7 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
 - **`cache`** (boolean | string, optional, default: `true`): Write parsed component output to disk and skip re-parsing unchanged files on later runs. On by default, writing to `node_modules/.cache/sveld/parse-cache.json`; a string sets a custom path; pass `false` to disable. Also available as `--cache` / `--cache=<path>` / `--cache=false`. See [Persistent parse cache](#persistent-parse-cache-cache).
 - **`checkExamples`** (boolean, optional, default: `false`): Run plain TS/JS `@example` blocks through the TypeScript program. Broken ones get an `example-compile-error` diagnostic. Also available as `--check-examples` (`--checkExamples` remains as a deprecated alias). See [Compile-checked `@example` blocks](#compile-checked-example-blocks-checkexamples).
 - **`reportDiagnostics`** (boolean, optional, default: `false`): Print unresolved-type diagnostics to stderr (CLI) or `console.warn` (programmatic API). Also available as `--report-diagnostics`. See [Type inference diagnostics](#type-inference-diagnostics).
-- **`strict`** (`boolean | "errors"`, optional, default: `false`): Exit with code `4` when diagnostics exist. Implies `reportDiagnostics`. `"errors"` fails only on `severity: "error"` diagnostics, letting `warning` ones through. Also available as `--strict` / `--strict=errors`. See [Type inference diagnostics](#type-inference-diagnostics).
+- **`strict`** (`boolean | "errors" | "ci" | "local"`, optional, default: `false`): Exit with code `4` when diagnostics exist. Implies `reportDiagnostics`. `"errors"` fails only on `severity: "error"` diagnostics, letting `warning` ones through. `"ci"` and `"local"` are strictness profiles that expand into other options before this object's own keys are applied. Also available as `--strict` / `--strict=errors` / `--strict=ci` / `--strict=local`. See [Type inference diagnostics](#type-inference-diagnostics) and [CI: strictness profiles](#ci-strictness-profiles---strictci---strictlocal).
 - **`diagnostics.ignore`** (`Array<{ code?: string; component?: string; name?: string }>`, optional): Marks matching diagnostics `ignored` — they're still reported and counted, but never fail `strict`. `component` is a glob; an omitted field on a matcher matches anything. No CLI flag; config-file or `sveld()` only. See [Ignoring diagnostics](#ignoring-diagnostics).
 - **`check`** (boolean | string, optional, default: `false`): Diff the parsed component API against a committed snapshot and assign a semver bump to each change. `true` uses the `json` writer's `outFile` (or `COMPONENT_API.json`); a string sets a custom snapshot path. Also available as `--check` / `--check=<path>`. On the CLI this exits `3` on a breaking change; from `sveld()` it's returned on `SveldResult.check` for you to act on. See [CI: API-drift checks (`--check`)](#ci-api-drift-checks---check).
 - **`checkLevel`** (`"major" | "minor" | "patch"`, optional, default: `"major"`): Minimum bump `--check` fails the CLI run on. Also available as `--check-level`. See [CI: API-drift checks (`--check`)](#ci-api-drift-checks---check).

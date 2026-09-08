@@ -137,6 +137,14 @@ describe("parseCliOptions", () => {
     expect(parseCliOptions(["--strict=false"])).toEqual({ kind: "options", options: { strict: false } });
   });
 
+  test("--strict=ci sets strict to the ci profile", () => {
+    expect(parseCliOptions(["--strict=ci"])).toEqual({ kind: "options", options: { strict: "ci" } });
+  });
+
+  test("--strict=local sets strict to the local profile", () => {
+    expect(parseCliOptions(["--strict=local"])).toEqual({ kind: "options", options: { strict: "local" } });
+  });
+
   test("--stdout enables stdout", () => {
     expect(parseCliOptions(["--stdout"])).toEqual({ kind: "options", options: { stdout: true } });
   });
@@ -1408,6 +1416,54 @@ describe("cli() exit codes", () => {
 
     expect(process.exitCode).toBe(1);
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('--strict must be "errors"'));
+  });
+
+  test("--strict=ci expands to strict+reportDiagnostics+check+checkExamples: exitCode 4 and a diagnostics summary without --report-diagnostics", async () => {
+    writeFileSync(
+      join(dir, "src", "Phantom.svelte"),
+      "<script>\n  /** @event {CustomEvent<null>} phantom */\n  export let label;\n</script>\n<button>{label}</button>\n",
+    );
+    writeFileSync(join(dir, "src", "index.js"), 'export { default as Phantom } from "./Phantom.svelte";\n');
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--json", "--strict=ci"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(4);
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("unresolved type"));
+    // `check: true` from the profile ran (no snapshot committed yet, so it just notices and doesn't fail).
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("no snapshot found"));
+  });
+
+  test("--strict=local expands to reportDiagnostics only: prints diagnostics but keeps exitCode 0", async () => {
+    writeFileSync(
+      join(dir, "src", "Phantom.svelte"),
+      "<script>\n  /** @event {CustomEvent<null>} phantom */\n  export let label;\n</script>\n<button>{label}</button>\n",
+    );
+    writeFileSync(join(dir, "src", "index.js"), 'export { default as Phantom } from "./Phantom.svelte";\n');
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--json", "--strict=local"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(0);
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("unresolved type"));
+  });
+
+  test("--strict=ci --check-examples=false opts back out of the profile's checkExamples", async () => {
+    writeFileSync(join(dir, "src", "Button.svelte"), "<script></script>\n<button>Click</button>\n");
+    writeFileSync(join(dir, "src", "index.js"), 'export { default as Button } from "./Button.svelte";\n');
+    process.argv = [
+      "bun",
+      "cli.js",
+      "--entry=src/index.js",
+      "--types=false",
+      "--json",
+      "--strict=ci",
+      "--check-examples=false",
+    ];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(0);
   });
 
   test("exits 3 (not 4) when a --check breaking change and --strict diagnostics both apply in one run", async () => {

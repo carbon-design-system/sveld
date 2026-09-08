@@ -8,7 +8,7 @@ import {
   type SveldDiagnostic,
 } from "./diagnostics";
 import { getSvelteEntry } from "./get-svelte-entry";
-import { loadConfig, mergeConfig, type SveldRuntimeOptions, validateOptions } from "./load-config";
+import { expandStrictProfile, loadConfig, mergeConfig, type SveldRuntimeOptions, validateOptions } from "./load-config";
 import { setQuiet } from "./logger";
 import { generateBundle, toGenerateBundleOptions, writeOutput } from "./plugin";
 
@@ -61,7 +61,7 @@ export async function sveld(opts?: SveldOptions): Promise<SveldResult> {
       'sveld: could not resolve a Svelte entry point. Set package.json#svelte, or pass the "entry" option.',
     );
   }
-  const merged = mergeConfig<SveldRuntimeOptions>(fileConfig, runtimeOpts, { entry: input });
+  const merged = expandStrictProfile(mergeConfig<SveldRuntimeOptions>(fileConfig, runtimeOpts, { entry: input }));
   validateOptions(merged);
   setQuiet(merged.quiet === true);
   const result = await generateBundle(input, merged.glob === true, toGenerateBundleOptions(merged));
