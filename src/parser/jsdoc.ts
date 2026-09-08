@@ -186,6 +186,9 @@ export function getCommentTags(parsed: JSDocComment[]) {
     "deprecated",
     "ignore",
     "internal",
+    "csspart",
+    "cssprop",
+    "cssproperty",
   ]);
 
   let typeTag: (typeof tags)[number] | undefined;
@@ -828,6 +831,25 @@ export function parseCustomTypes(
               if (slot) slot.tags = [...(slot.tags ?? []), trailingTag];
             };
           }
+          break;
+        }
+        case "csspart": {
+          const partDescription = cleanDescription(getInlineTagDescription(tagSource));
+          ctx.cssParts.push({
+            name,
+            ...(partDescription ? { description: partDescription } : {}),
+          });
+          break;
+        }
+        case "cssprop":
+        case "cssproperty": {
+          const propertyDescription = cleanDescription(getInlineTagDescription(tagSource));
+          ctx.cssProperties.push({
+            name,
+            ...(type ? { type } : {}),
+            ...(defaultValue === undefined ? {} : { default: defaultValue }),
+            ...(propertyDescription ? { description: propertyDescription } : {}),
+          });
           break;
         }
         case "event": {

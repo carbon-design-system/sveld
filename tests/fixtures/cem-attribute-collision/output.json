@@ -5,7 +5,7 @@
       "column": 0
     },
     "end": {
-      "line": 11,
+      "line": 10,
       "column": 0
     }
   },
@@ -13,9 +13,9 @@
   "scriptLanguage": "js",
   "props": [
     {
-      "name": "label",
+      "name": "value",
       "kind": "let",
-      "description": "The badge label.",
+      "description": "Lowercase value.",
       "type": "string",
       "typeSource": "default",
       "value": "\"\"",
@@ -31,41 +31,49 @@
       "reactive": false,
       "source": {
         "start": {
-          "line": 5,
+          "line": 3,
           "column": 2
         },
         "end": {
-          "line": 5,
+          "line": 3,
+          "column": 24
+        }
+      }
+    },
+    {
+      "name": "Value",
+      "kind": "let",
+      "description": "Capitalized value collides with `value` on the attribute name.",
+      "type": "string",
+      "typeSource": "default",
+      "value": "\"\"",
+      "defaultValue": {
+        "raw": "\"\"",
+        "kind": "literal",
+        "value": ""
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 6,
+          "column": 2
+        },
+        "end": {
+          "line": 6,
           "column": 24
         }
       }
     }
   ],
   "moduleExports": [],
-  "slots": [
-    {
-      "name": null,
-      "default": true,
-      "slot_props": "Record<string, never>",
-      "source": {
-        "start": {
-          "line": 10,
-          "column": 0
-        },
-        "end": {
-          "line": 10,
-          "column": 8
-        }
-      }
-    }
-  ],
+  "slots": [],
   "events": [],
   "typedefs": [],
   "generics": null,
   "contexts": [],
-  "customElementTag": "x-badge",
-  "customElement": {
-    "tag": "x-badge"
-  },
   "diagnostics": []
 }

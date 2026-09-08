@@ -12,6 +12,9 @@ export const SLOT_TABLE_HEADER =
   "| Slot name | Default | Props | Fallback | Description |\n| :- | :- | :- | :- | :- |\n";
 export const EVENT_TABLE_HEADER = "| Event name | Type | Detail | Description |\n| :- | :- | :- | :- |\n";
 export const EXPORT_TABLE_HEADER = "| Name | Kind | Type | Description |\n| :- | :- | :- | :- |\n";
+export const CSS_PART_TABLE_HEADER = "| Part name | Description |\n| :- | :- |\n";
+export const CSS_PROPERTY_TABLE_HEADER =
+  "| Property name | Type | Default value | Description |\n| :- | :- | :- | :- |\n";
 
 const PIPE_REGEX = /\|/g;
 const LT_REGEX = /</g;

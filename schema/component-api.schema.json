@@ -137,7 +137,61 @@
         "customElementTag": {
           "type": "string",
           "description": "Custom-element tag name from `<svelte:options customElement=\"x-foo\" />` (or the object form's `tag`), when present."
+        },
+        "customElement": { "$ref": "#/$defs/customElement" },
+        "cssParts": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/cssPart" }
+        },
+        "cssProperties": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/cssProperty" }
         }
+      }
+    },
+    "customElement": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Full `<svelte:options customElement=... />` config (shorthand or object form), when present.",
+      "properties": {
+        "tag": { "type": "string" },
+        "shadow": { "enum": ["open", "none"] },
+        "props": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/customElementPropConfig" }
+        },
+        "extend": { "const": true }
+      }
+    },
+    "customElementPropConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "attribute": {
+          "oneOf": [{ "type": "string" }, { "const": false }]
+        },
+        "reflect": { "type": "boolean" },
+        "type": { "enum": ["String", "Boolean", "Number", "Array", "Object"] }
+      }
+    },
+    "cssPart": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "cssProperty": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "description": "Includes the leading `--`." },
+        "type": { "type": "string" },
+        "default": { "type": "string" },
+        "description": { "type": "string" }
       }
     },
     "prop": {

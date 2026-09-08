@@ -552,4 +552,64 @@ describe("WriterMarkdown", () => {
     expect(positions.every((position) => position !== -1)).toBe(true);
     expect(positions).toEqual([...positions].sort((a, b) => a - b));
   });
+
+  test("renders CSS Parts and CSS Custom Properties tables only when present", () => {
+    const withCss = writeMarkdownCore(
+      new Map([
+        [
+          "Card",
+          {
+            filePath: asNormalizedPath("Card.svelte"),
+            moduleName: "Card",
+            syntaxMode: "legacy",
+            props: [],
+            moduleExports: [],
+            slots: [],
+            events: [],
+            typedefs: [],
+            generics: null,
+            rest_props: undefined,
+            contexts: [],
+            cssParts: [{ name: "header", description: "Styles the header region." }],
+            cssProperties: [
+              { name: "--card-background", type: "Color", default: "white", description: "Card background." },
+              { name: "--card-border-color", description: "Card border color." },
+            ],
+          },
+        ],
+      ]),
+    );
+
+    expect(withCss).toContain("### CSS Parts");
+    expect(withCss).toContain("| Part name | Description |");
+    expect(withCss).toContain("| header | Styles the header region. |");
+    expect(withCss).toContain("### CSS Custom Properties");
+    expect(withCss).toContain("| Property name | Type | Default value | Description |");
+    expect(withCss).toContain("| --card-background | <code>Color</code> | <code>white</code> | Card background. |");
+    expect(withCss).toContain("| --card-border-color | -- | -- | Card border color. |");
+
+    const withoutCss = writeMarkdownCore(
+      new Map([
+        [
+          "Plain",
+          {
+            filePath: asNormalizedPath("Plain.svelte"),
+            moduleName: "Plain",
+            syntaxMode: "legacy",
+            props: [],
+            moduleExports: [],
+            slots: [],
+            events: [],
+            typedefs: [],
+            generics: null,
+            rest_props: undefined,
+            contexts: [],
+          },
+        ],
+      ]),
+    );
+
+    expect(withoutCss).not.toContain("CSS Parts");
+    expect(withoutCss).not.toContain("CSS Custom Properties");
+  });
 });

@@ -92,8 +92,43 @@ describe("component API JSON schema", () => {
         "componentCommentSource",
         "contexts",
         "customElementTag",
+        "customElement",
+        "cssParts",
+        "cssProperties",
       ]),
     );
+  });
+
+  test("documents the object-form customElement config and CSS parts/properties", () => {
+    const schema = readJson("schema/component-api.schema.json");
+    const defs = objectProperty(schema, "$defs");
+
+    const customElementProperties = objectProperty(objectProperty(defs, "customElement"), "properties");
+    expect(Object.keys(customElementProperties)).toEqual(expect.arrayContaining(["tag", "shadow", "props", "extend"]));
+
+    const propConfigProperties = objectProperty(objectProperty(defs, "customElementPropConfig"), "properties");
+    expect(Object.keys(propConfigProperties)).toEqual(expect.arrayContaining(["attribute", "reflect", "type"]));
+
+    expect(stringArrayProperty(objectProperty(defs, "cssPart"), "required")).toEqual(["name"]);
+    expect(stringArrayProperty(objectProperty(defs, "cssProperty"), "required")).toEqual(["name"]);
+
+    const parser = new ComponentParser();
+    const filePath = path.join(root, "tests", "fixtures", "cem-custom-element-object-config", "input.svelte");
+    const source = readFileSync(filePath, "utf-8");
+    const parsed = parser.parseSvelteComponent(source, { filePath, moduleName: "CemCustomElementObjectConfig" });
+    const components: ComponentDocs = new Map([
+      [
+        "CemCustomElementObjectConfig",
+        { ...parsed, moduleName: "CemCustomElementObjectConfig", filePath: asNormalizedPath(filePath) },
+      ],
+    ]);
+
+    const ajv = new Ajv2020({ strict: true, allErrors: true });
+    const validate = ajv.compile(schema);
+    const document = buildComponentApiDocument(components);
+    const valid = validate(document);
+    if (!valid) throw new Error(`Schema validation failed:\n${ajv.errorsText(validate.errors, { separator: "\n" })}`);
+    expect(valid).toBe(true);
   });
 
   test("documents the optional entry exports collection", () => {

@@ -7,10 +7,11 @@ import { asNormalizedPath, buildCustomElementsManifest, type ComponentDocs, Comp
 
 const root = process.cwd();
 
-// Same representative prefixes as tests/component-api-schema.test.ts: every
-// syntax mode plus the typedef/context/slot metadata shapes, without paying
-// for all ~90 fixtures on every run.
-const FIXTURE_PREFIXES = ["runes-", "legacy-", "typedef-", "context-", "slot-"];
+// Same representative prefixes as tests/component-api-schema.test.ts (every
+// syntax mode plus the typedef/context/slot metadata shapes), plus every
+// `cem-*` fixture exercising Custom Elements Manifest fidelity - without
+// paying for all ~90 fixtures on every run.
+const FIXTURE_PREFIXES = ["runes-", "legacy-", "typedef-", "context-", "slot-", "cem-"];
 
 async function buildRepresentativeFixtureComponents(): Promise<ComponentDocs> {
   const fixturesRoot = path.join(root, "tests", "fixtures");

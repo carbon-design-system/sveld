@@ -2,6 +2,8 @@ import type { AssignmentPattern, Identifier, Property, VariableDeclaration, Vari
 import { getTypeCastAnnotation, isCallExpressionNamed, unwrapTypeCastExpression } from "../ast-guards";
 import type ComponentParser from "../ComponentParser";
 import type {
+  CustomElementPropConfig,
+  CustomElementPropType,
   ModernRunesTypeMember,
   ModernRunesTypeNode,
   ModernScriptNode,
@@ -228,8 +230,33 @@ type ModernParsedRoot = {
     };
   };
   module?: ModernScriptNode;
-  options?: { customElement?: { tag?: string }; runes?: boolean } | null;
+  options?: {
+    customElement?: {
+      tag?: string;
+      shadow?: "open" | "none" | unknown;
+      props?: Record<string, ModernCustomElementPropConfig>;
+      extend?: unknown;
+    };
+    runes?: boolean;
+  } | null;
 };
+
+type ModernCustomElementPropConfig = { attribute?: string; reflect?: boolean; type?: CustomElementPropType };
+
+/** JSON-safe copy of the raw `customElement.props` config read off `modernParsedRoot.options`. */
+function buildCustomElementPropConfigs(
+  props: Record<string, ModernCustomElementPropConfig>,
+): Record<string, CustomElementPropConfig> {
+  const result: Record<string, CustomElementPropConfig> = {};
+  for (const [name, config] of Object.entries(props)) {
+    result[name] = {
+      ...(config.attribute === undefined ? {} : { attribute: config.attribute }),
+      ...(config.reflect === undefined ? {} : { reflect: config.reflect }),
+      ...(config.type === undefined ? {} : { type: config.type }),
+    };
+  }
+  return result;
+}
 
 /**
  * Reads type imports, local types, explicit `export let` annotations, and
@@ -251,7 +278,16 @@ export function buildRunesPropTypeMetadata(parser: ComponentParser, ctx: ParserC
   const modernParsed = modernParsedRoot as ModernParsedRoot;
 
   ctx.scriptLanguage = parser.resolveScriptLanguage(modernParsed);
-  ctx.customElementTag = modernParsed.options?.customElement?.tag;
+  const customElement = modernParsed.options?.customElement;
+  ctx.customElementTag = customElement?.tag;
+  ctx.customElement = customElement
+    ? {
+        ...(customElement.tag === undefined ? {} : { tag: customElement.tag }),
+        ...(customElement.shadow === "open" || customElement.shadow === "none" ? { shadow: customElement.shadow } : {}),
+        ...(customElement.props ? { props: buildCustomElementPropConfigs(customElement.props) } : {}),
+        ...(customElement.extend === undefined ? {} : { extend: true as const }),
+      }
+    : undefined;
   ctx.runesOptionOverride = modernParsed.options?.runes;
   ctx.scriptGenericsAttribute = parser.resolveScriptGenericsAttribute(modernParsed);
   const body = modernParsed.instance?.content?.body ?? [];

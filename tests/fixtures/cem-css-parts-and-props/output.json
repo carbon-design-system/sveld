@@ -5,7 +5,7 @@
       "column": 0
     },
     "end": {
-      "line": 11,
+      "line": 18,
       "column": 0
     }
   },
@@ -13,9 +13,9 @@
   "scriptLanguage": "js",
   "props": [
     {
-      "name": "label",
+      "name": "title",
       "kind": "let",
-      "description": "The badge label.",
+      "description": "The card's title.",
       "type": "string",
       "typeSource": "default",
       "value": "\"\"",
@@ -31,11 +31,11 @@
       "reactive": false,
       "source": {
         "start": {
-          "line": 5,
+          "line": 3,
           "column": 2
         },
         "end": {
-          "line": 5,
+          "line": 3,
           "column": 24
         }
       }
@@ -49,12 +49,12 @@
       "slot_props": "Record<string, never>",
       "source": {
         "start": {
-          "line": 10,
-          "column": 0
+          "line": 16,
+          "column": 19
         },
         "end": {
-          "line": 10,
-          "column": 8
+          "line": 16,
+          "column": 27
         }
       }
     }
@@ -63,9 +63,33 @@
   "typedefs": [],
   "generics": null,
   "contexts": [],
-  "customElementTag": "x-badge",
-  "customElement": {
-    "tag": "x-badge"
-  },
+  "cssParts": [
+    {
+      "name": "header",
+      "description": "Styles the header region."
+    },
+    {
+      "name": "body",
+      "description": "Styles the body region."
+    }
+  ],
+  "cssProperties": [
+    {
+      "name": "--card-background",
+      "type": "Color",
+      "default": "white",
+      "description": "Background color of the card."
+    },
+    {
+      "name": "--card-border-color",
+      "description": "Border color of the card."
+    },
+    {
+      "name": "--card-padding",
+      "type": "Length",
+      "default": "1rem",
+      "description": "Padding inside the card."
+    }
+  ],
   "diagnostics": []
 }

@@ -3,6 +3,8 @@ import type { ComponentDocApi, ComponentDocs } from "../plugin";
 import { buildComponentApiDocument } from "./document-model";
 import type { AppendType } from "./MarkdownWriterBase";
 import {
+  CSS_PART_TABLE_HEADER,
+  CSS_PROPERTY_TABLE_HEADER,
   EVENT_TABLE_HEADER,
   EXPORT_TABLE_HEADER,
   formatDescriptionWithTags,
@@ -149,4 +151,27 @@ function renderComponent(document: MarkdownDocument, component: ComponentDocApi)
       );
     }
   });
+
+  if (component.cssParts && component.cssParts.length > 0) {
+    document.append("h3", "CSS Parts");
+    document.append("raw", CSS_PART_TABLE_HEADER);
+    for (const cssPart of component.cssParts) {
+      document.append("raw", `| ${cssPart.name} | ${formatPropDescription(cssPart.description)} |\n`);
+    }
+    document.append("raw", "\n");
+  }
+
+  if (component.cssProperties && component.cssProperties.length > 0) {
+    document.append("h3", "CSS Custom Properties");
+    document.append("raw", CSS_PROPERTY_TABLE_HEADER);
+    for (const cssProperty of component.cssProperties) {
+      document.append(
+        "raw",
+        `| ${cssProperty.name} | ${formatPropType(cssProperty.type)} | ${formatPropValue(cssProperty.default)} | ${formatPropDescription(
+          cssProperty.description,
+        )} |\n`,
+      );
+    }
+    document.append("raw", "\n");
+  }
 }

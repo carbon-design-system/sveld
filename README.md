@@ -1178,14 +1178,61 @@ sveld({
 
 Each exported component becomes one `javascript-module` with a class declaration:
 
-- **Members** — every prop becomes a `ClassField` (`name`, `type.text`, `default`, `description`, `deprecated`).
-- **Attributes** — derived conservatively from props: only props with a bare primitive type (`string`, `number`, or `boolean`) become attributes, using the same default name Svelte's custom-element runtime uses (`prop.toLowerCase()`, unless the tool's own `attribute` override applies). Props whose lowercased name collides with another prop are dropped from `attributes` on both sides, since which one wins at runtime is ambiguous. Complex types (arrays, objects, unions, custom types) never become attributes.
+- **Members** — every `export let`/`const` prop becomes a `ClassField` (`name`, `type.text`, `default`, `description`, `deprecated`; `readonly: true` for an `export const`). An accessor prop (`export function`) becomes a `ClassMethod` (`name`, `static: false`, `parameters`, `return.type.text`) instead — see [Accessor methods](#accessor-methods) below.
+- **Attributes** — every prop becomes an attribute (Svelte's custom-element runtime observes one for every prop by default), excluding `export function` accessors. The attribute name is `prop.toLowerCase()` by default, or the `customElement.props.<name>.attribute` config when set — see [Object-form `customElement` config](#object-form-customelement-config) below. Props that collide on the same attribute name keep the first (in declaration order); the rest are skipped with a console warning, since which one wins at runtime is ambiguous.
 - **Events** — dispatched events (`createEventDispatcher()`, and `$host().dispatchEvent(...)` from inside a custom element) become `{ name, type: { text: "CustomEvent<...>" } }`. Forwarded (`on:click`) events are left out, since they aren't dispatched by the component's own class.
 - **Slots** — named and default slots, with descriptions. The default slot's `name` is `""`, matching the CEM convention.
+- **`cssParts`/`cssProperties`** — from `@csspart`/`@cssprop` JSDoc tags — see [CSS parts and custom properties](#css-parts-and-custom-properties) below.
 
 When a component sets `<svelte:options customElement="x-foo" />` (or the object form, `<svelte:options customElement={{ tag: "x-foo" }} />`), its declaration gets `tagName: "x-foo"` and `customElement: true`, and the module's `exports` include a `custom-element-definition` export alongside the plain `js` export.
 
 Components without `customElement` still emit a plain class declaration (no `tagName`/`customElement`) — useful for documenting the class shape even before it's compiled as a custom element, but the manifest is most useful for `customElement`-compiled builds, where downstream tooling can resolve `tagName`, `attributes`, and `events` for actual custom-element usage.
+
+### Object-form `customElement` config
+
+The object form of `<svelte:options customElement={{ ... }} />` is read in full, not just `tag`:
+
+```svelte
+<svelte:options
+  customElement={{
+    tag: "x-widget",
+    shadow: "none",
+    props: {
+      variant: { attribute: "data-variant" },
+      active: { reflect: true },
+      tags: { type: "Array" }
+    },
+    extend: (customElementConstructor) => customElementConstructor
+  }}
+/>
+```
+
+| Config | Effect on the manifest |
+| --- | --- |
+| `props.<name>.attribute` | Overrides that prop's attribute name (default: `name.toLowerCase()`). `attribute: false` omits the prop's attribute entirely. |
+| `props.<name>.reflect` | Adds `reflects: true` to that prop's attribute. |
+| `props.<name>.type` | `"Array"`/`"Object"` appends a note to the attribute's description that the value is JSON-serialized (matching Svelte's runtime `JSON.stringify`/`JSON.parse` for those types); the attribute's `type.text` is still the prop's own TS type, not this config value. |
+| `shadow`, `extend` | Parsed and available on the raw `ParsedComponent.customElement` (Node API), but don't affect the manifest. |
+
+This full config (`tag`, `shadow`, `props`, `extend`) is also on `ParsedComponent.customElement` in the JSON output (`COMPONENT_API.json`), alongside the existing `customElementTag` shorthand.
+
+### Accessor methods
+
+An `export function` prop (a Svelte accessor, e.g. `export function focus() { ... }`) becomes a `ClassMethod`, not a `ClassField`, and is excluded from `attributes` (accessors aren't part of Svelte's props definition). `parameters`/`return` come from `@param`/`@returns` JSDoc when present, otherwise from splitting the function's TypeScript signature text (e.g. `(id: string) => boolean`).
+
+### CSS parts and custom properties
+
+Document shadow-DOM styling hooks with `@csspart`/`@cssprop` (alias `@cssproperty`) tags in the component's own JSDoc comment (the same comment block `@slot` tags go in):
+
+```js
+/**
+ * @csspart header - Styles the header region.
+ * @cssprop {Color} [--card-background=white] - Background color of the card.
+ * @cssprop --card-border-color - Border color of the card.
+ */
+```
+
+`@cssprop`'s `{type}` and `[--name=default]` are both optional, following the [Custom Elements Manifest analyzer](https://custom-elements-manifest.open-wc.org/analyzer/getting-started/#css-custom-properties) grammar. These populate `cssParts`/`cssProperties` on the class declaration, and `ParsedComponent.cssParts`/`cssProperties` in the JSON output; the Markdown writer renders them as two extra tables when present.
 
 ### Consuming the manifest
 
