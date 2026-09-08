@@ -282,7 +282,11 @@
         "type": { "type": "string" },
         "name": { "type": "string" },
         "description": { "type": "string" },
-        "ts": { "type": "string" }
+        "ts": { "type": "string" },
+        "tags": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/jsdocTag" }
+        }
       }
     },
     "context": {

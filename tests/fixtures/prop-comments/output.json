@@ -15,8 +15,14 @@
     {
       "name": "prop",
       "kind": "let",
-      "description": "This is a comment.\n@see https://github.com/",
+      "description": "This is a comment.",
       "deprecated": "this prop will be removed in the next major release.",
+      "tags": [
+        {
+          "name": "see",
+          "body": "https://github.com/"
+        }
+      ],
       "type": "boolean | string",
       "typeSource": "jsdoc",
       "value": "true",
@@ -44,7 +50,12 @@
     {
       "name": "prop1",
       "kind": "let",
-      "description": "@see https://github.com/",
+      "tags": [
+        {
+          "name": "see",
+          "body": "https://github.com/"
+        }
+      ],
       "type": "boolean",
       "typeSource": "default",
       "value": "true",

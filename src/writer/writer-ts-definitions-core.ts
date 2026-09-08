@@ -124,7 +124,14 @@ export function getTypeDefs(def: Pick<ComponentDocApi, "typedefs">) {
   if (def.typedefs.length === 0) return EMPTY_STR;
   return def.typedefs
     .map((typedef) => {
-      const typedefComment = typedef.description ? `${formatMultiLineComment(typedef.description)}\n` : "";
+      const tagLines = expandJsDocTagLines(typedef.tags);
+      let typedefComment: string;
+      if (tagLines.length === 0) {
+        typedefComment = typedef.description ? `${formatMultiLineComment(typedef.description)}\n` : "";
+      } else {
+        const lines = typedef.description ? [...typedef.description.split("\n"), ...tagLines] : tagLines;
+        typedefComment = `/**\n * ${lines.join("\n * ")}\n */\n`;
+      }
       return `${typedefComment}export ${typedef.ts}`;
     })
     .join("\n\n");

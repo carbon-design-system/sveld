@@ -42,7 +42,12 @@
     {
       "name": "prop1",
       "kind": "let",
-      "description": "@see https://github.com/",
+      "tags": [
+        {
+          "name": "see",
+          "body": "https://github.com/"
+        }
+      ],
       "type": "boolean",
       "typeSource": "default",
       "value": "true",

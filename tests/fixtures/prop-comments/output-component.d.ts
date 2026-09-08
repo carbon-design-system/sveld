@@ -3,8 +3,8 @@ import type { Component } from "svelte";
 export type PropCommentsProps = {
   /**
    * This is a comment.
-   * @see https://github.com/
    * @deprecated this prop will be removed in the next major release.
+   * @see https://github.com/
    * @default true
    */
   prop?: boolean | string;

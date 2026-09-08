@@ -9,7 +9,12 @@ import {
   resolveCheckSnapshotFile,
   runCheck,
 } from "./check";
-import { failingDiagnostics, formatDiagnosticsSummary, formatDiagnosticsSummaryJson } from "./diagnostics";
+import {
+  failingDiagnostics,
+  filterSpeculativeDiagnostics,
+  formatDiagnosticsSummary,
+  formatDiagnosticsSummaryJson,
+} from "./diagnostics";
 import { getSvelteEntry } from "./get-svelte-entry";
 import {
   formatCheckGitHub,
@@ -449,8 +454,8 @@ export async function cli(process: NodeJS.Process) {
     return;
   }
 
-  const { diagnostics } = result;
   const shouldReport = options.reportDiagnostics || options.strict;
+  const diagnostics = filterSpeculativeDiagnostics(result.diagnostics, shouldReport);
   const stepSummaryParts: string[] = [];
 
   if (shouldReport && diagnostics.length > 0) {

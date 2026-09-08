@@ -1570,14 +1570,13 @@ describe("ComponentParser", () => {
 
       const result = parser.parseSvelteComponent(source, diagnostics);
       expect(result.generics).toEqual(["Row", "Row extends string = string"]);
-      expect(warn).toHaveBeenCalledWith(expect.stringContaining('Duplicate generic name "Row"'));
+      expect(result.diagnostics).toContainEqual(expect.objectContaining({ kind: "generics-conflict", name: "Row" }));
       expect(warn).toHaveBeenCalledWith(expect.stringContaining("Both @generics and @template tags are used"));
 
       warn.mockRestore();
     });
 
     test("warns when a name repeats across two @generics tags", () => {
-      const warn = jest.spyOn(console, "warn").mockImplementation(() => undefined);
       const parser = new ComponentParser();
       const source = `
         <script>
@@ -1591,10 +1590,8 @@ describe("ComponentParser", () => {
         </script>
       `;
 
-      parser.parseSvelteComponent(source, diagnostics);
-      expect(warn).toHaveBeenCalledWith(expect.stringContaining('Duplicate generic name "Row"'));
-
-      warn.mockRestore();
+      const result = parser.parseSvelteComponent(source, diagnostics);
+      expect(result.diagnostics).toContainEqual(expect.objectContaining({ kind: "generics-conflict", name: "Row" }));
     });
   });
 

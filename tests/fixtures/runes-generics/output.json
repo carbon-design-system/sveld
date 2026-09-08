@@ -108,5 +108,24 @@
     "Row extends DataTableRow = DataTableRow"
   ],
   "contexts": [],
-  "diagnostics": []
+  "diagnostics": [
+    {
+      "component": "runes-generics/input.svelte",
+      "kind": "generics-conflict",
+      "name": "Row",
+      "message": "Duplicate generic name \"Row\".",
+      "source": {
+        "start": {
+          "line": 7,
+          "column": 5
+        },
+        "end": {
+          "line": 7,
+          "column": 60
+        }
+      },
+      "code": "sveld/generics-conflict",
+      "severity": "warning"
+    }
+  ]
 }

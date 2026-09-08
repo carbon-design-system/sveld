@@ -60,8 +60,18 @@ function getInlineTagDescription(tagLines: Array<{ content: string }> | undefine
   return tagLines[0].content;
 }
 
-/** `@since` and `@example` are kept out of prose descriptions and exposed as `tags` instead. */
-const IDE_PASSTHROUGH_TAGS = new Set(["since", "example"]);
+/** `@since`, `@example`, and `@see` are kept out of prose descriptions and exposed as `tags` instead. */
+const IDE_PASSTHROUGH_TAGS = new Set(["since", "example", "see"]);
+
+/**
+ * Tags sveld gives meaning to somewhere other than `parseCustomTypes`'s own
+ * switch below: `@bindable` is handled per-prop in {@link getCommentTags},
+ * and `@default`/`@required` are conventional documentation tags sveld
+ * doesn't act on but doesn't consider a typo either. Anything reaching the
+ * `default:` case that isn't in this set or `IDE_PASSTHROUGH_TAGS` is flagged
+ * as `jsdoc-unknown-tag`.
+ */
+const OTHER_KNOWN_JSDOC_TAGS = new Set(["bindable", "default", "required"]);
 
 function deprecatedValueFromBody(body: string): DeprecatedValue {
   const message = body.trim();
@@ -376,10 +386,9 @@ export function parseCustomTypes(
       );
     }
   };
-  const warnAndTrackGenericName = (genericName: string) => {
-    const location = ctx.componentFilePath ? ` in ${ctx.componentFilePath}` : "";
+  const warnAndTrackGenericName = (genericName: string, source: SourceRange | undefined) => {
     if (seenGenericNames.has(genericName)) {
-      console.warn(`Warning: Duplicate generic name "${genericName}"${location}.`);
+      recordDiagnostic(ctx, "generics-conflict", genericName, `Duplicate generic name "${genericName}".`, source);
     } else {
       seenGenericNames.add(genericName);
     }
@@ -404,11 +413,14 @@ export function parseCustomTypes(
     parser.accumulateGeneric(declaredName, constraint);
   };
   /** `ctx.typedefs` holds both `@typedef` and `@callback` declarations, keyed by name; both finalizers share this check. */
-  const warnDuplicateTypedefName = (name: string) => {
+  const warnDuplicateTypedefName = (name: string, source: SourceRange | undefined) => {
     if (ctx.typedefs.has(name)) {
-      const location = ctx.componentFilePath ? ` in ${ctx.componentFilePath}` : "";
-      console.warn(
-        `Warning: Duplicate typedef/callback name "${name}"${location}; the later declaration overwrites the earlier one.`,
+      recordDiagnostic(
+        ctx,
+        "typedef-duplicate",
+        name,
+        `Duplicate typedef/callback name "${name}"; the later declaration overwrites the earlier one.`,
+        source,
       );
     }
   };
@@ -417,15 +429,23 @@ export function parseCustomTypes(
    * second entry - two properties with the same key would otherwise appear
    * in the emitted object type.
    */
-  const pushOrReplaceProperty = <T extends { name: string }>(list: T[], property: T, ownerName: string | undefined) => {
+  const pushOrReplaceProperty = <T extends { name: string }>(
+    list: T[],
+    property: T,
+    ownerName: string | undefined,
+    source: SourceRange | undefined,
+  ) => {
     const existingIndex = list.findIndex((p) => p.name === property.name);
     if (existingIndex === -1) {
       list.push(property);
     } else {
-      const location = ctx.componentFilePath ? ` in ${ctx.componentFilePath}` : "";
       const owner = ownerName ? ` of "${ownerName}"` : "";
-      console.warn(
-        `Warning: Duplicate property "${property.name}"${owner}${location}; the later declaration overwrites the earlier one.`,
+      recordDiagnostic(
+        ctx,
+        "property-duplicate",
+        property.name,
+        `Duplicate property "${property.name}"${owner}; the later declaration overwrites the earlier one.`,
+        source,
       );
       list[existingIndex] = property;
     }
@@ -450,6 +470,8 @@ export function parseCustomTypes(
     let currentTypedefName: string | undefined;
     let currentTypedefType: string | undefined;
     let currentTypedefDescription: string | undefined;
+    let currentTypedefSource: SourceRange | undefined;
+    let currentTypedefTags: JsDocPassthroughTag[] = [];
     const typedefProperties: Array<{
       name: string;
       type: string;
@@ -460,12 +482,23 @@ export function parseCustomTypes(
 
     let currentCallbackName: string | undefined;
     let currentCallbackDescription: string | undefined;
+    let currentCallbackSource: SourceRange | undefined;
+    let currentCallbackTags: JsDocPassthroughTag[] = [];
     const callbackParams: Array<{
       name: string;
       type: string;
       optional?: boolean;
     }> = [];
     let callbackReturnType: string | undefined;
+
+    /**
+     * Where a passthrough tag (`@since`, `@see`, an unknown tag, ...) attaches
+     * once a structural tag (`@slot`/`@snippet`/`@event`/`@typedef`/`@callback`)
+     * has been seen in this block: set every time one starts, so a tag
+     * trailing it attaches to it directly instead of queuing in `pendingTags`
+     * for whatever structural tag happens to come next.
+     */
+    let attachTrailingTag: ((tag: JsDocPassthroughTag) => void) | undefined;
 
     let commentDescriptionUsed = false;
     let isFirstTag = true;
@@ -612,18 +645,21 @@ export function parseCustomTypes(
           typedefTs = `type ${currentTypedefName} = ${typedefType};`;
         }
 
-        warnDuplicateTypedefName(currentTypedefName);
+        warnDuplicateTypedefName(currentTypedefName, currentTypedefSource);
         ctx.typedefs.set(currentTypedefName, {
           type: typedefType,
           name: currentTypedefName,
           description: assignValueOrUndefined(currentTypedefDescription),
           ts: typedefTs,
+          tags: currentTypedefTags.length > 0 ? currentTypedefTags : undefined,
         });
 
         typedefProperties.length = 0;
         currentTypedefName = undefined;
         currentTypedefType = undefined;
         currentTypedefDescription = undefined;
+        currentTypedefSource = undefined;
+        currentTypedefTags = [];
       }
     };
 
@@ -639,18 +675,21 @@ export function parseCustomTypes(
         const callbackType = `(${params}) => ${returnType}`;
         const callbackTs = `type ${currentCallbackName} = ${callbackType};`;
 
-        warnDuplicateTypedefName(currentCallbackName);
+        warnDuplicateTypedefName(currentCallbackName, currentCallbackSource);
         ctx.typedefs.set(currentCallbackName, {
           type: callbackType,
           name: currentCallbackName,
           description: assignValueOrUndefined(currentCallbackDescription),
           ts: callbackTs,
+          tags: currentCallbackTags.length > 0 ? currentCallbackTags : undefined,
         });
 
         callbackParams.length = 0;
         callbackReturnType = undefined;
         currentCallbackName = undefined;
         currentCallbackDescription = undefined;
+        currentCallbackSource = undefined;
+        currentCallbackTags = [];
       }
     };
 
@@ -660,6 +699,16 @@ export function parseCustomTypes(
      */
     const blockHasSlotOrSnippetTag = tags.some((t) => t.tag === "slot" || t.tag === "snippet");
     const blockHasExtendsTag = tags.some((t) => t.tag === "extends" || t.tag === "extendProps");
+    /**
+     * Whether this block declares anything `pendingTags` can attach to. A plain
+     * prop or context comment with just a `@since`/`@example`/`@see` tag has no
+     * such tag, so a leftover passthrough tag there is expected, not dropped -
+     * that comment's own tags are captured separately by `processJSDocComment`.
+     */
+    const blockHasStructuralTag = tags.some(
+      (t) =>
+        t.tag === "slot" || t.tag === "snippet" || t.tag === "event" || t.tag === "typedef" || t.tag === "callback",
+    );
 
     for (const {
       tag,
@@ -730,6 +779,13 @@ export function parseCustomTypes(
           });
           pendingTags.length = 0;
           pendingDeprecated = undefined;
+          {
+            const slotKey = name === undefined || name === "" ? null : name;
+            attachTrailingTag = (trailingTag) => {
+              const slot = ctx.slots.get(slotKey);
+              if (slot) slot.tags = [...(slot.tags ?? []), trailingTag];
+            };
+          }
           break;
         }
         case "event": {
@@ -745,6 +801,11 @@ export function parseCustomTypes(
             commentDescriptionUsed = true;
           }
           currentEventSource = sourceRangeFromCommentTag(ctx, tagSource);
+          if (pendingTags.length > 0) {
+            currentEventTags.push(...pendingTags);
+            pendingTags.length = 0;
+          }
+          attachTrailingTag = (trailingTag) => currentEventTags.push(trailingTag);
           if (isFirstTag) isFirstTag = false;
           break;
         }
@@ -774,9 +835,19 @@ export function parseCustomTypes(
           };
 
           if (currentEventName !== undefined) {
-            pushOrReplaceProperty(eventProperties, propertyData, currentEventName);
+            pushOrReplaceProperty(
+              eventProperties,
+              propertyData,
+              currentEventName,
+              sourceRangeFromCommentTag(ctx, tagSource),
+            );
           } else if (currentTypedefName !== undefined) {
-            pushOrReplaceProperty(typedefProperties, propertyData, currentTypedefName);
+            pushOrReplaceProperty(
+              typedefProperties,
+              propertyData,
+              currentTypedefName,
+              sourceRangeFromCommentTag(ctx, tagSource),
+            );
           }
           break;
         }
@@ -785,12 +856,18 @@ export function parseCustomTypes(
 
           currentTypedefName = normalizeGenericNameSpacing(name);
           currentTypedefType = type;
+          currentTypedefSource = sourceRangeFromCommentTag(ctx, tagSource);
           const inlineTypedefDesc = cleanDescription(getInlineTagDescription(tagSource));
           currentTypedefDescription = inlineTypedefDesc || precedingDescription;
           if (!currentTypedefDescription && isFirstTag && !commentDescriptionUsed && commentDescription) {
             currentTypedefDescription = commentDescription;
             commentDescriptionUsed = true;
           }
+          if (pendingTags.length > 0) {
+            currentTypedefTags.push(...pendingTags);
+            pendingTags.length = 0;
+          }
+          attachTrailingTag = (trailingTag) => currentTypedefTags.push(trailingTag);
           if (isFirstTag) isFirstTag = false;
           break;
         }
@@ -798,12 +875,18 @@ export function parseCustomTypes(
           finalizeCallback();
 
           currentCallbackName = normalizeGenericNameSpacing(name);
+          currentCallbackSource = sourceRangeFromCommentTag(ctx, tagSource);
           const inlineCallbackDesc = cleanDescription(getInlineTagDescription(tagSource));
           currentCallbackDescription = inlineCallbackDesc || precedingDescription;
           if (!currentCallbackDescription && isFirstTag && !commentDescriptionUsed && commentDescription) {
             currentCallbackDescription = commentDescription;
             commentDescriptionUsed = true;
           }
+          if (pendingTags.length > 0) {
+            currentCallbackTags.push(...pendingTags);
+            pendingTags.length = 0;
+          }
+          attachTrailingTag = (trailingTag) => currentCallbackTags.push(trailingTag);
           if (isFirstTag) isFirstTag = false;
           break;
         }
@@ -812,7 +895,7 @@ export function parseCustomTypes(
           // itself, mirroring `@template`'s unconstrained-parameter fallback.
           const constraint = type || name;
           for (const genericName of splitTopLevelCommas(name)) {
-            warnAndTrackGenericName(genericName.trim());
+            warnAndTrackGenericName(genericName.trim(), sourceRangeFromCommentTag(ctx, tagSource));
           }
           usedGenericsTag = true;
           warnMixedGenericsTags();
@@ -835,7 +918,7 @@ export function parseCustomTypes(
             break;
           }
 
-          warnAndTrackGenericName(name);
+          warnAndTrackGenericName(name, sourceRangeFromCommentTag(ctx, tagSource));
           usedTemplateTag = true;
           warnMixedGenericsTags();
           accumulateOrReplaceGeneric(name, constraint);
@@ -872,8 +955,17 @@ export function parseCustomTypes(
               name: tag,
               body: raw,
             };
-            if (currentEventName !== undefined && IDE_PASSTHROUGH_TAGS.has(tag)) {
-              currentEventTags.push(passthroughTag);
+            if (!IDE_PASSTHROUGH_TAGS.has(tag) && !OTHER_KNOWN_JSDOC_TAGS.has(tag)) {
+              recordDiagnostic(
+                ctx,
+                "jsdoc-unknown-tag",
+                tag,
+                `Unknown JSDoc tag "@${tag}"; passed through unchanged. If this is a typo, fix the tag name.`,
+                sourceRangeFromCommentTag(ctx, tagSource),
+              );
+            }
+            if (attachTrailingTag) {
+              attachTrailingTag(passthroughTag);
             } else {
               pendingTags.push(passthroughTag);
             }
@@ -885,5 +977,17 @@ export function parseCustomTypes(
     finalizeEvent();
     finalizeTypedef();
     finalizeCallback();
+
+    if (blockHasStructuralTag && pendingTags.length > 0) {
+      for (const danglingTag of pendingTags) {
+        recordDiagnostic(
+          ctx,
+          "jsdoc-tag-dropped",
+          danglingTag.name,
+          `@${danglingTag.name} could not attach to a @slot/@snippet/@event/@typedef/@callback tag in the same comment block and was dropped.`,
+        );
+      }
+      pendingTags.length = 0;
+    }
   }
 }

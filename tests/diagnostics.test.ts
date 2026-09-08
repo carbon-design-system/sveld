@@ -401,6 +401,150 @@ describe("ComponentParser diagnostics", () => {
     expect(duplicateDiagnostic).toMatchObject({ kind: "extend-props-duplicate", name: "LinkProps" });
     expect(extendsInfo?.interface).toBe("LinkProps");
   });
+
+  test("flags a duplicate @typedef name as a diagnostic instead of console.warn", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /**
+         * @typedef {string} Config
+         * @typedef {number} Config
+         */
+        export let value;
+      </script>
+    `;
+
+    const { diagnostics } = parser.parseSvelteComponent(source, parseContext);
+    const duplicateDiagnostic = diagnostics?.find((d) => d.kind === "typedef-duplicate");
+
+    expect(duplicateDiagnostic).toMatchObject({ kind: "typedef-duplicate", name: "Config" });
+  });
+
+  test("flags a duplicate @property name on a @typedef as a diagnostic", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /**
+         * @typedef {Object} Config
+         * @property {string} id
+         * @property {number} id
+         */
+        export let value;
+      </script>
+    `;
+
+    const { diagnostics } = parser.parseSvelteComponent(source, parseContext);
+    const duplicateDiagnostic = diagnostics?.find((d) => d.kind === "property-duplicate");
+
+    expect(duplicateDiagnostic).toMatchObject({ kind: "property-duplicate", name: "id" });
+  });
+
+  test("flags a duplicate @template generic name as a diagnostic", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script lang="ts">
+        /**
+         * @template T
+         * @template T
+         */
+        export let value: unknown;
+      </script>
+    `;
+
+    const { diagnostics } = parser.parseSvelteComponent(source, parseContext);
+    const duplicateDiagnostic = diagnostics?.find((d) => d.kind === "generics-conflict");
+
+    expect(duplicateDiagnostic).toMatchObject({ kind: "generics-conflict", name: "T" });
+  });
+
+  test("a passthrough tag before @typedef attaches to it instead of being dropped", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /**
+         * @since 1.2.0
+         * @typedef {string} Config
+         */
+        export let value;
+      </script>
+    `;
+
+    const { diagnostics, typedefs } = parser.parseSvelteComponent(source, parseContext);
+
+    expect(diagnostics?.some((d) => d.kind === "jsdoc-tag-dropped")).toBe(false);
+    expect(typedefs.find((t) => t.name === "Config")?.tags).toEqual([{ name: "since", body: "1.2.0" }]);
+  });
+
+  test("a passthrough tag after @event attaches to it (also verifies @see is captured for events)", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /**
+         * @event {CustomEvent<null>} change
+         * @see https://example.com/docs
+         */
+        import { createEventDispatcher } from "svelte";
+        const dispatch = createEventDispatcher();
+        dispatch("change");
+      </script>
+    `;
+
+    const { events } = parser.parseSvelteComponent(source, parseContext);
+    const changeEvent = events.find((e) => e.name === "change");
+
+    expect(changeEvent?.tags).toEqual([{ name: "see", body: "https://example.com/docs" }]);
+  });
+
+  test("a passthrough tag on a plain prop comment (no structural tag) is not flagged as dropped", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /**
+         * @since 1.0.0
+         */
+        export let value = "ok";
+      </script>
+    `;
+
+    const { diagnostics } = parser.parseSvelteComponent(source, parseContext);
+
+    expect(diagnostics?.some((d) => d.kind === "jsdoc-tag-dropped")).toBe(false);
+    expect(diagnostics?.some((d) => d.kind === "jsdoc-unknown-tag")).toBe(false);
+  });
+
+  test("flags a genuinely unknown/misspelled JSDoc tag", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /**
+         * @depreacted use something else
+         * @slot content
+         */
+      </script>
+      <slot />
+    `;
+
+    const { diagnostics } = parser.parseSvelteComponent(source, parseContext);
+    const unknownTagDiagnostic = diagnostics?.find((d) => d.kind === "jsdoc-unknown-tag");
+
+    expect(unknownTagDiagnostic).toMatchObject({ kind: "jsdoc-unknown-tag", name: "depreacted" });
+  });
+
+  test("does not flag @bindable/@default/@required as unknown tags", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /**
+         * @bindable readonly
+         */
+        export let value = 1;
+      </script>
+    `;
+
+    const { diagnostics } = parser.parseSvelteComponent(source, parseContext);
+
+    expect(diagnostics?.some((d) => d.kind === "jsdoc-unknown-tag")).toBe(false);
+  });
 });
 
 describe("diagnostics helpers", () => {
@@ -716,5 +860,48 @@ describe("sveld() strict mode", () => {
     });
 
     expect(exitCode).toBe(4);
+  });
+});
+
+describe("sveld() gates jsdoc-unknown-tag on --strict/--report-diagnostics", () => {
+  let absoluteDir: string;
+  let relativeDir: string;
+  let previousExitCode: typeof process.exitCode;
+
+  beforeEach(() => {
+    previousExitCode = process.exitCode;
+    process.exitCode = undefined;
+    jest.spyOn(console, "error").mockImplementation(() => {});
+    jest.spyOn(console, "log").mockImplementation(() => {});
+    absoluteDir = mkdtempSync(join(process.cwd(), "sveld-unknown-tag-"));
+    relativeDir = basename(absoluteDir);
+    writeFileSync(
+      join(absoluteDir, "Typo.svelte"),
+      '<script>\n  /**\n   * @depreacted use something else\n   */\n  export let label = "ok";\n</script>\n',
+    );
+  });
+
+  afterEach(() => {
+    rmSync(absoluteDir, { recursive: true, force: true });
+    process.exitCode = previousExitCode;
+    jest.restoreAllMocks();
+  });
+
+  test("is hidden from the returned diagnostics by default", async () => {
+    const { diagnostics } = await sveld({ entry: relativeDir, glob: true, types: false });
+
+    expect(diagnostics.some((d) => d.kind === "jsdoc-unknown-tag")).toBe(false);
+  });
+
+  test("is included when reportDiagnostics is set", async () => {
+    const { diagnostics } = await sveld({ entry: relativeDir, glob: true, types: false, reportDiagnostics: true });
+
+    expect(diagnostics.some((d) => d.kind === "jsdoc-unknown-tag")).toBe(true);
+  });
+
+  test("is included when strict is set", async () => {
+    const { diagnostics } = await sveld({ entry: relativeDir, glob: true, types: false, strict: true });
+
+    expect(diagnostics.some((d) => d.kind === "jsdoc-unknown-tag")).toBe(true);
   });
 });

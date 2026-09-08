@@ -16,6 +16,11 @@ import { matchesGlob } from "./glob-match";
  * - `extend-props-target-missing`: an `@extends`/`@extendProps` target file wasn't found, or its named interface doesn't match the bundled component it points at.
  * - `extend-props-duplicate`: a second `@extends`/`@extendProps` tag overwrote the first.
  * - `extend-props-override`: an own prop has the same name as an `@extends` target's prop but a different type.
+ * - `jsdoc-unknown-tag`: a JSDoc tag sveld doesn't recognize (e.g. a typo like `@depreacted`); passed through unchanged, surfaced only under `--strict`/`--report-diagnostics`.
+ * - `typedef-duplicate`: a second `@typedef`/`@callback` reused a name; the later declaration overwrites the earlier one.
+ * - `property-duplicate`: a second `@property` reused a name on the same `@event`/`@typedef`; the later declaration overwrites the earlier one.
+ * - `generics-conflict`: a second `@generics`/`@template` reused a generic name.
+ * - `jsdoc-tag-dropped`: a passthrough JSDoc tag (e.g. `@see`) couldn't attach to a following or preceding structural tag.
  */
 export type SveldDiagnosticKind =
   | "prop-unknown-type"
@@ -29,7 +34,12 @@ export type SveldDiagnosticKind =
   | "export-unresolved"
   | "extend-props-target-missing"
   | "extend-props-duplicate"
-  | "extend-props-override";
+  | "extend-props-override"
+  | "jsdoc-unknown-tag"
+  | "typedef-duplicate"
+  | "property-duplicate"
+  | "generics-conflict"
+  | "jsdoc-tag-dropped";
 
 /** `"error"` fails `--strict=errors`; `"warning"` only fails plain `--strict`. */
 export type SveldDiagnosticSeverity = "error" | "warning";
@@ -53,6 +63,11 @@ export const DIAGNOSTIC_CODES: Record<SveldDiagnosticKind, string> = {
   "extend-props-target-missing": "sveld/extend-props-target-missing",
   "extend-props-duplicate": "sveld/extend-props-duplicate",
   "extend-props-override": "sveld/extend-props-override",
+  "jsdoc-unknown-tag": "sveld/jsdoc-unknown-tag",
+  "typedef-duplicate": "sveld/typedef-duplicate",
+  "property-duplicate": "sveld/property-duplicate",
+  "generics-conflict": "sveld/generics-conflict",
+  "jsdoc-tag-dropped": "sveld/jsdoc-tag-dropped",
 };
 
 /**
@@ -73,6 +88,11 @@ export const DIAGNOSTIC_SEVERITIES: Record<SveldDiagnosticKind, SveldDiagnosticS
   "extend-props-target-missing": "error",
   "extend-props-duplicate": "warning",
   "extend-props-override": "warning",
+  "jsdoc-unknown-tag": "warning",
+  "typedef-duplicate": "warning",
+  "property-duplicate": "warning",
+  "generics-conflict": "warning",
+  "jsdoc-tag-dropped": "warning",
 };
 
 /**
@@ -109,6 +129,21 @@ export function createDiagnostic(input: SveldDiagnosticInput): SveldDiagnostic {
     code: DIAGNOSTIC_CODES[input.kind],
     severity: DIAGNOSTIC_SEVERITIES[input.kind],
   };
+}
+
+/**
+ * `jsdoc-unknown-tag` is speculative: a misspelled tag (`@depreacted`) and an
+ * intentional custom tag look identical to the parser, so it's noisier than
+ * the rest of the codes. Surface it only when the caller opted into
+ * diagnostics via `--strict`/`--report-diagnostics`; a plain run stays quiet
+ * about tags sveld already passes through unchanged.
+ */
+export function filterSpeculativeDiagnostics(
+  diagnostics: SveldDiagnostic[],
+  shouldReport: boolean | "errors" | undefined,
+): SveldDiagnostic[] {
+  if (shouldReport) return diagnostics;
+  return diagnostics.filter((diagnostic) => diagnostic.kind !== "jsdoc-unknown-tag");
 }
 
 /**
@@ -176,6 +211,11 @@ const KIND_LABELS: Record<SveldDiagnosticKind, string> = {
   "extend-props-target-missing": "@extends/@extendProps targets that couldn't be verified",
   "extend-props-duplicate": "Duplicate @extends/@extendProps tags",
   "extend-props-override": "Own props overriding an @extends target's prop",
+  "jsdoc-unknown-tag": "Unknown JSDoc tags",
+  "typedef-duplicate": "Duplicate @typedef/@callback names",
+  "property-duplicate": "Duplicate @property names",
+  "generics-conflict": "Duplicate @generics/@template names",
+  "jsdoc-tag-dropped": "Passthrough JSDoc tags that couldn't attach",
 };
 
 const KIND_ORDER: SveldDiagnosticKind[] = [
@@ -191,6 +231,11 @@ const KIND_ORDER: SveldDiagnosticKind[] = [
   "extend-props-target-missing",
   "extend-props-duplicate",
   "extend-props-override",
+  "jsdoc-unknown-tag",
+  "typedef-duplicate",
+  "property-duplicate",
+  "generics-conflict",
+  "jsdoc-tag-dropped",
 ];
 
 /**

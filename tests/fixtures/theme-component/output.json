@@ -43,7 +43,13 @@
     {
       "name": "tokens",
       "kind": "let",
-      "description": "Customize a theme with your own tokens\n@see https://carbondesignsystem.com/guidelines/themes/overview#customizing-a-theme",
+      "description": "Customize a theme with your own tokens",
+      "tags": [
+        {
+          "name": "see",
+          "body": "https://carbondesignsystem.com/guidelines/themes/overview#customizing-a-theme"
+        }
+      ],
       "type": "{ [token: string]: any; }",
       "typeSource": "jsdoc",
       "value": "{}",

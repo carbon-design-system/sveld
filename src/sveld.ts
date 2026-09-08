@@ -2,6 +2,7 @@ import type { ComponentParseError } from "./bundle";
 import { type CheckResult, resolveCheckSnapshotFile, runCheck } from "./check";
 import {
   failingDiagnostics,
+  filterSpeculativeDiagnostics,
   formatDiagnosticsSummary,
   formatDiagnosticsSummaryJson,
   type SveldDiagnostic,
@@ -78,8 +79,8 @@ export async function sveld(opts?: SveldOptions): Promise<SveldResult> {
   // the parse-only save generateBundle() already did.
   if (!merged.dryRun) result.cache?.save();
 
-  const { diagnostics } = result;
   const shouldReport = merged.reportDiagnostics || merged.strict;
+  const diagnostics = filterSpeculativeDiagnostics(result.diagnostics, shouldReport);
 
   if (shouldReport && diagnostics.length > 0) {
     if (merged.format === "json") {

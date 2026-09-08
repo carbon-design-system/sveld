@@ -46,5 +46,24 @@
   ],
   "generics": null,
   "contexts": [],
-  "diagnostics": []
+  "diagnostics": [
+    {
+      "component": "typedef-duplicate-name/input.svelte",
+      "kind": "typedef-duplicate",
+      "name": "Config",
+      "message": "Duplicate typedef/callback name \"Config\"; the later declaration overwrites the earlier one.",
+      "source": {
+        "start": {
+          "line": 8,
+          "column": 5
+        },
+        "end": {
+          "line": 8,
+          "column": 29
+        }
+      },
+      "code": "sveld/typedef-duplicate",
+      "severity": "warning"
+    }
+  ]
 }

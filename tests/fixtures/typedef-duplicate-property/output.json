@@ -46,5 +46,24 @@
   ],
   "generics": null,
   "contexts": [],
-  "diagnostics": []
+  "diagnostics": [
+    {
+      "component": "typedef-duplicate-property/input.svelte",
+      "kind": "property-duplicate",
+      "name": "id",
+      "message": "Duplicate property \"id\" of \"Config\"; the later declaration overwrites the earlier one.",
+      "source": {
+        "start": {
+          "line": 5,
+          "column": 5
+        },
+        "end": {
+          "line": 5,
+          "column": 52
+        }
+      },
+      "code": "sveld/property-duplicate",
+      "severity": "warning"
+    }
+  ]
 }
