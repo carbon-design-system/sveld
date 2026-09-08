@@ -911,6 +911,7 @@ function applyContextKeyResolutions(component: ComponentDocApi, resolutions: Con
         typeName: generateContextTypeName(key),
         description: candidate.description,
         properties: candidate.properties,
+        source: candidate.source,
       },
     ];
   }

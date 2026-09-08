@@ -367,7 +367,7 @@ export async function writeStdout(
       ...opts?.jsonOptions,
       inputDir,
       entryExports: result.entryExports,
-    } satisfies Pick<WriteJsonOptions, "inputDir" | "entryExports">;
+    } satisfies Pick<WriteJsonOptions, "inputDir" | "entryExports" | "source">;
 
     const rendered =
       opts.stdout === "ndjson"

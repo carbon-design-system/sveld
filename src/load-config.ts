@@ -241,7 +241,7 @@ const KNOWN_TOP_LEVEL_KEYS = [
 /** Known keys inside each `*Options` object, keyed by the top-level option name. `additionalWriters` is userland-defined and not validated here. */
 const KNOWN_NESTED_KEYS: Record<string, string[]> = {
   typesOptions: ["outDir", "preamble", "format", "exports", "dryRun", "cache", "resolvedPathByFilePath"],
-  jsonOptions: ["input", "outFile", "outDir", "entryExports", "dryRun"],
+  jsonOptions: ["input", "outFile", "outDir", "entryExports", "dryRun", "source"],
   markdownOptions: ["write", "outFile", "entryExports", "onAppend", "dryRun"],
   customElementsOptions: ["outFile", "dryRun"],
   llmsOptions: ["outDir", "linkBase", "title", "summary", "entryExports", "dryRun"],

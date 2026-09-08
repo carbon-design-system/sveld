@@ -131,7 +131,17 @@
       "type": "{ rows: import(\"svelte/store\").Writable<string[]>; selected: import(\"svelte/store\").Readable<number> }",
       "name": "TableContext",
       "description": "The value stored under a Svelte context key, typed with imported store\ntypes. `import(...)` works inside a `@typedef` too.",
-      "ts": "interface TableContext { rows: import(\"svelte/store\").Writable<string[]>; selected: import(\"svelte/store\").Readable<number> }"
+      "ts": "interface TableContext { rows: import(\"svelte/store\").Writable<string[]>; selected: import(\"svelte/store\").Readable<number> }",
+      "source": {
+        "start": {
+          "line": 34,
+          "column": 5
+        },
+        "end": {
+          "line": 34,
+          "column": 131
+        }
+      }
     }
   ],
   "generics": null,

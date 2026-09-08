@@ -49,7 +49,17 @@
     {
       "type": "{\n  name: string;\n}",
       "name": "RealTypedef",
-      "ts": "type RealTypedef = {\n  name: string;\n};"
+      "ts": "type RealTypedef = {\n  name: string;\n};",
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 5
+        },
+        "end": {
+          "line": 3,
+          "column": 34
+        }
+      }
     }
   ],
   "generics": null,

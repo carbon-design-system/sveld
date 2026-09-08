@@ -50,7 +50,17 @@
           "description": "Register a tab and return its index.",
           "optional": false
         }
-      ]
+      ],
+      "source": {
+        "start": {
+          "line": 18,
+          "column": 2
+        },
+        "end": {
+          "line": 18,
+          "column": 45
+        }
+      }
     }
   ],
   "diagnostics": []

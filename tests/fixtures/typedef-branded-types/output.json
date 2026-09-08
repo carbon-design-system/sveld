@@ -65,13 +65,33 @@
       "type": "string & { readonly __brand: \"UserId\" }",
       "name": "UserId",
       "description": "A branded string. At runtime it is a plain `string`, but the brand makes it\na distinct domain type that other strings cannot be assigned to.",
-      "ts": "type UserId = string & { readonly __brand: \"UserId\" };"
+      "ts": "type UserId = string & { readonly __brand: \"UserId\" };",
+      "source": {
+        "start": {
+          "line": 6,
+          "column": 5
+        },
+        "end": {
+          "line": 6,
+          "column": 62
+        }
+      }
     },
     {
       "type": "number & { readonly __brand: \"Cents\" }",
       "name": "Cents",
       "description": "A branded number representing a monetary amount in cents.",
-      "ts": "type Cents = number & { readonly __brand: \"Cents\" };"
+      "ts": "type Cents = number & { readonly __brand: \"Cents\" };",
+      "source": {
+        "start": {
+          "line": 12,
+          "column": 5
+        },
+        "end": {
+          "line": 12,
+          "column": 60
+        }
+      }
     }
   ],
   "generics": null,

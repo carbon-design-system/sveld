@@ -319,6 +319,8 @@ export function parseSetContextCall(ctx: ParserContext, parser: ComponentParser,
   const valueArg = callExpr.arguments[1];
   if (!valueArg) return;
 
+  const callSource = sourceRangeFromNode(ctx, node);
+
   if (resolution.kind === "pending") {
     /** Properties come from the local value. The key is resolved later. */
     const contextInfo = parseContextValue(ctx, parser, valueArg, "");
@@ -328,6 +330,7 @@ export function parseSetContextCall(ctx: ParserContext, parser: ComponentParser,
         importedName: resolution.importedName,
         properties: contextInfo.properties,
         description: contextInfo.description,
+        source: callSource,
       });
     }
     return;
@@ -343,10 +346,10 @@ export function parseSetContextCall(ctx: ParserContext, parser: ComponentParser,
       "context-duplicate-key",
       contextKey,
       `setContext("${contextKey}", ...) was called more than once; only the first call's shape is used.`,
-      sourceRangeFromNode(ctx, node),
+      callSource,
     );
     return;
   }
 
-  ctx.contexts.set(contextKey, contextInfo);
+  ctx.contexts.set(contextKey, { ...contextInfo, source: callSource });
 }

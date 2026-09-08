@@ -64,12 +64,32 @@
     {
       "type": "{ id: any; [key: string]: any; }",
       "name": "DataTableRow",
-      "ts": "interface DataTableRow { id: any; [key: string]: any; }"
+      "ts": "interface DataTableRow { id: any; [key: string]: any; }",
+      "source": {
+        "start": {
+          "line": 6,
+          "column": 5
+        },
+        "end": {
+          "line": 6,
+          "column": 61
+        }
+      }
     },
     {
       "type": "any",
       "name": "DataTableRowId",
-      "ts": "type DataTableRowId = any;"
+      "ts": "type DataTableRowId = any;",
+      "source": {
+        "start": {
+          "line": 7,
+          "column": 5
+        },
+        "end": {
+          "line": 7,
+          "column": 34
+        }
+      }
     }
   ],
   "generics": [
@@ -105,7 +125,17 @@
           "description": "Filter rows by search value",
           "optional": false
         }
-      ]
+      ],
+      "source": {
+        "start": {
+          "line": 39,
+          "column": 2
+        },
+        "end": {
+          "line": 44,
+          "column": 4
+        }
+      }
     }
   ],
   "diagnostics": []

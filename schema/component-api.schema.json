@@ -340,7 +340,8 @@
         "tags": {
           "type": "array",
           "items": { "$ref": "#/$defs/jsdocTag" }
-        }
+        },
+        "source": { "$ref": "#/$defs/sourceRange" }
       }
     },
     "context": {
@@ -358,7 +359,8 @@
         "hasUnresolvedSpread": {
           "type": "boolean",
           "description": "True when a {...spread} in the context's object literal couldn't be resolved; the generated type intersects with Record<string, any>."
-        }
+        },
+        "source": { "$ref": "#/$defs/sourceRange" }
       }
     },
     "contextProperty": {

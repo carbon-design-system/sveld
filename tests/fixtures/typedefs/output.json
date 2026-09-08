@@ -92,12 +92,32 @@
     {
       "type": "{ [key: string]: boolean; }",
       "name": "MyTypedef",
-      "ts": "interface MyTypedef { [key: string]: boolean; }"
+      "ts": "interface MyTypedef { [key: string]: boolean; }",
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 5
+        },
+        "end": {
+          "line": 3,
+          "column": 53
+        }
+      }
     },
     {
       "type": "MyTypedef[]",
       "name": "MyTypedefArray",
-      "ts": "type MyTypedefArray = MyTypedef[];"
+      "ts": "type MyTypedefArray = MyTypedef[];",
+      "source": {
+        "start": {
+          "line": 4,
+          "column": 5
+        },
+        "end": {
+          "line": 4,
+          "column": 42
+        }
+      }
     }
   ],
   "generics": null,

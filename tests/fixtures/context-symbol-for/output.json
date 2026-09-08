@@ -44,7 +44,17 @@
           "description": "Push a notification message.",
           "optional": false
         }
-      ]
+      ],
+      "source": {
+        "start": {
+          "line": 10,
+          "column": 2
+        },
+        "end": {
+          "line": 10,
+          "column": 52
+        }
+      }
     }
   ],
   "diagnostics": []

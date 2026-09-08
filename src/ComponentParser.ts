@@ -198,6 +198,8 @@ export interface PendingContextKeyCandidate {
   importedName: string;
   properties: ComponentContextProp[];
   description?: string;
+  /** Source range of the `setContext(...)` call, when available. */
+  source?: SourceRange;
 }
 
 export interface LocalTypeDeclaration {
@@ -525,6 +527,8 @@ export interface TypeDef {
   tags?: JsDocPassthroughTag[];
   /** True from `@ignore`/`@internal` JSDoc; excluded from every output by `buildComponentApiDocument`. */
   internal?: boolean;
+  /** Source range of the `@typedef`/`@callback` tag, when available. */
+  source?: SourceRange;
 }
 
 export type ComponentGenerics = [name: string, type: string] | null;
@@ -638,6 +642,8 @@ export interface ComponentContext {
   hasUnresolvedSpread?: boolean;
   /** True from `@ignore`/`@internal` JSDoc on the `setContext` call; excluded from every output by `buildComponentApiDocument`. */
   internal?: boolean;
+  /** Source range of the `setContext(...)` call, when available. */
+  source?: SourceRange;
 }
 
 /**

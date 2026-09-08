@@ -90,17 +90,47 @@
     {
       "type": "{ id: string | number; [key: string]: any; }",
       "name": "DataTableRow",
-      "ts": "interface DataTableRow { id: string | number; [key: string]: any; }"
+      "ts": "interface DataTableRow { id: string | number; [key: string]: any; }",
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 5
+        },
+        "end": {
+          "line": 3,
+          "column": 73
+        }
+      }
     },
     {
       "type": "Exclude<keyof Row, \"id\">",
       "name": "DataTableKey<Row>",
-      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \"id\">;"
+      "ts": "type DataTableKey<Row> = Exclude<keyof Row, \"id\">;",
+      "source": {
+        "start": {
+          "line": 4,
+          "column": 5
+        },
+        "end": {
+          "line": 4,
+          "column": 58
+        }
+      }
     },
     {
       "type": "{ key: DataTableKey<Row>; value: string; }",
       "name": "DataTableHeader<Row = DataTableRow>",
-      "ts": "interface DataTableHeader<Row = DataTableRow> { key: DataTableKey<Row>; value: string; }"
+      "ts": "interface DataTableHeader<Row = DataTableRow> { key: DataTableKey<Row>; value: string; }",
+      "source": {
+        "start": {
+          "line": 5,
+          "column": 5
+        },
+        "end": {
+          "line": 5,
+          "column": 92
+        }
+      }
     }
   ],
   "generics": [

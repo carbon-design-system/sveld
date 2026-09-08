@@ -91,7 +91,17 @@
     {
       "type": "{ [key: string]: boolean; }",
       "name": "MyTypedef",
-      "ts": "interface MyTypedef { [key: string]: boolean; }"
+      "ts": "interface MyTypedef { [key: string]: boolean; }",
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 5
+        },
+        "end": {
+          "line": 3,
+          "column": 53
+        }
+      }
     }
   ],
   "generics": null,

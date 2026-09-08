@@ -115,19 +115,49 @@
       "type": "{\n  /** The user's full name. */\n  name: string;\n  /** The user's email address. */\n  email: string;\n  /** The user's age in years. */\n  age: number;\n  /** Optional nickname. */\n  nickname?: string;\n  /** Optional phone with default. @default 555-0000 */\n  phone?: string;\n}",
       "name": "User",
       "description": "Represents a user in the system.",
-      "ts": "type User = {\n  /** The user's full name. */\n  name: string;\n  /** The user's email address. */\n  email: string;\n  /** The user's age in years. */\n  age: number;\n  /** Optional nickname. */\n  nickname?: string;\n  /** Optional phone with default. @default 555-0000 */\n  phone?: string;\n};"
+      "ts": "type User = {\n  /** The user's full name. */\n  name: string;\n  /** The user's email address. */\n  email: string;\n  /** The user's age in years. */\n  age: number;\n  /** Optional nickname. */\n  nickname?: string;\n  /** Optional phone with default. @default 555-0000 */\n  phone?: string;\n};",
+      "source": {
+        "start": {
+          "line": 5,
+          "column": 5
+        },
+        "end": {
+          "line": 5,
+          "column": 27
+        }
+      }
     },
     {
       "type": "{\n  /** Whether the component is enabled. */\n  enabled: boolean;\n  /** The component theme. */\n  theme: string;\n  /** Optional timeout in milliseconds. @default 5000 */\n  timeout?: number;\n}",
       "name": "ComponentConfig",
       "description": "Configuration options for the component.",
-      "ts": "type ComponentConfig = {\n  /** Whether the component is enabled. */\n  enabled: boolean;\n  /** The component theme. */\n  theme: string;\n  /** Optional timeout in milliseconds. @default 5000 */\n  timeout?: number;\n};"
+      "ts": "type ComponentConfig = {\n  /** Whether the component is enabled. */\n  enabled: boolean;\n  /** The component theme. */\n  theme: string;\n  /** Optional timeout in milliseconds. @default 5000 */\n  timeout?: number;\n};",
+      "source": {
+        "start": {
+          "line": 15,
+          "column": 5
+        },
+        "end": {
+          "line": 15,
+          "column": 38
+        }
+      }
     },
     {
       "type": "{ id: number; label: string; }",
       "name": "SimpleType",
       "description": "Simple typedef without properties (backwards compatibility test).",
-      "ts": "interface SimpleType { id: number; label: string; }"
+      "ts": "interface SimpleType { id: number; label: string; }",
+      "source": {
+        "start": {
+          "line": 23,
+          "column": 5
+        },
+        "end": {
+          "line": 23,
+          "column": 57
+        }
+      }
     }
   ],
   "generics": null,

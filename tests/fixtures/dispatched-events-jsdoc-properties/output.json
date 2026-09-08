@@ -85,7 +85,17 @@
       "type": "{\n  /** The full new set of items. */\n  items: string[];\n  /** Items added since the last change. */\n  added: string[];\n  /** Items removed since the last change. */\n  removed?: string[];\n}",
       "name": "ChangeDetail",
       "description": "The event detail described once as a named typedef, then reused via `@event`.",
-      "ts": "type ChangeDetail = {\n  /** The full new set of items. */\n  items: string[];\n  /** Items added since the last change. */\n  added: string[];\n  /** Items removed since the last change. */\n  removed?: string[];\n};"
+      "ts": "type ChangeDetail = {\n  /** The full new set of items. */\n  items: string[];\n  /** Items added since the last change. */\n  added: string[];\n  /** Items removed since the last change. */\n  removed?: string[];\n};",
+      "source": {
+        "start": {
+          "line": 24,
+          "column": 5
+        },
+        "end": {
+          "line": 24,
+          "column": 35
+        }
+      }
     }
   ],
   "generics": null,

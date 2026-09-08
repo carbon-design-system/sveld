@@ -21,7 +21,17 @@
     {
       "key": "BreadcrumbItem",
       "typeName": "BreadcrumbItemContext",
-      "properties": []
+      "properties": [],
+      "source": {
+        "start": {
+          "line": 4,
+          "column": 2
+        },
+        "end": {
+          "line": 4,
+          "column": 34
+        }
+      }
     }
   ],
   "diagnostics": []

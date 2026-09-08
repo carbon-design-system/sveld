@@ -42,12 +42,32 @@
       "type": "{ count: number }",
       "name": "InternalCount",
       "ts": "interface InternalCount { count: number }",
-      "internal": true
+      "internal": true,
+      "source": {
+        "start": {
+          "line": 4,
+          "column": 5
+        },
+        "end": {
+          "line": 4,
+          "column": 47
+        }
+      }
     },
     {
       "type": "{ items: InternalCount[] }",
       "name": "PublicList",
-      "ts": "interface PublicList { items: InternalCount[] }"
+      "ts": "interface PublicList { items: InternalCount[] }",
+      "source": {
+        "start": {
+          "line": 8,
+          "column": 5
+        },
+        "end": {
+          "line": 8,
+          "column": 53
+        }
+      }
     }
   ],
   "generics": null,

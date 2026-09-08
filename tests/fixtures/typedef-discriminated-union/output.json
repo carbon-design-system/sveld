@@ -77,12 +77,32 @@
     {
       "type": "{ kind: \"success\"; value: string } | { kind: \"error\"; error: Error }",
       "name": "Result",
-      "ts": "type Result = { kind: \"success\"; value: string } | { kind: \"error\"; error: Error };"
+      "ts": "type Result = { kind: \"success\"; value: string } | { kind: \"error\"; error: Error };",
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 5
+        },
+        "end": {
+          "line": 3,
+          "column": 91
+        }
+      }
     },
     {
       "type": "{ ok: true; data: number } | { ok: false; reason: string } | \"pending\"",
       "name": "Status",
-      "ts": "type Status = { ok: true; data: number } | { ok: false; reason: string } | \"pending\";"
+      "ts": "type Status = { ok: true; data: number } | { ok: false; reason: string } | \"pending\";",
+      "source": {
+        "start": {
+          "line": 4,
+          "column": 5
+        },
+        "end": {
+          "line": 4,
+          "column": 93
+        }
+      }
     }
   ],
   "generics": null,

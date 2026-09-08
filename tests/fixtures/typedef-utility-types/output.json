@@ -109,13 +109,33 @@
       "type": "{ id: string; size: \"sm\" | \"md\" | \"lg\"; disabled: boolean }",
       "name": "Options",
       "description": "The full set of options. Other prop types are derived from this one\ninstead of redeclaring its fields.",
-      "ts": "interface Options { id: string; size: \"sm\" | \"md\" | \"lg\"; disabled: boolean }"
+      "ts": "interface Options { id: string; size: \"sm\" | \"md\" | \"lg\"; disabled: boolean }",
+      "source": {
+        "start": {
+          "line": 6,
+          "column": 5
+        },
+        "end": {
+          "line": 6,
+          "column": 83
+        }
+      }
     },
     {
       "type": "() => Options",
       "name": "Factory",
       "description": "A factory that produces an `Options` value.",
-      "ts": "type Factory = () => Options;"
+      "ts": "type Factory = () => Options;",
+      "source": {
+        "start": {
+          "line": 12,
+          "column": 5
+        },
+        "end": {
+          "line": 12,
+          "column": 37
+        }
+      }
     }
   ],
   "generics": null,

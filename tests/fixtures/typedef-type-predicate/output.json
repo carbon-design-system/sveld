@@ -64,13 +64,33 @@
     {
       "type": "{ id: string; name: string }",
       "name": "User",
-      "ts": "interface User { id: string; name: string }"
+      "ts": "interface User { id: string; name: string }",
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 5
+        },
+        "end": {
+          "line": 3,
+          "column": 49
+        }
+      }
     },
     {
       "type": "(value: unknown) => value is User",
       "name": "UserGuard",
       "description": "A type guard expressed as a `@callback`.",
-      "ts": "type UserGuard = (value: unknown) => value is User;"
+      "ts": "type UserGuard = (value: unknown) => value is User;",
+      "source": {
+        "start": {
+          "line": 17,
+          "column": 5
+        },
+        "end": {
+          "line": 17,
+          "column": 59
+        }
+      }
     }
   ],
   "generics": null,
