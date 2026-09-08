@@ -21,6 +21,7 @@ import { matchesGlob } from "./glob-match";
  * - `property-duplicate`: a second `@property` reused a name on the same `@event`/`@typedef`; the later declaration overwrites the earlier one.
  * - `generics-conflict`: a second `@generics`/`@template` reused a generic name.
  * - `jsdoc-tag-dropped`: a passthrough JSDoc tag (e.g. `@see`) couldn't attach to a following or preceding structural tag.
+ * - `internal-typedef-referenced`: a public prop/typedef/event/slot/module-export/context type references an `@internal` typedef by name, which is excluded from output; the generated `.d.ts` will contain a dangling reference.
  */
 export type SveldDiagnosticKind =
   | "prop-unknown-type"
@@ -39,7 +40,8 @@ export type SveldDiagnosticKind =
   | "typedef-duplicate"
   | "property-duplicate"
   | "generics-conflict"
-  | "jsdoc-tag-dropped";
+  | "jsdoc-tag-dropped"
+  | "internal-typedef-referenced";
 
 /** `"error"` fails `--strict=errors`; `"warning"` only fails plain `--strict`. */
 export type SveldDiagnosticSeverity = "error" | "warning";
@@ -68,6 +70,7 @@ export const DIAGNOSTIC_CODES: Record<SveldDiagnosticKind, string> = {
   "property-duplicate": "sveld/property-duplicate",
   "generics-conflict": "sveld/generics-conflict",
   "jsdoc-tag-dropped": "sveld/jsdoc-tag-dropped",
+  "internal-typedef-referenced": "sveld/internal-typedef-referenced",
 };
 
 /**
@@ -93,6 +96,7 @@ export const DIAGNOSTIC_SEVERITIES: Record<SveldDiagnosticKind, SveldDiagnosticS
   "property-duplicate": "warning",
   "generics-conflict": "warning",
   "jsdoc-tag-dropped": "warning",
+  "internal-typedef-referenced": "error",
 };
 
 /**
@@ -216,6 +220,7 @@ const KIND_LABELS: Record<SveldDiagnosticKind, string> = {
   "property-duplicate": "Duplicate @property names",
   "generics-conflict": "Duplicate @generics/@template names",
   "jsdoc-tag-dropped": "Passthrough JSDoc tags that couldn't attach",
+  "internal-typedef-referenced": "Public types referencing an @internal typedef",
 };
 
 const KIND_ORDER: SveldDiagnosticKind[] = [
@@ -236,6 +241,7 @@ const KIND_ORDER: SveldDiagnosticKind[] = [
   "property-duplicate",
   "generics-conflict",
   "jsdoc-tag-dropped",
+  "internal-typedef-referenced",
 ];
 
 /**

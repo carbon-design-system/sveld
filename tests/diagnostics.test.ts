@@ -545,6 +545,81 @@ describe("ComponentParser diagnostics", () => {
 
     expect(diagnostics?.some((d) => d.kind === "jsdoc-unknown-tag")).toBe(false);
   });
+
+  test("flags a public prop whose @type references an @internal typedef by name", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /**
+         * @internal
+         * @typedef {{ count: number }} InternalCount
+         */
+
+        /** @type {InternalCount} */
+        export let value;
+      </script>
+    `;
+
+    const { diagnostics } = parser.parseSvelteComponent(source, parseContext);
+    const referencedDiagnostic = diagnostics?.find((d) => d.kind === "internal-typedef-referenced");
+
+    expect(referencedDiagnostic).toMatchObject({ kind: "internal-typedef-referenced", name: "value" });
+  });
+
+  test("flags a public typedef whose declaration references an @internal typedef by name", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /**
+         * @internal
+         * @typedef {{ count: number }} InternalCount
+         */
+
+        /**
+         * @typedef {{ items: InternalCount[] }} PublicList
+         */
+
+        /** @type {PublicList} */
+        export let list;
+      </script>
+    `;
+
+    const { diagnostics } = parser.parseSvelteComponent(source, parseContext);
+    const referencedDiagnostic = diagnostics?.find((d) => d.kind === "internal-typedef-referenced");
+
+    expect(referencedDiagnostic).toMatchObject({ kind: "internal-typedef-referenced", name: "PublicList" });
+  });
+
+  test("does not flag an @internal typedef that nothing else references", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /**
+         * @internal
+         * @typedef {{ count: number }} InternalCount
+         */
+        export let value = 1;
+      </script>
+    `;
+
+    const { diagnostics } = parser.parseSvelteComponent(source, parseContext);
+
+    expect(diagnostics?.some((d) => d.kind === "internal-typedef-referenced")).toBe(false);
+  });
+
+  test("does not flag or throw for components with no @internal typedefs at all", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        export let a = 1;
+        export let b = "hello";
+      </script>
+    `;
+
+    const { diagnostics } = parser.parseSvelteComponent(source, parseContext);
+
+    expect(diagnostics?.some((d) => d.kind === "internal-typedef-referenced")).toBe(false);
+  });
 });
 
 describe("diagnostics helpers", () => {

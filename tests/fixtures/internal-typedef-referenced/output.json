@@ -1,0 +1,65 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 16,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "list",
+      "kind": "let",
+      "type": "PublicList",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 12,
+          "column": 2
+        },
+        "end": {
+          "line": 12,
+          "column": 18
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{ count: number }",
+      "name": "InternalCount",
+      "ts": "interface InternalCount { count: number }",
+      "internal": true
+    },
+    {
+      "type": "{ items: InternalCount[] }",
+      "name": "PublicList",
+      "ts": "interface PublicList { items: InternalCount[] }"
+    }
+  ],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "internal-typedef-referenced/input.svelte",
+      "kind": "internal-typedef-referenced",
+      "name": "PublicList",
+      "message": "\"PublicList\" references \"InternalCount\", which is @internal and excluded from output; the generated .d.ts will contain a dangling reference to it.",
+      "code": "sveld/internal-typedef-referenced",
+      "severity": "error"
+    }
+  ]
+}
