@@ -13,7 +13,7 @@ import { WATCH_RELEVANT_EXT_REGEX } from "./path";
 import { createSveldBundle, type SveldBundle } from "./watch";
 // Side-effect import: registers the built-in "json"/"markdown"/"types"/"custom-elements" writers.
 import "./writer/built-in-writers";
-import { getWriter } from "./writer/registry";
+import { getWriter, type OutputWriter } from "./writer/registry";
 import { renderCustomElementsManifest, type WriteCustomElementsOptions } from "./writer/writer-custom-elements";
 import { renderJsonDocument, renderJsonLines, type WriteJsonOptions } from "./writer/writer-json";
 import type { WriteLlmsOptions } from "./writer/writer-llms";
@@ -343,10 +343,34 @@ export async function writeOutput(
       return undefined;
     }
     const components = writer.componentSet === "all" ? result.allComponentsForTypes : result.components;
-    return writer.write(components, writerOptions);
+    // Same `dryRun` contract as every built-in writer above: report the
+    // resolved path instead of writing, from `sveld --dry-run`.
+    const options = { ...(writerOptions as Record<string, unknown>), dryRun };
+    return runCustomWriter(name, writer, components, options);
   });
 
   await Promise.all(additionalWrites);
+}
+
+/**
+ * Runs a userland writer registered via `additionalWriters`, attributing any
+ * failure to its registered `name`. Wrapping the call in an `async` function
+ * (rather than calling `writer.write` directly in the `.map()` above) turns a
+ * *synchronous* throw into a rejected promise instead of one that escapes
+ * `.map()` itself, so the other writers in the batch still run to completion.
+ */
+async function runCustomWriter(
+  name: string,
+  writer: OutputWriter<unknown>,
+  components: ComponentDocs,
+  options: unknown,
+): Promise<unknown> {
+  try {
+    return await writer.write(components, options);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`sveld: writer "${name}" failed: ${message}`, { cause: error });
+  }
 }
 
 /**

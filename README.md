@@ -1325,6 +1325,8 @@ interface OutputWriter<TOptions = unknown> {
   (also exported from `sveld`) to get the sorted, `diagnostics`-stripped,
   schema-versioned document the built-in writers build from. It's memoized
   per `components` map, so calling it more than once in one run is free.
+- **`options`** always carries `dryRun` alongside whatever fields the writer
+  itself defines. See [The `dryRun` contract](#the-dryrun-contract) below.
 
 ### Registering a writer
 
@@ -1342,6 +1344,50 @@ registerWriter({
 `registerWriter` is a side effect — call it once, before the plugin or CLI
 runs, e.g. at the top of `vite.config.ts` or `sveld.config.ts`, or in a file
 either of those imports.
+
+Registering a `name` that's already taken — a built-in writer's name, or
+another `registerWriter` call — throws instead of silently overwriting it.
+Pass `{ replace: true }` as a second argument when overwriting is intentional
+(e.g. re-registering a writer module during development):
+
+```ts
+registerWriter(
+  {
+    name: "my-format",
+    write(components, options) {
+      // ...
+    },
+  },
+  { replace: true },
+);
+```
+
+### The `dryRun` contract
+
+Every writer — built-in or `additionalWriters` — receives `dryRun: true` in
+its `options` when the run is `sveld --dry-run` (or `{ dryRun: true }` from
+the programmatic API). A writer must check it and skip touching disk; sveld
+does not do this for you:
+
+```ts
+import { writeFileSync } from "node:fs";
+
+registerWriter({
+  name: "my-format",
+  write(components, options: { outFile: string; dryRun?: boolean }) {
+    if (options.dryRun) {
+      console.log(`would write "${options.outFile}"`);
+      return;
+    }
+    writeFileSync(options.outFile, "...");
+  },
+});
+```
+
+A writer that throws — synchronously or from a rejected promise — has its
+error re-thrown as `sveld: writer "<name>" failed: <message>`, with the
+original error attached as `cause`, so a broken third-party writer never
+fails silently or without saying which one.
 
 ### Running it via the plugin
 
