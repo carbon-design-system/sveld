@@ -165,6 +165,196 @@ describe("diffApiDocuments", () => {
 
       expect(diffApiDocuments(document([before]), document([after]))).toEqual([]);
     });
+
+    test("a function type gaining a trailing optional param is additive", () => {
+      const before = mockComponentDocApi("Button", "Button.svelte", {
+        props: [makeProp("onClick", { type: "(event: MouseEvent) => void" })],
+      });
+      const after = mockComponentDocApi("Button", "Button.svelte", {
+        props: [makeProp("onClick", { type: "(event: MouseEvent, index?: number) => void" })],
+      });
+
+      const changes = diffApiDocuments(document([before]), document([after]));
+      expect(changes[0]).toMatchObject({ bump: "minor" });
+    });
+
+    test("a function type gaining a trailing required param is breaking", () => {
+      const before = mockComponentDocApi("Button", "Button.svelte", {
+        props: [makeProp("onClick", { type: "(event: MouseEvent) => void" })],
+      });
+      const after = mockComponentDocApi("Button", "Button.svelte", {
+        props: [makeProp("onClick", { type: "(event: MouseEvent, index: number) => void" })],
+      });
+
+      const changes = diffApiDocuments(document([before]), document([after]));
+      expect(changes[0]).toMatchObject({ bump: "major" });
+    });
+
+    test("a function type losing a param is breaking", () => {
+      const before = mockComponentDocApi("Button", "Button.svelte", {
+        props: [makeProp("onClick", { type: "(event: MouseEvent, index?: number) => void" })],
+      });
+      const after = mockComponentDocApi("Button", "Button.svelte", {
+        props: [makeProp("onClick", { type: "(event: MouseEvent) => void" })],
+      });
+
+      const changes = diffApiDocuments(document([before]), document([after]));
+      expect(changes[0]).toMatchObject({ bump: "major" });
+    });
+
+    test("a function type's changed return type is breaking", () => {
+      const before = mockComponentDocApi("Button", "Button.svelte", {
+        props: [makeProp("getValue", { type: "() => string" })],
+      });
+      const after = mockComponentDocApi("Button", "Button.svelte", {
+        props: [makeProp("getValue", { type: "() => number" })],
+      });
+
+      const changes = diffApiDocuments(document([before]), document([after]));
+      expect(changes[0]).toMatchObject({ bump: "major" });
+    });
+
+    test("gaining a writable binding is additive; losing it is breaking", () => {
+      const before = mockComponentDocApi("Input", "Input.svelte", {
+        props: [makeProp("value", { type: "string" }), makeProp("checked", { type: "boolean", binding: "writable" })],
+      });
+      const after = mockComponentDocApi("Input", "Input.svelte", {
+        props: [makeProp("value", { type: "string", binding: "writable" }), makeProp("checked", { type: "boolean" })],
+      });
+
+      const changes = diffApiDocuments(document([before]), document([after]));
+      expect(changes).toContainEqual({
+        component: "Input",
+        kind: "prop",
+        name: "value",
+        bump: "minor",
+        message: 'prop "value" gained a writable binding',
+      });
+      expect(changes).toContainEqual({
+        component: "Input",
+        kind: "prop",
+        name: "checked",
+        bump: "major",
+        message: 'prop "checked" lost its writable binding',
+      });
+    });
+
+    test("a runes $bindable() prop counts as a writable binding", () => {
+      const before = mockComponentDocApi("Input", "Input.svelte", { props: [makeProp("value", { type: "string" })] });
+      const after = mockComponentDocApi("Input", "Input.svelte", {
+        props: [makeProp("value", { type: "string", bindable: true })],
+      });
+
+      const changes = diffApiDocuments(document([before]), document([after]));
+      expect(changes).toEqual([
+        {
+          component: "Input",
+          kind: "prop",
+          name: "value",
+          bump: "minor",
+          message: 'prop "value" gained a writable binding',
+        },
+      ]);
+    });
+
+    test("a changed default is a patch when the type is unchanged", () => {
+      const before = mockComponentDocApi("Button", "Button.svelte", {
+        props: [makeProp("variant", { type: "string", value: '"primary"' })],
+      });
+      const after = mockComponentDocApi("Button", "Button.svelte", {
+        props: [makeProp("variant", { type: "string", value: '"secondary"' })],
+      });
+
+      const changes = diffApiDocuments(document([before]), document([after]));
+      expect(changes).toEqual([
+        {
+          component: "Button",
+          kind: "prop",
+          name: "variant",
+          bump: "patch",
+          message: 'prop "variant" default changed from `"primary"` to `"secondary"`',
+        },
+      ]);
+    });
+
+    test("a changed default alongside a type change is not reported separately", () => {
+      const before = mockComponentDocApi("Button", "Button.svelte", {
+        props: [makeProp("variant", { type: "string", value: '"primary"' })],
+      });
+      const after = mockComponentDocApi("Button", "Button.svelte", {
+        props: [makeProp("variant", { type: "number", value: "1" })],
+      });
+
+      const changes = diffApiDocuments(document([before]), document([after]));
+      expect(changes).toEqual([
+        {
+          component: "Button",
+          kind: "prop",
+          name: "variant",
+          bump: "major",
+          message: 'prop "variant" type changed from `string` to `number`',
+        },
+      ]);
+    });
+
+    test("adding @deprecated is additive; removing it is a patch", () => {
+      const before = mockComponentDocApi("Button", "Button.svelte", {
+        props: [makeProp("label", { type: "string" }), makeProp("icon", { type: "string", deprecated: true })],
+      });
+      const after = mockComponentDocApi("Button", "Button.svelte", {
+        props: [
+          makeProp("label", { type: "string", deprecated: "use `text` instead" }),
+          makeProp("icon", { type: "string" }),
+        ],
+      });
+
+      const changes = diffApiDocuments(document([before]), document([after]));
+      expect(changes).toContainEqual({
+        component: "Button",
+        kind: "prop",
+        name: "label",
+        bump: "minor",
+        message: 'prop "label" marked as deprecated',
+      });
+      expect(changes).toContainEqual({
+        component: "Button",
+        kind: "prop",
+        name: "icon",
+        bump: "patch",
+        message: 'prop "icon" no longer deprecated',
+      });
+    });
+
+    test("constant/reactive flips are additive", () => {
+      const before = mockComponentDocApi("Counter", "Counter.svelte", {
+        props: [
+          makeProp("count", { type: "number", constant: false, reactive: false }),
+          makeProp("label", { type: "string", constant: false, reactive: false }),
+        ],
+      });
+      const after = mockComponentDocApi("Counter", "Counter.svelte", {
+        props: [
+          makeProp("count", { type: "number", constant: true, reactive: false }),
+          makeProp("label", { type: "string", constant: false, reactive: true }),
+        ],
+      });
+
+      const changes = diffApiDocuments(document([before]), document([after]));
+      expect(changes).toContainEqual({
+        component: "Counter",
+        kind: "prop",
+        name: "count",
+        bump: "minor",
+        message: 'prop "count" became constant',
+      });
+      expect(changes).toContainEqual({
+        component: "Counter",
+        kind: "prop",
+        name: "label",
+        bump: "minor",
+        message: 'prop "label" became reactive',
+      });
+    });
   });
 
   describe("events", () => {
