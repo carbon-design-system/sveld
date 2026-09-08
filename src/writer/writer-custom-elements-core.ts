@@ -6,6 +6,10 @@ import { buildComponentApiDocument } from "./document-model";
  * Minimal local subset of the published Custom Elements Manifest schema
  * (schemaVersion "1.0.0") for the fields sveld can populate. See
  * https://github.com/webcomponents/custom-elements-manifest for the full spec.
+ *
+ * The CEM spec has no field for JSDoc passthrough tags (`@since`, `@example`,
+ * `@see`), so members/events/slots below carry `description` and
+ * `deprecated` only; `tags` is intentionally not read here.
  */
 export interface CemType {
   text: string;

@@ -2761,7 +2761,7 @@ label?: string;
 
 **Valid contexts:**
 
-- **Prop / module export** — captured as a structured tag: JSON adds a `tags: [{ "name": "since", "body": "..." }]` array on the prop (kept separate from `description`), and the generated `.d.ts` emits `@since ...` as its own JSDoc line above `@default`. **Not rendered in the Markdown table** — the Markdown props/events renderers only read `description`, not `tags` (only the slots renderer does; see [extra tags before `@slot`](#extra-jsdoc-tags-before-slot)).
+- **Prop / module export** — captured as a structured tag: JSON adds a `tags: [{ "name": "since", "body": "..." }]` array on the prop (kept separate from `description`), the generated `.d.ts` emits `@since ...` as its own JSDoc line above `@default`, and the Markdown table's Description column appends `@since ...` after the description, same as slots.
 - **`@event`** — same structured behavior as props, but only when `@since` is placed **after** the `@event` line in the same comment block (matching the [`@deprecated`](#deprecated) rule for events). Placed before `@event`, it is silently dropped.
 - **`@slot` / `@snippet`** — placed before the `@slot`/`@snippet` line, alongside the description. Fully surfaced in JSON, `.d.ts`, *and* the Markdown table. See [extra tags before `@slot`](#extra-jsdoc-tags-before-slot).
 - **`@typedef`** — **not supported.** A `@since` before `@typedef` produces no output anywhere; it is silently dropped.
@@ -2799,7 +2799,11 @@ Output (JSON, relevant slice):
 { "name": "width", "description": "A width prop.", "tags": [{ "name": "since", "body": "1.2.0" }] }
 ```
 
-The Markdown table for the same prop shows only `A width prop.` in the Description column — `@since` does not appear there.
+Output (Markdown props table Description column):
+
+```
+A width prop.<br />@since 1.2.0
+```
 
 ### `@see`
 
@@ -2883,7 +2887,7 @@ The same literal string appears unchanged in JSON `description` and in the Markd
 
 `@example` shares its underlying mechanism with `@since` (both are in the small set of tags `sveld` treats as structured "IDE passthrough" tags), so the valid contexts are the same:
 
-- **Prop / module export (including functions)** — structured `tags` entry in JSON, its own `@example` block in `.d.ts`. **Not rendered in the Markdown table**, same gap as `@since`.
+- **Prop / module export (including functions)** — structured `tags` entry in JSON, its own `@example` block in `.d.ts`, and appended to the Markdown table's Description column, same as `@since`.
 - **`@event`** — only when placed **after** the `@event` line in the same block, same rule as `@since`.
 - **`@slot` / `@snippet`** — placed before `@slot`/`@snippet`: fully supported in JSON, `.d.ts`, and Markdown. See [extra tags before `@slot`](#extra-jsdoc-tags-before-slot).
 - **`@typedef`** — **not supported**, dropped silently, same as `@since`.
@@ -2921,7 +2925,13 @@ Output (`.d.ts`):
 formatValue: (value: string) => string;
 ```
 
-`@param`/`@returns` are consumed into the function's type signature rather than kept as separate JSDoc lines. The Markdown table shows only `Formats a value.` in the Description column — the `@example` block does not appear there.
+`@param`/`@returns` are consumed into the function's type signature rather than kept as separate JSDoc lines.
+
+Output (Markdown props table Description column, newlines rendered as `<br />`):
+
+````
+Formats a value.<br />@example ```js<br /> formatValue("ok");<br /> ```
+````
 
 ### Context API
 

@@ -56,7 +56,7 @@ export function formatSlotFallback(fallback?: string) {
   return formatPropType(escapeHtml(fallback).replace(NEWLINE_REGEX, "<br />"));
 }
 
-export function formatSlotDescription(description?: string, tags?: Array<{ name: string; body: string }>) {
+export function formatDescriptionWithTags(description?: string, tags?: Array<{ name: string; body: string }>) {
   const segments: string[] = [];
 
   if (description !== undefined && description.trim().length > 0) {

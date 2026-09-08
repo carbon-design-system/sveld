@@ -195,6 +195,51 @@ describe("WriterMarkdown", () => {
     expect(output).toContain("| footer | No | -- | -- | -- |");
   });
 
+  test("props and events tables render pass-through tags like slots do", () => {
+    const output = writeMarkdownCore(
+      new Map([
+        [
+          "Example",
+          {
+            filePath: asNormalizedPath("Example.svelte"),
+            moduleName: "Example",
+            syntaxMode: "legacy",
+            props: [
+              {
+                name: "size",
+                kind: "let",
+                constant: false,
+                description: "Current value.",
+                isFunction: false,
+                isFunctionDeclaration: false,
+                isRequired: false,
+                reactive: false,
+                tags: [{ name: "since", body: "1.2.0" }],
+              },
+            ],
+            moduleExports: [],
+            slots: [],
+            events: [
+              {
+                type: "dispatched",
+                name: "change",
+                description: "Fires on change.",
+                tags: [{ name: "example", body: "on:change={handleChange}" }],
+              },
+            ],
+            typedefs: [],
+            generics: null,
+            rest_props: undefined,
+            contexts: [],
+          },
+        ],
+      ]),
+    );
+
+    expect(output).toContain("| size | No | <code>let</code> | No | -- | -- | -- | Current value.<br />@since 1.2.0 |");
+    expect(output).toContain("| change | dispatched | -- | Fires on change.<br />@example on:change={handleChange} |");
+  });
+
   test("defines the component's type parameters for generic components", () => {
     const output = writeMarkdownCore(
       new Map([
