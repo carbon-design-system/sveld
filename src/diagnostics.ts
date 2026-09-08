@@ -7,7 +7,8 @@ import { matchesGlob } from "./glob-match";
  * - `prop-unknown-type`: prop `typeSource` is `"unknown"`.
  * - `context-any-type`: `setContext` value inferred as `any`.
  * - `event-no-source`: `@event` with no dispatch, forward, or callback prop.
- * - `example-compile-error`: an `@example` block failed to type-check (opt-in, `checkExamples`).
+ * - `example-compile-error`: a TS/JS `@example` block failed to type-check (opt-in, `checkExamples`).
+ * - `example-syntax-error`: a `svelte`/`html` `@example` block failed to parse (opt-in, `checkExamples`).
  * - `syntax-skipped`: `$props()`/`{@render}` syntax the parser can't model; omitted from output.
  * - `rest-props-unresolved`: every `{...$$restProps}` target was a component, so `$RestProps` couldn't be typed.
  * - `context-duplicate-key`: `setContext` called more than once with the same key; only the first call's shape is used.
@@ -28,6 +29,7 @@ export type SveldDiagnosticKind =
   | "context-any-type"
   | "event-no-source"
   | "example-compile-error"
+  | "example-syntax-error"
   | "syntax-skipped"
   | "rest-props-unresolved"
   | "context-duplicate-key"
@@ -57,6 +59,7 @@ export const DIAGNOSTIC_CODES: Record<SveldDiagnosticKind, string> = {
   "context-any-type": "sveld/context-any-type",
   "event-no-source": "sveld/event-no-source",
   "example-compile-error": "sveld/example-compile-error",
+  "example-syntax-error": "sveld/example-syntax-error",
   "syntax-skipped": "sveld/syntax-skipped",
   "rest-props-unresolved": "sveld/rest-props-unresolved",
   "context-duplicate-key": "sveld/context-duplicate-key",
@@ -74,15 +77,16 @@ export const DIAGNOSTIC_CODES: Record<SveldDiagnosticKind, string> = {
 };
 
 /**
- * `example-compile-error` and `syntax-skipped` are errors (sveld emitted
- * broken or unmodeled output); the rest are warnings (a type fell back to
- * `any`).
+ * `example-compile-error`, `example-syntax-error`, and `syntax-skipped` are
+ * errors (sveld emitted broken or unmodeled output); the rest are warnings
+ * (a type fell back to `any`).
  */
 export const DIAGNOSTIC_SEVERITIES: Record<SveldDiagnosticKind, SveldDiagnosticSeverity> = {
   "prop-unknown-type": "warning",
   "context-any-type": "warning",
   "event-no-source": "warning",
   "example-compile-error": "error",
+  "example-syntax-error": "error",
   "syntax-skipped": "error",
   "rest-props-unresolved": "warning",
   "context-duplicate-key": "warning",
@@ -207,6 +211,7 @@ const KIND_LABELS: Record<SveldDiagnosticKind, string> = {
   "context-any-type": "Context values typed as `any`",
   "event-no-source": "@event tags with no dispatch or callback",
   "example-compile-error": "@example blocks that failed to compile",
+  "example-syntax-error": "@example blocks that failed to parse",
   "syntax-skipped": "Component syntax sveld skipped",
   "rest-props-unresolved": "$$restProps spread only onto components",
   "context-duplicate-key": "Duplicate setContext keys",
@@ -228,6 +233,7 @@ const KIND_ORDER: SveldDiagnosticKind[] = [
   "context-any-type",
   "event-no-source",
   "example-compile-error",
+  "example-syntax-error",
   "syntax-skipped",
   "rest-props-unresolved",
   "context-duplicate-key",

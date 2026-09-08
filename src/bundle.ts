@@ -12,7 +12,7 @@ import {
   dedupeDiagnostics,
   type SveldDiagnostic,
 } from "./diagnostics";
-import { collectExampleSources } from "./example-check";
+import { collectExampleSources, type ExampleCheckSource } from "./example-check";
 import { hashSource, ParseCache, resolveCacheFilePath } from "./parse-cache";
 import { type EntryExports, parseEntryExports } from "./parse-entry-exports";
 import { type ParsedExports, parseExports } from "./parse-exports";
@@ -28,6 +28,7 @@ import {
 } from "./resolve-call-defaults";
 import { type ContextKeyResolution, resolveContextKeyCandidates } from "./resolve-context-keys";
 import type { TypeResolver } from "./resolve-types";
+import { parse as parseTemplate, TemplateParseNotImplementedError } from "./svelte-template-parse";
 
 export interface ComponentDocApi extends ParsedComponent {
   filePath: NormalizedPath;
@@ -105,12 +106,15 @@ export interface GenerateBundleOptions {
    */
   cache?: boolean | string;
   /**
-   * Run plain TS/JS `@example` blocks on props, module exports, slots, and
-   * events through the TypeScript program. Broken examples become
-   * `example-compile-error` diagnostics. Svelte/HTML markup is skipped.
-   * Off by default. Requires `typescript`.
+   * Check `@example` blocks on props, module exports, slots, and events.
+   * `true` runs plain TS/JS examples through the TypeScript program
+   * (`example-compile-error` diagnostics; requires `typescript`) and
+   * Svelte/HTML examples through sveld's own template parser
+   * (`example-syntax-error` diagnostics; no `typescript` needed). Pass
+   * `"syntax"` to run only the markup path, so `typescript` is never loaded
+   * even when TS/JS examples exist. Off by default.
    */
-  checkExamples?: boolean;
+  checkExamples?: boolean | "syntax";
   /**
    * Parse as usual (so cache reads and real errors still apply) but skip
    * persisting the parse cache to disk. Set by the CLI's `--dry-run`.
@@ -137,7 +141,7 @@ export function toGenerateBundleOptions(
     resolveTypes: opts?.resolveTypes === true,
     documentExports: opts?.documentExports === true,
     cache: opts?.cache,
-    checkExamples: opts?.checkExamples === true,
+    checkExamples: opts?.checkExamples === "syntax" ? "syntax" : opts?.checkExamples === true,
     dryRun: opts?.dryRun === true,
     diagnostics: opts?.diagnostics,
   };
@@ -727,15 +731,29 @@ export async function generateBundle(
   // checkExamples runs over all discovered components, not just barrel exports.
   const resolveTypesCandidates = options.resolveTypes ? collectResolveTypesCandidates(components) : [];
   const checkExamplesCandidates = options.checkExamples ? collectCheckExamplesCandidates(allComponentsForTypes) : [];
+  // `checkExamples: "syntax"` only runs the template-parser path, so plain
+  // TS/JS examples never reach the TypeScript program.
+  const checkExamplesCompileCandidates =
+    options.checkExamples === true ? candidatesForKind(checkExamplesCandidates, "compile") : [];
+  const checkExamplesSyntaxCandidates = options.checkExamples
+    ? candidatesForKind(checkExamplesCandidates, "syntax")
+    : [];
 
-  if (resolveTypesCandidates.length > 0 || checkExamplesCandidates.length > 0) {
+  if (checkExamplesSyntaxCandidates.length > 0) {
+    checkComponentExamplesSyntax(checkExamplesSyntaxCandidates);
+  }
+
+  if (resolveTypesCandidates.length > 0 || checkExamplesCompileCandidates.length > 0) {
     // Share one TypeResolver when both resolveTypes and checkExamples are enabled.
+    // Guarded on `checkExamplesCompileCandidates` (not `checkExamplesCandidates`)
+    // so `checkExamples: true`/`"syntax"` with only markup fences never loads
+    // TypeScript.
     const { TypeResolver } = await import("./resolve-types");
     const created = await TypeResolver.create(rootDir);
     if (!created.ok) {
       const features = [
         resolveTypesCandidates.length > 0 ? "resolveTypes" : null,
-        checkExamplesCandidates.length > 0 ? "checkExamples" : null,
+        checkExamplesCompileCandidates.length > 0 ? "checkExamples" : null,
       ]
         .filter((feature): feature is string => feature !== null)
         .join(" and ");
@@ -747,8 +765,8 @@ export async function generateBundle(
       if (resolveTypesCandidates.length > 0) {
         await resolveImportedPropTypes(resolveTypesCandidates, resolver, resolveComponentFilePath);
       }
-      if (checkExamplesCandidates.length > 0) {
-        await checkComponentExamples(checkExamplesCandidates, resolver, resolveComponentFilePath);
+      if (checkExamplesCompileCandidates.length > 0) {
+        await checkComponentExamples(checkExamplesCompileCandidates, resolver, resolveComponentFilePath);
       }
     } finally {
       await resolver?.dispose();
@@ -951,6 +969,54 @@ function collectCheckExamplesCandidates(components: ComponentDocs): CheckExample
   }
 
   return candidates;
+}
+
+/** Narrows each candidate's `sources` to one `ExampleCheckKind`, dropping candidates left with none. */
+function candidatesForKind(
+  candidates: CheckExamplesCandidate[],
+  kind: ExampleCheckSource["kind"],
+): CheckExamplesCandidate[] {
+  const filtered: CheckExamplesCandidate[] = [];
+
+  for (const { component, sources } of candidates) {
+    const matching = sources.filter((source) => source.kind === kind);
+    if (matching.length === 0) continue;
+    filtered.push({ component, sources: matching });
+  }
+
+  return filtered;
+}
+
+/**
+ * Syntax-checks `kind: "syntax"` `@example` blocks (Svelte/HTML markup) with
+ * sveld's own template parser: parse only, discard the AST. A parser error
+ * becomes an `example-syntax-error` diagnostic; a construct the parser
+ * doesn't model yet ({@link TemplateParseNotImplementedError}) is not the
+ * example's fault, so it's skipped rather than reported.
+ */
+function checkComponentExamplesSyntax(candidates: CheckExamplesCandidate[]): void {
+  for (const { component, sources } of candidates) {
+    const diagnostics = component.diagnostics ?? [];
+
+    for (const source of sources) {
+      try {
+        parseTemplate(source.code);
+      } catch (error) {
+        if (error instanceof TemplateParseNotImplementedError) continue;
+        diagnostics.push(
+          createDiagnostic({
+            component: component.filePath,
+            kind: "example-syntax-error",
+            name: source.name,
+            message: error instanceof Error ? error.message : String(error),
+            ...(source.source ? { source: source.source } : {}),
+          }),
+        );
+      }
+    }
+
+    component.diagnostics = diagnostics;
+  }
 }
 
 async function checkComponentExamples(

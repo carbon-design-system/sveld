@@ -72,7 +72,7 @@ Options:
   --stdout[=json|ndjson] Print the document from exactly one of --json, --markdown, or --custom-elements to stdout and write nothing to disk (rejects --types and --check); --stdout=ndjson prints one JSON object per component per line and requires --json
   --cache[=<path>]      Persist parsed output and skip re-parsing unchanged files (on by default, default path: node_modules/.cache/sveld/parse-cache.json; pass --cache=false to disable)
   --resolve-types       Expand opaque imported $props() types into JSON (alias: --resolveTypes, deprecated)
-  --check-examples      Compile-check @example blocks against the TypeScript program (alias: --checkExamples, deprecated)
+  --check-examples[=syntax]  Check @example blocks: TS/JS against the TypeScript program, svelte/html markup against sveld's own parser (alias: --checkExamples, deprecated); --check-examples=syntax runs only the markup path and never loads TypeScript
   --report-diagnostics  Print unresolved-type diagnostics to stderr
   --strict[=errors|ci|local]  Exit with code 4 when diagnostics exist (implies --report-diagnostics); --strict=errors only fails on error-severity diagnostics; --strict=ci expands to {strict:true, reportDiagnostics:true, check:true, checkExamples:true}, --strict=local to {reportDiagnostics:true}
   --types-format=<format>  ".d.ts" output format: "class" (default) or "component" (Svelte 5 Component<...>)
@@ -233,7 +233,12 @@ function parseCliFlagValue(flag: string, value: string | boolean, arg: string, r
     case "resolve-types":
       return { kind: "option", option: { resolveTypes: value === true || value === "true" } };
     case "check-examples":
-      return { kind: "option", option: { checkExamples: value === true || value === "true" } };
+      // Bare `--check-examples` runs both the TypeScript and syntax paths;
+      // `--check-examples=syntax` runs only the markup path, so `typescript`
+      // is never loaded even when TS/JS examples exist.
+      if (value === true || value === "true") return { kind: "option", option: { checkExamples: true } };
+      if (value === "false") return { kind: "option", option: { checkExamples: false } };
+      return { kind: "option", option: { checkExamples: value as "syntax" } };
     case "fail-fast":
       return { kind: "option", option: { failFast: value === true || value === "true" } };
     case "dry-run":
@@ -421,6 +426,17 @@ export async function cli(process: NodeJS.Process) {
     options.checkLevel !== "patch"
   ) {
     console.error(`sveld: --check-level must be "major", "minor", or "patch"; got "${options.checkLevel}".`);
+    process.exitCode = EXIT_CODES.USAGE_ERROR;
+    return;
+  }
+
+  if (
+    options.checkExamples !== undefined &&
+    options.checkExamples !== true &&
+    options.checkExamples !== false &&
+    options.checkExamples !== "syntax"
+  ) {
+    console.error(`sveld: --check-examples must be "syntax" when given a value; got "${options.checkExamples}".`);
     process.exitCode = EXIT_CODES.USAGE_ERROR;
     return;
   }

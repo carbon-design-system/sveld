@@ -1,47 +1,63 @@
 import type { ComponentProp, ComponentSlot, ParsedComponent, SourceRange } from "./ComponentParser";
 
+/** `"compile"` runs through the TypeScript program; `"syntax"` runs through sveld's template parser only. */
+export type ExampleCheckKind = "compile" | "syntax";
+
 /**
- * One `@example` block worth type-checking, reduced to what `resolve-types.ts`
- * needs: a declaration for the documented symbol and the example body itself.
+ * One `@example` block worth checking, reduced to what `resolve-types.ts`
+ * (for `kind: "compile"`) or the template parser (for `kind: "syntax"`) needs.
  */
 export interface ExampleCheckSource {
   /** Stable id for diagnostics, e.g. `"prop:variant"` or `"prop:variant#1"` for a second example. */
   id: string;
   /** Human-readable name shown in diagnostics, e.g. `"variant"` or `"variant (example 2)"`. */
   name: string;
-  /** TypeScript type to bind the documented symbol to before running `code`. */
+  /** TypeScript type to bind the documented symbol to before running `code`. Unused for `kind: "syntax"`. */
   type: string;
   /** The `@example` body, stripped of any surrounding code fence. */
   code: string;
+  /** How `code` gets checked. */
+  kind: ExampleCheckKind;
   /** Source range of the documented symbol (prop/export/slot/event), when available. */
   source?: SourceRange;
 }
 
 const FENCE_REGEX = /^```([\w-]*)\r?\n([\s\S]*?)\r?\n?```$/;
 
-/** Languages sveld can type-check with `tsc`. Anything else (svelte, html, ...) is markup and skipped. */
-const CHECKABLE_FENCE_LANGS = new Set(["", "js", "jsx", "ts", "tsx", "javascript", "typescript"]);
+/** Languages sveld can type-check with `tsc`. */
+const COMPILE_FENCE_LANGS = new Set(["", "js", "jsx", "ts", "tsx", "javascript", "typescript"]);
+
+/** Languages sveld can syntax-check with its own template parser. */
+const SYNTAX_FENCE_LANGS = new Set(["svelte", "html"]);
+
+interface ExtractedExampleCode {
+  kind: ExampleCheckKind;
+  code: string;
+}
 
 /**
- * Extracts plain TS/JS code from an `@example` body, or `null` when the
- * example is Svelte/HTML markup (or another language sveld can't type-check
- * without `svelte2tsx` or similar).
+ * Extracts checkable code from an `@example` body: plain TS/JS (`kind:
+ * "compile"`), Svelte/HTML markup (`kind: "syntax"`), or `null` when the
+ * example is fenced as something else, or is bare unfenced markup sveld
+ * doesn't try to check.
  */
-function extractCheckableCode(body: string): string | null {
+function extractCheckableCode(body: string): ExtractedExampleCode | null {
   const trimmed = body.trim();
   if (trimmed === "") return null;
 
   const fenceMatch = trimmed.match(FENCE_REGEX);
   if (fenceMatch) {
     const lang = fenceMatch[1].toLowerCase();
-    if (!CHECKABLE_FENCE_LANGS.has(lang)) return null;
     const inner = fenceMatch[2].trim();
-    return inner === "" ? null : inner;
+    if (inner === "") return null;
+    if (COMPILE_FENCE_LANGS.has(lang)) return { kind: "compile", code: inner };
+    if (SYNTAX_FENCE_LANGS.has(lang)) return { kind: "syntax", code: inner };
+    return null;
   }
 
   // No fence: skip bare markup like `<Disclosure open />`.
   if (trimmed.startsWith("<")) return null;
-  return trimmed;
+  return { kind: "compile", code: trimmed };
 }
 
 /** The type sveld declares the documented symbol as before running its examples. */
@@ -62,14 +78,15 @@ function sourcesFromTags(
   const sources: ExampleCheckSource[] = [];
 
   examples.forEach((tag, index) => {
-    const code = extractCheckableCode(tag.body);
-    if (code === null) return;
+    const extracted = extractCheckableCode(tag.body);
+    if (extracted === null) return;
     const numbered = examples.length > 1;
     sources.push({
       id: numbered ? `${idPrefix}#${index}` : idPrefix,
       name: numbered ? `${name} (example ${index + 1})` : name,
       type,
-      code,
+      code: extracted.code,
+      kind: extracted.kind,
       ...(source ? { source } : {}),
     });
   });
@@ -82,10 +99,10 @@ function slotName(slot: ComponentSlot): string {
 }
 
 /**
- * Collects every `@example` block sveld can type-check for a parsed component:
- * plain TS/JS bodies on props, module exports, slots, and events. Svelte/HTML
- * markup examples (most slot/event examples, many prop examples) are skipped.
- * Checking those needs `svelte2tsx` or similar; sveld stays AST-only.
+ * Collects every `@example` block sveld can check for a parsed component:
+ * plain TS/JS bodies (`kind: "compile"`) on props, module exports, slots, and
+ * events, plus Svelte/HTML markup bodies (`kind: "syntax"`). Bare unfenced
+ * markup and other fenced languages are skipped.
  */
 export function collectExampleSources(component: ParsedComponent): ExampleCheckSource[] {
   const sources: ExampleCheckSource[] = [];

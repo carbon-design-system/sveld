@@ -314,7 +314,7 @@ If a component [`@extendProps`](#extendprops) / [`@extends`](#extendprops) anoth
 
 ### Compile-checked `@example` blocks (`checkExamples`)
 
-`@example` blocks are just text. Rename a prop and the sample code can sit there broken for months. Set `checkExamples: true` to run plain TS/JS `@example` blocks through the TypeScript program. Broken examples show up as `example-compile-error` diagnostics.
+`@example` blocks are just text. Rename a prop and the sample code can sit there broken for months. Set `checkExamples: true` to check them: plain TS/JS bodies run through the TypeScript program, and `svelte`/`html` bodies run through sveld's own template parser. Broken examples show up as `example-compile-error` (TS/JS) or `example-syntax-error` (markup) diagnostics.
 
 ```ts
 await sveld({ json: true, checkExamples: true });
@@ -345,15 +345,21 @@ If `formatValue` is later renamed and the example is never updated, `checkExampl
     - Line 1: Cannot find name 'formatValue'.
 ```
 
-Plain TS/JS only. Examples fenced as `svelte` or `html`, or bare markup like `<Button />`, are skipped. Checking those needs `svelte2tsx` or similar, and sveld stays AST-only.
+A `svelte`/`html`-fenced example is syntax-checked, not type-checked: sveld parses the markup and discards the AST, so it catches malformed markup (a mismatched closing tag, an unterminated attribute) but not a prop that doesn't exist or a type error inside an expression. Those still need `svelte-check` in the consumer's own tests. Bare unfenced markup (`<Button />` with no code fence) is skipped either way.
 
-The check is narrow on purpose. It catches renamed or removed symbols and wrong argument counts. It is not full type checking and never pulls in types sveld cannot see.
+```
+@example blocks that failed to parse (1):
+  ./Component.svelte
+    - Line 1: sveld: invalid closing tag </span>.
+```
 
-Needs `typescript` 7+ and a `tsconfig.json`, same as `resolveTypes` (see [Requirements](#requirements)); missing either fails the run rather than silently skipping every example. Use `--strict` (or the `strict` option) to fail CI when an example breaks.
+The TS/JS check is narrow on purpose too. It catches renamed or removed symbols and wrong argument counts. Neither path is full type checking, and neither pulls in types sveld cannot see.
+
+The TS/JS path needs `typescript` 7+ and a `tsconfig.json`, same as `resolveTypes` (see [Requirements](#requirements)); missing either fails the run rather than silently skipping every example. The markup path needs neither: pass `checkExamples: "syntax"` to run only it, so a project with only `svelte`/`html` examples (or no `tsconfig.json`) never loads TypeScript. Use `--strict` (or the `strict` option) to fail CI when an example breaks.
 
 ### Type inference diagnostics
 
-`sveld` collects unresolved-type diagnostics on every run: props that fall back to `any`, context values typed as `any`, `@event` tags with no dispatch or callback, `$props()`/`{@render}` syntax sveld can't model, and (when `checkExamples` is enabled) `example-compile-error`. They are always returned from the programmatic `sveld()` API in `SveldResult.diagnostics`. Each diagnostic carries an optional `source` range (the same `{ start: { line, column }, end: { line, column } }` shape as JSON output source ranges) whenever the parser holds a stable position for it.
+`sveld` collects unresolved-type diagnostics on every run: props that fall back to `any`, context values typed as `any`, `@event` tags with no dispatch or callback, `$props()`/`{@render}` syntax sveld can't model, and (when `checkExamples` is enabled) `example-compile-error`/`example-syntax-error`. They are always returned from the programmatic `sveld()` API in `SveldResult.diagnostics`. Each diagnostic carries an optional `source` range (the same `{ start: { line, column }, end: { line, column } }` shape as JSON output source ranges) whenever the parser holds a stable position for it.
 
 A prop with no type annotation, no `@type` JSDoc, and no initializer has nothing to infer a type or a default from: its JSON `type` stays absent (`"typeSource": "unknown"`), it triggers a `prop-unknown-type` diagnostic, and the emitted `.d.ts` types it as `any` with no `@default` line (rather than the literal type `undefined`).
 
@@ -380,12 +386,16 @@ Component syntax sveld skipped (1):
     - {@render tabs(getTabProps())} argument is not a plain object literal; the render call was not mapped to slot metadata. (./Tabs.svelte:6:4) [sveld/syntax-skipped]
 ```
 
-When `checkExamples` is also enabled, `@example` compile failures appear as a fifth group:
+When `checkExamples` is also enabled, `@example` failures appear as additional groups: TS/JS failures under `example-compile-error`, `svelte`/`html` failures under `example-syntax-error`.
 
 ```
 @example blocks that failed to compile (1):
   ./Component.svelte
     - Line 1: Cannot find name 'formatValue'. [sveld/example-compile-error]
+
+@example blocks that failed to parse (1):
+  ./Component.svelte
+    - Line 1: sveld: invalid closing tag </span>. [sveld/example-syntax-error]
 ```
 
 By default, nothing is printed. Opt in when you are working on types or want CI output:
@@ -418,7 +428,8 @@ Every diagnostic carries a stable, namespaced `code` (`"sveld/<kind>"`) alongsid
 | `sveld/prop-unknown-type` | `warning` | Add a native TypeScript annotation, a `@type` JSDoc tag, or an initializer sveld can infer a type from. |
 | `sveld/context-any-type` | `warning` | Annotate the `setContext` value's declaration with `@type` or a native TypeScript type. |
 | `sveld/event-no-source` | `warning` | Dispatch the event (`createEventDispatcher`/`dispatch`), forward it (`on:name`), or add a matching `on<Name>` callback prop; otherwise remove the stale `@event` tag. |
-| `sveld/example-compile-error` | `error` | Fix the `@example` code block so it type-checks, or remove the broken example. |
+| `sveld/example-compile-error` | `error` | Fix the `@example` TS/JS code block so it type-checks, or remove the broken example. |
+| `sveld/example-syntax-error` | `error` | Fix the `@example` `svelte`/`html` markup so it parses, or remove the broken example. |
 | `sveld/syntax-skipped` | `error` | Rewrite the flagged syntax in a form sveld can model (see the diagnostic's `message` for what was skipped). |
 | `sveld/rest-props-unresolved` | `warning` | Spread `$$restProps` onto a plain element (or `svelte:element`) instead of a component, or add an `@restProps` tag to type it manually. |
 | `sveld/context-duplicate-key` | `warning` | Remove the duplicate `setContext` call, or give it a distinct key; only the first call's shape is used. |
@@ -436,7 +447,7 @@ Every diagnostic carries a stable, namespaced `code` (`"sveld/<kind>"`) alongsid
 
 #### Severity and `--strict=errors`
 
-Each diagnostic's `severity` is `"error"` (`example-compile-error`, `syntax-skipped`, `extend-props-target-missing`, `internal-typedef-referenced` — sveld emitted broken or unmodeled output) or `"warning"` (`prop-unknown-type`, `context-any-type`, `event-no-source`, `rest-props-unresolved`, `context-duplicate-key`, `spread-unresolved`, `export-unresolved`, `extend-props-duplicate`, `extend-props-override`, `jsdoc-unknown-tag`, `typedef-duplicate`, `property-duplicate`, `generics-conflict`, `jsdoc-tag-dropped` — a type fell back to `any`). Plain `strict: true` / `--strict` fails on both, unchanged from before. Pass `strict: "errors"` (or `--strict=errors`) to fail CI only on `error`-severity diagnostics, letting `any`-fallback warnings through:
+Each diagnostic's `severity` is `"error"` (`example-compile-error`, `example-syntax-error`, `syntax-skipped`, `extend-props-target-missing`, `internal-typedef-referenced` — sveld emitted broken or unmodeled output) or `"warning"` (`prop-unknown-type`, `context-any-type`, `event-no-source`, `rest-props-unresolved`, `context-duplicate-key`, `spread-unresolved`, `export-unresolved`, `extend-props-duplicate`, `extend-props-override`, `jsdoc-unknown-tag`, `typedef-duplicate`, `property-duplicate`, `generics-conflict`, `jsdoc-tag-dropped` — a type fell back to `any`). Plain `strict: true` / `--strict` fails on both, unchanged from before. Pass `strict: "errors"` (or `--strict=errors`) to fail CI only on `error`-severity diagnostics, letting `any`-fallback warnings through:
 
 ```sh
 npx sveld --json --strict=errors
@@ -692,8 +703,8 @@ npx sveld --json --strict=local
 The profile's keys are applied first, then any other key set alongside `strict` overrides it, so you can opt back out of one piece:
 
 ```ts
-// Everything --strict=ci implies, except checkExamples.
-await sveld({ json: true, strict: "ci", checkExamples: false });
+// Everything --strict=ci implies, except the TypeScript-checked half of checkExamples.
+await sveld({ json: true, strict: "ci", checkExamples: "syntax" });
 ```
 
 ### Node.js
@@ -917,7 +928,7 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
 - **`failFast`** (boolean, optional, default: `false`): Abort the entire run when a single component fails to parse. By default, parse failures are collected as diagnostics (and reported to `stderr`) so the remaining components still emit their output. Also available as the `--fail-fast` CLI flag.
 - **`resolveTypes`** (boolean, optional, default: `false`): Load the TypeScript program to expand opaque imported whole-object `$props()` types into JSON. Also available as `--resolve-types` (`--resolveTypes` remains as a deprecated alias). See [Opt-in semantic resolution](#opt-in-semantic-resolution-resolvetypes).
 - **`cache`** (boolean | string, optional, default: `true`): Write parsed component output to disk and skip re-parsing unchanged files on later runs. On by default, writing to `node_modules/.cache/sveld/parse-cache.json`; a string sets a custom path; pass `false` to disable. Also available as `--cache` / `--cache=<path>` / `--cache=false`. See [Persistent parse cache](#persistent-parse-cache-cache).
-- **`checkExamples`** (boolean, optional, default: `false`): Run plain TS/JS `@example` blocks through the TypeScript program. Broken ones get an `example-compile-error` diagnostic. Also available as `--check-examples` (`--checkExamples` remains as a deprecated alias). See [Compile-checked `@example` blocks](#compile-checked-example-blocks-checkexamples).
+- **`checkExamples`** (`boolean | "syntax"`, optional, default: `false`): `true` runs plain TS/JS `@example` blocks through the TypeScript program (`example-compile-error` diagnostics) and `svelte`/`html` blocks through sveld's own template parser (`example-syntax-error` diagnostics). `"syntax"` runs only the markup path, so `typescript` is never loaded. Also available as `--check-examples` / `--check-examples=syntax` (`--checkExamples` remains as a deprecated alias). See [Compile-checked `@example` blocks](#compile-checked-example-blocks-checkexamples).
 - **`reportDiagnostics`** (boolean, optional, default: `false`): Print unresolved-type diagnostics to stderr (CLI) or `console.warn` (programmatic API). Also available as `--report-diagnostics`. See [Type inference diagnostics](#type-inference-diagnostics).
 - **`strict`** (`boolean | "errors" | "ci" | "local"`, optional, default: `false`): Exit with code `4` when diagnostics exist. Implies `reportDiagnostics`. `"errors"` fails only on `severity: "error"` diagnostics, letting `warning` ones through. `"ci"` and `"local"` are strictness profiles that expand into other options before this object's own keys are applied. Also available as `--strict` / `--strict=errors` / `--strict=ci` / `--strict=local`. See [Type inference diagnostics](#type-inference-diagnostics) and [CI: strictness profiles](#ci-strictness-profiles---strictci---strictlocal).
 - **`diagnostics.ignore`** (`Array<{ code?: string; component?: string; name?: string }>`, optional): Marks matching diagnostics `ignored` — they're still reported and counted, but never fail `strict`. `component` is a glob; an omitted field on a matcher matches anything. No CLI flag; config-file or `sveld()` only. See [Ignoring diagnostics](#ignoring-diagnostics).
