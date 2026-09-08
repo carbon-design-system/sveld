@@ -296,6 +296,48 @@ describe("component API JSON schema", () => {
     expect(dts).toContain("label");
     expect(dts).toContain("PublicLabel");
   });
+
+  test("@internal on an identifier-valued context property excludes only that property", () => {
+    const source = `
+<script>
+  import { setContext } from "svelte";
+
+  /**
+   * Public user info.
+   * @type {{ name: string }}
+   */
+  let publicUser = { name: "" };
+
+  /**
+   * Internal-only debug token.
+   * @type {string}
+   * @internal
+   */
+  let debugToken = "";
+
+  setContext("session", { user: publicUser, debug: debugToken });
+</script>
+`;
+    const filePath = path.join(root, "tests", "fixtures", "jsdoc-internal-ignore", "context-property.svelte");
+    const parser = new ComponentParser();
+    const parsed = parser.parseSvelteComponent(source, { filePath, moduleName: "ContextPropertyInternal" });
+    const component = { ...parsed, moduleName: "ContextPropertyInternal", filePath: asNormalizedPath(filePath) };
+
+    // The raw ParsedComponent keeps both properties, with only `debug` flagged `internal: true`.
+    const sessionContext = findObjectByProperty(component.contexts ?? [], "key", "session");
+    const rawProperties = arrayProperty(sessionContext, "properties");
+    expect(findObjectByProperty(rawProperties, "name", "user")).not.toMatchObject({ internal: true });
+    expect(findObjectByProperty(rawProperties, "name", "debug")).toMatchObject({ internal: true });
+
+    const components: ComponentDocs = new Map([["ContextPropertyInternal", component]]);
+    const document = buildComponentApiDocument(components);
+    const filtered = document.components[0];
+
+    const filteredContext = findObjectByProperty(filtered.contexts ?? [], "key", "session");
+    const filteredProperties = arrayProperty(filteredContext, "properties");
+    expect(filteredProperties.map((p) => (p as JsonObject).name)).toContain("user");
+    expect(filteredProperties.map((p) => (p as JsonObject).name)).not.toContain("debug");
+  });
 });
 
 // Representative directory-name prefixes chosen to cover every syntax mode

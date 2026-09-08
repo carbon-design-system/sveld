@@ -61,7 +61,14 @@ function excludeInternalMembers(component: ComponentDocApi): ComponentDocApi {
     slots: excludeInternal(component.slots),
     events: excludeInternal(component.events),
     typedefs: excludeInternal(component.typedefs),
-    ...(component.contexts ? { contexts: excludeInternal(component.contexts) } : {}),
+    ...(component.contexts
+      ? {
+          contexts: excludeInternal(component.contexts).map((context) => ({
+            ...context,
+            properties: excludeInternal(context.properties),
+          })),
+        }
+      : {}),
   };
 }
 
