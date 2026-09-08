@@ -5,12 +5,12 @@ import type { AppendType } from "./MarkdownWriterBase";
 import {
   EVENT_TABLE_HEADER,
   EXPORT_TABLE_HEADER,
+  formatDescriptionWithTags,
   formatEventDetail,
   formatNameWithDeprecation,
   formatPropDescription,
   formatPropType,
   formatPropValue,
-  formatSlotDescription,
   formatSlotFallback,
   formatSlotProps,
   MD_TYPE_UNDEFINED,
@@ -116,8 +116,9 @@ function renderComponent(document: MarkdownDocument, component: ComponentDocApi)
         "raw",
         `| ${formatNameWithDeprecation(prop.name, prop.deprecated)} | ${prop.isRequired ? "Yes" : "No"} | ${`<code>${prop.kind}</code>`} | ${
           prop.reactive ? "Yes" : "No"
-        } | ${prop.binding ?? "--"} | ${formatPropType(prop.type)} | ${formatPropValue(prop.value)} | ${formatPropDescription(
+        } | ${prop.binding ?? "--"} | ${formatPropType(prop.type)} | ${formatPropValue(prop.value)} | ${formatDescriptionWithTags(
           prop.description,
+          prop.tags,
         )} |\n`,
       );
     }
@@ -131,7 +132,7 @@ function renderComponent(document: MarkdownDocument, component: ComponentDocApi)
         "raw",
         `| ${formatNameWithDeprecation(slot.default ? MD_TYPE_UNDEFINED : (slot.name ?? MD_TYPE_UNDEFINED), slot.deprecated)} | ${slot.default ? "Yes" : "No"} | ${formatSlotProps(
           slot.slot_props,
-        )} | ${formatSlotFallback(slot.fallback)} | ${formatSlotDescription(slot.description, slot.tags)} |\n`,
+        )} | ${formatSlotFallback(slot.fallback)} | ${formatDescriptionWithTags(slot.description, slot.tags)} |\n`,
       );
     }
   });
@@ -144,7 +145,7 @@ function renderComponent(document: MarkdownDocument, component: ComponentDocApi)
         "raw",
         `| ${formatNameWithDeprecation(event.name, event.deprecated)} | ${event.type} | ${
           event.type === "dispatched" ? formatEventDetail(event.detail) : MD_TYPE_UNDEFINED
-        } | ${formatPropDescription(event.description)} |\n`,
+        } | ${formatDescriptionWithTags(event.description, event.tags)} |\n`,
       );
     }
   });

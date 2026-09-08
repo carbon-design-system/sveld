@@ -9,12 +9,12 @@ import { buildComponentApiDocument } from "./document-model";
 import { MarkdownWriterBaseImpl } from "./MarkdownWriterBase";
 import {
   EVENT_TABLE_HEADER,
+  formatDescriptionWithTags,
   formatEventDetail,
   formatNameWithDeprecation,
   formatPropDescription,
   formatPropType,
   formatPropValue,
-  formatSlotDescription,
   formatSlotFallback,
   formatSlotProps,
   MD_TYPE_UNDEFINED,
@@ -97,7 +97,7 @@ function renderSlotsSection(document: MarkdownWriterBaseImpl, heading: string, s
       "raw",
       `| ${formatNameWithDeprecation(slot.default ? MD_TYPE_UNDEFINED : (slot.name ?? MD_TYPE_UNDEFINED), slot.deprecated)} | ${
         slot.default ? "Yes" : "No"
-      } | ${formatSlotProps(slot.slot_props)} | ${formatSlotFallback(slot.fallback)} | ${formatSlotDescription(
+      } | ${formatSlotProps(slot.slot_props)} | ${formatSlotFallback(slot.fallback)} | ${formatDescriptionWithTags(
         slot.description,
         slot.tags,
       )} |\n`,
