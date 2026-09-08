@@ -18,6 +18,21 @@ const LT_REGEX = /</g;
 const GT_REGEX = />/g;
 const NEWLINE_REGEX = /\n/g;
 
+/** `{@link target}` or `{@link target|display text}`, per the inline JSDoc `@link` tag grammar. */
+const JSDOC_LINK_REGEX = /\{@link\s+([^{}\s|]+)(?:\|([^{}]+))?\}/g;
+
+/**
+ * Rewrites inline `{@link target|text}` / `{@link target}` to Markdown
+ * `[text](target)` / `[target](target)`. Markdown-only: JSON and `.d.ts`
+ * keep the JSDoc tag verbatim.
+ */
+function rewriteJsDocLinks(text: string): string {
+  return text.replace(JSDOC_LINK_REGEX, (_match, target: string, label: string | undefined) => {
+    const linkText = label === undefined ? target : label.trim();
+    return `[${linkText}](${target})`;
+  });
+}
+
 export function formatPropType(type?: string) {
   if (type === undefined) return MD_TYPE_UNDEFINED;
   return `<code>${type.replace(PIPE_REGEX, "&#124;")}</code>`;
@@ -43,7 +58,7 @@ export function formatNameWithDeprecation(name: string, deprecated: DeprecatedVa
 
 export function formatPropDescription(description: string | undefined) {
   if (description === undefined || description.trim().length === 0) return MD_TYPE_UNDEFINED;
-  return escapeHtml(description).replace(PIPE_REGEX, "&#124;").replace(NEWLINE_REGEX, "<br />");
+  return escapeHtml(rewriteJsDocLinks(description)).replace(PIPE_REGEX, "&#124;").replace(NEWLINE_REGEX, "<br />");
 }
 
 export function formatSlotProps(props?: string) {
@@ -60,12 +75,12 @@ export function formatDescriptionWithTags(description?: string, tags?: Array<{ n
   const segments: string[] = [];
 
   if (description !== undefined && description.trim().length > 0) {
-    segments.push(escapeHtml(description));
+    segments.push(escapeHtml(rewriteJsDocLinks(description)));
   }
 
   for (const { name, body } of tags ?? []) {
     const trimmed = body?.trim();
-    segments.push(trimmed ? `@${name} ${escapeHtml(trimmed)}` : `@${name}`);
+    segments.push(trimmed ? `@${name} ${escapeHtml(rewriteJsDocLinks(trimmed))}` : `@${name}`);
   }
 
   if (segments.length === 0) return MD_TYPE_UNDEFINED;

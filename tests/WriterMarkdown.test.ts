@@ -240,6 +240,53 @@ describe("WriterMarkdown", () => {
     expect(output).toContain("| change | dispatched | -- | Fires on change.<br />@example on:change={handleChange} |");
   });
 
+  test("rewrites {@link} to a Markdown link in prop and slot descriptions", () => {
+    const output = writeMarkdownCore(
+      new Map([
+        [
+          "Example",
+          {
+            filePath: asNormalizedPath("Example.svelte"),
+            moduleName: "Example",
+            syntaxMode: "legacy",
+            props: [
+              {
+                name: "width",
+                kind: "let",
+                constant: false,
+                description: "The width in pixels. See {@link https://example.com/width|width docs}.",
+                isFunction: false,
+                isFunctionDeclaration: false,
+                isRequired: false,
+                reactive: false,
+              },
+              {
+                name: "height",
+                kind: "let",
+                constant: false,
+                description: "See {@link https://example.com/height}.",
+                isFunction: false,
+                isFunctionDeclaration: false,
+                isRequired: false,
+                reactive: false,
+              },
+            ],
+            moduleExports: [],
+            slots: [],
+            events: [],
+            typedefs: [],
+            generics: null,
+            rest_props: undefined,
+            contexts: [],
+          },
+        ],
+      ]),
+    );
+
+    expect(output).toContain("See [width docs](https://example.com/width).");
+    expect(output).toContain("See [https://example.com/height](https://example.com/height).");
+  });
+
   test("defines the component's type parameters for generic components", () => {
     const output = writeMarkdownCore(
       new Map([
