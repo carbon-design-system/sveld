@@ -148,6 +148,24 @@ export function extractJsDocReturnType(commentValue: string): string | undefined
   return returnsTag ? aliasType(returnsTag.type) : undefined;
 }
 
+/**
+ * `@deprecated` and passthrough (`@since`/`@example`/`@see`) tags from raw JSDoc text (with or
+ * without `/**` delimiters). Standalone so `parse-entry-exports.ts` can read sibling modules
+ * without a component parser context, same as {@link extractJsDocReturnType}.
+ */
+export function extractJsDocDeprecatedAndTags(commentValue: string): {
+  deprecated?: DeprecatedValue;
+  tags?: JsDocPassthroughTag[];
+} {
+  const comment = parseComments(formatComment(commentValue));
+  const { deprecated, passthrough: passthroughTags } = getCommentTags(comment);
+
+  const tags: JsDocPassthroughTag[] | undefined =
+    passthroughTags.length > 0 ? passthroughTags.map((tag) => ({ name: tag.tag, body: tag.raw })) : undefined;
+
+  return { deprecated, tags };
+}
+
 export function getCommentTags(parsed: JSDocComment[]) {
   const tags = parsed[0]?.tags ?? [];
   const excludedTags = new Set([

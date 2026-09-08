@@ -45,6 +45,24 @@ describe("renderComponentsToMarkdown (entry exports)", () => {
     expect(output).not.toContain("theme: Theme;\n");
   });
 
+  test("strikes through a deprecated export's name with its reason", () => {
+    const output = render(new Map(), [
+      {
+        name: "DEFAULT_THEME",
+        kind: "const",
+        value: '"light"',
+        deprecated: "Use `invertTheme` instead.",
+        isTypeOnly: false,
+      },
+      { name: "LEGACY_FLAG", kind: "const", value: "true", deprecated: true, isTypeOnly: false },
+    ]);
+
+    expect(output).toContain(
+      "| <s>DEFAULT_THEME</s><br />**Deprecated**: Use `invertTheme` instead. | <code>const</code> | <code>\"light\"</code> | -- |",
+    );
+    expect(output).toContain("| <s>LEGACY_FLAG</s><br />**Deprecated** | <code>const</code> | <code>true</code> | -- |");
+  });
+
   test("omits the Exports section when there are no entry exports", () => {
     expect(render(new Map(), [])).not.toContain("## Exports");
     expect(render(new Map())).not.toContain("## Exports");

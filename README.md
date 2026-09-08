@@ -957,7 +957,7 @@ From that barrel, `sveld` documents `VERSION`, `clamp`, and `Theme`. `Button` st
 
 Nested barrels are followed too: `export { X } from "./dir"`, where `./dir/index.js` itself re-exports `.svelte` files, resolves `X` to the underlying component without needing `--glob`.
 
-JSON adds `exports` and `totalExports`. Markdown adds an "Exports" section. Each item has `name`, `kind`, type text, optional JSDoc `description`, and `source`.
+JSON adds `exports` and `totalExports`. Markdown adds an "Exports" section. Each item has `name`, `kind`, type text, optional JSDoc `description`, `source`, and — same as props — optional `@deprecated` and pass-through `tags`. A deprecated export's name is struck through in the Markdown table, same as a deprecated prop. See [`@deprecated`](#deprecated).
 
 ## JSON Output
 
@@ -995,6 +995,8 @@ interface EntryExport {
   type?: string;
   value?: string;
   description?: string;
+  deprecated?: string | true;
+  tags?: Array<{ name: string; body: string }>;
   source?: string;
   isTypeOnly: boolean;
 }
@@ -2710,7 +2712,7 @@ Any free-text prose after the tags is attached to the event description, not to 
 
 ### `@deprecated`
 
-Add `@deprecated` to a prop, event, slot, or exported accessor. An optional message after the tag can explain why or name a replacement.
+Add `@deprecated` to a prop, event, slot, entry export, or exported accessor. An optional message after the tag can explain why or name a replacement.
 
 ```svelte
 <script>
@@ -2739,7 +2741,7 @@ Add `@deprecated` to a prop, event, slot, or exported accessor. An optional mess
 </script>
 ```
 
-For slots, put `@deprecated` before the `@slot` / `@snippet` line, alongside the description and any other [extra tags](#extra-jsdoc-tags-before-slot). For events, put it after the `@event` line.
+For slots, put `@deprecated` before the `@slot` / `@snippet` line, alongside the description and any other [extra tags](#extra-jsdoc-tags-before-slot). For events, put it after the `@event` line. For entry exports (see [Documenting Entry Exports](#documenting-entry-exports)), put it in the JSDoc directly above the `const`/`function`/`class`/`type`/`interface` declaration, same as a prop.
 
 Generated `.d.ts` files include an `@deprecated` JSDoc line so editors strike the symbol through. JSON adds a `deprecated` field (the message string, or `true` when the tag has no message). Markdown strikes through the name and adds a **Deprecated** badge with the message when present.
 

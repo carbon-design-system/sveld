@@ -1,7 +1,8 @@
 import { existsSync, lstatSync, readFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { isIdentifier, resolveStaticStringLiteral } from "./ast-guards";
-import { extractJsDocReturnType } from "./parser/jsdoc";
+import type { DeprecatedValue, JsDocPassthroughTag } from "./ComponentParser";
+import { extractJsDocDeprecatedAndTags, extractJsDocReturnType } from "./parser/jsdoc";
 import { getParserStack, loadParserStack } from "./parser-stack";
 import { normalizeSeparators } from "./path";
 import { resolvePathAliasAbsolute } from "./resolve-alias";
@@ -15,6 +16,10 @@ export interface EntryExport {
   /** Initializer text for simple constants. */
   value?: string;
   description?: string;
+  /** From `@deprecated` JSDoc. */
+  deprecated?: DeprecatedValue;
+  /** `@since` / `@example` / `@see` tags in source order. */
+  tags?: JsDocPassthroughTag[];
   /** Declaring module, relative to the entry file. */
   source?: string;
   isTypeOnly: boolean;
@@ -257,6 +262,9 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
   const description = leadingJsDoc(source.text, jsdocStart);
   const rawJsDoc = leadingJsDocBlock(source.text, jsdocStart);
   const jsDocReturnType = rawJsDoc ? extractJsDocReturnType(rawJsDoc) : undefined;
+  const { deprecated, tags } = rawJsDoc
+    ? extractJsDocDeprecatedAndTags(rawJsDoc)
+    : { deprecated: undefined, tags: undefined };
 
   if (declaration.type === "VariableDeclaration") {
     const kind = (declaration.kind as "const" | "let" | "var") ?? "const";
@@ -288,7 +296,19 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
         }
       }
 
-      results.push({ name, kind, type, value, returnType, literalValue, description, declFile, isTypeOnly: false });
+      results.push({
+        name,
+        kind,
+        type,
+        value,
+        returnType,
+        literalValue,
+        description,
+        deprecated,
+        tags,
+        declFile,
+        isTypeOnly: false,
+      });
     }
 
     return results;
@@ -308,6 +328,8 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
           jsDocReturnType ??
           inferAstLiteralReturnType(declaration),
         description,
+        deprecated,
+        tags,
         declFile,
         isTypeOnly: false,
       },
@@ -317,7 +339,7 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
   if (declaration.type === "ClassDeclaration") {
     const name = identifierName(asNode(declaration.id));
     if (!name) return [];
-    return [{ name, kind: "class", type: name, description, declFile, isTypeOnly: false }];
+    return [{ name, kind: "class", type: name, description, deprecated, tags, declFile, isTypeOnly: false }];
   }
 
   if (declaration.type === "TSTypeAliasDeclaration") {
@@ -329,6 +351,8 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
         kind: "type",
         type: textOf(source, asNode(declaration.typeAnnotation)),
         description,
+        deprecated,
+        tags,
         declFile,
         isTypeOnly: true,
       },
@@ -344,6 +368,8 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
         kind: "interface",
         type: textOf(source, asNode(declaration.body)),
         description,
+        deprecated,
+        tags,
         declFile,
         isTypeOnly: true,
       },
@@ -353,7 +379,7 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
   if (declaration.type === "TSEnumDeclaration") {
     const name = identifierName(asNode(declaration.id));
     if (!name) return [];
-    return [{ name, kind: "enum", type: name, description, declFile, isTypeOnly: false }];
+    return [{ name, kind: "enum", type: name, description, deprecated, tags, declFile, isTypeOnly: false }];
   }
 
   return [];

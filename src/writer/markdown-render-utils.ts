@@ -56,7 +56,7 @@ function renderExports(document: MarkdownDocument, entryExports: EntryExports) {
     const type = (entry.type ?? entry.value)?.replace(WHITESPACE_REGEX, " ").trim();
     document.append(
       "raw",
-      `| ${entry.name} | ${`<code>${entry.kind}</code>`} | ${formatPropType(type)} | ${formatPropDescription(
+      `| ${formatNameWithDeprecation(entry.name, entry.deprecated)} | ${`<code>${entry.kind}</code>`} | ${formatPropType(type)} | ${formatPropDescription(
         entry.description,
       )} |\n`,
     );
