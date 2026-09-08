@@ -259,6 +259,60 @@ function collectAstReturnArguments(body: AstNode, out: Array<AstNode | null>): v
   }
 }
 
+/** A `TSEnumMember`'s literal initializer value, or `undefined` for anything not a plain string/number literal. */
+function enumMemberLiteralValue(member: AstNode): string | number | undefined {
+  const initializer = asNode(member.initializer);
+  if (!initializer) return undefined;
+
+  if (initializer.type === "Literal") {
+    const value = (initializer as unknown as { value: unknown }).value;
+    return typeof value === "string" || typeof value === "number" ? value : undefined;
+  }
+
+  // Negative numeric literals parse as `UnaryExpression` (`-1`), not `Literal`.
+  if (initializer.type === "UnaryExpression") {
+    const argument = asNode((initializer as unknown as { argument?: unknown }).argument);
+    const operator = (initializer as unknown as { operator?: string }).operator;
+    if (operator === "-" && argument?.type === "Literal") {
+      const value = (argument as unknown as { value: unknown }).value;
+      if (typeof value === "number") return -value;
+    }
+  }
+
+  return undefined;
+}
+
+/**
+ * Builds a literal union type for a `TSEnumDeclaration` (`"A" | "B"` for a
+ * string enum, `0 | 1` for a numeric one), matching what the enum's members
+ * actually widen to. Falls back to `undefined` (letting the caller keep the
+ * bare enum name) when a member's value can't be determined - e.g. a
+ * computed initializer like `1 << 2`.
+ */
+function enumMemberUnionType(declaration: AstNode): string | undefined {
+  const members = asNodeArray(declaration.members);
+  if (members.length === 0) return undefined;
+
+  const literals: string[] = [];
+  let nextNumeric = 0;
+  for (const member of members) {
+    const initializer = asNode(member.initializer);
+    if (!initializer) {
+      literals.push(String(nextNumeric));
+      nextNumeric += 1;
+      continue;
+    }
+
+    const value = enumMemberLiteralValue(member);
+    if (value === undefined) return undefined;
+
+    literals.push(typeof value === "string" ? JSON.stringify(value) : String(value));
+    nextNumeric = typeof value === "number" ? value + 1 : nextNumeric;
+  }
+
+  return literals.join(" | ");
+}
+
 function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocStart: number): InternalExport[] {
   const declFile = source.filePath;
   const description = leadingJsDoc(source.text, jsdocStart);
@@ -389,7 +443,17 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
     const name = identifierName(asNode(declaration.id));
     if (!name) return [];
     return [
-      { name, kind: "enum", type: name, description, deprecated, tags, ...internalField, declFile, isTypeOnly: false },
+      {
+        name,
+        kind: "enum",
+        type: enumMemberUnionType(declaration) ?? name,
+        description,
+        deprecated,
+        tags,
+        ...internalField,
+        declFile,
+        isTypeOnly: false,
+      },
     ];
   }
 
@@ -485,7 +549,10 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
     const target = resolveModuleFile(imported.specifier, source.dir);
     if (!target) return null;
 
-    return collectModuleExports(target, ctx).find((entry) => entry.name === imported.importedName) ?? null;
+    // `findLast`, not `find`: overloaded declarations (`export function f(...): A;` /
+    // `export function f(...): B;` / `export function f(...) { ... }`) all describe
+    // to the same name, in source order, with the implementation last.
+    return collectModuleExports(target, ctx).findLast((entry) => entry.name === imported.importedName) ?? null;
   };
 
   for (const node of body) {
@@ -528,7 +595,8 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
       if (moduleSpecifier) {
         const target = resolveModuleFile(moduleSpecifier, source.dir);
         if (target) {
-          resolved = collectModuleExports(target, ctx).find((entry) => entry.name === localName) ?? null;
+          // `findLast`: see the comment on the equivalent lookup in `resolveLocal`.
+          resolved = collectModuleExports(target, ctx).findLast((entry) => entry.name === localName) ?? null;
         }
       } else {
         resolved = resolveLocal(localName);
@@ -575,13 +643,29 @@ export async function parseEntryExports(entryFile: string): Promise<EntryExports
   const resolved = resolve(entryFile);
   const entryDir = dirname(resolved);
   const collected = collectModuleExports(resolved, { cache: new Map(), computing: new Set() });
+  const relativeSource = (declFile: string) => normalizeSeparators(`./${relative(entryDir, declFile)}`);
 
   const byName = new Map<string, EntryExport>();
+  // Tracks which file each name currently resolves to, to tell an overloaded
+  // declaration (repeated entries from the *same* file - the implementation
+  // signature should win) apart from a genuine `export *` collision between
+  // two different files (the first one seen should win, with a warning).
+  const declFileByName = new Map<string, string>();
   for (const entry of collected) {
+    const existingDeclFile = declFileByName.get(entry.name);
+    if (existingDeclFile !== undefined && existingDeclFile !== entry.declFile) {
+      console.warn(
+        `Warning: "${entry.name}" is exported from both "${relativeSource(existingDeclFile)}" and "${relativeSource(
+          entry.declFile,
+        )}"; keeping the first and dropping the rest.`,
+      );
+      continue;
+    }
+    declFileByName.set(entry.name, entry.declFile);
+
     // Drop internal returnType/literalValue; public EntryExport does not expose them.
     const { declFile, returnType: _returnType, literalValue: _literalValue, ...rest } = entry;
-    const source = normalizeSeparators(`./${relative(entryDir, declFile)}`);
-    byName.set(entry.name, { ...rest, source });
+    byName.set(entry.name, { ...rest, source: relativeSource(declFile) });
   }
 
   return Array.from(byName.values()).sort((a, b) => a.name.localeCompare(b.name));

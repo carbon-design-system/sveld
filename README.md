@@ -1044,6 +1044,8 @@ Nested barrels are followed too: `export { X } from "./dir"`, where `./dir/index
 
 JSON adds `exports` and `totalExports`. Markdown adds an "Exports" section. Each item has `name`, `kind`, type text, optional JSDoc `description`, `source`, and — same as props — optional `@deprecated` and pass-through `tags`. A deprecated export's name is struck through in the Markdown table, same as a deprecated prop. See [`@deprecated`](#deprecated).
 
+An overloaded function (repeated `export function f(...)` signatures, or an import re-exported through a barrel) always documents the implementation signature, i.e. the last declaration. An `enum` export's `type` is the literal union of its members' values (`"A" | "B"` for a string enum, `0 | 1` for a numeric one), falling back to the bare enum name when a member's value can't be determined (e.g. a computed initializer). When two different modules export the same name (most commonly via `export * from "./a"; export * from "./b"`), `sveld` keeps whichever was declared first and prints a warning; it does not silently pick one or emit both.
+
 ## JSON Output
 
 When `json: true` is enabled, `sveld` emits a `COMPONENT_API.json` file with schema and generator metadata plus the parsed

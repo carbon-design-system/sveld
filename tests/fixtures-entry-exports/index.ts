@@ -2,6 +2,8 @@
 export { default as Button } from "./Button.svelte";
 
 export { MAX_RETRIES, VERSION } from "./constants";
+export { format } from "./overloads";
+export { Priority, Status } from "./status";
 export type { Theme, ThemeConfig } from "./types";
 export { clamp, invertTheme } from "./utils";
 

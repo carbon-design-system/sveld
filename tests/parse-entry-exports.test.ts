@@ -145,6 +145,61 @@ describe("parseEntryExports", () => {
     expect(byName(exports, "DEFAULT_THEME").source).toBe("./index.ts");
   });
 
+  test("keeps the implementation signature for an overloaded function re-exported through a barrel", async () => {
+    const exports = await parseEntryExports(entryFile);
+
+    expect(byName(exports, "format")).toMatchObject({
+      name: "format",
+      kind: "function",
+      type: "(value: string | number) => string",
+    });
+  });
+
+  test("records an enum's members as a literal union type", async () => {
+    const exports = await parseEntryExports(entryFile);
+
+    expect(byName(exports, "Status")).toMatchObject({
+      name: "Status",
+      kind: "enum",
+      type: '"active" | "inactive"',
+    });
+    expect(byName(exports, "Priority")).toMatchObject({
+      name: "Priority",
+      kind: "enum",
+      type: "0 | 1 | 2",
+    });
+  });
+
+  test("`export *` collisions keep the first declaration and warn", async () => {
+    // Not written under tests/fixtures-entry-exports because `export * from`
+    // trips the repo's own `noReExportAll` lint rule.
+    const dir = mkdtempSync(path.join(tmpdir(), "sveld-entry-exports-export-star-collision-"));
+    try {
+      writeFileSync(path.join(dir, "collide-a.ts"), 'export const SHARED = "a";\n');
+      writeFileSync(path.join(dir, "collide-b.ts"), 'export const SHARED = "b";\n');
+      writeFileSync(
+        path.join(dir, "index.ts"),
+        ['export * from "./collide-a";', 'export * from "./collide-b";', ""].join("\n"),
+      );
+
+      const warn = jest.spyOn(console, "warn").mockImplementation(() => undefined);
+
+      const exports = await parseEntryExports(path.join(dir, "index.ts"));
+
+      expect(byName(exports, "SHARED")).toMatchObject({
+        name: "SHARED",
+        kind: "const",
+        value: '"a"',
+        source: "./collide-a.ts",
+      });
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining("SHARED"));
+
+      warn.mockRestore();
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   test("warns and skips a re-exported module the underlying parser can't handle, instead of throwing", async () => {
     // Not written under tests/fixtures-entry-exports because the redeclaration
     // below (valid to acorn-typescript, rejected by tsc/biome) would otherwise
