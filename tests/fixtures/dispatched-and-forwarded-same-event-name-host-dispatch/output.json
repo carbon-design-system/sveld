@@ -35,5 +35,8 @@
   "generics": null,
   "contexts": [],
   "customElementTag": "my-el",
+  "customElement": {
+    "tag": "my-el"
+  },
   "diagnostics": []
 }

@@ -85,6 +85,9 @@
   "generics": null,
   "contexts": [],
   "customElementTag": "my-widget",
+  "customElement": {
+    "tag": "my-widget"
+  },
   "diagnostics": [
     {
       "component": "runes-host-custom-element/input.svelte",

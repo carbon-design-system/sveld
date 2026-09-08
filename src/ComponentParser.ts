@@ -568,6 +568,45 @@ export interface Extends {
   import: string;
 }
 
+/** `customElement.props.<name>.type` in `<svelte:options customElement={{ ... }} />`. */
+export type CustomElementPropType = "String" | "Boolean" | "Number" | "Array" | "Object";
+
+/** `customElement.props.<name>` config in `<svelte:options customElement={{ ... }} />`. */
+export interface CustomElementPropConfig {
+  /** Explicit attribute name. Svelte itself always observes every prop as an attribute; sveld's own output omits the attribute entirely when this is `false`. */
+  attribute?: string | false;
+  reflect?: boolean;
+  type?: CustomElementPropType;
+}
+
+/**
+ * Parsed `<svelte:options customElement="tag" />` (shorthand, `tag` only) or
+ * `<svelte:options customElement={{ tag, shadow, props, extend }} />` (object
+ * form). `extend`'s callback expression isn't serializable, so only its
+ * presence is recorded.
+ */
+export interface CustomElementOptions {
+  tag?: string;
+  shadow?: "open" | "none";
+  props?: Record<string, CustomElementPropConfig>;
+  extend?: true;
+}
+
+/** From a component-level `@csspart` JSDoc tag. */
+export interface ComponentCssPart {
+  name: string;
+  description?: string;
+}
+
+/** From a component-level `@cssprop`/`@cssproperty` JSDoc tag. */
+export interface ComponentCssProperty {
+  /** Includes the leading `--`. */
+  name: string;
+  type?: string;
+  default?: string;
+  description?: string;
+}
+
 export interface ComponentPropBindings {
   elements: string[];
 }
@@ -640,6 +679,12 @@ export interface ParsedComponent {
   componentCommentSource?: SourceRange;
   contexts?: ComponentContext[];
   customElementTag?: string;
+  /** Full `<svelte:options customElement=... />` config (shorthand or object form), when present. */
+  customElement?: CustomElementOptions;
+  /** From component-level `@csspart` JSDoc tags. */
+  cssParts?: ComponentCssPart[];
+  /** From component-level `@cssprop`/`@cssproperty` JSDoc tags. */
+  cssProperties?: ComponentCssProperty[];
   /**
    * Type guesses from this parse (unknown props, `any` contexts, orphan `@event` tags).
    */
@@ -2231,6 +2276,9 @@ export default class ComponentParser {
       componentCommentSource: this.ctx.componentCommentSource,
       contexts: contextsArray,
       customElementTag: this.ctx.customElementTag,
+      customElement: this.ctx.customElement,
+      ...(this.ctx.cssParts.length > 0 ? { cssParts: this.ctx.cssParts.slice() } : {}),
+      ...(this.ctx.cssProperties.length > 0 ? { cssProperties: this.ctx.cssProperties.slice() } : {}),
       diagnostics: this.ctx.diagnosticRecords.slice(),
     };
 

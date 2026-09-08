@@ -1,0 +1,101 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 18,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "ts",
+  "props": [
+    {
+      "name": "version",
+      "kind": "const",
+      "type": "string",
+      "typeSource": "default",
+      "value": "\"1.0.0\"",
+      "defaultValue": {
+        "raw": "\"1.0.0\"",
+        "kind": "literal",
+        "value": "1.0.0"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 2,
+          "column": 2
+        },
+        "end": {
+          "line": 2,
+          "column": 33
+        }
+      }
+    },
+    {
+      "name": "setLabel",
+      "kind": "function",
+      "type": "(label: string) => string",
+      "typeSource": "typescript",
+      "params": [
+        {
+          "name": "label",
+          "type": "string",
+          "description": "The new label text",
+          "optional": false
+        }
+      ],
+      "returnType": "string",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 8,
+          "column": 2
+        },
+        "end": {
+          "line": 10,
+          "column": 3
+        }
+      }
+    },
+    {
+      "name": "getCount",
+      "kind": "function",
+      "type": "() => number",
+      "typeSource": "typescript",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 12,
+          "column": 2
+        },
+        "end": {
+          "line": 14,
+          "column": 3
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}

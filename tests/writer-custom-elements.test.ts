@@ -219,10 +219,12 @@ describe("writeCustomElements", () => {
         { kind: "field", name: "data", type: { text: "Record<string, unknown>" } },
       ]);
 
-      // Only bare primitive-typed props become attributes; "data" is skipped.
+      // Every prop becomes an attribute, including non-primitive types like "data";
+      // Svelte's custom-element runtime observes an attribute for every prop.
       expect(declaration.attributes).toEqual([
         { name: "label", fieldName: "label", type: { text: "string" }, default: '"hi"', description: "The label." },
         { name: "count", fieldName: "count", type: { text: "number" } },
+        { name: "data", fieldName: "data", type: { text: "Record<string, unknown>" } },
       ]);
 
       expect(declaration.events).toEqual([
@@ -235,7 +237,8 @@ describe("writeCustomElements", () => {
     }
   });
 
-  test("drops attributes that collide on the same lowercased name", async () => {
+  test("keeps the first prop on an attribute-name collision and warns", async () => {
+    const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
     const components: ComponentDocs = new Map([
       [
         "Clash",
@@ -247,8 +250,196 @@ describe("writeCustomElements", () => {
     const { module, cleanup } = await runWriter(components);
 
     try {
-      expect(module.declarations[0].attributes).toEqual([]);
+      expect(module.declarations[0].attributes).toEqual([
+        { name: "value", fieldName: "value", type: { text: "string" } },
+      ]);
       expect(module.declarations[0].members).toHaveLength(2);
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('"value" and "Value"'));
+    } finally {
+      cleanup();
+    }
+  });
+
+  test("uses the customElement.props config for the attribute name, reflect, and JSON-typed props", async () => {
+    const components: ComponentDocs = new Map([
+      [
+        "Themed",
+        mockComponentDocApi("Themed", "Themed.svelte", {
+          props: [
+            mockProp("variant", { type: "string" }),
+            mockProp("active", { type: "boolean" }),
+            mockProp("tags", { type: "string[]", description: "The tags." }),
+            mockProp("hidden", { type: "boolean" }),
+          ],
+          customElement: {
+            props: {
+              variant: { attribute: "data-variant" },
+              active: { reflect: true },
+              tags: { type: "Array" },
+              hidden: { attribute: false },
+            },
+          },
+        }),
+      ],
+    ]);
+    const { module, cleanup } = await runWriter(components);
+
+    try {
+      expect(module.declarations[0].attributes).toEqual([
+        { name: "data-variant", fieldName: "variant", type: { text: "string" } },
+        { name: "active", fieldName: "active", type: { text: "boolean" }, reflects: true },
+        {
+          name: "tags",
+          fieldName: "tags",
+          type: { text: "string[]" },
+          description: "The tags. Serialized to/from JSON for the attribute.",
+        },
+      ]);
+    } finally {
+      cleanup();
+    }
+  });
+
+  test("excludes export function accessors from attributes", async () => {
+    const components: ComponentDocs = new Map([
+      [
+        "Accessor",
+        mockComponentDocApi("Accessor", "Accessor.svelte", {
+          props: [mockProp("getValue", { isFunctionDeclaration: true, isFunction: true })],
+        }),
+      ],
+    ]);
+    const { module, cleanup } = await runWriter(components);
+
+    try {
+      expect(module.declarations[0].attributes).toEqual([]);
+    } finally {
+      cleanup();
+    }
+  });
+
+  test("maps an export function accessor to a method, preferring JSDoc params/returns", async () => {
+    const components: ComponentDocs = new Map([
+      [
+        "Notifier",
+        mockComponentDocApi("Notifier", "Notifier.svelte", {
+          props: [
+            mockProp("add", {
+              isFunctionDeclaration: true,
+              isFunction: true,
+              params: [{ name: "id", type: "string", description: "The id.", optional: false }],
+              returnType: "boolean",
+              description: "Adds a notification.",
+            }),
+          ],
+        }),
+      ],
+    ]);
+    const { module, cleanup } = await runWriter(components);
+
+    try {
+      expect(module.declarations[0].members).toEqual([
+        {
+          kind: "method",
+          name: "add",
+          static: false,
+          parameters: [{ name: "id", type: { text: "string" } }],
+          return: { type: { text: "boolean" } },
+          description: "Adds a notification.",
+        },
+      ]);
+    } finally {
+      cleanup();
+    }
+  });
+
+  test("falls back to splitting the TS signature text when there's no JSDoc params/returns", async () => {
+    const components: ComponentDocs = new Map([
+      [
+        "Calculator",
+        mockComponentDocApi("Calculator", "Calculator.svelte", {
+          props: [
+            mockProp("add", {
+              isFunctionDeclaration: true,
+              isFunction: true,
+              type: "(a: number, b?: number, ...rest: number[]) => number",
+            }),
+          ],
+        }),
+      ],
+    ]);
+    const { module, cleanup } = await runWriter(components);
+
+    try {
+      expect(module.declarations[0].members).toEqual([
+        {
+          kind: "method",
+          name: "add",
+          static: false,
+          parameters: [
+            { name: "a", type: { text: "number" } },
+            { name: "b", type: { text: "number" }, optional: true },
+            { name: "rest", type: { text: "number[]" }, rest: true },
+          ],
+          return: { type: { text: "number" } },
+        },
+      ]);
+    } finally {
+      cleanup();
+    }
+  });
+
+  test("marks an export const prop's field readonly", async () => {
+    const components: ComponentDocs = new Map([
+      [
+        "Constant",
+        mockComponentDocApi("Constant", "Constant.svelte", {
+          props: [mockProp("version", { kind: "const", constant: true, type: "string", value: '"1.0.0"' })],
+        }),
+      ],
+    ]);
+    const { module, cleanup } = await runWriter(components);
+
+    try {
+      expect(module.declarations[0].members).toEqual([
+        { kind: "field", name: "version", type: { text: "string" }, default: '"1.0.0"', readonly: true },
+      ]);
+    } finally {
+      cleanup();
+    }
+  });
+
+  test("populates cssParts and cssProperties on the declaration when present", async () => {
+    const components: ComponentDocs = new Map([
+      [
+        "Card",
+        mockComponentDocApi("Card", "Card.svelte", {
+          cssParts: [{ name: "header", description: "The header region." }],
+          cssProperties: [
+            { name: "--card-background", type: "Color", default: "white", description: "Card background." },
+          ],
+        }),
+      ],
+    ]);
+    const { module, cleanup } = await runWriter(components);
+
+    try {
+      expect(module.declarations[0].cssParts).toEqual([{ name: "header", description: "The header region." }]);
+      expect(module.declarations[0].cssProperties).toEqual([
+        { name: "--card-background", type: { text: "Color" }, default: "white", description: "Card background." },
+      ]);
+    } finally {
+      cleanup();
+    }
+  });
+
+  test("omits cssParts and cssProperties when absent", async () => {
+    const components: ComponentDocs = new Map([["Plain", mockComponentDocApi("Plain", "Plain.svelte")]]);
+    const { module, cleanup } = await runWriter(components);
+
+    try {
+      expect(module.declarations[0].cssParts).toBeUndefined();
+      expect(module.declarations[0].cssProperties).toBeUndefined();
     } finally {
       cleanup();
     }

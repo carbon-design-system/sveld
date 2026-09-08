@@ -1,4 +1,5 @@
 import type { DeprecatedValue } from "../ComponentParser";
+import { splitTopLevelCommas } from "../parser/generics";
 import type { ComponentDocApi, ComponentDocs } from "../plugin";
 import { buildComponentApiDocument } from "./document-model";
 
@@ -22,11 +23,52 @@ export interface CemClassField {
   default?: string;
   description?: string;
   deprecated?: DeprecatedValue;
+  /** Present, and `true`, for an `export const` prop. */
+  readonly?: true;
+}
+
+export interface CemParameter {
+  name: string;
+  type?: CemType;
+  optional?: true;
+  rest?: true;
+}
+
+/** An `export function` prop (a Svelte accessor), mapped to a method instead of a field. */
+export interface CemClassMethod {
+  kind: "method";
+  name: string;
+  static: boolean;
+  parameters?: CemParameter[];
+  return?: { type: CemType };
+  description?: string;
+  deprecated?: DeprecatedValue;
 }
 
 export interface CemAttribute {
   name: string;
   fieldName: string;
+  type?: CemType;
+  default?: string;
+  description?: string;
+  /** Present, and `true`, when the prop's `customElement` config sets `reflect: true`. */
+  reflects?: true;
+}
+
+export interface CemCssPart {
+  name: string;
+  description?: string;
+}
+
+/**
+ * The published schema names this field `syntax` (a strict CSS
+ * `@property`-style syntax string, e.g. `"<color>"`). sveld's `@cssprop
+ * {type}` is free-form prose (e.g. `"Color"`), so it's emitted as `type.text`
+ * instead, matching every other typed field in this manifest.
+ */
+export interface CemCssCustomProperty {
+  /** Includes the leading `--`. */
+  name: string;
   type?: CemType;
   default?: string;
   description?: string;
@@ -49,10 +91,14 @@ export interface CemClassDeclaration {
   kind: "class";
   name: string;
   description?: string;
-  members: CemClassField[];
+  members: Array<CemClassField | CemClassMethod>;
   attributes: CemAttribute[];
   events: CemEvent[];
   slots: CemSlot[];
+  /** From component-level `@csspart` JSDoc tags. */
+  cssParts?: CemCssPart[];
+  /** From component-level `@cssprop`/`@cssproperty` JSDoc tags. */
+  cssProperties?: CemCssCustomProperty[];
   /** Only present when the source component sets `<svelte:options customElement="..." />`. */
   tagName?: string;
   /** Only present when the source component sets `<svelte:options customElement="..." />`. */
@@ -85,60 +131,178 @@ export interface CustomElementsManifest {
   modules: CemModule[];
 }
 
-/**
- * Attribute-compatible prop types: primitives only. Anything else (arrays,
- * objects, unions, custom types) is skipped, since sveld doesn't attempt to
- * infer how a complex type reflects to a DOM attribute string.
- */
-const PRIMITIVE_ATTRIBUTE_TYPES = new Set(["string", "number", "boolean"]);
+type ComponentPropApi = ComponentDocApi["props"][number];
 
-function buildMembers(props: ComponentDocApi["props"]): CemClassField[] {
-  return props.map((prop) => ({
-    kind: "field",
-    name: prop.name,
-    ...(prop.type ? { type: { text: prop.type } } : {}),
-    ...(prop.value === undefined ? {} : { default: prop.value }),
-    ...(prop.description ? { description: prop.description } : {}),
-    ...(prop.deprecated === undefined ? {} : { deprecated: prop.deprecated }),
-  }));
+/**
+ * Splits an accessor's TS signature text (e.g. `"(input: string) => number"`,
+ * produced by {@link buildFunctionDeclarationSignature} when there's no
+ * `@param`/`@returns` JSDoc to prefer instead) into CEM parameters/return.
+ * Textual split, not a real type parse: params are whatever's between the
+ * signature's leading balanced `(...)`, split on top-level commas.
+ */
+const ARROW_PREFIX_REGEX = /^=>\s*/;
+
+function parseAccessorSignatureText(signature: string): { parameters: CemParameter[]; returnTypeText: string } {
+  const trimmed = signature.trim();
+  if (!trimmed.startsWith("(")) return { parameters: [], returnTypeText: trimmed || "any" };
+
+  let depth = 0;
+  let closeIndex = -1;
+  for (let i = 0; i < trimmed.length; i++) {
+    if (trimmed[i] === "(") depth++;
+    else if (trimmed[i] === ")") {
+      depth--;
+      if (depth === 0) {
+        closeIndex = i;
+        break;
+      }
+    }
+  }
+  if (closeIndex === -1) return { parameters: [], returnTypeText: "any" };
+
+  const paramsText = trimmed.slice(1, closeIndex).trim();
+  const returnText = trimmed
+    .slice(closeIndex + 1)
+    .trim()
+    .replace(ARROW_PREFIX_REGEX, "");
+
+  const parameters =
+    paramsText === ""
+      ? []
+      : splitTopLevelCommas(paramsText).map((paramText): CemParameter => {
+          const text = paramText.trim();
+          const isRest = text.startsWith("...");
+          const rest = isRest ? text.slice(3) : text;
+          const colonIndex = rest.indexOf(":");
+          const namePart = (colonIndex === -1 ? rest : rest.slice(0, colonIndex)).trim();
+          const typeText = colonIndex === -1 ? undefined : rest.slice(colonIndex + 1).trim();
+          const optional = namePart.endsWith("?");
+
+          return {
+            name: optional ? namePart.slice(0, -1) : namePart,
+            ...(typeText ? { type: { text: typeText } } : {}),
+            ...(optional ? { optional: true } : {}),
+            ...(isRest ? { rest: true } : {}),
+          };
+        });
+
+  return { parameters, returnTypeText: returnText || "any" };
 }
 
 /**
- * Derives attributes from props whose name is already attribute-compatible
- * (Svelte's custom-element runtime lowercases the prop name by default,
- * `key.toLowerCase()`) and whose type is a bare primitive. Props that would
- * collide on the same lowercased attribute name are dropped on both sides,
- * since which prop wins at runtime is ambiguous.
+ * Parameters/return for an `export function` accessor prop. JSDoc
+ * `@param`/`@returns` win when present (already structured on the prop);
+ * otherwise falls back to splitting the prop's TS signature text.
  */
-function buildAttributes(props: ComponentDocApi["props"]): CemAttribute[] {
-  const byAttributeName = new Map<string, ComponentDocApi["props"]>();
-
-  for (const prop of props) {
-    if (!prop.type || !PRIMITIVE_ATTRIBUTE_TYPES.has(prop.type.trim())) continue;
-
-    const attributeName = prop.name.toLowerCase();
-    const existing = byAttributeName.get(attributeName);
-    if (existing) {
-      existing.push(prop);
-    } else {
-      byAttributeName.set(attributeName, [prop]);
-    }
+function accessorParametersAndReturn(prop: ComponentPropApi): { parameters: CemParameter[]; returnTypeText: string } {
+  if (prop.params !== undefined || prop.returnType !== undefined) {
+    const parameters = (prop.params ?? []).map(
+      (param): CemParameter => ({
+        name: param.name,
+        ...(param.type ? { type: { text: param.type } } : {}),
+        ...(param.optional ? { optional: true } : {}),
+      }),
+    );
+    return { parameters, returnTypeText: prop.returnType ?? "any" };
   }
 
+  return prop.type ? parseAccessorSignatureText(prop.type) : { parameters: [], returnTypeText: "any" };
+}
+
+function buildMembers(props: ComponentDocApi["props"]): Array<CemClassField | CemClassMethod> {
+  return props.map((prop): CemClassField | CemClassMethod => {
+    if (prop.isFunctionDeclaration) {
+      const { parameters, returnTypeText } = accessorParametersAndReturn(prop);
+      return {
+        kind: "method",
+        name: prop.name,
+        static: false,
+        ...(parameters.length > 0 ? { parameters } : {}),
+        return: { type: { text: returnTypeText } },
+        ...(prop.description ? { description: prop.description } : {}),
+        ...(prop.deprecated === undefined ? {} : { deprecated: prop.deprecated }),
+      };
+    }
+
+    return {
+      kind: "field",
+      name: prop.name,
+      ...(prop.type ? { type: { text: prop.type } } : {}),
+      ...(prop.value === undefined ? {} : { default: prop.value }),
+      ...(prop.description ? { description: prop.description } : {}),
+      ...(prop.deprecated === undefined ? {} : { deprecated: prop.deprecated }),
+      ...(prop.kind === "const" ? { readonly: true } : {}),
+    };
+  });
+}
+
+/**
+ * Derives attributes from every prop (Svelte's custom-element runtime
+ * observes an attribute for every prop by default, converting to/from JSON
+ * for `Array`/`Object`-typed props), excluding `export function` accessors
+ * (those aren't part of Svelte's props definition; see {@link buildMembers}).
+ * The attribute name is the `customElement.props.<name>.attribute` config
+ * when present, the lowercased prop name otherwise; `attribute: false` in
+ * that config omits the prop's attribute entirely. Props that collide on the
+ * same attribute name keep the first (in declaration order); the rest are
+ * skipped with a console warning, since which prop wins at runtime is
+ * ambiguous.
+ */
+function buildAttributes(component: ComponentDocApi): CemAttribute[] {
+  const propConfigs = component.customElement?.props;
+  const claimedBy = new Map<string, string>();
   const attributes: CemAttribute[] = [];
-  for (const [attributeName, candidates] of byAttributeName) {
-    if (candidates.length !== 1) continue;
-    const prop = candidates[0];
+
+  for (const prop of component.props) {
+    if (prop.isFunctionDeclaration) continue;
+
+    const config = propConfigs?.[prop.name];
+    if (config?.attribute === false) continue;
+
+    const attributeName = config?.attribute || prop.name.toLowerCase();
+    const claimedByFieldName = claimedBy.get(attributeName);
+    if (claimedByFieldName !== undefined) {
+      console.warn(
+        `sveld: props "${claimedByFieldName}" and "${prop.name}" of component "${component.moduleName}" both map to the custom-element attribute "${attributeName}"; only "${claimedByFieldName}" is included.`,
+      );
+      continue;
+    }
+    claimedBy.set(attributeName, prop.name);
+
+    const isJsonSerialized = config?.type === "Array" || config?.type === "Object";
+    const description = isJsonSerialized
+      ? [prop.description, "Serialized to/from JSON for the attribute."].filter(Boolean).join(" ")
+      : prop.description;
+
     attributes.push({
       name: attributeName,
       fieldName: prop.name,
-      type: { text: prop.type as string },
+      ...(prop.type ? { type: { text: prop.type } } : {}),
       ...(prop.value === undefined ? {} : { default: prop.value }),
-      ...(prop.description ? { description: prop.description } : {}),
+      ...(description ? { description } : {}),
+      ...(config?.reflect ? { reflects: true } : {}),
     });
   }
 
   return attributes;
+}
+
+function buildCssParts(cssParts: ComponentDocApi["cssParts"]): CemCssPart[] | undefined {
+  if (!cssParts || cssParts.length === 0) return undefined;
+  return cssParts.map((cssPart) => ({
+    name: cssPart.name,
+    ...(cssPart.description ? { description: cssPart.description } : {}),
+  }));
+}
+
+function buildCssProperties(cssProperties: ComponentDocApi["cssProperties"]): CemCssCustomProperty[] | undefined {
+  if (!cssProperties || cssProperties.length === 0) return undefined;
+  return cssProperties.map((cssProperty) => ({
+    name: cssProperty.name,
+    ...(cssProperty.type ? { type: { text: cssProperty.type } } : {}),
+    ...(cssProperty.default === undefined ? {} : { default: cssProperty.default }),
+    ...(cssProperty.description ? { description: cssProperty.description } : {}),
+  }));
 }
 
 function buildEvents(events: ComponentDocApi["events"]): CemEvent[] {
@@ -161,14 +325,19 @@ function buildSlots(slots: ComponentDocApi["slots"]): CemSlot[] {
 }
 
 function buildDeclaration(component: ComponentDocApi): CemClassDeclaration {
+  const cssParts = buildCssParts(component.cssParts);
+  const cssProperties = buildCssProperties(component.cssProperties);
+
   const declaration: CemClassDeclaration = {
     kind: "class",
     name: component.moduleName,
     ...(component.componentComment ? { description: component.componentComment } : {}),
     members: buildMembers(component.props),
-    attributes: buildAttributes(component.props),
+    attributes: buildAttributes(component),
     events: buildEvents(component.events),
     slots: buildSlots(component.slots),
+    ...(cssParts ? { cssParts } : {}),
+    ...(cssProperties ? { cssProperties } : {}),
   };
 
   if (component.customElementTag) {

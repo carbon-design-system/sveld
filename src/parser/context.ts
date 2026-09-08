@@ -1,12 +1,15 @@
 import type { FunctionDeclaration, VariableDeclaration } from "estree";
 import type {
   ComponentContext,
+  ComponentCssPart,
+  ComponentCssProperty,
   ComponentElement,
   ComponentEvent,
   ComponentGenerics,
   ComponentInlineElement,
   ComponentProp,
   ComponentPropBindings,
+  CustomElementOptions,
   Extends,
   InternalComponentSlot,
   LexicalScope,
@@ -43,6 +46,7 @@ export interface ParserContext {
   rest_props?: RestProps;
   extends?: Extends;
   customElementTag?: string;
+  customElement?: CustomElementOptions;
   componentComment?: string;
   componentCommentSource?: SourceRange;
   generics: ComponentGenerics;
@@ -92,6 +96,11 @@ export interface ParserContext {
   readonly slots: Map<string | null, InternalComponentSlot>;
   readonly snippetPropLocals: Set<string>;
 
+  /** From component-level `@csspart` JSDoc tags. */
+  readonly cssParts: ComponentCssPart[];
+  /** From component-level `@cssprop`/`@cssproperty` JSDoc tags. */
+  readonly cssProperties: ComponentCssProperty[];
+
   /** `@template` tags from a `@slot`/`@snippet` block (no `@extends`), held until finalization. */
   deferredSlotBlockGenerics: Array<{ name: string; constraint: string }>;
 
@@ -132,6 +141,7 @@ export function createParserContext(): ParserContext {
     rest_props: undefined,
     extends: undefined,
     customElementTag: undefined,
+    customElement: undefined,
     componentComment: undefined,
     componentCommentSource: undefined,
     generics: null,
@@ -161,6 +171,8 @@ export function createParserContext(): ParserContext {
     activeScopes: [],
     slots: new Map(),
     snippetPropLocals: new Set(),
+    cssParts: [],
+    cssProperties: [],
     deferredSlotBlockGenerics: [],
     events: new Map(),
     eventDescriptions: new Map(),

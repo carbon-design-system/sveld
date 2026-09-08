@@ -1,0 +1,121 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 21,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "ts",
+  "props": [
+    {
+      "name": "variant",
+      "kind": "let",
+      "type": "string",
+      "typeSource": "typescript",
+      "value": "\"default\"",
+      "defaultValue": {
+        "raw": "\"default\"",
+        "kind": "literal",
+        "value": "default"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 15,
+          "column": 2
+        },
+        "end": {
+          "line": 15,
+          "column": 41
+        }
+      }
+    },
+    {
+      "name": "active",
+      "kind": "let",
+      "type": "boolean",
+      "typeSource": "typescript",
+      "value": "false",
+      "defaultValue": {
+        "raw": "false",
+        "kind": "literal",
+        "value": false
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 16,
+          "column": 2
+        },
+        "end": {
+          "line": 16,
+          "column": 37
+        }
+      }
+    },
+    {
+      "name": "tags",
+      "kind": "let",
+      "type": "string[]",
+      "typeSource": "typescript",
+      "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 17,
+          "column": 2
+        },
+        "end": {
+          "line": 17,
+          "column": 33
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "customElementTag": "x-config-widget",
+  "customElement": {
+    "tag": "x-config-widget",
+    "shadow": "none",
+    "props": {
+      "variant": {
+        "attribute": "data-variant"
+      },
+      "active": {
+        "reflect": true
+      },
+      "tags": {
+        "type": "Array"
+      }
+    },
+    "extend": true
+  },
+  "diagnostics": []
+}
