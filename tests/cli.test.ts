@@ -145,6 +145,13 @@ describe("parseCliOptions", () => {
     expect(parseCliOptions(["--strict=local"])).toEqual({ kind: "options", options: { strict: "local" } });
   });
 
+  test("--check-examples=syntax runs only the markup path", () => {
+    expect(parseCliOptions(["--check-examples=syntax"])).toEqual({
+      kind: "options",
+      options: { checkExamples: "syntax" },
+    });
+  });
+
   test("--stdout enables stdout", () => {
     expect(parseCliOptions(["--stdout"])).toEqual({ kind: "options", options: { stdout: true } });
   });
