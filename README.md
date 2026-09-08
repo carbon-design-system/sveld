@@ -2911,7 +2911,7 @@ A width prop.<br />@see https://example.com/width-docs
 
 `{@link target}` (optionally `{@link target|display text}`) is an inline JSDoc tag used inside prose, not a block-level tag like the others on this page. `sveld`'s comment parser only treats a *line* as starting a new tag when it begins with `@` — `{@link ...}` always starts with `{`, so it's never intercepted. It is always literal text.
 
-**Valid contexts:** anywhere free-form description text is read — prop and module export descriptions, event descriptions, slot descriptions, typedef descriptions, `@component` HTML comments, and `@example` bodies. In every case `sveld` copies it through unchanged, with no link resolution or target validation, into JSON `description`, `.d.ts` JSDoc, and Markdown.
+**Valid contexts:** anywhere free-form description text is read — prop and module export descriptions, event descriptions, slot descriptions, entry export descriptions, typedef descriptions, `@component` HTML comments, and `@example` bodies. `sveld` never resolves or validates the target. JSON `description` and `.d.ts` JSDoc always keep the tag verbatim. **Markdown is the one exception:** in a prop, event, slot, or entry export's Description table cell, `{@link target|text}` / `{@link target}` is rewritten to a Markdown link, `[text](target)` / `[target](target)`. Typedef descriptions (rendered as a `.d.ts`-style code block) and `@component` comments keep the tag literal in Markdown too, since neither goes through the table-cell renderer.
 
 **Example:**
 
@@ -2937,7 +2937,7 @@ export type ScratchProps = {
 };
 ```
 
-The same literal string appears unchanged in JSON `description` and in the Markdown table's Description column.
+The same literal string appears unchanged in JSON `description`. The Markdown table's Description column instead shows: `The element's width in pixels. See [width docs](https://example.com/width).`
 
 ### `@example`
 

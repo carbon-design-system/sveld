@@ -58,9 +58,11 @@ describe("renderComponentsToMarkdown (entry exports)", () => {
     ]);
 
     expect(output).toContain(
-      "| <s>DEFAULT_THEME</s><br />**Deprecated**: Use `invertTheme` instead. | <code>const</code> | <code>\"light\"</code> | -- |",
+      '| <s>DEFAULT_THEME</s><br />**Deprecated**: Use `invertTheme` instead. | <code>const</code> | <code>"light"</code> | -- |',
     );
-    expect(output).toContain("| <s>LEGACY_FLAG</s><br />**Deprecated** | <code>const</code> | <code>true</code> | -- |");
+    expect(output).toContain(
+      "| <s>LEGACY_FLAG</s><br />**Deprecated** | <code>const</code> | <code>true</code> | -- |",
+    );
   });
 
   test("omits the Exports section when there are no entry exports", () => {
