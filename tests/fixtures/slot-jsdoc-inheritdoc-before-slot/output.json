@@ -41,5 +41,24 @@
   "typedefs": [],
   "generics": null,
   "contexts": [],
-  "diagnostics": []
+  "diagnostics": [
+    {
+      "component": "slot-jsdoc-inheritdoc-before-slot/input.svelte",
+      "kind": "jsdoc-unknown-tag",
+      "name": "inheritdoc",
+      "message": "Unknown JSDoc tag \"@inheritdoc\"; passed through unchanged. If this is a typo, fix the tag name.",
+      "source": {
+        "start": {
+          "line": 4,
+          "column": 5
+        },
+        "end": {
+          "line": 4,
+          "column": 16
+        }
+      },
+      "code": "sveld/jsdoc-unknown-tag",
+      "severity": "warning"
+    }
+  ]
 }

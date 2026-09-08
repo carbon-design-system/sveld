@@ -511,6 +511,8 @@ export interface TypeDef {
   description?: string;
   /** Full `type` alias declaration text. */
   ts: string;
+  /** Tags in the same block (e.g. `@since`, `@example`, `@see`), in source order. */
+  tags?: JsDocPassthroughTag[];
 }
 
 export type ComponentGenerics = [name: string, type: string] | null;
