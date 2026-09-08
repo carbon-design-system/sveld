@@ -1,7 +1,13 @@
+import { existsSync, readFileSync, rmSync } from "node:fs";
+import { mkdtemp } from "node:fs/promises";
+import path from "node:path";
 import { asNormalizedPath } from "../src/brands";
+import type { ComponentDocs } from "../src/plugin";
 import type { AppendType } from "../src/writer/WriterMarkdown";
 import WriterMarkdown from "../src/writer/WriterMarkdown";
+import writeMarkdown from "../src/writer/writer-markdown";
 import { writeMarkdownCore } from "../src/writer/writer-markdown-core";
+import { mockComponentDocApi } from "./test-brands";
 
 describe("WriterMarkdown", () => {
   test("basic functionality", () => {
@@ -741,5 +747,70 @@ describe("WriterMarkdown", () => {
     expect(output).toContain("| count | No | <code>accessor</code> |");
     expect(output).toContain("| focus | No | <code>accessor</code> |");
     expect(output).toContain("| label | No | <code>let</code> |");
+  });
+
+  describe("markdownOptions.outDir", () => {
+    test("writes one file per component plus an index README.md with links", async () => {
+      const tempDir = await mkdtemp(path.join(process.cwd(), ".tmp-sveld-md-outdir-"));
+      const components: ComponentDocs = new Map([
+        ["Alert", mockComponentDocApi("Alert", "Alert.svelte")],
+        ["Button", mockComponentDocApi("Button", "Button.svelte")],
+      ]);
+
+      try {
+        await writeMarkdown(components, { outFile: "unused.md", outDir: tempDir });
+
+        expect(existsSync(path.join(tempDir, "README.md"))).toBe(true);
+        expect(existsSync(path.join(tempDir, "Alert.md"))).toBe(true);
+        expect(existsSync(path.join(tempDir, "Button.md"))).toBe(true);
+
+        const index = readFileSync(path.join(tempDir, "README.md"), "utf-8");
+        expect(index).toContain("# Component Index");
+        expect(index).toContain("- [Alert](./Alert.md)");
+        expect(index).toContain("- [Button](./Button.md)");
+        // Per-component sections live in their own files, not the index.
+        expect(index).not.toContain("### Props");
+
+        const alert = readFileSync(path.join(tempDir, "Alert.md"), "utf-8");
+        expect(alert).toContain("## `Alert`");
+        expect(alert).toContain("### Props");
+        expect(alert).not.toContain("`Button`");
+      } finally {
+        rmSync(tempDir, { recursive: true, force: true });
+      }
+    });
+
+    test("index README.md includes the Exports section when documentExports is on", async () => {
+      const tempDir = await mkdtemp(path.join(process.cwd(), ".tmp-sveld-md-outdir-exports-"));
+      const components: ComponentDocs = new Map([["Button", mockComponentDocApi("Button", "Button.svelte")]]);
+
+      try {
+        await writeMarkdown(components, {
+          outFile: "unused.md",
+          outDir: tempDir,
+          entryExports: [{ name: "VERSION", kind: "const", type: "string", isTypeOnly: false, value: '"1.0.0"' }],
+        });
+
+        const index = readFileSync(path.join(tempDir, "README.md"), "utf-8");
+        expect(index).toContain("## Exports");
+        expect(index).toContain("VERSION");
+      } finally {
+        rmSync(tempDir, { recursive: true, force: true });
+      }
+    });
+
+    test("outFile is ignored and no combined file is written when outDir is set", async () => {
+      const tempDir = await mkdtemp(path.join(process.cwd(), ".tmp-sveld-md-outdir-ignores-outfile-"));
+      const components: ComponentDocs = new Map([["Button", mockComponentDocApi("Button", "Button.svelte")]]);
+
+      try {
+        await writeMarkdown(components, { outFile: path.join(tempDir, "COMPONENT_INDEX.md"), outDir: tempDir });
+
+        expect(existsSync(path.join(tempDir, "COMPONENT_INDEX.md"))).toBe(false);
+        expect(existsSync(path.join(tempDir, "README.md"))).toBe(true);
+      } finally {
+        rmSync(tempDir, { recursive: true, force: true });
+      }
+    });
   });
 });

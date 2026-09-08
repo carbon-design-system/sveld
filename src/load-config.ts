@@ -242,7 +242,7 @@ const KNOWN_TOP_LEVEL_KEYS = [
 const KNOWN_NESTED_KEYS: Record<string, string[]> = {
   typesOptions: ["outDir", "preamble", "format", "exports", "dryRun", "cache", "resolvedPathByFilePath"],
   jsonOptions: ["input", "outFile", "outDir", "entryExports", "dryRun", "source"],
-  markdownOptions: ["write", "outFile", "entryExports", "onAppend", "dryRun"],
+  markdownOptions: ["write", "outFile", "outDir", "entryExports", "onAppend", "dryRun"],
   customElementsOptions: ["outFile", "dryRun"],
   llmsOptions: ["outDir", "linkBase", "title", "summary", "entryExports", "dryRun"],
   diagnostics: ["ignore"],

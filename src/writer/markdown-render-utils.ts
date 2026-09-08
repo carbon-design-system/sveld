@@ -49,6 +49,31 @@ export function renderComponentsToMarkdown(
   }
 }
 
+/**
+ * Renders the index page for `markdownOptions.outDir` mode: a title, a link
+ * list to each component's own file, and the Exports section (when
+ * `documentExports` is on) - the same content the combined single-file mode
+ * puts before its table of contents, minus the per-component sections
+ * themselves, which live in their own files.
+ */
+export function renderComponentIndexToMarkdown(
+  document: MarkdownDocument,
+  components: ComponentDocApi[],
+  entryExports?: EntryExports,
+) {
+  document.append("h1", "Component Index");
+  document.append("h2", "Components");
+  for (const component of components) {
+    document.append("raw", `- [${component.moduleName}](./${component.moduleName}.md)\n`);
+  }
+  document.append("raw", "\n");
+  document.append("divider");
+
+  if (entryExports && entryExports.length > 0) {
+    renderExports(document, entryExports);
+  }
+}
+
 function renderExports(document: MarkdownDocument, entryExports: EntryExports) {
   document.append("h2", "Exports");
   document.append("raw", EXPORT_TABLE_HEADER);
@@ -108,6 +133,11 @@ function renderSectionIfNotEmpty<TItem>(
   } else {
     document.append("p", emptyMessage ?? "None.");
   }
+}
+
+/** Renders one component's section, for both the combined document and `markdownOptions.outDir`'s per-component files. */
+export function renderComponentToMarkdown(document: MarkdownDocument, component: ComponentDocApi) {
+  renderComponent(document, component);
 }
 
 function renderComponent(document: MarkdownDocument, component: ComponentDocApi) {

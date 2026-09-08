@@ -929,8 +929,9 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
   - **`source`** (boolean, optional, default: `true`): Set to `false` to omit every `source`/`componentCommentSource` position range from the output. See [`jsonOptions.source`](#jsonoptionssource).
 - **`markdown`** (boolean, optional): Generate component documentation in Markdown format.
 - **`markdownOptions`** (object, optional): Options for Markdown output.
-  - **`outFile`** (string, optional, default: `"COMPONENT_INDEX.md"`): Path (relative to the project root) for the generated Markdown file.
-  - **`write`** (boolean, optional, default: `true`): Set to `false` to render the Markdown document without writing it to disk.
+  - **`outFile`** (string, optional, default: `"COMPONENT_INDEX.md"`): Path (relative to the project root) for the single combined Markdown document. Ignored when `outDir` is set.
+  - **`outDir`** (string, optional): Emit one `<ModuleName>.md` file per component into this directory, plus an index `README.md` linking to each, instead of a single combined file. See [`markdownOptions.outDir`](#markdownoptionsoutdir).
+  - **`write`** (boolean, optional, default: `true`): Set to `false` to skip writing to disk — the rendered combined document is still returned, or (with `outDir` set) no files are written at all.
   - **`onAppend`** (function, optional): Callback invoked every time a heading, quote, paragraph, divider, or raw block is appended to the document. Lets you inject extra content, e.g. a summary line under the title. See [`markdownOptions.onAppend`](#markdownoptionsonappend) below.
 - **`customElements`** (boolean, optional): Generate a [Custom Elements Manifest](#custom-elements-manifest) (`custom-elements.json`). Also available as the `--custom-elements` CLI flag.
 - **`customElementsOptions`** (object, optional): Options for Custom Elements Manifest output.
@@ -1015,6 +1016,24 @@ sveld({
 
 > 1 components exported from sveld-scratch@1.0.0.
 ```
+
+#### `markdownOptions.outDir`
+
+With `markdown: true`, `sveld` writes a single `COMPONENT_INDEX.md` at the project root, documenting every component.
+
+Use `markdownOptions.outDir` to split that into one `<ModuleName>.md` file per component, plus an index `README.md` that links to each one (and holds the Exports section when `documentExports` is on — per-component sections live entirely in their own file):
+
+```js
+sveld({
+  markdown: true,
+  markdownOptions: {
+    // e.g. "docs/Button.md", "docs/README.md"
+    outDir: "docs",
+  },
+});
+```
+
+`onAppend` still fires for both the index and every per-component file. `outFile` is ignored once `outDir` is set.
 
 ## Documenting Entry Exports
 
