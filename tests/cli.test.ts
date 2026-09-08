@@ -85,6 +85,10 @@ describe("parseCliOptions", () => {
     expect(parseCliOptions(["--check=false"])).toEqual({ kind: "options", options: { check: false } });
   });
 
+  test("--check-level=<value> sets the gate level", () => {
+    expect(parseCliOptions(["--check-level=minor"])).toEqual({ kind: "options", options: { checkLevel: "minor" } });
+  });
+
   test("--check-examples and --checkExamples produce identical options", () => {
     const canonical = parseCliOptions(["--check-examples"]);
     const alias = parseCliOptions(["--checkExamples"]);
@@ -1050,6 +1054,82 @@ describe("cli() --format with --check", () => {
     expect(process.exitCode).toBe(3);
     expect(stdoutSpy).not.toHaveBeenCalled();
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("Suggested semver bump: major."));
+  });
+});
+
+describe("cli() --check-level", () => {
+  let dir: string;
+  let previousCwd: string;
+  let previousArgv: string[];
+  let logSpy: ReturnType<typeof jest.spyOn>;
+
+  beforeEach(async () => {
+    previousCwd = process.cwd();
+    previousArgv = process.argv;
+    process.exitCode = 0;
+    dir = mkdtempSync(join(tmpdir(), "sveld-cli-check-level-"));
+    process.chdir(dir);
+    mkdirSync(join(dir, "src"), { recursive: true });
+    writeFileSync(join(dir, "src", "index.js"), 'export { default as Button } from "./Button.svelte";\n');
+    jest.spyOn(console, "error").mockImplementation(() => {});
+    logSpy = jest.spyOn(console, "log").mockImplementation(() => {});
+
+    // Snapshot a prop-less Button, then add a new optional prop so `--check`
+    // has a minor (additive) change to report, not a breaking one.
+    writeFileSync(join(dir, "src", "Button.svelte"), "<script></script>\n<button>Click</button>\n");
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--json"];
+    await cli(process);
+    logSpy.mockClear();
+
+    writeFileSync(
+      join(dir, "src", "Button.svelte"),
+      '<script>\n  export let icon = "";\n</script>\n<button>{icon}</button>\n',
+    );
+  });
+
+  afterEach(() => {
+    process.chdir(previousCwd);
+    process.argv = previousArgv;
+    process.exitCode = 0;
+    rmSync(dir, { recursive: true, force: true });
+    jest.restoreAllMocks();
+  });
+
+  test("defaults to major: a minor change does not fail the run", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--check"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(0);
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("Suggested semver bump: minor."));
+  });
+
+  test("--check-level=minor fails the run on a minor change", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--check", "--check-level=minor"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(3);
+  });
+
+  test("--check-level=patch fails the run on a minor change", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--check", "--check-level=patch"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(3);
+  });
+
+  test("rejects an invalid --check-level value", async () => {
+    const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--check", "--check-level=oops"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(1);
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('--check-level must be "major", "minor", or "patch"'),
+    );
   });
 });
 

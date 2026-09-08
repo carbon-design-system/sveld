@@ -19,6 +19,9 @@ type Slot = ComponentDocApi["slots"][number];
 
 export type SemverBump = "major" | "minor" | "patch" | "none";
 
+/** Minimum bump `--check-level` fails the run on. */
+export type CheckLevel = "major" | "minor" | "patch";
+
 /** One API diff between the committed snapshot and the current parse. */
 export interface ApiChange {
   /** Component `moduleName` this change belongs to, or `"*"` for document-wide notices. */
@@ -47,6 +50,11 @@ function maxBump(a: SemverBump, b: SemverBump): SemverBump {
 
 function highestBump(changes: ApiChange[]): SemverBump {
   return changes.reduce<SemverBump>((bump, change) => maxBump(bump, change.bump), "none");
+}
+
+/** True when `bump` is at or above `level` on the `none < patch < minor < major` scale. */
+export function bumpMeetsLevel(bump: SemverBump, level: CheckLevel): boolean {
+  return BUMP_RANK[bump] >= BUMP_RANK[level];
 }
 
 /**
