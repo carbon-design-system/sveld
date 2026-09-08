@@ -3,6 +3,7 @@ import { join } from "node:path";
 import pkg from "../package.json" with { type: "json" };
 import { asSvelteEntryPoint } from "./brands";
 import {
+  bumpMeetsLevel,
   type CheckResult,
   formatCheckReport,
   formatCheckReportJson,
@@ -76,6 +77,7 @@ Options:
   --strict[=errors]     Exit with code 4 when diagnostics exist (implies --report-diagnostics); --strict=errors only fails on error-severity diagnostics
   --types-format=<format>  ".d.ts" output format: "class" (default) or "component" (Svelte 5 Component<...>)
   --check[=<path>]      Diff the parsed API against a committed snapshot; exit 3 on a breaking change (default path: COMPONENT_API.json)
+  --check-level=<major|minor|patch>  Minimum bump --check fails the run on (default: major)
   --format=<text|json|github>  Output format for the --check report and the diagnostics summary (default: text); "github" prints GitHub Actions ::error/::warning lines and appends a GITHUB_STEP_SUMMARY table when that env var is set
   --help                Print this help message and exit
   --version             Print the installed sveld version and exit
@@ -123,6 +125,7 @@ const KNOWN_FLAGS = [
   "entry",
   "cache",
   "check",
+  "check-level",
   "types-format",
   "format",
 ];
@@ -256,6 +259,12 @@ function parseCliFlagValue(flag: string, value: string | boolean, arg: string, r
       // error (`--format=yaml`); a bare `--format` is silently ignored.
       return typeof value === "string"
         ? { kind: "option", option: { format: value as "text" | "json" | "github" } }
+        : { kind: "option", option: {} };
+    case "check-level":
+      // The value is validated in `cli()` once it can be reported as a usage
+      // error (`--check-level=oops`); a bare `--check-level` is silently ignored.
+      return typeof value === "string"
+        ? { kind: "option", option: { checkLevel: value as "major" | "minor" | "patch" } }
         : { kind: "option", option: {} };
     default:
       return { kind: "unknown", arg, suggestion: suggestFlag(rawFlag) };
@@ -405,6 +414,17 @@ export async function cli(process: NodeJS.Process) {
     return;
   }
 
+  if (
+    options.checkLevel !== undefined &&
+    options.checkLevel !== "major" &&
+    options.checkLevel !== "minor" &&
+    options.checkLevel !== "patch"
+  ) {
+    console.error(`sveld: --check-level must be "major", "minor", or "patch"; got "${options.checkLevel}".`);
+    process.exitCode = EXIT_CODES.USAGE_ERROR;
+    return;
+  }
+
   setQuiet(options.quiet === true);
 
   const resolvedEntry = getSvelteEntry(options.entry);
@@ -491,7 +511,7 @@ export async function cli(process: NodeJS.Process) {
   // Lowest applicable code wins (3 beats 4); every failure is still reported above.
   let exitCode: number | undefined;
 
-  if (checkResult?.bump === "major") {
+  if (checkResult && bumpMeetsLevel(checkResult.bump, options.checkLevel ?? "major")) {
     exitCode = EXIT_CODES.BREAKING_CHANGE;
   }
 

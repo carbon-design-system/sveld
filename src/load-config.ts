@@ -27,6 +27,11 @@ export interface SveldRuntimeOptions extends PluginSveldOptions {
    * string for a custom snapshot path.
    */
   check?: boolean | string;
+  /**
+   * Minimum bump `--check` fails the run (exit `3`) on: `"major"` (default,
+   * preserves prior behavior), `"minor"`, or `"patch"`.
+   */
+  checkLevel?: "major" | "minor" | "patch";
   /** Suppress writer progress logs (`created "..."` / `unchanged "..."`). */
   quiet?: boolean;
   /**
@@ -195,6 +200,7 @@ const KNOWN_TOP_LEVEL_KEYS = [
   "reportDiagnostics",
   "strict",
   "check",
+  "checkLevel",
   "stdout",
   "format",
   "dryRun",
