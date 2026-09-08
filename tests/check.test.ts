@@ -507,7 +507,14 @@ describe("runCheck", () => {
 
     expect(result.snapshotExists).toBe(true);
     expect(result.bump).toBe("none");
-    expect(result.changes[0].message).toContain("schemaVersion");
+    expect(result.changes).toEqual([
+      {
+        component: "*",
+        kind: "schema",
+        bump: "none",
+        message: "snapshot schemaVersion 99 differs from 1; regenerate the snapshot",
+      },
+    ]);
   });
 });
 

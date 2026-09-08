@@ -666,6 +666,8 @@ Use `--check=<path>` to diff against a snapshot at a custom location (defaults t
 
 By default `--check` only fails the run (exit `3`) on a `major` bump; `minor` and `patch` changes are still reported but don't fail CI. Pass `--check-level=minor` or `--check-level=patch` to fail the run at a lower threshold, e.g. to gate a package that promises no additive changes without a minor release.
 
+If the committed snapshot's `schemaVersion` doesn't match the version `sveld` currently emits, `--check` reports a `kind: "schema"` entry instead of diffing (a version mismatch isn't a semver bump) and exits `1` (usage error): regenerate the snapshot with `sveld --json`.
+
 The CLI exits non-zero on any fatal error (an unreadable entry, a config file that throws, etc.), not just on `--strict`/`--check` findings, so it's safe to use either flag as a CI gate. See [Exit codes](#exit-codes) for how these are differentiated.
 
 Pass `--format=json` for a machine-readable report on `stdout` instead of the prose above, e.g. `sveld --check --format=json | jq '.bump'` or `sveld --check --format=json | jq '.changes[] | select(.bump == "major")'`.

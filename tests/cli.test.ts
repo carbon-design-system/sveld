@@ -1131,6 +1131,19 @@ describe("cli() --check-level", () => {
       expect.stringContaining('--check-level must be "major", "minor", or "patch"'),
     );
   });
+
+  test("a schema mismatch exits 1 (usage error) regardless of --check-level", async () => {
+    const snapshotPath = join(dir, "COMPONENT_API.json");
+    const snapshot = JSON.parse(readFileSync(snapshotPath, "utf-8"));
+    writeFileSync(snapshotPath, JSON.stringify({ ...snapshot, schemaVersion: 99 }));
+
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--check", "--check-level=patch"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(1);
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("[schema] snapshot schemaVersion 99 differs from"));
+  });
 });
 
 describe("cli() --format with --report-diagnostics", () => {
