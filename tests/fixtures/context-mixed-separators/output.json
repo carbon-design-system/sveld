@@ -34,7 +34,17 @@
           "description": "Reset the state",
           "optional": false
         }
-      ]
+      ],
+      "source": {
+        "start": {
+          "line": 16,
+          "column": 2
+        },
+        "end": {
+          "line": 16,
+          "column": 53
+        }
+      }
     }
   ],
   "diagnostics": []

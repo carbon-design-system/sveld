@@ -62,7 +62,17 @@
     {
       "type": "string",
       "name": "TreeNodeId",
-      "ts": "type TreeNodeId = string;"
+      "ts": "type TreeNodeId = string;",
+      "source": {
+        "start": {
+          "line": 2,
+          "column": 6
+        },
+        "end": {
+          "line": 2,
+          "column": 37
+        }
+      }
     }
   ],
   "generics": null,

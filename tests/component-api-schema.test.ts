@@ -10,6 +10,7 @@ import {
   writeTsDefinition,
 } from "../src/browser";
 import { parseEntryExports } from "../src/parse-entry-exports";
+import { renderJsonDocument } from "../src/writer/writer-json";
 
 type JsonObject = Record<string, unknown>;
 
@@ -168,6 +169,16 @@ describe("component API JSON schema", () => {
       "kind",
       "isTypeOnly",
     ]);
+  });
+
+  test("typedefs and contexts carry a source range like other component metadata", () => {
+    const schema = readJson("schema/component-api.schema.json");
+    const defs = objectProperty(schema, "$defs");
+
+    for (const def of ["typedef", "context"]) {
+      const properties = objectProperty(objectProperty(defs, def), "properties");
+      expect(objectProperty(properties, "source")).toMatchObject({ $ref: "#/$defs/sourceRange" });
+    }
   });
 
   test("covers recent prop metadata fields", () => {
@@ -432,6 +443,19 @@ describe("component API JSON schema validates real emitted output", () => {
   test("validates the committed svelte5-vite e2e COMPONENT_API.json", () => {
     const api = readJson("tests/e2e/svelte5-vite/COMPONENT_API.json");
     expectValid(api);
+  });
+
+  test("validates the document with jsonOptions.source: false, and strips every source range", async () => {
+    const components = await buildRepresentativeFixtureComponents();
+
+    const rendered = renderJsonDocument(components, { inputDir: root, source: false });
+    const document = JSON.parse(rendered) as JsonObject;
+    expectValid(document);
+
+    for (const component of arrayProperty(document, "components")) {
+      expect(JSON.stringify(component)).not.toContain('"source"');
+      expect(JSON.stringify(component)).not.toContain('"componentCommentSource"');
+    }
   });
 
   const carbonApiPath = "tests/e2e/carbon/COMPONENT_API.json";

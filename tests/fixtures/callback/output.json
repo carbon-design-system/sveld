@@ -101,18 +101,48 @@
       "type": "(value: string, index: number) => void",
       "name": "OnChange",
       "description": "Callback fired when the value changes.",
-      "ts": "type OnChange = (value: string, index: number) => void;"
+      "ts": "type OnChange = (value: string, index: number) => void;",
+      "source": {
+        "start": {
+          "line": 4,
+          "column": 5
+        },
+        "end": {
+          "line": 4,
+          "column": 23
+        }
+      }
     },
     {
       "type": "(a: any, b: any) => number",
       "name": "Comparator",
-      "ts": "type Comparator = (a: any, b: any) => number;"
+      "ts": "type Comparator = (a: any, b: any) => number;",
+      "source": {
+        "start": {
+          "line": 11,
+          "column": 5
+        },
+        "end": {
+          "line": 11,
+          "column": 25
+        }
+      }
     },
     {
       "type": "() => void",
       "name": "OnClose",
       "description": "No-arg callback.",
-      "ts": "type OnClose = () => void;"
+      "ts": "type OnClose = () => void;",
+      "source": {
+        "start": {
+          "line": 19,
+          "column": 5
+        },
+        "end": {
+          "line": 19,
+          "column": 22
+        }
+      }
     }
   ],
   "generics": null,

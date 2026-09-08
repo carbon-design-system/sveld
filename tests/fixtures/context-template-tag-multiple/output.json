@@ -105,7 +105,17 @@
           "type": "Icon",
           "optional": false
         }
-      ]
+      ],
+      "source": {
+        "start": {
+          "line": 19,
+          "column": 2
+        },
+        "end": {
+          "line": 19,
+          "column": 53
+        }
+      }
     }
   ],
   "diagnostics": []

@@ -20,8 +20,43 @@ export interface WriteJsonOptions {
    * via `jsonOptions` has no effect.
    */
   entryExports?: EntryExports;
+  /**
+   * Include `source`/`componentCommentSource` position ranges in the
+   * output. These are the bulk of a large component library's
+   * `COMPONENT_API.json` (roughly a quarter of the file for a 150+
+   * component library); set to `false` to omit them and shrink the file
+   * when consumers don't need exact source positions.
+   * @default true
+   */
+  source?: boolean;
   /** @internal Report resolved paths instead of writing. Always set by the caller from `sveld --dry-run`. */
   dryRun?: boolean;
+}
+
+/** Narrows a `source`/`componentCommentSource` value to an actual `SourceRange`, as opposed to `EntryExport.source` (a module path string). */
+function isSourceRange(value: unknown): value is { start: unknown; end: unknown } {
+  return typeof value === "object" && value !== null && !Array.isArray(value) && "start" in value && "end" in value;
+}
+
+/**
+ * Recursively strips `source`/`componentCommentSource` position ranges from
+ * a component (or any nested value), for `jsonOptions.source: false`.
+ * `EntryExport.source` (a declaring-module path string, not a range) is
+ * left untouched since it fails the `isSourceRange` check.
+ */
+function stripSourceRanges<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return value.map((item) => stripSourceRanges(item)) as T;
+  }
+  if (value !== null && typeof value === "object") {
+    const result: Record<string, unknown> = {};
+    for (const [key, item] of Object.entries(value)) {
+      if ((key === "source" || key === "componentCommentSource") && isSourceRange(item)) continue;
+      result[key] = stripSourceRanges(item);
+    }
+    return result as T;
+  }
+  return value;
 }
 
 /**
@@ -64,7 +99,8 @@ function jsonFileName(component: ComponentDocApi, hasCollision: boolean, warnedM
 
 async function writeJsonComponents(components: ComponentDocs, options: WriteJsonOptions) {
   const document = buildComponentApiDocument(components);
-  const output = withNormalizedFilePaths(document.components, options.inputDir);
+  let output = withNormalizedFilePaths(document.components, options.inputDir);
+  if (options.source === false) output = stripSourceRanges(output);
 
   const moduleNameCounts = new Map<string, number>();
   for (const component of output) {
@@ -91,13 +127,14 @@ async function writeJsonComponents(components: ComponentDocs, options: WriteJson
  */
 export function renderJsonDocument(
   components: ComponentDocs,
-  options: Pick<WriteJsonOptions, "inputDir" | "entryExports">,
+  options: Pick<WriteJsonOptions, "inputDir" | "entryExports" | "source">,
 ): string {
   const document = buildComponentApiDocument(components, { entryExports: options.entryExports });
-  const output: ComponentApiDocument = {
+  let output: ComponentApiDocument = {
     ...document,
     components: withNormalizedFilePaths(document.components, options.inputDir),
   };
+  if (options.source === false) output = stripSourceRanges(output);
 
   return formatJsonOutput(output);
 }
@@ -109,10 +146,11 @@ export function renderJsonDocument(
  */
 export function renderJsonLines(
   components: ComponentDocs,
-  options: Pick<WriteJsonOptions, "inputDir" | "entryExports">,
+  options: Pick<WriteJsonOptions, "inputDir" | "entryExports" | "source">,
 ): string {
   const document = buildComponentApiDocument(components, { entryExports: options.entryExports });
-  const output = withNormalizedFilePaths(document.components, options.inputDir);
+  let output = withNormalizedFilePaths(document.components, options.inputDir);
+  if (options.source === false) output = stripSourceRanges(output);
 
   return `${output.map((c) => JSON.stringify(c)).join("\n")}\n`;
 }

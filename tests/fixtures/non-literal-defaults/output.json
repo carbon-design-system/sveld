@@ -345,7 +345,17 @@
     {
       "type": "\"top-left\" | \"top-right\" | \"bottom-left\" | \"bottom-right\"",
       "name": "Position",
-      "ts": "type Position = \"top-left\" | \"top-right\" | \"bottom-left\" | \"bottom-right\";"
+      "ts": "type Position = \"top-left\" | \"top-right\" | \"bottom-left\" | \"bottom-right\";",
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 5
+        },
+        "end": {
+          "line": 3,
+          "column": 82
+        }
+      }
     }
   ],
   "generics": null,

@@ -204,7 +204,17 @@
     {
       "type": "\"white\" | \"g10\" | \"g80\" | \"g90\" | \"g100\"",
       "name": "CarbonTheme",
-      "ts": "type CarbonTheme = \"white\" | \"g10\" | \"g80\" | \"g90\" | \"g100\";"
+      "ts": "type CarbonTheme = \"white\" | \"g10\" | \"g80\" | \"g90\" | \"g100\";",
+      "source": {
+        "start": {
+          "line": 18,
+          "column": 5
+        },
+        "end": {
+          "line": 18,
+          "column": 68
+        }
+      }
     }
   ],
   "generics": null,

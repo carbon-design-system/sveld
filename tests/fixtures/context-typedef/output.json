@@ -35,7 +35,17 @@
     {
       "type": "{\n  id: string;\n  label: string;\n  disabled?: boolean;\n}",
       "name": "TabData",
-      "ts": "type TabData = {\n  id: string;\n  label: string;\n  disabled?: boolean;\n};"
+      "ts": "type TabData = {\n  id: string;\n  label: string;\n  disabled?: boolean;\n};",
+      "source": {
+        "start": {
+          "line": 5,
+          "column": 5
+        },
+        "end": {
+          "line": 5,
+          "column": 30
+        }
+      }
     }
   ],
   "generics": null,
@@ -56,7 +66,17 @@
           "description": "Remove a tab by ID",
           "optional": false
         }
-      ]
+      ],
+      "source": {
+        "start": {
+          "line": 27,
+          "column": 2
+        },
+        "end": {
+          "line": 27,
+          "column": 43
+        }
+      }
     }
   ],
   "diagnostics": []

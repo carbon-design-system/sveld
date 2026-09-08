@@ -73,12 +73,32 @@
     {
       "type": "\"asc\" | \"desc\"",
       "name": "SortDirection",
-      "ts": "type SortDirection = \"asc\" | \"desc\";"
+      "ts": "type SortDirection = \"asc\" | \"desc\";",
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 5
+        },
+        "end": {
+          "line": 3,
+          "column": 44
+        }
+      }
     },
     {
       "type": "(a: any, b: any, direction: SortDirection) => number",
       "name": "SortFn",
-      "ts": "type SortFn = (a: any, b: any, direction: SortDirection) => number;"
+      "ts": "type SortFn = (a: any, b: any, direction: SortDirection) => number;",
+      "source": {
+        "start": {
+          "line": 4,
+          "column": 5
+        },
+        "end": {
+          "line": 4,
+          "column": 21
+        }
+      }
     }
   ],
   "generics": null,

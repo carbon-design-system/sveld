@@ -44,7 +44,17 @@
           "description": "Log a message to the console",
           "optional": false
         }
-      ]
+      ],
+      "source": {
+        "start": {
+          "line": 12,
+          "column": 2
+        },
+        "end": {
+          "line": 12,
+          "column": 30
+        }
+      }
     }
   ],
   "diagnostics": []

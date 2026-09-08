@@ -692,6 +692,7 @@ export function parseCustomTypes(
           ts: typedefTs,
           tags: currentTypedefTags.length > 0 ? currentTypedefTags : undefined,
           ...(currentTypedefInternal ? { internal: true as const } : {}),
+          source: currentTypedefSource,
         });
 
         typedefProperties.length = 0;
@@ -724,6 +725,7 @@ export function parseCustomTypes(
           ts: callbackTs,
           tags: currentCallbackTags.length > 0 ? currentCallbackTags : undefined,
           ...(currentCallbackInternal ? { internal: true as const } : {}),
+          source: currentCallbackSource,
         });
 
         callbackParams.length = 0;

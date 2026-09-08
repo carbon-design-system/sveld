@@ -28,7 +28,17 @@
           "description": "Toggle visibility",
           "optional": false
         }
-      ]
+      ],
+      "source": {
+        "start": {
+          "line": 10,
+          "column": 2
+        },
+        "end": {
+          "line": 10,
+          "column": 38
+        }
+      }
     }
   ],
   "diagnostics": []

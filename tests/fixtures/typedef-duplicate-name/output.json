@@ -41,7 +41,17 @@
     {
       "type": "{\n  /** Count */\n  count: number;\n}",
       "name": "Config",
-      "ts": "type Config = {\n  /** Count */\n  count: number;\n};"
+      "ts": "type Config = {\n  /** Count */\n  count: number;\n};",
+      "source": {
+        "start": {
+          "line": 8,
+          "column": 5
+        },
+        "end": {
+          "line": 8,
+          "column": 29
+        }
+      }
     }
   ],
   "generics": null,

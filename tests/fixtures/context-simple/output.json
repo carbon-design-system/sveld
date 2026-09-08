@@ -50,7 +50,17 @@
           "description": "Close the modal",
           "optional": false
         }
-      ]
+      ],
+      "source": {
+        "start": {
+          "line": 16,
+          "column": 2
+        },
+        "end": {
+          "line": 16,
+          "column": 45
+        }
+      }
     }
   ],
   "diagnostics": []

@@ -41,7 +41,17 @@
     {
       "type": "{\n  /** Second declaration wins */\n  id: number;\n}",
       "name": "Config",
-      "ts": "type Config = {\n  /** Second declaration wins */\n  id: number;\n};"
+      "ts": "type Config = {\n  /** Second declaration wins */\n  id: number;\n};",
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 5
+        },
+        "end": {
+          "line": 3,
+          "column": 29
+        }
+      }
     }
   ],
   "generics": null,

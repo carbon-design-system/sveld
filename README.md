@@ -774,6 +774,23 @@ sveld({
 });
 ```
 
+#### `jsonOptions.source`
+
+Every prop, slot, event, typedef, and context in `COMPONENT_API.json` carries a `source` position range (plus `componentCommentSource` on the component itself) when the parser has a stable AST position for it. For a large component library this is a substantial share of the file — roughly a quarter of `COMPONENT_API.json` for a 150+ component library — and many consumers (docs sites, LLM context) never read it.
+
+Set `jsonOptions.source` to `false` to omit every `source`/`componentCommentSource` range and shrink the file:
+
+```js
+sveld({
+  json: true,
+  jsonOptions: {
+    source: false,
+  },
+});
+```
+
+`source: true` is the default; every other field is unaffected. `EntryExport.source` (the declaring module's relative path, from `documentExports`) is a different field with a string value and is never stripped.
+
 ### Browser
 
 `sveld/browser` is a Node-free subpath export for running `sveld` client-side — e.g. an in-browser Svelte playground or REPL that parses whatever `.svelte` source the user typed and renders docs for it live. It bundles with Vite, esbuild, webpack, or Rollup without a `node:fs`/`node:path` polyfill.
@@ -909,6 +926,7 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
 - **`jsonOptions`** (object, optional): Options for JSON output.
   - **`outFile`** (string, optional, default: `"COMPONENT_API.json"`): Path (relative to the project root) for the single combined JSON document. Ignored when `outDir` is set.
   - **`outDir`** (string, optional): Emit one JSON file per component (`<ComponentName>.api.json`) into this directory instead of a single combined file. See [`jsonOptions.outDir`](#jsonoptionsoutdir).
+  - **`source`** (boolean, optional, default: `true`): Set to `false` to omit every `source`/`componentCommentSource` position range from the output. See [`jsonOptions.source`](#jsonoptionssource).
 - **`markdown`** (boolean, optional): Generate component documentation in Markdown format.
 - **`markdownOptions`** (object, optional): Options for Markdown output.
   - **`outFile`** (string, optional, default: `"COMPONENT_INDEX.md"`): Path (relative to the project root) for the generated Markdown file.

@@ -52,22 +52,62 @@
     {
       "type": "{ id: string; createdAt: number }",
       "name": "Base",
-      "ts": "interface Base { id: string; createdAt: number }"
+      "ts": "interface Base { id: string; createdAt: number }",
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 5
+        },
+        "end": {
+          "line": 3,
+          "column": 54
+        }
+      }
     },
     {
       "type": "Base & { kind: \"user\"; name: string }",
       "name": "User",
-      "ts": "type User = Base & { kind: \"user\"; name: string };"
+      "ts": "type User = Base & { kind: \"user\"; name: string };",
+      "source": {
+        "start": {
+          "line": 4,
+          "column": 5
+        },
+        "end": {
+          "line": 4,
+          "column": 58
+        }
+      }
     },
     {
       "type": "Base & { kind: \"post\"; title: string; body: string }",
       "name": "Post",
-      "ts": "type Post = Base & { kind: \"post\"; title: string; body: string };"
+      "ts": "type Post = Base & { kind: \"post\"; title: string; body: string };",
+      "source": {
+        "start": {
+          "line": 5,
+          "column": 5
+        },
+        "end": {
+          "line": 5,
+          "column": 73
+        }
+      }
     },
     {
       "type": "User | Post",
       "name": "Entity",
-      "ts": "type Entity = User | Post;"
+      "ts": "type Entity = User | Post;",
+      "source": {
+        "start": {
+          "line": 6,
+          "column": 5
+        },
+        "end": {
+          "line": 6,
+          "column": 34
+        }
+      }
     }
   ],
   "generics": null,
