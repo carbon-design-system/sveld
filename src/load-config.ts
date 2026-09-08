@@ -18,8 +18,15 @@ export interface SveldRuntimeOptions extends PluginSveldOptions {
    * `"errors"` to fail only on `severity: "error"` diagnostics
    * (`example-compile-error`, `syntax-skipped`), letting warnings
    * (`prop-unknown-type`, `context-any-type`, `event-no-source`) through.
+   *
+   * `"ci"` and `"local"` are strictness profiles, expanded by
+   * {@link expandStrictProfile} into a set of other options before this
+   * object's own explicit keys are applied (so they can still opt back out
+   * of one, e.g. `{ strict: "ci", checkExamples: false }`):
+   * - `"ci"`: `{ strict: true, reportDiagnostics: true, check: true, checkExamples: true }`.
+   * - `"local"`: `{ reportDiagnostics: true }` (does not itself enable `strict`).
    */
-  strict?: boolean | "errors";
+  strict?: boolean | "errors" | "ci" | "local";
   /**
    * Diff the parsed component API against a committed snapshot (default:
    * the `json` writer's `outFile`, or `COMPONENT_API.json`) and assign a
@@ -172,6 +179,30 @@ export function mergeConfig<T extends PluginSveldOptions = PluginSveldOptions>(
   }
 
   return merged as Partial<T>;
+}
+
+/** The options a `strict: "ci" | "local"` profile expands into. See `SveldRuntimeOptions.strict`. */
+const STRICT_PROFILES: Record<"ci" | "local", Partial<SveldRuntimeOptions>> = {
+  ci: { strict: true, reportDiagnostics: true, check: true, checkExamples: true },
+  local: { reportDiagnostics: true },
+};
+
+/** `options` with `strict` narrowed from a resolved `"ci"`/`"local"` profile to its plain runtime value. */
+type WithExpandedStrict<T> = Omit<T, "strict"> & { strict?: boolean | "errors" };
+
+/**
+ * Expands a `strict: "ci" | "local"` profile into its constituent options.
+ * The profile's own keys are applied first, then `options`' other explicit
+ * keys are layered on top, so `{ strict: "ci", checkExamples: false }` still
+ * opts back out of `checkExamples`. A plain `strict: true | "errors" | false
+ * | undefined` passes through unchanged.
+ */
+export function expandStrictProfile<T extends Partial<SveldRuntimeOptions>>(options: T): WithExpandedStrict<T> {
+  const { strict, ...rest } = options;
+
+  if (strict !== "ci" && strict !== "local") return options as WithExpandedStrict<T>;
+
+  return { ...STRICT_PROFILES[strict], ...rest } as WithExpandedStrict<T>;
 }
 
 /** Top-level keys accepted anywhere in `PluginSveldOptions` / `SveldRuntimeOptions`. */
