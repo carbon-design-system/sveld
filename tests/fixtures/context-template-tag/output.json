@@ -92,6 +92,7 @@
       }
     }
   ],
+  "reactiveStatementCount": 0,
   "generics": [
     "Row",
     "Row extends DataTableRow = DataTableRow"

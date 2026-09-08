@@ -133,6 +133,7 @@
       }
     }
   ],
+  "reactiveStatementCount": 0,
   "generics": [
     "Row, Header",
     "Row extends DataTableRow = DataTableRow, Header extends DataTableRow = DataTableRow"

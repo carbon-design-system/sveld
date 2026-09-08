@@ -85,6 +85,7 @@
   ],
   "events": [],
   "typedefs": [],
+  "reactiveStatementCount": 0,
   "generics": [
     "Value, Icon",
     "Value extends string = string, Icon = any"

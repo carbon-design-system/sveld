@@ -32,6 +32,7 @@ export function mockComponentDocApi(
     slots: [],
     events: [],
     typedefs: [],
+    reactiveStatementCount: 0,
     generics: null,
     rest_props: undefined,
     contexts: [],

@@ -54,6 +54,7 @@
   ],
   "events": [],
   "typedefs": [],
+  "reactiveStatementCount": 0,
   "generics": [
     "T",
     "const T extends readonly string[]"

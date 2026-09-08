@@ -252,6 +252,7 @@
       }
     }
   ],
+  "reactiveStatementCount": 1,
   "generics": null,
   "contexts": [],
   "diagnostics": [

@@ -31,6 +31,7 @@
   ],
   "events": [],
   "typedefs": [],
+  "reactiveStatementCount": 0,
   "generics": null,
   "componentComment": " Component comment",
   "componentCommentSource": {

@@ -18,6 +18,7 @@ import { renderCustomElementsManifest, type WriteCustomElementsOptions } from ".
 import { renderJsonDocument, renderJsonLines, type WriteJsonOptions } from "./writer/writer-json";
 import type { WriteLlmsOptions } from "./writer/writer-llms";
 import { renderMarkdownDocument, type WriteMarkdownOptions } from "./writer/writer-markdown";
+import type { WriteMigrationReportOptions } from "./writer/writer-migration-report";
 import type { WriteTsDefinitionsOptions } from "./writer/writer-ts-definitions";
 
 export type { ComponentDocApi, ComponentDocs, GenerateBundleResult } from "./bundle";
@@ -55,6 +56,13 @@ export interface PluginSveldOptions
   /** Generate a first-party `llms.txt` / `llms-full.txt` pair (per https://llmstxt.org). */
   llms?: boolean;
   llmsOptions?: Partial<WriteLlmsOptions>;
+  /**
+   * Generate a Svelte 5 migration readiness report (`MIGRATION_REPORT.json` /
+   * `MIGRATION_REPORT.md`): a per-component 0-100 heuristic score plus a
+   * library-wide rollup. See the README's "Migration report" section.
+   */
+  migrationReport?: boolean;
+  migrationReportOptions?: Partial<WriteMigrationReportOptions>;
   /**
    * Run additional, userland-registered writers (via `registerWriter` from
    * "sveld") beyond the built-in `json`/`markdown`/`types` outputs. Keyed by
@@ -225,7 +233,7 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
 
 /** Looks up a built-in writer by name; throws if `built-in-writers` never registered it. */
 function runBuiltInWriter(
-  name: "types" | "json" | "markdown" | "custom-elements" | "llms",
+  name: "types" | "json" | "markdown" | "custom-elements" | "llms" | "migration-report",
   components: ComponentDocs,
   options: unknown,
 ) {
@@ -334,6 +342,18 @@ export async function writeOutput(
       entryExports: result.entryExports,
       dryRun,
     } satisfies WriteLlmsOptions);
+  }
+
+  if (opts?.migrationReport) {
+    /**
+     * Use allComponentsForTypes, matching the .d.ts writer's convention: a
+     * migration readiness report is only useful if it covers every
+     * discovered component, not just the exported public API surface.
+     */
+    await runBuiltInWriter("migration-report", result.allComponentsForTypes, {
+      ...opts?.migrationReportOptions,
+      dryRun,
+    } satisfies WriteMigrationReportOptions);
   }
 
   const additionalWrites = Object.entries(opts?.additionalWriters ?? {}).map(([name, writerOptions]) => {

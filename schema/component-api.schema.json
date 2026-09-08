@@ -114,6 +114,11 @@
           "type": "array",
           "items": { "$ref": "#/$defs/typedef" }
         },
+        "reactiveStatementCount": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Count of top-level `$:` reactive-statement labels in the instance script. Always 0 in runes mode."
+        },
         "generics": {
           "oneOf": [
             { "type": "null" },

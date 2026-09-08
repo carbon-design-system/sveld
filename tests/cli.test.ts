@@ -111,6 +111,20 @@ describe("parseCliOptions", () => {
     expect(parseCliOptions(["--llms=false"])).toEqual({ kind: "options", options: { llms: false } });
   });
 
+  test("--migration-report enables migrationReport", () => {
+    expect(parseCliOptions(["--migration-report"])).toEqual({
+      kind: "options",
+      options: { migrationReport: true },
+    });
+  });
+
+  test("--migration-report=false disables migrationReport", () => {
+    expect(parseCliOptions(["--migration-report=false"])).toEqual({
+      kind: "options",
+      options: { migrationReport: false },
+    });
+  });
+
   test("--report-diagnostics enables reportDiagnostics", () => {
     expect(parseCliOptions(["--report-diagnostics"])).toEqual({
       kind: "options",
@@ -515,6 +529,7 @@ describe("cli() --dry-run", () => {
       "--markdown",
       "--custom-elements",
       "--llms",
+      "--migration-report",
       "--dry-run",
     ];
 
@@ -526,6 +541,8 @@ describe("cli() --dry-run", () => {
     expect(existsSync(join(dir, "custom-elements.json"))).toBe(false);
     expect(existsSync(join(dir, "llms.txt"))).toBe(false);
     expect(existsSync(join(dir, "llms-full.txt"))).toBe(false);
+    expect(existsSync(join(dir, "MIGRATION_REPORT.json"))).toBe(false);
+    expect(existsSync(join(dir, "MIGRATION_REPORT.md"))).toBe(false);
     expect(existsSync(join(dir, "src", "node_modules", ".cache"))).toBe(false);
   });
 
@@ -538,6 +555,7 @@ describe("cli() --dry-run", () => {
       "--markdown",
       "--custom-elements",
       "--llms",
+      "--migration-report",
       "--dry-run",
     ];
 
@@ -552,10 +570,21 @@ describe("cli() --dry-run", () => {
     expect(printed).toContain(`would write "${normalizeSeparators(join(cwd, "custom-elements.json"))}"`);
     expect(printed).toContain(`would write "${normalizeSeparators(join(cwd, "llms.txt"))}"`);
     expect(printed).toContain(`would write "${normalizeSeparators(join(cwd, "llms-full.txt"))}"`);
+    expect(printed).toContain(`would write "${normalizeSeparators(join(cwd, "MIGRATION_REPORT.json"))}"`);
+    expect(printed).toContain(`would write "${normalizeSeparators(join(cwd, "MIGRATION_REPORT.md"))}"`);
 
     // Now run for real and confirm the exact same paths land on disk.
     logSpy.mockClear();
-    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--markdown", "--custom-elements", "--llms"];
+    process.argv = [
+      "bun",
+      "cli.js",
+      "--entry=src/index.js",
+      "--json",
+      "--markdown",
+      "--custom-elements",
+      "--llms",
+      "--migration-report",
+    ];
     await cli(process);
 
     expect(existsSync(join(dir, "types", "Button.svelte.d.ts"))).toBe(true);
@@ -565,6 +594,8 @@ describe("cli() --dry-run", () => {
     expect(existsSync(join(dir, "custom-elements.json"))).toBe(true);
     expect(existsSync(join(dir, "llms.txt"))).toBe(true);
     expect(existsSync(join(dir, "llms-full.txt"))).toBe(true);
+    expect(existsSync(join(dir, "MIGRATION_REPORT.json"))).toBe(true);
+    expect(existsSync(join(dir, "MIGRATION_REPORT.md"))).toBe(true);
   });
 
   test("prints per-component .api.json paths when jsonOptions.outDir is set", async () => {
@@ -658,7 +689,16 @@ describe("cli() --quiet", () => {
   });
 
   test("a plain run prints writer progress lines to stderr", async () => {
-    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--markdown", "--custom-elements", "--llms"];
+    process.argv = [
+      "bun",
+      "cli.js",
+      "--entry=src/index.js",
+      "--json",
+      "--markdown",
+      "--custom-elements",
+      "--llms",
+      "--migration-report",
+    ];
 
     await cli(process);
 
@@ -668,6 +708,8 @@ describe("cli() --quiet", () => {
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('created "custom-elements.json".'));
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('created "llms.txt".'));
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('created "llms-full.txt".'));
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('created "MIGRATION_REPORT.json".'));
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('created "MIGRATION_REPORT.md".'));
   });
 
   test("--quiet suppresses writer progress lines but still writes output files", async () => {

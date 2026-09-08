@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://carbon-design-system.github.io/sveld/migration-report.schema.json",
+  "title": "sveld Migration Report",
+  "description": "Per-component Svelte 5 migration readiness heuristic, written by the `migration-report` writer (`--migration-report`).",
+  "type": "object",
+  "required": ["schemaVersion", "generator", "components", "summary"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "generator": {
+      "type": "object",
+      "required": ["name", "version", "svelteVersion"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string" },
+        "svelteVersion": { "type": "string" }
+      }
+    },
+    "components": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/component" }
+    },
+    "summary": {
+      "type": "object",
+      "required": ["totalComponents", "byMode", "meanScore", "lowestScoring"],
+      "additionalProperties": false,
+      "properties": {
+        "totalComponents": { "type": "integer", "minimum": 0 },
+        "byMode": {
+          "type": "object",
+          "required": ["legacy", "runes"],
+          "additionalProperties": false,
+          "properties": {
+            "legacy": { "type": "integer", "minimum": 0 },
+            "runes": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "meanScore": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "lowestScoring": {
+          "type": "array",
+          "maxItems": 10,
+          "items": { "$ref": "#/$defs/lowestScoringEntry" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "component": {
+      "type": "object",
+      "required": ["moduleName", "filePath", "syntaxMode", "counts", "score"],
+      "additionalProperties": false,
+      "properties": {
+        "moduleName": { "type": "string" },
+        "filePath": { "type": "string" },
+        "syntaxMode": { "enum": ["legacy", "runes"] },
+        "counts": { "$ref": "#/$defs/counts" },
+        "score": { "type": "integer", "minimum": 0, "maximum": 100 }
+      }
+    },
+    "counts": {
+      "type": "object",
+      "required": [
+        "exportLet",
+        "onDirectives",
+        "slots",
+        "createEventDispatcher",
+        "restPropsLegacy",
+        "reactiveStatements"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "exportLet": { "type": "integer", "minimum": 0 },
+        "onDirectives": { "type": "integer", "minimum": 0 },
+        "slots": { "type": "integer", "minimum": 0 },
+        "createEventDispatcher": { "type": "integer", "minimum": 0 },
+        "restPropsLegacy": { "type": "integer", "minimum": 0 },
+        "reactiveStatements": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "lowestScoringEntry": {
+      "type": "object",
+      "required": ["moduleName", "filePath", "score"],
+      "additionalProperties": false,
+      "properties": {
+        "moduleName": { "type": "string" },
+        "filePath": { "type": "string" },
+        "score": { "type": "integer", "minimum": 0, "maximum": 100 }
+      }
+    }
+  }
+}

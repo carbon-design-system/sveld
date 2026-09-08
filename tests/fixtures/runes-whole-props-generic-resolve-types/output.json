@@ -16,6 +16,7 @@
   "slots": [],
   "events": [],
   "typedefs": [],
+  "reactiveStatementCount": 0,
   "generics": [
     "T",
     "T extends Identifiable"

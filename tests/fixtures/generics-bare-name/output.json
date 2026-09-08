@@ -38,6 +38,7 @@
   "slots": [],
   "events": [],
   "typedefs": [],
+  "reactiveStatementCount": 0,
   "generics": [
     "Item",
     "Item"

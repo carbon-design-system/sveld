@@ -75,6 +75,7 @@
   ],
   "events": [],
   "typedefs": [],
+  "reactiveStatementCount": 0,
   "generics": [
     "Handler, Row",
     "Handler extends (value: string) => void = () => {}, Row extends DataTableRow = DataTableRow"

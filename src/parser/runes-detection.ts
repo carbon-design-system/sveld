@@ -222,7 +222,7 @@ function scanForRuneReference(root: unknown, baseScope: ScopeStack): boolean {
 }
 
 /** `<script>` / `<script module>` wrap their `Program` in `.content`. Same shape check as `scopes.ts`. */
-function getScriptProgramBody(script: unknown): unknown[] | undefined {
+export function getScriptProgramBody(script: unknown): unknown[] | undefined {
   if (!script || typeof script !== "object") return undefined;
 
   if ("content" in script) {
@@ -237,6 +237,29 @@ function getScriptProgramBody(script: unknown): unknown[] | undefined {
   }
 
   return undefined;
+}
+
+/**
+ * Counts top-level `$:` reactive-statement labels in an instance script. Only checks the
+ * script's direct statement list (Svelte never recognizes a `$:` label anywhere else), so
+ * this is a single non-recursive pass rather than a full AST walk.
+ */
+export function countReactiveStatements(instance: unknown): number {
+  const body = getScriptProgramBody(instance);
+  if (!body) return 0;
+
+  let count = 0;
+  for (const statement of body) {
+    if (
+      statement &&
+      typeof statement === "object" &&
+      (statement as { type?: string }).type === "LabeledStatement" &&
+      (statement as { label?: { name?: string } }).label?.name === "$"
+    ) {
+      count += 1;
+    }
+  }
+  return count;
 }
 
 /**
