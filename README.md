@@ -633,7 +633,32 @@ Suggested semver bump: major.
     [BREAKING] prop "href" removed
 ```
 
-Removed props, events, or slots, and props that become required, are breaking (`major`). New optional props, new events, and widened union types are additive (`minor`). Changes to generics, `@restProps`, `@extends`, or context shapes are not classified further. If any of those changed, `--check` calls it breaking.
+| Change | Bump |
+| --- | --- |
+| Component added | `minor` |
+| Component removed | `major` |
+| Prop/export added (optional) | `minor` |
+| Prop/export added (required) | `major` |
+| Prop/export removed | `major` |
+| Prop/export became required | `major` |
+| Prop/export became optional | `minor` |
+| Prop/export type widened (union gained a member) | `minor` |
+| Prop/export type narrowed (union lost a member) | `major` |
+| Prop/export type changed (anything else) | `major` |
+| Function-typed prop/export gained a trailing optional param | `minor` |
+| Function-typed prop/export lost a param, or return type changed | `major` |
+| Prop gained a writable binding (`bind:`-able) | `minor` |
+| Prop lost a writable binding | `major` |
+| Prop/export default value changed (type unchanged) | `patch` |
+| `@deprecated` added | `minor` |
+| `@deprecated` removed | `patch` |
+| `constant`/`reactive` flag flipped | `minor` |
+| Event/slot added | `minor` |
+| Event/slot removed | `major` |
+| Event detail / slot props type widened | `minor` |
+| Event detail / slot props type narrowed or otherwise changed | `major` |
+| `generics`, `@restProps`, `@extends`, or context shape changed | `major` (not classified further) |
+| Description-only change | not reported |
 
 `--check` does not write the snapshot. Run `sveld --json` (or `sveld --json --check`) and commit the file when you want to update it. If there is no snapshot yet, `--check` prints a notice and exits `0`.
 

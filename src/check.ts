@@ -10,6 +10,9 @@ import {
   type ComponentApiDocument,
 } from "./writer/document-model";
 
+/** Splits a function-type param segment on its first `:` or `=` to isolate the name/optional-marker prefix. */
+const PARAM_NAME_SPLIT_REGEX = /[:=]/;
+
 type Prop = ComponentDocApi["props"][number];
 type Event = ComponentDocApi["events"][number];
 type Slot = ComponentDocApi["slots"][number];
@@ -47,23 +50,24 @@ function highestBump(changes: ApiChange[]): SemverBump {
 }
 
 /**
- * Splits a type string on top-level `|`, ignoring `|` nested inside
- * `<>`/`()`/`{}`/`[]` or string literals (e.g. a `"a|b"` literal member).
+ * Splits `text` on top-level occurrences of `separator`, ignoring the
+ * separator when nested inside `<>`/`()`/`{}`/`[]` or string literals (e.g. a
+ * `"a|b"` literal member).
  */
-function splitUnionMembers(type: string): Set<string> {
-  const members: string[] = [];
+function splitTopLevel(text: string, separator: string): string[] {
+  const parts: string[] = [];
   let depth = 0;
   let current = "";
   let quote: string | null = null;
 
-  for (let i = 0; i < type.length; i++) {
-    const ch = type[i];
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
 
     if (quote) {
       current += ch;
       if (ch === "\\") {
         i++;
-        current += type[i] ?? "";
+        current += text[i] ?? "";
       } else if (ch === quote) {
         quote = null;
       }
@@ -79,17 +83,106 @@ function splitUnionMembers(type: string): Set<string> {
     if (ch === "<" || ch === "(" || ch === "{" || ch === "[") depth++;
     if (ch === ">" || ch === ")" || ch === "}" || ch === "]") depth--;
 
-    if (ch === "|" && depth === 0) {
-      members.push(current.trim());
+    if (ch === separator && depth === 0) {
+      parts.push(current.trim());
       current = "";
       continue;
     }
 
     current += ch;
   }
-  members.push(current.trim());
+  parts.push(current.trim());
 
-  return new Set(members.filter((member) => member.length > 0));
+  return parts;
+}
+
+/**
+ * Splits a type string on top-level `|`, ignoring `|` nested inside
+ * `<>`/`()`/`{}`/`[]` or string literals (e.g. a `"a|b"` literal member).
+ */
+function splitUnionMembers(type: string): Set<string> {
+  return new Set(splitTopLevel(type, "|").filter((member) => member.length > 0));
+}
+
+/** Index of the top-level `=>` in `type`, or -1 when none exists outside nesting/quotes. */
+function findTopLevelArrowIndex(type: string): number {
+  let depth = 0;
+  let quote: string | null = null;
+
+  for (let i = 0; i < type.length; i++) {
+    const ch = type[i];
+
+    if (quote) {
+      if (ch === "\\") {
+        i++;
+      } else if (ch === quote) {
+        quote = null;
+      }
+      continue;
+    }
+
+    if (ch === '"' || ch === "'" || ch === "`") {
+      quote = ch;
+      continue;
+    }
+
+    if (ch === "<" || ch === "(" || ch === "{" || ch === "[") depth++;
+    if (ch === ">" || ch === ")" || ch === "}" || ch === "]") depth--;
+
+    if (depth === 0 && ch === "=" && type[i + 1] === ">") return i;
+  }
+
+  return -1;
+}
+
+interface ParsedFunctionType {
+  params: string[];
+  returnType: string;
+}
+
+/**
+ * Textually parses `type` as an arrow/function type (`(a: string) => void`)
+ * via a simple top-level `=>` scan. Returns `undefined` when `type` isn't
+ * shaped like one (no top-level arrow, or the params segment isn't wrapped
+ * in a single parenthesized group).
+ */
+function parseFunctionType(type: string): ParsedFunctionType | undefined {
+  const arrowIndex = findTopLevelArrowIndex(type);
+  if (arrowIndex === -1) return undefined;
+
+  const paramsPart = type.slice(0, arrowIndex).trim();
+  const returnType = type.slice(arrowIndex + 2).trim();
+  if (!paramsPart.startsWith("(") || !paramsPart.endsWith(")")) return undefined;
+
+  const inner = paramsPart.slice(1, -1).trim();
+  const params = inner.length === 0 ? [] : splitTopLevel(inner, ",");
+
+  return { params, returnType };
+}
+
+/** True when a function-type param segment (e.g. `b?: number`) is marked optional with `?`. */
+function isOptionalParam(param: string): boolean {
+  const name = param.split(PARAM_NAME_SPLIT_REGEX, 1)[0] ?? "";
+  return name.trimEnd().endsWith("?");
+}
+
+/**
+ * Classifies a change between two parsed function-type signatures: a
+ * changed return type or a removed/reordered param is breaking; trailing
+ * optional params gained at the end are additive.
+ */
+function classifyFunctionTypeChange(oldFn: ParsedFunctionType, newFn: ParsedFunctionType): SemverBump {
+  if (oldFn.returnType !== newFn.returnType) return "major";
+  if (newFn.params.length < oldFn.params.length) return "major";
+
+  for (let i = 0; i < oldFn.params.length; i++) {
+    if (oldFn.params[i] !== newFn.params[i]) return "major";
+  }
+
+  if (newFn.params.length === oldFn.params.length) return "none";
+
+  const addedParams = newFn.params.slice(oldFn.params.length);
+  return addedParams.every(isOptionalParam) ? "minor" : "major";
 }
 
 /**
@@ -102,6 +195,10 @@ function classifyTypeChange(oldType: string | undefined, newType: string | undef
   if (oldType === newType) return "none";
   if (oldType === undefined || newType === undefined) return "major";
 
+  const oldFn = parseFunctionType(oldType);
+  const newFn = parseFunctionType(newType);
+  if (oldFn && newFn) return classifyFunctionTypeChange(oldFn, newFn);
+
   const oldMembers = splitUnionMembers(oldType);
   const newMembers = splitUnionMembers(newType);
   const gainedMembers = [...newMembers].some((member) => !oldMembers.has(member));
@@ -111,6 +208,11 @@ function classifyTypeChange(oldType: string | undefined, newType: string | undef
   if (gainedMembers && !lostMembers) return "minor";
   if (lostMembers && !gainedMembers) return "major";
   return "major"; // both gained and lost members
+}
+
+/** True when `bind:<name>` works: declared with runes `$bindable()` or legacy `@bindable writable`. */
+function isWritableBinding(prop: Prop): boolean {
+  return prop.bindable === true || prop.binding === "writable";
 }
 
 function diffPropList(
@@ -162,6 +264,60 @@ function diffPropList(
         name,
         bump: typeBump,
         message: `${label} "${name}" type changed from \`${oldProp.type ?? "unknown"}\` to \`${newProp.type ?? "unknown"}\``,
+      });
+    }
+
+    const oldWritable = isWritableBinding(oldProp);
+    const newWritable = isWritableBinding(newProp);
+    if (oldWritable !== newWritable) {
+      changes.push({
+        component,
+        kind,
+        name,
+        bump: newWritable ? "minor" : "major",
+        message: `${label} "${name}" ${newWritable ? "gained a writable binding" : "lost its writable binding"}`,
+      });
+    }
+
+    if (oldProp.value !== newProp.value && typeBump === "none") {
+      changes.push({
+        component,
+        kind,
+        name,
+        bump: "patch",
+        message: `${label} "${name}" default changed from \`${oldProp.value ?? "none"}\` to \`${newProp.value ?? "none"}\``,
+      });
+    }
+
+    const oldDeprecated = oldProp.deprecated !== undefined;
+    const newDeprecated = newProp.deprecated !== undefined;
+    if (oldDeprecated !== newDeprecated) {
+      changes.push({
+        component,
+        kind,
+        name,
+        bump: newDeprecated ? "minor" : "patch",
+        message: `${label} "${name}" ${newDeprecated ? "marked as deprecated" : "no longer deprecated"}`,
+      });
+    }
+
+    if (oldProp.constant !== newProp.constant) {
+      changes.push({
+        component,
+        kind,
+        name,
+        bump: "minor",
+        message: `${label} "${name}" ${newProp.constant ? "became constant" : "became mutable"}`,
+      });
+    }
+
+    if (oldProp.reactive !== newProp.reactive) {
+      changes.push({
+        component,
+        kind,
+        name,
+        bump: "minor",
+        message: `${label} "${name}" ${newProp.reactive ? "became reactive" : "stopped being reactive"}`,
       });
     }
   }
