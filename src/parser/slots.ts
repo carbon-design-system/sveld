@@ -226,6 +226,7 @@ export function addSlot(
     slot_description,
     slot_deprecated,
     slot_tags,
+    slot_internal,
     source,
   }: {
     slot_name?: string;
@@ -235,6 +236,7 @@ export function addSlot(
     slot_description?: string;
     slot_deprecated?: DeprecatedValue;
     slot_tags?: JsDocPassthroughTag[];
+    slot_internal?: boolean;
     source?: SourceRange;
   },
 ) {
@@ -256,6 +258,7 @@ export function addSlot(
         description: existing_slot.description || description,
         deprecated: existing_slot.deprecated ?? slot_deprecated,
         tags: existing_slot.tags || slot_tags,
+        ...(existing_slot.internal || slot_internal ? { internal: true as const } : {}),
         source: source || existing_slot.source,
       });
     }
@@ -269,6 +272,7 @@ export function addSlot(
       description,
       deprecated: slot_deprecated,
       tags: slot_tags,
+      ...(slot_internal ? { internal: true as const } : {}),
       source,
     });
   }

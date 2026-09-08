@@ -20,6 +20,8 @@ export interface EntryExport {
   deprecated?: DeprecatedValue;
   /** `@since` / `@example` / `@see` tags in source order. */
   tags?: JsDocPassthroughTag[];
+  /** True from `@ignore`/`@internal` JSDoc; excluded from every output by `buildComponentApiDocument`. */
+  internal?: boolean;
   /** Declaring module, relative to the entry file. */
   source?: string;
   isTypeOnly: boolean;
@@ -262,9 +264,10 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
   const description = leadingJsDoc(source.text, jsdocStart);
   const rawJsDoc = leadingJsDocBlock(source.text, jsdocStart);
   const jsDocReturnType = rawJsDoc ? extractJsDocReturnType(rawJsDoc) : undefined;
-  const { deprecated, tags } = rawJsDoc
+  const { deprecated, tags, internal } = rawJsDoc
     ? extractJsDocDeprecatedAndTags(rawJsDoc)
-    : { deprecated: undefined, tags: undefined };
+    : { deprecated: undefined, tags: undefined, internal: false };
+  const internalField = internal ? ({ internal: true } as const) : {};
 
   if (declaration.type === "VariableDeclaration") {
     const kind = (declaration.kind as "const" | "let" | "var") ?? "const";
@@ -306,6 +309,7 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
         description,
         deprecated,
         tags,
+        ...internalField,
         declFile,
         isTypeOnly: false,
       });
@@ -330,6 +334,7 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
         description,
         deprecated,
         tags,
+        ...internalField,
         declFile,
         isTypeOnly: false,
       },
@@ -339,7 +344,9 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
   if (declaration.type === "ClassDeclaration") {
     const name = identifierName(asNode(declaration.id));
     if (!name) return [];
-    return [{ name, kind: "class", type: name, description, deprecated, tags, declFile, isTypeOnly: false }];
+    return [
+      { name, kind: "class", type: name, description, deprecated, tags, ...internalField, declFile, isTypeOnly: false },
+    ];
   }
 
   if (declaration.type === "TSTypeAliasDeclaration") {
@@ -353,6 +360,7 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
         description,
         deprecated,
         tags,
+        ...internalField,
         declFile,
         isTypeOnly: true,
       },
@@ -370,6 +378,7 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
         description,
         deprecated,
         tags,
+        ...internalField,
         declFile,
         isTypeOnly: true,
       },
@@ -379,7 +388,9 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
   if (declaration.type === "TSEnumDeclaration") {
     const name = identifierName(asNode(declaration.id));
     if (!name) return [];
-    return [{ name, kind: "enum", type: name, description, deprecated, tags, declFile, isTypeOnly: false }];
+    return [
+      { name, kind: "enum", type: name, description, deprecated, tags, ...internalField, declFile, isTypeOnly: false },
+    ];
   }
 
   return [];

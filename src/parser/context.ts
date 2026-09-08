@@ -106,7 +106,7 @@ export interface ParserContext {
   readonly bindings: Map<string, ComponentPropBindings>;
   readonly contexts: Map<string, ComponentContext>;
   readonly typedefs: Map<string, TypeDef>;
-  variableInfoCache: Map<string, { type: string; description?: string }>;
+  variableInfoCache: Map<string, { type: string; description?: string; internal?: boolean }>;
 
   /** True after the per-component variable/JSDoc symbol table has populated {@link variableInfoCache}. */
   variableInfoCacheBuilt: boolean;

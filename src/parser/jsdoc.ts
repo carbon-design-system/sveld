@@ -149,21 +149,22 @@ export function extractJsDocReturnType(commentValue: string): string | undefined
 }
 
 /**
- * `@deprecated` and passthrough (`@since`/`@example`/`@see`) tags from raw JSDoc text (with or
- * without `/**` delimiters). Standalone so `parse-entry-exports.ts` can read sibling modules
- * without a component parser context, same as {@link extractJsDocReturnType}.
+ * `@deprecated`, passthrough (`@since`/`@example`/`@see`) tags, and `@ignore`/`@internal` from raw
+ * JSDoc text (with or without `/**` delimiters). Standalone so `parse-entry-exports.ts` can read
+ * sibling modules without a component parser context, same as {@link extractJsDocReturnType}.
  */
 export function extractJsDocDeprecatedAndTags(commentValue: string): {
   deprecated?: DeprecatedValue;
   tags?: JsDocPassthroughTag[];
+  internal: boolean;
 } {
   const comment = parseComments(formatComment(commentValue));
-  const { deprecated, passthrough: passthroughTags } = getCommentTags(comment);
+  const { deprecated, passthrough: passthroughTags, internal } = getCommentTags(comment);
 
   const tags: JsDocPassthroughTag[] | undefined =
     passthroughTags.length > 0 ? passthroughTags.map((tag) => ({ name: tag.tag, body: tag.raw })) : undefined;
 
-  return { deprecated, tags };
+  return { deprecated, tags, internal };
 }
 
 export function getCommentTags(parsed: JSDocComment[]) {
@@ -183,6 +184,8 @@ export function getCommentTags(parsed: JSDocComment[]) {
     "callback",
     "bindable",
     "deprecated",
+    "ignore",
+    "internal",
   ]);
 
   let typeTag: (typeof tags)[number] | undefined;
@@ -190,6 +193,7 @@ export function getCommentTags(parsed: JSDocComment[]) {
   let returnsTag: (typeof tags)[number] | undefined;
   let binding: ComponentPropBinding | undefined;
   let deprecated: DeprecatedValue | undefined;
+  let internal = false;
   const additionalTags: typeof tags = [];
   const passthroughTags: typeof tags = [];
   const ignoreCodes: string[] = [];
@@ -203,6 +207,8 @@ export function getCommentTags(parsed: JSDocComment[]) {
       returnsTag = tag;
     } else if (tag.tag === "deprecated") {
       deprecated ??= deprecatedValueFromParts(tag.name, tag.description);
+    } else if (tag.tag === "ignore" || tag.tag === "internal") {
+      internal = true;
     } else if (tag.tag === "sveld-ignore") {
       ignoreCodes.push(tag.name);
     } else if (IDE_PASSTHROUGH_TAGS.has(tag.tag)) {
@@ -227,6 +233,7 @@ export function getCommentTags(parsed: JSDocComment[]) {
     returns: returnsTag,
     binding,
     deprecated,
+    internal,
     additional: additionalTags,
     passthrough: passthroughTags,
     ignore: ignoreCodes,
@@ -309,6 +316,8 @@ function processJSDocComment(
       tags?: JsDocPassthroughTag[];
       /** `@sveld-ignore <code>` codes from this comment; `""` means "ignore anything for this symbol". */
       sveldIgnore?: string[];
+      /** True when `@ignore` or `@internal` is present; excludes this prop from every output. */
+      internal: boolean;
     }
   | undefined {
   if (!leadingComments) return undefined;
@@ -324,6 +333,7 @@ function processJSDocComment(
     returns: returnsTag,
     binding,
     deprecated,
+    internal,
     additional: additionalTags,
     passthrough: passthroughTags,
     ignore: ignoreCodes,
@@ -381,6 +391,7 @@ function processJSDocComment(
     deprecated,
     tags,
     sveldIgnore: ignoreCodes.length > 0 ? ignoreCodes : undefined,
+    internal,
   };
 }
 
@@ -473,6 +484,7 @@ export function parseCustomTypes(
     let currentEventType: string | undefined;
     let currentEventDescription: string | undefined;
     let currentEventDeprecated: DeprecatedValue | undefined;
+    let currentEventInternal = false;
     let currentEventSource: SourceRange | undefined;
     let currentEventTagLine: number | undefined;
     let currentEventTags: JsDocPassthroughTag[] = [];
@@ -490,6 +502,7 @@ export function parseCustomTypes(
     let currentTypedefDescription: string | undefined;
     let currentTypedefSource: SourceRange | undefined;
     let currentTypedefTags: JsDocPassthroughTag[] = [];
+    let currentTypedefInternal = false;
     const typedefProperties: Array<{
       name: string;
       type: string;
@@ -502,6 +515,7 @@ export function parseCustomTypes(
     let currentCallbackDescription: string | undefined;
     let currentCallbackSource: SourceRange | undefined;
     let currentCallbackTags: JsDocPassthroughTag[] = [];
+    let currentCallbackInternal = false;
     const callbackParams: Array<{
       name: string;
       type: string;
@@ -523,6 +537,8 @@ export function parseCustomTypes(
     const pendingTags: JsDocPassthroughTag[] = [];
     /** `@deprecated` for the next `@slot` / `@snippet` in this block. */
     let pendingDeprecated: DeprecatedValue | undefined;
+    /** `@ignore`/`@internal` for the next `@slot`/`@snippet`/`@typedef`/`@callback` in this block. */
+    let pendingInternal = false;
 
     const lineDescriptions = new Map<number, string>();
     const tagLineNumbers = new Set<number>();
@@ -627,6 +643,7 @@ export function parseCustomTypes(
           description: currentEventDescription,
           deprecated: currentEventDeprecated,
           tags: currentEventTags.length > 0 ? currentEventTags : undefined,
+          internal: currentEventInternal || undefined,
           source: currentEventSource,
         });
         ctx.eventDescriptions.set(currentEventName, currentEventDescription);
@@ -638,6 +655,7 @@ export function parseCustomTypes(
         currentEventType = undefined;
         currentEventDescription = undefined;
         currentEventDeprecated = undefined;
+        currentEventInternal = false;
         currentEventSource = undefined;
         currentEventTagLine = undefined;
         currentEventTags = [];
@@ -670,6 +688,7 @@ export function parseCustomTypes(
           description: assignValueOrUndefined(currentTypedefDescription),
           ts: typedefTs,
           tags: currentTypedefTags.length > 0 ? currentTypedefTags : undefined,
+          ...(currentTypedefInternal ? { internal: true as const } : {}),
         });
 
         typedefProperties.length = 0;
@@ -678,6 +697,7 @@ export function parseCustomTypes(
         currentTypedefDescription = undefined;
         currentTypedefSource = undefined;
         currentTypedefTags = [];
+        currentTypedefInternal = false;
       }
     };
 
@@ -700,6 +720,7 @@ export function parseCustomTypes(
           description: assignValueOrUndefined(currentCallbackDescription),
           ts: callbackTs,
           tags: currentCallbackTags.length > 0 ? currentCallbackTags : undefined,
+          ...(currentCallbackInternal ? { internal: true as const } : {}),
         });
 
         callbackParams.length = 0;
@@ -708,6 +729,7 @@ export function parseCustomTypes(
         currentCallbackDescription = undefined;
         currentCallbackSource = undefined;
         currentCallbackTags = [];
+        currentCallbackInternal = false;
       }
     };
 
@@ -793,10 +815,12 @@ export function parseCustomTypes(
             slot_description: slotDesc || undefined,
             slot_deprecated: pendingDeprecated,
             slot_tags: pendingTags.length > 0 ? [...pendingTags] : undefined,
+            slot_internal: pendingInternal || undefined,
             source: sourceRangeFromCommentTag(ctx, tagSource),
           });
           pendingTags.length = 0;
           pendingDeprecated = undefined;
+          pendingInternal = false;
           {
             const slotKey = name === undefined || name === "" ? null : name;
             attachTrailingTag = (trailingTag) => {
@@ -885,6 +909,8 @@ export function parseCustomTypes(
             currentTypedefTags.push(...pendingTags);
             pendingTags.length = 0;
           }
+          currentTypedefInternal = pendingInternal;
+          pendingInternal = false;
           attachTrailingTag = (trailingTag) => currentTypedefTags.push(trailingTag);
           if (isFirstTag) isFirstTag = false;
           break;
@@ -904,6 +930,8 @@ export function parseCustomTypes(
             currentCallbackTags.push(...pendingTags);
             pendingTags.length = 0;
           }
+          currentCallbackInternal = pendingInternal;
+          pendingInternal = false;
           attachTrailingTag = (trailingTag) => currentCallbackTags.push(trailingTag);
           if (isFirstTag) isFirstTag = false;
           break;
@@ -949,6 +977,15 @@ export function parseCustomTypes(
             pendingDeprecated ??= deprecatedValue;
           } else {
             currentEventDeprecated ??= deprecatedValue;
+          }
+          break;
+        }
+        case "ignore":
+        case "internal": {
+          if (currentEventName === undefined) {
+            pendingInternal = true;
+          } else {
+            currentEventInternal = true;
           }
           break;
         }

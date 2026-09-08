@@ -517,6 +517,7 @@ export function parseRunesPropsDeclaration(parser: ComponentParser, ctx: ParserC
         binding: propertyJSDoc?.binding,
         deprecated: propertyJSDoc?.deprecated,
         tags: propertyJSDoc?.tags,
+        ...(propertyJSDoc?.internal ? { internal: true as const } : {}),
         ...(bindable ? { bindable: true as const } : {}),
         type,
         typeSource,
