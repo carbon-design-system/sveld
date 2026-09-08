@@ -362,6 +362,11 @@
         "type": { "type": "string" },
         "value": { "type": "string" },
         "description": { "type": "string" },
+        "deprecated": { "$ref": "#/$defs/deprecated" },
+        "tags": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/jsdocTag" }
+        },
         "source": { "type": "string" },
         "isTypeOnly": { "type": "boolean" }
       }

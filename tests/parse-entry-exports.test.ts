@@ -120,6 +120,19 @@ describe("parseEntryExports", () => {
     });
   });
 
+  test("captures @deprecated and pass-through tags on an entry export", async () => {
+    const exports = await parseEntryExports(entryFile);
+
+    expect(byName(exports, "DEFAULT_THEME")).toMatchObject({
+      deprecated: "Use `invertTheme` with an explicit theme instead.",
+      tags: [{ name: "since", body: "1.0.0" }],
+    });
+
+    // Exports without either tag stay undefined.
+    expect(byName(exports, "VERSION").deprecated).toBeUndefined();
+    expect(byName(exports, "VERSION").tags).toBeUndefined();
+  });
+
   test("sorts exports alphabetically and resolves source paths", async () => {
     const exports = await parseEntryExports(entryFile);
 

@@ -105,8 +105,20 @@ describe("component API JSON schema", () => {
 
     const entryExportProperties = objectProperty(objectProperty(defs, "entryExport"), "properties");
     expect(Object.keys(entryExportProperties)).toEqual(
-      expect.arrayContaining(["name", "kind", "type", "value", "description", "source", "isTypeOnly"]),
+      expect.arrayContaining([
+        "name",
+        "kind",
+        "type",
+        "value",
+        "description",
+        "deprecated",
+        "tags",
+        "source",
+        "isTypeOnly",
+      ]),
     );
+    expect(objectProperty(entryExportProperties, "deprecated")).toMatchObject({ $ref: "#/$defs/deprecated" });
+    expect(objectProperty(entryExportProperties, "tags")).toMatchObject({ items: { $ref: "#/$defs/jsdocTag" } });
     expect(objectProperty(entryExportProperties, "kind")).toMatchObject({
       enum: ["const", "let", "var", "function", "class", "type", "interface", "enum"],
     });
