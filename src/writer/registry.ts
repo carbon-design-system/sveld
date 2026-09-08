@@ -27,12 +27,41 @@ export interface OutputWriter<TOptions = unknown> {
   name: string;
   /** Which component set this writer expects — see {@link WriterComponentSet}. @default "exported" */
   componentSet?: WriterComponentSet;
+  /**
+   * `options` always carries `dryRun: true` under `sveld --dry-run` (or
+   * `{ dryRun: true }` from the programmatic API), alongside whatever
+   * `TOptions` fields the writer defines. `write` must check it and skip
+   * touching disk; sveld does not do this for you. A thrown error (sync or
+   * async) is re-thrown by the caller as `sveld: writer "<name>" failed: ...`
+   * with the original error as `cause`.
+   */
   write(components: ComponentDocs, options: TOptions): Promise<unknown> | unknown;
+}
+
+export interface RegisterWriterOptions {
+  /** Overwrite an existing writer registered under the same `name` instead of throwing. @default false */
+  replace?: boolean;
 }
 
 const writers = new Map<string, OutputWriter<unknown>>();
 
-export function registerWriter<TOptions = unknown>(writer: OutputWriter<TOptions>): void {
+/**
+ * Registers a writer under `writer.name`. Throws if that name is already
+ * taken - a silent overwrite would otherwise let a userland writer clobber
+ * a built-in one (`json`/`markdown`/`types`/`custom-elements`/`llms`), or
+ * two third-party writers with the same name shadow each other depending on
+ * import order. Pass `{ replace: true }` to overwrite intentionally, e.g.
+ * when hot-reloading a writer module during development.
+ */
+export function registerWriter<TOptions = unknown>(
+  writer: OutputWriter<TOptions>,
+  options?: RegisterWriterOptions,
+): void {
+  if (!options?.replace && writers.has(writer.name)) {
+    throw new Error(
+      `sveld: a writer named "${writer.name}" is already registered. Pass { replace: true } to overwrite it.`,
+    );
+  }
   writers.set(writer.name, writer as OutputWriter<unknown>);
 }
 
