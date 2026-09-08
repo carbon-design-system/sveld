@@ -12,7 +12,6 @@ import {
   formatDescriptionWithTags,
   formatEventDetail,
   formatNameWithDeprecation,
-  formatPropDescription,
   formatPropType,
   formatPropValue,
   formatSlotFallback,
@@ -65,7 +64,7 @@ function renderPropsTableSection(document: MarkdownWriterBaseImpl, heading: stri
       "raw",
       `| ${formatNameWithDeprecation(prop.name, prop.deprecated)} | ${formatPropType(prop.type)} | ${formatPropValue(
         prop.value,
-      )} | ${prop.isRequired ? "Yes" : "No"} | ${formatPropDescription(prop.description)} |\n`,
+      )} | ${prop.isRequired ? "Yes" : "No"} | ${formatDescriptionWithTags(prop.description, prop.tags)} |\n`,
     );
   }
   document.append("raw", "\n");
@@ -81,7 +80,7 @@ function renderEventsSection(document: MarkdownWriterBaseImpl, events: Serialize
       "raw",
       `| ${formatNameWithDeprecation(event.name, event.deprecated)} | ${event.type} | ${
         event.type === "dispatched" ? formatEventDetail(event.detail) : MD_TYPE_UNDEFINED
-      } | ${formatPropDescription(event.description)} |\n`,
+      } | ${formatDescriptionWithTags(event.description, event.tags)} |\n`,
     );
   }
   document.append("raw", "\n");

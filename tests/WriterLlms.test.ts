@@ -183,6 +183,29 @@ describe("renderLlmsDocuments", () => {
     expect(llmsFullTxt).toContain("DEFAULT_OPTION");
   });
 
+  test("props and events tables render pass-through tags like slots do", () => {
+    const example = mockComponentDocApi("Example", "Example.svelte", {
+      syntaxMode: "legacy",
+      props: [
+        mockProp("size", {
+          description: "Current value.",
+          tags: [{ name: "since", body: "1.2.0" }],
+        }),
+      ],
+      events: [
+        mockEvent("change", {
+          description: "Fires on change.",
+          tags: [{ name: "example", body: "on:change={handleChange}" }],
+        }),
+      ],
+    });
+
+    const { llmsFullTxt } = renderLlmsDocuments(new Map([["Example", example]]), { title: "my-library" });
+
+    expect(llmsFullTxt).toContain("Current value.<br />@since 1.2.0");
+    expect(llmsFullTxt).toContain("Fires on change.<br />@example on:change={handleChange}");
+  });
+
   test("omits empty sections entirely", () => {
     const { llmsFullTxt } = renderLlmsDocuments(new Map([["Select", select]]), { title: "my-library" });
 

@@ -1139,7 +1139,7 @@ With that in place:
 
 ## llms.txt Output
 
-Set `llms: true` to emit an [`llms.txt`](https://llmstxt.org) / `llms-full.txt` pair: `llms.txt` is an index of every exported component (one link plus a one-line summary each), and `llms-full.txt` is the flattened full reference (every component's Props, Bindings, Events, Slots/Snippets, Typedefs, and Module exports, as terse Markdown tables).
+Set `llms: true` to emit an [`llms.txt`](https://llmstxt.org) / `llms-full.txt` pair: `llms.txt` is an index of every exported component (one link plus a one-line summary each), and `llms-full.txt` is the flattened full reference (every component's Props, Bindings, Events, Slots/Snippets, Typedefs, and Module exports, as terse Markdown tables). Props and Events Description columns include `@since`/`@example` tags, same as `COMPONENT_INDEX.md`.
 
 ```diff
 sveld({
