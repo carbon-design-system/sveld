@@ -2148,6 +2148,73 @@ export default class ComponentParser {
       );
     }
 
+    /**
+     * A public prop/typedef/event/slot/module-export/context-property whose type
+     * text still names a now-excluded `@internal` typedef leaves a dangling
+     * reference in the generated `.d.ts`. Cheap early-out: most components
+     * declare no `@internal` typedefs at all.
+     */
+    const internalTypedefNames = typedefsArray
+      .filter((typedef) => typedef.internal)
+      .map((typedef) => typedef.name.split("<")[0]);
+
+    if (internalTypedefNames.length > 0) {
+      const internalTypedefMatchers = internalTypedefNames.map((name) => ({
+        name,
+        regex: new RegExp(`\\b${name}\\b`),
+      }));
+
+      const scanForInternalReference = (
+        referencingName: string,
+        typeText: string | undefined,
+        source?: SourceRange,
+      ) => {
+        if (!typeText) return;
+        for (const { name: internalName, regex } of internalTypedefMatchers) {
+          if (!regex.test(typeText)) continue;
+          recordDiagnostic(
+            this.ctx,
+            "internal-typedef-referenced",
+            referencingName,
+            `"${referencingName}" references "${internalName}", which is @internal and excluded from output; the generated .d.ts will contain a dangling reference to it.`,
+            source,
+          );
+        }
+      };
+
+      for (const prop of processedProps) {
+        if (prop.internal) continue;
+        scanForInternalReference(prop.name, prop.type, prop.source);
+      }
+
+      for (const moduleExport of moduleExportsArray) {
+        if (moduleExport.internal) continue;
+        scanForInternalReference(moduleExport.name, moduleExport.type, moduleExport.source);
+      }
+
+      for (const typedef of typedefsArray) {
+        if (typedef.internal) continue;
+        scanForInternalReference(typedef.name, typedef.ts);
+      }
+
+      for (const event of eventsArray) {
+        if (event.internal || event.type !== "dispatched") continue;
+        scanForInternalReference(event.name, event.detail, event.source);
+      }
+
+      for (const slot of processedSlots) {
+        if (slot.internal) continue;
+        scanForInternalReference(slot.name ?? "default", slot.slot_props, slot.source);
+      }
+
+      for (const context of contextsArray) {
+        if (context.internal) continue;
+        for (const property of context.properties) {
+          scanForInternalReference(property.name, property.type);
+        }
+      }
+    }
+
     const parsedComponent: ParsedComponent = {
       source: sourceRangeFromOffsets(this.ctx, 0, this.ctx.source?.length),
       syntaxMode: this.ctx.syntaxMode,
