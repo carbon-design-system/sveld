@@ -2762,7 +2762,23 @@ For a context (`setContext(key, value)`), tag the JSDoc on the *value* variable,
 </script>
 ```
 
-An inline object literal passed directly to `setContext` (no intermediate variable) has no JSDoc position of its own, so `@internal` isn't supported there.
+A whole inline object literal passed directly to `setContext` (no intermediate variable) has no JSDoc position of its own, so `@internal` isn't supported there. An individual property *inside* one can be marked `@internal`, though, as long as its value is an identifier carrying its own JSDoc:
+
+```svelte
+<script>
+  /**
+   * @type {string}
+   * @internal
+   */
+  let debugToken = "";
+
+  let publicUser = { name: "" };
+
+  setContext("session", { user: publicUser, debug: debugToken });
+</script>
+```
+
+Only the `debug` property is excluded from `session`'s generated shape; `user` and the context itself are unaffected.
 
 Because an internal member never appears in output, adding `@internal` to a previously-public prop, event, slot, or typedef is a breaking change for `--check` purposes (it disappears from the generated `.d.ts` just like an outright removal). Removing an already-`@internal` member, by contrast, is not breaking — it was never part of the committed public snapshot to begin with.
 

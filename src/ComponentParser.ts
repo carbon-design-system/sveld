@@ -581,6 +581,8 @@ export interface ComponentContextProp {
   description?: string;
   /** True when optional. */
   optional: boolean;
+  /** True from `@ignore`/`@internal` JSDoc; excluded from every output by `buildComponentApiDocument`. */
+  internal?: boolean;
 }
 
 /** Context from `setContext(key, value)`. */

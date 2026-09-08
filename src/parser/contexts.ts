@@ -84,6 +84,7 @@ function parseContextObjectProperties(
 
     let propType = "any";
     let propDescription: string | undefined;
+    let propInternal: boolean | undefined;
 
     if (isIdentifier(prop.value)) {
       const varName = prop.value.name;
@@ -91,6 +92,7 @@ function parseContextObjectProperties(
       if (varInfo) {
         propType = varInfo.type;
         propDescription = varInfo.description;
+        propInternal = varInfo.internal;
       } else {
         recordDiagnostic(
           ctx,
@@ -126,6 +128,7 @@ function parseContextObjectProperties(
       type: propType,
       description: propDescription,
       optional: false,
+      ...(propInternal ? { internal: true } : {}),
     });
   }
 
