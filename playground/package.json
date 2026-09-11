@@ -12,8 +12,8 @@
     "carbon-icons-svelte": "^13.15.0",
     "carbon-preprocess-svelte": "^0.11.44",
     "svelte": "^5.57.0",
-    "svelte-highlight": "^7.20.0",
+    "svelte-highlight": "^7.21.0",
     "typescript": "^7.0.2",
-    "vite": "^8.2.2"
+    "vite": "^8.3.0"
   }
 }
