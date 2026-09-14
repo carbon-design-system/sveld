@@ -267,7 +267,7 @@ export function addSlot(
       name,
       default: default_slot,
       fallback,
-      slot_props,
+      slot_props: props,
       slot_props_unresolved_spread,
       description,
       deprecated: slot_deprecated,

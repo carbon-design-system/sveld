@@ -427,6 +427,7 @@ Every diagnostic carries a stable, namespaced `code` (`"sveld/<kind>"`) alongsid
 | --- | --- | --- |
 | `sveld/prop-unknown-type` | `warning` | Add a native TypeScript annotation, a `@type` JSDoc tag, or an initializer sveld can infer a type from. |
 | `sveld/context-any-type` | `warning` | Annotate the `setContext` value's declaration with `@type` or a native TypeScript type. |
+| `sveld/slot-missing-type` | `warning` | Add the required `{Type}` annotation to the `@slot`/`@snippet` tag (e.g. `@slot {{}} name`); until then it falls back to `Record<string, never>`. |
 | `sveld/event-no-source` | `warning` | Dispatch the event (`createEventDispatcher`/`dispatch`), forward it (`on:name`), or add a matching `on<Name>` callback prop; otherwise remove the stale `@event` tag. |
 | `sveld/example-compile-error` | `error` | Fix the `@example` TS/JS code block so it type-checks, or remove the broken example. |
 | `sveld/example-syntax-error` | `error` | Fix the `@example` `svelte`/`html` markup so it parses, or remove the broken example. |
@@ -447,7 +448,7 @@ Every diagnostic carries a stable, namespaced `code` (`"sveld/<kind>"`) alongsid
 
 #### Severity and `--strict=errors`
 
-Each diagnostic's `severity` is `"error"` (`example-compile-error`, `example-syntax-error`, `syntax-skipped`, `extend-props-target-missing`, `internal-typedef-referenced` — sveld emitted broken or unmodeled output) or `"warning"` (`prop-unknown-type`, `context-any-type`, `event-no-source`, `rest-props-unresolved`, `context-duplicate-key`, `spread-unresolved`, `export-unresolved`, `extend-props-duplicate`, `extend-props-override`, `jsdoc-unknown-tag`, `typedef-duplicate`, `property-duplicate`, `generics-conflict`, `jsdoc-tag-dropped` — a type fell back to `any`). Plain `strict: true` / `--strict` fails on both, unchanged from before. Pass `strict: "errors"` (or `--strict=errors`) to fail CI only on `error`-severity diagnostics, letting `any`-fallback warnings through:
+Each diagnostic's `severity` is `"error"` (`example-compile-error`, `example-syntax-error`, `syntax-skipped`, `extend-props-target-missing`, `internal-typedef-referenced` — sveld emitted broken or unmodeled output) or `"warning"` (`prop-unknown-type`, `context-any-type`, `slot-missing-type`, `event-no-source`, `rest-props-unresolved`, `context-duplicate-key`, `spread-unresolved`, `export-unresolved`, `extend-props-duplicate`, `extend-props-override`, `jsdoc-unknown-tag`, `typedef-duplicate`, `property-duplicate`, `generics-conflict`, `jsdoc-tag-dropped` — a type fell back to `any`). Plain `strict: true` / `--strict` fails on both, unchanged from before. Pass `strict: "errors"` (or `--strict=errors`) to fail CI only on `error`-severity diagnostics, letting `any`-fallback warnings through:
 
 ```sh
 npx sveld --json --strict=errors
@@ -2375,7 +2376,7 @@ Descriptions are optional for every slot, including the default slot. Put prose 
  */
 ```
 
-Omit the `slot-name` to type the default slot.
+Omit the `slot-name` to type the default slot. `{Type}` itself is required; omitting it falls back to `Record<string, never>` and raises a [`sveld/slot-missing-type`](#diagnostic-codes) warning.
 
 ```js
 /**
