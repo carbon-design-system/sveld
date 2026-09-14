@@ -6,6 +6,7 @@ import { matchesGlob } from "./glob-match";
  *
  * - `prop-unknown-type`: prop `typeSource` is `"unknown"`.
  * - `context-any-type`: `setContext` value inferred as `any`.
+ * - `slot-missing-type`: `@slot`/`@snippet` tag omitted the required `{Type}` annotation.
  * - `event-no-source`: `@event` with no dispatch, forward, or callback prop.
  * - `example-compile-error`: a TS/JS `@example` block failed to type-check (opt-in, `checkExamples`).
  * - `example-syntax-error`: a `svelte`/`html` `@example` block failed to parse (opt-in, `checkExamples`).
@@ -27,6 +28,7 @@ import { matchesGlob } from "./glob-match";
 export type SveldDiagnosticKind =
   | "prop-unknown-type"
   | "context-any-type"
+  | "slot-missing-type"
   | "event-no-source"
   | "example-compile-error"
   | "example-syntax-error"
@@ -57,6 +59,7 @@ export type SveldDiagnosticSeverity = "error" | "warning";
 export const DIAGNOSTIC_CODES: Record<SveldDiagnosticKind, string> = {
   "prop-unknown-type": "sveld/prop-unknown-type",
   "context-any-type": "sveld/context-any-type",
+  "slot-missing-type": "sveld/slot-missing-type",
   "event-no-source": "sveld/event-no-source",
   "example-compile-error": "sveld/example-compile-error",
   "example-syntax-error": "sveld/example-syntax-error",
@@ -84,6 +87,7 @@ export const DIAGNOSTIC_CODES: Record<SveldDiagnosticKind, string> = {
 export const DIAGNOSTIC_SEVERITIES: Record<SveldDiagnosticKind, SveldDiagnosticSeverity> = {
   "prop-unknown-type": "warning",
   "context-any-type": "warning",
+  "slot-missing-type": "warning",
   "event-no-source": "warning",
   "example-compile-error": "error",
   "example-syntax-error": "error",
@@ -209,6 +213,7 @@ export function applyDiagnosticIgnores(
 const KIND_LABELS: Record<SveldDiagnosticKind, string> = {
   "prop-unknown-type": "Props without inferred types",
   "context-any-type": "Context values typed as `any`",
+  "slot-missing-type": "@slot/@snippet tags missing a {Type} annotation",
   "event-no-source": "@event tags with no dispatch or callback",
   "example-compile-error": "@example blocks that failed to compile",
   "example-syntax-error": "@example blocks that failed to parse",
@@ -231,6 +236,7 @@ const KIND_LABELS: Record<SveldDiagnosticKind, string> = {
 const KIND_ORDER: SveldDiagnosticKind[] = [
   "prop-unknown-type",
   "context-any-type",
+  "slot-missing-type",
   "event-no-source",
   "example-compile-error",
   "example-syntax-error",

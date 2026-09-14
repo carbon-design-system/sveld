@@ -814,9 +814,20 @@ export function parseCustomTypes(
             slotDesc = precedingDescription;
           }
           if (isFirstTag) isFirstTag = false;
+          let slotType = type;
+          if (!slotType) {
+            slotType = "Record<string, never>";
+            recordDiagnostic(
+              ctx,
+              "slot-missing-type",
+              name || "default",
+              `@${tag}${name ? ` "${name}"` : ""} is missing a required {Type} annotation; falling back to "${slotType}".`,
+              sourceRangeFromCommentTag(ctx, tagSource),
+            );
+          }
           addSlot(ctx, {
             slot_name: name,
-            slot_props: type,
+            slot_props: slotType,
             slot_description: slotDesc || undefined,
             slot_deprecated: pendingDeprecated,
             slot_tags: pendingTags.length > 0 ? [...pendingTags] : undefined,

@@ -70,6 +70,34 @@ describe("ComponentParser diagnostics", () => {
     expect(contextDiagnostics[0]).toMatchObject({ kind: "context-any-type", name: "store" });
   });
 
+  test("flags @slot/@snippet tags missing a required {Type} annotation", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /**
+         * @slot named
+         */
+        export let title = "";
+      </script>
+      <div>
+        <slot name="named" />
+        {title}
+      </div>
+    `;
+
+    const { diagnostics, slots } = parser.parseSvelteComponent(source, parseContext);
+    const slotDiagnostic = diagnostics?.find((d) => d.kind === "slot-missing-type");
+
+    expect(slotDiagnostic).toMatchObject({
+      component: "./TestComponent.svelte",
+      kind: "slot-missing-type",
+      code: "sveld/slot-missing-type",
+      severity: "warning",
+      name: "named",
+    });
+    expect(slots.find((s) => s.name === "named")).toMatchObject({ slot_props: "Record<string, never>" });
+  });
+
   test("flags @event tags with no matching dispatch or callback prop", () => {
     const parser = new ComponentParser();
     const source = `
