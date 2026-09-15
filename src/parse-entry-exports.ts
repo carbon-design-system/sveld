@@ -1,7 +1,8 @@
-import { existsSync, lstatSync, readFileSync } from "node:fs";
-import { dirname, join, relative, resolve } from "node:path";
+import { lstatSync, readFileSync } from "node:fs";
+import { basename, dirname, join, relative, resolve } from "node:path";
 import { isIdentifier, resolveStaticStringLiteral } from "./ast-guards";
 import type { DeprecatedValue, JsDocPassthroughTag } from "./ComponentParser";
+import { directoryHasEntry } from "./fs-listing";
 import { extractJsDocDeprecatedAndTags, extractJsDocReturnType } from "./parser/jsdoc";
 import { getParserStack, loadParserStack } from "./parser-stack";
 import { normalizeSeparators } from "./path";
@@ -102,19 +103,27 @@ function identifierName(node: AstNode | undefined): string | undefined {
 export function resolveModuleFile(specifier: string, fromDir: string): string | null {
   const aliased = resolvePathAliasAbsolute(specifier, fromDir);
   const base = resolve(fromDir, aliased);
+  const parentDir = dirname(base);
+  const baseName = basename(base);
 
-  if (existsSync(base) && lstatSync(base).isFile()) return base;
+  if (directoryHasEntry(parentDir, baseName)) {
+    const stat = lstatSync(base, { throwIfNoEntry: false });
+    if (stat?.isFile()) return base;
 
-  for (const ext of CANDIDATE_EXTENSIONS) {
-    const candidate = base + ext;
-    if (existsSync(candidate)) return candidate;
+    for (const ext of CANDIDATE_EXTENSIONS) {
+      if (directoryHasEntry(parentDir, baseName + ext)) return base + ext;
+    }
+
+    if (stat?.isDirectory()) {
+      for (const ext of CANDIDATE_EXTENSIONS) {
+        if (directoryHasEntry(base, `index${ext}`)) return join(base, `index${ext}`);
+      }
+    }
+    return null;
   }
 
-  if (existsSync(base) && lstatSync(base).isDirectory()) {
-    for (const ext of CANDIDATE_EXTENSIONS) {
-      const candidate = join(base, `index${ext}`);
-      if (existsSync(candidate)) return candidate;
-    }
+  for (const ext of CANDIDATE_EXTENSIONS) {
+    if (directoryHasEntry(parentDir, baseName + ext)) return base + ext;
   }
 
   return null;

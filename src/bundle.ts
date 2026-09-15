@@ -1,5 +1,5 @@
 import type { Dirent } from "node:fs";
-import { existsSync, lstatSync, readdirSync, readFileSync, realpathSync, statSync } from "node:fs";
+import { existsSync, lstatSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { dirname, extname, isAbsolute, join, parse, relative, resolve } from "node:path";
 import { asRelativeSourcePath, type NormalizedPath } from "./brands";
@@ -13,6 +13,7 @@ import {
   type SveldDiagnostic,
 } from "./diagnostics";
 import { collectExampleSources, type ExampleCheckSource } from "./example-check";
+import { readDirectoryListing, resetDirectoryListings } from "./fs-listing";
 import { hashSource, ParseCache, resolveCacheFilePath } from "./parse-cache";
 import { type EntryExports, parseEntryExports } from "./parse-entry-exports";
 import { type ParsedExports, parseExports } from "./parse-exports";
@@ -226,16 +227,17 @@ function findSvelteFiles(
   /** `dir`'s real path when the caller already knows it (see the recursion below). */
   knownRealDir?: string,
 ): string[] {
-  let entries: Dirent[];
   let real: string;
   try {
     real = knownRealDir ?? realpathSync(dir);
-    if (visited.has(real)) return results;
-    visited.add(real);
-    entries = readdirSync(dir, { withFileTypes: true });
   } catch {
     return results;
   }
+  if (visited.has(real)) return results;
+  visited.add(real);
+  const listing = readDirectoryListing(dir);
+  if (listing === null) return results;
+  const entries: Dirent[] = listing.entries;
 
   for (const entry of entries) {
     if (entry.name.startsWith(".")) continue;
@@ -373,6 +375,9 @@ export function mergeGlobbedComponents(
  *   the acorn component-export parse (TypeScript-only syntax is common).
  */
 export function collectComponents(input: string, glob: boolean, documentExports = false): CollectedComponents {
+  // Directory listings are cached across the glob walk and module resolution;
+  // a new discovery pass must see files created since the last one.
+  resetDirectoryListings();
   const isFile = lstatSync(input).isFile();
   const dir = isFile ? dirname(input) : input;
   const rootDir = resolve(dir);
