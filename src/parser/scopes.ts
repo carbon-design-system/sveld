@@ -338,7 +338,7 @@ function collectComponentScopeDeclarations(parser: ComponentParser, ctx: ParserC
  */
 export function initComponentScope(parser: ComponentParser, ctx: ParserContext) {
   ctx.componentScope.clear();
-  ctx.scopeDeclarations = new WeakMap();
+  ctx.scopeDeclarations = new Map();
   ctx.activeScopes.length = 0;
 
   collectComponentScopeDeclarations(parser, ctx, ctx.parsed?.instance);

@@ -97,7 +97,7 @@ export interface ParserContext {
   readonly restPropLocals: Set<string>;
 
   readonly componentScope: LexicalScope;
-  scopeDeclarations: WeakMap<object, LexicalScope>;
+  scopeDeclarations: Map<object, LexicalScope>;
   readonly activeScopes: LexicalScope[];
 
   readonly slots: Map<string | null, InternalComponentSlot>;
@@ -177,7 +177,7 @@ export function createParserContext(): ParserContext {
     wholePropsLocals: new Set(),
     restPropLocals: new Set(),
     componentScope: new Map(),
-    scopeDeclarations: new WeakMap(),
+    scopeDeclarations: new Map(),
     activeScopes: [],
     slots: new Map(),
     snippetPropLocals: new Set(),
