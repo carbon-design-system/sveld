@@ -28,6 +28,7 @@ import type {
   ValueImportBinding,
 } from "../ComponentParser";
 import type { SveldDiagnostic } from "../diagnostics";
+import type { JSDocComment } from "./comment-parser";
 
 /** Per-parse mutable state for {@link ComponentParser}. Reset via {@link createParserContext} on each parse. */
 export interface ParserContext {
@@ -42,6 +43,10 @@ export interface ParserContext {
   runesOptionOverride?: boolean;
 
   sourceLineStartOffsetsCache?: number[];
+  /** Per-component memo of parsed JSDoc blocks keyed by their formatted comment text. */
+  readonly parsedJsDocByText: Map<string, JSDocComment[]>;
+  /** Every `/** *\/` block `parseCustomTypes` found in the source, keyed by absolute start offset. */
+  readonly jsDocBlocksByStart: Map<number, JSDocComment>;
 
   rest_props?: RestProps;
   extends?: Extends;
@@ -138,6 +143,8 @@ export function createParserContext(): ParserContext {
     parsed: undefined,
     runesOptionOverride: undefined,
     sourceLineStartOffsetsCache: undefined,
+    parsedJsDocByText: new Map(),
+    jsDocBlocksByStart: new Map(),
     rest_props: undefined,
     extends: undefined,
     customElementTag: undefined,
