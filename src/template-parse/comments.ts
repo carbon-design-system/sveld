@@ -112,12 +112,21 @@ function walkAndAttach(
   // Nothing left to attach. Skip walking the rest of this script AST.
   if (cursor.index >= comments.length) return;
 
+  // Every descendant starts before `node.end`, so none can take the next
+  // comment as leading when it sits past this node. The only claims a
+  // descendant could make are trailing ones over the same `[,) \t]*` gap this
+  // node (or the first ancestor whose trailing step runs) matches too, and a
+  // claim is just a cursor bump, so skipping the subtree changes nothing.
+  const nextStart = comments[cursor.index].start;
+  const nodeEnd = node.end;
+  const descend = nodeEnd === undefined || nodeEnd > nextStart;
+
   // Direct object/array-of-node children that have a `.type`, same walk rule
   // as zimmerframe, visited in place rather than collected into an array
   // first. `Object.keys` instead of `for...in`: acorn nodes don't put
   // enumerable properties on the prototype. Stops as soon as every comment
   // is claimed (the trailing-comment step below is a no-op by then).
-  const keys = Object.keys(node);
+  const keys = descend ? Object.keys(node) : [];
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i];
     if (key === "type" || key === "leadingComments") continue;
