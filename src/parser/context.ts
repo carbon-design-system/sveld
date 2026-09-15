@@ -43,6 +43,8 @@ export interface ParserContext {
   runesOptionOverride?: boolean;
 
   sourceLineStartOffsetsCache?: number[];
+  /** Line index of the last `sourcePositionFromOffset` hit; lookups are mostly monotonic. */
+  sourceLineHint?: number;
   /** Per-component memo of parsed JSDoc blocks keyed by their formatted comment text. */
   readonly parsedJsDocByText: Map<string, JSDocComment[]>;
   /** Every `/** *\/` block `parseCustomTypes` found in the source, keyed by absolute start offset. */
@@ -143,6 +145,7 @@ export function createParserContext(): ParserContext {
     parsed: undefined,
     runesOptionOverride: undefined,
     sourceLineStartOffsetsCache: undefined,
+    sourceLineHint: undefined,
     parsedJsDocByText: new Map(),
     jsDocBlocksByStart: new Map(),
     rest_props: undefined,
