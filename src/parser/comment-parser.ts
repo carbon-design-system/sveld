@@ -62,6 +62,8 @@ export interface JSDocComment {
   tags: JSDocTag[];
   /** Absolute character offset where this block's `/**` begins in the scanned source. */
   start: number;
+  /** Absolute character offset just past the block's closing `*\/` in the scanned source. */
+  end: number;
   /** All physical lines of the block, post type/name extraction (shared with each tag's own `lines`). */
   lines: CommentLine[];
 }
@@ -128,8 +130,8 @@ function physicalLineText(source: string, lineStart: number, lineEnd: number): s
  * first line from there whose trimmed text ends with `*\/`; a block still open at end of input is
  * dropped.
  */
-function findCommentBlocks(source: string): Array<{ start: number; lines: CommentLine[] }> {
-  const blocks: Array<{ start: number; lines: CommentLine[] }> = [];
+function findCommentBlocks(source: string): Array<{ start: number; end: number; lines: CommentLine[] }> {
+  const blocks: Array<{ start: number; end: number; lines: CommentLine[] }> = [];
   let searchFrom = 0;
 
   while (true) {
@@ -148,6 +150,7 @@ function findCommentBlocks(source: string): Array<{ start: number; lines: Commen
     const lines: CommentLine[] = [];
     let currentLineStart = lineStart;
     let closed = false;
+    let closeEnd = 0;
 
     while (currentLineStart <= source.length) {
       const newlineIndex = source.indexOf("\n", currentLineStart);
@@ -157,8 +160,10 @@ function findCommentBlocks(source: string): Array<{ start: number; lines: Commen
       const { indent, separator, content } = tokenizeLine(text, lines.length === 0);
       lines.push({ raw: text, start: currentLineStart, number: lines.length, indent, separator, content });
 
-      if (text.trimEnd().endsWith(BLOCK_CLOSE)) {
+      const trimmedText = text.trimEnd();
+      if (trimmedText.endsWith(BLOCK_CLOSE)) {
         closed = true;
+        closeEnd = currentLineStart + trimmedText.length;
         searchFrom = lineEnd;
         break;
       }
@@ -168,7 +173,7 @@ function findCommentBlocks(source: string): Array<{ start: number; lines: Commen
 
     // Unterminated block: nothing after it can open another one.
     if (!closed) break;
-    blocks.push({ start: openIndex, lines });
+    blocks.push({ start: openIndex, end: closeEnd, lines });
   }
 
   return blocks;
@@ -344,7 +349,7 @@ function parseTagSection(sectionLines: CommentLine[]): JSDocTag {
   };
 }
 
-function parseBlock(rawLines: CommentLine[], start: number): JSDocComment {
+function parseBlock(rawLines: CommentLine[], start: number, end: number): JSDocComment {
   const lines = trimBoilerplateEdges(rawLines);
   lines.forEach((line, index) => {
     line.number = index;
@@ -357,11 +362,12 @@ function parseBlock(rawLines: CommentLine[], start: number): JSDocComment {
     description: joinLines(sections[0]),
     tags,
     start,
+    end,
     lines,
   };
 }
 
 /** Parses every `/** ... *\/` block found in `source`. */
 export function parseComments(source: string): JSDocComment[] {
-  return findCommentBlocks(source).map(({ start, lines }) => parseBlock(lines, start));
+  return findCommentBlocks(source).map(({ start, end, lines }) => parseBlock(lines, start, end));
 }

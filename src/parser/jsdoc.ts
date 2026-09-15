@@ -167,6 +167,21 @@ export function extractJsDocDeprecatedAndTags(commentValue: string): {
   return { deprecated, tags, internal };
 }
 
+/**
+ * `parseComments` memoized per component on the raw comment text. The same
+ * block is read more than once per parse (the leading-comment pass and
+ * {@link buildVariableJsDocTable} both reach it); the parsed result is only
+ * read by callers, never mutated, so sharing it is safe.
+ */
+export function parseCommentText(ctx: ParserContext, text: string): JSDocComment[] {
+  let parsed = ctx.parsedJsDocByText.get(text);
+  if (parsed === undefined) {
+    parsed = parseComments(text);
+    ctx.parsedJsDocByText.set(text, parsed);
+  }
+  return parsed;
+}
+
 export function getCommentTags(parsed: JSDocComment[]) {
   const tags = parsed[0]?.tags ?? [];
   const excludedTags = new Set([
@@ -244,7 +259,26 @@ export function getCommentTags(parsed: JSDocComment[]) {
   };
 }
 
-function findJSDocComment(leadingComments: unknown[]): { value: string } | undefined {
+/**
+ * The block `parseCustomTypes` already parsed at this comment's offset, when it
+ * spans exactly the same text acorn reported. The source scan only opens a
+ * block whose `/**` leads its line and only closes on a line ending in `*\/`,
+ * so a block found at the same `start` with the same `end` tokenizes to the
+ * same lines as `formatComment(value)` would (the gutter strip discards the
+ * indentation acorn's `onComment` removed). Anything else - `/** doc *\/ code`
+ * on one line, `/***` ignore blocks - misses here and is parsed from `value`.
+ */
+function parsedSourceBlock(
+  ctx: ParserContext,
+  comment: { start?: unknown; end?: unknown },
+): JSDocComment[] | undefined {
+  if (typeof comment.start !== "number" || typeof comment.end !== "number") return undefined;
+  const block = ctx.jsDocBlocksByStart.get(comment.start);
+  if (block === undefined || block.end !== comment.end) return undefined;
+  return [block];
+}
+
+function findJSDocComment(leadingComments: unknown[]): { value: string; start?: unknown; end?: unknown } | undefined {
   if (!leadingComments || leadingComments.length === 0) return undefined;
   const comment = leadingComments[leadingComments.length - 1];
   return comment && typeof comment === "object" && "value" in comment ? (comment as { value: string }) : undefined;
@@ -304,7 +338,7 @@ export function processNodeJSDoc(
   const jsdoc_comment = findAdjacentJSDocComment(ctx, node.leadingComments, node.start);
   if (!jsdoc_comment) return undefined;
 
-  return processJSDocComment(parser, [jsdoc_comment]);
+  return processJSDocComment(ctx, parser, [jsdoc_comment]);
 }
 
 export function processLeadingCommentsJSDoc(
@@ -323,6 +357,7 @@ export function processLeadingCommentsJSDoc(
 }
 
 function processJSDocComment(
+  ctx: ParserContext,
   parser: ComponentParser,
   leadingComments: unknown[],
 ):
@@ -345,7 +380,7 @@ function processJSDocComment(
   const jsdoc_comment = findJSDocComment(leadingComments);
   if (!jsdoc_comment) return undefined;
 
-  const comment = parseComments(formatComment(jsdoc_comment.value));
+  const comment = parsedSourceBlock(ctx, jsdoc_comment) ?? parseCommentText(ctx, formatComment(jsdoc_comment.value));
 
   const {
     type: typeTag,
@@ -500,9 +535,11 @@ export function parseCustomTypes(
     }
   };
   const functionDocStarts = functionDocCommentStarts(ctx);
-  for (const { tags, description: commentDescription, lines: blockLines, start: blockStart } of parseComments(
-    scanSource,
-  )) {
+  const blocks = parseComments(scanSource);
+  // Leading-comment lookups during the main walk reuse these instead of
+  // re-tokenizing each block from acorn's comment value (see `parsedSourceBlock`).
+  for (const block of blocks) ctx.jsDocBlocksByStart.set(block.start, block);
+  for (const { tags, description: commentDescription, lines: blockLines, start: blockStart } of blocks) {
     const blockDocumentsFunction = functionDocStarts.has(blockStart);
     let currentEventName: string | undefined;
     let currentEventType: string | undefined;
