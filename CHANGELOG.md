@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.37.1](https://github.com/carbon-design-system/sveld/releases/tag/v0.37.1) - 2026-09-14
+
+**Features**
+
+- cache directory listings across glob and module resolution (96c53ff)
+- walk read-only passes with a lean walker (244c811)
+- exit the main walk early for uninspected node types (ed3315f)
+- parse each JSDoc block once per component (6c52017)
+- hoist the excluded-tags set out of `getCommentTags` (0bf6069)
+- skip template-parse subtrees that end before the next comment (e58e048)
+- strip comment indentation in one pass (af55a53)
+- remember the last line hit when resolving positions (e9b56dd)
+- keep scope declarations in a `Map` (5c3ff04)
+- create each output directory once per writer (69d7602)
+- test the `.svelte` extension without `path.parse` (102fe64)
+
+**Fixes**
+
+- stop function-scoped `@template` from leaking into `@generics` (fd94583, #476)
+
 ## [0.37.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.37.0) - 2026-09-14
 
 **Breaking Changes**
