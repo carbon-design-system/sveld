@@ -5,6 +5,79 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.37.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.37.0) - 2026-09-14
+
+**Breaking Changes**
+
+- return `exitCode` and `errors` from `sveld()` instead of mutating `process.exitCode` (9591047)
+
+**Features**
+
+- add first-party `llms.txt` and `llms-full.txt` writer (e2fd31a)
+- publish `component-api.schema.json` as a package subpath (3be6bc6)
+- exclude members marked `@ignore` / `@internal` from every output (12c7827)
+- add stable diagnostic codes and severities; support `--strict=errors` (68240a5)
+- add diagnostic ignore matchers and inline `@sveld-ignore` (d459bbd)
+- add `--format=github` for diagnostics and `--check` (2e11209)
+- version the check and diagnostics JSON envelopes (f8f9dd2)
+- add `--check-level` to fail below major (9f2bd8a)
+- classify binding, default, and deprecation changes in `--check` (f3195f0)
+- add `strict` profiles `ci` and `local` (7c8dd7a)
+- load `sveld.config` from the Vite plugin, deep-merge options, and fix watch gaps (753d0cd)
+- syntax-check svelte and html `@example` fences with the bundled parser (9273869)
+- add `markdownOptions.outDir` for per-component Markdown output (c4a7208)
+- add `jsonOptions.source` and source ranges for typedefs and contexts (f5f235c)
+- render module exports and accessor kinds in Markdown (c012331)
+- render `{@link}` as links in Markdown (cf9d89f)
+- render passthrough tags for props and events in Markdown (465e7d5)
+- make passthrough tags symmetric and turn warnings into diagnostics (10d5eb5)
+- capture `@deprecated` and tags on entry exports (1f9fc91)
+- support `@internal` on per-property context values (2a0171f)
+- flag public types that reference an `@internal` typedef (8d4f25a)
+- read full custom-element prop config, accessor methods, and CSS docs in CEM (1ecdefc)
+- read `createEventDispatcher` type arguments (a2a6101)
+- infer object and array literal event details (1f0bb35)
+
+**Fixes**
+
+- fall back and warn on `@slot`/`@snippet` missing `{Type}` (11940f6, #474)
+- attribute custom-writer failures and reject duplicate writer names (4f0c7d8)
+- handle overloads, enum members, and `export *` collisions consistently (2159e4c)
+- make `--format=github` annotations respect `--check-level` (c743289)
+- report snapshot schema mismatch as a usage error (5f8fee0)
+- render passthrough tags for props and events in the llms writer (ebde961)
+- validate `@extends`/`@extendProps` and stop silent prop collisions (38d9d07)
+- flag unresolved named export specifiers (1db0559)
+- resolve or flag spreads in context and slot-props literals (7f5e7d5)
+- flag duplicate `setContext` keys (2363af7)
+- flag `$$restProps` spread only onto a component (be188e7)
+- make `sveld()` respect `format` for its diagnostics summary (fa06743)
+- strip internal `literalValue` from `EntryExport` output (616df61)
+- re-emit value imports used as types as `import type` (3d311b0)
+- read TypeScript signatures on accessor exports (c937211)
+- track enums as local type declarations (c1cfe88)
+- re-emit imports and local types for per-prop annotations (96f5f3c)
+- sanitize module names derived from file names (95f2b88)
+- read every declarator of a multi-declarator export (c1e2b95)
+- warn on duplicate typedef, callback, and property names (ee89ee5)
+- fall back to the name for bare `@generics` and accumulate tags (906b69c)
+- document components from a directory entry under `--glob` (511e8de)
+- report unresolved modules and aliases with one clear error (999ed5c)
+- try every path-alias mapping and prefer the longest prefix (faca390)
+- register `--dry-run` in the CLI flag tables (9617a69)
+- honor `quiet` from `sveld()` and the plugin (1e3bff3)
+- fail the Vite plugin build when the entry cannot be resolved (c4b0f91)
+- correct exit-code help text for `--strict` and `--check` (616f55a)
+- log `unchanged` instead of `created` for identical output (90b00fa)
+- use a valid comparator for Markdown prop ordering (90a1925)
+- escape pipes in Markdown descriptions and match GitHub anchor slugs (a6f1446)
+- quote non-identifier keys in generated `.d.ts` (ce5b9e6)
+- write the parse cache atomically (ecc7a4a)
+- fail loudly when TypeScript 7 or tsconfig is unavailable (d509697, #444)
+- treat argument-less `$bindable()` as optional (aa9ca1b)
+- emit `any` and no `@default` for untyped props without an initializer (d42d379)
+- follow named re-export chains through nested barrels (155aa39, #445)
+
 ## [0.36.11](https://github.com/carbon-design-system/sveld/releases/tag/v0.36.11) - 2026-09-06
 
 **Features**
