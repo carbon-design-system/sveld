@@ -60,11 +60,11 @@ export function onComment(block: boolean, rawValue: string, start: number, end: 
  */
 function stripLeadingIndentation(value: string, indentation: string): string {
   if (indentation === "") return value;
-  const lines = value.split("\n");
-  for (let i = 0; i < lines.length; i++) {
-    if (lines[i].startsWith(indentation)) lines[i] = lines[i].slice(indentation.length);
-  }
-  return lines.join("\n");
+  // `indentation` is spaces/tabs only, so `"\n" + indentation` can only match
+  // at the start of a line that begins with it; one native pass replaces the
+  // per-line split/startsWith/join.
+  const rest = value.startsWith(indentation) ? value.slice(indentation.length) : value;
+  return rest.replaceAll(`\n${indentation}`, "\n");
 }
 
 /**
