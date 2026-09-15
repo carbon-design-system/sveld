@@ -30,11 +30,26 @@ function sourcePositionFromOffset(ctx: ParserContext, offset: number): SourcePos
   if (!ctx.source || offset < 0 || offset > ctx.source.length) return undefined;
 
   const offsets = getSourceLineStartOffsets(ctx);
+
+  // Ranges are requested roughly in source order, so the line found last
+  // (or the one after it) is usually right; check it before bisecting.
+  const hint = ctx.sourceLineHint;
+  if (hint !== undefined) {
+    for (let line = hint; line <= hint + 1 && line < offsets.length; line++) {
+      const lineStart = offsets[line];
+      const nextLineStart = offsets[line + 1] ?? Number.POSITIVE_INFINITY;
+      if (offset >= lineStart && offset < nextLineStart) {
+        ctx.sourceLineHint = line;
+        return { line: line + 1, column: offset - lineStart };
+      }
+    }
+  }
+
   let low = 0;
   let high = offsets.length - 1;
 
   while (low <= high) {
-    const mid = Math.floor((low + high) / 2);
+    const mid = (low + high) >>> 1;
     const lineStart = offsets[mid];
     const nextLineStart = offsets[mid + 1] ?? Number.POSITIVE_INFINITY;
 
@@ -43,6 +58,7 @@ function sourcePositionFromOffset(ctx: ParserContext, offset: number): SourcePos
     } else if (offset >= nextLineStart) {
       low = mid + 1;
     } else {
+      ctx.sourceLineHint = mid;
       return {
         line: mid + 1,
         column: offset - lineStart,
