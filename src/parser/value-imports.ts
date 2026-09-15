@@ -1,7 +1,7 @@
 import type { FunctionDeclaration } from "estree";
 import type { Node } from "estree-walker";
-import { walk } from "estree-walker";
 import type { ParserContext } from "./context";
+import { type WalkableNode, walkNodes } from "./walk";
 
 /** `ImportDeclaration` fields we read from the Svelte/acorn-typescript AST. */
 export interface ImportDeclarationNode {
@@ -47,18 +47,16 @@ export function collectValueImportBindings(ctx: ParserContext, node: ImportDecla
 export function collectHoistedScriptBindings(ctx: ParserContext, root: Node | undefined): void {
   if (!root) return;
 
-  walk(root, {
-    enter(node) {
-      if (node.type === "ImportDeclaration") {
-        collectValueImportBindings(ctx, node as unknown as ImportDeclarationNode);
-      }
+  walkNodes(root as unknown as WalkableNode, (node) => {
+    if (node.type === "ImportDeclaration") {
+      collectValueImportBindings(ctx, node as unknown as ImportDeclarationNode);
+    }
 
-      if (node.type === "FunctionDeclaration") {
-        const funcDecl = node as unknown as FunctionDeclaration;
-        if (funcDecl.id?.name) {
-          ctx.funcDecls.set(funcDecl.id.name, funcDecl);
-        }
+    if (node.type === "FunctionDeclaration") {
+      const funcDecl = node as unknown as FunctionDeclaration;
+      if (funcDecl.id?.name) {
+        ctx.funcDecls.set(funcDecl.id.name, funcDecl);
       }
-    },
+    }
   });
 }
