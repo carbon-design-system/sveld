@@ -699,6 +699,26 @@ export interface ParsedComponent {
   [PARSED_COMPONENT_TYPE_SCRIPT_METADATA]?: ParsedComponentTypeScriptMetadata;
 }
 
+/**
+ * Node types the main `componentRoot` walk in `parseSvelteComponent` acts on.
+ * Keep in sync with the `type === "..."` checks in that walk's `enter`.
+ */
+const MAIN_WALK_NODE_TYPES = new Set([
+  "AssignmentExpression",
+  "UpdateExpression",
+  "CallExpression",
+  "SpreadAttribute",
+  "FunctionDeclaration",
+  "ImportDeclaration",
+  "VariableDeclaration",
+  "ExportNamedDeclaration",
+  "Comment",
+  "SlotElement",
+  "RenderTag",
+  "OnDirective",
+  "BindDirective",
+]);
+
 export default class ComponentParser {
   /**
    * All per-parse mutable state (props, slots, events, scopes, source, etc.).
@@ -1326,6 +1346,10 @@ export default class ComponentParser {
         // Svelte template node types aren't in estree's `Node["type"]` union;
         // read the type once as a plain string for the markup checks below.
         const type: string = node.type;
+
+        // Every check below is keyed on one of these types; most nodes
+        // (identifiers, literals, text, elements) match none of them.
+        if (!MAIN_WALK_NODE_TYPES.has(type)) return;
 
         if (node.type === "AssignmentExpression") {
           markReactivePropsFromMutationTarget(this.ctx, (node as AssignmentExpression).left);
