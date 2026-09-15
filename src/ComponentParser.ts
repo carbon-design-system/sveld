@@ -13,7 +13,6 @@ import type {
   VariableDeclarator,
 } from "estree";
 import type { Node } from "estree-walker";
-import { walk } from "estree-walker";
 import {
   isCallExpressionNamed,
   isIdentifier,
@@ -71,6 +70,7 @@ import {
   type ImportDeclarationNode,
 } from "./parser/value-imports";
 import { buildVariableJsDocTable } from "./parser/variable-jsdoc";
+import { type WalkableNode, type WalkEnter, type WalkLeave, walkNodes } from "./parser/walk";
 import { parse as parseModernAst } from "./svelte-template-parse";
 
 /** Structured JSDoc tag (e.g. `{ name: "since", body: "1.2.0" }`). */
@@ -1062,8 +1062,9 @@ export default class ComponentParser {
      * entirely (module scripts are rare) - not worth the added complexity here.
      */
     if (this.ctx.parsed?.module) {
-      walk(this.ctx.parsed?.module as unknown as Node, {
-        enter: (node) => {
+      walkNodes(
+        this.ctx.parsed?.module as unknown as WalkableNode,
+        ((node: Node) => {
           // Module script is in scope for instance. Record imports/funcs/vars
           // the same way so instance CallExpression defaults can see them.
           if (node.type === "ImportDeclaration") {
@@ -1294,8 +1295,8 @@ export default class ComponentParser {
               });
             }
           }
-        },
-      });
+        }) as unknown as WalkEnter,
+      );
     }
 
     let dispatcher_name: undefined | string;
@@ -1311,8 +1312,9 @@ export default class ComponentParser {
     this.ctx.activeScopes.push(this.ctx.componentScope);
     const scopeWalkState = createScopeWalkState(this.ctx);
 
-    walk(componentRoot, {
-      enter: (node, parent, _prop) => {
+    walkNodes(
+      componentRoot as unknown as WalkableNode,
+      ((node: Node, parent: Node | null, _prop: string | null) => {
         // Fuse scope declaration into this walk (see enterNestedScopeDeclarationNode).
         // Only scope-owner nodes get a scope, so the returned scope is the
         // same one a `scopeDeclarations.get(node)` lookup would find.
@@ -1910,16 +1912,16 @@ export default class ComponentParser {
             }
           }
         }
-      },
-      leave: (node) => {
+      }) as unknown as WalkEnter,
+      ((node: Node) => {
         // Scopes exist exactly for scope-owner nodes (see `enter` above), and
         // function-scope owners are a subset, so one type check covers both.
         if (isScopeOwner(node)) {
           this.ctx.activeScopes.pop();
           leaveNestedScopeDeclarationNode(scopeWalkState, node);
         }
-      },
-    });
+      }) as unknown as WalkLeave,
+    );
 
     if (dispatcher_name !== undefined) {
       registerTypedDispatcherEvents(
