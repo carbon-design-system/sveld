@@ -167,6 +167,29 @@ export function extractJsDocDeprecatedAndTags(commentValue: string): {
   return { deprecated, tags, internal };
 }
 
+/** Tags {@link getCommentTags} handles structurally (or elsewhere), so they never land in `additional`. */
+const EXCLUDED_TAGS = new Set([
+  "type",
+  "param",
+  "returns",
+  "return",
+  "extends",
+  "extendProps",
+  "restProps",
+  "slot",
+  "snippet",
+  "event",
+  "typedef",
+  "callback",
+  "bindable",
+  "deprecated",
+  "ignore",
+  "internal",
+  "csspart",
+  "cssprop",
+  "cssproperty",
+]);
+
 /**
  * `parseComments` memoized per component on the raw comment text. The same
  * block is read more than once per parse (the leading-comment pass and
@@ -184,27 +207,6 @@ export function parseCommentText(ctx: ParserContext, text: string): JSDocComment
 
 export function getCommentTags(parsed: JSDocComment[]) {
   const tags = parsed[0]?.tags ?? [];
-  const excludedTags = new Set([
-    "type",
-    "param",
-    "returns",
-    "return",
-    "extends",
-    "extendProps",
-    "restProps",
-    "slot",
-    "snippet",
-    "event",
-    "typedef",
-    "callback",
-    "bindable",
-    "deprecated",
-    "ignore",
-    "internal",
-    "csspart",
-    "cssprop",
-    "cssproperty",
-  ]);
 
   let typeTag: (typeof tags)[number] | undefined;
   const paramTags: typeof tags = [];
@@ -240,7 +242,7 @@ export function getCommentTags(parsed: JSDocComment[]) {
       if (value === "readonly" || value === "writable") {
         binding ??= value;
       }
-    } else if (!excludedTags.has(tag.tag)) {
+    } else if (!EXCLUDED_TAGS.has(tag.tag)) {
       additionalTags.push(tag);
     }
   }
