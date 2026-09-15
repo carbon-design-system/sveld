@@ -16,6 +16,7 @@ import {
 } from "./bundle";
 import { buildReverseDeps, expandAffected } from "./dependency-graph";
 import { dedupeDiagnostics } from "./diagnostics";
+import { resetDirectoryListings } from "./fs-listing";
 import { type EntryExports, parseEntryExports } from "./parse-entry-exports";
 import type { ParsedExports } from "./parse-exports";
 import { loadParserStack } from "./parser-stack";
@@ -161,6 +162,8 @@ export async function createSveldBundle(input: string, glob: boolean, documentEx
 
   const update = async (changedFilePaths: string[]): Promise<SveldBundleUpdate> => {
     const resolvedChanged = changedFilePaths.map((path) => resolve(path));
+    // A rebuild may resolve imports against files added since the last pass.
+    resetDirectoryListings();
 
     if (resolvedChanged.length === 0) {
       return { result: buildResult(), reparsed: [] };
