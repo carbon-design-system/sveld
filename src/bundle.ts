@@ -1,7 +1,7 @@
 import type { Dirent } from "node:fs";
 import { existsSync, lstatSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { readFile } from "node:fs/promises";
-import { dirname, extname, isAbsolute, join, parse, relative, resolve } from "node:path";
+import { basename, dirname, extname, isAbsolute, join, parse, relative, resolve } from "node:path";
 import { asRelativeSourcePath, type NormalizedPath } from "./brands";
 import type { ParsedComponent, PendingCallDefaultCandidate, PendingContextKeyCandidate } from "./ComponentParser";
 import { buildReverseDeps, expandAffected } from "./dependency-graph";
@@ -20,7 +20,7 @@ import { type ParsedExports, parseExports } from "./parse-exports";
 import { applyResolvedProps, getParsedComponentTypeScriptMetadata } from "./parsed-component-metadata";
 import { generateContextTypeName } from "./parser/contexts";
 import { getParserStack, loadParserStack } from "./parser-stack";
-import { normalizeSeparators } from "./path";
+import { hasSvelteExtension, normalizeSeparators } from "./path";
 import {
   type CallDefaultResolution,
   createCallDefaultResolveContext,
@@ -268,7 +268,8 @@ function findSvelteFiles(
 function globComponentSources(rootDir: string): GlobbedComponentSource[] {
   return findSvelteFiles(rootDir)
     .map((file) => {
-      const moduleName = sanitizeModuleName(parse(file).name.replace(HYPHEN_REGEX, ""));
+      // Every hit ends in `.svelte` and is not a dotfile, so this is `parse(file).name`.
+      const moduleName = sanitizeModuleName(basename(file, ".svelte").replace(HYPHEN_REGEX, ""));
       const source = asRelativeSourcePath(normalizeSeparators(`./${relative(rootDir, file)}`));
       return { moduleName, source };
     })
@@ -277,7 +278,7 @@ function globComponentSources(rootDir: string): GlobbedComponentSource[] {
 
 /** True when an export `source` still needs glob resolution, like `export { X } from "./dir"`. */
 function isUnresolvedBarrelSource(source: string): boolean {
-  return parse(source).ext !== ".svelte";
+  return !hasSvelteExtension(source);
 }
 
 /** Whether `candidateSource` is a file located under the directory `dirSource` points at. */
@@ -480,15 +481,14 @@ export function processComponent(
   options: ProcessComponentOptions = {},
 ): ComponentDocApi | null {
   const filePath = entry.source;
-  const { ext, name } = parse(filePath);
 
   let moduleName = exportName;
 
   if (entries.length === 1 && exportName === "default") {
-    moduleName = name;
+    moduleName = parse(filePath).name;
   }
 
-  if (ext === ".svelte") {
+  if (hasSvelteExtension(filePath)) {
     const resolvedPath = resolveComponentFilePath(filePath);
     const source = fileMap.get(resolvedPath);
 
@@ -564,7 +564,7 @@ export function collectSvelteFilePaths(
   const uniqueFilePaths = new Set<string>();
   for (const entries of entriesList) {
     for (const [, entry] of entries) {
-      if (parse(entry.source).ext === ".svelte") {
+      if (hasSvelteExtension(entry.source)) {
         uniqueFilePaths.add(resolveComponentFilePath(entry.source));
       }
     }

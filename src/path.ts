@@ -11,6 +11,19 @@ export const SVELTE_EXT_REGEX = /\.svelte$/;
  */
 export const WATCH_RELEVANT_EXT_REGEX = /\.(?:svelte|[mc]?ts|[mc]?js)$/;
 
+/**
+ * Same answer as `path.parse(filePath).ext === ".svelte"`, without building
+ * the parse result: a leading dot is part of the name, so `.svelte` and
+ * `dir/.svelte` have no extension.
+ */
+export function hasSvelteExtension(filePath: string): boolean {
+  if (!filePath.endsWith(".svelte")) return false;
+  const dot = filePath.length - ".svelte".length;
+  if (dot === 0) return false;
+  const before = filePath.charCodeAt(dot - 1);
+  return before !== 47 /* / */ && (sep === "/" || before !== 92) /* \ */;
+}
+
 export function normalizeSeparators(filePath: string): NormalizedPath {
   return (sep === "/" ? filePath : filePath.split(sep).join("/")) as NormalizedPath;
 }
