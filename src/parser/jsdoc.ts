@@ -254,21 +254,38 @@ function findAdjacentJSDocComment(
   ctx: ParserContext,
   leadingComments: unknown[] | undefined,
   nodeStart: number | undefined,
-): { value: string } | undefined {
+): { value: string; start: number } | undefined {
   if (!leadingComments || leadingComments.length === 0 || nodeStart === undefined || !ctx.source) return undefined;
 
   for (let index = leadingComments.length - 1; index >= 0; index--) {
     const comment = leadingComments[index];
     if (!comment || typeof comment !== "object" || !("value" in comment) || !("end" in comment)) continue;
-    if (typeof comment.end !== "number") continue;
+    if (typeof comment.end !== "number" || !("start" in comment) || typeof comment.start !== "number") continue;
 
     const between = ctx.source.slice(comment.end, nodeStart);
     if (ONLY_WHITESPACE_REGEX.test(between)) {
-      return comment as { value: string };
+      return comment as { value: string; start: number };
     }
   }
 
   return undefined;
+}
+
+/**
+ * Absolute `/**` start offsets of every JSDoc comment directly documenting a `function`
+ * declaration (module or instance script, via `ctx.funcDecls`). A `@template` tag in one of
+ * these blocks types that function's own generic parameter, standard JSDoc usage unrelated to
+ * sveld's `@generics`/`@template` component-generics feature, and must not be folded into the
+ * component's class/props generic parameter list the way a `@generics`-adjacent one is.
+ */
+function functionDocCommentStarts(ctx: ParserContext): Set<number> {
+  const starts = new Set<number>();
+  for (const funcDecl of ctx.funcDecls.values()) {
+    const { leadingComments, start } = funcDecl as unknown as { leadingComments?: unknown[]; start?: number };
+    const comment = findAdjacentJSDocComment(ctx, leadingComments, start);
+    if (comment) starts.add(comment.start);
+  }
+  return starts;
 }
 
 export function processNodeJSDoc(
@@ -482,7 +499,11 @@ export function parseCustomTypes(
       list[existingIndex] = property;
     }
   };
-  for (const { tags, description: commentDescription, lines: blockLines } of parseComments(scanSource)) {
+  const functionDocStarts = functionDocCommentStarts(ctx);
+  for (const { tags, description: commentDescription, lines: blockLines, start: blockStart } of parseComments(
+    scanSource,
+  )) {
+    const blockDocumentsFunction = functionDocStarts.has(blockStart);
     let currentEventName: string | undefined;
     let currentEventType: string | undefined;
     let currentEventDescription: string | undefined;
@@ -998,6 +1019,10 @@ export function parseCustomTypes(
             ctx.deferredSlotBlockGenerics.push({ name, constraint });
             break;
           }
+
+          // Standard JSDoc usage: this `@template` types the function's own generic
+          // parameter, not the component's - leave it out of the component's generics.
+          if (blockDocumentsFunction) break;
 
           warnAndTrackGenericName(name, sourceRangeFromCommentTag(ctx, tagSource));
           usedTemplateTag = true;

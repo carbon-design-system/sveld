@@ -1032,6 +1032,19 @@ export default class ComponentParser {
           cleanedSource.slice(cssBlock.end)
         : cleanedSource;
 
+    /**
+     * Imports and function declarations hoist, so `export let id = uniqueId()` must
+     * resolve even when the import or `function uniqueId()` comes later in the script
+     * (see #410) - and `parseCustomTypes` below needs `ctx.funcDecls` populated too, to
+     * tell a `@template` tag documenting an ordinary function apart from one declaring a
+     * component generic (see `blockDocumentsFunction` in `parser/jsdoc.ts`).
+     *
+     * Skip `componentRoot`. Imports and function declarations never appear in the template
+     * fragment, so walking markup here would re-traverse the largest part of the AST for nothing.
+     */
+    collectHoistedScriptBindings(this.ctx, this.ctx.parsed?.module as unknown as Node | undefined);
+    collectHoistedScriptBindings(this.ctx, this.ctx.parsed?.instance as unknown as Node | undefined);
+
     parseCustomTypes(this.ctx, this, scanSource);
 
     const componentRoot = {
@@ -1039,17 +1052,6 @@ export default class ComponentParser {
       instance: this.ctx.parsed.instance,
       fragment: this.ctx.parsed.fragment,
     } as unknown as Node;
-
-    /**
-     * Imports and function declarations hoist, so `export let id = uniqueId()` must
-     * resolve even when the import or `function uniqueId()` comes later in the script.
-     * See #410. Pre-scan module and instance so those bindings exist before prop defaults run.
-     *
-     * Skip `componentRoot`. Imports and function declarations never appear in the template
-     * fragment, so walking markup here would re-traverse the largest part of the AST for nothing.
-     */
-    collectHoistedScriptBindings(this.ctx, this.ctx.parsed?.module as unknown as Node | undefined);
-    collectHoistedScriptBindings(this.ctx, this.ctx.parsed?.instance as unknown as Node | undefined);
 
     /**
      * Not fused with the componentRoot walk below: `module` (`<script context="module">`) is a

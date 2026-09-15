@@ -1,0 +1,56 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 31,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "node",
+      "kind": "let",
+      "description": "@generics Node",
+      "type": "{ id: \"1\" }",
+      "typeSource": "default",
+      "value": "{ id: \"1\" }",
+      "defaultValue": {
+        "raw": "{ id: \"1\" }",
+        "kind": "object",
+        "value": {
+          "id": "1"
+        }
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 27,
+          "column": 2
+        },
+        "end": {
+          "line": 27,
+          "column": 54
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": [
+    "Node",
+    "Node extends { id: string | number } = { id: string | number }"
+  ],
+  "contexts": [],
+  "diagnostics": []
+}
