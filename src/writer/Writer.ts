@@ -9,6 +9,8 @@ export interface WriterOptions {
 
 export default class Writer {
   private readonly dryRun: boolean;
+  /** Directories already created by this writer, so sibling files skip the `mkdir` round trip. */
+  private readonly ensuredDirs = new Set<string>();
 
   constructor(options?: WriterOptions) {
     this.dryRun = options?.dryRun === true;
@@ -41,7 +43,11 @@ export default class Writer {
       // File doesn't exist yet (or can't be read); fall through to write it.
     }
 
-    await mkdir(parse(filePath).dir, { recursive: true });
+    const dir = parse(filePath).dir;
+    if (!this.ensuredDirs.has(dir)) {
+      await mkdir(dir, { recursive: true });
+      this.ensuredDirs.add(dir);
+    }
     await writeFile(filePath, raw);
     return true;
   }
