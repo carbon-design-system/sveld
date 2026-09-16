@@ -1,6 +1,6 @@
 /**
  * Lazily loads `ComponentParser` and the template parser behind a dynamic
- * import. Those pull in acorn, `@sveltejs/acorn-typescript`, and zimmerframe.
+ * import. Those pull in acorn and `@sveltejs/acorn-typescript`.
  *
  * A fully cached run never parses, so it never evaluates any of that.
  * Callers about to parse (`bundle.ts`, `parse-entry-exports.ts`, `watch.ts`)

@@ -122,7 +122,7 @@ function walkAndAttach(
   const descend = nodeEnd === undefined || nodeEnd > nextStart;
 
   // Direct object/array-of-node children that have a `.type`, same walk rule
-  // as zimmerframe, visited in place rather than collected into an array
+  // as svelte's own walker, visited in place rather than collected into an array
   // first. `Object.keys` instead of `for...in`: acorn nodes don't put
   // enumerable properties on the prototype. Stops as soon as every comment
   // is claimed (the trailing-comment step below is a no-op by then).
