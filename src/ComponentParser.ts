@@ -1946,6 +1946,10 @@ export default class ComponentParser {
           leaveNestedScopeDeclarationNode(scopeWalkState, node);
         }
       }) as unknown as WalkLeave,
+      // Every type this walk acts on is value-level (calls, declarations,
+      // assignments, directives, slots), and scopes only come from
+      // functions/blocks, so type-level TS subtrees have nothing for it.
+      { skipTypeOnlySubtrees: true },
     );
 
     if (dispatcher_name !== undefined) {

@@ -2,6 +2,7 @@ import type { Pattern } from "estree";
 import type { SyntaxMode } from "../ComponentParser";
 import type { ParserContext } from "./context";
 import { collectPatternIdentifiers, isScopeOwner } from "./scopes";
+import { isTypeOnlySubtree } from "./walk";
 
 /**
  * Bare rune identifiers as they appear in `scope.references` keys. Dotted forms like `$state.raw`
@@ -179,22 +180,6 @@ function collectDirectBlockNames(body: unknown, names: Set<string>) {
   }
 }
 
-/**
- * TS nodes whose entire subtree is type-level: annotations, type aliases,
- * interfaces, and type parameter lists. Everything under them is either a
- * TS type node or an identifier whose parent is one, which the scan already
- * treats as a non-reference.
- */
-function isTypeOnlySubtree(type: string): boolean {
-  return (
-    type === "TSTypeAnnotation" ||
-    type === "TSTypeAliasDeclaration" ||
-    type === "TSInterfaceDeclaration" ||
-    type === "TSTypeParameterDeclaration" ||
-    type === "TSTypeParameterInstantiation"
-  );
-}
-
 /** True if `root`'s subtree contains an unshadowed reference to a rune name. */
 function scanForRuneReference(root: unknown, baseScope: ScopeStack): boolean {
   if (!root || typeof root !== "object") return false;
@@ -216,8 +201,10 @@ interface ScannableNode {
  */
 function scanNode(node: ScannableNode, parent: ScannableNode | undefined, scopeStack: ScopeStack): boolean {
   // Type-level TS subtrees hold no value references (svelte strips them
-  // before its own analysis), so don't descend into them. Value-level TS
-  // wrappers like `x as T` still get walked for the expression inside.
+  // before its own analysis; every identifier under one has a TS parent,
+  // which the check below rejects anyway), so don't descend into them.
+  // Value-level TS wrappers like `x as T` still get walked for the
+  // expression inside.
   if (isTypeOnlySubtree(node.type)) return false;
 
   const ownsScope = isScopeOwner(node);
