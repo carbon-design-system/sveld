@@ -1,6 +1,4 @@
 import type { Pattern } from "estree";
-import type { Node } from "estree-walker";
-import { walk } from "estree-walker";
 import type { SyntaxMode } from "../ComponentParser";
 import type { ParserContext } from "./context";
 import { collectPatternIdentifiers, isScopeOwner } from "./scopes";
@@ -181,43 +179,89 @@ function collectDirectBlockNames(body: unknown, names: Set<string>) {
   }
 }
 
+/**
+ * TS nodes whose entire subtree is type-level: annotations, type aliases,
+ * interfaces, and type parameter lists. Everything under them is either a
+ * TS type node or an identifier whose parent is one, which the scan already
+ * treats as a non-reference.
+ */
+function isTypeOnlySubtree(type: string): boolean {
+  return (
+    type === "TSTypeAnnotation" ||
+    type === "TSTypeAliasDeclaration" ||
+    type === "TSInterfaceDeclaration" ||
+    type === "TSTypeParameterDeclaration" ||
+    type === "TSTypeParameterInstantiation"
+  );
+}
+
 /** True if `root`'s subtree contains an unshadowed reference to a rune name. */
 function scanForRuneReference(root: unknown, baseScope: ScopeStack): boolean {
   if (!root || typeof root !== "object") return false;
+  return scanNode(root as ScannableNode, undefined, [...baseScope]);
+}
 
-  const scopeStack: ScopeStack = [...baseScope];
+interface ScannableNode {
+  type: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
+/**
+ * Recursive scan with a real early exit: the first unshadowed rune reference
+ * ends the whole walk, which for a runes component is usually within the
+ * first few statements. Same child rule as `parser/walk.ts` (own enumerable
+ * keys in order; a child is any object with a string `type`, directly or in
+ * an array), minus `leadingComments`, which hold no identifiers.
+ */
+function scanNode(node: ScannableNode, parent: ScannableNode | undefined, scopeStack: ScopeStack): boolean {
+  // Type-level TS subtrees hold no value references (svelte strips them
+  // before its own analysis), so don't descend into them. Value-level TS
+  // wrappers like `x as T` still get walked for the expression inside.
+  if (isTypeOnlySubtree(node.type)) return false;
+
+  const ownsScope = isScopeOwner(node);
+  if (ownsScope) scopeStack.push(collectScopeOwnerNames(node));
+
   let found = false;
 
-  walk(root as Node, {
-    enter(node, parent) {
-      if (found) {
-        this.skip();
-        return;
-      }
+  if (
+    parent &&
+    node.type === "Identifier" &&
+    node.name !== undefined &&
+    RUNE_NAMES.has(node.name) &&
+    !parent.type.startsWith("TS") &&
+    isValueReference(node, parent) &&
+    !isShadowed(node.name, scopeStack)
+  ) {
+    found = true;
+  } else {
+    for (const key in node) {
+      if (key === "leadingComments") continue;
+      const value = node[key];
+      if (!value || typeof value !== "object") continue;
 
-      if (isScopeOwner(node)) {
-        scopeStack.push(collectScopeOwnerNames(node));
+      if (Array.isArray(value)) {
+        for (let i = 0; i < value.length; i++) {
+          const item = value[i];
+          if (item && typeof item === "object" && typeof (item as ScannableNode).type === "string") {
+            if (scanNode(item as ScannableNode, node, scopeStack)) {
+              found = true;
+              break;
+            }
+          }
+        }
+        if (found) break;
+      } else if (typeof (value as ScannableNode).type === "string") {
+        if (scanNode(value as ScannableNode, node, scopeStack)) {
+          found = true;
+          break;
+        }
       }
+    }
+  }
 
-      if (
-        parent &&
-        node.type === "Identifier" &&
-        RUNE_NAMES.has(node.name) &&
-        !parent.type.startsWith("TS") &&
-        isValueReference(node, parent) &&
-        !isShadowed(node.name, scopeStack)
-      ) {
-        found = true;
-        this.skip();
-      }
-    },
-    leave(node) {
-      if (isScopeOwner(node)) {
-        scopeStack.pop();
-      }
-    },
-  });
-
+  if (ownsScope) scopeStack.pop();
   return found;
 }
 
