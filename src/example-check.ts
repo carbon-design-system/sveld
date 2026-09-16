@@ -1,7 +1,7 @@
 import type { ComponentProp, ComponentSlot, ParsedComponent, SourceRange } from "./ComponentParser";
 
 /** `"compile"` runs through the TypeScript program; `"syntax"` runs through sveld's template parser only. */
-export type ExampleCheckKind = "compile" | "syntax";
+type ExampleCheckKind = "compile" | "syntax";
 
 /**
  * One `@example` block worth checking, reduced to what `resolve-types.ts`

@@ -67,7 +67,7 @@ function substituteTypeParameters(type: string, substitutions: Map<string, strin
 }
 
 /** Flatten a runes `$props()` type node into prop name -> metadata, following local aliases and intersections. */
-export function buildRunesPropTypeMetadataMap(
+function buildRunesPropTypeMetadataMap(
   parser: ComponentParser,
   ctx: ParserContext,
   typeNode: ModernRunesTypeNode | undefined,

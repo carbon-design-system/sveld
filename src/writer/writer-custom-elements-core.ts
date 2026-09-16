@@ -27,7 +27,7 @@ export interface CemClassField {
   readonly?: true;
 }
 
-export interface CemParameter {
+interface CemParameter {
   name: string;
   type?: CemType;
   optional?: true;
@@ -35,7 +35,7 @@ export interface CemParameter {
 }
 
 /** An `export function` prop (a Svelte accessor), mapped to a method instead of a field. */
-export interface CemClassMethod {
+interface CemClassMethod {
   kind: "method";
   name: string;
   static: boolean;
@@ -55,7 +55,7 @@ export interface CemAttribute {
   reflects?: true;
 }
 
-export interface CemCssPart {
+interface CemCssPart {
   name: string;
   description?: string;
 }
@@ -66,7 +66,7 @@ export interface CemCssPart {
  * {type}` is free-form prose (e.g. `"Color"`), so it's emitted as `type.text`
  * instead, matching every other typed field in this manifest.
  */
-export interface CemCssCustomProperty {
+interface CemCssCustomProperty {
   /** Includes the leading `--`. */
   name: string;
   type?: CemType;

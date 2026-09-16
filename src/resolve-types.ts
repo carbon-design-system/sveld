@@ -39,22 +39,22 @@ const MIN_SUPPORTED_TS_MAJOR = 7;
 const REQUIREMENT_TEXT = `TypeScript ${MIN_SUPPORTED_TS_MAJOR} or later, which provides \`typescript/unstable/async\``;
 
 /** Outcome of loading the `typescript` package, before any tsconfig lookup. */
-export interface TypeScriptLoadResult {
+interface TypeScriptLoadResult {
   installed: boolean;
   version?: string;
   module?: TS;
 }
 
 /** Structured failure reason for {@link TypeResolver.create}. */
-export type TypeResolverFailureReason = "not-installed" | "unsupported-version" | "no-tsconfig";
+type TypeResolverFailureReason = "not-installed" | "unsupported-version" | "no-tsconfig";
 
-export interface TypeResolverFailure {
+interface TypeResolverFailure {
   ok: false;
   reason: TypeResolverFailureReason;
   message: string;
 }
 
-export interface TypeResolverSuccess {
+interface TypeResolverSuccess {
   ok: true;
   resolver: TypeResolver;
 }

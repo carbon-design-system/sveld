@@ -3,14 +3,6 @@
 import { isIdentifierChar, isIdentifierStart } from "acorn";
 import type { AST } from "svelte/compiler";
 
-/** Any node being built during a parse. Always has offsets. End may still be unset. */
-export interface Node {
-  type: string;
-  start: number;
-  end: number;
-  [key: string]: unknown;
-}
-
 export function isWhitespace(code: number): boolean {
   if (code === 32 || (code <= 13 && code >= 9)) return true;
   if (code < 160) return false;

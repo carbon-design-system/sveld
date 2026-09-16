@@ -1,8 +1,8 @@
 /** Largest edit distance for which a typo suggestion is still offered. */
-export const MAX_SUGGESTION_DISTANCE = 3;
+const MAX_SUGGESTION_DISTANCE = 3;
 
 /** Classic Levenshtein edit distance between two strings. */
-export function levenshteinDistance(a: string, b: string): number {
+function levenshteinDistance(a: string, b: string): number {
   const rows = a.length + 1;
   const columns = b.length + 1;
   const distances: number[][] = Array.from({ length: rows }, () => new Array<number>(columns).fill(0));

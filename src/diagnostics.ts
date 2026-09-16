@@ -84,7 +84,7 @@ export const DIAGNOSTIC_CODES: Record<SveldDiagnosticKind, string> = {
  * errors (sveld emitted broken or unmodeled output); the rest are warnings
  * (a type fell back to `any`).
  */
-export const DIAGNOSTIC_SEVERITIES: Record<SveldDiagnosticKind, SveldDiagnosticSeverity> = {
+const DIAGNOSTIC_SEVERITIES: Record<SveldDiagnosticKind, SveldDiagnosticSeverity> = {
   "prop-unknown-type": "warning",
   "context-any-type": "warning",
   "slot-missing-type": "warning",

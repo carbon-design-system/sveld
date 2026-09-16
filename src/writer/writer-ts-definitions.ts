@@ -17,13 +17,7 @@ import { type WriteTsDefinitionOptions, writeTsDefinition } from "./writer-ts-de
  *
  * @see {@link ./writer-ts-definitions-core} for the core implementation
  */
-export {
-  formatTsProps,
-  getContextDefs,
-  getTypeDefs,
-  type WriteTsDefinitionOptions,
-  writeTsDefinition,
-} from "./writer-ts-definitions-core";
+export { formatTsProps, getContextDefs, getTypeDefs, writeTsDefinition } from "./writer-ts-definitions-core";
 
 /**
  * @example
