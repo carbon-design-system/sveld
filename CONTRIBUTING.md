@@ -133,6 +133,16 @@ Name cases after the behavior under test, grouping by feature prefix to match th
 
 A change to props, events, slots, or context handling should be exercised across the modes it affects: legacy `export let` / `<slot>` / `$$restProps`, and runes `$props()` / `$bindable()` / `{@render}` / snippets / callback props. The fixture families and the `svelte5-vite` e2e project (legacy + runes via the Vite plugin, both `class` and `component` `.d.ts` formats) exist to keep both paths honest. `single-export` also runs a second pass for `export { default } from` entry barrels; `multi-export-typed` runs a minimal-config types-only pass.
 
+## Auditing upstream Svelte changes
+
+`src/template-parse/` reimplements Svelte's own template parser (see [`svelte-template-parse.ts`](src/svelte-template-parse.ts) for why), so it can drift from upstream when Svelte ships new template syntax or parser fixes. Do this pass whenever a new Svelte version lands, ad hoc:
+
+1. **Get the changelog.** [`sveltejs/svelte`'s `CHANGELOG.md`](https://github.com/sveltejs/svelte/blob/main/packages/svelte/CHANGELOG.md) on GitHub, or pasted release notes, covering every version since sveld's `svelte` peer/dev dependency was last bumped.
+2. **Filter to what a static parser cares about.** Keep entries about template syntax, tag/expression parsing, or AST shape (for example: new tag types, declaration/`{@const}` parsing edge cases, element special-casing like `svelte:window`). Drop runtime/compiler-output concerns sveld never touches: SSR/hydration, transitions, effects/batches/signals, reactivity internals, and CSS selector parsing (`style.ts` treats `<style>` as an opaque slice, see its docblock, so CSS fixes never apply).
+3. **Check current coverage per candidate.** `grep -rn "<keyword>" src/template-parse/ src/parser/` for the feature name, then `Read` the matching module (for example `declaration-tag.ts`, `special-tags.ts`, `elements.ts`) to confirm the fixed behavior, not just the syntax, is already handled. Trace one layer down when parsing delegates to `acorn-bridge.ts`; real acorn parsing (`parseExpressionAt`/`parseStatementAt`) already absorbs most upstream expression/statement fixes, so don't flag those as gaps.
+4. **Note gaps, don't guess fixes blind.** For anything not covered, name the specific module that should change and add a `tests/fixtures/<case-name>/input.svelte` reproducing the new syntax first (see [Fixture snapshot tests](#fixture-snapshot-tests)) before touching parser code.
+5. **Report findings before implementing**, since some upstream changes affect Svelte's compiler output only and have no parser-visible surface at all. Confirm with the user which gaps, if any, are worth a fix.
+
 ## Build
 
 [`scripts/build.ts`](scripts/build.ts) (`bun run build`) removes `lib/`, bundles `src/index.ts` / `src/cli-entry.ts` / `src/browser.ts` with `Bun.build` (minified ESM), then rolls public types into only `lib/index.d.ts` and `lib/browser.d.ts` via [`scripts/bundle-dts.ts`](scripts/bundle-dts.ts) (TypeScript 6 Compiler API from `@typescript/typescript6`; intermediate per-file `.d.ts` stay in memory). `lib/` is gitignored and is never committed. `bun run build -w` rebuilds on changes under `src/`.
