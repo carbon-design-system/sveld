@@ -2,7 +2,7 @@ import { lstatSync, readFileSync } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { isIdentifier, resolveStaticStringLiteral } from "./ast-guards";
 import type { DeprecatedValue, JsDocPassthroughTag } from "./ComponentParser";
-import { directoryHasEntry } from "./fs-listing";
+import { directoryEntry, directoryHasEntry } from "./fs-listing";
 import { extractJsDocDeprecatedAndTags, extractJsDocReturnType } from "./parser/jsdoc";
 import { getParserStack, loadParserStack } from "./parser-stack";
 import { normalizeSeparators } from "./path";
@@ -107,7 +107,11 @@ export function resolveModuleFile(specifier: string, fromDir: string): string | 
   const baseName = basename(base);
 
   if (directoryHasEntry(parentDir, baseName)) {
-    const stat = lstatSync(base, { throwIfNoEntry: false });
+    // The cached listing already knows the entry's type; only a name that
+    // matched by case/normalization variant (not in the listing under this
+    // exact name) still needs the `lstat`.
+    const entry = directoryEntry(parentDir, baseName);
+    const stat = entry ?? lstatSync(base, { throwIfNoEntry: false });
     if (stat?.isFile()) return base;
 
     for (const ext of CANDIDATE_EXTENSIONS) {
