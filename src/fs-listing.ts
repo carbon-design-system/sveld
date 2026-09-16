@@ -14,6 +14,8 @@ import { join } from "node:path";
 export interface DirectoryListing {
   entries: Dirent[];
   names: Set<string>;
+  /** On-disk name -> entry; built on first {@link directoryEntry} lookup. */
+  byName?: Map<string, Dirent>;
   /** Case-folded, NFC-normalized name -> on-disk name; built on first fuzzy lookup. */
   folded?: Map<string, string>;
 }
@@ -38,6 +40,23 @@ export function readDirectoryListing(dir: string): DirectoryListing | null {
   }
   listings.set(dir, listing);
   return listing;
+}
+
+/**
+ * The listing entry named exactly `name` in `dir`, or `undefined` when there
+ * is none (including when only a case/normalization variant exists; see
+ * {@link directoryHasEntry} for that path). Lets callers read the entry's
+ * type from the listing instead of `lstat`-ing the path again: like `lstat`,
+ * `readdir` entry types describe a symlink itself, not its target.
+ */
+export function directoryEntry(dir: string, name: string): Dirent | undefined {
+  const listing = readDirectoryListing(dir);
+  if (listing === null) return undefined;
+  if (listing.byName === undefined) {
+    listing.byName = new Map();
+    for (const entry of listing.entries) listing.byName.set(entry.name, entry);
+  }
+  return listing.byName.get(name);
 }
 
 function foldName(name: string): string {
