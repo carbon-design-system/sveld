@@ -1,7 +1,6 @@
 import type { FunctionDeclaration } from "estree";
 import type { Node } from "estree-walker";
 import type { ParserContext } from "./context";
-import { type WalkableNode, walkNodes } from "./walk";
 
 /** `ImportDeclaration` fields we read from the Svelte/acorn-typescript AST. */
 export interface ImportDeclarationNode {
@@ -47,16 +46,28 @@ export function collectValueImportBindings(ctx: ParserContext, node: ImportDecla
 export function collectHoistedScriptBindings(ctx: ParserContext, root: Node | undefined): void {
   if (!root) return;
 
-  walkNodes(root as unknown as WalkableNode, (node) => {
+  // Only top-level statements: imports can't appear anywhere else, and a
+  // function declared inside a block or another function isn't in scope for
+  // a top-level prop default (module code is strict). The main walk still
+  // records every nested declaration afterwards. Reading `Program.body`
+  // (or the script's `content.body`) skips a full walk of the script AST.
+  const program = root as unknown as { type?: string; body?: unknown[]; content?: { body?: unknown[] } };
+  const body = program.type === "Program" ? program.body : (program.content?.body ?? program.body);
+  if (!Array.isArray(body)) return;
+
+  for (const statement of body) {
+    const node = statement as { type: string; declaration?: { type: string } | null };
     if (node.type === "ImportDeclaration") {
       collectValueImportBindings(ctx, node as unknown as ImportDeclarationNode);
+      continue;
     }
 
-    if (node.type === "FunctionDeclaration") {
-      const funcDecl = node as unknown as FunctionDeclaration;
+    const declaration = node.type === "ExportNamedDeclaration" && node.declaration ? node.declaration : node;
+    if (declaration.type === "FunctionDeclaration") {
+      const funcDecl = declaration as unknown as FunctionDeclaration;
       if (funcDecl.id?.name) {
         ctx.funcDecls.set(funcDecl.id.name, funcDecl);
       }
     }
-  });
+  }
 }
