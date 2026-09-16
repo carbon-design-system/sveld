@@ -14,7 +14,7 @@
         "ajv": "^8.20.0",
         "culls": "^0.2.0",
         "custom-elements-manifest": "^2.1.0",
-        "ostia": "0.2.4",
+        "ostia": "0.2.5",
         "svelte": "^5.57.0",
         "typescript": "^7.0.2",
       },
@@ -199,7 +199,7 @@
 
     "magic-string": ["magic-string@0.30.21", "", { "dependencies": { "@jridgewell/sourcemap-codec": "^1.5.5" } }, "sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ=="],
 
-    "ostia": ["ostia@0.2.4", "", { "bin": { "ostia": "cli.js" } }, "sha512-jUYqvCe8w/00OtXDwE0Qox3G5uba7MXb/96CyoT1ioyR8qdYX97BeOtOPyYHNfXmSpUmlM+eBfrP3WChOMDEfA=="],
+    "ostia": ["ostia@0.2.5", "", { "bin": { "ostia": "cli.js" } }, "sha512-M/rr0jQ4JwbWexcUjdZvriEugT8KsiOcMVy9lCleLKWfpFyvS8E8aZdUDozhE0o7RTlIfkozeOgiWRx17MN+kQ=="],
 
     "picocolors": ["picocolors@1.1.1", "", {}, "sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA=="],
 
