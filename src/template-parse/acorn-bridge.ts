@@ -10,8 +10,25 @@ import { attachComments, bindOnComment, type CommentWithLocation, onComment } fr
  * Script and expression grammar is JS/TS, not Svelte, so this stays acorn.
  */
 
-const JSParser = Parser;
-const TSParser = JSParser.extend(tsPlugin());
+/**
+ * Records whether a parse produced any `ParenthesizedExpression`, so
+ * `parseExpressionAt` only walks the result to unwrap them when one exists.
+ * Every node passes through `finishNode`, so the check is one comparison
+ * per node instead of a tree walk per parenthesized-looking expression.
+ */
+const parenTracking = { sawParenthesized: false };
+
+// biome-ignore lint/suspicious/noExplicitAny: `finishNode` isn't in acorn's published Parser type; svelte's own acorn.js subclasses the same way
+const parenTrackingPlugin = ((BaseParser: any) =>
+  class extends BaseParser {
+    finishNode(node: AcornNode, type: string) {
+      if (type === "ParenthesizedExpression") parenTracking.sawParenthesized = true;
+      return super.finishNode(node, type);
+    }
+  }) as unknown as (BaseParser: typeof Parser) => typeof Parser;
+
+const JSParser = Parser.extend(parenTrackingPlugin);
+const TSParser = Parser.extend(tsPlugin(), parenTrackingPlugin);
 
 function parserFor(isTypeScript: boolean) {
   return isTypeScript ? TSParser : JSParser;
@@ -84,6 +101,7 @@ export function parseExpressionAt(
   const commentsBefore = comments.length;
   bindOnComment(source, comments);
 
+  parenTracking.sawParenthesized = false;
   const node = parserFor(isTypeScript).parseExpressionAt(source, index, EXPRESSION_OPTIONS);
 
   attachNewComments(node as unknown as Parameters<typeof attachComments>[0], source, comments, index, commentsBefore);
@@ -93,19 +111,12 @@ export function parseExpressionAt(
   const lastComment = comments.length > commentsBefore ? comments.at(-1) : undefined;
   const end = lastComment && lastComment.end > (node.end ?? 0) ? lastComment.end : (node.end ?? 0);
 
-  // `ParenthesizedExpression` only exists where the source has a literal `(`.
-  // Most expressions don't, so skip zimmerframe's tree walk.
-  const nodeEnd = node.end ?? index;
-  const parsed = hasCharInRange(source, index, nodeEnd, 40 /* "(" */) ? removeParens(node) : node;
+  // Most expressions (including calls and arrow functions, which do contain
+  // `(`) produce no `ParenthesizedExpression`; skip zimmerframe's tree walk
+  // unless the parser actually finished one.
+  const parsed = parenTracking.sawParenthesized ? removeParens(node) : node;
 
   return { node: parsed, end };
-}
-
-function hasCharInRange(source: string, start: number, end: number, charCode: number): boolean {
-  for (let i = start; i < end; i++) {
-    if (source.charCodeAt(i) === charCode) return true;
-  }
-  return false;
 }
 
 /**
