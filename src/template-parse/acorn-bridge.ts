@@ -13,41 +13,32 @@ import { attachComments, bindOnComment, type CommentWithLocation, onComment } fr
 /**
  * Records whether a parse produced any `ParenthesizedExpression`, so
  * `parseExpressionAt` only walks the result to unwrap them when one exists.
- * Every node passes through `finishNode`, so the check is one comparison
- * per node instead of a tree walk per parenthesized-looking expression.
+ * Hooked at the two methods that build one (a `(...)` group that turned out
+ * not to be an arrow function's parameter list, and a parenthesized
+ * decorator expression) rather than at `finishNode`, which runs for every
+ * node and measurably slows small parses.
  */
 const parenTracking = { sawParenthesized: false };
 
-/**
- * Counts the TS value-level wrapper nodes (`x as T`, `x satisfies T`, `x!`,
- * `<T>x`, `f<T>`) any parse has produced. `parse()` compares it before and
- * after a component to learn whether `stripTypeCastWrappers` has anything
- * to do; most TS components have none, and the strip is a full AST walk.
- */
-export const typeCastWrapperNodes = { count: 0 };
-
-function isTypeCastWrapperType(type: string): boolean {
-  return (
-    type === "TSAsExpression" ||
-    type === "TSSatisfiesExpression" ||
-    type === "TSNonNullExpression" ||
-    type === "TSTypeAssertion" ||
-    type === "TSInstantiationExpression"
-  );
-}
-
-// biome-ignore lint/suspicious/noExplicitAny: `finishNode` isn't in acorn's published Parser type; svelte's own acorn.js subclasses the same way
-const nodeTrackingPlugin = ((BaseParser: any) =>
+// biome-ignore lint/suspicious/noExplicitAny: these methods aren't in acorn's published Parser type; svelte's own acorn.js subclasses the same way
+const parenTrackingPlugin = ((BaseParser: any) =>
   class extends BaseParser {
-    finishNode(node: AcornNode, type: string) {
-      if (type === "ParenthesizedExpression") parenTracking.sawParenthesized = true;
-      else if (type.charCodeAt(0) === 84 /* T */ && isTypeCastWrapperType(type)) typeCastWrapperNodes.count++;
-      return super.finishNode(node, type);
+    parseParenAndDistinguishExpression(canBeArrow: boolean, forInit: boolean) {
+      const node = super.parseParenAndDistinguishExpression(canBeArrow, forInit);
+      if (node.type === "ParenthesizedExpression") parenTracking.sawParenthesized = true;
+      return node;
+    }
+
+    // acorn-typescript can wrap a decorator's expression in parens as well.
+    // Decorators are vanishingly rare in components, so just assume it did.
+    parseDecorator() {
+      parenTracking.sawParenthesized = true;
+      return super.parseDecorator();
     }
   }) as unknown as (BaseParser: typeof Parser) => typeof Parser;
 
-const JSParser = Parser.extend(nodeTrackingPlugin);
-const TSParser = Parser.extend(tsPlugin(), nodeTrackingPlugin);
+const JSParser = Parser.extend(parenTrackingPlugin);
+const TSParser = Parser.extend(tsPlugin(), parenTrackingPlugin);
 
 function parserFor(isTypeScript: boolean) {
   return isTypeScript ? TSParser : JSParser;
