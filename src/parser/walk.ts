@@ -30,6 +30,16 @@ function visit(
 ): void {
   enter(node, parent, prop);
 
+  // Leaves first: identifiers and literals are the bulk of any AST and have
+  // no child nodes, so skip enumerating their keys. An identifier with a TS
+  // `typeAnnotation` (or a literal with one, e.g. a typed default) does have
+  // one, so those still take the general path.
+  const type = node.type;
+  if ((type === "Identifier" || type === "Literal" || type === "Text") && node.typeAnnotation === undefined) {
+    if (leave) leave(node);
+    return;
+  }
+
   // `for...in` on acorn/svelte nodes: plain objects, no enumerable prototype keys.
   for (const key in node) {
     if (key === "leadingComments") continue;
