@@ -17,8 +17,34 @@ export interface WalkableNode {
 export type WalkEnter = (node: WalkableNode, parent: WalkableNode | null, prop: string | null) => void;
 export type WalkLeave = (node: WalkableNode) => void;
 
-export function walkNodes(root: WalkableNode, enter: WalkEnter, leave?: WalkLeave): void {
-  visit(root, null, null, enter, leave);
+export interface WalkOptions {
+  /**
+   * Don't descend into type-level TS subtrees (see {@link isTypeOnlySubtree}).
+   * The node itself is still entered and left. For passes that only care
+   * about value-level nodes, this skips what is often the largest part of a
+   * typed component's script (a `Props` type literal with one member per
+   * prop).
+   */
+  skipTypeOnlySubtrees?: boolean;
+}
+
+/**
+ * TS nodes whose entire subtree is type-level: annotations, type aliases,
+ * interfaces, and type parameter lists. Nothing under them is a value-level
+ * node (no calls, declarations, assignments, or scopes).
+ */
+export function isTypeOnlySubtree(type: string): boolean {
+  return (
+    type === "TSTypeAnnotation" ||
+    type === "TSTypeAliasDeclaration" ||
+    type === "TSInterfaceDeclaration" ||
+    type === "TSTypeParameterDeclaration" ||
+    type === "TSTypeParameterInstantiation"
+  );
+}
+
+export function walkNodes(root: WalkableNode, enter: WalkEnter, leave?: WalkLeave, options?: WalkOptions): void {
+  visit(root, null, null, enter, leave, options?.skipTypeOnlySubtrees === true);
 }
 
 function visit(
@@ -27,6 +53,7 @@ function visit(
   prop: string | null,
   enter: WalkEnter,
   leave: WalkLeave | undefined,
+  skipTypeOnly: boolean,
 ): void {
   enter(node, parent, prop);
 
@@ -36,6 +63,10 @@ function visit(
   // one, so those still take the general path.
   const type = node.type;
   if ((type === "Identifier" || type === "Literal" || type === "Text") && node.typeAnnotation === undefined) {
+    if (leave) leave(node);
+    return;
+  }
+  if (skipTypeOnly && type.charCodeAt(0) === 84 /* T */ && isTypeOnlySubtree(type)) {
     if (leave) leave(node);
     return;
   }
@@ -50,11 +81,11 @@ function visit(
       for (let i = 0; i < value.length; i++) {
         const item = value[i];
         if (item && typeof item === "object" && typeof (item as WalkableNode).type === "string") {
-          visit(item as WalkableNode, node, key, enter, leave);
+          visit(item as WalkableNode, node, key, enter, leave, skipTypeOnly);
         }
       }
     } else if (typeof (value as WalkableNode).type === "string") {
-      visit(value as WalkableNode, node, key, enter, leave);
+      visit(value as WalkableNode, node, key, enter, leave, skipTypeOnly);
     }
   }
 
