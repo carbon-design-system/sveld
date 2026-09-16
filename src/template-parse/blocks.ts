@@ -1,6 +1,5 @@
 import type { Pattern } from "estree";
 import type { AST } from "svelte/compiler";
-import { typeCastWrapperNodes } from "./acorn-bridge";
 import { matchBracket } from "./bracket";
 import { readPattern } from "./context";
 import { readExpression } from "./expression";
@@ -56,9 +55,6 @@ export function openBlock(state: TemplateParserState): void {
       if (candidate.type === "TSAsExpression") {
         const assertion = candidate as unknown as { expression: typeof expression; typeAnnotation: { start: number } };
         expression = assertion.expression;
-        // The wrapper is dropped here, so it shouldn't count towards the
-        // "this component has casts to strip" signal.
-        typeCastWrapperNodes.count -= 1;
         let rewind = assertion.typeAnnotation.start - 2;
         while (rewind >= 0 && !(state.source[rewind] === "a" && state.source[rewind + 1] === "s")) rewind -= 1;
         state.index = rewind;
