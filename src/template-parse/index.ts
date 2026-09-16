@@ -1,4 +1,5 @@
 import type { AST } from "svelte/compiler";
+import { typeCastWrapperNodes } from "./acorn-bridge";
 import { readElement } from "./elements";
 import { readOptions } from "./read-options";
 import { TemplateParserState } from "./state";
@@ -20,6 +21,7 @@ import { readText } from "./text";
 export function parse(source: string): unknown {
   const trimmed = source.trimEnd();
   const state = new TemplateParserState(trimmed, source.length);
+  const typeCastWrappersBefore = typeCastWrapperNodes.count;
 
   while (state.index < state.source.length) {
     if (state.match("<")) {
@@ -41,5 +43,17 @@ export function parse(source: string): unknown {
     );
   }
 
+  if (typeCastWrapperNodes.count !== typeCastWrappersBefore) rootsWithTypeCastWrappers.add(state.root);
   return state.root;
+}
+
+const rootsWithTypeCastWrappers = new WeakSet<object>();
+
+/**
+ * Whether a root returned by {@link parse} contains any TS value-level
+ * wrapper node (`as`, `satisfies`, `!`, `<T>x`, `f<T>`), so callers can skip
+ * the AST walk that strips them when there's nothing to strip.
+ */
+export function hasTypeCastWrappers(root: unknown): boolean {
+  return typeof root === "object" && root !== null && rootsWithTypeCastWrappers.has(root);
 }

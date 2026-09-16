@@ -1,6 +1,3 @@
-import type { Node } from "estree-walker";
-import { walk } from "estree-walker";
-
 /**
  * Value-level TS wrapper expressions that change a node's own `.type` without changing its
  * runtime meaning. `compile()` strips these (via `remove_typescript_nodes`) before exposing its
@@ -22,18 +19,54 @@ const TYPE_CAST_WRAPPER_TYPES = new Set([
   "TSInstantiationExpression",
 ]);
 
+interface AstNode {
+  type: string;
+  expression?: AstNode;
+  [key: string]: unknown;
+}
+
+function isAstNode(value: unknown): value is AstNode {
+  return value !== null && typeof value === "object" && typeof (value as AstNode).type === "string";
+}
+
+/** The innermost non-wrapper expression under `node`, or `node` itself when it isn't a wrapper (or wraps nothing). */
+function unwrap(node: AstNode): AstNode {
+  if (!TYPE_CAST_WRAPPER_TYPES.has(node.type)) return node;
+  let inner = node.expression;
+  while (inner && TYPE_CAST_WRAPPER_TYPES.has(inner.type)) inner = inner.expression;
+  return inner ?? node;
+}
+
 export function stripTypeCastWrappers(root: unknown): void {
-  if (!root || typeof root !== "object") return;
+  if (!isAstNode(root)) return;
+  stripChildren(root);
+}
 
-  walk(root as Node, {
-    enter(node) {
-      if (!TYPE_CAST_WRAPPER_TYPES.has(node.type)) return;
+/**
+ * Replaces each wrapper child in place with its unwrapped expression, then
+ * keeps walking inside the replacement. Same traversal and replacement
+ * semantics as the estree-walker `enter` + `replace` this used to run, on a
+ * plain recursive walk with no visitor context.
+ */
+function stripChildren(node: AstNode): void {
+  // `for...in` on acorn/svelte nodes: plain objects, no enumerable prototype keys.
+  for (const key in node) {
+    if (key === "leadingComments") continue;
+    const value = node[key];
+    if (!value || typeof value !== "object") continue;
 
-      let inner = (node as { expression?: Node }).expression;
-      while (inner && TYPE_CAST_WRAPPER_TYPES.has(inner.type)) {
-        inner = (inner as { expression?: Node }).expression;
+    if (Array.isArray(value)) {
+      for (let i = 0; i < value.length; i++) {
+        const item = value[i];
+        if (!isAstNode(item)) continue;
+        const replacement = unwrap(item);
+        if (replacement !== item) value[i] = replacement;
+        stripChildren(replacement);
       }
-      if (inner) this.replace(inner);
-    },
-  });
+    } else if (isAstNode(value)) {
+      const replacement = unwrap(value);
+      if (replacement !== value) node[key] = replacement;
+      stripChildren(replacement);
+    }
+  }
 }

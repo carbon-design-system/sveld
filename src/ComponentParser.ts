@@ -71,7 +71,7 @@ import {
 } from "./parser/value-imports";
 import { buildVariableJsDocTable } from "./parser/variable-jsdoc";
 import { type WalkableNode, type WalkEnter, type WalkLeave, walkNodes } from "./parser/walk";
-import { parse as parseModernAst } from "./svelte-template-parse";
+import { hasTypeCastWrappers, parse as parseModernAst } from "./svelte-template-parse";
 
 /** Structured JSDoc tag (e.g. `{ name: "since", body: "1.2.0" }`). */
 export interface JsDocPassthroughTag {
@@ -1025,9 +1025,10 @@ export default class ComponentParser {
     /**
      * compile() strips TS-only wrapper expressions (`as`/`satisfies`/`!`/type assertions/explicit
      * generic instantiation) before exposing its AST; parse() alone leaves them in place. Only
-     * TS-tagged scripts can contain them, so skip the walk entirely for plain JS components.
+     * TS-tagged scripts can contain them, and the parser records whether it produced any, so
+     * the walk is skipped for plain JS components and for TS components without a cast.
      */
-    if (this.ctx.scriptLanguage === "ts") {
+    if (this.ctx.scriptLanguage === "ts" && hasTypeCastWrappers(modernParsed)) {
       stripTypeCastWrappers(this.ctx.parsed.module);
       stripTypeCastWrappers(this.ctx.parsed.instance);
       stripTypeCastWrappers(this.ctx.parsed.fragment);
