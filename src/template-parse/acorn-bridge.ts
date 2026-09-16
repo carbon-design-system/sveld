@@ -72,8 +72,9 @@ const STATEMENT_OPTIONS = {
 // the offset by slicing and splitting the whole prefix, once per expression,
 // so a template's expression parses cost O(n) each in the file size. Passing
 // `startLocation` skips that; the line/column come from a per-source table.
+// (`parseStatementAt` constructs the parser directly, bypassing the plugin's
+// static entry points that force `locations`, so it never counts lines.)
 const TS_EXPRESSION_OPTIONS = { ...EXPRESSION_OPTIONS, startLocation: null as StartLocation | null };
-const TS_STATEMENT_OPTIONS = { ...STATEMENT_OPTIONS, startLocation: null as StartLocation | null };
 
 interface StartLocation {
   line: number;
@@ -202,20 +203,14 @@ export function parseStatementAt(
   index: number,
   isTypeScript: boolean,
   comments: CommentWithLocation[],
-  lineTable?: LineTable,
 ) {
   const commentsBefore = comments.length;
   const ParserClass = parserFor(isTypeScript);
   bindOnComment(source, comments);
   // Constructing a raw Parser to call unexported parseStatement isn't in
   // acorn's public types. svelte's own acorn.js does the same cast.
-  let options = STATEMENT_OPTIONS;
-  if (isTypeScript) {
-    TS_STATEMENT_OPTIONS.startLocation = startLocationFor(source, index, lineTable);
-    options = TS_STATEMENT_OPTIONS;
-  }
   // biome-ignore lint/suspicious/noExplicitAny: see comment above
-  const parser = new (ParserClass as any)(options, source, index);
+  const parser = new (ParserClass as any)(STATEMENT_OPTIONS, source, index);
   parser.nextToken();
   const statement = parser.parseStatement(null, true, Object.create(null));
   attachNewComments(

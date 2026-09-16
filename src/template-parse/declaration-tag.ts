@@ -26,13 +26,7 @@ export function readDeclarationTag(state: TemplateParserState): VariableDeclarat
   }
 
   const commentsBefore = state.root.comments.length;
-  const statement = parseStatementAt(
-    state.source,
-    start,
-    state.isTypeScript,
-    state.root.comments,
-    state.lineTable,
-  ) as unknown as {
+  const statement = parseStatementAt(state.source, start, state.isTypeScript, state.root.comments) as unknown as {
     type: string;
     kind?: string;
     end: number;
