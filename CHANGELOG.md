@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.37.2](https://github.com/carbon-design-system/sveld/releases/tag/v0.37.2) - 2026-09-16
+
+**Features**
+
+- scan `.d.ts` formatter passes by jumping, not per character (1c9e485)
+- build custom-elements manifest objects without spreads (8677581)
+- finish markdown documents without a full-text replace (b303a47)
+- read entry types from the cached directory listing (12fe87b)
+- skip key enumeration for leaf nodes in the walker (9dfb2e8)
+- reuse acorn's comments for the variable JSDoc table (5a6ae20)
+- collect hoisted bindings from the program body only (56e0972)
+- unwrap parens only when acorn produced them (6312b2a)
+- pass acorn a start location for TS expressions (71a0dcd)
+- strip TS cast wrappers only when the parse produced any (c0bcd2f)
+- scan for rune references with a real early exit (e05326e)
+- keep the TS line table on the parser state (2984fec)
+- iterate type nodes with `for...in` when collecting dependencies (1acddcd)
+- skip type-level TS subtrees in the main component walk (cc817ac)
+- track parens at the paren parser, not `finishNode` (c95a78d)
+- hash sources with the one-shot `crypto.hash` when available (8801888)
+- drop `zimmerframe` for an in-place paren unwrapper (541cab1)
+- drop `estree-walker` for a hand-rolled return collector (03606c7)
+
 ## [0.37.1](https://github.com/carbon-design-system/sveld/releases/tag/v0.37.1) - 2026-09-14
 
 **Features**
