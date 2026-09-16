@@ -98,14 +98,20 @@ export class MarkdownWriterBaseImpl implements MarkdownWriterBase {
 
   public end(): string {
     const source = this.sourceParts.join("");
+    // The placeholder only exists after `tableOfContents()`; skip the
+    // full-text search otherwise.
+    if (!this.hasToC) return source;
+
+    const placeholder = "<!-- __TOC__ -->";
+    const at = source.indexOf(placeholder);
+    if (at === -1) return source;
+
     const seenAnchors = new Map<string, number>();
-    return source.replace(
-      "<!-- __TOC__ -->",
-      this.toc
-        .map(({ indent, raw }) => {
-          return `${" ".repeat(indent)}- [${raw}](#${slugifyHeading(raw, seenAnchors)})`;
-        })
-        .join("\n"),
-    );
+    const toc = this.toc
+      .map(({ indent, raw }) => `${" ".repeat(indent)}- [${raw}](#${slugifyHeading(raw, seenAnchors)})`)
+      .join("\n");
+    // Spliced by index rather than `String#replace`, so a heading containing
+    // `$&`-style replacement patterns is inserted verbatim.
+    return source.slice(0, at) + toc + source.slice(at + placeholder.length);
   }
 }
