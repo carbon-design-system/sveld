@@ -18,17 +18,36 @@ import { attachComments, bindOnComment, type CommentWithLocation, onComment } fr
  */
 const parenTracking = { sawParenthesized: false };
 
+/**
+ * Counts the TS value-level wrapper nodes (`x as T`, `x satisfies T`, `x!`,
+ * `<T>x`, `f<T>`) any parse has produced. `parse()` compares it before and
+ * after a component to learn whether `stripTypeCastWrappers` has anything
+ * to do; most TS components have none, and the strip is a full AST walk.
+ */
+export const typeCastWrapperNodes = { count: 0 };
+
+function isTypeCastWrapperType(type: string): boolean {
+  return (
+    type === "TSAsExpression" ||
+    type === "TSSatisfiesExpression" ||
+    type === "TSNonNullExpression" ||
+    type === "TSTypeAssertion" ||
+    type === "TSInstantiationExpression"
+  );
+}
+
 // biome-ignore lint/suspicious/noExplicitAny: `finishNode` isn't in acorn's published Parser type; svelte's own acorn.js subclasses the same way
-const parenTrackingPlugin = ((BaseParser: any) =>
+const nodeTrackingPlugin = ((BaseParser: any) =>
   class extends BaseParser {
     finishNode(node: AcornNode, type: string) {
       if (type === "ParenthesizedExpression") parenTracking.sawParenthesized = true;
+      else if (type.charCodeAt(0) === 84 /* T */ && isTypeCastWrapperType(type)) typeCastWrapperNodes.count++;
       return super.finishNode(node, type);
     }
   }) as unknown as (BaseParser: typeof Parser) => typeof Parser;
 
-const JSParser = Parser.extend(parenTrackingPlugin);
-const TSParser = Parser.extend(tsPlugin(), parenTrackingPlugin);
+const JSParser = Parser.extend(nodeTrackingPlugin);
+const TSParser = Parser.extend(tsPlugin(), nodeTrackingPlugin);
 
 function parserFor(isTypeScript: boolean) {
   return isTypeScript ? TSParser : JSParser;
@@ -56,6 +75,55 @@ const STATEMENT_OPTIONS = {
   ecmaVersion: 16,
   // biome-ignore lint/suspicious/noExplicitAny: see PROGRAM_OPTIONS
 } as any;
+
+// `@sveltejs/acorn-typescript` forces `locations: true`. With locations on
+// and a non-zero start offset, acorn's constructor counts the lines before
+// the offset by slicing and splitting the whole prefix, once per expression,
+// so a template's expression parses cost O(n) each in the file size. Passing
+// `startLocation` skips that; the line/column come from a per-source table.
+const TS_EXPRESSION_OPTIONS = { ...EXPRESSION_OPTIONS, startLocation: null as StartLocation | null };
+const TS_STATEMENT_OPTIONS = { ...STATEMENT_OPTIONS, startLocation: null as StartLocation | null };
+
+interface StartLocation {
+  line: number;
+  column: number;
+}
+
+// acorn's `lineBreak`; its constructor counts lines with exactly this.
+const LINE_BREAK_REGEX = /\r\n?|\n|\u2028|\u2029/g;
+
+let lineTableSource = "";
+// End offset of every line break in `lineTableSource`, ascending.
+let lineTableBreakEnds: number[] = [];
+
+/**
+ * `{ line, column }` for `index` in `source`, equal to what acorn would
+ * compute itself: `column` counts from the last `\n`, `line` is one more
+ * than the number of line breaks before that point.
+ */
+function startLocationFor(source: string, index: number): StartLocation {
+  const lineStart = source.lastIndexOf("\n", index - 1) + 1;
+
+  if (source !== lineTableSource) {
+    const ends: number[] = [];
+    LINE_BREAK_REGEX.lastIndex = 0;
+    while (LINE_BREAK_REGEX.test(source)) ends.push(LINE_BREAK_REGEX.lastIndex);
+    lineTableSource = source;
+    lineTableBreakEnds = ends;
+  }
+
+  // Number of breaks ending at or before `lineStart`.
+  const ends = lineTableBreakEnds;
+  let low = 0;
+  let high = ends.length;
+  while (low < high) {
+    const mid = (low + high) >>> 1;
+    if (ends[mid] <= lineStart) low = mid + 1;
+    else high = mid;
+  }
+
+  return { line: low + 1, column: index - lineStart };
+}
 
 function attachNewComments(
   node: Parameters<typeof attachComments>[0],
@@ -102,7 +170,12 @@ export function parseExpressionAt(
   bindOnComment(source, comments);
 
   parenTracking.sawParenthesized = false;
-  const node = parserFor(isTypeScript).parseExpressionAt(source, index, EXPRESSION_OPTIONS);
+  let options = EXPRESSION_OPTIONS;
+  if (isTypeScript) {
+    TS_EXPRESSION_OPTIONS.startLocation = startLocationFor(source, index);
+    options = TS_EXPRESSION_OPTIONS;
+  }
+  const node = parserFor(isTypeScript).parseExpressionAt(source, index, options);
 
   attachNewComments(node as unknown as Parameters<typeof attachComments>[0], source, comments, index, commentsBefore);
 
@@ -135,8 +208,13 @@ export function parseStatementAt(
   bindOnComment(source, comments);
   // Constructing a raw Parser to call unexported parseStatement isn't in
   // acorn's public types. svelte's own acorn.js does the same cast.
+  let options = STATEMENT_OPTIONS;
+  if (isTypeScript) {
+    TS_STATEMENT_OPTIONS.startLocation = startLocationFor(source, index);
+    options = TS_STATEMENT_OPTIONS;
+  }
   // biome-ignore lint/suspicious/noExplicitAny: see comment above
-  const parser = new (ParserClass as any)(STATEMENT_OPTIONS, source, index);
+  const parser = new (ParserClass as any)(options, source, index);
   parser.nextToken();
   const statement = parser.parseStatement(null, true, Object.create(null));
   attachNewComments(
