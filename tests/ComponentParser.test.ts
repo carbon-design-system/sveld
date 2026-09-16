@@ -22,6 +22,57 @@ describe("ComponentParser", () => {
     expect(result.scriptLanguage).toBe("js");
   });
 
+  describe("hoisted call defaults", () => {
+    test("resolves a default from a top-level function declared after the prop", () => {
+      const parser = new ComponentParser();
+      const source = `
+        <script>
+          export let id = uniqueId();
+
+          /** @returns {string} */
+          function uniqueId() { return "ccs"; }
+        </script>
+      `;
+
+      const result = parser.parseSvelteComponent(source, diagnostics);
+      expect(result.props[0]).toMatchObject({ name: "id", type: "string", value: "uniqueId()" });
+    });
+
+    test("resolves a default from an exported function declared after the prop", () => {
+      const parser = new ComponentParser();
+      const source = `
+        <script>
+          export let id = uniqueId();
+
+          /** @returns {string} */
+          export function uniqueId() { return "ccs"; }
+        </script>
+      `;
+
+      const result = parser.parseSvelteComponent(source, diagnostics);
+      expect(result.props[0]).toMatchObject({ name: "id", type: "string", value: "uniqueId()" });
+    });
+
+    test("does not hoist a function declared inside a nested block", () => {
+      // Block-level functions are block-scoped in module (strict) code, so a
+      // top-level default can't actually call one; only top-level statements
+      // are pre-collected before prop defaults resolve.
+      const parser = new ComponentParser();
+      const source = `
+        <script>
+          export let id = helper();
+          {
+            /** @returns {string} */
+            function helper() { return "x"; }
+          }
+        </script>
+      `;
+
+      const result = parser.parseSvelteComponent(source, diagnostics);
+      expect(result.props[0]).toMatchObject({ name: "id", type: "any", value: "helper()" });
+    });
+  });
+
   test("detects legacy syntax with TypeScript script", () => {
     const parser = new ComponentParser();
     const source = `
@@ -1596,6 +1647,25 @@ describe("ComponentParser", () => {
   });
 
   describe("findVariableTypeAndDescription's JSDoc symbol table", () => {
+    test("is not derailed by a regex literal containing a quote before the JSDoc block", () => {
+      // A hand-rolled scanner that only knew about string literals would
+      // treat the `"` inside `/"/` as an opening quote and skip past the
+      // comment. The table reads acorn's own comment list instead.
+      const parser = new ComponentParser();
+      const source = `
+        <script>
+          import { setContext } from "svelte";
+          const quote = /"/;
+          /** @type {number} */
+          let count = 0;
+          setContext("k", { count });
+        </script>
+      `;
+
+      const result = parser.parseSvelteComponent(source, diagnostics);
+      expect(result.contexts?.[0].properties[0]).toMatchObject({ name: "count", type: "number" });
+    });
+
     test("resolves a JSDoc'd variable whose name is on a different line than its keyword", () => {
       const parser = new ComponentParser();
       const source = `
