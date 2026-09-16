@@ -178,12 +178,11 @@ function parseAccessorSignatureText(signature: string): { parameters: CemParamet
           const typeText = colonIndex === -1 ? undefined : rest.slice(colonIndex + 1).trim();
           const optional = namePart.endsWith("?");
 
-          return {
-            name: optional ? namePart.slice(0, -1) : namePart,
-            ...(typeText ? { type: { text: typeText } } : {}),
-            ...(optional ? { optional: true } : {}),
-            ...(isRest ? { rest: true } : {}),
-          };
+          const parameter: CemParameter = { name: optional ? namePart.slice(0, -1) : namePart };
+          if (typeText) parameter.type = { text: typeText };
+          if (optional) parameter.optional = true;
+          if (isRest) parameter.rest = true;
+          return parameter;
         });
 
   return { parameters, returnTypeText: returnText || "any" };
@@ -196,13 +195,12 @@ function parseAccessorSignatureText(signature: string): { parameters: CemParamet
  */
 function accessorParametersAndReturn(prop: ComponentPropApi): { parameters: CemParameter[]; returnTypeText: string } {
   if (prop.params !== undefined || prop.returnType !== undefined) {
-    const parameters = (prop.params ?? []).map(
-      (param): CemParameter => ({
-        name: param.name,
-        ...(param.type ? { type: { text: param.type } } : {}),
-        ...(param.optional ? { optional: true } : {}),
-      }),
-    );
+    const parameters = (prop.params ?? []).map((param): CemParameter => {
+      const parameter: CemParameter = { name: param.name };
+      if (param.type) parameter.type = { text: param.type };
+      if (param.optional) parameter.optional = true;
+      return parameter;
+    });
     return { parameters, returnTypeText: prop.returnType ?? "any" };
   }
 
@@ -213,26 +211,23 @@ function buildMembers(props: ComponentDocApi["props"]): Array<CemClassField | Ce
   return props.map((prop): CemClassField | CemClassMethod => {
     if (prop.isFunctionDeclaration) {
       const { parameters, returnTypeText } = accessorParametersAndReturn(prop);
-      return {
-        kind: "method",
-        name: prop.name,
-        static: false,
-        ...(parameters.length > 0 ? { parameters } : {}),
-        return: { type: { text: returnTypeText } },
-        ...(prop.description ? { description: prop.description } : {}),
-        ...(prop.deprecated === undefined ? {} : { deprecated: prop.deprecated }),
-      };
+      // Fields are assigned in schema order (no conditional spreads, which
+      // allocate and copy a throwaway object per optional field).
+      const method: CemClassMethod = { kind: "method", name: prop.name, static: false };
+      if (parameters.length > 0) method.parameters = parameters;
+      method.return = { type: { text: returnTypeText } };
+      if (prop.description) method.description = prop.description;
+      if (prop.deprecated !== undefined) method.deprecated = prop.deprecated;
+      return method;
     }
 
-    return {
-      kind: "field",
-      name: prop.name,
-      ...(prop.type ? { type: { text: prop.type } } : {}),
-      ...(prop.value === undefined ? {} : { default: prop.value }),
-      ...(prop.description ? { description: prop.description } : {}),
-      ...(prop.deprecated === undefined ? {} : { deprecated: prop.deprecated }),
-      ...(prop.kind === "const" ? { readonly: true } : {}),
-    };
+    const field: CemClassField = { kind: "field", name: prop.name };
+    if (prop.type) field.type = { text: prop.type };
+    if (prop.value !== undefined) field.default = prop.value;
+    if (prop.description) field.description = prop.description;
+    if (prop.deprecated !== undefined) field.deprecated = prop.deprecated;
+    if (prop.kind === "const") field.readonly = true;
+    return field;
   });
 }
 
@@ -274,14 +269,12 @@ function buildAttributes(component: ComponentDocApi): CemAttribute[] {
       ? [prop.description, "Serialized to/from JSON for the attribute."].filter(Boolean).join(" ")
       : prop.description;
 
-    attributes.push({
-      name: attributeName,
-      fieldName: prop.name,
-      ...(prop.type ? { type: { text: prop.type } } : {}),
-      ...(prop.value === undefined ? {} : { default: prop.value }),
-      ...(description ? { description } : {}),
-      ...(config?.reflect ? { reflects: true } : {}),
-    });
+    const attribute: CemAttribute = { name: attributeName, fieldName: prop.name };
+    if (prop.type) attribute.type = { text: prop.type };
+    if (prop.value !== undefined) attribute.default = prop.value;
+    if (description) attribute.description = description;
+    if (config?.reflect) attribute.reflects = true;
+    attributes.push(attribute);
   }
 
   return attributes;
@@ -289,56 +282,61 @@ function buildAttributes(component: ComponentDocApi): CemAttribute[] {
 
 function buildCssParts(cssParts: ComponentDocApi["cssParts"]): CemCssPart[] | undefined {
   if (!cssParts || cssParts.length === 0) return undefined;
-  return cssParts.map((cssPart) => ({
-    name: cssPart.name,
-    ...(cssPart.description ? { description: cssPart.description } : {}),
-  }));
+  return cssParts.map((cssPart) => {
+    const part: CemCssPart = { name: cssPart.name };
+    if (cssPart.description) part.description = cssPart.description;
+    return part;
+  });
 }
 
 function buildCssProperties(cssProperties: ComponentDocApi["cssProperties"]): CemCssCustomProperty[] | undefined {
   if (!cssProperties || cssProperties.length === 0) return undefined;
-  return cssProperties.map((cssProperty) => ({
-    name: cssProperty.name,
-    ...(cssProperty.type ? { type: { text: cssProperty.type } } : {}),
-    ...(cssProperty.default === undefined ? {} : { default: cssProperty.default }),
-    ...(cssProperty.description ? { description: cssProperty.description } : {}),
-  }));
+  return cssProperties.map((cssProperty) => {
+    const property: CemCssCustomProperty = { name: cssProperty.name };
+    if (cssProperty.type) property.type = { text: cssProperty.type };
+    if (cssProperty.default !== undefined) property.default = cssProperty.default;
+    if (cssProperty.description) property.description = cssProperty.description;
+    return property;
+  });
 }
 
 function buildEvents(events: ComponentDocApi["events"]): CemEvent[] {
   return events
     .filter((event) => event.type === "dispatched")
-    .map((event) => ({
-      name: event.name,
-      type: { text: `CustomEvent<${event.detail ?? "unknown"}>` },
-      ...(event.description ? { description: event.description } : {}),
-      ...(event.deprecated === undefined ? {} : { deprecated: event.deprecated }),
-    }));
+    .map((event) => {
+      const cemEvent: CemEvent = { name: event.name, type: { text: `CustomEvent<${event.detail ?? "unknown"}>` } };
+      if (event.description) cemEvent.description = event.description;
+      if (event.deprecated !== undefined) cemEvent.deprecated = event.deprecated;
+      return cemEvent;
+    });
 }
 
 function buildSlots(slots: ComponentDocApi["slots"]): CemSlot[] {
-  return slots.map((slot) => ({
-    name: slot.default ? "" : (slot.name ?? ""),
-    ...(slot.description ? { description: slot.description } : {}),
-    ...(slot.deprecated === undefined ? {} : { deprecated: slot.deprecated }),
-  }));
+  return slots.map((slot) => {
+    const cemSlot: CemSlot = { name: slot.default ? "" : (slot.name ?? "") };
+    if (slot.description) cemSlot.description = slot.description;
+    if (slot.deprecated !== undefined) cemSlot.deprecated = slot.deprecated;
+    return cemSlot;
+  });
 }
 
 function buildDeclaration(component: ComponentDocApi): CemClassDeclaration {
   const cssParts = buildCssParts(component.cssParts);
   const cssProperties = buildCssProperties(component.cssProperties);
 
-  const declaration: CemClassDeclaration = {
-    kind: "class",
-    name: component.moduleName,
-    ...(component.componentComment ? { description: component.componentComment } : {}),
-    members: buildMembers(component.props),
-    attributes: buildAttributes(component),
-    events: buildEvents(component.events),
-    slots: buildSlots(component.slots),
-    ...(cssParts ? { cssParts } : {}),
-    ...(cssProperties ? { cssProperties } : {}),
-  };
+  const members = buildMembers(component.props);
+  const attributes = buildAttributes(component);
+  const events = buildEvents(component.events);
+  const slots = buildSlots(component.slots);
+  const name = component.moduleName;
+
+  // Two literals rather than a conditional spread for `description`, so the
+  // schema key order is kept without copying a throwaway object.
+  const declaration: CemClassDeclaration = component.componentComment
+    ? { kind: "class", name, description: component.componentComment, members, attributes, events, slots }
+    : { kind: "class", name, members, attributes, events, slots };
+  if (cssParts) declaration.cssParts = cssParts;
+  if (cssProperties) declaration.cssProperties = cssProperties;
 
   if (component.customElementTag) {
     declaration.tagName = component.customElementTag;
