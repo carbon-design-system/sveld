@@ -246,7 +246,13 @@ export function readExpression(state: TemplateParserState): Expression {
   const trivial = tryReadTrivialExpression(state);
   if (trivial) return trivial;
 
-  const { node, end } = parseExpressionAt(state.source, state.index, state.isTypeScript, state.root.comments);
+  const { node, end } = parseExpressionAt(
+    state.source,
+    state.index,
+    state.isTypeScript,
+    state.root.comments,
+    state.lineTable,
+  );
   state.index = end;
   return node as unknown as Expression;
 }
