@@ -92,28 +92,36 @@ interface StartLocation {
 // acorn's `lineBreak`; its constructor counts lines with exactly this.
 const LINE_BREAK_REGEX = /\r\n?|\n|\u2028|\u2029/g;
 
-let lineTableSource = "";
-// End offset of every line break in `lineTableSource`, ascending.
-let lineTableBreakEnds: number[] = [];
+/**
+ * Per-source cache of line-break end offsets, owned by the caller (the
+ * template parser state) so no source-string comparison is needed to reuse
+ * it. Callers parsing a one-off synthetic source pass nothing and pay for
+ * one scan.
+ */
+export interface LineTable {
+  /** End offset of every line break in the source, ascending. */
+  breakEnds?: number[];
+}
+
+function lineBreakEnds(source: string, lineTable: LineTable | undefined): number[] {
+  if (lineTable?.breakEnds) return lineTable.breakEnds;
+  const ends: number[] = [];
+  LINE_BREAK_REGEX.lastIndex = 0;
+  while (LINE_BREAK_REGEX.test(source)) ends.push(LINE_BREAK_REGEX.lastIndex);
+  if (lineTable) lineTable.breakEnds = ends;
+  return ends;
+}
 
 /**
  * `{ line, column }` for `index` in `source`, equal to what acorn would
  * compute itself: `column` counts from the last `\n`, `line` is one more
  * than the number of line breaks before that point.
  */
-function startLocationFor(source: string, index: number): StartLocation {
+function startLocationFor(source: string, index: number, lineTable: LineTable | undefined): StartLocation {
   const lineStart = source.lastIndexOf("\n", index - 1) + 1;
 
-  if (source !== lineTableSource) {
-    const ends: number[] = [];
-    LINE_BREAK_REGEX.lastIndex = 0;
-    while (LINE_BREAK_REGEX.test(source)) ends.push(LINE_BREAK_REGEX.lastIndex);
-    lineTableSource = source;
-    lineTableBreakEnds = ends;
-  }
-
   // Number of breaks ending at or before `lineStart`.
-  const ends = lineTableBreakEnds;
+  const ends = lineBreakEnds(source, lineTable);
   let low = 0;
   let high = ends.length;
   while (low < high) {
@@ -164,6 +172,7 @@ export function parseExpressionAt(
   index: number,
   isTypeScript: boolean,
   comments: CommentWithLocation[],
+  lineTable?: LineTable,
 ) {
   acornExpressionParses.count += 1;
   const commentsBefore = comments.length;
@@ -172,7 +181,7 @@ export function parseExpressionAt(
   parenTracking.sawParenthesized = false;
   let options = EXPRESSION_OPTIONS;
   if (isTypeScript) {
-    TS_EXPRESSION_OPTIONS.startLocation = startLocationFor(source, index);
+    TS_EXPRESSION_OPTIONS.startLocation = startLocationFor(source, index, lineTable);
     options = TS_EXPRESSION_OPTIONS;
   }
   const node = parserFor(isTypeScript).parseExpressionAt(source, index, options);
@@ -202,6 +211,7 @@ export function parseStatementAt(
   index: number,
   isTypeScript: boolean,
   comments: CommentWithLocation[],
+  lineTable?: LineTable,
 ) {
   const commentsBefore = comments.length;
   const ParserClass = parserFor(isTypeScript);
@@ -210,7 +220,7 @@ export function parseStatementAt(
   // acorn's public types. svelte's own acorn.js does the same cast.
   let options = STATEMENT_OPTIONS;
   if (isTypeScript) {
-    TS_STATEMENT_OPTIONS.startLocation = startLocationFor(source, index);
+    TS_STATEMENT_OPTIONS.startLocation = startLocationFor(source, index, lineTable);
     options = TS_STATEMENT_OPTIONS;
   }
   // biome-ignore lint/suspicious/noExplicitAny: see comment above

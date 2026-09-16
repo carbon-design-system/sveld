@@ -1,4 +1,5 @@
 import type { AST } from "svelte/compiler";
+import type { LineTable } from "./acorn-bridge";
 import type { CommentWithLocation } from "./comments";
 import { createFragment, type Fragment, Reader } from "./reader";
 
@@ -36,6 +37,8 @@ export class TemplateParserState extends Reader {
   readonly stack: StackNode[] = [];
   readonly fragments: Fragment[] = [];
   readonly isTypeScript: boolean;
+  /** Line-break offsets of `source`, filled in by the first TS expression parse that needs them. */
+  readonly lineTable: LineTable = {};
   /** Last auto-closed tag, e.g. `<li>` before another `<li>`. A later stray closer for it is ignored. */
   lastAutoClosedTag?: { tag: string; reason: string; depth: number };
 
