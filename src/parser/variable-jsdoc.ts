@@ -1,4 +1,5 @@
 import type ComponentParser from "../ComponentParser";
+import type { CommentWithLocation } from "../template-parse/comments";
 import type { ParserContext } from "./context";
 import { recordSveldIgnore } from "./diagnostics";
 import { getCommentTags, ONLY_WHITESPACE_REGEX, parseCommentText } from "./jsdoc";
@@ -17,97 +18,24 @@ interface TopLevelDeclaration {
   start: number;
 }
 
-function skipStringLiteral(source: string, start: number, quote: string): number {
-  let i = start + 1;
-  while (i < source.length) {
-    if (source[i] === "\\") {
-      i += 2;
-      continue;
-    }
-    if (source[i] === quote) return i + 1;
-    i++;
-  }
-  return i;
-}
-
-/** Skips a template literal, including nested `${...}` expressions (which may themselves nest strings/templates). */
-function skipTemplateLiteral(source: string, start: number): number {
-  let i = start + 1;
-  let exprDepth = 0;
-  while (i < source.length) {
-    const ch = source[i];
-    if (ch === "\\") {
-      i += 2;
-      continue;
-    }
-    if (exprDepth === 0) {
-      if (ch === "`") return i + 1;
-      if (ch === "$" && source[i + 1] === "{") {
-        exprDepth = 1;
-        i += 2;
-        continue;
-      }
-      i++;
-      continue;
-    }
-    if (ch === "{") {
-      exprDepth++;
-    } else if (ch === "}") {
-      exprDepth--;
-    } else if (ch === '"' || ch === "'") {
-      i = skipStringLiteral(source, i, ch);
-      continue;
-    } else if (ch === "`") {
-      i = skipTemplateLiteral(source, i);
-      continue;
-    }
-    i++;
-  }
-  return i;
-}
-
 /**
- * Finds every `//` and `/* *\/` comment in `scriptSource`, skipping string and template
- * literal contents so declaration-like or comment-like text inside them can't be mistaken
- * for the real thing. `offsetBase` maps positions back into the full component source,
- * since `scriptSource` is a slice starting there.
+ * Every `/* *\/` comment inside `[programStart, programEnd)`, taken from the
+ * comments acorn already collected while parsing the script (which skips
+ * string, template, and regex literal contents correctly), so the script
+ * source isn't rescanned for them here.
  */
-function buildCommentIndex(scriptSource: string, offsetBase: number): ScriptComment[] {
-  const comments: ScriptComment[] = [];
-  const len = scriptSource.length;
-  let i = 0;
-
-  while (i < len) {
-    const ch = scriptSource[i];
-
-    if (ch === '"' || ch === "'") {
-      i = skipStringLiteral(scriptSource, i, ch);
-      continue;
-    }
-    if (ch === "`") {
-      i = skipTemplateLiteral(scriptSource, i);
-      continue;
-    }
-    if (ch === "/" && scriptSource[i + 1] === "/") {
-      let j = i + 2;
-      while (j < len && scriptSource[j] !== "\n") j++;
-      i = j;
-      continue;
-    }
-    if (ch === "/" && scriptSource[i + 1] === "*") {
-      const start = i;
-      let j = i + 2;
-      while (j < len && !(scriptSource[j] === "*" && scriptSource[j + 1] === "/")) j++;
-      const end = Math.min(j + 2, len);
-      const text = scriptSource.slice(start, end);
-      comments.push({ end: end + offsetBase, isJsDoc: text.startsWith("/**") && text.length > 4, text });
-      i = end;
-      continue;
-    }
-    i++;
+function collectBlockComments(
+  comments: CommentWithLocation[],
+  source: string,
+  programStart: number,
+  programEnd: number,
+  into: ScriptComment[],
+): void {
+  for (const comment of comments) {
+    if (comment.type !== "Block" || comment.start < programStart || comment.end > programEnd) continue;
+    const text = source.slice(comment.start, comment.end);
+    into.push({ end: comment.end, isJsDoc: text.startsWith("/**") && text.length > 4, text });
   }
-
-  return comments;
 }
 
 function addDeclarationNames(node: unknown, start: number, declarations: TopLevelDeclaration[]): void {
@@ -186,12 +114,13 @@ export function buildVariableJsDocTable(
 
   const allComments: ScriptComment[] = [];
   const allDeclarations: TopLevelDeclaration[] = [];
+  const comments = (ctx.parsed as unknown as { comments?: CommentWithLocation[] } | undefined)?.comments ?? [];
 
   for (const script of scripts) {
     const program = script?.content;
     if (!program?.body || program.start === undefined || program.end === undefined) continue;
 
-    allComments.push(...buildCommentIndex(ctx.source.slice(program.start, program.end), program.start));
+    collectBlockComments(comments, ctx.source, program.start, program.end, allComments);
     allDeclarations.push(...collectTopLevelDeclarations(program.body));
   }
 
