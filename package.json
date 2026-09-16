@@ -35,7 +35,7 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.13",
+    "@biomejs/biome": "2.5.14",
     "@sveltejs/acorn-typescript": "1.0.13",
     "@types/bun": "^1.4.2",
     "@types/jest": "^30.0.0",
