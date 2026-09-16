@@ -132,7 +132,7 @@ function formatComment(comment: string) {
 }
 
 /** Map JSDoc `"*"` to `"any"`; otherwise trim. Same rules as {@link ComponentParser.aliasType}. */
-export function aliasType(type: string): string {
+function aliasType(type: string): string {
   if (type === "*") return "any";
   return type.trim();
 }

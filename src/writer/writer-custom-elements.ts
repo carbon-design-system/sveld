@@ -5,19 +5,7 @@ import type { ComponentDocApi, ComponentDocs } from "../plugin";
 import Writer from "./Writer";
 import { buildCustomElementsManifest } from "./writer-custom-elements-core";
 
-export type {
-  CemAttribute,
-  CemClassDeclaration,
-  CemClassField,
-  CemCustomElementExport,
-  CemEvent,
-  CemExport,
-  CemJavaScriptExport,
-  CemModule,
-  CemSlot,
-  CemType,
-  CustomElementsManifest,
-} from "./writer-custom-elements-core";
+export type { CemModule } from "./writer-custom-elements-core";
 
 export interface WriteCustomElementsOptions {
   /** @internal Resolved from `entry` and always injected by the caller (`plugin.ts`); not user-configurable via `customElementsOptions`. */
