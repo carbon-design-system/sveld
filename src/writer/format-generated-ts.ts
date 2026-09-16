@@ -4,15 +4,21 @@ const INLINE_WIDTH_BUDGET = 120;
 // `interface` bodies always expand, unlike plain `{...}` type literals.
 const INTERFACE_HEADER_REGEX = /\binterface\s+[A-Za-z_$][\w$]*(\s*<[^{};]*>)?\s*$/;
 const INTERFACE_HEADER_TAIL_LENGTH = 200;
-const TRAILING_TAB_SPACE_REGEX = /[ \t]+$/;
 const WHITESPACE_CHAR_REGEX = /\s/;
 // Two consecutive whitespace chars, or any whitespace that isn't a plain space.
 const NEEDS_FLATTEN_REGEX = /\s{2}|[^\S ]/;
+
+// The scanners below only ever act on a handful of characters. Each keeps a
+// global regex and jumps between hits with `lastIndex`, instead of testing
+// every character in JS. `test` (not `exec`) so no match array is allocated.
+const BRACE_SCAN_REGEX = /["'`{}/]/g;
+const STATEMENT_SCAN_REGEX = /["'`{};/]/g;
 
 // Character codes. The scanners below compare codes rather than one-char
 // strings so the hot loops don't allocate.
 const CH_TAB = 9;
 const CH_LF = 10;
+const CH_CR = 13;
 const CH_SPACE = 32;
 const CH_DOUBLE_QUOTE = 34;
 const CH_SINGLE_QUOTE = 39;
@@ -30,13 +36,6 @@ const CH_CLOSE_BRACKET = 93;
 const CH_BACKTICK = 96;
 const CH_OPEN_BRACE = 123;
 const CH_CLOSE_BRACE = 125;
-
-// Scanner states shared by `computeBraceMatches` and `expandRange`.
-const STATE_NORMAL = 0;
-const STATE_DOUBLE = 1;
-const STATE_SINGLE = 2;
-const STATE_TEMPLATE = 3;
-const STATE_BLOCK_COMMENT = 4;
 
 function endsWithInterfaceHeader(text: string): boolean {
   return INTERFACE_HEADER_REGEX.test(text.slice(-200));
@@ -194,52 +193,98 @@ function flattenToOneLine(content: string): string {
 }
 
 /**
- * One pass over `raw` recording, for every `{` reached outside strings and
- * block comments, the index of its matching `}` (or -1 if unmatched). This
- * replaces a per-`{` forward scan, which re-walked every nested block once
- * per enclosing level.
+ * Index of the character that closes the string literal whose opening quote
+ * sits at `open`, or -1 when it never closes. A quote directly
+ * preceded by a backslash doesn't close (that includes `\\"`, matching the
+ * per-character scan this replaced).
  */
-function computeBraceMatches(raw: string): Int32Array {
-  const matches = new Int32Array(raw.length).fill(-1);
-  const stack: number[] = [];
-  let state = STATE_NORMAL;
+function findStringClose(raw: string, open: number): number {
+  const quote = raw[open];
+  let at = raw.indexOf(quote, open + 1);
+  while (at !== -1 && raw.charCodeAt(at - 1) === CH_BACKSLASH) {
+    at = raw.indexOf(quote, at + 1);
+  }
+  return at;
+}
 
-  for (let i = 0; i < raw.length; i++) {
+/**
+ * Index of the `/` that closes the block comment opening at `open` (the
+ * index of its `/`), or -1 when it never closes. Like the per-character scan
+ * this replaced, `/*` followed straight by `/` closes immediately.
+ */
+function findBlockCommentClose(raw: string, open: number): number {
+  const at = raw.indexOf("*/", open + 1);
+  return at === -1 ? -1 : at + 1;
+}
+
+/**
+ * One pass over `raw` recording, for every `{` reached outside strings and
+ * block comments, the index of its matching `}` (unmatched braces are simply
+ * absent). This replaces a per-`{` forward scan, which re-walked every
+ * nested block once per enclosing level. Keyed by brace index rather than
+ * stored in a `raw.length`-sized table: braces are sparse, and a table the
+ * size of the output had to be allocated and filled on every call.
+ */
+function computeBraceMatches(raw: string): Map<number, number> {
+  const matches = new Map<number, number>();
+  const stack: number[] = [];
+  const scan = BRACE_SCAN_REGEX;
+  let i = 0;
+
+  while (i < raw.length) {
+    scan.lastIndex = i;
+    if (!scan.test(raw)) break;
+    i = scan.lastIndex - 1;
     const c = raw.charCodeAt(i);
 
-    if (state === STATE_BLOCK_COMMENT) {
-      if (c === CH_SLASH && raw.charCodeAt(i - 1) === CH_STAR) state = STATE_NORMAL;
-      continue;
-    }
-    if (state === STATE_DOUBLE) {
-      if (c === CH_DOUBLE_QUOTE && raw.charCodeAt(i - 1) !== CH_BACKSLASH) state = STATE_NORMAL;
-      continue;
-    }
-    if (state === STATE_SINGLE) {
-      if (c === CH_SINGLE_QUOTE && raw.charCodeAt(i - 1) !== CH_BACKSLASH) state = STATE_NORMAL;
-      continue;
-    }
-    if (state === STATE_TEMPLATE) {
-      if (c === CH_BACKTICK && raw.charCodeAt(i - 1) !== CH_BACKSLASH) state = STATE_NORMAL;
-      continue;
-    }
-
     if (c === CH_SLASH) {
-      if (raw.charCodeAt(i + 1) === CH_STAR) state = STATE_BLOCK_COMMENT;
-    } else if (c === CH_DOUBLE_QUOTE) {
-      state = STATE_DOUBLE;
-    } else if (c === CH_SINGLE_QUOTE) {
-      state = STATE_SINGLE;
-    } else if (c === CH_BACKTICK) {
-      state = STATE_TEMPLATE;
+      if (raw.charCodeAt(i + 1) === CH_STAR) {
+        const close = findBlockCommentClose(raw, i);
+        if (close === -1) break;
+        i = close;
+      }
+    } else if (c === CH_DOUBLE_QUOTE || c === CH_SINGLE_QUOTE || c === CH_BACKTICK) {
+      const close = findStringClose(raw, i);
+      if (close === -1) break;
+      i = close;
     } else if (c === CH_OPEN_BRACE) {
       stack.push(i);
     } else if (c === CH_CLOSE_BRACE && stack.length > 0) {
-      matches[stack.pop() as number] = i;
+      matches.set(stack.pop() as number, i);
     }
+
+    i++;
   }
 
   return matches;
+}
+
+/** True when `raw[from, to)` is whitespace only. Same answer as `raw.slice(from, to).trim() === ""`, without the copies. */
+function isBlankRange(raw: string, from: number, to: number): boolean {
+  for (let i = from; i < to; i++) {
+    if (!isTrimmedWhitespace(raw.charCodeAt(i))) return false;
+  }
+  return true;
+}
+
+/**
+ * Whether `String.prototype.trim` would strip this code unit: the ECMAScript
+ * WhiteSpace and LineTerminator sets.
+ */
+function isTrimmedWhitespace(code: number): boolean {
+  if (code <= CH_SPACE) return code === CH_SPACE || (code >= CH_TAB && code <= CH_CR);
+  if (code < 0xa0) return false;
+  return (
+    code === 0xa0 ||
+    code === 0x1680 ||
+    (code >= 0x2000 && code <= 0x200a) ||
+    code === 0x2028 ||
+    code === 0x2029 ||
+    code === 0x202f ||
+    code === 0x205f ||
+    code === 0x3000 ||
+    code === 0xfeff
+  );
 }
 
 /**
@@ -257,68 +302,60 @@ function computeBraceMatches(raw: string): Int32Array {
  *
  * Operates on the `[from, to)` range of `raw` so nested blocks recurse
  * without slicing, and copies unchanged runs of characters through as single
- * slices rather than one array entry per character.
+ * slices rather than one array entry per character. Strings and block
+ * comments are skipped with `indexOf`; between them the scan jumps straight
+ * to the next structural character.
  */
-function expandRange(raw: string, from: number, to: number, matches: Int32Array): string {
+function expandRange(raw: string, from: number, to: number, matches: Map<number, number>): string {
   const out: string[] = [];
-  let state = STATE_NORMAL;
+  const scan = STATEMENT_SCAN_REGEX;
   let runStart = from;
+  let i = from;
 
-  for (let i = from; i < to; i++) {
+  while (i < to) {
+    scan.lastIndex = i;
+    if (!scan.test(raw)) break;
+    i = scan.lastIndex - 1;
+    if (i >= to) break;
     const c = raw.charCodeAt(i);
 
-    if (state === STATE_BLOCK_COMMENT) {
-      if (c === CH_SLASH && raw.charCodeAt(i - 1) === CH_STAR) state = STATE_NORMAL;
-      continue;
-    }
-    if (state === STATE_DOUBLE) {
-      if (c === CH_DOUBLE_QUOTE && raw.charCodeAt(i - 1) !== CH_BACKSLASH) state = STATE_NORMAL;
-      continue;
-    }
-    if (state === STATE_SINGLE) {
-      if (c === CH_SINGLE_QUOTE && raw.charCodeAt(i - 1) !== CH_BACKSLASH) state = STATE_NORMAL;
-      continue;
-    }
-    if (state === STATE_TEMPLATE) {
-      if (c === CH_BACKTICK && raw.charCodeAt(i - 1) !== CH_BACKSLASH) state = STATE_NORMAL;
+    if (c === CH_SLASH) {
+      if (raw.charCodeAt(i + 1) === CH_STAR) {
+        const close = findBlockCommentClose(raw, i);
+        if (close === -1) break;
+        i = close;
+      }
+      i++;
       continue;
     }
 
-    // state === STATE_NORMAL
-    if (c === CH_SLASH) {
-      if (raw.charCodeAt(i + 1) === CH_STAR) state = STATE_BLOCK_COMMENT;
-      continue;
-    }
-    if (c === CH_DOUBLE_QUOTE) {
-      state = STATE_DOUBLE;
-      continue;
-    }
-    if (c === CH_SINGLE_QUOTE) {
-      state = STATE_SINGLE;
-      continue;
-    }
-    if (c === CH_BACKTICK) {
-      state = STATE_TEMPLATE;
+    if (c === CH_DOUBLE_QUOTE || c === CH_SINGLE_QUOTE || c === CH_BACKTICK) {
+      const close = findStringClose(raw, i);
+      if (close === -1) break;
+      i = close + 1;
       continue;
     }
 
     if (c === CH_OPEN_BRACE) {
-      const closeIndex = matches[i];
+      const closeIndex = matches.get(i);
       // Unmatched: copy the brace through as ordinary text.
-      if (closeIndex === -1 || closeIndex >= to) continue;
-
-      if (runStart < i) out.push(raw.slice(runStart, i));
-      const contentStart = i + 1;
-      const content = raw.slice(contentStart, closeIndex);
-
-      if (content.trim() === "") {
-        // Empty block; keep braces adjacent instead of splitting across lines.
-        out.push("{}");
-        i = closeIndex;
-        runStart = closeIndex + 1;
+      if (closeIndex === undefined || closeIndex >= to) {
+        i++;
         continue;
       }
 
+      if (runStart < i) out.push(raw.slice(runStart, i));
+      const contentStart = i + 1;
+
+      if (isBlankRange(raw, contentStart, closeIndex)) {
+        // Empty block; keep braces adjacent instead of splitting across lines.
+        out.push("{}");
+        i = closeIndex + 1;
+        runStart = i;
+        continue;
+      }
+
+      const content = raw.slice(contentStart, closeIndex);
       const nextIsNewline = raw.charCodeAt(contentStart) === CH_LF;
 
       // Expand interface bodies always; collapse other single-line `{...}` blocks under INLINE_WIDTH_BUDGET.
@@ -336,8 +373,8 @@ function expandRange(raw: string, from: number, to: number, matches: Int32Array)
           const candidate = `{ ${flattenToOneLine(body)} }`;
           if (candidate.length <= INLINE_WIDTH_BUDGET) {
             out.push(candidate);
-            i = closeIndex;
-            runStart = closeIndex + 1;
+            i = closeIndex + 1;
+            runStart = i;
             continue;
           }
         }
@@ -349,13 +386,14 @@ function expandRange(raw: string, from: number, to: number, matches: Int32Array)
         out.push("{");
         if (inner.charCodeAt(0) !== CH_SEMICOLON) out.push("\n");
         if (inner.length > 0) out.push(inner);
-        i = closeIndex - 1;
+        i = closeIndex;
         runStart = closeIndex;
         continue;
       }
 
       out.push("{");
       if (!nextIsNewline) out.push("\n");
+      i = contentStart;
       runStart = contentStart;
       continue;
     }
@@ -365,20 +403,21 @@ function expandRange(raw: string, from: number, to: number, matches: Int32Array)
       popTrailingSpacesAndTabs(out);
       if (!endsWithNewline(out)) out.push("\n");
       out.push("}");
-      runStart = i + 1;
+      i++;
+      runStart = i;
       continue;
     }
 
-    if (c === CH_SEMICOLON) {
-      if (runStart < i) out.push(raw.slice(runStart, i));
-      // A `;` always terminates whatever precedes it; attach it directly
-      // rather than let it dangle alone on a line (which the generator's
-      // own templates sometimes leave a blank line or two before).
-      popTrailingWhitespace(out);
-      out.push(";");
-      if (raw.charCodeAt(i + 1) !== CH_LF) out.push("\n");
-      runStart = i + 1;
-    }
+    // c === CH_SEMICOLON
+    if (runStart < i) out.push(raw.slice(runStart, i));
+    // A `;` always terminates whatever precedes it; attach it directly
+    // rather than let it dangle alone on a line (which the generator's
+    // own templates sometimes leave a blank line or two before).
+    popTrailingWhitespace(out);
+    out.push(";");
+    if (raw.charCodeAt(i + 1) !== CH_LF) out.push("\n");
+    i++;
+    runStart = i;
   }
 
   if (runStart < to) out.push(raw.slice(runStart, to));
@@ -419,29 +458,71 @@ function collapseSpaces(line: string): string {
   return out;
 }
 
-function startsWithCloser(line: string): boolean {
-  const first = line.charCodeAt(0);
-  return first === CH_CLOSE_BRACE || first === CH_CLOSE_BRACKET || first === CH_CLOSE_PAREN || first === CH_GT;
+function isCloserCode(code: number): boolean {
+  return code === CH_CLOSE_BRACE || code === CH_CLOSE_BRACKET || code === CH_CLOSE_PAREN || code === CH_GT;
+}
+
+/** Whether `text[at, end)` starts with `/**`. */
+function startsWithDocOpen(text: string, at: number, end: number): boolean {
+  return (
+    end - at >= 3 &&
+    text.charCodeAt(at) === CH_SLASH &&
+    text.charCodeAt(at + 1) === CH_STAR &&
+    text.charCodeAt(at + 2) === CH_STAR
+  );
+}
+
+/** Whether `text[at, end)` contains `*​/`. */
+function containsDocClose(text: string, at: number, end: number): boolean {
+  const found = text.indexOf("*/", at);
+  return found !== -1 && found + 2 <= end;
 }
 
 /**
  * Recomputes indentation from bracket nesting depth, skipping content inside
  * block comments (JSDoc bodies may themselves contain `{`/`}`, e.g.
- * `{@link Foo}`, which must not perturb the running depth). Returns the
- * reindented lines for `tidyBlankLines` to consume without re-splitting.
+ * `{@link Foo}`, which must not perturb the running depth), and normalizes
+ * blank lines in the same pass: runs of blank lines collapse to one, a blank
+ * line directly after an opener (`{`, `(`, `[`) or directly before a
+ * top-level closer is dropped, and trailing blank lines go.
+ *
+ * Works on offsets into `text` rather than `split`/`trim` copies of every
+ * line, and keeps indent and content as separate array entries until the
+ * final join. Concatenating them per line left every line a rope that the
+ * next `charCodeAt` had to flatten, which cost more than the reindent itself.
  */
-function reindent(text: string): string[] {
-  const lines = text.split("\n");
-  const out: string[] = [];
+function reindentAndTidy(text: string): string {
+  // Parallel arrays: one entry per emitted line. A blank line is `""` with indent 0.
+  const outIndent: number[] = [];
+  const outContent: string[] = [];
+  const length = text.length;
   let depth = 0;
   let inBlockComment = false;
   let commentIndent = 0;
+  let lineStart = 0;
 
-  for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-    const trimmedLine = lines[lineIndex].trim();
+  while (lineStart <= length) {
+    let lineEnd = text.indexOf("\n", lineStart);
+    if (lineEnd === -1) lineEnd = length;
+    const nextLineStart = lineEnd + 1;
 
-    if (trimmedLine === "") {
-      out.push("");
+    // Trim bounds, same set of characters `String.prototype.trim` strips.
+    let start = lineStart;
+    let end = lineEnd;
+    while (start < end && isTrimmedWhitespace(text.charCodeAt(start))) start++;
+    while (end > start && isTrimmedWhitespace(text.charCodeAt(end - 1))) end--;
+
+    if (start === end) {
+      const prev = outContent.length > 0 ? outContent[outContent.length - 1] : undefined;
+      // First line, or already following a blank line: nothing to add.
+      if (prev !== undefined && prev !== "") {
+        const prevLast = prev.charCodeAt(prev.length - 1);
+        if (prevLast !== CH_OPEN_BRACE && prevLast !== CH_OPEN_PAREN && prevLast !== CH_OPEN_BRACKET) {
+          outIndent.push(0);
+          outContent.push("");
+        }
+      }
+      lineStart = nextLineStart;
       continue;
     }
 
@@ -451,32 +532,50 @@ function reindent(text: string): string[] {
       // spacing is otherwise left untouched — comment bodies may contain
       // authored code examples (e.g. an indented ```svelte fence) whose
       // whitespace is meaningful.
-      out.push(`${indentString(commentIndent)} ${trimmedLine}`);
-      if (trimmedLine.includes("*/")) inBlockComment = false;
+      outIndent.push(commentIndent);
+      outContent.push(` ${text.slice(start, end)}`);
+      if (containsDocClose(text, start, end)) inBlockComment = false;
+      lineStart = nextLineStart;
       continue;
     }
 
-    if (trimmedLine.startsWith("/**") && !trimmedLine.includes("*/")) {
-      out.push(indentString(depth) + trimmedLine);
+    const isDocOpen = startsWithDocOpen(text, start, end);
+    const hasDocClose = isDocOpen && containsDocClose(text, start, end);
+
+    if (isDocOpen && !hasDocClose) {
+      outIndent.push(depth);
+      outContent.push(text.slice(start, end));
       inBlockComment = true;
       commentIndent = depth;
+      lineStart = nextLineStart;
       continue;
     }
 
-    const line = collapseSpaces(trimmedLine);
-    const indent = Math.max(0, depth - (startsWithCloser(line) ? 1 : 0));
-    out.push(indentString(indent) + line);
+    const closer = isCloserCode(text.charCodeAt(start));
+    const indent = Math.max(0, depth - (closer ? 1 : 0));
+    // A blank line directly before a top-level closer is dropped. Only
+    // top-level: an indented closer starts with a space, so it never
+    // counted as a closer here before the indent and content were split.
+    if (closer && indent === 0 && outContent.length > 0 && outContent[outContent.length - 1] === "") {
+      outIndent.pop();
+      outContent.pop();
+    }
+    outIndent.push(indent);
+    outContent.push(collapseSpaces(text.slice(start, end)));
+    lineStart = nextLineStart;
 
     // Single-line comments (`/** ... */`) and lines fully inside strings never
     // change bracket depth; everything else is scanned char-by-char.
-    if (line.startsWith("/**") && line.includes("*/")) continue;
+    // (Collapsing space runs can't change any of these decisions, so the
+    // scan reads the uncollapsed text in place.)
+    if (hasDocClose) continue;
 
     let quote = 0;
-    for (let i = 0; i < line.length; i++) {
-      const c = line.charCodeAt(i);
+    for (let i = start; i < end; i++) {
+      const c = text.charCodeAt(i);
 
       if (quote !== 0) {
-        if (c === quote && line.charCodeAt(i - 1) !== CH_BACKSLASH) quote = 0;
+        if (c === quote && text.charCodeAt(i - 1) !== CH_BACKSLASH) quote = 0;
         continue;
       }
 
@@ -484,39 +583,21 @@ function reindent(text: string): string[] {
       else if (c === CH_OPEN_BRACE || c === CH_OPEN_PAREN || c === CH_OPEN_BRACKET || c === CH_LT) depth++;
       else if (c === CH_CLOSE_BRACE || c === CH_CLOSE_PAREN || c === CH_CLOSE_BRACKET) depth = Math.max(0, depth - 1);
       // Excludes the `>` in `=>`, which isn't a generic-list closer.
-      else if (c === CH_GT && line.charCodeAt(i - 1) !== CH_EQUALS) depth = Math.max(0, depth - 1);
+      else if (c === CH_GT && text.charCodeAt(i - 1) !== CH_EQUALS) depth = Math.max(0, depth - 1);
     }
   }
 
-  return out;
-}
+  let count = outContent.length;
+  while (count > 0 && outContent[count - 1] === "") count--;
 
-function tidyBlankLines(lines: string[]): string {
-  const out: string[] = [];
-
-  for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-    let line = lines[lineIndex];
-    const lastCode = line.charCodeAt(line.length - 1);
-    if (lastCode === CH_SPACE || lastCode === CH_TAB) line = line.replace(TRAILING_TAB_SPACE_REGEX, "");
-
-    const prev = out.length > 0 ? out[out.length - 1] : undefined;
-    const prevBlank = prev === "";
-
-    if (line === "") {
-      if (prev === undefined || prevBlank) continue;
-      const prevLast = prev.charCodeAt(prev.length - 1);
-      if (prevLast === CH_OPEN_BRACE || prevLast === CH_OPEN_PAREN || prevLast === CH_OPEN_BRACKET) continue;
-      out.push(line);
-      continue;
-    }
-
-    if (prevBlank && startsWithCloser(line)) out.pop();
-    out.push(line);
+  const parts: string[] = [];
+  for (let i = 0; i < count; i++) {
+    if (i > 0) parts.push("\n");
+    const indent = outIndent[i];
+    if (indent > 0) parts.push(indentString(indent));
+    parts.push(outContent[i]);
   }
-
-  while (out.length > 0 && out[out.length - 1] === "") out.pop();
-
-  return out.join("\n");
+  return parts.join("");
 }
 
 /**
@@ -527,5 +608,5 @@ function tidyBlankLines(lines: string[]): string {
  * operator spacing.
  */
 export function formatGeneratedTypeScript(raw: string): string {
-  return `${tidyBlankLines(reindent(expandStatements(raw)))}\n`;
+  return `${reindentAndTidy(expandStatements(raw))}\n`;
 }
