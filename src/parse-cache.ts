@@ -1,4 +1,4 @@
-import { createHash, hash as cryptoHash } from "node:crypto";
+import { hash as cryptoHash } from "node:crypto";
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { version as sveldVersion } from "../package.json";
@@ -49,14 +49,8 @@ export function resolveCacheFilePath(rootDir: string, cache: boolean | string): 
   return resolve(rootDir, DEFAULT_CACHE_FILE);
 }
 
-// `crypto.hash` (Node 21.7+, Bun) hashes in one call without allocating a
-// Hash object; older Node falls back to the streaming API. Same digest.
-const hashOneShot: ((algorithm: string, data: string, encoding: "hex") => string) | undefined =
-  typeof cryptoHash === "function" ? cryptoHash : undefined;
-
 export function hashSource(source: string): string {
-  if (hashOneShot) return hashOneShot("sha256", source, "hex");
-  return createHash("sha256").update(source).digest("hex");
+  return cryptoHash("sha256", source, "hex");
 }
 
 function emptyCacheFile(): ParseCacheFile {
