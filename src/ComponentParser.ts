@@ -6,13 +6,13 @@ import type {
   Identifier,
   Literal,
   MemberExpression,
+  Node,
   ObjectExpression,
   Property,
   UpdateExpression,
   VariableDeclaration,
   VariableDeclarator,
 } from "estree";
-import type { Node } from "estree-walker";
 import {
   isCallExpressionNamed,
   isIdentifier,

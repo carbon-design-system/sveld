@@ -20,7 +20,7 @@
  * without re-deriving offsets by walking line lengths.
  */
 
-export interface CommentLine {
+interface CommentLine {
   /** Raw, unmodified text of this physical source line. */
   raw: string;
   /** Absolute character offset in the scanned source where this line begins. */

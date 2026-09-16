@@ -14,8 +14,6 @@ import type {
   TemplateLiteral,
   UnaryExpression,
 } from "estree";
-import type { Node } from "estree-walker";
-import { walk } from "estree-walker";
 import { isCallExpressionNamed } from "../ast-guards";
 import type ComponentParser from "../ComponentParser";
 import type {
@@ -566,22 +564,41 @@ function inferReturnTypeFromNode(node: FunctionDeclaration | FunctionExpression 
  */
 function collectReturnArguments(body: unknown): unknown[] {
   const returnArgs: unknown[] = [];
-  walk(body as Node, {
-    enter(node) {
-      if (
-        node.type === "FunctionDeclaration" ||
-        node.type === "FunctionExpression" ||
-        node.type === "ArrowFunctionExpression"
-      ) {
-        this.skip();
-        return;
-      }
-      if (node.type === "ReturnStatement") {
-        returnArgs.push((node as { argument?: unknown }).argument ?? null);
-      }
-    },
-  });
+  collectReturnArgumentsInto(body, returnArgs);
   return returnArgs;
+}
+
+/**
+ * Own-function `return` arguments only: nested functions have their own
+ * returns, so the walk stops at them. `body` is a `BlockStatement`, never a
+ * function node, so the root is always descended.
+ */
+function collectReturnArgumentsInto(node: unknown, returnArgs: unknown[]): void {
+  if (!node || typeof node !== "object") return;
+  const current = node as { type?: unknown; argument?: unknown; [key: string]: unknown };
+  if (typeof current.type !== "string") return;
+
+  if (
+    current.type === "FunctionDeclaration" ||
+    current.type === "FunctionExpression" ||
+    current.type === "ArrowFunctionExpression"
+  ) {
+    return;
+  }
+  if (current.type === "ReturnStatement") {
+    returnArgs.push(current.argument ?? null);
+  }
+
+  for (const key in current) {
+    if (key === "leadingComments") continue;
+    const value = current[key];
+    if (!value || typeof value !== "object") continue;
+    if (Array.isArray(value)) {
+      for (let i = 0; i < value.length; i++) collectReturnArgumentsInto(value[i], returnArgs);
+    } else {
+      collectReturnArgumentsInto(value, returnArgs);
+    }
+  }
 }
 
 /**

@@ -44,7 +44,6 @@
     "ajv": "^8.20.0",
     "culls": "^0.2.0",
     "custom-elements-manifest": "^2.1.0",
-    "estree-walker": "^3.0.3",
     "ostia": "0.2.4",
     "svelte": "^5.57.0",
     "typescript": "^7.0.2"
