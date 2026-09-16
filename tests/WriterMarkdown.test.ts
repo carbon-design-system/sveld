@@ -10,6 +10,26 @@ import { writeMarkdownCore } from "../src/writer/writer-markdown-core";
 import { mockComponentDocApi } from "./test-brands";
 
 describe("WriterMarkdown", () => {
+  test("inserts table-of-contents headings verbatim, even ones that look like replacement patterns", () => {
+    const document = new WriterMarkdown({});
+    document.append("h1", "Index");
+    document.append("h2", "Components").tableOfContents();
+    document.append("h2", "Price $& Co");
+    document.append("h2", "Say $' and $` and $1");
+
+    const output = document.end();
+    expect(output).toContain("- [Price $& Co](#price-co)");
+    expect(output).toContain("- [Say $' and $` and $1](#say-and-and-1)");
+    expect(output).not.toContain("__TOC__");
+  });
+
+  test("does not scan for a table of contents when none was requested", () => {
+    const document = new WriterMarkdown({});
+    document.append("h1", "Index");
+    document.append("h2", "Components");
+    expect(document.end()).toBe("# Index\n\n## Components\n\n");
+  });
+
   test("basic functionality", () => {
     const types: AppendType[] = [];
     const document = new WriterMarkdown({
