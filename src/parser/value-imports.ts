@@ -1,5 +1,4 @@
-import type { FunctionDeclaration } from "estree";
-import type { Node } from "estree-walker";
+import type { FunctionDeclaration, Node } from "estree";
 import type { ParserContext } from "./context";
 
 /** `ImportDeclaration` fields we read from the Svelte/acorn-typescript AST. */

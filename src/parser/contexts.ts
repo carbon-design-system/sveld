@@ -4,9 +4,9 @@ import type {
   Expression,
   FunctionExpression,
   NewExpression,
+  Node,
   ObjectExpression,
 } from "estree";
-import type { Node } from "estree-walker";
 import { isIdentifier, isLiteral, isObjectExpression, resolveStaticStringLiteral } from "../ast-guards";
 import type ComponentParser from "../ComponentParser";
 import type { ComponentContext, ComponentContextProp } from "../ComponentParser";
