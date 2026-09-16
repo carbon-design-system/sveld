@@ -2,7 +2,6 @@ import { tsPlugin } from "@sveltejs/acorn-typescript";
 import type { Node as AcornNode } from "acorn";
 import { Parser } from "acorn";
 import type { Program } from "estree";
-import { walk } from "zimmerframe";
 import { attachComments, bindOnComment, type CommentWithLocation, onComment } from "./comments";
 
 /**
@@ -186,7 +185,7 @@ export function parseExpressionAt(
   const end = lastComment && lastComment.end > (node.end ?? 0) ? lastComment.end : (node.end ?? 0);
 
   // Most expressions (including calls and arrow functions, which do contain
-  // `(`) produce no `ParenthesizedExpression`; skip zimmerframe's tree walk
+  // `(`) produce no `ParenthesizedExpression`; skip the unwrapping tree walk
   // unless the parser actually finished one.
   const parsed = parenTracking.sawParenthesized ? removeParens(node) : node;
 
@@ -223,16 +222,53 @@ export function parseStatementAt(
   return statement;
 }
 
+interface WalkableAcornNode {
+  type: string;
+  expression?: WalkableAcornNode;
+  [key: string]: unknown;
+}
+
+function isWalkableNode(value: unknown): value is WalkableAcornNode {
+  return value !== null && typeof value === "object" && typeof (value as WalkableAcornNode).type === "string";
+}
+
+/** `node` with every `ParenthesizedExpression` layer peeled off. */
+function unwrapParens(node: WalkableAcornNode): WalkableAcornNode {
+  let inner = node;
+  while (inner.type === "ParenthesizedExpression" && inner.expression) inner = inner.expression;
+  return inner;
+}
+
 /**
  * `preserveParens: true` leaves `ParenthesizedExpression` wrappers in.
- * svelte's public AST never exposes them. Unwrap, matching svelte's
- * `remove_parens` in `phases/1-parse/acorn.js`.
+ * svelte's public AST never exposes them. Unwrap in place, matching svelte's
+ * `remove_parens` in `phases/1-parse/acorn.js`. Same traversal as the
+ * parser's other walks: own enumerable keys in order, a child is any object
+ * with a string `type`, directly or inside an array.
  */
 function removeParens<T extends AcornNode>(node: T): T {
-  return walk(node as unknown as { type: string }, null, {
-    ParenthesizedExpression(node: { expression: unknown }, context: { visit: (n: unknown) => unknown }) {
-      return context.visit(node.expression);
-    },
-    // biome-ignore lint/suspicious/noExplicitAny: zimmerframe's visitor map is keyed by arbitrary node type strings
-  } as any) as unknown as T;
+  const root = unwrapParens(node as unknown as WalkableAcornNode);
+  removeParensInChildren(root);
+  return root as unknown as T;
+}
+
+function removeParensInChildren(node: WalkableAcornNode): void {
+  for (const key in node) {
+    const value = node[key];
+    if (!value || typeof value !== "object") continue;
+
+    if (Array.isArray(value)) {
+      for (let i = 0; i < value.length; i++) {
+        const item = value[i];
+        if (!isWalkableNode(item)) continue;
+        const replacement = unwrapParens(item);
+        if (replacement !== item) value[i] = replacement;
+        removeParensInChildren(replacement);
+      }
+    } else if (isWalkableNode(value)) {
+      const replacement = unwrapParens(value);
+      if (replacement !== value) node[key] = replacement;
+      removeParensInChildren(replacement);
+    }
+  }
 }
