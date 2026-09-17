@@ -508,7 +508,7 @@ A bare `@sveld-ignore` (no code) suppresses every diagnostic for that symbol.
 - `sveld` is ESM-only. `require("sveld")` does not work — use `import` or dynamic `import()`.
 - The [persistent parse cache](#persistent-parse-cache-cache) hashes source with `node:crypto`'s one-shot `hash()`, which needs Node 22 (or Bun).
 - `sveld` bundles its own template parser to parse `.svelte` files, kept in parity with `svelte/compiler` (see [Approach](#approach)). Parsing does not depend on the Svelte version installed in your project, so Svelte 3 and Svelte 4 codebases parse the same way Svelte 5 codebases do — there is no compiler version to match up.
-- [`resolveTypes`](#opt-in-semantic-resolution-resolvetypes) and [`checkExamples`](#compile-checked-example-blocks-checkexamples) are optional and need `typescript` 7 or later (which provides `typescript/unstable/async`) plus a `tsconfig.json`. Everything else, including `.d.ts` generation, is AST-only and never loads TypeScript. If either is enabled and TypeScript can't be started (missing, too old, or no `tsconfig.json`), the run fails loudly: `sveld()` throws and the CLI exits `2` naming the requirement, rather than silently skipping the check.
+- [`resolveTypes`](#opt-in-semantic-resolution-resolvetypes), [`checkExamples`](#compile-checked-example-blocks-checkexamples), and [`typesOptions.inline: "all"`](#typesoptionsinline) are optional and need `typescript` 7 or later (which provides `typescript/unstable/async`) plus a `tsconfig.json`. Everything else, including `.d.ts` generation and `typesOptions.inline: "local"`, is AST-only and never loads TypeScript. If any of the three is enabled and TypeScript can't be started (missing, too old, or no `tsconfig.json`), the run fails loudly: `sveld()` throws and the CLI exits `2` naming the requirement, rather than silently skipping the check. For `typesOptions.inline: "all"` this only actually triggers when there's a non-allow-listed bare import somewhere in the bundle to resolve; see [`typesOptions.inline`](#typesoptionsinline).
 
 ## Usage
 
@@ -1303,7 +1303,7 @@ export type MyComponentProps = $Props;
 It leaves alone:
 
 - bare/package imports (`import type { CSSProperties } from "some-package"`) and `.svelte`
-  sources — a future option value will cover bare imports, if ever;
+  sources — `"all"` covers bare imports, see below;
 - `@extendProps`/`@extends` imports and `import("./x")` inline import types inside typedefs,
   which are unrelated mechanisms;
 - `enum`, `class`, and `function` exports, which can't be safely copied as a `type`/`interface`.
@@ -1315,8 +1315,68 @@ as an import, with a [`types-inline-unresolved`](#diagnostic-codes) warning expl
 `import type { A, B } from "./x"` statement imports several names and even one of them can't be
 inlined, the whole statement is kept and nothing from it is inlined — simpler, and always correct.
 
-`"all"` is accepted but currently behaves exactly like `"local"`; it's reserved for a future
-option that also inlines bare/package imports.
+**`"all"`** additionally inlines bare/package imports:
+
+```svelte
+<script lang="ts">
+  import type { HTMLButtonAttributes } from "svelte/elements";
+  import type { Alignment } from "some-design-system";
+  let { rest, align }: { rest: HTMLButtonAttributes; align: Alignment } = $props();
+</script>
+```
+
+```js
+sveld({
+  types: true,
+  typesOptions: {
+    inline: "all",
+  },
+});
+```
+
+```ts
+import type { Component } from "svelte";
+import type { HTMLButtonAttributes } from "svelte/elements";
+
+type Alignment = "start" | "center" | "end";
+
+type $Props = { rest: HTMLButtonAttributes; align: Alignment };
+export type MyComponentProps = $Props;
+```
+
+`some-design-system`'s `Alignment` got copied in, exactly like a `"local"` relative import would.
+`svelte`/`svelte/elements` did not, even though `HTMLButtonAttributes` is itself a bare import a
+real TypeScript checker could resolve and copy just as easily: those two specifiers are a
+hard-coded allow-list and always stay imports under `"all"`, regardless of what they resolve to.
+Copying framework types would freeze whatever Svelte version happened to be installed at
+generation time into every consumer's `.d.ts` output, which defeats the point of importing them
+from `svelte` in the first place.
+
+Resolving a bare specifier to a file needs a real module resolver, so `"all"` uses the actual
+TypeScript checker (the same one behind [`resolveTypes`](#opt-in-semantic-resolution-resolvetypes)
+and [`checkExamples`](#compile-checked-example-blocks-checkexamples), shared across all three when
+more than one is enabled) rather than sveld's own AST-only pass. This makes `"all"` a **hard
+requirement** on `typescript` 7+ and a resolvable `tsconfig.json` — same contract `resolveTypes`
+already has (see [Requirements](#requirements)): if TypeScript can't be started, the run fails
+loudly rather than silently falling back to `"local"` behavior. The requirement only actually
+kicks in when there's at least one non-allow-listed bare import somewhere in the bundle to
+resolve; an `"all"` run with nothing bare to inline never loads TypeScript at all.
+
+A reference inside a copied bare declaration is chased exactly like a local one: a same-file
+helper type is copied and recursed into, a relative/aliased import is followed the same way
+`"local"` already does, and a further bare import goes back through the checker (again skipping
+the svelte/svelte-elements allow-list). A reference that resolves to a TypeScript default-lib file
+(e.g. `Element`, `EventTarget` from `lib.dom.d.ts`) is left alone — it's already global and needs
+no import — the same way a local pass leaves an unimported name alone.
+
+`@extendProps`/`@extends` inlining (replacing `import type { ButtonProps } from "./Button.svelte"`
+with a copy of `Button`'s own generated declaration) is out of scope for both `"local"` and
+`"all"`; that's a distinct, deferred mechanism, not covered here.
+
+Copying from a large package can produce a large `.d.ts`: `svelte/elements`'s attribute-map
+interfaces (`HTMLButtonAttributes` and friends) are individually sizable, and every type they
+transitively reference gets copied too. Prefer `"local"` if you don't specifically need bare
+imports inlined.
 
 A component with at least one inlined declaration skips the generated-text cache (its output now
 depends on another file's contents, not just its own source hash), though its *parse* is still
