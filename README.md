@@ -445,10 +445,11 @@ Every diagnostic carries a stable, namespaced `code` (`"sveld/<kind>"`) alongsid
 | `sveld/generics-conflict` | `warning` | Rename one of the `@generics`/`@template` declarations to a distinct generic name. |
 | `sveld/jsdoc-tag-dropped` | `warning` | Move the tag next to a `@slot`/`@snippet`/`@event`/`@typedef`/`@callback` tag in the same comment block so it has something to attach to. |
 | `sveld/internal-typedef-referenced` | `error` | Remove `@internal`/`@ignore` from the referenced typedef, or stop referencing it from public type text (inline the shape, or make the referencing item `@internal` too). |
+| `sveld/types-inline-unresolved` | `warning` | The import is kept as-is. Point it at a relative `.ts` file that exports a `type`/`interface`, or rename the colliding type. |
 
 #### Severity and `--strict=errors`
 
-Each diagnostic's `severity` is `"error"` (`example-compile-error`, `example-syntax-error`, `syntax-skipped`, `extend-props-target-missing`, `internal-typedef-referenced` — sveld emitted broken or unmodeled output) or `"warning"` (`prop-unknown-type`, `context-any-type`, `slot-missing-type`, `event-no-source`, `rest-props-unresolved`, `context-duplicate-key`, `spread-unresolved`, `export-unresolved`, `extend-props-duplicate`, `extend-props-override`, `jsdoc-unknown-tag`, `typedef-duplicate`, `property-duplicate`, `generics-conflict`, `jsdoc-tag-dropped` — a type fell back to `any`). Plain `strict: true` / `--strict` fails on both, unchanged from before. Pass `strict: "errors"` (or `--strict=errors`) to fail CI only on `error`-severity diagnostics, letting `any`-fallback warnings through:
+Each diagnostic's `severity` is `"error"` (`example-compile-error`, `example-syntax-error`, `syntax-skipped`, `extend-props-target-missing`, `internal-typedef-referenced` — sveld emitted broken or unmodeled output) or `"warning"` (`prop-unknown-type`, `context-any-type`, `slot-missing-type`, `event-no-source`, `rest-props-unresolved`, `context-duplicate-key`, `spread-unresolved`, `export-unresolved`, `extend-props-duplicate`, `extend-props-override`, `jsdoc-unknown-tag`, `typedef-duplicate`, `property-duplicate`, `generics-conflict`, `jsdoc-tag-dropped`, `types-inline-unresolved` — a type fell back to `any`). Plain `strict: true` / `--strict` fails on both, unchanged from before. Pass `strict: "errors"` (or `--strict=errors`) to fail CI only on `error`-severity diagnostics, letting `any`-fallback warnings through:
 
 ```sh
 npx sveld --json --strict=errors
@@ -930,6 +931,7 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
   - **`propsDeclaration`** (`"type" | "interface"`, optional, default: `"type"`): `"interface"` emits the props type as an `interface` instead of a `type` alias when the props are a plain object. No CLI flag; config file or `sveld()` only. See [`typesOptions.propsDeclaration`](#typesoptionspropsdeclaration).
   - **`transform`** (function, optional): Post-processes each generated file's text before it is written. Runs after the generated-text cache, so it applies on every run. No CLI flag; config file or `sveld()` only. See [`typesOptions.transform`](#typesoptionstransform).
   - **`indexTypes`** (`boolean | { props?, exports?, typedefs?, contexts? }`, optional, default: `false`): Also re-export generated types from `index.d.ts`. `true` re-exports each component's `Props` type (and `Exports` under `format: "component"`); an object can additionally include typedefs and contexts. No CLI flag; config file or `sveld()` only. See [`typesOptions.indexTypes`](#typesoptionsindextypes).
+  - **`inline`** (`false | "local" | "all"`, optional, default: `false`): Copies `type`/`interface` declarations imported from a relative source (or a tsconfig/jsconfig path alias) directly into the `.d.ts`, dropping the import. No CLI flag; config file or `sveld()` only. See [`typesOptions.inline`](#typesoptionsinline).
 - **`json`** (boolean, optional): Generate component documentation in JSON format.
 - **`jsonOptions`** (object, optional): Options for JSON output.
   - **`outFile`** (string, optional, default: `"COMPONENT_API.json"`): Path (relative to the project root) for the single combined JSON document. Ignored when `outDir` is set.
@@ -1248,6 +1250,78 @@ sveld: index.d.ts skips duplicate type export "TabsContext" from "./Tabs2.svelte
 `indexTypes` composes with [`exportTypes`](#typesoptionsexporttypes): a type that `exportTypes` keeps local to its component's `.d.ts` is never re-exported from the barrel either, since it wouldn't resolve.
 
 There's no CLI flag for `indexTypes`; set it via a config file or the programmatic `sveld()` API.
+
+#### `typesOptions.inline`
+
+A TypeScript component that imports a type keeps that import in its `.d.ts`:
+
+```svelte
+<script lang="ts">
+  import type { Size } from "./types";
+  let { size }: { size: Size } = $props();
+</script>
+```
+
+```ts
+import type { Component } from "svelte";
+import type { Size } from "./types";
+
+type $Props = { size: Size };
+export type MyComponentProps = $Props;
+```
+
+Publishers who don't ship their `.svelte` sources need `.d.ts` files without relative imports:
+`./types.ts` might sit outside the published `types/` output directory, or the package might be
+bundled to a single file. `typesOptions.inline: "local"` copies the imported declaration into
+the `.d.ts` instead of importing it:
+
+```js
+sveld({
+  types: true,
+  typesOptions: {
+    inline: "local",
+  },
+});
+```
+
+```ts
+import type { Component } from "svelte";
+
+type Size = "sm" | "md" | "lg";
+
+type $Props = { size: Size };
+export type MyComponentProps = $Props;
+```
+
+`"local"` follows:
+
+- relative sources (`./types`) and tsconfig/jsconfig `paths` aliases;
+- re-exports (`export { X as Y } from "./z"` and `export * from "./z"`);
+- same-file dependencies (a copied type that itself references another type or interface
+  declared in the same file copies that one too, before the type that references it).
+
+It leaves alone:
+
+- bare/package imports (`import type { CSSProperties } from "some-package"`) and `.svelte`
+  sources — a future option value will cover bare imports, if ever;
+- `@extendProps`/`@extends` imports and `import("./x")` inline import types inside typedefs,
+  which are unrelated mechanisms;
+- `enum`, `class`, and `function` exports, which can't be safely copied as a `type`/`interface`.
+
+An import that can't be safely inlined (a missing file, a missing export, one of the unsupported
+export kinds above, or a name collision with something the component already declares — a
+typedef, a context type, a local `type`/`interface`, or its `Props`/`Exports` type name) is left
+as an import, with a [`types-inline-unresolved`](#diagnostic-codes) warning explaining why. If an
+`import type { A, B } from "./x"` statement imports several names and even one of them can't be
+inlined, the whole statement is kept and nothing from it is inlined — simpler, and always correct.
+
+`"all"` is accepted but currently behaves exactly like `"local"`; it's reserved for a future
+option that also inlines bare/package imports.
+
+A component with at least one inlined declaration skips the generated-text cache (its output now
+depends on another file's contents, not just its own source hash), though its *parse* is still
+cached as usual. There's no CLI flag for `inline`; set it via a config file or the programmatic
+`sveld()` API.
 
 #### `markdownOptions.onAppend`
 
