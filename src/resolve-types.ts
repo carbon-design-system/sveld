@@ -66,6 +66,32 @@ export interface TypeResolverCreateOptions {
   importTs?: (cwd: string) => Promise<TypeScriptLoadResult>;
 }
 
+/**
+ * Outcome of resolving one bare/package `import type` specifier through the checker, for
+ * `typesOptions.inline: "all"` (see {@link TypeResolver.openBareTypeSession}).
+ *
+ * - `resolved`: found a real declaring file and name; the caller still has to locate and
+ *   classify the actual declaration syntactically (same as any other file `inline-types.ts` reads).
+ * - `default-lib`: resolved, but into a TypeScript default-lib file (e.g. `lib.dom.d.ts`) - an
+ *   ambient global, already available without an import; leave it alone rather than copying it.
+ * - `unresolved`: no symbol at that position, or the alias couldn't be followed to a real symbol.
+ */
+export type BareSymbolResolution =
+  | { kind: "resolved"; filePath: string; declaredName: string }
+  | { kind: "default-lib" }
+  | { kind: "unresolved" };
+
+/** A live session over one TypeScript program snapshot, for resolving bare type imports. */
+export interface BareTypeSession {
+  /**
+   * Resolves the symbol at `position` in `file` (a virtual overlay file, or any real file
+   * already reachable from one) to its real declaring file/name.
+   */
+  resolveAt(file: string, position: number): Promise<BareSymbolResolution>;
+  /** Disposes this session's snapshot. Does not close the underlying `TypeResolver`/API. */
+  dispose(): Promise<void>;
+}
+
 function isSupportedVersion(version: string | undefined): boolean {
   if (!version) return false;
   const major = Number.parseInt(version, 10);
@@ -102,13 +128,19 @@ export class TypeResolver {
   private readonly symbolFlags: TS;
   private readonly typeFlags: TS;
   private readonly tsconfigPath: string;
+  private readonly cwd: string;
   private readonly overlay = new Map<string, string>();
+  // Populated by `forgetOverlayFiles`, consumed by the next `openBareTypeSession` call: reported
+  // as `deleted` in that call's `fileChanges` so the server's incremental snapshot actually drops
+  // the file, rather than continuing to serve a stale parse of content `this.overlay` no longer has.
+  private readonly pendingOverlayDeletions = new Set<string>();
 
-  private constructor(api: TS, symbolFlags: TS, typeFlags: TS, tsconfigPath: string) {
+  private constructor(api: TS, symbolFlags: TS, typeFlags: TS, tsconfigPath: string, cwd: string) {
     this.api = api;
     this.symbolFlags = symbolFlags;
     this.typeFlags = typeFlags;
     this.tsconfigPath = tsconfigPath;
+    this.cwd = cwd;
   }
 
   /**
@@ -150,7 +182,7 @@ export class TypeResolver {
     }
 
     const mod = loaded.module;
-    const resolver = new TypeResolver(null, mod.SymbolFlags, mod.TypeFlags, tsconfigPath);
+    const resolver = new TypeResolver(null, mod.SymbolFlags, mod.TypeFlags, tsconfigPath, cwd);
     const api = new mod.API({ cwd, fs: resolver.createFileSystem() });
     // biome-ignore lint/suspicious/noExplicitAny: assign after fs closure is created.
     (resolver as any).api = api;
@@ -342,6 +374,92 @@ export class TypeResolver {
     }
 
     return results;
+  }
+
+  /**
+   * Removes entries from the persistent overlay by path, for a long-lived resolver (watch mode)
+   * whose `openBareTypeSession` calls only ever add to `this.overlay` and never shrink it: a
+   * component's virtual overlay file would otherwise stay forever once created, even after that
+   * component's bare imports are all removed. Call this for every component about to be
+   * refreshed, before the fresh (possibly empty) overlay for it is set.
+   */
+  forgetOverlayFiles(filePaths: Iterable<string>): void {
+    for (const filePath of filePaths) {
+      if (this.overlay.delete(filePath)) this.pendingOverlayDeletions.add(filePath);
+    }
+  }
+
+  /**
+   * Opens a session for resolving bare/package `import type` specifiers to their real
+   * declaring file, for `typesOptions.inline: "all"`.
+   *
+   * `overlayFiles` seeds one virtual `.ts` file per component with a bare import to resolve
+   * (built by `inline-types.ts`'s `collectBareImportOverlay`): each aliases the imported name
+   * and references it in type position, giving the checker a real, checker-visible position to
+   * query. Importing a bare specifier at all pulls its full transitive module graph into this
+   * snapshot's program, so every real file that graph touches (e.g. `svelte/elements.d.ts`
+   * pulling in `svelte/attachments.d.ts`) becomes queryable through {@link BareTypeSession.resolveAt}
+   * too, with no further snapshot needed - one snapshot per bundle/watch-flush run is enough for
+   * arbitrarily deep recursion.
+   */
+  async openBareTypeSession(overlayFiles: ReadonlyMap<string, string>): Promise<BareTypeSession> {
+    for (const [file, content] of overlayFiles) this.overlay.set(file, content);
+
+    // A file forgotten since the last session must be reported `deleted` here, not just dropped
+    // from `this.overlay`: the server's own incremental snapshot otherwise keeps serving its last
+    // known (stale) parse of that file, since nothing told it the file went away. Exclude any path
+    // this same call is also (re-)creating: `forgetOverlayFiles` runs for every component about to
+    // be refreshed, including ones that still have a bare import and so get a fresh entry in
+    // `overlayFiles` moments later - that's a change, not a deletion, and reporting both for the
+    // same path in one call left it unresolvable even though it was just given fresh content.
+    const deleted = Array.from(this.pendingOverlayDeletions).filter((file) => !overlayFiles.has(file));
+    this.pendingOverlayDeletions.clear();
+
+    const snapshot = await this.api.updateSnapshot({
+      openProject: this.tsconfigPath,
+      fileChanges: { created: Array.from(overlayFiles.keys()), deleted },
+    });
+
+    // Trailing separator so a sibling directory that merely starts with the same prefix
+    // (e.g. "node_modules-extra") never falsely matches.
+    const nodeModulesPrefix = `${normalizeSeparators(path.join(this.cwd, "node_modules"))}/`;
+
+    const resolveAt = async (file: string, position: number): Promise<BareSymbolResolution> => {
+      const project = await snapshot.getDefaultProjectForFile(file);
+      if (!project) return { kind: "unresolved" };
+
+      const checker = project.checker;
+      const symbol = await checker.getSymbolAtPosition(file, position);
+      if (!symbol) return { kind: "unresolved" };
+
+      const aliased = await checker.getAliasedSymbol(symbol);
+      if (await checker.isUnknownSymbol(aliased)) return { kind: "unresolved" };
+
+      const declarations: readonly TS[] = aliased.declarations ?? [];
+      if (declarations.length === 0) return { kind: "unresolved" };
+
+      // Two npm installs of the same package (a hoisted root copy and a nested duplicate) can
+      // produce two `declarations` entries for the same symbol; prefer the project's own
+      // `node_modules` copy, falling back to the first declaration otherwise.
+      const resolvedNodes: Array<TS | undefined> = await Promise.all(declarations.map((decl) => decl.resolve()));
+      const preferredIndex = resolvedNodes.findIndex(
+        (node) => node && normalizeSeparators(node.getSourceFile().fileName).startsWith(nodeModulesPrefix),
+      );
+      const chosenIndex =
+        preferredIndex === -1 ? resolvedNodes.findIndex((node) => node !== undefined) : preferredIndex;
+      const chosenNode = chosenIndex === -1 ? undefined : resolvedNodes[chosenIndex];
+      if (!chosenNode) return { kind: "unresolved" };
+
+      const sourceFile = chosenNode.getSourceFile();
+      if (await project.program.isSourceFileDefaultLibrary(sourceFile)) return { kind: "default-lib" };
+
+      return { kind: "resolved", filePath: sourceFile.fileName, declaredName: aliased.name };
+    };
+
+    return {
+      resolveAt,
+      dispose: () => snapshot.dispose?.() ?? Promise.resolve(),
+    };
   }
 
   /** Closes the TypeScript server process. */

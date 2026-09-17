@@ -1181,9 +1181,14 @@ export interface WriteTsDefinitionOptions {
    * tsconfig/jsconfig path alias) directly into the `.d.ts`, dropping the import. `"local"`
    * follows relative sources, path aliases, re-exports, and same-file dependencies; bare package
    * imports, `.svelte` sources, and unsupported exports (enums, classes, functions, consts,
-   * namespaces) stay imports and get a `types-inline-unresolved` warning. `"all"` is accepted but
-   * currently behaves identically to `"local"` (reserved for a future prompt that also inlines
-   * bare/package imports). `false` (default) preserves every import as-is.
+   * namespaces) stay imports and get a `types-inline-unresolved` warning. `"all"` additionally
+   * inlines bare/package imports (e.g. `import type { Foo } from "some-lib"`) using the real
+   * TypeScript checker - same unsupported-export/collision rules, same warning on failure - with
+   * two exceptions kept as plain imports regardless: `svelte`/`svelte/elements` (a hard-coded
+   * allow-list; copying framework types would freeze a Svelte version into consumer output) and
+   * `@extendProps`/`@extends` targets (deferred; unrelated mechanism). `"all"` needs `typescript`
+   * 7+ and a `tsconfig.json`, same hard requirement as `resolveTypes`. `false` (default)
+   * preserves every import as-is.
    * @default false
    */
   inline?: false | "local" | "all";

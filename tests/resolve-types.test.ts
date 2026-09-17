@@ -1,6 +1,8 @@
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { asNormalizedPath } from "../src/brands";
 import ComponentParser, { applyResolvedProps, getParsedComponentTypeScriptMetadata } from "../src/ComponentParser";
+import { bareOverlayVirtualFilePath } from "../src/inline-types";
 import { TypeResolver } from "../src/resolve-types";
 
 const FIXTURE_DIR = path.join(process.cwd(), "tests", "fixtures", "runes-whole-props-imported");
@@ -219,4 +221,105 @@ describe("TypeResolver.create failure modes", () => {
     expect(result.reason).toBe("no-tsconfig");
     expect(result.message).toContain("tsconfig.json");
   });
+});
+
+describe("TypeResolver.forgetOverlayFiles", () => {
+  let dir: string;
+
+  beforeEach(() => {
+    dir = mkdtempSync(path.join(process.cwd(), ".tmp-sveld-resolve-types-forget-overlay-"));
+    writeFileSync(
+      path.join(dir, "tsconfig.json"),
+      JSON.stringify({
+        compilerOptions: { target: "ES2022", module: "ESNext", moduleResolution: "bundler", skipLibCheck: true },
+        include: ["**/*"],
+      }),
+    );
+    const libDir = path.join(dir, "node_modules", "some-lib");
+    mkdirSync(libDir, { recursive: true });
+    writeFileSync(path.join(libDir, "package.json"), JSON.stringify({ name: "some-lib", types: "index.d.ts" }));
+    writeFileSync(path.join(libDir, "index.d.ts"), `export type Size = "sm" | "md" | "lg";\n`);
+  });
+
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("removes an overlay file so a later session can no longer resolve positions in it", async () => {
+    const created = await TypeResolver.create(dir);
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+    const resolver = created.resolver;
+
+    try {
+      const virtualFile = bareOverlayVirtualFilePath(path.join(dir, "Comp.svelte"), "Comp");
+      const content = 'import type { Size as __sveld_bare_0 } from "some-lib";\ntype __sveld_ref_0 = __sveld_bare_0;\n';
+      const position = content.indexOf("__sveld_bare_0;");
+
+      const firstSession = await resolver.openBareTypeSession(new Map([[virtualFile, content]]));
+      try {
+        const resolved = await firstSession.resolveAt(virtualFile, position);
+        expect(resolved.kind).toBe("resolved");
+      } finally {
+        await firstSession.dispose();
+      }
+
+      // The component's bare import was removed; forget its stale overlay entry before the next
+      // session, the way `watch.ts`'s `refreshInlinedTypes` does for every component it refreshes.
+      resolver.forgetOverlayFiles([virtualFile]);
+
+      const secondSession = await resolver.openBareTypeSession(new Map());
+      try {
+        const resolved = await secondSession.resolveAt(virtualFile, position);
+        // The overlay file is gone, so there's no project for it anymore.
+        expect(resolved.kind).toBe("unresolved");
+      } finally {
+        await secondSession.dispose();
+      }
+    } finally {
+      await resolver.dispose();
+    }
+  }, 30_000);
+
+  test("forgetting a file that's immediately given fresh content in the same call still resolves", async () => {
+    // Mirrors `watch.ts`'s `refreshInlinedTypes`: it calls `forgetOverlayFiles` for every
+    // component about to be refreshed, including ones that still have a bare import and so get a
+    // fresh overlay entry moments later in the very same `openBareTypeSession` call - that's an
+    // edit, not a removal, and must not be reported as `deleted` alongside its own `created` entry.
+    const created = await TypeResolver.create(dir);
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+    const resolver = created.resolver;
+
+    try {
+      const virtualFile = bareOverlayVirtualFilePath(path.join(dir, "Comp.svelte"), "Comp");
+      const firstContent =
+        'import type { Size as __sveld_bare_0 } from "some-lib";\ntype __sveld_ref_0 = __sveld_bare_0;\n';
+      const firstPosition = firstContent.indexOf("__sveld_bare_0;");
+
+      const firstSession = await resolver.openBareTypeSession(new Map([[virtualFile, firstContent]]));
+      try {
+        expect((await firstSession.resolveAt(virtualFile, firstPosition)).kind).toBe("resolved");
+      } finally {
+        await firstSession.dispose();
+      }
+
+      resolver.forgetOverlayFiles([virtualFile]);
+
+      // Same virtual file, different content - as if the component's bare import changed rather
+      // than being removed.
+      const secondContent =
+        'import type { Size as __sveld_bare_1 } from "some-lib";\ntype __sveld_ref_1 = __sveld_bare_1;\n';
+      const secondPosition = secondContent.indexOf("__sveld_bare_1;");
+
+      const secondSession = await resolver.openBareTypeSession(new Map([[virtualFile, secondContent]]));
+      try {
+        expect((await secondSession.resolveAt(virtualFile, secondPosition)).kind).toBe("resolved");
+      } finally {
+        await secondSession.dispose();
+      }
+    } finally {
+      await resolver.dispose();
+    }
+  }, 30_000);
 });

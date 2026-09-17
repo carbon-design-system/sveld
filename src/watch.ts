@@ -17,11 +17,17 @@ import {
 import { buildReverseDeps, expandAffected } from "./dependency-graph";
 import { dedupeDiagnostics } from "./diagnostics";
 import { resetDirectoryListings } from "./fs-listing";
-import { type InlinedTypes, inlineLocalTypeImports } from "./inline-types";
+import {
+  bareOverlayVirtualFilePath,
+  collectBareImportOverlay,
+  type InlinedTypes,
+  inlineLocalTypeImports,
+} from "./inline-types";
 import { type EntryExports, parseEntryExports } from "./parse-entry-exports";
 import type { ParsedExports } from "./parse-exports";
 import { loadParserStack } from "./parser-stack";
 import { SVELTE_EXT_REGEX } from "./path";
+import type { BareTypeSession, TypeResolver } from "./resolve-types";
 import type { WriteTsDefinitionOptions } from "./writer/writer-ts-definitions-core";
 
 /** Result of an incremental update. */
@@ -46,7 +52,7 @@ interface SveldBundleUpdate {
  * plugin's watch mode.
  */
 export interface SveldBundle {
-  readonly result: GenerateBundleResult;
+  readonly result: Promise<GenerateBundleResult>;
   /** Re-parse the changed files plus their dependents and return the updated bundle. */
   update(changedFilePaths: string[]): Promise<SveldBundleUpdate>;
 }
@@ -61,7 +67,11 @@ export interface SveldBundle {
  * @param typesInline - Mirrors `typesOptions.inline`; scoped to the components actually affected
  *   by each `update()` (the reparsed ones, plus any component whose inline dependency file itself
  *   changed), so edits to an inlined source are picked up on the next debounced flush without
- *   re-resolving every other component's type imports too.
+ *   re-resolving every other component's type imports too. `"all"` additionally needs a live
+ *   TypeScript checker for bare/package imports (see `inline-types.ts`); unlike the one-shot
+ *   `generateBundle` path, watch mode creates that checker eagerly here (not gated on whether a
+ *   bare import exists yet), failing the same way `resolveTypes` does if it can't start, since a
+ *   later edit could add a bare import at any point in a long-lived session.
  * @param typesTypeNames - Mirrors `typesOptions.typeNames`, so inlining's collision check against
  *   the component's own `Props`/`Exports` type names uses the actual templated names.
  */
@@ -87,6 +97,20 @@ export async function createSveldBundle(
   let allComponentEntries = initial.allComponentEntries;
   let resolveComponentFilePath = initial.resolveComponentFilePath;
 
+  // Eager, unconditional (unlike the one-shot `generateBundle` path, which only pays this cost
+  // when a bare import already exists): watch mode is long-lived, and a bare import can be added
+  // by a later edit, so there's no single point where "nothing bare exists yet" can be trusted to
+  // stay true. Same fail-loud contract as `resolveTypes`.
+  let bareResolver: TypeResolver | undefined;
+  if (typesInline === "all") {
+    const { TypeResolver } = await import("./resolve-types");
+    const created = await TypeResolver.create(rootDir);
+    if (!created.ok) {
+      throw new Error(`sveld: \`typesOptions.inline: "all"\` ${created.message}.`);
+    }
+    bareResolver = created.resolver;
+  }
+
   let entryExports: EntryExports = documentExports && inputIsFile ? await parseEntryExports(resolve(input)) : [];
 
   let exportEntries = Object.entries(exports);
@@ -109,8 +133,9 @@ export async function createSveldBundle(
   };
 
   // Persisted across accesses/flushes so an unaffected component's inline result is reused rather
-  // than recomputed (re-reading and re-parsing its type-import dependency files) on every single
-  // `.result`/`update()` call. Kept in sync with `allComponentsForTypes` by `refreshInlinedTypes`.
+  // than recomputed (re-reading and re-parsing its type-import dependency files, or under `"all"`
+  // re-resolving through the checker) on every single `.result`/`update()` call. Kept in sync with
+  // `allComponentsForTypes` by `refreshInlinedTypes`.
   const inlinedTypesByFilePath = new Map<string, InlinedTypes>();
   // Absolute path of a file read while inlining -> the component `filePath`s whose inline result
   // depends on it. A dependency is never itself re-parsed as a component (it's a plain `.ts` file,
@@ -124,23 +149,52 @@ export async function createSveldBundle(
    * initial parse, then with the reparsed subset (plus any component whose recorded dependency
    * changed) after each `update()` - an edit to one component's type-import dependency never pays
    * for re-resolving every other component's.
+   *
+   * Under `"all"`, the bare-import overlay/session is likewise rebuilt for just `scope` rather
+   * than the whole bundle: cheap when `scope` has nothing bare to resolve (an empty overlay skips
+   * creating a session at all), and `forgetOverlayFiles` clears each scoped component's *previous*
+   * virtual overlay file first, since `openBareTypeSession` only ever adds to the resolver's
+   * long-lived overlay - without this, a component whose bare imports were all removed would leave
+   * a stale entry there for the rest of the dev-server session.
    */
-  const refreshInlinedTypes = (scope: ComponentDocs): void => {
+  const refreshInlinedTypes = async (scope: ComponentDocs): Promise<void> => {
     if (typesInline !== "local" && typesInline !== "all") return;
+
     for (const component of scope.values()) {
       inlinedTypesByFilePath.delete(component.filePath);
       for (const dependents of inlineDepsReverse.values()) dependents.delete(component.filePath);
     }
-    for (const [filePath, inlined] of inlineLocalTypeImports(scope, resolveComponentFilePath, typesTypeNames)) {
-      inlinedTypesByFilePath.set(filePath, inlined);
-      for (const dependency of inlined.dependencies) {
-        let dependents = inlineDepsReverse.get(dependency);
-        if (!dependents) {
-          dependents = new Set();
-          inlineDepsReverse.set(dependency, dependents);
-        }
-        dependents.add(filePath);
+
+    let bareOverlay: Map<string, string> = new Map();
+    if (typesInline === "all" && bareResolver) {
+      bareResolver.forgetOverlayFiles(
+        Array.from(scope.values(), (component) =>
+          bareOverlayVirtualFilePath(resolveComponentFilePath(component.filePath), component.moduleName),
+        ),
+      );
+      bareOverlay = collectBareImportOverlay(scope, resolveComponentFilePath);
+    }
+
+    let bareSession: BareTypeSession | undefined;
+    try {
+      if (bareResolver && bareOverlay.size > 0) {
+        bareSession = await bareResolver.openBareTypeSession(bareOverlay);
       }
+
+      const fresh = await inlineLocalTypeImports(scope, resolveComponentFilePath, typesTypeNames, bareSession);
+      for (const [filePath, inlined] of fresh) {
+        inlinedTypesByFilePath.set(filePath, inlined);
+        for (const dependency of inlined.dependencies) {
+          let dependents = inlineDepsReverse.get(dependency);
+          if (!dependents) {
+            dependents = new Set();
+            inlineDepsReverse.set(dependency, dependents);
+          }
+          dependents.add(filePath);
+        }
+      }
+    } finally {
+      if (bareSession) await bareSession.dispose();
     }
   };
 
@@ -169,8 +223,8 @@ export async function createSveldBundle(
       const result = processComponent(entry, allComponentEntries, fileMap, resolveComponentFilePath, processOptions);
       if (result) allComponentsForTypes.set(result.filePath, result);
     }
-    refreshInlinedTypes(allComponentsForTypes);
-    reportParseErrors(buildResult().errors);
+    await refreshInlinedTypes(allComponentsForTypes);
+    reportParseErrors(Array.from(parseErrors.values()));
   }
 
   // Rebuilt after every update so `@extends` edges stay current.
@@ -279,7 +333,7 @@ export async function createSveldBundle(
         for (const [key, component] of allComponentsForTypes) {
           if (inlineTypeAffectedFilePaths.has(component.filePath)) affectedForTypes.set(key, component);
         }
-        refreshInlinedTypes(affectedForTypes);
+        await refreshInlinedTypes(affectedForTypes);
       }
       return { result: buildResult(), reparsed: [] };
     }
@@ -326,7 +380,7 @@ export async function createSveldBundle(
         reparsedForTypes.set(key, component);
       }
     }
-    refreshInlinedTypes(reparsedForTypes);
+    await refreshInlinedTypes(reparsedForTypes);
     for (const filePath of inlinedTypesByFilePath.keys()) {
       if (!allComponentsForTypes.has(filePath)) inlinedTypesByFilePath.delete(filePath);
     }
@@ -342,7 +396,7 @@ export async function createSveldBundle(
 
   return {
     get result() {
-      return buildResult();
+      return Promise.resolve(buildResult());
     },
     update,
   };
