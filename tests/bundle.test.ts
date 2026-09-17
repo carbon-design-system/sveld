@@ -297,4 +297,30 @@ describe("generateBundle validates @extends/@extendProps targets", () => {
 
     expect(component?.diagnostics?.some((d) => d.kind.startsWith("extend-props-"))).toBeFalsy();
   });
+
+  test("typesTypeNames.props: an @extendProps tag naming the templated interface produces no diagnostic", async () => {
+    writeFileSync(
+      path.join(dir, "Templated.svelte"),
+      `<script>\n  /** @extendProps {"./Base.svelte"} IBaseProps */\n</script>\n`,
+    );
+
+    const result = await generateBundle(dir, true, { typesTypeNames: { props: "I{name}Props" } });
+    const component = byModuleName(result.allComponentsForTypes, "Templated");
+
+    expect(component?.diagnostics?.some((d) => d.kind.startsWith("extend-props-"))).toBeFalsy();
+  });
+
+  test("typesTypeNames.props: an @extendProps tag naming the untemplated interface is flagged", async () => {
+    writeFileSync(
+      path.join(dir, "Untemplated.svelte"),
+      `<script>\n  /** @extendProps {"./Base.svelte"} BaseProps */\n</script>\n`,
+    );
+
+    const result = await generateBundle(dir, true, { typesTypeNames: { props: "I{name}Props" } });
+    const component = byModuleName(result.allComponentsForTypes, "Untemplated");
+
+    expect(component?.diagnostics).toContainEqual(
+      expect.objectContaining({ kind: "extend-props-target-missing", name: "BaseProps" }),
+    );
+  });
 });
