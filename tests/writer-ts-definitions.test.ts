@@ -3,7 +3,7 @@ import { mkdtemp } from "node:fs/promises";
 import path from "node:path";
 import { asNormalizedPath } from "../src/brands";
 import type { ParsedComponent } from "../src/ComponentParser";
-import { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "../src/ComponentParser";
+import ComponentParser, { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "../src/ComponentParser";
 import { setQuiet } from "../src/logger";
 import { ParseCache } from "../src/parse-cache";
 import type { ComponentDocApi, ComponentDocs } from "../src/plugin";
@@ -1317,5 +1317,150 @@ describe("pickEmitOptions", () => {
     };
 
     expect(pickEmitOptions(options)).toEqual({ format: "component" });
+  });
+});
+
+describe("typesOptions.comments", () => {
+  const commentsTestComponent: ComponentDocApi = {
+    moduleName: "Widget",
+    filePath: asNormalizedPath("./src/Widget.svelte"),
+    syntaxMode: "legacy",
+    componentComment: "A widget component.",
+    props: [
+      {
+        name: "label",
+        kind: "let",
+        type: "string",
+        value: '""',
+        description: "The visible label.",
+        deprecated: "Use `text` instead.",
+        tags: [{ name: "since", body: "1.2.0" }],
+        isFunction: false,
+        isFunctionDeclaration: false,
+        isRequired: false,
+        constant: false,
+        reactive: false,
+      },
+    ],
+    moduleExports: [
+      {
+        name: "VERSION",
+        kind: "const",
+        type: "string",
+        description: "The package version.",
+        isFunction: false,
+        isFunctionDeclaration: false,
+        isRequired: false,
+        constant: true,
+        reactive: false,
+      },
+    ],
+    slots: [],
+    events: [],
+    typedefs: [
+      {
+        type: "{ [key: string]: boolean; }",
+        name: "MyTypedef",
+        description: "A typedef description.",
+        tags: [{ name: "see", body: "https://example.com" }],
+        ts: "interface MyTypedef { [key: string]: boolean; }",
+      },
+    ],
+    generics: null,
+    rest_props: undefined,
+    contexts: [
+      {
+        key: "simple-modal",
+        typeName: "SimpleModalContext",
+        description: "The simple modal context.",
+        properties: [{ name: "open", type: "() => void", optional: false }],
+      },
+    ],
+  };
+
+  test('"all" equals the output with `comments` omitted', () => {
+    expect(writeTsDefinition(commentsTestComponent, { comments: "all" })).toEqual(
+      writeTsDefinition(commentsTestComponent),
+    );
+  });
+
+  test('"descriptions" keeps descriptions and @deprecated, drops @default and passthrough tags', () => {
+    const output = writeTsDefinition(commentsTestComponent, { comments: "descriptions" });
+
+    expect(output).toContain("The visible label.");
+    expect(output).toContain("The package version.");
+    expect(output).toContain("A typedef description.");
+    expect(output).toContain("The simple modal context.");
+    expect(output).toContain("A widget component.");
+    expect(output).toContain("@deprecated");
+    expect(output).not.toContain("@default");
+    expect(output).not.toContain("@since");
+    expect(output).not.toContain("@see");
+  });
+
+  test('"none" emits no comments at all, keeping declarations unchanged', () => {
+    const output = writeTsDefinition(commentsTestComponent, { comments: "none" });
+
+    expect(output).not.toContain("/**");
+    expect(output).not.toContain("The visible label.");
+    expect(output).not.toContain("A widget component.");
+    expect(output).toContain("label?: string;");
+    expect(output).toContain("interface MyTypedef {");
+    expect(output).toContain("export declare const VERSION: string;");
+    expect(output).toContain("type SimpleModalContext = {");
+  });
+
+  test("a different comments level produces a different serializeEmitOptions key", () => {
+    expect(serializeEmitOptions({ comments: "none" })).not.toEqual(serializeEmitOptions({}));
+  });
+
+  test("pickEmitOptions keeps comments", () => {
+    const options: WriteTsDefinitionsOptions = {
+      comments: "descriptions",
+      outDir: "./dist",
+      inputDir: "./src",
+      preamble: "",
+      exports: mockParsedExports({}),
+    };
+
+    expect(pickEmitOptions(options)).toEqual({ comments: "descriptions" });
+  });
+
+  test('"none" produces no comment for a real component with a typedef', async () => {
+    const filePath = path.join(process.cwd(), "tests", "fixtures", "typedef-description", "input.svelte");
+    const source = await Bun.file(filePath).text();
+    const parser = new ComponentParser();
+    const parsed_component = parser.parseSvelteComponent(source, {
+      filePath: "typedef-description/input.svelte",
+      moduleName: "TypedefDescription",
+    });
+    const component = {
+      moduleName: "TypedefDescription",
+      filePath: asNormalizedPath("typedef-description/input.svelte"),
+      ...parsed_component,
+    };
+
+    const output = writeTsDefinition(component, { comments: "none" });
+
+    expect(output).not.toContain("/**");
+  });
+
+  test('"none" produces no comment for a real component with a context', async () => {
+    const filePath = path.join(process.cwd(), "tests", "fixtures", "context-typedef", "input.svelte");
+    const source = await Bun.file(filePath).text();
+    const parser = new ComponentParser();
+    const parsed_component = parser.parseSvelteComponent(source, {
+      filePath: "context-typedef/input.svelte",
+      moduleName: "ContextTypedef",
+    });
+    const component = {
+      moduleName: "ContextTypedef",
+      filePath: asNormalizedPath("context-typedef/input.svelte"),
+      ...parsed_component,
+    };
+
+    const output = writeTsDefinition(component, { comments: "none" });
+
+    expect(output).not.toContain("/**");
   });
 });

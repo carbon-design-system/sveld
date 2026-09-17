@@ -30,6 +30,13 @@ const LEADING_CONST_MODIFIER_REGEX = /^const\s+/;
 const NAME_PLACEHOLDER_REGEX = /\{name\}/g;
 
 /**
+ * How much JSDoc to emit, threaded as a plain parameter (not a module-level
+ * variable) through every comment-building helper - the core also runs in
+ * the browser playground, where two components can render concurrently.
+ */
+type CommentLevel = "all" | "descriptions" | "none";
+
+/**
  * Strips a leading `const` type-parameter modifier from a single generic
  * constraint (e.g. `"const T extends readonly string[]"` -> `"T extends
  * readonly string[]"`). `const` is only legal on function, method, and class
@@ -121,18 +128,24 @@ export function formatTsProps(props?: string) {
   return `${props}\n`;
 }
 
-export function getTypeDefs(def: Pick<ComponentDocApi, "typedefs">, emit: { export: boolean } = { export: true }) {
+export function getTypeDefs(
+  def: Pick<ComponentDocApi, "typedefs">,
+  emit: { export: boolean } = { export: true },
+  commentLevel: CommentLevel = "all",
+) {
   if (def.typedefs.length === 0) return EMPTY_STR;
   const exportKw = emit.export ? "export " : "";
   return def.typedefs
     .map((typedef) => {
-      const tagLines = expandJsDocTagLines(typedef.tags);
-      let typedefComment: string;
-      if (tagLines.length === 0) {
-        typedefComment = typedef.description ? `${formatMultiLineComment(typedef.description)}\n` : "";
-      } else {
-        const lines = typedef.description ? [...typedef.description.split("\n"), ...tagLines] : tagLines;
-        typedefComment = `/**\n * ${lines.join("\n * ")}\n */\n`;
+      let typedefComment = EMPTY_STR;
+      if (commentLevel !== "none") {
+        const tagLines = commentLevel === "all" ? expandJsDocTagLines(typedef.tags) : [];
+        if (tagLines.length === 0) {
+          typedefComment = typedef.description ? `${formatMultiLineComment(typedef.description)}\n` : "";
+        } else {
+          const lines = typedef.description ? [...typedef.description.split("\n"), ...tagLines] : tagLines;
+          typedefComment = `/**\n * ${lines.join("\n * ")}\n */\n`;
+        }
       }
       return `${typedefComment}${exportKw}${typedef.ts}`;
     })
@@ -226,6 +239,7 @@ function computeReferencedGenerics(generics: ComponentDocApi["generics"], text: 
 export function getContextDefs(
   def: Pick<ComponentDocApi, "contexts" | "generics">,
   emit: { export: boolean } = { export: true },
+  commentLevel: CommentLevel = "all",
 ) {
   if (!def.contexts || def.contexts.length === 0) return EMPTY_STR;
 
@@ -253,13 +267,15 @@ export function getContextDefs(
     .map((context) => {
       const props = context.properties
         .map((prop) => {
-          const comment = prop.description ? `${formatSingleLineComment(prop.description)}\n  ` : "";
+          const comment =
+            commentLevel !== "none" && prop.description ? `${formatSingleLineComment(prop.description)}\n  ` : "";
           const optional = prop.optional ? "?" : "";
           return `${comment}${prop.name}${optional}: ${prop.type};`;
         })
         .join("\n  ");
 
-      const contextComment = context.description ? `${formatMultiLineComment(context.description)}\n` : "";
+      const contextComment =
+        commentLevel !== "none" && context.description ? `${formatMultiLineComment(context.description)}\n` : "";
 
       /**
        * Parameterize the context type with the generics its properties reference,
@@ -308,16 +324,21 @@ function addCommentLine(value: string | boolean | undefined, returnValue?: strin
 
 /**
  * Creates a prop comment string from a description and optional deprecation.
+ * `commentLevel` (default `"all"`) controls how much survives: `"none"`
+ * drops everything, `"descriptions"` keeps the description and
+ * `@deprecated` but drops passthrough tags (`@since`, `@see`, etc).
  */
 function createPropComment(
   description: string | undefined,
   deprecated?: DeprecatedValue,
   tags?: Array<{ name: string; body: string }>,
+  commentLevel: CommentLevel = "all",
 ): string {
+  if (commentLevel === "none") return EMPTY_STR;
   return [
     addCommentLine(formatDescriptionForComment(description)),
     deprecatedCommentLine(deprecated),
-    formatTagCommentLines(tags),
+    commentLevel === "all" ? formatTagCommentLines(tags) : undefined,
   ]
     .filter(Boolean)
     .join("");
@@ -358,6 +379,7 @@ function genPropDef(
     events?: ComponentDocApi["events"];
   },
   emit: { export: boolean; typeNames?: WriteTsDefinitionOptions["typeNames"] } = { export: true },
+  commentLevel: CommentLevel = "all",
 ) {
   const exportKw = emit.export ? "export " : "";
 
@@ -395,9 +417,9 @@ function genPropDef(
     const suppressDefault = descriptionHasDefault || prop.value === undefined;
 
     const prop_comments = [
-      createPropComment(prop.description, prop.deprecated, prop.tags),
-      addCommentLine(prop.constant, "@constant"),
-      suppressDefault ? null : `* @default ${defaultValue}\n`,
+      createPropComment(prop.description, prop.deprecated, prop.tags, commentLevel),
+      commentLevel === "all" ? addCommentLine(prop.constant, "@constant") : null,
+      commentLevel === "all" && !suppressDefault ? `* @default ${defaultValue}\n` : null,
     ]
       .filter(Boolean)
       .join("");
@@ -858,11 +880,11 @@ function generateFunctionType(prop: {
   }
 }
 
-function genAccessors(def: Pick<ComponentDocApi, "props">) {
+function genAccessors(def: Pick<ComponentDocApi, "props">, commentLevel: CommentLevel = "all") {
   return def.props
     .filter((prop) => prop.isFunctionDeclaration || prop.kind === "const")
     .map((prop) => {
-      const prop_comments = createPropComment(prop.description, prop.deprecated, prop.tags);
+      const prop_comments = createPropComment(prop.description, prop.deprecated, prop.tags, commentLevel);
 
       const functionType = generateFunctionType(prop);
 
@@ -886,10 +908,11 @@ function genAccessors(def: Pick<ComponentDocApi, "props">) {
 function genExportsDef(
   def: Pick<ComponentDocApi, "props" | "moduleName" | "generics">,
   emit: { export: boolean; typeNames?: WriteTsDefinitionOptions["typeNames"] } = { export: true },
+  commentLevel: CommentLevel = "all",
 ) {
   const exportKw = emit.export ? "export " : "";
   const exports_name = exportsTypeName(def.moduleName, emit.typeNames);
-  const accessors = genAccessors({ props: def.props });
+  const accessors = genAccessors({ props: def.props }, commentLevel);
 
   if (accessors.trim() === "") {
     return {
@@ -997,8 +1020,8 @@ function genImports(def: Pick<ComponentDocApi, "extends">) {
   return `import type { ${def.extends.interface} } from ${def.extends.import};`;
 }
 
-function genComponentComment(def: Pick<ComponentDocApi, "componentComment">) {
-  if (!def.componentComment) return "";
+function genComponentComment(def: Pick<ComponentDocApi, "componentComment">, commentLevel: CommentLevel = "all") {
+  if (commentLevel === "none" || !def.componentComment) return "";
   if (!NEWLINE_REGEX.test(def.componentComment)) {
     return formatSingleLineComment(def.componentComment.trim());
   }
@@ -1008,10 +1031,10 @@ function genComponentComment(def: Pick<ComponentDocApi, "componentComment">) {
     .join("\n")}\n*/`;
 }
 
-function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">) {
+function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">, commentLevel: CommentLevel = "all") {
   return def.moduleExports
     .map((prop) => {
-      const prop_comments = createPropComment(prop.description, prop.deprecated, prop.tags);
+      const prop_comments = createPropComment(prop.description, prop.deprecated, prop.tags, commentLevel);
 
       let type_def: string;
 
@@ -1127,6 +1150,13 @@ export interface WriteTsDefinitionOptions {
    * component's module name. Defaults: `"{name}Props"`, `"{name}Exports"`.
    */
   typeNames?: { props?: string; exports?: string };
+  /**
+   * How much JSDoc to emit. `"all"` (default) keeps descriptions,
+   * `@deprecated`, `@default`, and passthrough tags (`@since`, `@see`,
+   * `@example`, `@link`). `"descriptions"` keeps descriptions and
+   * `@deprecated` only. `"none"` emits no comments at all.
+   */
+  comments?: "all" | "descriptions" | "none";
 }
 
 /**
@@ -1200,6 +1230,7 @@ export function serializeEmitOptions(options: WriteTsDefinitionOptions | undefin
     exportTypes: options?.exportTypes ?? true,
     forceExportProps: options?.forceExportProps ?? false,
     typeNames: options?.typeNames ?? null,
+    comments: options?.comments ?? "all",
   });
 }
 
@@ -1210,6 +1241,7 @@ export function pickEmitOptions(options: WriteTsDefinitionOptions): WriteTsDefin
     exportTypes: options.exportTypes,
     forceExportProps: options.forceExportProps,
     typeNames: options.typeNames,
+    comments: options.comments,
   };
 }
 
@@ -1233,6 +1265,7 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
   const useComponentFormat = options?.format === "component";
   const isGenericComponent = generics !== null;
   const exportFlags = resolveExportTypes(options);
+  const commentLevel: CommentLevel = options?.comments ?? "all";
 
   const { props_name, prop_def } = genPropDef(
     {
@@ -1247,18 +1280,23 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
       events: useComponentFormat && syntaxMode === "legacy" ? events : undefined,
     },
     { export: exportFlags.props, typeNames: options?.typeNames },
+    commentLevel,
   );
 
   const generic = generics ? `<${generics[1]}>` : "";
   const genericProps = generics ? `${props_name}<${generics[0]}>` : props_name;
-  const moduleExportsDef = genModuleExports({ moduleExports });
-  const typeDefs = getTypeDefs({ typedefs }, { export: exportFlags.typedefs });
-  const contextDefs = getContextDefs({ contexts, generics }, { export: exportFlags.contexts });
+  const moduleExportsDef = genModuleExports({ moduleExports }, commentLevel);
+  const typeDefs = getTypeDefs({ typedefs }, { export: exportFlags.typedefs }, commentLevel);
+  const contextDefs = getContextDefs({ contexts, generics }, { export: exportFlags.contexts }, commentLevel);
   const preservedTypeImports = (typeScriptMetadata?.typeImportStatements ?? []).join("\n");
   const preservedLocalTypeDeclarations = (typeScriptMetadata?.localTypeDeclarations ?? []).join("\n\n");
 
   const { exports_ref, exports_def } = useComponentFormat
-    ? genExportsDef({ props, moduleName, generics }, { export: exportFlags.exports, typeNames: options?.typeNames })
+    ? genExportsDef(
+        { props, moduleName, generics },
+        { export: exportFlags.exports, typeNames: options?.typeNames },
+        commentLevel,
+      )
     : { exports_ref: EMPTY_STR, exports_def: EMPTY_STR };
   const bindings = useComponentFormat ? genBindingsUnion({ props }) : EMPTY_STR;
 
@@ -1322,7 +1360,7 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
         genericProps,
         events: genEventDef({ events }),
         slots: genSlotDef({ slots }),
-        accessors: genAccessors({ props }),
+        accessors: genAccessors({ props }, commentLevel),
       });
 
   const bodySection = [
@@ -1332,7 +1370,7 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
     contextDefs,
     prop_def,
     exports_def,
-    [genComponentComment({ componentComment }), componentDeclaration].filter(Boolean).join("\n"),
+    [genComponentComment({ componentComment }, commentLevel), componentDeclaration].filter(Boolean).join("\n"),
   ]
     .map((section) => section.trim())
     .filter(Boolean)

@@ -246,6 +246,7 @@ const KNOWN_NESTED_KEYS: Record<string, string[]> = {
     "format",
     "exportTypes",
     "typeNames",
+    "comments",
     "exports",
     "dryRun",
     "cache",
