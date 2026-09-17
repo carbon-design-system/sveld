@@ -191,15 +191,23 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
       if (watch && input != null) {
         // Produce the initial output and prime the incremental bundle. This
         // covers both `vite dev` (where generateBundle/writeBundle never fire)
-        // and `vite build --watch`.
-        bundle = await createSveldBundle(
-          input,
-          mergedOpts.glob === true,
-          mergedOpts.documentExports === true,
-          mergedOpts.typesOptions?.inline,
-          mergedOpts.typesOptions?.typeNames,
-        );
-        await writeOutput(await bundle.result, mergedOpts, input);
+        // and `vite build --watch`. Caught the same way `runFlush` catches a
+        // later flush's failure: a bad config (e.g. an invalid `typeNames`
+        // template, or a `typesOptions.inline: "all"` project with no
+        // `tsconfig.json`) must degrade to "no output yet" rather than
+        // crashing the dev server on startup.
+        try {
+          bundle = await createSveldBundle(
+            input,
+            mergedOpts.glob === true,
+            mergedOpts.documentExports === true,
+            mergedOpts.typesOptions?.inline,
+            mergedOpts.typesOptions?.typeNames,
+          );
+          await writeOutput(await bundle.result, mergedOpts, input);
+        } catch (error) {
+          console.error("sveld: failed to generate initial types in watch mode:", error);
+        }
       }
     },
     async generateBundle() {
