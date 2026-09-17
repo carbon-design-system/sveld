@@ -21,7 +21,7 @@ import { getParsedComponentTypeScriptMetadata } from "./parsed-component-metadat
 import { type WalkableNode, walkNodes } from "./parser/walk";
 import { resolveAliasLookup } from "./resolve-alias";
 import { parseProgram } from "./template-parse/acorn-bridge";
-import { exportsTypeName, propsTypeName } from "./writer/writer-ts-definitions-core";
+import { exportsTypeName, propsTypeName, type WriteTsDefinitionOptions } from "./writer/writer-ts-definitions-core";
 
 /** Extensions probed, in order, for a resolved specifier with no extension of its own. */
 const RESOLVE_EXTENSIONS = [".ts", ".d.ts", ".mts", ".cts"];
@@ -553,7 +553,10 @@ function processStatement(ctx: InlineContext, statement: string, componentAbsPat
 }
 
 /** Names the component itself already declares; a copied declaration can't reuse one of these. */
-function collectComponentReservedNames(component: ComponentDocApi): Set<string> {
+function collectComponentReservedNames(
+  component: ComponentDocApi,
+  typeNames: WriteTsDefinitionOptions["typeNames"] | undefined,
+): Set<string> {
   const names = new Set<string>();
   for (const typedef of component.typedefs) names.add(typedef.name);
   for (const context of component.contexts ?? []) names.add(context.typeName);
@@ -564,8 +567,8 @@ function collectComponentReservedNames(component: ComponentDocApi): Set<string> 
     if (match) names.add(match[1]);
   }
 
-  names.add(propsTypeName(component.moduleName));
-  names.add(exportsTypeName(component.moduleName));
+  names.add(propsTypeName(component.moduleName, typeNames));
+  names.add(exportsTypeName(component.moduleName, typeNames));
   return names;
 }
 
@@ -582,6 +585,7 @@ function collectComponentReservedNames(component: ComponentDocApi): Set<string> 
 export function inlineLocalTypeImports(
   components: ComponentDocs,
   resolveComponentFilePath: ResolveComponentFilePath,
+  typeNames?: WriteTsDefinitionOptions["typeNames"],
 ): Map<string, InlinedTypes> {
   const result = new Map<string, InlinedTypes>();
 
@@ -593,7 +597,7 @@ export function inlineLocalTypeImports(
     const componentAbsPath = resolveComponentFilePath(component.filePath);
     const ctx: InlineContext = {
       files: new Map(),
-      reservedNames: collectComponentReservedNames(component),
+      reservedNames: collectComponentReservedNames(component, typeNames),
       nameOwner: new Map(),
       textByKey: new Map(),
       order: [],
