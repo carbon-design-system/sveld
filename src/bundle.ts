@@ -831,7 +831,7 @@ export async function generateBundle(
 
   const inlinedTypesByFilePath =
     options.typesInline === "local" || options.typesInline === "all"
-      ? inlineLocalTypeImports(allComponentsForTypes, resolveComponentFilePath)
+      ? inlineLocalTypeImports(allComponentsForTypes, resolveComponentFilePath, options.typesTypeNames)
       : undefined;
 
   // Dedupe diagnostics from export and all-components passes.

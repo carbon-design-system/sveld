@@ -62,12 +62,15 @@ export interface SveldBundle {
  *   by each `update()` (the reparsed ones, plus any component whose inline dependency file itself
  *   changed), so edits to an inlined source are picked up on the next debounced flush without
  *   re-resolving every other component's type imports too.
+ * @param typesTypeNames - Mirrors `typesOptions.typeNames`, so inlining's collision check against
+ *   the component's own `Props`/`Exports` type names uses the actual templated names.
  */
 export async function createSveldBundle(
   input: string,
   glob: boolean,
   documentExports = false,
   typesInline?: WriteTsDefinitionOptions["inline"],
+  typesTypeNames?: WriteTsDefinitionOptions["typeNames"],
 ): Promise<SveldBundle> {
   const inputIsFile = lstatSync(input).isFile();
   // Watched so editing the barrel (adding/removing/renaming an export) is
@@ -128,7 +131,7 @@ export async function createSveldBundle(
       inlinedTypesByFilePath.delete(component.filePath);
       for (const dependents of inlineDepsReverse.values()) dependents.delete(component.filePath);
     }
-    for (const [filePath, inlined] of inlineLocalTypeImports(scope, resolveComponentFilePath)) {
+    for (const [filePath, inlined] of inlineLocalTypeImports(scope, resolveComponentFilePath, typesTypeNames)) {
       inlinedTypesByFilePath.set(filePath, inlined);
       for (const dependency of inlined.dependencies) {
         let dependents = inlineDepsReverse.get(dependency);

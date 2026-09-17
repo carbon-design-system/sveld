@@ -197,6 +197,7 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
           mergedOpts.glob === true,
           mergedOpts.documentExports === true,
           mergedOpts.typesOptions?.inline,
+          mergedOpts.typesOptions?.typeNames,
         );
         await writeOutput(bundle.result, mergedOpts, input);
       }

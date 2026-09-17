@@ -282,6 +282,43 @@ describe("inlineLocalTypeImports (via generateBundle typesInline)", () => {
     expect(inlined?.droppedImportStatements ?? []).toEqual([]);
   });
 
+  test("collision check uses a templated typesOptions.typeNames, not the default name", async () => {
+    writeFileSync(
+      join(dir, "Comp.svelte"),
+      `<script lang="ts">
+  import type { CompApi } from "./types";
+  let { value }: { value: CompApi } = $props();
+</script>
+<div />
+`,
+    );
+    writeFileSync(join(dir, "types.ts"), "export type CompApi = string;\n");
+
+    // Default props type name is "CompProps", so the import (named "CompApi") does not collide
+    // and inlines cleanly.
+    const withoutTemplate = await generateBundle(dir, true, { cache: false, typesInline: "local" });
+    const withoutComponent = byModuleName(withoutTemplate.allComponentsForTypes, "Comp");
+    expect(withoutTemplate.diagnostics.filter((d) => d.kind === "types-inline-unresolved")).toEqual([]);
+    expect(withoutTemplate.inlinedTypesByFilePath?.get(withoutComponent?.filePath ?? "")?.declarations).toEqual([
+      "type CompApi = string;",
+    ]);
+
+    // With `typeNames.props: "{name}Api"` the actual generated props type name is "CompApi",
+    // which does collide with the imported name; the pass must check against that templated
+    // name, not the unused default, so it refuses instead of silently emitting a duplicate.
+    const withTemplate = await generateBundle(dir, true, {
+      cache: false,
+      typesInline: "local",
+      typesTypeNames: { props: "{name}Api" },
+    });
+    const withComponent = byModuleName(withTemplate.allComponentsForTypes, "Comp");
+    const diagnostic = withTemplate.diagnostics.find((d) => d.kind === "types-inline-unresolved");
+    expect(diagnostic).toBeDefined();
+    expect(diagnostic?.name).toBe("CompApi");
+    expect(diagnostic?.message).toContain("collides");
+    expect(withTemplate.inlinedTypesByFilePath?.get(withComponent?.filePath ?? "")?.declarations ?? []).toEqual([]);
+  });
+
   test("refuses the second of two imports of the same name from different files", async () => {
     writeFileSync(
       join(dir, "Comp.svelte"),
