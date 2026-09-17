@@ -1255,24 +1255,6 @@ export function resolveExportTypes(options: WriteTsDefinitionOptions | undefined
   return resolved;
 }
 
-/**
- * Stable string identifying every `WriteTsDefinitionOptions` value that
- * changes emitted text. Used as the generated-text cache key so a new
- * option can never be forgotten there. Defaults are applied before
- * serialization so `{}` and `{ format: "class" }` produce the same key.
- */
-export function serializeEmitOptions(options: WriteTsDefinitionOptions | undefined): string {
-  return JSON.stringify({
-    format: options?.format ?? "class",
-    exportTypes: options?.exportTypes ?? true,
-    forceExportProps: options?.forceExportProps ?? false,
-    typeNames: options?.typeNames ?? null,
-    comments: options?.comments ?? "all",
-    propsDeclaration: options?.propsDeclaration ?? "type",
-    inline: options?.inline ?? false,
-  });
-}
-
 /** Picks the pure emit options out of the wider Node writer options. */
 export function pickEmitOptions(options: WriteTsDefinitionOptions): WriteTsDefinitionOptions {
   return {
@@ -1284,6 +1266,37 @@ export function pickEmitOptions(options: WriteTsDefinitionOptions): WriteTsDefin
     propsDeclaration: options.propsDeclaration,
     inline: options.inline,
   };
+}
+
+/**
+ * The default value of every field `pickEmitOptions` returns, keyed by field name.
+ * `serializeEmitOptions` never re-lists the field names, so a field can only go missing from
+ * the cache key by also going missing from `pickEmitOptions` - a typed compile error, not a
+ * silent stale-cache bug.
+ */
+const EMIT_OPTION_DEFAULTS: Record<string, unknown> = {
+  format: "class",
+  exportTypes: true,
+  forceExportProps: false,
+  typeNames: null,
+  comments: "all",
+  propsDeclaration: "type",
+  inline: false,
+};
+
+/**
+ * Stable string identifying every `WriteTsDefinitionOptions` value that
+ * changes emitted text. Used as the generated-text cache key so a new
+ * option can never be forgotten there. Defaults are applied before
+ * serialization so `{}` and `{ format: "class" }` produce the same key.
+ */
+export function serializeEmitOptions(options: WriteTsDefinitionOptions | undefined): string {
+  const picked = pickEmitOptions(options ?? {});
+  const withDefaults: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(picked)) {
+    withDefaults[key] = value ?? EMIT_OPTION_DEFAULTS[key];
+  }
+  return JSON.stringify(withDefaults);
 }
 
 export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsDefinitionOptions) {
