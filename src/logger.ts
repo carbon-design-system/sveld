@@ -20,3 +20,10 @@ export function info(message: string): void {
     console.error(message);
   }
 }
+
+/** Writes a warning line to stderr, suppressed when quiet mode is on. */
+export function warn(message: string): void {
+  if (!quiet) {
+    console.error(message);
+  }
+}

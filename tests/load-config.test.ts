@@ -312,6 +312,11 @@ describe("validateOptions", () => {
     expect(warnSpy).not.toHaveBeenCalled();
   });
 
+  test("does not warn about typesOptions.indexTypes", () => {
+    validateOptions({ typesOptions: { indexTypes: true } });
+    expect(warnSpy).not.toHaveBeenCalled();
+  });
+
   test("does not validate inside additionalWriters (userland-defined shape)", () => {
     validateOptions({ additionalWriters: { llms: { anything: true } } });
     expect(warnSpy).not.toHaveBeenCalled();

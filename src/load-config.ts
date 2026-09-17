@@ -249,6 +249,7 @@ const KNOWN_NESTED_KEYS: Record<string, string[]> = {
     "comments",
     "propsDeclaration",
     "transform",
+    "indexTypes",
     "exports",
     "dryRun",
     "cache",

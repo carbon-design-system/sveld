@@ -77,6 +77,29 @@ export function createExports(parsed_exports: ParsedExports): string {
   return exportStatements.join("\n");
 }
 
+export interface TypeExportEntry {
+  source: string;
+  names: string[];
+}
+
+/**
+ * Builds `export type { ... } from "..."` statements, one per entry, in the
+ * order given. Used by `typesOptions.indexTypes` to re-export generated
+ * `Props`/`Exports`/typedef/context types from the barrel.
+ *
+ * @example
+ * ```ts
+ * createTypeExports([{ source: "./Button.svelte", names: ["ButtonProps"] }])
+ * // Returns: 'export type { ButtonProps } from "./Button.svelte";'
+ * ```
+ */
+export function createTypeExports(entries: TypeExportEntry[]): string {
+  return entries
+    .filter((entry) => entry.names.length > 0)
+    .map((entry) => `export type { ${entry.names.join(", ")} } from "${entry.source}";`)
+    .join("\n");
+}
+
 /**
  * Strips the `.svelte` extension from a path.
  *
