@@ -6,6 +6,7 @@ import { generateBundle } from "../src/bundle";
 import ComponentParser from "../src/ComponentParser";
 import { DEFAULT_CACHE_FILE } from "../src/parse-cache";
 import writeTsDefinitions from "../src/writer/writer-ts-definitions";
+import { serializeEmitOptions } from "../src/writer/writer-ts-definitions-core";
 
 /** Look up `allComponentsForTypes` by filePath; moduleName is not unique. */
 function byModuleName(components: ComponentDocs, moduleName: string): ComponentDocApi | undefined {
@@ -122,6 +123,18 @@ describe("parse cache", () => {
     expect(byModuleName(result.allComponentsForTypes, "SecondaryButton")).toBeDefined();
   });
 
+  test("a cache file with an old formatVersion is discarded, not misread", async () => {
+    await generateBundle(dir, true, { cache: cacheFile });
+
+    const stored = JSON.parse(readFileSync(cacheFile, "utf-8"));
+    writeFileSync(cacheFile, JSON.stringify({ ...stored, formatVersion: 2 }));
+    parseSpy.mockClear();
+
+    await generateBundle(dir, true, { cache: cacheFile });
+
+    expect(parseSpy).toHaveBeenCalledTimes(3);
+  });
+
   test("a stale cache from an unrelated project root doesn't leak into a new one", async () => {
     const otherDir = mkdtempSync(join(tmpdir(), "sveld-parse-cache-other-"));
     writeFileSync(join(otherDir, "Standalone.svelte"), STANDALONE);
@@ -141,6 +154,9 @@ describe("parse cache", () => {
 });
 
 describe("generated .d.ts text cache", () => {
+  const classKey = serializeEmitOptions({ format: "class" });
+  const componentKey = serializeEmitOptions({ format: "component" });
+
   let dir: string;
   let outDirAbs: string;
   let outDir: string;
@@ -180,8 +196,8 @@ describe("generated .d.ts text cache", () => {
     first.cache?.save();
 
     // Both components' generated text is now cached against the first run's parse.
-    expect(first.cache?.getGeneratedText(secondaryButtonPath, "class")).toBeDefined();
-    expect(first.cache?.getGeneratedText(standalonePath, "class")).toBeDefined();
+    expect(first.cache?.getGeneratedText(secondaryButtonPath, classKey)).toBeDefined();
+    expect(first.cache?.getGeneratedText(standalonePath, classKey)).toBeDefined();
 
     writeFileSync(join(dir, "Button.svelte"), BUTTON.replace("primary = false", "primary = true"));
     const second = await generateBundle(dir, true, { cache: cacheFile });
@@ -189,10 +205,10 @@ describe("generated .d.ts text cache", () => {
     // SecondaryButton depends on Button via @extendProps, so it's invalidated
     // and reparsed even though its own source didn't change; its fresh parse
     // entry must not carry over the stale cached text.
-    expect(second.cache?.getGeneratedText(secondaryButtonPath, "class")).toBeUndefined();
+    expect(second.cache?.getGeneratedText(secondaryButtonPath, classKey)).toBeUndefined();
     // Standalone is unrelated and still a parse-cache hit, so its previously
     // cached text is legitimately reused.
-    expect(second.cache?.getGeneratedText(standalonePath, "class")).toBeDefined();
+    expect(second.cache?.getGeneratedText(standalonePath, classKey)).toBeDefined();
   });
 
   test("--types-format switch doesn't serve a component's other-format cached text", async () => {
@@ -211,8 +227,8 @@ describe("generated .d.ts text cache", () => {
     first.cache?.save();
 
     const second = await generateBundle(dir, true, { cache: cacheFile });
-    expect(second.cache?.getGeneratedText(buttonPath, "class")).toBeDefined();
-    expect(second.cache?.getGeneratedText(buttonPath, "component")).toBeUndefined();
+    expect(second.cache?.getGeneratedText(buttonPath, classKey)).toBeDefined();
+    expect(second.cache?.getGeneratedText(buttonPath, componentKey)).toBeUndefined();
   });
 });
 

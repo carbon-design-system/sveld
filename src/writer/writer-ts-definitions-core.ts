@@ -1097,6 +1097,25 @@ export interface WriteTsDefinitionOptions {
   format?: "class" | "component";
 }
 
+/**
+ * Stable string identifying every `WriteTsDefinitionOptions` value that
+ * changes emitted text. Used as the generated-text cache key so a new
+ * option can never be forgotten there. Defaults are applied before
+ * serialization so `{}` and `{ format: "class" }` produce the same key.
+ */
+export function serializeEmitOptions(options: WriteTsDefinitionOptions | undefined): string {
+  return JSON.stringify({
+    format: options?.format ?? "class",
+  });
+}
+
+/** Picks the pure emit options out of the wider Node writer options. */
+export function pickEmitOptions(options: WriteTsDefinitionOptions): WriteTsDefinitionOptions {
+  return {
+    format: options.format,
+  };
+}
+
 export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsDefinitionOptions) {
   const typeScriptMetadata = getParsedComponentTypeScriptMetadata(component);
   const {
