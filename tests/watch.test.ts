@@ -1,6 +1,6 @@
 import { mkdirSync, mkdtempSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { join, relative, resolve } from "node:path";
 import type { ComponentDocApi, ComponentDocs } from "../src/bundle";
 import pluginSveld, { createSerialQueue } from "../src/plugin";
 import { TypeResolver } from "../src/resolve-types";
@@ -393,6 +393,46 @@ describe("pluginSveld watch option", () => {
     const plugin = pluginSveld({ watch: true });
     // Should not throw when no bundle exists yet (e.g. invalid entry).
     expect(() => plugin.handleHotUpdate?.({ file: "/tmp/Anything.svelte" })).not.toThrow();
+  });
+
+  test("a bad config does not crash buildStart; it logs and leaves the dev server running", async () => {
+    // `getSvelteEntry` joins `entry` onto `process.cwd()` rather than treating an absolute path
+    // as already-absolute, so the fixture lives under `process.cwd()` itself (as elsewhere in this
+    // suite) rather than `os.tmpdir()`: on Windows CI, the checkout and the OS temp dir can sit on
+    // different drives, and `path.relative` across drives falls back to an absolute path, which
+    // `getSvelteEntry` then mangles into a bogus one.
+    const dir = mkdtempSync(join(process.cwd(), ".tmp-sveld-watch-buildstart-"));
+    try {
+      writeFileSync(
+        join(dir, "Comp.svelte"),
+        `<script lang="ts">
+  import type { Size } from "./types";
+  let { size }: { size: Size } = $props();
+</script>
+<div>{size}</div>
+`,
+      );
+      writeFileSync(join(dir, "types.ts"), `export type Size = "sm" | "md";\n`);
+
+      const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      try {
+        const plugin = pluginSveld({
+          entry: relative(process.cwd(), join(dir, "Comp.svelte")),
+          watch: true,
+          typesOptions: { inline: "local", typeNames: { props: "NoPlaceholder" } },
+        });
+
+        await expect(plugin.buildStart()).resolves.toBeUndefined();
+        expect(errorSpy).toHaveBeenCalledWith(
+          "sveld: failed to generate initial types in watch mode:",
+          expect.any(Error),
+        );
+      } finally {
+        errorSpy.mockRestore();
+      }
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });
 
