@@ -926,6 +926,7 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
   - **`format`** (`"class"` | `"component"`, optional, default: `"class"`): `.d.ts` output shape. `"class"` extends `SvelteComponentTyped`; `"component"` emits the Svelte 5 `Component` type. Also available as `--types-format`. See [`.d.ts` output format](#dts-output-format-typesoptionsformat).
   - **`exportTypes`** (`boolean | { props?, exports?, typedefs?, contexts? }`, optional, default: `true`): Which generated type declarations get an `export` keyword. `false` keeps them all local to the `.d.ts` file; an object picks per kind. No CLI flag; config file or `sveld()` only. See [`typesOptions.exportTypes`](#typesoptionsexporttypes).
   - **`typeNames`** (`{ props?: string; exports?: string }`, optional, default: `{ props: "{name}Props", exports: "{name}Exports" }`): Templates for generated type names. No CLI flag; config file or `sveld()` only. See [`typesOptions.typeNames`](#typesoptionstypenames).
+  - **`comments`** (`"all" | "descriptions" | "none"`, optional, default: `"all"`): How much JSDoc lands in the generated `.d.ts`. `"all"` keeps descriptions, `@deprecated`, `@default`, and passthrough tags (`@since`, `@see`, `@example`, `@link`); `"descriptions"` keeps descriptions and `@deprecated` only; `"none"` emits no comments at all. No CLI flag; config file or `sveld()` only. See [`typesOptions.comments`](#typesoptionscomments).
 - **`json`** (boolean, optional): Generate component documentation in JSON format.
 - **`jsonOptions`** (object, optional): Options for JSON output.
   - **`outFile`** (string, optional, default: `"COMPONENT_API.json"`): Path (relative to the project root) for the single combined JSON document. Ignored when `outDir` is set.
@@ -1081,6 +1082,65 @@ Each template must contain `{name}` and produce a valid identifier once substitu
 If a bundled component then [`@extendProps`](#extendprops)/`@extends`-es another one, the tag must name the *templated* interface — `@extendProps {"./Button.svelte"} IButtonProps`, not `ButtonProps` — or sveld reports [`extend-props-target-missing`](#type-inference-diagnostics).
 
 There's no CLI flag for `typeNames`; set it via a config file or the programmatic `sveld()` API.
+
+#### `typesOptions.comments`
+
+By default sveld carries every prop's JSDoc into the generated `.d.ts`: the description, `@deprecated`, `@default`, and passthrough tags like `@since`. `typesOptions.comments` lets a library ship a leaner `.d.ts` instead — useful when the docs live elsewhere (a docs site, Storybook) and duplicating them in the type declaration just adds noise.
+
+```svelte
+<script>
+  /**
+   * The button's visible label.
+   * @deprecated Use `text` instead.
+   * @default ""
+   * @since 1.2.0
+   */
+  export let label = "";
+</script>
+```
+
+**`comments: "all"`** (default) — description, `@deprecated`, `@default`, and passthrough tags:
+
+```ts
+/**
+ * The button's visible label.
+ * @deprecated Use `text` instead.
+ * @default ""
+ * @since 1.2.0
+ */
+label?: string;
+```
+
+**`comments: "descriptions"`** — description and `@deprecated` only; `@default` and passthrough tags are dropped:
+
+```ts
+/**
+ * The button's visible label.
+ * @deprecated Use `text` instead.
+ */
+label?: string;
+```
+
+`@deprecated` survives at this level on purpose: editors render a strikethrough from it, so it's API information a consumer needs, not documentation.
+
+**`comments: "none"`** — no comments at all; only the declaration:
+
+```ts
+label?: string;
+```
+
+```js
+sveld({
+  types: true,
+  typesOptions: {
+    comments: "descriptions",
+  },
+});
+```
+
+`@internal`/`@ignore` members are removed from every output regardless of this option — see [`@ignore` / `@internal`](#ignore--internal). `comments` only controls how much JSDoc survives for members that *do* get emitted.
+
+There's no CLI flag for `comments`; set it via a config file or the programmatic `sveld()` API.
 
 #### `markdownOptions.onAppend`
 
