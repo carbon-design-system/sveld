@@ -24,6 +24,7 @@ import { matchesGlob } from "./glob-match";
  * - `generics-conflict`: a second `@generics`/`@template` reused a generic name.
  * - `jsdoc-tag-dropped`: a passthrough JSDoc tag (e.g. `@see`) couldn't attach to a following or preceding structural tag.
  * - `internal-typedef-referenced`: a public prop/typedef/event/slot/module-export/context type references an `@internal` typedef by name, which is excluded from output; the generated `.d.ts` will contain a dangling reference.
+ * - `types-inline-unresolved`: `typesOptions.inline` could not safely copy an imported type (missing file, missing export, an unsupported export kind, or a name collision); the import is kept as-is.
  */
 export type SveldDiagnosticKind =
   | "prop-unknown-type"
@@ -45,7 +46,8 @@ export type SveldDiagnosticKind =
   | "property-duplicate"
   | "generics-conflict"
   | "jsdoc-tag-dropped"
-  | "internal-typedef-referenced";
+  | "internal-typedef-referenced"
+  | "types-inline-unresolved";
 
 /** `"error"` fails `--strict=errors`; `"warning"` only fails plain `--strict`. */
 export type SveldDiagnosticSeverity = "error" | "warning";
@@ -77,6 +79,7 @@ export const DIAGNOSTIC_CODES: Record<SveldDiagnosticKind, string> = {
   "generics-conflict": "sveld/generics-conflict",
   "jsdoc-tag-dropped": "sveld/jsdoc-tag-dropped",
   "internal-typedef-referenced": "sveld/internal-typedef-referenced",
+  "types-inline-unresolved": "sveld/types-inline-unresolved",
 };
 
 /**
@@ -105,6 +108,7 @@ const DIAGNOSTIC_SEVERITIES: Record<SveldDiagnosticKind, SveldDiagnosticSeverity
   "generics-conflict": "warning",
   "jsdoc-tag-dropped": "warning",
   "internal-typedef-referenced": "error",
+  "types-inline-unresolved": "warning",
 };
 
 /**
@@ -231,6 +235,7 @@ const KIND_LABELS: Record<SveldDiagnosticKind, string> = {
   "generics-conflict": "Duplicate @generics/@template names",
   "jsdoc-tag-dropped": "Passthrough JSDoc tags that couldn't attach",
   "internal-typedef-referenced": "Public types referencing an @internal typedef",
+  "types-inline-unresolved": "typesOptions.inline could not safely copy an imported type",
 };
 
 const KIND_ORDER: SveldDiagnosticKind[] = [
@@ -254,6 +259,7 @@ const KIND_ORDER: SveldDiagnosticKind[] = [
   "generics-conflict",
   "jsdoc-tag-dropped",
   "internal-typedef-referenced",
+  "types-inline-unresolved",
 ];
 
 /**

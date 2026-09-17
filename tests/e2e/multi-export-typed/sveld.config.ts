@@ -6,6 +6,9 @@ export default defineConfig({
     preamble: `// TypeScript definitions for ${pkg.name}@${pkg.version}\n\n`,
     printWidth: 80,
     indexTypes: true,
+    // TypedThing imports its `Size` type from a sibling `.ts` file; inlining it means the
+    // generated `.d.ts` doesn't need that file to travel alongside it.
+    inline: "local",
   },
   json: true,
   markdown: true,

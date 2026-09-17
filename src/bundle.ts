@@ -14,6 +14,7 @@ import {
 } from "./diagnostics";
 import { collectExampleSources, type ExampleCheckSource } from "./example-check";
 import { readDirectoryListing, resetDirectoryListings } from "./fs-listing";
+import { type InlinedTypes, inlineLocalTypeImports } from "./inline-types";
 import { hashSource, ParseCache, resolveCacheFilePath } from "./parse-cache";
 import { type EntryExports, parseEntryExports } from "./parse-entry-exports";
 import { type ParsedExports, parseExports } from "./parse-exports";
@@ -85,6 +86,12 @@ export interface GenerateBundleResult {
    * is disabled.
    */
   resolvedPathByFilePath?: Map<string, string>;
+  /**
+   * @internal Populated when `typesInline` is `"local"`/`"all"`, keyed by
+   * `component.filePath`. Passed to the types writer (see `writeTsDefinitions`)
+   * so it can drop successfully-inlined imports and emit the copied declarations.
+   */
+  inlinedTypesByFilePath?: Map<string, InlinedTypes>;
 }
 
 export interface GenerateBundleOptions {
@@ -135,13 +142,20 @@ export interface GenerateBundleOptions {
    * interface name that `@extends`/`@extendProps` validation checks against.
    */
   typesTypeNames?: WriteTsDefinitionOptions["typeNames"];
+  /**
+   * Mirrors `typesOptions.inline`: `"local"`/`"all"` runs the cross-file
+   * inlining pass (see `inline-types.ts`) after every component has parsed.
+   */
+  typesInline?: WriteTsDefinitionOptions["inline"];
 }
 
 export function toGenerateBundleOptions(
   opts?: Pick<
     GenerateBundleOptions,
     "failFast" | "resolveTypes" | "documentExports" | "cache" | "checkExamples" | "dryRun" | "diagnostics"
-  > & { typesOptions?: { typeNames?: WriteTsDefinitionOptions["typeNames"] } },
+  > & {
+    typesOptions?: { typeNames?: WriteTsDefinitionOptions["typeNames"]; inline?: WriteTsDefinitionOptions["inline"] };
+  },
 ): GenerateBundleOptions {
   return {
     failFast: opts?.failFast,
@@ -152,6 +166,7 @@ export function toGenerateBundleOptions(
     dryRun: opts?.dryRun === true,
     diagnostics: opts?.diagnostics,
     typesTypeNames: opts?.typesOptions?.typeNames,
+    typesInline: opts?.typesOptions?.inline,
   };
 }
 
@@ -814,6 +829,11 @@ export async function generateBundle(
 
   validateExtendsTargets(allComponentsForTypes, resolveComponentFilePath, options.typesTypeNames);
 
+  const inlinedTypesByFilePath =
+    options.typesInline === "local" || options.typesInline === "all"
+      ? inlineLocalTypeImports(allComponentsForTypes, resolveComponentFilePath)
+      : undefined;
+
   // Dedupe diagnostics from export and all-components passes.
   const diagnostics = applyDiagnosticIgnores(
     dedupeDiagnostics(Array.from(allComponentsForTypes.values()).flatMap((component) => component.diagnostics ?? [])),
@@ -829,6 +849,7 @@ export async function generateBundle(
     diagnostics,
     cache,
     resolvedPathByFilePath,
+    inlinedTypesByFilePath,
   };
 }
 

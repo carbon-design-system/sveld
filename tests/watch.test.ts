@@ -216,6 +216,80 @@ describe("watch mode (createSveldBundle)", () => {
   });
 });
 
+describe("watch mode with typesOptions.inline", () => {
+  let dir: string;
+
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), "sveld-watch-inline-"));
+    writeFileSync(
+      join(dir, "A.svelte"),
+      `<script lang="ts">
+  import type { Size } from "./a-types";
+  let { size }: { size: Size } = $props();
+</script>
+<div>{size}</div>
+`,
+    );
+    writeFileSync(join(dir, "a-types.ts"), `export type Size = "sm" | "md";\n`);
+    writeFileSync(
+      join(dir, "B.svelte"),
+      `<script lang="ts">
+  export let label = "b";
+</script>
+<span>{label}</span>
+`,
+    );
+  });
+
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("editing a component's inline dependency refreshes only that component's inlined types", async () => {
+    const bundle = await createSveldBundle(dir, true, false, "local");
+
+    const componentA = byModuleName(bundle.result.allComponentsForTypes, "A");
+    expect(componentA).toBeDefined();
+    // biome-ignore lint/style/noNonNullAssertion: asserted above
+    const before = bundle.result.inlinedTypesByFilePath?.get(componentA!.filePath);
+    expect(before?.declarations).toEqual(['type Size = "sm" | "md";']);
+
+    // Not itself a component, so it's never in `update()`'s `reparsed` set - only the
+    // inline-dependency reverse map lets this be picked up.
+    writeFileSync(join(dir, "a-types.ts"), `export type Size = "sm" | "md" | "lg";\n`);
+    const { result, reparsed } = await bundle.update([resolve(dir, "a-types.ts")]);
+
+    expect(reparsed).toEqual([]);
+    // biome-ignore lint/style/noNonNullAssertion: asserted above
+    const after = result.inlinedTypesByFilePath?.get(componentA!.filePath);
+    expect(after?.declarations).toEqual(['type Size = "sm" | "md" | "lg";']);
+  });
+
+  test("editing an unrelated component does not recompute another component's inlined types", async () => {
+    const bundle = await createSveldBundle(dir, true, false, "local");
+
+    const componentA = byModuleName(bundle.result.allComponentsForTypes, "A");
+    // biome-ignore lint/style/noNonNullAssertion: asserted above
+    const before = bundle.result.inlinedTypesByFilePath?.get(componentA!.filePath);
+
+    writeFileSync(
+      join(dir, "B.svelte"),
+      `<script lang="ts">
+  export let label = "changed";
+</script>
+<span>{label}</span>
+`,
+    );
+    const { result, reparsed } = await bundle.update([resolve(dir, "B.svelte")]);
+
+    expect(reparsed).toEqual([resolve(dir, "B.svelte")]);
+    // biome-ignore lint/style/noNonNullAssertion: asserted above
+    const after = result.inlinedTypesByFilePath?.get(componentA!.filePath);
+    // Same object reference: A's inline result was carried forward, not recomputed.
+    expect(after).toBe(before);
+  });
+});
+
 describe("pluginSveld watch option", () => {
   test("defaults to build-only apply when watch is not set", () => {
     expect(pluginSveld().apply).toBe("build");

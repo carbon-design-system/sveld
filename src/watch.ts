@@ -17,10 +17,12 @@ import {
 import { buildReverseDeps, expandAffected } from "./dependency-graph";
 import { dedupeDiagnostics } from "./diagnostics";
 import { resetDirectoryListings } from "./fs-listing";
+import { type InlinedTypes, inlineLocalTypeImports } from "./inline-types";
 import { type EntryExports, parseEntryExports } from "./parse-entry-exports";
 import type { ParsedExports } from "./parse-exports";
 import { loadParserStack } from "./parser-stack";
 import { SVELTE_EXT_REGEX } from "./path";
+import type { WriteTsDefinitionOptions } from "./writer/writer-ts-definitions-core";
 
 /** Result of an incremental update. */
 interface SveldBundleUpdate {
@@ -56,8 +58,17 @@ export interface SveldBundle {
  * @param input - Entry point file or directory containing Svelte components
  * @param glob - Whether to glob for all `.svelte` files in the directory
  * @param documentExports - Record consts, functions, and types from the entry barrel
+ * @param typesInline - Mirrors `typesOptions.inline`; scoped to the components actually affected
+ *   by each `update()` (the reparsed ones, plus any component whose inline dependency file itself
+ *   changed), so edits to an inlined source are picked up on the next debounced flush without
+ *   re-resolving every other component's type imports too.
  */
-export async function createSveldBundle(input: string, glob: boolean, documentExports = false): Promise<SveldBundle> {
+export async function createSveldBundle(
+  input: string,
+  glob: boolean,
+  documentExports = false,
+  typesInline?: WriteTsDefinitionOptions["inline"],
+): Promise<SveldBundle> {
   const inputIsFile = lstatSync(input).isFile();
   // Watched so editing the barrel (adding/removing/renaming an export) is
   // picked up without restarting the dev server; `null` for a directory
@@ -94,6 +105,42 @@ export async function createSveldBundle(input: string, glob: boolean, documentEx
     onParseError: (error) => parseErrors.set(error.filePath, error),
   };
 
+  // Persisted across accesses/flushes so an unaffected component's inline result is reused rather
+  // than recomputed (re-reading and re-parsing its type-import dependency files) on every single
+  // `.result`/`update()` call. Kept in sync with `allComponentsForTypes` by `refreshInlinedTypes`.
+  const inlinedTypesByFilePath = new Map<string, InlinedTypes>();
+  // Absolute path of a file read while inlining -> the component `filePath`s whose inline result
+  // depends on it. A dependency is never itself re-parsed as a component (it's a plain `.ts` file,
+  // not a barrel export), so without this, an edit to it would go unnoticed by the reparse-scoping
+  // above; `update()` consults this to fold the dependency's owners into the refresh scope.
+  const inlineDepsReverse = new Map<string, Set<string>>();
+
+  /**
+   * Recomputes `typesOptions.inline` results for exactly `scope`, merging into the persisted map
+   * and refreshing `inlineDepsReverse` for it. Called with the full component set after the
+   * initial parse, then with the reparsed subset (plus any component whose recorded dependency
+   * changed) after each `update()` - an edit to one component's type-import dependency never pays
+   * for re-resolving every other component's.
+   */
+  const refreshInlinedTypes = (scope: ComponentDocs): void => {
+    if (typesInline !== "local" && typesInline !== "all") return;
+    for (const component of scope.values()) {
+      inlinedTypesByFilePath.delete(component.filePath);
+      for (const dependents of inlineDepsReverse.values()) dependents.delete(component.filePath);
+    }
+    for (const [filePath, inlined] of inlineLocalTypeImports(scope, resolveComponentFilePath)) {
+      inlinedTypesByFilePath.set(filePath, inlined);
+      for (const dependency of inlined.dependencies) {
+        let dependents = inlineDepsReverse.get(dependency);
+        if (!dependents) {
+          dependents = new Set();
+          inlineDepsReverse.set(dependency, dependents);
+        }
+        dependents.add(filePath);
+      }
+    }
+  };
+
   const buildResult = (): GenerateBundleResult => ({
     exports,
     entryExports,
@@ -103,6 +150,7 @@ export async function createSveldBundle(input: string, glob: boolean, documentEx
     diagnostics: dedupeDiagnostics(
       Array.from(allComponentsForTypes.values()).flatMap((component) => component.diagnostics ?? []),
     ),
+    inlinedTypesByFilePath: typesInline === "local" || typesInline === "all" ? inlinedTypesByFilePath : undefined,
   });
 
   // Initial full parse.
@@ -118,6 +166,7 @@ export async function createSveldBundle(input: string, glob: boolean, documentEx
       const result = processComponent(entry, allComponentEntries, fileMap, resolveComponentFilePath, processOptions);
       if (result) allComponentsForTypes.set(result.filePath, result);
     }
+    refreshInlinedTypes(allComponentsForTypes);
     reportParseErrors(buildResult().errors);
   }
 
@@ -169,6 +218,15 @@ export async function createSveldBundle(input: string, glob: boolean, documentEx
       return { result: buildResult(), reparsed: [] };
     }
 
+    // Components whose inline result depends on a file that just changed, even though the
+    // component's own source didn't - resolved from the reverse map built by the last
+    // `refreshInlinedTypes` call, since `reverseDeps` only tracks `@extendProps`/typedef edges.
+    const inlineTypeAffectedFilePaths = new Set<string>();
+    for (const changed of resolvedChanged) {
+      const dependents = inlineDepsReverse.get(changed);
+      if (dependents) for (const filePath of dependents) inlineTypeAffectedFilePaths.add(filePath);
+    }
+
     const entryChanged = resolvedInput !== null && resolvedChanged.includes(resolvedInput);
     const addedComponentPaths: string[] = [];
 
@@ -212,6 +270,14 @@ export async function createSveldBundle(input: string, glob: boolean, documentEx
     const relevantChanged = resolvedChanged.filter((path) => SVELTE_EXT_REGEX.test(path) || reverseDeps.has(path));
 
     if (relevantChanged.length === 0 && addedComponentPaths.length === 0) {
+      // Nothing needs a component re-parse, but a changed file may still be an inline dependency.
+      if (inlineTypeAffectedFilePaths.size > 0) {
+        const affectedForTypes: ComponentDocs = new Map();
+        for (const [key, component] of allComponentsForTypes) {
+          if (inlineTypeAffectedFilePaths.has(component.filePath)) affectedForTypes.set(key, component);
+        }
+        refreshInlinedTypes(affectedForTypes);
+      }
       return { result: buildResult(), reparsed: [] };
     }
 
@@ -243,6 +309,24 @@ export async function createSveldBundle(input: string, glob: boolean, documentEx
 
     // Refresh the dependency graph after re-parsing.
     reverseDeps = buildReverseDeps(allComponentsForTypes, resolveComponentFilePath);
+
+    // Only the reparsed components, plus any component whose inline dependency just changed, need
+    // their inline results recomputed; every other component's type-import dependencies are
+    // unchanged. Drop entries for components removed since the last update (a deleted file no
+    // longer has anything to carry forward).
+    const reparsedForTypes: ComponentDocs = new Map();
+    for (const [key, component] of allComponentsForTypes) {
+      if (
+        reparsed.has(resolveComponentFilePath(component.filePath)) ||
+        inlineTypeAffectedFilePaths.has(component.filePath)
+      ) {
+        reparsedForTypes.set(key, component);
+      }
+    }
+    refreshInlinedTypes(reparsedForTypes);
+    for (const filePath of inlinedTypesByFilePath.keys()) {
+      if (!allComponentsForTypes.has(filePath)) inlinedTypesByFilePath.delete(filePath);
+    }
 
     const result = buildResult();
     reportParseErrors(result.errors);

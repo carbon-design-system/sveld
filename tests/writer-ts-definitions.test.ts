@@ -1989,3 +1989,73 @@ describe("typesOptions.indexTypes", () => {
     }
   });
 });
+
+describe("writeTsDefinition with an `inlined` value", () => {
+  function componentWithTypeImport(): ComponentDocApi {
+    const component = mockComponentDocApi("Widget", "./src/Widget.svelte", {
+      props: [
+        {
+          name: "size",
+          kind: "let",
+          type: "Size",
+          isFunction: false,
+          isFunctionDeclaration: false,
+          isRequired: true,
+          constant: false,
+          reactive: false,
+        },
+      ],
+    });
+    component[PARSED_COMPONENT_TYPE_SCRIPT_METADATA] = {
+      canonicalPropNames: [],
+      localTypeDeclarations: [],
+      typeImportStatements: ['import type { Size } from "./types";'],
+    };
+    return component;
+  }
+
+  test("drops the listed import and emits the declarations before localTypeDeclarations", () => {
+    const component = componentWithTypeImport();
+    // biome-ignore lint/style/noNonNullAssertion: set above
+    component[PARSED_COMPONENT_TYPE_SCRIPT_METADATA]!.localTypeDeclarations = ["interface Local {\n  x: number;\n}"];
+
+    const output = writeTsDefinition(component, {
+      inlined: {
+        droppedImportStatements: ['import type { Size } from "./types";'],
+        declarations: ['type Size = "sm" | "md" | "lg";'],
+        dependencies: ["/abs/types.ts"],
+      },
+    });
+
+    expect(output).not.toContain('from "./types"');
+    expect(output).toContain('type Size = "sm" | "md" | "lg";');
+    expect(output).toContain("interface Local {\n  x: number;\n}");
+    // The inlined declaration comes before the component's own local declaration.
+    expect(output.indexOf('type Size = "sm" | "md" | "lg";')).toBeLessThan(output.indexOf("interface Local {"));
+  });
+
+  test("with inline: 'local' but no `inlined` value, output equals the default", () => {
+    const component = componentWithTypeImport();
+
+    const defaultOutput = writeTsDefinition(component);
+    const withInlineOption = writeTsDefinition(component, { inline: "local" });
+
+    expect(withInlineOption).toEqual(defaultOutput);
+    expect(withInlineOption).toContain('import type { Size } from "./types";');
+  });
+
+  test("serializeEmitOptions keys on `inline`", () => {
+    expect(serializeEmitOptions({ inline: "local" })).not.toEqual(serializeEmitOptions({ inline: false }));
+    expect(serializeEmitOptions({})).toEqual(serializeEmitOptions({ inline: false }));
+  });
+
+  test("pickEmitOptions carries `inline` through, not the per-component `inlined` map", () => {
+    const picked = pickEmitOptions({
+      inline: "local",
+      inlined: { droppedImportStatements: [], declarations: [], dependencies: [] },
+    });
+
+    expect(picked.inline).toBe("local");
+    expect(picked.inlined).toBeUndefined();
+  });
+});
