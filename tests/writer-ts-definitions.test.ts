@@ -1,13 +1,14 @@
-import { readFileSync, rmSync } from "node:fs";
+import { readFileSync, rmSync, writeFileSync } from "node:fs";
 import { mkdtemp } from "node:fs/promises";
 import path from "node:path";
 import { asNormalizedPath } from "../src/brands";
+import { generateBundle } from "../src/bundle";
 import type { ParsedComponent } from "../src/ComponentParser";
 import ComponentParser, { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "../src/ComponentParser";
 import { setQuiet } from "../src/logger";
 import { ParseCache } from "../src/parse-cache";
 import type { ComponentDocApi, ComponentDocs } from "../src/plugin";
-import type { WriteTsDefinitionsOptions } from "../src/writer/writer-ts-definitions";
+import type { TransformContext, WriteTsDefinitionsOptions } from "../src/writer/writer-ts-definitions";
 import writeTsDefinitions, {
   formatTsProps,
   getContextDefs,
@@ -1462,5 +1463,156 @@ describe("typesOptions.comments", () => {
     const output = writeTsDefinition(component, { comments: "none" });
 
     expect(output).not.toContain("/**");
+  });
+});
+
+describe("typesOptions.transform", () => {
+  test("transforms both the component file and index.d.ts, recording each context", async () => {
+    const tempDir = await mkdtemp(path.join(process.cwd(), ".tmp-sveld-ts-defs-transform-"));
+    const outDir = path.relative(process.cwd(), tempDir);
+    const component = mockComponentDocApi("Button", "Button.svelte");
+    const components: ComponentDocs = new Map([["Button", component]]);
+    const seenContexts: TransformContext[] = [];
+
+    try {
+      await writeTsDefinitions(components, {
+        outDir,
+        inputDir: "src",
+        preamble: "",
+        exports: mockParsedExports({}),
+        transform: async (text, context) => {
+          seenContexts.push(context);
+          return `// x\n${text}`;
+        },
+      });
+
+      const componentDts = readFileSync(path.join(tempDir, "Button.svelte.d.ts"), "utf-8");
+      const indexDts = readFileSync(path.join(tempDir, "index.d.ts"), "utf-8");
+
+      expect(componentDts.startsWith("// x\n")).toBe(true);
+      expect(indexDts.startsWith("// x\n")).toBe(true);
+
+      expect(seenContexts).toHaveLength(2);
+      const componentContext = seenContexts.find((context) => context.kind === "component");
+      const indexContext = seenContexts.find((context) => context.kind === "index");
+
+      expect(componentContext).toEqual({ kind: "component", component, filePath: "Button.svelte.d.ts" });
+      expect(indexContext).toEqual({ kind: "index", filePath: "index.d.ts" });
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  // These error-path tests run under `dryRun: true` so the write phase never
+  // touches disk: with a mix of a rejecting (component) and a resolving
+  // (index) write promise, `Promise.all` settles as soon as the first one
+  // rejects while the other keeps running in the background, so a real write
+  // could still land on disk (or recreate a just-removed temp dir) after the
+  // test's cleanup already ran.
+  test("a throwing transform rejects with a message naming the failing file", async () => {
+    const components: ComponentDocs = new Map([["Button", mockComponentDocApi("Button", "Button.svelte")]]);
+
+    await expect(
+      writeTsDefinitions(components, {
+        outDir: "types",
+        inputDir: "src",
+        preamble: "",
+        exports: mockParsedExports({}),
+        dryRun: true,
+        transform: (text, context) => {
+          if (context.kind === "component") throw new Error("boom");
+          return text;
+        },
+      }),
+    ).rejects.toThrow('sveld: typesOptions.transform failed for "Button.svelte.d.ts": boom');
+  });
+
+  test("a transform returning a non-string rejects with a message naming the failing file", async () => {
+    const components: ComponentDocs = new Map([["Button", mockComponentDocApi("Button", "Button.svelte")]]);
+
+    await expect(
+      writeTsDefinitions(components, {
+        outDir: "types",
+        inputDir: "src",
+        preamble: "",
+        exports: mockParsedExports({}),
+        dryRun: true,
+        // biome-ignore lint/suspicious/noExplicitAny: intentionally violating the return type to test the guard
+        transform: (text, context) => (context.kind === "component" ? (undefined as any) : text),
+      }),
+    ).rejects.toThrow('sveld: typesOptions.transform failed for "Button.svelte.d.ts"');
+  });
+
+  test("dry run still calls the transform for every generated file, without writing anything", async () => {
+    const components: ComponentDocs = new Map([["Button", mockComponentDocApi("Button", "Button.svelte")]]);
+    const seenContexts: TransformContext[] = [];
+
+    await writeTsDefinitions(components, {
+      outDir: "types",
+      inputDir: "src",
+      preamble: "",
+      exports: mockParsedExports({}),
+      dryRun: true,
+      transform: (text, context) => {
+        seenContexts.push(context);
+        return text;
+      },
+    });
+
+    expect(seenContexts.map((context) => context.kind).sort()).toEqual(["component", "index"]);
+  });
+
+  test("second run's output reflects the second transform even on a generated-text cache hit", async () => {
+    const dir = await mkdtemp(path.join(process.cwd(), ".tmp-sveld-ts-defs-transform-cache-src-"));
+    const outDirAbs = await mkdtemp(path.join(process.cwd(), ".tmp-sveld-ts-defs-transform-cache-out-"));
+    const outDir = path.relative(process.cwd(), outDirAbs);
+    const cacheFile = path.join(dir, ".cache", "parse-cache.json");
+    writeFileSync(
+      path.join(dir, "Button.svelte"),
+      `<script>\n  export let label = "";\n</script>\n\n<button>{label}</button>`,
+    );
+
+    try {
+      const first = await generateBundle(dir, true, { cache: cacheFile });
+      await writeTsDefinitions(first.allComponentsForTypes, {
+        outDir,
+        inputDir: dir,
+        preamble: "",
+        exports: first.exports,
+        cache: first.cache,
+        resolvedPathByFilePath: first.resolvedPathByFilePath,
+        transform: (text) => `// first\n${text}`,
+      });
+      first.cache?.save();
+
+      const firstOutput = readFileSync(path.join(outDirAbs, "Button.svelte.d.ts"), "utf-8");
+      expect(firstOutput.startsWith("// first\n")).toBe(true);
+
+      // The cache stores the untransformed text, not the transformed output.
+      const buttonPath = path.resolve(dir, "Button.svelte");
+      const cacheKey = serializeEmitOptions({});
+      expect(first.cache?.getGeneratedText(buttonPath, cacheKey)).toBeDefined();
+      expect(first.cache?.getGeneratedText(buttonPath, cacheKey)).not.toContain("// first");
+
+      const second = await generateBundle(dir, true, { cache: cacheFile });
+      await writeTsDefinitions(second.allComponentsForTypes, {
+        outDir,
+        inputDir: dir,
+        preamble: "",
+        exports: second.exports,
+        cache: second.cache,
+        resolvedPathByFilePath: second.resolvedPathByFilePath,
+        transform: (text) => `// second\n${text}`,
+      });
+
+      const secondOutput = readFileSync(path.join(outDirAbs, "Button.svelte.d.ts"), "utf-8");
+      expect(secondOutput.startsWith("// second\n")).toBe(true);
+      // The underlying generated text (below the prefix) is unchanged, proving
+      // the second run served the cached text and only the transform differed.
+      expect(secondOutput.slice("// second\n".length)).toEqual(firstOutput.slice("// first\n".length));
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+      rmSync(outDirAbs, { recursive: true, force: true });
+    }
   });
 });

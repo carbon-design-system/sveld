@@ -3,6 +3,7 @@ import { convertSvelteExt, createExports } from "../create-exports";
 import { info } from "../logger";
 import type { ParseCache } from "../parse-cache";
 import type { ParsedExports } from "../parse-exports";
+import { normalizeSeparators } from "../path";
 import type { ComponentDocApi, ComponentDocs } from "../plugin";
 import { buildComponentApiDocument } from "./document-model";
 import Writer from "./Writer";
@@ -45,6 +46,37 @@ function propsExportedByDefault(exportTypes: WriteTsDefinitionOptions["exportTyp
   return exportTypes.props ?? true;
 }
 
+/** The context `typesOptions.transform` receives alongside the generated text. */
+export type TransformContext =
+  | { kind: "component"; component: ComponentDocApi; filePath: string }
+  | { kind: "index"; filePath: string };
+
+/**
+ * Runs `typesOptions.transform` (a no-op passthrough when unset) over
+ * generated `.d.ts` text, called after the generated-text cache lookup so a
+ * changed transform can never serve stale cached output. A transform that
+ * throws, or resolves to something other than a string, fails the run with a
+ * `sveld:`-prefixed error naming the file - same shape as the writer-failure
+ * error in `src/writer/registry.ts`.
+ */
+async function applyTransform(
+  transform: WriteTsDefinitionsOptions["transform"],
+  text: string,
+  context: TransformContext,
+): Promise<string> {
+  if (!transform) return text;
+  try {
+    const result = await transform(text, context);
+    if (typeof result !== "string") {
+      throw new TypeError(`must return a string, got ${typeof result}`);
+    }
+    return result;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`sveld: typesOptions.transform failed for "${context.filePath}": ${message}`, { cause: error });
+  }
+}
+
 /**
  * Re-export browser-compatible functions from core module.
  *
@@ -85,6 +117,12 @@ export interface WriteTsDefinitionsOptions extends WriteTsDefinitionOptions {
   cache?: ParseCache;
   /** @internal See `cache`. Lookups use `component.filePath`. */
   resolvedPathByFilePath?: Map<string, string>;
+  /**
+   * Post-processes each generated file's text before it is written. Runs
+   * after the generated-text cache, so it applies on every run. Config file
+   * or `sveld()` only.
+   */
+  transform?: (text: string, context: TransformContext) => string | Promise<string>;
 }
 
 /**
@@ -109,6 +147,7 @@ export default async function writeTsDefinitions(components: ComponentDocs, opti
   const baseEmitOptions = pickEmitOptions(options);
   const writePromises = document.components.map(async (component) => {
     const ts_filepath = convertSvelteExt(join(options.outDir, component.filePath));
+    const relativeFilePath = normalizeSeparators(convertSvelteExt(component.filePath));
     const resolvedPath = options.resolvedPathByFilePath?.get(component.filePath);
     const emitOptions =
       extendsTargetInterfaces.has(propsTypeName(component.moduleName, options.typeNames)) &&
@@ -121,10 +160,23 @@ export default async function writeTsDefinitions(components: ComponentDocs, opti
       text = writeTsDefinition(component, emitOptions);
       if (resolvedPath) options.cache?.setGeneratedText(resolvedPath, cacheKey, text);
     }
-    await writer.write(ts_filepath, text);
+    const transformedText = await applyTransform(options.transform, text, {
+      kind: "component",
+      component,
+      filePath: relativeFilePath,
+    });
+    await writer.write(ts_filepath, transformedText);
   });
 
-  await Promise.all([...writePromises, writer.write(ts_base_path, `${indexDTs}\n`)]);
+  const indexWritePromise = (async () => {
+    const transformedIndexDts = await applyTransform(options.transform, indexDTs, {
+      kind: "index",
+      filePath: "index.d.ts",
+    });
+    await writer.write(ts_base_path, `${transformedIndexDts}\n`);
+  })();
+
+  await Promise.all([...writePromises, indexWritePromise]);
 
   if (!options.dryRun) info("created TypeScript definitions.");
 }
