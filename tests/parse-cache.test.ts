@@ -6,7 +6,7 @@ import { generateBundle } from "../src/bundle";
 import ComponentParser from "../src/ComponentParser";
 import { DEFAULT_CACHE_FILE } from "../src/parse-cache";
 import writeTsDefinitions from "../src/writer/writer-ts-definitions";
-import { serializeEmitOptions } from "../src/writer/writer-ts-definitions-core";
+import { serializeEmitOptions, type WriteTsDefinitionOptions } from "../src/writer/writer-ts-definitions-core";
 
 /** Look up `allComponentsForTypes` by filePath; moduleName is not unique. */
 function byModuleName(components: ComponentDocs, moduleName: string): ComponentDocApi | undefined {
@@ -229,6 +229,88 @@ describe("generated .d.ts text cache", () => {
     const second = await generateBundle(dir, true, { cache: cacheFile });
     expect(second.cache?.getGeneratedText(buttonPath, classKey)).toBeDefined();
     expect(second.cache?.getGeneratedText(buttonPath, componentKey)).toBeUndefined();
+  });
+
+  test("every other typesOptions key that affects output busts the cache too, not just format", async () => {
+    // Deliberately plain (no @restProps/@extendProps/canonical props type) and documented, so
+    // every option below actually changes its generated text: propsDeclaration needs a plain
+    // object shape, comments needs something to strip.
+    writeFileSync(
+      join(dir, "Widget.svelte"),
+      `<script lang="ts">
+  /** The widget's size. @default "md" */
+  export let size: "sm" | "md" | "lg" = "md";
+</script>
+<div>{size}</div>
+`,
+    );
+    const widgetPath = resolve(dir, "Widget.svelte");
+
+    // `inline` is deliberately excluded from this table: a component that actually inlines
+    // something bypasses the generated-text cache entirely (writer-ts-definitions.ts's
+    // `bypassCache`), rather than getting a new cache key, since its output depends on other
+    // files' contents that aren't part of its own source hash. `inline`'s key-differs coverage
+    // lives in the `serializeEmitOptions` unit tests instead.
+    const variants: Array<{
+      label: string;
+      before?: Partial<WriteTsDefinitionOptions>;
+      after: Partial<WriteTsDefinitionOptions>;
+    }> = [
+      { label: "exportTypes", after: { exportTypes: false } },
+      // Forcing props exported on top of exportTypes: false only differs in output from the
+      // exportTypes: false baseline itself - against the plain default (already exported) the two
+      // would produce identical text, since props ends up exported either way.
+      {
+        label: "forceExportProps",
+        before: { exportTypes: false },
+        after: { exportTypes: false, forceExportProps: true },
+      },
+      { label: "typeNames", after: { typeNames: { props: "I{name}Props" } } },
+      { label: "comments", after: { comments: "none" } },
+      { label: "propsDeclaration", after: { propsDeclaration: "interface" } },
+    ];
+
+    // The generated-text cache is a single `{key, text}` slot per component, not a history keyed
+    // by every distinct key ever seen (confirmed by the two tests above, which each use their own
+    // fresh cache file) - so each variant gets a fresh cache file to isolate its own before/after
+    // pair, exactly like `--types-format switch...` above does for a single option.
+    for (const { label, before: beforeOptions, after: afterOptions } of variants) {
+      const variantCacheFile = join(dir, `.cache-${label}`, "parse-cache.json");
+      const beforeKey = serializeEmitOptions(beforeOptions ?? {});
+      const afterKey = serializeEmitOptions(afterOptions);
+      expect(afterKey).not.toEqual(beforeKey);
+
+      // biome-ignore lint/performance/noAwaitInLoops: each variant's before/after pair must run in order, not concurrently.
+      const before = await generateBundle(dir, true, { cache: variantCacheFile });
+      await writeTsDefinitions(before.allComponentsForTypes, {
+        outDir,
+        inputDir: dir,
+        preamble: "",
+        exports: before.exports,
+        cache: before.cache,
+        resolvedPathByFilePath: before.resolvedPathByFilePath,
+        ...beforeOptions,
+      });
+      before.cache?.save();
+      const beforeText = before.cache?.getGeneratedText(widgetPath, beforeKey);
+      expect(beforeText).toBeDefined();
+
+      const after = await generateBundle(dir, true, { cache: variantCacheFile });
+      await writeTsDefinitions(after.allComponentsForTypes, {
+        outDir,
+        inputDir: dir,
+        preamble: "",
+        exports: after.exports,
+        cache: after.cache,
+        resolvedPathByFilePath: after.resolvedPathByFilePath,
+        ...afterOptions,
+      });
+      after.cache?.save();
+
+      const afterText = after.cache?.getGeneratedText(widgetPath, afterKey);
+      expect(afterText).toBeDefined();
+      expect(afterText).not.toEqual(beforeText);
+    }
   });
 });
 
