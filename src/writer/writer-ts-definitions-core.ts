@@ -378,7 +378,11 @@ function genPropDef(
      */
     events?: ComponentDocApi["events"];
   },
-  emit: { export: boolean; typeNames?: WriteTsDefinitionOptions["typeNames"] } = { export: true },
+  emit: {
+    export: boolean;
+    typeNames?: WriteTsDefinitionOptions["typeNames"];
+    propsDeclaration?: WriteTsDefinitionOptions["propsDeclaration"];
+  } = { export: true },
   commentLevel: CommentLevel = "all",
 ) {
   const exportKw = emit.export ? "export " : "";
@@ -638,7 +642,14 @@ function genPropDef(
     ${exportKw}type ${props_name}${genericsName} = ${def.extends === undefined ? "" : `Omit<${def.extends.interface}, keyof $Props${genericsNameRef}> & `}$Props${genericsNameRef};
   `;
     } else if (def.extends === undefined) {
-      prop_def = `
+      prop_def =
+        emit.propsDeclaration === "interface" && props.trim() !== ""
+          ? `
+    ${exportKw}interface ${props_name}${genericsName} {
+      ${props}
+    }
+  `
+          : `
     ${exportKw}type ${props_name}${genericsName} = {
       ${props}
     };
@@ -1157,6 +1168,13 @@ export interface WriteTsDefinitionOptions {
    * `@deprecated` only. `"none"` emits no comments at all.
    */
   comments?: "all" | "descriptions" | "none";
+  /**
+   * `"type"` (default) emits the props type as a type alias.
+   * `"interface"` emits `interface <Name>Props { ... }` when the props are a
+   * plain object (no `@restProps`, no `@extendProps`, no whole-object
+   * `$props()` type); other shapes are intersections and stay aliases.
+   */
+  propsDeclaration?: "type" | "interface";
 }
 
 /**
@@ -1231,6 +1249,7 @@ export function serializeEmitOptions(options: WriteTsDefinitionOptions | undefin
     forceExportProps: options?.forceExportProps ?? false,
     typeNames: options?.typeNames ?? null,
     comments: options?.comments ?? "all",
+    propsDeclaration: options?.propsDeclaration ?? "type",
   });
 }
 
@@ -1242,6 +1261,7 @@ export function pickEmitOptions(options: WriteTsDefinitionOptions): WriteTsDefin
     forceExportProps: options.forceExportProps,
     typeNames: options.typeNames,
     comments: options.comments,
+    propsDeclaration: options.propsDeclaration,
   };
 }
 
@@ -1279,7 +1299,7 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
       canonicalPropsType: typeScriptMetadata?.canonicalPropsType,
       events: useComponentFormat && syntaxMode === "legacy" ? events : undefined,
     },
-    { export: exportFlags.props, typeNames: options?.typeNames },
+    { export: exportFlags.props, typeNames: options?.typeNames, propsDeclaration: options?.propsDeclaration },
     commentLevel,
   );
 

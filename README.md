@@ -927,6 +927,7 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
   - **`exportTypes`** (`boolean | { props?, exports?, typedefs?, contexts? }`, optional, default: `true`): Which generated type declarations get an `export` keyword. `false` keeps them all local to the `.d.ts` file; an object picks per kind. No CLI flag; config file or `sveld()` only. See [`typesOptions.exportTypes`](#typesoptionsexporttypes).
   - **`typeNames`** (`{ props?: string; exports?: string }`, optional, default: `{ props: "{name}Props", exports: "{name}Exports" }`): Templates for generated type names. No CLI flag; config file or `sveld()` only. See [`typesOptions.typeNames`](#typesoptionstypenames).
   - **`comments`** (`"all" | "descriptions" | "none"`, optional, default: `"all"`): How much JSDoc lands in the generated `.d.ts`. `"all"` keeps descriptions, `@deprecated`, `@default`, and passthrough tags (`@since`, `@see`, `@example`, `@link`); `"descriptions"` keeps descriptions and `@deprecated` only; `"none"` emits no comments at all. No CLI flag; config file or `sveld()` only. See [`typesOptions.comments`](#typesoptionscomments).
+  - **`propsDeclaration`** (`"type" | "interface"`, optional, default: `"type"`): `"interface"` emits the props type as an `interface` instead of a `type` alias when the props are a plain object. No CLI flag; config file or `sveld()` only. See [`typesOptions.propsDeclaration`](#typesoptionspropsdeclaration).
   - **`transform`** (function, optional): Post-processes each generated file's text before it is written. Runs after the generated-text cache, so it applies on every run. No CLI flag; config file or `sveld()` only. See [`typesOptions.transform`](#typesoptionstransform).
 - **`json`** (boolean, optional): Generate component documentation in JSON format.
 - **`jsonOptions`** (object, optional): Options for JSON output.
@@ -1142,6 +1143,35 @@ sveld({
 `@internal`/`@ignore` members are removed from every output regardless of this option — see [`@ignore` / `@internal`](#ignore--internal). `comments` only controls how much JSDoc survives for members that *do* get emitted.
 
 There's no CLI flag for `comments`; set it via a config file or the programmatic `sveld()` API.
+
+#### `typesOptions.propsDeclaration`
+
+By default sveld emits the props type as a `type` alias. `typesOptions.propsDeclaration: "interface"` emits an `interface` instead, for consumers who want to extend it with `interface MyProps extends ButtonProps`, rely on declaration merging, or just prefer the shorter editor hover an `interface` gets.
+
+```js
+sveld({
+  types: true,
+  typesOptions: {
+    propsDeclaration: "interface",
+  },
+});
+```
+
+**Button.svelte.d.ts** before / after:
+
+```diff
+- export type ButtonProps = { label?: string };
++ export interface ButtonProps { label?: string }
+```
+
+Only a plain object props type can become an `interface` safely. These shapes are intersections instead, and always stay a `type` alias regardless of this option:
+
+- a component with [`@restProps`](#restprops) (`Omit<$RestProps, keyof $Props> & $Props`)
+- a component with [`@extendProps`](#extendprops) (`Omit<Extended, keyof $Props> & $Props`)
+- a component with a whole-object `$props()` type resolved via [`resolveTypes`](#opt-in-semantic-resolution-resolvetypes) (`CanonicalPropsType & { ... }`)
+- a component with no props at all (`Record<string, never>`; an empty `interface` trips `noEmptyInterface` in consumer lint setups)
+
+There's no CLI flag for `propsDeclaration`; set it via a config file or the programmatic `sveld()` API.
 
 #### `typesOptions.transform`
 

@@ -302,6 +302,11 @@ describe("validateOptions", () => {
     expect(warnSpy).not.toHaveBeenCalled();
   });
 
+  test("does not warn about typesOptions.propsDeclaration", () => {
+    validateOptions({ typesOptions: { propsDeclaration: "interface" } });
+    expect(warnSpy).not.toHaveBeenCalled();
+  });
+
   test("does not warn about typesOptions.transform", () => {
     validateOptions({ typesOptions: { transform: (text: string) => text } });
     expect(warnSpy).not.toHaveBeenCalled();

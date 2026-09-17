@@ -1,6 +1,7 @@
 import { readFileSync, rmSync, writeFileSync } from "node:fs";
 import { mkdtemp } from "node:fs/promises";
 import path from "node:path";
+import ts from "@typescript/typescript6";
 import { asNormalizedPath } from "../src/brands";
 import { generateBundle } from "../src/bundle";
 import type { ParsedComponent } from "../src/ComponentParser";
@@ -1463,6 +1464,189 @@ describe("typesOptions.comments", () => {
     const output = writeTsDefinition(component, { comments: "none" });
 
     expect(output).not.toContain("/**");
+  });
+});
+
+describe("typesOptions.propsDeclaration", () => {
+  const labelProp = {
+    name: "label",
+    kind: "let",
+    type: "string",
+    value: '""',
+    isFunction: false,
+    isFunctionDeclaration: false,
+    isRequired: false,
+    constant: false,
+    reactive: false,
+  } as ComponentDocApi["props"][number];
+
+  test('"type" (default) emits a type alias for plain props', () => {
+    const component = mockComponentDocApi("Widget", "./src/Widget.svelte", { props: [labelProp] });
+
+    expect(writeTsDefinition(component)).toContain("export type WidgetProps = {");
+  });
+
+  test('"interface" emits an interface for plain props', () => {
+    const component = mockComponentDocApi("Widget", "./src/Widget.svelte", { props: [labelProp] });
+
+    const output = writeTsDefinition(component, { propsDeclaration: "interface" });
+
+    expect(output).toContain("export interface WidgetProps {");
+    expect(output).not.toContain("export type WidgetProps");
+  });
+
+  test('"interface" on a generic component parameterizes the interface', () => {
+    const component = mockComponentDocApi("Widget", "./src/Widget.svelte", {
+      props: [labelProp],
+      generics: ["T", 'T extends string = "a"'],
+    });
+
+    const output = writeTsDefinition(component, { propsDeclaration: "interface" });
+
+    expect(output).toContain('export interface WidgetProps<T extends string = "a"> {');
+  });
+
+  test('combined with exportTypes: { props: false } drops "export" but keeps "interface"', () => {
+    const component = mockComponentDocApi("Widget", "./src/Widget.svelte", { props: [labelProp] });
+
+    const output = writeTsDefinition(component, { propsDeclaration: "interface", exportTypes: { props: false } });
+
+    expect(output).toContain("interface WidgetProps {");
+    expect(output).not.toContain("export interface WidgetProps");
+  });
+
+  test("a component with @restProps stays a type alias regardless of propsDeclaration", () => {
+    const component = mockComponentDocApi("Widget", "./src/Widget.svelte", {
+      props: [labelProp],
+      rest_props: { type: "Element", name: "div" },
+    });
+
+    const typeOutput = writeTsDefinition(component, { propsDeclaration: "type" });
+    const interfaceOutput = writeTsDefinition(component, { propsDeclaration: "interface" });
+
+    expect(interfaceOutput).toEqual(typeOutput);
+    expect(interfaceOutput).toContain("export type WidgetProps = Omit<$RestProps");
+  });
+
+  test("a component with @extends stays a type alias regardless of propsDeclaration", () => {
+    const component = mockComponentDocApi("Widget", "./src/Widget.svelte", {
+      props: [labelProp],
+      extends: { interface: "ButtonProps", import: '"./Button.svelte"' },
+    });
+
+    const typeOutput = writeTsDefinition(component, { propsDeclaration: "type" });
+    const interfaceOutput = writeTsDefinition(component, { propsDeclaration: "interface" });
+
+    expect(interfaceOutput).toEqual(typeOutput);
+    expect(interfaceOutput).toContain("export type WidgetProps = Omit<ButtonProps");
+  });
+
+  test("a whole-object $props() canonical type stays a type alias regardless of propsDeclaration", () => {
+    const component = mockComponentDocApi("TypedButton", "./src/TypedButton.svelte", { props: [labelProp] });
+    component[PARSED_COMPONENT_TYPE_SCRIPT_METADATA] = {
+      canonicalPropsType: "HTMLButtonAttributes & Props",
+      canonicalPropNames: ["label"],
+      localTypeDeclarations: [
+        `interface Props {
+  label?: string;
+}`,
+      ],
+      typeImportStatements: ['import type { HTMLButtonAttributes } from "svelte/elements";'],
+    };
+
+    const typeOutput = writeTsDefinition(component, { propsDeclaration: "type" });
+    const interfaceOutput = writeTsDefinition(component, { propsDeclaration: "interface" });
+
+    expect(interfaceOutput).toEqual(typeOutput);
+    expect(interfaceOutput).toContain("export type TypedButtonProps = $Props;");
+  });
+
+  test("zero props stays a type alias (Record<string, never>) regardless of propsDeclaration", () => {
+    const component = mockComponentDocApi("Empty", "./src/Empty.svelte");
+
+    const typeOutput = writeTsDefinition(component, { propsDeclaration: "type" });
+    const interfaceOutput = writeTsDefinition(component, { propsDeclaration: "interface" });
+
+    expect(interfaceOutput).toEqual(typeOutput);
+    expect(interfaceOutput).toContain("export type EmptyProps = Record<string, never>;");
+  });
+
+  test("a different propsDeclaration produces a different serializeEmitOptions key", () => {
+    expect(serializeEmitOptions({ propsDeclaration: "interface" })).not.toEqual(serializeEmitOptions({}));
+  });
+
+  test("pickEmitOptions keeps propsDeclaration", () => {
+    const options: WriteTsDefinitionsOptions = {
+      propsDeclaration: "interface",
+      outDir: "./dist",
+      inputDir: "./src",
+      preamble: "",
+      exports: mockParsedExports({}),
+    };
+
+    expect(pickEmitOptions(options)).toEqual({ propsDeclaration: "interface" });
+  });
+
+  test("parsed fixtures emit valid TypeScript under `interface`, verified with tsc", async () => {
+    const parser = new ComponentParser();
+
+    const typedefSource = await Bun.file(
+      path.join(process.cwd(), "tests", "fixtures", "typedef-description", "input.svelte"),
+    ).text();
+    const typedefParsed = parser.parseSvelteComponent(typedefSource, {
+      filePath: "typedef-description/input.svelte",
+      moduleName: "TypedefDescription",
+    });
+    const typedefComponent = {
+      moduleName: "TypedefDescription",
+      filePath: asNormalizedPath("typedef-description/input.svelte"),
+      ...typedefParsed,
+    };
+    const typedefOutput = writeTsDefinition(typedefComponent, { propsDeclaration: "interface" });
+    expect(typedefOutput).toContain("export interface TypedefDescriptionProps {");
+
+    const restPropsSource = await Bun.file(
+      path.join(process.cwd(), "tests", "fixtures", "rest-props-multiple", "input.svelte"),
+    ).text();
+    const restPropsParsed = parser.parseSvelteComponent(restPropsSource, {
+      filePath: "rest-props-multiple/input.svelte",
+      moduleName: "RestPropsMultiple",
+    });
+    const restPropsComponent = {
+      moduleName: "RestPropsMultiple",
+      filePath: asNormalizedPath("rest-props-multiple/input.svelte"),
+      ...restPropsParsed,
+    };
+    const restPropsOutput = writeTsDefinition(restPropsComponent, { propsDeclaration: "interface" });
+    // @restProps stays a type alias even under propsDeclaration: "interface".
+    expect(restPropsOutput).toContain("export type RestPropsMultipleProps = Omit<$RestProps");
+
+    // Reuse tsconfig.fixtures.json's compiler options so a shape mistake here
+    // is caught as a real type error, not just a string mismatch.
+    const configPath = path.join(process.cwd(), "tsconfig.fixtures.json");
+    const configFile = ts.readConfigFile(configPath, ts.sys.readFile);
+    const parsedConfig = ts.parseJsonConfigFileContent(configFile.config, ts.sys, path.dirname(configPath));
+
+    const tempDir = await mkdtemp(path.join(process.cwd(), ".tmp-sveld-props-declaration-tsc-"));
+    try {
+      const typedefFilePath = path.join(tempDir, "typedef-description.d.ts");
+      const restPropsFilePath = path.join(tempDir, "rest-props-multiple.d.ts");
+      writeFileSync(typedefFilePath, typedefOutput);
+      writeFileSync(restPropsFilePath, restPropsOutput);
+
+      const program = ts.createProgram([typedefFilePath, restPropsFilePath], parsedConfig.options);
+      const diagnostics = ts.getPreEmitDiagnostics(program).map((diagnostic) =>
+        ts.formatDiagnostic(diagnostic, {
+          getCanonicalFileName: (fileName) => fileName,
+          getCurrentDirectory: () => tempDir,
+          getNewLine: () => "\n",
+        }),
+      );
+
+      expect(diagnostics).toEqual([]);
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
   });
 });
 
