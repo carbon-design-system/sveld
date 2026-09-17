@@ -1,4 +1,4 @@
-import { rmSync } from "node:fs";
+import { readFileSync, rmSync } from "node:fs";
 import { mkdtemp } from "node:fs/promises";
 import path from "node:path";
 import { asNormalizedPath } from "../src/brands";
@@ -1039,6 +1039,192 @@ describe("writeTsDefinitions", () => {
       });
 
       expect(errorSpy).not.toHaveBeenCalled();
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("typesOptions.exportTypes", () => {
+  test("exportTypes: false hides every generated export keyword except module exports and export default", () => {
+    const component_api: ComponentDocApi = {
+      moduleName: "Widget",
+      filePath: asNormalizedPath("./src/Widget.svelte"),
+      syntaxMode: "legacy",
+      props: [
+        {
+          name: "label",
+          kind: "let",
+          type: "string",
+          value: '""',
+          isFunction: false,
+          isFunctionDeclaration: false,
+          isRequired: false,
+          constant: false,
+          reactive: false,
+        },
+      ],
+      moduleExports: [
+        {
+          name: "VERSION",
+          kind: "const",
+          type: "string",
+          isFunction: false,
+          isFunctionDeclaration: false,
+          isRequired: false,
+          constant: true,
+          reactive: false,
+        },
+      ],
+      slots: [],
+      events: [],
+      typedefs: [
+        {
+          type: "{ [key: string]: boolean; }",
+          name: "MyTypedef",
+          ts: "interface MyTypedef { [key: string]: boolean; }",
+        },
+      ],
+      generics: null,
+      rest_props: undefined,
+      contexts: [
+        {
+          key: "simple-modal",
+          typeName: "SimpleModalContext",
+          properties: [{ name: "open", type: "() => void", optional: false }],
+        },
+      ],
+    };
+
+    const output = writeTsDefinition(component_api, { exportTypes: false });
+
+    expect(output).not.toContain("export type");
+    expect(output).not.toContain("export interface");
+    expect(output).toContain("export declare const VERSION: string;");
+    expect(output).toContain("export default class Widget");
+  });
+
+  test('exportTypes: { props: false } on format: "component" keeps Exports exported', () => {
+    const component_api: ComponentDocApi = {
+      moduleName: "Tree",
+      filePath: asNormalizedPath("./src/Tree.svelte"),
+      syntaxMode: "legacy",
+      props: [
+        {
+          name: "expandAll",
+          kind: "function",
+          type: "() => any",
+          isFunction: true,
+          isFunctionDeclaration: true,
+          isRequired: false,
+          constant: false,
+          reactive: false,
+          returnType: "void",
+        },
+      ],
+      moduleExports: [],
+      slots: [],
+      events: [],
+      typedefs: [],
+      generics: null,
+      rest_props: undefined,
+    };
+
+    const output = writeTsDefinition(component_api, { format: "component", exportTypes: { props: false } });
+
+    expect(output).toContain("type TreeProps = Record<string, never>;");
+    expect(output).not.toContain("export type TreeProps");
+    expect(output).toContain("export type TreeExports = {");
+    expect(output).toContain(
+      `declare const Tree: Component<
+  TreeProps,
+  TreeExports,
+  ""
+>;`,
+    );
+  });
+
+  test("forceExportProps: true overrides exportTypes: false, exporting only the props type", () => {
+    const component_api: ComponentDocApi = {
+      moduleName: "Button",
+      filePath: asNormalizedPath("./src/Button.svelte"),
+      syntaxMode: "legacy",
+      props: [
+        {
+          name: "label",
+          kind: "let",
+          type: "string",
+          value: '""',
+          isFunction: false,
+          isFunctionDeclaration: false,
+          isRequired: false,
+          constant: false,
+          reactive: false,
+        },
+      ],
+      moduleExports: [],
+      slots: [],
+      events: [],
+      typedefs: [
+        {
+          type: "{ [key: string]: boolean; }",
+          name: "MyTypedef",
+          ts: "interface MyTypedef { [key: string]: boolean; }",
+        },
+      ],
+      generics: null,
+      rest_props: undefined,
+    };
+
+    const output = writeTsDefinition(component_api, { exportTypes: false, forceExportProps: true });
+
+    expect(output).toContain("export type ButtonProps");
+    expect(output).toContain("interface MyTypedef");
+    expect(output).not.toContain("export interface MyTypedef");
+  });
+
+  test("writeTsDefinitions keeps an @extends target's props type exported under exportTypes: false", async () => {
+    const tempDir = await mkdtemp(path.join(process.cwd(), ".tmp-sveld-ts-defs-export-types-"));
+    const outDir = path.relative(process.cwd(), tempDir);
+
+    const componentA = mockComponentDocApi("A", "A.svelte", {
+      props: [
+        {
+          name: "variant",
+          kind: "let",
+          type: "string",
+          value: '"primary"',
+          isFunction: false,
+          isFunctionDeclaration: false,
+          isRequired: false,
+          constant: false,
+          reactive: false,
+        },
+      ],
+    });
+    const componentB = mockComponentDocApi("B", "B.svelte", {
+      extends: { interface: "AProps", import: '"./A.svelte"' },
+    });
+
+    const components: ComponentDocs = new Map([
+      ["A", componentA],
+      ["B", componentB],
+    ]);
+
+    try {
+      await writeTsDefinitions(components, {
+        outDir,
+        inputDir: "src",
+        preamble: "",
+        exports: mockParsedExports({}),
+        exportTypes: false,
+      });
+
+      const aDts = readFileSync(path.join(tempDir, "A.svelte.d.ts"), "utf-8");
+      const bDts = readFileSync(path.join(tempDir, "B.svelte.d.ts"), "utf-8");
+
+      expect(aDts).toContain("export type AProps");
+      expect(bDts).not.toContain("export type BProps");
     } finally {
       rmSync(tempDir, { recursive: true, force: true });
     }

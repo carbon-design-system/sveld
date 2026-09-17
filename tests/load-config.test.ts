@@ -278,6 +278,11 @@ describe("validateOptions", () => {
     expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('unknown option "typesOptions.printWidth"'));
   });
 
+  test("does not warn about typesOptions.exportTypes", () => {
+    validateOptions({ typesOptions: { exportTypes: false } });
+    expect(warnSpy).not.toHaveBeenCalled();
+  });
+
   test("does not validate inside additionalWriters (userland-defined shape)", () => {
     validateOptions({ additionalWriters: { llms: { anything: true } } });
     expect(warnSpy).not.toHaveBeenCalled();

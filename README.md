@@ -924,6 +924,7 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
   - **`outDir`** (string, optional, default: `"types"`): Output directory for generated `.d.ts` files, relative to the project root.
   - **`preamble`** (string, optional, default: `""`): Raw text prepended to the top of the generated `index.d.ts` barrel file, before the `export * from "./..."` lines. Useful for license headers or lint-disable comments. See [`typesOptions.preamble`](#typesoptionspreamble) below.
   - **`format`** (`"class"` | `"component"`, optional, default: `"class"`): `.d.ts` output shape. `"class"` extends `SvelteComponentTyped`; `"component"` emits the Svelte 5 `Component` type. Also available as `--types-format`. See [`.d.ts` output format](#dts-output-format-typesoptionsformat).
+  - **`exportTypes`** (`boolean | { props?, exports?, typedefs?, contexts? }`, optional, default: `true`): Which generated type declarations get an `export` keyword. `false` keeps them all local to the `.d.ts` file; an object picks per kind. No CLI flag; config file or `sveld()` only. See [`typesOptions.exportTypes`](#typesoptionsexporttypes).
 - **`json`** (boolean, optional): Generate component documentation in JSON format.
 - **`jsonOptions`** (object, optional): Options for JSON output.
   - **`outFile`** (string, optional, default: `"COMPONENT_API.json"`): Path (relative to the project root) for the single combined JSON document. Ignored when `outDir` is set.
@@ -990,6 +991,66 @@ export { default as Button } from "./Button.svelte";
 ```
 
 `preamble` only affects the barrel file (`index.d.ts`); per-component `.d.ts` files are untouched.
+
+#### `typesOptions.exportTypes`
+
+Every type sveld generates is `export`ed by default. `typesOptions.exportTypes` lets a library keep some or all of them local to each component's `.d.ts` — useful when the props type is an implementation detail, or when it collides with a hand-written type of the same name in the package's own `index.d.ts`. Only the component itself needs to be public either way.
+
+```js
+sveld({
+  types: true,
+  typesOptions: {
+    exportTypes: false,
+  },
+});
+```
+
+**Button.svelte.d.ts** before:
+
+```ts
+export type ButtonProps = { label?: string };
+
+export default class Button extends SvelteComponentTyped<
+  ButtonProps,
+  { click: WindowEventMap["click"] },
+  { default: Record<string, never> }
+> {}
+```
+
+**Button.svelte.d.ts** after (`exportTypes: false`):
+
+```ts
+type ButtonProps = { label?: string };
+
+export default class Button extends SvelteComponentTyped<
+  ButtonProps,
+  { click: WindowEventMap["click"] },
+  { default: Record<string, never> }
+> {}
+```
+
+`Button` is still the only thing a consumer imports; `ButtonProps` is just no longer part of the public surface (it can still be referenced structurally — through `ComponentProps<typeof Button>`, for instance).
+
+Pass an object instead of a boolean to pick per kind:
+
+```js
+typesOptions: {
+  exportTypes: {
+    props: false,   // export type <Name>Props
+    exports: true,  // export type <Name>Exports (format: "component" only)
+    typedefs: true, // export interface|type <Typedef> from @typedef
+    contexts: true, // export type <Context> from setContext
+  },
+}
+```
+
+Any key left out defaults to `true`.
+
+`<script context="module">` exports (`export declare const` / `export declare function`) are real runtime exports and are always emitted as exports, regardless of `exportTypes`.
+
+One exception: when a bundled component uses [`@extendProps`](#extendprops) to extend another bundled component, sveld emits `import type { ButtonProps } from "./Button.svelte"` in the extending component's `.d.ts`. If `Button`'s props type stopped being exported, that import would break — so sveld always keeps a component's props type exported when another component in the same run extends it, even under `exportTypes: false`.
+
+There's no CLI flag for `exportTypes`; set it via a config file or the programmatic `sveld()` API.
 
 #### `markdownOptions.onAppend`
 
