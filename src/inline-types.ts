@@ -12,11 +12,12 @@
  * entirely in the returned `Map`; the writer applies them (see
  * `writer-ts-definitions-core.ts`).
  */
-import { existsSync, readFileSync, statSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { lstatSync, readFileSync } from "node:fs";
+import { basename, dirname, join, resolve } from "node:path";
 import { isIdentifier, isObject, resolveStaticStringLiteral } from "./ast-guards";
 import type { ComponentDocApi, ComponentDocs, ResolveComponentFilePath } from "./bundle";
 import { createDiagnostic } from "./diagnostics";
+import { directoryEntry, directoryHasEntry } from "./fs-listing";
 import { getParsedComponentTypeScriptMetadata } from "./parsed-component-metadata";
 import { type WalkableNode, walkNodes } from "./parser/walk";
 import { normalizeSeparators } from "./path";
@@ -28,7 +29,7 @@ import { exportsTypeName, propsTypeName, type WriteTsDefinitionOptions } from ".
 /** Extensions probed, in order, for a resolved specifier with no extension of its own. */
 const RESOLVE_EXTENSIONS = [".ts", ".d.ts", ".mts", ".cts"];
 /** `index.*` candidates probed when a specifier resolves to a directory. */
-const INDEX_SUFFIXES = ["/index.ts", "/index.d.ts"];
+const INDEX_FILENAMES = ["index.ts", "index.d.ts"];
 /** Bounds `export {} from` / `export *` chasing so a re-export cycle can't loop forever. */
 const MAX_REEXPORT_DEPTH = 10;
 /** Extracts the declared name from a `localTypeDeclarations` code string (e.g. `"interface Foo {"`). */
@@ -100,7 +101,13 @@ type ModuleResolution =
   | { kind: "bare" }
   | { kind: "missing" };
 
-/** Resolves an import specifier (relative, absolute, or a tsconfig/jsconfig path alias) to a file on disk. */
+/**
+ * Resolves an import specifier (relative, absolute, or a tsconfig/jsconfig path alias) to a file
+ * on disk. Existence checks go through `fs-listing.ts`'s cached directory listing (one `readdirSync`
+ * per directory per bundle/watch-flush run, shared with the barrel's own module resolution)
+ * instead of an `existsSync` per candidate extension, since a component can have several type
+ * imports and each is tried against up to seven candidates here.
+ */
 function resolveModuleSpecifier(source: string, fromAbsoluteFilePath: string): ModuleResolution {
   const fromDir = dirname(fromAbsoluteFilePath);
   let base: string;
@@ -113,17 +120,22 @@ function resolveModuleSpecifier(source: string, fromAbsoluteFilePath: string): M
     base = lookup.resolved;
   }
 
-  if (existsSync(base) && statSync(base).isFile()) {
-    return base.endsWith(".svelte") ? { kind: "svelte" } : { kind: "resolved", path: base };
+  const parentDir = dirname(base);
+  const baseName = basename(base);
+
+  if (directoryHasEntry(parentDir, baseName)) {
+    // The cached listing already knows the entry's type; only a name that matched by
+    // case/normalization variant (not present in the listing under this exact name) needs `lstat`.
+    const entry = directoryEntry(parentDir, baseName);
+    const isFile = entry ? entry.isFile() : lstatSync(base, { throwIfNoEntry: false })?.isFile();
+    if (isFile) return base.endsWith(".svelte") ? { kind: "svelte" } : { kind: "resolved", path: base };
   }
-  if (existsSync(`${base}.svelte`)) return { kind: "svelte" };
+  if (directoryHasEntry(parentDir, `${baseName}.svelte`)) return { kind: "svelte" };
   for (const ext of RESOLVE_EXTENSIONS) {
-    const candidate = `${base}${ext}`;
-    if (existsSync(candidate)) return { kind: "resolved", path: candidate };
+    if (directoryHasEntry(parentDir, `${baseName}${ext}`)) return { kind: "resolved", path: `${base}${ext}` };
   }
-  for (const suffix of INDEX_SUFFIXES) {
-    const candidate = `${base}${suffix}`;
-    if (existsSync(candidate)) return { kind: "resolved", path: candidate };
+  for (const indexFilename of INDEX_FILENAMES) {
+    if (directoryHasEntry(base, indexFilename)) return { kind: "resolved", path: join(base, indexFilename) };
   }
   return { kind: "missing" };
 }
