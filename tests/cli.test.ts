@@ -175,6 +175,62 @@ describe("parseCliOptions", () => {
     });
   });
 
+  test("--types-export=all sets typesOptions.exportTypes", () => {
+    expect(parseCliOptions(["--types-export=all"])).toEqual({
+      kind: "options",
+      options: { typesOptions: { exportTypes: "all" } },
+    });
+  });
+
+  test("--types-export=none sets typesOptions.exportTypes", () => {
+    expect(parseCliOptions(["--types-export=none"])).toEqual({
+      kind: "options",
+      options: { typesOptions: { exportTypes: "none" } },
+    });
+  });
+
+  test("--types-comments=descriptions sets typesOptions.comments", () => {
+    expect(parseCliOptions(["--types-comments=descriptions"])).toEqual({
+      kind: "options",
+      options: { typesOptions: { comments: "descriptions" } },
+    });
+  });
+
+  test("--types-inline=local sets typesOptions.inline", () => {
+    expect(parseCliOptions(["--types-inline=local"])).toEqual({
+      kind: "options",
+      options: { typesOptions: { inline: "local" } },
+    });
+  });
+
+  test("--types-inline=false disables typesOptions.inline", () => {
+    expect(parseCliOptions(["--types-inline=false"])).toEqual({
+      kind: "options",
+      options: { typesOptions: { inline: false } },
+    });
+  });
+
+  test("--types-props-declaration=interface sets typesOptions.propsDeclaration", () => {
+    expect(parseCliOptions(["--types-props-declaration=interface"])).toEqual({
+      kind: "options",
+      options: { typesOptions: { propsDeclaration: "interface" } },
+    });
+  });
+
+  test("--types-index-types enables typesOptions.indexTypes", () => {
+    expect(parseCliOptions(["--types-index-types"])).toEqual({
+      kind: "options",
+      options: { typesOptions: { indexTypes: true } },
+    });
+  });
+
+  test("--types-index-types=false disables typesOptions.indexTypes", () => {
+    expect(parseCliOptions(["--types-index-types=false"])).toEqual({
+      kind: "options",
+      options: { typesOptions: { indexTypes: false } },
+    });
+  });
+
   test("--format=json sets format to json", () => {
     expect(parseCliOptions(["--format=json"])).toEqual({ kind: "options", options: { format: "json" } });
   });
@@ -255,10 +311,49 @@ describe("parseCliOptions", () => {
     });
   });
 
+  test("--types-export accepts its value as the next argument", () => {
+    expect(parseCliOptions(["--types-export", "none"])).toEqual({
+      kind: "options",
+      options: { typesOptions: { exportTypes: "none" } },
+    });
+  });
+
+  test("--types-comments accepts its value as the next argument", () => {
+    expect(parseCliOptions(["--types-comments", "none"])).toEqual({
+      kind: "options",
+      options: { typesOptions: { comments: "none" } },
+    });
+  });
+
+  test("--types-inline accepts its value as the next argument", () => {
+    expect(parseCliOptions(["--types-inline", "all"])).toEqual({
+      kind: "options",
+      options: { typesOptions: { inline: "all" } },
+    });
+  });
+
+  test("--types-props-declaration accepts its value as the next argument", () => {
+    expect(parseCliOptions(["--types-props-declaration", "interface"])).toEqual({
+      kind: "options",
+      options: { typesOptions: { propsDeclaration: "interface" } },
+    });
+  });
+
   test("space-separated and = forms combine across multiple flags", () => {
     expect(parseCliOptions(["--entry", "src/index.js", "--json", "--cache=.cache/sveld.json"])).toEqual({
       kind: "options",
       options: { entry: "src/index.js", json: true, cache: ".cache/sveld.json" },
+    });
+  });
+
+  test("multiple flags that each set a typesOptions key merge into one object instead of clobbering each other", () => {
+    expect(
+      parseCliOptions(["--types-export=none", "--types-comments=none", "--types-props-declaration=interface"]),
+    ).toEqual({
+      kind: "options",
+      options: {
+        typesOptions: { exportTypes: "none", comments: "none", propsDeclaration: "interface" },
+      },
     });
   });
 
@@ -273,6 +368,36 @@ describe("parseCliOptions", () => {
     expect(parseCliOptions(["--types-format", "--json"])).toEqual({
       kind: "usage-error",
       message: "sveld: --types-format requires a value (pass --types-format=<value> or --types-format <value>).",
+    });
+  });
+
+  test("--types-export followed by another flag falls back to a usage error naming the flag", () => {
+    expect(parseCliOptions(["--types-export", "--json"])).toEqual({
+      kind: "usage-error",
+      message: "sveld: --types-export requires a value (pass --types-export=<value> or --types-export <value>).",
+    });
+  });
+
+  test("--types-comments followed by another flag falls back to a usage error naming the flag", () => {
+    expect(parseCliOptions(["--types-comments", "--json"])).toEqual({
+      kind: "usage-error",
+      message: "sveld: --types-comments requires a value (pass --types-comments=<value> or --types-comments <value>).",
+    });
+  });
+
+  test("--types-inline followed by another flag falls back to a usage error naming the flag", () => {
+    expect(parseCliOptions(["--types-inline", "--json"])).toEqual({
+      kind: "usage-error",
+      message: "sveld: --types-inline requires a value (pass --types-inline=<value> or --types-inline <value>).",
+    });
+  });
+
+  test("--types-props-declaration followed by another flag falls back to a usage error naming the flag", () => {
+    expect(parseCliOptions(["--types-props-declaration", "--json"])).toEqual({
+      kind: "usage-error",
+      message:
+        "sveld: --types-props-declaration requires a value (pass --types-props-declaration=<value> or " +
+        "--types-props-declaration <value>).",
     });
   });
 
@@ -746,6 +871,93 @@ describe("cli() --types-format merges with config file typesOptions", () => {
     const outputPath = join(dir, "custom-types", "Button.svelte.d.ts");
     expect(existsSync(outputPath)).toBe(true);
     expect(readFileSync(outputPath, "utf-8")).toContain("declare const Button: Component<");
+  });
+
+  test("--types-export=none keeps the config file's typesOptions.outDir", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types-export=none"];
+
+    await cli(process);
+
+    const outputPath = join(dir, "custom-types", "Button.svelte.d.ts");
+    expect(existsSync(outputPath)).toBe(true);
+    const output = readFileSync(outputPath, "utf-8");
+    expect(output).toContain("type ButtonProps");
+    expect(output).not.toContain("export type ButtonProps");
+  });
+});
+
+describe("cli() --types-* usage errors", () => {
+  let dir: string;
+  let previousCwd: string;
+  let previousArgv: string[];
+  let errorSpy: ReturnType<typeof jest.spyOn>;
+
+  beforeEach(() => {
+    previousCwd = process.cwd();
+    previousArgv = process.argv;
+    process.exitCode = 0;
+    dir = mkdtempSync(join(tmpdir(), "sveld-cli-types-error-"));
+    process.chdir(dir);
+    mkdirSync(join(dir, "src"), { recursive: true });
+    writeFileSync(join(dir, "src", "Button.svelte"), "<script></script>\n<button>Click</button>\n");
+    writeFileSync(join(dir, "src", "index.js"), 'export { default as Button } from "./Button.svelte";\n');
+    errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    process.chdir(previousCwd);
+    process.argv = previousArgv;
+    process.exitCode = 0;
+    rmSync(dir, { recursive: true, force: true });
+    jest.restoreAllMocks();
+  });
+
+  test("--types-export=oops errors and generates nothing", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types-export=oops"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(1);
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('--types-export must be "all" or "none"; got "oops"'),
+    );
+    expect(existsSync(join(dir, "types"))).toBe(false);
+  });
+
+  test("--types-comments=oops errors and generates nothing", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types-comments=oops"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(1);
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('--types-comments must be "all", "descriptions", or "none"; got "oops"'),
+    );
+    expect(existsSync(join(dir, "types"))).toBe(false);
+  });
+
+  test("--types-inline=oops errors and generates nothing", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types-inline=oops"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(1);
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('--types-inline must be "local" or "all"; got "oops"'),
+    );
+    expect(existsSync(join(dir, "types"))).toBe(false);
+  });
+
+  test("--types-props-declaration=oops errors and generates nothing", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types-props-declaration=oops"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(1);
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('--types-props-declaration must be "type" or "interface"; got "oops"'),
+    );
+    expect(existsSync(join(dir, "types"))).toBe(false);
   });
 });
 
