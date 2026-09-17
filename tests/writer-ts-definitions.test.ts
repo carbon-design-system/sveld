@@ -1303,12 +1303,32 @@ describe("serializeEmitOptions", () => {
   test("a different typeNames template produces a different key", () => {
     expect(serializeEmitOptions({ typeNames: { props: "I{name}Props" } })).not.toEqual(serializeEmitOptions({}));
   });
+
+  // Every other field the cache key must fold in, so a future option added to
+  // WriteTsDefinitionOptions but forgotten here is caught by this list needing a new entry, not by
+  // a stale-cache bug report. `inline`'s actual cache-*bypass* behavior (rather than a key change)
+  // is covered separately in tests/parse-cache.test.ts.
+  test.each([
+    ["exportTypes", { exportTypes: false } as const],
+    ["forceExportProps", { forceExportProps: true } as const],
+    ["comments", { comments: "none" } as const],
+    ["propsDeclaration", { propsDeclaration: "interface" } as const],
+    ["inline", { inline: "local" } as const],
+  ])("a different %s produces a different key", (_label, options) => {
+    expect(serializeEmitOptions(options)).not.toEqual(serializeEmitOptions({}));
+  });
 });
 
 describe("pickEmitOptions", () => {
-  test("keeps only pure emit options, dropping writer-only fields", () => {
+  test("keeps every pure emit option, dropping writer-only fields", () => {
     const options: WriteTsDefinitionsOptions = {
       format: "component",
+      exportTypes: false,
+      forceExportProps: true,
+      typeNames: { props: "I{name}Props" },
+      comments: "none",
+      propsDeclaration: "interface",
+      inline: "local",
       outDir: "./dist",
       inputDir: "./src",
       preamble: "// preamble\n",
@@ -1318,7 +1338,15 @@ describe("pickEmitOptions", () => {
       resolvedPathByFilePath: new Map(),
     };
 
-    expect(pickEmitOptions(options)).toEqual({ format: "component" });
+    expect(pickEmitOptions(options)).toEqual({
+      format: "component",
+      exportTypes: false,
+      forceExportProps: true,
+      typeNames: { props: "I{name}Props" },
+      comments: "none",
+      propsDeclaration: "interface",
+      inline: "local",
+    });
   });
 });
 
