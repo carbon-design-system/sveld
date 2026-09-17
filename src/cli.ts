@@ -375,11 +375,12 @@ export function parseCliOptions(argv: string[]): CliParseResult {
  */
 interface TypesEnumFlag {
   flagName: string;
-  key: "comments" | "inline" | "propsDeclaration";
+  key: "format" | "comments" | "inline" | "propsDeclaration";
   values: readonly string[];
 }
 
 const TYPES_ENUM_FLAGS: readonly TypesEnumFlag[] = [
+  { flagName: "types-format", key: "format", values: ["class", "component"] },
   { flagName: "types-comments", key: "comments", values: ["all", "descriptions", "none"] },
   { flagName: "types-inline", key: "inline", values: ["local", "all"] },
   { flagName: "types-props-declaration", key: "propsDeclaration", values: ["type", "interface"] },

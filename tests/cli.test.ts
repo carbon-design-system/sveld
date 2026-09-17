@@ -924,6 +924,18 @@ describe("cli() --types-* usage errors", () => {
     expect(existsSync(join(dir, "types"))).toBe(false);
   });
 
+  test("--types-format=oops errors and generates nothing", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types-format=oops"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(1);
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('--types-format must be "class" or "component"; got "oops"'),
+    );
+    expect(existsSync(join(dir, "types"))).toBe(false);
+  });
+
   test("--types-comments=oops errors and generates nothing", async () => {
     process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types-comments=oops"];
 
