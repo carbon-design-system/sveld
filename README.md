@@ -927,6 +927,7 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
   - **`exportTypes`** (`boolean | { props?, exports?, typedefs?, contexts? }`, optional, default: `true`): Which generated type declarations get an `export` keyword. `false` keeps them all local to the `.d.ts` file; an object picks per kind. No CLI flag; config file or `sveld()` only. See [`typesOptions.exportTypes`](#typesoptionsexporttypes).
   - **`typeNames`** (`{ props?: string; exports?: string }`, optional, default: `{ props: "{name}Props", exports: "{name}Exports" }`): Templates for generated type names. No CLI flag; config file or `sveld()` only. See [`typesOptions.typeNames`](#typesoptionstypenames).
   - **`comments`** (`"all" | "descriptions" | "none"`, optional, default: `"all"`): How much JSDoc lands in the generated `.d.ts`. `"all"` keeps descriptions, `@deprecated`, `@default`, and passthrough tags (`@since`, `@see`, `@example`, `@link`); `"descriptions"` keeps descriptions and `@deprecated` only; `"none"` emits no comments at all. No CLI flag; config file or `sveld()` only. See [`typesOptions.comments`](#typesoptionscomments).
+  - **`transform`** (function, optional): Post-processes each generated file's text before it is written. Runs after the generated-text cache, so it applies on every run. No CLI flag; config file or `sveld()` only. See [`typesOptions.transform`](#typesoptionstransform).
 - **`json`** (boolean, optional): Generate component documentation in JSON format.
 - **`jsonOptions`** (object, optional): Options for JSON output.
   - **`outFile`** (string, optional, default: `"COMPONENT_API.json"`): Path (relative to the project root) for the single combined JSON document. Ignored when `outDir` is set.
@@ -1141,6 +1142,33 @@ sveld({
 `@internal`/`@ignore` members are removed from every output regardless of this option — see [`@ignore` / `@internal`](#ignore--internal). `comments` only controls how much JSDoc survives for members that *do* get emitted.
 
 There's no CLI flag for `comments`; set it via a config file or the programmatic `sveld()` API.
+
+#### `typesOptions.transform`
+
+`typesOptions.transform` is an escape hatch for one-off edits no other option covers - appending a `/// <reference>` directive, rewriting an import specifier for a monorepo, stripping a banner. It runs on every generated `.d.ts` file's text, immediately before it's written, and receives the block's `kind` (`"component"` or `"index"`), and for `"component"` the parsed `ComponentDocApi` too, plus the output `filePath` relative to `outDir` (e.g. `"Button.svelte.d.ts"` or `"index.d.ts"`). Return the new text, synchronously or via a `Promise`.
+
+```js
+sveld({
+  types: true,
+  typesOptions: {
+    transform: (text, context) => {
+      if (context.kind !== "component") return text;
+      return `/// <reference types="svelte" />\n${text}`;
+    },
+  },
+});
+```
+
+```ts
+// Button.svelte.d.ts
+/// <reference types="svelte" />
+export type ButtonProps = { label?: string };
+// ...
+```
+
+`transform` runs after the [persistent parse cache](#persistent-parse-cache-cache)'s generated-text cache, so a changed transform is never served stale cached output - it always re-applies, even when the underlying `.d.ts` text was reused from a previous run. A transform that throws, or resolves to something other than a string, fails the whole `sveld` run with an error naming the file that failed.
+
+There's no CLI flag for `transform`; set it via a config file or the programmatic `sveld()` API.
 
 #### `markdownOptions.onAppend`
 

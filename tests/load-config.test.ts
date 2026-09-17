@@ -206,6 +206,15 @@ describe("mergeConfig", () => {
       markdownOptions: { onAppend: overriddenOnAppend },
     });
   });
+
+  test("replaces a function-valued typesOptions.transform outright instead of merging", () => {
+    const transform = (text: string) => text;
+    const fileConfig: Partial<PluginSveldOptions> = { typesOptions: { transform } };
+    const overriddenTransform = (text: string) => text;
+    expect(mergeConfig(fileConfig, { typesOptions: { transform: overriddenTransform } })).toEqual({
+      typesOptions: { transform: overriddenTransform },
+    });
+  });
 });
 
 describe("expandStrictProfile", () => {
@@ -290,6 +299,11 @@ describe("validateOptions", () => {
 
   test("does not warn about typesOptions.comments", () => {
     validateOptions({ typesOptions: { comments: "descriptions" } });
+    expect(warnSpy).not.toHaveBeenCalled();
+  });
+
+  test("does not warn about typesOptions.transform", () => {
+    validateOptions({ typesOptions: { transform: (text: string) => text } });
     expect(warnSpy).not.toHaveBeenCalled();
   });
 
