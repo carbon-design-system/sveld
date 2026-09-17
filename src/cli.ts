@@ -55,8 +55,9 @@ Generate TypeScript definitions and component documentation for a Svelte
 library. With no flags, only TypeScript definitions are generated for the
 entry resolved from package.json#svelte.
 
---entry, --cache, --check, and --types-format accept their value as
---flag=value or as a separate --flag value argument.
+--entry, --cache, --check, --types-format, --types-export,
+--types-comments, --types-inline, and --types-props-declaration accept
+their value as --flag=value or as a separate --flag value argument.
 
 Options:
   --entry=<path>        Entry point to uncompiled Svelte source (default: package.json "svelte" field)
@@ -76,6 +77,11 @@ Options:
   --report-diagnostics  Print unresolved-type diagnostics to stderr
   --strict[=errors|ci|local]  Exit with code 4 when diagnostics exist (implies --report-diagnostics); --strict=errors only fails on error-severity diagnostics; --strict=ci expands to {strict:true, reportDiagnostics:true, check:true, checkExamples:true}, --strict=local to {reportDiagnostics:true}
   --types-format=<format>  ".d.ts" output format: "class" (default) or "component" (Svelte 5 Component<...>)
+  --types-export=<all|none>  Sets typesOptions.exportTypes; "all" exports every generated type (default), "none" keeps them all local
+  --types-comments=<all|descriptions|none>  Sets typesOptions.comments; how much JSDoc lands in the generated .d.ts (default: all)
+  --types-inline=<local|all>  Sets typesOptions.inline; copies imported types into the .d.ts instead of importing them (default: false; pass --types-inline=false to reset)
+  --types-index-types    Sets typesOptions.indexTypes; also re-exports generated types from index.d.ts (pass --types-index-types=false to disable)
+  --types-props-declaration=<type|interface>  Sets typesOptions.propsDeclaration; emits the props type as a type alias (default) or an interface
   --check[=<path>]      Diff the parsed API against a committed snapshot; exit 3 on a breaking change (default path: COMPONENT_API.json)
   --check-level=<major|minor|patch>  Minimum bump --check fails the run on (default: major)
   --format=<text|json|github>  Output format for the --check report and the diagnostics summary (default: text); "github" prints GitHub Actions ::error/::warning lines and appends a GITHUB_STEP_SUMMARY table when that env var is set
@@ -127,6 +133,11 @@ const KNOWN_FLAGS = [
   "check",
   "check-level",
   "types-format",
+  "types-export",
+  "types-comments",
+  "types-inline",
+  "types-index-types",
+  "types-props-declaration",
   "format",
 ];
 
@@ -148,13 +159,30 @@ const BOOLEAN_FLAGS = new Set([
   "check-examples",
   "fail-fast",
   "dry-run",
+  "types-index-types",
 ]);
 
 /** Value-taking flags that also accept their value as the next argument. */
-const SPACE_SEPARATED_VALUE_FLAGS = new Set(["entry", "cache", "check", "types-format"]);
+const SPACE_SEPARATED_VALUE_FLAGS = new Set([
+  "entry",
+  "cache",
+  "check",
+  "types-format",
+  "types-export",
+  "types-comments",
+  "types-inline",
+  "types-props-declaration",
+]);
 
 /** Of those, the flags that error (rather than falling back to a bare default) when no value is given. */
-const REQUIRES_VALUE_FLAGS = new Set(["entry", "types-format"]);
+const REQUIRES_VALUE_FLAGS = new Set([
+  "entry",
+  "types-format",
+  "types-export",
+  "types-comments",
+  "types-inline",
+  "types-props-declaration",
+]);
 
 /** Closest known flag (canonical spelling) to an unrecognized raw flag name, or undefined if none is close enough. */
 function suggestFlag(rawFlag: string): string | undefined {
@@ -259,6 +287,31 @@ function parseCliFlagValue(flag: string, value: string | boolean, arg: string, r
       return typeof value === "string"
         ? { kind: "option", option: { typesOptions: { format: value as "class" | "component" } } }
         : { kind: "option", option: {} };
+    case "types-export":
+      // "all"/"none" are the only accepted values; anything else is validated
+      // (and rejected) in `cli()` once merged with the config file, same as
+      // `--format`. The raw string rides through `exportTypes` (typed
+      // `boolean | {...}`) until that validation converts it to a boolean.
+      return typeof value === "string"
+        ? { kind: "option", option: { typesOptions: { exportTypes: value as unknown as boolean } } }
+        : { kind: "option", option: {} };
+    case "types-comments":
+      return typeof value === "string"
+        ? { kind: "option", option: { typesOptions: { comments: value as "all" | "descriptions" | "none" } } }
+        : { kind: "option", option: {} };
+    case "types-inline":
+      // `--types-inline=false` resets to the default (imports stay imports);
+      // `"local"`/`"all"` are validated in `cli()`.
+      if (value === "false") return { kind: "option", option: { typesOptions: { inline: false } } };
+      return typeof value === "string"
+        ? { kind: "option", option: { typesOptions: { inline: value as "local" | "all" } } }
+        : { kind: "option", option: {} };
+    case "types-index-types":
+      return { kind: "option", option: { typesOptions: { indexTypes: value === true || value === "true" } } };
+    case "types-props-declaration":
+      return typeof value === "string"
+        ? { kind: "option", option: { typesOptions: { propsDeclaration: value as "type" | "interface" } } }
+        : { kind: "option", option: {} };
     case "format":
       // The value is validated in `cli()` once it can be reported as a usage
       // error (`--format=yaml`); a bare `--format` is silently ignored.
@@ -285,7 +338,7 @@ export type CliParseResult =
   | { kind: "usage-error"; message: string };
 
 export function parseCliOptions(argv: string[]): CliParseResult {
-  const options: CliOptions = {};
+  let options: CliOptions = {};
   let previousFlagWasBoolean = false;
 
   for (let i = 0; i < argv.length; i++) {
@@ -301,7 +354,10 @@ export function parseCliOptions(argv: string[]): CliParseResult {
       return result;
     }
 
-    Object.assign(options, result.option);
+    // One-level-deep merge (not `Object.assign`) so multiple flags that each
+    // set a different `typesOptions` key (e.g. `--types-export` and
+    // `--types-comments`) don't clobber each other's nested object.
+    options = mergeConfig<CliOptions>(options, result.option) as CliOptions;
     previousFlagWasBoolean = BOOLEAN_FLAGS.has(flag);
 
     if (consumedNext) {
@@ -310,6 +366,29 @@ export function parseCliOptions(argv: string[]): CliParseResult {
   }
 
   return { kind: "options", options };
+}
+
+/**
+ * A `--types-*` flag whose value must be one of a fixed set of strings, stored on `typesOptions`
+ * verbatim (no mapping, unlike `--types-export`'s all/none -> boolean conversion below). Validated
+ * in `cli()` once merged with the config file, same as `--format`.
+ */
+interface TypesEnumFlag {
+  flagName: string;
+  key: "comments" | "inline" | "propsDeclaration";
+  values: readonly string[];
+}
+
+const TYPES_ENUM_FLAGS: readonly TypesEnumFlag[] = [
+  { flagName: "types-comments", key: "comments", values: ["all", "descriptions", "none"] },
+  { flagName: "types-inline", key: "inline", values: ["local", "all"] },
+  { flagName: "types-props-declaration", key: "propsDeclaration", values: ["type", "interface"] },
+];
+
+/** `["a", "b"]` -> `"a" or "b"`; `["a", "b", "c"]` -> `"a", "b", or "c"` - the `--format`-style usage-error phrasing. */
+function formatEnumValues(values: readonly string[]): string {
+  const quoted = values.map((value) => `"${value}"`);
+  return quoted.length <= 2 ? quoted.join(" or ") : `${quoted.slice(0, -1).join(", ")}, or ${quoted.at(-1)}`;
 }
 
 /**
@@ -439,6 +518,31 @@ export async function cli(process: NodeJS.Process) {
     console.error(`sveld: --check-examples must be "syntax" when given a value; got "${options.checkExamples}".`);
     process.exitCode = EXIT_CODES.USAGE_ERROR;
     return;
+  }
+
+  // `--types-export` rides through `typesOptions.exportTypes` as a raw
+  // string; convert it to the boolean form once validated.
+  const rawExportTypes = options.typesOptions?.exportTypes as unknown;
+
+  if (typeof rawExportTypes === "string") {
+    if (rawExportTypes !== "all" && rawExportTypes !== "none") {
+      console.error(`sveld: --types-export must be "all" or "none"; got "${rawExportTypes}".`);
+      process.exitCode = EXIT_CODES.USAGE_ERROR;
+      return;
+    }
+
+    options.typesOptions = { ...options.typesOptions, exportTypes: rawExportTypes === "all" };
+  }
+
+  for (const { flagName, key, values } of TYPES_ENUM_FLAGS) {
+    const value = options.typesOptions?.[key];
+    // `false` is `--types-inline`'s reset sentinel, not an enum member; every other key never has it.
+    if (value === undefined || value === false) continue;
+    if (!values.includes(value)) {
+      console.error(`sveld: --${flagName} must be ${formatEnumValues(values)}; got "${value}".`);
+      process.exitCode = EXIT_CODES.USAGE_ERROR;
+      return;
+    }
   }
 
   setQuiet(options.quiet === true);

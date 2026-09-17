@@ -594,7 +594,7 @@ npx sveld --json --markdown
 
 If no entry point can be resolved (no `package.json#svelte` field and no `--entry`), the CLI exits `1` and prints the reason to `stderr`. If `src/index.js` happens to exist relative to your working directory, sveld falls back to it and prints a one-line note asking you to set `package.json#svelte` (or `--entry`) instead of relying on the fallback.
 
-Flags are kebab-case: `--entry`, `--glob`, `--types`, `--json`, `--markdown`, `--custom-elements`, `--llms`, `--fail-fast`, `--dry-run`, `--cache`, `--resolve-types`, `--check-examples`, `--report-diagnostics`, `--strict`, `--check`, `--check-level`, `--types-format`, `--quiet`, `--stdout`, `--format`. The camelCase spellings `--resolveTypes` and `--checkExamples` still work as deprecated aliases for compatibility with existing scripts. `--entry`, `--cache`, `--check`, and `--types-format` take their value either as `--flag=value` or as a separate `--flag value` argument (`sveld --entry src/index.js` and `sveld --entry=src/index.js` are equivalent); if the next argument starts with `--` it's not consumed as a value, so `--cache` and `--check` fall back to their default location and `--entry` and `--types-format` report a usage error naming the flag. Boolean flags (`--json`, `--glob`, `--strict`, and the like) never consume a following argument. An unrecognized flag (e.g. `--markdwon`) prints `Unknown flag: --markdwon` to `stderr`, exits `1`, and skips generation; when a close match exists it appends a suggestion, e.g. `Unknown flag: --markdwon Did you mean --markdown?`. sveld takes no positional arguments, so any non-flag argument errors the same way.
+Flags are kebab-case: `--entry`, `--glob`, `--types`, `--json`, `--markdown`, `--custom-elements`, `--llms`, `--fail-fast`, `--dry-run`, `--cache`, `--resolve-types`, `--check-examples`, `--report-diagnostics`, `--strict`, `--check`, `--check-level`, `--types-format`, `--types-export`, `--types-comments`, `--types-inline`, `--types-index-types`, `--types-props-declaration`, `--quiet`, `--stdout`, `--format`. The camelCase spellings `--resolveTypes` and `--checkExamples` still work as deprecated aliases for compatibility with existing scripts. `--entry`, `--cache`, `--check`, `--types-format`, `--types-export`, `--types-comments`, `--types-inline`, and `--types-props-declaration` take their value either as `--flag=value` or as a separate `--flag value` argument (`sveld --entry src/index.js` and `sveld --entry=src/index.js` are equivalent); if the next argument starts with `--` it's not consumed as a value, so `--cache` and `--check` fall back to their default location and the rest of that list report a usage error naming the flag. Boolean flags (`--json`, `--glob`, `--strict`, `--types-index-types`, and the like) never consume a following argument. An unrecognized flag (e.g. `--markdwon`) prints `Unknown flag: --markdwon` to `stderr`, exits `1`, and skips generation; when a close match exists it appends a suggestion, e.g. `Unknown flag: --markdwon Did you mean --markdown?`. sveld takes no positional arguments, so any non-flag argument errors the same way.
 
 Writer progress lines (`created "..."` / `unchanged "..."`) print to `stderr`, keeping `stdout` reserved for machine-readable data. Pass `--quiet` (or `quiet: true` in `sveld.config.*`) to suppress them; it does not suppress error messages, the diagnostics summary (`--report-diagnostics` / `--strict`), or the `--check` report.
 
@@ -925,13 +925,13 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
   - **`outDir`** (string, optional, default: `"types"`): Output directory for generated `.d.ts` files, relative to the project root.
   - **`preamble`** (string, optional, default: `""`): Raw text prepended to the top of the generated `index.d.ts` barrel file, before the `export * from "./..."` lines. Useful for license headers or lint-disable comments. See [`typesOptions.preamble`](#typesoptionspreamble) below.
   - **`format`** (`"class"` | `"component"`, optional, default: `"class"`): `.d.ts` output shape. `"class"` extends `SvelteComponentTyped`; `"component"` emits the Svelte 5 `Component` type. Also available as `--types-format`. See [`.d.ts` output format](#dts-output-format-typesoptionsformat).
-  - **`exportTypes`** (`boolean | { props?, exports?, typedefs?, contexts? }`, optional, default: `true`): Which generated type declarations get an `export` keyword. `false` keeps them all local to the `.d.ts` file; an object picks per kind. No CLI flag; config file or `sveld()` only. See [`typesOptions.exportTypes`](#typesoptionsexporttypes).
+  - **`exportTypes`** (`boolean | { props?, exports?, typedefs?, contexts? }`, optional, default: `true`): Which generated type declarations get an `export` keyword. `false` keeps them all local to the `.d.ts` file; an object picks per kind. Also available as `--types-export=<all|none>` (the CLI can only set the boolean form, not the per-kind object). See [`typesOptions.exportTypes`](#typesoptionsexporttypes).
   - **`typeNames`** (`{ props?: string; exports?: string }`, optional, default: `{ props: "{name}Props", exports: "{name}Exports" }`): Templates for generated type names. No CLI flag; config file or `sveld()` only. See [`typesOptions.typeNames`](#typesoptionstypenames).
-  - **`comments`** (`"all" | "descriptions" | "none"`, optional, default: `"all"`): How much JSDoc lands in the generated `.d.ts`. `"all"` keeps descriptions, `@deprecated`, `@default`, and passthrough tags (`@since`, `@see`, `@example`, `@link`); `"descriptions"` keeps descriptions and `@deprecated` only; `"none"` emits no comments at all. No CLI flag; config file or `sveld()` only. See [`typesOptions.comments`](#typesoptionscomments).
-  - **`propsDeclaration`** (`"type" | "interface"`, optional, default: `"type"`): `"interface"` emits the props type as an `interface` instead of a `type` alias when the props are a plain object. No CLI flag; config file or `sveld()` only. See [`typesOptions.propsDeclaration`](#typesoptionspropsdeclaration).
+  - **`comments`** (`"all" | "descriptions" | "none"`, optional, default: `"all"`): How much JSDoc lands in the generated `.d.ts`. `"all"` keeps descriptions, `@deprecated`, `@default`, and passthrough tags (`@since`, `@see`, `@example`, `@link`); `"descriptions"` keeps descriptions and `@deprecated` only; `"none"` emits no comments at all. Also available as `--types-comments=<all|descriptions|none>`. See [`typesOptions.comments`](#typesoptionscomments).
+  - **`propsDeclaration`** (`"type" | "interface"`, optional, default: `"type"`): `"interface"` emits the props type as an `interface` instead of a `type` alias when the props are a plain object. Also available as `--types-props-declaration=<type|interface>`. See [`typesOptions.propsDeclaration`](#typesoptionspropsdeclaration).
   - **`transform`** (function, optional): Post-processes each generated file's text before it is written. Runs after the generated-text cache, so it applies on every run. No CLI flag; config file or `sveld()` only. See [`typesOptions.transform`](#typesoptionstransform).
-  - **`indexTypes`** (`boolean | { props?, exports?, typedefs?, contexts? }`, optional, default: `false`): Also re-export generated types from `index.d.ts`. `true` re-exports each component's `Props` type (and `Exports` under `format: "component"`); an object can additionally include typedefs and contexts. No CLI flag; config file or `sveld()` only. See [`typesOptions.indexTypes`](#typesoptionsindextypes).
-  - **`inline`** (`false | "local" | "all"`, optional, default: `false`): Copies `type`/`interface` declarations imported from a relative source (or a tsconfig/jsconfig path alias) directly into the `.d.ts`, dropping the import. No CLI flag; config file or `sveld()` only. See [`typesOptions.inline`](#typesoptionsinline).
+  - **`indexTypes`** (`boolean | { props?, exports?, typedefs?, contexts? }`, optional, default: `false`): Also re-export generated types from `index.d.ts`. `true` re-exports each component's `Props` type (and `Exports` under `format: "component"`); an object can additionally include typedefs and contexts. Also available as `--types-index-types` (the CLI can only set the boolean form, not the per-kind object). See [`typesOptions.indexTypes`](#typesoptionsindextypes).
+  - **`inline`** (`false | "local" | "all"`, optional, default: `false`): Copies `type`/`interface` declarations imported from a relative source (or a tsconfig/jsconfig path alias) directly into the `.d.ts`, dropping the import. Also available as `--types-inline=<local|all>` (`--types-inline=false` resets to the default). See [`typesOptions.inline`](#typesoptionsinline).
 - **`json`** (boolean, optional): Generate component documentation in JSON format.
 - **`jsonOptions`** (object, optional): Options for JSON output.
   - **`outFile`** (string, optional, default: `"COMPONENT_API.json"`): Path (relative to the project root) for the single combined JSON document. Ignored when `outDir` is set.
@@ -1057,7 +1057,7 @@ Any key left out defaults to `true`.
 
 One exception: when a bundled component uses [`@extendProps`](#extendprops) to extend another bundled component, sveld emits `import type { ButtonProps } from "./Button.svelte"` in the extending component's `.d.ts`. If `Button`'s props type stopped being exported, that import would break — so sveld always keeps a component's props type exported when another component in the same run extends it, even under `exportTypes: false`.
 
-There's no CLI flag for `exportTypes`; set it via a config file or the programmatic `sveld()` API.
+Also available as `--types-export=<all|none>` on the CLI, mapped to the boolean form (`all` => `true`, `none` => `false`) — the CLI can't express the per-kind object form.
 
 #### `typesOptions.typeNames`
 
@@ -1145,7 +1145,7 @@ sveld({
 
 `@internal`/`@ignore` members are removed from every output regardless of this option — see [`@ignore` / `@internal`](#ignore--internal). `comments` only controls how much JSDoc survives for members that *do* get emitted.
 
-There's no CLI flag for `comments`; set it via a config file or the programmatic `sveld()` API.
+Also available as `--types-comments=<all|descriptions|none>` on the CLI.
 
 #### `typesOptions.propsDeclaration`
 
@@ -1174,7 +1174,7 @@ Only a plain object props type can become an `interface` safely. These shapes ar
 - a component with a whole-object `$props()` type resolved via [`resolveTypes`](#opt-in-semantic-resolution-resolvetypes) (`CanonicalPropsType & { ... }`)
 - a component with no props at all (`Record<string, never>`; an empty `interface` trips `noEmptyInterface` in consumer lint setups)
 
-There's no CLI flag for `propsDeclaration`; set it via a config file or the programmatic `sveld()` API.
+Also available as `--types-props-declaration=<type|interface>` on the CLI.
 
 #### `typesOptions.transform`
 
@@ -1249,7 +1249,7 @@ sveld: index.d.ts skips duplicate type export "TabsContext" from "./Tabs2.svelte
 
 `indexTypes` composes with [`exportTypes`](#typesoptionsexporttypes): a type that `exportTypes` keeps local to its component's `.d.ts` is never re-exported from the barrel either, since it wouldn't resolve.
 
-There's no CLI flag for `indexTypes`; set it via a config file or the programmatic `sveld()` API.
+Also available as `--types-index-types` on the CLI, mapped to the boolean form (`true` re-exports `Props`/`Exports` only) — the CLI can't express the per-kind object form. Pass `--types-index-types=false` to disable it explicitly.
 
 #### `typesOptions.inline`
 
@@ -1380,8 +1380,8 @@ imports inlined.
 
 A component with at least one inlined declaration skips the generated-text cache (its output now
 depends on another file's contents, not just its own source hash), though its *parse* is still
-cached as usual. There's no CLI flag for `inline`; set it via a config file or the programmatic
-`sveld()` API.
+cached as usual. Also available as `--types-inline=<local|all>` on the CLI; `--types-inline=false`
+resets to the default.
 
 #### `markdownOptions.onAppend`
 
