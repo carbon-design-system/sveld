@@ -14,7 +14,7 @@ import {
 } from "./diagnostics";
 import { collectExampleSources, type ExampleCheckSource } from "./example-check";
 import { readDirectoryListing, resetDirectoryListings } from "./fs-listing";
-import { type InlinedTypes, inlineLocalTypeImports } from "./inline-types";
+import { collectBareImportOverlay, type InlinedTypes, inlineLocalTypeImports } from "./inline-types";
 import { hashSource, ParseCache, resolveCacheFilePath } from "./parse-cache";
 import { type EntryExports, parseEntryExports } from "./parse-entry-exports";
 import { type ParsedExports, parseExports } from "./parse-exports";
@@ -29,7 +29,7 @@ import {
   resolveCallDefaultCandidates,
 } from "./resolve-call-defaults";
 import { type ContextKeyResolution, resolveContextKeyCandidates } from "./resolve-context-keys";
-import type { TypeResolver } from "./resolve-types";
+import type { BareTypeSession, TypeResolver } from "./resolve-types";
 import { parse as parseTemplate, TemplateParseNotImplementedError } from "./svelte-template-parse";
 import { propsTypeName, type WriteTsDefinitionOptions } from "./writer/writer-ts-definitions-core";
 
@@ -770,17 +770,27 @@ export async function generateBundle(
     checkComponentExamplesSyntax(checkExamplesSyntaxCandidates);
   }
 
-  if (resolveTypesCandidates.length > 0 || checkExamplesCompileCandidates.length > 0) {
-    // Share one TypeResolver when both resolveTypes and checkExamples are enabled.
-    // Guarded on `checkExamplesCompileCandidates` (not `checkExamplesCandidates`)
-    // so `checkExamples: true`/`"syntax"` with only markup fences never loads
-    // TypeScript.
+  // An `"all"` run with nothing bare to resolve behaves exactly like `"local"`, so an empty
+  // overlay skips loading TypeScript entirely.
+  const bareOverlay: Map<string, string> =
+    options.typesInline === "all"
+      ? collectBareImportOverlay(allComponentsForTypes, resolveComponentFilePath)
+      : new Map();
+
+  let bareSession: BareTypeSession | undefined;
+  let resolverToDisposeAfterInline: TypeResolver | undefined;
+
+  if (resolveTypesCandidates.length > 0 || checkExamplesCompileCandidates.length > 0 || bareOverlay.size > 0) {
+    // Share one TypeResolver across resolveTypes, checkExamples, and typesOptions.inline: "all".
+    // Guarded on `checkExamplesCompileCandidates` (not `checkExamplesCandidates`) so
+    // `checkExamples: true`/`"syntax"` with only markup fences never loads TypeScript.
     const { TypeResolver } = await import("./resolve-types");
     const created = await TypeResolver.create(rootDir);
     if (!created.ok) {
       const features = [
         resolveTypesCandidates.length > 0 ? "resolveTypes" : null,
         checkExamplesCompileCandidates.length > 0 ? "checkExamples" : null,
+        bareOverlay.size > 0 ? 'typesOptions.inline: "all"' : null,
       ]
         .filter((feature): feature is string => feature !== null)
         .join(" and ");
@@ -795,8 +805,17 @@ export async function generateBundle(
       if (checkExamplesCompileCandidates.length > 0) {
         await checkComponentExamples(checkExamplesCompileCandidates, resolver, resolveComponentFilePath);
       }
-    } finally {
-      await resolver?.dispose();
+      if (bareOverlay.size > 0) {
+        // Kept alive past this block: the inline pass runs later, after the AST/JSDoc-only
+        // passes below. Disposed together with the resolver right after that pass runs.
+        bareSession = await resolver.openBareTypeSession(bareOverlay);
+        resolverToDisposeAfterInline = resolver;
+      } else {
+        await resolver.dispose();
+      }
+    } catch (error) {
+      await resolver.dispose();
+      throw error;
     }
   }
 
@@ -829,10 +848,21 @@ export async function generateBundle(
 
   validateExtendsTargets(allComponentsForTypes, resolveComponentFilePath, options.typesTypeNames);
 
-  const inlinedTypesByFilePath =
-    options.typesInline === "local" || options.typesInline === "all"
-      ? inlineLocalTypeImports(allComponentsForTypes, resolveComponentFilePath, options.typesTypeNames)
-      : undefined;
+  let inlinedTypesByFilePath: Map<string, InlinedTypes> | undefined;
+  try {
+    inlinedTypesByFilePath =
+      options.typesInline === "local" || options.typesInline === "all"
+        ? await inlineLocalTypeImports(
+            allComponentsForTypes,
+            resolveComponentFilePath,
+            options.typesTypeNames,
+            bareSession,
+          )
+        : undefined;
+  } finally {
+    if (bareSession) await bareSession.dispose();
+    if (resolverToDisposeAfterInline) await resolverToDisposeAfterInline.dispose();
+  }
 
   // Dedupe diagnostics from export and all-components passes.
   const diagnostics = applyDiagnosticIgnores(

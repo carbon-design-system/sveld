@@ -199,7 +199,7 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
           mergedOpts.typesOptions?.inline,
           mergedOpts.typesOptions?.typeNames,
         );
-        await writeOutput(bundle.result, mergedOpts, input);
+        await writeOutput(await bundle.result, mergedOpts, input);
       }
     },
     async generateBundle() {

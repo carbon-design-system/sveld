@@ -13,13 +13,15 @@
  * `writer-ts-definitions-core.ts`).
  */
 import { existsSync, readFileSync, statSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { isIdentifier, isObject, resolveStaticStringLiteral } from "./ast-guards";
 import type { ComponentDocApi, ComponentDocs, ResolveComponentFilePath } from "./bundle";
 import { createDiagnostic } from "./diagnostics";
 import { getParsedComponentTypeScriptMetadata } from "./parsed-component-metadata";
 import { type WalkableNode, walkNodes } from "./parser/walk";
+import { normalizeSeparators } from "./path";
 import { resolveAliasLookup } from "./resolve-alias";
+import type { BareTypeSession } from "./resolve-types";
 import { parseProgram } from "./template-parse/acorn-bridge";
 import { exportsTypeName, propsTypeName, type WriteTsDefinitionOptions } from "./writer/writer-ts-definitions-core";
 
@@ -31,6 +33,20 @@ const INDEX_SUFFIXES = ["/index.ts", "/index.d.ts"];
 const MAX_REEXPORT_DEPTH = 10;
 /** Extracts the declared name from a `localTypeDeclarations` code string (e.g. `"interface Foo {"`). */
 const DECL_NAME_REGEX = /^\s*(?:export\s+)?(?:declare\s+)?(?:type|interface)\s+([A-Za-z_$][\w$]*)/;
+
+/**
+ * Bare imports from exactly these sources always stay imports under `typesOptions.inline: "all"`,
+ * never copied, even though the checker can resolve and copy them just fine: copying a framework
+ * type would freeze whatever Svelte version happened to be installed at generation time into
+ * every consumer's `.d.ts`, defeating the point of importing it from `svelte`/`svelte/elements`
+ * in the first place. Checked against the exact import specifier string, not a resolved path, so
+ * a project-local file that happens to be named "svelte.ts" is unaffected.
+ */
+const FRAMEWORK_BARE_ALLOWLIST: ReadonlySet<string> = new Set(["svelte", "svelte/elements"]);
+
+function isFrameworkAllowlisted(source: string): boolean {
+  return FRAMEWORK_BARE_ALLOWLIST.has(source);
+}
 
 export interface InlinedTypes {
   /** Exact `typeImportStatements` entries the writer must drop. */
@@ -66,6 +82,14 @@ interface InlineContext {
   pending: Set<string>;
   dependencies: Set<string>;
   tx: Transaction;
+  /**
+   * `typesOptions.inline: "all"` only: a live checker session for resolving bare/package
+   * imports. `undefined` under `"local"`, or under `"all"` when this component has no
+   * non-allowlisted bare import to resolve in the first place.
+   */
+  bareSession: BareTypeSession | undefined;
+  /** This component's bare-import overlay plan (see `planBareOverlay`), or `null` if it has none. */
+  barePlan: BareOverlayPlan | null;
 }
 
 type Outcome = { ok: true } | { ok: false; reason: string };
@@ -231,9 +255,18 @@ function findTopLevelDeclaration(program: { body: WalkableNode[] }, name: string
   return undefined;
 }
 
-type ImportTarget = { kind: "named"; source: string; importedName: string } | { kind: "namespace" };
+type ImportTarget =
+  | { kind: "named"; source: string; importedName: string; localNameStart: number | undefined }
+  | { kind: "namespace" };
 
-/** Finds how `localName` is bound by an `import` statement in `program`, if at all. */
+/**
+ * Finds how `localName` is bound by an `import` statement in `program`, if at all.
+ *
+ * `localNameStart` is the local-name identifier's character offset in the file `program` was
+ * parsed from - a real, checker-visible position, used only by the `"all"` bare-import path to
+ * ask the checker "what does this specifier resolve to" for a name reached while recursing
+ * through an already-resolved real file (see `resolveBareReference`).
+ */
 function findImportedName(program: { body: WalkableNode[] }, localName: string): ImportTarget | undefined {
   for (const stmt of program.body) {
     if (stmt.type !== "ImportDeclaration") continue;
@@ -241,16 +274,140 @@ function findImportedName(program: { body: WalkableNode[] }, localName: string):
     if (source === undefined) continue;
 
     for (const spec of asNodeArray(stmt.specifiers)) {
-      const local = nodeName(asNode(spec.local));
+      const localNode = asNode(spec.local);
+      const local = nodeName(localNode);
       if (local !== localName) continue;
       if (spec.type === "ImportNamespaceSpecifier") return { kind: "namespace" };
-      if (spec.type === "ImportDefaultSpecifier") return { kind: "named", source, importedName: "default" };
+      const localNameStart = typeof localNode?.start === "number" ? localNode.start : undefined;
+      if (spec.type === "ImportDefaultSpecifier") {
+        return { kind: "named", source, importedName: "default", localNameStart };
+      }
       if (spec.type === "ImportSpecifier") {
-        return { kind: "named", source, importedName: nodeName(asNode(spec.imported)) ?? local };
+        return { kind: "named", source, importedName: nodeName(asNode(spec.imported)) ?? local, localNameStart };
       }
     }
   }
   return undefined;
+}
+
+/** One distinct bare specifier's imported name, deduplicated across a component's statements. */
+interface BareEntrySpecifier {
+  source: string;
+  importedName: string;
+}
+
+/**
+ * A component's bare-import overlay: a virtual `.ts` file that aliases and re-references every
+ * distinct non-allowlisted bare-imported name from that component's own `typeImportStatements`,
+ * so the checker has a real position to resolve each one from (a `.svelte` file's positions
+ * aren't checker-visible).
+ */
+interface BareOverlayPlan {
+  virtualFile: string;
+  content: string;
+  /** `${source}\0${importedName}` -> character offset of that name's reference in `content`. */
+  positions: Map<string, number>;
+}
+
+function bareEntryKey(source: string, importedName: string): string {
+  return `${source}\0${importedName}`;
+}
+
+/** Every distinct non-allowlisted bare specifier imported by a component's `typeImportStatements`. */
+function collectBareEntrySpecifiers(statements: string[], componentAbsPath: string): BareEntrySpecifier[] {
+  const seen = new Set<string>();
+  const specifiers: BareEntrySpecifier[] = [];
+
+  for (const statement of statements) {
+    let program: { body: WalkableNode[] };
+    try {
+      program = parseProgram(statement, true, []) as unknown as { body: WalkableNode[] };
+    } catch {
+      continue;
+    }
+
+    for (const stmt of program.body) {
+      if (stmt.type !== "ImportDeclaration") continue;
+      const source = sourceValueOf(asNode(stmt.source));
+      if (source === undefined || isFrameworkAllowlisted(source)) continue;
+      if (resolveModuleSpecifier(source, componentAbsPath).kind !== "bare") continue;
+
+      for (const spec of asNodeArray(stmt.specifiers)) {
+        if (spec.type === "ImportNamespaceSpecifier") continue;
+        const importedName =
+          spec.type === "ImportDefaultSpecifier" ? "default" : (nodeName(asNode(spec.imported)) ?? undefined);
+        if (!importedName) continue;
+
+        const key = bareEntryKey(source, importedName);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        specifiers.push({ source, importedName });
+      }
+    }
+  }
+
+  return specifiers;
+}
+
+/**
+ * The deterministic virtual overlay file path a component would get if it has a bare import to
+ * resolve, whether or not it currently does - lets a caller (watch mode) find and forget a stale
+ * overlay entry for a component that no longer has one, without needing to re-derive this naming.
+ * Normalized to forward slashes: `resolve-types.ts`'s filesystem host normalizes every path before
+ * checking its overlay map, so a raw `path.join` result (backslashes on Windows) would never match.
+ */
+export function bareOverlayVirtualFilePath(componentAbsPath: string, moduleName: string): string {
+  return normalizeSeparators(join(dirname(componentAbsPath), `__sveld_inline_all_${moduleName}.ts`));
+}
+
+/**
+ * Builds a component's bare-import overlay plan (see {@link BareOverlayPlan}), or `null` when it
+ * has no non-allowlisted bare import to resolve. Pure and deterministic - safe to call twice (once
+ * to build the up-front session overlay, once more per component while processing statements)
+ * rather than threading state between the two.
+ */
+function planBareOverlay(componentAbsPath: string, moduleName: string, statements: string[]): BareOverlayPlan | null {
+  const specifiers = collectBareEntrySpecifiers(statements, componentAbsPath);
+  if (specifiers.length === 0) return null;
+
+  const importLines = specifiers.map(
+    ({ source, importedName }, index) =>
+      `import type { ${importedName} as __sveld_bare_${index} } from ${JSON.stringify(source)};`,
+  );
+
+  const positions = new Map<string, number>();
+  let content = `${importLines.join("\n")}\n`;
+  specifiers.forEach(({ source, importedName }, index) => {
+    content += `type __sveld_ref_${index} = `;
+    positions.set(bareEntryKey(source, importedName), content.length);
+    content += `__sveld_bare_${index};\n`;
+  });
+
+  const virtualFile = bareOverlayVirtualFilePath(componentAbsPath, moduleName);
+  return { virtualFile, content, positions };
+}
+
+/**
+ * Builds the overlay for every component's bare-import plan, for the caller to seed a
+ * `BareTypeSession` with (`TypeResolver.openBareTypeSession`) before running
+ * `inlineLocalTypeImports` with `typesInline: "all"`. Empty when no component has a
+ * non-allowlisted bare import - callers use this to skip creating a `TypeResolver` entirely.
+ */
+export function collectBareImportOverlay(
+  components: ComponentDocs,
+  resolveComponentFilePath: ResolveComponentFilePath,
+): Map<string, string> {
+  const overlay = new Map<string, string>();
+
+  for (const component of components.values()) {
+    const statements = getParsedComponentTypeScriptMetadata(component)?.typeImportStatements ?? [];
+    if (statements.length === 0) continue;
+
+    const plan = planBareOverlay(resolveComponentFilePath(component.filePath), component.moduleName, statements);
+    if (plan) overlay.set(plan.virtualFile, plan.content);
+  }
+
+  return overlay;
 }
 
 type ExportLookup =
@@ -385,18 +542,50 @@ function applyAlias(ctx: InlineContext, declaredName: string, wantedLocalName: s
   return { ok: true };
 }
 
+/** What resolving a bare reference through the checker (see `resolveBareReference`) landed on. */
+type BareReferenceOutcome =
+  | { status: "found"; node: WalkableNode; filePath: string; source: string }
+  | { status: "left-alone" }
+  | { status: "unresolved" }
+  | { status: "unlocatable"; filePath: string; declaredName: string }
+  | { status: "unsupported"; reason: string };
+
+/**
+ * Resolves the bare/package specifier at `position` in `file` through `ctx.bareSession`, then
+ * classifies the result exactly like any other file this pass reads - same unsupported-kind
+ * rules as the local pass.
+ *
+ * Only called where `ctx.bareSession` is already known to be set (`"all"` mode, at least one
+ * non-allowlisted bare specifier found somewhere in the bundle).
+ */
+async function resolveBareReference(ctx: InlineContext, file: string, position: number): Promise<BareReferenceOutcome> {
+  // biome-ignore lint/style/noNonNullAssertion: only called by call sites that already checked ctx.bareSession.
+  const resolution = await ctx.bareSession!.resolveAt(file, position);
+  if (resolution.kind === "default-lib") return { status: "left-alone" };
+  if (resolution.kind === "unresolved") return { status: "unresolved" };
+
+  const target = getFile(ctx, resolution.filePath);
+  if (!target) return { status: "unlocatable", filePath: resolution.filePath, declaredName: resolution.declaredName };
+
+  const found = findTopLevelDeclaration(target.program, resolution.declaredName);
+  if (!found) return { status: "unlocatable", filePath: resolution.filePath, declaredName: resolution.declaredName };
+  if (found.kind === "unsupported") return { status: "unsupported", reason: found.reason };
+
+  return { status: "found", node: found.node, filePath: resolution.filePath, source: target.source };
+}
+
 /**
  * Copies `node` (a `type`/`interface` declaration from `filePath`) and every same-file or
  * imported declaration it references, then registers `wantedLocalName` as an alias if the
  * caller's local name differs from the declaration's own name.
  */
-function emitDeclaration(
+async function emitDeclaration(
   ctx: InlineContext,
   node: WalkableNode,
   filePath: string,
   source: string,
   wantedLocalName: string,
-): Outcome {
+): Promise<Outcome> {
   const declaredName = nodeName(asNode(node.id));
   const start = node.start;
   const end = node.end;
@@ -425,6 +614,9 @@ function emitDeclaration(
   const typeParamNames = collectTypeParamNames(node);
   const file = getFile(ctx, filePath);
 
+  // Sequential by necessity: each reference's outcome (a name reservation, a pending-set entry)
+  // is visible to the next reference's collision/cycle checks, and a failure must roll back only
+  // what this declaration itself added so far.
   for (const refName of collectTypeReferenceNames(node)) {
     if (typeParamNames.has(refName) || refName === declaredName) continue;
     if (!file) continue;
@@ -435,7 +627,8 @@ function emitDeclaration(
         ctx.pending.delete(realKey);
         return { ok: false, reason: `references "${refName}", a ${local.reason} that cannot be inlined` };
       }
-      const result = emitDeclaration(ctx, local.node, filePath, source, refName);
+      // biome-ignore lint/performance/noAwaitInLoops: shared, order-dependent ctx state (see above the loop).
+      const result = await emitDeclaration(ctx, local.node, filePath, source, refName);
       if (!result.ok) {
         ctx.pending.delete(realKey);
         return result;
@@ -447,18 +640,49 @@ function emitDeclaration(
     if (!importTarget || importTarget.kind === "namespace") continue; // assume a global, or an out-of-scope namespace import.
 
     const resolution = resolveModuleSpecifier(importTarget.source, filePath);
-    if (resolution.kind !== "resolved") continue; // bare/missing/.svelte: assume a global, leave alone.
+    if (resolution.kind === "resolved") {
+      const found = findExportedDeclaration(ctx, resolution.path, importTarget.importedName, new Set(), 0);
+      if (found.kind === "not-found") {
+        ctx.pending.delete(realKey);
+        return { ok: false, reason: `references "${refName}", which is not exported from "${importTarget.source}"` };
+      }
+      if (found.kind === "unsupported") {
+        ctx.pending.delete(realKey);
+        return { ok: false, reason: `references "${refName}", a ${found.reason} that cannot be inlined` };
+      }
+      const result = await emitDeclaration(ctx, found.node, found.filePath, found.source, refName);
+      if (!result.ok) {
+        ctx.pending.delete(realKey);
+        return result;
+      }
+      continue;
+    }
 
-    const found = findExportedDeclaration(ctx, resolution.path, importTarget.importedName, new Set(), 0);
-    if (found.kind === "not-found") {
-      ctx.pending.delete(realKey);
-      return { ok: false, reason: `references "${refName}", which is not exported from "${importTarget.source}"` };
+    if (
+      resolution.kind !== "bare" ||
+      isFrameworkAllowlisted(importTarget.source) ||
+      !ctx.bareSession ||
+      importTarget.localNameStart === undefined
+    ) {
+      // missing/.svelte, the svelte/svelte-elements allow-list, no checker session (`"local"`, or
+      // `"all"` with nothing bare anywhere else), or no real position to query: assume a global,
+      // leave alone - same "leave alone" contract a bare reference has always had.
+      continue;
     }
-    if (found.kind === "unsupported") {
+
+    const resolved = await resolveBareReference(ctx, filePath, importTarget.localNameStart);
+    if (resolved.status === "left-alone") continue; // an ambient (TypeScript default-lib) global.
+    if (resolved.status !== "found") {
       ctx.pending.delete(realKey);
-      return { ok: false, reason: `references "${refName}", a ${found.reason} that cannot be inlined` };
+      const reason =
+        resolved.status === "unresolved"
+          ? `which could not be resolved from "${importTarget.source}"`
+          : resolved.status === "unlocatable"
+            ? `which resolves to "${resolved.declaredName}" in "${resolved.filePath}", where sveld could not locate that declaration`
+            : `a ${resolved.reason} that cannot be inlined`;
+      return { ok: false, reason: `references "${refName}", ${reason}` };
     }
-    const result = emitDeclaration(ctx, found.node, found.filePath, found.source, refName);
+    const result = await emitDeclaration(ctx, resolved.node, resolved.filePath, resolved.source, refName);
     if (!result.ok) {
       ctx.pending.delete(realKey);
       return result;
@@ -473,13 +697,56 @@ function emitDeclaration(
 }
 
 /** Top-level entry: `name` must be exported from `filePath` (an actual `import` requires this). */
-function inlineImportedName(ctx: InlineContext, filePath: string, name: string, wantedLocalName: string): Outcome {
+async function inlineImportedName(
+  ctx: InlineContext,
+  filePath: string,
+  name: string,
+  wantedLocalName: string,
+): Promise<Outcome> {
   const found = findExportedDeclaration(ctx, filePath, name, new Set(), 0);
   if (found.kind === "not-found") return { ok: false, reason: `"${name}" is not exported from "${filePath}"` };
   if (found.kind === "unsupported") {
     return { ok: false, reason: `"${name}" is a ${found.reason}, which cannot be inlined` };
   }
   return emitDeclaration(ctx, found.node, found.filePath, found.source, wantedLocalName);
+}
+
+/**
+ * Top-level entry for a bare/package specifier under `typesOptions.inline: "all"`: looks up
+ * `source`+`importedName`'s pre-computed position in `ctx.barePlan` (built once per component by
+ * `planBareOverlay`) and resolves it through the checker.
+ */
+async function inlineBareImportedName(
+  ctx: InlineContext,
+  source: string,
+  importedName: string,
+  wantedLocalName: string,
+): Promise<Outcome> {
+  const position = ctx.barePlan?.positions.get(bareEntryKey(source, importedName));
+  if (!ctx.bareSession || !ctx.barePlan || position === undefined) {
+    return { ok: false, reason: `"${importedName}" is a package import that sveld could not verify` };
+  }
+
+  const resolved = await resolveBareReference(ctx, ctx.barePlan.virtualFile, position);
+  switch (resolved.status) {
+    case "left-alone":
+      return { ok: false, reason: `"${importedName}" resolves to a built-in TypeScript type, which cannot be inlined` };
+    case "unresolved":
+      return { ok: false, reason: `"${importedName}" could not be resolved from "${source}"` };
+    case "unlocatable":
+      return {
+        ok: false,
+        reason: `"${importedName}" resolves to "${resolved.declaredName}" in "${resolved.filePath}", where sveld could not locate that declaration`,
+      };
+    case "unsupported":
+      return { ok: false, reason: `"${importedName}" is a ${resolved.reason}, which cannot be inlined` };
+    case "found":
+      return emitDeclaration(ctx, resolved.node, resolved.filePath, resolved.source, wantedLocalName);
+    default: {
+      const exhaustive: never = resolved;
+      return exhaustive;
+    }
+  }
 }
 
 function rollback(ctx: InlineContext): void {
@@ -502,7 +769,11 @@ type StatementOutcome =
   | { status: "refused"; failures: StatementFailure[] };
 
 /** Attempts to inline every name of one `typeImportStatements` entry, atomically (all or nothing). */
-function processStatement(ctx: InlineContext, statement: string, componentAbsPath: string): StatementOutcome {
+async function processStatement(
+  ctx: InlineContext,
+  statement: string,
+  componentAbsPath: string,
+): Promise<StatementOutcome> {
   let program: { body: WalkableNode[] };
   try {
     program = parseProgram(statement, true, []) as unknown as { body: WalkableNode[] };
@@ -520,7 +791,7 @@ function processStatement(ctx: InlineContext, statement: string, componentAbsPat
   if (sourceValue === undefined) return { status: "kept" };
 
   const resolution = resolveModuleSpecifier(sourceValue, componentAbsPath);
-  if (resolution.kind === "bare" || resolution.kind === "svelte") return { status: "kept" };
+  if (resolution.kind === "svelte") return { status: "kept" };
 
   const names: Array<{ importedName: string; localName: string }> = [];
   for (const { spec } of specifierPairs) {
@@ -538,10 +809,35 @@ function processStatement(ctx: InlineContext, statement: string, componentAbsPat
     };
   }
 
+  if (resolution.kind === "bare") {
+    // Never attempted under `"local"`, for the svelte/svelte-elements allow-list, or when no
+    // checker session exists (e.g. `"all"` found nothing bare anywhere else in the bundle and
+    // skipped creating one): kept exactly as sveld has always kept a bare import, no diagnostic.
+    if (isFrameworkAllowlisted(sourceValue) || !ctx.bareSession) return { status: "kept" };
+
+    ctx.tx = { orderStart: ctx.order.length, keys: [] };
+    const bareFailures: StatementFailure[] = [];
+    // Sequential by necessity: each name's collision check depends on ctx state a prior name in
+    // the same statement may have just reserved (rolled back together below on any failure).
+    for (const { importedName, localName } of names) {
+      // biome-ignore lint/performance/noAwaitInLoops: shared, order-dependent ctx state (see above the loop).
+      const outcome = await inlineBareImportedName(ctx, sourceValue, importedName, localName);
+      if (!outcome.ok) bareFailures.push({ name: localName, reason: outcome.reason });
+    }
+
+    if (bareFailures.length > 0) {
+      rollback(ctx);
+      return { status: "refused", failures: bareFailures };
+    }
+    return { status: "inlined" };
+  }
+
   ctx.tx = { orderStart: ctx.order.length, keys: [] };
   const failures: StatementFailure[] = [];
+  // Sequential by necessity, same as the bare-import loop above.
   for (const { importedName, localName } of names) {
-    const outcome = inlineImportedName(ctx, resolution.path, importedName, localName);
+    // biome-ignore lint/performance/noAwaitInLoops: shared, order-dependent ctx state (see above the loop).
+    const outcome = await inlineImportedName(ctx, resolution.path, importedName, localName);
     if (!outcome.ok) failures.push({ name: localName, reason: outcome.reason });
   }
 
@@ -574,71 +870,89 @@ function collectComponentReservedNames(
 
 /**
  * Copies relative (and tsconfig/jsconfig-alias) type imports into each component's `.d.ts`,
- * dropping the import in favor of the copied declaration. Bare/package imports, `.svelte`
- * sources, and namespace imports are left as imports untouched. An import that can't be safely
- * inlined (missing file, missing export, an unsupported export kind, or a name collision) stays
- * an import too, with a `types-inline-unresolved` diagnostic explaining why.
+ * dropping the import in favor of the copied declaration. `.svelte` sources and namespace
+ * imports are left as imports untouched, as are bare/package imports unless `bareSession` is
+ * given (`typesOptions.inline: "all"`, and this bundle has at least one non-allowlisted bare
+ * import to attempt - see `collectBareImportOverlay`), in which case those are attempted through
+ * the checker too, except for the svelte/svelte-elements allow-list, which always stays an
+ * import. An import that can't be safely inlined (missing file, missing export, an unsupported
+ * export kind, a name collision, or - `"all"` only - a bare specifier the checker couldn't
+ * resolve) stays an import too, with a `types-inline-unresolved` diagnostic explaining why.
  *
  * Never mutates `typeImportStatements`/`localTypeDeclarations` - see the module doc comment.
  * Idempotent: previous `types-inline-unresolved` diagnostics are replaced, not accumulated.
  */
-export function inlineLocalTypeImports(
+export async function inlineLocalTypeImports(
   components: ComponentDocs,
   resolveComponentFilePath: ResolveComponentFilePath,
   typeNames?: WriteTsDefinitionOptions["typeNames"],
-): Map<string, InlinedTypes> {
+  bareSession?: BareTypeSession,
+): Promise<Map<string, InlinedTypes>> {
   const result = new Map<string, InlinedTypes>();
 
-  for (const component of components.values()) {
-    const metadata = getParsedComponentTypeScriptMetadata(component);
-    const typeImportStatements = metadata?.typeImportStatements ?? [];
-    if (typeImportStatements.length === 0) continue;
+  // Each component gets its own InlineContext with no state shared across components, so this
+  // runs concurrently rather than needing a sequential for...of.
+  await Promise.all(
+    Array.from(components.values()).map(async (component) => {
+      const metadata = getParsedComponentTypeScriptMetadata(component);
+      const typeImportStatements = metadata?.typeImportStatements ?? [];
+      if (typeImportStatements.length === 0) return;
 
-    const componentAbsPath = resolveComponentFilePath(component.filePath);
-    const ctx: InlineContext = {
-      files: new Map(),
-      reservedNames: collectComponentReservedNames(component, typeNames),
-      nameOwner: new Map(),
-      textByKey: new Map(),
-      order: [],
-      pending: new Set(),
-      dependencies: new Set(),
-      tx: { orderStart: 0, keys: [] },
-    };
+      const componentAbsPath = resolveComponentFilePath(component.filePath);
+      const barePlan = bareSession
+        ? planBareOverlay(componentAbsPath, component.moduleName, typeImportStatements)
+        : null;
 
-    const droppedImportStatements: string[] = [];
-    // Idempotent: drop any diagnostics from a previous run of this pass on the same component
-    // (e.g. a prior watch-mode flush) before adding this run's.
-    const diagnostics = (component.diagnostics ?? []).filter((d) => d.kind !== "types-inline-unresolved");
+      const ctx: InlineContext = {
+        files: new Map(),
+        reservedNames: collectComponentReservedNames(component, typeNames),
+        nameOwner: new Map(),
+        textByKey: new Map(),
+        order: [],
+        pending: new Set(),
+        dependencies: new Set(),
+        tx: { orderStart: 0, keys: [] },
+        bareSession,
+        barePlan,
+      };
 
-    for (const statement of typeImportStatements) {
-      const outcome = processStatement(ctx, statement, componentAbsPath);
-      if (outcome.status === "inlined") {
-        droppedImportStatements.push(statement);
-      } else if (outcome.status === "refused") {
-        for (const failure of outcome.failures) {
-          diagnostics.push(
-            createDiagnostic({
-              component: component.filePath,
-              kind: "types-inline-unresolved",
-              name: failure.name,
-              message: `Cannot inline "${failure.name}": ${failure.reason}.`,
-            }),
-          );
+      const droppedImportStatements: string[] = [];
+      // Idempotent: drop any diagnostics from a previous run of this pass on the same component
+      // (e.g. a prior watch-mode flush) before adding this run's.
+      const diagnostics = (component.diagnostics ?? []).filter((d) => d.kind !== "types-inline-unresolved");
+
+      // Sequential by necessity: statements share `ctx` (name reservations, emission order), so
+      // processing order determines dedup/collision outcomes and must stay stable.
+      for (const statement of typeImportStatements) {
+        // biome-ignore lint/performance/noAwaitInLoops: shared, order-dependent ctx state (see above the loop).
+        const outcome = await processStatement(ctx, statement, componentAbsPath);
+        if (outcome.status === "inlined") {
+          droppedImportStatements.push(statement);
+        } else if (outcome.status === "refused") {
+          for (const failure of outcome.failures) {
+            diagnostics.push(
+              createDiagnostic({
+                component: component.filePath,
+                kind: "types-inline-unresolved",
+                name: failure.name,
+                message: `Cannot inline "${failure.name}": ${failure.reason}.`,
+              }),
+            );
+          }
         }
       }
-    }
 
-    component.diagnostics = diagnostics;
+      component.diagnostics = diagnostics;
 
-    if (droppedImportStatements.length === 0 && ctx.order.length === 0) continue;
+      if (droppedImportStatements.length === 0 && ctx.order.length === 0) return;
 
-    result.set(component.filePath, {
-      droppedImportStatements,
-      declarations: ctx.order.map((key) => ctx.textByKey.get(key) ?? ""),
-      dependencies: Array.from(ctx.dependencies),
-    });
-  }
+      result.set(component.filePath, {
+        droppedImportStatements,
+        declarations: ctx.order.map((key) => ctx.textByKey.get(key) ?? ""),
+        dependencies: Array.from(ctx.dependencies),
+      });
+    }),
+  );
 
   return result;
 }

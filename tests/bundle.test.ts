@@ -6,6 +6,7 @@ import ComponentParser from "../src/ComponentParser";
 import { TypeResolver } from "../src/resolve-types";
 
 const RESOLVER_FAILURE_MESSAGE_REGEX = /resolveTypes.*checkExamples.*tsconfig\.json/s;
+const INLINE_ALL_RESOLVER_FAILURE_MESSAGE_REGEX = /typesOptions\.inline: "all".*tsconfig\.json/s;
 
 /** Look up `allComponentsForTypes` by filePath; moduleName is not unique. */
 function byModuleName(components: ComponentDocs, moduleName: string): ComponentDocApi | undefined {
@@ -65,9 +66,21 @@ function makeFakeResolver() {
   return {
     expandAll: jest.fn(async () => new Map()),
     checkExamples: jest.fn(async () => new Map()),
+    openBareTypeSession: jest.fn(async () => ({
+      resolveAt: jest.fn(async () => ({ kind: "unresolved" })),
+      dispose: jest.fn(async () => {}),
+    })),
     dispose: jest.fn(async () => {}),
   };
 }
+
+/** Imports a bare/package type; a `typesOptions.inline: "all"` candidate. */
+const BARE_IMPORT_COMPONENT = `<script lang="ts">
+  import type { Foo } from "some-lib";
+  let { value }: { value: Foo } = $props();
+</script>
+<div />
+`;
 
 describe("generateBundle in-run parse dedupe", () => {
   let dir: string;
@@ -175,6 +188,77 @@ describe("generateBundle shares one TypeResolver across resolveTypes and checkEx
         checkExamples: true,
       }),
     ).rejects.toThrow(RESOLVER_FAILURE_MESSAGE_REGEX);
+
+    expect(createSpy).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('generateBundle typesOptions.inline: "all" shares the same TypeResolver contract', () => {
+  let dir: string;
+  let createSpy: ReturnType<typeof jest.spyOn>;
+
+  beforeEach(() => {
+    dir = mkdtempSync(path.join(tmpdir(), "sveld-bundle-inline-all-"));
+  });
+
+  afterEach(() => {
+    createSpy.mockRestore();
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("creates and disposes exactly one resolver when a bare import needs resolving", async () => {
+    writeFileSync(path.join(dir, "Comp.svelte"), BARE_IMPORT_COMPONENT);
+
+    const fakeResolver = makeFakeResolver();
+    createSpy = jest
+      .spyOn(TypeResolver, "create")
+      .mockResolvedValue({ ok: true, resolver: fakeResolver as unknown as TypeResolver });
+
+    await generateBundle(dir, true, { cache: false, typesInline: "all" });
+
+    expect(createSpy).toHaveBeenCalledTimes(1);
+    expect(fakeResolver.openBareTypeSession).toHaveBeenCalledTimes(1);
+    expect(fakeResolver.dispose).toHaveBeenCalledTimes(1);
+  });
+
+  test("never creates a resolver when there is no bare import to resolve", async () => {
+    writeFileSync(path.join(dir, "Comp.svelte"), BUTTON);
+
+    const fakeResolver = makeFakeResolver();
+    createSpy = jest
+      .spyOn(TypeResolver, "create")
+      .mockResolvedValue({ ok: true, resolver: fakeResolver as unknown as TypeResolver });
+
+    await generateBundle(dir, true, { cache: false, typesInline: "all" });
+
+    expect(createSpy).not.toHaveBeenCalled();
+  });
+
+  test('never creates a resolver when typesInline is "local", even with a bare import present', async () => {
+    writeFileSync(path.join(dir, "Comp.svelte"), BARE_IMPORT_COMPONENT);
+
+    const fakeResolver = makeFakeResolver();
+    createSpy = jest
+      .spyOn(TypeResolver, "create")
+      .mockResolvedValue({ ok: true, resolver: fakeResolver as unknown as TypeResolver });
+
+    await generateBundle(dir, true, { cache: false, typesInline: "local" });
+
+    expect(createSpy).not.toHaveBeenCalled();
+  });
+
+  test("a failed resolver fails the run instead of silently degrading, same as resolveTypes", async () => {
+    writeFileSync(path.join(dir, "Comp.svelte"), BARE_IMPORT_COMPONENT);
+
+    createSpy = jest.spyOn(TypeResolver, "create").mockResolvedValue({
+      ok: false,
+      reason: "no-tsconfig",
+      message: 'could not locate a tsconfig.json starting from "/fake"',
+    });
+
+    await expect(generateBundle(dir, true, { cache: false, typesInline: "all" })).rejects.toThrow(
+      INLINE_ALL_RESOLVER_FAILURE_MESSAGE_REGEX,
+    );
 
     expect(createSpy).toHaveBeenCalledTimes(1);
   });

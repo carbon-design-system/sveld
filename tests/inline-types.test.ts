@@ -467,3 +467,176 @@ describe("typesOptions.inline output type-checks", () => {
     }
   });
 });
+
+/**
+ * `typesOptions.inline: "all"` needs the real TypeScript checker (see `resolve-types.ts`'s
+ * `TypeResolver.openBareTypeSession`), which needs a resolvable `tsconfig.json` and `node_modules`
+ * lookup for both `typescript` itself and any fabricated bare package below. Created inside the
+ * repo (not the system tmpdir), same reasoning as the `tsc`-verification test above: module
+ * resolution needs to walk up to the repo's own `node_modules`.
+ */
+describe('typesOptions.inline: "all" (bare/package imports)', () => {
+  let dir: string;
+
+  beforeEach(() => {
+    dir = mkdtempSync(join(process.cwd(), ".tmp-sveld-inline-all-"));
+    writeFileSync(
+      join(dir, "tsconfig.json"),
+      JSON.stringify({
+        compilerOptions: {
+          target: "ES2022",
+          module: "ESNext",
+          moduleResolution: "bundler",
+          strict: true,
+          skipLibCheck: true,
+        },
+        include: ["**/*"],
+      }),
+    );
+    clearConfigCache();
+  });
+
+  afterEach(() => {
+    clearConfigCache();
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  /** Writes a fabricated `node_modules/some-lib` package with `content` as its `index.d.ts`. */
+  function writeSomeLib(content: string, extraFiles: Record<string, string> = {}) {
+    const libDir = join(dir, "node_modules", "some-lib");
+    mkdirSync(libDir, { recursive: true });
+    writeFileSync(join(libDir, "package.json"), JSON.stringify({ name: "some-lib", types: "index.d.ts" }));
+    writeFileSync(join(libDir, "index.d.ts"), content);
+    for (const [name, fileContent] of Object.entries(extraFiles)) {
+      writeFileSync(join(libDir, name), fileContent);
+    }
+  }
+
+  test("inlines a type alias, an interface, a same-file cross-reference, and a re-export through a sibling file", async () => {
+    writeSomeLib(
+      `export type Size = "sm" | "md" | "lg";
+export interface Container {
+  item: Item;
+}
+export interface Item {
+  id: string;
+}
+export type { Real as Reexported } from "./real";
+`,
+      { "real.d.ts": "export type Real = string;\n" },
+    );
+    writeFileSync(
+      join(dir, "Comp.svelte"),
+      `<script lang="ts">
+  import type { Size, Container, Reexported } from "some-lib";
+  let { size, container, extra }: { size: Size; container: Container; extra: Reexported } = $props();
+</script>
+<div />
+`,
+    );
+
+    const result = await generateBundle(dir, true, { cache: false, typesInline: "all" });
+    const component = byModuleName(result.allComponentsForTypes, "Comp");
+    expect(component).toBeDefined();
+    // biome-ignore lint/style/noNonNullAssertion: asserted above
+    const inlined = result.inlinedTypesByFilePath?.get(component!.filePath);
+
+    expect(inlined?.droppedImportStatements).toEqual(['import type { Container, Reexported, Size } from "some-lib";']);
+    const text = inlined?.declarations.join("\n") ?? "";
+    expect(text).toContain('type Size = "sm" | "md" | "lg";');
+    expect(text).toContain("interface Container {");
+    expect(text).toContain("interface Item {"); // same-file cross-reference, recursed and copied.
+    expect(text).toContain("type Real = string;"); // re-export through a sibling file, followed transparently.
+    expect(text).toContain("type Reexported = Real;"); // imported name differs from the declared name.
+    expect(result.diagnostics.filter((d) => d.kind === "types-inline-unresolved")).toEqual([]);
+  }, 30_000);
+
+  test('an import from "svelte"/"svelte/elements" stays an import, never inlined', async () => {
+    writeFileSync(
+      join(dir, "Comp.svelte"),
+      `<script lang="ts">
+  import type { HTMLButtonAttributes } from "svelte/elements";
+  let { rest }: { rest: HTMLButtonAttributes } = $props();
+</script>
+<div />
+`,
+    );
+
+    const result = await generateBundle(dir, true, { cache: false, typesInline: "all" });
+    const component = byModuleName(result.allComponentsForTypes, "Comp");
+    // biome-ignore lint/style/noNonNullAssertion: asserted above component lookup below
+    expect(result.inlinedTypesByFilePath?.has(component!.filePath)).toBeFalsy();
+    expect(result.diagnostics.filter((d) => d.kind === "types-inline-unresolved")).toEqual([]);
+  }, 30_000);
+
+  test("a reference inside a copied bare declaration that resolves to a DOM global is left alone, not copied", async () => {
+    writeSomeLib("export interface Widget {\n  target: EventTarget;\n}\n");
+    writeFileSync(
+      join(dir, "Comp.svelte"),
+      `<script lang="ts">
+  import type { Widget } from "some-lib";
+  let { widget }: { widget: Widget } = $props();
+</script>
+<div />
+`,
+    );
+
+    const result = await generateBundle(dir, true, { cache: false, typesInline: "all" });
+    const component = byModuleName(result.allComponentsForTypes, "Comp");
+    // biome-ignore lint/style/noNonNullAssertion: asserted above
+    const inlined = result.inlinedTypesByFilePath?.get(component!.filePath);
+
+    expect(inlined?.declarations).toEqual(["interface Widget {\n  target: EventTarget;\n}"]);
+    expect(inlined?.droppedImportStatements).toHaveLength(1);
+    expect(result.diagnostics.filter((d) => d.kind === "types-inline-unresolved")).toEqual([]);
+  }, 30_000);
+
+  test("refuses an unresolvable bare import, keeping the statement and warning", async () => {
+    writeSomeLib(`export type Size = "sm" | "md" | "lg";\n`);
+    writeFileSync(
+      join(dir, "Comp.svelte"),
+      `<script lang="ts">
+  import type { DoesNotExist } from "some-lib";
+  let { value }: { value: DoesNotExist } = $props();
+</script>
+<div />
+`,
+    );
+
+    const result = await generateBundle(dir, true, { cache: false, typesInline: "all" });
+    const diagnostic = result.diagnostics.find((d) => d.kind === "types-inline-unresolved");
+
+    expect(diagnostic).toBeDefined();
+    expect(diagnostic?.name).toBe("DoesNotExist");
+    expect(diagnostic?.message).toContain("could not be resolved from");
+    expect(diagnostic?.severity).toBe("warning");
+    expect(diagnostic?.code).toBe("sveld/types-inline-unresolved");
+
+    const component = byModuleName(result.allComponentsForTypes, "Comp");
+    // biome-ignore lint/style/noNonNullAssertion: asserted above
+    const inlined = result.inlinedTypesByFilePath?.get(component!.filePath);
+    expect(inlined?.droppedImportStatements ?? []).toEqual([]);
+  }, 30_000);
+
+  test("refuses an entry-level bare import that resolves to a TypeScript default-lib global", async () => {
+    writeSomeLib(`export type { EventTarget as GlobalThing } from "./dom-passthrough";\n`, {
+      "dom-passthrough.d.ts": "export type { EventTarget };\n",
+    });
+    writeFileSync(
+      join(dir, "Comp.svelte"),
+      `<script lang="ts">
+  import type { GlobalThing } from "some-lib";
+  let { value }: { value: GlobalThing } = $props();
+</script>
+<div />
+`,
+    );
+
+    const result = await generateBundle(dir, true, { cache: false, typesInline: "all" });
+    const diagnostic = result.diagnostics.find((d) => d.kind === "types-inline-unresolved");
+
+    expect(diagnostic).toBeDefined();
+    expect(diagnostic?.name).toBe("GlobalThing");
+    expect(diagnostic?.message).toContain("built-in TypeScript type");
+  }, 30_000);
+});
