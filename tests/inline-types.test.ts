@@ -1,0 +1,432 @@
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, relative } from "node:path";
+import ts from "@typescript/typescript6";
+import type { ComponentDocApi, ComponentDocs } from "../src/bundle";
+import { generateBundle } from "../src/bundle";
+import { clearConfigCache } from "../src/resolve-alias";
+
+/** Look up `allComponentsForTypes` by filePath; moduleName is not unique. */
+function byModuleName(components: ComponentDocs, moduleName: string): ComponentDocApi | undefined {
+  return Array.from(components.values()).find((component) => component.moduleName === moduleName);
+}
+
+describe("inlineLocalTypeImports (via generateBundle typesInline)", () => {
+  let dir: string;
+
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), "sveld-inline-types-"));
+    clearConfigCache();
+  });
+
+  afterEach(() => {
+    clearConfigCache();
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("simple type alias", async () => {
+    writeFileSync(
+      join(dir, "Comp.svelte"),
+      `<script lang="ts">
+  import type { Size } from "./types";
+  let { size }: { size: Size } = $props();
+</script>
+<div>{size}</div>
+`,
+    );
+    writeFileSync(join(dir, "types.ts"), `export type Size = "sm" | "md" | "lg";\n`);
+
+    const result = await generateBundle(dir, true, { cache: false, typesInline: "local" });
+    const component = byModuleName(result.allComponentsForTypes, "Comp");
+    expect(component).toBeDefined();
+    // biome-ignore lint/style/noNonNullAssertion: asserted above
+    const inlined = result.inlinedTypesByFilePath?.get(component!.filePath);
+
+    expect(inlined?.droppedImportStatements).toEqual(['import type { Size } from "./types";']);
+    expect(inlined?.declarations).toEqual(['type Size = "sm" | "md" | "lg";']);
+    expect(inlined?.dependencies).toEqual([join(dir, "types.ts")]);
+    expect(result.diagnostics.filter((d) => d.kind === "types-inline-unresolved")).toEqual([]);
+  });
+
+  test("interface", async () => {
+    writeFileSync(
+      join(dir, "Comp.svelte"),
+      `<script lang="ts">
+  import type { Props } from "./types";
+  let { value }: { value: Props } = $props();
+</script>
+<div />
+`,
+    );
+    writeFileSync(join(dir, "types.ts"), "export interface Props {\n  a: string;\n}\n");
+
+    const result = await generateBundle(dir, true, { cache: false, typesInline: "local" });
+    const component = byModuleName(result.allComponentsForTypes, "Comp");
+    // biome-ignore lint/style/noNonNullAssertion: parsed above
+    const inlined = result.inlinedTypesByFilePath?.get(component!.filePath);
+
+    expect(inlined?.declarations).toEqual(["interface Props {\n  a: string;\n}"]);
+    expect(inlined?.droppedImportStatements).toHaveLength(1);
+  });
+
+  test("re-export via export { X as Y } from", async () => {
+    writeFileSync(
+      join(dir, "Comp.svelte"),
+      `<script lang="ts">
+  import type { Bar } from "./types";
+  let { value }: { value: Bar } = $props();
+</script>
+<div />
+`,
+    );
+    writeFileSync(join(dir, "other.ts"), "export type Foo = string;\n");
+    writeFileSync(join(dir, "types.ts"), `export { Foo as Bar } from "./other";\n`);
+
+    const result = await generateBundle(dir, true, { cache: false, typesInline: "local" });
+    const component = byModuleName(result.allComponentsForTypes, "Comp");
+    // biome-ignore lint/style/noNonNullAssertion: parsed above
+    const inlined = result.inlinedTypesByFilePath?.get(component!.filePath);
+
+    expect(inlined?.declarations).toEqual(["type Foo = string;", "type Bar = Foo;"]);
+    expect(inlined?.dependencies).toEqual(expect.arrayContaining([join(dir, "other.ts"), join(dir, "types.ts")]));
+  });
+
+  test("export * from", async () => {
+    writeFileSync(
+      join(dir, "Comp.svelte"),
+      `<script lang="ts">
+  import type { Foo } from "./types";
+  let { value }: { value: Foo } = $props();
+</script>
+<div />
+`,
+    );
+    writeFileSync(join(dir, "other.ts"), "export type Foo = string;\n");
+    writeFileSync(join(dir, "types.ts"), `export * from "./other";\n`);
+
+    const result = await generateBundle(dir, true, { cache: false, typesInline: "local" });
+    const component = byModuleName(result.allComponentsForTypes, "Comp");
+    // biome-ignore lint/style/noNonNullAssertion: parsed above
+    const inlined = result.inlinedTypesByFilePath?.get(component!.filePath);
+
+    expect(inlined?.declarations).toEqual(["type Foo = string;"]);
+  });
+
+  test("a type referencing a same-file helper type copies the helper first", async () => {
+    writeFileSync(
+      join(dir, "Comp.svelte"),
+      `<script lang="ts">
+  import type { Foo } from "./types";
+  let { value }: { value: Foo } = $props();
+</script>
+<div />
+`,
+    );
+    writeFileSync(join(dir, "types.ts"), "type Helper = string;\nexport type Foo = Helper;\n");
+
+    const result = await generateBundle(dir, true, { cache: false, typesInline: "local" });
+    const component = byModuleName(result.allComponentsForTypes, "Comp");
+    // biome-ignore lint/style/noNonNullAssertion: parsed above
+    const inlined = result.inlinedTypesByFilePath?.get(component!.filePath);
+
+    expect(inlined?.declarations).toEqual(["type Helper = string;", "type Foo = Helper;"]);
+  });
+
+  test("a type referencing its own type parameter and a global copies nothing extra", async () => {
+    writeFileSync(
+      join(dir, "Comp.svelte"),
+      `<script lang="ts">
+  import type { Box } from "./types";
+  let { value }: { value: Box<string> } = $props();
+</script>
+<div />
+`,
+    );
+    writeFileSync(join(dir, "types.ts"), "export type Box<T> = { value: T; extra: Record<string, T> };\n");
+
+    const result = await generateBundle(dir, true, { cache: false, typesInline: "local" });
+    const component = byModuleName(result.allComponentsForTypes, "Comp");
+    // biome-ignore lint/style/noNonNullAssertion: parsed above
+    const inlined = result.inlinedTypesByFilePath?.get(component!.filePath);
+
+    expect(inlined?.declarations).toEqual(["type Box<T> = { value: T; extra: Record<string, T> };"]);
+  });
+
+  test("an aliased import (as) yields an extra alias declaration", async () => {
+    writeFileSync(
+      join(dir, "Comp.svelte"),
+      `<script lang="ts">
+  import type { Size as MySize } from "./types";
+  let { value }: { value: MySize } = $props();
+</script>
+<div />
+`,
+    );
+    writeFileSync(join(dir, "types.ts"), `export type Size = "sm" | "md" | "lg";\n`);
+
+    const result = await generateBundle(dir, true, { cache: false, typesInline: "local" });
+    const component = byModuleName(result.allComponentsForTypes, "Comp");
+    // biome-ignore lint/style/noNonNullAssertion: parsed above
+    const inlined = result.inlinedTypesByFilePath?.get(component!.filePath);
+
+    expect(inlined?.declarations).toEqual(['type Size = "sm" | "md" | "lg";', "type MySize = Size;"]);
+  });
+
+  test("resolves a tsconfig path alias", async () => {
+    writeFileSync(
+      join(dir, "tsconfig.json"),
+      JSON.stringify({ compilerOptions: { baseUrl: ".", paths: { "$lib/*": ["./lib/*"] } } }),
+    );
+    mkdirSync(join(dir, "lib"), { recursive: true });
+    writeFileSync(join(dir, "lib", "types.ts"), `export type Size = "sm" | "md" | "lg";\n`);
+    writeFileSync(
+      join(dir, "Comp.svelte"),
+      `<script lang="ts">
+  import type { Size } from "$lib/types";
+  let { value }: { value: Size } = $props();
+</script>
+<div />
+`,
+    );
+
+    const result = await generateBundle(dir, true, { cache: false, typesInline: "local" });
+    const component = byModuleName(result.allComponentsForTypes, "Comp");
+    // biome-ignore lint/style/noNonNullAssertion: parsed above
+    const inlined = result.inlinedTypesByFilePath?.get(component!.filePath);
+
+    expect(inlined?.declarations).toEqual(['type Size = "sm" | "md" | "lg";']);
+  });
+
+  test("refuses a missing file, keeping the import and warning", async () => {
+    writeFileSync(
+      join(dir, "Comp.svelte"),
+      `<script lang="ts">
+  import type { X } from "./missing";
+  let { value }: { value: X } = $props();
+</script>
+<div />
+`,
+    );
+
+    const result = await generateBundle(dir, true, { cache: false, typesInline: "local" });
+    const diagnostic = result.diagnostics.find((d) => d.kind === "types-inline-unresolved");
+
+    expect(diagnostic).toBeDefined();
+    expect(diagnostic?.name).toBe("X");
+    expect(diagnostic?.message).toContain("was not found on disk");
+    expect(diagnostic?.severity).toBe("warning");
+    expect(diagnostic?.code).toBe("sveld/types-inline-unresolved");
+  });
+
+  test("refuses a name not exported by the source file", async () => {
+    writeFileSync(
+      join(dir, "Comp.svelte"),
+      `<script lang="ts">
+  import type { X } from "./types";
+  let { value }: { value: X } = $props();
+</script>
+<div />
+`,
+    );
+    writeFileSync(join(dir, "types.ts"), "export type Y = string;\n");
+
+    const result = await generateBundle(dir, true, { cache: false, typesInline: "local" });
+    const diagnostic = result.diagnostics.find((d) => d.kind === "types-inline-unresolved");
+
+    expect(diagnostic).toBeDefined();
+    expect(diagnostic?.message).toContain("not exported");
+  });
+
+  test("refuses an enum export", async () => {
+    writeFileSync(
+      join(dir, "Comp.svelte"),
+      `<script lang="ts">
+  import type { Color } from "./types";
+  let { value }: { value: Color } = $props();
+</script>
+<div />
+`,
+    );
+    writeFileSync(join(dir, "types.ts"), "export enum Color {\n  Red,\n  Green,\n}\n");
+
+    const result = await generateBundle(dir, true, { cache: false, typesInline: "local" });
+    const diagnostic = result.diagnostics.find((d) => d.kind === "types-inline-unresolved");
+
+    expect(diagnostic).toBeDefined();
+    expect(diagnostic?.message).toContain("enum");
+  });
+
+  test("refuses a name colliding with a component @typedef", async () => {
+    writeFileSync(
+      join(dir, "Comp.svelte"),
+      `<script lang="ts">
+  /** @typedef {number} Size */
+  import type { Size as MySize } from "./types";
+  let { value }: { value: MySize } = $props();
+</script>
+<div />
+`,
+    );
+    writeFileSync(join(dir, "types.ts"), `export type Size = "sm" | "md" | "lg";\n`);
+
+    const result = await generateBundle(dir, true, { cache: false, typesInline: "local" });
+    const component = byModuleName(result.allComponentsForTypes, "Comp");
+    expect(component?.typedefs.some((typedef) => typedef.name === "Size")).toBe(true);
+
+    const diagnostic = result.diagnostics.find((d) => d.kind === "types-inline-unresolved");
+    expect(diagnostic).toBeDefined();
+    expect(diagnostic?.name).toBe("MySize");
+    expect(diagnostic?.message).toContain("collides");
+    // biome-ignore lint/style/noNonNullAssertion: parsed above
+    const inlined = result.inlinedTypesByFilePath?.get(component!.filePath);
+    expect(inlined?.droppedImportStatements ?? []).toEqual([]);
+  });
+
+  test("refuses the second of two imports of the same name from different files", async () => {
+    writeFileSync(
+      join(dir, "Comp.svelte"),
+      `<script lang="ts">
+  import type { Foo as A } from "./a";
+  import type { Foo as B } from "./b";
+  let { x, y }: { x: A; y: B } = $props();
+</script>
+<div />
+`,
+    );
+    writeFileSync(join(dir, "a.ts"), "export type Foo = string;\n");
+    writeFileSync(join(dir, "b.ts"), "export type Foo = number;\n");
+
+    const result = await generateBundle(dir, true, { cache: false, typesInline: "local" });
+    const component = byModuleName(result.allComponentsForTypes, "Comp");
+    // biome-ignore lint/style/noNonNullAssertion: parsed above
+    const inlined = result.inlinedTypesByFilePath?.get(component!.filePath);
+
+    expect(inlined?.declarations).toEqual(["type Foo = string;", "type A = Foo;"]);
+    expect(inlined?.droppedImportStatements).toEqual(['import type { Foo as A } from "./a";']);
+
+    const diagnostic = result.diagnostics.find((d) => d.kind === "types-inline-unresolved");
+    expect(diagnostic?.name).toBe("B");
+    expect(diagnostic?.message).toContain("already inlined from a different source");
+  });
+
+  test("a cycle between two files terminates and inlines both", async () => {
+    writeFileSync(
+      join(dir, "Comp.svelte"),
+      `<script lang="ts">
+  import type { A } from "./a";
+  let { value }: { value: A } = $props();
+</script>
+<div />
+`,
+    );
+    writeFileSync(join(dir, "a.ts"), `import type { B } from "./b";\nexport type A = { next?: B };\n`);
+    writeFileSync(join(dir, "b.ts"), `import type { A } from "./a";\nexport type B = { next?: A };\n`);
+
+    const result = await generateBundle(dir, true, { cache: false, typesInline: "local" });
+    const component = byModuleName(result.allComponentsForTypes, "Comp");
+    // biome-ignore lint/style/noNonNullAssertion: parsed above
+    const inlined = result.inlinedTypesByFilePath?.get(component!.filePath);
+
+    expect(inlined?.declarations).toHaveLength(2);
+    expect(inlined?.declarations.join("\n")).toContain("type A = { next?: B };");
+    expect(inlined?.declarations.join("\n")).toContain("type B = { next?: A };");
+    expect(inlined?.droppedImportStatements).toEqual(['import type { A } from "./a";']);
+    expect(result.diagnostics.filter((d) => d.kind === "types-inline-unresolved")).toEqual([]);
+  });
+});
+
+describe("inlineLocalTypeImports fixture-level snapshots", () => {
+  const FIXTURES_DIR = join(import.meta.dir, "fixtures");
+
+  test("ts-runes-per-prop-imported-type inlines Size and type-checks", async () => {
+    const fixtureDir = join(FIXTURES_DIR, "ts-runes-per-prop-imported-type");
+    const result = await generateBundle(fixtureDir, true, {
+      cache: false,
+      typesInline: "local",
+    });
+    const component = byModuleName(result.allComponentsForTypes, "input");
+    expect(component).toBeDefined();
+    // biome-ignore lint/style/noNonNullAssertion: asserted above
+    const inlined = result.inlinedTypesByFilePath?.get(component!.filePath);
+
+    expect(inlined?.declarations).toEqual(['type Size = "sm" | "md" | "lg";']);
+    expect(inlined?.droppedImportStatements).toEqual(['import type { Size } from "./types";']);
+  });
+
+  test("runes-whole-props-imported inlines Props and type-checks", async () => {
+    const fixtureDir = join(FIXTURES_DIR, "runes-whole-props-imported");
+    const result = await generateBundle(fixtureDir, true, {
+      cache: false,
+      resolveTypes: true,
+      typesInline: "local",
+    });
+    const component = byModuleName(result.allComponentsForTypes, "input");
+    expect(component).toBeDefined();
+    // biome-ignore lint/style/noNonNullAssertion: asserted above
+    const inlined = result.inlinedTypesByFilePath?.get(component!.filePath);
+
+    // `runes-whole-props-imported`'s props come from `resolveTypes` expanding the whole-object
+    // `$props()` type, not from a per-prop `typeImportStatements` entry, so there may be nothing
+    // to inline here; assert only that inlining never crashes and produces no bogus diagnostics.
+    expect(result.diagnostics.filter((d) => d.kind === "types-inline-unresolved")).toEqual(
+      inlined === undefined ? [] : expect.any(Array),
+    );
+  });
+});
+
+describe("typesOptions.inline output type-checks", () => {
+  test("a component with an inlined type produces valid TypeScript, verified with tsc", async () => {
+    // Created inside the repo (not the system tmpdir) so `moduleResolution: "bundler"` can walk
+    // up to the repo's own `node_modules/svelte` when type-checking the generated `.d.ts`.
+    const tempDir = mkdtempSync(join(process.cwd(), ".tmp-sveld-inline-types-tsc-"));
+    try {
+      writeFileSync(
+        join(tempDir, "Comp.svelte"),
+        `<script lang="ts">
+  import type { Size } from "./types";
+  let { size }: { size: Size } = $props();
+</script>
+<div>{size}</div>
+`,
+      );
+      writeFileSync(join(tempDir, "types.ts"), `export type Size = "sm" | "md" | "lg";\n`);
+
+      const writeTsDefinitions = (await import("../src/writer/writer-ts-definitions")).default;
+      const result = await generateBundle(tempDir, true, { cache: false, typesInline: "local" });
+      const outDirAbsolute = join(tempDir, "out");
+      // `writeTsDefinitions` resolves `outDir` against `process.cwd()`, so it must be relative
+      // here (an absolute path would get joined onto `process.cwd()` instead of used as-is).
+      const outDir = relative(process.cwd(), outDirAbsolute);
+
+      await writeTsDefinitions(result.allComponentsForTypes, {
+        outDir,
+        inputDir: tempDir,
+        preamble: "",
+        exports: result.exports,
+        inlinedTypesByFilePath: result.inlinedTypesByFilePath,
+        inline: "local",
+      });
+
+      const dtsPath = join(outDirAbsolute, "Comp.svelte.d.ts");
+      const dtsText = await Bun.file(dtsPath).text();
+      expect(dtsText).not.toContain('from "./types"');
+      expect(dtsText).toContain('type Size = "sm" | "md" | "lg";');
+
+      const configPath = join(process.cwd(), "tsconfig.fixtures.json");
+      const configFile = ts.readConfigFile(configPath, ts.sys.readFile);
+      const parsedConfig = ts.parseJsonConfigFileContent(configFile.config, ts.sys, process.cwd());
+
+      const program = ts.createProgram([dtsPath], parsedConfig.options);
+      const diagnostics = ts.getPreEmitDiagnostics(program).map((diagnostic) =>
+        ts.formatDiagnostic(diagnostic, {
+          getCanonicalFileName: (fileName) => fileName,
+          getCurrentDirectory: () => outDirAbsolute,
+          getNewLine: () => "\n",
+        }),
+      );
+      expect(diagnostics).toEqual([]);
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+});

@@ -1,5 +1,6 @@
 import { join } from "node:path";
 import { convertSvelteExt, createExports, createTypeExports, type TypeExportEntry } from "../create-exports";
+import type { InlinedTypes } from "../inline-types";
 import { info, warn } from "../logger";
 import type { ParseCache } from "../parse-cache";
 import type { ParsedExports } from "../parse-exports";
@@ -209,6 +210,11 @@ export interface WriteTsDefinitionsOptions extends WriteTsDefinitionOptions {
   /** @internal See `cache`. Lookups use `component.filePath`. */
   resolvedPathByFilePath?: Map<string, string>;
   /**
+   * @internal From `GenerateBundleResult.inlinedTypesByFilePath`, populated when
+   * `typesOptions.inline` is `"local"`/`"all"`. Lookups use `component.filePath`.
+   */
+  inlinedTypesByFilePath?: Map<string, InlinedTypes>;
+  /**
    * Post-processes each generated file's text before it is written. Runs
    * after the generated-text cache, so it applies on every run. Config file
    * or `sveld()` only.
@@ -249,16 +255,21 @@ export default async function writeTsDefinitions(components: ComponentDocs, opti
     const ts_filepath = convertSvelteExt(join(options.outDir, component.filePath));
     const relativeFilePath = normalizeSeparators(convertSvelteExt(component.filePath));
     const resolvedPath = options.resolvedPathByFilePath?.get(component.filePath);
-    const emitOptions =
+    const inlined = options.inlinedTypesByFilePath?.get(component.filePath);
+    const emitOptionsWithForceExport =
       extendsTargetInterfaces.has(propsTypeName(component.moduleName, options.typeNames)) &&
       !propsExportedByDefault(baseEmitOptions.exportTypes)
         ? { ...baseEmitOptions, forceExportProps: true }
         : baseEmitOptions;
+    const emitOptions = inlined ? { ...emitOptionsWithForceExport, inlined } : emitOptionsWithForceExport;
+    // A component with inlined declarations depends on other files' contents, which aren't part
+    // of its own source hash, so the generated-text cache can't safely be trusted for it.
+    const bypassCache = (inlined?.declarations.length ?? 0) > 0;
     const cacheKey = serializeEmitOptions(emitOptions);
-    let text = resolvedPath ? options.cache?.getGeneratedText(resolvedPath, cacheKey) : undefined;
+    let text = !bypassCache && resolvedPath ? options.cache?.getGeneratedText(resolvedPath, cacheKey) : undefined;
     if (text === undefined) {
       text = writeTsDefinition(component, emitOptions);
-      if (resolvedPath) options.cache?.setGeneratedText(resolvedPath, cacheKey, text);
+      if (!bypassCache && resolvedPath) options.cache?.setGeneratedText(resolvedPath, cacheKey, text);
     }
     const transformedText = await applyTransform(options.transform, text, {
       kind: "component",

@@ -1,4 +1,5 @@
 import type { DeprecatedValue } from "../ComponentParser";
+import type { InlinedTypes } from "../inline-types";
 import { getParsedComponentTypeScriptMetadata } from "../parsed-component-metadata";
 import { splitTopLevelCommas } from "../parser/generics";
 import type { ComponentDocApi } from "../plugin";
@@ -1175,6 +1176,19 @@ export interface WriteTsDefinitionOptions {
    * `$props()` type); other shapes are intersections and stay aliases.
    */
   propsDeclaration?: "type" | "interface";
+  /**
+   * Copies `type`/`interface` declarations imported from a relative source (or a
+   * tsconfig/jsconfig path alias) directly into the `.d.ts`, dropping the import. `"local"`
+   * follows relative sources, path aliases, re-exports, and same-file dependencies; bare package
+   * imports, `.svelte` sources, and unsupported exports (enums, classes, functions, consts,
+   * namespaces) stay imports and get a `types-inline-unresolved` warning. `"all"` is accepted but
+   * currently behaves identically to `"local"` (reserved for a future prompt that also inlines
+   * bare/package imports). `false` (default) preserves every import as-is.
+   * @default false
+   */
+  inline?: false | "local" | "all";
+  /** @internal Set by `writeTsDefinitions` from `GenerateBundleResult.inlinedTypesByFilePath` when `inline` resolved something for this component. */
+  inlined?: InlinedTypes;
 }
 
 /**
@@ -1250,6 +1264,7 @@ export function serializeEmitOptions(options: WriteTsDefinitionOptions | undefin
     typeNames: options?.typeNames ?? null,
     comments: options?.comments ?? "all",
     propsDeclaration: options?.propsDeclaration ?? "type",
+    inline: options?.inline ?? false,
   });
 }
 
@@ -1262,6 +1277,7 @@ export function pickEmitOptions(options: WriteTsDefinitionOptions): WriteTsDefin
     typeNames: options.typeNames,
     comments: options.comments,
     propsDeclaration: options.propsDeclaration,
+    inline: options.inline,
   };
 }
 
@@ -1308,8 +1324,14 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
   const moduleExportsDef = genModuleExports({ moduleExports }, commentLevel);
   const typeDefs = getTypeDefs({ typedefs }, { export: exportFlags.typedefs }, commentLevel);
   const contextDefs = getContextDefs({ contexts, generics }, { export: exportFlags.contexts }, commentLevel);
-  const preservedTypeImports = (typeScriptMetadata?.typeImportStatements ?? []).join("\n");
-  const preservedLocalTypeDeclarations = (typeScriptMetadata?.localTypeDeclarations ?? []).join("\n\n");
+  const droppedImportStatements = new Set(options?.inlined?.droppedImportStatements ?? []);
+  const preservedTypeImports = (typeScriptMetadata?.typeImportStatements ?? [])
+    .filter((statement) => !droppedImportStatements.has(statement))
+    .join("\n");
+  const preservedLocalTypeDeclarations = [
+    ...(options?.inlined?.declarations ?? []),
+    ...(typeScriptMetadata?.localTypeDeclarations ?? []),
+  ].join("\n\n");
 
   const { exports_ref, exports_def } = useComponentFormat
     ? genExportsDef(

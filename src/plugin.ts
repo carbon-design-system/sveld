@@ -192,7 +192,12 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
         // Produce the initial output and prime the incremental bundle. This
         // covers both `vite dev` (where generateBundle/writeBundle never fire)
         // and `vite build --watch`.
-        bundle = await createSveldBundle(input, mergedOpts.glob === true, mergedOpts.documentExports === true);
+        bundle = await createSveldBundle(
+          input,
+          mergedOpts.glob === true,
+          mergedOpts.documentExports === true,
+          mergedOpts.typesOptions?.inline,
+        );
         await writeOutput(bundle.result, mergedOpts, input);
       }
     },
@@ -278,6 +283,7 @@ export async function writeOutput(
       dryRun,
       cache: result.cache,
       resolvedPathByFilePath: result.resolvedPathByFilePath,
+      inlinedTypesByFilePath: result.inlinedTypesByFilePath,
     } satisfies WriteTsDefinitionsOptions);
   }
 
