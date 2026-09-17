@@ -302,7 +302,7 @@ Without `resolveTypes`, JSON lists no props. With it, each field shows up with `
 
 ### Persistent parse cache (`cache`)
 
-Parsed output is written to disk and reused when the source file has not changed, on by default. That applies across runs, including CI on a fresh checkout.
+Parsed output is written to disk and reused when the source file has not changed, on by default. That applies across runs, including CI on a fresh checkout. Generated `.d.ts` text is cached the same way, but is only reused when the component source _and_ every `typesOptions` value that affects output (for example [`format`](#dts-output-format-typesoptionsformat)) are unchanged; changing any of them regenerates that component's `.d.ts` without invalidating its cached parse.
 
 ```ts
 await sveld({ json: true });

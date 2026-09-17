@@ -6,7 +6,12 @@ import type { ParsedExports } from "../parse-exports";
 import type { ComponentDocs } from "../plugin";
 import { buildComponentApiDocument } from "./document-model";
 import Writer from "./Writer";
-import { type WriteTsDefinitionOptions, writeTsDefinition } from "./writer-ts-definitions-core";
+import {
+  pickEmitOptions,
+  serializeEmitOptions,
+  type WriteTsDefinitionOptions,
+  writeTsDefinition,
+} from "./writer-ts-definitions-core";
 
 /**
  * Re-export browser-compatible functions from core module.
@@ -41,8 +46,9 @@ export interface WriteTsDefinitionsOptions extends WriteTsDefinitionOptions {
   dryRun?: boolean;
   /**
    * @internal Reuses generated `.d.ts` text across runs for components whose
-   * source (and the effective `format` option) hasn't changed. Requires
-   * `resolvedPathByFilePath` to key lookups; both come from `GenerateBundleResult`.
+   * source (and every emit option from `serializeEmitOptions`) hasn't
+   * changed. Requires `resolvedPathByFilePath` to key lookups; both come
+   * from `GenerateBundleResult`.
    */
   cache?: ParseCache;
   /** @internal See `cache`. Lookups use `component.filePath`. */
@@ -67,15 +73,14 @@ export default async function writeTsDefinitions(components: ComponentDocs, opti
   const indexDTs = options.preamble + createExports(options.exports);
 
   const document = buildComponentApiDocument(components);
-  // Must match the default `writeTsDefinition` assumes for `options.format === undefined`.
-  const cacheFormatKey = options.format ?? "class";
+  const cacheKey = serializeEmitOptions(options);
   const writePromises = document.components.map(async (component) => {
     const ts_filepath = convertSvelteExt(join(options.outDir, component.filePath));
     const resolvedPath = options.resolvedPathByFilePath?.get(component.filePath);
-    let text = resolvedPath ? options.cache?.getGeneratedText(resolvedPath, cacheFormatKey) : undefined;
+    let text = resolvedPath ? options.cache?.getGeneratedText(resolvedPath, cacheKey) : undefined;
     if (text === undefined) {
-      text = writeTsDefinition(component, { format: options.format });
-      if (resolvedPath) options.cache?.setGeneratedText(resolvedPath, cacheFormatKey, text);
+      text = writeTsDefinition(component, pickEmitOptions(options));
+      if (resolvedPath) options.cache?.setGeneratedText(resolvedPath, cacheKey, text);
     }
     await writer.write(ts_filepath, text);
   });

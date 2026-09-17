@@ -5,13 +5,16 @@ import { asNormalizedPath } from "../src/brands";
 import type { ParsedComponent } from "../src/ComponentParser";
 import { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "../src/ComponentParser";
 import { setQuiet } from "../src/logger";
+import { ParseCache } from "../src/parse-cache";
 import type { ComponentDocApi, ComponentDocs } from "../src/plugin";
+import type { WriteTsDefinitionsOptions } from "../src/writer/writer-ts-definitions";
 import writeTsDefinitions, {
   formatTsProps,
   getContextDefs,
   getTypeDefs,
   writeTsDefinition,
 } from "../src/writer/writer-ts-definitions";
+import { pickEmitOptions, serializeEmitOptions } from "../src/writer/writer-ts-definitions-core";
 import { mockComponentDocApi, mockParsedExports } from "./test-brands";
 
 const DEFAULT_SLOT_SNIPPET_PROP_REGEX = /default\?\s*:\s*\(\)\s*=>\s*void/;
@@ -1039,5 +1042,37 @@ describe("writeTsDefinitions", () => {
     } finally {
       rmSync(tempDir, { recursive: true, force: true });
     }
+  });
+});
+
+describe("serializeEmitOptions", () => {
+  test(`undefined, {}, and { format: "class" } all produce the same key`, () => {
+    const undefinedKey = serializeEmitOptions(undefined);
+    const emptyKey = serializeEmitOptions({});
+    const explicitClassKey = serializeEmitOptions({ format: "class" });
+
+    expect(emptyKey).toEqual(undefinedKey);
+    expect(explicitClassKey).toEqual(undefinedKey);
+  });
+
+  test("a different format produces a different key", () => {
+    expect(serializeEmitOptions({ format: "component" })).not.toEqual(serializeEmitOptions({ format: "class" }));
+  });
+});
+
+describe("pickEmitOptions", () => {
+  test("keeps only pure emit options, dropping writer-only fields", () => {
+    const options: WriteTsDefinitionsOptions = {
+      format: "component",
+      outDir: "./dist",
+      inputDir: "./src",
+      preamble: "// preamble\n",
+      exports: mockParsedExports({}),
+      cache: new ParseCache(path.join(process.cwd(), ".tmp-sveld-pick-emit-options-nonexistent-cache.json")),
+      dryRun: true,
+      resolvedPathByFilePath: new Map(),
+    };
+
+    expect(pickEmitOptions(options)).toEqual({ format: "component" });
   });
 });

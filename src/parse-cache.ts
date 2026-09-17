@@ -7,7 +7,7 @@ import { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "./parsed-component-metada
 import { VERSION as svelteVersion } from "./svelte-version";
 
 /** Bumped whenever the on-disk cache shape changes in a way old caches can't read. */
-const CACHE_FORMAT_VERSION = 2;
+const CACHE_FORMAT_VERSION = 3;
 
 /** Default on-disk location for the persistent parse cache, relative to the project root. */
 export const DEFAULT_CACHE_FILE = join("node_modules", ".cache", "sveld", "parse-cache.json");
@@ -25,9 +25,9 @@ interface ParseCacheEntry {
   typeScriptMetadata?: ParsedComponentTypeScriptMetadata;
   /**
    * Generated `.d.ts` text for this entry's `hash`, keyed additionally by the
-   * effective `types-format` option since that changes the output shape.
+   * serialized emit options since those change the output shape.
    */
-  generatedText?: { format: string; text: string };
+  generatedText?: { key: string; text: string };
 }
 
 interface ParseCacheFile {
@@ -126,12 +126,13 @@ export class ParseCache {
 
   /**
    * Returns the cached generated `.d.ts` text for `resolvedPath`, if this
-   * run's parse entry for it (a fresh parse or a hash-verified hit — see
-   * `get()`/`set()`) already carries text generated for `format`.
+   * run's parse entry for it (a fresh parse or a hash-verified hit - see
+   * `get()`/`set()`) already carries text generated for `key`, the
+   * serialized emit options (see `serializeEmitOptions`).
    */
-  getGeneratedText(resolvedPath: string, format: string): string | undefined {
+  getGeneratedText(resolvedPath: string, key: string): string | undefined {
     const entry = this.next.get(resolvedPath);
-    if (entry?.generatedText === undefined || entry.generatedText.format !== format) return undefined;
+    if (entry?.generatedText === undefined || entry.generatedText.key !== key) return undefined;
     return entry.generatedText.text;
   }
 
@@ -141,10 +142,10 @@ export class ParseCache {
    * (shouldn't happen: the write phase only runs after every component has
    * been parsed).
    */
-  setGeneratedText(resolvedPath: string, format: string, text: string): void {
+  setGeneratedText(resolvedPath: string, key: string, text: string): void {
     const entry = this.next.get(resolvedPath);
     if (entry === undefined) return;
-    entry.generatedText = { format, text };
+    entry.generatedText = { key, text };
   }
 
   /**
