@@ -925,6 +925,7 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
   - **`preamble`** (string, optional, default: `""`): Raw text prepended to the top of the generated `index.d.ts` barrel file, before the `export * from "./..."` lines. Useful for license headers or lint-disable comments. See [`typesOptions.preamble`](#typesoptionspreamble) below.
   - **`format`** (`"class"` | `"component"`, optional, default: `"class"`): `.d.ts` output shape. `"class"` extends `SvelteComponentTyped`; `"component"` emits the Svelte 5 `Component` type. Also available as `--types-format`. See [`.d.ts` output format](#dts-output-format-typesoptionsformat).
   - **`exportTypes`** (`boolean | { props?, exports?, typedefs?, contexts? }`, optional, default: `true`): Which generated type declarations get an `export` keyword. `false` keeps them all local to the `.d.ts` file; an object picks per kind. No CLI flag; config file or `sveld()` only. See [`typesOptions.exportTypes`](#typesoptionsexporttypes).
+  - **`typeNames`** (`{ props?: string; exports?: string }`, optional, default: `{ props: "{name}Props", exports: "{name}Exports" }`): Templates for generated type names. No CLI flag; config file or `sveld()` only. See [`typesOptions.typeNames`](#typesoptionstypenames).
 - **`json`** (boolean, optional): Generate component documentation in JSON format.
 - **`jsonOptions`** (object, optional): Options for JSON output.
   - **`outFile`** (string, optional, default: `"COMPONENT_API.json"`): Path (relative to the project root) for the single combined JSON document. Ignored when `outDir` is set.
@@ -1051,6 +1052,35 @@ Any key left out defaults to `true`.
 One exception: when a bundled component uses [`@extendProps`](#extendprops) to extend another bundled component, sveld emits `import type { ButtonProps } from "./Button.svelte"` in the extending component's `.d.ts`. If `Button`'s props type stopped being exported, that import would break — so sveld always keeps a component's props type exported when another component in the same run extends it, even under `exportTypes: false`.
 
 There's no CLI flag for `exportTypes`; set it via a config file or the programmatic `sveld()` API.
+
+#### `typesOptions.typeNames`
+
+By default, sveld names the generated props type `<Name>Props` and (for [`format: "component"`](#dts-output-format-typesoptionsformat)) the exports type `<Name>Exports`, where `<Name>` is the component's module name. `typesOptions.typeNames` lets a library follow its own naming convention instead, via a `{name}` placeholder template.
+
+```js
+sveld({
+  types: true,
+  typesOptions: {
+    typeNames: { props: "I{name}Props" },
+  },
+});
+```
+
+**Button.svelte.d.ts** before / after:
+
+```diff
+- export type ButtonProps = { label?: string };
++ export type IButtonProps = { label?: string };
+
+- export default class Button extends SvelteComponentTyped<ButtonProps, ...> {}
++ export default class Button extends SvelteComponentTyped<IButtonProps, ...> {}
+```
+
+Each template must contain `{name}` and produce a valid identifier once substituted; sveld throws otherwise. Any key left out of the object keeps its default (`"{name}Props"` / `"{name}Exports"`).
+
+If a bundled component then [`@extendProps`](#extendprops)/`@extends`-es another one, the tag must name the *templated* interface — `@extendProps {"./Button.svelte"} IButtonProps`, not `ButtonProps` — or sveld reports [`extend-props-target-missing`](#type-inference-diagnostics).
+
+There's no CLI flag for `typeNames`; set it via a config file or the programmatic `sveld()` API.
 
 #### `markdownOptions.onAppend`
 
@@ -3570,6 +3600,8 @@ export const secondary = true;
 
 import Button from "./Button.svelte";
 ```
+
+The named interface must match the target's generated props type name exactly — the default `<Name>Props`, or whatever [`typesOptions.typeNames`](#typesoptionstypenames) templates it to.
 
 ### `@template`
 

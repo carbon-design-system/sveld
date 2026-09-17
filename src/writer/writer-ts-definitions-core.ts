@@ -27,6 +27,7 @@ const PRESERVED_SNIPPET_IMPORT_REGEX = /import\s+type\s+[^;]*\bSnippet\b[^;]*fro
 // a user-authored generic name into a RegExp.
 const REGEX_METACHARS = /[.*+?^${}()|[\]\\]/g;
 const LEADING_CONST_MODIFIER_REGEX = /^const\s+/;
+const NAME_PLACEHOLDER_REGEX = /\{name\}/g;
 
 /**
  * Strips a leading `const` type-parameter modifier from a single generic
@@ -356,7 +357,7 @@ function genPropDef(
      */
     events?: ComponentDocApi["events"];
   },
-  emit: { export: boolean } = { export: true },
+  emit: { export: boolean; typeNames?: WriteTsDefinitionOptions["typeNames"] } = { export: true },
 ) {
   const exportKw = emit.export ? "export " : "";
 
@@ -470,7 +471,7 @@ function genPropDef(
 
   const props = [...extra_initial_props, ...snippet_props].join("\n");
 
-  const props_name = `${def.moduleName}Props`;
+  const props_name = propsTypeName(def.moduleName, emit.typeNames);
 
   let prop_def = EMPTY_STR;
 
@@ -884,10 +885,10 @@ function genAccessors(def: Pick<ComponentDocApi, "props">) {
  */
 function genExportsDef(
   def: Pick<ComponentDocApi, "props" | "moduleName" | "generics">,
-  emit: { export: boolean } = { export: true },
+  emit: { export: boolean; typeNames?: WriteTsDefinitionOptions["typeNames"] } = { export: true },
 ) {
   const exportKw = emit.export ? "export " : "";
-  const exports_name = `${def.moduleName}Exports`;
+  const exports_name = exportsTypeName(def.moduleName, emit.typeNames);
   const accessors = genAccessors({ props: def.props });
 
   if (accessors.trim() === "") {
@@ -1121,6 +1122,37 @@ export interface WriteTsDefinitionOptions {
   exportTypes?: boolean | { props?: boolean; exports?: boolean; typedefs?: boolean; contexts?: boolean };
   /** @internal Set by `writeTsDefinitions` for `@extends` targets; overrides `exportTypes.props`. */
   forceExportProps?: boolean;
+  /**
+   * Templates for generated type names. `{name}` is replaced with the
+   * component's module name. Defaults: `"{name}Props"`, `"{name}Exports"`.
+   */
+  typeNames?: { props?: string; exports?: string };
+}
+
+/**
+ * Substitutes `{name}` in a `typesOptions.typeNames` template with
+ * `moduleName` and validates the result. The template must contain `{name}`
+ * (otherwise every component would collide on the same literal name) and the
+ * substituted result must be a valid TypeScript identifier.
+ */
+function applyNameTemplate(kind: "props" | "exports", moduleName: string, template: string): string {
+  const result = template.replace(NAME_PLACEHOLDER_REGEX, moduleName);
+  if (!template.includes("{name}") || !IDENTIFIER_REGEX.test(result)) {
+    throw new Error(
+      `sveld: typesOptions.typeNames.${kind} must contain "{name}" and produce a valid identifier; got "${template}".`,
+    );
+  }
+  return result;
+}
+
+/** Resolves the generated props type name from `typesOptions.typeNames.props` (default `"{name}Props"`). */
+export function propsTypeName(moduleName: string, typeNames?: WriteTsDefinitionOptions["typeNames"]): string {
+  return applyNameTemplate("props", moduleName, typeNames?.props ?? "{name}Props");
+}
+
+/** Resolves the generated exports type name from `typesOptions.typeNames.exports` (default `"{name}Exports"`). */
+export function exportsTypeName(moduleName: string, typeNames?: WriteTsDefinitionOptions["typeNames"]): string {
+  return applyNameTemplate("exports", moduleName, typeNames?.exports ?? "{name}Exports");
 }
 
 /**
@@ -1167,6 +1199,7 @@ export function serializeEmitOptions(options: WriteTsDefinitionOptions | undefin
     format: options?.format ?? "class",
     exportTypes: options?.exportTypes ?? true,
     forceExportProps: options?.forceExportProps ?? false,
+    typeNames: options?.typeNames ?? null,
   });
 }
 
@@ -1176,6 +1209,7 @@ export function pickEmitOptions(options: WriteTsDefinitionOptions): WriteTsDefin
     format: options.format,
     exportTypes: options.exportTypes,
     forceExportProps: options.forceExportProps,
+    typeNames: options.typeNames,
   };
 }
 
@@ -1212,7 +1246,7 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
       canonicalPropsType: typeScriptMetadata?.canonicalPropsType,
       events: useComponentFormat && syntaxMode === "legacy" ? events : undefined,
     },
-    { export: exportFlags.props },
+    { export: exportFlags.props, typeNames: options?.typeNames },
   );
 
   const generic = generics ? `<${generics[1]}>` : "";
@@ -1224,7 +1258,7 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
   const preservedLocalTypeDeclarations = (typeScriptMetadata?.localTypeDeclarations ?? []).join("\n\n");
 
   const { exports_ref, exports_def } = useComponentFormat
-    ? genExportsDef({ props, moduleName, generics }, { export: exportFlags.exports })
+    ? genExportsDef({ props, moduleName, generics }, { export: exportFlags.exports, typeNames: options?.typeNames })
     : { exports_ref: EMPTY_STR, exports_def: EMPTY_STR };
   const bindings = useComponentFormat ? genBindingsUnion({ props }) : EMPTY_STR;
 

@@ -283,6 +283,11 @@ describe("validateOptions", () => {
     expect(warnSpy).not.toHaveBeenCalled();
   });
 
+  test("does not warn about typesOptions.typeNames", () => {
+    validateOptions({ typesOptions: { typeNames: { props: "I{name}Props" } } });
+    expect(warnSpy).not.toHaveBeenCalled();
+  });
+
   test("does not validate inside additionalWriters (userland-defined shape)", () => {
     validateOptions({ additionalWriters: { llms: { anything: true } } });
     expect(warnSpy).not.toHaveBeenCalled();

@@ -30,6 +30,7 @@ import {
 import { type ContextKeyResolution, resolveContextKeyCandidates } from "./resolve-context-keys";
 import type { TypeResolver } from "./resolve-types";
 import { parse as parseTemplate, TemplateParseNotImplementedError } from "./svelte-template-parse";
+import { propsTypeName, type WriteTsDefinitionOptions } from "./writer/writer-ts-definitions-core";
 
 export interface ComponentDocApi extends ParsedComponent {
   filePath: NormalizedPath;
@@ -129,13 +130,18 @@ export interface GenerateBundleOptions {
    * fail `--strict` / `--strict=errors`.
    */
   diagnostics?: { ignore?: DiagnosticIgnoreMatcher[] };
+  /**
+   * Mirrors `typesOptions.typeNames`: templates for the `<Name>Props`
+   * interface name that `@extends`/`@extendProps` validation checks against.
+   */
+  typesTypeNames?: WriteTsDefinitionOptions["typeNames"];
 }
 
 export function toGenerateBundleOptions(
   opts?: Pick<
     GenerateBundleOptions,
     "failFast" | "resolveTypes" | "documentExports" | "cache" | "checkExamples" | "dryRun" | "diagnostics"
-  >,
+  > & { typesOptions?: { typeNames?: WriteTsDefinitionOptions["typeNames"] } },
 ): GenerateBundleOptions {
   return {
     failFast: opts?.failFast,
@@ -145,6 +151,7 @@ export function toGenerateBundleOptions(
     checkExamples: opts?.checkExamples === "syntax" ? "syntax" : opts?.checkExamples === true,
     dryRun: opts?.dryRun === true,
     diagnostics: opts?.diagnostics,
+    typesTypeNames: opts?.typesOptions?.typeNames,
   };
 }
 
@@ -805,7 +812,7 @@ export async function generateBundle(
     }
   }
 
-  validateExtendsTargets(allComponentsForTypes, resolveComponentFilePath);
+  validateExtendsTargets(allComponentsForTypes, resolveComponentFilePath, options.typesTypeNames);
 
   // Dedupe diagnostics from export and all-components passes.
   const diagnostics = applyDiagnosticIgnores(
@@ -1101,7 +1108,11 @@ function resolveExtendsTargetPath(fromAbsoluteFilePath: string, specifier: strin
  * Bare/package specifiers (not starting with `.` or `/`) aren't verifiable
  * without a module resolver and are left alone.
  */
-function validateExtendsTargets(components: ComponentDocs, resolveComponentFilePath: ResolveComponentFilePath): void {
+function validateExtendsTargets(
+  components: ComponentDocs,
+  resolveComponentFilePath: ResolveComponentFilePath,
+  typeNames?: WriteTsDefinitionOptions["typeNames"],
+): void {
   const componentsByAbsolutePath = new Map(
     Array.from(components.values()).map((component) => [resolveComponentFilePath(component.filePath), component]),
   );
@@ -1135,7 +1146,7 @@ function validateExtendsTargets(components: ComponentDocs, resolveComponentFileP
     const target = componentsByAbsolutePath.get(targetPath);
     if (!target) continue;
 
-    const expectedInterface = `${target.moduleName}Props`;
+    const expectedInterface = propsTypeName(target.moduleName, typeNames);
     if (extendsInfo.interface !== expectedInterface) {
       diagnostics.push(
         createDiagnostic({

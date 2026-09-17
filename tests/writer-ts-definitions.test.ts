@@ -14,7 +14,12 @@ import writeTsDefinitions, {
   getTypeDefs,
   writeTsDefinition,
 } from "../src/writer/writer-ts-definitions";
-import { pickEmitOptions, serializeEmitOptions } from "../src/writer/writer-ts-definitions-core";
+import {
+  exportsTypeName,
+  pickEmitOptions,
+  propsTypeName,
+  serializeEmitOptions,
+} from "../src/writer/writer-ts-definitions-core";
 import { mockComponentDocApi, mockParsedExports } from "./test-brands";
 
 const DEFAULT_SLOT_SNIPPET_PROP_REGEX = /default\?\s*:\s*\(\)\s*=>\s*void/;
@@ -1231,6 +1236,54 @@ describe("typesOptions.exportTypes", () => {
   });
 });
 
+describe("typesOptions.typeNames", () => {
+  test("propsTypeName defaults to <Name>Props", () => {
+    expect(propsTypeName("Button", undefined)).toEqual("ButtonProps");
+  });
+
+  test("propsTypeName substitutes {name} in a custom template", () => {
+    expect(propsTypeName("Button", { props: "I{name}Props" })).toEqual("IButtonProps");
+  });
+
+  test("exportsTypeName defaults to <Name>Exports", () => {
+    expect(exportsTypeName("Button", undefined)).toEqual("ButtonExports");
+  });
+
+  test("exportsTypeName substitutes {name} in a custom template", () => {
+    expect(exportsTypeName("Button", { exports: "{name}Api" })).toEqual("ButtonApi");
+  });
+
+  test("propsTypeName throws when the template omits {name}", () => {
+    expect(() => propsTypeName("Button", { props: "FixedProps" })).toThrow(
+      'sveld: typesOptions.typeNames.props must contain "{name}" and produce a valid identifier; got "FixedProps".',
+    );
+  });
+
+  test("propsTypeName throws when the substituted result is not a valid identifier", () => {
+    expect(() => propsTypeName("Button", { props: "{name}-Props" })).toThrow(
+      'sveld: typesOptions.typeNames.props must contain "{name}" and produce a valid identifier; got "{name}-Props".',
+    );
+  });
+
+  test('writeTsDefinition applies typeNames templates for "component" format', () => {
+    const component_api = mockComponentDocApi("Button", "./src/Button.svelte");
+
+    const output = writeTsDefinition(component_api, {
+      format: "component",
+      typeNames: { props: "I{name}Props", exports: "{name}Api" },
+    });
+
+    expect(output).toContain("export type IButtonProps");
+    expect(output).toContain(
+      `declare const Button: Component<
+  IButtonProps,
+  ButtonApi,
+  ""
+>;`,
+    );
+  });
+});
+
 describe("serializeEmitOptions", () => {
   test(`undefined, {}, and { format: "class" } all produce the same key`, () => {
     const undefinedKey = serializeEmitOptions(undefined);
@@ -1243,6 +1296,10 @@ describe("serializeEmitOptions", () => {
 
   test("a different format produces a different key", () => {
     expect(serializeEmitOptions({ format: "component" })).not.toEqual(serializeEmitOptions({ format: "class" }));
+  });
+
+  test("a different typeNames template produces a different key", () => {
+    expect(serializeEmitOptions({ typeNames: { props: "I{name}Props" } })).not.toEqual(serializeEmitOptions({}));
   });
 });
 
