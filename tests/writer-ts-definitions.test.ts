@@ -22,7 +22,7 @@ import {
   propsTypeName,
   serializeEmitOptions,
 } from "../src/writer/writer-ts-definitions-core";
-import { mockComponentDocApi, mockParsedExports } from "./test-brands";
+import { mockComponentDocApi, mockParsedExport, mockParsedExports } from "./test-brands";
 
 const DEFAULT_SLOT_SNIPPET_PROP_REGEX = /default\?\s*:\s*\(\)\s*=>\s*void/;
 
@@ -1797,6 +1797,195 @@ describe("typesOptions.transform", () => {
     } finally {
       rmSync(dir, { recursive: true, force: true });
       rmSync(outDirAbs, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("typesOptions.indexTypes", () => {
+  let errorSpy: ReturnType<typeof jest.spyOn>;
+
+  beforeEach(() => {
+    errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  const componentA = mockComponentDocApi("A", "./A.svelte", {
+    typedefs: [
+      {
+        type: "{ x: number }",
+        name: "Shared",
+        ts: "type Shared = { x: number };",
+      },
+    ],
+    contexts: [
+      {
+        key: "a-context",
+        typeName: "Shared",
+        properties: [],
+      },
+    ],
+  });
+  const componentB = mockComponentDocApi("B", "./B.svelte", {
+    contexts: [
+      {
+        key: "b-context",
+        typeName: "Shared",
+        properties: [],
+      },
+    ],
+  });
+
+  const indexTypesExports = mockParsedExports({
+    A: mockParsedExport("./A.svelte", { default: true }),
+    B: mockParsedExport("./B.svelte", { default: true }),
+  });
+
+  test("re-exports Props, Exports, typedefs, and contexts, deduping in barrel order", async () => {
+    const tempDir = await mkdtemp(path.join(process.cwd(), ".tmp-sveld-ts-defs-index-types-"));
+    const outDir = path.relative(process.cwd(), tempDir);
+    const components: ComponentDocs = new Map([
+      ["A", componentA],
+      ["B", componentB],
+    ]);
+
+    try {
+      await writeTsDefinitions(components, {
+        outDir,
+        inputDir: "src",
+        preamble: "",
+        exports: indexTypesExports,
+        format: "component",
+        indexTypes: { props: true, exports: true, typedefs: true, contexts: true },
+      });
+
+      const indexDts = readFileSync(path.join(tempDir, "index.d.ts"), "utf-8");
+
+      expect(indexDts).toContain('export type { AProps, AExports, Shared } from "./A.svelte";');
+      expect(indexDts).toContain('export type { BProps, BExports } from "./B.svelte";');
+      expect(errorSpy).toHaveBeenCalledWith(
+        'sveld: index.d.ts skips duplicate type export "Shared" from "./B.svelte" (already exported from "./A.svelte").',
+      );
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  test('indexTypes: true with format: "class" emits only Props', async () => {
+    const tempDir = await mkdtemp(path.join(process.cwd(), ".tmp-sveld-ts-defs-index-types-class-"));
+    const outDir = path.relative(process.cwd(), tempDir);
+    const components: ComponentDocs = new Map([
+      ["A", componentA],
+      ["B", componentB],
+    ]);
+
+    try {
+      await writeTsDefinitions(components, {
+        outDir,
+        inputDir: "src",
+        preamble: "",
+        exports: indexTypesExports,
+        indexTypes: true,
+      });
+
+      const indexDts = readFileSync(path.join(tempDir, "index.d.ts"), "utf-8");
+
+      expect(indexDts).toContain('export type { AProps } from "./A.svelte";');
+      expect(indexDts).toContain('export type { BProps } from "./B.svelte";');
+      expect(indexDts).not.toContain("AExports");
+      expect(indexDts).not.toContain("BExports");
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  test("indexTypes: true with exportTypes: false emits no type lines", async () => {
+    const tempDir = await mkdtemp(path.join(process.cwd(), ".tmp-sveld-ts-defs-index-types-no-export-"));
+    const outDir = path.relative(process.cwd(), tempDir);
+    const components: ComponentDocs = new Map([
+      ["A", componentA],
+      ["B", componentB],
+    ]);
+
+    try {
+      await writeTsDefinitions(components, {
+        outDir,
+        inputDir: "src",
+        preamble: "",
+        exports: indexTypesExports,
+        format: "component",
+        indexTypes: true,
+        exportTypes: false,
+      });
+
+      const indexDts = readFileSync(path.join(tempDir, "index.d.ts"), "utf-8");
+
+      expect(indexDts).not.toContain("export type {");
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  test('re-exports types for a bare "export { default } from" barrel entry', async () => {
+    const tempDir = await mkdtemp(path.join(process.cwd(), ".tmp-sveld-ts-defs-index-types-bare-default-"));
+    const outDir = path.relative(process.cwd(), tempDir);
+    const components: ComponentDocs = new Map([["A", componentA]]);
+    const bareDefaultExports = mockParsedExports({
+      default: mockParsedExport("./A.svelte", { default: true }),
+    });
+
+    try {
+      await writeTsDefinitions(components, {
+        outDir,
+        inputDir: "src",
+        preamble: "",
+        exports: bareDefaultExports,
+        format: "component",
+        indexTypes: true,
+      });
+
+      const indexDts = readFileSync(path.join(tempDir, "index.d.ts"), "utf-8");
+
+      expect(indexDts).toContain('export type { AProps, AExports } from "./A.svelte";');
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  test("re-exports a props type forced exported by an @extendProps target, even under exportTypes: false", async () => {
+    const tempDir = await mkdtemp(path.join(process.cwd(), ".tmp-sveld-ts-defs-index-types-forced-props-"));
+    const outDir = path.relative(process.cwd(), tempDir);
+    const target = mockComponentDocApi("Button", "./Button.svelte");
+    const extender = mockComponentDocApi("IconButton", "./IconButton.svelte", {
+      extends: { interface: "ButtonProps", import: '"./Button.svelte"' },
+    });
+    const components: ComponentDocs = new Map([
+      ["Button", target],
+      ["IconButton", extender],
+    ]);
+    const forcedPropsExports = mockParsedExports({
+      Button: mockParsedExport("./Button.svelte", { default: true }),
+      IconButton: mockParsedExport("./IconButton.svelte", { default: true }),
+    });
+
+    try {
+      await writeTsDefinitions(components, {
+        outDir,
+        inputDir: "src",
+        preamble: "",
+        exports: forcedPropsExports,
+        indexTypes: true,
+        exportTypes: false,
+      });
+
+      const indexDts = readFileSync(path.join(tempDir, "index.d.ts"), "utf-8");
+
+      expect(indexDts).toContain('export type { ButtonProps } from "./Button.svelte";');
+      expect(indexDts).not.toContain("IconButtonProps");
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
     }
   });
 });

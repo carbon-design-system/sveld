@@ -929,6 +929,7 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
   - **`comments`** (`"all" | "descriptions" | "none"`, optional, default: `"all"`): How much JSDoc lands in the generated `.d.ts`. `"all"` keeps descriptions, `@deprecated`, `@default`, and passthrough tags (`@since`, `@see`, `@example`, `@link`); `"descriptions"` keeps descriptions and `@deprecated` only; `"none"` emits no comments at all. No CLI flag; config file or `sveld()` only. See [`typesOptions.comments`](#typesoptionscomments).
   - **`propsDeclaration`** (`"type" | "interface"`, optional, default: `"type"`): `"interface"` emits the props type as an `interface` instead of a `type` alias when the props are a plain object. No CLI flag; config file or `sveld()` only. See [`typesOptions.propsDeclaration`](#typesoptionspropsdeclaration).
   - **`transform`** (function, optional): Post-processes each generated file's text before it is written. Runs after the generated-text cache, so it applies on every run. No CLI flag; config file or `sveld()` only. See [`typesOptions.transform`](#typesoptionstransform).
+  - **`indexTypes`** (`boolean | { props?, exports?, typedefs?, contexts? }`, optional, default: `false`): Also re-export generated types from `index.d.ts`. `true` re-exports each component's `Props` type (and `Exports` under `format: "component"`); an object can additionally include typedefs and contexts. No CLI flag; config file or `sveld()` only. See [`typesOptions.indexTypes`](#typesoptionsindextypes).
 - **`json`** (boolean, optional): Generate component documentation in JSON format.
 - **`jsonOptions`** (object, optional): Options for JSON output.
   - **`outFile`** (string, optional, default: `"COMPONENT_API.json"`): Path (relative to the project root) for the single combined JSON document. Ignored when `outDir` is set.
@@ -1199,6 +1200,54 @@ export type ButtonProps = { label?: string };
 `transform` runs after the [persistent parse cache](#persistent-parse-cache-cache)'s generated-text cache, so a changed transform is never served stale cached output - it always re-applies, even when the underlying `.d.ts` text was reused from a previous run. A transform that throws, or resolves to something other than a string, fails the whole `sveld` run with an error naming the file that failed.
 
 There's no CLI flag for `transform`; set it via a config file or the programmatic `sveld()` API.
+
+#### `typesOptions.indexTypes`
+
+By default, `types/index.d.ts` only re-exports components:
+
+```ts
+export { default as Button } from "./Button.svelte";
+```
+
+A consumer who wants `ButtonProps` has to deep-import `my-lib/types/Button.svelte`. `typesOptions.indexTypes` re-exports the generated types from the barrel instead, so `import type { ButtonProps } from "my-lib"` works directly.
+
+```js
+sveld({
+  types: true,
+  typesOptions: {
+    indexTypes: true,
+  },
+});
+```
+
+```ts
+// types/index.d.ts
+export { default as Button } from "./Button.svelte";
+
+export type { ButtonProps } from "./Button.svelte";
+```
+
+```ts
+import type { ButtonProps } from "my-lib";
+```
+
+`true` is shorthand for `{ props: true, exports: true }`: it re-exports each component's `Props` type, and (under [`format: "component"`](#dts-output-format-typesoptionsformat)) its `Exports` type. Pass an object to also re-export typedefs and/or contexts:
+
+```js
+typesOptions: {
+  indexTypes: { props: true, typedefs: true, contexts: true },
+}
+```
+
+`Props`/`Exports` names are unique per component by construction (they're derived from the module name), so they're always safe to re-export together. Typedef and context names are user-authored and can collide across components - when two components generate the same name, the first one in barrel order wins and every later collision is dropped with a one-line warning to `stderr`:
+
+```
+sveld: index.d.ts skips duplicate type export "TabsContext" from "./Tabs2.svelte" (already exported from "./Tabs.svelte").
+```
+
+`indexTypes` composes with [`exportTypes`](#typesoptionsexporttypes): a type that `exportTypes` keeps local to its component's `.d.ts` is never re-exported from the barrel either, since it wouldn't resolve.
+
+There's no CLI flag for `indexTypes`; set it via a config file or the programmatic `sveld()` API.
 
 #### `markdownOptions.onAppend`
 

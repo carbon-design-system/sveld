@@ -5,6 +5,7 @@ export default defineConfig({
   typesOptions: {
     preamble: `// TypeScript definitions for ${pkg.name}@${pkg.version}\n\n`,
     printWidth: 80,
+    indexTypes: true,
   },
   json: true,
   markdown: true,

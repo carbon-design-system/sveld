@@ -1,15 +1,18 @@
 import { join } from "node:path";
-import { convertSvelteExt, createExports } from "../create-exports";
-import { info } from "../logger";
+import { convertSvelteExt, createExports, createTypeExports, type TypeExportEntry } from "../create-exports";
+import { info, warn } from "../logger";
 import type { ParseCache } from "../parse-cache";
 import type { ParsedExports } from "../parse-exports";
-import { normalizeSeparators } from "../path";
+import { normalizeSeparators, SVELTE_EXT_REGEX } from "../path";
 import type { ComponentDocApi, ComponentDocs } from "../plugin";
+import type { ComponentApiDocument } from "./document-model";
 import { buildComponentApiDocument } from "./document-model";
 import Writer from "./Writer";
 import {
+  exportsTypeName,
   pickEmitOptions,
   propsTypeName,
+  resolveExportTypes,
   serializeEmitOptions,
   type WriteTsDefinitionOptions,
   writeTsDefinition,
@@ -44,6 +47,94 @@ function propsExportedByDefault(exportTypes: WriteTsDefinitionOptions["exportTyp
   if (exportTypes === undefined || exportTypes === true) return true;
   if (exportTypes === false) return false;
   return exportTypes.props ?? true;
+}
+
+/** Resolves `typesOptions.indexTypes` into a concrete per-kind decision. */
+function resolveIndexTypes(
+  indexTypes: WriteTsDefinitionsOptions["indexTypes"],
+): { props: boolean; exports: boolean; typedefs: boolean; contexts: boolean } | undefined {
+  if (!indexTypes) return undefined;
+  if (indexTypes === true) return { props: true, exports: true, typedefs: false, contexts: false };
+  return {
+    props: indexTypes.props ?? false,
+    exports: indexTypes.exports ?? false,
+    typedefs: indexTypes.typedefs ?? false,
+    contexts: indexTypes.contexts ?? false,
+  };
+}
+
+/**
+ * Builds the `export type { ... } from "./X.svelte";` entries for
+ * `typesOptions.indexTypes`, in barrel (export-map) order.
+ *
+ * Deduped by source, not export id: `export { default } from` and
+ * `export { default as Button } from` name the same component, which would
+ * otherwise emit the same type names twice under different specifiers.
+ *
+ * `extendsTargetInterfaces` force-exports a props type that `exportTypes`
+ * would keep local, mirroring the per-component `forceExportProps` override -
+ * a type exported from the component's own file must stay reachable here too.
+ *
+ * A name already claimed by an earlier component is dropped with a warning:
+ * typedef and context names are user-authored and can collide, while
+ * `Props`/`Exports` names are unique per component by construction.
+ */
+function collectIndexTypeExports(
+  document: ComponentApiDocument,
+  options: WriteTsDefinitionsOptions,
+  extendsTargetInterfaces: Set<string>,
+): TypeExportEntry[] {
+  const indexTypes = resolveIndexTypes(options.indexTypes);
+  if (!indexTypes) return [];
+
+  const exportFlags = resolveExportTypes(options);
+  const useComponentFormat = options.format === "component";
+  const claimedBySource = new Map<string, string>();
+  const processedSources = new Set<string>();
+  const entries: TypeExportEntry[] = [];
+
+  for (const [, exportee] of Object.entries(options.exports)) {
+    if (!exportee.default || !SVELTE_EXT_REGEX.test(exportee.source)) continue;
+
+    const normalizedSource = normalizeSeparators(exportee.source);
+    if (processedSources.has(normalizedSource)) continue;
+    processedSources.add(normalizedSource);
+
+    const component = document.components.find((candidate) => candidate.filePath === normalizedSource);
+    if (!component) continue;
+
+    const propsName = propsTypeName(component.moduleName, options.typeNames);
+    const propsForced = extendsTargetInterfaces.has(propsName);
+
+    const names: string[] = [];
+    if (indexTypes.props && (exportFlags.props || propsForced)) names.push(propsName);
+    if (indexTypes.exports && useComponentFormat && exportFlags.exports) {
+      names.push(exportsTypeName(component.moduleName, options.typeNames));
+    }
+    if (indexTypes.typedefs && exportFlags.typedefs) {
+      for (const typedef of component.typedefs) names.push(typedef.name);
+    }
+    if (indexTypes.contexts && exportFlags.contexts) {
+      for (const context of component.contexts ?? []) names.push(context.typeName);
+    }
+
+    const uniqueNames: string[] = [];
+    for (const name of names) {
+      const claimedFrom = claimedBySource.get(name);
+      if (claimedFrom !== undefined) {
+        warn(
+          `sveld: index.d.ts skips duplicate type export "${name}" from "${exportee.source}" (already exported from "${claimedFrom}").`,
+        );
+        continue;
+      }
+      claimedBySource.set(name, exportee.source);
+      uniqueNames.push(name);
+    }
+
+    if (uniqueNames.length > 0) entries.push({ source: exportee.source, names: uniqueNames });
+  }
+
+  return entries;
 }
 
 /** The context `typesOptions.transform` receives alongside the generated text. */
@@ -123,6 +214,13 @@ export interface WriteTsDefinitionsOptions extends WriteTsDefinitionOptions {
    * or `sveld()` only.
    */
   transform?: (text: string, context: TransformContext) => string | Promise<string>;
+  /**
+   * Also re-export generated types from `index.d.ts`. `true` re-exports each
+   * component's `Props` type (and `Exports` under `format: "component"`); an
+   * object can additionally include typedefs and contexts. Skips any type
+   * that `exportTypes` keeps local.
+   */
+  indexTypes?: boolean | { props?: boolean; exports?: boolean; typedefs?: boolean; contexts?: boolean };
 }
 
 /**
@@ -140,10 +238,12 @@ export interface WriteTsDefinitionsOptions extends WriteTsDefinitionOptions {
 export default async function writeTsDefinitions(components: ComponentDocs, options: WriteTsDefinitionsOptions) {
   const ts_base_path = join(process.cwd(), options.outDir, "index.d.ts");
   const writer = new Writer({ dryRun: options.dryRun });
-  const indexDTs = options.preamble + createExports(options.exports);
-
   const document = buildComponentApiDocument(components);
   const extendsTargetInterfaces = collectExtendsTargetInterfaces(document.components);
+  const typeExports = createTypeExports(collectIndexTypeExports(document, options, extendsTargetInterfaces));
+  const indexDTs =
+    options.preamble + [createExports(options.exports), typeExports].filter((section) => section !== "").join("\n\n");
+
   const baseEmitOptions = pickEmitOptions(options);
   const writePromises = document.components.map(async (component) => {
     const ts_filepath = convertSvelteExt(join(options.outDir, component.filePath));

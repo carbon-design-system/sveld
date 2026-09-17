@@ -1,4 +1,4 @@
-import { convertSvelteExt, createExports, removeSvelteExt } from "../src/create-exports";
+import { convertSvelteExt, createExports, createTypeExports, removeSvelteExt } from "../src/create-exports";
 import { mockParsedExport, mockParsedExports } from "./test-brands";
 
 describe("createExports", () => {
@@ -123,5 +123,21 @@ export { helperA, helperB, helperC } from "./utils/helpers";`);
   test("convertSvelteExt", () => {
     expect(convertSvelteExt("input.svelte")).toEqual("input.svelte.d.ts");
     expect(convertSvelteExt("ComponentName.svelte")).toEqual("ComponentName.svelte.d.ts");
+  });
+
+  test("createTypeExports with two sources", () => {
+    expect(
+      createTypeExports([
+        { source: "./Button.svelte", names: ["ButtonProps"] },
+        { source: "./Link.svelte", names: ["LinkProps", "LinkExports"] },
+      ]),
+    ).toEqual(
+      `export type { ButtonProps } from "./Button.svelte";
+export type { LinkProps, LinkExports } from "./Link.svelte";`,
+    );
+  });
+
+  test("createTypeExports with an empty list", () => {
+    expect(createTypeExports([])).toEqual("");
   });
 });

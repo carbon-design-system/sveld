@@ -1211,7 +1211,7 @@ export function exportsTypeName(moduleName: string, typeNames?: WriteTsDefinitio
  * `@extends` target's props type must stay exported for the extending
  * component's `import type` to resolve.
  */
-function resolveExportTypes(options: WriteTsDefinitionOptions | undefined): {
+export function resolveExportTypes(options: WriteTsDefinitionOptions | undefined): {
   props: boolean;
   exports: boolean;
   typedefs: boolean;
