@@ -1222,6 +1222,42 @@ export function exportsTypeName(moduleName: string, typeNames?: WriteTsDefinitio
   return applyNameTemplate("exports", moduleName, typeNames?.exports ?? "{name}Exports");
 }
 
+/** The `{props, exports, typedefs, contexts}` shape every per-kind `typesOptions` toggle resolves to. */
+export interface PerKindFlags {
+  props: boolean;
+  exports: boolean;
+  typedefs: boolean;
+  contexts: boolean;
+}
+
+/**
+ * Resolves a `boolean | { props?, exports?, typedefs?, contexts? }` toggle into concrete flags:
+ * `true` resolves to `whenTrue` verbatim (callers differ on what "all on" means - `exportTypes`'s
+ * `true` really is all four, `indexTypes`'s isn't); `false` resolves to all-false; an object
+ * defaults each omitted key to `objectDefault` (also caller-specific - `exportTypes` defaults an
+ * omitted key to keeping that kind exported, `indexTypes` defaults it to *not* re-exporting that
+ * kind from the barrel).
+ */
+export function resolvePerKindFlags(
+  value: boolean | Partial<PerKindFlags> | undefined,
+  whenTrue: PerKindFlags,
+  objectDefault: boolean,
+): PerKindFlags {
+  // Always a fresh object, never `whenTrue` itself: a caller (`resolveExportTypes`) mutates its
+  // result to apply `forceExportProps`, which must never leak into a shared default constant.
+  if (value === undefined || value === true) return { ...whenTrue };
+  if (value === false) return { props: false, exports: false, typedefs: false, contexts: false };
+  return {
+    props: value.props ?? objectDefault,
+    exports: value.exports ?? objectDefault,
+    typedefs: value.typedefs ?? objectDefault,
+    contexts: value.contexts ?? objectDefault,
+  };
+}
+
+/** `exportTypes`'s all-kinds-on resolution. */
+export const ALL_KINDS_EXPORTED: PerKindFlags = { props: true, exports: true, typedefs: true, contexts: true };
+
 /**
  * Resolves `exportTypes` (and the `forceExportProps` override) into a
  * concrete per-kind export decision. `true`/`undefined` exports everything;
@@ -1230,25 +1266,8 @@ export function exportsTypeName(moduleName: string, typeNames?: WriteTsDefinitio
  * `@extends` target's props type must stay exported for the extending
  * component's `import type` to resolve.
  */
-export function resolveExportTypes(options: WriteTsDefinitionOptions | undefined): {
-  props: boolean;
-  exports: boolean;
-  typedefs: boolean;
-  contexts: boolean;
-} {
-  const exportTypes = options?.exportTypes;
-
-  const resolved =
-    exportTypes === undefined || exportTypes === true
-      ? { props: true, exports: true, typedefs: true, contexts: true }
-      : exportTypes === false
-        ? { props: false, exports: false, typedefs: false, contexts: false }
-        : {
-            props: exportTypes.props ?? true,
-            exports: exportTypes.exports ?? true,
-            typedefs: exportTypes.typedefs ?? true,
-            contexts: exportTypes.contexts ?? true,
-          };
+export function resolveExportTypes(options: WriteTsDefinitionOptions | undefined): PerKindFlags {
+  const resolved = resolvePerKindFlags(options?.exportTypes, ALL_KINDS_EXPORTED, true);
 
   if (options?.forceExportProps === true) resolved.props = true;
 
