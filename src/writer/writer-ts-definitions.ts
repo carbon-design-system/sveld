@@ -10,10 +10,13 @@ import type { ComponentApiDocument } from "./document-model";
 import { buildComponentApiDocument } from "./document-model";
 import Writer from "./Writer";
 import {
+  ALL_KINDS_EXPORTED,
   exportsTypeName,
+  type PerKindFlags,
   pickEmitOptions,
   propsTypeName,
   resolveExportTypes,
+  resolvePerKindFlags,
   serializeEmitOptions,
   type WriteTsDefinitionOptions,
   writeTsDefinition,
@@ -45,23 +48,16 @@ function collectExtendsTargetInterfaces(components: ComponentDocApi[]): Set<stri
  * for no behavioral reason, invalidating caches pointlessly on every run.
  */
 function propsExportedByDefault(exportTypes: WriteTsDefinitionOptions["exportTypes"]): boolean {
-  if (exportTypes === undefined || exportTypes === true) return true;
-  if (exportTypes === false) return false;
-  return exportTypes.props ?? true;
+  return resolvePerKindFlags(exportTypes, ALL_KINDS_EXPORTED, true).props;
 }
 
+/** `typesOptions.indexTypes: true` re-exports `Props`/`Exports` only, never typedefs/contexts. */
+const INDEX_TYPES_WHEN_TRUE: PerKindFlags = { props: true, exports: true, typedefs: false, contexts: false };
+
 /** Resolves `typesOptions.indexTypes` into a concrete per-kind decision. */
-function resolveIndexTypes(
-  indexTypes: WriteTsDefinitionsOptions["indexTypes"],
-): { props: boolean; exports: boolean; typedefs: boolean; contexts: boolean } | undefined {
+function resolveIndexTypes(indexTypes: WriteTsDefinitionsOptions["indexTypes"]): PerKindFlags | undefined {
   if (!indexTypes) return undefined;
-  if (indexTypes === true) return { props: true, exports: true, typedefs: false, contexts: false };
-  return {
-    props: indexTypes.props ?? false,
-    exports: indexTypes.exports ?? false,
-    typedefs: indexTypes.typedefs ?? false,
-    contexts: indexTypes.contexts ?? false,
-  };
+  return resolvePerKindFlags(indexTypes, INDEX_TYPES_WHEN_TRUE, false);
 }
 
 /**
