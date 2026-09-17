@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.37.3](https://github.com/carbon-design-system/sveld/releases/tag/v0.37.3) - 2026-09-17
+
+**Features**
+
+- add `typesOptions.exportTypes` to control type exports (64ac960)
+- add `typesOptions.typeNames` templates for generated types (577a835)
+- add `typesOptions.comments` to control emitted JSDoc (e40bc62)
+- add `typesOptions.transform` hook for generated `.d.ts` text (263836d)
+- add `typesOptions.propsDeclaration: "interface"` (a4985ff)
+- add `typesOptions.indexTypes` to re-export types from the barrel (127b1d9)
+- add `typesOptions.inline: "local"` to copy relative type imports (7dcb878)
+- add `typesOptions.inline: "all"` for package imports (8c85ff8)
+- add `--types-*` flags for the `.d.ts` output options (521a609)
+
+**Fixes**
+
+- use `typesOptions.typeNames` when checking inline-type collisions (d8c4f11)
+- validate `--types-format` like its `--types-*` siblings (3d28b26)
+- don't crash the Vite dev server when the initial watch build fails (f3e5f46)
+
 ## [0.37.2](https://github.com/carbon-design-system/sveld/releases/tag/v0.37.2) - 2026-09-16
 
 **Features**
