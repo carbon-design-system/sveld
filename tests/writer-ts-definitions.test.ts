@@ -25,6 +25,9 @@ import {
 import { mockComponentDocApi, mockParsedExport, mockParsedExports } from "./test-brands";
 
 const DEFAULT_SLOT_SNIPPET_PROP_REGEX = /default\?\s*:\s*\(\)\s*=>\s*void/;
+const EMPTY_INTERSECTION_REGEX = / & \{\s*\};/;
+const DEFAULT_SLOT_MEMBER_REGEX = /\n\s+children\?: \(this: void(?:, \.\.\.args: \[[^\]]*\])?\) => void;/g;
+const EMPTY_INTERSECTION_GLOBAL_REGEX = / & \{\s*\};/g;
 
 describe("writerTsDefinition", () => {
   test("writeTsDefinition", () => {
@@ -1825,6 +1828,42 @@ describe("typesOptions.transform", () => {
     } finally {
       rmSync(dir, { recursive: true, force: true });
       rmSync(outDirAbs, { recursive: true, force: true });
+    }
+  });
+
+  test("a transform can replace sveld's default-slot member and clean up the resulting empty intersection", async () => {
+    const component = mockComponentDocApi("Button", "Button.svelte", { slots: [{ default: true, name: null }] });
+    component[PARSED_COMPONENT_TYPE_SCRIPT_METADATA] = {
+      canonicalPropsType: "SharedProps",
+      canonicalPropNames: [],
+      localTypeDeclarations: [],
+      typeImportStatements: ['import type { SharedProps } from "./shared-props";'],
+    };
+    const components: ComponentDocs = new Map([["Button", component]]);
+
+    const stripDefaultSlotMember = (text: string) =>
+      text.replace(DEFAULT_SLOT_MEMBER_REGEX, "").replace(EMPTY_INTERSECTION_GLOBAL_REGEX, ";");
+
+    const tempDir = await mkdtemp(path.join(process.cwd(), ".tmp-sveld-ts-defs-children-transform-"));
+    const outDir = path.relative(process.cwd(), tempDir);
+
+    try {
+      await writeTsDefinitions(components, {
+        outDir,
+        inputDir: "src",
+        preamble: "",
+        exports: mockParsedExports({}),
+        transform: (text, context) => (context.kind === "component" ? stripDefaultSlotMember(text) : text),
+      });
+
+      const output = readFileSync(path.join(tempDir, "Button.svelte.d.ts"), "utf-8");
+
+      expect(output).not.toContain("children?:");
+      expect(output).not.toContain("(this: void)");
+      expect(output).not.toMatch(EMPTY_INTERSECTION_REGEX);
+      expect(output).toContain("type $Props = SharedProps;");
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true });
     }
   });
 });
