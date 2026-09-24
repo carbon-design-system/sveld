@@ -3,14 +3,17 @@ import type {
   ArrowFunctionExpression,
   BinaryExpression,
   CallExpression,
+  ConditionalExpression,
   FunctionDeclaration,
   FunctionExpression,
   Identifier,
   Literal,
+  LogicalExpression,
   MemberExpression,
   NewExpression,
   ObjectExpression,
   Property,
+  SequenceExpression,
   TemplateLiteral,
   UnaryExpression,
 } from "estree";
@@ -85,21 +88,14 @@ export function processInitializer(
     if ("start" in expr && "end" in expr && typeof expr.start === "number" && typeof expr.end === "number") {
       value = sourceAtPos(ctx, expr.start, expr.end)?.replace(NEWLINE_CR_REGEX, " ");
     }
-    type = value;
     isFunction = init.type === "ArrowFunctionExpression" || init.type === "FunctionExpression";
 
     if (init.type === "BinaryExpression") {
-      const binExpr = init as BinaryExpression;
-      if (
-        binExpr.left &&
-        typeof binExpr.left === "object" &&
-        "type" in binExpr.left &&
-        binExpr.left.type === "Literal" &&
-        "value" in binExpr.left &&
-        typeof binExpr.left.value === "string"
-      ) {
-        type = "string";
-      }
+      type = inferExpressionType(parser, ctx, init, depth);
+    } else if (init.type === "ObjectExpression" || init.type === "ArrayExpression") {
+      // The literal's own text doubles as its type (`{ dense: true }`, `[1, 2]`)
+      // only when every member is itself a literal; `{ x: a }` isn't a type.
+      type = isLiteralTypeText(init) ? value : undefined;
     }
 
     if (init.type === "ArrowFunctionExpression" || init.type === "FunctionExpression") {
@@ -116,18 +112,13 @@ export function processInitializer(
     ) {
       value = sourceAtPos(ctx, unaryExpr.start, unaryExpr.end);
     }
-    if (unaryExpr.argument) {
-      if (
-        typeof unaryExpr.argument === "object" &&
-        "type" in unaryExpr.argument &&
-        unaryExpr.argument.type === "UnaryExpression"
-      ) {
-        const nestedResult = processInitializer(parser, ctx, unaryExpr.argument);
-        type = nestedResult.type;
-      } else if (typeof unaryExpr.argument === "object" && "value" in unaryExpr.argument) {
-        type = typeof (unaryExpr.argument as Literal).value;
-      }
-    }
+    type = inferExpressionType(parser, ctx, unaryExpr, depth);
+  } else if (
+    init.type === "LogicalExpression" ||
+    init.type === "ConditionalExpression" ||
+    init.type === "SequenceExpression"
+  ) {
+    type = inferExpressionType(parser, ctx, init, depth);
   } else if (init.type === "NewExpression") {
     const newExpr = init as NewExpression;
     if (
@@ -312,6 +303,135 @@ export function processInitializer(
   }
 
   return { value, type, isFunction, defaultValue };
+}
+
+/** Operators whose result is always a number (or a bigint, when both operands are). */
+const NUMERIC_BINARY_OPERATORS = new Set(["-", "*", "/", "%", "**", "<<", ">>", ">>>", "&", "|", "^"]);
+const BOOLEAN_BINARY_OPERATORS = new Set(["==", "!=", "===", "!==", "<", "<=", ">", ">=", "in", "instanceof"]);
+
+/**
+ * Type of an operator expression (`a * 2`, `"#" + id`, `!open`, `a ?? 5`,
+ * `cond ? 1 : 2`) from its operators and the types of its operands. Returns
+ * `undefined` when that can't be told without a type checker (`a + b` of
+ * two untyped values), so the caller falls back to `any` rather than
+ * emitting the expression itself as a type.
+ */
+function inferExpressionType(
+  parser: ComponentParser,
+  ctx: ParserContext,
+  node: unknown,
+  depth: number,
+): string | undefined {
+  if (!node || typeof node !== "object" || !("type" in node)) return undefined;
+
+  switch (node.type) {
+    case "UnaryExpression": {
+      const unary = node as UnaryExpression;
+      if (unary.operator === "!" || unary.operator === "delete") return "boolean";
+      if (unary.operator === "typeof") return "string";
+      if (unary.operator === "void") return undefined;
+      if (unary.operator === "+") return "number";
+      return inferExpressionType(parser, ctx, unary.argument, depth) === "bigint" ? "bigint" : "number";
+    }
+    case "BinaryExpression": {
+      const binary = node as BinaryExpression;
+      if (BOOLEAN_BINARY_OPERATORS.has(binary.operator)) return "boolean";
+      const left = inferExpressionType(parser, ctx, binary.left, depth);
+      const right = inferExpressionType(parser, ctx, binary.right, depth);
+      if (left === "bigint" && right === "bigint") return "bigint";
+      if (NUMERIC_BINARY_OPERATORS.has(binary.operator)) return "number";
+      if (binary.operator !== "+") return undefined;
+      if (left === "string" || right === "string") return "string";
+      if (left === "number" && right === "number") return "number";
+      return undefined;
+    }
+    case "LogicalExpression": {
+      const logical = node as LogicalExpression;
+      return unionOfBranchTypes([
+        inferExpressionType(parser, ctx, logical.left, depth),
+        inferExpressionType(parser, ctx, logical.right, depth),
+      ]);
+    }
+    case "ConditionalExpression": {
+      const conditional = node as ConditionalExpression;
+      return unionOfBranchTypes([
+        inferExpressionType(parser, ctx, conditional.consequent, depth),
+        inferExpressionType(parser, ctx, conditional.alternate, depth),
+      ]);
+    }
+    case "SequenceExpression": {
+      const expressions = (node as SequenceExpression).expressions;
+      return inferExpressionType(parser, ctx, expressions[expressions.length - 1], depth);
+    }
+    case "Identifier": {
+      const name = (node as Identifier).name;
+      if (name === "NaN" || name === "Infinity") return "number";
+      if (name === "undefined") return undefined;
+      const variableType = parser.findVariableTypeAndDescription(name)?.type;
+      if (variableType) return variableType;
+      if (depth >= 5) return undefined;
+      return inferExpressionType(parser, ctx, resolveLocalVarInitializer(ctx, name), depth + 1);
+    }
+    default: {
+      if (depth >= 5) return undefined;
+      const result = processInitializer(parser, ctx, node, depth + 1);
+      return result.type ?? result.resolvedType;
+    }
+  }
+}
+
+/** `A | B` from the branches of `??`/`||`/`&&`/`?:`, or `undefined` if any branch is unknown. */
+function unionOfBranchTypes(types: Array<string | undefined>): string | undefined {
+  const members = new Set<string>();
+  for (const type of types) {
+    if (type === undefined) return undefined;
+    // A function type needs parens to be a union member.
+    members.add(type.includes("=>") ? `(${type})` : type);
+  }
+  return members.size === 1 ? types[0] : [...members].join(" | ");
+}
+
+/**
+ * Whether an object or array literal's source text is also a valid type:
+ * every member a string, number, boolean, bigint, or `null` literal (or a
+ * negated number), `undefined`, a template literal with no substitutions,
+ * or a nested literal of the same kind, under plain keys.
+ */
+function isLiteralTypeText(node: unknown): boolean {
+  if (!node || typeof node !== "object" || !("type" in node)) return false;
+
+  switch (node.type) {
+    case "Literal":
+      return !("regex" in node && node.regex);
+    case "TemplateLiteral":
+      return (node as TemplateLiteral).expressions.length === 0;
+    case "Identifier":
+      return (node as Identifier).name === "undefined";
+    case "UnaryExpression": {
+      const unary = node as UnaryExpression;
+      const argument = unary.argument as Literal | undefined;
+      return (
+        unary.operator === "-" &&
+        argument?.type === "Literal" &&
+        (typeof argument.value === "number" || typeof argument.value === "bigint")
+      );
+    }
+    case "ArrayExpression":
+      return (node as ArrayExpression).elements.every((element) => element !== null && isLiteralTypeText(element));
+    case "ObjectExpression":
+      return (node as ObjectExpression).properties.every(
+        (property) =>
+          property.type === "Property" &&
+          property.kind === "init" &&
+          !property.computed &&
+          !property.method &&
+          !property.shorthand &&
+          (property.key.type === "Identifier" || property.key.type === "Literal") &&
+          isLiteralTypeText(property.value),
+      );
+    default:
+      return false;
+  }
 }
 
 /**
