@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.37.6](https://github.com/carbon-design-system/sveld/releases/tag/v0.37.6) - 2026-09-24
+
+**Features**
+
+- report unresolved `setContext` keys as a diagnostic (eaedb9c)
+
+**Fixes**
+
+- keep events dispatched by an imported helper (f7e6e4f)
+- keep imported-key contexts in source order (cebad17)
+- indent wrapped type lines past the line they continue (f81c631)
+- name imported-key contexts in their diagnostics (a1b530c)
+- keep imported `setContext` keys in JSON and Markdown (689e9bd)
+- read text after a multi-line type as the tag's description (2998d21)
+
 ## [0.37.5](https://github.com/carbon-design-system/sveld/releases/tag/v0.37.5) - 2026-09-23
 
 **Features**
