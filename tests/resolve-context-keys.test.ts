@@ -133,6 +133,9 @@ describe("cross-file setContext key resolution", () => {
     expect(result.diagnostics.filter((d) => d.kind === "context-key-unresolved")).toMatchObject([
       { code: "sveld/context-key-unresolved", name: "MODAL_KEY", source: { start: { line: 7 } } },
     ]);
+    expect(result.diagnostics.find((d) => d.kind === "context-any-type")?.message).toBe(
+      'Context "MODAL_KEY" property "close" has no type annotation; defaulted to "any".',
+    );
   });
 
   test("missing export records a diagnostic and skips the context", async () => {
