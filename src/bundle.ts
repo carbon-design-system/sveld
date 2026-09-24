@@ -859,6 +859,7 @@ export async function generateBundle(
       );
       applyContextKeyResolutions(component, resolutions);
     }
+    syncCrossFileResults(components, allComponentsForTypes);
   }
 
   validateExtendsTargets(allComponentsForTypes, resolveComponentFilePath, options.typesTypeNames);
@@ -1037,6 +1038,21 @@ function applyContextKeyResolutions(component: ComponentDocApi, resolutions: Con
         source: candidate.source,
       },
     ];
+  }
+}
+
+/**
+ * The cross-file passes run on `allComponentsForTypes` and reassign
+ * `contexts` and `diagnostics` there. Exported components are separate
+ * shallow copies of the same parse, so JSON and Markdown would otherwise
+ * miss a context whose key was imported.
+ */
+function syncCrossFileResults(components: ComponentDocs, allComponentsForTypes: ComponentDocs): void {
+  for (const component of components.values()) {
+    const resolved = allComponentsForTypes.get(component.filePath);
+    if (!resolved || resolved === component) continue;
+    component.contexts = resolved.contexts;
+    component.diagnostics = resolved.diagnostics;
   }
 }
 
