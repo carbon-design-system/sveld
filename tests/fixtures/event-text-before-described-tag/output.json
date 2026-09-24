@@ -1,0 +1,149 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 39,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "items",
+      "kind": "let",
+      "type": "Item[]",
+      "typeSource": "jsdoc",
+      "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 23,
+          "column": 2
+        },
+        "end": {
+          "line": 23,
+          "column": 24
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "item",
+      "default": false,
+      "slot_props": "Record<string, never>",
+      "description": "Renders one item.",
+      "source": {
+        "start": {
+          "line": 34,
+          "column": 2
+        },
+        "end": {
+          "line": 37,
+          "column": 4
+        }
+      }
+    }
+  ],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "clear",
+      "detail": "null",
+      "description": "Fired when the selection is cleared.",
+      "source": {
+        "start": {
+          "line": 30,
+          "column": 5
+        },
+        "end": {
+          "line": 30,
+          "column": 22
+        }
+      }
+    },
+    {
+      "type": "dispatched",
+      "name": "close",
+      "detail": "null",
+      "description": "Fired when the menu closes.",
+      "source": {
+        "start": {
+          "line": 28,
+          "column": 5
+        },
+        "end": {
+          "line": 28,
+          "column": 22
+        }
+      }
+    },
+    {
+      "type": "dispatched",
+      "name": "open",
+      "detail": "null",
+      "description": "Fired when the menu opens.",
+      "source": {
+        "start": {
+          "line": 27,
+          "column": 5
+        },
+        "end": {
+          "line": 27,
+          "column": 21
+        }
+      }
+    },
+    {
+      "type": "dispatched",
+      "name": "select",
+      "detail": "null",
+      "description": "Fired when an item is selected.",
+      "source": {
+        "start": {
+          "line": 29,
+          "column": 5
+        },
+        "end": {
+          "line": 29,
+          "column": 23
+        }
+      }
+    }
+  ],
+  "typedefs": [
+    {
+      "type": "string",
+      "name": "Item",
+      "description": "An item id.",
+      "ts": "type Item = string;",
+      "source": {
+        "start": {
+          "line": 17,
+          "column": 5
+        },
+        "end": {
+          "line": 17,
+          "column": 39
+        }
+      }
+    }
+  ],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}

@@ -848,6 +848,18 @@ export function parseCustomTypes(
       );
     };
 
+    /**
+     * The text above `tags[tagIndex]`, for a tag with no description of its own. Only a tag that
+     * uses it claims it: otherwise it stays with the tag above (e.g. an `@event`'s trailing text),
+     * and a `@property` or `@type` never swallows the lines between an `@event` and itself.
+     */
+    const takePrecedingDescription = (tagIndex: number): string | undefined => {
+      const { tag, name, lines: tagSource } = tags[tagIndex];
+      const preceding = getPrecedingDescription(tagSource);
+      if (preceding) flagDescriptionAfterEvent(tag, name, tagSource, tags[tagIndex - 1]);
+      return preceding;
+    };
+
     const finalizeEvent = () => {
       if (currentEventName !== undefined) {
         // Prefer explicit `@type` over `@property`-built objects; `{object}` falls through.
@@ -1025,10 +1037,6 @@ export function parseCustomTypes(
       // Sections are split in line order, so neighbors in `tags` are neighbors in the block.
       const nextTag = tags[tagIndex + 1];
       const type = parser.aliasType(tagType);
-      // Only tags that can use it claim the text above them; a `@property` or `@type` must not
-      // swallow the lines between an `@event` and itself, or a previous tag's continuation lines.
-      const precedingDescription = PRECEDING_DESCRIPTION_TAGS.has(tag) ? getPrecedingDescription(tagSource) : undefined;
-      if (precedingDescription) flagDescriptionAfterEvent(tag, name, tagSource, tags[tagIndex - 1]);
 
       switch (tag) {
         case "extends":
@@ -1051,7 +1059,7 @@ export function parseCustomTypes(
         case "restProps": {
           const rawInlineDesc = name ? (description ? `${name} ${description}` : name) : description;
           const inlineRestPropsDesc = cleanDescription(rawInlineDesc);
-          let restPropsDesc = inlineRestPropsDesc || precedingDescription;
+          let restPropsDesc = inlineRestPropsDesc || takePrecedingDescription(tagIndex);
           if (!restPropsDesc && isFirstTag && !commentDescriptionUsed && commentDescription) {
             restPropsDesc = commentDescription;
             commentDescriptionUsed = true;
@@ -1073,7 +1081,7 @@ export function parseCustomTypes(
             commentDescriptionUsed = true;
           }
           if (!slotDesc && pendingTags.length === 0) {
-            slotDesc = precedingDescription;
+            slotDesc = takePrecedingDescription(tagIndex);
           }
           if (isFirstTag) isFirstTag = false;
           let slotType = type;
@@ -1128,13 +1136,15 @@ export function parseCustomTypes(
           break;
         }
         case "event": {
+          // Claim the text above before the previous event takes it as its trailing description.
+          const eventDescription =
+            cleanDescription(getInlineTagDescription(tagSource)) || takePrecedingDescription(tagIndex);
           finalizeEvent();
 
           currentEventName = name;
           currentEventType = type;
           currentEventTagLine = tagSource.length > 0 ? tagSource[0].number : undefined;
-          const inlineEventDesc = cleanDescription(getInlineTagDescription(tagSource));
-          currentEventDescription = inlineEventDesc || precedingDescription;
+          currentEventDescription = eventDescription;
           if (!currentEventDescription && isFirstTag && !commentDescriptionUsed && commentDescription) {
             currentEventDescription = commentDescription;
             commentDescriptionUsed = true;
@@ -1197,7 +1207,7 @@ export function parseCustomTypes(
           currentTypedefType = type;
           currentTypedefSource = sourceRangeFromCommentTag(ctx, tagSource);
           const inlineTypedefDesc = getTagDescription(tagSource, nextTag);
-          currentTypedefDescription = inlineTypedefDesc || precedingDescription;
+          currentTypedefDescription = inlineTypedefDesc || takePrecedingDescription(tagIndex);
           if (!currentTypedefDescription && isFirstTag && !commentDescriptionUsed && commentDescription) {
             currentTypedefDescription = commentDescription;
             commentDescriptionUsed = true;
@@ -1218,7 +1228,7 @@ export function parseCustomTypes(
           currentCallbackName = typeDeclarationName(name);
           currentCallbackSource = sourceRangeFromCommentTag(ctx, tagSource);
           const inlineCallbackDesc = getTagDescription(tagSource, nextTag);
-          currentCallbackDescription = inlineCallbackDesc || precedingDescription;
+          currentCallbackDescription = inlineCallbackDesc || takePrecedingDescription(tagIndex);
           if (!currentCallbackDescription && isFirstTag && !commentDescriptionUsed && commentDescription) {
             currentCallbackDescription = commentDescription;
             commentDescriptionUsed = true;
