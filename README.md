@@ -3690,6 +3690,8 @@ The key becomes the `{PascalCase}Context` type name. `sveld` can resolve:
 | `Symbol()` / `Symbol.for()` | `setContext(Symbol("tabs"), …)` | `TabsContext` |
 | Imported `export const` string | `import { KEY } from "./keys.js";`<br>`setContext(KEY, …)` | `SimpleModalContext` |
 
+Characters that can't appear in a TypeScript identifier are dropped and start a new PascalCase word, and a name starting with a digit gets a leading `_`: `"@scope/ctx"` becomes `ScopeCtxContext` and `"123"` becomes `_123Context`.
+
 `const` identifiers are followed up to 5 levels deep (`const A = "x"; const B = A;`). Only `const` bindings count. `let`, `var`, and props are skipped because they can change at runtime.
 
 Symbol keys take their name from the description: `Symbol("tabs")` and `Symbol.for("tabs")` both become `TabsContext`. For `const ModalKey = Symbol()` with no description, the binding name wins: `ModalKeyContext`.
@@ -3878,7 +3880,7 @@ There are several ways to type contexts:
 
 - Context keys must be statically resolvable: a string literal, a static template literal, a `const`-bound string (local or an imported `export const`), or a `Symbol()` / `Symbol.for()` call with a static description. Dynamic expressions (runtime identifiers, template interpolation, other function calls) are skipped with a `sveld/context-key-unresolved` diagnostic.
 - Variables passed to `setContext` should have JSDoc `@type` annotations for accurate types
-- The generated type name follows the pattern: `{PascalCase}Context`. Separators (hyphens, underscores, dots, colons, slashes, spaces) are stripped and each segment is capitalized:
+- The generated type name follows the pattern: `{PascalCase}Context`. Separators (underscores and any character that can't appear in an identifier, such as hyphens, dots, colons, slashes, `@`, and spaces) are stripped and each segment is capitalized. A name starting with a digit gets a leading `_`:
   | Context Key | Generated Type Name |
   | --- | --- |
   | `"simple-modal"` | `SimpleModalContext` |
@@ -3887,6 +3889,8 @@ There are several ways to type contexts:
   | `"Carbon:Modal"` | `CarbonModalContext` |
   | `"app/modal"` | `AppModalContext` |
   | `"My Context"` | `MyContextContext` |
+  | `"@scope/ctx"` | `ScopeCtxContext` |
+  | `"123"` | `_123Context` |
   | `"Tabs"` | `TabsContext` |
 - If no type annotation is found, the type defaults to `any` with a warning
 
