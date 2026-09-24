@@ -85,3 +85,15 @@ describe("writeMarkdown", () => {
     }
   });
 });
+
+describe("renderMarkdownDocument events", () => {
+  test("shows the @event detail of a forwarded event", () => {
+    const button = mockComponentDocApi("Button", "Button.svelte", {
+      events: [{ type: "forwarded", name: "click", element: "button", detail: "MouseEvent", description: "Clicked." }],
+    });
+
+    const rendered = renderMarkdownDocument(new Map([["Button", button]]), {});
+
+    expect(rendered).toContain("| click | forwarded | <code>MouseEvent</code> | Clicked. |");
+  });
+});

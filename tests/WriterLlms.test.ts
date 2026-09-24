@@ -206,6 +206,24 @@ describe("renderLlmsDocuments", () => {
     expect(llmsFullTxt).toContain("Fires on change.<br />@example on:change={handleChange}");
   });
 
+  test("events table shows the @event detail of a forwarded event", () => {
+    const example = mockComponentDocApi("Example", "Example.svelte", {
+      syntaxMode: "legacy",
+      events: [
+        mockEvent("click", {
+          type: "forwarded",
+          element: "button",
+          detail: "MouseEvent",
+          description: "Clicked.",
+        } as unknown as Partial<SerializedComponentEvent>),
+      ],
+    });
+
+    const { llmsFullTxt } = renderLlmsDocuments(new Map([["Example", example]]), { title: "my-library" });
+
+    expect(llmsFullTxt).toContain("| click | forwarded | <code>MouseEvent</code> | Clicked. |");
+  });
+
   test("omits empty sections entirely", () => {
     const { llmsFullTxt } = renderLlmsDocuments(new Map([["Select", select]]), { title: "my-library" });
 
