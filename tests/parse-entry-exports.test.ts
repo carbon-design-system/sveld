@@ -245,7 +245,8 @@ describe("parseEntryExports", () => {
         ['export { Theme } from "./theme";', 'export { VERSION } from "./other";', ""].join("\n"),
       );
 
-      const warn = jest.spyOn(console, "warn").mockImplementation(() => undefined);
+      // Warnings go through the quiet-aware logger, which writes to stderr.
+      const warn = jest.spyOn(console, "error").mockImplementation(() => undefined);
 
       const exports = await parseEntryExports(path.join(dir, "index.ts"));
 
