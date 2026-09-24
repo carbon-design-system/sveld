@@ -386,14 +386,19 @@ export type FunctionDeclarationLike = {
     argument?: { name?: string };
   }>;
   returnType?: { start?: number; end?: number; typeAnnotation?: ModernRunesTypeNode };
+  typeParameters?: {
+    start?: number;
+    end?: number;
+    params?: Array<{ constraint?: ModernRunesTypeNode; default?: ModernRunesTypeNode }>;
+  };
 };
 
 /**
- * Builds a `(params) => ReturnType` signature string from a `FunctionDeclaration`'s
- * own TS annotations (params, defaults, rest, return type), for `export function`
- * accessors in `lang="ts"` components. Untyped positions fall back to `any` rather
- * than being dropped. Returns `hasAnnotations: false` when nothing was actually
- * annotated, so the caller can prefer a JSDoc-derived signature instead.
+ * Builds a `<T>(params) => ReturnType` signature string from a `FunctionDeclaration`'s
+ * own TS annotations (type parameters, params, defaults, rest, return type), for
+ * `export function` accessors in `lang="ts"` components. Untyped positions fall back
+ * to `any` rather than being dropped. Returns `hasAnnotations: false` when nothing was
+ * actually annotated, so the caller can prefer a JSDoc-derived signature instead.
  */
 export function buildFunctionDeclarationSignature(
   ctx: ParserContext,
@@ -426,7 +431,18 @@ export function buildFunctionDeclarationSignature(
   if (returnTypeText) hasAnnotations = true;
   trackAdditionalTypeDependencyNode(ctx, funcDecl.returnType?.typeAnnotation);
 
-  return { signature: `(${paramTexts.join(", ")}) => ${returnTypeText ?? "any"}`, hasAnnotations };
+  // `<V extends Item = Item>`, verbatim, so the parameter and return types that name `V` still resolve.
+  const typeParametersText = getTypeNodeText(ctx, funcDecl.typeParameters) ?? "";
+  if (typeParametersText) hasAnnotations = true;
+  for (const typeParameter of funcDecl.typeParameters?.params ?? []) {
+    trackAdditionalTypeDependencyNode(ctx, typeParameter.constraint);
+    trackAdditionalTypeDependencyNode(ctx, typeParameter.default);
+  }
+
+  return {
+    signature: `${typeParametersText}(${paramTexts.join(", ")}) => ${returnTypeText ?? "any"}`,
+    hasAnnotations,
+  };
 }
 
 export function buildTypeScriptMetadata(ctx: ParserContext): ParsedComponentTypeScriptMetadata | undefined {
