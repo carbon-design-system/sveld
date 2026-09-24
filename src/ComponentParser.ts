@@ -56,6 +56,7 @@ import {
   createScopeWalkState,
   enterNestedScopeDeclarationNode,
   initComponentScope,
+  isCalleeBoundInNestedScope,
   isScopeOwner,
   leaveNestedScopeDeclarationNode,
   markReactivePropsFromMutationTarget,
@@ -1578,6 +1579,8 @@ export default class ComponentParser {
     const callees: { name: string; arguments: Array<Expression | unknown>; node: CallExpression }[] = [];
     /** Every call with arguments, any callee: checked for the dispatcher escaping once its name is known. */
     const callsWithArguments: CallExpression[] = [];
+    /** Those whose callee a function parameter or nested declaration binds, so it isn't an import. */
+    const locallyBoundCalls = new Set<CallExpression>();
 
     initComponentScope(this, this.ctx);
     this.ctx.activeScopes.push(this.ctx.componentScope);
@@ -1829,7 +1832,10 @@ export default class ComponentParser {
             parseSetContextCall(this.ctx, this, node, parent ?? undefined);
           }
 
-          if (callExpr.arguments.length > 0) callsWithArguments.push(callExpr);
+          if (callExpr.arguments.length > 0) {
+            callsWithArguments.push(callExpr);
+            if (isCalleeBoundInNestedScope(this.ctx, callExpr.callee)) locallyBoundCalls.add(callExpr);
+          }
 
           if (calleeName) {
             callees.push({
@@ -2434,10 +2440,12 @@ export default class ComponentParser {
       }
       const ignored = isSveldIgnored(this.ctx, "dispatch-escapes", dispatcherName);
       for (const { call, argumentIndex, property } of escapes) {
-        const importBinding = importedCalleeBinding(this.ctx, call.callee, [
-          this.ctx.parsed?.instance as unknown as Node | undefined,
-          this.ctx.parsed?.module as unknown as Node | undefined,
-        ]);
+        const importBinding = locallyBoundCalls.has(call)
+          ? undefined
+          : importedCalleeBinding(this.ctx, call.callee, [
+              this.ctx.parsed?.instance as unknown as Node | undefined,
+              this.ctx.parsed?.module as unknown as Node | undefined,
+            ]);
         if (!importBinding) {
           unfollowableEscapes.push(call);
           continue;

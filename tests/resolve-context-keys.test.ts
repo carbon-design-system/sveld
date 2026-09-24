@@ -328,6 +328,31 @@ describe("cross-file setContext key resolution", () => {
     expect(component?.diagnostics ?? []).toEqual([]);
   });
 
+  test("a parameter that shadows an imported key isn't read as the import", async () => {
+    writeFileSync(path.join(dir, "keys.js"), `export const KEY = "imported-key";\n`);
+    writeFileSync(
+      path.join(dir, "Registry.svelte"),
+      `<script>
+  import { setContext } from "svelte";
+  import { KEY } from "./keys.js";
+
+  function register(KEY) {
+    setContext(KEY, { a: 1 });
+  }
+  register("runtime");
+  setContext(KEY, { b: 1 });
+</script>
+`,
+    );
+    writeFileSync(path.join(dir, "index.js"), `export { default as Registry } from "./Registry.svelte";\n`);
+
+    const result = await generateBundle(path.join(dir, "index.js"), true);
+    const component = byModuleName(result.allComponentsForTypes, "Registry");
+
+    expect(component?.contexts).toMatchObject([{ key: "imported-key", properties: [{ name: "b" }] }]);
+    expect(result.diagnostics).toMatchObject([{ kind: "context-key-unresolved", name: "KEY" }]);
+  });
+
   test("local const resolves without an import", async () => {
     writeFileSync(
       path.join(dir, "Modal.svelte"),

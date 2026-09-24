@@ -161,6 +161,28 @@ export function createSelectHandler(options) {
     expect(result.diagnostics).toEqual([]);
   });
 
+  test("doesn't follow a parameter that shadows an imported helper", async () => {
+    writeFileSync(
+      path.join(dir, "h.js"),
+      `export function helper(d) { d("from-import"); }\nexport function open() {}\n`,
+    );
+
+    const result = await bundleMenu(`  import { createEventDispatcher } from "svelte";
+  import { helper } from "./h.js";
+  import * as h from "./h.js";
+
+  const dispatch = createEventDispatcher();
+  function wire(helper, h) {
+    helper(dispatch);
+    h.open(dispatch);
+  }
+  wire((d) => d("real"), { open: (d) => d("other") });`);
+
+    // Neither `helper` nor `h.open` is the import, so both escapes stay unfollowed.
+    expect(byModuleName(result.components, "Menu")?.events).toEqual([]);
+    expect(result.diagnostics).toMatchObject([{ kind: "dispatch-escapes", name: "dispatch" }]);
+  });
+
   test("names a default export that isn't a function in its diagnostic", async () => {
     writeFileSync(path.join(dir, "config.js"), "export default { retries: 3 };\n");
 
