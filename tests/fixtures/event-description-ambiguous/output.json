@@ -5,7 +5,7 @@
       "column": 0
     },
     "end": {
-      "line": 29,
+      "line": 38,
       "column": 0
     }
   },
@@ -17,16 +17,32 @@
   "events": [
     {
       "type": "dispatched",
+      "name": "blur",
+      "detail": "null",
+      "description": "Fired when the menu loses focus.",
+      "source": {
+        "start": {
+          "line": 33,
+          "column": 4
+        },
+        "end": {
+          "line": 33,
+          "column": 26
+        }
+      }
+    },
+    {
+      "type": "dispatched",
       "name": "clear",
       "detail": "null",
       "description": "Fired when the user selects an item.",
       "source": {
         "start": {
-          "line": 22,
+          "line": 29,
           "column": 4
         },
         "end": {
-          "line": 22,
+          "line": 29,
           "column": 27
         }
       }
@@ -37,11 +53,27 @@
       "detail": "null",
       "source": {
         "start": {
-          "line": 24,
+          "line": 31,
           "column": 4
         },
         "end": {
-          "line": 24,
+          "line": 31,
+          "column": 27
+        }
+      }
+    },
+    {
+      "type": "dispatched",
+      "name": "focus",
+      "detail": "null",
+      "description": "Fired when the menu gains focus.",
+      "source": {
+        "start": {
+          "line": 32,
+          "column": 4
+        },
+        "end": {
+          "line": 32,
           "column": 27
         }
       }
@@ -53,11 +85,11 @@
       "description": "Fired when the menu opens.",
       "source": {
         "start": {
-          "line": 23,
+          "line": 30,
           "column": 4
         },
         "end": {
-          "line": 23,
+          "line": 30,
           "column": 36
         }
       }
@@ -68,11 +100,11 @@
       "detail": "{ value: string }",
       "source": {
         "start": {
-          "line": 21,
+          "line": 28,
           "column": 4
         },
         "end": {
-          "line": 21,
+          "line": 28,
           "column": 38
         }
       }

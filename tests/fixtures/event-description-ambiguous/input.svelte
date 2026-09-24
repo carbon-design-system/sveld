@@ -11,6 +11,13 @@
    * @event {null} close
    */
 
+  /**
+   * @event {null} focus
+   *   Fired when the menu gains focus.
+   * Fired when the menu loses focus.
+   * @event {null} blur
+   */
+
   import { createEventDispatcher } from "svelte";
 
   const dispatch = createEventDispatcher();
@@ -22,6 +29,8 @@
     dispatch("clear", null);
     dispatch("open", { value: "a" });
     dispatch("close", null);
+    dispatch("focus", null);
+    dispatch("blur", null);
   }}
 >
   Menu
