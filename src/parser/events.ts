@@ -37,15 +37,31 @@ function inferLiteralMemberType(parser: ComponentParser, node: unknown): string 
   return "any";
 }
 
+/**
+ * `{}` types as `Record<string, never>` (never `null`, and not the banned bare `{}`). A spread or
+ * computed key adds members sveld can't name, so it becomes a `[key: string]: any` index
+ * signature alongside the known members, or `Record<string, any>` when there are none.
+ */
 function buildObjectLiteralDetailType(parser: ComponentParser, node: ObjectExpression): string {
+  if (node.properties.length === 0) return "Record<string, never>";
+
   const properties: Array<{ name: string; type: string }> = [];
+  let hasUnknownMembers = false;
   for (const property of node.properties) {
-    if (property.type !== "Property" || property.computed) continue;
-    const name = parser.getPropertyName(property.key as Property["key"]);
-    if (!name) continue;
+    const name =
+      property.type === "Property" && !property.computed
+        ? parser.getPropertyName(property.key as Property["key"])
+        : undefined;
+    if (property.type !== "Property" || !name) {
+      hasUnknownMembers = true;
+      continue;
+    }
     properties.push({ name, type: inferLiteralMemberType(parser, property.value) });
   }
-  return buildEventDetailFromProperties(properties);
+
+  if (!hasUnknownMembers) return buildEventDetailFromProperties(properties);
+  if (properties.length === 0) return "Record<string, any>";
+  return buildEventDetailFromProperties([...properties, { name: "[key: string]", type: "any" }]);
 }
 
 function buildArrayLiteralDetailType(parser: ComponentParser, node: ArrayExpression): string {

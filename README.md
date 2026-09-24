@@ -3124,6 +3124,7 @@ Without an `@event` tag or a typed dispatcher, `sveld` infers a dispatched event
 
 - A scalar literal argument narrows to its literal type: `dispatch("count", 5)` types the detail as `5`, not `number`. Use `@event` or a typed dispatcher (below) to widen it.
 - An object or array literal argument infers a structural type per field/element: `dispatch("save", { id })` types the detail as `{ id: string }` (resolving the `id` variable's own type), and `dispatch("items", [1, 2])` types it as `number[]`. Fields or elements sveld can't resolve fall back to `any` individually, not for the whole detail.
+- An empty object literal (`dispatch("reset", {})`) types the detail as `Record<string, never>`. A spread or computed key (`{ ...state }`, `{ [key]: 1 }`) adds fields sveld can't name, so the detail becomes `Record<string, any>`, or keeps the named fields next to a `[key: string]: any` index signature (`{ id: number; [key: string]: any }`).
 
 #### Typed dispatchers
 
