@@ -1,6 +1,8 @@
 import type {
   AssignmentExpression,
   CallExpression,
+  ExportNamedDeclaration,
+  ExportSpecifier,
   Expression,
   FunctionDeclaration,
   Identifier,
@@ -89,6 +91,20 @@ export type DeprecatedValue = string | true;
  * `var` becomes `let` for Svelte-oriented output; `using` / `await using`
  * map to `const` (single binding, not a valid Svelte prop keyword).
  */
+/** Name of an export/import specifier's `local`/`exported`/`imported` (an identifier or a string literal). */
+function moduleExportName(node: Identifier | Literal | undefined): string | undefined {
+  if (node?.type === "Identifier") return node.name;
+  return typeof node?.value === "string" ? node.value : undefined;
+}
+
+/** {@link ComponentParser.resolveExportSpecifier}: `declaration`/`declarator` are unset when no local variable matched. */
+interface ResolvedExportSpecifier {
+  localName: string;
+  exportedName: string;
+  declaration?: VariableDeclaration;
+  declarator?: VariableDeclarator;
+}
+
 function variableDeclarationKindToComponentPropKind(kind: VariableDeclaration["kind"]): "let" | "const" {
   if (kind === "var") return "let";
   if (kind === "using" || kind === "await using") return "const";
@@ -904,6 +920,44 @@ export default class ComponentParser {
   }
 
   /**
+   * Resolves one `export { local as exported }` specifier to the variable
+   * declarator it names. Each specifier resolves on its own, so
+   * `export { a, b }` exports both, and `const a = 1, b = ""; export { b }`
+   * exports `b`'s declarator rather than the first one in the declaration.
+   */
+  private resolveExportSpecifier(specifier: ExportSpecifier): ResolvedExportSpecifier | undefined {
+    const localName = moduleExportName(specifier.local);
+    const exportedName = moduleExportName(specifier.exported);
+    if (!localName || !exportedName) return undefined;
+
+    // Walk is in order; the local binding must appear before this export.
+    for (const declaration of this.ctx.vars) {
+      const declarator = declaration.declarations.find(
+        (decl) => decl.id.type === "Identifier" && decl.id.name === localName,
+      );
+      if (declarator) return { localName, exportedName, declaration, declarator };
+    }
+    return { localName, exportedName };
+  }
+
+  private recordUnresolvedExportSpecifier(node: ExportNamedDeclaration, localName: string, exportedName: string) {
+    const source = node.source?.value;
+    const reason =
+      typeof source === "string"
+        ? `it re-exports from "${source}"`
+        : this.ctx.valueImportBindingsByLocalName.has(localName)
+          ? "it re-exports an imported binding"
+          : "no matching local declaration was found";
+    recordDiagnostic(
+      this.ctx,
+      "export-unresolved",
+      exportedName,
+      `export "${exportedName}" was skipped because ${reason}; sveld only resolves exports of a local declaration.`,
+      sourceRangeFromNode(this.ctx, node),
+    );
+  }
+
+  /**
    * @example
    * ```ts
    * aliasType("*"); // "any"
@@ -1082,6 +1136,149 @@ export default class ComponentParser {
      * entirely (module scripts are rare) - not worth the added complexity here.
      */
     if (this.ctx.parsed?.module) {
+      const addModuleDeclarationExports = (
+        node: ExportNamedDeclaration,
+        declaration: NonNullable<ExportNamedDeclaration["declaration"]>,
+        specifier?: ResolvedExportSpecifier,
+      ) => {
+        type ModuleExportDeclarator = {
+          prop_name: string;
+          kind: "let" | "const" | "function";
+          isFunctionDeclaration: boolean;
+          value: string | undefined;
+          typeSeed: string | undefined;
+          explicitType: string | undefined;
+          initializerIsFunction: boolean;
+          defaultValue: ComponentPropDefaultValue | undefined;
+          inferredTypeForSource: string | undefined;
+          resolvedJSDoc:
+            | Pick<
+                ProcessedInitializer,
+                "resolvedType" | "resolvedDescription" | "resolvedParams" | "resolvedReturnType" | "pendingCallDefault"
+              >
+            | undefined;
+        };
+        const declarators: ModuleExportDeclarator[] = [];
+
+        if (declaration.type === "FunctionDeclaration") {
+          const funcDecl = declaration as { id?: { name?: string } } & FunctionDeclarationLike;
+          if (!funcDecl.id?.name) return;
+          const accessorSignature =
+            this.ctx.scriptLanguage === "ts" ? buildFunctionDeclarationSignature(this.ctx, funcDecl) : undefined;
+          declarators.push({
+            prop_name: funcDecl.id.name,
+            kind: "function",
+            isFunctionDeclaration: true,
+            value: undefined,
+            typeSeed: accessorSignature?.hasAnnotations ? undefined : "() => any",
+            explicitType: accessorSignature?.hasAnnotations ? accessorSignature.signature : undefined,
+            initializerIsFunction: true,
+            defaultValue: undefined,
+            inferredTypeForSource: undefined,
+            resolvedJSDoc: undefined,
+          });
+        } else if (declaration.type === "VariableDeclaration") {
+          const varDecl = declaration as VariableDeclaration;
+          const kind = variableDeclarationKindToComponentPropKind(varDecl.kind);
+          const declaratorsToProcess = specifier?.declarator ? [specifier.declarator] : varDecl.declarations;
+
+          for (const declarator of declaratorsToProcess) {
+            if (!declarator || typeof declarator !== "object" || !("id" in declarator)) {
+              continue;
+            }
+
+            const { id, init } = declarator as VariableDeclarator;
+
+            if (!id || typeof id !== "object" || !("name" in id)) {
+              continue;
+            }
+
+            const localPropName = (id as Identifier).name;
+            const declaratorPropName = specifier?.exportedName ?? localPropName;
+            const initResult = init == null ? { isFunction: false } : processInitializer(this, this.ctx, init);
+            const { value, type: typeSeed, isFunction: initializerIsFunction, defaultValue } = initResult;
+            const resolvedJSDoc = initResult;
+            if (resolvedJSDoc.pendingCallDefault) {
+              this.ctx.pendingCallDefaultCandidates.push({
+                propName: localPropName,
+                location: "moduleExports",
+                ...resolvedJSDoc.pendingCallDefault,
+              });
+            }
+
+            declarators.push({
+              prop_name: declaratorPropName,
+              kind,
+              isFunctionDeclaration: false,
+              value,
+              typeSeed,
+              explicitType: this.getExplicitPropType(localPropName),
+              initializerIsFunction,
+              defaultValue,
+              inferredTypeForSource: typeSeed,
+              resolvedJSDoc,
+            });
+          }
+
+          if (declarators.length === 0) return;
+        } else {
+          return;
+        }
+
+        const jsdocInfo = processNodeJSDoc(this.ctx, this, node);
+
+        for (const {
+          prop_name,
+          kind,
+          isFunctionDeclaration,
+          value,
+          typeSeed,
+          explicitType,
+          initializerIsFunction,
+          defaultValue,
+          inferredTypeForSource,
+          resolvedJSDoc,
+        } of declarators) {
+          const { type, typeSource, description, params, returnType, isFunction } = resolvePropTypeAndDocs({
+            explicitType,
+            typeSeed,
+            inferredTypeForSource,
+            jsdocType: jsdocInfo?.type,
+            jsdocDescription: jsdocInfo?.description,
+            jsdocParams: jsdocInfo?.params,
+            jsdocReturnType: jsdocInfo?.returnType,
+            resolvedType: resolvedJSDoc?.resolvedType,
+            resolvedDescription: resolvedJSDoc?.resolvedDescription,
+            resolvedParams: resolvedJSDoc?.resolvedParams,
+            resolvedReturnType: resolvedJSDoc?.resolvedReturnType,
+            initializerIsFunction,
+            isFunctionDeclaration,
+            typedefs: this.ctx.typedefs,
+          });
+
+          this.addModuleExport(prop_name, {
+            name: prop_name,
+            kind,
+            description,
+            deprecated: jsdocInfo?.deprecated,
+            tags: jsdocInfo?.tags,
+            ...(jsdocInfo?.internal ? { internal: true as const } : {}),
+            type,
+            typeSource,
+            value,
+            defaultValue,
+            params,
+            returnType,
+            isFunction,
+            isFunctionDeclaration,
+            isRequired: false,
+            constant: kind === "const",
+            reactive: false,
+            source: sourceRangeFromNode(this.ctx, node),
+          });
+        }
+      };
+
       walkNodes(
         this.ctx.parsed?.module as unknown as WalkableNode,
         ((node: Node) => {
@@ -1103,216 +1300,18 @@ export default class ComponentParser {
           }
 
           if (node.type === "ExportNamedDeclaration") {
-            if (node.declaration == null && node.specifiers.length === 0) {
+            if (node.declaration != null) {
+              addModuleDeclarationExports(node, node.declaration);
               return;
             }
-
-            let moduleExportedName: string | undefined;
-            let isResolvedModuleSpecifierExport = false;
-            if (node.declaration == null && node.specifiers[0]?.type === "ExportSpecifier") {
-              const specifier = node.specifiers[0];
-              const localName =
-                specifier.local && typeof specifier.local === "object" && "name" in specifier.local
-                  ? (specifier.local as Identifier).name
-                  : undefined;
-              const exportedName =
-                specifier.exported && typeof specifier.exported === "object" && "name" in specifier.exported
-                  ? (specifier.exported as Identifier).name
-                  : undefined;
-              if (!localName || !exportedName) return;
-
-              let declaration: VariableDeclaration | undefined;
-              for (const varDecl of Array.from(this.ctx.vars)) {
-                if (
-                  varDecl.declarations.some(
-                    (decl) =>
-                      decl.id &&
-                      typeof decl.id === "object" &&
-                      "type" in decl.id &&
-                      decl.id.type === "Identifier" &&
-                      (decl.id as Identifier).name === localName,
-                  )
-                ) {
-                  declaration = varDecl;
-                  break;
-                }
+            for (const specifier of node.specifiers) {
+              const resolved = this.resolveExportSpecifier(specifier);
+              if (!resolved) continue;
+              if (resolved.declaration) {
+                addModuleDeclarationExports(node, resolved.declaration, resolved);
+              } else {
+                this.recordUnresolvedExportSpecifier(node, resolved.localName, resolved.exportedName);
               }
-
-              if (!declaration) {
-                const source =
-                  "source" in node && node.source && typeof node.source === "object" && "value" in node.source
-                    ? node.source.value
-                    : undefined;
-                const reason =
-                  typeof source === "string"
-                    ? `it re-exports from "${source}"`
-                    : this.ctx.valueImportBindingsByLocalName.has(localName)
-                      ? "it re-exports an imported binding"
-                      : "no matching local declaration was found";
-                recordDiagnostic(
-                  this.ctx,
-                  "export-unresolved",
-                  exportedName,
-                  `export "${exportedName}" was skipped because ${reason}; sveld only resolves exports of a local declaration.`,
-                  sourceRangeFromNode(this.ctx, node),
-                );
-                return;
-              }
-
-              node.declaration = declaration;
-              moduleExportedName = exportedName;
-              isResolvedModuleSpecifierExport = true;
-            }
-
-            if (node.declaration == null) {
-              return;
-            }
-
-            if (!node.declaration || typeof node.declaration !== "object" || !("type" in node.declaration)) {
-              return;
-            }
-
-            type ModuleExportDeclarator = {
-              prop_name: string;
-              kind: "let" | "const" | "function";
-              isFunctionDeclaration: boolean;
-              value: string | undefined;
-              typeSeed: string | undefined;
-              explicitType: string | undefined;
-              initializerIsFunction: boolean;
-              defaultValue: ComponentPropDefaultValue | undefined;
-              inferredTypeForSource: string | undefined;
-              resolvedJSDoc:
-                | Pick<
-                    ProcessedInitializer,
-                    | "resolvedType"
-                    | "resolvedDescription"
-                    | "resolvedParams"
-                    | "resolvedReturnType"
-                    | "pendingCallDefault"
-                  >
-                | undefined;
-            };
-            const declarators: ModuleExportDeclarator[] = [];
-
-            if (node.declaration.type === "FunctionDeclaration") {
-              const funcDecl = node.declaration as { id?: { name?: string } } & FunctionDeclarationLike;
-              if (!funcDecl.id?.name) return;
-              const accessorSignature =
-                this.ctx.scriptLanguage === "ts" ? buildFunctionDeclarationSignature(this.ctx, funcDecl) : undefined;
-              declarators.push({
-                prop_name: funcDecl.id.name,
-                kind: "function",
-                isFunctionDeclaration: true,
-                value: undefined,
-                typeSeed: accessorSignature?.hasAnnotations ? undefined : "() => any",
-                explicitType: accessorSignature?.hasAnnotations ? accessorSignature.signature : undefined,
-                initializerIsFunction: true,
-                defaultValue: undefined,
-                inferredTypeForSource: undefined,
-                resolvedJSDoc: undefined,
-              });
-            } else if (node.declaration.type === "VariableDeclaration") {
-              const varDecl = node.declaration as VariableDeclaration;
-              const kind = variableDeclarationKindToComponentPropKind(varDecl.kind);
-              const declaratorsToProcess = isResolvedModuleSpecifierExport
-                ? varDecl.declarations.slice(0, 1)
-                : varDecl.declarations;
-
-              for (const declarator of declaratorsToProcess) {
-                if (!declarator || typeof declarator !== "object" || !("id" in declarator)) {
-                  continue;
-                }
-
-                const { id, init } = declarator as VariableDeclarator;
-
-                if (!id || typeof id !== "object" || !("name" in id)) {
-                  continue;
-                }
-
-                const localPropName = (id as Identifier).name;
-                const declaratorPropName = moduleExportedName ?? localPropName;
-                const initResult = init == null ? { isFunction: false } : processInitializer(this, this.ctx, init);
-                const { value, type: typeSeed, isFunction: initializerIsFunction, defaultValue } = initResult;
-                const resolvedJSDoc = initResult;
-                if (resolvedJSDoc.pendingCallDefault) {
-                  this.ctx.pendingCallDefaultCandidates.push({
-                    propName: localPropName,
-                    location: "moduleExports",
-                    ...resolvedJSDoc.pendingCallDefault,
-                  });
-                }
-
-                declarators.push({
-                  prop_name: declaratorPropName,
-                  kind,
-                  isFunctionDeclaration: false,
-                  value,
-                  typeSeed,
-                  explicitType: this.getExplicitPropType(localPropName),
-                  initializerIsFunction,
-                  defaultValue,
-                  inferredTypeForSource: typeSeed,
-                  resolvedJSDoc,
-                });
-              }
-
-              if (declarators.length === 0) return;
-            } else {
-              return;
-            }
-
-            const jsdocInfo = processNodeJSDoc(this.ctx, this, node);
-
-            for (const {
-              prop_name,
-              kind,
-              isFunctionDeclaration,
-              value,
-              typeSeed,
-              explicitType,
-              initializerIsFunction,
-              defaultValue,
-              inferredTypeForSource,
-              resolvedJSDoc,
-            } of declarators) {
-              const { type, typeSource, description, params, returnType, isFunction } = resolvePropTypeAndDocs({
-                explicitType,
-                typeSeed,
-                inferredTypeForSource,
-                jsdocType: jsdocInfo?.type,
-                jsdocDescription: jsdocInfo?.description,
-                jsdocParams: jsdocInfo?.params,
-                jsdocReturnType: jsdocInfo?.returnType,
-                resolvedType: resolvedJSDoc?.resolvedType,
-                resolvedDescription: resolvedJSDoc?.resolvedDescription,
-                resolvedParams: resolvedJSDoc?.resolvedParams,
-                resolvedReturnType: resolvedJSDoc?.resolvedReturnType,
-                initializerIsFunction,
-                isFunctionDeclaration,
-                typedefs: this.ctx.typedefs,
-              });
-
-              this.addModuleExport(prop_name, {
-                name: prop_name,
-                kind,
-                description,
-                deprecated: jsdocInfo?.deprecated,
-                tags: jsdocInfo?.tags,
-                ...(jsdocInfo?.internal ? { internal: true as const } : {}),
-                type,
-                typeSource,
-                value,
-                defaultValue,
-                params,
-                returnType,
-                isFunction,
-                isFunctionDeclaration,
-                isRequired: false,
-                constant: kind === "const",
-                reactive: false,
-                source: sourceRangeFromNode(this.ctx, node),
-              });
             }
           }
         }) as unknown as WalkEnter,
@@ -1331,6 +1330,162 @@ export default class ComponentParser {
     initComponentScope(this, this.ctx);
     this.ctx.activeScopes.push(this.ctx.componentScope);
     const scopeWalkState = createScopeWalkState(this.ctx);
+
+    const addInstanceDeclarationExports = (
+      node: ExportNamedDeclaration,
+      declaration: NonNullable<ExportNamedDeclaration["declaration"]>,
+      specifier?: ResolvedExportSpecifier,
+    ) => {
+      type InstancePropDeclarator = {
+        prop_name: string;
+        kind: "let" | "const" | "function";
+        isFunctionDeclaration: boolean;
+        value: string | undefined;
+        typeSeed: string | undefined;
+        explicitType: string | undefined;
+        initializerIsFunction: boolean;
+        isRequired: boolean;
+        localName: string | undefined;
+        defaultValue: ComponentPropDefaultValue | undefined;
+        inferredTypeForSource: string | undefined;
+        resolvedJSDoc:
+          | Pick<
+              ProcessedInitializer,
+              "resolvedType" | "resolvedDescription" | "resolvedParams" | "resolvedReturnType" | "pendingCallDefault"
+            >
+          | undefined;
+      };
+      const declarators: InstancePropDeclarator[] = [];
+
+      if (declaration.type === "FunctionDeclaration") {
+        const funcDecl = declaration as { id?: { name?: string } } & FunctionDeclarationLike;
+        if (!funcDecl.id?.name) return;
+        const prop_name = funcDecl.id.name;
+        const accessorSignature =
+          this.ctx.scriptLanguage === "ts" ? buildFunctionDeclarationSignature(this.ctx, funcDecl) : undefined;
+        declarators.push({
+          prop_name,
+          kind: "function",
+          isFunctionDeclaration: true,
+          value: undefined,
+          typeSeed: accessorSignature?.hasAnnotations ? undefined : "() => any",
+          explicitType: accessorSignature?.hasAnnotations ? accessorSignature.signature : undefined,
+          initializerIsFunction: true,
+          isRequired: false,
+          localName: funcDecl.id.name,
+          defaultValue: undefined,
+          inferredTypeForSource: undefined,
+          resolvedJSDoc: undefined,
+        });
+      } else if (declaration.type === "VariableDeclaration") {
+        const varDecl = declaration as VariableDeclaration;
+        const kind = variableDeclarationKindToComponentPropKind(varDecl.kind);
+        const declaratorsToProcess = specifier?.declarator ? [specifier.declarator] : varDecl.declarations;
+
+        for (const declarator of declaratorsToProcess) {
+          if (!declarator || typeof declarator !== "object" || !("id" in declarator)) {
+            continue;
+          }
+
+          const { id, init } = declarator as VariableDeclarator;
+          if (!id || typeof id !== "object" || !("name" in id)) {
+            continue;
+          }
+
+          const localPropName = (id as Identifier).name;
+          const declaratorPropName = specifier?.exportedName ?? localPropName;
+          const isRequired = kind === "let" && init == null;
+          const initResult = init == null ? { isFunction: false } : processInitializer(this, this.ctx, init);
+          const { value, type: typeSeed, isFunction: initializerIsFunction, defaultValue } = initResult;
+          const resolvedJSDoc = initResult;
+          if (resolvedJSDoc.pendingCallDefault) {
+            this.ctx.pendingCallDefaultCandidates.push({
+              propName: declaratorPropName,
+              location: "props",
+              ...resolvedJSDoc.pendingCallDefault,
+            });
+          }
+
+          declarators.push({
+            prop_name: declaratorPropName,
+            kind,
+            isFunctionDeclaration: false,
+            value,
+            typeSeed,
+            explicitType: this.getExplicitPropType(localPropName),
+            initializerIsFunction,
+            isRequired,
+            localName: localPropName,
+            defaultValue,
+            inferredTypeForSource: typeSeed,
+            resolvedJSDoc,
+          });
+        }
+
+        if (declarators.length === 0) return;
+      } else {
+        return;
+      }
+
+      const jsdocInfo = processNodeJSDoc(this.ctx, this, node);
+
+      for (const {
+        prop_name,
+        kind,
+        isFunctionDeclaration,
+        value,
+        typeSeed,
+        explicitType,
+        initializerIsFunction,
+        isRequired,
+        localName,
+        defaultValue,
+        inferredTypeForSource,
+        resolvedJSDoc,
+      } of declarators) {
+        const { type, typeSource, description, params, returnType, isFunction } = resolvePropTypeAndDocs({
+          explicitType,
+          typeSeed,
+          inferredTypeForSource,
+          jsdocType: jsdocInfo?.type,
+          jsdocDescription: jsdocInfo?.description,
+          jsdocParams: jsdocInfo?.params,
+          jsdocReturnType: jsdocInfo?.returnType,
+          resolvedType: resolvedJSDoc?.resolvedType,
+          resolvedDescription: resolvedJSDoc?.resolvedDescription,
+          resolvedParams: resolvedJSDoc?.resolvedParams,
+          resolvedReturnType: resolvedJSDoc?.resolvedReturnType,
+          initializerIsFunction,
+          isFunctionDeclaration,
+          typedefs: this.ctx.typedefs,
+        });
+
+        recordSveldIgnore(this.ctx, "prop-unknown-type", prop_name, jsdocInfo?.sveldIgnore);
+
+        addProp(this, this.ctx, prop_name, {
+          name: prop_name,
+          ...(localName !== undefined && localName !== prop_name ? { localName } : {}),
+          kind,
+          description,
+          binding: jsdocInfo?.binding,
+          deprecated: jsdocInfo?.deprecated,
+          tags: jsdocInfo?.tags,
+          ...(jsdocInfo?.internal ? { internal: true as const } : {}),
+          type,
+          typeSource,
+          value,
+          defaultValue,
+          params,
+          returnType,
+          isFunction,
+          isFunctionDeclaration,
+          isRequired,
+          constant: kind === "const",
+          reactive: this.ctx.reactive_vars.has(prop_name),
+          source: sourceRangeFromNode(this.ctx, node),
+        });
+      }
+    };
 
     walkNodes(
       componentRoot as unknown as WalkableNode,
@@ -1459,231 +1614,18 @@ export default class ComponentParser {
         }
 
         if (node.type === "ExportNamedDeclaration") {
-          if (node.declaration == null && node.specifiers.length === 0) {
+          if (node.declaration != null) {
+            addInstanceDeclarationExports(node, node.declaration);
             return;
           }
-
-          let prop_name: string | undefined;
-          // `export { local as exported }` resolves `prop_name` here and points `node.declaration`
-          // at the local variable's whole declaration; only that one declarator is exported below,
-          // not every declarator sharing the declaration.
-          let isResolvedSpecifierExport = false;
-          if (node.declaration == null && node.specifiers[0]?.type === "ExportSpecifier") {
-            const specifier = node.specifiers[0];
-            const localName =
-              specifier.local && typeof specifier.local === "object" && "name" in specifier.local
-                ? (specifier.local as Identifier).name
-                : undefined;
-            const exportedName =
-              specifier.exported && typeof specifier.exported === "object" && "name" in specifier.exported
-                ? (specifier.exported as Identifier).name
-                : undefined;
-            if (!localName || !exportedName) return;
-            let declaration: VariableDeclaration | undefined;
-            // Walk is in order; the local binding must appear before this export.
-            for (const varDecl of Array.from(this.ctx.vars)) {
-              if (
-                varDecl.declarations.some(
-                  (decl) =>
-                    decl.id &&
-                    typeof decl.id === "object" &&
-                    "type" in decl.id &&
-                    decl.id.type === "Identifier" &&
-                    (decl.id as Identifier).name === localName,
-                )
-              ) {
-                declaration = varDecl;
-                break;
-              }
+          for (const specifier of node.specifiers) {
+            const resolved = this.resolveExportSpecifier(specifier);
+            if (!resolved) continue;
+            if (resolved.declaration) {
+              addInstanceDeclarationExports(node, resolved.declaration, resolved);
+            } else {
+              this.recordUnresolvedExportSpecifier(node, resolved.localName, resolved.exportedName);
             }
-            node.declaration = declaration;
-            prop_name = exportedName;
-            isResolvedSpecifierExport = true;
-
-            if (!declaration) {
-              const source =
-                "source" in node && node.source && typeof node.source === "object" && "value" in node.source
-                  ? node.source.value
-                  : undefined;
-              const reason =
-                typeof source === "string"
-                  ? `it re-exports from "${source}"`
-                  : this.ctx.valueImportBindingsByLocalName.has(localName)
-                    ? "it re-exports an imported binding"
-                    : "no matching local declaration was found";
-              recordDiagnostic(
-                this.ctx,
-                "export-unresolved",
-                exportedName,
-                `export "${exportedName}" was skipped because ${reason}; sveld only resolves exports of a local declaration.`,
-                sourceRangeFromNode(this.ctx, node),
-              );
-              return;
-            }
-          }
-
-          if (node.declaration == null) {
-            return;
-          }
-
-          if (!node.declaration || typeof node.declaration !== "object" || !("type" in node.declaration)) {
-            return;
-          }
-
-          type InstancePropDeclarator = {
-            prop_name: string;
-            kind: "let" | "const" | "function";
-            isFunctionDeclaration: boolean;
-            value: string | undefined;
-            typeSeed: string | undefined;
-            explicitType: string | undefined;
-            initializerIsFunction: boolean;
-            isRequired: boolean;
-            localName: string | undefined;
-            defaultValue: ComponentPropDefaultValue | undefined;
-            inferredTypeForSource: string | undefined;
-            resolvedJSDoc:
-              | Pick<
-                  ProcessedInitializer,
-                  | "resolvedType"
-                  | "resolvedDescription"
-                  | "resolvedParams"
-                  | "resolvedReturnType"
-                  | "pendingCallDefault"
-                >
-              | undefined;
-          };
-          const declarators: InstancePropDeclarator[] = [];
-
-          if (node.declaration.type === "FunctionDeclaration") {
-            const funcDecl = node.declaration as { id?: { name?: string } } & FunctionDeclarationLike;
-            if (!funcDecl.id?.name) return;
-            prop_name ??= funcDecl.id.name;
-            const accessorSignature =
-              this.ctx.scriptLanguage === "ts" ? buildFunctionDeclarationSignature(this.ctx, funcDecl) : undefined;
-            declarators.push({
-              prop_name,
-              kind: "function",
-              isFunctionDeclaration: true,
-              value: undefined,
-              typeSeed: accessorSignature?.hasAnnotations ? undefined : "() => any",
-              explicitType: accessorSignature?.hasAnnotations ? accessorSignature.signature : undefined,
-              initializerIsFunction: true,
-              isRequired: false,
-              localName: funcDecl.id.name,
-              defaultValue: undefined,
-              inferredTypeForSource: undefined,
-              resolvedJSDoc: undefined,
-            });
-          } else if (node.declaration.type === "VariableDeclaration") {
-            const varDecl = node.declaration as VariableDeclaration;
-            const kind = variableDeclarationKindToComponentPropKind(varDecl.kind);
-            const declaratorsToProcess = isResolvedSpecifierExport
-              ? varDecl.declarations.slice(0, 1)
-              : varDecl.declarations;
-
-            for (const declarator of declaratorsToProcess) {
-              if (!declarator || typeof declarator !== "object" || !("id" in declarator)) {
-                continue;
-              }
-
-              const { id, init } = declarator as VariableDeclarator;
-              if (!id || typeof id !== "object" || !("name" in id)) {
-                continue;
-              }
-
-              const localPropName = (id as Identifier).name;
-              const declaratorPropName = prop_name ?? localPropName;
-              const isRequired = kind === "let" && init == null;
-              const initResult = init == null ? { isFunction: false } : processInitializer(this, this.ctx, init);
-              const { value, type: typeSeed, isFunction: initializerIsFunction, defaultValue } = initResult;
-              const resolvedJSDoc = initResult;
-              if (resolvedJSDoc.pendingCallDefault) {
-                this.ctx.pendingCallDefaultCandidates.push({
-                  propName: declaratorPropName,
-                  location: "props",
-                  ...resolvedJSDoc.pendingCallDefault,
-                });
-              }
-
-              declarators.push({
-                prop_name: declaratorPropName,
-                kind,
-                isFunctionDeclaration: false,
-                value,
-                typeSeed,
-                explicitType: this.getExplicitPropType(localPropName),
-                initializerIsFunction,
-                isRequired,
-                localName: localPropName,
-                defaultValue,
-                inferredTypeForSource: typeSeed,
-                resolvedJSDoc,
-              });
-            }
-
-            if (declarators.length === 0) return;
-          } else {
-            return;
-          }
-
-          const jsdocInfo = processNodeJSDoc(this.ctx, this, node);
-
-          for (const {
-            prop_name,
-            kind,
-            isFunctionDeclaration,
-            value,
-            typeSeed,
-            explicitType,
-            initializerIsFunction,
-            isRequired,
-            localName,
-            defaultValue,
-            inferredTypeForSource,
-            resolvedJSDoc,
-          } of declarators) {
-            const { type, typeSource, description, params, returnType, isFunction } = resolvePropTypeAndDocs({
-              explicitType,
-              typeSeed,
-              inferredTypeForSource,
-              jsdocType: jsdocInfo?.type,
-              jsdocDescription: jsdocInfo?.description,
-              jsdocParams: jsdocInfo?.params,
-              jsdocReturnType: jsdocInfo?.returnType,
-              resolvedType: resolvedJSDoc?.resolvedType,
-              resolvedDescription: resolvedJSDoc?.resolvedDescription,
-              resolvedParams: resolvedJSDoc?.resolvedParams,
-              resolvedReturnType: resolvedJSDoc?.resolvedReturnType,
-              initializerIsFunction,
-              isFunctionDeclaration,
-              typedefs: this.ctx.typedefs,
-            });
-
-            recordSveldIgnore(this.ctx, "prop-unknown-type", prop_name, jsdocInfo?.sveldIgnore);
-
-            addProp(this, this.ctx, prop_name, {
-              name: prop_name,
-              ...(localName !== undefined && localName !== prop_name ? { localName } : {}),
-              kind,
-              description,
-              binding: jsdocInfo?.binding,
-              deprecated: jsdocInfo?.deprecated,
-              tags: jsdocInfo?.tags,
-              ...(jsdocInfo?.internal ? { internal: true as const } : {}),
-              type,
-              typeSource,
-              value,
-              defaultValue,
-              params,
-              returnType,
-              isFunction,
-              isFunctionDeclaration,
-              isRequired,
-              constant: kind === "const",
-              reactive: this.ctx.reactive_vars.has(prop_name),
-              source: sourceRangeFromNode(this.ctx, node),
-            });
           }
         }
 
