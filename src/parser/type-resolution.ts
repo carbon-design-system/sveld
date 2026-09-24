@@ -88,6 +88,9 @@ export function getTypeNodeText(ctx: ParserContext, typeNode: { start?: number; 
   return sourceAtPos(ctx, start, end)?.trim();
 }
 
+/** One `extends` clause of an interface declaration. */
+type InterfaceHeritage = { expression?: unknown; typeParameters?: { params?: ModernRunesTypeNode[] } };
+
 export function collectReferencedTypeDependencies(
   ctx: ParserContext,
   typeNode: ModernRunesTypeNode | undefined,
@@ -99,6 +102,20 @@ export function collectReferencedTypeDependencies(
 
   switch (typeNode.type) {
     case "TSInterfaceDeclaration":
+      // `interface A extends B<C>`: each heritage clause names a type like a reference does.
+      for (const heritage of (typeNode as { extends?: InterfaceHeritage[] }).extends ?? []) {
+        collectReferencedTypeDependencies(
+          ctx,
+          {
+            type: "TSTypeReference",
+            typeName: heritage.expression,
+            ...(heritage.typeParameters ? { typeParameters: heritage.typeParameters } : {}),
+          } as ModernRunesTypeNode,
+          referencedImportedTypes,
+          referencedLocalTypes,
+          visitedLocalTypes,
+        );
+      }
       collectReferencedTypeDependencies(
         ctx,
         { type: "TSTypeLiteral", members: typeNode.body?.body },
