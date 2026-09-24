@@ -106,6 +106,59 @@ describe("cross-file setContext key resolution", () => {
     expect(component?.contexts?.map((context) => context.key)).toEqual(["carbon:Modal", "carbon:ComposedModal"]);
   });
 
+  test("an imported key duplicating a later same-file key keeps the first call's shape and is flagged", async () => {
+    writeFileSync(path.join(dir, "keys.js"), `export const K = "tabs";\nexport const K2 = "tabs";\n`);
+    writeFileSync(
+      path.join(dir, "Tabs.svelte"),
+      `<script>
+  import { setContext } from "svelte";
+  import { K } from "./keys.js";
+
+  /** @type {number} */
+  let a = 0;
+  /** @type {string} */
+  let b = "";
+
+  setContext(K, { a });
+  setContext("tabs", { b });
+</script>
+<div><slot /></div>
+`,
+    );
+    writeFileSync(
+      path.join(dir, "TwoImports.svelte"),
+      `<script>
+  import { setContext } from "svelte";
+  import { K, K2 } from "./keys.js";
+
+  /** @type {number} */
+  let a = 0;
+  /** @type {string} */
+  let b = "";
+
+  setContext(K, { a });
+  setContext(K2, { b });
+</script>
+<div><slot /></div>
+`,
+    );
+    writeFileSync(
+      path.join(dir, "index.js"),
+      `export { default as Tabs } from "./Tabs.svelte";\nexport { default as TwoImports } from "./TwoImports.svelte";\n`,
+    );
+
+    const result = await generateBundle(path.join(dir, "index.js"), true);
+
+    for (const moduleName of ["Tabs", "TwoImports"]) {
+      const component = byModuleName(result.components, moduleName);
+      expect(component?.contexts?.map((context) => context.properties.map((property) => property.name))).toEqual([
+        ["a"],
+      ]);
+      const duplicates = component?.diagnostics?.filter((diagnostic) => diagnostic.kind === "context-duplicate-key");
+      expect(duplicates?.map((diagnostic) => [diagnostic.name, diagnostic.source?.start.line])).toEqual([["tabs", 11]]);
+    }
+  });
+
   test("B: resolves through a re-export barrel", async () => {
     writeFileSync(path.join(dir, "key.js"), `export const MODAL_KEY = "simple-modal";\n`);
     writeFileSync(path.join(dir, "reexport.js"), `export { MODAL_KEY } from "./key.js";\n`);

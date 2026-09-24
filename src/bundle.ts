@@ -1009,8 +1009,9 @@ function applyConstDefaultResolutions(component: ComponentDocApi, resolutions: C
 }
 
 /**
- * Append each resolved context to `component.contexts`. Unresolved keys
- * get the same diagnostic `parseSetContextCall` records for a local miss.
+ * Append each resolved context to `component.contexts`. Unresolved keys and
+ * duplicate keys get the same diagnostics `parseSetContextCall` records for
+ * a local call, and the first call in source order keeps its shape.
  */
 function applyContextKeyResolutions(component: ComponentDocApi, resolutions: ContextKeyResolution[]): void {
   for (const { candidate, key } of resolutions) {
@@ -1028,9 +1029,27 @@ function applyContextKeyResolutions(component: ComponentDocApi, resolutions: Con
       continue;
     }
 
-    if (component.contexts?.some((existing) => existing.key === key)) continue;
-
     const contexts = [...(component.contexts ?? [])];
+    const duplicateIndex = contexts.findIndex((existing) => existing.key === key);
+    if (duplicateIndex !== -1) {
+      // Same rule as a same-file duplicate: the first call's shape wins and the later call is flagged.
+      const duplicate = contexts[duplicateIndex];
+      const candidateIsFirst = startsAfter(duplicate.source, candidate.source);
+      const laterSource = candidateIsFirst ? duplicate.source : candidate.source;
+      component.diagnostics = [
+        ...(component.diagnostics ?? []),
+        createDiagnostic({
+          component: component.filePath,
+          kind: "context-duplicate-key",
+          name: key,
+          message: `setContext("${key}", ...) was called more than once; only the first call's shape is used.`,
+          ...(laterSource ? { source: laterSource } : {}),
+        }),
+      ];
+      if (!candidateIsFirst) continue;
+      contexts.splice(duplicateIndex, 1);
+    }
+
     // Keep source order, as a same-file key would: go before the first later `setContext`.
     const laterIndex = contexts.findIndex((existing) => startsAfter(existing.source, candidate.source));
     contexts.splice(laterIndex === -1 ? contexts.length : laterIndex, 0, {
