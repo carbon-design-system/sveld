@@ -79,9 +79,9 @@ function renderEventsSection(document: MarkdownWriterBaseImpl, events: Serialize
   for (const event of events) {
     document.append(
       "raw",
-      `| ${formatNameWithDeprecation(event.name, event.deprecated)} | ${event.type} | ${
-        event.type === "dispatched" ? formatEventDetail(event.detail) : MD_TYPE_UNDEFINED
-      } | ${formatDescriptionWithTags(event.description, event.tags)} |\n`,
+      `| ${formatNameWithDeprecation(event.name, event.deprecated)} | ${event.type} | ${formatEventDetail(
+        event.detail,
+      )} | ${formatDescriptionWithTags(event.description, event.tags)} |\n`,
     );
   }
   document.append("raw", "\n");

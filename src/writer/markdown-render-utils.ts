@@ -204,9 +204,9 @@ function renderComponent(document: MarkdownDocument, component: ComponentDocApi)
     for (const event of component.events) {
       document.append(
         "raw",
-        `| ${formatNameWithDeprecation(event.name, event.deprecated)} | ${event.type} | ${
-          event.type === "dispatched" ? formatEventDetail(event.detail) : MD_TYPE_UNDEFINED
-        } | ${formatDescriptionWithTags(event.description, event.tags)} |\n`,
+        `| ${formatNameWithDeprecation(event.name, event.deprecated)} | ${event.type} | ${formatEventDetail(
+          event.detail,
+        )} | ${formatDescriptionWithTags(event.description, event.tags)} |\n`,
       );
     }
   });
