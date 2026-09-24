@@ -45,6 +45,8 @@ export interface ResolvePropTypeAndDocsInput {
   jsdocDescription?: string;
   jsdocParams?: ComponentPropParam[];
   jsdocReturnType?: string;
+  /** `@template` type parameters from a comment documenting a function (see `processJSDocComment`). */
+  jsdocTypeParameters?: string;
   /**
    * Type/description/params/returnType resolved from an identifier default's
    * own JSDoc (e.g. `export let onClick = defaultHandler;` where
@@ -84,6 +86,7 @@ export interface ResolvedPropTypeAndDocs {
   params?: ComponentPropParam[];
   returnType?: string;
   isFunction: boolean;
+  typeParameters?: string;
 }
 
 /**
@@ -102,10 +105,11 @@ export function resolvePropTypeAndDocs(input: ResolvePropTypeAndDocsInput): Reso
   // A bare `export function foo() {}` has no `@type` placeholder of its own; if JSDoc
   // supplies `@param`/`@returns` but no `@type`, build a signature from them.
   if (input.isFunctionDeclaration && type === "() => any" && returnType) {
+    const typeParameters = input.jsdocTypeParameters ? `<${input.jsdocTypeParameters}>` : "";
     type =
       params && params.length > 0
-        ? `(${params.map((param) => `${param.name}${param.optional ? "?" : ""}: ${param.type}`).join(", ")}) => ${returnType}`
-        : `() => ${returnType}`;
+        ? `${typeParameters}(${params.map((param) => `${param.name}${param.optional ? "?" : ""}: ${param.type}`).join(", ")}) => ${returnType}`
+        : `${typeParameters}() => ${returnType}`;
   }
 
   let description = input.jsdocDescription ?? input.resolvedDescription;
@@ -134,5 +138,7 @@ export function resolvePropTypeAndDocs(input: ResolvePropTypeAndDocsInput): Reso
         !!input.resolvedType?.includes("=>") ||
         !!input.explicitType?.includes("=>")));
 
-  return { type, typeSource, description, params, returnType, isFunction };
+  const typeParameters = isFunction ? input.jsdocTypeParameters : undefined;
+
+  return { type, typeSource, description, params, returnType, isFunction, typeParameters };
 }

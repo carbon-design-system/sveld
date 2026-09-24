@@ -1,3 +1,4 @@
+import type { Node } from "estree";
 import type ComponentParser from "../ComponentParser";
 import type {
   ComponentPropBinding,
@@ -15,6 +16,7 @@ import { splitTopLevelCommas } from "./generics";
 import { addSlot } from "./slots";
 import { sourceRangeFromCommentTag } from "./source-position";
 import { assignValueOrUndefined } from "./utils";
+import { scriptBody } from "./value-imports";
 
 const GENERIC_DEFAULT_EQUALS_REGEX = /\s*=\s*/;
 
@@ -308,21 +310,52 @@ function findAdjacentJSDocComment(
 }
 
 /**
- * Absolute `/**` start offsets of every JSDoc comment directly documenting a `function`
- * declaration (module or instance script, via `ctx.funcDecls`). A `@template` tag in one of
- * these blocks types that function's own generic parameter, standard JSDoc usage unrelated to
- * sveld's `@generics`/`@template` component-generics feature, and must not be folded into the
- * component's class/props generic parameter list the way a `@generics`-adjacent one is.
+ * Absolute `/**` start offsets of every JSDoc comment directly documenting a function: a
+ * `function` declaration (module or instance script, exported or not), a module-script `const`
+ * initialized with an arrow or function expression, or a non-exported one in the instance
+ * script. A `@template` tag in one of these blocks types that function's own generic parameter,
+ * standard JSDoc usage unrelated to sveld's `@generics`/`@template` component-generics feature,
+ * and must not be folded into the component's class/props generic parameter list the way a
+ * `@generics`-adjacent one is. An instance-script `export let`/`export const` is a prop, so a
+ * `@template` on one still declares a component generic.
  */
 function functionDocCommentStarts(ctx: ParserContext): Set<number> {
   const starts = new Set<number>();
-  for (const funcDecl of ctx.funcDecls.values()) {
-    const { leadingComments, start } = funcDecl as unknown as { leadingComments?: unknown[]; start?: number };
+  const addDocumented = (node: unknown) => {
+    const { leadingComments, start } = node as { leadingComments?: unknown[]; start?: number };
     const comment = findAdjacentJSDocComment(ctx, leadingComments, start);
     if (comment) starts.add(comment.start);
+  };
+  for (const funcDecl of ctx.funcDecls.values()) addDocumented(funcDecl);
+
+  // An exported declaration's doc comment sits on the `export` statement, not the declaration.
+  const scripts = [
+    { root: ctx.parsed?.module, isModule: true },
+    { root: ctx.parsed?.instance, isModule: false },
+  ];
+  for (const { root, isModule } of scripts) {
+    for (const statement of (root && scriptBody(root as Node)) ?? []) {
+      const node = statement as { type: string; declaration?: FunctionDocCandidate | null };
+      const isExported = node.type === "ExportNamedDeclaration";
+      const declaration = isExported ? node.declaration : (node as FunctionDocCandidate);
+      if (declaration?.type === "FunctionDeclaration") {
+        if (isExported) addDocumented(node);
+      } else if (
+        declaration?.type === "VariableDeclaration" &&
+        (isModule || !isExported) &&
+        declaration.declarations?.length === 1 &&
+        FUNCTION_EXPRESSION_TYPES.has(declaration.declarations[0].init?.type ?? "")
+      ) {
+        addDocumented(node);
+      }
+    }
   }
   return starts;
 }
+
+type FunctionDocCandidate = { type: string; declarations?: Array<{ init?: { type?: string } | null }> };
+
+const FUNCTION_EXPRESSION_TYPES = new Set(["ArrowFunctionExpression", "FunctionExpression"]);
 
 export function processNodeJSDoc(
   ctx: ParserContext,
@@ -358,6 +391,14 @@ export function processLeadingCommentsJSDoc(
   return processNodeJSDoc(ctx, parser, node);
 }
 
+/** One `@template` tag as a type parameter: `T`, `T extends Foo`, or `T extends Foo = Bar`. */
+function templateTagConstraint(name: string, type: string, defaultValue: string | undefined): string {
+  let constraint = name;
+  if (type) constraint = `${name} extends ${type}`;
+  if (defaultValue) constraint += ` = ${defaultValue}`;
+  return constraint;
+}
+
 function processJSDocComment(
   ctx: ParserContext,
   parser: ComponentParser,
@@ -375,6 +416,8 @@ function processJSDocComment(
       sveldIgnore?: string[];
       /** True when `@ignore` or `@internal` is present; excludes this prop from every output. */
       internal: boolean;
+      /** `@template` tags of a comment documenting a function, as its type parameter list (`T extends Foo, U`). */
+      typeParameters?: string;
     }
   | undefined {
   if (!leadingComments) return undefined;
@@ -418,13 +461,26 @@ function processJSDocComment(
 
   if (returnsTag) returnType = parser.aliasType(returnsTag.type);
 
+  // A function's own `@template`s become its type parameters instead of description text.
+  let typeParameters: string | undefined;
+  let descriptionTags = additionalTags;
+  if (typeof jsdoc_comment.start === "number" && ctx.functionDocCommentStarts.has(jsdoc_comment.start)) {
+    const templateTags = additionalTags.filter((tag) => tag.tag === "template" && tag.name);
+    if (templateTags.length > 0) {
+      typeParameters = templateTags
+        .map((tag) => templateTagConstraint(tag.name, parser.aliasType(tag.type), tag.default))
+        .join(", ");
+      descriptionTags = additionalTags.filter((tag) => tag.tag !== "template");
+    }
+  }
+
   const formattedDescription = assignValueOrUndefined(commentDescription?.trim());
-  if (formattedDescription || additionalTags.length > 0) {
+  if (formattedDescription || descriptionTags.length > 0) {
     const descriptionParts: string[] = [];
     if (formattedDescription) {
       descriptionParts.push(formattedDescription);
     }
-    for (const tag of additionalTags) {
+    for (const tag of descriptionTags) {
       const tagStr = `@${tag.tag}${tag.name ? ` ${tag.name}` : ""}${tag.description ? ` ${tag.description}` : ""}`;
       descriptionParts.push(tagStr);
     }
@@ -449,6 +505,7 @@ function processJSDocComment(
     tags,
     sveldIgnore: ignoreCodes.length > 0 ? ignoreCodes : undefined,
     internal,
+    typeParameters,
   };
 }
 
@@ -536,7 +593,9 @@ export function parseCustomTypes(
       list[existingIndex] = property;
     }
   };
-  const functionDocStarts = functionDocCommentStarts(ctx);
+  // Only a `@template` tag reads this set, so skip the statement scan without one.
+  const functionDocStarts = scanSource.includes("@template") ? functionDocCommentStarts(ctx) : new Set<number>();
+  ctx.functionDocCommentStarts = functionDocStarts;
   const blocks = parseComments(scanSource);
   // Leading-comment lookups during the main walk reuse these instead of
   // re-tokenizing each block from acorn's comment value (see `parsedSourceBlock`).
@@ -1050,9 +1109,7 @@ export function parseCustomTypes(
           //   @template {string} T     → type="string", name="T", default=undefined
           //   @template [T=string]     → type="", name="T", default="string"
           //   @template {Foo} [T=Foo]  → type="Foo", name="T", default="Foo"
-          let constraint = name;
-          if (type) constraint = `${name} extends ${type}`;
-          if (defaultValue) constraint += ` = ${defaultValue}`;
+          const constraint = templateTagConstraint(name, type, defaultValue);
 
           if (blockHasSlotOrSnippetTag && !blockHasExtendsTag) {
             ctx.deferredSlotBlockGenerics.push({ name, constraint });
