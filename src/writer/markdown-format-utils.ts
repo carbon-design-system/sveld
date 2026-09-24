@@ -21,6 +21,30 @@ const LT_REGEX = /</g;
 const GT_REGEX = />/g;
 const NEWLINE_REGEX = /\n/g;
 const IDENTIFIER_REGEX = /^[A-Za-z_$][\w$]*$/;
+const LINE_BREAK_REGEX = /\s*\n\s*/g;
+const ENTITY_AMPERSAND_REGEX = /&(?=#?\w+;)/g;
+const TAG_OPEN_REGEX = /<(?=[A-Za-z/!?])/g;
+const CODE_SPECIAL_CHAR_REGEX = /[|`*]|\\(?=[!-/:-@[-`{-~])/g;
+const EMPHASIS_UNDERSCORE_REGEX = /(?<![A-Za-z0-9])_|_(?![A-Za-z0-9])/g;
+
+/**
+ * Markdown still parses the text inside a `<code>` element, so `Promise<void>`
+ * would lose `<void>` as an unknown HTML tag, and a backtick, `*`, or
+ * word-edge `_` would start a code span or emphasis. Encode just those, so
+ * the raw Markdown stays readable.
+ */
+function escapeCodeText(text: string): string {
+  return text
+    .replace(ENTITY_AMPERSAND_REGEX, "&amp;")
+    .replace(TAG_OPEN_REGEX, "&lt;")
+    .replace(CODE_SPECIAL_CHAR_REGEX, (match) => `&#${match.charCodeAt(0)};`)
+    .replace(EMPHASIS_UNDERSCORE_REGEX, "&#95;");
+}
+
+/** A `<code>` table cell; a multi-line type or value joins onto one line so it can't split the row. */
+function codeCell(text: string): string {
+  return `<code>${escapeCodeText(text.replace(LINE_BREAK_REGEX, " "))}</code>`;
+}
 
 /** `{@link target}` or `{@link target|display text}`, per the inline JSDoc `@link` tag grammar. */
 const JSDOC_LINK_REGEX = /\{@link\s+([^{}\s|]+)(?:\|([^{}]+))?\}/g;
@@ -39,7 +63,7 @@ function rewriteJsDocLinks(text: string): string {
 
 export function formatPropType(type?: string) {
   if (type === undefined) return MD_TYPE_UNDEFINED;
-  return `<code>${type.replace(PIPE_REGEX, "&#124;")}</code>`;
+  return codeCell(type);
 }
 
 /**
@@ -60,7 +84,7 @@ function escapeHtml(text: string) {
 
 export function formatPropValue(value: string | undefined) {
   if (value === undefined) return MD_TYPE_UNDEFINED;
-  return `<code>${value.replace(BACKTICK_REGEX, "\\`").replace(PIPE_REGEX, "&#124;")}</code>`;
+  return codeCell(value);
 }
 
 export function formatNameWithDeprecation(name: string, deprecated: DeprecatedValue | undefined): string {
@@ -84,7 +108,7 @@ export function formatSlotProps(props?: string) {
 
 export function formatSlotFallback(fallback?: string) {
   if (fallback === undefined) return MD_TYPE_UNDEFINED;
-  return formatPropType(escapeHtml(fallback).replace(NEWLINE_REGEX, "<br />"));
+  return `<code>${escapeCodeText(fallback).replace(NEWLINE_REGEX, "<br />")}</code>`;
 }
 
 export function formatDescriptionWithTags(description?: string, tags?: Array<{ name: string; body: string }>) {

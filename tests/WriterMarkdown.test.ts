@@ -392,8 +392,10 @@ describe("WriterMarkdown", () => {
     expect(output).toMatchSnapshot();
     // `Row` is used in the prop type below; without this line it would be an
     // undefined name floating in the document.
-    expect(output).toContain("**Type parameters:** <code><Row extends DataTableRow = DataTableRow></code>");
-    expect(output).toContain("| rows | Yes | <code>let</code> | No | -- | <code>ReadonlyArray<Row></code> | -- | -- |");
+    expect(output).toContain("**Type parameters:** <code>&lt;Row extends DataTableRow = DataTableRow></code>");
+    expect(output).toContain(
+      "| rows | Yes | <code>let</code> | No | -- | <code>ReadonlyArray&lt;Row></code> | -- | -- |",
+    );
   });
 
   test("omits the type parameters line for non-generic components", () => {

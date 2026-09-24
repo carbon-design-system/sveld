@@ -19,7 +19,7 @@
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | <code>Click me</code> | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | <code>Click me</code> | -- |
 
 ### Events
 

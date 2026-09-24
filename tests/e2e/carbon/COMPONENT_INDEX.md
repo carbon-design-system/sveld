@@ -178,7 +178,7 @@
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -204,8 +204,8 @@
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
-| title | No | <code>Record<string, never> </code> | <code>{title}</code> | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| title | No | <code>Record&lt;string, never> </code> | <code>{title}</code> | -- |
 
 ### Events
 
@@ -254,7 +254,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -273,7 +273,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -383,7 +383,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -428,7 +428,7 @@ None.
 | hideLabel | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to visually hide the label text |
 | name | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Set a name for the input element |
 | title | No | <code>let</code> | No | -- | <code>string</code> | <code>undefined</code> | Specify the title attribute for the label element |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the input label |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the input label |
 
 ### Slots
 
@@ -479,7 +479,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -513,13 +513,13 @@ None.
 | feedbackTimeout | No | <code>let</code> | No | -- | <code>number</code> | <code>2000</code> | Set the timeout duration (ms) to display feedback text |
 | showLessText | No | <code>let</code> | No | -- | <code>string</code> | <code>"Show less"</code> | Specify the show less text<br />`type` must be "multi" |
 | showMoreText | No | <code>let</code> | No | -- | <code>string</code> | <code>"Show more"</code> | Specify the show more text<br />`type` must be "multi" |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the code element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the code element |
 
 ### Slots
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | <code>{code}</code> | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | <code>{code}</code> | -- |
 
 ### Events
 
@@ -619,7 +619,7 @@ export interface ComboBoxItem { id: string; text: string; }
 | light | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to enable the light variant |
 | shouldFilterItem | No | <code>let</code> | No | -- | <code>(item: ComboBoxItem, value: string) => boolean</code> | <code>() => true</code> | Determine if an item should be filtered given the current combobox value |
 | translateWithId | No | <code>let</code> | No | -- | <code>(id: any) => string</code> | <code>undefined</code> | Override the default translation ids |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the list box component |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the list box component |
 | name | No | <code>let</code> | No | -- | <code>string</code> | <code>undefined</code> | Specify a name attribute for the input |
 
 ### Slots
@@ -655,7 +655,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -682,7 +682,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -702,7 +702,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -728,7 +728,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | <code>{#if animation}<br />      {feedback &#124;&#124; $$restProps["aria-label"]}<br />    {/if}</code> | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | <code>{#if animation}<br />      {feedback &#124;&#124; $$restProps["aria-label"]}<br />    {/if}</code> | -- |
 
 ### Events
 
@@ -758,7 +758,7 @@ None.
 
 ## `DataTable`
 
-**Type parameters:** <code><Row extends DataTableRow = DataTableRow></code>
+**Type parameters:** <code>&lt;Row extends DataTableRow = DataTableRow></code>
 
 ### Types
 
@@ -787,21 +787,21 @@ export interface DataTableCell { key: DataTableKey<Row>; value: DataTableValue; 
 | sortKey | No | <code>let</code> | Yes | -- | <code>DataTableKey</code> | <code>null</code> | Specify the header key to sort by |
 | sortDirection | No | <code>let</code> | Yes | -- | <code>"none" &#124; "ascending" &#124; "descending"</code> | <code>"none"</code> | Specify the sort direction |
 | expandable | No | <code>let</code> | Yes | -- | <code>boolean</code> | <code>false</code> | Set to `true` for the expandable variant<br />Automatically set to `true` if `batchExpansion` is `true` |
-| expandedRowIds | No | <code>let</code> | Yes | -- | <code>ReadonlyArray<DataTableRowId></code> | <code>[]</code> | Specify the row ids to be expanded |
+| expandedRowIds | No | <code>let</code> | Yes | -- | <code>ReadonlyArray&lt;DataTableRowId></code> | <code>[]</code> | Specify the row ids to be expanded |
 | selectable | No | <code>let</code> | Yes | -- | <code>boolean</code> | <code>false</code> | Set to `true` for the selectable variant<br />Automatically set to `true` if `radio` or `batchSelection` are `true` |
-| selectedRowIds | No | <code>let</code> | Yes | -- | <code>ReadonlyArray<DataTableRowId></code> | <code>[]</code> | Specify the row ids to be selected |
-| headers | No | <code>let</code> | No | -- | <code>ReadonlyArray<DataTableHeader<Row>></code> | <code>[]</code> | Specify the data table headers |
-| rows | No | <code>let</code> | No | -- | <code>ReadonlyArray<Row></code> | <code>[]</code> | Specify the rows the data table should render<br />keys defined in `headers` are used for the row ids |
+| selectedRowIds | No | <code>let</code> | Yes | -- | <code>ReadonlyArray&lt;DataTableRowId></code> | <code>[]</code> | Specify the row ids to be selected |
+| headers | No | <code>let</code> | No | -- | <code>ReadonlyArray&lt;DataTableHeader&lt;Row>></code> | <code>[]</code> | Specify the data table headers |
+| rows | No | <code>let</code> | No | -- | <code>ReadonlyArray&lt;Row></code> | <code>[]</code> | Specify the rows the data table should render<br />keys defined in `headers` are used for the row ids |
 | size | No | <code>let</code> | No | -- | <code>"compact" &#124; "short" &#124; "medium" &#124; "tall"</code> | <code>undefined</code> | Set the size of the data table |
 | title | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the title of the data table |
 | description | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the description of the data table |
 | zebra | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to use zebra styles |
 | sortable | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` for the sortable variant |
 | batchExpansion | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to enable batch expansion |
-| nonExpandableRowIds | No | <code>let</code> | No | -- | <code>ReadonlyArray<DataTableRowId></code> | <code>[]</code> | Specify the ids for rows that should not be expandable |
+| nonExpandableRowIds | No | <code>let</code> | No | -- | <code>ReadonlyArray&lt;DataTableRowId></code> | <code>[]</code> | Specify the ids for rows that should not be expandable |
 | radio | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` for the radio selection variant |
 | batchSelection | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to enable batch selection |
-| nonSelectableRowIds | No | <code>let</code> | No | -- | <code>ReadonlyArray<DataTableRowId></code> | <code>[]</code> | Specify the ids of rows that should not be selectable |
+| nonSelectableRowIds | No | <code>let</code> | No | -- | <code>ReadonlyArray&lt;DataTableRowId></code> | <code>[]</code> | Specify the ids of rows that should not be selectable |
 | stickyHeader | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to enable a sticky header |
 | useStaticWidth | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to use static width |
 | pageSize | No | <code>let</code> | No | -- | <code>number</code> | <code>0</code> | Specify the number of items to display in a page |
@@ -811,20 +811,20 @@ export interface DataTableCell { key: DataTableKey<Row>; value: DataTableValue; 
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
-| cell | No | <code>{ row: Row; cell: DataTableCell<Row>; rowIndex: number; cellIndex: number; } </code> | <code>{cell.display ? cell.display(cell.value, row) : cell.value}</code> | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| cell | No | <code>{ row: Row; cell: DataTableCell&lt;Row>; rowIndex: number; cellIndex: number; } </code> | <code>{cell.display ? cell.display(cell.value, row) : cell.value}</code> | -- |
 | cell-header | No | <code>{ header: DataTableNonEmptyHeader; } </code> | <code>{header.value}</code> | -- |
-| description | No | <code>Record<string, never> </code> | <code>{description}</code> | -- |
+| description | No | <code>Record&lt;string, never> </code> | <code>{description}</code> | -- |
 | expanded-row | No | <code>{ row: Row; } </code> | -- | -- |
-| title | No | <code>Record<string, never> </code> | <code>{title}</code> | -- |
+| title | No | <code>Record&lt;string, never> </code> | <code>{title}</code> | -- |
 
 ### Events
 
 | Event name | Type | Detail | Description |
 | :- | :- | :- | :- |
-| click | dispatched | <code>{ header?: DataTableHeader<Row>; row?: Row; cell?: DataTableCell<Row>; }</code> | -- |
-| click:cell | dispatched | <code>DataTableCell<Row></code> | -- |
-| click:header | dispatched | <code>{ header: DataTableHeader<Row>; sortDirection?: "ascending" &#124; "descending" &#124; "none" }</code> | -- |
+| click | dispatched | <code>{ header?: DataTableHeader&lt;Row>; row?: Row; cell?: DataTableCell&lt;Row>; }</code> | -- |
+| click:cell | dispatched | <code>DataTableCell&lt;Row></code> | -- |
+| click:header | dispatched | <code>{ header: DataTableHeader&lt;Row>; sortDirection?: "ascending" &#124; "descending" &#124; "none" }</code> | -- |
 | click:header--expand | dispatched | <code>{ expanded: boolean; }</code> | -- |
 | click:header--select | dispatched | <code>{ indeterminate: boolean; selected: boolean; }</code> | -- |
 | click:row | dispatched | <code>Row</code> | -- |
@@ -844,7 +844,7 @@ export interface DataTableCell { key: DataTableKey<Row>; value: DataTableValue; 
 | size | No | <code>let</code> | No | -- | <code>"compact" &#124; "short" &#124; "tall"</code> | <code>undefined</code> | Set the size of the data table |
 | zebra | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to apply zebra styles to the datatable rows |
 | showHeader | No | <code>let</code> | No | -- | <code>boolean</code> | <code>true</code> | Set to `false` to hide the header |
-| headers | No | <code>let</code> | No | -- | <code>string[] &#124; Partial<DataTableHeader>[]</code> | <code>[]</code> | Set the column headers<br />Supersedes `columns` if value is a non-empty array |
+| headers | No | <code>let</code> | No | -- | <code>string[] &#124; Partial&lt;DataTableHeader>[]</code> | <code>[]</code> | Set the column headers<br />Supersedes `columns` if value is a non-empty array |
 | showToolbar | No | <code>let</code> | No | -- | <code>boolean</code> | <code>true</code> | Set to `false` to hide the toolbar |
 
 ### Slots
@@ -875,13 +875,13 @@ None.
 | locale | No | <code>let</code> | No | -- | <code>string</code> | <code>"en"</code> | Specify the locale |
 | short | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to use the short variant |
 | light | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to enable the light variant |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the date picker element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the date picker element |
 
 ### Slots
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -903,10 +903,10 @@ None.
 | size | No | <code>let</code> | No | -- | <code>"sm" &#124; "xl"</code> | <code>undefined</code> | Set the size of the input |
 | type | No | <code>let</code> | No | -- | <code>string</code> | <code>"text"</code> | Specify the input type |
 | placeholder | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the input placeholder text |
-| pattern | No | <code>let</code> | No | -- | <code>string</code> | <code>"\\d{1,2}\\/\\d{1,2}\\/\\d{4}"</code> | Specify the Regular Expression for the input value |
+| pattern | No | <code>let</code> | No | -- | <code>string</code> | <code>"&#92;\d{1,2}&#92;&#92;/&#92;\d{1,2}&#92;&#92;/&#92;\d{4}"</code> | Specify the Regular Expression for the input value |
 | disabled | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to disable the input |
 | iconDescription | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the ARIA label for the calendar icon |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the input element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the input element |
 | labelText | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the label text |
 | hideLabel | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to visually hide the label text |
 | invalid | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to indicate an invalid state |
@@ -932,7 +932,7 @@ None.
 | Prop name | Required | Kind | Reactive | Binding | Type | Default value | Description |
 | :- | :- | :- | :- | :- | :- | :- | :- |
 | range | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to use the range variant |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id to be used by the label element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id to be used by the label element |
 
 ### Slots
 
@@ -981,7 +981,7 @@ export interface DropdownItem { id: DropdownItemId; text: DropdownItemText; }
 | helperText | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the helper text |
 | label | No | <code>let</code> | No | -- | <code>string</code> | <code>undefined</code> | Specify the list box label |
 | translateWithId | No | <code>let</code> | No | -- | <code>(id: any) => string</code> | <code>undefined</code> | Override the default translation ids |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the list box component |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the list box component |
 | name | No | <code>let</code> | No | -- | <code>string</code> | <code>undefined</code> | Specify a name attribute for the list box |
 
 ### Slots
@@ -1031,14 +1031,14 @@ None.
 | tileExpandedLabel | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the icon label of the expanded tile |
 | tileCollapsedLabel | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the icon label of the collapsed tile |
 | tabindex | No | <code>let</code> | No | -- | <code>string</code> | <code>"0"</code> | Specify the tabindex |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the top-level div element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the top-level div element |
 
 ### Slots
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| above | No | <code>Record<string, never> </code> | -- | -- |
-| below | No | <code>Record<string, never> </code> | -- | -- |
+| above | No | <code>Record&lt;string, never> </code> | -- | -- |
+| below | No | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -1121,7 +1121,7 @@ None.
 | kind | No | <code>let</code> | No | -- | <code>"primary" &#124; "secondary" &#124; "tertiary" &#124; "ghost" &#124; "danger"</code> | <code>"primary"</code> | Specify the kind of file uploader button |
 | role | No | <code>let</code> | No | -- | <code>string</code> | <code>"button"</code> | Specify the label role |
 | tabindex | No | <code>let</code> | No | -- | <code>string</code> | <code>"0"</code> | Specify `tabindex` attribute |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the input element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the input element |
 | name | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify a name attribute for the input |
 
 ### Slots
@@ -1150,7 +1150,7 @@ None.
 | role | No | <code>let</code> | No | -- | <code>string</code> | <code>"button"</code> | Specify the `role` attribute of the drop container |
 | disabled | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to disable the input |
 | tabindex | No | <code>let</code> | No | -- | <code>string</code> | <code>"0"</code> | Specify `tabindex` attribute |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the input element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the input element |
 | name | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify a name attribute for the input |
 
 ### Slots
@@ -1180,7 +1180,7 @@ None.
 | invalid | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to indicate an invalid state |
 | errorSubject | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the error subject text |
 | errorBody | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the error body text |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the top-level element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the top-level element |
 | name | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the file uploader name |
 
 ### Slots
@@ -1225,7 +1225,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -1243,7 +1243,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -1270,7 +1270,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -1291,7 +1291,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -1308,13 +1308,13 @@ None.
 
 | Prop name | Required | Kind | Reactive | Binding | Type | Default value | Description |
 | :- | :- | :- | :- | :- | :- | :- | :- |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id to be used by the label element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id to be used by the label element |
 
 ### Slots
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -1369,9 +1369,9 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
-| platform | No | <code>Record<string, never> </code> | <code>{platformName}</code> | -- |
-| skip-to-content | No | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| platform | No | <code>Record&lt;string, never> </code> | <code>{platformName}</code> | -- |
+| skip-to-content | No | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -1401,8 +1401,8 @@ export interface HeaderActionSlideTransition { delay?: number; duration?: number
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
-| text | No | <code>Record<string, never> </code> | <code>{#if text}<br />        &lt;span&gt;{text}&lt;/span&gt;<br />      {/if}</code> | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| text | No | <code>Record&lt;string, never> </code> | <code>{#if text}<br />        &lt;span>{text}&lt;/span><br />      {/if}</code> | -- |
 
 ### Events
 
@@ -1464,7 +1464,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | <code>&lt;svelte:component this={icon} /&gt;</code> | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | <code>&lt;svelte:component this={icon} /></code> | -- |
 
 ### Events
 
@@ -1484,7 +1484,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -1533,7 +1533,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -1558,7 +1558,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -1577,7 +1577,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -1595,7 +1595,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -1623,7 +1623,7 @@ export interface HeaderSearchResult { href: string; text: string; description?: 
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>{ result: HeaderSearchResult; index: number } </code> | <code>{result.text}<br />              {#if result.description}<br />                &lt;span&gt;– {result.description}&lt;/span&gt;<br />              {/if}</code> | -- |
+| -- | Yes | <code>{ result: HeaderSearchResult; index: number } </code> | <code>{result.text}<br />              {#if result.description}<br />                &lt;span>– {result.description}&lt;/span><br />              {/if}</code> | -- |
 
 ### Events
 
@@ -1649,7 +1649,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -1742,8 +1742,8 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
-| actions | No | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| actions | No | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -1772,7 +1772,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -1803,7 +1803,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -1829,14 +1829,14 @@ export type ListBoxFieldTranslationId = "close" | "open";
 | role | No | <code>let</code> | No | -- | <code>string</code> | <code>"combobox"</code> | Specify the role attribute |
 | tabindex | No | <code>let</code> | No | -- | <code>string</code> | <code>"-1"</code> | Specify the tabindex |
 | translateWithId | No | <code>let</code> | No | -- | <code>(id: ListBoxFieldTranslationId) => string</code> | <code>(id) => defaultTranslations[id]</code> | Override the default translation ids |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the top-level element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the top-level element |
 | translationIds | No | <code>accessor</code> | No | -- | <code>{ close: "close", open: "open" }</code> | <code>{ close: "close", open: "open" }</code> | Default translation ids |
 
 ### Slots
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -1856,13 +1856,13 @@ export type ListBoxFieldTranslationId = "close" | "open";
 | Prop name | Required | Kind | Reactive | Binding | Type | Default value | Description |
 | :- | :- | :- | :- | :- | :- | :- | :- |
 | ref | No | <code>let</code> | Yes | -- | <code>null &#124; HTMLDivElement</code> | <code>null</code> | Obtain a reference to the HTML element |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the top-level element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the top-level element |
 
 ### Slots
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -1909,7 +1909,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -1957,7 +1957,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -1978,7 +1978,7 @@ None.
 | active | No | <code>let</code> | No | -- | <code>boolean</code> | <code>true</code> | Set to `false` to disable the active state |
 | withOverlay | No | <code>let</code> | No | -- | <code>boolean</code> | <code>true</code> | Set to `false` to disable the overlay |
 | description | No | <code>let</code> | No | -- | <code>string</code> | <code>"Active loading indicator"</code> | Specify the label description |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the label element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the label element |
 
 ### Slots
 
@@ -2012,15 +2012,15 @@ None.
 | secondaryButtonText | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the secondary button text |
 | selectorPrimaryFocus | No | <code>let</code> | No | -- | <code>string</code> | <code>"[data-modal-primary-focus]"</code> | Specify a selector to be focused when opening the modal |
 | preventCloseOnClickOutside | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to prevent the modal from closing when clicking outside |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the top-level element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the top-level element |
 
 ### Slots
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
-| heading | No | <code>Record<string, never> </code> | <code>{modalHeading}</code> | -- |
-| label | No | <code>Record<string, never> </code> | <code>{modalLabel}</code> | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| heading | No | <code>Record&lt;string, never> </code> | <code>{modalHeading}</code> | -- |
+| label | No | <code>Record&lt;string, never> </code> | <code>{modalLabel}</code> | -- |
 
 ### Events
 
@@ -2049,7 +2049,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -2072,7 +2072,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -2096,7 +2096,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -2144,7 +2144,7 @@ export interface MultiSelectItem { id: MultiSelectItemId; text: MultiSelectItemT
 | warnText | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the warning state text |
 | helperText | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the helper text |
 | label | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the list box label |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the list box component |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the list box component |
 | name | No | <code>let</code> | No | -- | <code>string</code> | <code>undefined</code> | Specify a name attribute for the select |
 
 ### Slots
@@ -2171,7 +2171,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -2239,7 +2239,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -2277,7 +2277,7 @@ export type NumberInputTranslationId = "increment" | "decrement";
 | label | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the label text |
 | hideLabel | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to visually hide the label text |
 | translateWithId | No | <code>let</code> | No | -- | <code>(id: NumberInputTranslationId) => string</code> | <code>(id) => defaultTranslations[id]</code> | Override the default translation ids |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the input element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the input element |
 | name | No | <code>let</code> | No | -- | <code>string</code> | <code>undefined</code> | Specify a name attribute for the input |
 | translationIds | No | <code>accessor</code> | No | -- | <code>{ increment: "increment"; decrement: "decrement" }</code> | <code>{     increment: "increment",     decrement: "decrement",   }</code> | Default translation ids |
 
@@ -2285,7 +2285,7 @@ export type NumberInputTranslationId = "increment" | "decrement";
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| label | No | <code>Record<string, never> </code> | <code>{label}</code> | -- |
+| label | No | <code>Record&lt;string, never> </code> | <code>{label}</code> | -- |
 
 ### Events
 
@@ -2332,7 +2332,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -2353,7 +2353,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -2381,14 +2381,14 @@ None.
 | icon | No | <code>let</code> | No | -- | <code>typeof import("carbon-icons-svelte").CarbonIcon</code> | <code>OverflowMenuVertical16</code> | Specify the icon from `carbon-icons-svelte` to render |
 | iconClass | No | <code>let</code> | No | -- | <code>string</code> | <code>undefined</code> | Specify the icon class |
 | iconDescription | No | <code>let</code> | No | -- | <code>string</code> | <code>"Open and close list of options"</code> | Specify the ARIA label for the icon |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the button element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the button element |
 
 ### Slots
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
-| menu | No | <code>Record<string, never> </code> | <code>&lt;svelte:component<br />      this={icon}<br />      aria-label={iconDescription}<br />      title={iconDescription}<br />      class="bx--overflow-menu__icon {iconClass}"<br />    /&gt;</code> | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| menu | No | <code>Record&lt;string, never> </code> | <code>&lt;svelte:component<br />      this={icon}<br />      aria-label={iconDescription}<br />      title={iconDescription}<br />      class="bx--overflow-menu&#95;&#95;icon {iconClass}"<br />    /></code> | -- |
 
 ### Events
 
@@ -2415,13 +2415,13 @@ None.
 | hasDivider | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to include a divider |
 | danger | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to use the danger variant |
 | requireTitle | No | <code>let</code> | No | -- | <code>boolean</code> | <code>true</code> | Set to `false` to omit the button `title` attribute |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the top-level element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the top-level element |
 
 ### Slots
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | <code>&lt;div class:bx--overflow-menu-options__option-content={true}&gt;{text}&lt;/div&gt;</code> | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | <code>&lt;div class:bx--overflow-menu-options&#95;&#95;option-content={true}>{text}&lt;/div></code> | -- |
 
 ### Events
 
@@ -2443,15 +2443,15 @@ None.
 | forwardText | No | <code>let</code> | No | -- | <code>string</code> | <code>"Next page"</code> | Specify the forward button text |
 | backwardText | No | <code>let</code> | No | -- | <code>string</code> | <code>"Previous page"</code> | Specify the backward button text |
 | itemsPerPageText | No | <code>let</code> | No | -- | <code>string</code> | <code>"Items per page:"</code> | Specify the items per page text |
-| itemText | No | <code>let</code> | No | -- | <code>(min: number, max: number) => string</code> | <code>(min, max) => \`${min}–${max} items\`</code> | Override the item text |
-| itemRangeText | No | <code>let</code> | No | -- | <code>(min: number, max: number, total: number) => string</code> | <code>(min, max, total) => \`${min}–${max} of ${total} items\`</code> | Override the item range text |
+| itemText | No | <code>let</code> | No | -- | <code>(min: number, max: number) => string</code> | <code>(min, max) => &#96;${min}–${max} items&#96;</code> | Override the item text |
+| itemRangeText | No | <code>let</code> | No | -- | <code>(min: number, max: number, total: number) => string</code> | <code>(min, max, total) => &#96;${min}–${max} of ${total} items&#96;</code> | Override the item range text |
 | pageInputDisabled | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to disable the page input |
 | pageSizeInputDisabled | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to disable the page size input |
 | pageSizes | No | <code>let</code> | No | -- | <code>number[]</code> | <code>[10]</code> | Specify the available page sizes |
 | pagesUnknown | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` if the number of pages is unknown |
-| pageText | No | <code>let</code> | No | -- | <code>(page: number) => string</code> | <code>(page) => \`page ${page}\`</code> | Override the page text |
-| pageRangeText | No | <code>let</code> | No | -- | <code>(current: number, total: number) => string</code> | <code>(_current, total) => \`of ${total} page${total === 1 ? "" : "s"}\`</code> | Override the page range text |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the top-level element |
+| pageText | No | <code>let</code> | No | -- | <code>(page: number) => string</code> | <code>(page) => &#96;page ${page}&#96;</code> | Override the page text |
+| pageRangeText | No | <code>let</code> | No | -- | <code>(current: number, total: number) => string</code> | <code>(&#95;current, total) => &#96;of ${total} page${total === 1 ? "" : "s"}&#96;</code> | Override the page range text |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the top-level element |
 
 ### Slots
 
@@ -2529,7 +2529,7 @@ None.
 | hideLabel | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to visually hide the label text |
 | invalid | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to indicate an invalid state |
 | invalidText | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the text for the invalid state |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the input element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the input element |
 | name | No | <code>let</code> | No | -- | <code>string</code> | <code>undefined</code> | Specify a name attribute for the input |
 
 ### Slots
@@ -2565,7 +2565,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -2612,13 +2612,13 @@ None.
 | description | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the step description |
 | label | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the step label |
 | secondaryLabel | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the step secondary label |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the top-level element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the top-level element |
 
 ### Slots
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>{ props: { class: "bx--progress-label" } } </code> | <code>&lt;p class:bx--progress-label={true}&gt;{label}&lt;/p&gt;</code> | -- |
+| -- | Yes | <code>{ props: { class: "bx--progress-label" } } </code> | <code>&lt;p class:bx--progress-label={true}>{label}&lt;/p></code> | -- |
 
 ### Events
 
@@ -2643,7 +2643,7 @@ None.
 | labelPosition | No | <code>let</code> | No | -- | <code>"right" &#124; "left"</code> | <code>"right"</code> | Specify the label position |
 | labelText | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the label text |
 | hideLabel | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to visually hide the label text |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the input element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the input element |
 | name | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify a name attribute for the checkbox input |
 
 ### Slots
@@ -2672,7 +2672,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -2714,14 +2714,14 @@ None.
 | value | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the value of the radio input |
 | tabindex | No | <code>let</code> | No | -- | <code>string</code> | <code>"0"</code> | Specify the tabindex |
 | iconDescription | No | <code>let</code> | No | -- | <code>string</code> | <code>"Tile checkmark"</code> | Specify the ARIA label for the radio tile checkmark icon |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the input element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the input element |
 | name | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify a name attribute for the input |
 
 ### Slots
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -2777,7 +2777,7 @@ None.
 | autofocus | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to auto focus the search element |
 | closeButtonLabelText | No | <code>let</code> | No | -- | <code>string</code> | <code>"Clear search input"</code> | Specify the close button label text |
 | labelText | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the label text |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the input element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the input element |
 
 ### Slots
 
@@ -2832,7 +2832,7 @@ None.
 | inline | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to use the inline variant |
 | light | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to enable the light variant |
 | disabled | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to disable the select element |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the select element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the select element |
 | name | No | <code>let</code> | No | -- | <code>string</code> | <code>undefined</code> | Specify a name attribute for the select element |
 | invalid | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to indicate an invalid state |
 | invalidText | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the invalid state text |
@@ -2845,7 +2845,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -2867,14 +2867,14 @@ None.
 | value | No | <code>let</code> | No | -- | <code>string</code> | <code>"value"</code> | Specify the value of the selectable tile |
 | tabindex | No | <code>let</code> | No | -- | <code>string</code> | <code>"0"</code> | Specify the tabindex |
 | iconDescription | No | <code>let</code> | No | -- | <code>string</code> | <code>"Tile checkmark"</code> | Specify the ARIA label for the selectable tile checkmark icon |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the input element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the input element |
 | name | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify a name attribute for the input |
 
 ### Slots
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -2918,7 +2918,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -2959,7 +2959,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -2975,7 +2975,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -3018,7 +3018,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -3103,7 +3103,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | <code>Skip to main content</code> | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | <code>Skip to main content</code> | -- |
 
 ### Events
 
@@ -3130,7 +3130,7 @@ None.
 | disabled | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to disable the slider |
 | light | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to enable the light variant |
 | hideTextInput | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to hide the text input |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the slider div element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the slider div element |
 | invalid | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to indicate an invalid state |
 | labelText | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the label text |
 | name | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Set a name for the slider element |
@@ -3184,7 +3184,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -3206,7 +3206,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -3230,7 +3230,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -3251,7 +3251,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -3272,7 +3272,7 @@ None.
 | ref | No | <code>let</code> | Yes | -- | <code>null &#124; HTMLInputElement</code> | <code>null</code> | Obtain a reference to the input HTML element |
 | title | No | <code>let</code> | No | -- | <code>string</code> | <code>"title"</code> | Specify the title of the input |
 | value | No | <code>let</code> | No | -- | <code>string</code> | <code>"value"</code> | Specify the value of the input |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the input element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the input element |
 | name | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify a name attribute for the input |
 
 ### Slots
@@ -3297,7 +3297,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -3341,13 +3341,13 @@ None.
 | ref | No | <code>let</code> | Yes | -- | <code>null &#124; HTMLButtonElement</code> | <code>null</code> | Obtain a reference to the button HTML element |
 | text | No | <code>let</code> | No | -- | <code>string</code> | <code>"Provide text"</code> | Specify the switch text<br />Alternatively, use the "text" slot  (e.g., &lt;span slot="text"&gt;...&lt;/span&gt;) |
 | disabled | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to disable the switch |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the button element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the button element |
 
 ### Slots
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | <code>{text}</code> | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | <code>{text}</code> | -- |
 
 ### Events
 
@@ -3370,13 +3370,13 @@ None.
 | href | No | <code>let</code> | No | -- | <code>string</code> | <code>"#"</code> | Specify the href attribute |
 | disabled | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to disable the tab |
 | tabindex | No | <code>let</code> | No | -- | <code>string</code> | <code>"0"</code> | Specify the tabindex |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the top-level element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the top-level element |
 
 ### Slots
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | <code>{label}</code> | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | <code>{label}</code> | -- |
 
 ### Events
 
@@ -3393,13 +3393,13 @@ None.
 
 | Prop name | Required | Kind | Reactive | Binding | Type | Default value | Description |
 | :- | :- | :- | :- | :- | :- | :- | :- |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the top-level element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the top-level element |
 
 ### Slots
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -3422,7 +3422,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -3438,7 +3438,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -3454,7 +3454,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -3479,7 +3479,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -3495,7 +3495,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -3514,13 +3514,13 @@ None.
 | :- | :- | :- | :- | :- | :- | :- | :- |
 | scope | No | <code>let</code> | No | -- | <code>string</code> | <code>"col"</code> | Specify the `scope` attribute |
 | translateWithId | No | <code>let</code> | No | -- | <code>() => string</code> | <code>() => ""</code> | Override the default id translations |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the top-level element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the top-level element |
 
 ### Slots
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -3541,7 +3541,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -3567,8 +3567,8 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
-| content | No | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| content | No | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -3611,13 +3611,13 @@ None.
 | skeleton | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to display the skeleton state |
 | title | No | <code>let</code> | No | -- | <code>string</code> | <code>"Clear filter"</code> | Set the title for the close button in a filterable tag |
 | icon | No | <code>let</code> | No | -- | <code>typeof import("carbon-icons-svelte").CarbonIcon</code> | <code>undefined</code> | Specify the icon from `carbon-icons-svelte` to render |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the filterable tag |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the filterable tag |
 
 ### Slots
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>{ props: { class: "bx--tag__label" } } </code> | -- | -- |
+| -- | Yes | <code>{ props: { class: "bx--tag&#95;&#95;label" } } </code> | -- | -- |
 
 ### Events
 
@@ -3666,7 +3666,7 @@ None.
 | hideLabel | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to visually hide the label text |
 | invalid | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to indicate an invalid state |
 | invalidText | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the text for the invalid state |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the textarea element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the textarea element |
 | name | No | <code>let</code> | No | -- | <code>string</code> | <code>undefined</code> | Specify a name attribute for the input |
 
 ### Slots
@@ -3721,7 +3721,7 @@ None.
 | light | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to enable the light variant |
 | disabled | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to disable the input |
 | helperText | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the helper text |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the input element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the input element |
 | name | No | <code>let</code> | No | -- | <code>string</code> | <code>undefined</code> | Specify a name attribute for the input |
 | labelText | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the label text |
 | hideLabel | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to visually hide the label text |
@@ -3783,7 +3783,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -3808,7 +3808,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -3827,7 +3827,7 @@ None.
 | size | No | <code>let</code> | No | -- | <code>"sm" &#124; "xl"</code> | <code>undefined</code> | Specify the size of the input |
 | type | No | <code>let</code> | No | -- | <code>string</code> | <code>"text"</code> | Specify the input type |
 | placeholder | No | <code>let</code> | No | -- | <code>string</code> | <code>"hh=mm"</code> | Specify the input placeholder text |
-| pattern | No | <code>let</code> | No | -- | <code>string</code> | <code>"(1[012]&#124;[1-9]):[0-5][0-9](\\s)?"</code> | Specify the `pattern` attribute for the input element |
+| pattern | No | <code>let</code> | No | -- | <code>string</code> | <code>"(1[012]&#124;[1-9]):[0-5][0-9](&#92;\s)?"</code> | Specify the `pattern` attribute for the input element |
 | maxlength | No | <code>let</code> | No | -- | <code>number</code> | <code>5</code> | Specify the `maxlength` input attribute |
 | light | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to enable the light variant |
 | disabled | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to disable the input |
@@ -3835,14 +3835,14 @@ None.
 | hideLabel | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to visually hide the label text |
 | invalid | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | Set to `true` to indicate an invalid state |
 | invalidText | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the invalid state text |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the input element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the input element |
 | name | No | <code>let</code> | No | -- | <code>string</code> | <code>undefined</code> | Specify a name attribute for the input |
 
 ### Slots
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -3869,14 +3869,14 @@ None.
 | iconDescription | No | <code>let</code> | No | -- | <code>string</code> | <code>"Open list of options"</code> | Specify the ARIA label for the chevron icon |
 | labelText | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the label text |
 | <s>hideLabel</s><br />**Deprecated**: The `hideLabel` prop for `TimePickerSelect` is no longer needed and has been deprecated. It will be removed in the next major release. Set to `false` to show the label text | No | <code>let</code> | No | -- | <code>boolean</code> | <code>true</code> | -- |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the select element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the select element |
 | name | No | <code>let</code> | No | -- | <code>string</code> | <code>undefined</code> | Specify a name attribute for the select element |
 
 ### Slots
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -3907,7 +3907,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -3931,7 +3931,7 @@ None.
 | labelA | No | <code>let</code> | No | -- | <code>string</code> | <code>"Off"</code> | Specify the label for the untoggled state |
 | labelB | No | <code>let</code> | No | -- | <code>string</code> | <code>"On"</code> | Specify the label for the toggled state |
 | labelText | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the label text |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the input element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the input element |
 | name | No | <code>let</code> | No | -- | <code>string</code> | <code>undefined</code> | Specify a name attribute for the checkbox input |
 
 ### Slots
@@ -3960,7 +3960,7 @@ None.
 | :- | :- | :- | :- | :- | :- | :- | :- |
 | size | No | <code>let</code> | No | -- | <code>"default" &#124; "sm"</code> | <code>"default"</code> | Specify the toggle size |
 | labelText | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the label text |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the input element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the input element |
 
 ### Slots
 
@@ -3986,7 +3986,7 @@ None.
 | labelA | No | <code>let</code> | No | -- | <code>string</code> | <code>"Off"</code> | Specify the label for the untoggled state |
 | labelB | No | <code>let</code> | No | -- | <code>string</code> | <code>"On"</code> | Specify the label for the toggled state |
 | labelText | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the label text |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the input element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the input element |
 | name | No | <code>let</code> | No | -- | <code>string</code> | <code>undefined</code> | Specify a name attribute for the checkbox input |
 
 ### Slots
@@ -4013,7 +4013,7 @@ None.
 | Prop name | Required | Kind | Reactive | Binding | Type | Default value | Description |
 | :- | :- | :- | :- | :- | :- | :- | :- |
 | labelText | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the label text |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the input element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the input element |
 
 ### Slots
 
@@ -4040,7 +4040,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -4052,13 +4052,13 @@ None.
 
 | Prop name | Required | Kind | Reactive | Binding | Type | Default value | Description |
 | :- | :- | :- | :- | :- | :- | :- | :- |
-| formatTotalSelected | No | <code>let</code> | No | -- | <code>(totalSelected: number) => string</code> | <code>(totalSelected) => \`${totalSelected} item${totalSelected === 1 ? "" : "s"} selected\`</code> | Override the total items selected text |
+| formatTotalSelected | No | <code>let</code> | No | -- | <code>(totalSelected: number) => string</code> | <code>(totalSelected) => &#96;${totalSelected} item${totalSelected === 1 ? "" : "s"} selected&#96;</code> | Override the total items selected text |
 
 ### Slots
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -4074,7 +4074,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -4090,7 +4090,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -4106,7 +4106,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
@@ -4157,17 +4157,17 @@ None.
 | iconDescription | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the ARIA label for the tooltip button |
 | iconName | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the icon name attribute |
 | tabindex | No | <code>let</code> | No | -- | <code>string</code> | <code>"0"</code> | Set the button tabindex |
-| tooltipId | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the tooltip |
-| triggerId | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the tooltip button |
+| tooltipId | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the tooltip |
+| triggerId | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the tooltip button |
 | triggerText | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Set the tooltip button text |
 
 ### Slots
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
-| icon | No | <code>Record<string, never> </code> | <code>&lt;svelte:component<br />            this={icon}<br />            name={iconName}<br />          /&gt;</code> | -- |
-| triggerText | No | <code>Record<string, never> </code> | <code>{triggerText}</code> | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| icon | No | <code>Record&lt;string, never> </code> | <code>&lt;svelte:component<br />            this={icon}<br />            name={iconName}<br />          /></code> | -- |
+| triggerText | No | <code>Record&lt;string, never> </code> | <code>{triggerText}</code> | -- |
 
 ### Events
 
@@ -4186,14 +4186,14 @@ None.
 | tooltipText | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the tooltip text |
 | align | No | <code>let</code> | No | -- | <code>"start" &#124; "center" &#124; "end"</code> | <code>"center"</code> | Set the alignment of the tooltip relative to the icon |
 | direction | No | <code>let</code> | No | -- | <code>"top" &#124; "bottom"</code> | <code>"bottom"</code> | Set the direction of the tooltip relative to the icon |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the tooltip div element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the tooltip div element |
 
 ### Slots
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
-| tooltip | No | <code>Record<string, never> </code> | <code>{tooltipText}</code> | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| tooltip | No | <code>Record&lt;string, never> </code> | <code>{tooltipText}</code> | -- |
 
 ### Events
 
@@ -4215,14 +4215,14 @@ None.
 | tooltipText | No | <code>let</code> | No | -- | <code>string</code> | <code>""</code> | Specify the tooltip text.<br />Alternatively, use the "text" slot |
 | align | No | <code>let</code> | No | -- | <code>"start" &#124; "center" &#124; "end"</code> | <code>"center"</code> | Set the alignment of the tooltip relative to the icon |
 | direction | No | <code>let</code> | No | -- | <code>"top" &#124; "right" &#124; "bottom" &#124; "left"</code> | <code>"bottom"</code> | Set the direction of the tooltip relative to the icon |
-| id | No | <code>let</code> | No | -- | <code>string</code> | <code>\`ccs-${Math.random().toString(36)}\`</code> | Set an id for the span element |
+| id | No | <code>let</code> | No | -- | <code>string</code> | <code>&#96;ccs-${Math.random().toString(36)}&#96;</code> | Set an id for the span element |
 
 ### Slots
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
-| text | No | <code>Record<string, never> </code> | <code>{tooltipText}</code> | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
+| text | No | <code>Record&lt;string, never> </code> | <code>{tooltipText}</code> | -- |
 
 ### Events
 
@@ -4246,7 +4246,7 @@ None.
 
 | Slot name | Default | Props | Fallback | Description |
 | :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record<string, never> </code> | -- | -- |
+| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
 
 ### Events
 
