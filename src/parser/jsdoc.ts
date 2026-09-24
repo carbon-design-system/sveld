@@ -770,6 +770,31 @@ export function parseCustomTypes(
       return [inline, ...continuation].filter(Boolean).join("\n");
     };
 
+    /**
+     * Unindented text right after an `@event` (or after its last `@property`/`@type`) is read
+     * as the description of the tag below it, per the description-above-the-tag convention.
+     * When that leaves the event with no description, the author likely meant the text for the
+     * event, so flag the attribution instead of guessing.
+     */
+    const flagDescriptionAfterEvent = (
+      tag: string,
+      name: string,
+      tagSource: typeof blockLines,
+      previousTag: JSDocTag | undefined,
+    ) => {
+      if (currentEventName === undefined || currentEventDescription) return;
+      if (previousTag?.tag !== "event" && !EVENT_SCOPE_TAGS.has(previousTag?.tag ?? "")) return;
+      if (cleanDescription(getInlineTagDescription(tagSource))) return;
+      const label = name ? `@${tag} "${name}"` : `@${tag}`;
+      recordDiagnostic(
+        ctx,
+        "event-description-ambiguous",
+        currentEventName,
+        `Text after @event "${currentEventName}" was used as the description of ${label}. Move it above the tag it describes, indent it as a continuation line, or give each event its own comment block.`,
+        sourceRangeFromCommentTag(ctx, tagSource),
+      );
+    };
+
     const finalizeEvent = () => {
       if (currentEventName !== undefined) {
         // Prefer explicit `@type` over `@property`-built objects; `{object}` falls through.
@@ -950,6 +975,7 @@ export function parseCustomTypes(
       // Only tags that can use it claim the text above them; a `@property` or `@type` must not
       // swallow the lines between an `@event` and itself, or a previous tag's continuation lines.
       const precedingDescription = PRECEDING_DESCRIPTION_TAGS.has(tag) ? getPrecedingDescription(tagSource) : undefined;
+      if (precedingDescription) flagDescriptionAfterEvent(tag, name, tagSource, tags[tagIndex - 1]);
 
       switch (tag) {
         case "extends":

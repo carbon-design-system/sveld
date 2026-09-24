@@ -1,0 +1,104 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 29,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "clear",
+      "detail": "null",
+      "description": "Fired when the user selects an item.",
+      "source": {
+        "start": {
+          "line": 22,
+          "column": 4
+        },
+        "end": {
+          "line": 22,
+          "column": 27
+        }
+      }
+    },
+    {
+      "type": "dispatched",
+      "name": "close",
+      "detail": "null",
+      "source": {
+        "start": {
+          "line": 24,
+          "column": 4
+        },
+        "end": {
+          "line": 24,
+          "column": 27
+        }
+      }
+    },
+    {
+      "type": "dispatched",
+      "name": "open",
+      "detail": "{ value: string }",
+      "description": "Fired when the menu opens.",
+      "source": {
+        "start": {
+          "line": 23,
+          "column": 4
+        },
+        "end": {
+          "line": 23,
+          "column": 36
+        }
+      }
+    },
+    {
+      "type": "dispatched",
+      "name": "select",
+      "detail": "{ value: string }",
+      "source": {
+        "start": {
+          "line": 21,
+          "column": 4
+        },
+        "end": {
+          "line": 21,
+          "column": 38
+        }
+      }
+    }
+  ],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "event-description-ambiguous/input.svelte",
+      "kind": "event-description-ambiguous",
+      "name": "select",
+      "message": "Text after @event \"select\" was used as the description of @event \"clear\". Move it above the tag it describes, indent it as a continuation line, or give each event its own comment block.",
+      "source": {
+        "start": {
+          "line": 5,
+          "column": 5
+        },
+        "end": {
+          "line": 5,
+          "column": 24
+        }
+      },
+      "code": "sveld/event-description-ambiguous",
+      "severity": "warning"
+    }
+  ]
+}
