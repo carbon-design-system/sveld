@@ -1312,7 +1312,7 @@ export default class ComponentParser {
             const initResult = init == null ? { isFunction: false } : processInitializer(this, this.ctx, init);
             const { value, type: typeSeed, isFunction: initializerIsFunction, defaultValue } = initResult;
             const resolvedJSDoc = initResult;
-            queuePendingCrossFileDefault(this.ctx, initResult, localPropName, "moduleExports");
+            queuePendingCrossFileDefault(this.ctx, initResult, declaratorPropName, "moduleExports");
 
             declarators.push({
               prop_name: declaratorPropName,

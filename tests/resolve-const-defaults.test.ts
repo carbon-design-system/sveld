@@ -196,6 +196,24 @@ describe("cross-file imported-constant prop-default resolution", () => {
     expect(moduleExport?.type).toBe("number");
   });
 
+  test("resolves a module-script const exported under another name", async () => {
+    const component = await parseComponent(
+      "ModuleRenamed",
+      `<script context="module">
+  import { TOOLTIP_LEAVE_DELAY_MS } from "./timing.js";
+
+  const delay = TOOLTIP_LEAVE_DELAY_MS;
+  export { delay as DEFAULT_DELAY };
+</script>
+<div />
+`,
+    );
+    const moduleExport = component?.moduleExports.find((e) => e.name === "DEFAULT_DELAY");
+
+    expect(moduleExport?.value).toBe("300");
+    expect(moduleExport?.type).toBe("number");
+  });
+
   test("resolves each component the same whichever order an import cycle is reached in", async () => {
     writeFileSync(path.join(dir, "a.js"), 'export const X = 1;\nexport * from "./b.js";\n');
     writeFileSync(path.join(dir, "b.js"), 'export * from "./a.js";\nexport const Y = 2;\n');
