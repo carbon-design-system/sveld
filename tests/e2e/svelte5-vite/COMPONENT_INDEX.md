@@ -25,7 +25,7 @@ None.
 | Event name | Type | Detail | Description |
 | :- | :- | :- | :- |
 | click | forwarded | -- | -- |
-| close | dispatched | -- | -- |
+| close | dispatched | <code>{ reason: string }</code> | -- |
 
 ## `RunesButton`
 

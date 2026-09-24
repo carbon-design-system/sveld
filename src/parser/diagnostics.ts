@@ -15,16 +15,25 @@ export function recordDiagnostic(
   message: string,
   source?: SourceRange,
 ) {
-  ctx.diagnosticRecords.push(
-    createDiagnostic({
-      component: ctx.componentFilePath,
-      kind,
-      name,
-      message,
-      ...(source ? { source } : {}),
-      ...(isSveldIgnored(ctx, kind, name) ? { ignored: true } : {}),
-    }),
-  );
+  ctx.diagnosticRecords.push(buildDiagnostic(ctx, kind, name, message, source));
+}
+
+/** The diagnostic {@link recordDiagnostic} would record, for callers that hold it back. */
+export function buildDiagnostic(
+  ctx: ParserContext,
+  kind: SveldDiagnosticKind,
+  name: string,
+  message: string,
+  source?: SourceRange,
+) {
+  return createDiagnostic({
+    component: ctx.componentFilePath,
+    kind,
+    name,
+    message,
+    ...(source ? { source } : {}),
+    ...(isSveldIgnored(ctx, kind, name) ? { ignored: true } : {}),
+  });
 }
 
 /** Key `ctx.sveldIgnoreDirectives` by kind + name so a context variable and a prop can't collide. */
@@ -54,7 +63,7 @@ export function recordSveldIgnore(
 }
 
 /** True when `recordSveldIgnore` recorded a matching code (or a bare ignore-all) for this symbol. */
-function isSveldIgnored(ctx: ParserContext, kind: SveldDiagnosticKind, name: string): boolean {
+export function isSveldIgnored(ctx: ParserContext, kind: SveldDiagnosticKind, name: string): boolean {
   const codes = ctx.sveldIgnoreDirectives.get(ignoreKey(kind, name));
   if (!codes) return false;
   return codes.has("") || codes.has(DIAGNOSTIC_CODES[kind]);

@@ -20,7 +20,7 @@
 | :- | :- | :- | :- | :- | :- | :- | :- |
 | type | No | <code>let</code> | No | -- | <code>string</code> | <code>"button"</code> | -- |
 | primary | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | -- |
-| print | No | <code>function</code> | No | -- | <code>() => any</code> | -- | -- |
+| print | No | <code>accessor</code> | No | -- | <code>() => any</code> | -- | -- |
 
 ### Slots
 

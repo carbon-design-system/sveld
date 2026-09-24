@@ -4,10 +4,12 @@ import { readFile } from "node:fs/promises";
 import { basename, dirname, extname, isAbsolute, join, parse, relative, resolve } from "node:path";
 import { asRelativeSourcePath, type NormalizedPath } from "./brands";
 import type {
+  DispatchedEvent,
   ParsedComponent,
   PendingCallDefaultCandidate,
   PendingConstDefaultCandidate,
   PendingContextKeyCandidate,
+  PendingDispatchEscapeCandidate,
   SourceRange,
 } from "./ComponentParser";
 import { buildReverseDeps, expandAffected } from "./dependency-graph";
@@ -26,6 +28,7 @@ import { type EntryExports, parseEntryExports } from "./parse-entry-exports";
 import { type ParsedExports, parseExports } from "./parse-exports";
 import { applyResolvedProps, getParsedComponentTypeScriptMetadata } from "./parsed-component-metadata";
 import { generateContextTypeName } from "./parser/contexts";
+import { compareSerializedEvents } from "./parser/events";
 import { getParserStack, loadParserStack } from "./parser-stack";
 import { hasSvelteExtension, normalizeSeparators } from "./path";
 import {
@@ -36,6 +39,11 @@ import {
 } from "./resolve-call-defaults";
 import { type ConstDefaultResolution, resolveConstDefaultCandidates } from "./resolve-const-defaults";
 import { type ContextKeyResolution, resolveContextKeyCandidates } from "./resolve-context-keys";
+import {
+  type DispatchEscapeResolution,
+  describeDispatchEscapeFailure,
+  resolveDispatchEscapeCandidates,
+} from "./resolve-dispatch-escapes";
 import type { BareTypeSession, TypeResolver } from "./resolve-types";
 import { parse as parseTemplate, TemplateParseNotImplementedError } from "./svelte-template-parse";
 import { exportsTypeName, propsTypeName, type WriteTsDefinitionOptions } from "./writer/writer-ts-definitions-core";
@@ -832,9 +840,15 @@ export async function generateBundle(
   const callDefaultCandidates = collectCallDefaultCandidates(allComponentsForTypes);
   const constDefaultCandidates = collectConstDefaultCandidates(allComponentsForTypes);
   const contextKeyCandidates = collectContextKeyCandidates(allComponentsForTypes);
-  if (callDefaultCandidates.length > 0 || constDefaultCandidates.length > 0 || contextKeyCandidates.length > 0) {
+  const dispatchEscapeCandidates = collectDispatchEscapeCandidates(allComponentsForTypes);
+  if (
+    callDefaultCandidates.length > 0 ||
+    constDefaultCandidates.length > 0 ||
+    contextKeyCandidates.length > 0 ||
+    dispatchEscapeCandidates.length > 0
+  ) {
     await loadParserStack();
-    // All three passes share this cache and cycle set.
+    // All four passes share this cache and cycle set.
     const crossFileResolveContext = createCallDefaultResolveContext();
     for (const { component, candidates } of callDefaultCandidates) {
       const resolutions = resolveCallDefaultCandidates(
@@ -859,6 +873,14 @@ export async function generateBundle(
         crossFileResolveContext,
       );
       applyContextKeyResolutions(component, resolutions);
+    }
+    for (const { component, candidates, deferredEventNoSource } of dispatchEscapeCandidates) {
+      const resolutions = resolveDispatchEscapeCandidates(
+        resolveComponentFilePath(component.filePath),
+        candidates,
+        crossFileResolveContext,
+      );
+      applyDispatchEscapeResolutions(component, resolutions, deferredEventNoSource);
     }
     syncCrossFileResults(components, allComponentsForTypes);
   }
@@ -1056,17 +1078,92 @@ function startsAfter(range: SourceRange | undefined, other: SourceRange | undefi
   return line > other.start.line || (line === other.start.line && column > other.start.column);
 }
 
+interface DispatchEscapeCandidateGroup {
+  component: ComponentDocApi;
+  candidates: PendingDispatchEscapeCandidate[];
+  deferredEventNoSource: SveldDiagnostic[];
+}
+
+/** Components whose dispatcher is passed to an imported function. */
+function collectDispatchEscapeCandidates(components: ComponentDocs): DispatchEscapeCandidateGroup[] {
+  const groups: DispatchEscapeCandidateGroup[] = [];
+
+  for (const component of components.values()) {
+    const metadata = getParsedComponentTypeScriptMetadata(component);
+    const candidates = metadata?.pendingDispatchEscapeCandidates;
+    if (!candidates || candidates.length === 0) continue;
+    groups.push({ component, candidates, deferredEventNoSource: metadata.deferredEventNoSourceDiagnostics ?? [] });
+  }
+
+  return groups;
+}
+
+/**
+ * Add the events each helper dispatches, unless the component already has
+ * one by that name (its `@event` tag wins). A helper sveld couldn't read gets
+ * a `dispatch-escapes` diagnostic. The held-back `event-no-source`
+ * diagnostics come back only when every helper was read and none of them
+ * dispatches the event.
+ */
+function applyDispatchEscapeResolutions(
+  component: ComponentDocApi,
+  resolutions: DispatchEscapeResolution[],
+  deferredEventNoSource: SveldDiagnostic[],
+): void {
+  const helperEvents = new Map<string, DispatchedEvent>();
+  const diagnostics = [...(component.diagnostics ?? [])];
+  let everyHelperRead = true;
+
+  for (const { candidate, events, failureReason } of resolutions) {
+    if (failureReason) {
+      everyHelperRead = false;
+      diagnostics.push(
+        createDiagnostic({
+          component: component.filePath,
+          kind: "dispatch-escapes",
+          name: candidate.dispatcherName,
+          message: `\`${candidate.dispatcherName}\` is passed to \`${candidate.calleeText}\`, but sveld couldn't read the events it dispatches: ${describeDispatchEscapeFailure(candidate, failureReason)}. Document them with @event tags.`,
+          ...(candidate.source ? { source: candidate.source } : {}),
+          ...(candidate.ignored ? { ignored: true } : {}),
+        }),
+      );
+      continue;
+    }
+    for (const event of events ?? []) {
+      if (helperEvents.has(event.name)) continue;
+      helperEvents.set(event.name, {
+        type: "dispatched",
+        name: event.name,
+        detail: event.detail,
+        ...(candidate.source ? { source: candidate.source } : {}),
+      });
+    }
+  }
+
+  if (everyHelperRead) {
+    for (const diagnostic of deferredEventNoSource) {
+      if (!helperEvents.has(diagnostic.name)) diagnostics.push(diagnostic);
+    }
+  }
+  component.diagnostics = diagnostics;
+
+  const knownNames = new Set(component.events.map((event) => event.name));
+  const added = Array.from(helperEvents.values()).filter((event) => !knownNames.has(event.name));
+  if (added.length > 0) component.events = [...component.events, ...added].sort(compareSerializedEvents);
+}
+
 /**
  * The cross-file passes run on `allComponentsForTypes` and reassign
- * `contexts` and `diagnostics` there. Exported components are separate
+ * `contexts`, `events`, and `diagnostics` there. Exported components are separate
  * shallow copies of the same parse, so JSON and Markdown would otherwise
- * miss a context whose key was imported.
+ * miss a context whose key was imported, or an event a helper dispatches.
  */
 function syncCrossFileResults(components: ComponentDocs, allComponentsForTypes: ComponentDocs): void {
   for (const component of components.values()) {
     const resolved = allComponentsForTypes.get(component.filePath);
     if (!resolved || resolved === component) continue;
     component.contexts = resolved.contexts;
+    component.events = resolved.events;
     component.diagnostics = resolved.diagnostics;
   }
 }

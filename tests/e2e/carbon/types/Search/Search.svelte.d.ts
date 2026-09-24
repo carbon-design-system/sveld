@@ -1,6 +1,9 @@
 import { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
 
-export type SearchProps = {
+type $RestProps = SvelteHTMLElements["div"];
+
+type $Props = {
   /**
    * @deprecated this prop will be removed in the next major release
    * Use size="sm" instead
@@ -85,7 +88,11 @@ export type SearchProps = {
    * @default null
    */
   ref?: null | HTMLInputElement;
+
+  [key: `data-${string}`]: unknown;
 };
+
+export type SearchProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class Search extends SvelteComponentTyped<
   SearchProps,

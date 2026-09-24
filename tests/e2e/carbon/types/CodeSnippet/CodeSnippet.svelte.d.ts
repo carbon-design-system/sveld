@@ -1,6 +1,9 @@
 import { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
 
-export type CodeSnippetProps = {
+type $RestProps = SvelteHTMLElements["span"];
+
+type $Props = {
   /**
    * Set the type of code snippet
    * @default "single"
@@ -109,7 +112,11 @@ export type CodeSnippetProps = {
   ref?: null | HTMLPreElement;
 
   children?: (this: void) => void;
+
+  [key: `data-${string}`]: unknown;
 };
+
+export type CodeSnippetProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class CodeSnippet extends SvelteComponentTyped<
   CodeSnippetProps,

@@ -8,6 +8,7 @@ import { matchesGlob } from "./glob-match";
  * - `context-any-type`: `setContext` value inferred as `any`.
  * - `slot-missing-type`: `@slot`/`@snippet` tag omitted the required `{Type}` annotation.
  * - `event-no-source`: `@event` with no dispatch, forward, or callback prop.
+ * - `dispatch-escapes`: the `createEventDispatcher()` result is passed to a function sveld can't read the dispatched events of; they must be documented with `@event`.
  * - `example-compile-error`: a TS/JS `@example` block failed to type-check (opt-in, `checkExamples`).
  * - `example-syntax-error`: a `svelte`/`html` `@example` block failed to parse (opt-in, `checkExamples`).
  * - `syntax-skipped`: `$props()`/`{@render}` syntax the parser can't model; omitted from output.
@@ -34,6 +35,7 @@ export type SveldDiagnosticKind =
   | "context-any-type"
   | "slot-missing-type"
   | "event-no-source"
+  | "dispatch-escapes"
   | "example-compile-error"
   | "example-syntax-error"
   | "syntax-skipped"
@@ -69,6 +71,7 @@ export const DIAGNOSTIC_CODES: Record<SveldDiagnosticKind, string> = {
   "context-any-type": "sveld/context-any-type",
   "slot-missing-type": "sveld/slot-missing-type",
   "event-no-source": "sveld/event-no-source",
+  "dispatch-escapes": "sveld/dispatch-escapes",
   "example-compile-error": "sveld/example-compile-error",
   "example-syntax-error": "sveld/example-syntax-error",
   "syntax-skipped": "sveld/syntax-skipped",
@@ -101,6 +104,7 @@ const DIAGNOSTIC_SEVERITIES: Record<SveldDiagnosticKind, SveldDiagnosticSeverity
   "context-any-type": "warning",
   "slot-missing-type": "warning",
   "event-no-source": "warning",
+  "dispatch-escapes": "warning",
   "example-compile-error": "error",
   "example-syntax-error": "error",
   "syntax-skipped": "error",
@@ -231,6 +235,7 @@ const KIND_LABELS: Record<SveldDiagnosticKind, string> = {
   "context-any-type": "Context values typed as `any`",
   "slot-missing-type": "@slot/@snippet tags missing a {Type} annotation",
   "event-no-source": "@event tags with no dispatch or callback",
+  "dispatch-escapes": "Dispatchers passed to functions sveld can't follow",
   "example-compile-error": "@example blocks that failed to compile",
   "example-syntax-error": "@example blocks that failed to parse",
   "syntax-skipped": "Component syntax sveld skipped",
@@ -258,6 +263,7 @@ const KIND_ORDER: SveldDiagnosticKind[] = [
   "context-any-type",
   "slot-missing-type",
   "event-no-source",
+  "dispatch-escapes",
   "example-compile-error",
   "example-syntax-error",
   "syntax-skipped",

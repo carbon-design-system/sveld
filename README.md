@@ -429,6 +429,7 @@ Every diagnostic carries a stable, namespaced `code` (`"sveld/<kind>"`) alongsid
 | `sveld/context-any-type` | `warning` | Annotate the `setContext` value's declaration with `@type` or a native TypeScript type. |
 | `sveld/slot-missing-type` | `warning` | Add the required `{Type}` annotation to the `@slot`/`@snippet` tag (e.g. `@slot {{}} name`); until then it falls back to `Record<string, never>`. |
 | `sveld/event-no-source` | `warning` | Dispatch the event (`createEventDispatcher`/`dispatch`), forward it (`on:name`), or add a matching `on<Name>` callback prop; otherwise remove the stale `@event` tag. |
+| `sveld/dispatch-escapes` | `warning` | The `createEventDispatcher()` result is passed to a function sveld can't follow: one that isn't imported from a local module, names an event with something other than a string literal, or passes the dispatcher on. Document the events it dispatches with `@event` tags. Add `@sveld-ignore sveld/dispatch-escapes` to the dispatcher's JSDoc once they're covered. |
 | `sveld/example-compile-error` | `error` | Fix the `@example` TS/JS code block so it type-checks, or remove the broken example. |
 | `sveld/example-syntax-error` | `error` | Fix the `@example` `svelte`/`html` markup so it parses, or remove the broken example. |
 | `sveld/syntax-skipped` | `error` | Rewrite the flagged syntax in a form sveld can model (see the diagnostic's `message` for what was skipped). |
@@ -452,7 +453,7 @@ Every diagnostic carries a stable, namespaced `code` (`"sveld/<kind>"`) alongsid
 
 #### Severity and `--strict=errors`
 
-Each diagnostic's `severity` is `"error"` (`example-compile-error`, `example-syntax-error`, `syntax-skipped`, `extend-props-target-missing`, `internal-typedef-referenced` — sveld emitted broken or unmodeled output) or `"warning"` (`prop-unknown-type`, `context-any-type`, `slot-missing-type`, `event-no-source`, `rest-props-unresolved`, `context-duplicate-key`, `context-key-unresolved`, `spread-unresolved`, `export-unresolved`, `module-export-conflict`, `extend-props-duplicate`, `extend-props-override`, `jsdoc-unknown-tag`, `typedef-duplicate`, `property-duplicate`, `generics-conflict`, `event-description-ambiguous`, `jsdoc-tag-dropped`, `types-inline-unresolved` — a type fell back to `any`). Plain `strict: true` / `--strict` fails on both, unchanged from before. Pass `strict: "errors"` (or `--strict=errors`) to fail CI only on `error`-severity diagnostics, letting `any`-fallback warnings through:
+Each diagnostic's `severity` is `"error"` (`example-compile-error`, `example-syntax-error`, `syntax-skipped`, `extend-props-target-missing`, `internal-typedef-referenced` — sveld emitted broken or unmodeled output) or `"warning"` (`prop-unknown-type`, `context-any-type`, `slot-missing-type`, `event-no-source`, `dispatch-escapes`, `rest-props-unresolved`, `context-duplicate-key`, `context-key-unresolved`, `spread-unresolved`, `export-unresolved`, `module-export-conflict`, `extend-props-duplicate`, `extend-props-override`, `jsdoc-unknown-tag`, `typedef-duplicate`, `property-duplicate`, `generics-conflict`, `event-description-ambiguous`, `jsdoc-tag-dropped`, `types-inline-unresolved` — a type fell back to `any`). Plain `strict: true` / `--strict` fails on both, unchanged from before. Pass `strict: "errors"` (or `--strict=errors`) to fail CI only on `error`-severity diagnostics, letting `any`-fallback warnings through:
 
 ```sh
 npx sveld --json --strict=errors
@@ -482,7 +483,7 @@ export default defineConfig({
 });
 ```
 
-**Inline `@sveld-ignore <code>`**, on the same JSDoc comment as the prop, `@event` tag, or context variable it applies to:
+**Inline `@sveld-ignore <code>`**, on the same JSDoc comment as the prop, `@event` tag, context variable, or event dispatcher it applies to:
 
 ```svelte
 <script>
@@ -3011,6 +3012,28 @@ Use the `@event` tag to type dispatched events. An event name is required and a 
 In Svelte 5 runes components, callback props like `onclick` are props, not events. The `events` output stays reserved for dispatched events and legacy forwarded events. If a runes component documents `@event foo` and exposes a matching callback prop like `onfoo` without actually dispatching or forwarding `foo`, `sveld` aliases that documentation onto the callback prop instead of synthesizing an emitted event.
 
 Use `null` as the value if no event detail is provided.
+
+`sveld` infers events from `dispatch("name")` calls. When the dispatcher is passed to a function imported from a local module, as `helper(dispatch)` or `helper({ dispatch })`, it reads that function too and picks up the events it dispatches:
+
+```js
+// dispatch-open-close.js
+export function createOpenCloseDispatcher(dispatch) {
+  return (open) => dispatch(open ? "open" : "close");
+}
+```
+
+```svelte
+<script>
+  import { createEventDispatcher } from "svelte";
+  import { createOpenCloseDispatcher } from "./dispatch-open-close.js";
+
+  const dispatch = createEventDispatcher();
+  // Types `open` and `close` as `CustomEvent<null>`
+  const notifyOpenChange = createOpenCloseDispatcher(dispatch);
+</script>
+```
+
+This happens when sveld builds the whole library (CLI, `sveld()`, or the Vite plugin), not when parsing a single component on its own. Each event name there must be a string literal, or a conditional between them. The detail is typed from a literal argument and is `any` otherwise, so add an `@event` tag to type it more precisely. When sveld can't follow the dispatcher (a package import, a local function, a computed event name, or a helper that passes the dispatcher on), it reports `sveld/dispatch-escapes`, and you document those events with `@event` tags.
 
 **Signature:**
 

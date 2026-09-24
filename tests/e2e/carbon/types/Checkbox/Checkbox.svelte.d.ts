@@ -1,6 +1,9 @@
 import { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
 
-export type CheckboxProps = {
+type $RestProps = SvelteHTMLElements["div"];
+
+type $Props = {
   /**
    * Specify whether the checkbox is checked
    * @default false
@@ -66,7 +69,11 @@ export type CheckboxProps = {
    * @default null
    */
   ref?: null | HTMLInputElement;
+
+  [key: `data-${string}`]: unknown;
 };
+
+export type CheckboxProps = Omit<$RestProps, keyof $Props> & $Props;
 
 export default class Checkbox extends SvelteComponentTyped<
   CheckboxProps,

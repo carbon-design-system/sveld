@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "generator": {
     "name": "sveld",
-    "version": "0.36.10",
-    "svelteVersion": "5.56.10"
+    "version": "0.37.5",
+    "svelteVersion": "5.57.0"
   },
   "total": 3,
   "components": [
@@ -66,6 +66,7 @@
         {
           "type": "dispatched",
           "name": "close",
+          "detail": "{ reason: string }",
           "source": {
             "start": {
               "line": 9,

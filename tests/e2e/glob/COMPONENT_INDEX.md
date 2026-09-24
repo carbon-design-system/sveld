@@ -17,6 +17,14 @@
 | type | No | <code>let</code> | No | -- | <code>string</code> | <code>"button"</code> | -- |
 | primary | No | <code>let</code> | No | -- | <code>boolean</code> | <code>false</code> | -- |
 
+### Module exports
+
+| Name | Kind | Type | Description |
+| :- | :- | :- | :- |
+| tree | <code>const</code> | <code>boolean</code> | -- |
+| computeTreeLeafDepth | <code>function</code> | <code>() => any</code> | -- |
+| findParentTreeNode | <code>function</code> | <code>(node: HTMLElement) => null &#124; HTMLElement</code> | Finds the nearest parent tree node |
+
 ### Slots
 
 | Slot name | Default | Props | Fallback | Description |

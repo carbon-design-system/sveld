@@ -1,9 +1,11 @@
 import { SvelteComponentTyped } from "svelte";
 import type { OverflowMenuProps } from "../OverflowMenu/OverflowMenu.svelte";
 
-export type ToolbarMenuProps = OverflowMenuProps & {
+type $Props = {
   children?: (this: void) => void;
 };
+
+export type ToolbarMenuProps = Omit<OverflowMenuProps, keyof $Props> & $Props;
 
 export default class ToolbarMenu extends SvelteComponentTyped<
   ToolbarMenuProps,

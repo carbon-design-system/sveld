@@ -1,11 +1,14 @@
 import { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
 import type { AccordionSkeletonProps } from "./AccordionSkeleton.svelte";
 
 export type AccordionContext = {
   disableItems: any;
 };
 
-export type AccordionProps = AccordionSkeletonProps & {
+type $RestProps = SvelteHTMLElements["ul"];
+
+type $Props = {
   /**
    * Specify alignment of accordion item chevron icon
    * @default "end"
@@ -31,7 +34,11 @@ export type AccordionProps = AccordionSkeletonProps & {
   skeleton?: boolean;
 
   children?: (this: void) => void;
+
+  [key: `data-${string}`]: unknown;
 };
+
+export type AccordionProps = Omit<$RestProps, keyof ($Props & AccordionSkeletonProps)> & Omit<AccordionSkeletonProps, keyof $Props> & $Props;
 
 /**
  * @example

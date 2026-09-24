@@ -87,6 +87,10 @@
               "default": "\"Click\""
             },
             {
+              "name": "value",
+              "fieldName": "value"
+            },
+            {
               "name": "variant",
               "fieldName": "variant",
               "type": {

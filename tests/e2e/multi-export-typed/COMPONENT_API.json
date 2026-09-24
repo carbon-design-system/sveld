@@ -2,10 +2,10 @@
   "schemaVersion": 1,
   "generator": {
     "name": "sveld",
-    "version": "0.36.10",
-    "svelteVersion": "5.56.10"
+    "version": "0.37.5",
+    "svelteVersion": "5.57.0"
   },
-  "total": 4,
+  "total": 5,
   "components": [
     {
       "moduleName": "Button",
@@ -371,6 +371,73 @@
         "interface": "ButtonProps",
         "import": "\"./Button.svelte\""
       },
+      "contexts": []
+    },
+    {
+      "moduleName": "TypedThing",
+      "filePath": "src/TypedThing.svelte",
+      "source": {
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 10,
+          "column": 0
+        }
+      },
+      "syntaxMode": "legacy",
+      "scriptLanguage": "ts",
+      "props": [
+        {
+          "name": "size",
+          "kind": "let",
+          "type": "Size",
+          "typeSource": "typescript",
+          "value": "\"sm\"",
+          "defaultValue": {
+            "raw": "\"sm\"",
+            "kind": "literal",
+            "value": "sm"
+          },
+          "isFunction": false,
+          "isFunctionDeclaration": false,
+          "isRequired": false,
+          "constant": false,
+          "reactive": false,
+          "source": {
+            "start": {
+              "line": 4,
+              "column": 2
+            },
+            "end": {
+              "line": 4,
+              "column": 31
+            }
+          }
+        }
+      ],
+      "moduleExports": [],
+      "slots": [
+        {
+          "name": null,
+          "default": true,
+          "slot_props": "Record<string, never>",
+          "source": {
+            "start": {
+              "line": 8,
+              "column": 2
+            },
+            "end": {
+              "line": 8,
+              "column": 10
+            }
+          }
+        }
+      ],
+      "events": [],
+      "typedefs": [],
+      "generics": null,
       "contexts": []
     }
   ]
