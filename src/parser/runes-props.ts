@@ -611,6 +611,16 @@ function extractEventDispatcherGenericText(typeText: string): string | undefined
   return undefined;
 }
 
+/** Returns the index of the quote closing the string that opens at `start`, so a scan can skip it. */
+function skipQuotedText(text: string, start: number): number {
+  const quote = text[start];
+  for (let i = start + 1; i < text.length; i++) {
+    if (text[i] === "\\") i++;
+    else if (text[i] === quote) return i;
+  }
+  return text.length;
+}
+
 /** Splits a `{ a: X; b: Y }` type-literal body on top-level `;`/`,`, ignoring separators nested inside brackets. */
 function splitTypeLiteralMembers(body: string): string[] {
   const members: string[] = [];
@@ -619,7 +629,8 @@ function splitTypeLiteralMembers(body: string): string[] {
 
   for (let i = 0; i < body.length; i++) {
     const char = body[i];
-    if (char === "{" || char === "(" || char === "[" || char === "<") depth++;
+    if (char === '"' || char === "'") i = skipQuotedText(body, i);
+    else if (char === "{" || char === "(" || char === "[" || char === "<") depth++;
     else if (char === "}" || char === ")" || char === "]" || char === ">") depth = Math.max(depth - 1, 0);
     else if (depth === 0 && (char === ";" || char === ",")) {
       members.push(body.slice(start, i));
@@ -636,12 +647,13 @@ const OPTIONAL_MEMBER_NAME_SUFFIX_REGEX = /\?$/;
 const LEADING_BRACE_REGEX = /^\{/;
 const TRAILING_BRACE_REGEX = /\}$/;
 
-/** Splits a `name: Type` (or `name?: Type`) member on its top-level `:`. */
+/** Splits a `name: Type` (or `name?: Type`) member on its top-level `:`, skipping a quoted name's own colons. */
 function splitMemberNameAndType(member: string): { name: string; type: string } | undefined {
   let depth = 0;
   for (let i = 0; i < member.length; i++) {
     const char = member[i];
-    if (char === "{" || char === "(" || char === "[" || char === "<") depth++;
+    if (char === '"' || char === "'") i = skipQuotedText(member, i);
+    else if (char === "{" || char === "(" || char === "[" || char === "<") depth++;
     else if (char === "}" || char === ")" || char === "]" || char === ">") depth = Math.max(depth - 1, 0);
     else if (depth === 0 && char === ":") {
       const name = member
