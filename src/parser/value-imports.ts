@@ -38,7 +38,7 @@ export function collectValueImportBindings(ctx: ParserContext, node: ImportDecla
 }
 
 /** Top-level statements of a script root (`Program.body`, or the script's `content.body`). */
-function scriptBody(root: Node): unknown[] | undefined {
+export function scriptBody(root: Node): unknown[] | undefined {
   const program = root as unknown as { type?: string; body?: unknown[]; content?: { body?: unknown[] } };
   const body = program.type === "Program" ? program.body : (program.content?.body ?? program.body);
   return Array.isArray(body) ? body : undefined;

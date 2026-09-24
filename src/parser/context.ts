@@ -49,6 +49,11 @@ export interface ParserContext {
   readonly parsedJsDocByText: Map<string, JSDocComment[]>;
   /** Every `/** *\/` block `parseCustomTypes` found in the source, keyed by absolute start offset. */
   readonly jsDocBlocksByStart: Map<number, JSDocComment>;
+  /**
+   * Start offsets of the JSDoc blocks that document a function (see `functionDocCommentStarts`
+   * in `./jsdoc.ts`). A `@template` in one is that function's own type parameter.
+   */
+  functionDocCommentStarts: Set<number>;
 
   rest_props?: RestProps;
   extends?: Extends;
@@ -148,6 +153,7 @@ export function createParserContext(): ParserContext {
     sourceLineHint: undefined,
     parsedJsDocByText: new Map(),
     jsDocBlocksByStart: new Map(),
+    functionDocCommentStarts: new Set(),
     rest_props: undefined,
     extends: undefined,
     customElementTag: undefined,

@@ -380,6 +380,12 @@ export interface ComponentProp {
   /** From JSDoc `@returns` on function props. */
   returnType?: string;
   /**
+   * A function's own type parameter list from its `@template` tags (e.g.
+   * `T extends { id: string }`), without the angle brackets. Also prefixed
+   * onto `type` when that signature is built from `@param`/`@returns`.
+   */
+  typeParameters?: string;
+  /**
    * True for arrow/function-expression initializers and bare `function`
    * declarations in every mode; additionally true for a function-shaped
    * type/JSDoc signature in runes only (see {@link ComponentProp}).
@@ -1280,22 +1286,24 @@ export default class ComponentParser {
           inferredTypeForSource,
           resolvedJSDoc,
         } of declarators) {
-          const { type, typeSource, description, params, returnType, isFunction } = resolvePropTypeAndDocs({
-            explicitType,
-            typeSeed,
-            inferredTypeForSource,
-            jsdocType: jsdocInfo?.type,
-            jsdocDescription: jsdocInfo?.description,
-            jsdocParams: jsdocInfo?.params,
-            jsdocReturnType: jsdocInfo?.returnType,
-            resolvedType: resolvedJSDoc?.resolvedType,
-            resolvedDescription: resolvedJSDoc?.resolvedDescription,
-            resolvedParams: resolvedJSDoc?.resolvedParams,
-            resolvedReturnType: resolvedJSDoc?.resolvedReturnType,
-            initializerIsFunction,
-            isFunctionDeclaration,
-            typedefs: this.ctx.typedefs,
-          });
+          const { type, typeSource, description, params, returnType, isFunction, typeParameters } =
+            resolvePropTypeAndDocs({
+              explicitType,
+              typeSeed,
+              inferredTypeForSource,
+              jsdocType: jsdocInfo?.type,
+              jsdocDescription: jsdocInfo?.description,
+              jsdocParams: jsdocInfo?.params,
+              jsdocReturnType: jsdocInfo?.returnType,
+              jsdocTypeParameters: jsdocInfo?.typeParameters,
+              resolvedType: resolvedJSDoc?.resolvedType,
+              resolvedDescription: resolvedJSDoc?.resolvedDescription,
+              resolvedParams: resolvedJSDoc?.resolvedParams,
+              resolvedReturnType: resolvedJSDoc?.resolvedReturnType,
+              initializerIsFunction,
+              isFunctionDeclaration,
+              typedefs: this.ctx.typedefs,
+            });
 
           this.addModuleExport(prop_name, {
             name: prop_name,
@@ -1310,6 +1318,7 @@ export default class ComponentParser {
             defaultValue,
             params,
             returnType,
+            typeParameters,
             isFunction,
             isFunctionDeclaration,
             isRequired: false,
@@ -1506,22 +1515,24 @@ export default class ComponentParser {
         inferredTypeForSource,
         resolvedJSDoc,
       } of declarators) {
-        const { type, typeSource, description, params, returnType, isFunction } = resolvePropTypeAndDocs({
-          explicitType,
-          typeSeed,
-          inferredTypeForSource,
-          jsdocType: jsdocInfo?.type,
-          jsdocDescription: jsdocInfo?.description,
-          jsdocParams: jsdocInfo?.params,
-          jsdocReturnType: jsdocInfo?.returnType,
-          resolvedType: resolvedJSDoc?.resolvedType,
-          resolvedDescription: resolvedJSDoc?.resolvedDescription,
-          resolvedParams: resolvedJSDoc?.resolvedParams,
-          resolvedReturnType: resolvedJSDoc?.resolvedReturnType,
-          initializerIsFunction,
-          isFunctionDeclaration,
-          typedefs: this.ctx.typedefs,
-        });
+        const { type, typeSource, description, params, returnType, isFunction, typeParameters } =
+          resolvePropTypeAndDocs({
+            explicitType,
+            typeSeed,
+            inferredTypeForSource,
+            jsdocType: jsdocInfo?.type,
+            jsdocDescription: jsdocInfo?.description,
+            jsdocParams: jsdocInfo?.params,
+            jsdocReturnType: jsdocInfo?.returnType,
+            jsdocTypeParameters: jsdocInfo?.typeParameters,
+            resolvedType: resolvedJSDoc?.resolvedType,
+            resolvedDescription: resolvedJSDoc?.resolvedDescription,
+            resolvedParams: resolvedJSDoc?.resolvedParams,
+            resolvedReturnType: resolvedJSDoc?.resolvedReturnType,
+            initializerIsFunction,
+            isFunctionDeclaration,
+            typedefs: this.ctx.typedefs,
+          });
 
         recordSveldIgnore(this.ctx, "prop-unknown-type", prop_name, jsdocInfo?.sveldIgnore);
 
@@ -1540,6 +1551,7 @@ export default class ComponentParser {
           defaultValue,
           params,
           returnType,
+          typeParameters,
           isFunction,
           isFunctionDeclaration,
           isRequired,

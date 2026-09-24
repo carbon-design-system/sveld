@@ -218,6 +218,10 @@
           "items": { "$ref": "#/$defs/propParam" }
         },
         "returnType": { "type": "string" },
+        "typeParameters": {
+          "type": "string",
+          "description": "A function's own type parameter list from its `@template` tags, without angle brackets."
+        },
         "isFunction": { "type": "boolean" },
         "isFunctionDeclaration": { "type": "boolean" },
         "isRequired": { "type": "boolean" },

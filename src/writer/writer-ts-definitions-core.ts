@@ -1099,6 +1099,7 @@ function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">, commentLe
 
       const is_function = prop.type && FUNCTION_TYPE_REGEX.test(prop.type);
       const isDefaultFunctionType = prop.type === "() => any";
+      const typeParameters = prop.typeParameters ? `<${prop.typeParameters}>` : "";
 
       /**
        * Check for const exports first (but only if not a function).
@@ -1117,9 +1118,9 @@ function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">, commentLe
         });
         const paramsString = paramStrings.join(", ");
         const returnType = prop.returnType || ANY_TYPE;
-        type_def = `export declare function ${prop.name}(${paramsString}): ${returnType};`;
+        type_def = `export declare function ${prop.name}${typeParameters}(${paramsString}): ${returnType};`;
       } else if (prop.returnType) {
-        type_def = `export declare function ${prop.name}(): ${prop.returnType};`;
+        type_def = `export declare function ${prop.name}${typeParameters}(): ${prop.returnType};`;
       } else if (is_function && prop.type && !isDefaultFunctionType) {
         /**
          * `@type` tag provides a custom function signature.
