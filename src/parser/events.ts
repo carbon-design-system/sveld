@@ -6,6 +6,8 @@ import type { ParserContext } from "./context";
 import { sourceRangeFromNode } from "./source-position";
 import { assignValueOrUndefined } from "./utils";
 
+const NEWLINES_REGEX = /\n/g;
+
 /**
  * Structurally infers a dispatched event's detail type from an object or array literal `dispatch()`
  * argument (`{ id: string }`, `number[]`), resolving identifier property values through the
@@ -180,9 +182,13 @@ export function buildEventDetailFromProperties(
 
       if (comment) {
         if (multiline) {
-          return `/** ${comment} */\n  ${name}${optionalMarker}: ${type};`;
+          // A multi-line `@property` description (continuation lines) gets a block comment.
+          const docComment = comment.includes("\n")
+            ? `/**\n   * ${comment.split("\n").join("\n   * ")}\n   */`
+            : `/** ${comment} */`;
+          return `${docComment}\n  ${name}${optionalMarker}: ${type};`;
         }
-        return `/** ${comment} */ ${name}${optionalMarker}: ${type};`;
+        return `/** ${comment.replace(NEWLINES_REGEX, " ")} */ ${name}${optionalMarker}: ${type};`;
       }
       return `${name}${optionalMarker}: ${type};`;
     })

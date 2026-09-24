@@ -7,7 +7,7 @@ import type {
   JsDocPassthroughTag,
   SourceRange,
 } from "../ComponentParser";
-import type { JSDocComment } from "./comment-parser";
+import type { JSDocComment, JSDocTag } from "./comment-parser";
 import { parseComments } from "./comment-parser";
 import type { ParserContext } from "./context";
 import { recordDiagnostic, recordSveldIgnore } from "./diagnostics";
@@ -45,6 +45,14 @@ const TRAILING_SEMICOLON_REGEX = /;$/;
 
 const DESCRIPTION_DASH_PREFIX_REGEX = /^-\s*/;
 
+/** Strips each line's indentation, so a wrapped tag description reads as plain lines. */
+function dedentLines(text: string): string {
+  return text
+    .split("\n")
+    .map((line) => line.trim())
+    .join("\n");
+}
+
 function cleanDescription(description: string | undefined): string | undefined {
   if (description === undefined) return undefined;
   const cleaned = description.replace(DESCRIPTION_DASH_PREFIX_REGEX, "").trim();
@@ -52,10 +60,17 @@ function cleanDescription(description: string | undefined): string | undefined {
 }
 
 /**
+ * Tags that take the description lines directly above them when they have none on their own
+ * line (sveld's description-above-the-tag convention), e.g. a line of prose then `@event`.
+ */
+const PRECEDING_DESCRIPTION_TAGS = new Set(["restProps", "slot", "snippet", "event", "typedef", "callback"]);
+
+/** Tags that stay inside the preceding `@event`'s scope instead of ending it. */
+const EVENT_SCOPE_TAGS = new Set(["property", "type"]);
+
+/**
  * Returns the description text that appears on the same line as the tag itself, ignoring
  * continuation lines that `parseComments` aggregated into the tag's `description` field.
- * Continuation lines belong to the next tag (or the enclosing event/typedef) and must not
- * pollute the tag's own JSDoc.
  */
 function getInlineTagDescription(tagLines: Array<{ content: string }> | undefined): string | undefined {
   if (!tagLines || tagLines.length === 0) return undefined;
@@ -454,7 +469,7 @@ function processJSDocComment(
       .map((tag) => ({
         name: tag.name,
         type: parser.aliasType(tag.type),
-        description: cleanDescription(tag.description),
+        description: cleanDescription(dedentLines(tag.description)),
         optional: tag.optional || false,
       }));
   }
@@ -671,11 +686,25 @@ export function parseCustomTypes(
         tagLineNumbers.add(tagInfo.lines[0].number);
       }
     }
+    /**
+     * Indented lines directly under a tag's line: that tag's wrapped description, never the
+     * description of the tag after it. Unindented text between two tags stays ambiguous and
+     * keeps the description-above-the-tag reading.
+     */
+    const indentedContinuationLines = new Set<number>();
+    let inIndentedContinuation = false;
     for (const line of blockLines) {
       // A line whose only remaining content is a lone "}" is the tail of a multi-line `{...}`
       // type, not prose - it must not get attributed to any tag as a description.
       if (!line.tag && line.content && line.content.trim() !== "}") {
         lineDescriptions.set(line.number, line.content);
+      }
+      if (line.tag !== undefined) {
+        inIndentedContinuation = true;
+      } else if (inIndentedContinuation && line.indent && line.content.trim()) {
+        indentedContinuationLines.add(line.number);
+      } else {
+        inIndentedContinuation = false;
       }
     }
 
@@ -689,7 +718,7 @@ export function parseCustomTypes(
       let foundDescriptionBlock = false;
 
       for (let lineNum = tagLineNumber - 1; lineNum >= 0; lineNum--) {
-        if (tagLineNumbers.has(lineNum)) {
+        if (tagLineNumbers.has(lineNum) || indentedContinuationLines.has(lineNum)) {
           break;
         }
 
@@ -709,6 +738,36 @@ export function parseCustomTypes(
       if (descLines.length === 0) return undefined;
       for (const n of claimedLineNums) consumedDescriptionLines.add(n);
       return descLines.join("\n").trim();
+    };
+
+    /**
+     * A tag's own description: the text on its line plus its continuation lines, which run to
+     * the next tag as in JSDoc and TypeScript. When that next tag has no description of its own
+     * and takes the text above it instead (see {@link PRECEDING_DESCRIPTION_TAGS}), unindented
+     * lines are left for it, preserving sveld's description-above-the-tag convention. The same
+     * goes for the last tag in an `@event`'s scope, whose trailing text describes the event.
+     */
+    const getTagDescription = (tagSource: typeof blockLines, nextTag: JSDocTag | undefined): string | undefined => {
+      const inline = cleanDescription(getInlineTagDescription(tagSource));
+      const nextTagTakesTextAbove =
+        nextTag !== undefined &&
+        PRECEDING_DESCRIPTION_TAGS.has(nextTag.tag) &&
+        !cleanDescription(getInlineTagDescription(nextTag.lines));
+      // Unindented text after an event's last `@property`/`@type` is the event's own description.
+      const endsEventScope =
+        currentEventName !== undefined && (nextTag === undefined || !EVENT_SCOPE_TAGS.has(nextTag.tag));
+
+      const continuation: string[] = [];
+      for (let index = 1; index < tagSource.length; index++) {
+        const line = tagSource[index];
+        if ((nextTagTakesTextAbove || endsEventScope) && !indentedContinuationLines.has(line.number)) continue;
+        const text = lineDescriptions.get(line.number)?.trim();
+        if (!text || consumedDescriptionLines.has(line.number)) continue;
+        continuation.push(text);
+        consumedDescriptionLines.add(line.number);
+      }
+      if (continuation.length === 0) return inline;
+      return [inline, ...continuation].filter(Boolean).join("\n");
     };
 
     const finalizeEvent = () => {
@@ -733,7 +792,7 @@ export function parseCustomTypes(
             const tLine = t.lines[0]?.number;
             if (typeof tLine !== "number") continue;
             if (tLine <= currentEventTagLine) continue;
-            if (t.tag === "property" || t.tag === "type") continue;
+            if (EVENT_SCOPE_TAGS.has(t.tag)) continue;
             scopeBoundaryLine = tLine;
             break;
           }
@@ -874,18 +933,23 @@ export function parseCustomTypes(
         t.tag === "slot" || t.tag === "snippet" || t.tag === "event" || t.tag === "typedef" || t.tag === "callback",
     );
 
-    for (const {
-      tag,
-      type: tagType,
-      name,
-      description,
-      optional,
-      default: defaultValue,
-      raw,
-      lines: tagSource,
-    } of tags) {
+    for (let tagIndex = 0; tagIndex < tags.length; tagIndex++) {
+      const {
+        tag,
+        type: tagType,
+        name,
+        description,
+        optional,
+        default: defaultValue,
+        raw,
+        lines: tagSource,
+      } = tags[tagIndex];
+      // Sections are split in line order, so neighbors in `tags` are neighbors in the block.
+      const nextTag = tags[tagIndex + 1];
       const type = parser.aliasType(tagType);
-      const precedingDescription = getPrecedingDescription(tagSource);
+      // Only tags that can use it claim the text above them; a `@property` or `@type` must not
+      // swallow the lines between an `@event` and itself, or a previous tag's continuation lines.
+      const precedingDescription = PRECEDING_DESCRIPTION_TAGS.has(tag) ? getPrecedingDescription(tagSource) : undefined;
 
       switch (tag) {
         case "extends":
@@ -923,7 +987,7 @@ export function parseCustomTypes(
         }
         case "slot":
         case "snippet": {
-          const inlineSlotDesc = cleanDescription(getInlineTagDescription(tagSource));
+          const inlineSlotDesc = getTagDescription(tagSource, nextTag);
           let slotDesc = inlineSlotDesc;
           if (!slotDesc && isFirstTag && !commentDescriptionUsed && commentDescription) {
             slotDesc = commentDescription;
@@ -966,7 +1030,7 @@ export function parseCustomTypes(
           break;
         }
         case "csspart": {
-          const partDescription = cleanDescription(getInlineTagDescription(tagSource));
+          const partDescription = getTagDescription(tagSource, nextTag);
           ctx.cssParts.push({
             name,
             ...(partDescription ? { description: partDescription } : {}),
@@ -975,7 +1039,7 @@ export function parseCustomTypes(
         }
         case "cssprop":
         case "cssproperty": {
-          const propertyDescription = cleanDescription(getInlineTagDescription(tagSource));
+          const propertyDescription = getTagDescription(tagSource, nextTag);
           ctx.cssProperties.push({
             name,
             ...(type ? { type } : {}),
@@ -1025,7 +1089,7 @@ export function parseCustomTypes(
           const propertyData = {
             name,
             type,
-            description: cleanDescription(getInlineTagDescription(tagSource)),
+            description: getTagDescription(tagSource, nextTag),
             optional: optional || false,
             default: defaultValue,
           };
@@ -1053,7 +1117,7 @@ export function parseCustomTypes(
           currentTypedefName = normalizeGenericNameSpacing(name);
           currentTypedefType = type;
           currentTypedefSource = sourceRangeFromCommentTag(ctx, tagSource);
-          const inlineTypedefDesc = cleanDescription(getInlineTagDescription(tagSource));
+          const inlineTypedefDesc = getTagDescription(tagSource, nextTag);
           currentTypedefDescription = inlineTypedefDesc || precedingDescription;
           if (!currentTypedefDescription && isFirstTag && !commentDescriptionUsed && commentDescription) {
             currentTypedefDescription = commentDescription;
@@ -1074,7 +1138,7 @@ export function parseCustomTypes(
 
           currentCallbackName = normalizeGenericNameSpacing(name);
           currentCallbackSource = sourceRangeFromCommentTag(ctx, tagSource);
-          const inlineCallbackDesc = cleanDescription(getInlineTagDescription(tagSource));
+          const inlineCallbackDesc = getTagDescription(tagSource, nextTag);
           currentCallbackDescription = inlineCallbackDesc || precedingDescription;
           if (!currentCallbackDescription && isFirstTag && !commentDescriptionUsed && commentDescription) {
             currentCallbackDescription = commentDescription;

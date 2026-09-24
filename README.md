@@ -2668,6 +2668,16 @@ function render(value: unknown, props: ComponentProps) {
 
 Both forms support the same modifiers as typedef properties elsewhere in this doc: optional properties (`[name]`), default values (`[name=value]`), and nested/discriminated-union shapes. See the linked sections above for full signatures and worked examples with generated output.
 
+A description can wrap onto continuation lines, which run until the next tag. Indent them past the `*` gutter to keep them attached to the tag unambiguously; an unindented line right above an `@event`/`@typedef`/`@slot` with no description of its own is read as that tag's description instead, and an unindented line after an event's last `@property` describes the event.
+
+```js
+/**
+ * @typedef {object} Config
+ * @property {number} itemHeight Height of each item in pixels, used for
+ *   virtualization math.
+ */
+```
+
 ### `@callback`
 
 The `@callback` tag defines a function type with `@param` and `@returns`, following the [TypeScript JSDoc `@callback` spec](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html#callback). Like `@typedef`, callbacks are exported from the generated `.d.ts`.
