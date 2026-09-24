@@ -115,6 +115,8 @@ interface ResolvedExportSpecifier {
   declaration?: VariableDeclaration | FunctionDeclaration | ClassDeclaration;
   /** For a variable, the declarator whose `id` (or destructuring pattern) binds `localName`. */
   declarator?: VariableDeclarator;
+  /** The top-level statement holding `declaration`, whose doc comment documents it. */
+  statement?: Node;
 }
 
 /**
@@ -124,7 +126,7 @@ interface ResolvedExportSpecifier {
 function findTopLevelBinding(
   program: Node | null,
   localName: string,
-): Pick<ResolvedExportSpecifier, "declaration" | "declarator"> | undefined {
+): Pick<ResolvedExportSpecifier, "declaration" | "declarator" | "statement"> | undefined {
   for (const statement of (program && scriptBody(program)) ?? []) {
     const node = statement as Node;
     const declaration = node.type === "ExportNamedDeclaration" && node.declaration ? node.declaration : node;
@@ -132,12 +134,12 @@ function findTopLevelBinding(
       const declarator = declaration.declarations.find((decl) =>
         decl.id.type === "Identifier" ? decl.id.name === localName : collectPatternIdentifiers(decl.id).has(localName),
       );
-      if (declarator) return { declaration, declarator };
+      if (declarator) return { declaration, declarator, statement: node };
     } else if (
       (declaration.type === "FunctionDeclaration" || declaration.type === "ClassDeclaration") &&
       declaration.id?.name === localName
     ) {
-      return { declaration };
+      return { declaration, statement: node };
     }
   }
   return undefined;
@@ -151,7 +153,7 @@ function findTopLevelBinding(
 function findReactiveDeclaration(
   program: Node | null,
   localName: string,
-): Pick<ResolvedExportSpecifier, "declaration" | "declarator"> | undefined {
+): Pick<ResolvedExportSpecifier, "declaration" | "declarator" | "statement"> | undefined {
   for (const statement of (program && scriptBody(program)) ?? []) {
     const node = statement as Node;
     if (node.type !== "LabeledStatement" || node.label.name !== "$") continue;
@@ -164,7 +166,11 @@ function findReactiveDeclaration(
       id: assignment.left,
       init: assignment.right,
     };
-    return { declaration: { type: "VariableDeclaration", kind: "let", declarations: [declarator] }, declarator };
+    return {
+      declaration: { type: "VariableDeclaration", kind: "let", declarations: [declarator] },
+      declarator,
+      statement: node,
+    };
   }
   return undefined;
 }
@@ -1101,6 +1107,21 @@ export default class ComponentParser {
     );
   }
 
+  /**
+   * Doc comment for a declaration exported by `node`. A specifier uses the
+   * comment on the declaration it names. An `export { ... }` list's own
+   * comment documents it too, but only when the list has a single specifier;
+   * its tags and description then override the declaration's.
+   */
+  private exportJSDoc(node: ExportNamedDeclaration, specifier: ResolvedExportSpecifier | undefined) {
+    if (!specifier) return processNodeJSDoc(this.ctx, this, node);
+    const listJSDoc = node.specifiers.length === 1 ? processNodeJSDoc(this.ctx, this, node) : undefined;
+    const declarationJSDoc = processNodeJSDoc(this.ctx, this, specifier.statement);
+    if (!listJSDoc || !declarationJSDoc) return listJSDoc ?? declarationJSDoc;
+    const listFields = Object.fromEntries(Object.entries(listJSDoc).filter(([, value]) => value !== undefined));
+    return { ...declarationJSDoc, ...listFields, internal: listJSDoc.internal || declarationJSDoc.internal };
+  }
+
   /** `export class Foo {}` or `export { Foo }` of a class: neither a prop nor a documented accessor. */
   private recordClassExport(node: ExportNamedDeclaration, exportedName: string) {
     recordDiagnostic(
@@ -1418,7 +1439,7 @@ export default class ComponentParser {
           return;
         }
 
-        const jsdocInfo = processNodeJSDoc(this.ctx, this, node);
+        const jsdocInfo = this.exportJSDoc(node, specifier);
 
         for (const {
           prop_name,
@@ -1668,7 +1689,7 @@ export default class ComponentParser {
         return;
       }
 
-      const jsdocInfo = processNodeJSDoc(this.ctx, this, node);
+      const jsdocInfo = this.exportJSDoc(node, specifier);
 
       for (const {
         prop_name,
