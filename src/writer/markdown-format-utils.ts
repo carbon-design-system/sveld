@@ -1,4 +1,4 @@
-import type { DeprecatedValue } from "../ComponentParser";
+import type { ComponentProp, DeprecatedValue } from "../ComponentParser";
 import { formatTsProps } from "./writer-ts-definitions-core";
 
 export const BACKTICK_REGEX = /`/g;
@@ -20,6 +20,7 @@ const PIPE_REGEX = /\|/g;
 const LT_REGEX = /</g;
 const GT_REGEX = />/g;
 const NEWLINE_REGEX = /\n/g;
+const IDENTIFIER_REGEX = /^[A-Za-z_$][\w$]*$/;
 
 /** `{@link target}` or `{@link target|display text}`, per the inline JSDoc `@link` tag grammar. */
 const JSDOC_LINK_REGEX = /\{@link\s+([^{}\s|]+)(?:\|([^{}]+))?\}/g;
@@ -39,6 +40,18 @@ function rewriteJsDocLinks(text: string): string {
 export function formatPropType(type?: string) {
   if (type === undefined) return MD_TYPE_UNDEFINED;
   return `<code>${type.replace(PIPE_REGEX, "&#124;")}</code>`;
+}
+
+/**
+ * Type cell for a prop or module export. A re-export has no `type` of its
+ * own, so it shows where the binding comes from as a `typeof import(...)`.
+ */
+export function formatExportType(prop: Pick<ComponentProp, "type" | "reExport">) {
+  if (!prop.reExport) return formatPropType(prop.type);
+  const { from, imported } = prop.reExport;
+  const member =
+    imported === "*" ? "" : IDENTIFIER_REGEX.test(imported) ? `.${imported}` : `[${JSON.stringify(imported)}]`;
+  return formatPropType(`typeof import(${JSON.stringify(from)})${member}`);
 }
 
 function escapeHtml(text: string) {

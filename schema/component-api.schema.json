@@ -202,7 +202,8 @@
         "name": { "type": "string" },
         "localName": { "type": "string" },
         "kind": {
-          "enum": ["let", "const", "function"]
+          "enum": ["let", "const", "function", "re-export"],
+          "description": "`re-export` is module-export only: `export { x } from \"...\"`, `export * from \"...\"`, or `export { x }` of an imported binding."
         },
         "constant": { "type": "boolean" },
         "type": { "type": "string" },
@@ -233,7 +234,21 @@
           "type": "array",
           "items": { "$ref": "#/$defs/jsdocTag" }
         },
+        "reExport": { "$ref": "#/$defs/reExport" },
         "source": { "$ref": "#/$defs/sourceRange" }
+      }
+    },
+    "reExport": {
+      "type": "object",
+      "required": ["from", "imported"],
+      "additionalProperties": false,
+      "description": "Where a `kind: \"re-export\"` module export's binding comes from.",
+      "properties": {
+        "from": { "type": "string", "description": "Module specifier as written in the source." },
+        "imported": {
+          "type": "string",
+          "description": "Name the source module exports: `default` for a default import, `*` for `export *` or a namespace import."
+        }
       }
     },
     "defaultValue": {

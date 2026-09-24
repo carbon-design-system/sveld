@@ -68,6 +68,7 @@ import { stripTypeCastWrappers } from "./parser/typescript-casts";
 import { assignValueOrUndefined } from "./parser/utils";
 import {
   collectHoistedScriptBindings,
+  collectReExportableImports,
   collectValueImportBindings,
   type ImportDeclarationNode,
 } from "./parser/value-imports";
@@ -343,11 +344,23 @@ export interface ComponentPropParam {
  *   matching `@typedef`'s own description when the prop has none; runes does
  *   not pass `typedefs` to {@link resolvePropTypeAndDocs} today.
  */
+/** Where a `<script context="module">` re-export's binding comes from. */
+export interface ComponentPropReExport {
+  /** Module specifier as written in the source (e.g. `"./utils.js"`). */
+  from: string;
+  /** Name `from` exports: `"default"` for a default import, `"*"` for `export *` or a namespace import. */
+  imported: string;
+}
+
 export interface ComponentProp {
-  /** Public prop name. */
+  /** Public prop name; `"*"` for a bare `export * from "..."`. */
   name: string;
-  /** `"let"` (required), `"const"` (default), or `"function"`. */
-  kind: "let" | "const" | "function";
+  /**
+   * `"let"` (required), `"const"` (default), or `"function"`. `"re-export"`
+   * is module-export only: `export { x } from "..."`, `export * from "..."`,
+   * or `export { x }` of an imported binding, written to the `.d.ts` as-is.
+   */
+  kind: "let" | "const" | "function" | "re-export";
   /** True when declared with `const`. */
   constant: boolean;
   /** TypeScript type text. */
@@ -391,6 +404,8 @@ export interface ComponentProp {
   tags?: JsDocPassthroughTag[];
   /** True from `@ignore`/`@internal` JSDoc; excluded from every output by `buildComponentApiDocument`. */
   internal?: boolean;
+  /** Set when `kind` is `"re-export"`. */
+  reExport?: ComponentPropReExport;
   /** Source range when available. */
   source?: SourceRange;
 }
@@ -925,10 +940,15 @@ export default class ComponentParser {
    * `export { a, b }` exports both, and `const a = 1, b = ""; export { b }`
    * exports `b`'s declarator rather than the first one in the declaration.
    */
-  private resolveExportSpecifier(specifier: ExportSpecifier): ResolvedExportSpecifier | undefined {
+  private resolveExportSpecifier(
+    node: ExportNamedDeclaration,
+    specifier: ExportSpecifier,
+  ): ResolvedExportSpecifier | undefined {
     const localName = moduleExportName(specifier.local);
     const exportedName = moduleExportName(specifier.exported);
     if (!localName || !exportedName) return undefined;
+    // `export { x } from "..."` names the other module's `x`, never a local one.
+    if (node.source != null) return { localName, exportedName };
 
     // Walk is in order; the local binding must appear before this export.
     for (const declaration of this.ctx.vars) {
@@ -1136,6 +1156,27 @@ export default class ComponentParser {
      * entirely (module scripts are rare) - not worth the added complexity here.
      */
     if (this.ctx.parsed?.module) {
+      const reExportableImports = collectReExportableImports(this.ctx.parsed.module);
+      /** Records an `export ... from` (or `export { imported }`) as-is; the `.d.ts` writer emits it verbatim. */
+      const addModuleReExport = (node: Node, name: string, reExport: ComponentPropReExport) => {
+        const jsdocInfo = processNodeJSDoc(this.ctx, this, node);
+        // Each `export * from` shares the name "*", so key those by source instead.
+        this.addModuleExport(name === "*" ? `* from ${reExport.from}` : name, {
+          name,
+          kind: "re-export",
+          description: jsdocInfo?.description,
+          deprecated: jsdocInfo?.deprecated,
+          tags: jsdocInfo?.tags,
+          ...(jsdocInfo?.internal ? { internal: true as const } : {}),
+          isFunction: false,
+          isFunctionDeclaration: false,
+          isRequired: false,
+          constant: false,
+          reactive: false,
+          reExport,
+          source: sourceRangeFromNode(this.ctx, node),
+        });
+      };
       const addModuleDeclarationExports = (
         node: ExportNamedDeclaration,
         declaration: NonNullable<ExportNamedDeclaration["declaration"]>,
@@ -1304,15 +1345,37 @@ export default class ComponentParser {
               addModuleDeclarationExports(node, node.declaration);
               return;
             }
+            const from = node.source?.value;
             for (const specifier of node.specifiers) {
-              const resolved = this.resolveExportSpecifier(specifier);
+              const resolved = this.resolveExportSpecifier(node, specifier);
               if (!resolved) continue;
+              if (resolved.exportedName === "default") {
+                recordDiagnostic(
+                  this.ctx,
+                  "module-export-conflict",
+                  resolved.exportedName,
+                  'export "default" was skipped because it collides with the component\'s own default export.',
+                  sourceRangeFromNode(this.ctx, node),
+                );
+                continue;
+              }
+              const reExport =
+                typeof from === "string"
+                  ? { from, imported: resolved.localName }
+                  : reExportableImports.get(resolved.localName);
               if (resolved.declaration) {
                 addModuleDeclarationExports(node, resolved.declaration, resolved);
+              } else if (reExport) {
+                addModuleReExport(node, resolved.exportedName, reExport);
               } else {
                 this.recordUnresolvedExportSpecifier(node, resolved.localName, resolved.exportedName);
               }
             }
+          }
+
+          if (node.type === "ExportAllDeclaration" && typeof node.source.value === "string") {
+            const name = (node.exported && moduleExportName(node.exported)) ?? "*";
+            addModuleReExport(node, name, { from: node.source.value, imported: "*" });
           }
         }) as unknown as WalkEnter,
       );
@@ -1619,7 +1682,7 @@ export default class ComponentParser {
             return;
           }
           for (const specifier of node.specifiers) {
-            const resolved = this.resolveExportSpecifier(specifier);
+            const resolved = this.resolveExportSpecifier(node, specifier);
             if (!resolved) continue;
             if (resolved.declaration) {
               addInstanceDeclarationExports(node, resolved.declaration, resolved);

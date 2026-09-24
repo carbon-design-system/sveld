@@ -68,7 +68,31 @@
       }
     }
   ],
-  "moduleExports": [],
+  "moduleExports": [
+    {
+      "name": "tokTypes",
+      "kind": "re-export",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "reExport": {
+        "from": "acorn",
+        "imported": "tokTypes"
+      },
+      "source": {
+        "start": {
+          "line": 7,
+          "column": 2
+        },
+        "end": {
+          "line": 7,
+          "column": 22
+        }
+      }
+    }
+  ],
   "slots": [
     {
       "name": null,
@@ -91,24 +115,6 @@
   "generics": null,
   "contexts": [],
   "diagnostics": [
-    {
-      "component": "module-reexport/input.svelte",
-      "kind": "export-unresolved",
-      "name": "tokTypes",
-      "message": "export \"tokTypes\" was skipped because it re-exports an imported binding; sveld only resolves exports of a local declaration.",
-      "source": {
-        "start": {
-          "line": 7,
-          "column": 2
-        },
-        "end": {
-          "line": 7,
-          "column": 22
-        }
-      },
-      "code": "sveld/export-unresolved",
-      "severity": "warning"
-    },
     {
       "component": "module-reexport/input.svelte",
       "kind": "prop-unknown-type",

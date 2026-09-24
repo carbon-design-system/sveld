@@ -1,5 +1,5 @@
 <script context="module">
-  import { External } from "lib";
+  import { External } from "./external.js";
 
   /**
    * A local utility function for formatting

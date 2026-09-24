@@ -1043,8 +1043,55 @@ function genComponentComment(def: Pick<ComponentDocApi, "componentComment">, com
     .join("\n")}\n*/`;
 }
 
+/** An export/import name as written in a specifier: an identifier, or a quoted string (`export { "a-b" as x }`). */
+function moduleExportNameText(name: string): string {
+  return IDENTIFIER_REGEX.test(name) ? name : JSON.stringify(name);
+}
+
+/**
+ * Module-script re-exports, written as-is with their original specifier so
+ * TypeScript resolves each name through that module's own types. Named
+ * re-exports from one source (with the same doc comment) share one statement.
+ */
+function genModuleReExports(def: Pick<ComponentDocApi, "moduleExports">, commentLevel: CommentLevel) {
+  const statements: string[] = [];
+  const namedGroups = new Map<string, { comments: string; from: string; specifiers: string[] }>();
+
+  for (const prop of def.moduleExports) {
+    if (prop.kind !== "re-export" || !prop.reExport) continue;
+    const { from, imported } = prop.reExport;
+    const comments = createPropComment(prop.description, prop.deprecated, prop.tags, commentLevel);
+    const name = moduleExportNameText(prop.name);
+
+    if (imported === "*") {
+      const clause = prop.name === "*" ? "*" : `* as ${name}`;
+      statements.push(`${wrapCommentInJSDoc(comments)}\nexport ${clause} from ${JSON.stringify(from)};`);
+      continue;
+    }
+
+    const key = `${from}\0${comments}`;
+    let group = namedGroups.get(key);
+    if (!group) {
+      group = { comments, from, specifiers: [] };
+      namedGroups.set(key, group);
+      statements.push(key);
+    }
+    group.specifiers.push(imported === prop.name ? name : `${moduleExportNameText(imported)} as ${name}`);
+  }
+
+  return statements
+    .map((statement) => {
+      const group = namedGroups.get(statement);
+      if (!group) return statement;
+      return `${wrapCommentInJSDoc(group.comments)}\nexport { ${group.specifiers.join(", ")} } from ${JSON.stringify(group.from)};`;
+    })
+    .join("\n\n");
+}
+
 function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">, commentLevel: CommentLevel = "all") {
-  return def.moduleExports
+  const reExports = genModuleReExports(def, commentLevel);
+  const declarations = def.moduleExports
+    .filter((prop) => prop.kind !== "re-export")
     .map((prop) => {
       const prop_comments = createPropComment(prop.description, prop.deprecated, prop.tags, commentLevel);
 
@@ -1108,6 +1155,7 @@ function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">, commentLe
       ${type_def}`;
     })
     .join("\n");
+  return [reExports, declarations].filter(Boolean).join("\n\n");
 }
 
 const COMPONENT_SHELL_INLINE_WIDTH = 120;

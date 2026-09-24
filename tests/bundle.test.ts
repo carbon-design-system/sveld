@@ -408,3 +408,40 @@ describe("generateBundle validates @extends/@extendProps targets", () => {
     );
   });
 });
+
+describe("generateBundle flags module-script re-exports named like a generated type", () => {
+  let dir: string;
+
+  beforeEach(() => {
+    dir = mkdtempSync(path.join(tmpdir(), "sveld-bundle-reexport-"));
+  });
+
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("flags a re-export named like the generated Props type", async () => {
+    writeFileSync(
+      path.join(dir, "Tree.svelte"),
+      `<script context="module">\n  export { TreeProps, toHierarchy } from "./types.js";\n</script>\n`,
+    );
+
+    const result = await generateBundle(dir, true);
+    const diagnostics = byModuleName(result.allComponentsForTypes, "Tree")?.diagnostics ?? [];
+
+    expect(diagnostics).toContainEqual(expect.objectContaining({ kind: "module-export-conflict", name: "TreeProps" }));
+    expect(diagnostics.filter((d) => d.kind === "module-export-conflict")).toHaveLength(1);
+  });
+
+  test("typesTypeNames.props: checks against the templated name", async () => {
+    writeFileSync(
+      path.join(dir, "Tree.svelte"),
+      `<script context="module">\n  export { TreeProps, ITreeProps } from "./types.js";\n</script>\n`,
+    );
+
+    const result = await generateBundle(dir, true, { typesTypeNames: { props: "I{name}Props" } });
+    const diagnostics = byModuleName(result.allComponentsForTypes, "Tree")?.diagnostics ?? [];
+
+    expect(diagnostics.filter((d) => d.kind === "module-export-conflict").map((d) => d.name)).toEqual(["ITreeProps"]);
+  });
+});
