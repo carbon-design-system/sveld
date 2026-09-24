@@ -3,15 +3,7 @@ import { existsSync, lstatSync, readFileSync, realpathSync, statSync } from "nod
 import { readFile } from "node:fs/promises";
 import { basename, dirname, extname, isAbsolute, join, parse, relative, resolve } from "node:path";
 import { asRelativeSourcePath, type NormalizedPath } from "./brands";
-import type {
-  DispatchedEvent,
-  ParsedComponent,
-  PendingCallDefaultCandidate,
-  PendingConstDefaultCandidate,
-  PendingContextKeyCandidate,
-  PendingDispatchEscapeCandidate,
-  SourceRange,
-} from "./ComponentParser";
+import type { DispatchedEvent, ParsedComponent, SourceRange } from "./ComponentParser";
 import { buildReverseDeps, expandAffected } from "./dependency-graph";
 import {
   applyDiagnosticIgnores,
@@ -837,70 +829,15 @@ export async function generateBundle(
     }
   }
 
-  // AST/JSDoc only (no tsc). Always runs when parsing left pending candidates.
-  // Warm-cache runs skip loadParserStack above, but this pass still needs it to
-  // parse sibling modules.
-  const callDefaultCandidates = collectCallDefaultCandidates(allComponentsForTypes);
-  const constDefaultCandidates = collectConstDefaultCandidates(allComponentsForTypes);
-  const contextKeyCandidates = collectContextKeyCandidates(allComponentsForTypes);
-  const dispatchEscapeCandidates = collectDispatchEscapeCandidates(allComponentsForTypes);
-  if (
-    callDefaultCandidates.length > 0 ||
-    constDefaultCandidates.length > 0 ||
-    contextKeyCandidates.length > 0 ||
-    dispatchEscapeCandidates.length > 0
-  ) {
-    await loadParserStack();
-    // All four passes share this cache and cycle set.
-    const crossFileResolveContext = createCallDefaultResolveContext();
-    for (const { component, candidates } of callDefaultCandidates) {
-      const resolutions = resolveCallDefaultCandidates(
-        resolveComponentFilePath(component.filePath),
-        candidates,
-        crossFileResolveContext,
-      );
-      applyCallDefaultResolutions(component, resolutions);
-    }
-    for (const { component, candidates } of constDefaultCandidates) {
-      const resolutions = resolveConstDefaultCandidates(
-        resolveComponentFilePath(component.filePath),
-        candidates,
-        crossFileResolveContext,
-      );
-      applyConstDefaultResolutions(component, resolutions);
-    }
-    for (const { component, candidates } of contextKeyCandidates) {
-      const resolutions = resolveContextKeyCandidates(
-        resolveComponentFilePath(component.filePath),
-        candidates,
-        crossFileResolveContext,
-      );
-      applyContextKeyResolutions(component, resolutions);
-    }
-    for (const { component, candidates, deferredEventNoSource } of dispatchEscapeCandidates) {
-      const resolutions = resolveDispatchEscapeCandidates(
-        resolveComponentFilePath(component.filePath),
-        candidates,
-        crossFileResolveContext,
-      );
-      applyDispatchEscapeResolutions(component, resolutions, deferredEventNoSource);
-    }
-    syncCrossFileResults(components, allComponentsForTypes);
-  }
+  const crossFileReads = await resolveCrossFileCandidates(allComponentsForTypes.values(), resolveComponentFilePath);
+  syncCrossFileResults(components, allComponentsForTypes);
 
   // The generated-text cache is keyed on a component's own source, so it
   // can't see an edit to the module a default, context key, event, or
   // resolved props type was read from.
   if (resolvedPathByFilePath) {
-    for (const { component } of [
-      ...resolveTypesCandidates,
-      ...callDefaultCandidates,
-      ...constDefaultCandidates,
-      ...contextKeyCandidates,
-      ...dispatchEscapeCandidates,
-    ]) {
-      resolvedPathByFilePath.delete(component.filePath);
-    }
+    for (const filePath of crossFileReads.keys()) resolvedPathByFilePath.delete(filePath);
+    for (const { component } of resolveTypesCandidates) resolvedPathByFilePath.delete(component.filePath);
   }
 
   validateExtendsTargets(allComponentsForTypes, resolveComponentFilePath, options.typesTypeNames);
@@ -941,24 +878,77 @@ export async function generateBundle(
   };
 }
 
-interface CallDefaultCandidateGroup {
-  component: ComponentDocApi;
-  candidates: PendingCallDefaultCandidate[];
-}
+/**
+ * Resolves each component's cross-file candidates in place: prop defaults
+ * that call or name an import, `setContext` keys bound to an import, and
+ * events dispatched by an imported helper. AST/JSDoc only (no tsc).
+ *
+ * Each component gets its own resolve context, so its result doesn't depend
+ * on which components ran first, and the files that context read are the
+ * component's cross-file dependencies. Returns them keyed by `filePath`,
+ * for every component that had something to resolve.
+ */
+export async function resolveCrossFileCandidates(
+  scope: Iterable<ComponentDocApi>,
+  resolveComponentFilePath: ResolveComponentFilePath,
+): Promise<Map<string, string[]>> {
+  const pending = Array.from(scope, (component) => {
+    const metadata = getParsedComponentTypeScriptMetadata(component);
+    return {
+      component,
+      callDefaults:
+        metadata?.pendingCallDefaultCandidates?.filter((candidate) => candidate.importSource !== undefined) ?? [],
+      constDefaults: metadata?.pendingConstDefaultCandidates ?? [],
+      contextKeys: metadata?.pendingContextKeyCandidates ?? [],
+      dispatchEscapes: metadata?.pendingDispatchEscapeCandidates ?? [],
+      deferredEventNoSource: metadata?.deferredEventNoSourceDiagnostics ?? [],
+    };
+  }).filter(
+    (work) =>
+      work.callDefaults.length > 0 ||
+      work.constDefaults.length > 0 ||
+      work.contextKeys.length > 0 ||
+      work.dispatchEscapes.length > 0,
+  );
 
-/** Components that have a CallExpression prop default from a named import. */
-function collectCallDefaultCandidates(components: ComponentDocs): CallDefaultCandidateGroup[] {
-  const groups: CallDefaultCandidateGroup[] = [];
+  const readsByFilePath = new Map<string, string[]>();
+  if (pending.length === 0) return readsByFilePath;
 
-  for (const component of components.values()) {
-    const candidates = getParsedComponentTypeScriptMetadata(component)?.pendingCallDefaultCandidates?.filter(
-      (candidate) => candidate.importSource !== undefined,
-    );
-    if (!candidates || candidates.length === 0) continue;
-    groups.push({ component, candidates });
+  // Warm-cache runs skip the parser stack, but sibling modules still need it.
+  await loadParserStack();
+
+  for (const {
+    component,
+    callDefaults,
+    constDefaults,
+    contextKeys,
+    dispatchEscapes,
+    deferredEventNoSource,
+  } of pending) {
+    const ctx = createCallDefaultResolveContext();
+    const filePath = resolveComponentFilePath(component.filePath);
+
+    if (callDefaults.length > 0) {
+      applyCallDefaultResolutions(component, resolveCallDefaultCandidates(filePath, callDefaults, ctx));
+    }
+    if (constDefaults.length > 0) {
+      applyConstDefaultResolutions(component, resolveConstDefaultCandidates(filePath, constDefaults, ctx));
+    }
+    if (contextKeys.length > 0) {
+      applyContextKeyResolutions(component, resolveContextKeyCandidates(filePath, contextKeys, ctx));
+    }
+    if (dispatchEscapes.length > 0) {
+      applyDispatchEscapeResolutions(
+        component,
+        resolveDispatchEscapeCandidates(filePath, dispatchEscapes, ctx),
+        deferredEventNoSource,
+      );
+    }
+
+    readsByFilePath.set(component.filePath, Array.from(ctx.cache.keys()));
   }
 
-  return groups;
+  return readsByFilePath;
 }
 
 /**
@@ -992,24 +982,6 @@ function applyCallDefaultResolutions(component: ComponentDocApi, resolutions: Ca
   }
 }
 
-interface ConstDefaultCandidateGroup {
-  component: ComponentDocApi;
-  candidates: PendingConstDefaultCandidate[];
-}
-
-/** Components with a prop default bound to a named value import. */
-function collectConstDefaultCandidates(components: ComponentDocs): ConstDefaultCandidateGroup[] {
-  const groups: ConstDefaultCandidateGroup[] = [];
-
-  for (const component of components.values()) {
-    const candidates = getParsedComponentTypeScriptMetadata(component)?.pendingConstDefaultCandidates;
-    if (!candidates || candidates.length === 0) continue;
-    groups.push({ component, candidates });
-  }
-
-  return groups;
-}
-
 /**
  * Swap the imported identifier for its literal in `value`/`defaultValue`,
  * matching a same-file `const`. Type the prop from the literal only when
@@ -1034,24 +1006,6 @@ function applyConstDefaultResolutions(component: ComponentDocApi, resolutions: C
       );
     }
   }
-}
-
-interface ContextKeyCandidateGroup {
-  component: ComponentDocApi;
-  candidates: PendingContextKeyCandidate[];
-}
-
-/** Components with a `setContext` key bound to a named import. */
-function collectContextKeyCandidates(components: ComponentDocs): ContextKeyCandidateGroup[] {
-  const groups: ContextKeyCandidateGroup[] = [];
-
-  for (const component of components.values()) {
-    const candidates = getParsedComponentTypeScriptMetadata(component)?.pendingContextKeyCandidates;
-    if (!candidates || candidates.length === 0) continue;
-    groups.push({ component, candidates });
-  }
-
-  return groups;
 }
 
 /**
@@ -1094,26 +1048,6 @@ function startsAfter(range: SourceRange | undefined, other: SourceRange | undefi
   if (!range || !other) return false;
   const { line, column } = range.start;
   return line > other.start.line || (line === other.start.line && column > other.start.column);
-}
-
-interface DispatchEscapeCandidateGroup {
-  component: ComponentDocApi;
-  candidates: PendingDispatchEscapeCandidate[];
-  deferredEventNoSource: SveldDiagnostic[];
-}
-
-/** Components whose dispatcher is passed to an imported function. */
-function collectDispatchEscapeCandidates(components: ComponentDocs): DispatchEscapeCandidateGroup[] {
-  const groups: DispatchEscapeCandidateGroup[] = [];
-
-  for (const component of components.values()) {
-    const metadata = getParsedComponentTypeScriptMetadata(component);
-    const candidates = metadata?.pendingDispatchEscapeCandidates;
-    if (!candidates || candidates.length === 0) continue;
-    groups.push({ component, candidates, deferredEventNoSource: metadata.deferredEventNoSourceDiagnostics ?? [] });
-  }
-
-  return groups;
 }
 
 /**
@@ -1176,7 +1110,7 @@ function applyDispatchEscapeResolutions(
  * shallow copies of the same parse, so JSON and Markdown would otherwise
  * miss a context whose key was imported, or an event a helper dispatches.
  */
-function syncCrossFileResults(components: ComponentDocs, allComponentsForTypes: ComponentDocs): void {
+export function syncCrossFileResults(components: ComponentDocs, allComponentsForTypes: ComponentDocs): void {
   for (const component of components.values()) {
     const resolved = allComponentsForTypes.get(component.filePath);
     if (!resolved || resolved === component) continue;

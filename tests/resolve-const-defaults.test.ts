@@ -195,4 +195,29 @@ describe("cross-file imported-constant prop-default resolution", () => {
     expect(moduleExport?.value).toBe("300");
     expect(moduleExport?.type).toBe("number");
   });
+
+  test("resolves each component the same whichever order an import cycle is reached in", async () => {
+    writeFileSync(path.join(dir, "a.js"), 'export const X = 1;\nexport * from "./b.js";\n');
+    writeFileSync(path.join(dir, "b.js"), 'export * from "./a.js";\nexport const Y = 2;\n');
+    writeFileSync(
+      path.join(dir, "One.svelte"),
+      '<script>\n  import { X } from "./a.js";\n  export let x = X;\n</script>\n',
+    );
+    writeFileSync(
+      path.join(dir, "Two.svelte"),
+      '<script>\n  import { X } from "./b.js";\n  export let x = X;\n</script>\n',
+    );
+
+    const valuesInOrder = async (order: string[]) => {
+      writeFileSync(
+        path.join(dir, "index.js"),
+        order.map((name) => `export { default as ${name} } from "./${name}.svelte";\n`).join(""),
+      );
+      const result = await generateBundle(path.join(dir, "index.js"), false, { cache: false });
+      return order.map((name) => result.components.get(name)?.props[0]?.value);
+    };
+
+    expect(await valuesInOrder(["One", "Two"])).toEqual(["1", "1"]);
+    expect(await valuesInOrder(["Two", "One"])).toEqual(["1", "1"]);
+  });
 });
