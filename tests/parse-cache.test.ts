@@ -123,6 +123,31 @@ describe("parse cache", () => {
     expect(byModuleName(result.allComponentsForTypes, "SecondaryButton")).toBeDefined();
   });
 
+  test("values resolved from an imported module aren't saved as part of the cached parse", async () => {
+    const entry = join(dir, "entry.js");
+    writeFileSync(entry, 'export { default as Tip } from "./Tip.svelte";\n');
+    writeFileSync(join(dir, "constants.js"), "export const DELAY = 100;\n");
+    writeFileSync(
+      join(dir, "Tip.svelte"),
+      `<script>\n  import { DELAY } from "./constants.js";\n  export let delay = DELAY;\n</script>`,
+    );
+
+    const first = await generateBundle(entry, false, { cache: cacheFile });
+    // sveld() saves again after the write phase; that save must not persist the resolved default.
+    first.cache?.save();
+    expect(readFileSync(cacheFile, "utf-8")).not.toContain('"value":"100"');
+
+    writeFileSync(join(dir, "constants.js"), 'export const DELAY = "slow";\n');
+    parseSpy.mockClear();
+    const second = await generateBundle(entry, false, { cache: cacheFile });
+
+    expect(parseSpy).not.toHaveBeenCalled();
+    for (const components of [second.components, second.allComponentsForTypes]) {
+      const delay = byModuleName(components, "Tip")?.props.find((prop) => prop.name === "delay");
+      expect(delay).toMatchObject({ value: '"slow"', type: "string", typeSource: "default" });
+    }
+  });
+
   test("a cache file with an old formatVersion is discarded, not misread", async () => {
     await generateBundle(dir, true, { cache: cacheFile });
 

@@ -104,18 +104,26 @@ export class ParseCache {
     // Keep the entry for save() even if nothing else touches it this run.
     this.next.set(resolvedPath, entry);
 
+    // Hand out a copy: the cross-file passes in `generateBundle` resolve
+    // props and diagnostics in place, and those results must not be saved
+    // as if they came from this file's source alone.
+    const parsed = structuredClone(entry.parsed);
     if (entry.typeScriptMetadata !== undefined) {
-      entry.parsed[PARSED_COMPONENT_TYPE_SCRIPT_METADATA] = entry.typeScriptMetadata;
+      parsed[PARSED_COMPONENT_TYPE_SCRIPT_METADATA] = structuredClone(entry.typeScriptMetadata);
     }
-    return entry.parsed;
+    return parsed;
   }
 
-  /** Records a freshly parsed component so it can be reused on a future run. */
+  /**
+   * Records a freshly parsed component so it can be reused on a future run.
+   * Stores a copy, for the same reason `get()` returns one.
+   */
   set(resolvedPath: string, hash: string, parsed: ParsedComponent): void {
+    const typeScriptMetadata = parsed[PARSED_COMPONENT_TYPE_SCRIPT_METADATA];
     this.next.set(resolvedPath, {
       hash,
-      parsed,
-      typeScriptMetadata: parsed[PARSED_COMPONENT_TYPE_SCRIPT_METADATA],
+      parsed: structuredClone(parsed),
+      typeScriptMetadata: typeScriptMetadata === undefined ? undefined : structuredClone(typeScriptMetadata),
     });
   }
 
