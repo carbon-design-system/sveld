@@ -419,6 +419,34 @@ describe("ComponentParser", () => {
     expect(prop3?.description).toBe("JSDoc without directive");
   });
 
+  test("keeps TypeScript directives inside a JSDoc example", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /**
+         * Value.
+         * @example
+         * \`\`\`js
+         * // @ts-expect-error value must be a number
+         * value = "x";
+         * \`\`\`
+         */
+        // @ts-ignore
+        export let value = 1;
+      </script>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    const value = result.props.find((p) => p.name === "value");
+    expect(value?.description).toBe("Value.");
+    expect(value?.tags).toEqual([
+      {
+        name: "example",
+        body: ' ```js\n // @ts-expect-error value must be a number\n value = "x";\n ```',
+      },
+    ]);
+  });
+
   test("handles slots and slot props", () => {
     const parser = new ComponentParser();
     const source = `
