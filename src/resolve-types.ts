@@ -3,6 +3,7 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import type { ParsedComponentTypeScriptMetadata, ResolvedComponentProp } from "./ComponentParser";
 import type { ExampleCheckSource } from "./example-check";
+import { compareText } from "./parser/utils";
 import { normalizeSeparators } from "./path";
 
 export interface ResolveTarget {
@@ -302,7 +303,7 @@ export class TypeResolver {
           );
           return { name: group.name, type: Array.from(new Set(texts)).join(" | "), isRequired };
         });
-        resolved.sort((a, b) => a.name.localeCompare(b.name));
+        resolved.sort((a, b) => compareText(a.name, b.name));
         results.set(entry.filePath, resolved);
       });
     } finally {

@@ -7,6 +7,7 @@ import type {
 } from "../ComponentParser";
 import type { ParserContext } from "./context";
 import { sourceAtPos } from "./source-position";
+import { compareText } from "./utils";
 
 const GENERIC_TYPE_TEXT_IDENTIFIER_REGEX = /[A-Za-z_$][\w$]*/g;
 
@@ -292,7 +293,7 @@ function buildTypeImportStatements(ctx: ParserContext, referencedImportedTypes: 
   }
 
   return Array.from(groupedImports.entries())
-    .sort(([sourceA], [sourceB]) => sourceA.localeCompare(sourceB))
+    .sort(([sourceA], [sourceB]) => compareText(sourceA, sourceB))
     .map(([source, group]) => {
       if (group.namespace.length > 0) {
         return group.namespace.map((localName) => `import type * as ${localName} from "${source}";`).join("\n");
