@@ -217,6 +217,46 @@ describe("watch mode (createSveldBundle)", () => {
     const { result } = await bundle.update([resolve(entryPath)]);
 
     expect(Array.from(result.components.keys())).toEqual(["Button"]);
+    // No `.d.ts` for it either, same as a fresh build without --glob.
+    expect(Array.from(result.allComponentsForTypes.values(), (c) => c.moduleName)).toEqual(["Button"]);
+  });
+
+  test("removing a barrel export stops reporting its parse error", async () => {
+    const entryPath = join(dir, "index.js");
+    writeFileSync(join(dir, "Broken.svelte"), "<script>export let = ;</script>\n");
+    writeFileSync(
+      entryPath,
+      'export { default as Button } from "./Button.svelte";\n' +
+        'export { default as Broken } from "./Broken.svelte";\n',
+    );
+
+    const errorSpy = jest.spyOn(console, "error").mockImplementation(() => undefined);
+    try {
+      const bundle = await createSveldBundle(entryPath, false);
+      expect((await bundle.result).errors.map((error) => error.moduleName)).toEqual(["Broken"]);
+
+      writeFileSync(entryPath, 'export { default as Button } from "./Button.svelte";\n');
+      const { result } = await bundle.update([resolve(entryPath)]);
+
+      expect(result.errors).toEqual([]);
+    } finally {
+      errorSpy.mockRestore();
+    }
+  });
+
+  test.each([false, true])("repointing a barrel export at another file re-parses it (glob: %p)", async (glob) => {
+    const entryPath = join(dir, "index.js");
+    writeFileSync(entryPath, 'export { default as Button } from "./Button.svelte";\n');
+
+    const bundle = await createSveldBundle(entryPath, glob);
+    expect((await bundle.result).components.get("Button")?.props.map((prop) => prop.name)).toEqual(["primary"]);
+
+    writeFileSync(entryPath, 'export { default as Button } from "./Standalone.svelte";\n');
+    const { result, reparsed } = await bundle.update([resolve(entryPath)]);
+
+    expect(result.components.get("Button")?.filePath).toBe("./Standalone.svelte");
+    expect(result.components.get("Button")?.props.map((prop) => prop.name)).toEqual(["label"]);
+    expect(reparsed).toContain(resolve(dir, "Standalone.svelte"));
   });
 
   describe("values read from other modules", () => {

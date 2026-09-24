@@ -325,8 +325,8 @@ export async function createSveldBundle(
     if (entryChanged) {
       // Re-run export collection on the entry barrel: a name that disappears
       // is dropped from `components` outright (its file may still surface via
-      // `--glob`); a name that appears is treated as changed so the normal
-      // reparse path below parses it for the first time.
+      // `--glob`); a name that appears, or now points at another file, is
+      // treated as changed so the normal reparse path below parses its file.
       const recollected = collectComponents(input, glob, documentExports);
       const oldNames = new Set(Object.keys(exports));
       const newNames = new Set(Object.keys(recollected.exports));
@@ -335,8 +335,12 @@ export async function createSveldBundle(
         if (!newNames.has(name)) components.delete(name);
       }
       for (const name of newNames) {
+        const path = recollected.resolveComponentFilePath(recollected.exports[name].source);
         if (!oldNames.has(name)) {
-          addedComponentPaths.push(recollected.resolveComponentFilePath(recollected.exports[name].source));
+          addedComponentPaths.push(path);
+        } else if (resolveComponentFilePath(exports[name].source) !== path) {
+          components.delete(name);
+          addedComponentPaths.push(path);
         }
       }
 
@@ -354,6 +358,24 @@ export async function createSveldBundle(
     // Pick up components created since the last parse.
     if (glob) {
       mergeGlobbedComponents(rootDir, exports, allComponentEntries, resolveComponentFilePath, globMergeState);
+    }
+
+    // A file the barrel stopped exporting (and, under `--glob`, that no
+    // longer exists) is out of the bundle: stop writing its `.d.ts` and
+    // reporting its parse error.
+    if (entryChanged) {
+      const listed = new Set(
+        [...exportEntries, ...allComponentEntries].map(([, entry]) => resolveComponentFilePath(entry.source)),
+      );
+      for (const [key, component] of allComponentsForTypes) {
+        if (!listed.has(resolveComponentFilePath(component.filePath))) allComponentsForTypes.delete(key);
+      }
+      for (const [key, error] of parseErrors) {
+        if (!listed.has(resolveComponentFilePath(error.filePath))) parseErrors.delete(key);
+      }
+      for (const filePath of inlinedTypesByFilePath.keys()) {
+        if (!allComponentsForTypes.has(filePath)) inlinedTypesByFilePath.delete(filePath);
+      }
     }
 
     // Non-`.svelte` changes only matter when they're a known dependency
