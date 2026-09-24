@@ -72,7 +72,7 @@ interface Transaction {
 /** State shared across every `typeImportStatements` entry of a single component. */
 interface InlineContext {
   files: Map<string, ParsedFile | null>;
-  /** Names already declared by the component itself; a copied declaration can't reuse one. */
+  /** Names the component's `.d.ts` already declares or imports; a copied declaration can't reuse one. */
   reservedNames: Set<string>;
   /** Declared name -> the `path#name` (or `alias#name`) key that owns it, for collision detection. */
   nameOwner: Map<string, string>;
@@ -545,7 +545,10 @@ function applyAlias(ctx: InlineContext, declaredName: string, wantedLocalName: s
     return { ok: false, reason: `"${wantedLocalName}" was already inlined from a different source` };
   }
   if (ctx.reservedNames.has(wantedLocalName)) {
-    return { ok: false, reason: `"${wantedLocalName}" collides with an existing declaration in the component` };
+    return {
+      ok: false,
+      reason: `"${wantedLocalName}" collides with a name the component's .d.ts already declares or imports`,
+    };
   }
 
   ctx.nameOwner.set(wantedLocalName, aliasKey);
@@ -616,7 +619,10 @@ async function emitDeclaration(
     return { ok: false, reason: `"${declaredName}" was already inlined from a different source` };
   }
   if (ctx.reservedNames.has(declaredName)) {
-    return { ok: false, reason: `"${declaredName}" collides with an existing declaration in the component` };
+    return {
+      ok: false,
+      reason: `"${declaredName}" collides with a name the component's .d.ts already declares or imports`,
+    };
   }
 
   ctx.pending.add(realKey);
@@ -781,30 +787,49 @@ type StatementOutcome =
   | { status: "kept" }
   | { status: "refused"; failures: StatementFailure[] };
 
-/** Attempts to inline every name of one `typeImportStatements` entry, atomically (all or nothing). */
-async function processStatement(
-  ctx: InlineContext,
+/**
+ * One `typeImportStatements` entry, read before anything is inlined: the local names it binds,
+ * and whether it's attempted at all. A statement that isn't attempted (or can't be, its module
+ * missing) stays in the `.d.ts`, so nothing inlined may reuse the names it binds.
+ */
+type StatementRead = { localNames: string[] } & (
+  | { status: "kept" }
+  | { status: "refused"; failures: StatementFailure[] }
+  | {
+      status: "attempt";
+      names: Array<{ importedName: string; localName: string }>;
+      sourceValue: string;
+      resolution: Extract<ModuleResolution, { kind: "resolved" | "bare" }>;
+    }
+);
+
+function readStatement(
   statement: string,
   componentAbsPath: string,
-): Promise<StatementOutcome> {
+  bareSession: BareTypeSession | undefined,
+): StatementRead {
   let program: { body: WalkableNode[] };
   try {
     program = parseProgram(statement, true, []) as unknown as { body: WalkableNode[] };
   } catch {
-    return { status: "kept" };
+    return { status: "kept", localNames: [] };
   }
 
   const importDecls = program.body.filter((stmt) => stmt.type === "ImportDeclaration");
-  if (importDecls.length === 0) return { status: "kept" };
-
   const specifierPairs = importDecls.flatMap((decl) => asNodeArray(decl.specifiers).map((spec) => ({ decl, spec })));
-  if (specifierPairs.some(({ spec }) => spec.type === "ImportNamespaceSpecifier")) return { status: "kept" };
+  const localNames = specifierPairs
+    .map(({ spec }) => nodeName(asNode(spec.local)))
+    .filter((name): name is string => name !== undefined);
+  if (importDecls.length === 0) return { status: "kept", localNames };
+
+  if (specifierPairs.some(({ spec }) => spec.type === "ImportNamespaceSpecifier"))
+    return { status: "kept", localNames };
 
   const sourceValue = sourceValueOf(asNode(importDecls[0]?.source));
-  if (sourceValue === undefined) return { status: "kept" };
+  if (sourceValue === undefined) return { status: "kept", localNames };
 
   const resolution = resolveModuleSpecifier(sourceValue, componentAbsPath);
-  if (resolution.kind === "svelte") return { status: "kept" };
+  if (resolution.kind === "svelte") return { status: "kept", localNames };
 
   const names: Array<{ importedName: string; localName: string }> = [];
   for (const { spec } of specifierPairs) {
@@ -818,39 +843,36 @@ async function processStatement(
   if (resolution.kind === "missing") {
     return {
       status: "refused",
+      localNames,
       failures: names.map(({ localName }) => ({ name: localName, reason: `"${sourceValue}" was not found on disk` })),
     };
   }
 
-  if (resolution.kind === "bare") {
-    // Never attempted under `"local"`, for the svelte/svelte-elements allow-list, or when no
-    // checker session exists (e.g. `"all"` found nothing bare anywhere else in the bundle and
-    // skipped creating one): kept exactly as sveld has always kept a bare import, no diagnostic.
-    if (isFrameworkAllowlisted(sourceValue) || !ctx.bareSession) return { status: "kept" };
-
-    ctx.tx = { orderStart: ctx.order.length, keys: [] };
-    const bareFailures: StatementFailure[] = [];
-    // Sequential by necessity: each name's collision check depends on ctx state a prior name in
-    // the same statement may have just reserved (rolled back together below on any failure).
-    for (const { importedName, localName } of names) {
-      // biome-ignore lint/performance/noAwaitInLoops: shared, order-dependent ctx state (see above the loop).
-      const outcome = await inlineBareImportedName(ctx, sourceValue, importedName, localName);
-      if (!outcome.ok) bareFailures.push({ name: localName, reason: outcome.reason });
-    }
-
-    if (bareFailures.length > 0) {
-      rollback(ctx);
-      return { status: "refused", failures: bareFailures };
-    }
-    return { status: "inlined" };
+  // A bare import is never attempted under `"local"`, for the svelte/svelte-elements allow-list,
+  // or when no checker session exists (e.g. `"all"` found nothing bare anywhere else in the
+  // bundle and skipped creating one): kept exactly as sveld has always kept a bare import, no
+  // diagnostic.
+  if (resolution.kind === "bare" && (isFrameworkAllowlisted(sourceValue) || !bareSession)) {
+    return { status: "kept", localNames };
   }
+
+  return { status: "attempt", localNames, names, sourceValue, resolution };
+}
+
+/** Attempts to inline every name of one `typeImportStatements` entry, atomically (all or nothing). */
+async function processStatement(ctx: InlineContext, read: StatementRead): Promise<StatementOutcome> {
+  if (read.status !== "attempt") return read;
+  const { names, sourceValue, resolution } = read;
 
   ctx.tx = { orderStart: ctx.order.length, keys: [] };
   const failures: StatementFailure[] = [];
-  // Sequential by necessity, same as the bare-import loop above.
+  // Sequential by necessity: each name's collision check depends on ctx state a prior name in
+  // the same statement may have just reserved (rolled back together below on any failure).
   for (const { importedName, localName } of names) {
     // biome-ignore lint/performance/noAwaitInLoops: shared, order-dependent ctx state (see above the loop).
-    const outcome = await inlineImportedName(ctx, resolution.path, importedName, localName);
+    const outcome = await (resolution.kind === "bare"
+      ? inlineBareImportedName(ctx, sourceValue, importedName, localName)
+      : inlineImportedName(ctx, resolution.path, importedName, localName));
     if (!outcome.ok) failures.push({ name: localName, reason: outcome.reason });
   }
 
@@ -861,7 +883,11 @@ async function processStatement(
   return { status: "inlined" };
 }
 
-/** Names the component itself already declares; a copied declaration can't reuse one of these. */
+/**
+ * Names the component's `.d.ts` already declares or imports; a copied declaration can't reuse
+ * one of these. The names its kept imports bind are added per statement (see
+ * `inlineLocalTypeImports`).
+ */
 function collectComponentReservedNames(
   component: ComponentDocApi,
   typeNames: WriteTsDefinitionOptions["typeNames"] | undefined,
@@ -878,8 +904,29 @@ function collectComponentReservedNames(
 
   names.add(propsTypeName(component.moduleName, typeNames));
   names.add(exportsTypeName(component.moduleName, typeNames));
+
+  // What the writer itself declares or imports around the copied declarations: the component
+  // (`$$Component` stands in for an anonymous default) and its generic-component interface,
+  // the `$Props`/`$RestProps` helpers, and the svelte types it imports, in either format.
+  const componentName = component.moduleName === "default" ? "$$Component" : component.moduleName;
+  names.add(componentName);
+  names.add(`${componentName}Component`);
+  for (const name of WRITER_DECLARED_NAMES) names.add(name);
   return names;
 }
+
+const WRITER_DECLARED_NAMES = [
+  "$Props",
+  "$RestProps",
+  "Component",
+  "ComponentConstructorOptions",
+  "ComponentInternals",
+  "HTMLAttributes",
+  "Snippet",
+  "SvelteComponent",
+  "SvelteComponentTyped",
+  "SvelteHTMLElements",
+];
 
 /**
  * Copies relative (and tsconfig/jsconfig-alias) type imports into each component's `.d.ts`,
@@ -934,14 +981,23 @@ export async function inlineLocalTypeImports(
       // (e.g. a prior watch-mode flush) before adding this run's.
       const diagnostics = (component.diagnostics ?? []).filter((d) => d.kind !== "types-inline-unresolved");
 
+      // An import that stays in the `.d.ts` keeps its names: reserve those known up front, and a
+      // refused statement's once it's refused (for the statements after it).
+      const reads = typeImportStatements.map((statement) => readStatement(statement, componentAbsPath, bareSession));
+      for (const read of reads) {
+        if (read.status !== "attempt") for (const name of read.localNames) ctx.reservedNames.add(name);
+      }
+
       // Sequential by necessity: statements share `ctx` (name reservations, emission order), so
       // processing order determines dedup/collision outcomes and must stay stable.
-      for (const statement of typeImportStatements) {
+      for (const [index, statement] of typeImportStatements.entries()) {
+        const read = reads[index];
         // biome-ignore lint/performance/noAwaitInLoops: shared, order-dependent ctx state (see above the loop).
-        const outcome = await processStatement(ctx, statement, componentAbsPath);
+        const outcome = await processStatement(ctx, read);
         if (outcome.status === "inlined") {
           droppedImportStatements.push(statement);
         } else if (outcome.status === "refused") {
+          for (const name of read.localNames) ctx.reservedNames.add(name);
           for (const failure of outcome.failures) {
             diagnostics.push(
               createDiagnostic({
