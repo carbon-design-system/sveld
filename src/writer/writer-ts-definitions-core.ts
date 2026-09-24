@@ -1288,14 +1288,45 @@ function applyNameTemplate(kind: "props" | "exports", moduleName: string, templa
   return result;
 }
 
+/**
+ * Both generated type names for `moduleName`, rejecting templates whose names
+ * collide with each other, with the component itself, or with the
+ * `<Name>Component` interface a generic component declares.
+ */
+function resolveTypeNames(
+  moduleName: string,
+  typeNames: WriteTsDefinitionOptions["typeNames"],
+): { props: string; exports: string } {
+  const props = applyNameTemplate("props", moduleName, typeNames?.props ?? "{name}Props");
+  const exports = applyNameTemplate("exports", moduleName, typeNames?.exports ?? "{name}Exports");
+  if (props === exports) {
+    throw new Error(
+      `sveld: typesOptions.typeNames.props and typesOptions.typeNames.exports both produce "${props}" for component "${moduleName}"; they must differ.`,
+    );
+  }
+
+  const componentName = moduleName === "default" ? "$$Component" : moduleName;
+  for (const [kind, name] of [
+    ["props", props],
+    ["exports", exports],
+  ] as const) {
+    if (name === componentName || name === `${componentName}Component`) {
+      throw new Error(
+        `sveld: typesOptions.typeNames.${kind} produces "${name}" for component "${moduleName}", which the .d.ts already declares for the component itself; use a different template.`,
+      );
+    }
+  }
+  return { props, exports };
+}
+
 /** Resolves the generated props type name from `typesOptions.typeNames.props` (default `"{name}Props"`). */
 export function propsTypeName(moduleName: string, typeNames?: WriteTsDefinitionOptions["typeNames"]): string {
-  return applyNameTemplate("props", moduleName, typeNames?.props ?? "{name}Props");
+  return resolveTypeNames(moduleName, typeNames).props;
 }
 
 /** Resolves the generated exports type name from `typesOptions.typeNames.exports` (default `"{name}Exports"`). */
 export function exportsTypeName(moduleName: string, typeNames?: WriteTsDefinitionOptions["typeNames"]): string {
-  return applyNameTemplate("exports", moduleName, typeNames?.exports ?? "{name}Exports");
+  return resolveTypeNames(moduleName, typeNames).exports;
 }
 
 /** The `{props, exports, typedefs, contexts}` shape every per-kind `typesOptions` toggle resolves to. */
