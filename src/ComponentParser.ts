@@ -80,6 +80,7 @@ import {
   collectReExportableImports,
   collectValueImportBindings,
   type ImportDeclarationNode,
+  importedCalleeBinding,
   scriptBody,
 } from "./parser/value-imports";
 import { buildVariableJsDocTable } from "./parser/variable-jsdoc";
@@ -2433,9 +2434,10 @@ export default class ComponentParser {
       }
       const ignored = isSveldIgnored(this.ctx, "dispatch-escapes", dispatcherName);
       for (const { call, argumentIndex, property } of escapes) {
-        const importBinding = isIdentifier(call.callee)
-          ? this.ctx.valueImportBindingsByLocalName.get(call.callee.name)
-          : undefined;
+        const importBinding = importedCalleeBinding(this.ctx, call.callee, [
+          this.ctx.parsed?.instance as unknown as Node | undefined,
+          this.ctx.parsed?.module as unknown as Node | undefined,
+        ]);
         if (!importBinding) {
           unfollowableEscapes.push(call);
           continue;
@@ -2486,7 +2488,7 @@ export default class ComponentParser {
         this.ctx,
         "dispatch-escapes",
         dispatcherName ?? "",
-        `\`${dispatcherName}\` is passed to \`${callee}\`, which sveld can only follow when it's an imported function. Document the events dispatched there with @event tags.`,
+        `\`${dispatcherName}\` is passed to \`${callee}\`, which sveld can't follow: it only reads a function imported from another module, by name, as its default export, or through a namespace import. Document the events dispatched there with @event tags.`,
         sourceRangeFromNode(this.ctx, call),
       );
     }

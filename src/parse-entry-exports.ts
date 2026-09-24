@@ -625,6 +625,39 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
 }
 
 /**
+ * The entry a module's `export default` contributes, named `default`: a
+ * function declared in place (`export default function helper(d) {}`), or
+ * the local binding it names (`export default helper`). Anything else isn't
+ * read.
+ */
+function describeDefaultExport(
+  source: ModuleSource,
+  declaration: AstNode | undefined,
+  resolveLocal: (name: string) => InternalExport | null,
+): InternalExport | undefined {
+  if (!declaration) return undefined;
+
+  if (
+    declaration.type === "FunctionDeclaration" ||
+    declaration.type === "FunctionExpression" ||
+    declaration.type === "ArrowFunctionExpression"
+  ) {
+    return {
+      name: "default",
+      kind: "function",
+      type: buildSignature(source, declaration),
+      functionNode: declaration,
+      declFile: source.filePath,
+      isTypeOnly: false,
+    };
+  }
+
+  const localName = identifierName(declaration);
+  const resolved = localName ? resolveLocal(localName) : null;
+  return resolved ? { ...resolved, name: "default" } : undefined;
+}
+
+/**
  * Parses a module file into its top-level statements, with byte offsets into
  * the file's own text for verbatim text extraction.
  *
@@ -679,6 +712,8 @@ function findImportSource(body: AstNode[], name: string): { specifier: string; i
  * Collects every named export declared or re-exported by a module.
  *
  * Walks `export ... from` and `export *` chains. Skips `.svelte` re-exports.
+ * A default export that's a function or a local binding is listed as
+ * `default` (see {@link describeDefaultExport}).
  */
 export function collectModuleExports(filePath: string, ctx: ResolveContext): InternalExport[] {
   const cached = ctx.cache.get(filePath);
@@ -739,6 +774,12 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
       continue;
     }
 
+    if (node.type === "ExportDefaultDeclaration") {
+      const defaultExport = describeDefaultExport(source, asNode(node.declaration), resolveLocal);
+      if (defaultExport) results.push(defaultExport);
+      continue;
+    }
+
     if (node.type !== "ExportNamedDeclaration") continue;
 
     // Inline `export const/function/class/type/interface/enum`.
@@ -758,7 +799,9 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
       if (specifier.type !== "ExportSpecifier") continue;
       const exportedName = identifierName(asNode(specifier.exported));
       const localName = identifierName(asNode(specifier.local));
-      if (!exportedName || !localName || localName === "default" || exportedName === "default") continue;
+      if (!exportedName || !localName || localName === "default") continue;
+      // `export { impl as default }` of a local binding; a re-exported default isn't followed.
+      if (exportedName === "default" && moduleSpecifier) continue;
 
       const elementIsTypeOnly = stmtIsTypeOnly || specifier.exportKind === "type";
 
@@ -790,10 +833,11 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
   // Same rules as ES module linking: a name the module exports explicitly
   // shadows every `export *` of it, and a name two stars bring in from
   // different declarations is ambiguous, so the module doesn't export it.
-  // Entries from one file are one declaration (or its overloads).
+  // Entries from one file are one declaration (or its overloads). A star
+  // never re-exports `default`.
   const explicitNames = new Set(results.map((entry) => entry.name));
   for (const [name, entries] of starExports) {
-    if (explicitNames.has(name)) continue;
+    if (explicitNames.has(name) || name === "default") continue;
     if (entries.every((entry) => entry.declFile === entries[0].declFile)) {
       results.push(...entries);
     } else {
@@ -866,6 +910,8 @@ export async function parseEntryExports(entryFile: string): Promise<EntryExports
   // Entries sharing a name are one declaration's overloads; the last (the
   // implementation signature) wins.
   for (const entry of [...collected, ...ambiguous]) {
+    // The barrel's default export isn't a named export.
+    if (entry.name === "default") continue;
     // Drop internal returnType/literalValue/primitiveLiteral/declaredType/functionNode; public EntryExport does not expose them.
     const {
       declFile,
