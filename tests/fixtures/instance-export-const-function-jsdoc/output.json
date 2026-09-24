@@ -1,0 +1,122 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 21,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "format",
+      "kind": "const",
+      "description": "Formats a value.",
+      "type": "(value: string) => string",
+      "typeSource": "jsdoc",
+      "value": "(value) => value.trim()",
+      "defaultValue": {
+        "raw": "(value) => value.trim()",
+        "kind": "function"
+      },
+      "params": [
+        {
+          "name": "value",
+          "type": "string",
+          "description": "",
+          "optional": false
+        }
+      ],
+      "returnType": "string",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 7,
+          "column": 2
+        },
+        "end": {
+          "line": 7,
+          "column": 48
+        }
+      }
+    },
+    {
+      "name": "identity",
+      "kind": "const",
+      "type": "<T>(value: T) => T",
+      "typeSource": "jsdoc",
+      "value": "(value) => value",
+      "defaultValue": {
+        "raw": "(value) => value",
+        "kind": "function"
+      },
+      "params": [
+        {
+          "name": "value",
+          "type": "T",
+          "description": "",
+          "optional": false
+        }
+      ],
+      "returnType": "T",
+      "typeParameters": "T",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 14,
+          "column": 2
+        },
+        "end": {
+          "line": 14,
+          "column": 43
+        }
+      }
+    },
+    {
+      "name": "size",
+      "kind": "let",
+      "type": "number",
+      "typeSource": "jsdoc",
+      "value": "1",
+      "defaultValue": {
+        "raw": "1",
+        "kind": "literal",
+        "value": 1
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 17,
+          "column": 2
+        },
+        "end": {
+          "line": 17,
+          "column": 22
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
