@@ -218,6 +218,69 @@ describe("watch mode (createSveldBundle)", () => {
 
     expect(Array.from(result.components.keys())).toEqual(["Button"]);
   });
+
+  describe("values read from other modules", () => {
+    const TIP = `<script>
+  import { setContext, createEventDispatcher } from "svelte";
+  import { DELAY, KEY } from "./constants.js";
+  import { wire } from "./helper.js";
+  export let delay = DELAY;
+  setContext(KEY, { delay });
+  const dispatch = createEventDispatcher();
+  wire(dispatch);
+</script>`;
+
+    const summarize = (components: ComponentDocs) => {
+      const tip = byModuleName(components, "Tip");
+      const delay = tip?.props.find((prop) => prop.name === "delay");
+      return {
+        delay: [delay?.value, delay?.type],
+        contexts: tip?.contexts?.map((context) => context.key),
+        events: tip?.events.map((event) => event.name),
+      };
+    };
+
+    beforeEach(() => {
+      writeFileSync(join(dir, "Tip.svelte"), TIP);
+      writeFileSync(join(dir, "constants.js"), 'export const DELAY = 100;\nexport const KEY = "one";\n');
+      writeFileSync(join(dir, "helper.js"), 'export function wire(dispatch) { dispatch("alpha"); }\n');
+      writeFileSync(join(dir, "index.js"), 'export { default as Tip } from "./Tip.svelte";\n');
+    });
+
+    test("resolves imported defaults, context keys, and helper events like a one-shot build", async () => {
+      const bundle = await createSveldBundle(join(dir, "index.js"), false);
+      const initial = await bundle.result;
+
+      const expected = { delay: ["100", "number"], contexts: ["one"], events: ["alpha"] };
+      expect(summarize(initial.components)).toEqual(expected);
+      expect(summarize(initial.allComponentsForTypes)).toEqual(expected);
+    });
+
+    test("editing a module a component read from re-parses that component", async () => {
+      const bundle = await createSveldBundle(join(dir, "index.js"), false);
+      await bundle.result;
+
+      writeFileSync(join(dir, "constants.js"), 'export const DELAY = "slow";\nexport const KEY = "two";\n');
+      writeFileSync(join(dir, "helper.js"), 'export function wire(dispatch) { dispatch("beta"); }\n');
+      const { result, reparsed } = await bundle.update([join(dir, "constants.js"), join(dir, "helper.js")]);
+
+      expect(reparsed).toEqual([resolve(dir, "Tip.svelte")]);
+      const expected = { delay: ['"slow"', "string"], contexts: ["two"], events: ["beta"] };
+      expect(summarize(result.components)).toEqual(expected);
+      expect(summarize(result.allComponentsForTypes)).toEqual(expected);
+    });
+
+    test("stops re-parsing a component once it no longer reads the module", async () => {
+      const bundle = await createSveldBundle(join(dir, "index.js"), false);
+      await bundle.result;
+
+      writeFileSync(join(dir, "Tip.svelte"), STANDALONE);
+      await bundle.update([join(dir, "Tip.svelte")]);
+
+      const { reparsed } = await bundle.update([join(dir, "constants.js")]);
+      expect(reparsed).toEqual([]);
+    });
+  });
 });
 
 describe("watch mode with typesOptions.inline", () => {

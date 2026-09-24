@@ -13,6 +13,8 @@ import {
   processComponent,
   readFileMap,
   reportParseErrors,
+  resolveCrossFileCandidates,
+  syncCrossFileResults,
 } from "./bundle";
 import { buildReverseDeps, expandAffected } from "./dependency-graph";
 import { dedupeDiagnostics } from "./diagnostics";
@@ -128,8 +130,40 @@ export async function createSveldBundle(
 
   // Diagnostics keyed by normalized path so incremental updates can clear them.
   const parseErrors = new Map<string, ComponentParseError>();
+  // `memo` is replaced for each parse pass, so both maps share one parse of
+  // a component (the cross-file passes resolve its props in place) without
+  // carrying it into the next update.
   const processOptions: ProcessComponentOptions = {
     onParseError: (error) => parseErrors.set(error.filePath, error),
+    memo: new Map(),
+  };
+
+  // Absolute path of a module read by the cross-file passes (an imported
+  // default, `setContext` key, or dispatch helper) -> resolved paths of the
+  // components that read it. Such a module is never itself a component, so
+  // `update()` consults this to reparse its readers when it changes.
+  const crossFileDepsReverse = new Map<string, Set<string>>();
+
+  /** Resolves cross-file candidates for `scope` and records what each component read. */
+  const resolveCrossFile = async (scope: ComponentDocApi[]): Promise<void> => {
+    const scopePaths = new Set(scope.map((component) => resolveComponentFilePath(component.filePath)));
+    for (const readers of crossFileDepsReverse.values()) {
+      for (const path of scopePaths) readers.delete(path);
+    }
+
+    const reads = await resolveCrossFileCandidates(scope, resolveComponentFilePath);
+    for (const [filePath, modules] of reads) {
+      const componentPath = resolveComponentFilePath(filePath);
+      for (const module of modules) {
+        let readers = crossFileDepsReverse.get(module);
+        if (!readers) {
+          readers = new Set();
+          crossFileDepsReverse.set(module, readers);
+        }
+        readers.add(componentPath);
+      }
+    }
+    syncCrossFileResults(components, allComponentsForTypes);
   };
 
   // Persisted across accesses/flushes so an unaffected component's inline result is reused rather
@@ -223,6 +257,7 @@ export async function createSveldBundle(
       const result = processComponent(entry, allComponentEntries, fileMap, resolveComponentFilePath, processOptions);
       if (result) allComponentsForTypes.set(result.filePath, result);
     }
+    await resolveCrossFile(Array.from(allComponentsForTypes.values()));
     await refreshInlinedTypes(allComponentsForTypes);
     reportParseErrors(Array.from(parseErrors.values()));
   }
@@ -323,10 +358,12 @@ export async function createSveldBundle(
 
     // Non-`.svelte` changes only matter when they're a known dependency
     // target (an `@extendProps`/`@extends` file or a typedef `import(...)`
-    // target); anything else (README, CSS, ...) is ignored here.
+    // target) or a module the cross-file passes read; anything else
+    // (README, CSS, ...) is ignored here.
     const relevantChanged = resolvedChanged.filter((path) => SVELTE_EXT_REGEX.test(path) || reverseDeps.has(path));
+    const crossFileReaders = resolvedChanged.flatMap((path) => Array.from(crossFileDepsReverse.get(path) ?? []));
 
-    if (relevantChanged.length === 0 && addedComponentPaths.length === 0) {
+    if (relevantChanged.length === 0 && addedComponentPaths.length === 0 && crossFileReaders.length === 0) {
       // Nothing needs a component re-parse, but a changed file may still be an inline dependency.
       if (inlineTypeAffectedFilePaths.size > 0) {
         const affectedForTypes: ComponentDocs = new Map();
@@ -338,7 +375,7 @@ export async function createSveldBundle(
       return { result: buildResult(), reparsed: [] };
     }
 
-    const affected = expandAffected([...relevantChanged, ...addedComponentPaths], reverseDeps);
+    const affected = expandAffected([...relevantChanged, ...addedComponentPaths, ...crossFileReaders], reverseDeps);
 
     // Clear diagnostics for files about to be re-parsed.
     for (const [filePath, error] of parseErrors) {
@@ -349,6 +386,7 @@ export async function createSveldBundle(
 
     // Read fresh contents for the affected files only.
     const fileMap = await readFileMap(affected);
+    processOptions.memo = new Map();
 
     const reparsed = new Set<string>();
     for (const path of reparseInto(components, (result) => result.moduleName, exportEntries, affected, fileMap)) {
@@ -366,6 +404,12 @@ export async function createSveldBundle(
 
     // Refresh the dependency graph after re-parsing.
     reverseDeps = buildReverseDeps(allComponentsForTypes, resolveComponentFilePath);
+
+    await resolveCrossFile(
+      Array.from(allComponentsForTypes.values()).filter((component) =>
+        reparsed.has(resolveComponentFilePath(component.filePath)),
+      ),
+    );
 
     // Only the reparsed components, plus any component whose inline dependency just changed, need
     // their inline results recomputed; every other component's type-import dependencies are
