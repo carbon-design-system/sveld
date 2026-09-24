@@ -1316,8 +1316,10 @@ It leaves alone:
 - `enum`, `class`, and `function` exports, which can't be safely copied as a `type`/`interface`.
 
 An import that can't be safely inlined (a missing file, a missing export, one of the unsupported
-export kinds above, or a name collision with something the component already declares — a
-typedef, a context type, a local `type`/`interface`, or its `Props`/`Exports` type name) is left
+export kinds above, or a name collision with something the component's `.d.ts` already declares
+or imports — a typedef, a context type, a local `type`/`interface`, its `Props`/`Exports` type
+name, the component's own name, `$Props`/`$RestProps`, the svelte types the `.d.ts` imports, or a
+name bound by an import that stays) is left
 as an import, with a [`types-inline-unresolved`](#diagnostic-codes) warning explaining why. If an
 `import type { A, B } from "./x"` statement imports several names and even one of them can't be
 inlined, the whole statement is kept and nothing from it is inlined — simpler, and always correct.

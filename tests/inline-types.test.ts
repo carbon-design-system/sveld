@@ -302,6 +302,52 @@ describe("inlineLocalTypeImports (via generateBundle typesInline)", () => {
     expect(inlined?.droppedImportStatements ?? []).toEqual([]);
   });
 
+  test("refuses names the writer declares or imports itself, and names a kept import binds", async () => {
+    writeFileSync(
+      join(dir, "Comp.svelte"),
+      `<script lang="ts">
+  import type { Comp } from "./self";
+  import type { CompComponent } from "./generic";
+  import type { $Props } from "./helper";
+  import type { Snippet } from "./snippet";
+  import type { Uses } from "./uses";
+  import type { Shared } from "some-package";
+  import type { Size } from "./size";
+  let { a, b, c, d, e, f, g }: { a: Comp; b: CompComponent; c: $Props; d: Snippet; e: Uses; f: Shared; g: Size } =
+    $props();
+</script>
+<div />
+`,
+    );
+    writeFileSync(join(dir, "self.ts"), "export type Comp = { a: 1 };\n");
+    writeFileSync(join(dir, "generic.ts"), "export type CompComponent = { b: 1 };\n");
+    writeFileSync(join(dir, "helper.ts"), "export type $Props = { c: 1 };\n");
+    writeFileSync(join(dir, "snippet.ts"), "export type Snippet = { d: 1 };\n");
+    // Copying `Uses` would copy a local `Shared`, clashing with the package import above.
+    writeFileSync(join(dir, "uses.ts"), "export type Shared = { e: 1 };\nexport type Uses = { shared: Shared };\n");
+    writeFileSync(join(dir, "size.ts"), `export type Size = "sm" | "md";\n`);
+
+    const result = await generateBundle(dir, true, { cache: false, typesInline: "local" });
+    const component = byModuleName(result.allComponentsForTypes, "Comp");
+    // biome-ignore lint/style/noNonNullAssertion: parsed above
+    const inlined = result.inlinedTypesByFilePath?.get(component!.filePath);
+
+    expect(inlined?.droppedImportStatements).toEqual(['import type { Size } from "./size";']);
+    const messages = result.diagnostics.filter((d) => d.kind === "types-inline-unresolved").map((d) => d.message);
+    expect(messages.sort()).toEqual(
+      [
+        ["$Props", "$Props"],
+        ["Comp", "Comp"],
+        ["CompComponent", "CompComponent"],
+        ["Snippet", "Snippet"],
+        ["Uses", "Shared"],
+      ].map(
+        ([name, collision]) =>
+          `Cannot inline "${name}": "${collision}" collides with a name the component's .d.ts already declares or imports.`,
+      ),
+    );
+  });
+
   test("collision check uses a templated typesOptions.typeNames, not the default name", async () => {
     writeFileSync(
       join(dir, "Comp.svelte"),
