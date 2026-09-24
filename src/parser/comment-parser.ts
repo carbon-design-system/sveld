@@ -38,6 +38,12 @@ interface CommentLine {
   content: string;
   /** Set only on a tag section's first line, once tag parsing has run. */
   tag?: string;
+  /**
+   * Set on each line after a tag's first that its multi-line `{type}` runs onto. The last such
+   * line holds whatever follows the closing `}` (name, description) - the tag's own line in
+   * every sense but the physical one.
+   */
+  continuesType?: true;
 }
 
 export interface JSDocTag {
@@ -255,6 +261,7 @@ function extractType(lines: CommentLine[], fromIndex: number): { type: string; e
     // extraction to consume) so a typeless-name tag like `@type {Foo}` doesn't leave a stray
     // space behind as its "description" when there's no name/description to follow it.
     lines[lineIndex].content = lines[lineIndex].content.slice(count).replace(LEADING_WS_REGEX, "");
+    if (lineIndex > 0) lines[lineIndex].continuesType = true;
     return idx === 0 ? fragment : lines[lineIndex].indent + fragment;
   });
 

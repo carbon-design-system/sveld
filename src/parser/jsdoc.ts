@@ -70,11 +70,16 @@ const EVENT_SCOPE_TAGS = new Set(["property", "type"]);
 
 /**
  * Returns the description text that appears on the same line as the tag itself, ignoring
- * continuation lines that `parseComments` aggregated into the tag's `description` field.
+ * continuation lines that `parseComments` aggregated into the tag's `description` field. A
+ * multi-line `{type}` moves that line down to where the type closes.
  */
-function getInlineTagDescription(tagLines: Array<{ content: string }> | undefined): string | undefined {
+function getInlineTagDescription(
+  tagLines: Array<{ content: string; continuesType?: true }> | undefined,
+): string | undefined {
   if (!tagLines || tagLines.length === 0) return undefined;
-  return tagLines[0].content;
+  let headIndex = 0;
+  while (tagLines[headIndex + 1]?.continuesType) headIndex++;
+  return tagLines[headIndex].content;
 }
 
 /** `@since`, `@example`, and `@see` are kept out of prose descriptions and exposed as `tags` instead. */
@@ -686,6 +691,11 @@ export function parseCustomTypes(
         tagLineNumbers.add(tagInfo.lines[0].number);
       }
     }
+    // A multi-line `{type}`'s lines, including the one where it closes, belong to the tag's
+    // opening line: their text is the tag's inline description, never a continuation line.
+    for (const line of blockLines) {
+      if (line.continuesType) tagLineNumbers.add(line.number);
+    }
     /**
      * Indented lines directly under a tag's line: that tag's wrapped description, never the
      * description of the tag after it. Unindented text between two tags stays ambiguous and
@@ -696,10 +706,10 @@ export function parseCustomTypes(
     for (const line of blockLines) {
       // A line whose only remaining content is a lone "}" is the tail of a multi-line `{...}`
       // type, not prose - it must not get attributed to any tag as a description.
-      if (!line.tag && line.content && line.content.trim() !== "}") {
+      if (!line.tag && !line.continuesType && line.content && line.content.trim() !== "}") {
         lineDescriptions.set(line.number, line.content);
       }
-      if (line.tag !== undefined) {
+      if (line.tag !== undefined || line.continuesType) {
         inIndentedContinuation = true;
       } else if (inIndentedContinuation && line.indent && line.content.trim()) {
         indentedContinuationLines.add(line.number);
