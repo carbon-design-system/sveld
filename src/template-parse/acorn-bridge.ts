@@ -36,8 +36,20 @@ const parenTrackingPlugin = ((BaseParser: any) =>
     }
   }) as unknown as (BaseParser: typeof Parser) => typeof Parser;
 
-const JSParser = Parser.extend(parenTrackingPlugin);
-const TSParser = Parser.extend(tsPlugin(), parenTrackingPlugin);
+/**
+ * Turns off acorn's "Export 'x' is not defined" check. A script's
+ * `export { x }` can name a binding declared elsewhere in the component
+ * (`$: x = ...`, or a module-script variable exported from the instance
+ * script), so svelte disables the check too.
+ */
+// biome-ignore lint/suspicious/noExplicitAny: checkLocalExport isn't in acorn's published Parser type
+const localExportsPlugin = ((BaseParser: any) =>
+  class extends BaseParser {
+    checkLocalExport() {}
+  }) as unknown as (BaseParser: typeof Parser) => typeof Parser;
+
+const JSParser = Parser.extend(parenTrackingPlugin, localExportsPlugin);
+const TSParser = Parser.extend(tsPlugin(), parenTrackingPlugin, localExportsPlugin);
 
 function parserFor(isTypeScript: boolean) {
   return isTypeScript ? TSParser : JSParser;
