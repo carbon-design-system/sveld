@@ -2,6 +2,7 @@ import type { DeprecatedValue } from "../ComponentParser";
 import { splitTopLevelCommas } from "../parser/generics";
 import type { ComponentDocApi, ComponentDocs } from "../plugin";
 import { buildComponentApiDocument } from "./document-model";
+import { createDispatchedEventType } from "./writer-ts-definitions-core";
 
 /**
  * Minimal local subset of the published Custom Elements Manifest schema
@@ -304,7 +305,10 @@ function buildEvents(events: ComponentDocApi["events"]): CemEvent[] {
   return events
     .filter((event) => event.type === "dispatched")
     .map((event) => {
-      const cemEvent: CemEvent = { name: event.name, type: { text: `CustomEvent<${event.detail ?? "unknown"}>` } };
+      const cemEvent: CemEvent = {
+        name: event.name,
+        type: { text: createDispatchedEventType(event.detail ?? "unknown") },
+      };
       if (event.description) cemEvent.description = event.description;
       if (event.deprecated !== undefined) cemEvent.deprecated = event.deprecated;
       return cemEvent;
