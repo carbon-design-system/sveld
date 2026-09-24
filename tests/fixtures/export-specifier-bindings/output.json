@@ -1,0 +1,265 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 31,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "size",
+      "kind": "let",
+      "type": "number",
+      "typeSource": "default",
+      "value": "1",
+      "defaultValue": {
+        "raw": "1",
+        "kind": "literal",
+        "value": 1
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 10,
+          "column": 2
+        },
+        "end": {
+          "line": 10,
+          "column": 18
+        }
+      }
+    },
+    {
+      "name": "x",
+      "kind": "let",
+      "typeSource": "unknown",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 17,
+          "column": 2
+        },
+        "end": {
+          "line": 17,
+          "column": 25
+        }
+      }
+    },
+    {
+      "name": "why",
+      "localName": "y",
+      "kind": "let",
+      "typeSource": "unknown",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 17,
+          "column": 2
+        },
+        "end": {
+          "line": 17,
+          "column": 25
+        }
+      }
+    },
+    {
+      "name": "a",
+      "kind": "let",
+      "typeSource": "unknown",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 19,
+          "column": 2
+        },
+        "end": {
+          "line": 19,
+          "column": 28
+        }
+      }
+    },
+    {
+      "name": "b",
+      "kind": "let",
+      "typeSource": "unknown",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 19,
+          "column": 2
+        },
+        "end": {
+          "line": 19,
+          "column": 28
+        }
+      }
+    },
+    {
+      "name": "reset",
+      "kind": "function",
+      "type": "() => any",
+      "typeSource": "inferred",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 23,
+          "column": 2
+        },
+        "end": {
+          "line": 23,
+          "column": 19
+        }
+      }
+    }
+  ],
+  "moduleExports": [
+    {
+      "name": "format",
+      "kind": "function",
+      "type": "() => any",
+      "typeSource": "inferred",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 6,
+          "column": 2
+        },
+        "end": {
+          "line": 6,
+          "column": 30
+        }
+      }
+    }
+  ],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "export-specifier-bindings/input.svelte",
+      "kind": "export-unresolved",
+      "name": "Foo",
+      "message": "export \"Foo\" was skipped because it's a class; sveld doesn't document exported classes.",
+      "source": {
+        "start": {
+          "line": 27,
+          "column": 2
+        },
+        "end": {
+          "line": 27,
+          "column": 17
+        }
+      },
+      "code": "sveld/export-unresolved",
+      "severity": "warning"
+    },
+    {
+      "component": "export-specifier-bindings/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "x",
+      "message": "Prop \"x\" type could not be inferred; falling back to \"any\".",
+      "source": {
+        "start": {
+          "line": 17,
+          "column": 2
+        },
+        "end": {
+          "line": 17,
+          "column": 25
+        }
+      },
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
+    },
+    {
+      "component": "export-specifier-bindings/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "why",
+      "message": "Prop \"why\" type could not be inferred; falling back to \"any\".",
+      "source": {
+        "start": {
+          "line": 17,
+          "column": 2
+        },
+        "end": {
+          "line": 17,
+          "column": 25
+        }
+      },
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
+    },
+    {
+      "component": "export-specifier-bindings/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "a",
+      "message": "Prop \"a\" type could not be inferred; falling back to \"any\".",
+      "source": {
+        "start": {
+          "line": 19,
+          "column": 2
+        },
+        "end": {
+          "line": 19,
+          "column": 28
+        }
+      },
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
+    },
+    {
+      "component": "export-specifier-bindings/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "b",
+      "message": "Prop \"b\" type could not be inferred; falling back to \"any\".",
+      "source": {
+        "start": {
+          "line": 19,
+          "column": 2
+        },
+        "end": {
+          "line": 19,
+          "column": 28
+        }
+      },
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
+    }
+  ]
+}

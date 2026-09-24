@@ -1,6 +1,7 @@
 import type {
   AssignmentExpression,
   CallExpression,
+  ClassDeclaration,
   ExportNamedDeclaration,
   ExportSpecifier,
   Expression,
@@ -51,6 +52,7 @@ import {
   registerTypedDispatcherEvents,
 } from "./parser/runes-props";
 import {
+  collectPatternIdentifiers,
   createScopeWalkState,
   enterNestedScopeDeclarationNode,
   initComponentScope,
@@ -78,6 +80,7 @@ import {
   collectReExportableImports,
   collectValueImportBindings,
   type ImportDeclarationNode,
+  scriptBody,
 } from "./parser/value-imports";
 import { buildVariableJsDocTable } from "./parser/variable-jsdoc";
 import { type WalkableNode, type WalkEnter, type WalkLeave, walkNodes } from "./parser/walk";
@@ -105,11 +108,12 @@ function moduleExportName(node: Identifier | Literal | undefined): string | unde
   return typeof node?.value === "string" ? node.value : undefined;
 }
 
-/** {@link ComponentParser.resolveExportSpecifier}: `declaration`/`declarator` are unset when no local variable matched. */
+/** {@link ComponentParser.resolveExportSpecifier}: `declaration`/`declarator` are unset when no local declaration matched. */
 interface ResolvedExportSpecifier {
   localName: string;
   exportedName: string;
-  declaration?: VariableDeclaration;
+  declaration?: VariableDeclaration | FunctionDeclaration | ClassDeclaration;
+  /** For a variable, the declarator whose `id` (or destructuring pattern) binds `localName`. */
   declarator?: VariableDeclarator;
 }
 
@@ -997,8 +1001,9 @@ export default class ComponentParser {
   }
 
   /**
-   * Resolves one `export { local as exported }` specifier to the variable
-   * declarator it names. Each specifier resolves on its own, so
+   * Resolves one `export { local as exported }` specifier to the top-level
+   * function, class, or variable declarator (including one destructured
+   * from a pattern) it names. Each specifier resolves on its own, so
    * `export { a, b }` exports both, and `const a = 1, b = ""; export { b }`
    * exports `b`'s declarator rather than the first one in the declaration.
    *
@@ -1017,18 +1022,23 @@ export default class ComponentParser {
     // `export { x } from "..."` names the other module's `x`, never a local one.
     if (node.source != null) return { localName, exportedName };
 
-    const topLevel = new Set(
-      (program && "body" in program && Array.isArray(program.body) ? program.body : []).map((statement: Node) =>
-        statement.type === "ExportNamedDeclaration" && statement.declaration ? statement.declaration : statement,
-      ),
-    );
-    // Walk is in order; the local binding must appear before this export.
-    for (const declaration of this.ctx.vars) {
-      if (!topLevel.has(declaration)) continue;
-      const declarator = declaration.declarations.find(
-        (decl) => decl.id.type === "Identifier" && decl.id.name === localName,
-      );
-      if (declarator) return { localName, exportedName, declaration, declarator };
+    // The binding can be declared anywhere in the script, before or after the export.
+    for (const statement of (program && scriptBody(program)) ?? []) {
+      const node = statement as Node;
+      const declaration = node.type === "ExportNamedDeclaration" && node.declaration ? node.declaration : node;
+      if (declaration.type === "VariableDeclaration") {
+        const declarator = declaration.declarations.find((decl) =>
+          decl.id.type === "Identifier"
+            ? decl.id.name === localName
+            : collectPatternIdentifiers(decl.id).has(localName),
+        );
+        if (declarator) return { localName, exportedName, declaration, declarator };
+      } else if (
+        (declaration.type === "FunctionDeclaration" || declaration.type === "ClassDeclaration") &&
+        declaration.id?.name === localName
+      ) {
+        return { localName, exportedName, declaration };
+      }
     }
     return { localName, exportedName };
   }
@@ -1046,6 +1056,17 @@ export default class ComponentParser {
       "export-unresolved",
       exportedName,
       `export "${exportedName}" was skipped because ${reason}; sveld only resolves exports of a local declaration.`,
+      sourceRangeFromNode(this.ctx, node),
+    );
+  }
+
+  /** `export class Foo {}` or `export { Foo }` of a class: neither a prop nor a documented accessor. */
+  private recordClassExport(node: ExportNamedDeclaration, exportedName: string) {
+    recordDiagnostic(
+      this.ctx,
+      "export-unresolved",
+      exportedName,
+      `export "${exportedName}" was skipped because it's a class; sveld doesn't document exported classes.`,
       sourceRangeFromNode(this.ctx, node),
     );
   }
@@ -1280,7 +1301,7 @@ export default class ComponentParser {
           const accessorSignature =
             this.ctx.scriptLanguage === "ts" ? buildFunctionDeclarationSignature(this.ctx, funcDecl) : undefined;
           declarators.push({
-            prop_name: funcDecl.id.name,
+            prop_name: specifier?.exportedName ?? funcDecl.id.name,
             kind: "function",
             isFunctionDeclaration: true,
             value: undefined,
@@ -1303,11 +1324,31 @@ export default class ComponentParser {
 
             const { id, init } = declarator as VariableDeclarator;
 
-            if (!id || typeof id !== "object" || !("name" in id)) {
+            if (!id || typeof id !== "object") {
               continue;
             }
 
-            const localPropName = (id as Identifier).name;
+            if (id.type !== "Identifier") {
+              // `export const { a, b } = obj`: each name is an export with no inferable type.
+              for (const localPropName of collectPatternIdentifiers(id)) {
+                if (specifier && specifier.localName !== localPropName) continue;
+                declarators.push({
+                  prop_name: specifier?.exportedName ?? localPropName,
+                  kind,
+                  isFunctionDeclaration: false,
+                  value: undefined,
+                  typeSeed: undefined,
+                  explicitType: undefined,
+                  initializerIsFunction: false,
+                  defaultValue: undefined,
+                  inferredTypeForSource: undefined,
+                  resolvedJSDoc: undefined,
+                });
+              }
+              continue;
+            }
+
+            const localPropName = id.name;
             const declaratorPropName = specifier?.exportedName ?? localPropName;
             const initResult = init == null ? { isFunction: false } : processInitializer(this, this.ctx, init);
             const { value, type: typeSeed, isFunction: initializerIsFunction, defaultValue } = initResult;
@@ -1330,6 +1371,9 @@ export default class ComponentParser {
 
           if (declarators.length === 0) return;
         } else {
+          if (declaration.type === "ClassDeclaration" && declaration.id) {
+            this.recordClassExport(node, specifier?.exportedName ?? declaration.id.name);
+          }
           return;
         }
 
@@ -1496,7 +1540,7 @@ export default class ComponentParser {
       if (declaration.type === "FunctionDeclaration") {
         const funcDecl = declaration as { id?: { name?: string } } & FunctionDeclarationLike;
         if (!funcDecl.id?.name) return;
-        const prop_name = funcDecl.id.name;
+        const prop_name = specifier?.exportedName ?? funcDecl.id.name;
         const accessorSignature =
           this.ctx.scriptLanguage === "ts" ? buildFunctionDeclarationSignature(this.ctx, funcDecl) : undefined;
         declarators.push({
@@ -1524,11 +1568,34 @@ export default class ComponentParser {
           }
 
           const { id, init } = declarator as VariableDeclarator;
-          if (!id || typeof id !== "object" || !("name" in id)) {
+          if (!id || typeof id !== "object") {
             continue;
           }
 
-          const localPropName = (id as Identifier).name;
+          if (id.type !== "Identifier") {
+            // `export let { a, b } = obj`: each name is a prop, defaulting to
+            // its part of `obj`, with no inferable type.
+            for (const localPropName of collectPatternIdentifiers(id)) {
+              if (specifier && specifier.localName !== localPropName) continue;
+              declarators.push({
+                prop_name: specifier?.exportedName ?? localPropName,
+                kind,
+                isFunctionDeclaration: false,
+                value: undefined,
+                typeSeed: undefined,
+                explicitType: undefined,
+                initializerIsFunction: false,
+                isRequired: false,
+                localName: localPropName,
+                defaultValue: undefined,
+                inferredTypeForSource: undefined,
+                resolvedJSDoc: undefined,
+              });
+            }
+            continue;
+          }
+
+          const localPropName = id.name;
           const declaratorPropName = specifier?.exportedName ?? localPropName;
           const isRequired = kind === "let" && init == null;
           const initResult = init == null ? { isFunction: false } : processInitializer(this, this.ctx, init);
@@ -1554,6 +1621,9 @@ export default class ComponentParser {
 
         if (declarators.length === 0) return;
       } else {
+        if (declaration.type === "ClassDeclaration" && declaration.id) {
+          this.recordClassExport(node, specifier?.exportedName ?? declaration.id.name);
+        }
         return;
       }
 
