@@ -1,0 +1,173 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 23,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "glob",
+      "kind": "let",
+      "description": "Glob to match",
+      "type": "string",
+      "typeSource": "default",
+      "value": "\"src/**/*.svelte\"",
+      "defaultValue": {
+        "raw": "\"src/**/*.svelte\"",
+        "kind": "literal",
+        "value": "src/**/*.svelte"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 8,
+          "column": 2
+        },
+        "end": {
+          "line": 8,
+          "column": 38
+        }
+      }
+    },
+    {
+      "name": "cron",
+      "kind": "let",
+      "description": "Cron schedule",
+      "type": "string",
+      "typeSource": "default",
+      "value": "\"*/5 * * * *\"",
+      "defaultValue": {
+        "raw": "\"*/5 * * * *\"",
+        "kind": "literal",
+        "value": "*/5 * * * *"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 11,
+          "column": 2
+        },
+        "end": {
+          "line": 11,
+          "column": 34
+        }
+      }
+    },
+    {
+      "name": "re",
+      "kind": "let",
+      "type": "object",
+      "typeSource": "default",
+      "value": "/a*/g",
+      "defaultValue": {
+        "raw": "/a*/g",
+        "kind": "literal",
+        "value": {}
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 13,
+          "column": 2
+        },
+        "end": {
+          "line": 13,
+          "column": 24
+        }
+      }
+    },
+    {
+      "name": "fallback",
+      "kind": "const",
+      "type": "string",
+      "typeSource": "default",
+      "value": "\"lib/**/*.js\"",
+      "defaultValue": {
+        "raw": "\"lib/**/*.js\"",
+        "kind": "literal",
+        "value": "lib/**/*.js"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 15,
+          "column": 2
+        },
+        "end": {
+          "line": 15,
+          "column": 40
+        }
+      }
+    }
+  ],
+  "moduleExports": [
+    {
+      "name": "pattern",
+      "kind": "const",
+      "description": "Default glob",
+      "type": "string",
+      "typeSource": "default",
+      "value": "\"src/**/*.svelte\"",
+      "defaultValue": {
+        "raw": "\"src/**/*.svelte\"",
+        "kind": "literal",
+        "value": "src/**/*.svelte"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 2
+        },
+        "end": {
+          "line": 3,
+          "column": 43
+        }
+      }
+    }
+  ],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "componentComment": "\nRenders files matching `src/**/*.svelte`.",
+  "componentCommentSource": {
+    "start": {
+      "line": 18,
+      "column": 0
+    },
+    "end": {
+      "line": 20,
+      "column": 3
+    }
+  },
+  "contexts": [],
+  "diagnostics": []
+}

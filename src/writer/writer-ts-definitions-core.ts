@@ -2,6 +2,7 @@ import type { DeprecatedValue } from "../ComponentParser";
 import type { InlinedTypes } from "../inline-types";
 import { getParsedComponentTypeScriptMetadata } from "../parsed-component-metadata";
 import { splitTopLevelCommas } from "../parser/generics";
+import { escapeCommentText } from "../parser/utils";
 import type { ComponentDocApi } from "../plugin";
 import { formatGeneratedTypeScript } from "./format-generated-ts";
 
@@ -57,12 +58,12 @@ function formatDescriptionForComment(description: string | undefined): string | 
 
 function formatSingleLineComment(description: string | undefined): string {
   if (!description) return "";
-  return `/** ${description} */`;
+  return `/** ${escapeCommentText(description)} */`;
 }
 
 function formatMultiLineComment(description: string | undefined): string {
   if (!description) return "";
-  return `/**\n * ${description.replace(NEWLINE_TO_COMMENT_REGEX, "\n * ")}\n */`;
+  return `/**\n * ${escapeCommentText(description).replace(NEWLINE_TO_COMMENT_REGEX, "\n * ")}\n */`;
 }
 
 /**
@@ -115,7 +116,7 @@ function formatSlotJsDoc(
   if (description) lines.push(...description.split("\n"));
   lines.push(...tagLines);
   if (deprecatedLine) lines.push(...deprecatedLine.split("\n"));
-  return `/**\n * ${lines.join("\n * ")}\n */`;
+  return `/**\n * ${escapeCommentText(lines.join("\n * "))}\n */`;
 }
 
 function formatTagCommentLines(tags?: Array<{ name: string; body: string }>): string {
@@ -145,7 +146,7 @@ export function getTypeDefs(
           typedefComment = typedef.description ? `${formatMultiLineComment(typedef.description)}\n` : "";
         } else {
           const lines = typedef.description ? [...typedef.description.split("\n"), ...tagLines] : tagLines;
-          typedefComment = `/**\n * ${lines.join("\n * ")}\n */\n`;
+          typedefComment = `/**\n * ${escapeCommentText(lines.join("\n * "))}\n */\n`;
         }
       }
       return `${typedefComment}${exportKw}${typedef.ts}`;
@@ -349,7 +350,7 @@ function createPropComment(
  * Wraps comment lines in JSDoc format if comments exist.
  */
 function wrapCommentInJSDoc(commentLines: string): string {
-  return commentLines.length > 0 ? `/**\n${commentLines}*/` : EMPTY_STR;
+  return commentLines.length > 0 ? `/**\n${escapeCommentText(commentLines)}*/` : EMPTY_STR;
 }
 
 /**
@@ -1037,7 +1038,7 @@ function genComponentComment(def: Pick<ComponentDocApi, "componentComment">, com
   if (!NEWLINE_REGEX.test(def.componentComment)) {
     return formatSingleLineComment(def.componentComment.trim());
   }
-  return `/*${def.componentComment
+  return `/*${escapeCommentText(def.componentComment)
     .split("\n")
     .map((line) => `* ${line}`)
     .join("\n")}\n*/`;

@@ -4,7 +4,7 @@ import type ComponentParser from "../ComponentParser";
 import type { DispatchedEvent, SerializedComponentEvent } from "../ComponentParser";
 import type { ParserContext } from "./context";
 import { sourceRangeFromNode } from "./source-position";
-import { assignValueOrUndefined } from "./utils";
+import { assignValueOrUndefined, escapeCommentText } from "./utils";
 
 const NEWLINES_REGEX = /\n/g;
 
@@ -218,6 +218,7 @@ export function buildEventDetailFromProperties(
       } else if (defaultValue) {
         comment = `@default ${defaultValue}`;
       }
+      comment = escapeCommentText(comment);
 
       if (comment) {
         if (multiline) {
