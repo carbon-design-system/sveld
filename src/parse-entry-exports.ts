@@ -3,11 +3,13 @@ import { basename, dirname, isAbsolute, join, relative, resolve } from "node:pat
 import { isIdentifier, resolveStaticStringLiteral } from "./ast-guards";
 import type { DeprecatedValue, JsDocPassthroughTag } from "./ComponentParser";
 import { directoryEntry, directoryHasEntry, typeScriptCounterpart } from "./fs-listing";
+import { warn } from "./logger";
 import { extractJsDocDeprecatedAndTags, extractJsDocReturnType } from "./parser/jsdoc";
 import { compareText } from "./parser/utils";
 import { getParserStack, loadParserStack } from "./parser-stack";
 import { normalizeSeparators } from "./path";
 import { resolvePathAliasAbsolute } from "./resolve-alias";
+import { parseProgram } from "./template-parse/acorn-bridge";
 
 /** One named export from the entry barrel (not a `.svelte` component). */
 export interface EntryExport {
@@ -80,7 +82,7 @@ export interface PrimitiveLiteral {
 
 /** Parsed-source context shared while walking a single module. */
 interface ModuleSource {
-  /** Full `<script lang="ts">`-wrapped source the offsets index into. */
+  /** The file's full text, which the AST offsets index into. */
   text: string;
   /** Absolute path of the parsed file. */
   filePath: string;
@@ -545,29 +547,34 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
 }
 
 /**
- * Parses a module file into the top-level statements of its script body.
+ * Parses a module file into its top-level statements, with byte offsets into
+ * the file's own text for verbatim text extraction.
  *
- * The source is wrapped in `<script lang="ts">` so the Svelte parser
- * (backed by acorn-typescript) yields a TypeScript-aware AST with byte
- * offsets for verbatim text extraction.
+ * A plain module goes straight to acorn with the TypeScript plugin (a `.js`
+ * file is valid input too). A `.svelte` file yields its module script
+ * (`<script module>` / `<script context="module">`), the only place a
+ * component declares exports other than its default.
  */
 function parseModule(filePath: string): { source: ModuleSource; body: AstNode[] } | null {
-  let raw: string;
+  let text: string;
   try {
-    raw = readFileSync(filePath, "utf-8");
+    text = readFileSync(filePath, "utf-8");
   } catch {
     return null;
   }
 
-  const text = `<script lang="ts">\n${raw}\n</script>`;
-
   try {
-    const ast = getParserStack().parseSvelte(text) as { instance?: { content?: { body?: unknown } } };
-    const body = asNodeArray(ast.instance?.content?.body);
+    let body: AstNode[];
+    if (filePath.endsWith(".svelte")) {
+      const ast = getParserStack().parseSvelte(text) as { module?: { content?: { body?: unknown } } };
+      body = asNodeArray(ast.module?.content?.body);
+    } else {
+      body = asNodeArray(parseProgram(text, true, []).body);
+    }
     return { source: { text, filePath, dir: dirname(filePath) }, body };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.warn(`Warning: Failed to parse entry export module ${filePath}: ${message}`);
+    warn(`Warning: sveld couldn't parse ${filePath} to read its exports (${message}); skipping it.`);
     return null;
   }
 }
