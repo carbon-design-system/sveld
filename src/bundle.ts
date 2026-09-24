@@ -841,7 +841,7 @@ export async function generateBundle(
   }
 
   validateExtendsTargets(allComponentsForTypes, resolveComponentFilePath, options.typesTypeNames);
-  validateModuleReExportNames(allComponentsForTypes, options.typesTypeNames);
+  validateModuleReExportNames(allComponentsForTypes.values(), options.typesTypeNames);
 
   let inlinedTypesByFilePath: Map<string, InlinedTypes> | undefined;
   try {
@@ -1350,13 +1350,14 @@ function resolveExtendsTargetPath(fromAbsoluteFilePath: string, specifier: strin
  * `<Name>Props`/`<Name>Exports` type. Checked here rather than at parse time
  * because `typesOptions.typeNames` decides those names. The `.d.ts` only
  * breaks if the re-exported binding also carries a type, which isn't
- * knowable without resolving the source, so this is a warning.
+ * knowable without resolving the source, so this is a warning. Pushes onto
+ * each component's diagnostics, so only pass freshly parsed components.
  */
-function validateModuleReExportNames(
-  components: ComponentDocs,
+export function validateModuleReExportNames(
+  components: Iterable<ComponentDocApi>,
   typeNames?: WriteTsDefinitionOptions["typeNames"],
 ): void {
-  for (const component of components.values()) {
+  for (const component of components) {
     const reExports = component.moduleExports.filter((moduleExport) => moduleExport.kind === "re-export");
     if (reExports.length === 0) continue;
 
@@ -1391,17 +1392,22 @@ function validateModuleReExportNames(
  *
  * Bare/package specifiers (not starting with `.` or `/`) aren't verifiable
  * without a module resolver and are left alone.
+ *
+ * Checks `scope` (default: every component) against targets anywhere in
+ * `components`. Pushes onto each checked component's diagnostics, so `scope`
+ * should only hold freshly parsed components.
  */
-function validateExtendsTargets(
+export function validateExtendsTargets(
   components: ComponentDocs,
   resolveComponentFilePath: ResolveComponentFilePath,
   typeNames?: WriteTsDefinitionOptions["typeNames"],
+  scope: Iterable<ComponentDocApi> = components.values(),
 ): void {
   const componentsByAbsolutePath = new Map(
     Array.from(components.values()).map((component) => [resolveComponentFilePath(component.filePath), component]),
   );
 
-  for (const component of components.values()) {
+  for (const component of scope) {
     const extendsInfo = component.extends;
     if (!extendsInfo) continue;
 

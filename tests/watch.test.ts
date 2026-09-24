@@ -259,6 +259,34 @@ describe("watch mode (createSveldBundle)", () => {
     expect(reparsed).toContain(resolve(dir, "Standalone.svelte"));
   });
 
+  test("reports @extendProps and module re-export problems like a one-shot build", async () => {
+    const entryPath = join(dir, "index.js");
+    writeFileSync(
+      join(dir, "Card.svelte"),
+      `<script context="module">
+  export { CardProps } from "./card-props.js";
+</script>
+<script>
+  /** @extendProps {"./Missing.svelte"} MissingProps */
+  export let title = "";
+</script>
+`,
+    );
+    writeFileSync(entryPath, 'export { default as Card } from "./Card.svelte";\n');
+
+    const bundle = await createSveldBundle(entryPath, false);
+    const kinds = (diagnostics: Array<{ kind: string }>) => diagnostics.map((diagnostic) => diagnostic.kind).sort();
+    expect(kinds((await bundle.result).diagnostics)).toEqual(["extend-props-target-missing", "module-export-conflict"]);
+
+    // Re-parsing reports them once, not once more per update.
+    const { result } = await bundle.update([resolve(dir, "Card.svelte")]);
+    expect(kinds(result.diagnostics)).toEqual(["extend-props-target-missing", "module-export-conflict"]);
+    expect(kinds(result.components.get("Card")?.diagnostics ?? [])).toEqual([
+      "extend-props-target-missing",
+      "module-export-conflict",
+    ]);
+  });
+
   describe("values read from other modules", () => {
     const TIP = `<script>
   import { setContext, createEventDispatcher } from "svelte";

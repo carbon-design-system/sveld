@@ -15,6 +15,8 @@ import {
   reportParseErrors,
   resolveCrossFileCandidates,
   syncCrossFileResults,
+  validateExtendsTargets,
+  validateModuleReExportNames,
 } from "./bundle";
 import { buildReverseDeps, expandAffected } from "./dependency-graph";
 import { dedupeDiagnostics } from "./diagnostics";
@@ -144,7 +146,12 @@ export async function createSveldBundle(
   // `update()` consults this to reparse its readers when it changes.
   const crossFileDepsReverse = new Map<string, Set<string>>();
 
-  /** Resolves cross-file candidates for `scope` and records what each component read. */
+  /**
+   * Resolves cross-file candidates for `scope`, records what each component
+   * read, then runs the bundle-wide checks (`@extends` targets, module
+   * re-export names) on `scope`, which must hold only freshly parsed
+   * components: the checks push onto their diagnostics.
+   */
   const resolveCrossFile = async (scope: ComponentDocApi[]): Promise<void> => {
     const scopePaths = new Set(scope.map((component) => resolveComponentFilePath(component.filePath)));
     for (const readers of crossFileDepsReverse.values()) {
@@ -163,6 +170,8 @@ export async function createSveldBundle(
         readers.add(componentPath);
       }
     }
+    validateExtendsTargets(allComponentsForTypes, resolveComponentFilePath, typesTypeNames, scope);
+    validateModuleReExportNames(scope, typesTypeNames);
     syncCrossFileResults(components, allComponentsForTypes);
   };
 
