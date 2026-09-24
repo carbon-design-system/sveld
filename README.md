@@ -2699,6 +2699,16 @@ A description can wrap onto continuation lines, which run until the next tag. In
  */
 ```
 
+A `{type}` can wrap too. The text after its closing `}` and the name is the tag's own description, exactly as if the type fit on one line:
+
+```js
+/**
+ * @property {"ascending"
+ *   | "descending"} [dir] - The next sort direction,
+ *   reported regardless.
+ */
+```
+
 ### `@callback`
 
 The `@callback` tag defines a function type with `@param` and `@returns`, following the [TypeScript JSDoc `@callback` spec](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html#callback). Like `@typedef`, callbacks are exported from the generated `.d.ts`.

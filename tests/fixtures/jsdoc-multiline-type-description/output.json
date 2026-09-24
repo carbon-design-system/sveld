@@ -1,0 +1,288 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 81,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "header",
+      "kind": "let",
+      "type": "Header",
+      "typeSource": "jsdoc",
+      "value": "{}",
+      "defaultValue": {
+        "raw": "{}",
+        "kind": "object",
+        "value": {}
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 46,
+          "column": 2
+        },
+        "end": {
+          "line": 46,
+          "column": 25
+        }
+      }
+    },
+    {
+      "name": "aliased",
+      "kind": "let",
+      "description": "Props of any component,\nspread onto the root.",
+      "type": "Aliased",
+      "typeSource": "jsdoc",
+      "value": "{}",
+      "defaultValue": {
+        "raw": "{}",
+        "kind": "object",
+        "value": {}
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 49,
+          "column": 2
+        },
+        "end": {
+          "line": 49,
+          "column": 26
+        }
+      }
+    },
+    {
+      "name": "size",
+      "kind": "let",
+      "type": "Size",
+      "typeSource": "jsdoc",
+      "value": "\"sm\"",
+      "defaultValue": {
+        "raw": "\"sm\"",
+        "kind": "literal",
+        "value": "sm"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 52,
+          "column": 2
+        },
+        "end": {
+          "line": 52,
+          "column": 25
+        }
+      }
+    },
+    {
+      "name": "formatter",
+      "kind": "let",
+      "type": "Formatter",
+      "typeSource": "jsdoc",
+      "value": "(value) => String(value)",
+      "defaultValue": {
+        "raw": "(value) => String(value)",
+        "kind": "function"
+      },
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 55,
+          "column": 2
+        },
+        "end": {
+          "line": 55,
+          "column": 50
+        }
+      }
+    },
+    {
+      "name": "format",
+      "kind": "function",
+      "description": "Formats a value.",
+      "type": "(value: string\n  | number) => string\n  | undefined",
+      "typeSource": "jsdoc",
+      "params": [
+        {
+          "name": "value",
+          "type": "string\n  | number",
+          "description": "The raw value,\nbefore normalization.",
+          "optional": false
+        }
+      ],
+      "returnType": "string\n  | undefined",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 65,
+          "column": 2
+        },
+        "end": {
+          "line": 69,
+          "column": 3
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "footer",
+      "default": false,
+      "slot_props": "Record<string, never>",
+      "source": {
+        "start": {
+          "line": 77,
+          "column": 0
+        },
+        "end": {
+          "line": 80,
+          "column": 2
+        }
+      }
+    },
+    {
+      "name": "item",
+      "default": false,
+      "slot_props": "{ item: string;\n  index: number }",
+      "description": "Renders one item,\nwith its props.",
+      "source": {
+        "start": {
+          "line": 72,
+          "column": 0
+        },
+        "end": {
+          "line": 76,
+          "column": 2
+        }
+      }
+    }
+  ],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "close",
+      "detail": "null",
+      "source": {
+        "start": {
+          "line": 67,
+          "column": 4
+        },
+        "end": {
+          "line": 67,
+          "column": 27
+        }
+      }
+    },
+    {
+      "type": "dispatched",
+      "name": "select",
+      "detail": "{ id: string;\n  index: number }",
+      "description": "Fired when a row is selected,\nwith its position.",
+      "source": {
+        "start": {
+          "line": 66,
+          "column": 4
+        },
+        "end": {
+          "line": 66,
+          "column": 55
+        }
+      }
+    }
+  ],
+  "typedefs": [
+    {
+      "type": "{\n  /**\n   * The intended next sort direction,\n   * reported regardless.\n   */\n  dir?: \"ascending\"\n  | \"descending\"\n  | \"none\";\n  /** Description on the line after the type. */\n  prev?: \"ascending\"\n  | \"descending\";\n}",
+      "name": "Header",
+      "ts": "type Header = {\n  /**\n   * The intended next sort direction,\n   * reported regardless.\n   */\n  dir?: \"ascending\"\n  | \"descending\"\n  | \"none\";\n  /** Description on the line after the type. */\n  prev?: \"ascending\"\n  | \"descending\";\n};",
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 5
+        },
+        "end": {
+          "line": 3,
+          "column": 29
+        }
+      }
+    },
+    {
+      "type": "import(\"svelte\").ComponentProps<\n  import(\"svelte\").SvelteComponent>",
+      "name": "Aliased",
+      "description": "Props of any component,\nspread onto the root.",
+      "ts": "type Aliased = import(\"svelte\").ComponentProps<\n  import(\"svelte\").SvelteComponent>;",
+      "source": {
+        "start": {
+          "line": 11,
+          "column": 5
+        },
+        "end": {
+          "line": 13,
+          "column": 28
+        }
+      }
+    },
+    {
+      "type": "\"sm\"\n  | \"lg\"",
+      "name": "Size",
+      "ts": "type Size = \"sm\"\n  | \"lg\";",
+      "source": {
+        "start": {
+          "line": 14,
+          "column": 5
+        },
+        "end": {
+          "line": 15,
+          "column": 19
+        }
+      }
+    },
+    {
+      "type": "(value: string\n  | number) => string\n  | undefined",
+      "name": "Formatter",
+      "ts": "type Formatter = (value: string\n  | number) => string\n  | undefined;",
+      "source": {
+        "start": {
+          "line": 19,
+          "column": 5
+        },
+        "end": {
+          "line": 19,
+          "column": 24
+        }
+      }
+    }
+  ],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
