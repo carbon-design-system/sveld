@@ -202,6 +202,24 @@ describe("parseExports", () => {
     }
   });
 
+  test("`export *` by filename resolves sources against the file's directory", () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "sveld-parse-exports-star-filename-"));
+
+    try {
+      const tipDir = path.join(dir, "tip");
+      mkdirSync(tipDir);
+      writeFileSync(path.join(tipDir, "index.js"), `export { default as Tip } from "./Tip.svelte";\n`);
+
+      for (const specifier of ["./tip", "./tip/index", "./tip/index.js"]) {
+        expect(parseExports(`export * from "${specifier}";`, dir)).toEqual({
+          Tip: { source: "./tip/Tip.svelte", default: true },
+        });
+      }
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   test("three-level named chain", () => {
     const dir = mkdtempSync(path.join(tmpdir(), "sveld-parse-exports-chain-three-"));
 
