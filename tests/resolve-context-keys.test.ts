@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { type ComponentDocApi, type ComponentDocs, generateBundle } from "../src/bundle";
@@ -55,6 +55,33 @@ describe("cross-file setContext key resolution", () => {
       { name: "highlightCursor", type: "number", optional: false },
     ]);
     expect(warnSpy).not.toHaveBeenCalled();
+  });
+
+  test("exported components carry the resolved context for JSON and Markdown", async () => {
+    mkdirSync(path.join(dir, "constants"));
+    mkdirSync(path.join(dir, "FluidForm"));
+    writeFileSync(path.join(dir, "constants", "context-keys.ts"), `export const FORM_CONTEXT_KEY = "carbon:Form";\n`);
+    writeFileSync(
+      path.join(dir, "FluidForm", "FluidForm.svelte"),
+      `<script>
+  import { setContext } from "svelte";
+  import { FORM_CONTEXT_KEY } from "../constants/context-keys";
+
+  setContext(FORM_CONTEXT_KEY, { isFluid: true });
+</script>
+<form><slot /></form>
+`,
+    );
+    writeFileSync(path.join(dir, "index.js"), `export { default as FluidForm } from "./FluidForm/FluidForm.svelte";\n`);
+
+    const result = await generateBundle(path.join(dir, "index.js"), true);
+
+    for (const components of [result.components, result.allComponentsForTypes]) {
+      const component = byModuleName(components, "FluidForm");
+      expect(component?.contexts).toMatchObject([
+        { key: "carbon:Form", typeName: "CarbonFormContext", properties: [{ name: "isFluid", type: "boolean" }] },
+      ]);
+    }
   });
 
   test("B: resolves through a re-export barrel", async () => {
