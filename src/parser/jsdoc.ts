@@ -68,6 +68,9 @@ const PRECEDING_DESCRIPTION_TAGS = new Set(["restProps", "slot", "snippet", "eve
 /** Tags that stay inside the preceding `@event`'s scope instead of ending it. */
 const EVENT_SCOPE_TAGS = new Set(["property", "type"]);
 
+/** Tags that declare something of their own, closing the preceding `@event`'s scope. */
+const EVENT_SCOPE_ENDING_TAGS = new Set(["slot", "snippet", "typedef", "callback"]);
+
 /**
  * Returns the description text that appears on the same line as the tag itself, ignoring
  * continuation lines that `parseComments` aggregated into the tag's `description` field. A
@@ -789,17 +792,21 @@ export function parseCustomTypes(
      * the next tag as in JSDoc and TypeScript. When that next tag has no description of its own
      * and takes the text above it instead (see {@link PRECEDING_DESCRIPTION_TAGS}), unindented
      * lines are left for it, preserving sveld's description-above-the-tag convention. The same
-     * goes for the last tag in an `@event`'s scope, whose trailing text describes the event.
+     * goes for the last tag in an `@event`'s scope (`inEventScope`), whose trailing text
+     * describes the event.
      */
-    const getTagDescription = (tagSource: typeof blockLines, nextTag: JSDocTag | undefined): string | undefined => {
+    const getTagDescription = (
+      tagSource: typeof blockLines,
+      nextTag: JSDocTag | undefined,
+      inEventScope = false,
+    ): string | undefined => {
       const inline = cleanDescription(getInlineTagDescription(tagSource));
       const nextTagTakesTextAbove =
         nextTag !== undefined &&
         PRECEDING_DESCRIPTION_TAGS.has(nextTag.tag) &&
         !cleanDescription(getInlineTagDescription(nextTag.lines));
       // Unindented text after an event's last `@property`/`@type` is the event's own description.
-      const endsEventScope =
-        currentEventName !== undefined && (nextTag === undefined || !EVENT_SCOPE_TAGS.has(nextTag.tag));
+      const endsEventScope = inEventScope && (nextTag === undefined || !EVENT_SCOPE_TAGS.has(nextTag.tag));
 
       const continuation: string[] = [];
       for (let index = 1; index < tagSource.length; index++) {
@@ -1161,7 +1168,7 @@ export function parseCustomTypes(
           const propertyData = {
             name,
             type,
-            description: getTagDescription(tagSource, nextTag),
+            description: getTagDescription(tagSource, nextTag, currentEventName !== undefined),
             optional: optional || false,
             default: defaultValue,
           };
@@ -1333,6 +1340,9 @@ export function parseCustomTypes(
           }
           break;
       }
+      // A `@slot`/`@snippet`/`@typedef`/`@callback` ends the preceding `@event`'s scope, so a
+      // `@property` below it belongs to it, not to the event.
+      if (EVENT_SCOPE_ENDING_TAGS.has(tag)) finalizeEvent();
     }
 
     finalizeEvent();
