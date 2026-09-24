@@ -117,6 +117,58 @@ interface ResolvedExportSpecifier {
   declarator?: VariableDeclarator;
 }
 
+/**
+ * The top-level function, class, or variable declarator in `program` that binds
+ * `localName`, which can come before or after the export naming it.
+ */
+function findTopLevelBinding(
+  program: Node | null,
+  localName: string,
+): Pick<ResolvedExportSpecifier, "declaration" | "declarator"> | undefined {
+  for (const statement of (program && scriptBody(program)) ?? []) {
+    const node = statement as Node;
+    const declaration = node.type === "ExportNamedDeclaration" && node.declaration ? node.declaration : node;
+    if (declaration.type === "VariableDeclaration") {
+      const declarator = declaration.declarations.find((decl) =>
+        decl.id.type === "Identifier" ? decl.id.name === localName : collectPatternIdentifiers(decl.id).has(localName),
+      );
+      if (declarator) return { declaration, declarator };
+    } else if (
+      (declaration.type === "FunctionDeclaration" || declaration.type === "ClassDeclaration") &&
+      declaration.id?.name === localName
+    ) {
+      return { declaration };
+    }
+  }
+  return undefined;
+}
+
+/**
+ * `$: localName = value` with no other declaration of `localName` declares it,
+ * so an export of it is a `let` prop initialized to `value`. Returns that
+ * implied `let localName = value`.
+ */
+function findReactiveDeclaration(
+  program: Node | null,
+  localName: string,
+): Pick<ResolvedExportSpecifier, "declaration" | "declarator"> | undefined {
+  for (const statement of (program && scriptBody(program)) ?? []) {
+    const node = statement as Node;
+    if (node.type !== "LabeledStatement" || node.label.name !== "$") continue;
+    if (node.body.type !== "ExpressionStatement") continue;
+    const assignment = node.body.expression;
+    if (assignment.type !== "AssignmentExpression" || assignment.operator !== "=") continue;
+    if (!collectPatternIdentifiers(assignment.left).has(localName)) continue;
+    const declarator: VariableDeclarator = {
+      type: "VariableDeclarator",
+      id: assignment.left,
+      init: assignment.right,
+    };
+    return { declaration: { type: "VariableDeclaration", kind: "let", declarations: [declarator] }, declarator };
+  }
+  return undefined;
+}
+
 function variableDeclarationKindToComponentPropKind(kind: VariableDeclaration["kind"]): "let" | "const" {
   if (kind === "var") return "let";
   if (kind === "using" || kind === "await using") return "const";
@@ -1008,13 +1060,15 @@ export default class ComponentParser {
    * exports `b`'s declarator rather than the first one in the declaration.
    *
    * `program` is the script the export sits in: only its top-level
-   * declarations count, not a same-named variable inside a function or in
-   * the other script.
+   * declarations count, not a same-named variable inside a function. An
+   * instance-script export can also name a module-script declaration, or a
+   * variable that a `$: local = ...` reactive declaration declares implicitly.
    */
   private resolveExportSpecifier(
     node: ExportNamedDeclaration,
     specifier: ExportSpecifier,
     program: Node | null,
+    script: "instance" | "module",
   ): ResolvedExportSpecifier | undefined {
     const localName = moduleExportName(specifier.local);
     const exportedName = moduleExportName(specifier.exported);
@@ -1022,25 +1076,12 @@ export default class ComponentParser {
     // `export { x } from "..."` names the other module's `x`, never a local one.
     if (node.source != null) return { localName, exportedName };
 
-    // The binding can be declared anywhere in the script, before or after the export.
-    for (const statement of (program && scriptBody(program)) ?? []) {
-      const node = statement as Node;
-      const declaration = node.type === "ExportNamedDeclaration" && node.declaration ? node.declaration : node;
-      if (declaration.type === "VariableDeclaration") {
-        const declarator = declaration.declarations.find((decl) =>
-          decl.id.type === "Identifier"
-            ? decl.id.name === localName
-            : collectPatternIdentifiers(decl.id).has(localName),
-        );
-        if (declarator) return { localName, exportedName, declaration, declarator };
-      } else if (
-        (declaration.type === "FunctionDeclaration" || declaration.type === "ClassDeclaration") &&
-        declaration.id?.name === localName
-      ) {
-        return { localName, exportedName, declaration };
-      }
+    let binding = findTopLevelBinding(program, localName);
+    if (!binding && script === "instance") {
+      const module = this.ctx.parsed?.module as unknown as Node | undefined;
+      binding = findTopLevelBinding(module ?? null, localName) ?? findReactiveDeclaration(program, localName);
     }
-    return { localName, exportedName };
+    return { localName, exportedName, ...binding };
   }
 
   private recordUnresolvedExportSpecifier(node: ExportNamedDeclaration, localName: string, exportedName: string) {
@@ -1461,7 +1502,7 @@ export default class ComponentParser {
             }
             const from = node.source?.value;
             for (const specifier of node.specifiers) {
-              const resolved = this.resolveExportSpecifier(node, specifier, parent);
+              const resolved = this.resolveExportSpecifier(node, specifier, parent, "module");
               if (!resolved) continue;
               if (resolved.exportedName === "default") {
                 recordDiagnostic(
@@ -1824,7 +1865,7 @@ export default class ComponentParser {
             return;
           }
           for (const specifier of node.specifiers) {
-            const resolved = this.resolveExportSpecifier(node, specifier, parent);
+            const resolved = this.resolveExportSpecifier(node, specifier, parent, "instance");
             if (!resolved) continue;
             if (resolved.declaration) {
               addInstanceDeclarationExports(node, resolved.declaration, resolved);
