@@ -1,12 +1,4 @@
-import type {
-  ArrowFunctionExpression,
-  CallExpression,
-  Expression,
-  FunctionExpression,
-  NewExpression,
-  Node,
-  ObjectExpression,
-} from "estree";
+import type { CallExpression, Expression, FunctionExpression, NewExpression, Node, ObjectExpression } from "estree";
 import { isIdentifier, isLiteral, isObjectExpression, resolveStaticStringLiteral } from "../ast-guards";
 import type ComponentParser from "../ComponentParser";
 import type { ComponentContext, ComponentContextProp } from "../ComponentParser";
@@ -49,6 +41,63 @@ function resolveSpreadShape(
   }));
 }
 
+/** Whether `objExpr` has a `get` accessor named `name`. */
+function hasGetter(parser: ComponentParser, objExpr: ObjectExpression, name: string): boolean {
+  return objExpr.properties.some(
+    (other) => other.type === "Property" && other.kind === "get" && parser.getPropertyName(other.key) === name,
+  );
+}
+
+/** Source text of a TS annotation (`owner[field]`, e.g. a function's `returnType`), without the colon. */
+function annotationText(
+  ctx: ParserContext,
+  owner: unknown,
+  field: "returnType" | "typeAnnotation",
+): string | undefined {
+  if (!owner || typeof owner !== "object" || !(field in owner)) return undefined;
+  const annotation = (owner as Record<string, unknown>)[field];
+  if (!annotation || typeof annotation !== "object" || !("typeAnnotation" in annotation)) return undefined;
+  return sourceForExpression(ctx, annotation.typeAnnotation);
+}
+
+/** The value a getter returns when its body is a single `return` statement. */
+function returnedValue(getter: FunctionExpression | undefined): Node | undefined {
+  const statements = getter?.body.body;
+  if (statements?.length !== 1 || statements[0].type !== "ReturnStatement") return undefined;
+  return statements[0].argument ?? undefined;
+}
+
+/** Type (and description, for a documented variable) of one context property's value. */
+function describeContextValue(
+  ctx: ParserContext,
+  parser: ComponentParser,
+  key: string,
+  propName: string,
+  prop: Node,
+  value: Node | undefined,
+): { type: string; description?: string; internal?: boolean } {
+  if (isIdentifier(value)) {
+    const varInfo = parser.findVariableTypeAndDescription(value.name);
+    if (varInfo) return { type: varInfo.type, description: varInfo.description, internal: varInfo.internal };
+    recordDiagnostic(
+      ctx,
+      "context-any-type",
+      propName,
+      `Context "${key}" property "${propName}" has no type annotation; defaulted to "any".`,
+      sourceRangeFromNode(ctx, prop),
+    );
+    return { type: "any" };
+  }
+  if (value?.type === "ArrowFunctionExpression" || value?.type === "FunctionExpression") {
+    const params = value.params.map((param) => `${isIdentifier(param) ? param.name || "arg" : "arg"}: any`).join(", ");
+    return { type: `(${params}) => any` };
+  }
+  if (isLiteral(value)) {
+    return { type: value.value == null ? "null" : typeof value.value };
+  }
+  return { type: "any" };
+}
+
 /** Build a context's property list from an object literal, merging or flagging spreads. */
 function parseContextObjectProperties(
   ctx: ParserContext,
@@ -82,53 +131,32 @@ function parseContextObjectProperties(
     const propName = parser.getPropertyName(prop.key);
     if (!propName) continue;
 
-    let propType = "any";
-    let propDescription: string | undefined;
-    let propInternal: boolean | undefined;
-
-    if (isIdentifier(prop.value)) {
-      const varName = prop.value.name;
-      const varInfo = parser.findVariableTypeAndDescription(varName);
-      if (varInfo) {
-        propType = varInfo.type;
-        propDescription = varInfo.description;
-        propInternal = varInfo.internal;
-      } else {
-        recordDiagnostic(
+    // `get x() {}` / `set x(v) {}` describe one property, typed by the
+    // getter; a setter alone is typed by its parameter.
+    if (prop.kind === "set" && hasGetter(parser, objExpr, propName)) continue;
+    const accessor = prop.kind === "get" || prop.kind === "set" ? (prop.value as FunctionExpression) : undefined;
+    const annotated = accessor
+      ? prop.kind === "get"
+        ? annotationText(ctx, accessor, "returnType")
+        : annotationText(ctx, accessor.params[0], "typeAnnotation")
+      : undefined;
+    const described = annotated
+      ? { type: annotated }
+      : describeContextValue(
           ctx,
-          "context-any-type",
+          parser,
+          key,
           propName,
-          `Context "${key}" property "${propName}" has no type annotation; defaulted to "any".`,
-          sourceRangeFromNode(ctx, prop),
+          prop,
+          prop.kind === "get" ? returnedValue(accessor) : prop.kind === "set" ? undefined : prop.value,
         );
-      }
-    } else if (
-      prop.value &&
-      typeof prop.value === "object" &&
-      "type" in prop.value &&
-      (prop.value.type === "ArrowFunctionExpression" || prop.value.type === "FunctionExpression")
-    ) {
-      const funcExpr = prop.value as ArrowFunctionExpression | FunctionExpression;
-      const params =
-        funcExpr.params
-          ?.map((p) => {
-            if (isIdentifier(p)) {
-              return `${p.name || "arg"}: any`;
-            }
-            return "arg: any";
-          })
-          .join(", ") || "";
-      propType = `(${params}) => any`;
-    } else if (isLiteral(prop.value)) {
-      propType = prop.value.value == null ? "null" : typeof prop.value.value;
-    }
 
     properties.push({
       name: propName,
-      type: propType,
-      description: propDescription,
+      type: described.type,
+      description: described.description,
       optional: false,
-      ...(propInternal ? { internal: true } : {}),
+      ...(described.internal ? { internal: true } : {}),
     });
   }
 
