@@ -3,7 +3,12 @@ import { existsSync, lstatSync, readFileSync, realpathSync, statSync } from "nod
 import { readFile } from "node:fs/promises";
 import { basename, dirname, extname, isAbsolute, join, parse, relative, resolve } from "node:path";
 import { asRelativeSourcePath, type NormalizedPath } from "./brands";
-import type { ParsedComponent, PendingCallDefaultCandidate, PendingContextKeyCandidate } from "./ComponentParser";
+import type {
+  ParsedComponent,
+  PendingCallDefaultCandidate,
+  PendingConstDefaultCandidate,
+  PendingContextKeyCandidate,
+} from "./ComponentParser";
 import { buildReverseDeps, expandAffected } from "./dependency-graph";
 import {
   applyDiagnosticIgnores,
@@ -28,6 +33,7 @@ import {
   describeCallDefaultFailure,
   resolveCallDefaultCandidates,
 } from "./resolve-call-defaults";
+import { type ConstDefaultResolution, resolveConstDefaultCandidates } from "./resolve-const-defaults";
 import { type ContextKeyResolution, resolveContextKeyCandidates } from "./resolve-context-keys";
 import type { BareTypeSession, TypeResolver } from "./resolve-types";
 import { parse as parseTemplate, TemplateParseNotImplementedError } from "./svelte-template-parse";
@@ -823,10 +829,11 @@ export async function generateBundle(
   // Warm-cache runs skip loadParserStack above, but this pass still needs it to
   // parse sibling modules.
   const callDefaultCandidates = collectCallDefaultCandidates(allComponentsForTypes);
+  const constDefaultCandidates = collectConstDefaultCandidates(allComponentsForTypes);
   const contextKeyCandidates = collectContextKeyCandidates(allComponentsForTypes);
-  if (callDefaultCandidates.length > 0 || contextKeyCandidates.length > 0) {
+  if (callDefaultCandidates.length > 0 || constDefaultCandidates.length > 0 || contextKeyCandidates.length > 0) {
     await loadParserStack();
-    // Both passes share this cache and cycle set.
+    // All three passes share this cache and cycle set.
     const crossFileResolveContext = createCallDefaultResolveContext();
     for (const { component, candidates } of callDefaultCandidates) {
       const resolutions = resolveCallDefaultCandidates(
@@ -835,6 +842,14 @@ export async function generateBundle(
         crossFileResolveContext,
       );
       applyCallDefaultResolutions(component, resolutions);
+    }
+    for (const { component, candidates } of constDefaultCandidates) {
+      const resolutions = resolveConstDefaultCandidates(
+        resolveComponentFilePath(component.filePath),
+        candidates,
+        crossFileResolveContext,
+      );
+      applyConstDefaultResolutions(component, resolutions);
     }
     for (const { component, candidates } of contextKeyCandidates) {
       const resolutions = resolveContextKeyCandidates(
@@ -931,6 +946,50 @@ function applyCallDefaultResolutions(component: ComponentDocApi, resolutions: Ca
         (diagnostic) => diagnostic.kind === "prop-unknown-type" && diagnostic.name === candidate.propName,
       );
       if (existing) existing.message = describeCallDefaultFailure(candidate, failureReason);
+    }
+  }
+}
+
+interface ConstDefaultCandidateGroup {
+  component: ComponentDocApi;
+  candidates: PendingConstDefaultCandidate[];
+}
+
+/** Components with a prop default bound to a named value import. */
+function collectConstDefaultCandidates(components: ComponentDocs): ConstDefaultCandidateGroup[] {
+  const groups: ConstDefaultCandidateGroup[] = [];
+
+  for (const component of components.values()) {
+    const candidates = getParsedComponentTypeScriptMetadata(component)?.pendingConstDefaultCandidates;
+    if (!candidates || candidates.length === 0) continue;
+    groups.push({ component, candidates });
+  }
+
+  return groups;
+}
+
+/**
+ * Swap the imported identifier for its literal in `value`/`defaultValue`,
+ * matching a same-file `const`. Type the prop from the literal only when
+ * nothing more explicit won, and drop the parse-time `prop-unknown-type`.
+ */
+function applyConstDefaultResolutions(component: ComponentDocApi, resolutions: ConstDefaultResolution[]): void {
+  for (const { candidate, literal } of resolutions) {
+    if (!literal) continue;
+    const list = candidate.location === "props" ? component.props : component.moduleExports;
+    const prop = list.find((entry) => entry.name === candidate.propName);
+    if (!prop) continue;
+
+    prop.value = literal.raw;
+    prop.defaultValue = { raw: literal.raw, kind: "literal", value: literal.value };
+    if (prop.typeSource !== "unknown") continue;
+
+    prop.type = literal.type;
+    prop.typeSource = "default";
+    if (candidate.location === "props") {
+      component.diagnostics = (component.diagnostics ?? []).filter(
+        (diagnostic) => !(diagnostic.kind === "prop-unknown-type" && diagnostic.name === candidate.propName),
+      );
     }
   }
 }

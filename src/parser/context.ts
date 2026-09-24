@@ -17,6 +17,7 @@ import type {
   ModernAstRoot,
   ModernRunesTypeNode,
   PendingCallDefaultCandidate,
+  PendingConstDefaultCandidate,
   PendingContextKeyCandidate,
   RestProps,
   RunesPropsDeclarationMetadata,
@@ -82,6 +83,8 @@ export interface ParserContext {
   readonly valueImportBindingsByLocalName: Map<string, ValueImportBinding>;
   /** CallExpression defaults that still need a return type after AST parsing. */
   readonly pendingCallDefaultCandidates: PendingCallDefaultCandidate[];
+  /** Identifier defaults bound to a named value import, resolved after AST parsing. */
+  readonly pendingConstDefaultCandidates: PendingConstDefaultCandidate[];
   /** Named-import `setContext` keys that need a string value after AST parsing. */
   readonly pendingContextKeyCandidates: PendingContextKeyCandidate[];
 
@@ -172,6 +175,7 @@ export function createParserContext(): ParserContext {
     vars: new Set(),
     valueImportBindingsByLocalName: new Map(),
     pendingCallDefaultCandidates: [],
+    pendingConstDefaultCandidates: [],
     pendingContextKeyCandidates: [],
     runesPropsDeclarationMetadataByDeclaratorStart: new Map(),
     typedRunesPropsDeclarations: [],

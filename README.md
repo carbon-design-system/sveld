@@ -2187,7 +2187,27 @@ Chained references are also resolved:
 count?: number;
 ```
 
-Resolution follows up to 5 levels of indirection. Beyond that, the last resolved identifier name is used as the default value. If the identifier cannot be resolved (e.g., it is imported from another module), the variable name is used as-is.
+Resolution follows up to 5 levels of indirection. Beyond that, the last resolved identifier name is used as the default value.
+
+A named import resolves when the imported module (followed through re-exports) declares it as an `export const` with a string, number, boolean, or static template literal:
+
+```svelte
+<script>
+  // timing.js: export const TOOLTIP_LEAVE_DELAY_MS = 300;
+  import { TOOLTIP_LEAVE_DELAY_MS } from "./timing.js";
+
+  export let leaveDelayMs = TOOLTIP_LEAVE_DELAY_MS;
+</script>
+```
+
+```ts
+/**
+ * @default 300
+ */
+leaveDelayMs?: number;
+```
+
+Any other identifier that cannot be resolved (an `export let`, a computed value, a package import) is used as-is, and its type falls back to `any`.
 
 When an explicit `@default` annotation is provided, it always takes precedence over the resolved value.
 
