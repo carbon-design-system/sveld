@@ -3,7 +3,7 @@ import { existsSync, lstatSync, readFileSync, realpathSync, statSync } from "nod
 import { readFile } from "node:fs/promises";
 import { basename, dirname, extname, isAbsolute, join, parse, relative, resolve } from "node:path";
 import { asRelativeSourcePath, type NormalizedPath } from "./brands";
-import type { DispatchedEvent, ParsedComponent, SourceRange } from "./ComponentParser";
+import type { DispatchedEvent, ParsedComponent, SerializedComponentEvent, SourceRange } from "./ComponentParser";
 import { buildReverseDeps, expandAffected } from "./dependency-graph";
 import {
   applyDiagnosticIgnores,
@@ -1070,8 +1070,9 @@ function startsAfter(range: SourceRange | undefined, other: SourceRange | undefi
 }
 
 /**
- * Add the events each helper dispatches, unless the component already has
- * one by that name (its `@event` tag wins). A helper sveld couldn't read gets
+ * Add the events each helper dispatches, unless the component already
+ * dispatches one by that name (its `@event` tag wins). A helper event
+ * replaces a forwarded event of the same name. A helper sveld couldn't read gets
  * a `dispatch-escapes` diagnostic. The held-back `event-no-source`
  * diagnostics come back only when every helper was read and none of them
  * dispatches the event.
@@ -1118,9 +1119,45 @@ function applyDispatchEscapeResolutions(
   }
   component.diagnostics = diagnostics;
 
-  const knownNames = new Set(component.events.map((event) => event.name));
-  const added = Array.from(helperEvents.values()).filter((event) => !knownNames.has(event.name));
-  if (added.length > 0) component.events = [...component.events, ...added].sort(compareSerializedEvents);
+  if (helperEvents.size === 0) return;
+
+  /**
+   * A helper dispatch beats forwarding of the same name, as a same-file dispatch does
+   * (`addDispatchedEvent`). The forwarded entry's `@event` metadata, detail included, carries over.
+   */
+  const forwardedByName = new Map<string, SerializedComponentEvent>();
+  const dispatchedNames = new Set<string>();
+  for (const event of component.events) {
+    if (event.type === "dispatched") dispatchedNames.add(event.name);
+    else if (!forwardedByName.has(event.name)) forwardedByName.set(event.name, event);
+  }
+
+  const added: DispatchedEvent[] = [];
+  for (const helperEvent of helperEvents.values()) {
+    if (dispatchedNames.has(helperEvent.name)) continue;
+    const forwarded = forwardedByName.get(helperEvent.name);
+    if (!forwarded) {
+      added.push(helperEvent);
+      continue;
+    }
+    added.push({
+      type: "dispatched",
+      name: helperEvent.name,
+      detail: forwarded.detail ?? helperEvent.detail,
+      ...(forwarded.description ? { description: forwarded.description } : {}),
+      ...(forwarded.deprecated === undefined ? {} : { deprecated: forwarded.deprecated }),
+      ...(forwarded.tags ? { tags: forwarded.tags } : {}),
+      ...(forwarded.internal ? { internal: true as const } : {}),
+      ...((helperEvent.source ?? forwarded.source) ? { source: helperEvent.source ?? forwarded.source } : {}),
+    });
+  }
+  if (added.length === 0) return;
+
+  const replacedNames = new Set(added.map((event) => event.name));
+  component.events = [
+    ...component.events.filter((event) => event.type === "dispatched" || !replacedNames.has(event.name)),
+    ...added,
+  ].sort(compareSerializedEvents);
 }
 
 /**

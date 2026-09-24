@@ -100,6 +100,33 @@ export function createSelectHandler(options) {
     expect(byModuleName(result.components, "Menu")?.events.map((event) => event.name)).toEqual(["change"]);
   });
 
+  test("a helper dispatch beats forwarding an event of the same name, as a local dispatch does", async () => {
+    writeFileSync(
+      path.join(dir, "Menu.svelte"),
+      `<script>
+  /** @event focus - Focus moved */
+  import { createEventDispatcher } from "svelte";
+  import { clickWith } from "./helpers.js";
+
+  const dispatch = createEventDispatcher();
+  clickWith(dispatch);
+</script>
+<button on:click on:focus />
+`,
+    );
+    writeFileSync(path.join(dir, "helpers.js"), `export function clickWith(d) { d("click", 1); d("focus"); }\n`);
+    writeFileSync(path.join(dir, "index.js"), `export { default as Menu } from "./Menu.svelte";\n`);
+
+    const result = await generateBundle(path.join(dir, "index.js"), true);
+
+    for (const components of [result.components, result.allComponentsForTypes]) {
+      expect(byModuleName(components, "Menu")?.events).toEqual([
+        expect.objectContaining({ type: "dispatched", name: "click", detail: "1" }),
+        expect.objectContaining({ type: "dispatched", name: "focus", detail: "null", description: "Focus moved" }),
+      ]);
+    }
+  });
+
   test("still reports an @event that neither the component nor the helper dispatches", async () => {
     writeFileSync(path.join(dir, "notify.js"), `export function notify(dispatch) { dispatch("open"); }\n`);
 
