@@ -8,6 +8,7 @@ import { sourceRangeFromNode } from "./source-position";
 import { assignValueOrUndefined, compareText, escapeCommentText } from "./utils";
 
 const NEWLINES_REGEX = /\n/g;
+const IDENTIFIER_REGEX = /^[A-Za-z_$][\w$]*$/;
 
 /**
  * Structurally infers a dispatched event's detail type from an object or array literal `dispatch()`
@@ -227,6 +228,8 @@ export function buildEventDetailFromProperties(
   const props = properties
     .map(({ name, type, description, optional, default: defaultValue }) => {
       const optionalMarker = optional ? "?" : "";
+      // `"a-b"` needs its quotes back; `[key: string]` is an index signature, not a key.
+      const key = IDENTIFIER_REGEX.test(name) || name.startsWith("[") ? name : JSON.stringify(name);
       let comment = description || "";
 
       if (defaultValue && comment) {
@@ -242,11 +245,11 @@ export function buildEventDetailFromProperties(
           const docComment = comment.includes("\n")
             ? `/**\n   * ${comment.split("\n").join("\n   * ")}\n   */`
             : `/** ${comment} */`;
-          return `${docComment}\n  ${name}${optionalMarker}: ${type};`;
+          return `${docComment}\n  ${key}${optionalMarker}: ${type};`;
         }
-        return `/** ${comment.replace(NEWLINES_REGEX, " ")} */ ${name}${optionalMarker}: ${type};`;
+        return `/** ${comment.replace(NEWLINES_REGEX, " ")} */ ${key}${optionalMarker}: ${type};`;
       }
-      return `${name}${optionalMarker}: ${type};`;
+      return `${key}${optionalMarker}: ${type};`;
     })
     .join(multiline ? "\n  " : " ");
 

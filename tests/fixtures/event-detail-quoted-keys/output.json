@@ -1,0 +1,69 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 23,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "change",
+      "detail": "{ \"a-b\": number; ok: boolean; \"3\": string; \"with space\": string; }",
+      "source": {
+        "start": {
+          "line": 18,
+          "column": 5
+        },
+        "end": {
+          "line": 18,
+          "column": 78
+        }
+      }
+    },
+    {
+      "type": "dispatched",
+      "name": "select",
+      "detail": "{\n  /** The selected item's id. */\n  \"item-id\": string;\n  index?: number;\n}",
+      "source": {
+        "start": {
+          "line": 19,
+          "column": 5
+        },
+        "end": {
+          "line": 19,
+          "column": 43
+        }
+      }
+    }
+  ],
+  "typedefs": [
+    {
+      "type": "{\n  /** The element's data id. */\n  \"data-id\": string;\n  \"aria-hidden\": boolean;\n}",
+      "name": "Attributes",
+      "ts": "type Attributes = {\n  /** The element's data id. */\n  \"data-id\": string;\n  \"aria-hidden\": boolean;\n};",
+      "source": {
+        "start": {
+          "line": 5,
+          "column": 5
+        },
+        "end": {
+          "line": 5,
+          "column": 33
+        }
+      }
+    }
+  ],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
