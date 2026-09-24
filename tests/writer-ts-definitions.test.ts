@@ -1388,8 +1388,25 @@ describe("typesOptions.comments", () => {
         reactive: false,
       },
     ],
-    slots: [],
-    events: [],
+    slots: [
+      {
+        name: "header",
+        default: false,
+        slot_props: "{ title: string }",
+        description: "The header slot.",
+        tags: [{ name: "since", body: "1.3.0" }],
+      },
+    ],
+    events: [
+      {
+        type: "dispatched",
+        name: "change",
+        detail: "string",
+        description: "Fired on change.",
+        deprecated: "Use `update` instead.",
+        tags: [{ name: "since", body: "1.4.0" }],
+      },
+    ],
     typedefs: [
       {
         type: "{ [key: string]: boolean; }",
@@ -1400,7 +1417,7 @@ describe("typesOptions.comments", () => {
       },
     ],
     generics: null,
-    rest_props: undefined,
+    rest_props: { type: "Element", name: "div", description: "Rest props go on the div." },
     contexts: [
       {
         key: "simple-modal",
@@ -1417,31 +1434,41 @@ describe("typesOptions.comments", () => {
     );
   });
 
-  test('"descriptions" keeps descriptions and @deprecated, drops @default and passthrough tags', () => {
-    const output = writeTsDefinition(commentsTestComponent, { comments: "descriptions" });
+  test.each(["class", "component"] as const)(
+    '"descriptions" keeps descriptions and @deprecated, drops @default and passthrough tags (%s)',
+    (format) => {
+      const output = writeTsDefinition(commentsTestComponent, { comments: "descriptions", format });
 
-    expect(output).toContain("The visible label.");
-    expect(output).toContain("The package version.");
-    expect(output).toContain("A typedef description.");
-    expect(output).toContain("The simple modal context.");
-    expect(output).toContain("A widget component.");
-    expect(output).toContain("@deprecated");
-    expect(output).not.toContain("@default");
-    expect(output).not.toContain("@since");
-    expect(output).not.toContain("@see");
-  });
+      expect(output).toContain("The visible label.");
+      expect(output).toContain("The package version.");
+      expect(output).toContain("A typedef description.");
+      expect(output).toContain("The simple modal context.");
+      expect(output).toContain("A widget component.");
+      expect(output).toContain("The header slot.");
+      expect(output).toContain("Fired on change.");
+      expect(output).toContain("@deprecated Use `update` instead.");
+      expect(output).toContain("Rest props go on the div.");
+      expect(output).not.toContain("@default");
+      expect(output).not.toContain("@since");
+      expect(output).not.toContain("@see");
+    },
+  );
 
-  test('"none" emits no comments at all, keeping declarations unchanged', () => {
-    const output = writeTsDefinition(commentsTestComponent, { comments: "none" });
+  test.each(["class", "component"] as const)(
+    '"none" emits no comments at all, keeping declarations unchanged (%s)',
+    (format) => {
+      const output = writeTsDefinition(commentsTestComponent, { comments: "none", format });
 
-    expect(output).not.toContain("/**");
-    expect(output).not.toContain("The visible label.");
-    expect(output).not.toContain("A widget component.");
-    expect(output).toContain("label?: string;");
-    expect(output).toContain("interface MyTypedef {");
-    expect(output).toContain("export declare const VERSION: string;");
-    expect(output).toContain("type SimpleModalContext = {");
-  });
+      expect(output).not.toContain("/**");
+      expect(output).not.toContain("The visible label.");
+      expect(output).not.toContain("A widget component.");
+      expect(output).toContain("label?: string;");
+      expect(output).toContain("header?: (this: void, ...args: [{ title: string }]) => void;");
+      expect(output).toContain("interface MyTypedef {");
+      expect(output).toContain("export declare const VERSION: string;");
+      expect(output).toContain("type SimpleModalContext = {");
+    },
+  );
 
   test("a different comments level produces a different serializeEmitOptions key", () => {
     expect(serializeEmitOptions({ comments: "none" })).not.toEqual(serializeEmitOptions({}));

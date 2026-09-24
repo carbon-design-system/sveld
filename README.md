@@ -1148,6 +1148,8 @@ sveld({
 });
 ```
 
+The same levels apply to the comments on slots, events, their snippet and `on<event>` callback props, `@restProps`, typedefs, contexts, module exports, and the component itself. A `@property` description inside a `@typedef` is part of the type's own text, so it stays at every level.
+
 `@internal`/`@ignore` members are removed from every output regardless of this option — see [`@ignore` / `@internal`](#ignore--internal). `comments` only controls how much JSDoc survives for members that *do* get emitted.
 
 Also available as `--types-comments=<all|descriptions|none>` on the CLI.
