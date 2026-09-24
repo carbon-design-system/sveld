@@ -417,6 +417,20 @@ describe("ComponentParser diagnostics", () => {
     expect(diagnostics).toContainEqual(expect.objectContaining({ kind: "module-export-conflict", name: "default" }));
   });
 
+  test("skips and flags a module-script namespace re-export named default", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script module>
+        export * as default from "./utils";
+      </script>
+    `;
+
+    const { diagnostics, moduleExports } = parser.parseSvelteComponent(source, parseContext);
+
+    expect(moduleExports).toEqual([]);
+    expect(diagnostics).toContainEqual(expect.objectContaining({ kind: "module-export-conflict", name: "default" }));
+  });
+
   test("does not flag a specifier export resolving to a local declaration", () => {
     const parser = new ComponentParser();
     const source = `

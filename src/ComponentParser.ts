@@ -1333,6 +1333,16 @@ export default class ComponentParser {
           source: sourceRangeFromNode(this.ctx, node),
         });
       };
+      /** `export { x as default }` or `export * as default from "..."`: the component is the default export. */
+      const recordDefaultExportConflict = (node: Node) => {
+        recordDiagnostic(
+          this.ctx,
+          "module-export-conflict",
+          "default",
+          'export "default" was skipped because it collides with the component\'s own default export.',
+          sourceRangeFromNode(this.ctx, node),
+        );
+      };
       const addModuleDeclarationExports = (
         node: ExportNamedDeclaration,
         declaration: NonNullable<ExportNamedDeclaration["declaration"]>,
@@ -1526,13 +1536,7 @@ export default class ComponentParser {
               const resolved = this.resolveExportSpecifier(node, specifier, parent, "module");
               if (!resolved) continue;
               if (resolved.exportedName === "default") {
-                recordDiagnostic(
-                  this.ctx,
-                  "module-export-conflict",
-                  resolved.exportedName,
-                  'export "default" was skipped because it collides with the component\'s own default export.',
-                  sourceRangeFromNode(this.ctx, node),
-                );
+                recordDefaultExportConflict(node);
                 continue;
               }
               const reExport =
@@ -1552,6 +1556,10 @@ export default class ComponentParser {
 
           if (node.type === "ExportAllDeclaration" && typeof node.source.value === "string") {
             const name = (node.exported && moduleExportName(node.exported)) ?? "*";
+            if (name === "default") {
+              recordDefaultExportConflict(node);
+              return;
+            }
             addModuleReExport(node, name, { from: node.source.value, imported: "*" });
           }
         }) as unknown as WalkEnter,
