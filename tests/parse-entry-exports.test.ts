@@ -251,6 +251,31 @@ describe("parseEntryExports", () => {
     }
   });
 
+  test("documents a default export re-exported by name, and skips one it can't read", async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "sveld-entry-exports-default-reexport-"));
+    try {
+      writeFileSync(path.join(dir, "track.ts"), "export default function track(id: string): void {}\n");
+      writeFileSync(path.join(dir, "config.ts"), "export default { retries: 3 };\n");
+      writeFileSync(
+        path.join(dir, "index.ts"),
+        [
+          'export { default as track } from "./track";',
+          'export { default as config } from "./config";',
+          'export { default } from "./track";',
+          "",
+        ].join("\n"),
+      );
+
+      const exports = await parseEntryExports(path.join(dir, "index.ts"));
+
+      expect(exports).toEqual([
+        { name: "track", kind: "function", type: "(id: string) => void", source: "./track.ts", isTypeOnly: false },
+      ]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   test("warns and skips a re-exported module the underlying parser can't handle, instead of throwing", async () => {
     // Not written under tests/fixtures-entry-exports because the redeclaration
     // below (valid to acorn-typescript, rejected by tsc/biome) would otherwise

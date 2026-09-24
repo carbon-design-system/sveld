@@ -185,6 +185,27 @@ export function createSelectHandler(options) {
     ]);
   });
 
+  test("follows a default export re-exported by name or as a default", async () => {
+    writeFileSync(path.join(dir, "track.js"), `export default function track(dispatch) { dispatch("tracked"); }\n`);
+    writeFileSync(path.join(dir, "helpers.js"), `export { default as track } from "./track.js";\n`);
+    writeFileSync(path.join(dir, "reexport.js"), `export { default } from "./track.js";\n`);
+    writeFileSync(path.join(dir, "log.js"), `export default function log(dispatch) { dispatch("logged"); }\n`);
+    writeFileSync(path.join(dir, "imported.js"), `import log from "./log.js";\nexport { log };\n`);
+
+    const result = await bundleMenu(`  import { createEventDispatcher } from "svelte";
+  import { track } from "./helpers.js";
+  import tracker from "./reexport.js";
+  import { log } from "./imported.js";
+
+  const dispatch = createEventDispatcher();
+  track(dispatch);
+  tracker(dispatch);
+  log(dispatch);`);
+
+    expect(byModuleName(result.components, "Menu")?.events.map((event) => event.name)).toEqual(["logged", "tracked"]);
+    expect(result.diagnostics).toEqual([]);
+  });
+
   test("doesn't follow a parameter that shadows an imported helper", async () => {
     writeFileSync(
       path.join(dir, "h.js"),
