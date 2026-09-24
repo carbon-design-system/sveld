@@ -297,12 +297,20 @@ export function processInitializer(
     type = "string";
   } else if ("raw" in init && typeof init.raw === "string") {
     value = init.raw;
-    if ("value" in init) {
-      type = init.value == null ? undefined : typeof init.value;
-    }
+    type = literalValueType(init as Literal);
   }
 
   return { value, type, isFunction, defaultValue };
+}
+
+/**
+ * Type of a literal's value: `RegExp` for `/a*\/g` (not `typeof`'s
+ * `object`), `bigint` for `10n`, `undefined` for `null`.
+ */
+export function literalValueType(node: Literal): string | undefined {
+  if ("regex" in node && node.regex) return "RegExp";
+  if ("bigint" in node && node.bigint) return "bigint";
+  return node.value == null ? undefined : typeof node.value;
 }
 
 /** Operators whose result is always a number (or a bigint, when both operands are). */
@@ -910,7 +918,8 @@ function jsonSafeValueFromExpression(
 
   if (node.type === "Literal") {
     const value = (node as Literal).value;
-    return typeof value === "bigint" ? { ok: false } : { ok: true, value };
+    // A regex's value is a `RegExp` object, which JSON would turn into `{}`.
+    return typeof value === "bigint" || "regex" in node ? { ok: false } : { ok: true, value };
   }
 
   if (node.type === "UnaryExpression") {

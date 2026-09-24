@@ -5,7 +5,7 @@ import type { ComponentContext, ComponentContextProp, SourceRange } from "../Com
 import type { ParserContext } from "./context";
 import { recordDiagnostic } from "./diagnostics";
 import { parseObjectTypeLiteralMembers } from "./object-type-literal";
-import { resolveConstInitializer } from "./props";
+import { literalValueType, resolveConstInitializer } from "./props";
 import { isBoundInNestedScope } from "./scopes";
 import { sourceForExpression, sourceRangeFromNode } from "./source-position";
 
@@ -94,7 +94,7 @@ function describeContextValue(
     return { type: `(${params}) => any` };
   }
   if (isLiteral(value)) {
-    return { type: value.value == null ? "null" : typeof value.value };
+    return { type: literalValueType(value) ?? "null" };
   }
   return { type: "any" };
 }
