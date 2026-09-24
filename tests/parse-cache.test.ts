@@ -236,6 +236,50 @@ describe("generated .d.ts text cache", () => {
     expect(second.cache?.getGeneratedText(standalonePath, classKey)).toBeDefined();
   });
 
+  test("a component with a default, context key, or event read from another module is regenerated when that module changes", async () => {
+    writeFileSync(join(dir, "constants.js"), 'export const DELAY = 100;\nexport const KEY = "one";\n');
+    writeFileSync(join(dir, "helper.js"), 'export function wire(dispatch) { dispatch("alpha"); }\n');
+    writeFileSync(
+      join(dir, "Tip.svelte"),
+      `<script>
+  import { setContext, createEventDispatcher } from "svelte";
+  import { DELAY, KEY } from "./constants.js";
+  import { wire } from "./helper.js";
+  export let delay = DELAY;
+  setContext(KEY, { delay });
+  const dispatch = createEventDispatcher();
+  wire(dispatch);
+</script>`,
+    );
+    const tipDts = join(outDirAbs, "Tip.svelte.d.ts");
+    const write = async (result: Awaited<ReturnType<typeof generateBundle>>) => {
+      await writeTsDefinitions(result.allComponentsForTypes, {
+        outDir,
+        inputDir: dir,
+        preamble: "",
+        exports: result.exports,
+        cache: result.cache,
+        resolvedPathByFilePath: result.resolvedPathByFilePath,
+      });
+      result.cache?.save();
+    };
+
+    await write(await generateBundle(dir, true, { cache: cacheFile }));
+    expect(readFileSync(tipDts, "utf-8")).toContain("@default 100");
+
+    writeFileSync(join(dir, "constants.js"), 'export const DELAY = 999;\nexport const KEY = "two";\n');
+    writeFileSync(join(dir, "helper.js"), 'export function wire(dispatch) { dispatch("beta"); }\n');
+    const second = await generateBundle(dir, true, { cache: cacheFile });
+    await write(second);
+
+    const text = readFileSync(tipDts, "utf-8");
+    expect(text).toContain("@default 999");
+    expect(text).toContain("TwoContext");
+    expect(text).toContain("beta: CustomEvent<null>");
+    // Standalone reads nothing from other files, so it still reuses its cached text.
+    expect(second.cache?.getGeneratedText(resolve(dir, "Standalone.svelte"), classKey)).toBeDefined();
+  });
+
   test("--types-format switch doesn't serve a component's other-format cached text", async () => {
     const buttonPath = resolve(dir, "Button.svelte");
 

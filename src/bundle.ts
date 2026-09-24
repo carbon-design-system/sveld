@@ -98,7 +98,8 @@ export interface GenerateBundleResult {
    * identity so the write phase can look up text cache without redoing
    * path-alias resolution. Uses filePath because moduleName is not unique
    * when two components share a basename. Undefined when the parse cache
-   * is disabled.
+   * is disabled. Leaves out components whose output was resolved from
+   * another file's contents, so they never reuse cached text.
    */
   resolvedPathByFilePath?: Map<string, string>;
   /**
@@ -885,6 +886,21 @@ export async function generateBundle(
       applyDispatchEscapeResolutions(component, resolutions, deferredEventNoSource);
     }
     syncCrossFileResults(components, allComponentsForTypes);
+  }
+
+  // The generated-text cache is keyed on a component's own source, so it
+  // can't see an edit to the module a default, context key, event, or
+  // resolved props type was read from.
+  if (resolvedPathByFilePath) {
+    for (const { component } of [
+      ...resolveTypesCandidates,
+      ...callDefaultCandidates,
+      ...constDefaultCandidates,
+      ...contextKeyCandidates,
+      ...dispatchEscapeCandidates,
+    ]) {
+      resolvedPathByFilePath.delete(component.filePath);
+    }
   }
 
   validateExtendsTargets(allComponentsForTypes, resolveComponentFilePath, options.typesTypeNames);
