@@ -128,6 +128,8 @@ export interface ParserContext {
   readonly eventDescriptions: Map<string, string | undefined>;
   readonly forwardedEvents: Map<string, ComponentInlineElement | ComponentElement>;
   readonly jsDocEventNames: Set<string>;
+  /** `@event` tags with no `{type}` or `@property`: their `null` detail gives way to a dispatch's. */
+  readonly untypedJsDocEventNames: Set<string>;
 
   /** Source range per `@event` JSDoc tag, for `event-no-source` diagnostics. */
   readonly jsDocEventSources: Map<string, SourceRange | undefined>;
@@ -205,6 +207,7 @@ export function createParserContext(): ParserContext {
     eventDescriptions: new Map(),
     forwardedEvents: new Map(),
     jsDocEventNames: new Set(),
+    untypedJsDocEventNames: new Set(),
     jsDocEventSources: new Map(),
     bindings: new Map(),
     contexts: new Map(),

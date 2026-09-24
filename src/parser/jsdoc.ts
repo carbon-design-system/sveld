@@ -944,6 +944,10 @@ export function parseCustomTypes(
           }
         }
 
+        // With no `{type}` or `@property`, the `null` detail is only a fallback that a dispatch
+        // replaces (see `addDispatchedEvent`), unless an earlier `@event` typed this one.
+        const fallbackDetail =
+          detailType === "" && (!ctx.events.has(currentEventName) || ctx.untypedJsDocEventNames.has(currentEventName));
         addDispatchedEvent(ctx, {
           name: currentEventName,
           detail: detailType,
@@ -954,6 +958,7 @@ export function parseCustomTypes(
           internal: currentEventInternal || undefined,
           source: currentEventSource,
         });
+        if (fallbackDetail) ctx.untypedJsDocEventNames.add(currentEventName);
         ctx.eventDescriptions.set(currentEventName, currentEventDescription);
         ctx.jsDocEventNames.add(currentEventName);
         ctx.jsDocEventSources.set(currentEventName, currentEventSource);
