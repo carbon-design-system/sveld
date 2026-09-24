@@ -1150,11 +1150,8 @@ function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">, commentLe
          */
         type_def = `export declare const ${prop.name}: ${prop.type || ANY_TYPE};\n`;
       } else {
-        /**
-         * Default: export as type.
-         * For non-function, non-const exports, use type alias.
-         */
-        type_def = `export type ${prop.name} = ${prop.type || ANY_TYPE};`;
+        /** `export let` (and `var`, recorded as `let`): a live binding. */
+        type_def = `export declare let ${prop.name}: ${prop.type || ANY_TYPE};`;
       }
 
       if (quoted) {

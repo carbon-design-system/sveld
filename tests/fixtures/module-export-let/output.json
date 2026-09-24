@@ -1,0 +1,78 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 12,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [
+    {
+      "name": "count",
+      "kind": "let",
+      "description": "Instances created so far",
+      "type": "number",
+      "typeSource": "default",
+      "value": "0",
+      "defaultValue": {
+        "raw": "0",
+        "kind": "literal",
+        "value": 0
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 2
+        },
+        "end": {
+          "line": 3,
+          "column": 23
+        }
+      }
+    },
+    {
+      "name": "legacy",
+      "kind": "let",
+      "type": "string",
+      "typeSource": "default",
+      "value": "\"x\"",
+      "defaultValue": {
+        "raw": "\"x\"",
+        "kind": "literal",
+        "value": "x"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 4,
+          "column": 2
+        },
+        "end": {
+          "line": 4,
+          "column": 26
+        }
+      }
+    }
+  ],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
