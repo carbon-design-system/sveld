@@ -466,6 +466,24 @@ describe("writeCustomElements", () => {
     }
   });
 
+  test("doesn't wrap an @event detail that is already a CustomEvent type", async () => {
+    const components: ComponentDocs = new Map([
+      [
+        "Legacy",
+        mockComponentDocApi("Legacy", "Legacy.svelte", {
+          events: [mockEvent("legacyEvent", { detail: "CustomEvent<null>" })],
+        }),
+      ],
+    ]);
+    const { module, cleanup } = await runWriter(components);
+
+    try {
+      expect(module.declarations[0].events).toEqual([{ name: "legacyEvent", type: { text: "CustomEvent<null>" } }]);
+    } finally {
+      cleanup();
+    }
+  });
+
   test("carries a deprecated prop's deprecation onto its member and attribute", async () => {
     const components: ComponentDocs = new Map([
       [
