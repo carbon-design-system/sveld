@@ -44,6 +44,31 @@ describe("ComponentParser", () => {
     }
   });
 
+  test("orders type imports the same way whatever the machine locale", () => {
+    const original = String.prototype.localeCompare;
+    const czech = new Intl.Collator("cs");
+    String.prototype.localeCompare = function (this: string, that: string) {
+      return czech.compare(this, that);
+    };
+    try {
+      const source = `
+        <script lang="ts">
+          import type { H } from "./hover";
+          import type { C } from "./change";
+          export let h: H;
+          export let c: C;
+        </script>
+      `;
+      const result = new ComponentParser().parseSvelteComponent(source, diagnostics);
+      expect(getParsedComponentTypeScriptMetadata(result)?.typeImportStatements).toEqual([
+        'import type { C } from "./change";',
+        'import type { H } from "./hover";',
+      ]);
+    } finally {
+      String.prototype.localeCompare = original;
+    }
+  });
+
   describe("hoisted call defaults", () => {
     test("resolves a default from a top-level function declared after the prop", () => {
       const parser = new ComponentParser();

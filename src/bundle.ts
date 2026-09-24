@@ -21,6 +21,7 @@ import { type ParsedExports, parseExports } from "./parse-exports";
 import { applyResolvedProps, getParsedComponentTypeScriptMetadata } from "./parsed-component-metadata";
 import { generateContextTypeName } from "./parser/contexts";
 import { compareSerializedEvents } from "./parser/events";
+import { compareText } from "./parser/utils";
 import { getParserStack, loadParserStack } from "./parser-stack";
 import { hasSvelteExtension, normalizeSeparators } from "./path";
 import {
@@ -303,7 +304,7 @@ function globComponentSources(rootDir: string): GlobbedComponentSource[] {
       const source = asRelativeSourcePath(normalizeSeparators(`./${relative(rootDir, file)}`));
       return { moduleName, source };
     })
-    .sort((a, b) => a.source.localeCompare(b.source));
+    .sort((a, b) => compareText(a.source, b.source));
 }
 
 /** True when an export `source` still needs glob resolution, like `export { X } from "./dir"`. */
