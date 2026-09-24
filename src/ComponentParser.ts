@@ -2192,11 +2192,15 @@ export default class ComponentParser {
             "value" in event_argument
               ? (event_argument as Literal).value
               : undefined;
+          // A `null` value is also how a regex/bigint literal the runtime can't build looks, so check `raw`.
+          const isNullLiteral = event_detail === null && (event_argument as Literal).raw === "null";
 
           if (event_name != null) {
             addDispatchedEvent(this.ctx, {
               name: String(event_name),
-              detail: structuralDetail ?? (event_detail == null ? "" : literalDetailToTypeText(event_detail)),
+              detail:
+                structuralDetail ??
+                (isNullLiteral ? "null" : event_detail == null ? "" : literalDetailToTypeText(event_detail)),
               has_argument: Boolean(event_argument),
               source: sourceRangeFromNode(this.ctx, callee.node),
             });
