@@ -1418,6 +1418,7 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
   const preservedLocalTypeDeclarations = [
     ...(options?.inlined?.declarations ?? []),
     ...(typeScriptMetadata?.localTypeDeclarations ?? []),
+    ...(typeScriptMetadata?.moduleTypeDeclarations ?? []),
   ].join("\n\n");
 
   const { exports_ref, exports_def } = useComponentFormat

@@ -183,53 +183,41 @@ function buildRunesPropTypeMetadataMap(
 }
 
 /** The modern-AST shape `buildRunesPropTypeMetadata` reads from. */
-type ModernParsedRoot = {
-  instance?: ModernScriptNode & {
-    content?: {
-      body?: Array<{
-        type?: string;
+type ModernScriptStatement = {
+  type?: string;
+  start?: number;
+  end?: number;
+  importKind?: string;
+  exportKind?: string;
+  source?: { value?: string } | null;
+  specifiers?: Array<{
+    type?: string;
+    importKind?: string;
+    local?: { name?: string; type?: string; value?: string };
+    exported?: { name?: string; type?: string; value?: string };
+    imported?: { type?: string; name?: string; value?: string };
+  }>;
+  id?: { name?: string };
+  /** `export <declaration>`: the declared statement itself. */
+  declaration?: ModernScriptStatement;
+  declarations?: Array<{
+    id?: {
+      type?: string;
+      name?: string;
+      typeAnnotation?: {
         start?: number;
         end?: number;
-        importKind?: string;
-        source?: { value?: string };
-        specifiers?: Array<{
-          type?: string;
-          importKind?: string;
-          local?: { name?: string };
-          imported?: { type?: string; name?: string; value?: string };
-        }>;
-        id?: { name?: string };
-        declaration?: {
-          type?: string;
-          declarations?: Array<{
-            id?: {
-              type?: string;
-              name?: string;
-              typeAnnotation?: {
-                start?: number;
-                end?: number;
-                typeAnnotation?: ModernRunesTypeNode;
-              };
-            };
-          }>;
-        };
-        declarations?: Array<{
-          id?: {
-            type?: string;
-            name?: string;
-            typeAnnotation?: {
-              start?: number;
-              end?: number;
-              typeAnnotation?: ModernRunesTypeNode;
-            };
-          };
-          init?: unknown;
-          start?: number;
-        }>;
-      }>;
+        typeAnnotation?: ModernRunesTypeNode;
+      };
     };
-  };
-  module?: ModernScriptNode;
+    init?: unknown;
+    start?: number;
+  }>;
+};
+
+type ModernParsedRoot = {
+  instance?: ModernScriptNode & { content?: { body?: ModernScriptStatement[] } };
+  module?: ModernScriptNode & { content?: { body?: ModernScriptStatement[] } };
   options?: {
     customElement?: {
       tag?: string;
@@ -256,6 +244,75 @@ function buildCustomElementPropConfigs(
     };
   }
   return result;
+}
+
+/**
+ * Records one top-level statement's type import or `interface`/`type`/`enum`
+ * declaration. `exported` marks a module-script `export`ed type, which the
+ * `.d.ts` exports too.
+ */
+function collectScriptTypeDeclaration(ctx: ParserContext, statement: ModernScriptStatement, exported: boolean) {
+  if (statement.type === "ImportDeclaration" && statement.source?.value) {
+    for (const specifier of statement.specifiers ?? []) {
+      const localName = specifier.local?.name;
+      if (!localName) continue;
+      const isTypeOnly = statement.importKind === "type" || specifier.importKind === "type";
+      if (!isTypeOnly) continue;
+
+      let specifierType: TypeImportBinding["specifierType"] | undefined;
+      let importedName: string | undefined;
+
+      if (specifier.type === "ImportSpecifier") {
+        specifierType = "named";
+        importedName =
+          specifier.imported?.type === "Identifier"
+            ? specifier.imported.name
+            : typeof specifier.imported?.value === "string"
+              ? specifier.imported.value
+              : undefined;
+      } else if (specifier.type === "ImportDefaultSpecifier") {
+        specifierType = "default";
+      } else if (specifier.type === "ImportNamespaceSpecifier") {
+        specifierType = "namespace";
+      }
+
+      if (!specifierType) continue;
+
+      ctx.typeImportBindingsByLocalName.set(localName, {
+        importedName,
+        localName,
+        source: String(statement.source.value),
+        specifierType,
+      });
+    }
+  }
+  if (
+    (statement.type === "TSInterfaceDeclaration" || statement.type === "TSTypeAliasDeclaration") &&
+    statement.id?.name &&
+    statement.start !== undefined &&
+    statement.end !== undefined
+  ) {
+    ctx.localTypeDeclarationsByName.set(statement.id.name, {
+      code: sourceAtPos(ctx, statement.start, statement.end)?.trim() ?? "",
+      node: statement as ModernRunesTypeNode,
+      start: statement.start,
+      ...(exported ? { exported } : {}),
+    });
+  }
+
+  if (
+    statement.type === "TSEnumDeclaration" &&
+    statement.id?.name &&
+    statement.start !== undefined &&
+    statement.end !== undefined
+  ) {
+    ctx.localTypeDeclarationsByName.set(statement.id.name, {
+      code: buildEnumLocalTypeDeclarationCode(ctx, statement) ?? "",
+      node: statement as ModernRunesTypeNode,
+      start: statement.start,
+      ...(exported ? { exported } : {}),
+    });
+  }
 }
 
 /**
@@ -290,69 +347,35 @@ export function buildRunesPropTypeMetadata(parser: ComponentParser, ctx: ParserC
     : undefined;
   ctx.runesOptionOverride = modernParsed.options?.runes;
   ctx.scriptGenericsAttribute = parser.resolveScriptGenericsAttribute(modernParsed);
+  // Module-script type imports and declarations are in scope for the
+  // instance script. Collected first, so an instance declaration of the
+  // same name wins.
+  const moduleBody = modernParsed.module?.content?.body ?? [];
+  const typeOnlyExportNames = new Set<string>();
+  for (const statement of moduleBody) {
+    if (!statement?.type) continue;
+    if (statement.type === "ExportNamedDeclaration" && statement.declaration) {
+      collectScriptTypeDeclaration(ctx, statement.declaration, true);
+    } else if (statement.type === "ExportNamedDeclaration" && !statement.source) {
+      // `export type { Local }`: a local type exported under its own name.
+      for (const specifier of statement.specifiers ?? []) {
+        const localName = specifier.local?.name;
+        if (localName && localName === specifier.exported?.name) typeOnlyExportNames.add(localName);
+      }
+    } else {
+      collectScriptTypeDeclaration(ctx, statement, false);
+    }
+  }
+  for (const name of typeOnlyExportNames) {
+    const declaration = ctx.localTypeDeclarationsByName.get(name);
+    if (declaration) declaration.exported = true;
+  }
+
   const body = modernParsed.instance?.content?.body ?? [];
 
   for (const statement of body) {
     if (!statement?.type) continue;
-    if (statement.type === "ImportDeclaration" && statement.source?.value) {
-      for (const specifier of statement.specifiers ?? []) {
-        const localName = specifier.local?.name;
-        if (!localName) continue;
-        const isTypeOnly = statement.importKind === "type" || specifier.importKind === "type";
-        if (!isTypeOnly) continue;
-
-        let specifierType: TypeImportBinding["specifierType"] | undefined;
-        let importedName: string | undefined;
-
-        if (specifier.type === "ImportSpecifier") {
-          specifierType = "named";
-          importedName =
-            specifier.imported?.type === "Identifier"
-              ? specifier.imported.name
-              : typeof specifier.imported?.value === "string"
-                ? specifier.imported.value
-                : undefined;
-        } else if (specifier.type === "ImportDefaultSpecifier") {
-          specifierType = "default";
-        } else if (specifier.type === "ImportNamespaceSpecifier") {
-          specifierType = "namespace";
-        }
-
-        if (!specifierType) continue;
-
-        ctx.typeImportBindingsByLocalName.set(localName, {
-          importedName,
-          localName,
-          source: String(statement.source.value),
-          specifierType,
-        });
-      }
-    }
-    if (
-      (statement.type === "TSInterfaceDeclaration" || statement.type === "TSTypeAliasDeclaration") &&
-      statement.id?.name &&
-      statement.start !== undefined &&
-      statement.end !== undefined
-    ) {
-      ctx.localTypeDeclarationsByName.set(statement.id.name, {
-        code: sourceAtPos(ctx, statement.start, statement.end)?.trim() ?? "",
-        node: statement as ModernRunesTypeNode,
-        start: statement.start,
-      });
-    }
-
-    if (
-      statement.type === "TSEnumDeclaration" &&
-      statement.id?.name &&
-      statement.start !== undefined &&
-      statement.end !== undefined
-    ) {
-      ctx.localTypeDeclarationsByName.set(statement.id.name, {
-        code: buildEnumLocalTypeDeclarationCode(ctx, statement) ?? "",
-        node: statement as ModernRunesTypeNode,
-        start: statement.start,
-      });
-    }
+    collectScriptTypeDeclaration(ctx, statement, false);
 
     if (statement.type === "ExportNamedDeclaration" && statement.declaration?.type === "VariableDeclaration") {
       for (const declarator of statement.declaration.declarations ?? []) {

@@ -871,7 +871,7 @@ function collectComponentReservedNames(
   for (const context of component.contexts ?? []) names.add(context.typeName);
 
   const metadata = getParsedComponentTypeScriptMetadata(component);
-  for (const declaration of metadata?.localTypeDeclarations ?? []) {
+  for (const declaration of [...(metadata?.localTypeDeclarations ?? []), ...(metadata?.moduleTypeDeclarations ?? [])]) {
     const match = DECL_NAME_REGEX.exec(declaration);
     if (match) names.add(match[1]);
   }
