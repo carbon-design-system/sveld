@@ -93,6 +93,24 @@
       },
       "code": "sveld/export-unresolved",
       "severity": "warning"
+    },
+    {
+      "component": "instance-reexport/input.svelte",
+      "kind": "export-unresolved",
+      "name": "validator",
+      "message": "export \"validator\" was skipped because it re-exports an imported binding; sveld only resolves exports of a local declaration.",
+      "source": {
+        "start": {
+          "line": 5,
+          "column": 2
+        },
+        "end": {
+          "line": 5,
+          "column": 31
+        }
+      },
+      "code": "sveld/export-unresolved",
+      "severity": "warning"
     }
   ]
 }
