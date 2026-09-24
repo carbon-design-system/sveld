@@ -1,0 +1,111 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 24,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "options",
+      "kind": "let",
+      "description": "Options desc\ncontinued unindented.",
+      "type": "Options",
+      "typeSource": "jsdoc",
+      "value": "{ label: \"\" }",
+      "defaultValue": {
+        "raw": "{ label: \"\" }",
+        "kind": "object",
+        "value": {
+          "label": ""
+        }
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 16,
+          "column": 2
+        },
+        "end": {
+          "line": 16,
+          "column": 37
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "footer",
+      "default": false,
+      "slot_props": "Record<string, never>",
+      "description": "Footer desc\ncontinued footer.",
+      "source": {
+        "start": {
+          "line": 23,
+          "column": 0
+        },
+        "end": {
+          "line": 23,
+          "column": 22
+        }
+      }
+    }
+  ],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "go",
+      "detail": "null",
+      "description": "Go desc.",
+      "source": {
+        "start": {
+          "line": 20,
+          "column": 5
+        },
+        "end": {
+          "line": 20,
+          "column": 19
+        }
+      }
+    }
+  ],
+  "typedefs": [
+    {
+      "type": "{\n  /** Label desc. */\n  label: string;\n}",
+      "name": "Options",
+      "description": "Options desc\ncontinued unindented.",
+      "ts": "type Options = {\n  /** Label desc. */\n  label: string;\n};",
+      "source": {
+        "start": {
+          "line": 4,
+          "column": 5
+        },
+        "end": {
+          "line": 5,
+          "column": 26
+        }
+      }
+    }
+  ],
+  "generics": null,
+  "contexts": [],
+  "cssProperties": [
+    {
+      "name": "--accent",
+      "type": "color",
+      "description": "Accent desc\ncontinued accent."
+    }
+  ],
+  "diagnostics": []
+}
