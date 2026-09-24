@@ -71,13 +71,12 @@
     {
       "name": "re",
       "kind": "let",
-      "type": "object",
+      "type": "RegExp",
       "typeSource": "default",
       "value": "/a*/g",
       "defaultValue": {
         "raw": "/a*/g",
-        "kind": "literal",
-        "value": {}
+        "kind": "literal"
       },
       "isFunction": false,
       "isFunctionDeclaration": false,

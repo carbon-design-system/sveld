@@ -3,6 +3,7 @@ import { isIdentifier, isLiteral, isNewExpressionNamed, isObjectExpression } fro
 import type ComponentParser from "../ComponentParser";
 import type { DispatchedEvent, SerializedComponentEvent } from "../ComponentParser";
 import type { ParserContext } from "./context";
+import { literalValueType } from "./props";
 import { sourceRangeFromNode } from "./source-position";
 import { assignValueOrUndefined, compareText, escapeCommentText } from "./utils";
 
@@ -26,10 +27,7 @@ function inferLiteralMemberType(parser: ComponentParser, node: unknown): string 
   if (!node || typeof node !== "object" || !("type" in node)) return "any";
   if (isIdentifier(node)) return parser.findVariableTypeAndDescription(node.name)?.type ?? "any";
 
-  if (isLiteral(node)) {
-    const value = node.value;
-    return value === null ? "null" : typeof value;
-  }
+  if (isLiteral(node)) return literalValueType(node) ?? "null";
 
   if (isObjectExpression(node)) return buildObjectLiteralDetailType(parser, node);
   if (node.type === "ArrayExpression") return buildArrayLiteralDetailType(parser, node as ArrayExpression);

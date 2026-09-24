@@ -21,7 +21,7 @@ export type CommentCloseInTextProps = {
   /**
    * @default /a*\/g
    */
-  re?: object;
+  re?: RegExp;
 };
 
 export type CommentCloseInTextExports = {

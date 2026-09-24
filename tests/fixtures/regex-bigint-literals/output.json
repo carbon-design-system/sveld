@@ -1,0 +1,120 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 18,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "pattern",
+      "kind": "let",
+      "description": "Pattern to match",
+      "type": "RegExp",
+      "typeSource": "default",
+      "value": "/^[a-z]+$/i",
+      "defaultValue": {
+        "raw": "/^[a-z]+$/i",
+        "kind": "literal"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 5,
+          "column": 2
+        },
+        "end": {
+          "line": 5,
+          "column": 35
+        }
+      }
+    },
+    {
+      "name": "total",
+      "kind": "let",
+      "description": "Large counter",
+      "type": "bigint",
+      "typeSource": "default",
+      "value": "10n",
+      "defaultValue": {
+        "raw": "10n",
+        "kind": "literal"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 8,
+          "column": 2
+        },
+        "end": {
+          "line": 8,
+          "column": 25
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "match",
+      "detail": "{ pattern: RegExp; count: bigint; }",
+      "source": {
+        "start": {
+          "line": 14,
+          "column": 5
+        },
+        "end": {
+          "line": 14,
+          "column": 52
+        }
+      }
+    }
+  ],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "matcher",
+      "typeName": "MatcherContext",
+      "properties": [
+        {
+          "name": "pattern",
+          "type": "RegExp",
+          "optional": false
+        },
+        {
+          "name": "limit",
+          "type": "bigint",
+          "optional": false
+        }
+      ],
+      "source": {
+        "start": {
+          "line": 12,
+          "column": 2
+        },
+        "end": {
+          "line": 12,
+          "column": 52
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}
