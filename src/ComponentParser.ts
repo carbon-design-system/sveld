@@ -1212,7 +1212,8 @@ export default class ComponentParser {
 
   private static readonly SCRIPT_BLOCK_REGEX = /(<script[^>]*>)([\s\S]*?)(<\/script>)/gi;
 
-  private static readonly TS_DIRECTIVE_REGEX = /\/\/\s*@ts-[^\n\r]*/g;
+  /** A `// @ts-...` comment, but not one on a `*` line of a JSDoc block (e.g. in an `@example`). */
+  private static readonly TS_DIRECTIVE_REGEX = /\/\/(?<!^[ \t]*\*.*\/\/)\s*@ts-[^\n\r]*/gm;
 
   private static stripTypeScriptDirectivesFromScripts(source: string): string {
     // Every directive contains `@ts-`; without it there's nothing to strip,
