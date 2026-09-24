@@ -199,12 +199,12 @@ export interface ProcessComponentOptions {
   /** Resolved file path -> sha256, computed once up front so it isn't re-hashed per pass. */
   hashes?: Map<string, string>;
   /**
-   * In-run memo of freshly parsed components, keyed by resolved file path and
-   * shared across the exported and all-components passes so a component that
-   * appears in both is only parsed once. Only fresh parses are stored here
-   * (never disk-cache hits), and an entry is cleared wherever the disk cache
-   * is invalidated so the `@extends` dependency-invalidation flow still forces
-   * a re-parse.
+   * In-run memo of parsed components (fresh parses and disk-cache hits),
+   * keyed by resolved file path and shared across the exported and
+   * all-components passes so a component that appears in both is parsed
+   * once and both maps share its props. An entry is cleared wherever the
+   * disk cache is invalidated so the `@extends` dependency-invalidation flow
+   * still forces a re-parse.
    */
   memo?: Map<string, ParsedComponent>;
 }
@@ -580,9 +580,11 @@ export function processComponent(
       if (hash !== undefined) {
         options.cache?.set(resolvedPath, hash, parsed);
       }
-      // Memoize fresh parses only; disk-cache hits may be invalidated later in the same run.
-      options.memo?.set(resolvedPath, parsed);
     }
+    // Both maps must share one parse: the cross-file passes resolve props in
+    // place. A disk-cache hit that is invalidated later in the run is dropped
+    // from the memo before it's reparsed.
+    options.memo?.set(resolvedPath, parsed);
 
     return {
       moduleName,
