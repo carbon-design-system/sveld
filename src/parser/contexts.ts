@@ -6,6 +6,7 @@ import type { ParserContext } from "./context";
 import { recordDiagnostic } from "./diagnostics";
 import { parseObjectTypeLiteralMembers } from "./object-type-literal";
 import { resolveConstInitializer } from "./props";
+import { isBoundInNestedScope } from "./scopes";
 import { sourceForExpression, sourceRangeFromNode } from "./source-position";
 
 /**
@@ -319,7 +320,11 @@ function resolveContextKey(ctx: ParserContext, keyArg: unknown, depth = 0): Cont
       return resolveContextKey(ctx, init, depth + 1);
     }
 
-    const importBinding = ctx.valueImportBindingsByLocalName.get(node.name);
+    // A parameter or nested declaration by the same name hides the import.
+    const importBinding =
+      depth === 0 && isBoundInNestedScope(ctx, node.name)
+        ? undefined
+        : ctx.valueImportBindingsByLocalName.get(node.name);
     if (importBinding) {
       return { kind: "pending", importSource: importBinding.source, importedName: importBinding.importedName };
     }

@@ -29,6 +29,27 @@ export function resolveIdentifierToReactiveProp(ctx: ParserContext, name: string
   return undefined;
 }
 
+/**
+ * True when `name` is bound by a function, block, or template scope around the
+ * current walk position, so it isn't the script's top-level binding of that
+ * name (an import, say): `function register(KEY) { setContext(KEY, ...) }`.
+ */
+export function isBoundInNestedScope(ctx: ParserContext, name: string): boolean {
+  for (let i = ctx.activeScopes.length - 1; i >= 0; i -= 1) {
+    const scope = ctx.activeScopes[i];
+    if (scope === ctx.componentScope) return false;
+    if (scope?.has(name)) return true;
+  }
+  return false;
+}
+
+/** {@link isBoundInNestedScope} for the identifier a callee starts with (`helper`, or `h` in `h.fn`). */
+export function isCalleeBoundInNestedScope(ctx: ParserContext, callee: unknown): boolean {
+  let node = callee as { type?: string; name?: string; object?: unknown } | undefined;
+  while (node?.type === "MemberExpression") node = node.object as typeof node;
+  return node?.type === "Identifier" && typeof node.name === "string" && isBoundInNestedScope(ctx, node.name);
+}
+
 /** Collects all identifier names bound by a destructuring/assignment pattern (or plain expression). */
 export function collectPatternIdentifiers(
   target: Pattern | Expression | null | undefined,
