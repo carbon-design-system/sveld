@@ -237,15 +237,25 @@ function extractType(lines: CommentLine[], fromIndex: number): { type: string; e
   if (lines[start].content[0] !== "{") return null;
 
   let depth = 0;
+  // Braces inside a string literal type (`{"}"}`, `{{ "a}": string }}`) don't count.
+  let quote: string | undefined;
+  let escaped = false;
   const consumedPerLine: number[] = [];
   let i = start;
   for (; i < lines.length; i++) {
     const content = lines[i].content;
     let consumed = 0;
     for (const ch of content) {
-      if (ch === "{") depth++;
-      else if (ch === "}") depth--;
       consumed++;
+      if (quote !== undefined) {
+        if (escaped) escaped = false;
+        else if (ch === "\\") escaped = true;
+        else if (ch === quote) quote = undefined;
+        continue;
+      }
+      if (ch === '"' || ch === "'" || ch === "`") quote = ch;
+      else if (ch === "{") depth++;
+      else if (ch === "}") depth--;
       if (depth === 0) break;
     }
     consumedPerLine.push(consumed);

@@ -1,0 +1,60 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 13,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "config",
+      "kind": "let",
+      "type": "Config",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 11,
+          "column": 2
+        },
+        "end": {
+          "line": 11,
+          "column": 20
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{\n  /** Key with a closing brace. */\n  weird: { \"a}\": string };\n  /** Template literal type. */\n  prefixed: `x-${string}`;\n  /** Open brace literal. */\n  brace: \"{\";\n  /** Escaped quote before a brace. */\n  escaped: '\\'}';\n}",
+      "name": "Config",
+      "ts": "type Config = {\n  /** Key with a closing brace. */\n  weird: { \"a}\": string };\n  /** Template literal type. */\n  prefixed: `x-${string}`;\n  /** Open brace literal. */\n  brace: \"{\";\n  /** Escaped quote before a brace. */\n  escaped: '\\'}';\n};",
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 5
+        },
+        "end": {
+          "line": 3,
+          "column": 29
+        }
+      }
+    }
+  ],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
