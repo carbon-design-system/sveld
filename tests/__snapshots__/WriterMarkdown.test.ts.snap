@@ -71,13 +71,13 @@ exports[`WriterMarkdown defines the component's type parameters for generic comp
 
 ## \`DataTable\`
 
-**Type parameters:** <code><Row extends DataTableRow = DataTableRow></code>
+**Type parameters:** <code>&lt;Row extends DataTableRow = DataTableRow></code>
 
 ### Props
 
 | Prop name | Required | Kind | Reactive | Binding | Type | Default value | Description |
 | :- | :- | :- | :- | :- | :- | :- | :- |
-| rows | Yes | <code>let</code> | No | -- | <code>ReadonlyArray<Row></code> | -- | -- |
+| rows | Yes | <code>let</code> | No | -- | <code>ReadonlyArray&lt;Row></code> | -- | -- |
 
 ### Slots
 

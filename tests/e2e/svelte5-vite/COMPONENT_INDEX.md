@@ -50,7 +50,7 @@ None.
 
 ## `RunesGenericList`
 
-**Type parameters:** <code><Item extends { id: string &#124; number } = { id: string }></code>
+**Type parameters:** <code>&lt;Item extends { id: string &#124; number } = { id: string }></code>
 
 ### Props
 

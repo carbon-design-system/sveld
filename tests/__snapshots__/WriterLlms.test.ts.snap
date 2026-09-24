@@ -40,7 +40,7 @@ exports[`renderLlmsDocuments llms-full.txt renders per-component Props/Bindings/
 
 ## DataTable
 
-Type parameters: <code><Row extends DataTableRow></code>
+Type parameters: <code>&lt;Row extends DataTableRow></code>
 
 A table for displaying rows of data.
 
