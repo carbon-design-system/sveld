@@ -30,6 +30,8 @@ const PRESERVED_SNIPPET_IMPORT_REGEX = /import\s+type\s+[^;]*\bSnippet\b[^;]*fro
 const REGEX_METACHARS = /[.*+?^${}()|[\]\\]/g;
 const LEADING_CONST_MODIFIER_REGEX = /^const\s+/;
 const NAME_PLACEHOLDER_REGEX = /\{name\}/g;
+const LEADING_EXPORT_REGEX = /^export /;
+const NON_IDENTIFIER_CHAR_REGEX = /[^\w$]/g;
 
 /**
  * How much JSDoc to emit, threaded as a plain parameter (not a module-level
@@ -1093,7 +1095,10 @@ function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">, commentLe
   const reExports = genModuleReExports(def, commentLevel);
   const declarations = def.moduleExports
     .filter((prop) => prop.kind !== "re-export")
-    .map((prop) => {
+    .map((exported) => {
+      // `export { a as "some-name" }`: declare under a private identifier, then export it by the string name.
+      const quoted = !IDENTIFIER_REGEX.test(exported.name);
+      const prop = quoted ? { ...exported, name: privateExportName(exported.name) } : exported;
       const prop_comments = createPropComment(prop.description, prop.deprecated, prop.tags, commentLevel);
 
       let type_def: string;
@@ -1152,12 +1157,21 @@ function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">, commentLe
         type_def = `export type ${prop.name} = ${prop.type || ANY_TYPE};`;
       }
 
+      if (quoted) {
+        type_def = `${type_def.replace(LEADING_EXPORT_REGEX, "").trimEnd()}\nexport { ${prop.name} as ${JSON.stringify(exported.name)} };`;
+      }
+
       return `
       ${wrapCommentInJSDoc(prop_comments)}
       ${type_def}`;
     })
     .join("\n");
   return [reExports, declarations].filter(Boolean).join("\n\n");
+}
+
+/** A module-private identifier for a string-named export (`"some-name"` -> `__export_some_name`). */
+function privateExportName(name: string): string {
+  return `__export_${name.replace(NON_IDENTIFIER_CHAR_REGEX, "_")}`;
 }
 
 const COMPONENT_SHELL_INLINE_WIDTH = 120;
