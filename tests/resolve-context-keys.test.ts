@@ -287,6 +287,47 @@ describe("cross-file setContext key resolution", () => {
     expect(component?.contexts?.[0]?.key).toBe("simple-modal");
   });
 
+  test("resolves imported Symbol(), `as const`, and `satisfies` keys like local ones", async () => {
+    writeFileSync(
+      path.join(dir, "keys.ts"),
+      [
+        'export const THEME = Symbol("theme");',
+        'export const REGISTRY = Symbol.for("registry");',
+        "export const UNNAMED = Symbol();",
+        'export const TABS = "tabs" as const;',
+        'export const FORM = "form" satisfies string;',
+        "",
+      ].join("\n"),
+    );
+    writeFileSync(
+      path.join(dir, "Keys.svelte"),
+      `<script>
+  import { setContext } from "svelte";
+  import { THEME, REGISTRY, UNNAMED, TABS, FORM } from "./keys";
+
+  setContext(THEME, { a: 1 });
+  setContext(REGISTRY, { a: 1 });
+  setContext(UNNAMED, { a: 1 });
+  setContext(TABS, { a: 1 });
+  setContext(FORM, { a: 1 });
+</script>
+`,
+    );
+    writeFileSync(path.join(dir, "index.js"), `export { default as Keys } from "./Keys.svelte";\n`);
+
+    const result = await generateBundle(path.join(dir, "index.js"), true);
+    const component = byModuleName(result.allComponentsForTypes, "Keys");
+
+    expect(component?.contexts?.map((context) => context.key)).toEqual([
+      "theme",
+      "registry",
+      "UNNAMED",
+      "tabs",
+      "form",
+    ]);
+    expect(component?.diagnostics ?? []).toEqual([]);
+  });
+
   test("local const resolves without an import", async () => {
     writeFileSync(
       path.join(dir, "Modal.svelte"),

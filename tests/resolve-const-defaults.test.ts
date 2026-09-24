@@ -243,6 +243,44 @@ describe("cross-file imported-constant prop-default resolution", () => {
     expect(await valuesInOrder(["Two", "One"])).toEqual(["1", "1"]);
   });
 
+  test("reads `as const` and `satisfies` initializers, and types the prop from a portable declared type", async () => {
+    writeFileSync(
+      path.join(dir, "typed.ts"),
+      [
+        'export type Size = "sm" | "md";',
+        'export const CAST = "x" as const;',
+        'export const CHECKED = "y" satisfies string;',
+        'export const ANNOTATED: "sm" | "md" = "md";',
+        'export const NAMED: Size = "sm";',
+        '/** @type {"a" | "b"} */',
+        'export const JSDOC = "a";',
+        "",
+      ].join("\n"),
+    );
+
+    const component = await parseComponent(
+      "Typed",
+      `<script>
+  import { CAST, CHECKED, ANNOTATED, NAMED, JSDOC } from "./typed";
+  export let cast = CAST;
+  export let checked = CHECKED;
+  export let annotated = ANNOTATED;
+  export let named = NAMED;
+  export let jsdoc = JSDOC;
+</script>
+`,
+    );
+
+    expect(component?.props.map((prop) => [prop.name, prop.value, prop.type, prop.typeSource])).toEqual([
+      ["cast", '"x"', "string", "default"],
+      ["checked", '"y"', "string", "default"],
+      ["annotated", '"md"', '"sm" | "md"', "typescript"],
+      // `Size` isn't in scope in the component's .d.ts.
+      ["named", '"sm"', "string", "default"],
+      ["jsdoc", '"a"', '"a" | "b"', "jsdoc"],
+    ]);
+  });
+
   test("reads a module with `</script>` in a string or a `#!` first line", async () => {
     writeFileSync(path.join(dir, "html.js"), 'export const SNIPPET = "<script>alert(1)</script>";\n');
     writeFileSync(path.join(dir, "cli.js"), "#!/usr/bin/env node\nexport const DELAY = 300;\n");
