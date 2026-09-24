@@ -984,11 +984,12 @@ function applyCallDefaultResolutions(component: ComponentDocApi, resolutions: Ca
 
 /**
  * Swap the imported identifier for its literal in `value`/`defaultValue`,
- * matching a same-file `const`. Type the prop from the literal only when
- * nothing more explicit won, and drop the parse-time `prop-unknown-type`.
+ * matching a same-file `const`. Type the prop from the const's declared
+ * type, else the literal, only when nothing more explicit won, and drop the
+ * parse-time `prop-unknown-type`.
  */
 function applyConstDefaultResolutions(component: ComponentDocApi, resolutions: ConstDefaultResolution[]): void {
-  for (const { candidate, literal } of resolutions) {
+  for (const { candidate, literal, declaredType } of resolutions) {
     if (!literal) continue;
     const list = candidate.location === "props" ? component.props : component.moduleExports;
     const prop = list.find((entry) => entry.name === candidate.propName);
@@ -998,8 +999,8 @@ function applyConstDefaultResolutions(component: ComponentDocApi, resolutions: C
     prop.defaultValue = { raw: literal.raw, kind: "literal", value: literal.value };
     if (prop.typeSource !== "unknown") continue;
 
-    prop.type = literal.type;
-    prop.typeSource = "default";
+    prop.type = declaredType?.type ?? literal.type;
+    prop.typeSource = declaredType?.source ?? "default";
     if (candidate.location === "props") {
       component.diagnostics = (component.diagnostics ?? []).filter(
         (diagnostic) => !(diagnostic.kind === "prop-unknown-type" && diagnostic.name === candidate.propName),
@@ -1022,7 +1023,7 @@ function applyContextKeyResolutions(component: ComponentDocApi, resolutions: Con
           component: component.filePath,
           kind: "context-key-unresolved",
           name: candidate.importedName,
-          message: `setContext key \`${candidate.importedName}\` from "${candidate.importSource}" isn't an \`export const\` string sveld can read; the context is skipped.`,
+          message: `setContext key \`${candidate.importedName}\` from "${candidate.importSource}" isn't an \`export const\` string or Symbol() sveld can read; the context is skipped.`,
           ...(candidate.source ? { source: candidate.source } : {}),
         }),
       ];

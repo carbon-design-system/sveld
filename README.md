@@ -435,7 +435,7 @@ Every diagnostic carries a stable, namespaced `code` (`"sveld/<kind>"`) alongsid
 | `sveld/syntax-skipped` | `error` | Rewrite the flagged syntax in a form sveld can model (see the diagnostic's `message` for what was skipped). |
 | `sveld/rest-props-unresolved` | `warning` | Spread `$$restProps` onto a plain element (or `svelte:element`) instead of a component, or add an `@restProps` tag to type it manually. |
 | `sveld/context-duplicate-key` | `warning` | Remove the duplicate `setContext` call, or give it a distinct key; only the first call's shape is used. |
-| `sveld/context-key-unresolved` | `warning` | Use a string literal, a `const`-bound string, `Symbol()`, or a string `export const` imported from a relative module as the `setContext` key; otherwise the context is left out of every output. |
+| `sveld/context-key-unresolved` | `warning` | Use a string literal, a `const`-bound string, `Symbol()`, or a string or `Symbol()` `export const` imported from a relative module as the `setContext` key; otherwise the context is left out of every output. |
 | `sveld/context-value-unresolved` | `warning` | Pass an object literal or a typed variable as the `setContext` value (e.g. `const store = writable(0);` with a `@type` annotation, or `{ store }`); a call or other expression has no shape sveld can describe, so the context is left out of every output. |
 | `sveld/spread-unresolved` | `warning` | Spread a local object literal or a variable with a resolvable type instead; otherwise the spread widens the generated type to `Record<string, any>`. |
 | `sveld/export-unresolved` | `warning` | Export a local declaration directly. Instance-script exports are props, so move a re-export (`export { x } from "..."`, or `export { x }` of an import) into `<script context="module">`, where sveld writes it to the `.d.ts` as-is. Exported classes aren't documented; export them from a separate `.js`/`.ts` module instead. |
@@ -3880,7 +3880,7 @@ There are several ways to type contexts:
 
 #### Notes
 
-- Context keys must be statically resolvable: a string literal, a static template literal, a `const`-bound string (local or an imported `export const`), or a `Symbol()` / `Symbol.for()` call with a static description. Dynamic expressions (runtime identifiers, template interpolation, other function calls) are skipped with a `sveld/context-key-unresolved` diagnostic.
+- Context keys must be statically resolvable: a string literal, a static template literal, a `const`-bound string, or a `Symbol()` / `Symbol.for()` call with a static description, either local or an imported `export const`. Dynamic expressions (runtime identifiers, template interpolation, other function calls) are skipped with a `sveld/context-key-unresolved` diagnostic.
 - Variables passed to `setContext` should have JSDoc `@type` annotations for accurate types
 - The value must be an object literal or a variable. Any other expression (such as `setContext("store", writable(0))`) is skipped with a `sveld/context-value-unresolved` diagnostic.
 - The generated type name follows the pattern: `{PascalCase}Context`. Separators (underscores and any character that can't appear in an identifier, such as hyphens, dots, colons, slashes, `@`, and spaces) are stripped and each segment is capitalized. A name starting with a digit gets a leading `_`:

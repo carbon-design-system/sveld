@@ -3,6 +3,7 @@ import type { PendingConstDefaultCandidate } from "./ComponentParser";
 import {
   collectModuleExports,
   findModuleExport,
+  type InternalExport,
   type PrimitiveLiteral,
   type ResolveContext,
   resolveModuleFile,
@@ -12,6 +13,8 @@ export interface ConstDefaultResolution {
   candidate: PendingConstDefaultCandidate;
   /** Present on success. */
   literal?: PrimitiveLiteral;
+  /** The const's own type annotation or JSDoc `@type`, when it can be copied into another file. */
+  declaredType?: InternalExport["declaredType"];
 }
 
 /**
@@ -34,6 +37,6 @@ export function resolveConstDefaultCandidates(
     const match = findModuleExport(collectModuleExports(resolvedFile, ctx), candidate.importedName);
     if (!match?.primitiveLiteral) return { candidate };
 
-    return { candidate, literal: match.primitiveLiteral };
+    return { candidate, literal: match.primitiveLiteral, declaredType: match.declaredType };
   });
 }

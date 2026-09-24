@@ -1,10 +1,11 @@
 import { lstatSync, readFileSync } from "node:fs";
 import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
-import { isIdentifier, resolveStaticStringLiteral } from "./ast-guards";
+import { isIdentifier, resolveStaticStringLiteral, unwrapTypeCastExpression } from "./ast-guards";
 import type { DeprecatedValue, JsDocPassthroughTag } from "./ComponentParser";
 import { directoryEntry, directoryHasEntry, typeScriptCounterpart } from "./fs-listing";
 import { warn } from "./logger";
-import { extractJsDocDeprecatedAndTags, extractJsDocReturnType } from "./parser/jsdoc";
+import { parseComments } from "./parser/comment-parser";
+import { extractJsDocDeprecatedAndTags, extractJsDocReturnType, getCommentTags } from "./parser/jsdoc";
 import { compareText } from "./parser/utils";
 import { getParserStack, loadParserStack } from "./parser-stack";
 import { normalizeSeparators } from "./path";
@@ -65,6 +66,13 @@ export interface InternalExport extends Omit<EntryExport, "source"> {
    * template). `resolve-const-defaults.ts` writes it as an imported prop default.
    */
   primitiveLiteral?: PrimitiveLiteral;
+  /**
+   * A `const`'s TypeScript annotation or JSDoc `@type`, when it names no
+   * types that would be out of scope in another file (`"a" | "b"`, not
+   * `Size`). `resolve-const-defaults.ts` types an imported prop default with
+   * it, as a same-file `const` would be.
+   */
+  declaredType?: { type: string; source: "typescript" | "jsdoc" };
   /**
    * The function a function-valued export is declared as (`export function`,
    * or a `const` arrow/function expression). `resolve-dispatch-escapes.ts`
@@ -271,6 +279,68 @@ function primitiveLiteralOf(source: ModuleSource, init: AstNode): PrimitiveLiter
   return templateValue === null ? undefined : { raw, value: templateValue, type: "string" };
 }
 
+/**
+ * The context key a `Symbol("theme")` / `Symbol.for("theme")` initializer
+ * stands for, as `setContext` with a same-file key reads it: its static
+ * description, or the binding name when it has none.
+ */
+function symbolKeyDescription(init: AstNode, bindingName: string): string | undefined {
+  if (init.type !== "CallExpression" && init.type !== "NewExpression") return undefined;
+  const callee = asNode(init.callee);
+  const isSymbol =
+    identifierName(callee) === "Symbol" ||
+    (callee?.type === "MemberExpression" &&
+      !callee.computed &&
+      identifierName(asNode(callee.object)) === "Symbol" &&
+      identifierName(asNode(callee.property)) === "for");
+  if (!isSymbol) return undefined;
+  const description = resolveStaticStringLiteral(asNodeArray(init.arguments)[0]);
+  return description || bindingName;
+}
+
+/** Type keywords that mean the same in any file. */
+const PORTABLE_TYPE_KEYWORDS = new Set([
+  "any",
+  "bigint",
+  "boolean",
+  "false",
+  "never",
+  "null",
+  "number",
+  "object",
+  "readonly",
+  "string",
+  "symbol",
+  "true",
+  "undefined",
+  "unknown",
+  "void",
+]);
+const TYPE_STRING_LITERAL_REGEX = /"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'/g;
+/** An identifier in type text that isn't an object type's property key. */
+const TYPE_NAME_REGEX = /(?<![\w$.])[A-Za-z_$][\w$]*(?![\w$]|\s*\??:)/g;
+
+/**
+ * A `const`'s declared type (TypeScript annotation first, then JSDoc
+ * `@type`), when it only uses literals and type keywords. A type naming
+ * anything else (`Size`, `import("./t").Size`) would be out of scope in
+ * the component's `.d.ts`.
+ */
+function portableDeclaredType(
+  annotation: string | undefined,
+  rawJsDoc: string | undefined,
+): InternalExport["declaredType"] {
+  const jsDocType = rawJsDoc ? getCommentTags(parseComments(rawJsDoc)).type?.type.trim() : undefined;
+  const declared = annotation
+    ? { type: annotation, source: "typescript" as const }
+    : jsDocType
+      ? { type: jsDocType, source: "jsdoc" as const }
+      : undefined;
+  if (!declared || declared.type.includes("`")) return undefined;
+  const names = declared.type.replace(TYPE_STRING_LITERAL_REGEX, '""').match(TYPE_NAME_REGEX) ?? [];
+  return names.every((name) => PORTABLE_TYPE_KEYWORDS.has(name)) ? declared : undefined;
+}
+
 /** Trailing return from a callable type (`() => string` → `string`). */
 function returnTypeFromCallableTypeText(type: string | undefined): string | undefined {
   if (!type) return undefined;
@@ -411,11 +481,13 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
       const name = identifierName(id);
       if (!name) continue;
 
-      let type = annotationText(source, id);
+      const annotation = annotationText(source, id);
+      let type = annotation;
       let value: string | undefined;
       let returnType: string | undefined;
       let literalValue: string | undefined;
       let primitiveLiteral: PrimitiveLiteral | undefined;
+      let declaredType: InternalExport["declaredType"];
       let functionNode: AstNode | undefined;
       const init = asNode(declarator.init);
 
@@ -431,8 +503,13 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
         } else {
           value = textOf(source, init);
           if (!type) type = inferLiteralType(init);
-          literalValue = resolveStaticStringLiteral(init) ?? undefined;
-          if (kind === "const") primitiveLiteral = primitiveLiteralOf(source, init);
+          // `"k" as const` and `"k" satisfies string` hold the same value as `"k"`.
+          const inner = asNode(unwrapTypeCastExpression(init)) ?? init;
+          literalValue = resolveStaticStringLiteral(inner) ?? symbolKeyDescription(inner, name);
+          if (kind === "const") {
+            primitiveLiteral = primitiveLiteralOf(source, inner);
+            declaredType = portableDeclaredType(annotation, rawJsDoc);
+          }
         }
       }
 
@@ -444,6 +521,7 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
         returnType,
         literalValue,
         primitiveLiteral,
+        declaredType,
         functionNode,
         description,
         deprecated,
@@ -788,12 +866,13 @@ export async function parseEntryExports(entryFile: string): Promise<EntryExports
   // Entries sharing a name are one declaration's overloads; the last (the
   // implementation signature) wins.
   for (const entry of [...collected, ...ambiguous]) {
-    // Drop internal returnType/literalValue/primitiveLiteral/functionNode; public EntryExport does not expose them.
+    // Drop internal returnType/literalValue/primitiveLiteral/declaredType/functionNode; public EntryExport does not expose them.
     const {
       declFile,
       returnType: _returnType,
       literalValue: _literalValue,
       primitiveLiteral: _primitiveLiteral,
+      declaredType: _declaredType,
       functionNode: _functionNode,
       ...rest
     } = entry;
