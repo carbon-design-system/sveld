@@ -698,8 +698,8 @@ function parseModule(filePath: string): { source: ModuleSource; body: AstNode[] 
 }
 
 /**
- * The import that binds `name`: `importedName` is the export it reads, or
- * `*` for a namespace import.
+ * The import that binds `name`: `importedName` is the export it reads,
+ * `default` for a default import, or `*` for a namespace import.
  */
 function findImportSource(
   body: AstNode[],
@@ -713,6 +713,9 @@ function findImportSource(
     for (const specifier of asNodeArray(node.specifiers)) {
       if (identifierName(asNode(specifier.local)) !== name) continue;
       const isTypeOnly = node.importKind === "type" || specifier.importKind === "type";
+      if (specifier.type === "ImportDefaultSpecifier") {
+        return { specifier: specifierValue, importedName: "default", isTypeOnly };
+      }
       if (specifier.type === "ImportNamespaceSpecifier") {
         return { specifier: specifierValue, importedName: "*", isTypeOnly };
       }
@@ -831,9 +834,7 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
       if (specifier.type !== "ExportSpecifier") continue;
       const exportedName = identifierName(asNode(specifier.exported));
       const localName = identifierName(asNode(specifier.local));
-      if (!exportedName || !localName || localName === "default") continue;
-      // `export { impl as default }` of a local binding; a re-exported default isn't followed.
-      if (exportedName === "default" && moduleSpecifier) continue;
+      if (!exportedName || !localName) continue;
 
       const elementIsTypeOnly = stmtIsTypeOnly || specifier.exportKind === "type";
 
@@ -851,7 +852,9 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
 
       if (resolved) {
         results.push({ ...resolved, name: exportedName, isTypeOnly: resolved.isTypeOnly || elementIsTypeOnly });
-      } else {
+      } else if (localName !== "default") {
+        // A default export sveld doesn't read (an object literal, a class, a
+        // component behind a nested barrel) isn't listed as a `const`.
         results.push({
           name: exportedName,
           kind: elementIsTypeOnly ? "type" : "const",
