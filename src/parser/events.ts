@@ -4,7 +4,7 @@ import type ComponentParser from "../ComponentParser";
 import type { DispatchedEvent, SerializedComponentEvent } from "../ComponentParser";
 import type { ParserContext } from "./context";
 import { sourceRangeFromNode } from "./source-position";
-import { assignValueOrUndefined, escapeCommentText } from "./utils";
+import { assignValueOrUndefined, compareText, escapeCommentText } from "./utils";
 
 const NEWLINES_REGEX = /\n/g;
 
@@ -82,18 +82,18 @@ export function findDispatcherArgument(
 
 /** Event order in every output: by name, then dispatched before forwarded, then by element and detail. */
 export function compareSerializedEvents(a: SerializedComponentEvent, b: SerializedComponentEvent): number {
-  const nameCompare = a.name.localeCompare(b.name);
+  const nameCompare = compareText(a.name, b.name);
   if (nameCompare !== 0) return nameCompare;
 
-  const typeCompare = a.type.localeCompare(b.type);
+  const typeCompare = compareText(a.type, b.type);
   if (typeCompare !== 0) return typeCompare;
 
   if (a.type === "forwarded" && b.type === "forwarded") {
-    const elementCompare = a.element.localeCompare(b.element);
+    const elementCompare = compareText(a.element, b.element);
     if (elementCompare !== 0) return elementCompare;
   }
 
-  return (a.detail ?? "").localeCompare(b.detail ?? "");
+  return compareText(a.detail ?? "", b.detail ?? "");
 }
 
 export function literalDetailToTypeText(value: unknown): string {

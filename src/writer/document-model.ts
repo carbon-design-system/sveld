@@ -1,5 +1,6 @@
 import { name as packageName, version as packageVersion } from "../../package.json";
 import type { EntryExports } from "../parse-entry-exports";
+import { compareText } from "../parser/utils";
 import type { ComponentDocApi, ComponentDocs } from "../plugin";
 import { VERSION as svelteVersion } from "../svelte-version";
 
@@ -89,7 +90,7 @@ export function buildComponentApiDocument(
     // `diagnostics` is for the Node API only; rendered output skips it.
     const { diagnostics: _diagnostics, ...rest } = component;
     return excludeInternalMembers(rest as ComponentDocApi);
-  }).sort((a, b) => a.moduleName.localeCompare(b.moduleName));
+  }).sort((a, b) => compareText(a.moduleName, b.moduleName));
 
   const document: ComponentApiDocument = {
     schemaVersion: COMPONENT_API_SCHEMA_VERSION,
