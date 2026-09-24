@@ -264,12 +264,16 @@ export interface LocalTypeDeclaration {
   code: string;
   node: ModernRunesTypeNode;
   start: number;
+  /** Exported from the module script, so the `.d.ts` exports it too. */
+  exported?: boolean;
 }
 
 export interface ParsedComponentTypeScriptMetadata {
   canonicalPropsType?: string;
   canonicalPropNames: string[];
   localTypeDeclarations: string[];
+  /** Types the module script exports (`export interface Item`), emitted with `export`. */
+  moduleTypeDeclarations?: string[];
   typeImportStatements: string[];
   /**
    * Whether `canonicalPropsType` mentions one of the component's own
@@ -1433,7 +1437,8 @@ export default class ComponentParser {
                 addModuleDeclarationExports(node, resolved.declaration, resolved);
               } else if (reExport) {
                 addModuleReExport(node, resolved.exportedName, reExport);
-              } else {
+              } else if (!this.ctx.localTypeDeclarationsByName.get(resolved.localName)?.exported) {
+                // A type exported this way is emitted with the module's other types.
                 this.recordUnresolvedExportSpecifier(node, resolved.localName, resolved.exportedName);
               }
             }

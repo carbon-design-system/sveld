@@ -459,6 +459,16 @@ export function buildTypeScriptMetadata(ctx: ParserContext): ParsedComponentType
     collectReferencedTypeDependencies(ctx, typeNode, referencedImportedTypes, referencedLocalTypes);
   }
 
+  // A type the module script exports is part of the component's module API,
+  // so it's emitted (exported) whether or not a prop references it.
+  const exportedModuleTypes = Array.from(ctx.localTypeDeclarationsByName.values())
+    .filter((declaration) => declaration.exported)
+    .sort((a, b) => a.start - b.start);
+  for (const declaration of exportedModuleTypes) {
+    collectReferencedTypeDependencies(ctx, declaration.node, referencedImportedTypes, referencedLocalTypes);
+  }
+  const moduleTypeDeclarations = exportedModuleTypes.map((declaration) => `export ${declaration.code}`);
+
   const typedDeclaration =
     ctx.typedRunesPropsDeclarations.length === 1 ? ctx.typedRunesPropsDeclarations[0] : undefined;
   const canonicalType = typedDeclaration?.canonicalType;
@@ -467,7 +477,12 @@ export function buildTypeScriptMetadata(ctx: ParserContext): ParsedComponentType
     for (const name of typedDeclaration.referencedLocalTypes) referencedLocalTypes.add(name);
   }
 
-  if (!canonicalType && referencedImportedTypes.size === 0 && referencedLocalTypes.size === 0) {
+  if (
+    !canonicalType &&
+    referencedImportedTypes.size === 0 &&
+    referencedLocalTypes.size === 0 &&
+    moduleTypeDeclarations.length === 0
+  ) {
     return hasPendingCrossFileCandidates
       ? { canonicalPropNames: [], localTypeDeclarations: [], typeImportStatements: [], ...pendingCrossFileCandidates }
       : undefined;
@@ -475,7 +490,7 @@ export function buildTypeScriptMetadata(ctx: ParserContext): ParsedComponentType
 
   const localTypeDeclarations = Array.from(referencedLocalTypes)
     .map((typeName) => ctx.localTypeDeclarationsByName.get(typeName))
-    .filter((declaration): declaration is LocalTypeDeclaration => declaration !== undefined)
+    .filter((declaration): declaration is LocalTypeDeclaration => declaration !== undefined && !declaration.exported)
     .sort((a, b) => a.start - b.start)
     .map((declaration) => declaration.code);
 
@@ -483,6 +498,7 @@ export function buildTypeScriptMetadata(ctx: ParserContext): ParsedComponentType
     ...(canonicalType ? { canonicalPropsType: canonicalType } : {}),
     canonicalPropNames: typedDeclaration && canonicalType ? Array.from(typedDeclaration.props.keys()).sort() : [],
     localTypeDeclarations,
+    ...(moduleTypeDeclarations.length > 0 ? { moduleTypeDeclarations } : {}),
     typeImportStatements: buildTypeImportStatements(ctx, referencedImportedTypes),
     referencesComponentGenerics: canonicalType ? typeTextReferencesGenerics(canonicalType, ctx.generics) : false,
     ...pendingCrossFileCandidates,

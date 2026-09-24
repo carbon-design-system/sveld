@@ -1057,7 +1057,7 @@ typesOptions: {
 
 Any key left out defaults to `true`.
 
-`<script context="module">` exports (`export declare const` / `export declare function`) are real runtime exports and are always emitted as exports, regardless of `exportTypes`.
+`<script context="module">` exports (`export declare const` / `export declare function`) are real runtime exports and are always emitted as exports, regardless of `exportTypes`. So are the types a module script exports (`export interface Item`, `export type Mode`, `export type { Local }`), since they're part of the component module's API.
 
 One exception: when a bundled component uses [`@extendProps`](#extendprops) to extend another bundled component, sveld emits `import type { ButtonProps } from "./Button.svelte"` in the extending component's `.d.ts`. If `Button`'s props type stopped being exported, that import would break — so sveld always keeps a component's props type exported when another component in the same run extends it, even under `exportTypes: false`.
 
