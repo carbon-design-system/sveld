@@ -37,6 +37,53 @@ export function collectValueImportBindings(ctx: ParserContext, node: ImportDecla
   }
 }
 
+/**
+ * The imported function a call's callee names, for following a dispatcher
+ * into it: a named import (`helper`), a default import (`helper`, read as the
+ * module's `default` export), or a namespace member (`h.helper`). `roots` are
+ * the component's scripts, searched for the default and namespace imports
+ * {@link collectValueImportBindings} doesn't record.
+ */
+export function importedCalleeBinding(
+  ctx: ParserContext,
+  callee: unknown,
+  roots: Array<Node | undefined>,
+): { source: string; importedName: string } | undefined {
+  const node = callee as { type?: string; name?: string; computed?: boolean; object?: unknown; property?: unknown };
+  const objectName = node.type === "MemberExpression" && !node.computed ? identifierName(node.object) : undefined;
+  const propertyName = objectName === undefined ? undefined : identifierName(node.property);
+  const localName = node.type === "Identifier" ? node.name : objectName;
+  if (!localName) return undefined;
+
+  if (node.type === "Identifier") {
+    const named = ctx.valueImportBindingsByLocalName.get(localName);
+    if (named) return named;
+  }
+
+  for (const root of roots) {
+    for (const statement of (root ? scriptBody(root) : undefined) ?? []) {
+      const declaration = statement as ImportDeclarationNode;
+      const source = declaration.source?.value;
+      if (declaration.type !== "ImportDeclaration" || declaration.importKind === "type" || typeof source !== "string") {
+        continue;
+      }
+      const specifier = declaration.specifiers?.find((candidate) => candidate.local?.name === localName);
+      if (specifier?.type === "ImportDefaultSpecifier" && node.type === "Identifier") {
+        return { source, importedName: "default" };
+      }
+      if (specifier?.type === "ImportNamespaceSpecifier" && propertyName) {
+        return { source, importedName: propertyName };
+      }
+    }
+  }
+  return undefined;
+}
+
+function identifierName(node: unknown): string | undefined {
+  const identifier = node as { type?: string; name?: string } | null | undefined;
+  return identifier?.type === "Identifier" ? identifier.name : undefined;
+}
+
 /** Top-level statements of a script root (`Program.body`, or the script's `content.body`). */
 export function scriptBody(root: Node): unknown[] | undefined {
   const program = root as unknown as { type?: string; body?: unknown[]; content?: { body?: unknown[] } };

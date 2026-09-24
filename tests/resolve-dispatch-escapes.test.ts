@@ -127,6 +127,54 @@ export function createSelectHandler(options) {
     }
   });
 
+  test("follows default-imported and namespace-imported helpers", async () => {
+    writeFileSync(path.join(dir, "declared.js"), `export default function track(dispatch) { dispatch("declared"); }\n`);
+    writeFileSync(path.join(dir, "arrow.js"), `export default (dispatch) => dispatch("arrow");\n`);
+    writeFileSync(path.join(dir, "named.js"), `function impl(dispatch) { dispatch("named"); }\nexport default impl;\n`);
+    writeFileSync(
+      path.join(dir, "aliased.js"),
+      `function impl(dispatch) { dispatch("aliased"); }\nexport { impl as default };\n`,
+    );
+    writeFileSync(path.join(dir, "ns.js"), `export function open(dispatch) { dispatch("namespaced"); }\n`);
+
+    const result = await bundleMenu(`  import { createEventDispatcher } from "svelte";
+  import declared from "./declared.js";
+  import arrow from "./arrow.js";
+  import named from "./named.js";
+  import aliased from "./aliased.js";
+  import * as ns from "./ns.js";
+
+  const dispatch = createEventDispatcher();
+  declared(dispatch);
+  arrow(dispatch);
+  named(dispatch);
+  aliased(dispatch);
+  ns.open(dispatch);`);
+
+    expect(byModuleName(result.components, "Menu")?.events.map((event) => event.name)).toEqual([
+      "aliased",
+      "arrow",
+      "declared",
+      "named",
+      "namespaced",
+    ]);
+    expect(result.diagnostics).toEqual([]);
+  });
+
+  test("names a default export that isn't a function in its diagnostic", async () => {
+    writeFileSync(path.join(dir, "config.js"), "export default { retries: 3 };\n");
+
+    const result = await bundleMenu(`  import { createEventDispatcher } from "svelte";
+  import config from "./config.js";
+
+  const dispatch = createEventDispatcher();
+  config(dispatch);`);
+
+    expect(result.diagnostics.map((diagnostic) => diagnostic.message)).toEqual([
+      "`dispatch` is passed to `config`, but sveld couldn't read the events it dispatches: the default export isn't a function declared in \"./config.js\". Document them with @event tags.",
+    ]);
+  });
+
   test("still reports an @event that neither the component nor the helper dispatches", async () => {
     writeFileSync(path.join(dir, "notify.js"), `export function notify(dispatch) { dispatch("open"); }\n`);
 

@@ -3014,7 +3014,7 @@ In Svelte 5 runes components, callback props like `onclick` are props, not event
 
 Use `null` as the value if no event detail is provided.
 
-`sveld` infers events from `dispatch("name")` calls. When the dispatcher is passed to a function imported from a local module, as `helper(dispatch)` or `helper({ dispatch })`, it reads that function too and picks up the events it dispatches:
+`sveld` infers events from `dispatch("name")` calls. When the dispatcher is passed to a function imported from a local module, as `helper(dispatch)` or `helper({ dispatch })` (a named or default import) or `helpers.open(dispatch)` (a namespace import), it reads that function too and picks up the events it dispatches:
 
 ```js
 // dispatch-open-close.js

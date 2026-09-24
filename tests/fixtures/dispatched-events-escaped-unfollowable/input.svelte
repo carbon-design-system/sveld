@@ -4,7 +4,7 @@
    * @event {null} open
    */
   import { createEventDispatcher } from "svelte";
-  import * as registry from "./registry.js";
+  import { registry } from "./registry.js";
 
   const dispatch = createEventDispatcher();
 

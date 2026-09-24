@@ -188,16 +188,17 @@ export function describeDispatchEscapeFailure(
   candidate: PendingDispatchEscapeCandidate,
   reason: DispatchEscapeFailureReason,
 ): string {
+  const helper = candidate.importedName === "default" ? "the default export" : `"${candidate.importedName}"`;
   switch (reason) {
     case "module-not-found":
       return `"${candidate.importSource}" isn't a local module sveld can read`;
     case "not-a-function":
-      return `"${candidate.importedName}" isn't a function declared in "${candidate.importSource}"`;
+      return `${helper} isn't a function declared in "${candidate.importSource}"`;
     case "parameter-not-found":
-      return `no parameter of "${candidate.importedName}" receives it`;
+      return `no parameter of ${helper} receives it`;
     case "dynamic-event-name":
       return "an event name isn't a string literal";
     case "passed-on":
-      return `"${candidate.importedName}" passes it on`;
+      return `${helper} passes it on`;
   }
 }
