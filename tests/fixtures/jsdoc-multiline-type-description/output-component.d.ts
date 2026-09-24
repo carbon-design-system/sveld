@@ -6,11 +6,11 @@ export type Header = {
    * reported regardless.
    */
   dir?: "ascending"
-  | "descending"
-  | "none";
+    | "descending"
+    | "none";
   /** Description on the line after the type. */
   prev?: "ascending"
-  | "descending";
+    | "descending";
 };
 
 /**
@@ -21,11 +21,11 @@ export type Aliased = import("svelte").ComponentProps<
   import("svelte").SvelteComponent>;
 
 export type Size = "sm"
-| "lg";
+  | "lg";
 
 export type Formatter = (value: string
-  | number) => string
-| undefined;
+    | number) => string
+  | undefined;
 
 export type JsdocMultilineTypeDescriptionProps = {
   /**
@@ -78,8 +78,8 @@ export type JsdocMultilineTypeDescriptionExports = {
    * Formats a value.
    */
   format: (value: string
-    | number) => string
-  | undefined;
+      | number) => string
+    | undefined;
 };
 
 declare const JsdocMultilineTypeDescription: Component<

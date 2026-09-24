@@ -67,6 +67,14 @@ describe("formatGeneratedTypeScript", () => {
     );
   });
 
+  test("indents a wrapped union member or member access one level past the line it continues", () => {
+    const raw =
+      'type Size = "sm"\n| "lg";\ntype A = import("svelte/elements")\n.SvelteHTMLElements["a"];\ntype P = {\ndir?: "ascending"\n| "none";\n};\ntype F = (\n...args: any[]\n) => void;';
+    expect(formatGeneratedTypeScript(raw)).toBe(
+      'type Size = "sm"\n  | "lg";\ntype A = import("svelte/elements")\n  .SvelteHTMLElements["a"];\ntype P = {\n  dir?: "ascending"\n    | "none";\n};\ntype F = (\n  ...args: any[]\n) => void;\n',
+    );
+  });
+
   test("is stable: formatting its own output again changes nothing", () => {
     const raw =
       // biome-ignore lint/suspicious/noTemplateCurlyInString: a template-literal index signature is exactly what generated .d.ts contains

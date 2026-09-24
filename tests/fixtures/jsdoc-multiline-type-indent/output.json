@@ -1,0 +1,94 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 23,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "attributes",
+      "kind": "let",
+      "description": "Attributes of the underlying anchor.",
+      "type": "import(\"svelte/elements\")\n  .SvelteHTMLElements[\"a\"]",
+      "typeSource": "jsdoc",
+      "value": "{}",
+      "defaultValue": {
+        "raw": "{}",
+        "kind": "object",
+        "value": {}
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 7,
+          "column": 2
+        },
+        "end": {
+          "line": 7,
+          "column": 29
+        }
+      }
+    },
+    {
+      "name": "size",
+      "kind": "let",
+      "type": "\"sm\"\n  | \"md\"\n  | \"lg\"",
+      "typeSource": "jsdoc",
+      "value": "\"md\"",
+      "defaultValue": {
+        "raw": "\"md\"",
+        "kind": "literal",
+        "value": "md"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 14,
+          "column": 2
+        },
+        "end": {
+          "line": 14,
+          "column": 25
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>",
+      "source": {
+        "start": {
+          "line": 21,
+          "column": 3
+        },
+        "end": {
+          "line": 21,
+          "column": 11
+        }
+      }
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}

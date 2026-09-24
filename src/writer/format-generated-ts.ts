@@ -21,10 +21,12 @@ const CH_LF = 10;
 const CH_CR = 13;
 const CH_SPACE = 32;
 const CH_DOUBLE_QUOTE = 34;
+const CH_AMPERSAND = 38;
 const CH_SINGLE_QUOTE = 39;
 const CH_OPEN_PAREN = 40;
 const CH_CLOSE_PAREN = 41;
 const CH_STAR = 42;
+const CH_DOT = 46;
 const CH_SLASH = 47;
 const CH_SEMICOLON = 59;
 const CH_LT = 60;
@@ -35,6 +37,7 @@ const CH_BACKSLASH = 92;
 const CH_CLOSE_BRACKET = 93;
 const CH_BACKTICK = 96;
 const CH_OPEN_BRACE = 123;
+const CH_PIPE = 124;
 const CH_CLOSE_BRACE = 125;
 
 function endsWithInterfaceHeader(text: string): boolean {
@@ -479,6 +482,18 @@ function containsDocClose(text: string, at: number, end: number): boolean {
 }
 
 /**
+ * Whether the line at `text[at, end)` continues the expression on the line
+ * above: a wrapped union or intersection member (`| "b"`, `& B`) or member
+ * access (`.Foo`, not a `...` spread), as a multi-line JSDoc `{type}` leaves
+ * them. These sit one level deeper than the line they continue.
+ */
+function continuesExpression(text: string, at: number, end: number): boolean {
+  const c = text.charCodeAt(at);
+  if (c === CH_PIPE || c === CH_AMPERSAND) return true;
+  return c === CH_DOT && at + 1 < end && text.charCodeAt(at + 1) !== CH_DOT;
+}
+
+/**
  * Recomputes indentation from bracket nesting depth, skipping content inside
  * block comments (JSDoc bodies may themselves contain `{`/`}`, e.g.
  * `{@link Foo}`, which must not perturb the running depth), and normalizes
@@ -552,7 +567,7 @@ function reindentAndTidy(text: string): string {
     }
 
     const closer = isCloserCode(text.charCodeAt(start));
-    const indent = Math.max(0, depth - (closer ? 1 : 0));
+    const indent = Math.max(0, depth - (closer ? 1 : 0)) + (continuesExpression(text, start, end) ? 1 : 0);
     // A blank line directly before a top-level closer is dropped. Only
     // top-level: an indented closer starts with a space, so it never
     // counted as a closer here before the indent and content were split.
