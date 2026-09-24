@@ -1,5 +1,6 @@
 import type {
   ArrowFunctionExpression,
+  ExportSpecifier,
   Expression,
   FunctionDeclaration,
   FunctionExpression,
@@ -267,6 +268,20 @@ function collectDirectBlockDeclarations(
   }
 }
 
+/**
+ * `export { local as name }` makes `local` the `name` prop, so assigning `local`
+ * marks `name` reactive. Replaces the `local` binding its declaration made, if
+ * any; one declared after the export keeps this binding (see `declareScopeBinding`).
+ */
+function declareExportSpecifierProps(ctx: ParserContext, specifiers: ExportSpecifier[]) {
+  for (const { local, exported } of specifiers) {
+    if (local.type !== "Identifier") continue;
+    const publicPropName = exported.type === "Identifier" ? exported.name : String(exported.value);
+    if (ctx.componentScope.get(local.name)?.kind === "prop") continue;
+    ctx.componentScope.set(local.name, { kind: "prop", publicPropName });
+  }
+}
+
 /** Declares all component-instance-level (`<script>`) bindings into `ctx.componentScope`. */
 function collectComponentScopeDeclarations(parser: ComponentParser, ctx: ParserContext, instance: unknown) {
   if (!instance || typeof instance !== "object") return;
@@ -312,6 +327,7 @@ function collectComponentScopeDeclarations(parser: ComponentParser, ctx: ParserC
         break;
       case "ExportNamedDeclaration":
         if (!statement.declaration || typeof statement.declaration !== "object" || !("type" in statement.declaration)) {
+          if (statement.source == null) declareExportSpecifierProps(ctx, statement.specifiers ?? []);
           break;
         }
 

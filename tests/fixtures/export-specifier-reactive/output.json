@@ -5,7 +5,7 @@
       "column": 0
     },
     "end": {
-      "line": 14,
+      "line": 24,
       "column": 0
     }
   },
@@ -13,41 +13,16 @@
   "scriptLanguage": "js",
   "props": [
     {
-      "name": "count",
-      "kind": "let",
-      "type": "number",
-      "typeSource": "default",
-      "value": "1",
-      "defaultValue": {
-        "raw": "1",
-        "kind": "literal",
-        "value": 1
-      },
-      "isFunction": false,
-      "isFunctionDeclaration": false,
-      "isRequired": false,
-      "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 6,
-          "column": 2
-        },
-        "end": {
-          "line": 6,
-          "column": 23
-        }
-      }
-    },
-    {
-      "name": "label",
+      "name": "variant",
+      "localName": "kind",
       "kind": "let",
       "type": "string",
       "typeSource": "default",
-      "value": "\"Count: \" + count",
+      "value": "\"a\"",
       "defaultValue": {
-        "raw": "\"Count: \" + count",
-        "kind": "expression"
+        "raw": "\"a\"",
+        "kind": "literal",
+        "value": "a"
       },
       "isFunction": false,
       "isFunctionDeclaration": false,
@@ -56,39 +31,66 @@
       "reactive": true,
       "source": {
         "start": {
-          "line": 10,
+          "line": 4,
           "column": 2
         },
         "end": {
-          "line": 10,
-          "column": 27
+          "line": 4,
+          "column": 35
         }
       }
     },
     {
-      "name": "shared",
-      "kind": "const",
-      "type": "string",
+      "name": "open",
+      "kind": "let",
+      "type": "boolean",
       "typeSource": "default",
-      "value": "\"s\"",
+      "value": "false",
       "defaultValue": {
-        "raw": "\"s\"",
+        "raw": "false",
         "kind": "literal",
-        "value": "s"
+        "value": false
       },
       "isFunction": false,
       "isFunctionDeclaration": false,
       "isRequired": false,
-      "constant": true,
-      "reactive": false,
+      "constant": false,
+      "reactive": true,
       "source": {
         "start": {
-          "line": 10,
+          "line": 4,
           "column": 2
         },
         "end": {
-          "line": 10,
-          "column": 27
+          "line": 4,
+          "column": 35
+        }
+      }
+    },
+    {
+      "name": "count",
+      "kind": "let",
+      "type": "number",
+      "typeSource": "default",
+      "value": "0",
+      "defaultValue": {
+        "raw": "0",
+        "kind": "literal",
+        "value": 0
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true,
+      "source": {
+        "start": {
+          "line": 9,
+          "column": 2
+        },
+        "end": {
+          "line": 9,
+          "column": 19
         }
       }
     }
