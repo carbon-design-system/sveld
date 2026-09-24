@@ -326,8 +326,11 @@ export function parseSetContextCall(ctx: ParserContext, parser: ComponentParser,
   const callSource = sourceRangeFromNode(ctx, node);
 
   if (resolution.kind === "pending") {
-    /** Properties come from the local value. The key is resolved later. */
-    const contextInfo = parseContextValue(ctx, parser, valueArg, "");
+    /**
+     * Properties come from the local value. The key is resolved later; until
+     * then the imported name labels this context in diagnostics.
+     */
+    const contextInfo = parseContextValue(ctx, parser, valueArg, resolution.importedName);
     if (contextInfo) {
       ctx.pendingContextKeyCandidates.push({
         importSource: resolution.importSource,
