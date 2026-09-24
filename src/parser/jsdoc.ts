@@ -793,6 +793,8 @@ export function parseCustomTypes(
       previousTag: JSDocTag | undefined,
     ) => {
       if (currentEventName === undefined || currentEventDescription) return;
+      // Indented lines under the `@event` are its description; they're merged in later.
+      if (currentEventTagLine !== undefined && indentedContinuationLines.has(currentEventTagLine + 1)) return;
       if (previousTag?.tag !== "event" && !EVENT_SCOPE_TAGS.has(previousTag?.tag ?? "")) return;
       if (cleanDescription(getInlineTagDescription(tagSource))) return;
       const label = name ? `@${tag} "${name}"` : `@${tag}`;
