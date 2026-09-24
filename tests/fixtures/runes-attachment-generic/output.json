@@ -15,7 +15,7 @@
     {
       "name": "measure",
       "kind": "let",
-      "description": "@generics Element",
+      "description": "@generics {Element extends HTMLElement = HTMLDivElement} Element",
       "type": "Attachment<Element>",
       "typeSource": "typescript",
       "isFunction": false,
