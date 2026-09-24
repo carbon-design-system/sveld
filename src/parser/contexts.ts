@@ -14,7 +14,7 @@ import type { ParserContext } from "./context";
 import { recordDiagnostic } from "./diagnostics";
 import { parseObjectTypeLiteralMembers } from "./object-type-literal";
 import { resolveConstInitializer } from "./props";
-import { sourceRangeFromNode } from "./source-position";
+import { sourceForExpression, sourceRangeFromNode } from "./source-position";
 
 /**
  * Resolves `{...identifier}` inside a `setContext` object literal to a property
@@ -309,9 +309,13 @@ export function parseSetContextCall(ctx: ParserContext, parser: ComponentParser,
   const resolution = resolveContextKey(ctx, keyArg);
 
   if (resolution.kind === "unresolved" || (resolution.kind === "resolved" && !resolution.key)) {
-    const location = ctx.componentFilePath ? ` in ${ctx.componentFilePath}` : "";
-    console.warn(
-      `Warning: Could not resolve setContext key${location}. Use a string literal, const-bound string, or Symbol(). Skipping context type generation.`,
+    const keySource = sourceForExpression(ctx, keyArg) ?? "";
+    recordDiagnostic(
+      ctx,
+      "context-key-unresolved",
+      keySource,
+      `setContext key \`${keySource}\` isn't a string literal, const-bound string, Symbol(), or imported \`export const\` string; the context is skipped.`,
+      sourceRangeFromNode(ctx, node),
     );
     return;
   }

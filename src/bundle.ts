@@ -1015,14 +1015,21 @@ function collectContextKeyCandidates(components: ComponentDocs): ContextKeyCandi
 
 /**
  * Append each resolved context to `component.contexts`. Unresolved keys
- * get the same warning `parseSetContextCall` prints for a local miss.
+ * get the same diagnostic `parseSetContextCall` records for a local miss.
  */
 function applyContextKeyResolutions(component: ComponentDocApi, resolutions: ContextKeyResolution[]): void {
   for (const { candidate, key } of resolutions) {
     if (!key) {
-      console.warn(
-        `Warning: Could not resolve setContext key in ${component.filePath}. Use a string literal, const-bound string, or Symbol(). Skipping context type generation.`,
-      );
+      component.diagnostics = [
+        ...(component.diagnostics ?? []),
+        createDiagnostic({
+          component: component.filePath,
+          kind: "context-key-unresolved",
+          name: candidate.importedName,
+          message: `setContext key \`${candidate.importedName}\` from "${candidate.importSource}" isn't an \`export const\` string sveld can read; the context is skipped.`,
+          ...(candidate.source ? { source: candidate.source } : {}),
+        }),
+      ];
       continue;
     }
 
