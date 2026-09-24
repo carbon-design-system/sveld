@@ -1,0 +1,126 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 27,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "label",
+      "kind": "let",
+      "type": "boolean",
+      "typeSource": "default",
+      "value": "true",
+      "defaultValue": {
+        "raw": "true",
+        "kind": "literal",
+        "value": true
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 23,
+          "column": 2
+        },
+        "end": {
+          "line": 23,
+          "column": 25
+        }
+      }
+    },
+    {
+      "name": "size",
+      "kind": "let",
+      "type": "number",
+      "typeSource": "default",
+      "value": "1",
+      "defaultValue": {
+        "raw": "1",
+        "kind": "literal",
+        "value": 1
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 23,
+          "column": 2
+        },
+        "end": {
+          "line": 23,
+          "column": 25
+        }
+      }
+    }
+  ],
+  "moduleExports": [
+    {
+      "name": "helper",
+      "kind": "function",
+      "type": "() => any",
+      "typeSource": "inferred",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 6,
+          "column": 2
+        },
+        "end": {
+          "line": 9,
+          "column": 3
+        }
+      }
+    },
+    {
+      "name": "value",
+      "kind": "const",
+      "type": "number",
+      "typeSource": "default",
+      "value": "1",
+      "defaultValue": {
+        "raw": "1",
+        "kind": "literal",
+        "value": 1
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 12,
+          "column": 2
+        },
+        "end": {
+          "line": 12,
+          "column": 19
+        }
+      }
+    }
+  ],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
