@@ -1,0 +1,190 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 37,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "variant",
+      "localName": "kind",
+      "kind": "let",
+      "type": "\"x\" | \"y\"",
+      "typeSource": "jsdoc",
+      "value": "\"x\"",
+      "defaultValue": {
+        "raw": "\"x\"",
+        "kind": "literal",
+        "value": "x"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 18,
+          "column": 2
+        },
+        "end": {
+          "line": 18,
+          "column": 35
+        }
+      }
+    },
+    {
+      "name": "size",
+      "kind": "let",
+      "description": "Size doc",
+      "type": "number",
+      "typeSource": "default",
+      "value": "1",
+      "defaultValue": {
+        "raw": "1",
+        "kind": "literal",
+        "value": 1
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 18,
+          "column": 2
+        },
+        "end": {
+          "line": 18,
+          "column": 35
+        }
+      }
+    },
+    {
+      "name": "count",
+      "kind": "let",
+      "type": "number",
+      "typeSource": "default",
+      "value": "1",
+      "defaultValue": {
+        "raw": "1",
+        "kind": "literal",
+        "value": 1
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 24,
+          "column": 2
+        },
+        "end": {
+          "line": 24,
+          "column": 26
+        }
+      }
+    },
+    {
+      "name": "title",
+      "kind": "let",
+      "type": "string",
+      "typeSource": "default",
+      "value": "\"x\"",
+      "defaultValue": {
+        "raw": "\"x\"",
+        "kind": "literal",
+        "value": "x"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 24,
+          "column": 2
+        },
+        "end": {
+          "line": 24,
+          "column": 26
+        }
+      }
+    },
+    {
+      "name": "state",
+      "kind": "let",
+      "description": "The panel state",
+      "type": "\"open\" | \"closed\"",
+      "typeSource": "jsdoc",
+      "value": "\"open\"",
+      "defaultValue": {
+        "raw": "\"open\"",
+        "kind": "literal",
+        "value": "open"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 33,
+          "column": 2
+        },
+        "end": {
+          "line": 33,
+          "column": 19
+        }
+      }
+    }
+  ],
+  "moduleExports": [
+    {
+      "name": "label",
+      "kind": "const",
+      "description": "Label doc",
+      "type": "\"a\" | \"b\"",
+      "typeSource": "jsdoc",
+      "value": "\"a\"",
+      "defaultValue": {
+        "raw": "\"a\"",
+        "kind": "literal",
+        "value": "a"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": true,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 8,
+          "column": 2
+        },
+        "end": {
+          "line": 8,
+          "column": 19
+        }
+      }
+    }
+  ],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
