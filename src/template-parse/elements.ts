@@ -560,8 +560,17 @@ export function readElement(state: TemplateParserState): void {
   if (isTopLevelScriptOrStyle) {
     state.eat(">", true);
 
+    const prevComment = findCommentBeforeTag(current.fragment.nodes, start);
+
     if (tag.name === "script") {
       const content = readScript(state, start, element.attributes as AST.Attribute[]);
+      // svelte stores the HTML comment right before `<script>` as the
+      // Program's only leading comment, as a `Line` with the comment's text.
+      if (prevComment) {
+        (content.content as unknown as { leadingComments: unknown[] }).leadingComments = [
+          { type: "Line", value: prevComment.data },
+        ];
+      }
       if (content.context === "module") {
         if (state.root.module) throw new Error("sveld: duplicate <script module>");
         state.root.module = content;
@@ -571,7 +580,9 @@ export function readElement(state: TemplateParserState): void {
       }
     } else {
       if (state.root.css) throw new Error("sveld: duplicate <style>");
-      state.root.css = readStyle(state, start, element.attributes as AST.Attribute[]);
+      const css = readStyle(state, start, element.attributes as AST.Attribute[]);
+      (css.content as { comment: AST.Comment | null }).comment = prevComment;
+      state.root.css = css;
     }
     return;
   }
@@ -593,6 +604,21 @@ export function readElement(state: TemplateParserState): void {
   } else {
     state.push(element as unknown as StackNode, element.fragment);
   }
+}
+
+/**
+ * The HTML comment a top-level `<script>`/`<style>` at `tagStart` directly
+ * follows, allowing whitespace-only text in between. The last node must end
+ * exactly at `tagStart`. From the `prev_comment` loop in svelte's `element.js`.
+ */
+function findCommentBeforeTag(nodes: AST.Fragment["nodes"], tagStart: number): AST.Comment | null {
+  for (let i = nodes.length - 1; i >= 0; i--) {
+    const node = nodes[i];
+    if (i === nodes.length - 1 && node.end !== tagStart) break;
+    if (node.type === "Comment") return node;
+    if (node.type !== "Text" || node.data.trim()) break;
+  }
+  return null;
 }
 
 function takeThisAttribute(element: AST.ElementLike): AST.Attribute {
