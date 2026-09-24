@@ -415,14 +415,19 @@ export function buildFunctionDeclarationSignature(
 export function buildTypeScriptMetadata(ctx: ParserContext): ParsedComponentTypeScriptMetadata | undefined {
   const pendingCallDefaultCandidates =
     ctx.pendingCallDefaultCandidates.length > 0 ? ctx.pendingCallDefaultCandidates.slice() : undefined;
+  const pendingConstDefaultCandidates =
+    ctx.pendingConstDefaultCandidates.length > 0 ? ctx.pendingConstDefaultCandidates.slice() : undefined;
   const pendingContextKeyCandidates =
     ctx.pendingContextKeyCandidates.length > 0 ? ctx.pendingContextKeyCandidates.slice() : undefined;
   const pendingCrossFileCandidates = {
     ...(pendingCallDefaultCandidates ? { pendingCallDefaultCandidates } : {}),
+    ...(pendingConstDefaultCandidates ? { pendingConstDefaultCandidates } : {}),
     ...(pendingContextKeyCandidates ? { pendingContextKeyCandidates } : {}),
   };
   const hasPendingCrossFileCandidates =
-    pendingCallDefaultCandidates !== undefined || pendingContextKeyCandidates !== undefined;
+    pendingCallDefaultCandidates !== undefined ||
+    pendingConstDefaultCandidates !== undefined ||
+    pendingContextKeyCandidates !== undefined;
 
   const referencedImportedTypes = new Set<string>();
   const referencedLocalTypes = new Set<string>();

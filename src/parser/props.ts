@@ -43,6 +43,21 @@ export function addProp(parser: ComponentParser, ctx: ParserContext, prop_name: 
   }
 }
 
+/** Queue an initializer's unresolved cross-file default for `generateBundle`. */
+export function queuePendingCrossFileDefault(
+  ctx: ParserContext,
+  initResult: Pick<ProcessedInitializer, "pendingCallDefault" | "pendingConstDefault">,
+  propName: string,
+  location: "props" | "moduleExports",
+): void {
+  if (initResult.pendingCallDefault) {
+    ctx.pendingCallDefaultCandidates.push({ propName, location, ...initResult.pendingCallDefault });
+  }
+  if (initResult.pendingConstDefault) {
+    ctx.pendingConstDefaultCandidates.push({ propName, location, ...initResult.pendingConstDefault });
+  }
+}
+
 export function processInitializer(
   parser: ComponentParser,
   ctx: ParserContext,
@@ -252,6 +267,18 @@ export function processInitializer(
     }
     if ("start" in ident && "end" in ident && typeof ident.start === "number" && typeof ident.end === "number") {
       value = sourceAtPos(ctx, ident.start, ident.end);
+    }
+
+    // Named value import. The cross-file pass may swap in the imported literal.
+    const importBinding = ctx.valueImportBindingsByLocalName.get(ident.name);
+    if (importBinding) {
+      return {
+        value,
+        type,
+        isFunction,
+        defaultValue,
+        pendingConstDefault: { importSource: importBinding.source, importedName: importBinding.importedName },
+      };
     }
   } else if (init.type === "MemberExpression") {
     const memberExpr = init as MemberExpression;

@@ -39,7 +39,7 @@ import {
 import { parseGenericsAttribute } from "./parser/generics";
 import { parseCustomTypes, processNodeJSDoc } from "./parser/jsdoc";
 import { resolvePropTypeAndDocs } from "./parser/prop-shared";
-import { addProp, processInitializer } from "./parser/props";
+import { addProp, processInitializer, queuePendingCrossFileDefault } from "./parser/props";
 import { maybeSetRestProps } from "./parser/rest-props";
 import { detectSyntaxMode } from "./parser/runes-detection";
 import {
@@ -206,6 +206,18 @@ export interface PendingCallDefaultCandidate {
 }
 
 /**
+ * Prop default is a named value import (`export let delay = DELAY_MS`).
+ * `generateBundle` reads the other file via `resolve-const-defaults.ts` and,
+ * for an `export const` primitive literal, writes the literal as the default.
+ */
+export interface PendingConstDefaultCandidate {
+  propName: string;
+  location: "props" | "moduleExports";
+  importSource: string;
+  importedName: string;
+}
+
+/**
  * Named-import `setContext` key (`import { KEY } from "./mod.js"`).
  * `generateBundle` reads the other file via `resolve-context-keys.ts`.
  * Properties and description are already filled in from the value argument.
@@ -239,6 +251,8 @@ export interface ParsedComponentTypeScriptMetadata {
   referencesComponentGenerics?: boolean;
   /** Unresolved CallExpression defaults for the cross-file pass in `generateBundle`. */
   pendingCallDefaultCandidates?: PendingCallDefaultCandidate[];
+  /** Imported-identifier defaults for the cross-file pass in `generateBundle`. */
+  pendingConstDefaultCandidates?: PendingConstDefaultCandidate[];
   /** Unresolved `setContext` import keys for the cross-file pass in `generateBundle`. */
   pendingContextKeyCandidates?: PendingContextKeyCandidate[];
 }
@@ -287,6 +301,8 @@ export interface ProcessedInitializer {
    * onto {@link ParserContext.pendingCallDefaultCandidates}.
    */
   pendingCallDefault?: Omit<PendingCallDefaultCandidate, "propName" | "location">;
+  /** Identifier default bound to a named value import ({@link PendingConstDefaultCandidate}). */
+  pendingConstDefault?: Omit<PendingConstDefaultCandidate, "propName" | "location">;
 }
 
 type ModernScriptAttribute = {
@@ -1245,13 +1261,7 @@ export default class ComponentParser {
             const initResult = init == null ? { isFunction: false } : processInitializer(this, this.ctx, init);
             const { value, type: typeSeed, isFunction: initializerIsFunction, defaultValue } = initResult;
             const resolvedJSDoc = initResult;
-            if (resolvedJSDoc.pendingCallDefault) {
-              this.ctx.pendingCallDefaultCandidates.push({
-                propName: localPropName,
-                location: "moduleExports",
-                ...resolvedJSDoc.pendingCallDefault,
-              });
-            }
+            queuePendingCrossFileDefault(this.ctx, initResult, localPropName, "moduleExports");
 
             declarators.push({
               prop_name: declaratorPropName,
@@ -1470,13 +1480,7 @@ export default class ComponentParser {
           const initResult = init == null ? { isFunction: false } : processInitializer(this, this.ctx, init);
           const { value, type: typeSeed, isFunction: initializerIsFunction, defaultValue } = initResult;
           const resolvedJSDoc = initResult;
-          if (resolvedJSDoc.pendingCallDefault) {
-            this.ctx.pendingCallDefaultCandidates.push({
-              propName: declaratorPropName,
-              location: "props",
-              ...resolvedJSDoc.pendingCallDefault,
-            });
-          }
+          queuePendingCrossFileDefault(this.ctx, initResult, declaratorPropName, "props");
 
           declarators.push({
             prop_name: declaratorPropName,

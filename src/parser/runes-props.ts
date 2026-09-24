@@ -18,7 +18,7 @@ import { addDispatchedEvent } from "./events";
 import { collectGenericsAttributeTypeDependencies } from "./generics";
 import { processLeadingCommentsJSDoc, processNodeJSDoc } from "./jsdoc";
 import { resolvePropTypeAndDocs } from "./prop-shared";
-import { addProp, processInitializer, unwrapBindableInitializer } from "./props";
+import { addProp, processInitializer, queuePendingCrossFileDefault, unwrapBindableInitializer } from "./props";
 import { sourceAtPos, sourceRangeFromNode } from "./source-position";
 import {
   buildEnumLocalTypeDeclarationCode,
@@ -514,13 +514,7 @@ export function parseRunesPropsDeclaration(parser: ComponentParser, ctx: ParserC
       // won; an explicit TS/JSDoc type on the prop itself must not be overridden by it.
       const inheritedType =
         typeMetadata?.type === undefined && propertyJSDoc?.type === undefined ? initResult.resolvedType : undefined;
-      if (initResult.pendingCallDefault) {
-        ctx.pendingCallDefaultCandidates.push({
-          propName,
-          location: "props",
-          ...initResult.pendingCallDefault,
-        });
-      }
+      queuePendingCrossFileDefault(ctx, initResult, propName, "props");
 
       const { type, typeSource, description, params, returnType, isFunction } = resolvePropTypeAndDocs({
         explicitType: typeMetadata?.type,

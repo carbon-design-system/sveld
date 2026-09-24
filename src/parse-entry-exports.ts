@@ -57,6 +57,18 @@ export interface InternalExport extends Omit<EntryExport, "source"> {
    * `resolve-context-keys.ts` uses this when a `setContext` key is imported.
    */
   literalValue?: string;
+  /**
+   * `export const` primitive literal (string, number, boolean, or a static
+   * template). `resolve-const-defaults.ts` writes it as an imported prop default.
+   */
+  primitiveLiteral?: PrimitiveLiteral;
+}
+
+export interface PrimitiveLiteral {
+  /** Initializer source text. */
+  raw: string;
+  value: string | number | boolean;
+  type: "string" | "number" | "boolean";
 }
 
 /** Parsed-source context shared while walking a single module. */
@@ -205,6 +217,31 @@ function inferLiteralType(init: AstNode): string | undefined {
   return undefined;
 }
 
+/** `300`, `-1`, `"a"`, `true`, or a template with no expressions. */
+function primitiveLiteralOf(source: ModuleSource, init: AstNode): PrimitiveLiteral | undefined {
+  const raw = textOf(source, init);
+  if (raw === undefined) return undefined;
+
+  if (init.type === "Literal") {
+    const value = init.value;
+    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+      return { raw, value, type: typeof value as PrimitiveLiteral["type"] };
+    }
+    return undefined;
+  }
+
+  if (init.type === "UnaryExpression" && init.operator === "-") {
+    const argument = asNode(init.argument);
+    if (argument?.type === "Literal" && typeof argument.value === "number") {
+      return { raw, value: -argument.value, type: "number" };
+    }
+    return undefined;
+  }
+
+  const templateValue = init.type === "TemplateLiteral" ? resolveStaticStringLiteral(init) : null;
+  return templateValue === null ? undefined : { raw, value: templateValue, type: "string" };
+}
+
 /** Trailing return from a callable type (`() => string` → `string`). */
 function returnTypeFromCallableTypeText(type: string | undefined): string | undefined {
   if (!type) return undefined;
@@ -349,6 +386,7 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
       let value: string | undefined;
       let returnType: string | undefined;
       let literalValue: string | undefined;
+      let primitiveLiteral: PrimitiveLiteral | undefined;
       const init = asNode(declarator.init);
 
       if (init) {
@@ -363,6 +401,7 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
           value = textOf(source, init);
           if (!type) type = inferLiteralType(init);
           literalValue = resolveStaticStringLiteral(init) ?? undefined;
+          if (kind === "const") primitiveLiteral = primitiveLiteralOf(source, init);
         }
       }
 
@@ -373,6 +412,7 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
         value,
         returnType,
         literalValue,
+        primitiveLiteral,
         description,
         deprecated,
         tags,
@@ -676,8 +716,14 @@ export async function parseEntryExports(entryFile: string): Promise<EntryExports
     }
     declFileByName.set(entry.name, entry.declFile);
 
-    // Drop internal returnType/literalValue; public EntryExport does not expose them.
-    const { declFile, returnType: _returnType, literalValue: _literalValue, ...rest } = entry;
+    // Drop internal returnType/literalValue/primitiveLiteral; public EntryExport does not expose them.
+    const {
+      declFile,
+      returnType: _returnType,
+      literalValue: _literalValue,
+      primitiveLiteral: _primitiveLiteral,
+      ...rest
+    } = entry;
     byName.set(entry.name, { ...rest, source: relativeSource(declFile) });
   }
 
