@@ -17,7 +17,7 @@ import { basename, dirname, join, resolve } from "node:path";
 import { isIdentifier, isObject, resolveStaticStringLiteral } from "./ast-guards";
 import type { ComponentDocApi, ComponentDocs, ResolveComponentFilePath } from "./bundle";
 import { createDiagnostic } from "./diagnostics";
-import { directoryEntry, directoryHasEntry } from "./fs-listing";
+import { directoryEntry, directoryHasEntry, typeScriptCounterpart } from "./fs-listing";
 import { getParsedComponentTypeScriptMetadata } from "./parsed-component-metadata";
 import { type WalkableNode, walkNodes } from "./parser/walk";
 import { normalizeSeparators } from "./path";
@@ -137,7 +137,8 @@ function resolveModuleSpecifier(source: string, fromAbsoluteFilePath: string): M
   for (const indexFilename of INDEX_FILENAMES) {
     if (directoryHasEntry(base, indexFilename)) return { kind: "resolved", path: join(base, indexFilename) };
   }
-  return { kind: "missing" };
+  const counterpart = typeScriptCounterpart(base);
+  return counterpart ? { kind: "resolved", path: counterpart } : { kind: "missing" };
 }
 
 function asNode(value: unknown): WalkableNode | undefined {

@@ -41,6 +41,22 @@ describe("resolveModuleFile", () => {
     expect(resolveModuleFile("./Both", dir)).toBe(path.join(dir, "Both.js"));
   });
 
+  test("resolves a .js-family specifier to the TypeScript file it stands for", () => {
+    writeFileSync(path.join(dir, "state.svelte.ts"), "export {};\n");
+    writeFileSync(path.join(dir, "esm.mts"), "export {};\n");
+    writeFileSync(path.join(dir, "view.tsx"), "export {};\n");
+    writeFileSync(path.join(dir, "Both.ts"), "export {};\n");
+    resetDirectoryListings();
+
+    expect(resolveModuleFile("./utils.js", dir)).toBe(path.join(dir, "utils.ts"));
+    expect(resolveModuleFile("./state.svelte.js", dir)).toBe(path.join(dir, "state.svelte.ts"));
+    expect(resolveModuleFile("./esm.mjs", dir)).toBe(path.join(dir, "esm.mts"));
+    expect(resolveModuleFile("./view.jsx", dir)).toBe(path.join(dir, "view.tsx"));
+    // A .js file that exists wins over its .ts twin.
+    expect(resolveModuleFile("./Both.js", dir)).toBe(path.join(dir, "Both.js"));
+    expect(resolveModuleFile("./nope.js", dir)).toBeNull();
+  });
+
   test("returns null for a missing specifier", () => {
     expect(resolveModuleFile("./nope", dir)).toBeNull();
   });
