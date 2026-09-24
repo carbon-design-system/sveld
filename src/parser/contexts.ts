@@ -1,7 +1,7 @@
 import type { CallExpression, Expression, FunctionExpression, NewExpression, Node, ObjectExpression } from "estree";
 import { isIdentifier, isLiteral, isObjectExpression, resolveStaticStringLiteral } from "../ast-guards";
 import type ComponentParser from "../ComponentParser";
-import type { ComponentContext, ComponentContextProp } from "../ComponentParser";
+import type { ComponentContext, ComponentContextProp, SourceRange } from "../ComponentParser";
 import type { ParserContext } from "./context";
 import { recordDiagnostic } from "./diagnostics";
 import { parseObjectTypeLiteralMembers } from "./object-type-literal";
@@ -330,6 +330,24 @@ function resolveContextKey(ctx: ParserContext, keyArg: unknown, depth = 0): Cont
   return { kind: "unresolved" };
 }
 
+/** A value other than an object literal or a variable (`writable(0)`, `new Map()`) has no shape to describe. */
+function recordContextValueUnresolved(
+  ctx: ParserContext,
+  key: string,
+  keyLabel: string,
+  valueArg: Node,
+  callSource: SourceRange | undefined,
+) {
+  const valueSource = sourceForExpression(ctx, valueArg) ?? "";
+  recordDiagnostic(
+    ctx,
+    "context-value-unresolved",
+    key,
+    `setContext(${keyLabel}, ${valueSource}): the value isn't an object literal or a variable, so sveld can't describe its shape; the context is skipped.`,
+    callSource,
+  );
+}
+
 /** Parse `setContext(key, value)`. Imported keys go to `pendingContextKeyCandidates`. */
 export function parseSetContextCall(ctx: ParserContext, parser: ComponentParser, node: Node, _parent?: Node) {
   if (!node || typeof node !== "object" || !("type" in node) || node.type !== "CallExpression") {
@@ -372,13 +390,18 @@ export function parseSetContextCall(ctx: ParserContext, parser: ComponentParser,
         description: contextInfo.description,
         source: callSource,
       });
+    } else {
+      recordContextValueUnresolved(ctx, resolution.importedName, resolution.importedName, valueArg, callSource);
     }
     return;
   }
 
   const contextKey = resolution.key;
   const contextInfo = parseContextValue(ctx, parser, valueArg, contextKey);
-  if (!contextInfo) return;
+  if (!contextInfo) {
+    recordContextValueUnresolved(ctx, contextKey, JSON.stringify(contextKey), valueArg, callSource);
+    return;
+  }
 
   if (ctx.contexts.has(contextKey)) {
     recordDiagnostic(

@@ -436,6 +436,7 @@ Every diagnostic carries a stable, namespaced `code` (`"sveld/<kind>"`) alongsid
 | `sveld/rest-props-unresolved` | `warning` | Spread `$$restProps` onto a plain element (or `svelte:element`) instead of a component, or add an `@restProps` tag to type it manually. |
 | `sveld/context-duplicate-key` | `warning` | Remove the duplicate `setContext` call, or give it a distinct key; only the first call's shape is used. |
 | `sveld/context-key-unresolved` | `warning` | Use a string literal, a `const`-bound string, `Symbol()`, or a string `export const` imported from a relative module as the `setContext` key; otherwise the context is left out of every output. |
+| `sveld/context-value-unresolved` | `warning` | Pass an object literal or a typed variable as the `setContext` value (e.g. `const store = writable(0);` with a `@type` annotation, or `{ store }`); a call or other expression has no shape sveld can describe, so the context is left out of every output. |
 | `sveld/spread-unresolved` | `warning` | Spread a local object literal or a variable with a resolvable type instead; otherwise the spread widens the generated type to `Record<string, any>`. |
 | `sveld/export-unresolved` | `warning` | Export a local declaration directly. Instance-script exports are props, so move a re-export (`export { x } from "..."`, or `export { x }` of an import) into `<script context="module">`, where sveld writes it to the `.d.ts` as-is. Exported classes aren't documented; export them from a separate `.js`/`.ts` module instead. |
 | `sveld/module-export-conflict` | `warning` | Rename the module-script export. `default` is always skipped (it collides with the component itself); a name matching the generated `<Name>Props`/`<Name>Exports` type breaks the `.d.ts` if the export carries a type. |
@@ -453,7 +454,7 @@ Every diagnostic carries a stable, namespaced `code` (`"sveld/<kind>"`) alongsid
 
 #### Severity and `--strict=errors`
 
-Each diagnostic's `severity` is `"error"` (`example-compile-error`, `example-syntax-error`, `syntax-skipped`, `extend-props-target-missing`, `internal-typedef-referenced` — sveld emitted broken or unmodeled output) or `"warning"` (`prop-unknown-type`, `context-any-type`, `slot-missing-type`, `event-no-source`, `dispatch-escapes`, `rest-props-unresolved`, `context-duplicate-key`, `context-key-unresolved`, `spread-unresolved`, `export-unresolved`, `module-export-conflict`, `extend-props-duplicate`, `extend-props-override`, `jsdoc-unknown-tag`, `typedef-duplicate`, `property-duplicate`, `generics-conflict`, `event-description-ambiguous`, `jsdoc-tag-dropped`, `types-inline-unresolved` — a type fell back to `any`). Plain `strict: true` / `--strict` fails on both, unchanged from before. Pass `strict: "errors"` (or `--strict=errors`) to fail CI only on `error`-severity diagnostics, letting `any`-fallback warnings through:
+Each diagnostic's `severity` is `"error"` (`example-compile-error`, `example-syntax-error`, `syntax-skipped`, `extend-props-target-missing`, `internal-typedef-referenced` — sveld emitted broken or unmodeled output) or `"warning"` (`prop-unknown-type`, `context-any-type`, `slot-missing-type`, `event-no-source`, `dispatch-escapes`, `rest-props-unresolved`, `context-duplicate-key`, `context-key-unresolved`, `context-value-unresolved`, `spread-unresolved`, `export-unresolved`, `module-export-conflict`, `extend-props-duplicate`, `extend-props-override`, `jsdoc-unknown-tag`, `typedef-duplicate`, `property-duplicate`, `generics-conflict`, `event-description-ambiguous`, `jsdoc-tag-dropped`, `types-inline-unresolved` — a type fell back to `any`). Plain `strict: true` / `--strict` fails on both, unchanged from before. Pass `strict: "errors"` (or `--strict=errors`) to fail CI only on `error`-severity diagnostics, letting `any`-fallback warnings through:
 
 ```sh
 npx sveld --json --strict=errors
@@ -3881,6 +3882,7 @@ There are several ways to type contexts:
 
 - Context keys must be statically resolvable: a string literal, a static template literal, a `const`-bound string (local or an imported `export const`), or a `Symbol()` / `Symbol.for()` call with a static description. Dynamic expressions (runtime identifiers, template interpolation, other function calls) are skipped with a `sveld/context-key-unresolved` diagnostic.
 - Variables passed to `setContext` should have JSDoc `@type` annotations for accurate types
+- The value must be an object literal or a variable. Any other expression (such as `setContext("store", writable(0))`) is skipped with a `sveld/context-value-unresolved` diagnostic.
 - The generated type name follows the pattern: `{PascalCase}Context`. Separators (underscores and any character that can't appear in an identifier, such as hyphens, dots, colons, slashes, `@`, and spaces) are stripped and each segment is capitalized. A name starting with a digit gets a leading `_`:
   | Context Key | Generated Type Name |
   | --- | --- |
