@@ -61,6 +61,14 @@ describe("resolveModuleFile", () => {
     expect(resolveModuleFile("./nope", dir)).toBeNull();
   });
 
+  test("never resolves a bare package specifier to a file next to the importer", () => {
+    expect(resolveModuleFile("utils", dir)).toBeNull();
+    expect(resolveModuleFile("Button", dir)).toBeNull();
+    expect(resolveModuleFile("./utils", dir)).toBe(path.join(dir, "utils.ts"));
+    expect(resolveModuleFile(path.join(dir, "utils"), dir)).toBe(path.join(dir, "utils.ts"));
+    expect(resolveModuleFile("../utils", path.join(dir, "Button"))).toBe(path.join(dir, "utils.ts"));
+  });
+
   test("treats a symlink named exactly by the specifier like lstat does: neither file nor directory", () => {
     // Neither `Dirent` nor `lstat` reports a symlink as a file or directory,
     // so an exactly-named symlink has never resolved here, while the

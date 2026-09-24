@@ -1,5 +1,5 @@
 import { lstatSync, readFileSync } from "node:fs";
-import { basename, dirname, join, relative, resolve } from "node:path";
+import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { isIdentifier, resolveStaticStringLiteral } from "./ast-guards";
 import type { DeprecatedValue, JsDocPassthroughTag } from "./ComponentParser";
 import { directoryEntry, directoryHasEntry, typeScriptCounterpart } from "./fs-listing";
@@ -113,12 +113,25 @@ function identifierName(node: AstNode | undefined): string | undefined {
   return isIdentifier(node) ? node.name : undefined;
 }
 
+/** `./x`, `../x`, `.`, `..`, or an absolute path, as opposed to a bare package specifier. */
+function isPathSpecifier(specifier: string): boolean {
+  return (
+    specifier === "." ||
+    specifier === ".." ||
+    specifier.startsWith("./") ||
+    specifier.startsWith("../") ||
+    isAbsolute(specifier)
+  );
+}
+
 /**
  * Resolves a module specifier to an on-disk source file.
  *
  * Tries the path verbatim, with each candidate extension, then an
  * `index.*` file when the specifier points at a directory, and finally the
- * `.ts` file a missing `.js` specifier stands for.
+ * `.ts` file a missing `.js` specifier stands for. Only relative, absolute,
+ * and tsconfig/jsconfig path-alias specifiers resolve; a bare package
+ * specifier (`"helpers"`) never names a file next to the importer.
  *
  * @example
  * ```ts
@@ -127,6 +140,7 @@ function identifierName(node: AstNode | undefined): string | undefined {
  */
 export function resolveModuleFile(specifier: string, fromDir: string): string | null {
   const aliased = resolvePathAliasAbsolute(specifier, fromDir);
+  if (aliased === specifier && !isPathSpecifier(specifier)) return null;
   const base = resolve(fromDir, aliased);
   const parentDir = dirname(base);
   const baseName = basename(base);
