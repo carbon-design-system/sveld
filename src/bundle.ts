@@ -8,6 +8,7 @@ import type {
   PendingCallDefaultCandidate,
   PendingConstDefaultCandidate,
   PendingContextKeyCandidate,
+  SourceRange,
 } from "./ComponentParser";
 import { buildReverseDeps, expandAffected } from "./dependency-graph";
 import {
@@ -1035,17 +1036,24 @@ function applyContextKeyResolutions(component: ComponentDocApi, resolutions: Con
 
     if (component.contexts?.some((existing) => existing.key === key)) continue;
 
-    component.contexts = [
-      ...(component.contexts ?? []),
-      {
-        key,
-        typeName: generateContextTypeName(key),
-        description: candidate.description,
-        properties: candidate.properties,
-        source: candidate.source,
-      },
-    ];
+    const contexts = [...(component.contexts ?? [])];
+    // Keep source order, as a same-file key would: go before the first later `setContext`.
+    const laterIndex = contexts.findIndex((existing) => startsAfter(existing.source, candidate.source));
+    contexts.splice(laterIndex === -1 ? contexts.length : laterIndex, 0, {
+      key,
+      typeName: generateContextTypeName(key),
+      description: candidate.description,
+      properties: candidate.properties,
+      source: candidate.source,
+    });
+    component.contexts = contexts;
   }
+}
+
+function startsAfter(range: SourceRange | undefined, other: SourceRange | undefined): boolean {
+  if (!range || !other) return false;
+  const { line, column } = range.start;
+  return line > other.start.line || (line === other.start.line && column > other.start.column);
 }
 
 /**

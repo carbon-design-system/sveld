@@ -84,6 +84,28 @@ describe("cross-file setContext key resolution", () => {
     }
   });
 
+  test("keeps an imported key in source order among same-file keys", async () => {
+    writeFileSync(path.join(dir, "keys.js"), `export const MODAL_KEY = "carbon:Modal";\n`);
+    writeFileSync(
+      path.join(dir, "ComposedModal.svelte"),
+      `<script>
+  import { setContext } from "svelte";
+  import { MODAL_KEY } from "./keys.js";
+
+  setContext(MODAL_KEY, {});
+  setContext("carbon:ComposedModal", { open: true });
+</script>
+<div><slot /></div>
+`,
+    );
+    writeFileSync(path.join(dir, "index.js"), `export { default as ComposedModal } from "./ComposedModal.svelte";\n`);
+
+    const result = await generateBundle(path.join(dir, "index.js"), true);
+    const component = byModuleName(result.components, "ComposedModal");
+
+    expect(component?.contexts?.map((context) => context.key)).toEqual(["carbon:Modal", "carbon:ComposedModal"]);
+  });
+
   test("B: resolves through a re-export barrel", async () => {
     writeFileSync(path.join(dir, "key.js"), `export const MODAL_KEY = "simple-modal";\n`);
     writeFileSync(path.join(dir, "reexport.js"), `export { MODAL_KEY } from "./key.js";\n`);
