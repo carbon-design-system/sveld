@@ -706,6 +706,15 @@ export function parseCustomTypes(
     let pendingDeprecated: DeprecatedValue | undefined;
     /** `@ignore`/`@internal` for the next `@slot`/`@snippet`/`@typedef`/`@callback` in this block. */
     let pendingInternal = false;
+    /** `@template` type parameters for the `@typedef`/`@callback` right below them. */
+    const pendingTypeParameters: string[] = [];
+    /** A `@typedef`/`@callback` name, taking any `@template`s right above it as its type parameters. */
+    const typeDeclarationName = (name: string): string => {
+      if (pendingTypeParameters.length === 0) return normalizeGenericNameSpacing(name);
+      const declared = `${name}<${pendingTypeParameters.join(", ")}>`;
+      pendingTypeParameters.length = 0;
+      return declared;
+    };
 
     const lineDescriptions = new Map<number, string>();
     const tagLineNumbers = new Set<number>();
@@ -1177,7 +1186,7 @@ export function parseCustomTypes(
         case "typedef": {
           finalizeTypedef();
 
-          currentTypedefName = normalizeGenericNameSpacing(name);
+          currentTypedefName = typeDeclarationName(name);
           currentTypedefType = type;
           currentTypedefSource = sourceRangeFromCommentTag(ctx, tagSource);
           const inlineTypedefDesc = getTagDescription(tagSource, nextTag);
@@ -1199,7 +1208,7 @@ export function parseCustomTypes(
         case "callback": {
           finalizeCallback();
 
-          currentCallbackName = normalizeGenericNameSpacing(name);
+          currentCallbackName = typeDeclarationName(name);
           currentCallbackSource = sourceRangeFromCommentTag(ctx, tagSource);
           const inlineCallbackDesc = getTagDescription(tagSource, nextTag);
           currentCallbackDescription = inlineCallbackDesc || precedingDescription;
@@ -1238,6 +1247,17 @@ export function parseCustomTypes(
           //   @template {Foo} [T=Foo]  → type="Foo", name="T", default="Foo"
           //   @template T, U           → one parameter each
           const parameters = templateTagParameters(tags[tagIndex], type);
+
+          // Right above a `@typedef`/`@callback` without its own `<...>`, the `@template`s
+          // parameterize that type (`type Box<T>`), as in TypeScript. Below one, they keep
+          // declaring component generics.
+          let ownerIndex = tagIndex + 1;
+          while (tags[ownerIndex]?.tag === "template") ownerIndex++;
+          const owner = tags[ownerIndex];
+          if ((owner?.tag === "typedef" || owner?.tag === "callback") && !owner.name.includes("<")) {
+            pendingTypeParameters.push(...parameters.map(({ constraint }) => constraint));
+            break;
+          }
 
           if (blockHasSlotOrSnippetTag && !blockHasExtendsTag) {
             ctx.deferredSlotBlockGenerics.push(...parameters);
