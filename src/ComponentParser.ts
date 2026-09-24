@@ -28,11 +28,13 @@ import { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "./parsed-component-metada
 import { resolveMemberExpressionType } from "./parser/bindings";
 import { createParserContext, type ParserContext } from "./parser/context";
 import { parseSetContextCall } from "./parser/contexts";
-import { recordDiagnostic, recordSveldIgnore } from "./parser/diagnostics";
+import { buildDiagnostic, isSveldIgnored, recordDiagnostic, recordSveldIgnore } from "./parser/diagnostics";
 import { isComponentLikeType, isElementLikeType } from "./parser/element-kind";
 import {
   addDispatchedEvent,
+  compareSerializedEvents,
   deriveLiteralDetailType,
+  findDispatcherArgument,
   literalDetailToTypeText,
   parseHostDispatchEventCall,
 } from "./parser/events";
@@ -58,7 +60,12 @@ import {
   resolveIdentifierToReactiveProp,
 } from "./parser/scopes";
 import { addSlot, buildSlotPropsFromObjectExpression, extractRenderTagInfo } from "./parser/slots";
-import { sourceAtPos, sourceRangeFromNode, sourceRangeFromOffsets } from "./parser/source-position";
+import {
+  sourceAtPos,
+  sourceForExpression,
+  sourceRangeFromNode,
+  sourceRangeFromOffsets,
+} from "./parser/source-position";
 import {
   buildFunctionDeclarationSignature,
   buildTypeScriptMetadata,
@@ -231,6 +238,28 @@ export interface PendingContextKeyCandidate {
   source?: SourceRange;
 }
 
+/**
+ * The component's dispatcher passed to an imported function
+ * (`createHelper(dispatch)`). `generateBundle` reads that function via
+ * `resolve-dispatch-escapes.ts` to find the events it dispatches.
+ */
+export interface PendingDispatchEscapeCandidate {
+  importSource: string;
+  importedName: string;
+  /** Callee as written, for messages. */
+  calleeText: string;
+  /** Local name of the `createEventDispatcher()` result. */
+  dispatcherName: string;
+  /** Argument position the dispatcher is passed at. */
+  argumentIndex: number;
+  /** Set when passed as an object literal property (`{ dispatch }`): that property's key. */
+  property?: string;
+  /** Source range of the call, when available. */
+  source?: SourceRange;
+  /** `@sveld-ignore sveld/dispatch-escapes` on the dispatcher's declaration. */
+  ignored?: boolean;
+}
+
 export interface LocalTypeDeclaration {
   code: string;
   node: ModernRunesTypeNode;
@@ -255,6 +284,13 @@ export interface ParsedComponentTypeScriptMetadata {
   pendingConstDefaultCandidates?: PendingConstDefaultCandidate[];
   /** Unresolved `setContext` import keys for the cross-file pass in `generateBundle`. */
   pendingContextKeyCandidates?: PendingContextKeyCandidate[];
+  /** Dispatchers passed to imported functions, for the cross-file pass in `generateBundle`. */
+  pendingDispatchEscapeCandidates?: PendingDispatchEscapeCandidate[];
+  /**
+   * `event-no-source` diagnostics held back while the dispatcher escapes to
+   * imported functions: `generateBundle` keeps those the functions don't dispatch.
+   */
+  deferredEventNoSourceDiagnostics?: SveldDiagnostic[];
 }
 
 export {
@@ -1408,6 +1444,8 @@ export default class ComponentParser {
     // Source ranges are resolved lazily below: only calls to the dispatcher
     // need one, and most components' call expressions aren't dispatches.
     const callees: { name: string; arguments: Array<Expression | unknown>; node: CallExpression }[] = [];
+    /** Every call with arguments, any callee: checked for the dispatcher escaping once its name is known. */
+    const callsWithArguments: CallExpression[] = [];
 
     initComponentScope(this, this.ctx);
     this.ctx.activeScopes.push(this.ctx.componentScope);
@@ -1632,6 +1670,8 @@ export default class ComponentParser {
           if (calleeName === "setContext") {
             parseSetContextCall(this.ctx, this, node, parent ?? undefined);
           }
+
+          if (callExpr.arguments.length > 0) callsWithArguments.push(callExpr);
 
           if (calleeName) {
             callees.push({
@@ -2174,20 +2214,7 @@ export default class ComponentParser {
           }
         }
       })
-      .sort((a, b) => {
-        const nameCompare = a.name.localeCompare(b.name);
-        if (nameCompare !== 0) return nameCompare;
-
-        const typeCompare = a.type.localeCompare(b.type);
-        if (typeCompare !== 0) return typeCompare;
-
-        if (a.type === "forwarded" && b.type === "forwarded") {
-          const elementCompare = a.element.localeCompare(b.element);
-          if (elementCompare !== 0) return elementCompare;
-        }
-
-        return (a.detail ?? "").localeCompare(b.detail ?? "");
-      });
+      .sort(compareSerializedEvents);
     const typedefsArray = ComponentParser.mapToArray(this.ctx.typedefs);
     const contextsArray = ComponentParser.mapToArray(this.ctx.contexts);
 
@@ -2223,19 +2250,83 @@ export default class ComponentParser {
     }
 
     /**
+     * The dispatcher handed to another function (`helper(dispatch)`). For an
+     * imported function, `generateBundle` reads the events it dispatches
+     * (see `resolve-dispatch-escapes.ts`). Any other callee can't be followed.
+     */
+    const dispatcherName = dispatcher_name;
+    const unfollowableEscapes: CallExpression[] = [];
+    if (dispatcherName !== undefined) {
+      const escapes: Array<{ call: CallExpression; argumentIndex: number; property?: string }> = [];
+      for (const call of callsWithArguments) {
+        const passed = findDispatcherArgument(call, dispatcherName);
+        if (passed) escapes.push({ call, ...passed });
+      }
+      if (escapes.length > 0) {
+        recordSveldIgnore(
+          this.ctx,
+          "dispatch-escapes",
+          dispatcherName,
+          this.resolveLocalVarJSDoc(dispatcherName)?.sveldIgnore,
+        );
+      }
+      const ignored = isSveldIgnored(this.ctx, "dispatch-escapes", dispatcherName);
+      for (const { call, argumentIndex, property } of escapes) {
+        const importBinding = isIdentifier(call.callee)
+          ? this.ctx.valueImportBindingsByLocalName.get(call.callee.name)
+          : undefined;
+        if (!importBinding) {
+          unfollowableEscapes.push(call);
+          continue;
+        }
+        const source = sourceRangeFromNode(this.ctx, call);
+        this.ctx.pendingDispatchEscapeCandidates.push({
+          importSource: importBinding.source,
+          importedName: importBinding.importedName,
+          calleeText: sourceForExpression(this.ctx, call.callee) ?? importBinding.importedName,
+          dispatcherName,
+          argumentIndex,
+          ...(property === undefined ? {} : { property }),
+          ...(source ? { source } : {}),
+          ...(ignored ? { ignored } : {}),
+        });
+      }
+    }
+
+    /**
      * `@event` in JSDoc with no `createEventDispatcher`, `on:` forward,
-     * or `on<event>` callback prop.
+     * or `on<event>` callback prop. While the dispatcher escapes, such an
+     * event may come from the function it escapes to: an imported one gets
+     * checked once its events are known, anything else gets the benefit of
+     * the doubt.
      */
     for (const eventName of this.ctx.jsDocEventNames) {
       if (actuallyDispatchedEvents.has(eventName)) continue;
       if (this.ctx.forwardedEvents.has(eventName)) continue;
       if (this.ctx.props.has(`on${eventName}`)) continue;
-      recordDiagnostic(
+      if (unfollowableEscapes.length > 0) continue;
+      const diagnostic = buildDiagnostic(
         this.ctx,
         "event-no-source",
         eventName,
         `@event "${eventName}" has no matching dispatch or callback prop.`,
         this.ctx.jsDocEventSources.get(eventName),
+      );
+      if (this.ctx.pendingDispatchEscapeCandidates.length > 0) {
+        this.ctx.deferredEventNoSourceDiagnostics.push(diagnostic);
+      } else {
+        this.ctx.diagnosticRecords.push(diagnostic);
+      }
+    }
+
+    for (const call of unfollowableEscapes) {
+      const callee = sourceForExpression(this.ctx, call.callee) ?? "";
+      recordDiagnostic(
+        this.ctx,
+        "dispatch-escapes",
+        dispatcherName ?? "",
+        `\`${dispatcherName}\` is passed to \`${callee}\`, which sveld can only follow when it's an imported function. Document the events dispatched there with @event tags.`,
+        sourceRangeFromNode(this.ctx, call),
       );
     }
 

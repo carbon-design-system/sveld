@@ -1,7 +1,10 @@
 import { SvelteComponentTyped } from "svelte";
+import type { SvelteHTMLElements } from "svelte/elements";
 import type { BreadcrumbSkeletonProps } from "./BreadcrumbSkeleton.svelte";
 
-export type BreadcrumbProps = BreadcrumbSkeletonProps & {
+type $RestProps = SvelteHTMLElements["nav"];
+
+type $Props = {
   /**
    * Set to `true` to hide the breadcrumb trailing slash
    * @default false
@@ -15,7 +18,11 @@ export type BreadcrumbProps = BreadcrumbSkeletonProps & {
   skeleton?: boolean;
 
   children?: (this: void) => void;
+
+  [key: `data-${string}`]: unknown;
 };
+
+export type BreadcrumbProps = Omit<$RestProps, keyof ($Props & BreadcrumbSkeletonProps)> & Omit<BreadcrumbSkeletonProps, keyof $Props> & $Props;
 
 export default class Breadcrumb extends SvelteComponentTyped<
   BreadcrumbProps,

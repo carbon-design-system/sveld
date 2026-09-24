@@ -1,7 +1,7 @@
 import type { ArrayExpression, CallExpression, ObjectExpression, Property } from "estree";
 import { isIdentifier, isLiteral, isNewExpressionNamed, isObjectExpression } from "../ast-guards";
 import type ComponentParser from "../ComponentParser";
-import type { DispatchedEvent } from "../ComponentParser";
+import type { DispatchedEvent, SerializedComponentEvent } from "../ComponentParser";
 import type { ParserContext } from "./context";
 import { sourceRangeFromNode } from "./source-position";
 import { assignValueOrUndefined } from "./utils";
@@ -55,6 +55,45 @@ function buildArrayLiteralDetailType(parser: ComponentParser, node: ArrayExpress
   if (elementTypes.size === 0) return "any[]";
   if (elementTypes.size === 1) return `${[...elementTypes][0]}[]`;
   return `(${[...elementTypes].join(" | ")})[]`;
+}
+
+/**
+ * Where `call` hands the dispatcher itself to another function: as an argument
+ * (`helper(dispatch)`) or an object literal property (`helper({ dispatch })`).
+ * Events dispatched in there are out of the component's own script.
+ */
+export function findDispatcherArgument(
+  call: CallExpression,
+  dispatcherName: string,
+): { argumentIndex: number; property?: string } | undefined {
+  for (const [argumentIndex, argument] of call.arguments.entries()) {
+    if (isIdentifier(argument) && argument.name === dispatcherName) return { argumentIndex };
+    if (!isObjectExpression(argument)) continue;
+    for (const property of argument.properties) {
+      if (property.type !== "Property" || !isIdentifier(property.value)) continue;
+      if (property.value.name !== dispatcherName) continue;
+      // A computed key can't be matched to the helper's parameter, so it stays unnamed.
+      const key = !property.computed && isIdentifier(property.key) ? property.key.name : undefined;
+      return { argumentIndex, property: key ?? "" };
+    }
+  }
+  return undefined;
+}
+
+/** Event order in every output: by name, then dispatched before forwarded, then by element and detail. */
+export function compareSerializedEvents(a: SerializedComponentEvent, b: SerializedComponentEvent): number {
+  const nameCompare = a.name.localeCompare(b.name);
+  if (nameCompare !== 0) return nameCompare;
+
+  const typeCompare = a.type.localeCompare(b.type);
+  if (typeCompare !== 0) return typeCompare;
+
+  if (a.type === "forwarded" && b.type === "forwarded") {
+    const elementCompare = a.element.localeCompare(b.element);
+    if (elementCompare !== 0) return elementCompare;
+  }
+
+  return (a.detail ?? "").localeCompare(b.detail ?? "");
 }
 
 export function literalDetailToTypeText(value: unknown): string {

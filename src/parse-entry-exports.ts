@@ -37,7 +37,7 @@ const NEWLINE_REGEX = /\r?\n/;
 const JSDOC_LINE_PREFIX_REGEX = /^\s*\*+/;
 
 /** Minimal AST node shape exposed by the Svelte/acorn-typescript parser. */
-interface AstNode {
+export interface AstNode {
   type: string;
   start: number;
   end: number;
@@ -62,6 +62,12 @@ export interface InternalExport extends Omit<EntryExport, "source"> {
    * template). `resolve-const-defaults.ts` writes it as an imported prop default.
    */
   primitiveLiteral?: PrimitiveLiteral;
+  /**
+   * The function a function-valued export is declared as (`export function`,
+   * or a `const` arrow/function expression). `resolve-dispatch-escapes.ts`
+   * reads the events it dispatches through a parameter.
+   */
+  functionNode?: AstNode;
 }
 
 export interface PrimitiveLiteral {
@@ -387,10 +393,12 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
       let returnType: string | undefined;
       let literalValue: string | undefined;
       let primitiveLiteral: PrimitiveLiteral | undefined;
+      let functionNode: AstNode | undefined;
       const init = asNode(declarator.init);
 
       if (init) {
         if (init.type === "ArrowFunctionExpression" || init.type === "FunctionExpression") {
+          functionNode = init;
           if (!type) type = buildSignature(source, init);
           returnType =
             functionReturnAnnotationText(source, init) ??
@@ -413,6 +421,7 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
         returnType,
         literalValue,
         primitiveLiteral,
+        functionNode,
         description,
         deprecated,
         tags,
@@ -438,6 +447,7 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
           functionReturnAnnotationText(source, declaration) ??
           jsDocReturnType ??
           inferAstLiteralReturnType(declaration),
+        ...(declaration.type === "FunctionDeclaration" ? { functionNode: declaration } : {}),
         description,
         deprecated,
         tags,
@@ -716,12 +726,13 @@ export async function parseEntryExports(entryFile: string): Promise<EntryExports
     }
     declFileByName.set(entry.name, entry.declFile);
 
-    // Drop internal returnType/literalValue/primitiveLiteral; public EntryExport does not expose them.
+    // Drop internal returnType/literalValue/primitiveLiteral/functionNode; public EntryExport does not expose them.
     const {
       declFile,
       returnType: _returnType,
       literalValue: _literalValue,
       primitiveLiteral: _primitiveLiteral,
+      functionNode: _functionNode,
       ...rest
     } = entry;
     byName.set(entry.name, { ...rest, source: relativeSource(declFile) });

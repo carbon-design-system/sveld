@@ -419,15 +419,22 @@ export function buildTypeScriptMetadata(ctx: ParserContext): ParsedComponentType
     ctx.pendingConstDefaultCandidates.length > 0 ? ctx.pendingConstDefaultCandidates.slice() : undefined;
   const pendingContextKeyCandidates =
     ctx.pendingContextKeyCandidates.length > 0 ? ctx.pendingContextKeyCandidates.slice() : undefined;
+  const pendingDispatchEscapeCandidates =
+    ctx.pendingDispatchEscapeCandidates.length > 0 ? ctx.pendingDispatchEscapeCandidates.slice() : undefined;
+  const deferredEventNoSourceDiagnostics =
+    ctx.deferredEventNoSourceDiagnostics.length > 0 ? ctx.deferredEventNoSourceDiagnostics.slice() : undefined;
   const pendingCrossFileCandidates = {
     ...(pendingCallDefaultCandidates ? { pendingCallDefaultCandidates } : {}),
     ...(pendingConstDefaultCandidates ? { pendingConstDefaultCandidates } : {}),
     ...(pendingContextKeyCandidates ? { pendingContextKeyCandidates } : {}),
+    ...(pendingDispatchEscapeCandidates ? { pendingDispatchEscapeCandidates } : {}),
+    ...(deferredEventNoSourceDiagnostics ? { deferredEventNoSourceDiagnostics } : {}),
   };
   const hasPendingCrossFileCandidates =
     pendingCallDefaultCandidates !== undefined ||
     pendingConstDefaultCandidates !== undefined ||
-    pendingContextKeyCandidates !== undefined;
+    pendingContextKeyCandidates !== undefined ||
+    pendingDispatchEscapeCandidates !== undefined;
 
   const referencedImportedTypes = new Set<string>();
   const referencedLocalTypes = new Set<string>();

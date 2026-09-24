@@ -187,7 +187,11 @@ export default class MultiSelect extends SvelteComponentTyped<
     clear: CustomEvent<any>;
     focus: WindowEventMap["focus"];
     keydown: WindowEventMap["keydown"];
-    select: CustomEvent<any>;
+    select: CustomEvent<{
+        selectedIds: MultiSelectItemId[];
+        selected: any;
+        unselected: any;
+      }>;
   },
   Record<string, never>
 > {}

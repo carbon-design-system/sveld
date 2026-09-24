@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "generator": {
     "name": "sveld",
-    "version": "0.36.10",
-    "svelteVersion": "5.56.10"
+    "version": "0.37.5",
+    "svelteVersion": "5.57.0"
   },
   "total": 156,
   "components": [
@@ -218,8 +218,8 @@
       "typedefs": [],
       "generics": null,
       "rest_props": {
-        "type": "InlineComponent",
-        "name": "AccordionSkeleton"
+        "type": "Element",
+        "name": "ul"
       },
       "extends": {
         "interface": "AccordionSkeletonProps",
@@ -246,7 +246,17 @@
               "type": "any",
               "optional": false
             }
-          ]
+          ],
+          "source": {
+            "start": {
+              "line": 30,
+              "column": 2
+            },
+            "end": {
+              "line": 30,
+              "column": 43
+            }
+          }
         }
       ]
     },
@@ -952,8 +962,8 @@
       "typedefs": [],
       "generics": null,
       "rest_props": {
-        "type": "InlineComponent",
-        "name": "BreadcrumbSkeleton"
+        "type": "Element",
+        "name": "nav"
       },
       "extends": {
         "interface": "BreadcrumbSkeletonProps",
@@ -2558,8 +2568,8 @@
       "typedefs": [],
       "generics": null,
       "rest_props": {
-        "type": "InlineComponent",
-        "name": "CheckboxSkeleton"
+        "type": "Element",
+        "name": "div"
       },
       "contexts": []
     },
@@ -3441,8 +3451,8 @@
       "typedefs": [],
       "generics": null,
       "rest_props": {
-        "type": "InlineComponent",
-        "name": "CodeSnippetSkeleton"
+        "type": "Element",
+        "name": "span"
       },
       "contexts": []
     },
@@ -3905,17 +3915,47 @@
         {
           "type": "boolean | number",
           "name": "ColumnSize",
-          "ts": "type ColumnSize = boolean | number;"
+          "ts": "type ColumnSize = boolean | number;",
+          "source": {
+            "start": {
+              "line": 3,
+              "column": 5
+            },
+            "end": {
+              "line": 3,
+              "column": 43
+            }
+          }
         },
         {
           "type": "{span?: ColumnSize; offset: number;}",
           "name": "ColumnSizeDescriptor",
-          "ts": "interface ColumnSizeDescriptor {span?: ColumnSize; offset: number;}"
+          "ts": "interface ColumnSizeDescriptor {span?: ColumnSize; offset: number;}",
+          "source": {
+            "start": {
+              "line": 4,
+              "column": 5
+            },
+            "end": {
+              "line": 4,
+              "column": 73
+            }
+          }
         },
         {
           "type": "ColumnSize | ColumnSizeDescriptor",
           "name": "ColumnBreakpoint",
-          "ts": "type ColumnBreakpoint = ColumnSize | ColumnSizeDescriptor;"
+          "ts": "type ColumnBreakpoint = ColumnSize | ColumnSizeDescriptor;",
+          "source": {
+            "start": {
+              "line": 5,
+              "column": 5
+            },
+            "end": {
+              "line": 5,
+              "column": 66
+            }
+          }
         }
       ],
       "generics": null,
@@ -4566,7 +4606,17 @@
         {
           "type": "{ id: string; text: string; }",
           "name": "ComboBoxItem",
-          "ts": "interface ComboBoxItem { id: string; text: string; }"
+          "ts": "interface ComboBoxItem { id: string; text: string; }",
+          "source": {
+            "start": {
+              "line": 3,
+              "column": 5
+            },
+            "end": {
+              "line": 3,
+              "column": 58
+            }
+          }
         }
       ],
       "generics": null,
@@ -4954,7 +5004,17 @@
               "type": "(ref: any) => any",
               "optional": false
             }
-          ]
+          ],
+          "source": {
+            "start": {
+              "line": 37,
+              "column": 2
+            },
+            "end": {
+              "line": 47,
+              "column": 4
+            }
+          }
         }
       ]
     },
@@ -5257,7 +5317,17 @@
               "type": "(direction: any) => any",
               "optional": false
             }
-          ]
+          ],
+          "source": {
+            "start": {
+              "line": 31,
+              "column": 2
+            },
+            "end": {
+              "line": 54,
+              "column": 4
+            }
+          }
         }
       ]
     },
@@ -6397,42 +6467,122 @@
         {
           "type": "Exclude<keyof Row, \"id\">",
           "name": "DataTableKey<Row>",
-          "ts": "type DataTableKey<Row> = Exclude<keyof Row, \"id\">;"
+          "ts": "type DataTableKey<Row> = Exclude<keyof Row, \"id\">;",
+          "source": {
+            "start": {
+              "line": 4,
+              "column": 3
+            },
+            "end": {
+              "line": 4,
+              "column": 56
+            }
+          }
         },
         {
           "type": "any",
           "name": "DataTableValue",
-          "ts": "type DataTableValue = any;"
+          "ts": "type DataTableValue = any;",
+          "source": {
+            "start": {
+              "line": 5,
+              "column": 3
+            },
+            "end": {
+              "line": 5,
+              "column": 32
+            }
+          }
         },
         {
           "type": "{ key: DataTableKey<Row>; empty: boolean; display?: (item: Value, row: Row) => DataTableValue; sort?: false | ((a: DataTableValue, b: DataTableValue) => number); columnMenu?: boolean; width?: string; minWidth?: string; }",
           "name": "DataTableEmptyHeader<Row>",
-          "ts": "interface DataTableEmptyHeader<Row> { key: DataTableKey<Row>; empty: boolean; display?: (item: Value, row: Row) => DataTableValue; sort?: false | ((a: DataTableValue, b: DataTableValue) => number); columnMenu?: boolean; width?: string; minWidth?: string; }"
+          "ts": "interface DataTableEmptyHeader<Row> { key: DataTableKey<Row>; empty: boolean; display?: (item: Value, row: Row) => DataTableValue; sort?: false | ((a: DataTableValue, b: DataTableValue) => number); columnMenu?: boolean; width?: string; minWidth?: string; }",
+          "source": {
+            "start": {
+              "line": 6,
+              "column": 3
+            },
+            "end": {
+              "line": 6,
+              "column": 260
+            }
+          }
         },
         {
           "type": "{ key: DataTableKey<Row>; value: DataTableValue; display?: (item: Value, row: Row) => DataTableValue; sort?: false | ((a: DataTableValue, b: DataTableValue) => number); columnMenu?: boolean; width?: string; minWidth?: string; }",
           "name": "DataTableNonEmptyHeader<Row>",
-          "ts": "interface DataTableNonEmptyHeader<Row> { key: DataTableKey<Row>; value: DataTableValue; display?: (item: Value, row: Row) => DataTableValue; sort?: false | ((a: DataTableValue, b: DataTableValue) => number); columnMenu?: boolean; width?: string; minWidth?: string; }"
+          "ts": "interface DataTableNonEmptyHeader<Row> { key: DataTableKey<Row>; value: DataTableValue; display?: (item: Value, row: Row) => DataTableValue; sort?: false | ((a: DataTableValue, b: DataTableValue) => number); columnMenu?: boolean; width?: string; minWidth?: string; }",
+          "source": {
+            "start": {
+              "line": 7,
+              "column": 3
+            },
+            "end": {
+              "line": 7,
+              "column": 270
+            }
+          }
         },
         {
           "type": "DataTableNonEmptyHeader<Row> | DataTableEmptyHeader<Row>",
           "name": "DataTableHeader<Row>",
-          "ts": "type DataTableHeader<Row> = DataTableNonEmptyHeader<Row> | DataTableEmptyHeader<Row>;"
+          "ts": "type DataTableHeader<Row> = DataTableNonEmptyHeader<Row> | DataTableEmptyHeader<Row>;",
+          "source": {
+            "start": {
+              "line": 8,
+              "column": 3
+            },
+            "end": {
+              "line": 8,
+              "column": 91
+            }
+          }
         },
         {
           "type": "{ id: any; [key: string]: DataTableValue; }",
           "name": "DataTableRow",
-          "ts": "interface DataTableRow { id: any; [key: string]: DataTableValue; }"
+          "ts": "interface DataTableRow { id: any; [key: string]: DataTableValue; }",
+          "source": {
+            "start": {
+              "line": 9,
+              "column": 3
+            },
+            "end": {
+              "line": 9,
+              "column": 70
+            }
+          }
         },
         {
           "type": "any",
           "name": "DataTableRowId",
-          "ts": "type DataTableRowId = any;"
+          "ts": "type DataTableRowId = any;",
+          "source": {
+            "start": {
+              "line": 10,
+              "column": 3
+            },
+            "end": {
+              "line": 10,
+              "column": 32
+            }
+          }
         },
         {
           "type": "{ key: DataTableKey<Row>; value: DataTableValue; display?: (item: Value, row: DataTableRow) => DataTableValue; }",
           "name": "DataTableCell",
-          "ts": "interface DataTableCell { key: DataTableKey<Row>; value: DataTableValue; display?: (item: Value, row: DataTableRow) => DataTableValue; }"
+          "ts": "interface DataTableCell { key: DataTableKey<Row>; value: DataTableValue; display?: (item: Value, row: DataTableRow) => DataTableValue; }",
+          "source": {
+            "start": {
+              "line": 11,
+              "column": 3
+            },
+            "end": {
+              "line": 11,
+              "column": 140
+            }
+          }
         }
       ],
       "generics": [
@@ -6463,7 +6613,17 @@
               "type": "() => any",
               "optional": false
             }
-          ]
+          ],
+          "source": {
+            "start": {
+              "line": 160,
+              "column": 0
+            },
+            "end": {
+              "line": 168,
+              "column": 2
+            }
+          }
         }
       ]
     },
@@ -7200,7 +7360,17 @@
               "type": "() => any",
               "optional": false
             }
-          ]
+          ],
+          "source": {
+            "start": {
+              "line": 69,
+              "column": 2
+            },
+            "end": {
+              "line": 108,
+              "column": 4
+            }
+          }
         }
       ]
     },
@@ -8377,17 +8547,47 @@
         {
           "type": "string",
           "name": "DropdownItemId",
-          "ts": "type DropdownItemId = string;"
+          "ts": "type DropdownItemId = string;",
+          "source": {
+            "start": {
+              "line": 3,
+              "column": 5
+            },
+            "end": {
+              "line": 3,
+              "column": 37
+            }
+          }
         },
         {
           "type": "string",
           "name": "DropdownItemText",
-          "ts": "type DropdownItemText = string;"
+          "ts": "type DropdownItemText = string;",
+          "source": {
+            "start": {
+              "line": 4,
+              "column": 5
+            },
+            "end": {
+              "line": 4,
+              "column": 39
+            }
+          }
         },
         {
           "type": "{ id: DropdownItemId; text: DropdownItemText; }",
           "name": "DropdownItem",
-          "ts": "interface DropdownItem { id: DropdownItemId; text: DropdownItemText; }"
+          "ts": "interface DropdownItem { id: DropdownItemId; text: DropdownItemText; }",
+          "source": {
+            "start": {
+              "line": 5,
+              "column": 5
+            },
+            "end": {
+              "line": 5,
+              "column": 76
+            }
+          }
         }
       ],
       "generics": null,
@@ -10786,7 +10986,17 @@
               "type": "boolean",
               "optional": false
             }
-          ]
+          ],
+          "source": {
+            "start": {
+              "line": 5,
+              "column": 2
+            },
+            "end": {
+              "line": 5,
+              "column": 39
+            }
+          }
         }
       ]
     },
@@ -12167,7 +12377,17 @@
         {
           "type": "{ delay?: number; duration?: number; easing?: (t: number) => number; }",
           "name": "HeaderActionSlideTransition",
-          "ts": "interface HeaderActionSlideTransition { delay?: number; duration?: number; easing?: (t: number) => number; }"
+          "ts": "interface HeaderActionSlideTransition { delay?: number; duration?: number; easing?: (t: number) => number; }",
+          "source": {
+            "start": {
+              "line": 3,
+              "column": 5
+            },
+            "end": {
+              "line": 3,
+              "column": 114
+            }
+          }
         }
       ],
       "generics": null,
@@ -13672,7 +13892,17 @@
         {
           "type": "{ href: string; text: string; description?: string; }",
           "name": "HeaderSearchResult",
-          "ts": "interface HeaderSearchResult { href: string; text: string; description?: string; }"
+          "ts": "interface HeaderSearchResult { href: string; text: string; description?: string; }",
+          "source": {
+            "start": {
+              "line": 3,
+              "column": 5
+            },
+            "end": {
+              "line": 3,
+              "column": 88
+            }
+          }
         }
       ],
       "generics": null,
@@ -15483,7 +15713,17 @@
         {
           "type": "\"close\" | \"open\"",
           "name": "ListBoxFieldTranslationId",
-          "ts": "type ListBoxFieldTranslationId = \"close\" | \"open\";"
+          "ts": "type ListBoxFieldTranslationId = \"close\" | \"open\";",
+          "source": {
+            "start": {
+              "line": 3,
+              "column": 5
+            },
+            "end": {
+              "line": 3,
+              "column": 58
+            }
+          }
         }
       ],
       "generics": null,
@@ -15734,7 +15974,17 @@
         {
           "type": "\"close\" | \"open\"",
           "name": "ListBoxMenuIconTranslationId",
-          "ts": "type ListBoxMenuIconTranslationId = \"close\" | \"open\";"
+          "ts": "type ListBoxMenuIconTranslationId = \"close\" | \"open\";",
+          "source": {
+            "start": {
+              "line": 3,
+              "column": 5
+            },
+            "end": {
+              "line": 3,
+              "column": 61
+            }
+          }
         }
       ],
       "generics": null,
@@ -16070,7 +16320,17 @@
         {
           "type": "\"clearAll\" | \"clearSelection\"",
           "name": "ListBoxSelectionTranslationId",
-          "ts": "type ListBoxSelectionTranslationId = \"clearAll\" | \"clearSelection\";"
+          "ts": "type ListBoxSelectionTranslationId = \"clearAll\" | \"clearSelection\";",
+          "source": {
+            "start": {
+              "line": 3,
+              "column": 5
+            },
+            "end": {
+              "line": 3,
+              "column": 75
+            }
+          }
         }
       ],
       "generics": null,
@@ -18459,6 +18719,7 @@
         {
           "type": "dispatched",
           "name": "select",
+          "detail": "{ selectedIds: MultiSelectItemId[]; selected: any; unselected: any; }",
           "source": {
             "start": {
               "line": 171,
@@ -18475,17 +18736,47 @@
         {
           "type": "string",
           "name": "MultiSelectItemId",
-          "ts": "type MultiSelectItemId = string;"
+          "ts": "type MultiSelectItemId = string;",
+          "source": {
+            "start": {
+              "line": 113,
+              "column": 5
+            },
+            "end": {
+              "line": 113,
+              "column": 40
+            }
+          }
         },
         {
           "type": "string",
           "name": "MultiSelectItemText",
-          "ts": "type MultiSelectItemText = string;"
+          "ts": "type MultiSelectItemText = string;",
+          "source": {
+            "start": {
+              "line": 114,
+              "column": 5
+            },
+            "end": {
+              "line": 114,
+              "column": 42
+            }
+          }
         },
         {
           "type": "{ id: MultiSelectItemId; text: MultiSelectItemText; }",
           "name": "MultiSelectItem",
-          "ts": "interface MultiSelectItem { id: MultiSelectItemId; text: MultiSelectItemText; }"
+          "ts": "interface MultiSelectItem { id: MultiSelectItemId; text: MultiSelectItemText; }",
+          "source": {
+            "start": {
+              "line": 115,
+              "column": 5
+            },
+            "end": {
+              "line": 115,
+              "column": 85
+            }
+          }
         }
       ],
       "generics": null,
@@ -18503,7 +18794,17 @@
               "type": "(arg: any) => any",
               "optional": false
             }
-          ]
+          ],
+          "source": {
+            "start": {
+              "line": 135,
+              "column": 2
+            },
+            "end": {
+              "line": 146,
+              "column": 4
+            }
+          }
         }
       ]
     },
@@ -19843,7 +20144,17 @@
         {
           "type": "\"increment\" | \"decrement\"",
           "name": "NumberInputTranslationId",
-          "ts": "type NumberInputTranslationId = \"increment\" | \"decrement\";"
+          "ts": "type NumberInputTranslationId = \"increment\" | \"decrement\";",
+          "source": {
+            "start": {
+              "line": 3,
+              "column": 5
+            },
+            "end": {
+              "line": 3,
+              "column": 66
+            }
+          }
         }
       ],
       "generics": null,
@@ -20744,7 +21055,17 @@
               "type": "(direction: any) => any",
               "optional": false
             }
-          ]
+          ],
+          "source": {
+            "start": {
+              "line": 71,
+              "column": 2
+            },
+            "end": {
+              "line": 97,
+              "column": 4
+            }
+          }
         }
       ]
     },
@@ -22814,7 +23135,17 @@
               "type": "(index: any) => any",
               "optional": false
             }
-          ]
+          ],
+          "source": {
+            "start": {
+              "line": 21,
+              "column": 2
+            },
+            "end": {
+              "line": 51,
+              "column": 4
+            }
+          }
         }
       ]
     },
@@ -23877,7 +24208,17 @@
               "type": "(value: any) => any",
               "optional": false
             }
-          ]
+          ],
+          "source": {
+            "start": {
+              "line": 35,
+              "column": 2
+            },
+            "end": {
+              "line": 45,
+              "column": 4
+            }
+          }
         }
       ]
     },
@@ -25103,8 +25444,8 @@
       "typedefs": [],
       "generics": null,
       "rest_props": {
-        "type": "InlineComponent",
-        "name": "SearchSkeleton"
+        "type": "Element",
+        "name": "div"
       },
       "contexts": []
     },
@@ -25724,7 +26065,17 @@
               "type": "any",
               "optional": false
             }
-          ]
+          ],
+          "source": {
+            "start": {
+              "line": 65,
+              "column": 2
+            },
+            "end": {
+              "line": 65,
+              "column": 41
+            }
+          }
         }
       ]
     },
@@ -28436,7 +28787,17 @@
               "type": "(value: any) => any",
               "optional": false
             }
-          ]
+          ],
+          "source": {
+            "start": {
+              "line": 20,
+              "column": 2
+            },
+            "end": {
+              "line": 25,
+              "column": 4
+            }
+          }
         }
       ]
     },
@@ -31091,7 +31452,17 @@
               "type": "(direction: any) => any",
               "optional": false
             }
-          ]
+          ],
+          "source": {
+            "start": {
+              "line": 33,
+              "column": 2
+            },
+            "end": {
+              "line": 72,
+              "column": 4
+            }
+          }
         }
       ]
     },
@@ -33343,7 +33714,17 @@
               "type": "(value: any) => any",
               "optional": false
             }
-          ]
+          ],
+          "source": {
+            "start": {
+              "line": 20,
+              "column": 2
+            },
+            "end": {
+              "line": 30,
+              "column": 4
+            }
+          }
         }
       ]
     },
@@ -34264,7 +34645,17 @@
               "type": "any",
               "optional": false
             }
-          ]
+          ],
+          "source": {
+            "start": {
+              "line": 41,
+              "column": 2
+            },
+            "end": {
+              "line": 41,
+              "column": 51
+            }
+          }
         }
       ]
     },
@@ -35770,7 +36161,17 @@
               "type": "(visible: any) => any",
               "optional": false
             }
-          ]
+          ],
+          "source": {
+            "start": {
+              "line": 15,
+              "column": 2
+            },
+            "end": {
+              "line": 21,
+              "column": 4
+            }
+          }
         }
       ]
     },

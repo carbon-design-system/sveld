@@ -19,6 +19,7 @@ import type {
   PendingCallDefaultCandidate,
   PendingConstDefaultCandidate,
   PendingContextKeyCandidate,
+  PendingDispatchEscapeCandidate,
   RestProps,
   RunesPropsDeclarationMetadata,
   ScriptLanguage,
@@ -87,6 +88,10 @@ export interface ParserContext {
   readonly pendingConstDefaultCandidates: PendingConstDefaultCandidate[];
   /** Named-import `setContext` keys that need a string value after AST parsing. */
   readonly pendingContextKeyCandidates: PendingContextKeyCandidate[];
+  /** Dispatchers passed to imported functions, resolved after AST parsing. */
+  readonly pendingDispatchEscapeCandidates: PendingDispatchEscapeCandidate[];
+  /** `event-no-source` diagnostics that wait on {@link pendingDispatchEscapeCandidates}. */
+  readonly deferredEventNoSourceDiagnostics: SveldDiagnostic[];
 
   readonly runesPropsDeclarationMetadataByDeclaratorStart: Map<number, RunesPropsDeclarationMetadata>;
   readonly typedRunesPropsDeclarations: RunesPropsDeclarationMetadata[];
@@ -177,6 +182,8 @@ export function createParserContext(): ParserContext {
     pendingCallDefaultCandidates: [],
     pendingConstDefaultCandidates: [],
     pendingContextKeyCandidates: [],
+    pendingDispatchEscapeCandidates: [],
+    deferredEventNoSourceDiagnostics: [],
     runesPropsDeclarationMetadataByDeclaratorStart: new Map(),
     typedRunesPropsDeclarations: [],
     explicitPropTypesByName: new Map(),

@@ -1,0 +1,76 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 18,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "open",
+      "detail": "null",
+      "description": "Fired by `registry.track`.",
+      "source": {
+        "start": {
+          "line": 4,
+          "column": 5
+        },
+        "end": {
+          "line": 4,
+          "column": 23
+        }
+      }
+    }
+  ],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "dispatched-events-escaped-unfollowable/input.svelte",
+      "kind": "dispatch-escapes",
+      "name": "dispatch",
+      "message": "`dispatch` is passed to `registry.track`, which sveld can only follow when it's an imported function. Document the events dispatched there with @event tags.",
+      "source": {
+        "start": {
+          "line": 15,
+          "column": 2
+        },
+        "end": {
+          "line": 15,
+          "column": 26
+        }
+      },
+      "code": "sveld/dispatch-escapes",
+      "severity": "warning"
+    },
+    {
+      "component": "dispatched-events-escaped-unfollowable/input.svelte",
+      "kind": "dispatch-escapes",
+      "name": "dispatch",
+      "message": "`dispatch` is passed to `notify`, which sveld can only follow when it's an imported function. Document the events dispatched there with @event tags.",
+      "source": {
+        "start": {
+          "line": 16,
+          "column": 2
+        },
+        "end": {
+          "line": 16,
+          "column": 18
+        }
+      },
+      "code": "sveld/dispatch-escapes",
+      "severity": "warning"
+    }
+  ]
+}

@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "generator": {
     "name": "sveld",
-    "version": "0.36.10",
-    "svelteVersion": "5.56.10"
+    "version": "0.37.5",
+    "svelteVersion": "5.57.0"
   },
   "total": 5,
   "components": [
@@ -373,7 +373,17 @@
         {
           "type": "string",
           "name": "Author",
-          "ts": "type Author = string;"
+          "ts": "type Author = string;",
+          "source": {
+            "start": {
+              "line": 6,
+              "column": 5
+            },
+            "end": {
+              "line": 6,
+              "column": 29
+            }
+          }
         }
       ],
       "generics": null,
