@@ -1,0 +1,72 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 29,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "{ item: string }",
+      "description": "Renders each item.",
+      "source": {
+        "start": {
+          "line": 28,
+          "column": 0
+        },
+        "end": {
+          "line": 28,
+          "column": 16
+        }
+      }
+    },
+    {
+      "name": "header",
+      "default": false,
+      "slot_props": "{ title: string }",
+      "description": "Header content.",
+      "source": {
+        "start": {
+          "line": 24,
+          "column": 0
+        },
+        "end": {
+          "line": 27,
+          "column": 2
+        }
+      }
+    }
+  ],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "change",
+      "detail": "{ value: string }",
+      "description": "Fired on change.",
+      "source": {
+        "start": {
+          "line": 21,
+          "column": 5
+        },
+        "end": {
+          "line": 21,
+          "column": 38
+        }
+      }
+    }
+  ],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
