@@ -142,9 +142,11 @@ export function addDispatchedEvent(
     });
   } else if (existing_event) {
     const merged_tags = existing_event.tags ?? tags;
+    // An untyped `@event`'s `null` detail is only a fallback: the first dispatch replaces it.
+    const replacesUntypedDetail = ctx.untypedJsDocEventNames.delete(name);
     ctx.events.set(name, {
       ...existing_event,
-      detail: existing_event.detail === undefined ? default_detail : existing_event.detail,
+      detail: existing_event.detail === undefined || replacesUntypedDetail ? default_detail : existing_event.detail,
       description: existing_event.description || event_description,
       deprecated: existing_event.deprecated ?? deprecated,
       tags: merged_tags,
