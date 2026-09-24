@@ -85,6 +85,18 @@ function getInlineTagDescription(
   return tagLines[headIndex].content;
 }
 
+/** Whether a tag has body text on its own line (`@since 1.0`), not only below it (`@example`). */
+function hasBodyOnTagLine(tag: JSDocTag): boolean {
+  // `text` leaves out an empty tag line, so then it has one line fewer than the tag.
+  return tag.text.split("\n").length === tag.lines.length;
+}
+
+/** `text` minus its last `count` lines. */
+function dropLastLines(text: string, count: number): string {
+  if (count <= 0) return text;
+  return text.split("\n").slice(0, -count).join("\n").trimEnd();
+}
+
 /** `@since`, `@example`, and `@see` are kept out of prose descriptions and exposed as `tags` instead. */
 const IDE_PASSTHROUGH_TAGS = new Set(["since", "example", "see"]);
 
@@ -720,6 +732,13 @@ export function parseCustomTypes(
     const tagLineNumbers = new Set<number>();
     /** Lines already used as preceding-description for another tag. */
     const consumedDescriptionLines = new Set<number>();
+    /**
+     * Cuts the body of the tag right above the current one (`@since`, `@deprecated`,
+     * `@restProps`, ...) short at the first line the current tag claims as its description, so
+     * the text isn't in both. `trimThisBody` is the current tag's, handed down to the next one.
+     */
+    let trimBodyAbove: ((fromLine: number) => void) | undefined;
+    let trimThisBody: ((fromLine: number) => void) | undefined;
     for (const tagInfo of tags) {
       if (tagInfo.lines.length > 0) {
         tagLineNumbers.add(tagInfo.lines[0].number);
@@ -762,7 +781,11 @@ export function parseCustomTypes(
       let foundDescriptionBlock = false;
 
       for (let lineNum = tagLineNumber - 1; lineNum >= 0; lineNum--) {
-        if (tagLineNumbers.has(lineNum) || indentedContinuationLines.has(lineNum)) {
+        if (
+          tagLineNumbers.has(lineNum) ||
+          indentedContinuationLines.has(lineNum) ||
+          consumedDescriptionLines.has(lineNum)
+        ) {
           break;
         }
 
@@ -781,7 +804,24 @@ export function parseCustomTypes(
       }
       if (descLines.length === 0) return undefined;
       for (const n of claimedLineNums) consumedDescriptionLines.add(n);
+      trimBodyAbove?.(claimedLineNums[0]);
       return descLines.join("\n").trim();
+    };
+
+    /**
+     * Keeps a prose tag's body and the next tag's description apart. A tag with nothing on its
+     * own line (`@example` above a code fence) owns every line below it; one with text there
+     * gives up its trailing lines when the next tag claims them, dropping them via `trim`.
+     */
+    const claimBodyLines = (tagInfo: JSDocTag, trim: (droppedLineCount: number) => void) => {
+      if (!hasBodyOnTagLine(tagInfo)) {
+        for (let index = 1; index < tagInfo.lines.length; index++) {
+          consumedDescriptionLines.add(tagInfo.lines[index].number);
+        }
+        return;
+      }
+      const lastLine = tagInfo.lines[tagInfo.lines.length - 1].number;
+      trimThisBody = (fromLine) => trim(lastLine - fromLine + 1);
     };
 
     /**
@@ -1034,6 +1074,8 @@ export function parseCustomTypes(
       // Sections are split in line order, so neighbors in `tags` are neighbors in the block.
       const nextTag = tags[tagIndex + 1];
       const type = parser.aliasType(tagType);
+      trimBodyAbove = trimThisBody;
+      trimThisBody = undefined;
 
       switch (tag) {
         case "extends":
@@ -1061,11 +1103,17 @@ export function parseCustomTypes(
             restPropsDesc = commentDescription;
             commentDescriptionUsed = true;
           }
-          ctx.rest_props = {
+          const restProps: NonNullable<ParserContext["rest_props"]> = {
             type: "Element",
             name: type,
             description: restPropsDesc || undefined,
           };
+          ctx.rest_props = restProps;
+          if (inlineRestPropsDesc) {
+            claimBodyLines(tags[tagIndex], (droppedLineCount) => {
+              restProps.description = cleanDescription(dropLastLines(rawInlineDesc, droppedLineCount)) || undefined;
+            });
+          }
           if (isFirstTag) isFirstTag = false;
           break;
         }
@@ -1292,12 +1340,18 @@ export function parseCustomTypes(
           break;
         }
         case "deprecated": {
-          const deprecatedValue = deprecatedValueFromBody(tags[tagIndex].text);
-          if (currentEventName === undefined) {
-            pendingDeprecated ??= deprecatedValue;
-          } else {
-            currentEventDeprecated ??= deprecatedValue;
-          }
+          const { text } = tags[tagIndex];
+          const forEvent = currentEventName !== undefined;
+          // The first `@deprecated` wins.
+          if (forEvent ? currentEventDeprecated !== undefined : pendingDeprecated !== undefined) break;
+          const setDeprecated = (value: DeprecatedValue) => {
+            if (forEvent) currentEventDeprecated = value;
+            else pendingDeprecated = value;
+          };
+          setDeprecated(deprecatedValueFromBody(text));
+          claimBodyLines(tags[tagIndex], (droppedLineCount) => {
+            setDeprecated(deprecatedValueFromBody(dropLastLines(text, droppedLineCount)));
+          });
           break;
         }
         case "ignore":
@@ -1330,6 +1384,9 @@ export function parseCustomTypes(
               name: tag,
               body: raw,
             };
+            claimBodyLines(tags[tagIndex], (droppedLineCount) => {
+              passthroughTag.body = dropLastLines(raw, droppedLineCount);
+            });
             if (!IDE_PASSTHROUGH_TAGS.has(tag) && !OTHER_KNOWN_JSDOC_TAGS.has(tag)) {
               recordDiagnostic(
                 ctx,
