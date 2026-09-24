@@ -16,7 +16,7 @@ import { matchesGlob } from "./glob-match";
  * - `context-duplicate-key`: `setContext` called more than once with the same key; only the first call's shape is used.
  * - `context-key-unresolved`: a `setContext` key isn't a string literal, a `const`-bound string, `Symbol()`, or an imported `export const` string; the context is skipped.
  * - `spread-unresolved`: a `{...spread}` in a context or slot-props object literal couldn't be resolved; widened to `Record<string, any>`.
- * - `export-unresolved`: a named export specifier couldn't be resolved to a local declaration (instance script), or to a local declaration or value import (module script).
+ * - `export-unresolved`: a named export specifier couldn't be resolved to a local declaration (instance script), or to a local declaration or value import (module script); or an exported class, which isn't documented.
  * - `module-export-conflict`: a `<script context="module">` export collides with the component's default export or a generated type name; the export is skipped or may not type-check.
  * - `extend-props-target-missing`: an `@extends`/`@extendProps` target file wasn't found, or its named interface doesn't match the bundled component it points at.
  * - `extend-props-duplicate`: a second `@extends`/`@extendProps` tag overwrote the first.
