@@ -13,6 +13,7 @@ import { matchesGlob } from "./glob-match";
  * - `syntax-skipped`: `$props()`/`{@render}` syntax the parser can't model; omitted from output.
  * - `rest-props-unresolved`: every `{...$$restProps}` target was a component, so `$RestProps` couldn't be typed.
  * - `context-duplicate-key`: `setContext` called more than once with the same key; only the first call's shape is used.
+ * - `context-key-unresolved`: a `setContext` key isn't a string literal, a `const`-bound string, `Symbol()`, or an imported `export const` string; the context is skipped.
  * - `spread-unresolved`: a `{...spread}` in a context or slot-props object literal couldn't be resolved; widened to `Record<string, any>`.
  * - `export-unresolved`: a named export specifier couldn't be resolved to a local declaration (instance script), or to a local declaration or value import (module script).
  * - `module-export-conflict`: a `<script context="module">` export collides with the component's default export or a generated type name; the export is skipped or may not type-check.
@@ -38,6 +39,7 @@ export type SveldDiagnosticKind =
   | "syntax-skipped"
   | "rest-props-unresolved"
   | "context-duplicate-key"
+  | "context-key-unresolved"
   | "spread-unresolved"
   | "export-unresolved"
   | "module-export-conflict"
@@ -72,6 +74,7 @@ export const DIAGNOSTIC_CODES: Record<SveldDiagnosticKind, string> = {
   "syntax-skipped": "sveld/syntax-skipped",
   "rest-props-unresolved": "sveld/rest-props-unresolved",
   "context-duplicate-key": "sveld/context-duplicate-key",
+  "context-key-unresolved": "sveld/context-key-unresolved",
   "spread-unresolved": "sveld/spread-unresolved",
   "export-unresolved": "sveld/export-unresolved",
   "module-export-conflict": "sveld/module-export-conflict",
@@ -103,6 +106,7 @@ const DIAGNOSTIC_SEVERITIES: Record<SveldDiagnosticKind, SveldDiagnosticSeverity
   "syntax-skipped": "error",
   "rest-props-unresolved": "warning",
   "context-duplicate-key": "warning",
+  "context-key-unresolved": "warning",
   "spread-unresolved": "warning",
   "export-unresolved": "warning",
   "module-export-conflict": "warning",
@@ -232,6 +236,7 @@ const KIND_LABELS: Record<SveldDiagnosticKind, string> = {
   "syntax-skipped": "Component syntax sveld skipped",
   "rest-props-unresolved": "$$restProps spread only onto components",
   "context-duplicate-key": "Duplicate setContext keys",
+  "context-key-unresolved": "setContext keys sveld couldn't resolve",
   "spread-unresolved": "Unresolved spreads widened to Record<string, any>",
   "export-unresolved": "Unresolved named export specifiers",
   "module-export-conflict": "Module-script exports colliding with generated names",
@@ -258,6 +263,7 @@ const KIND_ORDER: SveldDiagnosticKind[] = [
   "syntax-skipped",
   "rest-props-unresolved",
   "context-duplicate-key",
+  "context-key-unresolved",
   "spread-unresolved",
   "export-unresolved",
   "module-export-conflict",

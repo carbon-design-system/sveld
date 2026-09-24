@@ -1561,7 +1561,10 @@ describe("ComponentParser", () => {
 
     const result = parser.parseSvelteComponent(source, diagnostics);
     expect(result.contexts ?? []).toHaveLength(0);
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining("Could not resolve setContext key"));
+    expect(result.diagnostics).toMatchObject([
+      { kind: "context-key-unresolved", code: "sveld/context-key-unresolved", name: "dynamicKey" },
+    ]);
+    expect(warn).not.toHaveBeenCalled();
 
     warn.mockRestore();
   });
@@ -1581,7 +1584,10 @@ describe("ComponentParser", () => {
 
     const result = parser.parseSvelteComponent(source, diagnostics);
     expect(result.contexts ?? []).toHaveLength(0);
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining("Could not resolve setContext key"));
+    expect(result.diagnostics).toMatchObject([
+      { kind: "context-key-unresolved", code: "sveld/context-key-unresolved", name: "mutableKey" },
+    ]);
+    expect(warn).not.toHaveBeenCalled();
 
     warn.mockRestore();
   });

@@ -62,5 +62,24 @@
   "typedefs": [],
   "generics": null,
   "contexts": [],
-  "diagnostics": []
+  "diagnostics": [
+    {
+      "component": "context-unresolvable-key/input.svelte",
+      "kind": "context-key-unresolved",
+      "name": "dynamicKey",
+      "message": "setContext key `dynamicKey` isn't a string literal, const-bound string, Symbol(), or imported `export const` string; the context is skipped.",
+      "source": {
+        "start": {
+          "line": 12,
+          "column": 2
+        },
+        "end": {
+          "line": 12,
+          "column": 35
+        }
+      },
+      "code": "sveld/context-key-unresolved",
+      "severity": "warning"
+    }
+  ]
 }

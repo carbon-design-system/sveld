@@ -109,7 +109,7 @@ describe("cross-file setContext key resolution", () => {
     expect(component?.contexts?.[0].key).toBe("simple-modal");
   });
 
-  test("C: export let stays unresolved and warns", async () => {
+  test("C: export let stays unresolved and records a diagnostic", async () => {
     writeFileSync(path.join(dir, "key.js"), `export let MODAL_KEY = "simple-modal";\n`);
     writeFileSync(
       path.join(dir, "Modal.svelte"),
@@ -130,10 +130,12 @@ describe("cross-file setContext key resolution", () => {
     const component = byModuleName(result.allComponentsForTypes, "Modal");
 
     expect(component?.contexts ?? []).toHaveLength(0);
-    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("Could not resolve setContext key"));
+    expect(result.diagnostics.filter((d) => d.kind === "context-key-unresolved")).toMatchObject([
+      { code: "sveld/context-key-unresolved", name: "MODAL_KEY", source: { start: { line: 7 } } },
+    ]);
   });
 
-  test("missing export warns and skips the context", async () => {
+  test("missing export records a diagnostic and skips the context", async () => {
     writeFileSync(path.join(dir, "key.js"), `export const OTHER_KEY = "other";\n`);
     writeFileSync(
       path.join(dir, "Modal.svelte"),
@@ -154,10 +156,12 @@ describe("cross-file setContext key resolution", () => {
     const component = byModuleName(result.allComponentsForTypes, "Modal");
 
     expect(component?.contexts ?? []).toHaveLength(0);
-    expect(warnSpy).toHaveBeenCalled();
+    expect(result.diagnostics.filter((d) => d.kind === "context-key-unresolved")).toMatchObject([
+      { name: "MODAL_KEY" },
+    ]);
   });
 
-  test("missing module warns and skips the context", async () => {
+  test("missing module records a diagnostic and skips the context", async () => {
     writeFileSync(
       path.join(dir, "Modal.svelte"),
       `<script>
@@ -177,7 +181,9 @@ describe("cross-file setContext key resolution", () => {
     const component = byModuleName(result.allComponentsForTypes, "Modal");
 
     expect(component?.contexts ?? []).toHaveLength(0);
-    expect(warnSpy).toHaveBeenCalled();
+    expect(result.diagnostics.filter((d) => d.kind === "context-key-unresolved")).toMatchObject([
+      { name: "MODAL_KEY" },
+    ]);
   });
 
   test("renamed import uses importedName", async () => {
