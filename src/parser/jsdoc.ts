@@ -331,13 +331,13 @@ function findAdjacentJSDocComment(
 
 /**
  * Absolute `/**` start offsets of every JSDoc comment directly documenting a function: a
- * `function` declaration (module or instance script, exported or not), a module-script `const`
- * initialized with an arrow or function expression, or a non-exported one in the instance
- * script. A `@template` tag in one of these blocks types that function's own generic parameter,
- * standard JSDoc usage unrelated to sveld's `@generics`/`@template` component-generics feature,
- * and must not be folded into the component's class/props generic parameter list the way a
- * `@generics`-adjacent one is. An instance-script `export let`/`export const` is a prop, so a
- * `@template` on one still declares a component generic.
+ * `function` declaration (module or instance script, exported or not), or a variable initialized
+ * with an arrow or function expression, except an instance-script `export let`. A `@template`
+ * tag in one of these blocks types that function's own generic parameter, standard JSDoc usage
+ * unrelated to sveld's `@generics`/`@template` component-generics feature, and must not be
+ * folded into the component's class/props generic parameter list the way a `@generics`-adjacent
+ * one is. An instance-script `export let` is a prop, so a `@template` on one still declares a
+ * component generic; an `export const` is a read-only accessor, not a prop.
  */
 function functionDocCommentStarts(ctx: ParserContext): Set<number> {
   const starts = new Set<number>();
@@ -362,7 +362,7 @@ function functionDocCommentStarts(ctx: ParserContext): Set<number> {
         if (isExported) addDocumented(node);
       } else if (
         declaration?.type === "VariableDeclaration" &&
-        (isModule || !isExported) &&
+        (isModule || !isExported || declaration.kind === "const") &&
         declaration.declarations?.length === 1 &&
         FUNCTION_EXPRESSION_TYPES.has(declaration.declarations[0].init?.type ?? "")
       ) {
@@ -373,7 +373,11 @@ function functionDocCommentStarts(ctx: ParserContext): Set<number> {
   return starts;
 }
 
-type FunctionDocCandidate = { type: string; declarations?: Array<{ init?: { type?: string } | null }> };
+type FunctionDocCandidate = {
+  type: string;
+  kind?: string;
+  declarations?: Array<{ init?: { type?: string } | null }>;
+};
 
 const FUNCTION_EXPRESSION_TYPES = new Set(["ArrowFunctionExpression", "FunctionExpression"]);
 
