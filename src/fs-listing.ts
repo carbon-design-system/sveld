@@ -1,5 +1,5 @@
 import { type Dirent, existsSync, readdirSync } from "node:fs";
-import { join } from "node:path";
+import { basename, dirname, join } from "node:path";
 
 /**
  * One `readdirSync` per directory per discovery pass, shared by the glob walk
@@ -81,4 +81,32 @@ export function directoryHasEntry(dir: string, name: string): boolean {
   }
   const sibling = listing.folded.get(foldName(name));
   return sibling !== undefined && sibling !== name && existsSync(join(dir, name));
+}
+
+const JS_FAMILY_EXTENSION_REGEX = /\.[mc]?jsx?$/;
+
+/** What each `.js`-family extension maps to under TypeScript's module resolution, in the order `tsc` tries them. */
+const TYPESCRIPT_COUNTERPART_EXTENSIONS: Record<string, string[]> = {
+  ".js": [".ts", ".tsx", ".d.ts"],
+  ".jsx": [".tsx", ".d.ts"],
+  ".mjs": [".mts", ".d.mts"],
+  ".cjs": [".cts", ".d.cts"],
+};
+
+/**
+ * The TypeScript file a `.js`-family path names when only that file exists:
+ * TypeScript projects import `./util.ts` as `./util.js` (and a Svelte 5
+ * `x.svelte.ts` module as `./x.svelte.js`), since that's the emitted name.
+ */
+export function typeScriptCounterpart(filePath: string): string | undefined {
+  const extension = JS_FAMILY_EXTENSION_REGEX.exec(filePath)?.[0];
+  if (extension === undefined) return undefined;
+
+  const stem = filePath.slice(0, -extension.length);
+  const dir = dirname(stem);
+  const name = basename(stem);
+  for (const candidate of TYPESCRIPT_COUNTERPART_EXTENSIONS[extension] ?? []) {
+    if (directoryHasEntry(dir, name + candidate)) return stem + candidate;
+  }
+  return undefined;
 }

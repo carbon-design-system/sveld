@@ -48,6 +48,26 @@ describe("inlineLocalTypeImports (via generateBundle typesInline)", () => {
     expect(result.diagnostics.filter((d) => d.kind === "types-inline-unresolved")).toEqual([]);
   });
 
+  test("a .js specifier naming a .ts file", async () => {
+    writeFileSync(
+      join(dir, "Comp.svelte"),
+      `<script lang="ts">
+  import type { Size } from "./types.js";
+  let { size }: { size: Size } = $props();
+</script>
+<div>{size}</div>
+`,
+    );
+    writeFileSync(join(dir, "types.ts"), `export type Size = "sm" | "md" | "lg";\n`);
+
+    const result = await generateBundle(dir, true, { cache: false, typesInline: "local" });
+    const component = byModuleName(result.allComponentsForTypes, "Comp");
+    const inlined = component ? result.inlinedTypesByFilePath?.get(component.filePath) : undefined;
+
+    expect(inlined?.declarations).toEqual(['type Size = "sm" | "md" | "lg";']);
+    expect(inlined?.dependencies).toEqual([join(dir, "types.ts")]);
+  });
+
   test("interface", async () => {
     writeFileSync(
       join(dir, "Comp.svelte"),

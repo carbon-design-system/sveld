@@ -2,7 +2,7 @@ import { lstatSync, readFileSync } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { isIdentifier, resolveStaticStringLiteral } from "./ast-guards";
 import type { DeprecatedValue, JsDocPassthroughTag } from "./ComponentParser";
-import { directoryEntry, directoryHasEntry } from "./fs-listing";
+import { directoryEntry, directoryHasEntry, typeScriptCounterpart } from "./fs-listing";
 import { extractJsDocDeprecatedAndTags, extractJsDocReturnType } from "./parser/jsdoc";
 import { getParserStack, loadParserStack } from "./parser-stack";
 import { normalizeSeparators } from "./path";
@@ -110,8 +110,9 @@ function identifierName(node: AstNode | undefined): string | undefined {
 /**
  * Resolves a module specifier to an on-disk source file.
  *
- * Tries the path verbatim, with each candidate extension, and finally an
- * `index.*` file when the specifier points at a directory.
+ * Tries the path verbatim, with each candidate extension, then an
+ * `index.*` file when the specifier points at a directory, and finally the
+ * `.ts` file a missing `.js` specifier stands for.
  *
  * @example
  * ```ts
@@ -148,7 +149,7 @@ export function resolveModuleFile(specifier: string, fromDir: string): string | 
     if (directoryHasEntry(parentDir, baseName + ext)) return base + ext;
   }
 
-  return null;
+  return typeScriptCounterpart(base) ?? null;
 }
 
 function leadingJsDoc(text: string, start: number): string | undefined {
