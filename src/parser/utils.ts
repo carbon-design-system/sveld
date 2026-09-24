@@ -12,3 +12,14 @@ export function escapeCommentText(text: string): string {
 export function assignValueOrUndefined(value?: "" | string) {
   return value === undefined || value === "" ? undefined : value;
 }
+
+const TEXT_COLLATOR = new Intl.Collator("en");
+
+/**
+ * Sort comparator for names in generated output. A fixed `en` collation (what `localeCompare()`
+ * gives under en-US) keeps output identical across machines; plain `localeCompare()` follows the
+ * machine's locale, so e.g. Czech sorts `change` after `hover` and breaks `--check` elsewhere.
+ */
+export function compareText(a: string, b: string): number {
+  return TEXT_COLLATOR.compare(a, b);
+}

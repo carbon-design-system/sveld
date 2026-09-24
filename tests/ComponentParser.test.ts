@@ -22,6 +22,28 @@ describe("ComponentParser", () => {
     expect(result.scriptLanguage).toBe("js");
   });
 
+  test("orders events the same way whatever the machine locale", () => {
+    const original = String.prototype.localeCompare;
+    const czech = new Intl.Collator("cs");
+    // Czech collation sorts "ch" after "h", so a locale-following sort would put hover first.
+    String.prototype.localeCompare = function (this: string, that: string) {
+      return czech.compare(this, that);
+    };
+    try {
+      const source = `
+        <script>
+          import { createEventDispatcher } from "svelte";
+          const dispatch = createEventDispatcher();
+          function f() { dispatch("hover"); dispatch("change"); dispatch("click"); }
+        </script>
+      `;
+      const result = new ComponentParser().parseSvelteComponent(source, diagnostics);
+      expect(result.events.map((event) => event.name)).toEqual(["change", "click", "hover"]);
+    } finally {
+      String.prototype.localeCompare = original;
+    }
+  });
+
   describe("hoisted call defaults", () => {
     test("resolves a default from a top-level function declared after the prop", () => {
       const parser = new ComponentParser();

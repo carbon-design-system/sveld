@@ -40,3 +40,23 @@ describe("buildComponentApiDocument caching", () => {
     expect(second.components.map((c) => c.moduleName)).toEqual(["Beta"]);
   });
 });
+
+describe("buildComponentApiDocument ordering", () => {
+  test("sorts components the same way whatever the machine locale", () => {
+    const original = String.prototype.localeCompare;
+    const czech = new Intl.Collator("cs");
+    // Czech collation sorts "ch" after "h", so a locale-following sort would put Hover first.
+    String.prototype.localeCompare = function (this: string, that: string) {
+      return czech.compare(this, that);
+    };
+    try {
+      const components: ComponentDocs = new Map([
+        ["Hover", mockComponentDocApi("Hover", "Hover.svelte")],
+        ["Change", mockComponentDocApi("Change", "Change.svelte")],
+      ]);
+      expect(buildComponentApiDocument(components).components.map((c) => c.moduleName)).toEqual(["Change", "Hover"]);
+    } finally {
+      String.prototype.localeCompare = original;
+    }
+  });
+});

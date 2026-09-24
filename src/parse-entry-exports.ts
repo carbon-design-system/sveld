@@ -4,6 +4,7 @@ import { isIdentifier, resolveStaticStringLiteral } from "./ast-guards";
 import type { DeprecatedValue, JsDocPassthroughTag } from "./ComponentParser";
 import { directoryEntry, directoryHasEntry, typeScriptCounterpart } from "./fs-listing";
 import { extractJsDocDeprecatedAndTags, extractJsDocReturnType } from "./parser/jsdoc";
+import { compareText } from "./parser/utils";
 import { getParserStack, loadParserStack } from "./parser-stack";
 import { normalizeSeparators } from "./path";
 import { resolvePathAliasAbsolute } from "./resolve-alias";
@@ -739,5 +740,5 @@ export async function parseEntryExports(entryFile: string): Promise<EntryExports
     byName.set(entry.name, { ...rest, source: relativeSource(declFile) });
   }
 
-  return Array.from(byName.values()).sort((a, b) => a.name.localeCompare(b.name));
+  return Array.from(byName.values()).sort((a, b) => compareText(a.name, b.name));
 }
