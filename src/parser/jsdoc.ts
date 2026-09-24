@@ -423,6 +423,26 @@ function templateTagConstraint(name: string, type: string, defaultValue: string 
   return constraint;
 }
 
+const TEMPLATE_FIRST_NAME_REGEX = /^[^\s,]+/;
+const TEMPLATE_NEXT_NAME_REGEX = /^\s*,\s*([^\s,]+)/;
+
+/**
+ * Every type parameter one `@template` tag declares: `@template T, U` lists several. As in
+ * TypeScript, a `{constraint}` or `[T=default]` applies to the first name only.
+ */
+function templateTagParameters(tag: JSDocTag, type: string): Array<{ name: string; constraint: string }> {
+  const firstName = tag.optional ? tag.name : TEMPLATE_FIRST_NAME_REGEX.exec(tag.name)?.[0];
+  if (!firstName) return [];
+  const parameters = [{ name: firstName, constraint: templateTagConstraint(firstName, type, tag.default) }];
+  // Past the first name: the rest of an unspaced `T,U` name token, then the description.
+  let rest = `${tag.optional ? "" : tag.name.slice(firstName.length)} ${tag.description}`;
+  for (let match = TEMPLATE_NEXT_NAME_REGEX.exec(rest); match; match = TEMPLATE_NEXT_NAME_REGEX.exec(rest)) {
+    parameters.push({ name: match[1], constraint: match[1] });
+    rest = rest.slice(match[0].length);
+  }
+  return parameters;
+}
+
 function processJSDocComment(
   ctx: ParserContext,
   parser: ComponentParser,
@@ -492,7 +512,8 @@ function processJSDocComment(
     const templateTags = additionalTags.filter((tag) => tag.tag === "template" && tag.name);
     if (templateTags.length > 0) {
       typeParameters = templateTags
-        .map((tag) => templateTagConstraint(tag.name, parser.aliasType(tag.type), tag.default))
+        .flatMap((tag) => templateTagParameters(tag, parser.aliasType(tag.type)))
+        .map(({ constraint }) => constraint)
         .join(", ");
       descriptionTags = additionalTags.filter((tag) => tag.tag !== "template");
     }
@@ -1215,10 +1236,11 @@ export function parseCustomTypes(
           //   @template {string} T     → type="string", name="T", default=undefined
           //   @template [T=string]     → type="", name="T", default="string"
           //   @template {Foo} [T=Foo]  → type="Foo", name="T", default="Foo"
-          const constraint = templateTagConstraint(name, type, defaultValue);
+          //   @template T, U           → one parameter each
+          const parameters = templateTagParameters(tags[tagIndex], type);
 
           if (blockHasSlotOrSnippetTag && !blockHasExtendsTag) {
-            ctx.deferredSlotBlockGenerics.push({ name, constraint });
+            ctx.deferredSlotBlockGenerics.push(...parameters);
             break;
           }
 
@@ -1226,10 +1248,12 @@ export function parseCustomTypes(
           // parameter, not the component's - leave it out of the component's generics.
           if (blockDocumentsFunction) break;
 
-          warnAndTrackGenericName(name, sourceRangeFromCommentTag(ctx, tagSource));
+          for (const parameter of parameters) {
+            warnAndTrackGenericName(parameter.name, sourceRangeFromCommentTag(ctx, tagSource));
+            accumulateOrReplaceGeneric(parameter.name, parameter.constraint);
+          }
           usedTemplateTag = true;
           warnMixedGenericsTags();
-          accumulateOrReplaceGeneric(name, constraint);
           if (isFirstTag) isFirstTag = false;
           break;
         }

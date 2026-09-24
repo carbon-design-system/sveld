@@ -1,0 +1,128 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 29,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "first",
+      "kind": "let",
+      "type": "T",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 21,
+          "column": 2
+        },
+        "end": {
+          "line": 21,
+          "column": 19
+        }
+      }
+    },
+    {
+      "name": "second",
+      "kind": "let",
+      "type": "U",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 24,
+          "column": 2
+        },
+        "end": {
+          "line": 24,
+          "column": 20
+        }
+      }
+    },
+    {
+      "name": "map",
+      "kind": "let",
+      "type": "Record<K, V>",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 27,
+          "column": 2
+        },
+        "end": {
+          "line": 27,
+          "column": 17
+        }
+      }
+    }
+  ],
+  "moduleExports": [
+    {
+      "name": "pair",
+      "kind": "function",
+      "description": "Pairs two values.",
+      "type": "<A, B>(a: A, b: B) => [A, B]",
+      "typeSource": "jsdoc",
+      "params": [
+        {
+          "name": "a",
+          "type": "A",
+          "description": "",
+          "optional": false
+        },
+        {
+          "name": "b",
+          "type": "B",
+          "description": "",
+          "optional": false
+        }
+      ],
+      "returnType": "[A, B]",
+      "typeParameters": "A, B",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 9,
+          "column": 2
+        },
+        "end": {
+          "line": 11,
+          "column": 3
+        }
+      }
+    }
+  ],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": [
+    "T, U, K, V",
+    "T, U, K extends string, V"
+  ],
+  "contexts": [],
+  "diagnostics": []
+}
