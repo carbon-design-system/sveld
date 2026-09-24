@@ -335,12 +335,9 @@ function parseTagSection(sectionLines: CommentLine[]): JSDocTag {
   const typeResult = extractType(sectionLines, 0);
   const type = typeResult?.type ?? "";
 
-  let nameIndex = 0;
-  if (typeResult) {
-    nameIndex = typeResult.endIndex;
-    while (nameIndex < sectionLines.length - 1 && sectionLines[nameIndex].content.trim() === "") nameIndex++;
-  }
-  const nameResult = extractName(sectionLines[nameIndex]);
+  // The name shares the line the type ends on. A type with nothing after it
+  // (`@slot {{ item: string }}`) has no name, so the next line stays description.
+  const nameResult = extractName(sectionLines[typeResult ? typeResult.endIndex : 0]);
 
   const description = joinLines(sectionLines.slice(typeResult ? typeResult.endIndex : 0));
 
