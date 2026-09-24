@@ -1,0 +1,126 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 28,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "options",
+      "kind": "let",
+      "description": "Options.\n@default { a: 1, b: 2 }",
+      "type": "{}",
+      "typeSource": "default",
+      "value": "{}",
+      "defaultValue": {
+        "raw": "{}",
+        "kind": "object",
+        "value": {}
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 11,
+          "column": 2
+        },
+        "end": {
+          "line": 11,
+          "column": 26
+        }
+      }
+    },
+    {
+      "name": "oldProp",
+      "kind": "let",
+      "description": "Old prop.",
+      "deprecated": "{@link newProp} replaces this.",
+      "type": "number",
+      "typeSource": "default",
+      "value": "1",
+      "defaultValue": {
+        "raw": "1",
+        "kind": "literal",
+        "value": 1
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 17,
+          "column": 2
+        },
+        "end": {
+          "line": 17,
+          "column": 25
+        }
+      }
+    },
+    {
+      "name": "olderProp",
+      "kind": "let",
+      "description": "Older prop.",
+      "deprecated": "Use newProp,\n  which is faster.",
+      "type": "number",
+      "typeSource": "default",
+      "value": "1",
+      "defaultValue": {
+        "raw": "1",
+        "kind": "literal",
+        "value": 1
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 24,
+          "column": 2
+        },
+        "end": {
+          "line": 24,
+          "column": 27
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "header",
+      "default": false,
+      "slot_props": "Record<string, never>",
+      "deprecated": "{@link body} replaces this slot.",
+      "source": {
+        "start": {
+          "line": 27,
+          "column": 0
+        },
+        "end": {
+          "line": 27,
+          "column": 22
+        }
+      }
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}

@@ -103,10 +103,6 @@ function deprecatedValueFromBody(body: string): DeprecatedValue {
   return message === "" ? true : message;
 }
 
-function deprecatedValueFromParts(name: string | undefined, description: string | undefined): DeprecatedValue {
-  return deprecatedValueFromBody(`${name ?? ""}${description ? ` ${description}` : ""}`);
-}
-
 /**
  * True when `source` is one balanced `{...}` (optional trailing `;`).
  * Unions like `{...} | {...}` must stay `type` aliases, not `interface`.
@@ -251,7 +247,7 @@ export function getCommentTags(parsed: JSDocComment[]) {
     } else if (tag.tag === "returns" || tag.tag === "return") {
       returnsTag = tag;
     } else if (tag.tag === "deprecated") {
-      deprecated ??= deprecatedValueFromParts(tag.name, tag.description);
+      deprecated ??= deprecatedValueFromBody(tag.text);
     } else if (tag.tag === "ignore" || tag.tag === "internal") {
       internal = true;
     } else if (tag.tag === "sveld-ignore") {
@@ -529,7 +525,8 @@ function processJSDocComment(
       descriptionParts.push(formattedDescription);
     }
     for (const tag of descriptionTags) {
-      const tagStr = `@${tag.tag}${tag.name ? ` ${tag.name}` : ""}${tag.description ? ` ${tag.description}` : ""}`;
+      // Rebuilt from the text as written, so a `{...}` in it (`@default { a: 1 }`) survives.
+      const tagStr = `@${tag.tag}${tag.text ? ` ${tag.text}` : ""}`;
       descriptionParts.push(tagStr);
     }
     description = descriptionParts.join("\n");
@@ -1295,7 +1292,7 @@ export function parseCustomTypes(
           break;
         }
         case "deprecated": {
-          const deprecatedValue = deprecatedValueFromParts(name, description);
+          const deprecatedValue = deprecatedValueFromBody(tags[tagIndex].text);
           if (currentEventName === undefined) {
             pendingDeprecated ??= deprecatedValue;
           } else {

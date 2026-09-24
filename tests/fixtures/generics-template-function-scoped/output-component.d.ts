@@ -2,7 +2,7 @@ import type { SvelteComponent, ComponentConstructorOptions, ComponentInternals }
 
 export type GenericsTemplateFunctionScopedProps<Node extends { id: string | number } = { id: string | number }> = {
   /**
-   * @generics Node
+   * @generics {Node extends { id: string | number } = { id: string | number }} Node
    * @default { id: "1" }
    */
   node?: { id: "1" };

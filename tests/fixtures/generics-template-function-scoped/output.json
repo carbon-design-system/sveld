@@ -15,7 +15,7 @@
     {
       "name": "node",
       "kind": "let",
-      "description": "@generics Node",
+      "description": "@generics {Node extends { id: string | number } = { id: string | number }} Node",
       "type": "{ id: \"1\" }",
       "typeSource": "default",
       "value": "{ id: \"1\" }",

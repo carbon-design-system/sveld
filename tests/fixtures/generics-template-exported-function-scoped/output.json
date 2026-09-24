@@ -46,7 +46,7 @@
     {
       "name": "rows",
       "kind": "let",
-      "description": "@template Row",
+      "description": "@template {{ id: string | number }} Row",
       "type": "Row[]",
       "typeSource": "jsdoc",
       "value": "[]",

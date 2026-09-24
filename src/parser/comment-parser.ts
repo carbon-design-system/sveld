@@ -59,6 +59,11 @@ export interface JSDocTag {
    * tag it doesn't otherwise structurally interpret).
    */
   raw: string;
+  /**
+   * The same body text as `raw`, braces included, but with continuation lines keeping only their
+   * meaningful `indent` (as `description` does) - for tags read as prose, like `@deprecated`.
+   */
+  text: string;
   /** This tag's own physical lines, post type/name extraction (shares objects with the parent `JSDocComment.lines`). */
   lines: CommentLine[];
 }
@@ -338,6 +343,8 @@ function parseTagSection(sectionLines: CommentLine[]): JSDocTag {
   const firstBodyLine = afterTagPrefix.trimEnd();
   const continuationLines = sectionLines.slice(1).map((line) => line.separator + line.content);
   const raw = (firstBodyLine ? [firstBodyLine, ...continuationLines] : continuationLines).join("\n");
+  const proseLines = sectionLines.slice(1).map((line) => line.indent + line.content);
+  const text = (firstBodyLine ? [firstBodyLine, ...proseLines] : proseLines).join("\n");
 
   first.content = afterTagPrefix;
   first.tag = tag;
@@ -359,6 +366,7 @@ function parseTagSection(sectionLines: CommentLine[]): JSDocTag {
     default: nameResult?.default,
     description,
     raw,
+    text,
     lines: sectionLines,
   };
 }
