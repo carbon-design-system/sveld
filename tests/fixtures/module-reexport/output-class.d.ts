@@ -1,5 +1,7 @@
 import { SvelteComponentTyped } from "svelte";
 
+export { tokTypes } from "acorn";
+
 export type ModuleReexportProps = {
   /**
    * Chart data to display

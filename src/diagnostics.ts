@@ -14,7 +14,8 @@ import { matchesGlob } from "./glob-match";
  * - `rest-props-unresolved`: every `{...$$restProps}` target was a component, so `$RestProps` couldn't be typed.
  * - `context-duplicate-key`: `setContext` called more than once with the same key; only the first call's shape is used.
  * - `spread-unresolved`: a `{...spread}` in a context or slot-props object literal couldn't be resolved; widened to `Record<string, any>`.
- * - `export-unresolved`: a named export specifier (re-export or renamed import) couldn't be resolved to a local declaration.
+ * - `export-unresolved`: a named export specifier couldn't be resolved to a local declaration (instance script), or to a local declaration or value import (module script).
+ * - `module-export-conflict`: a `<script context="module">` export collides with the component's default export or a generated type name; the export is skipped or may not type-check.
  * - `extend-props-target-missing`: an `@extends`/`@extendProps` target file wasn't found, or its named interface doesn't match the bundled component it points at.
  * - `extend-props-duplicate`: a second `@extends`/`@extendProps` tag overwrote the first.
  * - `extend-props-override`: an own prop has the same name as an `@extends` target's prop but a different type.
@@ -38,6 +39,7 @@ export type SveldDiagnosticKind =
   | "context-duplicate-key"
   | "spread-unresolved"
   | "export-unresolved"
+  | "module-export-conflict"
   | "extend-props-target-missing"
   | "extend-props-duplicate"
   | "extend-props-override"
@@ -70,6 +72,7 @@ export const DIAGNOSTIC_CODES: Record<SveldDiagnosticKind, string> = {
   "context-duplicate-key": "sveld/context-duplicate-key",
   "spread-unresolved": "sveld/spread-unresolved",
   "export-unresolved": "sveld/export-unresolved",
+  "module-export-conflict": "sveld/module-export-conflict",
   "extend-props-target-missing": "sveld/extend-props-target-missing",
   "extend-props-duplicate": "sveld/extend-props-duplicate",
   "extend-props-override": "sveld/extend-props-override",
@@ -99,6 +102,7 @@ const DIAGNOSTIC_SEVERITIES: Record<SveldDiagnosticKind, SveldDiagnosticSeverity
   "context-duplicate-key": "warning",
   "spread-unresolved": "warning",
   "export-unresolved": "warning",
+  "module-export-conflict": "warning",
   "extend-props-target-missing": "error",
   "extend-props-duplicate": "warning",
   "extend-props-override": "warning",
@@ -226,6 +230,7 @@ const KIND_LABELS: Record<SveldDiagnosticKind, string> = {
   "context-duplicate-key": "Duplicate setContext keys",
   "spread-unresolved": "Unresolved spreads widened to Record<string, any>",
   "export-unresolved": "Unresolved named export specifiers",
+  "module-export-conflict": "Module-script exports colliding with generated names",
   "extend-props-target-missing": "@extends/@extendProps targets that couldn't be verified",
   "extend-props-duplicate": "Duplicate @extends/@extendProps tags",
   "extend-props-override": "Own props overriding an @extends target's prop",
@@ -250,6 +255,7 @@ const KIND_ORDER: SveldDiagnosticKind[] = [
   "context-duplicate-key",
   "spread-unresolved",
   "export-unresolved",
+  "module-export-conflict",
   "extend-props-target-missing",
   "extend-props-duplicate",
   "extend-props-override",

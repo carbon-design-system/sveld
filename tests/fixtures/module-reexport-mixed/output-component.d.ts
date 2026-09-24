@@ -1,5 +1,7 @@
 import type { Component } from "svelte";
 
+export { External } from "./external.js";
+
 /**
  * A local utility function for formatting
  */

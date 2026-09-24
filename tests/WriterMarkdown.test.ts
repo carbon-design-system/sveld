@@ -165,6 +165,49 @@ describe("WriterMarkdown", () => {
     expect(output).toContain("| label | No | <code>let</code> | No | -- | -- | -- | Label text. |");
   });
 
+  test("module exports table shows a re-export's source", () => {
+    const reExport = {
+      kind: "re-export" as const,
+      constant: false,
+      isFunction: false,
+      isFunctionDeclaration: false,
+      isRequired: false,
+      reactive: false,
+    };
+    const output = writeMarkdownCore(
+      new Map([
+        [
+          "Tree",
+          {
+            filePath: asNormalizedPath("Tree.svelte"),
+            moduleName: "Tree",
+            syntaxMode: "legacy",
+            props: [],
+            moduleExports: [
+              { ...reExport, name: "toHierarchy", reExport: { from: "./to-hierarchy.js", imported: "toHierarchy" } },
+              { ...reExport, name: "Initials", reExport: { from: "./initials.js", imported: "default" } },
+              { ...reExport, name: "*", reExport: { from: "./other.js", imported: "*" } },
+            ],
+            slots: [],
+            events: [],
+            typedefs: [],
+            generics: null,
+            rest_props: undefined,
+            contexts: [],
+          },
+        ],
+      ]),
+    );
+
+    expect(output).toContain(
+      '| toHierarchy | <code>re-export</code> | <code>typeof import("./to-hierarchy.js").toHierarchy</code> | -- |',
+    );
+    expect(output).toContain(
+      '| Initials | <code>re-export</code> | <code>typeof import("./initials.js").default</code> | -- |',
+    );
+    expect(output).toContain('| * | <code>re-export</code> | <code>typeof import("./other.js")</code> | -- |');
+  });
+
   test("slots table renders descriptions and pass-through tags", () => {
     const output = writeMarkdownCore(
       new Map([

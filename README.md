@@ -435,7 +435,8 @@ Every diagnostic carries a stable, namespaced `code` (`"sveld/<kind>"`) alongsid
 | `sveld/rest-props-unresolved` | `warning` | Spread `$$restProps` onto a plain element (or `svelte:element`) instead of a component, or add an `@restProps` tag to type it manually. |
 | `sveld/context-duplicate-key` | `warning` | Remove the duplicate `setContext` call, or give it a distinct key; only the first call's shape is used. |
 | `sveld/spread-unresolved` | `warning` | Spread a local object literal or a variable with a resolvable type instead; otherwise the spread widens the generated type to `Record<string, any>`. |
-| `sveld/export-unresolved` | `warning` | Export a local declaration directly instead of re-exporting an import or a binding from another file; sveld only resolves exports of a local declaration. |
+| `sveld/export-unresolved` | `warning` | Export a local declaration directly. Instance-script exports are props, so move a re-export (`export { x } from "..."`, or `export { x }` of an import) into `<script context="module">`, where sveld writes it to the `.d.ts` as-is. |
+| `sveld/module-export-conflict` | `warning` | Rename the module-script export. `default` is always skipped (it collides with the component itself); a name matching the generated `<Name>Props`/`<Name>Exports` type breaks the `.d.ts` if the export carries a type. |
 | `sveld/extend-props-target-missing` | `error` | Point `@extends`/`@extendProps` at a file that exists, and (for a bundled `.svelte` target) name its generated `<Name>Props` interface exactly. |
 | `sveld/extend-props-duplicate` | `warning` | Remove the extra `@extends`/`@extendProps` tag; only the last one is used. |
 | `sveld/extend-props-override` | `warning` | Rename the own prop, or accept that it intentionally overrides the `@extends` target's prop of the same name. |
@@ -449,7 +450,7 @@ Every diagnostic carries a stable, namespaced `code` (`"sveld/<kind>"`) alongsid
 
 #### Severity and `--strict=errors`
 
-Each diagnostic's `severity` is `"error"` (`example-compile-error`, `example-syntax-error`, `syntax-skipped`, `extend-props-target-missing`, `internal-typedef-referenced` — sveld emitted broken or unmodeled output) or `"warning"` (`prop-unknown-type`, `context-any-type`, `slot-missing-type`, `event-no-source`, `rest-props-unresolved`, `context-duplicate-key`, `spread-unresolved`, `export-unresolved`, `extend-props-duplicate`, `extend-props-override`, `jsdoc-unknown-tag`, `typedef-duplicate`, `property-duplicate`, `generics-conflict`, `jsdoc-tag-dropped`, `types-inline-unresolved` — a type fell back to `any`). Plain `strict: true` / `--strict` fails on both, unchanged from before. Pass `strict: "errors"` (or `--strict=errors`) to fail CI only on `error`-severity diagnostics, letting `any`-fallback warnings through:
+Each diagnostic's `severity` is `"error"` (`example-compile-error`, `example-syntax-error`, `syntax-skipped`, `extend-props-target-missing`, `internal-typedef-referenced` — sveld emitted broken or unmodeled output) or `"warning"` (`prop-unknown-type`, `context-any-type`, `slot-missing-type`, `event-no-source`, `rest-props-unresolved`, `context-duplicate-key`, `spread-unresolved`, `export-unresolved`, `module-export-conflict`, `extend-props-duplicate`, `extend-props-override`, `jsdoc-unknown-tag`, `typedef-duplicate`, `property-duplicate`, `generics-conflict`, `jsdoc-tag-dropped`, `types-inline-unresolved` — a type fell back to `any`). Plain `strict: true` / `--strict` fails on both, unchanged from before. Pass `strict: "errors"` (or `--strict=errors`) to fail CI only on `error`-severity diagnostics, letting `any`-fallback warnings through:
 
 ```sh
 npx sveld --json --strict=errors

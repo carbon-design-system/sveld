@@ -31,7 +31,7 @@ import {
 import { type ContextKeyResolution, resolveContextKeyCandidates } from "./resolve-context-keys";
 import type { BareTypeSession, TypeResolver } from "./resolve-types";
 import { parse as parseTemplate, TemplateParseNotImplementedError } from "./svelte-template-parse";
-import { propsTypeName, type WriteTsDefinitionOptions } from "./writer/writer-ts-definitions-core";
+import { exportsTypeName, propsTypeName, type WriteTsDefinitionOptions } from "./writer/writer-ts-definitions-core";
 
 export interface ComponentDocApi extends ParsedComponent {
   filePath: NormalizedPath;
@@ -847,6 +847,7 @@ export async function generateBundle(
   }
 
   validateExtendsTargets(allComponentsForTypes, resolveComponentFilePath, options.typesTypeNames);
+  validateModuleReExportNames(allComponentsForTypes, options.typesTypeNames);
 
   let inlinedTypesByFilePath: Map<string, InlinedTypes> | undefined;
   try {
@@ -1146,6 +1147,42 @@ function resolveExtendsTargetPath(fromAbsoluteFilePath: string, specifier: strin
     if (existsSync(candidate)) return candidate;
   }
   return undefined;
+}
+
+/**
+ * Flags a module-script re-export named like the component's generated
+ * `<Name>Props`/`<Name>Exports` type. Checked here rather than at parse time
+ * because `typesOptions.typeNames` decides those names. The `.d.ts` only
+ * breaks if the re-exported binding also carries a type, which isn't
+ * knowable without resolving the source, so this is a warning.
+ */
+function validateModuleReExportNames(
+  components: ComponentDocs,
+  typeNames?: WriteTsDefinitionOptions["typeNames"],
+): void {
+  for (const component of components.values()) {
+    const reExports = component.moduleExports.filter((moduleExport) => moduleExport.kind === "re-export");
+    if (reExports.length === 0) continue;
+
+    const generatedTypeNames = new Set([
+      propsTypeName(component.moduleName, typeNames),
+      exportsTypeName(component.moduleName, typeNames),
+    ]);
+    const diagnostics = component.diagnostics ?? [];
+    for (const reExport of reExports) {
+      if (!generatedTypeNames.has(reExport.name)) continue;
+      diagnostics.push(
+        createDiagnostic({
+          component: component.filePath,
+          kind: "module-export-conflict",
+          name: reExport.name,
+          message: `Re-export "${reExport.name}" has the same name as the generated "${reExport.name}" type; the .d.ts won't type-check if "${reExport.reExport?.from}" exports a type by that name.`,
+          source: reExport.source,
+        }),
+      );
+    }
+    component.diagnostics = diagnostics;
+  }
 }
 
 /**

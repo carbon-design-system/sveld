@@ -1,4 +1,5 @@
 import type { FunctionDeclaration, Node } from "estree";
+import type { ComponentPropReExport } from "../ComponentParser";
 import type { ParserContext } from "./context";
 
 /** `ImportDeclaration` fields we read from the Svelte/acorn-typescript AST. */
@@ -36,6 +37,42 @@ export function collectValueImportBindings(ctx: ParserContext, node: ImportDecla
   }
 }
 
+/** Top-level statements of a script root (`Program.body`, or the script's `content.body`). */
+function scriptBody(root: Node): unknown[] | undefined {
+  const program = root as unknown as { type?: string; body?: unknown[]; content?: { body?: unknown[] } };
+  const body = program.type === "Program" ? program.body : (program.content?.body ?? program.body);
+  return Array.isArray(body) ? body : undefined;
+}
+
+/**
+ * Value imports of a `<script context="module">` by local name, so `export { local }`
+ * can be written as `export { imported as local } from "..."`. Unlike
+ * {@link collectValueImportBindings}, default and namespace imports count too.
+ */
+export function collectReExportableImports(root: Node | undefined): Map<string, ComponentPropReExport> {
+  const imports = new Map<string, ComponentPropReExport>();
+  const body = root ? scriptBody(root) : undefined;
+  if (!body) return imports;
+
+  for (const statement of body) {
+    const node = statement as ImportDeclarationNode;
+    if (node.type !== "ImportDeclaration" || node.importKind === "type") continue;
+    const from = node.source?.value;
+    if (typeof from !== "string") continue;
+
+    for (const specifier of node.specifiers ?? []) {
+      const localName = specifier.local?.name;
+      if (!localName || specifier.importKind === "type") continue;
+      let imported: string;
+      if (specifier.type === "ImportDefaultSpecifier") imported = "default";
+      else if (specifier.type === "ImportNamespaceSpecifier") imported = "*";
+      else imported = specifier.imported?.name ?? String(specifier.imported?.value ?? localName);
+      imports.set(localName, { from, imported });
+    }
+  }
+  return imports;
+}
+
 /**
  * Collect imports and function declarations from a script root before prop defaults run.
  * Both hoist, so `export let id = uniqueId()` still resolves when the import or
@@ -50,9 +87,8 @@ export function collectHoistedScriptBindings(ctx: ParserContext, root: Node | un
   // a top-level prop default (module code is strict). The main walk still
   // records every nested declaration afterwards. Reading `Program.body`
   // (or the script's `content.body`) skips a full walk of the script AST.
-  const program = root as unknown as { type?: string; body?: unknown[]; content?: { body?: unknown[] } };
-  const body = program.type === "Program" ? program.body : (program.content?.body ?? program.body);
-  if (!Array.isArray(body)) return;
+  const body = scriptBody(root);
+  if (!body) return;
 
   for (const statement of body) {
     const node = statement as { type: string; declaration?: { type: string } | null };

@@ -90,6 +90,29 @@
       }
     },
     {
+      "name": "External",
+      "kind": "re-export",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "reExport": {
+        "from": "./external.js",
+        "imported": "External"
+      },
+      "source": {
+        "start": {
+          "line": 11,
+          "column": 2
+        },
+        "end": {
+          "line": 11,
+          "column": 22
+        }
+      }
+    },
+    {
       "name": "VERSION",
       "kind": "const",
       "description": "Application version number",
@@ -146,24 +169,6 @@
   "generics": null,
   "contexts": [],
   "diagnostics": [
-    {
-      "component": "module-reexport-mixed/input.svelte",
-      "kind": "export-unresolved",
-      "name": "External",
-      "message": "export \"External\" was skipped because it re-exports an imported binding; sveld only resolves exports of a local declaration.",
-      "source": {
-        "start": {
-          "line": 11,
-          "column": 2
-        },
-        "end": {
-          "line": 11,
-          "column": 22
-        }
-      },
-      "code": "sveld/export-unresolved",
-      "severity": "warning"
-    },
     {
       "component": "module-reexport-mixed/input.svelte",
       "kind": "prop-unknown-type",

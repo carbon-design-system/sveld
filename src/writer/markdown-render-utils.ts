@@ -10,6 +10,7 @@ import {
   EXPORT_TABLE_HEADER,
   formatDescriptionWithTags,
   formatEventDetail,
+  formatExportType,
   formatNameWithDeprecation,
   formatPropDescription,
   formatPropType,
@@ -112,9 +113,7 @@ function renderModuleExports(document: MarkdownDocument, moduleExports: Componen
   for (const moduleExport of moduleExports) {
     document.append(
       "raw",
-      `| ${formatNameWithDeprecation(moduleExport.name, moduleExport.deprecated)} | ${`<code>${moduleExport.kind}</code>`} | ${formatPropType(
-        moduleExport.type,
-      )} | ${formatDescriptionWithTags(moduleExport.description, moduleExport.tags)} |\n`,
+      `| ${formatNameWithDeprecation(moduleExport.name, moduleExport.deprecated)} | ${`<code>${moduleExport.kind}</code>`} | ${formatExportType(moduleExport)} | ${formatDescriptionWithTags(moduleExport.description, moduleExport.tags)} |\n`,
     );
   }
   document.append("raw", "\n");

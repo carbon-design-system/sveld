@@ -380,7 +380,7 @@ describe("ComponentParser diagnostics", () => {
     expect(exportDiagnostic).toMatchObject({ kind: "export-unresolved", name: "helper" });
   });
 
-  test("flags a module-script export specifier from another file", () => {
+  test("records a module-script re-export instead of flagging it", () => {
     const parser = new ComponentParser();
     const source = `
       <script module>
@@ -390,11 +390,31 @@ describe("ComponentParser diagnostics", () => {
       </script>
     `;
 
-    const { diagnostics } = parser.parseSvelteComponent(source, parseContext);
-    const exportDiagnostic = diagnostics?.find((d) => d.kind === "export-unresolved");
+    const { diagnostics, moduleExports } = parser.parseSvelteComponent(source, parseContext);
 
-    expect(exportDiagnostic).toMatchObject({ kind: "export-unresolved", name: "helper" });
-    expect(exportDiagnostic?.message).toContain('re-exports from "./utils"');
+    expect(diagnostics?.some((d) => d.kind === "export-unresolved")).toBe(false);
+    expect(moduleExports).toEqual([
+      expect.objectContaining({
+        name: "helper",
+        kind: "re-export",
+        reExport: { from: "./utils", imported: "helper" },
+      }),
+    ]);
+  });
+
+  test("skips and flags a module-script export named default", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script module>
+        import { helper } from "./utils";
+        export { helper as default };
+      </script>
+    `;
+
+    const { diagnostics, moduleExports } = parser.parseSvelteComponent(source, parseContext);
+
+    expect(moduleExports).toEqual([]);
+    expect(diagnostics).toContainEqual(expect.objectContaining({ kind: "module-export-conflict", name: "default" }));
   });
 
   test("does not flag a specifier export resolving to a local declaration", () => {

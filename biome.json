@@ -104,6 +104,10 @@
       "includes": ["**/tests/fixtures/**/*"],
       "linter": {
         "rules": {
+          "performance": {
+            "noNamespaceImport": "off",
+            "noReExportAll": "off"
+          },
           "correctness": {
             "noDuplicateAttributes": "off",
             "noUnusedFunctionParameters": "off",

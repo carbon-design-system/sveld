@@ -11,6 +11,7 @@ import {
   EVENT_TABLE_HEADER,
   formatDescriptionWithTags,
   formatEventDetail,
+  formatExportType,
   formatNameWithDeprecation,
   formatPropType,
   formatPropValue,
@@ -62,7 +63,7 @@ function renderPropsTableSection(document: MarkdownWriterBaseImpl, heading: stri
   for (const prop of props) {
     document.append(
       "raw",
-      `| ${formatNameWithDeprecation(prop.name, prop.deprecated)} | ${formatPropType(prop.type)} | ${formatPropValue(
+      `| ${formatNameWithDeprecation(prop.name, prop.deprecated)} | ${formatExportType(prop)} | ${formatPropValue(
         prop.value,
       )} | ${prop.isRequired ? "Yes" : "No"} | ${formatDescriptionWithTags(prop.description, prop.tags)} |\n`,
     );
