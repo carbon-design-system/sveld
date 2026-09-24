@@ -200,6 +200,29 @@ describe("parseEntryExports", () => {
     }
   });
 
+  test("the barrel's own export beats an `export *` of the same name, without a warning", async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "sveld-entry-exports-export-star-shadow-"));
+    try {
+      writeFileSync(path.join(dir, "star.ts"), 'export const SHARED = "star";\nexport const OTHER = 1;\n');
+      writeFileSync(
+        path.join(dir, "index.ts"),
+        ['export * from "./star";', 'export const SHARED = "own";', ""].join("\n"),
+      );
+
+      const warn = jest.spyOn(console, "warn").mockImplementation(() => undefined);
+
+      const exports = await parseEntryExports(path.join(dir, "index.ts"));
+
+      expect(byName(exports, "SHARED")).toMatchObject({ value: '"own"', source: "./index.ts" });
+      expect(byName(exports, "OTHER")).toMatchObject({ source: "./star.ts" });
+      expect(warn).not.toHaveBeenCalled();
+
+      warn.mockRestore();
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   test("warns and skips a re-exported module the underlying parser can't handle, instead of throwing", async () => {
     // Not written under tests/fixtures-entry-exports because the redeclaration
     // below (valid to acorn-typescript, rejected by tsc/biome) would otherwise

@@ -94,6 +94,11 @@ export interface ResolveContext {
   cache: Map<string, InternalExport[]>;
   /** Files currently being resolved, used to break import cycles. */
   computing: Set<string>;
+  /**
+   * Called for a name two `export *` statements of `filePath` bring in from
+   * different declarations. The module doesn't export such a name.
+   */
+  onAmbiguousStarExport?: (filePath: string, name: string, entries: InternalExport[]) => void;
 }
 
 function asNode(value: unknown): AstNode | undefined {
@@ -614,11 +619,11 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
     const target = resolveModuleFile(imported.specifier, source.dir);
     if (!target) return null;
 
-    // `findLast`, not `find`: overloaded declarations (`export function f(...): A;` /
-    // `export function f(...): B;` / `export function f(...) { ... }`) all describe
-    // to the same name, in source order, with the implementation last.
-    return collectModuleExports(target, ctx).findLast((entry) => entry.name === imported.importedName) ?? null;
+    return findModuleExport(collectModuleExports(target, ctx), imported.importedName) ?? null;
   };
+
+  /** Entries each `export *` brings in, by name; merged after the explicit exports below. */
+  const starExports = new Map<string, InternalExport[]>();
 
   for (const node of body) {
     if (node.type === "ExportAllDeclaration") {
@@ -628,7 +633,9 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
       if (!target) continue;
       const isTypeOnly = node.exportKind === "type";
       for (const entry of collectModuleExports(target, ctx)) {
-        results.push(isTypeOnly ? { ...entry, isTypeOnly: true } : entry);
+        const entries = starExports.get(entry.name) ?? [];
+        entries.push(isTypeOnly ? { ...entry, isTypeOnly: true } : entry);
+        starExports.set(entry.name, entries);
       }
       continue;
     }
@@ -660,8 +667,7 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
       if (moduleSpecifier) {
         const target = resolveModuleFile(moduleSpecifier, source.dir);
         if (target) {
-          // `findLast`: see the comment on the equivalent lookup in `resolveLocal`.
-          resolved = collectModuleExports(target, ctx).findLast((entry) => entry.name === localName) ?? null;
+          resolved = findModuleExport(collectModuleExports(target, ctx), localName) ?? null;
         }
       } else {
         resolved = resolveLocal(localName);
@@ -682,9 +688,35 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
     }
   }
 
+  // Same rules as ES module linking: a name the module exports explicitly
+  // shadows every `export *` of it, and a name two stars bring in from
+  // different declarations is ambiguous, so the module doesn't export it.
+  // Entries from one file are one declaration (or its overloads).
+  const explicitNames = new Set(results.map((entry) => entry.name));
+  for (const [name, entries] of starExports) {
+    if (explicitNames.has(name)) continue;
+    if (entries.every((entry) => entry.declFile === entries[0].declFile)) {
+      results.push(...entries);
+    } else {
+      ctx.onAmbiguousStarExport?.(filePath, name, entries);
+    }
+  }
+
   ctx.computing.delete(filePath);
   ctx.cache.set(filePath, results);
   return results;
+}
+
+/**
+ * The entry for `name` in a module's export list, or `undefined`.
+ *
+ * `findLast`, not `find`: overloaded declarations (`export function f(...): A;` /
+ * `export function f(...): B;` / `export function f(...) { ... }`) all describe
+ * to the same name, in source order, with the implementation last. Any other
+ * name appears at most once (see {@link collectModuleExports}).
+ */
+export function findModuleExport(exports: InternalExport[], name: string): InternalExport | undefined {
+  return exports.findLast((entry) => entry.name === name);
 }
 
 /**
@@ -707,27 +739,34 @@ export async function parseEntryExports(entryFile: string): Promise<EntryExports
 
   const resolved = resolve(entryFile);
   const entryDir = dirname(resolved);
-  const collected = collectModuleExports(resolved, { cache: new Map(), computing: new Set() });
   const relativeSource = (declFile: string) => normalizeSeparators(`./${relative(entryDir, declFile)}`);
 
-  const byName = new Map<string, EntryExport>();
-  // Tracks which file each name currently resolves to, to tell an overloaded
-  // declaration (repeated entries from the *same* file - the implementation
-  // signature should win) apart from a genuine `export *` collision between
-  // two different files (the first one seen should win, with a warning).
-  const declFileByName = new Map<string, string>();
-  for (const entry of collected) {
-    const existingDeclFile = declFileByName.get(entry.name);
-    if (existingDeclFile !== undefined && existingDeclFile !== entry.declFile) {
+  // A name two of the entry's `export *` statements bring in from different
+  // files is ambiguous, so the module doesn't export it. The docs keep the
+  // first declaration anyway, with a warning, rather than drop it silently.
+  const ambiguous: InternalExport[] = [];
+  const collected = collectModuleExports(resolved, {
+    cache: new Map(),
+    computing: new Set(),
+    onAmbiguousStarExport: (filePath, name, entries) => {
+      if (filePath !== resolved) return;
+      const firstDeclFile = entries[0].declFile;
+      const otherDeclFiles = new Set(entries.map((entry) => entry.declFile));
+      otherDeclFiles.delete(firstDeclFile);
       console.warn(
-        `Warning: "${entry.name}" is exported from both "${relativeSource(existingDeclFile)}" and "${relativeSource(
-          entry.declFile,
-        )}"; keeping the first and dropping the rest.`,
+        `Warning: "${name}" is exported from both "${relativeSource(firstDeclFile)}" and "${Array.from(
+          otherDeclFiles,
+          relativeSource,
+        ).join('", "')}"; keeping the first and dropping the rest.`,
       );
-      continue;
-    }
-    declFileByName.set(entry.name, entry.declFile);
+      ambiguous.push(...entries.filter((entry) => entry.declFile === firstDeclFile));
+    },
+  });
 
+  const byName = new Map<string, EntryExport>();
+  // Entries sharing a name are one declaration's overloads; the last (the
+  // implementation signature) wins.
+  for (const entry of [...collected, ...ambiguous]) {
     // Drop internal returnType/literalValue/primitiveLiteral/functionNode; public EntryExport does not expose them.
     const {
       declFile,

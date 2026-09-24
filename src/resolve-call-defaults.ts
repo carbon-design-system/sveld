@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { dirname } from "node:path";
 import type { PendingCallDefaultCandidate } from "./ComponentParser";
-import { collectModuleExports, type ResolveContext, resolveModuleFile } from "./parse-entry-exports";
+import { collectModuleExports, findModuleExport, type ResolveContext, resolveModuleFile } from "./parse-entry-exports";
 
 export type CallDefaultFailureReason = "module-not-found" | "export-not-found" | "return-type-unresolved";
 
@@ -49,13 +49,13 @@ export function resolveCallDefaultCandidates(
     const resolvedFile = resolveModuleFile(candidate.importSource, fromDir);
     if (!resolvedFile) return { candidate, failureReason: "module-not-found" };
 
-    const match = collectModuleExports(resolvedFile, ctx).find((entry) => entry.name === candidate.importedName);
+    const match = findModuleExport(collectModuleExports(resolvedFile, ctx), candidate.importedName);
     if (!match) return { candidate, failureReason: "export-not-found" };
     if (match.returnType) return { candidate, type: match.returnType };
 
     const siblingDts = siblingDeclarationFile(resolvedFile);
     if (siblingDts) {
-      const dtsMatch = collectModuleExports(siblingDts, ctx).find((entry) => entry.name === candidate.importedName);
+      const dtsMatch = findModuleExport(collectModuleExports(siblingDts, ctx), candidate.importedName);
       if (dtsMatch?.returnType) return { candidate, type: dtsMatch.returnType };
     }
 

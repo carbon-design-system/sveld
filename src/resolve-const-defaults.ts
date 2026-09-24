@@ -2,6 +2,7 @@ import { dirname } from "node:path";
 import type { PendingConstDefaultCandidate } from "./ComponentParser";
 import {
   collectModuleExports,
+  findModuleExport,
   type PrimitiveLiteral,
   type ResolveContext,
   resolveModuleFile,
@@ -30,7 +31,7 @@ export function resolveConstDefaultCandidates(
     const resolvedFile = resolveModuleFile(candidate.importSource, fromDir);
     if (!resolvedFile) return { candidate };
 
-    const match = collectModuleExports(resolvedFile, ctx).find((entry) => entry.name === candidate.importedName);
+    const match = findModuleExport(collectModuleExports(resolvedFile, ctx), candidate.importedName);
     if (!match?.primitiveLiteral) return { candidate };
 
     return { candidate, literal: match.primitiveLiteral };
