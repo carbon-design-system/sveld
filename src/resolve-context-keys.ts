@@ -1,6 +1,6 @@
 import { dirname } from "node:path";
 import type { PendingContextKeyCandidate } from "./ComponentParser";
-import { collectModuleExports, type ResolveContext, resolveModuleFile } from "./parse-entry-exports";
+import { collectModuleExports, findModuleExport, type ResolveContext, resolveModuleFile } from "./parse-entry-exports";
 
 export interface ContextKeyResolution {
   candidate: PendingContextKeyCandidate;
@@ -25,7 +25,7 @@ export function resolveContextKeyCandidates(
     const resolvedFile = resolveModuleFile(candidate.importSource, fromDir);
     if (!resolvedFile) return { candidate };
 
-    const match = collectModuleExports(resolvedFile, ctx).find((entry) => entry.name === candidate.importedName);
+    const match = findModuleExport(collectModuleExports(resolvedFile, ctx), candidate.importedName);
     if (match?.kind !== "const" || match.literalValue === undefined) return { candidate };
 
     return { candidate, key: match.literalValue };

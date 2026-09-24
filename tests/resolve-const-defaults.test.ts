@@ -238,4 +238,48 @@ describe("cross-file imported-constant prop-default resolution", () => {
     expect(await valuesInOrder(["One", "Two"])).toEqual(["1", "1"]);
     expect(await valuesInOrder(["Two", "One"])).toEqual(["1", "1"]);
   });
+
+  test("a module's own export beats an `export *` of the same name, in either order", async () => {
+    writeFileSync(path.join(dir, "a.js"), "export const DELAY = 1;\n");
+    writeFileSync(path.join(dir, "before.js"), 'export * from "./a.js";\nexport const DELAY = 2;\n');
+    writeFileSync(path.join(dir, "after.js"), 'export const DELAY = 3;\nexport * from "./a.js";\n');
+
+    const before = await parseComponent(
+      "Before",
+      '<script>\n  import { DELAY } from "./before.js";\n  export let delay = DELAY;\n</script>\n',
+    );
+    const after = await parseComponent(
+      "After",
+      '<script>\n  import { DELAY } from "./after.js";\n  export let delay = DELAY;\n</script>\n',
+    );
+
+    expect(before?.props[0]?.value).toBe("2");
+    expect(after?.props[0]?.value).toBe("3");
+  });
+
+  test("a name two `export *` statements bring in from different modules stays unresolved", async () => {
+    writeFileSync(path.join(dir, "a.js"), "export const DELAY = 1;\nexport const SHARED = 5;\n");
+    writeFileSync(path.join(dir, "b.js"), "export const DELAY = 2;\n");
+    writeFileSync(path.join(dir, "shared.js"), 'export * from "./a.js";\n');
+    writeFileSync(
+      path.join(dir, "consts.js"),
+      'export * from "./a.js";\nexport * from "./b.js";\nexport * from "./shared.js";\n',
+    );
+
+    const component = await parseComponent(
+      "Ambiguous",
+      `<script>
+  import { DELAY, SHARED } from "./consts.js";
+  export let delay = DELAY;
+  export let shared = SHARED;
+</script>
+`,
+    );
+
+    const delay = component?.props.find((prop) => prop.name === "delay");
+    expect(delay?.value).toBe("DELAY");
+    expect(delay?.typeSource).toBe("unknown");
+    // Two paths to the same declaration aren't ambiguous.
+    expect(component?.props.find((prop) => prop.name === "shared")?.value).toBe("5");
+  });
 });

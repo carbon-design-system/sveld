@@ -1,7 +1,13 @@
 import { dirname } from "node:path";
 import { isIdentifier, resolveStaticStringLiteral } from "./ast-guards";
 import type { PendingDispatchEscapeCandidate } from "./ComponentParser";
-import { type AstNode, collectModuleExports, type ResolveContext, resolveModuleFile } from "./parse-entry-exports";
+import {
+  type AstNode,
+  collectModuleExports,
+  findModuleExport,
+  type ResolveContext,
+  resolveModuleFile,
+} from "./parse-entry-exports";
 import { literalDetailToTypeText } from "./parser/events";
 import { type WalkableNode, walkNodes } from "./parser/walk";
 
@@ -48,10 +54,7 @@ export function resolveDispatchEscapeCandidates(
     const resolvedFile = resolveModuleFile(candidate.importSource, fromDir);
     if (!resolvedFile) return { candidate, failureReason: "module-not-found" };
 
-    // `findLast`: overloads describe to the same name, with the implementation last.
-    const fn = collectModuleExports(resolvedFile, ctx).findLast(
-      (entry) => entry.name === candidate.importedName,
-    )?.functionNode;
+    const fn = findModuleExport(collectModuleExports(resolvedFile, ctx), candidate.importedName)?.functionNode;
     if (!fn) return { candidate, failureReason: "not-a-function" };
 
     const binding = dispatcherBinding(fn, candidate);
