@@ -152,7 +152,15 @@ export function parseExports(source: string, dir: string, resolving: Set<string>
       resolving.delete(file_path);
 
       for (const [key, value] of Object.entries(exports)) {
-        const source = asRelativeSourcePath(normalizeSeparators(`./${join(specifier, value.source)}`));
+        // A relative source is relative to the re-exported file's directory,
+        // which is the specifier itself only when it names a directory.
+        const source = asRelativeSourcePath(
+          normalizeSeparators(
+            value.source.startsWith(".")
+              ? `./${relative(dir, resolve(dirname(file_path), value.source))}`
+              : `./${join(specifier, value.source)}`,
+          ),
+        );
         exports_by_identifier[key] = {
           ...value,
           source,
