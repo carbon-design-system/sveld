@@ -444,13 +444,14 @@ Every diagnostic carries a stable, namespaced `code` (`"sveld/<kind>"`) alongsid
 | `sveld/typedef-duplicate` | `warning` | Rename one of the `@typedef`/`@callback` declarations; only the later one is kept. |
 | `sveld/property-duplicate` | `warning` | Remove the duplicate `@property`; only the later one is kept. |
 | `sveld/generics-conflict` | `warning` | Rename one of the `@generics`/`@template` declarations to a distinct generic name. |
+| `sveld/event-description-ambiguous` | `warning` | Put an event's description above its `@event` tag (or indent it as a continuation of the tag's line), or give each event its own comment block. Unindented text after an `@event` is read as the description of the tag below it. |
 | `sveld/jsdoc-tag-dropped` | `warning` | Move the tag next to a `@slot`/`@snippet`/`@event`/`@typedef`/`@callback` tag in the same comment block so it has something to attach to. |
 | `sveld/internal-typedef-referenced` | `error` | Remove `@internal`/`@ignore` from the referenced typedef, or stop referencing it from public type text (inline the shape, or make the referencing item `@internal` too). |
 | `sveld/types-inline-unresolved` | `warning` | The import is kept as-is. Point it at a relative `.ts` file that exports a `type`/`interface`, or rename the colliding type. |
 
 #### Severity and `--strict=errors`
 
-Each diagnostic's `severity` is `"error"` (`example-compile-error`, `example-syntax-error`, `syntax-skipped`, `extend-props-target-missing`, `internal-typedef-referenced` — sveld emitted broken or unmodeled output) or `"warning"` (`prop-unknown-type`, `context-any-type`, `slot-missing-type`, `event-no-source`, `rest-props-unresolved`, `context-duplicate-key`, `spread-unresolved`, `export-unresolved`, `module-export-conflict`, `extend-props-duplicate`, `extend-props-override`, `jsdoc-unknown-tag`, `typedef-duplicate`, `property-duplicate`, `generics-conflict`, `jsdoc-tag-dropped`, `types-inline-unresolved` — a type fell back to `any`). Plain `strict: true` / `--strict` fails on both, unchanged from before. Pass `strict: "errors"` (or `--strict=errors`) to fail CI only on `error`-severity diagnostics, letting `any`-fallback warnings through:
+Each diagnostic's `severity` is `"error"` (`example-compile-error`, `example-syntax-error`, `syntax-skipped`, `extend-props-target-missing`, `internal-typedef-referenced` — sveld emitted broken or unmodeled output) or `"warning"` (`prop-unknown-type`, `context-any-type`, `slot-missing-type`, `event-no-source`, `rest-props-unresolved`, `context-duplicate-key`, `spread-unresolved`, `export-unresolved`, `module-export-conflict`, `extend-props-duplicate`, `extend-props-override`, `jsdoc-unknown-tag`, `typedef-duplicate`, `property-duplicate`, `generics-conflict`, `event-description-ambiguous`, `jsdoc-tag-dropped`, `types-inline-unresolved` — a type fell back to `any`). Plain `strict: true` / `--strict` fails on both, unchanged from before. Pass `strict: "errors"` (or `--strict=errors`) to fail CI only on `error`-severity diagnostics, letting `any`-fallback warnings through:
 
 ```sh
 npx sveld --json --strict=errors

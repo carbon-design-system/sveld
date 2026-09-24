@@ -23,6 +23,7 @@ import { matchesGlob } from "./glob-match";
  * - `typedef-duplicate`: a second `@typedef`/`@callback` reused a name; the later declaration overwrites the earlier one.
  * - `property-duplicate`: a second `@property` reused a name on the same `@event`/`@typedef`; the later declaration overwrites the earlier one.
  * - `generics-conflict`: a second `@generics`/`@template` reused a generic name.
+ * - `event-description-ambiguous`: unindented text after an `@event` in the same comment block was read as the next tag's description; the author may have meant it for the event.
  * - `jsdoc-tag-dropped`: a passthrough JSDoc tag (e.g. `@see`) couldn't attach to a following or preceding structural tag.
  * - `internal-typedef-referenced`: a public prop/typedef/event/slot/module-export/context type references an `@internal` typedef by name, which is excluded from output; the generated `.d.ts` will contain a dangling reference.
  * - `types-inline-unresolved`: `typesOptions.inline` could not safely copy an imported type (missing file, missing export, an unsupported export kind, or a name collision); the import is kept as-is.
@@ -47,6 +48,7 @@ export type SveldDiagnosticKind =
   | "typedef-duplicate"
   | "property-duplicate"
   | "generics-conflict"
+  | "event-description-ambiguous"
   | "jsdoc-tag-dropped"
   | "internal-typedef-referenced"
   | "types-inline-unresolved";
@@ -80,6 +82,7 @@ export const DIAGNOSTIC_CODES: Record<SveldDiagnosticKind, string> = {
   "typedef-duplicate": "sveld/typedef-duplicate",
   "property-duplicate": "sveld/property-duplicate",
   "generics-conflict": "sveld/generics-conflict",
+  "event-description-ambiguous": "sveld/event-description-ambiguous",
   "jsdoc-tag-dropped": "sveld/jsdoc-tag-dropped",
   "internal-typedef-referenced": "sveld/internal-typedef-referenced",
   "types-inline-unresolved": "sveld/types-inline-unresolved",
@@ -110,6 +113,7 @@ const DIAGNOSTIC_SEVERITIES: Record<SveldDiagnosticKind, SveldDiagnosticSeverity
   "typedef-duplicate": "warning",
   "property-duplicate": "warning",
   "generics-conflict": "warning",
+  "event-description-ambiguous": "warning",
   "jsdoc-tag-dropped": "warning",
   "internal-typedef-referenced": "error",
   "types-inline-unresolved": "warning",
@@ -238,6 +242,7 @@ const KIND_LABELS: Record<SveldDiagnosticKind, string> = {
   "typedef-duplicate": "Duplicate @typedef/@callback names",
   "property-duplicate": "Duplicate @property names",
   "generics-conflict": "Duplicate @generics/@template names",
+  "event-description-ambiguous": "Text after an @event read as the next tag's description",
   "jsdoc-tag-dropped": "Passthrough JSDoc tags that couldn't attach",
   "internal-typedef-referenced": "Public types referencing an @internal typedef",
   "types-inline-unresolved": "typesOptions.inline could not safely copy an imported type",
@@ -263,6 +268,7 @@ const KIND_ORDER: SveldDiagnosticKind[] = [
   "typedef-duplicate",
   "property-duplicate",
   "generics-conflict",
+  "event-description-ambiguous",
   "jsdoc-tag-dropped",
   "internal-typedef-referenced",
   "types-inline-unresolved",
