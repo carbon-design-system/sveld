@@ -102,13 +102,19 @@ function expandJsDocTagLines(tags: Array<{ name: string; body: string }> | undef
   return lines;
 }
 
+/**
+ * JSDoc for a slot or event (and the snippet/callback prop standing in for
+ * one). Same `commentLevel` rules as {@link createPropComment}.
+ */
 function formatSlotJsDoc(
   description: string | undefined,
   tags: Array<{ name: string; body: string }> | undefined,
-  deprecated?: DeprecatedValue,
+  deprecated: DeprecatedValue | undefined,
+  commentLevel: CommentLevel,
 ): string {
+  if (commentLevel === "none") return "";
   const deprecatedLine = formatDeprecatedJsDocLine(deprecated);
-  const tagLines = expandJsDocTagLines(tags);
+  const tagLines = commentLevel === "all" ? expandJsDocTagLines(tags) : [];
   const hasTags = tagLines.length > 0;
   if (!description && !hasTags && !deprecatedLine) return "";
   if (!hasTags && !deprecatedLine) {
@@ -459,7 +465,7 @@ function genPropDef(
     .map((slot) => {
       const slotName = slot.name;
       const key = formatKey(slotName);
-      const slotComment = formatSlotJsDoc(slot.description, slot.tags, slot.deprecated);
+      const slotComment = formatSlotJsDoc(slot.description, slot.tags, slot.deprecated, commentLevel);
       const description = slotComment ? `${slotComment}\n      ` : "";
       /**
        * Use Snippet-compatible type: (this: void, ...args: [Props]) => void for slots with props
@@ -484,6 +490,7 @@ function genPropDef(
             default_slot.description,
             default_slot.tags,
             default_slot.deprecated,
+            commentLevel,
           );
           const description = defaultSlotComment ? `${defaultSlotComment}\n      ` : "";
           const hasSlotProps = default_slot.slot_props && default_slot.slot_props !== "Record<string, never>";
@@ -495,7 +502,9 @@ function genPropDef(
         })()
       : "";
 
-  const event_callback_props = def.events ? genEventCallbackProps({ events: def.events }, existingPropNames) : [];
+  const event_callback_props = def.events
+    ? genEventCallbackProps({ events: def.events }, existingPropNames, commentLevel)
+    : [];
 
   const snippet_props = [...named_snippet_props, children_snippet_prop, ...event_callback_props].filter(Boolean);
 
@@ -581,11 +590,12 @@ function genPropDef(
      * Generate JSDoc comment for $RestProps if description is provided.
      * Use multiline format when description contains newlines.
      */
-    const restPropsComment = def.rest_props.description
-      ? def.rest_props.description.includes("\n")
-        ? `${formatMultiLineComment(def.rest_props.description)}\n    `
-        : `${formatSingleLineComment(def.rest_props.description)}\n    `
-      : "";
+    const restPropsComment =
+      commentLevel !== "none" && def.rest_props.description
+        ? def.rest_props.description.includes("\n")
+          ? `${formatMultiLineComment(def.rest_props.description)}\n    `
+          : `${formatSingleLineComment(def.rest_props.description)}\n    `
+        : "";
 
     /**
      * When both `@extends` and `@restProps` are present, merge all three type sources:
@@ -675,13 +685,13 @@ function genPropDef(
   };
 }
 
-function genSlotDef(def: Pick<ComponentDocApi, "slots">) {
+function genSlotDef(def: Pick<ComponentDocApi, "slots">, commentLevel: CommentLevel = "all") {
   if (def.slots.length === 0) return EMPTY_OBJECT;
 
   const slotDefs = def.slots
     .map(({ name, slot_props, ...rest }) => {
       const key = rest.default || name === null ? "default" : formatKey(name ?? "");
-      const slotDefComment = formatSlotJsDoc(rest.description, rest.tags, rest.deprecated);
+      const slotDefComment = formatSlotJsDoc(rest.description, rest.tags, rest.deprecated, commentLevel);
       const description = slotDefComment ? `${slotDefComment}\n` : "";
       return `${description}${key}: ${formatTsProps(slot_props)};`;
     })
@@ -825,13 +835,13 @@ function computeEventTypeString(event: ComponentDocApi["events"][number]): strin
   }
 }
 
-function genEventDef(def: Pick<ComponentDocApi, "events">) {
+function genEventDef(def: Pick<ComponentDocApi, "events">, commentLevel: CommentLevel = "all") {
   if (def.events.length === 0) return EMPTY_EVENTS;
 
   const events_map = def.events
     .map((event) => {
       let description = "";
-      const eventComment = formatSlotJsDoc(event.description, event.tags, event.deprecated);
+      const eventComment = formatSlotJsDoc(event.description, event.tags, event.deprecated, commentLevel);
       if (eventComment) {
         description = `${eventComment}\n`;
       }
@@ -850,14 +860,18 @@ function genEventDef(def: Pick<ComponentDocApi, "events">) {
  * declare callback props (e.g. `onclick`) as regular props, so this is only
  * called for legacy components. Skips names that collide with an existing prop.
  */
-function genEventCallbackProps(def: Pick<ComponentDocApi, "events">, existingPropNames: Set<string>): string[] {
+function genEventCallbackProps(
+  def: Pick<ComponentDocApi, "events">,
+  existingPropNames: Set<string>,
+  commentLevel: CommentLevel = "all",
+): string[] {
   return def.events
     .map((event) => {
       const propName = `on${event.name}`;
       if (existingPropNames.has(propName)) return undefined;
 
       let description = "";
-      const eventComment = formatSlotJsDoc(event.description, event.tags, event.deprecated);
+      const eventComment = formatSlotJsDoc(event.description, event.tags, event.deprecated, commentLevel);
       if (eventComment) {
         description = `${eventComment}\n      `;
       }
@@ -1500,8 +1514,8 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
         moduleName,
         generic,
         genericProps,
-        events: genEventDef({ events }),
-        slots: genSlotDef({ slots }),
+        events: genEventDef({ events }, commentLevel),
+        slots: genSlotDef({ slots }, commentLevel),
         accessors: genAccessors({ props }, commentLevel),
       });
 
