@@ -997,10 +997,15 @@ export default class ComponentParser {
    * declarator it names. Each specifier resolves on its own, so
    * `export { a, b }` exports both, and `const a = 1, b = ""; export { b }`
    * exports `b`'s declarator rather than the first one in the declaration.
+   *
+   * `program` is the script the export sits in: only its top-level
+   * declarations count, not a same-named variable inside a function or in
+   * the other script.
    */
   private resolveExportSpecifier(
     node: ExportNamedDeclaration,
     specifier: ExportSpecifier,
+    program: Node | null,
   ): ResolvedExportSpecifier | undefined {
     const localName = moduleExportName(specifier.local);
     const exportedName = moduleExportName(specifier.exported);
@@ -1008,8 +1013,14 @@ export default class ComponentParser {
     // `export { x } from "..."` names the other module's `x`, never a local one.
     if (node.source != null) return { localName, exportedName };
 
+    const topLevel = new Set(
+      (program && "body" in program && Array.isArray(program.body) ? program.body : []).map((statement: Node) =>
+        statement.type === "ExportNamedDeclaration" && statement.declaration ? statement.declaration : statement,
+      ),
+    );
     // Walk is in order; the local binding must appear before this export.
     for (const declaration of this.ctx.vars) {
+      if (!topLevel.has(declaration)) continue;
       const declarator = declaration.declarations.find(
         (decl) => decl.id.type === "Identifier" && decl.id.name === localName,
       );
@@ -1377,7 +1388,7 @@ export default class ComponentParser {
 
       walkNodes(
         this.ctx.parsed?.module as unknown as WalkableNode,
-        ((node: Node) => {
+        ((node: Node, parent: Node | null) => {
           // Module script is in scope for instance. Record imports/funcs/vars
           // the same way so instance CallExpression defaults can see them.
           if (node.type === "ImportDeclaration") {
@@ -1402,7 +1413,7 @@ export default class ComponentParser {
             }
             const from = node.source?.value;
             for (const specifier of node.specifiers) {
-              const resolved = this.resolveExportSpecifier(node, specifier);
+              const resolved = this.resolveExportSpecifier(node, specifier, parent);
               if (!resolved) continue;
               if (resolved.exportedName === "default") {
                 recordDiagnostic(
@@ -1738,7 +1749,7 @@ export default class ComponentParser {
             return;
           }
           for (const specifier of node.specifiers) {
-            const resolved = this.resolveExportSpecifier(node, specifier);
+            const resolved = this.resolveExportSpecifier(node, specifier, parent);
             if (!resolved) continue;
             if (resolved.declaration) {
               addInstanceDeclarationExports(node, resolved.declaration, resolved);
