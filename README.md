@@ -1087,7 +1087,7 @@ sveld({
 + export default class Button extends SvelteComponentTyped<IButtonProps, ...> {}
 ```
 
-Each template must contain `{name}` and produce a valid identifier once substituted; sveld throws otherwise. Any key left out of the object keeps its default (`"{name}Props"` / `"{name}Exports"`).
+Each template must contain `{name}` and produce a valid identifier once substituted, and the two must produce different names that aren't the component's own (`{name}`) or its generic-component interface's (`{name}Component`); sveld throws otherwise. Any key left out of the object keeps its default (`"{name}Props"` / `"{name}Exports"`).
 
 If a bundled component then [`@extendProps`](#extendprops)/`@extends`-es another one, the tag must name the *templated* interface — `@extendProps {"./Button.svelte"} IButtonProps`, not `ButtonProps` — or sveld reports [`extend-props-target-missing`](#type-inference-diagnostics).
 

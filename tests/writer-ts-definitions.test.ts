@@ -1270,6 +1270,27 @@ describe("typesOptions.typeNames", () => {
     );
   });
 
+  test("rejects props and exports templates that produce the same name", () => {
+    for (const typeNames of [{ props: "{name}T", exports: "{name}T" }, { props: "{name}Exports" }]) {
+      expect(() => propsTypeName("Button", typeNames)).toThrow(
+        "typesOptions.typeNames.props and typesOptions.typeNames.exports both produce",
+      );
+      expect(() => exportsTypeName("Button", typeNames)).toThrow("they must differ");
+    }
+  });
+
+  test.each([
+    ["props", { props: "{name}" }, "Button"],
+    ["props", { props: "{name}Component" }, "ButtonComponent"],
+    ["exports", { exports: "{name}" }, "Button"],
+    ["exports", { exports: "{name}Component" }, "ButtonComponent"],
+  ] as const)("rejects a %s template %o that produces the component's own %s", (kind, typeNames, name) => {
+    const resolve = kind === "props" ? propsTypeName : exportsTypeName;
+    expect(() => resolve("Button", typeNames)).toThrow(
+      `sveld: typesOptions.typeNames.${kind} produces "${name}" for component "Button", which the .d.ts already declares for the component itself; use a different template.`,
+    );
+  });
+
   test('writeTsDefinition applies typeNames templates for "component" format', () => {
     const component_api = mockComponentDocApi("Button", "./src/Button.svelte");
 
