@@ -5,6 +5,7 @@
 import type { ParsedComponent, ParsedComponentTypeScriptMetadata, SourceRange } from "./ComponentParser";
 import { createDiagnostic, type SveldDiagnostic } from "./diagnostics";
 import { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "./parsed-component-metadata";
+import { importPath } from "./parser/value-imports";
 
 export interface FinalizeWithoutCrossFileResolutionOptions {
   /** Path recorded on the new diagnostics. Defaults to the component's own `filePath`, if it has one. */
@@ -14,11 +15,6 @@ export interface FinalizeWithoutCrossFileResolutionOptions {
 const TRAILING_PERIOD_REGEX = /\.$/;
 
 const FILE_ACCESS = "resolving it needs file access (generateBundle or the CLI)";
-
-/** The export an import names, read through namespace exports: `keys.THEME`. */
-function importPath(candidate: { importedName: string; members?: string[] }): string {
-  return [candidate.importedName, ...(candidate.members ?? [])].join(".");
-}
 
 /**
  * Settle the cross-file candidates `parseSvelteComponent` leaves for

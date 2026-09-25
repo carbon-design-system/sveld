@@ -9,7 +9,7 @@ import { inferVariableInitializerType, literalValueType, resolveConstInitializer
 import { isBoundInNestedScope, isCalleeBoundInNestedScope } from "./scopes";
 import { sourceForExpression, sourceRangeFromNode } from "./source-position";
 import { trackAdditionalTypeDependencyNode } from "./type-resolution";
-import { importedMemberBinding } from "./value-imports";
+import { importedMemberBinding, importPath } from "./value-imports";
 
 /**
  * {@link ComponentParser.findVariableTypeAndDescription} for a variable whose
@@ -322,15 +322,6 @@ function pendingContextKey(binding: { source: string; importedName: string; memb
 }
 
 /**
- * The export an imported key names, from the module it's imported from:
- * `KEY`, or `keys.KEY` read through a namespace export. Labels the context
- * in diagnostics until the key is known.
- */
-export function importedContextKeyLabel(key: { importedName: string; members?: string[] }): string {
-  return [key.importedName, ...(key.members ?? [])].join(".");
-}
-
-/**
  * Resolve a `setContext` key. Literals, static templates, local `const`
  * chains (depth 5), and `Symbol()` become `{ kind: "resolved" }`. A
  * `Symbol()` with no description uses the binding name. A named import,
@@ -437,7 +428,7 @@ export function parseSetContextCall(ctx: ParserContext, parser: ComponentParser,
      * Properties come from the local value. The key is resolved later; until
      * then the imported name labels this context in diagnostics.
      */
-    const label = importedContextKeyLabel(resolution);
+    const label = importPath(resolution);
     const contextInfo = parseContextValue(ctx, parser, valueArg, label);
     if (contextInfo) {
       ctx.pendingContextKeyCandidates.push({
