@@ -88,7 +88,7 @@ function findAttachedComment(comments: ScriptComment[], declStart: number, sourc
   for (const comment of comments) {
     if (comment.end > declStart) break;
     if (!comment.isJsDoc) continue;
-    if (!isJsDocGap(source.slice(comment.end, declStart))) continue;
+    if (!isJsDocGap(source, comment.end, declStart)) continue;
     attached = comment;
   }
 

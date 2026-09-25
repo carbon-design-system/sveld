@@ -39,16 +39,32 @@ function normalizeGenericNameSpacing(name: string): string {
   return `${base}<${normalizedParams}>`;
 }
 
-/** Whitespace, `//` lines, and `/* *\/` blocks that aren't JSDoc. */
-const COMMENT_GAP_REGEX = /^(?:\s+|\/\/[^\n]*|\/\*(?!\*)[\s\S]*?\*\/)*$/;
+const WHITESPACE_CHAR_REGEX = /\s/;
 
 /**
- * Whether `text` may sit between a JSDoc block and the declaration it
- * documents: whitespace, or comments that aren't JSDoc, such as a
- * `// biome-ignore ...` or `/* istanbul ignore next *\/` line.
+ * Whether `source` from `start` to `end` may sit between a JSDoc block and
+ * the declaration it documents: whitespace, or comments that aren't JSDoc,
+ * such as a `// biome-ignore ...` or `/* istanbul ignore next *\/` line.
  */
-export function isJsDocGap(text: string): boolean {
-  return COMMENT_GAP_REGEX.test(text);
+export function isJsDocGap(source: string, start: number, end: number): boolean {
+  let index = start;
+  while (index < end) {
+    const char = source[index];
+    if (char === "/" && source[index + 1] === "/") {
+      const lineEnd = source.indexOf("\n", index + 2);
+      if (lineEnd === -1 || lineEnd >= end) return true;
+      index = lineEnd + 1;
+    } else if (char === "/" && source[index + 1] === "*" && source[index + 2] !== "*") {
+      const close = source.indexOf("*/", index + 2);
+      if (close === -1 || close + 2 > end) return false;
+      index = close + 2;
+    } else if (char === " " || char === "\n" || char === "\t" || char === "\r" || WHITESPACE_CHAR_REGEX.test(char)) {
+      index++;
+    } else {
+      return false;
+    }
+  }
+  return true;
 }
 
 const TRAILING_SEMICOLON_REGEX = /;$/;
@@ -388,8 +404,7 @@ function findAdjacentJSDocComment(
     // A `//` line or plain `/* *\/` block (e.g. a lint suppression) isn't the doc comment.
     if (("type" in comment && comment.type === "Line") || !String(comment.value).startsWith("*")) continue;
 
-    const between = ctx.source.slice(comment.end, nodeStart);
-    if (isJsDocGap(between)) {
+    if (isJsDocGap(ctx.source, comment.end, nodeStart)) {
       return comment as { value: string; start: number };
     }
   }
