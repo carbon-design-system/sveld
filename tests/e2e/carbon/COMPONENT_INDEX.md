@@ -3143,7 +3143,7 @@ None.
 
 | Event name | Type | Detail | Description |
 | :- | :- | :- | :- |
-| change | dispatched | -- | -- |
+| change | dispatched | <code>number</code> | -- |
 | click | forwarded | -- | -- |
 | mouseenter | forwarded | -- | -- |
 | mouseleave | forwarded | -- | -- |
@@ -3574,7 +3574,7 @@ None.
 
 | Event name | Type | Detail | Description |
 | :- | :- | :- | :- |
-| change | dispatched | -- | -- |
+| change | dispatched | <code>number</code> | -- |
 | click | forwarded | -- | -- |
 | keypress | forwarded | -- | -- |
 

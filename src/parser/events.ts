@@ -3,8 +3,10 @@ import { isIdentifier, isLiteral, isNewExpressionNamed, isObjectExpression } fro
 import type ComponentParser from "../ComponentParser";
 import type { DispatchedEvent, SerializedComponentEvent } from "../ComponentParser";
 import type { ParserContext } from "./context";
-import { literalValueType } from "./props";
+import { inferVariableInitializerType, literalValueType } from "./props";
+import { isBoundInNestedScope } from "./scopes";
 import { sourceRangeFromNode } from "./source-position";
+import { trackAdditionalTypeDependencyNode } from "./type-resolution";
 import { assignValueOrUndefined, compareText, escapeCommentText } from "./utils";
 
 const NEWLINES_REGEX = /\n/g;
@@ -12,10 +14,81 @@ const IDENTIFIER_REGEX = /^[A-Za-z_$][\w$]*$/;
 
 /**
  * What {@link deriveLiteralDetailType} reads identifier types and property
- * names through: the component's parser, or a stand-in for a module sveld
- * reads without one (an imported dispatch helper).
+ * names through: the component's parser ({@link componentDetailTypeSource}),
+ * or a stand-in for a module sveld reads without one (an imported dispatch
+ * helper). `variableType` is `undefined` for a variable it can't type.
  */
-export type DetailTypeSource = Pick<ComponentParser, "findVariableTypeAndDescription" | "getPropertyName">;
+export type DetailTypeSource = {
+  variableType(name: string): string | undefined;
+  getPropertyName: ComponentParser["getPropertyName"];
+};
+
+/**
+ * Types a detail's variables as a context value's are: a JSDoc `@type` or TS
+ * annotation, else the initializer (`let count = 0` and `$state(0)` are
+ * `number`). `nestedBoundNames` are names a parameter or nested declaration
+ * binds at the dispatch; the script's variable or prop of that name isn't the
+ * one dispatched, so they stay `any`.
+ */
+export function componentDetailTypeSource(
+  parser: ComponentParser,
+  ctx: ParserContext,
+  nestedBoundNames?: ReadonlySet<string>,
+): DetailTypeSource {
+  return {
+    variableType: (name) => {
+      if (nestedBoundNames?.has(name)) return undefined;
+      const declaredType = parser.findVariableTypeAndDescription(name)?.type;
+      if (declaredType === undefined) return inferVariableInitializerType(parser, ctx, name);
+      if (declaredType === ctx.explicitVariableTypesByName.get(name)) {
+        trackAdditionalTypeDependencyNode(ctx, ctx.explicitVariableTypeNodesByName.get(name));
+      }
+      return declaredType;
+    },
+    getPropertyName: (key) => parser.getPropertyName(key),
+  };
+}
+
+/**
+ * The names in a detail argument (`count`, or the members of `{ count }` and
+ * `[count]`) that a function, block or template scope binds where it's
+ * dispatched. Read during the walk, while those scopes are live. `undefined`
+ * when there are none, which is almost always.
+ */
+export function detailNamesBoundInNestedScope(
+  ctx: ParserContext,
+  node: unknown,
+  names?: Set<string>,
+): Set<string> | undefined {
+  if (!node || typeof node !== "object" || !("type" in node)) return names;
+  if (isIdentifier(node)) {
+    if (!isBoundInNestedScope(ctx, node.name)) return names;
+    const found = names ?? new Set<string>();
+    found.add(node.name);
+    return found;
+  }
+  let found = names;
+  if (isObjectExpression(node)) {
+    for (const property of node.properties) {
+      if (property.type === "Property") found = detailNamesBoundInNestedScope(ctx, property.value, found);
+    }
+  } else if (node.type === "ArrayExpression") {
+    for (const element of (node as ArrayExpression).elements) {
+      found = detailNamesBoundInNestedScope(ctx, element, found);
+    }
+  }
+  return found;
+}
+
+/**
+ * Detail type of a same-file dispatch argument that isn't a scalar literal:
+ * an object or array literal structurally, a variable by its type. `undefined`
+ * for anything else, so callers keep their scalar-literal narrowing.
+ */
+export function deriveDetailType(source: DetailTypeSource, node: unknown): string | undefined {
+  if (isIdentifier(node)) return source.variableType(node.name);
+  return deriveLiteralDetailType(source, node);
+}
 
 /**
  * Structurally infers a dispatched event's detail type from an object or array literal `dispatch()`
@@ -33,7 +106,7 @@ export function deriveLiteralDetailType(parser: DetailTypeSource, node: unknown)
 
 function inferLiteralMemberType(parser: DetailTypeSource, node: unknown): string {
   if (!node || typeof node !== "object" || !("type" in node)) return "any";
-  if (isIdentifier(node)) return parser.findVariableTypeAndDescription(node.name)?.type ?? "any";
+  if (isIdentifier(node)) return parser.variableType(node.name) ?? "any";
 
   if (isLiteral(node)) return literalValueType(node) ?? "null";
 
@@ -189,11 +262,24 @@ export function addDispatchedEvent(
   }
 }
 
+/** A `$host().dispatchEvent(...)` call read during the walk, recorded by {@link addHostDispatchedEvent}. */
+export interface HostDispatch {
+  name: string;
+  detail: unknown;
+  hasArgument: boolean;
+  nestedBoundNames: Set<string> | undefined;
+  source: DispatchedEvent["source"];
+}
+
 /**
- * Detect `$host().dispatchEvent(new CustomEvent("name", { detail }))` (or `new Event(...)`) and
- * record it as a dispatched event, mirroring `createEventDispatcher()` detection.
+ * Detect `$host().dispatchEvent(new CustomEvent("name", { detail }))` (or `new Event(...)`),
+ * mirroring `createEventDispatcher()` detection. Runs during the walk; the event is recorded
+ * after it by {@link addHostDispatchedEvent}, once every variable the detail names is known.
  */
-export function parseHostDispatchEventCall(ctx: ParserContext, dispatchEventCall: CallExpression): string | undefined {
+export function parseHostDispatchEventCall(
+  ctx: ParserContext,
+  dispatchEventCall: CallExpression,
+): HostDispatch | undefined {
   const eventArg = dispatchEventCall.arguments[0];
   const isCustomEvent = isNewExpressionNamed(eventArg, "CustomEvent");
   if (!isCustomEvent && !isNewExpressionNamed(eventArg, "Event")) return undefined;
@@ -204,25 +290,36 @@ export function parseHostDispatchEventCall(ctx: ParserContext, dispatchEventCall
 
   const optionsArg = isCustomEvent ? eventArg.arguments[1] : undefined;
   let hasArgument = false;
-  let detailValue: unknown;
+  let detail: unknown;
   if (isObjectExpression(optionsArg)) {
     const detailProperty = optionsArg.properties.find(
       (property) => property.type === "Property" && isIdentifier(property.key) && property.key.name === "detail",
     );
     if (detailProperty?.type === "Property") {
       hasArgument = true;
-      detailValue = isLiteral(detailProperty.value) ? detailProperty.value.value : undefined;
+      detail = detailProperty.value;
     }
   }
 
-  addDispatchedEvent(ctx, {
+  return {
     name: String(eventName),
-    detail: detailValue == null ? "" : literalDetailToTypeText(detailValue),
-    has_argument: hasArgument,
+    detail,
+    hasArgument,
+    nestedBoundNames: detailNamesBoundInNestedScope(ctx, detail),
     source: sourceRangeFromNode(ctx, dispatchEventCall),
-  });
+  };
+}
 
-  return String(eventName);
+/** Records a {@link parseHostDispatchEventCall} event, its detail typed as a `dispatch()` detail is. */
+export function addHostDispatchedEvent(parser: ComponentParser, ctx: ParserContext, dispatch: HostDispatch) {
+  const typed = deriveDetailType(componentDetailTypeSource(parser, ctx, dispatch.nestedBoundNames), dispatch.detail);
+  const literal = typed === undefined && isLiteral(dispatch.detail) ? dispatch.detail.value : undefined;
+  addDispatchedEvent(ctx, {
+    name: dispatch.name,
+    detail: typed ?? (literal == null ? "" : literalDetailToTypeText(literal)),
+    has_argument: dispatch.hasArgument,
+    source: dispatch.source,
+  });
 }
 
 export function buildEventDetailFromProperties(

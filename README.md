@@ -3163,6 +3163,8 @@ Without an `@event` tag or a typed dispatcher, `sveld` infers a dispatched event
 
 - A scalar literal argument narrows to its literal type: `dispatch("count", 5)` types the detail as `5`, not `number`. Use `@event` or a typed dispatcher (below) to widen it.
 - An object or array literal argument infers a structural type per field/element: `dispatch("save", { id })` types the detail as `{ id: string }` (resolving the `id` variable's own type), and `dispatch("items", [1, 2])` types it as `number[]`. Fields or elements sveld can't resolve fall back to `any` individually, not for the whole detail.
+- A variable, as the whole detail (`dispatch("count", count)`) or as a field or element, takes its JSDoc `@type` or TS annotation. Without one, it's typed from its initializer the way a prop default is: `let count = 0` and `let count = $state(0)` are `number`, `$state<Item[]>([])` is `Item[]`, and `$derived(total * 2)` is `number`. A literal widens to its primitive, since a `let` can be reassigned. A variable initialized from a call (`let roll = Math.random()`), a destructured binding without an annotation, or a function parameter or nested variable is `any`.
+- `$host().dispatchEvent(new CustomEvent("name", { detail }))` in a custom element types `detail` the same way.
 - An empty object literal (`dispatch("reset", {})`) types the detail as `Record<string, never>`. A spread or computed key (`{ ...state }`, `{ [key]: 1 }`) adds fields sveld can't name, so the detail becomes `Record<string, any>`, or keeps the named fields next to a `[key: string]: any` index signature (`{ id: number; [key: string]: any }`).
 
 #### Typed dispatchers
