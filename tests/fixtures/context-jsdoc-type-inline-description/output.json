@@ -1,0 +1,105 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 22,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>",
+      "source": {
+        "start": {
+          "line": 21,
+          "column": 0
+        },
+        "end": {
+          "line": 21,
+          "column": 8
+        }
+      }
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "modal",
+      "typeName": "ModalContext",
+      "properties": [
+        {
+          "name": "open",
+          "type": "() => void",
+          "optional": false
+        }
+      ],
+      "description": "Opens the modal",
+      "source": {
+        "start": {
+          "line": 6,
+          "column": 2
+        },
+        "end": {
+          "line": 6,
+          "column": 28
+        }
+      }
+    },
+    {
+      "key": "menu",
+      "typeName": "MenuContext",
+      "properties": [
+        {
+          "name": "toggle",
+          "type": "() => void",
+          "optional": false
+        }
+      ],
+      "description": "Toggles the menu\nwhen clicked.",
+      "source": {
+        "start": {
+          "line": 14,
+          "column": 2
+        },
+        "end": {
+          "line": 14,
+          "column": 26
+        }
+      }
+    },
+    {
+      "key": "drawer",
+      "typeName": "DrawerContext",
+      "properties": [
+        {
+          "name": "close",
+          "type": "() => void",
+          "description": "Closes the drawer",
+          "optional": false
+        }
+      ],
+      "source": {
+        "start": {
+          "line": 18,
+          "column": 2
+        },
+        "end": {
+          "line": 18,
+          "column": 33
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}
