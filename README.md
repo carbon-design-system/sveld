@@ -2167,6 +2167,24 @@ By default, `sveld` infers the `@default` value from the prop's initializer and 
 open?: boolean;
 ```
 
+A fallback or conditional initializer (`??`, `||`, `&&`, `?:`) shows its source text, folded onto one line, in the `.d.ts`, the JSON `value`, and the Markdown "Default value" column:
+
+```svelte
+<script>
+  export let theme = undefined;
+  const defaultSize = theme === "dense" ? "sm" : "md";
+
+  export let size = defaultSize ?? "md";
+</script>
+```
+
+```ts
+/**
+ * @default defaultSize ?? "md"
+ */
+size?: string;
+```
+
 Use `@default` to document the default value. When you supply `@default`, `sveld` uses it instead of the inferred value and avoids duplicate `@default` tags in the output.
 
 Use `@default` when the initializer references a variable or expression that means nothing to consumers:

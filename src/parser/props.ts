@@ -65,6 +65,9 @@ export function queuePendingCrossFileDefault(
   }
 }
 
+/** A line break plus the indentation around it, folded to one space in default text. */
+const LINE_BREAK_WITH_INDENT_REGEX = /[^\S\r\n]*[\r\n]\s*/g;
+
 export function processInitializer(
   parser: ComponentParser,
   ctx: ParserContext,
@@ -123,6 +126,16 @@ export function processInitializer(
     init.type === "ConditionalExpression" ||
     init.type === "SequenceExpression"
   ) {
+    // Show the fallback (`size ?? "md"`, `compact ? "…" : "More"`) as the
+    // default. A multi-line ternary folds onto one line with its
+    // indentation dropped; a sequence keeps the parens it needs to read
+    // as one value.
+    const { start, end } = init as { start?: number; end?: number };
+    const text =
+      start === undefined || end === undefined
+        ? undefined
+        : sourceAtPos(ctx, start, end)?.replace(LINE_BREAK_WITH_INDENT_REGEX, " ");
+    value = text !== undefined && init.type === "SequenceExpression" ? `(${text})` : text;
     type = inferExpressionType(parser, ctx, init, depth);
   } else if (init.type === "NewExpression") {
     const newExpr = init as NewExpression;

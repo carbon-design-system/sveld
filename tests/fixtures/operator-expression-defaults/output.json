@@ -367,6 +367,7 @@
       "description": "Nullish fallback of the same type",
       "type": "number",
       "typeSource": "default",
+      "value": "size ?? 5",
       "defaultValue": {
         "raw": "size ?? 5",
         "kind": "expression"
@@ -393,6 +394,7 @@
       "description": "Mixed fallback",
       "type": "number | string",
       "typeSource": "default",
+      "value": "size || \"none\"",
       "defaultValue": {
         "raw": "size || \"none\"",
         "kind": "expression"
@@ -419,6 +421,7 @@
       "description": "Conditional",
       "type": "string",
       "typeSource": "default",
+      "value": "size > 1 ? \"large\" : \"small\"",
       "defaultValue": {
         "raw": "size > 1 ? \"large\" : \"small\"",
         "kind": "expression"

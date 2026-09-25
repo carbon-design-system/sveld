@@ -1,0 +1,132 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 23,
+      "column": 0
+    }
+  },
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "size",
+      "kind": "let",
+      "description": "Nullish fallback",
+      "type": "string",
+      "typeSource": "default",
+      "value": "defaultSize ?? \"md\"",
+      "defaultValue": {
+        "raw": "defaultSize ?? \"md\"",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 8,
+          "column": 4
+        },
+        "end": {
+          "line": 8,
+          "column": 30
+        }
+      }
+    },
+    {
+      "name": "label",
+      "kind": "let",
+      "description": "Ternary",
+      "type": "string",
+      "typeSource": "default",
+      "value": "compact ? \"…\" : \"More\"",
+      "defaultValue": {
+        "raw": "compact ? \"…\" : \"More\"",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 10,
+          "column": 4
+        },
+        "end": {
+          "line": 10,
+          "column": 34
+        }
+      }
+    },
+    {
+      "name": "tone",
+      "kind": "let",
+      "description": "A long ternary spread over several lines",
+      "type": "string",
+      "typeSource": "default",
+      "value": "compact ? \"compact-spacing-with-tight-line-height\" : theme === \"print\" ? \"print-friendly-spacing\" : \"comfortable-spacing\"",
+      "defaultValue": {
+        "raw": "compact       ? \"compact-spacing-with-tight-line-height\"       : theme === \"print\"         ? \"print-friendly-spacing\"         : \"comfortable-spacing\"",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 12,
+          "column": 4
+        },
+        "end": {
+          "line": 16,
+          "column": 31
+        }
+      }
+    },
+    {
+      "name": "value",
+      "kind": "let",
+      "description": "Bindable fallback",
+      "bindable": true,
+      "type": "string",
+      "typeSource": "default",
+      "value": "defaultSize || \"sm\"",
+      "defaultValue": {
+        "raw": "defaultSize || \"sm\"",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": true,
+      "source": {
+        "start": {
+          "line": 18,
+          "column": 4
+        },
+        "end": {
+          "line": 18,
+          "column": 42
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}

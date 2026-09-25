@@ -2,6 +2,7 @@ import { existsSync, readFileSync, rmSync } from "node:fs";
 import { mkdtemp } from "node:fs/promises";
 import path from "node:path";
 import { asNormalizedPath } from "../src/brands";
+import ComponentParser from "../src/ComponentParser";
 import type { ComponentDocs } from "../src/plugin";
 import type { AppendType } from "../src/writer/WriterMarkdown";
 import WriterMarkdown from "../src/writer/WriterMarkdown";
@@ -622,6 +623,33 @@ describe("WriterMarkdown", () => {
     const positions = names.map((name) => output.indexOf(`| ${name} |`));
     expect(positions.every((position) => position !== -1)).toBe(true);
     expect(positions).toEqual([...positions].sort((a, b) => a - b));
+  });
+
+  test("default value column shows the text of logical and conditional initializers", () => {
+    const source = `
+      <script>
+        let defaultSize = "md";
+        let compact = false;
+        export let size = defaultSize ?? "md";
+        export let label = compact
+          ? "short"
+          : "More";
+      </script>
+    `;
+    const parsed = new ComponentParser().parseSvelteComponent(source, {
+      moduleName: "Example",
+      filePath: "Example.svelte",
+    });
+    const output = writeMarkdownCore(
+      new Map([["Example", { filePath: asNormalizedPath("Example.svelte"), moduleName: "Example", ...parsed }]]),
+    );
+
+    expect(output).toContain(
+      '| size | No | <code>let</code> | No | -- | <code>string</code> | <code>defaultSize ?? "md"</code> |',
+    );
+    expect(output).toContain(
+      '| label | No | <code>let</code> | No | -- | <code>string</code> | <code>compact ? "short" : "More"</code> |',
+    );
   });
 
   test("renders CSS Parts and CSS Custom Properties tables only when present", () => {

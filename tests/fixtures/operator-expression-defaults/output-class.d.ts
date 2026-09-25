@@ -78,16 +78,19 @@ export type OperatorExpressionDefaultsProps = {
 
   /**
    * Nullish fallback of the same type
+   * @default size ?? 5
    */
   count?: number;
 
   /**
    * Mixed fallback
+   * @default size || "none"
    */
   either?: number | string;
 
   /**
    * Conditional
+   * @default size > 1 ? "large" : "small"
    */
   variant?: string;
 
