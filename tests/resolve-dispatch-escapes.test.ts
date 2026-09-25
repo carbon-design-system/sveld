@@ -126,6 +126,40 @@ export function createSelectHandler(options) {
     }
   });
 
+  test("types an object or array detail as a local dispatch does, leaving unknown members any", async () => {
+    writeFileSync(
+      path.join(dir, "notify.js"),
+      `export function notify(dispatch, extra) {
+  const trigger = "escape";
+  dispatch("close", { trigger, count: 1, nested: { ok: true } });
+  dispatch("select", [1, 2]);
+  dispatch("change", { ...extra, id: "a" });
+  dispatch("clear", {});
+  dispatch("reset", null);
+  dispatch("toggle", trigger);
+}
+`,
+    );
+
+    const result = await bundleMenu(`  import { createEventDispatcher } from "svelte";
+  import { notify } from "./notify.js";
+
+  /** @event close Closed */
+  const dispatch = createEventDispatcher();
+  notify(dispatch, {});`);
+
+    for (const components of [result.components, result.allComponentsForTypes]) {
+      expect(byModuleName(components, "Menu")?.events).toMatchObject([
+        { name: "change", detail: "{ id: string; [key: string]: any; }" },
+        { name: "clear", detail: "Record<string, never>" },
+        { name: "close", detail: "{ trigger: any; count: number; nested: { ok: boolean; }; }", description: "Closed" },
+        { name: "reset", detail: "null" },
+        { name: "select", detail: "number[]" },
+        { name: "toggle", detail: "any" },
+      ]);
+    }
+  });
+
   test("a helper dispatch beats forwarding an event of the same name, as a local dispatch does", async () => {
     writeFileSync(
       path.join(dir, "Menu.svelte"),

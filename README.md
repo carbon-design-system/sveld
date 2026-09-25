@@ -3038,7 +3038,7 @@ export function createOpenCloseDispatcher(dispatch) {
 </script>
 ```
 
-This happens when sveld builds the whole library (CLI, `sveld()`, or the Vite plugin), not when parsing a single component on its own. Each event name there must be a string literal, or a conditional between them. The detail is typed from a literal argument and is `any` otherwise, so add an `@event` tag to type it more precisely. When sveld can't follow the dispatcher (a package import, a local function, a computed event name, or a helper that passes the dispatcher on), it reports `sveld/dispatch-escapes`, and you document those events with `@event` tags.
+This happens when sveld builds the whole library (CLI, `sveld()`, or the Vite plugin), not when parsing a single component on its own. Each event name there must be a string literal, or a conditional between them. The detail is typed from a literal argument, and an object or array literal is typed member by member as for a dispatch in the component (`{ id: "a" }` is `{ id: string; }`); a member or argument the helper computes, including one of its own variables, is `any`, so add an `@event` tag to type it more precisely. When sveld can't follow the dispatcher (a package import, a local function, a computed event name, or a helper that passes the dispatcher on), it reports `sveld/dispatch-escapes`, and you document those events with `@event` tags.
 
 **Signature:**
 
