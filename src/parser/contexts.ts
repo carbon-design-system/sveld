@@ -427,6 +427,8 @@ export function parseSetContextCall(ctx: ParserContext, parser: ComponentParser,
         ...(contextInfo.type === undefined ? {} : { type: contextInfo.type }),
         properties: contextInfo.properties,
         description: contextInfo.description,
+        ...(contextInfo.hasUnresolvedSpread ? { hasUnresolvedSpread: true } : {}),
+        ...(contextInfo.internal ? { internal: true } : {}),
         source: callSource,
       });
     } else {

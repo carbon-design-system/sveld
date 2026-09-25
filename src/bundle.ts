@@ -1063,6 +1063,8 @@ function applyContextKeyResolutions(component: ComponentDocApi, resolutions: Con
       ...(candidate.type === undefined ? {} : { type: candidate.type }),
       description: candidate.description,
       properties: candidate.properties,
+      ...(candidate.hasUnresolvedSpread ? { hasUnresolvedSpread: true } : {}),
+      ...(candidate.internal ? { internal: true } : {}),
       source: candidate.source,
     });
     component.contexts = contexts;

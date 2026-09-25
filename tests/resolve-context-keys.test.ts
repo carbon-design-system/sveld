@@ -119,6 +119,41 @@ describe("cross-file setContext key resolution", () => {
     ]);
   });
 
+  test("an imported key keeps an unresolved spread's widening and @internal", async () => {
+    writeFileSync(
+      path.join(dir, "keys.js"),
+      `export const KEY = "carbon:Menu";\nexport const HIDDEN = "carbon:Hidden";\n`,
+    );
+    writeFileSync(path.join(dir, "extra.js"), "export const extra = {};\n");
+    writeFileSync(
+      path.join(dir, "Menu.svelte"),
+      `<script>
+  import { setContext } from "svelte";
+  import { KEY, HIDDEN } from "./keys.js";
+  import { extra } from "./extra.js";
+
+  /**
+   * @type {{ token: string }}
+   * @internal
+   */
+  const secret = { token: "" };
+
+  setContext(KEY, { ...extra, open: true });
+  setContext(HIDDEN, secret);
+</script>
+<div><slot /></div>
+`,
+    );
+    writeFileSync(path.join(dir, "index.js"), `export { default as Menu } from "./Menu.svelte";\n`);
+
+    const result = await generateBundle(path.join(dir, "index.js"), true);
+
+    expect(byModuleName(result.allComponentsForTypes, "Menu")?.contexts).toMatchObject([
+      { key: "carbon:Menu", hasUnresolvedSpread: true },
+      { key: "carbon:Hidden", internal: true },
+    ]);
+  });
+
   test("keeps an imported key in source order among same-file keys", async () => {
     writeFileSync(path.join(dir, "keys.js"), `export const MODAL_KEY = "carbon:Modal";\n`);
     writeFileSync(
