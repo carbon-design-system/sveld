@@ -110,6 +110,9 @@ interface ModuleSource {
   dir: string;
 }
 
+/** A module's text and top-level statements, or `null` when it can't be read or parsed. */
+type ParsedModule = { source: ModuleSource; body: AstNode[] } | null;
+
 /** Resolution state shared across the recursive module walk. */
 export interface ResolveContext {
   /** Memoized exports per file so repeated lookups stay cheap. */
@@ -117,15 +120,21 @@ export interface ResolveContext {
   /** Files currently being resolved, used to break import cycles. */
   computing: Set<string>;
   /**
+   * Parsed modules per file. Unlike `cache`, which a cycle cut short can
+   * leave incomplete, a parse depends only on the file, so contexts may
+   * share this map.
+   */
+  modules: Map<string, ParsedModule>;
+  /**
    * Called for a name two `export *` statements of `filePath` bring in from
    * different declarations. The module doesn't export such a name.
    */
   onAmbiguousStarExport?: (filePath: string, name: string, entries: InternalExport[]) => void;
 }
 
-/** A fresh cache and cycle set, shared by the cross-file passes of one `generateBundle()` run. */
-export function createResolveContext(): ResolveContext {
-  return { cache: new Map(), computing: new Set() };
+/** A fresh cache and cycle set, reading parsed modules from (and adding them to) `modules`. */
+export function createResolveContext(modules: Map<string, ParsedModule> = new Map()): ResolveContext {
+  return { cache: new Map(), computing: new Set(), modules };
 }
 
 export function asNode(value: unknown): AstNode | undefined {
@@ -724,7 +733,7 @@ function describeDefaultExport(
  * (`<script module>` / `<script context="module">`), the only place a
  * component declares exports other than its default.
  */
-function parseModule(filePath: string): { source: ModuleSource; body: AstNode[] } | null {
+function parseModule(filePath: string): ParsedModule {
   let text: string;
   try {
     text = readFileSync(filePath, "utf-8");
@@ -801,7 +810,11 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
   if (ctx.computing.has(filePath)) return [];
   ctx.computing.add(filePath);
 
-  const parsed = parseModule(filePath);
+  let parsed = ctx.modules.get(filePath);
+  if (parsed === undefined) {
+    parsed = parseModule(filePath);
+    ctx.modules.set(filePath, parsed);
+  }
   if (!parsed) {
     ctx.computing.delete(filePath);
     ctx.cache.set(filePath, []);
