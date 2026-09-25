@@ -4,6 +4,7 @@ import path from "node:path";
 import { asNormalizedPath } from "../src/brands";
 import ComponentParser from "../src/ComponentParser";
 import type { ComponentDocs } from "../src/plugin";
+import { formatDescriptionWithTags, formatPropDescription } from "../src/writer/markdown-format-utils";
 import type { AppendType } from "../src/writer/WriterMarkdown";
 import WriterMarkdown from "../src/writer/WriterMarkdown";
 import writeMarkdown from "../src/writer/writer-markdown";
@@ -963,5 +964,83 @@ describe("WriterMarkdown", () => {
         rmSync(tempDir, { recursive: true, force: true });
       }
     });
+  });
+});
+
+describe("code fences in table cells", () => {
+  test("prose-only text is unchanged", () => {
+    expect(
+      formatDescriptionWithTags("Uses `kind` | size.\n\nSecond <b>paragraph</b>.", [{ name: "since", body: "1.2.0" }]),
+    ).toBe("Uses `kind` &#124; size.<br /><br />Second &lt;b&gt;paragraph&lt;/b&gt;.<br />@since 1.2.0");
+    expect(formatPropDescription("Inline `code` and a\nline break.")).toBe("Inline `code` and a<br />line break.");
+  });
+
+  test("renders a fenced block in a description as <pre><code>", () => {
+    expect(formatPropDescription("Renders an icon:\n```svelte\n<Icon />\n```\nThen more text.")).toBe(
+      "Renders an icon:<pre><code>&lt;Icon /></code></pre>Then more text.",
+    );
+  });
+
+  test("keeps the indentation of an @example fence, one <br /> per line", () => {
+    const body = '```svelte\n<Button>\n  <Icon slot="icon" size={20} />\n</Button>\n```';
+    expect(formatDescriptionWithTags("Specify the icon.", [{ name: "example", body }])).toBe(
+      'Specify the icon.<br />@example <pre><code>&lt;Button><br />  &lt;Icon slot="icon" size={20} /><br />&lt;/Button></code></pre>',
+    );
+  });
+
+  test("adds no <br /> between a closing fence and the next tag", () => {
+    expect(formatDescriptionWithTags("Usage:\n```js\nrun();\n```", [{ name: "since", body: "2.0.0" }])).toBe(
+      "Usage:<pre><code>run();</code></pre>@since 2.0.0",
+    );
+  });
+
+  test("strips the opening fence's indentation from an indented fence", () => {
+    expect(formatPropDescription("Call it:\n  ```ts\n  start();\n    step();\n  ```")).toBe(
+      "Call it:<pre><code>start();<br />  step();</code></pre>",
+    );
+  });
+
+  test("escapes Markdown syntax inside a fence and leaves {@link} alone", () => {
+    expect(formatPropDescription("```ts\nconst a = b || c; // `x` *y* _z_ {@link Foo}\n```")).toBe(
+      "<pre><code>const a = b &#124;&#124; c; // &#96;x&#96; &#42;y&#42; &#95;z&#95; {@link Foo}</code></pre>",
+    );
+  });
+
+  test("supports tilde fences, longer fences and an unclosed fence", () => {
+    expect(formatPropDescription("~~~\na\n~~~")).toBe("<pre><code>a</code></pre>");
+    expect(formatPropDescription("````md\n```\ninner\n```\n````")).toBe(
+      "<pre><code>&#96;&#96;&#96;<br />inner<br />&#96;&#96;&#96;</code></pre>",
+    );
+    expect(formatPropDescription("Open:\n```js\nleft();")).toBe("Open:<pre><code>left();</code></pre>");
+  });
+
+  test("renders an @example fence in the props table", () => {
+    const output = writeMarkdownCore(
+      new Map([
+        [
+          "Example",
+          mockComponentDocApi("Example", "Example.svelte", {
+            syntaxMode: "legacy",
+            props: [
+              {
+                name: "icon",
+                kind: "let",
+                constant: false,
+                description: "The icon.",
+                isFunction: false,
+                isFunctionDeclaration: false,
+                isRequired: false,
+                reactive: false,
+                tags: [{ name: "example", body: "```svelte\n<Button>\n  <Icon />\n</Button>\n```" }],
+              },
+            ],
+          }),
+        ],
+      ]),
+    );
+
+    expect(output).toContain(
+      "| The icon.<br />@example <pre><code>&lt;Button><br />  &lt;Icon /><br />&lt;/Button></code></pre> |\n",
+    );
   });
 });

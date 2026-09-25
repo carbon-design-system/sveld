@@ -203,6 +203,61 @@ describe("renderLlmsDocuments", () => {
     expect(llmsFullTxt).toContain("| reset | <code>reset(): void</code> | Clears it. |");
   });
 
+  test("llms-full.txt moves fenced code out of table cells into blocks below the table", () => {
+    const example = mockComponentDocApi("Example", "Example.svelte", {
+      syntaxMode: "legacy",
+      props: [
+        mockProp("icon", {
+          isRequired: false,
+          description: "The icon.",
+          tags: [{ name: "example", body: "```svelte\n<Button>\n  <Icon />\n</Button>\n```" }],
+        }),
+        mockProp("size", { isRequired: false, description: "Plain text | pipes." }),
+      ],
+      events: [mockEvent("change", { description: 'Fires on change.\n```js\non("change", fn);\n```' })],
+      slots: [mockSlot({ description: "Body.\n~~~html\n<p>Hi</p>\n~~~" })],
+    });
+
+    const { llmsFullTxt } = renderLlmsDocuments(new Map([["Example", example]]), { title: "lib" });
+
+    expect(llmsFullTxt).toContain(
+      "| icon | -- | -- | No | The icon.<br />@example (code below) |\n| size | -- | -- | No | Plain text &#124; pipes. |\n\nCode for `icon`:\n\n```svelte\n<Button>\n  <Icon />\n</Button>\n```\n\n### Events",
+    );
+    expect(llmsFullTxt).toContain(
+      '| change | dispatched | -- | Fires on change.<br />(code below) |\n\nCode for `change`:\n\n```js\non("change", fn);\n```\n\n',
+    );
+    expect(llmsFullTxt).toContain("| Body.<br />(code below) |\n\nCode for `default`:\n\n~~~html\n<p>Hi</p>\n~~~\n\n");
+    expect(llmsFullTxt).not.toContain("<pre>");
+  });
+
+  test("llms-full.txt moves fenced code out of class member tables too", () => {
+    const example = mockComponentDocApi("Example", "Example.svelte", {
+      syntaxMode: "legacy",
+      moduleExports: [
+        mockProp("Store", {
+          kind: "class",
+          type: "typeof Store",
+          isRequired: false,
+          members: [
+            {
+              kind: "method",
+              name: "reset",
+              returnType: "void",
+              description: "Clears it.",
+              tags: [{ name: "example", body: "```ts\nstore.reset();\n```" }],
+            },
+          ],
+        }),
+      ],
+    });
+
+    const { llmsFullTxt } = renderLlmsDocuments(new Map([["Example", example]]), { title: "lib" });
+
+    expect(llmsFullTxt).toContain(
+      "| reset | <code>reset(): void</code> | Clears it.<br />@example (code below) |\n\nCode for `reset`:\n\n```ts\nstore.reset();\n```\n\n",
+    );
+  });
+
   test("props and events tables render pass-through tags like slots do", () => {
     const example = mockComponentDocApi("Example", "Example.svelte", {
       syntaxMode: "legacy",

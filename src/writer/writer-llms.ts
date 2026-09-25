@@ -8,8 +8,9 @@ import { readProjectPackageMeta } from "../read-project-package-meta";
 import { buildComponentApiDocument } from "./document-model";
 import { MarkdownWriterBaseImpl } from "./MarkdownWriterBase";
 import {
+  type CodeBelowTable,
   EVENT_TABLE_HEADER,
-  formatDescriptionWithTags,
+  formatDescriptionWithCodeBelow,
   formatEventDetail,
   formatExportType,
   formatNameWithDeprecation,
@@ -19,6 +20,7 @@ import {
   formatSlotProps,
   MD_TYPE_UNDEFINED,
   renderClassMemberTables,
+  renderCodeBelowTable,
   SLOT_TABLE_HEADER,
 } from "./markdown-format-utils";
 import Writer from "./Writer";
@@ -56,20 +58,31 @@ function firstSentence(text: string | undefined, fallback: string): string {
   return match ? firstParagraph.slice(0, match.index + 1) : firstParagraph;
 }
 
+/**
+ * Ends a table, then prints the fenced code lifted out of its cells as real
+ * multi-line blocks: models read this file as text, where an inline
+ * `<pre><code>` with `<br />` and entities would only be noise.
+ */
+function endTable(document: MarkdownWriterBaseImpl, below: CodeBelowTable) {
+  document.append("raw", "\n");
+  if (below.length > 0) document.append("raw", renderCodeBelowTable(below));
+}
+
 function renderPropsTableSection(document: MarkdownWriterBaseImpl, heading: string, props: ComponentProp[]) {
   if (props.length === 0) return;
 
   document.append("h3", heading);
   document.append("raw", LLMS_PROP_TABLE_HEADER);
+  const below: CodeBelowTable = [];
   for (const prop of props) {
     document.append(
       "raw",
       `| ${formatNameWithDeprecation(prop.name, prop.deprecated)} | ${formatExportType(prop)} | ${formatPropValue(
         prop.value,
-      )} | ${prop.isRequired ? "Yes" : "No"} | ${formatDescriptionWithTags(prop.description, prop.tags)} |\n`,
+      )} | ${prop.isRequired ? "Yes" : "No"} | ${formatDescriptionWithCodeBelow(below, prop.name, prop.description, prop.tags)} |\n`,
     );
   }
-  document.append("raw", "\n");
+  endTable(document, below);
 }
 
 function renderEventsSection(document: MarkdownWriterBaseImpl, events: SerializedComponentEvent[]) {
@@ -77,15 +90,16 @@ function renderEventsSection(document: MarkdownWriterBaseImpl, events: Serialize
 
   document.append("h3", "Events");
   document.append("raw", EVENT_TABLE_HEADER);
+  const below: CodeBelowTable = [];
   for (const event of events) {
     document.append(
       "raw",
       `| ${formatNameWithDeprecation(event.name, event.deprecated)} | ${event.type} | ${formatEventDetail(
         event.detail,
-      )} | ${formatDescriptionWithTags(event.description, event.tags)} |\n`,
+      )} | ${formatDescriptionWithCodeBelow(below, event.name, event.description, event.tags)} |\n`,
     );
   }
-  document.append("raw", "\n");
+  endTable(document, below);
 }
 
 function renderSlotsSection(document: MarkdownWriterBaseImpl, heading: string, slots: ComponentSlot[]) {
@@ -93,18 +107,21 @@ function renderSlotsSection(document: MarkdownWriterBaseImpl, heading: string, s
 
   document.append("h3", heading);
   document.append("raw", SLOT_TABLE_HEADER);
+  const below: CodeBelowTable = [];
   for (const slot of slots) {
     document.append(
       "raw",
       `| ${formatNameWithDeprecation(slot.default ? MD_TYPE_UNDEFINED : (slot.name ?? MD_TYPE_UNDEFINED), slot.deprecated)} | ${
         slot.default ? "Yes" : "No"
-      } | ${formatSlotProps(slot.slot_props)} | ${formatSlotFallback(slot.fallback)} | ${formatDescriptionWithTags(
+      } | ${formatSlotProps(slot.slot_props)} | ${formatSlotFallback(slot.fallback)} | ${formatDescriptionWithCodeBelow(
+        below,
+        slot.default ? "default" : (slot.name ?? "default"),
         slot.description,
         slot.tags,
       )} |\n`,
     );
   }
-  document.append("raw", "\n");
+  endTable(document, below);
 }
 
 function renderTypedefsSection(document: MarkdownWriterBaseImpl, component: ComponentDocApi) {
@@ -135,7 +152,7 @@ function renderComponentFull(document: MarkdownWriterBaseImpl, component: Compon
   renderSlotsSection(document, component.syntaxMode === "runes" ? "Snippets" : "Slots", component.slots);
   renderTypedefsSection(document, component);
   renderPropsTableSection(document, "Module exports", component.moduleExports);
-  renderClassMemberTables(document, component.moduleExports);
+  renderClassMemberTables(document, component.moduleExports, { codeBelow: true });
 }
 
 function renderLlmsTxt(
