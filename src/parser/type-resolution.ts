@@ -460,12 +460,17 @@ export function buildTypeScriptMetadata(ctx: ParserContext): ParsedComponentType
     ctx.pendingDispatchEscapeCandidates.length > 0 ? ctx.pendingDispatchEscapeCandidates.slice() : undefined;
   const deferredEventNoSourceDiagnostics =
     ctx.deferredEventNoSourceDiagnostics.length > 0 ? ctx.deferredEventNoSourceDiagnostics.slice() : undefined;
+  const untypedJsDocEventNames =
+    pendingDispatchEscapeCandidates && ctx.untypedJsDocEventNames.size > 0
+      ? Array.from(ctx.untypedJsDocEventNames)
+      : undefined;
   const pendingCrossFileCandidates = {
     ...(pendingCallDefaultCandidates ? { pendingCallDefaultCandidates } : {}),
     ...(pendingConstDefaultCandidates ? { pendingConstDefaultCandidates } : {}),
     ...(pendingContextKeyCandidates ? { pendingContextKeyCandidates } : {}),
     ...(pendingDispatchEscapeCandidates ? { pendingDispatchEscapeCandidates } : {}),
     ...(deferredEventNoSourceDiagnostics ? { deferredEventNoSourceDiagnostics } : {}),
+    ...(untypedJsDocEventNames ? { untypedJsDocEventNames } : {}),
   };
   const hasPendingCrossFileCandidates =
     pendingCallDefaultCandidates !== undefined ||

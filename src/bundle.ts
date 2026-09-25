@@ -903,6 +903,7 @@ export async function resolveCrossFileCandidates(
       contextKeys: metadata?.pendingContextKeyCandidates ?? [],
       dispatchEscapes: metadata?.pendingDispatchEscapeCandidates ?? [],
       deferredEventNoSource: metadata?.deferredEventNoSourceDiagnostics ?? [],
+      untypedEventNames: metadata?.untypedJsDocEventNames ?? [],
     };
   }).filter(
     (work) =>
@@ -925,6 +926,7 @@ export async function resolveCrossFileCandidates(
     contextKeys,
     dispatchEscapes,
     deferredEventNoSource,
+    untypedEventNames,
   } of pending) {
     const ctx = createCallDefaultResolveContext();
     const filePath = resolveComponentFilePath(component.filePath);
@@ -943,6 +945,7 @@ export async function resolveCrossFileCandidates(
         component,
         resolveDispatchEscapeCandidates(filePath, dispatchEscapes, ctx),
         deferredEventNoSource,
+        untypedEventNames,
       );
     }
 
@@ -1084,6 +1087,7 @@ function applyDispatchEscapeResolutions(
   component: ComponentDocApi,
   resolutions: DispatchEscapeResolution[],
   deferredEventNoSource: SveldDiagnostic[],
+  untypedEventNames: string[],
 ): void {
   const helperEvents = new Map<string, DispatchedEvent>();
   const diagnostics = [...(component.diagnostics ?? [])];
@@ -1135,9 +1139,17 @@ function applyDispatchEscapeResolutions(
     else if (!forwardedByName.has(event.name)) forwardedByName.set(event.name, event);
   }
 
+  // An untyped `@event`'s `null` detail is only a fallback, as for a same-file dispatch.
+  const untypedNames = new Set(untypedEventNames);
+  const detailByUntypedName = new Map<string, string>();
   const added: DispatchedEvent[] = [];
   for (const helperEvent of helperEvents.values()) {
-    if (dispatchedNames.has(helperEvent.name)) continue;
+    if (dispatchedNames.has(helperEvent.name)) {
+      if (untypedNames.has(helperEvent.name) && helperEvent.detail !== undefined) {
+        detailByUntypedName.set(helperEvent.name, helperEvent.detail);
+      }
+      continue;
+    }
     const forwarded = forwardedByName.get(helperEvent.name);
     if (!forwarded) {
       added.push(helperEvent);
@@ -1154,11 +1166,16 @@ function applyDispatchEscapeResolutions(
       ...((helperEvent.source ?? forwarded.source) ? { source: helperEvent.source ?? forwarded.source } : {}),
     });
   }
-  if (added.length === 0) return;
+  if (added.length === 0 && detailByUntypedName.size === 0) return;
 
   const replacedNames = new Set(added.map((event) => event.name));
   component.events = [
-    ...component.events.filter((event) => event.type === "dispatched" || !replacedNames.has(event.name)),
+    ...component.events
+      .filter((event) => event.type === "dispatched" || !replacedNames.has(event.name))
+      .map((event) => {
+        const detail = event.type === "dispatched" ? detailByUntypedName.get(event.name) : undefined;
+        return detail === undefined ? event : { ...event, detail };
+      }),
     ...added,
   ].sort(compareSerializedEvents);
 }
