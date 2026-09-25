@@ -1212,7 +1212,9 @@ export default class ComponentParser {
       };
     }
 
-    return cached ?? null;
+    // A JSDoc block without `@type` only types a TS-annotated variable (above).
+    if (!cached?.type) return null;
+    return { type: cached.type, description: cached.description, internal: cached.internal };
   }
 
   accumulateGeneric(name: string, constraint: string): void {

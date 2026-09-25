@@ -112,7 +112,7 @@ function tokenizeLine(text: string, isOpeningLine: boolean): { indent: string; c
   rest = rest.slice(separator.length);
 
   const trimmedEnd = rest.trimEnd();
-  const content = trimmedEnd.endsWith(BLOCK_CLOSE) ? trimmedEnd.slice(0, -BLOCK_CLOSE.length) : rest;
+  const content = trimmedEnd.endsWith(BLOCK_CLOSE) ? trimmedEnd.slice(0, -BLOCK_CLOSE.length).trimEnd() : rest;
 
   // The gutter convention is "marker + exactly one separator space"; anything past that first
   // space is meaningful indentation and gets preserved as part of `indent`.
