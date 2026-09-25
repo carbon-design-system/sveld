@@ -52,10 +52,8 @@ export interface JSDocTag {
   default?: string;
   description: string;
   /**
-   * The tag's full original body text (after `@tag`), untouched by type/name parsing (braces
-   * included), with continuation lines keeping only their meaningful `indent` (as `description`
-   * does) - for tags read as prose (`@deprecated`) or kept verbatim (`@since`, `@example`, and any
-   * tag sveld doesn't otherwise structurally interpret).
+   * The tag's body text (after `@tag`) as written, braces included, untouched by type/name
+   * parsing; for prose tags (`@deprecated`) and verbatim ones (`@since`, `@example`, unknown tags).
    */
   text: string;
   /** This tag's own physical lines, post type/name extraction (shares objects with the parent `JSDocComment.lines`). */
@@ -351,9 +349,10 @@ function parseTagSection(sectionLines: CommentLine[]): JSDocTag {
 
   // The name shares the line the type ends on. A type with nothing after it
   // (`@slot {{ item: string }}`) has no name, so the next line stays description.
-  const nameResult = extractName(sectionLines[typeResult ? typeResult.endIndex : 0]);
+  const nameLineIndex = typeResult?.endIndex ?? 0;
+  const nameResult = extractName(sectionLines[nameLineIndex]);
 
-  const description = joinLines(sectionLines.slice(typeResult ? typeResult.endIndex : 0));
+  const description = joinLines(sectionLines.slice(nameLineIndex));
 
   return {
     tag,

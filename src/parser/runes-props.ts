@@ -188,13 +188,12 @@ type ModernScriptStatement = {
   start?: number;
   end?: number;
   importKind?: string;
-  exportKind?: string;
   source?: { value?: string } | null;
   specifiers?: Array<{
     type?: string;
     importKind?: string;
-    local?: { name?: string; type?: string; value?: string };
-    exported?: { name?: string; type?: string; value?: string };
+    local?: { name?: string };
+    exported?: { name?: string };
     imported?: { type?: string; name?: string; value?: string };
   }>;
   id?: { name?: string };
@@ -215,9 +214,11 @@ type ModernScriptStatement = {
   }>;
 };
 
+type ModernScript = ModernScriptNode & { content?: { body?: ModernScriptStatement[] } };
+
 type ModernParsedRoot = {
-  instance?: ModernScriptNode & { content?: { body?: ModernScriptStatement[] } };
-  module?: ModernScriptNode & { content?: { body?: ModernScriptStatement[] } };
+  instance?: ModernScript;
+  module?: ModernScript;
   options?: {
     customElement?: {
       tag?: string;
@@ -286,28 +287,18 @@ function collectScriptTypeDeclaration(ctx: ParserContext, statement: ModernScrip
       });
     }
   }
+  const isEnum = statement.type === "TSEnumDeclaration";
   if (
-    (statement.type === "TSInterfaceDeclaration" || statement.type === "TSTypeAliasDeclaration") &&
+    (isEnum || statement.type === "TSInterfaceDeclaration" || statement.type === "TSTypeAliasDeclaration") &&
     statement.id?.name &&
     statement.start !== undefined &&
     statement.end !== undefined
   ) {
+    const code = isEnum
+      ? buildEnumLocalTypeDeclarationCode(ctx, statement)
+      : sourceAtPos(ctx, statement.start, statement.end)?.trim();
     ctx.localTypeDeclarationsByName.set(statement.id.name, {
-      code: sourceAtPos(ctx, statement.start, statement.end)?.trim() ?? "",
-      node: statement as ModernRunesTypeNode,
-      start: statement.start,
-      ...(exported ? { exported } : {}),
-    });
-  }
-
-  if (
-    statement.type === "TSEnumDeclaration" &&
-    statement.id?.name &&
-    statement.start !== undefined &&
-    statement.end !== undefined
-  ) {
-    ctx.localTypeDeclarationsByName.set(statement.id.name, {
-      code: buildEnumLocalTypeDeclarationCode(ctx, statement) ?? "",
+      code: code ?? "",
       node: statement as ModernRunesTypeNode,
       start: statement.start,
       ...(exported ? { exported } : {}),
