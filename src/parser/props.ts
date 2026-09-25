@@ -126,10 +126,8 @@ export function processInitializer(
     init.type === "ConditionalExpression" ||
     init.type === "SequenceExpression"
   ) {
-    // Show the fallback (`size ?? "md"`, `compact ? "…" : "More"`) as the
-    // default. A multi-line ternary folds onto one line with its
-    // indentation dropped; a sequence keeps the parens it needs to read
-    // as one value.
+    // The whole expression is the default (`size ?? "md"`), folded onto one
+    // line; a sequence keeps the parens it needs to read as one value.
     const { start, end } = init as { start?: number; end?: number };
     const text =
       start === undefined || end === undefined
@@ -352,11 +350,9 @@ const NUMERIC_BINARY_OPERATORS = new Set(["-", "*", "/", "%", "**", "<<", ">>", 
 const BOOLEAN_BINARY_OPERATORS = new Set(["==", "!=", "===", "!==", "<", "<=", ">", ">=", "in", "instanceof"]);
 
 /**
- * Type of an operator expression (`a * 2`, `"#" + id`, `!open`, `a ?? 5`,
- * `cond ? 1 : 2`) from its operators and the types of its operands. Returns
- * `undefined` when that can't be told without a type checker (`a + b` of
- * two untyped values), so the caller falls back to `any` rather than
- * emitting the expression itself as a type.
+ * Type of an operator expression (`a * 2`, `"#" + id`, `!open`, `a ?? 5`) from its
+ * operators and operand types. `undefined` when that needs a type checker (`a + b`
+ * of untyped values), so the caller falls back to `any`, not the expression text.
  */
 function inferExpressionType(
   parser: ComponentParser,

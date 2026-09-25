@@ -165,6 +165,10 @@ const IDE_PASSTHROUGH_TAGS = new Set(["since", "example", "see"]);
  */
 const OTHER_KNOWN_JSDOC_TAGS = new Set(["bindable", "default", "required"]);
 
+function toPassthroughTags(tags: JSDocTag[]): JsDocPassthroughTag[] | undefined {
+  return tags.length > 0 ? tags.map((tag) => ({ name: tag.tag, body: tag.text })) : undefined;
+}
+
 function deprecatedValueFromBody(body: string): DeprecatedValue {
   const message = body.trim();
   return message === "" ? true : message;
@@ -247,12 +251,8 @@ export function extractJsDocDeprecatedAndTags(commentValue: string): {
   internal: boolean;
 } {
   const comment = parseComments(formatComment(commentValue));
-  const { deprecated, passthrough: passthroughTags, internal } = getCommentTags(comment);
-
-  const tags: JsDocPassthroughTag[] | undefined =
-    passthroughTags.length > 0 ? passthroughTags.map((tag) => ({ name: tag.tag, body: tag.text })) : undefined;
-
-  return { deprecated, tags, internal };
+  const { deprecated, passthrough, internal } = getCommentTags(comment);
+  return { deprecated, tags: toPassthroughTags(passthrough), internal };
 }
 
 /** Tags {@link getCommentTags} handles structurally (or elsewhere), so they never land in `additional`. */
@@ -399,14 +399,10 @@ function findAdjacentJSDocComment(
 
 /**
  * Absolute `/**` start offsets of every JSDoc comment directly documenting a function: a
- * `function` declaration (module or instance script, exported or not), a variable initialized
- * with an arrow or function expression, except an instance-script `export let`, or a
- * module-script class or one of its methods. A `@template`
- * tag in one of these blocks types that function's own generic parameter, standard JSDoc usage
- * unrelated to sveld's `@generics`/`@template` component-generics feature, and must not be
- * folded into the component's class/props generic parameter list the way a `@generics`-adjacent
- * one is. An instance-script `export let` is a prop, so a `@template` on one still declares a
- * component generic; an `export const` is a read-only accessor, not a prop.
+ * `function` declaration, a variable initialized with an arrow or function expression, or a
+ * module-script class or one of its methods. A `@template` in one of these types that
+ * function's own generic parameter, not the component's. The exception is an instance-script
+ * `export let`: it's a prop, so its `@template` still declares a component generic.
  */
 function functionDocCommentStarts(ctx: ParserContext): Set<number> {
   const starts = new Set<number>();
@@ -604,19 +600,10 @@ function processJSDocComment(
     }
     for (const tag of descriptionTags) {
       // Rebuilt from the text as written, so a `{...}` in it (`@default { a: 1 }`) survives.
-      const tagStr = `@${tag.tag}${tag.text ? ` ${tag.text}` : ""}`;
-      descriptionParts.push(tagStr);
+      descriptionParts.push(`@${tag.tag}${tag.text ? ` ${tag.text}` : ""}`);
     }
     description = descriptionParts.join("\n");
   }
-
-  const tags: JsDocPassthroughTag[] | undefined =
-    passthroughTags.length > 0
-      ? passthroughTags.map((tag) => ({
-          name: tag.tag,
-          body: tag.text,
-        }))
-      : undefined;
 
   return {
     type,
@@ -625,7 +612,7 @@ function processJSDocComment(
     description,
     binding,
     deprecated,
-    tags,
+    tags: toPassthroughTags(passthroughTags),
     sveldIgnore: ignoreCodes.length > 0 ? ignoreCodes : undefined,
     internal,
     typeParameters,
@@ -866,7 +853,7 @@ export function parseCustomTypes(
 
     /** Description lines immediately above a tag (not continuation lines the tag's own body absorbed). */
     const getPrecedingDescription = (tagSource: typeof blockLines): string | undefined => {
-      if (!tagSource || tagSource.length === 0) return undefined;
+      if (tagSource.length === 0) return undefined;
       const tagLineNumber = tagSource[0].number;
 
       const claimedLineNums: number[] = [];
@@ -1207,8 +1194,7 @@ export function parseCustomTypes(
         }
         case "slot":
         case "snippet": {
-          const inlineSlotDesc = getTagDescription(tagSource, nextTag);
-          let slotDesc = inlineSlotDesc;
+          let slotDesc = getTagDescription(tagSource, nextTag);
           if (!slotDesc && isFirstTag && !commentDescriptionUsed && commentDescription) {
             slotDesc = commentDescription;
             commentDescriptionUsed = true;
@@ -1339,8 +1325,7 @@ export function parseCustomTypes(
           currentTypedefName = typeDeclarationName(name);
           currentTypedefType = type;
           currentTypedefSource = sourceRangeFromCommentTag(ctx, tagSource);
-          const inlineTypedefDesc = getTagDescription(tagSource, nextTag);
-          currentTypedefDescription = inlineTypedefDesc || takePrecedingDescription(tagIndex);
+          currentTypedefDescription = getTagDescription(tagSource, nextTag) || takePrecedingDescription(tagIndex);
           if (!currentTypedefDescription && isFirstTag && !commentDescriptionUsed && commentDescription) {
             currentTypedefDescription = commentDescription;
             commentDescriptionUsed = true;
@@ -1360,8 +1345,7 @@ export function parseCustomTypes(
 
           currentCallbackName = typeDeclarationName(name);
           currentCallbackSource = sourceRangeFromCommentTag(ctx, tagSource);
-          const inlineCallbackDesc = getTagDescription(tagSource, nextTag);
-          currentCallbackDescription = inlineCallbackDesc || takePrecedingDescription(tagIndex);
+          currentCallbackDescription = getTagDescription(tagSource, nextTag) || takePrecedingDescription(tagIndex);
           if (!currentCallbackDescription && isFirstTag && !commentDescriptionUsed && commentDescription) {
             currentCallbackDescription = commentDescription;
             commentDescriptionUsed = true;
@@ -1467,10 +1451,7 @@ export function parseCustomTypes(
           break;
         default:
           {
-            const passthroughTag = {
-              name: tag,
-              body: text,
-            };
+            const passthroughTag = { name: tag, body: text };
             claimBodyLines(tags[tagIndex], (droppedLineCount) => {
               passthroughTag.body = dropLastLines(text, droppedLineCount);
             });

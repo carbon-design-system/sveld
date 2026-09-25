@@ -110,7 +110,7 @@ export function collectReferencedTypeDependencies(
           {
             type: "TSTypeReference",
             typeName: heritage.expression,
-            ...(heritage.typeParameters ? { typeParameters: heritage.typeParameters } : {}),
+            typeParameters: heritage.typeParameters,
           } as ModernRunesTypeNode,
           referencedImportedTypes,
           referencedLocalTypes,
@@ -468,11 +468,9 @@ export function readFunctionDeclarationParts(
 }
 
 /**
- * Builds a `<T>(params) => ReturnType` signature string from a `FunctionDeclaration`'s
- * own TS annotations (type parameters, params, defaults, rest, return type), for
- * `export function` accessors in `lang="ts"` components. Untyped positions fall back
- * to `any` rather than being dropped. Returns `hasAnnotations: false` when nothing was
- * actually annotated, so the caller can prefer a JSDoc-derived signature instead.
+ * `<T>(params) => ReturnType` for an `export function` accessor in a `lang="ts"` component,
+ * with `any` for untyped positions. `hasAnnotations: false` when nothing was annotated, so the
+ * caller can prefer a JSDoc-derived signature.
  */
 export function buildFunctionDeclarationSignature(
   ctx: ParserContext,
