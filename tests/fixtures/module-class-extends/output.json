@@ -1,0 +1,127 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 25,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "ts",
+  "props": [],
+  "moduleExports": [
+    {
+      "name": "Store",
+      "kind": "class",
+      "description": "A store built on `Base`",
+      "type": "typeof Store",
+      "typeParameters": "T",
+      "members": [
+        {
+          "kind": "method",
+          "name": "dispose",
+          "returnType": "void"
+        }
+      ],
+      "extends": "Base<T>",
+      "implements": [
+        "Disposable"
+      ],
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 9,
+          "column": 2
+        },
+        "end": {
+          "line": 11,
+          "column": 3
+        }
+      }
+    },
+    {
+      "name": "NamedStore",
+      "kind": "class",
+      "type": "typeof NamedStore",
+      "members": [
+        {
+          "kind": "property",
+          "name": "name",
+          "type": "any"
+        }
+      ],
+      "extends": "Store<string>",
+      "implements": [
+        "Named"
+      ],
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 13,
+          "column": 2
+        },
+        "end": {
+          "line": 15,
+          "column": 3
+        }
+      }
+    },
+    {
+      "name": "FromHidden",
+      "kind": "class",
+      "type": "typeof FromHidden",
+      "members": [],
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 21,
+          "column": 2
+        },
+        "end": {
+          "line": 21,
+          "column": 43
+        }
+      }
+    }
+  ],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "module-class-extends/input.svelte",
+      "kind": "export-unresolved",
+      "name": "FromHidden",
+      "message": "class \"FromHidden\" extends `Hidden`, which isn't imported or an exported class, so the .d.ts declares it without `extends` and its inherited members are missing. Export the base class from the module script.",
+      "source": {
+        "start": {
+          "line": 21,
+          "column": 2
+        },
+        "end": {
+          "line": 21,
+          "column": 43
+        }
+      },
+      "code": "sveld/export-unresolved",
+      "severity": "warning"
+    }
+  ]
+}

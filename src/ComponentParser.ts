@@ -564,6 +564,10 @@ export interface ComponentProp {
   members?: ComponentClassMember[];
   /** Set when `kind` is `"class"` and the class is `abstract`. */
   abstract?: true;
+  /** Set when `kind` is `"class"` and it extends a base class: `Base<T>`. */
+  extends?: string;
+  /** Set when `kind` is `"class"` and it implements interfaces: `["Disposable"]`. */
+  implements?: string[];
   /**
    * True for arrow/function-expression initializers and bare `function`
    * declarations in every mode; additionally true for a function-shaped
@@ -599,6 +603,8 @@ const DEFAULT_SLOT_NAME = null;
 
 /** Matches `@component` in HTML comments. */
 const COMPONENT_COMMENT_REGEX = /^@component/;
+/** The bare base-class name in an `extends` clause: `Base` in `Base<T>`; none for `mixin(Base)` or `ns.Base`. */
+const CLASS_BASE_NAME_REGEX = /^[A-Za-z_$][\w$]*(?=\s*(?:<|$))/;
 
 const CARRIAGE_RETURN_REGEX = /\r/g;
 
@@ -1200,6 +1206,37 @@ export default class ComponentParser {
     );
   }
 
+  /**
+   * The `.d.ts` can only say `extends Base` when `Base` is in scope there:
+   * imported, or another exported class. A class extending anything else
+   * (a local class, a call like `mixin(Base)`) is declared without it, and
+   * flagged, since consumers won't see its inherited members.
+   */
+  private dropUndeclaredClassBases() {
+    const classes = Array.from(this.ctx.moduleExports.values()).filter((entry) => entry.kind === "class");
+    const declared = new Set(classes.map((entry) => entry.localName ?? entry.name));
+    for (const entry of classes) {
+      if (!entry.extends) continue;
+      const base = CLASS_BASE_NAME_REGEX.exec(entry.extends)?.[0];
+      if (
+        base &&
+        (declared.has(base) ||
+          this.ctx.valueImportBindingsByLocalName.has(base) ||
+          this.ctx.typeImportBindingsByLocalName.has(base))
+      ) {
+        continue;
+      }
+      recordDiagnostic(
+        this.ctx,
+        "export-unresolved",
+        entry.name,
+        `class "${entry.name}" extends \`${entry.extends}\`, which isn't imported or an exported class, so the .d.ts declares it without \`extends\` and its inherited members are missing. Export the base class from the module script.`,
+        entry.source,
+      );
+      entry.extends = undefined;
+    }
+  }
+
   /** A module-script `export class Foo {}` or `export { Foo }` of a class, with its public members. */
   private addModuleClassExport(
     node: ExportNamedDeclaration,
@@ -1210,7 +1247,12 @@ export default class ComponentParser {
     if (!localName) return;
     const name = specifier?.exportedName ?? localName;
     const jsdocInfo = this.exportJSDoc(node, specifier);
-    const { members, typeParameters } = readClassDeclaration(this.ctx, this, declaration as ClassDeclarationLike);
+    const {
+      members,
+      typeParameters,
+      extends: baseClass,
+      implements: implemented,
+    } = readClassDeclaration(this.ctx, this, declaration as ClassDeclarationLike);
     const classTypeParameters = typeParameters ?? jsdocInfo?.typeParameters;
 
     this.addModuleExport(name, {
@@ -1225,6 +1267,8 @@ export default class ComponentParser {
       ...(classTypeParameters ? { typeParameters: classTypeParameters } : {}),
       members,
       ...((declaration as { abstract?: boolean }).abstract ? { abstract: true as const } : {}),
+      ...(baseClass ? { extends: baseClass } : {}),
+      ...(implemented ? { implements: implemented } : {}),
       isFunction: false,
       isFunctionDeclaration: false,
       isRequired: false,
@@ -1683,6 +1727,7 @@ export default class ComponentParser {
           }
         }) as unknown as WalkEnter,
       );
+      this.dropUndeclaredClassBases();
     }
 
     let dispatcher_name: undefined | string;

@@ -821,6 +821,49 @@ describe("WriterMarkdown", () => {
     );
   });
 
+  test("lists a class's extends and implements clauses above its members", () => {
+    const store = {
+      name: "Store",
+      kind: "class" as const,
+      constant: false,
+      type: "typeof Store",
+      extends: "Base<T>",
+      implements: ["Disposable", "Named"],
+      members: [{ kind: "method" as const, name: "dispose", params: [], returnType: "void" }],
+      isFunction: false,
+      isFunctionDeclaration: false,
+      isRequired: false,
+      reactive: false,
+    };
+    const empty = { ...store, name: "Empty", type: "typeof Empty", implements: undefined, members: [] };
+    const output = writeMarkdownCore(
+      new Map([
+        [
+          "Example",
+          {
+            filePath: asNormalizedPath("Example.svelte"),
+            moduleName: "Example",
+            syntaxMode: "legacy",
+            props: [],
+            moduleExports: [store, empty],
+            slots: [],
+            events: [],
+            typedefs: [],
+            generics: null,
+            rest_props: undefined,
+            contexts: [],
+          },
+        ],
+      ]),
+    );
+
+    expect(output).toContain(
+      "#### `Store` members\n\nExtends <code>Base&lt;T></code>. Implements <code>Disposable</code>, <code>Named</code>.",
+    );
+    // A class with no members of its own still shows what it extends.
+    expect(output).toContain("#### `Empty` members\n\nExtends <code>Base&lt;T></code>.");
+  });
+
   test("omits the Module exports table when there are no module exports", () => {
     const output = writeMarkdownCore(
       new Map([

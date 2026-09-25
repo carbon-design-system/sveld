@@ -60,6 +60,16 @@ export type ClassDeclarationLike = {
     end?: number;
     params?: Array<{ constraint?: ModernRunesTypeNode; default?: ModernRunesTypeNode }>;
   };
+  /** `extends Base`: the base class expression, and its type arguments (`Base<T>`). */
+  superClass?: { type?: string; start?: number; end?: number } | null;
+  superTypeParameters?: { start?: number; end?: number; params?: ModernRunesTypeNode[] };
+  /** `implements A<T>, B`. */
+  implements?: Array<{
+    start?: number;
+    end?: number;
+    expression?: unknown;
+    typeParameters?: { params?: ModernRunesTypeNode[] };
+  }>;
   body?: { body?: unknown[] };
 };
 
@@ -138,7 +148,7 @@ export function readClassDeclaration(
   ctx: ParserContext,
   parser: ComponentParser,
   classDecl: ClassDeclarationLike,
-): { members: ComponentClassMember[]; typeParameters?: string } {
+): { members: ComponentClassMember[]; typeParameters?: string; extends?: string; implements?: string[] } {
   const members: ComponentClassMember[] = [];
   /** Getter/setter pairs, keyed `static name` or `name`, merged into one property. */
   const accessors = new Map<string, ComponentClassMember>();
@@ -247,7 +257,46 @@ export function readClassDeclaration(
     trackAdditionalTypeDependencyNode(ctx, typeParameter.default);
   }
   const typeParameters = stripAngleBrackets(getTypeNodeText(ctx, classDecl.typeParameters));
-  return { members, ...(typeParameters ? { typeParameters } : {}) };
+  const heritage = readClassHeritage(ctx, classDecl);
+  return { members, ...(typeParameters ? { typeParameters } : {}), ...heritage };
+}
+
+/**
+ * The class's `extends` and `implements` clauses as source text, with the
+ * names they reference tracked as type dependencies, so an imported base
+ * class or interface gets an `import type` in the `.d.ts`.
+ */
+function readClassHeritage(
+  ctx: ParserContext,
+  classDecl: ClassDeclarationLike,
+): { extends?: string; implements?: string[] } {
+  const heritage: { extends?: string; implements?: string[] } = {};
+  const superClass = classDecl.superClass;
+  if (superClass) {
+    heritage.extends = getTypeNodeText(ctx, {
+      start: superClass.start,
+      end: classDecl.superTypeParameters?.end ?? superClass.end,
+    });
+    if (superClass.type === "Identifier") {
+      trackAdditionalTypeDependencyNode(ctx, {
+        type: "TSTypeReference",
+        typeName: superClass,
+        ...(classDecl.superTypeParameters ? { typeParameters: classDecl.superTypeParameters } : {}),
+      } as ModernRunesTypeNode);
+    }
+  }
+  const implemented = (classDecl.implements ?? [])
+    .map((clause) => {
+      trackAdditionalTypeDependencyNode(ctx, {
+        type: "TSTypeReference",
+        typeName: clause.expression,
+        ...(clause.typeParameters ? { typeParameters: clause.typeParameters } : {}),
+      } as ModernRunesTypeNode);
+      return getTypeNodeText(ctx, clause);
+    })
+    .filter((text): text is string => Boolean(text));
+  if (implemented.length > 0) heritage.implements = implemented;
+  return heritage;
 }
 
 /**

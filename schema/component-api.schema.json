@@ -227,6 +227,15 @@
           "description": "Set when `kind` is `class`: its public constructor, methods, and properties, in source order.",
           "items": { "$ref": "#/$defs/classMember" }
         },
+        "extends": {
+          "type": "string",
+          "description": "Set when `kind` is `class` and it extends an imported or exported class: the clause's source text, e.g. `Base<T>`."
+        },
+        "implements": {
+          "type": "array",
+          "description": "Set when `kind` is `class` and it implements interfaces: each clause's source text.",
+          "items": { "type": "string" }
+        },
         "abstract": {
           "const": true,
           "description": "Set when `kind` is `class` and the class is abstract."
