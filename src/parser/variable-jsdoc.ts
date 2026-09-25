@@ -5,11 +5,10 @@ import { recordSveldIgnore } from "./diagnostics";
 import { getCommentTags, isJsDocGap, parseCommentText, typeTagDescription } from "./jsdoc";
 
 interface ScriptComment {
-  /** Offset (into the full component source) right after the closing delimiter. */
+  /** Offsets into the full component source, delimiters included. */
+  start: number;
   end: number;
   isJsDoc: boolean;
-  /** Raw comment text, delimiters included. */
-  text: string;
 }
 
 interface TopLevelDeclaration {
@@ -33,8 +32,11 @@ function collectBlockComments(
 ): void {
   for (const comment of comments) {
     if (comment.type !== "Block" || comment.start < programStart || comment.end > programEnd) continue;
-    const text = source.slice(comment.start, comment.end);
-    into.push({ end: comment.end, isJsDoc: text.startsWith("/**") && text.length > 4, text });
+    into.push({
+      start: comment.start,
+      end: comment.end,
+      isJsDoc: comment.end - comment.start > 4 && source.startsWith("/**", comment.start),
+    });
   }
 }
 
@@ -81,18 +83,27 @@ function collectTopLevelDeclarations(body: unknown[]): TopLevelDeclaration[] {
   return declarations;
 }
 
-/** The closest JSDoc block comment with only whitespace or other comments between it and `declStart`, if any. */
+/**
+ * The closest JSDoc block comment with only whitespace or other comments
+ * between it and `declStart`, if any. `comments` is sorted by `end`. Any
+ * JSDoc block before the closest one has that block in its gap, so only
+ * the closest can attach.
+ */
 function findAttachedComment(comments: ScriptComment[], declStart: number, source: string): ScriptComment | undefined {
-  let attached: ScriptComment | undefined;
-
-  for (const comment of comments) {
-    if (comment.end > declStart) break;
-    if (!comment.isJsDoc) continue;
-    if (!isJsDocGap(source, comment.end, declStart)) continue;
-    attached = comment;
+  let low = 0;
+  let high = comments.length;
+  while (low < high) {
+    const mid = (low + high) >>> 1;
+    if (comments[mid].end <= declStart) low = mid + 1;
+    else high = mid;
   }
 
-  return attached;
+  for (let index = low - 1; index >= 0; index--) {
+    const comment = comments[index];
+    if (!comment.isJsDoc) continue;
+    return isJsDocGap(source, comment.end, declStart) ? comment : undefined;
+  }
+  return undefined;
 }
 
 /**
@@ -131,7 +142,7 @@ export function buildVariableJsDocTable(
     const comment = findAttachedComment(allComments, declaration.start, ctx.source);
     if (!comment) continue;
 
-    const parsed = parseCommentText(ctx, comment.text);
+    const parsed = parseCommentText(ctx, ctx.source.slice(comment.start, comment.end));
     const { type: typeTag, description, ignore: ignoreCodes, internal } = getCommentTags(parsed);
     if (ignoreCodes.length > 0) {
       recordSveldIgnore(ctx, "context-any-type", declaration.name, ignoreCodes);
