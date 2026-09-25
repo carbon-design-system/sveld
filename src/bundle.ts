@@ -22,7 +22,7 @@ import { collectExampleSources, type ExampleCheckSource } from "./example-check"
 import { readDirectoryListing, resetDirectoryListings } from "./fs-listing";
 import { collectBareImportOverlay, type InlinedTypes, inlineLocalTypeImports } from "./inline-types";
 import { hashSource, ParseCache, resolveCacheFilePath } from "./parse-cache";
-import { type EntryExports, parseEntryExports } from "./parse-entry-exports";
+import { createResolveContext, type EntryExports, parseEntryExports } from "./parse-entry-exports";
 import { type ParsedExports, parseExports } from "./parse-exports";
 import { applyResolvedProps, getParsedComponentTypeScriptMetadata } from "./parsed-component-metadata";
 import { generateContextTypeName } from "./parser/contexts";
@@ -33,7 +33,6 @@ import { getParserStack, loadParserStack } from "./parser-stack";
 import { hasSvelteExtension, normalizeSeparators } from "./path";
 import {
   type CallDefaultResolution,
-  createCallDefaultResolveContext,
   describeCallDefaultFailure,
   resolveCallDefaultCandidates,
 } from "./resolve-call-defaults";
@@ -942,7 +941,7 @@ export async function resolveCrossFileCandidates(
     deferredEventNoSource,
     untypedEventNames,
   } of pending) {
-    const ctx = createCallDefaultResolveContext();
+    const ctx = createResolveContext();
     const filePath = resolveComponentFilePath(component.filePath);
 
     if (callDefaults.length > 0) {
