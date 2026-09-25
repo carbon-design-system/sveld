@@ -1,4 +1,5 @@
 import type { ComponentPropParam, ComponentPropTypeSource } from "../ComponentParser";
+import { formatParamList } from "./utils";
 
 /**
  * Decides a prop's provenance for docs UIs. Order is fixed and mirrors the
@@ -112,7 +113,7 @@ export function resolvePropTypeAndDocs(input: ResolvePropTypeAndDocsInput): Reso
     const typeParameters = input.jsdocTypeParameters ? `<${input.jsdocTypeParameters}>` : "";
     type =
       params && params.length > 0
-        ? `${typeParameters}(${params.map((param) => `${param.name}${param.optional ? "?" : ""}: ${param.type}`).join(", ")}) => ${returnType}`
+        ? `${typeParameters}(${formatParamList(params)}) => ${returnType}`
         : `${typeParameters}() => ${returnType}`;
   }
 

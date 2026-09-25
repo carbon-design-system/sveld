@@ -31,7 +31,7 @@ import type { CommentWithLocation } from "../template-parse/comments";
 import type { ParserContext } from "./context";
 import { NEWLINE_CR_REGEX, sourceAtPos, sourceForExpression } from "./source-position";
 import { trackAdditionalTypeDependencyNode } from "./type-resolution";
-import { assignValueOrUndefined } from "./utils";
+import { assignValueOrUndefined, formatParamList } from "./utils";
 import { importedMemberBinding } from "./value-imports";
 
 export function addProp(parser: ComponentParser, ctx: ParserContext, prop_name: string, data: ComponentProp) {
@@ -705,8 +705,7 @@ function buildFunctionTypeFromParts(
   const returnType = jsdoc?.returnType ?? "any";
   const params = jsdoc?.params;
   if (params && params.length > 0) {
-    const paramsString = params.map((param) => `${param.name}${param.optional ? "?" : ""}: ${param.type}`).join(", ");
-    return `(${paramsString}) => ${returnType}`;
+    return `(${formatParamList(params)}) => ${returnType}`;
   }
   if (jsdoc?.returnType) {
     return `() => ${returnType}`;

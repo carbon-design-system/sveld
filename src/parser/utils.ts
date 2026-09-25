@@ -9,6 +9,11 @@ export function escapeCommentText(text: string): string {
   return text.replace(COMMENT_CLOSE_REGEX, "*\\/");
 }
 
+/** `a: string, b?: number` */
+export function formatParamList(params: Array<{ name: string; type: string; optional?: boolean }>): string {
+  return params.map((param) => `${param.name}${param.optional ? "?" : ""}: ${param.type}`).join(", ");
+}
+
 export function assignValueOrUndefined(value?: "" | string) {
   return value === undefined || value === "" ? undefined : value;
 }
