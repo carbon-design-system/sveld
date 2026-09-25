@@ -1,13 +1,7 @@
 import { dirname } from "node:path";
 import { isIdentifier, resolveStaticStringLiteral } from "./ast-guards";
 import type { PendingDispatchEscapeCandidate } from "./ComponentParser";
-import {
-  type AstNode,
-  collectModuleExports,
-  findModuleExport,
-  type ResolveContext,
-  resolveModuleFile,
-} from "./parse-entry-exports";
+import { type AstNode, findModuleExportPath, type ResolveContext, resolveModuleFile } from "./parse-entry-exports";
 import { literalDetailToTypeText } from "./parser/events";
 import { type WalkableNode, walkNodes } from "./parser/walk";
 
@@ -37,11 +31,11 @@ type DispatcherBinding = { name: string } | { object: string; property: string }
 
 /**
  * Read the function each candidate passes its dispatcher to
- * ({@link collectModuleExports} follows re-exports) and collect the events it
- * dispatches: every call through the receiving parameter must name its event
- * with a string literal, or a conditional between them. A dispatcher the
- * function passes on, or a name computed at runtime, leaves the candidate
- * unresolved. AST only, no `tsc`.
+ * ({@link findModuleExportPath} follows re-exports and namespace exports)
+ * and collect the events it dispatches: every call through the receiving
+ * parameter must name its event with a string literal, or a conditional
+ * between them. A dispatcher the function passes on, or a name computed at
+ * runtime, leaves the candidate unresolved. AST only, no `tsc`.
  */
 export function resolveDispatchEscapeCandidates(
   componentFilePath: string,
@@ -54,7 +48,8 @@ export function resolveDispatchEscapeCandidates(
     const resolvedFile = resolveModuleFile(candidate.importSource, fromDir);
     if (!resolvedFile) return { candidate, failureReason: "module-not-found" };
 
-    const fn = findModuleExport(collectModuleExports(resolvedFile, ctx), candidate.importedName)?.functionNode;
+    const names = [candidate.importedName, ...(candidate.members ?? [])];
+    const fn = findModuleExportPath(resolvedFile, names, ctx)?.functionNode;
     if (!fn) return { candidate, failureReason: "not-a-function" };
 
     const binding = dispatcherBinding(fn, candidate);
@@ -188,7 +183,11 @@ export function describeDispatchEscapeFailure(
   candidate: PendingDispatchEscapeCandidate,
   reason: DispatchEscapeFailureReason,
 ): string {
-  const helper = candidate.importedName === "default" ? "the default export" : `"${candidate.importedName}"`;
+  const helper = candidate.members
+    ? `"${candidate.calleeText}"`
+    : candidate.importedName === "default"
+      ? "the default export"
+      : `"${candidate.importedName}"`;
   switch (reason) {
     case "module-not-found":
       return `"${candidate.importSource}" isn't a local module sveld can read`;

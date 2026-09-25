@@ -161,6 +161,30 @@ export function createSelectHandler(options) {
     expect(result.diagnostics).toEqual([]);
   });
 
+  test("follows a helper through a namespace another module re-exports", async () => {
+    writeFileSync(path.join(dir, "x.js"), `export function open(dispatch) { dispatch("opened"); }\n`);
+    writeFileSync(path.join(dir, "mod.js"), `export * as ns from "./x.js";\n`);
+
+    const result = await bundleMenu(`  import { createEventDispatcher } from "svelte";
+  import { ns, open } from "./mod.js";
+  import * as mod from "./mod.js";
+
+  const dispatch = createEventDispatcher();
+  ns.open(dispatch);
+  mod.ns.open(dispatch);
+  ns.close(dispatch);
+  open(dispatch);`);
+
+    expect(byModuleName(result.components, "Menu")?.events.map((event) => event.name)).toEqual(["opened"]);
+    // `x`'s names are members of `ns`, not exports of `mod` itself.
+    expect(
+      (byModuleName(result.components, "Menu")?.diagnostics ?? []).map((diagnostic) => diagnostic.message),
+    ).toEqual([
+      '`dispatch` is passed to `ns.close`, but sveld couldn\'t read the events it dispatches: "ns.close" isn\'t a function declared in "./mod.js". Document them with @event tags.',
+      '`dispatch` is passed to `open`, but sveld couldn\'t read the events it dispatches: "open" isn\'t a function declared in "./mod.js". Document them with @event tags.',
+    ]);
+  });
+
   test("doesn't follow a parameter that shadows an imported helper", async () => {
     writeFileSync(
       path.join(dir, "h.js"),

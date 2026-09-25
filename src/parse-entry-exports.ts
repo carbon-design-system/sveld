@@ -79,6 +79,13 @@ export interface InternalExport extends Omit<EntryExport, "source"> {
    * reads the events it dispatches through a parameter.
    */
   functionNode?: AstNode;
+  /**
+   * The module a namespace export (`export * as ns from "./x"`, or an
+   * `import * as ns` the module re-exports) is the namespace object of. Its
+   * members aren't exports of this module; {@link findModuleExportPath}
+   * reads `ns.member` through it.
+   */
+  namespaceFile?: string;
 }
 
 export interface PrimitiveLiteral {
@@ -690,17 +697,28 @@ function parseModule(filePath: string): { source: ModuleSource; body: AstNode[] 
   }
 }
 
-function findImportSource(body: AstNode[], name: string): { specifier: string; importedName: string } | null {
+/**
+ * The import that binds `name`: `importedName` is the export it reads, or
+ * `*` for a namespace import.
+ */
+function findImportSource(
+  body: AstNode[],
+  name: string,
+): { specifier: string; importedName: string; isTypeOnly: boolean } | null {
   for (const node of body) {
     if (node.type !== "ImportDeclaration") continue;
     const specifierValue = asNode(node.source)?.value;
     if (typeof specifierValue !== "string") continue;
 
     for (const specifier of asNodeArray(node.specifiers)) {
-      if (specifier.type !== "ImportSpecifier") continue;
-      if (identifierName(asNode(specifier.local)) === name) {
+      if (identifierName(asNode(specifier.local)) !== name) continue;
+      const isTypeOnly = node.importKind === "type" || specifier.importKind === "type";
+      if (specifier.type === "ImportNamespaceSpecifier") {
+        return { specifier: specifierValue, importedName: "*", isTypeOnly };
+      }
+      if (specifier.type === "ImportSpecifier") {
         const importedName = identifierName(asNode(specifier.imported)) ?? name;
-        return { specifier: specifierValue, importedName };
+        return { specifier: specifierValue, importedName, isTypeOnly };
       }
     }
   }
@@ -708,12 +726,19 @@ function findImportSource(body: AstNode[], name: string): { specifier: string; i
   return null;
 }
 
+/** The entry for the namespace object of `namespaceFile`, exported as `name`. */
+function namespaceExport(name: string, namespaceFile: string, isTypeOnly: boolean): InternalExport {
+  return { name, kind: "const", declFile: namespaceFile, namespaceFile, isTypeOnly };
+}
+
 /**
  * Collects every named export declared or re-exported by a module.
  *
  * Walks `export ... from` and `export *` chains. Skips `.svelte` re-exports.
  * A default export that's a function or a local binding is listed as
- * `default` (see {@link describeDefaultExport}).
+ * `default` (see {@link describeDefaultExport}). A namespace export
+ * (`export * as ns from "./x"`) is the one entry `ns`, with `namespaceFile`
+ * set; the names `x` exports aren't this module's.
  */
 export function collectModuleExports(filePath: string, ctx: ResolveContext): InternalExport[] {
   const cached = ctx.cache.get(filePath);
@@ -753,6 +778,7 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
     const target = resolveModuleFile(imported.specifier, source.dir);
     if (!target) return null;
 
+    if (imported.importedName === "*") return namespaceExport(name, target, imported.isTypeOnly);
     return findModuleExport(collectModuleExports(target, ctx), imported.importedName) ?? null;
   };
 
@@ -766,6 +792,12 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
       const target = resolveModuleFile(specifierValue, source.dir);
       if (!target) continue;
       const isTypeOnly = node.exportKind === "type";
+      // `export * as ns from "./x"` exports the one name `ns`, like an explicit export.
+      const namespaceName = identifierName(asNode(node.exported));
+      if (namespaceName) {
+        results.push(namespaceExport(namespaceName, target, isTypeOnly));
+        continue;
+      }
       for (const entry of collectModuleExports(target, ctx)) {
         const entries = starExports.get(entry.name) ?? [];
         entries.push(isTypeOnly ? { ...entry, isTypeOnly: true } : entry);
@@ -863,6 +895,26 @@ export function findModuleExport(exports: InternalExport[], name: string): Inter
 }
 
 /**
+ * The export `names` reaches from `filePath`: the first name is an export of
+ * `filePath`, and each one after it a member of the namespace export before
+ * it (`["ns", "helper"]` for `ns.helper`, with `export * as ns from "./x"`).
+ */
+export function findModuleExportPath(
+  filePath: string,
+  names: readonly string[],
+  ctx: ResolveContext,
+): InternalExport | undefined {
+  let match: InternalExport | undefined;
+  let file: string | undefined = filePath;
+  for (const name of names) {
+    if (file === undefined) return undefined;
+    match = findModuleExport(collectModuleExports(file, ctx), name);
+    file = match?.namespaceFile;
+  }
+  return match;
+}
+
+/**
  * List consts, functions, and types exported from an entry barrel.
  *
  * Follows re-exports with AST-only traversal. Skips `.svelte` files.
@@ -912,7 +964,7 @@ export async function parseEntryExports(entryFile: string): Promise<EntryExports
   for (const entry of [...collected, ...ambiguous]) {
     // The barrel's default export isn't a named export.
     if (entry.name === "default") continue;
-    // Drop internal returnType/literalValue/primitiveLiteral/declaredType/functionNode; public EntryExport does not expose them.
+    // Drop internal returnType/literalValue/primitiveLiteral/declaredType/functionNode/namespaceFile; public EntryExport does not expose them.
     const {
       declFile,
       returnType: _returnType,
@@ -920,6 +972,7 @@ export async function parseEntryExports(entryFile: string): Promise<EntryExports
       primitiveLiteral: _primitiveLiteral,
       declaredType: _declaredType,
       functionNode: _functionNode,
+      namespaceFile: _namespaceFile,
       ...rest
     } = entry;
     byName.set(entry.name, { ...rest, source: relativeSource(declFile) });

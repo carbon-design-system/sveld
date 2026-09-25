@@ -40,24 +40,6 @@
       "component": "dispatched-events-escaped-unfollowable/input.svelte",
       "kind": "dispatch-escapes",
       "name": "dispatch",
-      "message": "`dispatch` is passed to `registry.track`, which sveld can't follow: it only reads a function imported from another module, by name, as its default export, or through a namespace import. Document the events dispatched there with @event tags.",
-      "source": {
-        "start": {
-          "line": 15,
-          "column": 2
-        },
-        "end": {
-          "line": 15,
-          "column": 26
-        }
-      },
-      "code": "sveld/dispatch-escapes",
-      "severity": "warning"
-    },
-    {
-      "component": "dispatched-events-escaped-unfollowable/input.svelte",
-      "kind": "dispatch-escapes",
-      "name": "dispatch",
       "message": "`dispatch` is passed to `notify`, which sveld can't follow: it only reads a function imported from another module, by name, as its default export, or through a namespace import. Document the events dispatched there with @event tags.",
       "source": {
         "start": {

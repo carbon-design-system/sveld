@@ -223,6 +223,34 @@ describe("parseEntryExports", () => {
     }
   });
 
+  test("lists a namespace re-export as one name, not the names inside it", async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "sveld-entry-exports-namespace-"));
+    try {
+      writeFileSync(path.join(dir, "utils.ts"), "export const clamp = 1;\nexport type Size = number;\n");
+      writeFileSync(path.join(dir, "local.ts"), "export const local = 1;\n");
+      writeFileSync(
+        path.join(dir, "index.ts"),
+        [
+          'export * as utils from "./utils";',
+          'export type * as types from "./utils";',
+          'import * as localNs from "./local";',
+          "export { localNs };",
+          "",
+        ].join("\n"),
+      );
+
+      const exports = await parseEntryExports(path.join(dir, "index.ts"));
+
+      expect(exports).toEqual([
+        { name: "localNs", kind: "const", source: "./local.ts", isTypeOnly: false },
+        { name: "types", kind: "const", source: "./utils.ts", isTypeOnly: true },
+        { name: "utils", kind: "const", source: "./utils.ts", isTypeOnly: false },
+      ]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   test("warns and skips a re-exported module the underlying parser can't handle, instead of throwing", async () => {
     // Not written under tests/fixtures-entry-exports because the redeclaration
     // below (valid to acorn-typescript, rejected by tsc/biome) would otherwise
