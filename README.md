@@ -2196,7 +2196,7 @@ count?: number;
 
 Resolution follows up to 5 levels of indirection. Beyond that, the last resolved identifier name is used as the default value.
 
-A named import resolves when the imported module (followed through re-exports) declares it as an `export const` with a string, number, boolean, or static template literal:
+A named import, or a member of a namespace import (`import * as timing from "./timing.js"` with `timing.TOOLTIP_LEAVE_DELAY_MS`, also through a namespace the module re-exports with `export * as`), resolves when the imported module (followed through re-exports) declares it as an `export const` with a string, number, boolean, or static template literal:
 
 ```svelte
 <script>
@@ -3695,6 +3695,7 @@ The key becomes the `{PascalCase}Context` type name. `sveld` can resolve:
 | `const`-bound string | `const KEY = "simple-modal";`<br>`setContext(KEY, …)` | `SimpleModalContext` |
 | `Symbol()` / `Symbol.for()` | `setContext(Symbol("tabs"), …)` | `TabsContext` |
 | Imported `export const` string | `import { KEY } from "./keys.js";`<br>`setContext(KEY, …)` | `SimpleModalContext` |
+| Namespace-imported `export const` string | `import * as keys from "./keys.js";`<br>`setContext(keys.KEY, …)` | `SimpleModalContext` |
 
 Characters that can't appear in a TypeScript identifier are dropped and start a new PascalCase word, and a name starting with a digit gets a leading `_`: `"@scope/ctx"` becomes `ScopeCtxContext` and `"123"` becomes `_123Context`.
 
@@ -3702,7 +3703,7 @@ Characters that can't appear in a TypeScript identifier are dropped and start a 
 
 Symbol keys take their name from the description: `Symbol("tabs")` and `Symbol.for("tabs")` both become `TabsContext`. For `const ModalKey = Symbol()` with no description, the binding name wins: `ModalKeyContext`.
 
-An imported key is read from its module, following re-exports, when that module is a relative `.js`/`.ts` file declaring it as `export const KEY = "simple-modal"` (or a static template literal). This works when sveld builds a whole library (CLI, `sveld()`, or the Vite plugin), not when parsing a single component on its own.
+An imported key (named, or read off a namespace import, including one another module re-exports with `export * as keys from "./keys.js"`) is read from its module, following re-exports, when that module is a relative `.js`/`.ts` file declaring it as `export const KEY = "simple-modal"` (or a static template literal). This works when sveld builds a whole library (CLI, `sveld()`, or the Vite plugin), not when parsing a single component on its own.
 
 Anything else (dynamic identifiers, `let` exports, template interpolation, other function calls) records a `sveld/context-key-unresolved` diagnostic. No context type is generated.
 

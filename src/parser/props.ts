@@ -32,6 +32,7 @@ import type { ParserContext } from "./context";
 import { NEWLINE_CR_REGEX, sourceAtPos, sourceForExpression } from "./source-position";
 import { trackAdditionalTypeDependencyNode } from "./type-resolution";
 import { assignValueOrUndefined } from "./utils";
+import { importedMemberBinding } from "./value-imports";
 
 export function addProp(parser: ComponentParser, ctx: ParserContext, prop_name: string, data: ComponentProp) {
   if (assignValueOrUndefined(prop_name) === undefined) return;
@@ -287,6 +288,22 @@ export function processInitializer(
     }
     if (parser.isNumericConstant(init)) {
       type = "number";
+    }
+
+    // Member of a namespace import (`C.DELAY`). The cross-file pass may swap in the literal.
+    const importBinding = importedMemberBinding(ctx, init);
+    if (importBinding) {
+      return {
+        value,
+        type,
+        isFunction,
+        defaultValue,
+        pendingConstDefault: {
+          importSource: importBinding.source,
+          importedName: importBinding.importedName,
+          ...(importBinding.members ? { members: importBinding.members } : {}),
+        },
+      };
     }
   } else if (init.type === "TemplateLiteral") {
     const template = init as TemplateLiteral;

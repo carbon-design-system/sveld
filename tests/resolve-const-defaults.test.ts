@@ -183,6 +183,51 @@ describe("cross-file imported-constant prop-default resolution", () => {
     }
   });
 
+  test("resolves a default read off a namespace import, through `export * as` chains", async () => {
+    writeFileSync(path.join(dir, "constants.js"), 'export * as timing from "./timing.js";\n');
+    const component = await parseComponent(
+      "Namespaced",
+      `<script>
+  import * as C from "./timing.js";
+  import * as constants from "./constants.js";
+
+  export let delay = C.TOOLTIP_LEAVE_DELAY_MS;
+  export let label = constants.timing.LABEL;
+  export let mutable = C.MUTABLE_DELAY;
+</script>
+<div />
+`,
+    );
+    const runes = await parseComponent(
+      "RunesNamespaced",
+      `<script>
+  import * as C from "./timing.js";
+
+  let { delay = C.TOOLTIP_LEAVE_DELAY_MS } = $props();
+</script>
+<div />
+`,
+    );
+
+    const pick = (name: string) => {
+      const prop = component?.props.find((p) => p.name === name);
+      return { type: prop?.type, value: prop?.value, defaultValue: prop?.defaultValue };
+    };
+    expect(pick("delay")).toEqual({
+      type: "number",
+      value: "300",
+      defaultValue: { raw: "300", kind: "literal", value: 300 },
+    });
+    expect(pick("label")).toEqual({
+      type: "string",
+      value: '"Close"',
+      defaultValue: { raw: '"Close"', kind: "literal", value: "Close" },
+    });
+    expect(pick("mutable").value).toBe("C.MUTABLE_DELAY");
+    expect(component?.diagnostics?.map((d) => [d.kind, d.name])).toEqual([["prop-unknown-type", "mutable"]]);
+    expect(runes?.props.find((p) => p.name === "delay")).toMatchObject({ type: "number", value: "300" });
+  });
+
   test("resolves a module-script export const", async () => {
     const component = await parseComponent(
       "ModuleConst",

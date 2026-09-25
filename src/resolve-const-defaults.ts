@@ -1,8 +1,7 @@
 import { dirname } from "node:path";
 import type { PendingConstDefaultCandidate } from "./ComponentParser";
 import {
-  collectModuleExports,
-  findModuleExport,
+  findModuleExportPath,
   type InternalExport,
   type PrimitiveLiteral,
   type ResolveContext,
@@ -19,7 +18,7 @@ export interface ConstDefaultResolution {
 
 /**
  * Read each candidate's imported value from its declaring module
- * ({@link collectModuleExports} follows re-exports). Only `export const`
+ * ({@link findModuleExportPath} follows re-exports and namespace exports). Only `export const`
  * with a primitive literal counts; `let`/`var` exports are live bindings.
  * AST only, no `tsc`.
  */
@@ -34,7 +33,8 @@ export function resolveConstDefaultCandidates(
     const resolvedFile = resolveModuleFile(candidate.importSource, fromDir);
     if (!resolvedFile) return { candidate };
 
-    const match = findModuleExport(collectModuleExports(resolvedFile, ctx), candidate.importedName);
+    const names = [candidate.importedName, ...(candidate.members ?? [])];
+    const match = findModuleExportPath(resolvedFile, names, ctx);
     if (!match?.primitiveLiteral) return { candidate };
 
     return { candidate, literal: match.primitiveLiteral, declaredType: match.declaredType };

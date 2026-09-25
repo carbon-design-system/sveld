@@ -1,6 +1,6 @@
 import { dirname } from "node:path";
 import type { PendingContextKeyCandidate } from "./ComponentParser";
-import { collectModuleExports, findModuleExport, type ResolveContext, resolveModuleFile } from "./parse-entry-exports";
+import { findModuleExportPath, type ResolveContext, resolveModuleFile } from "./parse-entry-exports";
 
 export interface ContextKeyResolution {
   candidate: PendingContextKeyCandidate;
@@ -10,9 +10,10 @@ export interface ContextKeyResolution {
 
 /**
  * Read each candidate's imported key from its declaring module
- * ({@link collectModuleExports} follows re-exports). Only `export const`
- * with a string literal or static template counts. `export let` / `var`
- * stay unresolved even if the initializer is a literal. AST only, no `tsc`.
+ * ({@link findModuleExportPath} follows re-exports and namespace exports).
+ * Only `export const` with a string literal or static template counts.
+ * `export let` / `var` stay unresolved even if the initializer is a literal.
+ * AST only, no `tsc`.
  */
 export function resolveContextKeyCandidates(
   componentFilePath: string,
@@ -25,7 +26,8 @@ export function resolveContextKeyCandidates(
     const resolvedFile = resolveModuleFile(candidate.importSource, fromDir);
     if (!resolvedFile) return { candidate };
 
-    const match = findModuleExport(collectModuleExports(resolvedFile, ctx), candidate.importedName);
+    const names = [candidate.importedName, ...(candidate.members ?? [])];
+    const match = findModuleExportPath(resolvedFile, names, ctx);
     if (match?.kind !== "const" || match.literalValue === undefined) return { candidate };
 
     return { candidate, key: match.literalValue };
