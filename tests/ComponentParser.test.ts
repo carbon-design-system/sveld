@@ -120,6 +120,39 @@ describe("ComponentParser", () => {
     });
   });
 
+  test("keeps the JSDoc of a context variable typed from its initializer", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        import { setContext } from "svelte";
+
+        /** Number of open panels */
+        let count = $state(0);
+        /**
+         * Hidden from docs
+         * @internal
+         */
+        let secret = $state(1);
+        setContext("panels", { count, secret });
+
+        /** Current label */
+        let label = "x";
+        setContext("label", label);
+      </script>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+
+    expect(result.contexts?.find((context) => context.key === "panels")?.properties).toEqual([
+      { name: "count", type: "number", description: "Number of open panels", optional: false },
+      { name: "secret", type: "number", description: "Hidden from docs", optional: false, internal: true },
+    ]);
+    expect(result.contexts?.find((context) => context.key === "label")).toMatchObject({
+      type: "string",
+      description: "Current label",
+    });
+  });
+
   test("detects legacy syntax with TypeScript script", () => {
     const parser = new ComponentParser();
     const source = `

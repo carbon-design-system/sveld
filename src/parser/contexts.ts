@@ -31,7 +31,7 @@ function findContextVariableType(
   if (varInfo || !inferFromInitializer) return varInfo;
 
   const inferredType = inferVariableInitializerType(parser, ctx, name);
-  return inferredType ? { type: inferredType } : null;
+  return inferredType ? { type: inferredType, ...parser.findVariableJsDoc(name) } : null;
 }
 
 /**

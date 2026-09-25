@@ -1217,6 +1217,23 @@ export default class ComponentParser {
     return { type: cached.type, description: cached.description, internal: cached.internal };
   }
 
+  /**
+   * The description and `@internal` flag of the JSDoc above `varName`,
+   * whether or not it has a `@type`. For a variable typed some other way,
+   * such as from its initializer.
+   */
+  findVariableJsDoc(varName: string): { description?: string; internal?: boolean } {
+    if (!this.ctx.variableInfoCacheBuilt) {
+      this.ctx.variableInfoCache = buildVariableJsDocTable(this.ctx, this);
+      this.ctx.variableInfoCacheBuilt = true;
+    }
+    const cached = this.ctx.variableInfoCache.get(varName);
+    return {
+      ...(cached?.description ? { description: cached.description } : {}),
+      ...(cached?.internal ? { internal: true } : {}),
+    };
+  }
+
   accumulateGeneric(name: string, constraint: string): void {
     if (this.ctx.generics) {
       this.ctx.generics = [`${this.ctx.generics[0]}, ${name}`, `${this.ctx.generics[1]}, ${constraint}`];
