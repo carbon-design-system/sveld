@@ -531,6 +531,28 @@ function templateTagParameters(tag: JSDocTag, type: string): Array<{ name: strin
   return parameters;
 }
 
+const IDENTIFIER_REGEX = /[\w$]+/g;
+
+/** Tags whose types make up the body of the `@typedef`/`@callback` above them. */
+const TYPE_DECLARATION_BODY_TAGS = new Set(["property", "param", "returns", "return"]);
+
+/**
+ * Whether the `@typedef`/`@callback` at `ownerIndex` refers to any of `parameters` in its own
+ * type or in the `@property`/`@param`/`@returns` types right below it.
+ */
+function typeDeclarationUsesAny(
+  tags: readonly JSDocTag[],
+  ownerIndex: number,
+  parameters: ReadonlyArray<{ name: string }>,
+): boolean {
+  const bodyTypes = [tags[ownerIndex].type];
+  for (let index = ownerIndex + 1; TYPE_DECLARATION_BODY_TAGS.has(tags[index]?.tag); index++) {
+    bodyTypes.push(tags[index].type);
+  }
+  const identifiers = new Set(bodyTypes.join(" ").match(IDENTIFIER_REGEX));
+  return parameters.some(({ name }) => identifiers.has(name));
+}
+
 function processJSDocComment(
   ctx: ParserContext,
   parser: ComponentParser,
@@ -1400,10 +1422,16 @@ export function parseCustomTypes(
           // Right above a `@typedef`/`@callback` without its own `<...>`, the `@template`s
           // parameterize that type (`type Box<T>`), as in TypeScript. Below one, they keep
           // declaring component generics.
+          // A typedef that never mentions them (`@template {Node} [Node=Node]` above
+          // `@typedef {object} Node`) can't take them, so they stay component generics.
           let ownerIndex = tagIndex + 1;
           while (tags[ownerIndex]?.tag === "template") ownerIndex++;
           const owner = tags[ownerIndex];
-          if ((owner?.tag === "typedef" || owner?.tag === "callback") && !owner.name.includes("<")) {
+          if (
+            (owner?.tag === "typedef" || owner?.tag === "callback") &&
+            !owner.name.includes("<") &&
+            typeDeclarationUsesAny(tags, ownerIndex, parameters)
+          ) {
             pendingTypeParameters.push(...parameters.map(({ constraint }) => constraint));
             break;
           }
