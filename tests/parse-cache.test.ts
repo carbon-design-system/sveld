@@ -410,6 +410,20 @@ describe("cache default", () => {
     expect(byModuleName(second.allComponentsForTypes, "Standalone")).toBeDefined();
   });
 
+  test("writes under the project root (nearest package.json), not inside the input directory", async () => {
+    mkdirSync(join(dir, "src"));
+    writeFileSync(join(dir, "package.json"), JSON.stringify({ name: "project" }));
+    writeFileSync(join(dir, "src", "Standalone.svelte"), STANDALONE);
+
+    await generateBundle(join(dir, "src"), true);
+    await generateBundle(join(dir, "src"), true, { cache: ".cache/sveld.json" });
+
+    expect(existsSync(join(dir, DEFAULT_CACHE_FILE))).toBe(true);
+    expect(existsSync(join(dir, ".cache", "sveld.json"))).toBe(true);
+    expect(existsSync(join(dir, "src", "node_modules"))).toBe(false);
+    expect(existsSync(join(dir, "src", ".cache"))).toBe(false);
+  });
+
   test("cache: false disables the cache entirely", async () => {
     await generateBundle(dir, true, { cache: false });
 
