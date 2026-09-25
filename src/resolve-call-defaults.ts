@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { dirname } from "node:path";
 import type { PendingCallDefaultCandidate } from "./ComponentParser";
-import { collectModuleExports, findModuleExport, type ResolveContext, resolveModuleFile } from "./parse-entry-exports";
+import { findModuleExport, type ResolveContext, resolveModuleFile } from "./parse-entry-exports";
 
 export type CallDefaultFailureReason = "module-not-found" | "export-not-found" | "return-type-unresolved";
 
@@ -29,7 +29,7 @@ function siblingDeclarationFile(resolvedFile: string): string | null {
 
 /**
  * Read each candidate's callee return type from its declaring module
- * ({@link collectModuleExports} follows re-exports). If the `.js` has no
+ * ({@link findModuleExport} follows re-exports). If the `.js` has no
  * `@returns`, try a sibling `.d.ts`. AST/JSDoc only. Not inlined in
  * `ComponentParser` because the browser build cannot use `node:fs`.
  */
@@ -49,13 +49,13 @@ export function resolveCallDefaultCandidates(
     const resolvedFile = resolveModuleFile(candidate.importSource, fromDir);
     if (!resolvedFile) return { candidate, failureReason: "module-not-found" };
 
-    const match = findModuleExport(collectModuleExports(resolvedFile, ctx), candidate.importedName);
+    const match = findModuleExport(resolvedFile, candidate.importedName, ctx);
     if (!match) return { candidate, failureReason: "export-not-found" };
     if (match.returnType) return { candidate, type: match.returnType };
 
     const siblingDts = siblingDeclarationFile(resolvedFile);
     if (siblingDts) {
-      const dtsMatch = findModuleExport(collectModuleExports(siblingDts, ctx), candidate.importedName);
+      const dtsMatch = findModuleExport(siblingDts, candidate.importedName, ctx);
       if (dtsMatch?.returnType) return { candidate, type: dtsMatch.returnType };
     }
 

@@ -1,7 +1,13 @@
 import { dirname } from "node:path";
 import { isIdentifier, isLiteral, resolveStaticStringLiteral } from "./ast-guards";
 import type { PendingDispatchEscapeCandidate } from "./ComponentParser";
-import { type AstNode, findModuleExportPath, type ResolveContext, resolveModuleFile } from "./parse-entry-exports";
+import {
+  type AstNode,
+  asNode,
+  findImportedExport,
+  type ResolveContext,
+  resolveModuleFile,
+} from "./parse-entry-exports";
 import { type DetailTypeSource, deriveLiteralDetailType, literalDetailToTypeText } from "./parser/events";
 import { type WalkableNode, walkNodes } from "./parser/walk";
 
@@ -31,7 +37,7 @@ type DispatcherBinding = { name: string } | { object: string; property: string }
 
 /**
  * Read the function each candidate passes its dispatcher to
- * ({@link findModuleExportPath} follows re-exports and namespace exports)
+ * ({@link findImportedExport} follows re-exports and namespace exports)
  * and collect the events it dispatches: every call through the receiving
  * parameter must name its event with a string literal, or a conditional
  * between them. A dispatcher the function passes on, or a name computed at
@@ -48,8 +54,7 @@ export function resolveDispatchEscapeCandidates(
     const resolvedFile = resolveModuleFile(candidate.importSource, fromDir);
     if (!resolvedFile) return { candidate, failureReason: "module-not-found" };
 
-    const names = [candidate.importedName, ...(candidate.members ?? [])];
-    const fn = findModuleExportPath(resolvedFile, names, ctx)?.functionNode;
+    const fn = findImportedExport(resolvedFile, candidate, ctx)?.functionNode;
     if (!fn) return { candidate, failureReason: "not-a-function" };
 
     const binding = dispatcherBinding(fn, candidate);
@@ -57,10 +62,6 @@ export function resolveDispatchEscapeCandidates(
 
     return collectDispatchedEvents(fn, binding, candidate);
   });
-}
-
-function asNode(value: unknown): AstNode | undefined {
-  return value && typeof value === "object" ? (value as AstNode) : undefined;
 }
 
 /** `param = fallback` → `param`. */
@@ -116,10 +117,8 @@ const helperDetailTypeSource: DetailTypeSource = {
  */
 function detailType(node: AstNode | undefined): string {
   if (!node) return "null";
-  const structural = deriveLiteralDetailType(helperDetailTypeSource, node);
-  if (structural !== undefined) return structural;
   if (node.type === "Literal") return literalDetailToTypeText(node.value);
-  return "any";
+  return deriveLiteralDetailType(helperDetailTypeSource, node) ?? "any";
 }
 
 function isDispatcherCallee(node: WalkableNode, binding: DispatcherBinding): boolean {
