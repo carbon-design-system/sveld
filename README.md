@@ -451,10 +451,11 @@ Every diagnostic carries a stable, namespaced `code` (`"sveld/<kind>"`) alongsid
 | `sveld/jsdoc-tag-dropped` | `warning` | Move the tag next to a `@slot`/`@snippet`/`@event`/`@typedef`/`@callback` tag in the same comment block so it has something to attach to. |
 | `sveld/internal-typedef-referenced` | `error` | Remove `@internal`/`@ignore` from the referenced typedef, or stop referencing it from public type text (inline the shape, or make the referencing item `@internal` too). |
 | `sveld/types-inline-unresolved` | `warning` | The import is kept as-is. Point it at a relative `.ts` file that exports a `type`/`interface`, or rename the colliding type. |
+| `sveld/cross-file-unresolved` | `warning` | Only recorded by [`finalizeWithoutCrossFileResolution`](#browser) on a standalone parse: an imported `setContext` key, prop default, or dispatch helper needs the imported file read. Run `sveld` through the CLI or `generateBundle` to resolve it, or inline the value in the component. |
 
 #### Severity and `--strict=errors`
 
-Each diagnostic's `severity` is `"error"` (`example-compile-error`, `example-syntax-error`, `syntax-skipped`, `extend-props-target-missing`, `internal-typedef-referenced` — sveld emitted broken or unmodeled output) or `"warning"` (`prop-unknown-type`, `context-any-type`, `slot-missing-type`, `event-no-source`, `dispatch-escapes`, `rest-props-unresolved`, `context-duplicate-key`, `context-key-unresolved`, `context-value-unresolved`, `spread-unresolved`, `export-unresolved`, `module-export-conflict`, `extend-props-duplicate`, `extend-props-override`, `jsdoc-unknown-tag`, `typedef-duplicate`, `property-duplicate`, `generics-conflict`, `event-description-ambiguous`, `jsdoc-tag-dropped`, `types-inline-unresolved` — a type fell back to `any`). Plain `strict: true` / `--strict` fails on both, unchanged from before. Pass `strict: "errors"` (or `--strict=errors`) to fail CI only on `error`-severity diagnostics, letting `any`-fallback warnings through:
+Each diagnostic's `severity` is `"error"` (`example-compile-error`, `example-syntax-error`, `syntax-skipped`, `extend-props-target-missing`, `internal-typedef-referenced` — sveld emitted broken or unmodeled output) or `"warning"` (`prop-unknown-type`, `context-any-type`, `slot-missing-type`, `event-no-source`, `dispatch-escapes`, `rest-props-unresolved`, `context-duplicate-key`, `context-key-unresolved`, `context-value-unresolved`, `spread-unresolved`, `export-unresolved`, `module-export-conflict`, `extend-props-duplicate`, `extend-props-override`, `jsdoc-unknown-tag`, `typedef-duplicate`, `property-duplicate`, `generics-conflict`, `event-description-ambiguous`, `jsdoc-tag-dropped`, `types-inline-unresolved`, `cross-file-unresolved` — a type fell back to `any`). Plain `strict: true` / `--strict` fails on both, unchanged from before. Pass `strict: "errors"` (or `--strict=errors`) to fail CI only on `error`-severity diagnostics, letting `any`-fallback warnings through:
 
 ```sh
 npx sveld --json --strict=errors
@@ -809,6 +810,7 @@ It covers parsing one component's source and rendering that result to any output
 import {
   asNormalizedPath,
   ComponentParser,
+  finalizeWithoutCrossFileResolution,
   buildComponentApiDocument,
   writeMarkdownCore,
   writeTsDefinition,
@@ -818,7 +820,10 @@ import {
 const parser = new ComponentParser();
 const moduleName = "Button";
 const filePath = "Button.svelte";
-const parsed = parser.parseSvelteComponent(source, { moduleName, filePath });
+const parsed = finalizeWithoutCrossFileResolution(
+  parser.parseSvelteComponent(source, { moduleName, filePath }),
+  { filePath },
+);
 
 // `parseSvelteComponent` returns component metadata only; add `moduleName`
 // and `filePath` yourself to match the `ComponentDocApi` shape the writers expect.
@@ -839,6 +844,8 @@ const cem = buildCustomElementsManifest(components, {
   resolveModulePath: (component) => component.filePath,
 });
 ```
+
+A standalone parse can't read the files a component imports from, so some output the CLI and `generateBundle` produce is missing: a context whose `setContext` key is imported, the value of a prop default that names an imported `const`, the return type of a default that calls an imported function, and events dispatched by an imported helper (`wire(dispatch)`). `parseSvelteComponent` leaves these pending for the cross-file pass, which never runs here. Pass the result through `finalizeWithoutCrossFileResolution(parsed, { filePath })` to record a `sveld/cross-file-unresolved` warning for each one, naming the import (e.g. `` setContext key `keys.THEME` is imported from "./keys.js" ``), and to release the `sveld/event-no-source` warnings held back while a helper's events were unknown. It returns a new component and leaves the input unchanged.
 
 `ComponentParser` is stateful but reusable across parses — call `parseSvelteComponent` again on the same instance for the next component instead of constructing a new one each time.
 

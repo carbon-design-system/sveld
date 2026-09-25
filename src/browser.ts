@@ -10,11 +10,18 @@
  *
  * @example
  * ```ts
- * import { asNormalizedPath, ComponentParser, buildComponentApiDocument } from "sveld/browser";
+ * import {
+ *   asNormalizedPath,
+ *   ComponentParser,
+ *   buildComponentApiDocument,
+ *   finalizeWithoutCrossFileResolution,
+ * } from "sveld/browser";
  *
  * const parser = new ComponentParser();
  * const diagnostics = { moduleName: "Button", filePath: "Button.svelte" };
- * const parsed = parser.parseSvelteComponent(source, diagnostics);
+ * // Nothing here reads imported files: record a `cross-file-unresolved`
+ * // warning for each import the output depends on.
+ * const parsed = finalizeWithoutCrossFileResolution(parser.parseSvelteComponent(source, diagnostics), diagnostics);
  *
  * // `parseSvelteComponent` returns component metadata only; add the fields
  * // `ComponentDocApi` needs (`moduleName`, `filePath`) yourself.
@@ -30,6 +37,10 @@
 export { asNormalizedPath, type NormalizedPath } from "./brands";
 export { default as ComponentParser, type SerializedComponentEvent } from "./ComponentParser";
 export type { SveldDiagnostic, SveldDiagnosticKind } from "./diagnostics";
+export {
+  type FinalizeWithoutCrossFileResolutionOptions,
+  finalizeWithoutCrossFileResolution,
+} from "./finalize-standalone";
 export type { ComponentDocApi, ComponentDocs } from "./plugin";
 export {
   type BuildComponentApiDocumentOptions,

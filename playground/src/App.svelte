@@ -15,7 +15,7 @@
   import Json from "carbon-icons-svelte/lib/Json.svelte";
   import TextCreation from "carbon-icons-svelte/lib/TextCreation.svelte";
   import { type Component, onMount } from "svelte";
-  import { ComponentParser } from "../../src/browser";
+  import { ComponentParser, finalizeWithoutCrossFileResolution } from "../../src/browser";
   import CodeEditor from "./CodeEditor.svelte";
   import data from "./data";
   import Header from "./Header.svelte";
@@ -78,10 +78,11 @@
       parse_error = null;
 
       if (value) {
-        parsed_component = parser.parseSvelteComponent(value, {
-          moduleName,
-          filePath: "VIRTUAL",
-        });
+        const diagnostics = { moduleName, filePath: "VIRTUAL" };
+        parsed_component = finalizeWithoutCrossFileResolution(
+          parser.parseSvelteComponent(value, diagnostics),
+          diagnostics,
+        );
       }
     } catch (error) {
       parse_error = error as string;
