@@ -1,0 +1,100 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 14,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "rowClass",
+      "kind": "let",
+      "type": "RowClass",
+      "typeSource": "jsdoc",
+      "value": "undefined",
+      "defaultValue": {
+        "raw": "undefined",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 12,
+          "column": 2
+        },
+        "end": {
+          "line": 12,
+          "column": 34
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "click:cell",
+      "detail": "{\n  cell: string;\n}",
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 5
+        },
+        "end": {
+          "line": 3,
+          "column": 22
+        }
+      }
+    }
+  ],
+  "typedefs": [
+    {
+      "type": "string | ((row: string) => string | undefined)",
+      "name": "RowClass",
+      "ts": "type RowClass = string | ((row: string) => string | undefined);",
+      "source": {
+        "start": {
+          "line": 6,
+          "column": 5
+        },
+        "end": {
+          "line": 6,
+          "column": 71
+        }
+      }
+    }
+  ],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "typedef-non-object-property/input.svelte",
+      "kind": "event-no-source",
+      "name": "click:cell",
+      "message": "@event \"click:cell\" has no matching dispatch or callback prop.",
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 5
+        },
+        "end": {
+          "line": 3,
+          "column": 22
+        }
+      },
+      "code": "sveld/event-no-source",
+      "severity": "warning"
+    }
+  ]
+}
