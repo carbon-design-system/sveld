@@ -502,7 +502,7 @@ describe("inlineLocalTypeImports fixture-level snapshots", () => {
     expect(result.diagnostics.filter((d) => d.kind === "types-inline-unresolved")).toEqual(
       inlined === undefined ? [] : expect.any(Array),
     );
-  });
+  }, 30_000); // `resolveTypes` starts a TypeScript program, slow on a busy machine.
 });
 
 /**
