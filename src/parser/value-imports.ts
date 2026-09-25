@@ -1,4 +1,5 @@
 import type { FunctionDeclaration, Node } from "estree";
+import { isIdentifier, isMemberExpression } from "../ast-guards";
 import type { ComponentPropReExport } from "../ComponentParser";
 import type { ParserContext } from "./context";
 
@@ -37,33 +38,33 @@ export function collectValueImportBindings(ctx: ParserContext, node: ImportDecla
   }
 }
 
+/** An export of `source`, and any members read off it. */
+type ImportedBinding = { source: string; importedName: string; members?: string[] };
+
 /**
- * The imported function a call's callee names, for following a dispatcher
- * into it: a named import (`helper`), a default import (`helper`, read as the
- * module's `default` export), or a namespace member (`h.helper`). A member
- * of an imported binding (`ns.helper`, with `ns` a namespace the module
- * re-exports) comes back with `members: ["helper"]`, for the resolver to read
- * through that namespace. `roots` are the component's scripts, searched for
- * the default and namespace imports {@link collectValueImportBindings}
- * doesn't record.
+ * The import a callee names: a named import (`helper`), a default import
+ * (read as `default`), or a namespace member (`h.helper`). Members past the
+ * imported binding (`ns.helper` with `ns` a re-exported namespace) come back
+ * as `members`, for the resolver to read through. `roots` are the scripts
+ * searched for the default and namespace imports
+ * {@link collectValueImportBindings} doesn't record.
  */
 export function importedCalleeBinding(
   ctx: ParserContext,
   callee: unknown,
   roots: Array<Node | undefined>,
-): { source: string; importedName: string; members?: string[] } | undefined {
+): ImportedBinding | undefined {
   type CalleeNode = { type?: string; computed?: boolean; object?: unknown; property?: unknown };
   // `a.b.c` -> `a`, with members `["b", "c"]`.
   const members: string[] = [];
   let node = callee as CalleeNode;
   while (node.type === "MemberExpression") {
-    const property = node.computed ? undefined : identifierName(node.property);
-    if (!property) return undefined;
-    members.unshift(property);
+    if (node.computed || !isIdentifier(node.property)) return undefined;
+    members.unshift(node.property.name);
     node = node.object as CalleeNode;
   }
-  const localName = identifierName(node);
-  if (!localName) return undefined;
+  if (!isIdentifier(node)) return undefined;
+  const localName = node.name;
 
   const binding = (source: string, importedName: string, rest: string[]) =>
     rest.length > 0 ? { source, importedName, members: rest } : { source, importedName };
@@ -96,17 +97,9 @@ export function importedCalleeBinding(
  * instance and module scripts. `undefined` for anything else, including a
  * plain identifier.
  */
-export function importedMemberBinding(
-  ctx: ParserContext,
-  node: unknown,
-): { source: string; importedName: string; members?: string[] } | undefined {
-  if ((node as { type?: string } | null | undefined)?.type !== "MemberExpression") return undefined;
+export function importedMemberBinding(ctx: ParserContext, node: unknown): ImportedBinding | undefined {
+  if (!isMemberExpression(node)) return undefined;
   return importedCalleeBinding(ctx, node, [ctx.parsed?.instance, ctx.parsed?.module]);
-}
-
-function identifierName(node: unknown): string | undefined {
-  const identifier = node as { type?: string; name?: string } | null | undefined;
-  return identifier?.type === "Identifier" ? identifier.name : undefined;
 }
 
 /** Top-level statements of a script root (`Program.body`, or the script's `content.body`). */
