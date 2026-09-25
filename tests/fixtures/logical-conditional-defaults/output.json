@@ -1,0 +1,229 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 36,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "size",
+      "kind": "let",
+      "description": "Nullish fallback",
+      "type": "string",
+      "typeSource": "default",
+      "value": "defaultSize ?? \"md\"",
+      "defaultValue": {
+        "raw": "defaultSize ?? \"md\"",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 7,
+          "column": 2
+        },
+        "end": {
+          "line": 7,
+          "column": 40
+        }
+      }
+    },
+    {
+      "name": "items",
+      "kind": "let",
+      "description": "Falsy fallback",
+      "typeSource": "unknown",
+      "value": "theme || []",
+      "defaultValue": {
+        "raw": "theme || []",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 10,
+          "column": 2
+        },
+        "end": {
+          "line": 10,
+          "column": 33
+        }
+      }
+    },
+    {
+      "name": "showIcon",
+      "kind": "let",
+      "description": "Logical and",
+      "type": "boolean",
+      "typeSource": "default",
+      "value": "compact && true",
+      "defaultValue": {
+        "raw": "compact && true",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 13,
+          "column": 2
+        },
+        "end": {
+          "line": 13,
+          "column": 40
+        }
+      }
+    },
+    {
+      "name": "label",
+      "kind": "let",
+      "description": "Ternary",
+      "type": "string",
+      "typeSource": "default",
+      "value": "compact ? \"…\" : \"More\"",
+      "defaultValue": {
+        "raw": "compact ? \"…\" : \"More\"",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 16,
+          "column": 2
+        },
+        "end": {
+          "line": 16,
+          "column": 44
+        }
+      }
+    },
+    {
+      "name": "tone",
+      "kind": "let",
+      "description": "A long ternary spread over several lines",
+      "type": "string",
+      "typeSource": "default",
+      "value": "theme === \"dark\" ? \"light-text-on-dark-background\" : theme === \"light\" ? \"dark-text-on-light-background\" : \"neutral\"",
+      "defaultValue": {
+        "raw": "theme === \"dark\"       ? \"light-text-on-dark-background\"       : theme === \"light\"         ? \"dark-text-on-light-background\"         : \"neutral\"",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 19,
+          "column": 2
+        },
+        "end": {
+          "line": 24,
+          "column": 20
+        }
+      }
+    },
+    {
+      "name": "last",
+      "kind": "let",
+      "type": "number",
+      "typeSource": "default",
+      "value": "(compact, 42)",
+      "defaultValue": {
+        "raw": "compact, 42",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 27,
+          "column": 2
+        },
+        "end": {
+          "line": 27,
+          "column": 34
+        }
+      }
+    },
+    {
+      "name": "explicit",
+      "kind": "let",
+      "description": "A description that already documents its default\n@default \"md\"",
+      "type": "string",
+      "typeSource": "default",
+      "value": "defaultSize ?? \"md\"",
+      "defaultValue": {
+        "raw": "defaultSize ?? \"md\"",
+        "kind": "expression"
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 32,
+          "column": 2
+        },
+        "end": {
+          "line": 32,
+          "column": 44
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": [
+    {
+      "component": "logical-conditional-defaults/input.svelte",
+      "kind": "prop-unknown-type",
+      "name": "items",
+      "message": "Prop \"items\" type could not be inferred; falling back to \"any\".",
+      "source": {
+        "start": {
+          "line": 10,
+          "column": 2
+        },
+        "end": {
+          "line": 10,
+          "column": 33
+        }
+      },
+      "code": "sveld/prop-unknown-type",
+      "severity": "warning"
+    }
+  ]
+}
