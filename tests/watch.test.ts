@@ -592,6 +592,8 @@ describe("createSerialQueue", () => {
     const order: string[] = [];
     let concurrent = 0;
     let maxConcurrent = 0;
+    let finished = 0;
+    const { promise: bothSettled, resolve: settle } = Promise.withResolvers<void>();
 
     const run = async () => {
       concurrent++;
@@ -600,14 +602,15 @@ describe("createSerialQueue", () => {
       await new Promise((resolve) => setTimeout(resolve, 20));
       order.push("end");
       concurrent--;
+      if (++finished === 2) settle();
     };
 
     const trigger = createSerialQueue(run);
     trigger();
     trigger(); // Fires while the first `run()` is still awaiting its timeout.
 
-    // Wait for both queued runs to settle.
-    await new Promise((resolve) => setTimeout(resolve, 80));
+    // Wait for both queued runs to settle, however slow the machine's timers are.
+    await bothSettled;
 
     expect(maxConcurrent).toBe(1);
     expect(order).toEqual(["start", "end", "start", "end"]);
