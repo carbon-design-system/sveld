@@ -8,7 +8,7 @@ import type {
   SourceRange,
 } from "../ComponentParser";
 import type { JSDocComment, JSDocTag } from "./comment-parser";
-import { parseComments } from "./comment-parser";
+import { leadingWhitespaceLength, parseComments, togglesCodeFence } from "./comment-parser";
 import type { ParserContext } from "./context";
 import { recordDiagnostic, recordSveldIgnore } from "./diagnostics";
 import { addDispatchedEvent, buildEventDetailFromProperties } from "./events";
@@ -45,12 +45,38 @@ const TRAILING_SEMICOLON_REGEX = /;$/;
 
 const DESCRIPTION_DASH_PREFIX_REGEX = /^-\s*/;
 
-/** Strips each line's indentation, so a wrapped tag description reads as plain lines. */
-function dedentLines(text: string): string {
-  return text
-    .split("\n")
-    .map((line) => line.trim())
-    .join("\n");
+/**
+ * Joins a wrapped tag description's lines into text. Prose lines lose their indentation, a run
+ * of blank lines between paragraphs becomes one blank line, and lines inside a ```` ``` ````
+ * fence keep their indentation relative to the fence's opening line (blank lines included).
+ */
+function joinDescriptionLines(lines: readonly string[]): string {
+  const out: string[] = [];
+  /** Indentation width of the open fence's opening line; undefined outside a fence. */
+  let fenceIndent: number | undefined;
+  let paragraphBreak = false;
+  for (const line of lines) {
+    const togglesFence = togglesCodeFence(line);
+    if (fenceIndent !== undefined) {
+      if (togglesFence) {
+        out.push(line.trim());
+        fenceIndent = undefined;
+      } else {
+        out.push(line.slice(Math.min(fenceIndent, leadingWhitespaceLength(line))).trimEnd());
+      }
+      continue;
+    }
+    const trimmed = line.trim();
+    if (trimmed === "") {
+      paragraphBreak = out.length > 0;
+      continue;
+    }
+    if (paragraphBreak) out.push("");
+    paragraphBreak = false;
+    out.push(trimmed);
+    if (togglesFence) fenceIndent = leadingWhitespaceLength(line);
+  }
+  return out.join("\n").trimEnd();
 }
 
 function cleanDescription(description: string | undefined): string | undefined {
@@ -80,9 +106,19 @@ function getInlineTagDescription(
   tagLines: Array<{ content: string; continuesType?: true }> | undefined,
 ): string | undefined {
   if (!tagLines || tagLines.length === 0) return undefined;
+  return tagLines[tagHeadIndex(tagLines)].content;
+}
+
+/** Index in a tag's lines of the one holding its inline description (where a multi-line `{type}` closes). */
+function tagHeadIndex(tagLines: ReadonlyArray<{ continuesType?: true }>): number {
   let headIndex = 0;
   while (tagLines[headIndex + 1]?.continuesType) headIndex++;
-  return tagLines[headIndex].content;
+  return headIndex;
+}
+
+/** A block line with no text, not part of a tag's opening line or its multi-line `{type}`. */
+function isBlankLine(line: { tag?: string; continuesType?: true; content: string } | undefined): boolean {
+  return !line || (!line.tag && !line.continuesType && line.content.trim() === "");
 }
 
 /** Whether a tag has body text on its own line (`@since 1.0`), not only below it (`@example`). */
@@ -509,7 +545,7 @@ function processJSDocComment(
       .map((tag) => ({
         name: tag.name,
         type: parser.aliasType(tag.type),
-        description: cleanDescription(dedentLines(tag.description)),
+        description: cleanDescription(joinDescriptionLines(tag.description.split("\n"))),
         optional: tag.optional || false,
       }));
   }
@@ -756,27 +792,53 @@ export function parseCustomTypes(
      */
     const indentedContinuationLines = new Set<number>();
     let inIndentedContinuation = false;
+    let inCodeFence = false;
     for (const line of blockLines) {
       // A line whose only remaining content is a lone "}" is the tail of a multi-line `{...}`
-      // type, not prose - it must not get attributed to any tag as a description.
-      if (!line.tag && !line.continuesType && line.content && line.content.trim() !== "}") {
+      // type, not prose - it must not get attributed to any tag as a description. Inside a code
+      // fence it's code.
+      if (!line.tag && !line.continuesType && line.content && (inCodeFence || line.content.trim() !== "}")) {
         lineDescriptions.set(line.number, line.content);
       }
       if (line.tag !== undefined || line.continuesType) {
         inIndentedContinuation = true;
-      } else if (inIndentedContinuation && line.indent && line.content.trim()) {
+      } else if (!line.content.trim()) {
+        // A blank line between paragraphs doesn't end an indented continuation.
+      } else if (inIndentedContinuation && (line.indent || inCodeFence)) {
+        // A code fence opened in an indented continuation runs to its closing line.
         indentedContinuationLines.add(line.number);
       } else {
         inIndentedContinuation = false;
       }
+      if (togglesCodeFence(line.content)) inCodeFence = !inCodeFence;
     }
+
+    /**
+     * The description text of block lines `lineNums` (ascending), after `head` (the text on the
+     * tag's own line) when given. Blank lines between two of them are kept as a paragraph break
+     * when nothing else sits in between; see {@link joinDescriptionLines}.
+     */
+    const joinBlockLines = (lineNums: readonly number[], head?: { text: string; line: number }): string => {
+      const texts = head ? head.text.split("\n") : [];
+      let previous = head?.line;
+      for (const lineNum of lineNums) {
+        if (previous !== undefined && lineNum - previous > 1) {
+          let gap = previous + 1;
+          while (gap < lineNum && isBlankLine(blockLines[gap])) gap++;
+          if (gap === lineNum) for (let n = previous + 1; n < lineNum; n++) texts.push("");
+        }
+        const line = blockLines[lineNum];
+        texts.push(line.indent + line.content);
+        previous = lineNum;
+      }
+      return joinDescriptionLines(texts);
+    };
 
     /** Description lines immediately above a tag (not continuation lines the tag's own body absorbed). */
     const getPrecedingDescription = (tagSource: typeof blockLines): string | undefined => {
       if (!tagSource || tagSource.length === 0) return undefined;
       const tagLineNumber = tagSource[0].number;
 
-      const descLines: string[] = [];
       const claimedLineNums: number[] = [];
       let foundDescriptionBlock = false;
 
@@ -789,23 +851,17 @@ export function parseCustomTypes(
           break;
         }
 
-        const desc = lineDescriptions.get(lineNum);
-        if (desc) {
-          descLines.unshift(desc);
+        if (lineDescriptions.has(lineNum)) {
           claimedLineNums.unshift(lineNum);
           foundDescriptionBlock = true;
-        } else if (foundDescriptionBlock) {
-          const sourceLine = blockLines[lineNum];
-          const isBlank = !sourceLine || (!sourceLine.tag && (!sourceLine.content || sourceLine.content.trim() === ""));
-          if (!isBlank) {
-            break;
-          }
+        } else if (foundDescriptionBlock && !isBlankLine(blockLines[lineNum])) {
+          break;
         }
       }
-      if (descLines.length === 0) return undefined;
+      if (claimedLineNums.length === 0) return undefined;
       for (const n of claimedLineNums) consumedDescriptionLines.add(n);
       trimBodyAbove?.(claimedLineNums[0]);
-      return descLines.join("\n").trim();
+      return joinBlockLines(claimedLineNums);
     };
 
     /**
@@ -845,17 +901,16 @@ export function parseCustomTypes(
       // Unindented text after an event's last `@property`/`@type` is the event's own description.
       const endsEventScope = inEventScope && (nextTag === undefined || !EVENT_SCOPE_TAGS.has(nextTag.tag));
 
-      const continuation: string[] = [];
+      const continuation: number[] = [];
       for (let index = 1; index < tagSource.length; index++) {
         const line = tagSource[index];
         if ((nextTagTakesTextAbove || endsEventScope) && !indentedContinuationLines.has(line.number)) continue;
-        const text = lineDescriptions.get(line.number)?.trim();
-        if (!text || consumedDescriptionLines.has(line.number)) continue;
-        continuation.push(text);
+        if (!lineDescriptions.get(line.number)?.trim() || consumedDescriptionLines.has(line.number)) continue;
+        continuation.push(line.number);
         consumedDescriptionLines.add(line.number);
       }
       if (continuation.length === 0) return inline;
-      return [inline, ...continuation].filter(Boolean).join("\n");
+      return joinBlockLines(continuation, { text: inline ?? "", line: tagSource[tagHeadIndex(tagSource)].number });
     };
 
     /**
@@ -923,24 +978,22 @@ export function parseCustomTypes(
             scopeBoundaryLine = tLine;
             break;
           }
-          const trailing: string[] = [];
+          const trailing: number[] = [];
           const sortedLineNums = Array.from(lineDescriptions.keys()).sort((a, b) => a - b);
           for (const lineNum of sortedLineNums) {
             if (lineNum <= currentEventTagLine) continue;
             if (scopeBoundaryLine !== undefined && lineNum >= scopeBoundaryLine) continue;
             if (consumedDescriptionLines.has(lineNum)) continue;
-            const desc = lineDescriptions.get(lineNum);
-            const trimmed = desc?.trim();
-            if (trimmed) {
-              trailing.push(trimmed);
+            if (lineDescriptions.get(lineNum)?.trim()) {
+              trailing.push(lineNum);
               consumedDescriptionLines.add(lineNum);
             }
           }
           if (trailing.length > 0) {
-            const trailingText = trailing.join("\n");
-            currentEventDescription = currentEventDescription
-              ? `${currentEventDescription}\n${trailingText}`
-              : trailingText;
+            currentEventDescription = joinBlockLines(
+              trailing,
+              currentEventDescription ? { text: currentEventDescription, line: currentEventTagLine } : undefined,
+            );
           }
         }
 

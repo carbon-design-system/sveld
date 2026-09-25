@@ -1,0 +1,192 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 70,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "items",
+      "kind": "let",
+      "type": "Item[]",
+      "typeSource": "jsdoc",
+      "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 42,
+          "column": 2
+        },
+        "end": {
+          "line": 42,
+          "column": 24
+        }
+      }
+    },
+    {
+      "name": "format",
+      "kind": "function",
+      "description": "Formats an item.",
+      "type": "(item: Item) => string",
+      "typeSource": "jsdoc",
+      "params": [
+        {
+          "name": "item",
+          "type": "Item",
+          "description": "The item to format.\n\nReturns an empty string for an item without an id:\n```js\nif (!item.id) {\n  return \"\";\n}\n```",
+          "optional": false
+        }
+      ],
+      "returnType": "string",
+      "isFunction": true,
+      "isFunctionDeclaration": true,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 56,
+          "column": 2
+        },
+        "end": {
+          "line": 60,
+          "column": 3
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": "footer",
+      "default": false,
+      "slot_props": "Record<string, never>",
+      "source": {
+        "start": {
+          "line": 69,
+          "column": 0
+        },
+        "end": {
+          "line": 69,
+          "column": 22
+        }
+      }
+    },
+    {
+      "name": "item",
+      "default": false,
+      "slot_props": "{ item: Item }",
+      "description": "Renders one item.\n\nFor example:\n```svelte\n{#if item.id}\n  <b>{item.id}</b>\n{/if}\n```",
+      "source": {
+        "start": {
+          "line": 64,
+          "column": 2
+        },
+        "end": {
+          "line": 67,
+          "column": 4
+        }
+      }
+    }
+  ],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "close",
+      "detail": "null",
+      "source": {
+        "start": {
+          "line": 58,
+          "column": 4
+        },
+        "end": {
+          "line": 58,
+          "column": 27
+        }
+      }
+    },
+    {
+      "type": "dispatched",
+      "name": "open",
+      "detail": "null",
+      "description": "Fired when the menu opens.\n\nNot fired on the first render.",
+      "source": {
+        "start": {
+          "line": 57,
+          "column": 4
+        },
+        "end": {
+          "line": 57,
+          "column": 26
+        }
+      }
+    }
+  ],
+  "typedefs": [
+    {
+      "type": "{\n  /**\n   * The item id.\n   * \n   * Unique within one menu.\n   */\n  id: string;\n}",
+      "name": "Item",
+      "ts": "type Item = {\n  /**\n   * The item id.\n   * \n   * Unique within one menu.\n   */\n  id: string;\n};",
+      "source": {
+        "start": {
+          "line": 11,
+          "column": 5
+        },
+        "end": {
+          "line": 11,
+          "column": 27
+        }
+      }
+    },
+    {
+      "type": "number",
+      "name": "Count",
+      "ts": "type Count = number;",
+      "source": {
+        "start": {
+          "line": 15,
+          "column": 5
+        },
+        "end": {
+          "line": 15,
+          "column": 28
+        }
+      }
+    },
+    {
+      "type": "\"top\" | \"bottom\"",
+      "name": "Placement",
+      "description": "The menu's placement.\n\nFlips when there's no room.",
+      "ts": "type Placement = \"top\" | \"bottom\";",
+      "source": {
+        "start": {
+          "line": 22,
+          "column": 5
+        },
+        "end": {
+          "line": 22,
+          "column": 42
+        }
+      }
+    }
+  ],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}

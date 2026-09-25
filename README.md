@@ -2696,7 +2696,7 @@ function render(value: unknown, props: ComponentProps) {
 
 Both forms support the same modifiers as typedef properties elsewhere in this doc: optional properties (`[name]`), default values (`[name=value]`), and nested/discriminated-union shapes. See the linked sections above for full signatures and worked examples with generated output.
 
-A description can wrap onto continuation lines, which run until the next tag. Indent them past the `*` gutter to keep them attached to the tag unambiguously; an unindented line right above an `@event`/`@typedef`/`@slot` with no description of its own is read as that tag's description instead, and an unindented line after an event's last `@property` describes the event.
+A description can wrap onto continuation lines, which run until the next tag. Indent them past the `*` gutter to keep them attached to the tag unambiguously; an unindented line right above an `@event`/`@typedef`/`@slot` with no description of its own is read as that tag's description instead, and an unindented line after an event's last `@property` describes the event. A blank line between indented paragraphs doesn't end the description; it's kept as a paragraph break. Lines inside a ```` ``` ```` code fence keep their indentation relative to the fence.
 
 ```js
 /**
