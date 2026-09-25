@@ -100,6 +100,32 @@ export function createSelectHandler(options) {
     expect(byModuleName(result.components, "Menu")?.events.map((event) => event.name)).toEqual(["change"]);
   });
 
+  test("a helper's detail replaces an untyped @event's null detail, as a local dispatch does", async () => {
+    writeFileSync(
+      path.join(dir, "notify.js"),
+      `export function notify(dispatch) { dispatch("close", "escape"); dispatch("select", 1); dispatch("open"); }\n`,
+    );
+
+    const result = await bundleMenu(`  import { createEventDispatcher } from "svelte";
+  import { notify } from "./notify.js";
+
+  /**
+   * @event close Closed by a key
+   * @event {number | null} select
+   * @event open
+   */
+  const dispatch = createEventDispatcher();
+  notify(dispatch);`);
+
+    for (const components of [result.components, result.allComponentsForTypes]) {
+      expect(byModuleName(components, "Menu")?.events).toMatchObject([
+        { type: "dispatched", name: "close", detail: '"escape"', description: "Closed by a key" },
+        { type: "dispatched", name: "open", detail: "null" },
+        { type: "dispatched", name: "select", detail: "number | null" },
+      ]);
+    }
+  });
+
   test("a helper dispatch beats forwarding an event of the same name, as a local dispatch does", async () => {
     writeFileSync(
       path.join(dir, "Menu.svelte"),

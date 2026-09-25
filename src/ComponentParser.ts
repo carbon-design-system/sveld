@@ -363,6 +363,11 @@ export interface ParsedComponentTypeScriptMetadata {
    * imported functions: `generateBundle` keeps those the functions don't dispatch.
    */
   deferredEventNoSourceDiagnostics?: SveldDiagnostic[];
+  /**
+   * `@event` tags with no `{type}` or `@property`, whose `null` detail no
+   * same-file dispatch replaced; an escaped dispatcher's helper may still.
+   */
+  untypedJsDocEventNames?: string[];
 }
 
 export {

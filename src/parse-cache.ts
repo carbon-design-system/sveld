@@ -7,7 +7,7 @@ import { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "./parsed-component-metada
 import { VERSION as svelteVersion } from "./svelte-version";
 
 /** Bumped whenever the on-disk cache shape changes in a way old caches can't read. */
-const CACHE_FORMAT_VERSION = 4;
+const CACHE_FORMAT_VERSION = 5;
 
 /** Default on-disk location for the persistent parse cache, relative to the project root. */
 export const DEFAULT_CACHE_FILE = join("node_modules", ".cache", "sveld", "parse-cache.json");
