@@ -4,7 +4,7 @@ import { join, relative, resolve } from "node:path";
 import type { ComponentDocApi, ComponentDocs } from "../src/bundle";
 import { generateBundle } from "../src/bundle";
 import ComponentParser from "../src/ComponentParser";
-import { DEFAULT_CACHE_FILE } from "../src/parse-cache";
+import { DEFAULT_CACHE_FILE, ParseCache } from "../src/parse-cache";
 import writeTsDefinitions from "../src/writer/writer-ts-definitions";
 import { serializeEmitOptions, type WriteTsDefinitionOptions } from "../src/writer/writer-ts-definitions-core";
 
@@ -290,12 +290,25 @@ describe("generated .d.ts text cache", () => {
         exports: result.exports,
         cache: result.cache,
         resolvedPathByFilePath: result.resolvedPathByFilePath,
+        crossFileResolvedPathByFilePath: result.crossFileResolvedPathByFilePath,
       });
       result.cache?.save();
     };
 
     await write(await generateBundle(dir, true, { cache: cacheFile }));
     expect(readFileSync(tipDts, "utf-8")).toContain("@default 100");
+
+    // Nothing changed, so Tip's cached text is reused rather than regenerated.
+    const getGeneratedText = jest.spyOn(ParseCache.prototype, "getGeneratedText");
+    try {
+      await write(await generateBundle(dir, true, { cache: cacheFile }));
+      const tipLookups = getGeneratedText.mock.calls.flatMap(([path], index) =>
+        path === resolve(dir, "Tip.svelte") ? [getGeneratedText.mock.results[index]?.value] : [],
+      );
+      expect(tipLookups).toEqual([expect.stringContaining("@default 100")]);
+    } finally {
+      getGeneratedText.mockRestore();
+    }
 
     writeFileSync(join(dir, "constants.js"), 'export const DELAY = 999;\nexport const KEY = "two";\n');
     writeFileSync(join(dir, "helper.js"), 'export function wire(dispatch) { dispatch("beta"); }\n');

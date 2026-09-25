@@ -255,6 +255,7 @@ const KNOWN_NESTED_KEYS: Record<string, string[]> = {
     "dryRun",
     "cache",
     "resolvedPathByFilePath",
+    "crossFileResolvedPathByFilePath",
   ],
   jsonOptions: ["input", "outFile", "outDir", "entryExports", "dryRun", "source"],
   markdownOptions: ["write", "outFile", "outDir", "entryExports", "onAppend", "dryRun"],

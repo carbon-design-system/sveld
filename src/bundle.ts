@@ -99,9 +99,15 @@ export interface GenerateBundleResult {
    * path-alias resolution. Uses filePath because moduleName is not unique
    * when two components share a basename. Undefined when the parse cache
    * is disabled. Leaves out components whose output was resolved from
-   * another file's contents, so they never reuse cached text.
+   * another file's contents; see `crossFileResolvedPathByFilePath`.
    */
   resolvedPathByFilePath?: Map<string, string>;
+  /**
+   * @internal Like `resolvedPathByFilePath`, for the components it leaves
+   * out: their cached text is also keyed on their resolved content, since
+   * their own source doesn't determine it.
+   */
+  crossFileResolvedPathByFilePath?: Map<string, string>;
   /**
    * @internal Populated when `typesInline` is `"local"`/`"all"`, keyed by
    * `component.filePath`. Passed to the types writer (see `writeTsDefinitions`)
@@ -847,9 +853,15 @@ export async function generateBundle(
   // The generated-text cache is keyed on a component's own source, so it
   // can't see an edit to the module a default, context key, event, or
   // resolved props type was read from.
-  if (resolvedPathByFilePath) {
-    for (const filePath of crossFileReads.keys()) resolvedPathByFilePath.delete(filePath);
-    for (const { component } of resolveTypesCandidates) resolvedPathByFilePath.delete(component.filePath);
+  const crossFileResolvedPathByFilePath = resolvedPathByFilePath ? new Map<string, string>() : undefined;
+  if (resolvedPathByFilePath && crossFileResolvedPathByFilePath) {
+    const dependents = [...crossFileReads.keys(), ...resolveTypesCandidates.map(({ component }) => component.filePath)];
+    for (const filePath of dependents) {
+      const resolvedPath = resolvedPathByFilePath.get(filePath);
+      if (resolvedPath === undefined) continue;
+      resolvedPathByFilePath.delete(filePath);
+      crossFileResolvedPathByFilePath.set(filePath, resolvedPath);
+    }
   }
 
   validateExtendsTargets(allComponentsForTypes, resolveComponentFilePath, options.typesTypeNames);
@@ -889,6 +901,7 @@ export async function generateBundle(
     diagnostics,
     cache,
     resolvedPathByFilePath,
+    crossFileResolvedPathByFilePath,
     inlinedTypesByFilePath,
   };
 }
