@@ -27,6 +27,7 @@ import type {
   ModernRunesTypeNode,
   ProcessedInitializer,
 } from "../ComponentParser";
+import type { CommentWithLocation } from "../template-parse/comments";
 import type { ParserContext } from "./context";
 import { NEWLINE_CR_REGEX, sourceAtPos, sourceForExpression } from "./source-position";
 import { trackAdditionalTypeDependencyNode } from "./type-resolution";
@@ -97,7 +98,8 @@ export function processInitializer(
     } else if (init.type === "ObjectExpression" || init.type === "ArrayExpression") {
       // The literal's own text doubles as its type (`{ dense: true }`, `[1, 2]`)
       // only when every member is itself a literal; `{ x: a }` isn't a type.
-      type = isLiteralTypeText(init) ? value : undefined;
+      const { start, end } = expr as { start?: number; end?: number };
+      type = isLiteralTypeText(init) ? literalTypeText(ctx, start, end, value) : undefined;
     }
 
     if (init.type === "ArrowFunctionExpression" || init.type === "FunctionExpression") {
@@ -399,6 +401,31 @@ function unionOfBranchTypes(types: Array<string | undefined>): string | undefine
     members.add(type.includes("=>") ? `(${type})` : type);
   }
   return members.size === 1 ? types[0] : [...members].join(" | ");
+}
+
+/**
+ * An object or array literal's one-line `text` as a type, with its comments
+ * dropped: once newlines are collapsed, a `// note` would comment out the
+ * rest of the type.
+ */
+function literalTypeText(
+  ctx: ParserContext,
+  start: number | undefined,
+  end: number | undefined,
+  text: string | undefined,
+): string | undefined {
+  if (text === undefined || start === undefined || end === undefined) return text;
+  const comments = (ctx.parsed as unknown as { comments?: CommentWithLocation[] } | undefined)?.comments ?? [];
+  let withoutComments = "";
+  let position = start;
+  for (const comment of comments) {
+    if (comment.start < start || comment.end > end) continue;
+    withoutComments += sourceAtPos(ctx, position, comment.start) ?? "";
+    position = comment.end;
+  }
+  if (position === start) return text;
+  withoutComments += sourceAtPos(ctx, position, end) ?? "";
+  return withoutComments.replace(NEWLINE_CR_REGEX, " ");
 }
 
 /**
