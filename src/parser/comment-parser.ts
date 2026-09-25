@@ -90,7 +90,7 @@ const TAG_SECTION_START_REGEX = /^@[^\s/]+(?=\s|$)/;
 const TAG_PREFIX_REGEX = /^@(\S+)\s*/;
 
 /** Length of the leading `\s` run in `text`; same set of characters as `LEADING_WS_REGEX`. */
-function leadingWhitespaceLength(text: string): number {
+export function leadingWhitespaceLength(text: string): number {
   let index = 0;
   while (index < text.length) {
     const code = text.charCodeAt(index);
@@ -209,10 +209,15 @@ function splitIntoSections(lines: CommentLine[]): CommentLine[][] {
     } else {
       sections[sections.length - 1].push(line);
     }
-    if (countOccurrences(line.content, FENCE) % 2 === 1) fenced = !fenced;
+    if (togglesCodeFence(line.content)) fenced = !fenced;
   }
 
   return sections;
+}
+
+/** Whether `text` opens or closes a fenced (```` ``` ````) code block: an odd number of fences. */
+export function togglesCodeFence(text: string): boolean {
+  return countOccurrences(text, FENCE) % 2 === 1;
 }
 
 /** Number of non-overlapping `needle` occurrences in `text`; no per-line `split` allocation. */

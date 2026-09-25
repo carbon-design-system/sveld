@@ -45,6 +45,21 @@ describe("writerTsDefinition", () => {
         ],
       }),
     ).toEqual("export interface MyTypedef { [key: string]: boolean; }");
+    // A paragraph break's JSDoc line has no trailing space (Markdown prints this unformatted).
+    expect(
+      getTypeDefs({
+        typedefs: [
+          {
+            type: "string",
+            name: "Id",
+            description: "First.\n\nSecond.",
+            ts: "type Id = { /**\n   * A.\n   * \n   * B.\n   */\n  a: string };",
+          },
+        ],
+      }),
+    ).toEqual(
+      "/**\n * First.\n *\n * Second.\n */\nexport type Id = { /**\n   * A.\n   *\n   * B.\n   */\n  a: string };",
+    );
 
     const parsed_output: ParsedComponent = {
       syntaxMode: "legacy",

@@ -22,6 +22,8 @@ const NEWLINE_REGEX = /\n/;
 const FUNCTION_TYPE_REGEX = /=>/;
 const DESCRIPTION_DEFAULT_TAG_REGEX = /(?:^|\n)@default\b/;
 const NEWLINE_TO_COMMENT_REGEX = /\n/g;
+/** A JSDoc line for a blank line in its text (a paragraph break), written as `" * "`. */
+const BLANK_COMMENT_LINE_REGEX = /^([ \t]*\*) +$/gm;
 const WHITESPACE_REGEX = /\s+/g;
 const SNIPPET_TYPE_REFERENCE_REGEX = /(^|[^.\w])Snippet(?:\s*<|\b)/;
 const PRESERVED_SNIPPET_IMPORT_REGEX = /import\s+type\s+[^;]*\bSnippet\b[^;]*from\s+"svelte";/;
@@ -157,7 +159,9 @@ export function getTypeDefs(
           typedefComment = `/**\n * ${escapeCommentText(lines.join("\n * "))}\n */\n`;
         }
       }
-      return `${typedefComment}${exportKw}${typedef.ts}`;
+      // Markdown and llms.txt print this as is, not through the .d.ts formatter, so drop the
+      // trailing space a paragraph break leaves on its ` * ` line.
+      return `${typedefComment}${exportKw}${typedef.ts}`.replace(BLANK_COMMENT_LINE_REGEX, "$1");
     })
     .join("\n\n");
 }
