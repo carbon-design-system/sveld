@@ -2,6 +2,7 @@ import { lstatSync, readFileSync } from "node:fs";
 import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { isIdentifier, resolveStaticStringLiteral, unwrapTypeCastExpression } from "./ast-guards";
 import type { DeprecatedValue, JsDocPassthroughTag } from "./ComponentParser";
+import { createDiagnostic, type SveldDiagnostic } from "./diagnostics";
 import { directoryEntry, directoryHasEntry, typeScriptCounterpart } from "./fs-listing";
 import { warn } from "./logger";
 import { parseComments } from "./parser/comment-parser";
@@ -966,12 +967,21 @@ export function findModuleExportPath(
   return match;
 }
 
+export interface ParseEntryExportsOptions {
+  /**
+   * Receives an `export-ambiguous` diagnostic for each name two of the
+   * entry's `export *` statements bring in from different modules.
+   */
+  diagnostics?: SveldDiagnostic[];
+}
+
 /**
  * List consts, functions, and types exported from an entry barrel.
  *
  * Follows re-exports with AST-only traversal. Skips `.svelte` files.
  *
  * @param entryFile - Absolute path to the entry module.
+ * @param options - Where to record diagnostics about the barrel.
  * @returns Exports deduplicated by name, sorted alphabetically.
  *
  * @example
@@ -981,7 +991,10 @@ export function findModuleExportPath(
  * // [{ name: "Theme", kind: "type", isTypeOnly: true, ... }, { name: "VERSION", kind: "const", ... }]
  * ```
  */
-export async function parseEntryExports(entryFile: string): Promise<EntryExports> {
+export async function parseEntryExports(
+  entryFile: string,
+  options: ParseEntryExportsOptions = {},
+): Promise<EntryExports> {
   await loadParserStack();
 
   const resolved = resolve(entryFile);
@@ -989,31 +1002,35 @@ export async function parseEntryExports(entryFile: string): Promise<EntryExports
   const relativeSource = (declFile: string) => normalizeSeparators(`./${relative(entryDir, declFile)}`);
 
   // A name two of the entry's `export *` statements bring in from different
-  // files is ambiguous, so the module doesn't export it. The docs keep the
-  // first declaration anyway, with a warning, rather than drop it silently.
-  const ambiguous: InternalExport[] = [];
+  // files is ambiguous, so the module doesn't export it and the docs leave
+  // it out, as `collectModuleExports` already does. Say so, since the author
+  // likely meant to export it. A nested barrel's ambiguous name was never
+  // one of the entry's exports to begin with.
   const collected = collectModuleExports(resolved, {
     cache: new Map(),
     computing: new Set(),
     onAmbiguousStarExport: (filePath, name, entries) => {
-      if (filePath !== resolved) return;
-      const firstDeclFile = entries[0].declFile;
-      const otherDeclFiles = new Set(entries.map((entry) => entry.declFile));
-      otherDeclFiles.delete(firstDeclFile);
-      console.warn(
-        `Warning: "${name}" is exported from both "${relativeSource(firstDeclFile)}" and "${Array.from(
-          otherDeclFiles,
-          relativeSource,
-        ).join('", "')}"; keeping the first and dropping the rest.`,
+      if (filePath !== resolved || !options.diagnostics) return;
+      // Components get their own docs, from `parse-exports.ts`.
+      if (entries.every((entry) => entry.declFile.endsWith(".svelte"))) return;
+      const sources = Array.from(new Set(entries.map((entry) => relativeSource(entry.declFile))));
+      const quoted = sources.map((source) => `"${source}"`);
+      const listed = `${quoted.slice(0, -1).join(", ")} and ${quoted[quoted.length - 1]}`;
+      options.diagnostics.push(
+        createDiagnostic({
+          component: relativeSource(resolved),
+          kind: "export-ambiguous",
+          name,
+          message: `"${name}" is exported by ${listed} through \`export *\`, so the barrel doesn't export it and the docs leave it out; export it explicitly from the barrel (e.g. \`export { ${name} } from "${sources[0]}"\`).`,
+        }),
       );
-      ambiguous.push(...entries.filter((entry) => entry.declFile === firstDeclFile));
     },
   });
 
   const byName = new Map<string, EntryExport>();
   // Entries sharing a name are one declaration's overloads; the last (the
   // implementation signature) wins.
-  for (const entry of [...collected, ...ambiguous]) {
+  for (const entry of collected) {
     // The barrel's default export isn't a named export, and components get
     // their own docs.
     if (entry.name === "default" || entry.declFile.endsWith(".svelte")) continue;

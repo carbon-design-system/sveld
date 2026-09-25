@@ -221,6 +221,26 @@ describe("watch mode (createSveldBundle)", () => {
     expect(Array.from(result.allComponentsForTypes.values(), (c) => c.moduleName)).toEqual(["Button"]);
   });
 
+  test("reports an ambiguous `export *` in the barrel until an edit resolves it", async () => {
+    const entryPath = join(dir, "index.js");
+    writeFileSync(join(dir, "a.js"), "export const format = 1;\n");
+    writeFileSync(join(dir, "b.js"), "export const format = 2;\n");
+    writeFileSync(entryPath, 'export * from "./a.js";\nexport * from "./b.js";\n');
+
+    const bundle = await createSveldBundle(entryPath, false, true);
+    const initial = await bundle.result;
+    expect(initial.entryExports).toEqual([]);
+    expect(initial.diagnostics).toContainEqual(
+      expect.objectContaining({ component: "./index.js", kind: "export-ambiguous", name: "format" }),
+    );
+
+    writeFileSync(entryPath, 'export * from "./a.js";\nexport * from "./b.js";\nexport { format } from "./a.js";\n');
+    const { result } = await bundle.update([resolve(entryPath)]);
+
+    expect(result.entryExports.map((entry) => entry.name)).toEqual(["format"]);
+    expect(result.diagnostics.some((d) => d.kind === "export-ambiguous")).toBe(false);
+  });
+
   test("removing a barrel export stops reporting its parse error", async () => {
     const entryPath = join(dir, "index.js");
     writeFileSync(join(dir, "Broken.svelte"), "<script>export let = ;</script>\n");

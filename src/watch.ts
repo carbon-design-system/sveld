@@ -19,7 +19,7 @@ import {
   validateModuleReExportNames,
 } from "./bundle";
 import { buildReverseDeps, expandAffected } from "./dependency-graph";
-import { dedupeDiagnostics } from "./diagnostics";
+import { dedupeDiagnostics, type SveldDiagnostic } from "./diagnostics";
 import { resetDirectoryListings } from "./fs-listing";
 import {
   bareOverlayVirtualFilePath,
@@ -115,7 +115,11 @@ export async function createSveldBundle(
     bareResolver = created.resolver;
   }
 
-  let entryExports: EntryExports = documentExports && inputIsFile ? await parseEntryExports(resolve(input)) : [];
+  // The barrel's own diagnostics, attributed to it rather than a component.
+  // Replaced whenever the barrel is re-read.
+  let entryDiagnostics: SveldDiagnostic[] = [];
+  let entryExports: EntryExports =
+    documentExports && inputIsFile ? await parseEntryExports(resolve(input), { diagnostics: entryDiagnostics }) : [];
 
   let exportEntries = Object.entries(exports);
 
@@ -247,9 +251,10 @@ export async function createSveldBundle(
     components,
     allComponentsForTypes,
     errors: Array.from(parseErrors.values()),
-    diagnostics: dedupeDiagnostics(
-      Array.from(allComponentsForTypes.values()).flatMap((component) => component.diagnostics ?? []),
-    ),
+    diagnostics: dedupeDiagnostics([
+      ...Array.from(allComponentsForTypes.values()).flatMap((component) => component.diagnostics ?? []),
+      ...entryDiagnostics,
+    ]),
     inlinedTypesByFilePath: typesInline === "local" || typesInline === "all" ? inlinedTypesByFilePath : undefined,
   });
 
@@ -360,7 +365,8 @@ export async function createSveldBundle(
       globMergeState = createGlobMergeState(allComponentEntries, resolveComponentFilePath);
 
       if (documentExports && inputIsFile) {
-        entryExports = await parseEntryExports(resolve(input));
+        entryDiagnostics = [];
+        entryExports = await parseEntryExports(resolve(input), { diagnostics: entryDiagnostics });
       }
     }
 

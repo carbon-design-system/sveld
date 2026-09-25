@@ -1,6 +1,7 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import type { SveldDiagnostic } from "../src/diagnostics";
 import { type EntryExport, parseEntryExports } from "../src/parse-entry-exports";
 
 const entryFile = path.join(process.cwd(), "tests", "fixtures-entry-exports", "index.ts");
@@ -170,12 +171,12 @@ describe("parseEntryExports", () => {
     });
   });
 
-  test("`export *` collisions keep the first declaration and warn", async () => {
+  test("`export *` collisions leave the name out and report a diagnostic", async () => {
     // Not written under tests/fixtures-entry-exports because `export * from`
     // trips the repo's own `noReExportAll` lint rule.
     const dir = mkdtempSync(path.join(tmpdir(), "sveld-entry-exports-export-star-collision-"));
     try {
-      writeFileSync(path.join(dir, "collide-a.ts"), 'export const SHARED = "a";\n');
+      writeFileSync(path.join(dir, "collide-a.ts"), 'export const SHARED = "a";\nexport const ONLY_A = 1;\n');
       writeFileSync(path.join(dir, "collide-b.ts"), 'export const SHARED = "b";\n');
       writeFileSync(
         path.join(dir, "index.ts"),
@@ -183,18 +184,72 @@ describe("parseEntryExports", () => {
       );
 
       const warn = jest.spyOn(console, "warn").mockImplementation(() => undefined);
+      const diagnostics: SveldDiagnostic[] = [];
 
-      const exports = await parseEntryExports(path.join(dir, "index.ts"));
+      const exports = await parseEntryExports(path.join(dir, "index.ts"), { diagnostics });
 
-      expect(byName(exports, "SHARED")).toMatchObject({
-        name: "SHARED",
-        kind: "const",
-        value: '"a"',
-        source: "./collide-a.ts",
-      });
-      expect(warn).toHaveBeenCalledWith(expect.stringContaining("SHARED"));
+      // ES modules don't export an ambiguous star name at all.
+      expect(exports.map((entry) => entry.name)).toEqual(["ONLY_A"]);
+      expect(diagnostics).toEqual([
+        {
+          component: "./index.ts",
+          kind: "export-ambiguous",
+          code: "sveld/export-ambiguous",
+          severity: "warning",
+          name: "SHARED",
+          message: expect.stringContaining('"./collide-a.ts" and "./collide-b.ts"'),
+        },
+      ]);
+      expect(diagnostics[0].message).toContain('export { SHARED } from "./collide-a.ts"');
+      expect(warn).not.toHaveBeenCalled();
 
       warn.mockRestore();
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("an `export *` collision in a nested barrel isn't the entry's to report", async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "sveld-entry-exports-export-star-nested-collision-"));
+    try {
+      writeFileSync(path.join(dir, "collide-a.ts"), 'export const SHARED = "a";\n');
+      writeFileSync(path.join(dir, "collide-b.ts"), 'export const SHARED = "b";\n');
+      writeFileSync(
+        path.join(dir, "nested.ts"),
+        ['export * from "./collide-a";', 'export * from "./collide-b";', "export const NESTED = 1;", ""].join("\n"),
+      );
+      writeFileSync(path.join(dir, "index.ts"), 'export * from "./nested";\n');
+
+      const diagnostics: SveldDiagnostic[] = [];
+      const exports = await parseEntryExports(path.join(dir, "index.ts"), { diagnostics });
+
+      expect(exports.map((entry) => entry.name)).toEqual(["NESTED"]);
+      expect(diagnostics).toEqual([]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("an explicit re-export resolves an `export *` collision silently", async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "sveld-entry-exports-export-star-explicit-"));
+    try {
+      writeFileSync(path.join(dir, "collide-a.ts"), 'export const SHARED = "a";\n');
+      writeFileSync(path.join(dir, "collide-b.ts"), 'export const SHARED = "b";\n');
+      writeFileSync(
+        path.join(dir, "index.ts"),
+        [
+          'export * from "./collide-a";',
+          'export * from "./collide-b";',
+          'export { SHARED } from "./collide-b";',
+          "",
+        ].join("\n"),
+      );
+
+      const diagnostics: SveldDiagnostic[] = [];
+      const exports = await parseEntryExports(path.join(dir, "index.ts"), { diagnostics });
+
+      expect(byName(exports, "SHARED")).toMatchObject({ value: '"b"', source: "./collide-b.ts" });
+      expect(diagnostics).toEqual([]);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

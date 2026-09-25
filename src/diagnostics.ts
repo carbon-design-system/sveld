@@ -31,6 +31,7 @@ import { matchesGlob } from "./glob-match";
  * - `internal-typedef-referenced`: a public prop/typedef/event/slot/module-export/context type references an `@internal` typedef by name, which is excluded from output; the generated `.d.ts` will contain a dangling reference.
  * - `types-inline-unresolved`: `typesOptions.inline` could not safely copy an imported type (missing file, missing export, an unsupported export kind, or a name collision); the import is kept as-is.
  * - `cross-file-unresolved`: output depends on an import that was never read, because the component was parsed standalone (`sveld/browser`, or `ComponentParser` directly) and finalized with `finalizeWithoutCrossFileResolution`. `generateBundle` and the CLI resolve these and never record it.
+ * - `export-ambiguous`: two `export *` statements in the entry barrel bring in the same name from different modules, so the barrel doesn't export it and the entry-exports docs leave it out (`documentExports` only). Attributed to the barrel file, not a component.
  */
 export type SveldDiagnosticKind =
   | "prop-unknown-type"
@@ -59,7 +60,8 @@ export type SveldDiagnosticKind =
   | "jsdoc-tag-dropped"
   | "internal-typedef-referenced"
   | "types-inline-unresolved"
-  | "cross-file-unresolved";
+  | "cross-file-unresolved"
+  | "export-ambiguous";
 
 /** `"error"` fails `--strict=errors`; `"warning"` only fails plain `--strict`. */
 export type SveldDiagnosticSeverity = "error" | "warning";
@@ -98,6 +100,7 @@ export const DIAGNOSTIC_CODES: Record<SveldDiagnosticKind, string> = {
   "internal-typedef-referenced": "sveld/internal-typedef-referenced",
   "types-inline-unresolved": "sveld/types-inline-unresolved",
   "cross-file-unresolved": "sveld/cross-file-unresolved",
+  "export-ambiguous": "sveld/export-ambiguous",
 };
 
 /**
@@ -133,13 +136,17 @@ const DIAGNOSTIC_SEVERITIES: Record<SveldDiagnosticKind, SveldDiagnosticSeverity
   "internal-typedef-referenced": "error",
   "types-inline-unresolved": "warning",
   "cross-file-unresolved": "warning",
+  "export-ambiguous": "warning",
 };
 
 /**
  * One place sveld had to guess a type instead of inferring it.
  */
 export interface SveldDiagnostic {
-  /** File this came from, e.g. `"./Button.svelte"`. */
+  /**
+   * File this came from, e.g. `"./Button.svelte"`, or the entry barrel
+   * (`"./index.js"`) for `export-ambiguous`.
+   */
   component: string;
   kind: SveldDiagnosticKind;
   /** Stable, namespaced identifier for `kind` (e.g. `"sveld/prop-unknown-type"`). */
@@ -266,6 +273,7 @@ const KIND_LABELS: Record<SveldDiagnosticKind, string> = {
   "internal-typedef-referenced": "Public types referencing an @internal typedef",
   "types-inline-unresolved": "typesOptions.inline could not safely copy an imported type",
   "cross-file-unresolved": "Imports a standalone parse couldn't read",
+  "export-ambiguous": "Ambiguous `export *` names left out of the entry exports",
 };
 
 const KIND_ORDER: SveldDiagnosticKind[] = [
@@ -296,6 +304,7 @@ const KIND_ORDER: SveldDiagnosticKind[] = [
   "internal-typedef-referenced",
   "types-inline-unresolved",
   "cross-file-unresolved",
+  "export-ambiguous",
 ];
 
 /**
