@@ -22,7 +22,7 @@ import { collectExampleSources, type ExampleCheckSource } from "./example-check"
 import { readDirectoryListing, resetDirectoryListings } from "./fs-listing";
 import { collectBareImportOverlay, type InlinedTypes, inlineLocalTypeImports } from "./inline-types";
 import { hashSource, ParseCache, resolveCacheFilePath } from "./parse-cache";
-import { createResolveContext, type EntryExports, parseEntryExports } from "./parse-entry-exports";
+import { createResolveContext, type EntryExports, parseEntryExports, type ResolveContext } from "./parse-entry-exports";
 import { type ParsedExports, parseExports } from "./parse-exports";
 import { applyResolvedProps, getParsedComponentTypeScriptMetadata } from "./parsed-component-metadata";
 import { generateContextTypeName } from "./parser/contexts";
@@ -932,6 +932,10 @@ export async function resolveCrossFileCandidates(
   // Warm-cache runs skip the parser stack, but sibling modules still need it.
   await loadParserStack();
 
+  // Per-component contexts keep each result independent of order; the
+  // modules they parse are shared.
+  const modules: ResolveContext["modules"] = new Map();
+
   for (const {
     component,
     callDefaults,
@@ -941,7 +945,7 @@ export async function resolveCrossFileCandidates(
     deferredEventNoSource,
     untypedEventNames,
   } of pending) {
-    const ctx = createResolveContext();
+    const ctx = createResolveContext(modules);
     const filePath = resolveComponentFilePath(component.filePath);
 
     if (callDefaults.length > 0) {
