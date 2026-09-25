@@ -1787,6 +1787,70 @@ describe("ComponentParser", () => {
     });
   });
 
+  describe("dispatch detail inference from variable initializers", () => {
+    const detailOf = (source: string, name: string) =>
+      new ComponentParser().parseSvelteComponent(source, diagnostics).events.find((event) => event.name === name)
+        ?.detail;
+
+    test("types an unannotated variable from its initializer, as a member or the whole detail", () => {
+      const source = `
+        <script>
+          import { createEventDispatcher } from "svelte";
+          const dispatch = createEventDispatcher();
+          let count = 0;
+          let label = "none";
+          let roll = Math.random();
+          function change() {
+            dispatch("change", { count, label, roll });
+            dispatch("count", count);
+            dispatch("roll", roll);
+          }
+        </script>
+      `;
+
+      expect(detailOf(source, "change")).toBe("{ count: number; label: string; roll: any; }");
+      expect(detailOf(source, "count")).toBe("number");
+      expect(detailOf(source, "roll")).toBeUndefined();
+    });
+
+    test("leaves a name a nested scope binds untyped", () => {
+      const source = `
+        <script>
+          import { createEventDispatcher } from "svelte";
+          const dispatch = createEventDispatcher();
+          let label = "none";
+          /** @type {number | string} */
+          export let value = "";
+          function rename(label) {
+            dispatch("rename", { label });
+            dispatch("label", label);
+          }
+          const update = ({ value }) => dispatch("value", value);
+        </script>
+      `;
+
+      expect(detailOf(source, "rename")).toBe("{ label: any; }");
+      expect(detailOf(source, "label")).toBeUndefined();
+      expect(detailOf(source, "value")).toBeUndefined();
+    });
+
+    test("types a $host() CustomEvent detail the same way", () => {
+      const source = `
+        <svelte:options customElement="detail-host" />
+        <script>
+          let count = $state(0);
+          function change() {
+            $host().dispatchEvent(new CustomEvent("change", { detail: { count, open: true } }));
+            $host().dispatchEvent(new CustomEvent("tick", { detail: count }));
+          }
+        </script>
+      `;
+
+      expect(detailOf(source, "change")).toBe("{ count: number; open: boolean; }");
+      expect(detailOf(source, "tick")).toBe("number");
+    });
+  });
+
   describe("findVariableTypeAndDescription's JSDoc symbol table", () => {
     test("is not derailed by a regex literal containing a quote before the JSDoc block", () => {
       // A hand-rolled scanner that only knew about string literals would

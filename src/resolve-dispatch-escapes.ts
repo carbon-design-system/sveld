@@ -102,7 +102,7 @@ function staticEventNames(node: AstNode | undefined): string[] | null {
 
 /** Literal detail inference inside a helper: its locals aren't typed, so an identifier member is `any`. */
 const helperDetailTypeSource: DetailTypeSource = {
-  findVariableTypeAndDescription: () => null,
+  variableType: () => undefined,
   getPropertyName: (key) => {
     if (isIdentifier(key)) return key.name;
     return isLiteral(key) && key.value != null ? String(key.value) : undefined;

@@ -28375,6 +28375,7 @@
         {
           "type": "dispatched",
           "name": "change",
+          "detail": "number",
           "source": {
             "start": {
               "line": 112,
@@ -31359,6 +31360,7 @@
         {
           "type": "dispatched",
           "name": "change",
+          "detail": "number",
           "source": {
             "start": {
               "line": 85,

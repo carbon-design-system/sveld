@@ -34,9 +34,13 @@ import { buildDiagnostic, isSveldIgnored, recordDiagnostic, recordSveldIgnore } 
 import { isComponentLikeType, isElementLikeType } from "./parser/element-kind";
 import {
   addDispatchedEvent,
+  addHostDispatchedEvent,
   compareSerializedEvents,
-  deriveLiteralDetailType,
+  componentDetailTypeSource,
+  deriveDetailType,
+  detailNamesBoundInNestedScope,
   findDispatcherArgument,
+  type HostDispatch,
   literalDetailToTypeText,
   parseHostDispatchEventCall,
 } from "./parser/events";
@@ -1686,9 +1690,16 @@ export default class ComponentParser {
     let dispatcherTypeArgument: ModernRunesTypeNode | undefined;
     const hostLocalNames = new Set<string>();
     const hostDispatchedEventNames = new Set<string>();
+    const hostDispatches: HostDispatch[] = [];
     // Source ranges are resolved lazily below: only calls to the dispatcher
     // need one, and most components' call expressions aren't dispatches.
-    const callees: { name: string; arguments: Array<Expression | unknown>; node: CallExpression }[] = [];
+    const callees: {
+      name: string;
+      arguments: Array<Expression | unknown>;
+      node: CallExpression;
+      /** Detail names a nested scope binds here, read while the scopes are live. */
+      nestedBoundDetailNames: Set<string> | undefined;
+    }[] = [];
     /** Every call with arguments, any callee: checked for the dispatcher escaping once its name is known. */
     const callsWithArguments: CallExpression[] = [];
     /** Those whose callee a function parameter or nested declaration binds, so it isn't an import. */
@@ -1954,6 +1965,7 @@ export default class ComponentParser {
               name: calleeName,
               arguments: callExpr.arguments,
               node: callExpr,
+              nestedBoundDetailNames: detailNamesBoundInNestedScope(this.ctx, callExpr.arguments[1]),
             });
           }
 
@@ -1964,9 +1976,10 @@ export default class ComponentParser {
             (isCallExpressionNamed(callExpr.callee.object, "$host") ||
               (isIdentifier(callExpr.callee.object) && hostLocalNames.has(callExpr.callee.object.name)))
           ) {
-            const hostDispatchedEventName = parseHostDispatchEventCall(this.ctx, callExpr);
-            if (hostDispatchedEventName) {
-              hostDispatchedEventNames.add(hostDispatchedEventName);
+            const hostDispatch = parseHostDispatchEventCall(this.ctx, callExpr);
+            if (hostDispatch) {
+              hostDispatchedEventNames.add(hostDispatch.name);
+              hostDispatches.push(hostDispatch);
             }
           }
         }
@@ -2288,6 +2301,8 @@ export default class ComponentParser {
       { skipTypeOnlySubtrees: true },
     );
 
+    for (const hostDispatch of hostDispatches) addHostDispatchedEvent(this, this.ctx, hostDispatch);
+
     if (dispatcher_name !== undefined) {
       registerTypedDispatcherEvents(
         this,
@@ -2303,7 +2318,10 @@ export default class ComponentParser {
           const event_name =
             firstArg && typeof firstArg === "object" && "value" in firstArg ? (firstArg as Literal).value : undefined;
           const event_argument = callee.arguments[1];
-          const structuralDetail = deriveLiteralDetailType(this, event_argument);
+          const structuralDetail = deriveDetailType(
+            componentDetailTypeSource(this, this.ctx, callee.nestedBoundDetailNames),
+            event_argument,
+          );
           const event_detail =
             structuralDetail === undefined &&
             event_argument &&
