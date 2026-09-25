@@ -3,7 +3,13 @@ import { existsSync, lstatSync, readFileSync, realpathSync, statSync } from "nod
 import { readFile } from "node:fs/promises";
 import { basename, dirname, extname, isAbsolute, join, parse, relative, resolve } from "node:path";
 import { asRelativeSourcePath, type NormalizedPath } from "./brands";
-import type { DispatchedEvent, ParsedComponent, SerializedComponentEvent, SourceRange } from "./ComponentParser";
+import type {
+  DispatchedEvent,
+  ParsedComponent,
+  PendingConstDefaultCandidate,
+  SerializedComponentEvent,
+  SourceRange,
+} from "./ComponentParser";
 import { buildReverseDeps, expandAffected } from "./dependency-graph";
 import {
   applyDiagnosticIgnores,
@@ -969,18 +975,13 @@ export async function resolveCrossFileCandidates(
  */
 function applyCallDefaultResolutions(component: ComponentDocApi, resolutions: CallDefaultResolution[]): void {
   for (const { candidate, type, failureReason } of resolutions) {
-    const list = candidate.location === "props" ? component.props : component.moduleExports;
-    const prop = list.find((entry) => entry.name === candidate.propName);
+    const prop = findCandidateProp(component, candidate);
     if (prop?.typeSource !== "unknown") continue;
 
     if (type) {
       prop.type = type;
       prop.typeSource = "typescript";
-      if (candidate.location === "props") {
-        component.diagnostics = (component.diagnostics ?? []).filter(
-          (diagnostic) => !(diagnostic.kind === "prop-unknown-type" && diagnostic.name === candidate.propName),
-        );
-      }
+      dropUnknownTypeDiagnostic(component, candidate);
       continue;
     }
 
@@ -1002,8 +1003,7 @@ function applyCallDefaultResolutions(component: ComponentDocApi, resolutions: Ca
 function applyConstDefaultResolutions(component: ComponentDocApi, resolutions: ConstDefaultResolution[]): void {
   for (const { candidate, literal, declaredType } of resolutions) {
     if (!literal) continue;
-    const list = candidate.location === "props" ? component.props : component.moduleExports;
-    const prop = list.find((entry) => entry.name === candidate.propName);
+    const prop = findCandidateProp(component, candidate);
     if (!prop) continue;
 
     prop.value = literal.raw;
@@ -1012,12 +1012,23 @@ function applyConstDefaultResolutions(component: ComponentDocApi, resolutions: C
 
     prop.type = declaredType?.type ?? literal.type;
     prop.typeSource = declaredType?.source ?? "default";
-    if (candidate.location === "props") {
-      component.diagnostics = (component.diagnostics ?? []).filter(
-        (diagnostic) => !(diagnostic.kind === "prop-unknown-type" && diagnostic.name === candidate.propName),
-      );
-    }
+    dropUnknownTypeDiagnostic(component, candidate);
   }
+}
+
+type PropDefaultCandidate = Pick<PendingConstDefaultCandidate, "propName" | "location">;
+
+function findCandidateProp(component: ComponentDocApi, candidate: PropDefaultCandidate) {
+  const list = candidate.location === "props" ? component.props : component.moduleExports;
+  return list.find((entry) => entry.name === candidate.propName);
+}
+
+/** The parse-time `prop-unknown-type` no longer applies once the default's type is known. */
+function dropUnknownTypeDiagnostic(component: ComponentDocApi, candidate: PropDefaultCandidate): void {
+  if (candidate.location !== "props") return;
+  component.diagnostics = (component.diagnostics ?? []).filter(
+    (diagnostic) => !(diagnostic.kind === "prop-unknown-type" && diagnostic.name === candidate.propName),
+  );
 }
 
 /**
@@ -1088,8 +1099,8 @@ function startsAfter(range: SourceRange | undefined, other: SourceRange | undefi
 /**
  * Add the events each helper dispatches, unless the component already
  * dispatches one by that name (its `@event` tag wins). A helper event
- * replaces a forwarded event of the same name. A helper sveld couldn't read gets
- * a `dispatch-escapes` diagnostic. The held-back `event-no-source`
+ * replaces a forwarded event of the same name. A helper sveld couldn't read
+ * gets a `dispatch-escapes` diagnostic. The held-back `event-no-source`
  * diagnostics come back only when every helper was read and none of them
  * dispatches the event.
  */
@@ -1138,10 +1149,8 @@ function applyDispatchEscapeResolutions(
 
   if (helperEvents.size === 0) return;
 
-  /**
-   * A helper dispatch beats forwarding of the same name, as a same-file dispatch does
-   * (`addDispatchedEvent`). The forwarded entry's `@event` metadata, detail included, carries over.
-   */
+  // As with a same-file dispatch (`addDispatchedEvent`), the forwarded
+  // entry's `@event` metadata, detail included, carries over.
   const forwardedByName = new Map<string, SerializedComponentEvent>();
   const dispatchedNames = new Set<string>();
   for (const event of component.events) {
@@ -1165,6 +1174,7 @@ function applyDispatchEscapeResolutions(
       added.push(helperEvent);
       continue;
     }
+    const source = helperEvent.source ?? forwarded.source;
     added.push({
       type: "dispatched",
       name: helperEvent.name,
@@ -1173,7 +1183,7 @@ function applyDispatchEscapeResolutions(
       ...(forwarded.deprecated === undefined ? {} : { deprecated: forwarded.deprecated }),
       ...(forwarded.tags ? { tags: forwarded.tags } : {}),
       ...(forwarded.internal ? { internal: true as const } : {}),
-      ...((helperEvent.source ?? forwarded.source) ? { source: helperEvent.source ?? forwarded.source } : {}),
+      ...(source ? { source } : {}),
     });
   }
   if (added.length === 0 && detailByUntypedName.size === 0) return;
