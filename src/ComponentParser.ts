@@ -131,7 +131,7 @@ interface ResolvedExportSpecifier {
  * `localName`, which can come before or after the export naming it.
  */
 function findTopLevelBinding(
-  program: Node | null,
+  program: Node | null | undefined,
   localName: string,
 ): Pick<ResolvedExportSpecifier, "declaration" | "declarator" | "statement"> | undefined {
   for (const statement of (program && scriptBody(program)) ?? []) {
@@ -1158,7 +1158,7 @@ export default class ComponentParser {
     let binding = findTopLevelBinding(program, localName);
     if (!binding && script === "instance") {
       const module = this.ctx.parsed?.module as unknown as Node | undefined;
-      binding = findTopLevelBinding(module ?? null, localName) ?? findReactiveDeclaration(program, localName);
+      binding = findTopLevelBinding(module, localName) ?? findReactiveDeclaration(program, localName);
     }
     return { localName, exportedName, ...binding };
   }
@@ -1314,12 +1314,7 @@ export default class ComponentParser {
       };
     }
 
-    if (!this.ctx.variableInfoCacheBuilt) {
-      this.ctx.variableInfoCache = buildVariableJsDocTable(this.ctx, this);
-      this.ctx.variableInfoCacheBuilt = true;
-    }
-
-    const cached = this.ctx.variableInfoCache.get(varName);
+    const cached = this.variableJsDocEntry(varName);
 
     const explicitType = this.ctx.explicitVariableTypesByName.get(varName);
     if (explicitType) {
@@ -1341,15 +1336,20 @@ export default class ComponentParser {
    * such as from its initializer.
    */
   findVariableJsDoc(varName: string): { description?: string; internal?: boolean } {
-    if (!this.ctx.variableInfoCacheBuilt) {
-      this.ctx.variableInfoCache = buildVariableJsDocTable(this.ctx, this);
-      this.ctx.variableInfoCacheBuilt = true;
-    }
-    const cached = this.ctx.variableInfoCache.get(varName);
+    const cached = this.variableJsDocEntry(varName);
     return {
       ...(cached?.description ? { description: cached.description } : {}),
       ...(cached?.internal ? { internal: true } : {}),
     };
+  }
+
+  /** The JSDoc table entry for `varName`, building the table on first use. */
+  private variableJsDocEntry(varName: string) {
+    if (!this.ctx.variableInfoCacheBuilt) {
+      this.ctx.variableInfoCache = buildVariableJsDocTable(this.ctx, this);
+      this.ctx.variableInfoCacheBuilt = true;
+    }
+    return this.ctx.variableInfoCache.get(varName);
   }
 
   accumulateGeneric(name: string, constraint: string): void {
