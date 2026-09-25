@@ -41,19 +41,20 @@ export function collectValueImportBindings(ctx: ParserContext, node: ImportDecla
 /** An export of `source`, and any members read off it. */
 type ImportedBinding = { source: string; importedName: string; members?: string[] };
 
+/** The export an import names, read through namespace exports: `keys.THEME`. */
+export function importPath(binding: { importedName: string; members?: string[] }): string {
+  return [binding.importedName, ...(binding.members ?? [])].join(".");
+}
+
 /**
  * The import a callee names: a named import (`helper`), a default import
  * (read as `default`), or a namespace member (`h.helper`). Members past the
  * imported binding (`ns.helper` with `ns` a re-exported namespace) come back
- * as `members`, for the resolver to read through. `roots` are the scripts
- * searched for the default and namespace imports
- * {@link collectValueImportBindings} doesn't record.
+ * as `members`, for the resolver to read through. Default and namespace
+ * imports, which {@link collectValueImportBindings} doesn't record, are
+ * found by searching the component's scripts.
  */
-export function importedCalleeBinding(
-  ctx: ParserContext,
-  callee: unknown,
-  roots: Array<Node | undefined>,
-): ImportedBinding | undefined {
+export function importedCalleeBinding(ctx: ParserContext, callee: unknown): ImportedBinding | undefined {
   type CalleeNode = { type?: string; computed?: boolean; object?: unknown; property?: unknown };
   // `a.b.c` -> `a`, with members `["b", "c"]`.
   const members: string[] = [];
@@ -72,7 +73,7 @@ export function importedCalleeBinding(
   const named = ctx.valueImportBindingsByLocalName.get(localName);
   if (named) return binding(named.source, named.importedName, members);
 
-  for (const root of roots) {
+  for (const root of [ctx.parsed?.instance, ctx.parsed?.module]) {
     for (const statement of (root ? scriptBody(root) : undefined) ?? []) {
       const declaration = statement as ImportDeclarationNode;
       const source = declaration.source?.value;
@@ -93,13 +94,12 @@ export function importedCalleeBinding(
 
 /**
  * The imported value a member expression reads (`keys.THEME`, `C.timing.DELAY`),
- * as {@link importedCalleeBinding} reads a callee, searching the component's
- * instance and module scripts. `undefined` for anything else, including a
- * plain identifier.
+ * as {@link importedCalleeBinding} reads a callee. `undefined` for anything
+ * else, including a plain identifier.
  */
 export function importedMemberBinding(ctx: ParserContext, node: unknown): ImportedBinding | undefined {
   if (!isMemberExpression(node)) return undefined;
-  return importedCalleeBinding(ctx, node, [ctx.parsed?.instance, ctx.parsed?.module]);
+  return importedCalleeBinding(ctx, node);
 }
 
 /** Top-level statements of a script root (`Program.body`, or the script's `content.body`). */

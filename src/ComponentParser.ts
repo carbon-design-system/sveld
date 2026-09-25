@@ -2615,12 +2615,7 @@ export default class ComponentParser {
       }
       const ignored = isSveldIgnored(this.ctx, "dispatch-escapes", dispatcherName);
       for (const { call, argumentIndex, property } of escapes) {
-        const importBinding = locallyBoundCalls.has(call)
-          ? undefined
-          : importedCalleeBinding(this.ctx, call.callee, [
-              this.ctx.parsed?.instance as unknown as Node | undefined,
-              this.ctx.parsed?.module as unknown as Node | undefined,
-            ]);
+        const importBinding = locallyBoundCalls.has(call) ? undefined : importedCalleeBinding(this.ctx, call.callee);
         if (!importBinding) {
           unfollowableEscapes.push(call);
           continue;
