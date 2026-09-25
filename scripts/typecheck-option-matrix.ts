@@ -3,10 +3,7 @@
  * `typesOptions` combinations.
  *
  * `bun run test:fixtures-types` only checks the committed default-options
- * outputs. Typechecking generated output is what surfaced the worst `.d.ts`
- * bugs (a default value closing its JSDoc comment early, `typeNames`
- * duplicate identifiers, undeclared module-script types), so this covers
- * the rest of the option surface consumers actually use.
+ * outputs; this covers the rest of the option surface consumers actually use.
  *
  * Each option set gets its own directory, `<tmp>/<set>/<fixture>/`, holding
  * the component's `.d.ts` plus the fixture's sibling `.ts` / `.d.ts` files
