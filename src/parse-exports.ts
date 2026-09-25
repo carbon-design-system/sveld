@@ -46,7 +46,12 @@ interface ProgramNode extends Node {
   body: BodyNode[];
 }
 
-const astCache = new Map<string, ProgramNode>();
+/**
+ * The last AST parsed for each file, reused while its source is unchanged.
+ * Keyed by file rather than source so watch mode's edits replace entries
+ * instead of adding one per revision.
+ */
+const astCache = new Map<string, { source: string; ast: ProgramNode }>();
 
 function parseProgram(source: string): ProgramNode {
   return parse(source, {
@@ -110,11 +115,12 @@ function resolveBarrelExports(
  *   Callers should not pass this; it is threaded internally.
  */
 export function parseExports(source: string, dir: string, resolving: Set<string> = new Set(), fromFile: string = dir) {
-  let ast = astCache.get(source);
+  const cached = astCache.get(fromFile);
+  let ast = cached?.source === source ? cached.ast : undefined;
 
   if (!ast) {
     ast = parseProgram(source);
-    astCache.set(source, ast);
+    astCache.set(fromFile, { source, ast });
   }
 
   const exports_by_identifier: ParsedExports = {};
