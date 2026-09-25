@@ -2,12 +2,7 @@
  * Finalize a standalone parse (`sveld/browser`, or `ComponentParser` used
  * directly), where nothing reads the other files a component imports from.
  */
-import type {
-  ParsedComponent,
-  ParsedComponentTypeScriptMetadata,
-  PendingDispatchEscapeCandidate,
-  SourceRange,
-} from "./ComponentParser";
+import type { ParsedComponent, ParsedComponentTypeScriptMetadata, SourceRange } from "./ComponentParser";
 import { createDiagnostic, type SveldDiagnostic } from "./diagnostics";
 import { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "./parsed-component-metadata";
 
@@ -23,10 +18,6 @@ const FILE_ACCESS = "resolving it needs file access (generateBundle or the CLI)"
 /** The export an import names, read through namespace exports: `keys.THEME`. */
 function importPath(candidate: { importedName: string; members?: string[] }): string {
   return [candidate.importedName, ...(candidate.members ?? [])].join(".");
-}
-
-function helperList(candidates: PendingDispatchEscapeCandidate[]): string {
-  return Array.from(new Set(candidates.map((candidate) => `\`${candidate.calleeText}\``))).join(", ");
 }
 
 /**
@@ -128,7 +119,9 @@ export function finalizeWithoutCrossFileResolution<T extends ParsedComponent>(
     );
   }
 
-  const helpers = helperList(pendingDispatchEscapeCandidates ?? []);
+  const helpers = Array.from(
+    new Set((pendingDispatchEscapeCandidates ?? []).map((candidate) => `\`${candidate.calleeText}\``)),
+  ).join(", ");
   const released = (deferredEventNoSourceDiagnostics ?? []).map((diagnostic) =>
     helpers
       ? {

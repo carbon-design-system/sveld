@@ -141,11 +141,10 @@ export class ParseCache {
    * Stores a copy, for the same reason `get()` returns one.
    */
   set(resolvedPath: string, hash: string, parsed: ParsedComponent): void {
-    const typeScriptMetadata = parsed[PARSED_COMPONENT_TYPE_SCRIPT_METADATA];
     this.next.set(resolvedPath, {
       hash,
       parsed: structuredClone(parsed),
-      typeScriptMetadata: typeScriptMetadata === undefined ? undefined : structuredClone(typeScriptMetadata),
+      typeScriptMetadata: structuredClone(parsed[PARSED_COMPONENT_TYPE_SCRIPT_METADATA]),
     });
   }
 
