@@ -770,13 +770,26 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
     }
   }
 
+  /**
+   * A component a module re-exports (`export { default as X } from "./X.svelte"`).
+   * Recorded so a barrel that re-exports it again knows it's a component,
+   * which the entry docs leave out, rather than an unknown `const`.
+   */
+  const componentExport = (name: string, specifier: string): InternalExport => ({
+    name,
+    kind: "const",
+    declFile: resolve(source.dir, specifier),
+    isTypeOnly: false,
+  });
+
   /** Resolves a name within `filePath`, following one level of import. */
   const resolveLocal = (name: string): InternalExport | null => {
     const local = localDeclarations.get(name);
     if (local) return local;
 
     const imported = findImportSource(body, name);
-    if (!imported || imported.specifier.endsWith(".svelte")) return null;
+    if (!imported) return null;
+    if (imported.specifier.endsWith(".svelte")) return componentExport(name, imported.specifier);
 
     const target = resolveModuleFile(imported.specifier, source.dir);
     if (!target) return null;
@@ -826,7 +839,13 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
 
     const specifierValue = asNode(node.source)?.value;
     const moduleSpecifier = typeof specifierValue === "string" ? specifierValue : undefined;
-    if (moduleSpecifier?.endsWith(".svelte")) continue;
+    if (moduleSpecifier?.endsWith(".svelte")) {
+      for (const specifier of asNodeArray(node.specifiers)) {
+        const exportedName = identifierName(asNode(specifier.exported));
+        if (exportedName) results.push(componentExport(exportedName, moduleSpecifier));
+      }
+      continue;
+    }
 
     const stmtIsTypeOnly = node.exportKind === "type";
 
@@ -847,8 +866,6 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
       } else {
         resolved = resolveLocal(localName);
       }
-
-      if (resolved?.declFile.endsWith(".svelte")) continue;
 
       if (resolved) {
         results.push({ ...resolved, name: exportedName, isTypeOnly: resolved.isTypeOnly || elementIsTypeOnly });
@@ -965,8 +982,9 @@ export async function parseEntryExports(entryFile: string): Promise<EntryExports
   // Entries sharing a name are one declaration's overloads; the last (the
   // implementation signature) wins.
   for (const entry of [...collected, ...ambiguous]) {
-    // The barrel's default export isn't a named export.
-    if (entry.name === "default") continue;
+    // The barrel's default export isn't a named export, and components get
+    // their own docs.
+    if (entry.name === "default" || entry.declFile.endsWith(".svelte")) continue;
     // Drop internal returnType/literalValue/primitiveLiteral/declaredType/functionNode/namespaceFile; public EntryExport does not expose them.
     const {
       declFile,
