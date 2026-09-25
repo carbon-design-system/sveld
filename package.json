@@ -22,6 +22,7 @@
   "scripts": {
     "test": "bun test --parallel",
     "test:fixtures-types": "tsc --project tsconfig.fixtures.json",
+    "test:types-matrix": "bun scripts/typecheck-option-matrix.ts",
     "test:e2e": "bun tests/test-e2e.ts",
     "format": "biome format --write .",
     "lint": "biome check --error-on-warnings .",

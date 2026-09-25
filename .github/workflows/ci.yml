@@ -34,6 +34,9 @@ jobs:
       - name: Type check fixtures
         run: bun run test:fixtures-types
 
+      - name: Type check fixtures across typesOptions
+        run: bun run test:types-matrix
+
       - name: Run e2e tests
         run: bun run test:e2e
 

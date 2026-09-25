@@ -41,6 +41,7 @@ bun install
 | `bun run build` | Bundle `src/index.ts` to `lib/` and emit `.d.ts`. Add `-w` / `--watch` for watch mode. |
 | `bun run typecheck` | `tsc --noEmit` over `src/` and `tests/`. |
 | `bun run test:fixtures-types` | Type-check the generated fixture outputs (`tests/fixtures/**`). |
+| `bun run test:types-matrix` | Regenerate every fixture's `.d.ts` under a matrix of `typesOptions` combinations and type-check each set. Add `--keep` to keep the temp output. |
 | `bun run test:e2e` | Link sveld into the downstream packages under `tests/e2e/`, run `sveld` (or `build` for Vite fixtures), and `typecheck` generated types where configured. |
 | `bun run bench` | Time the parse/write pipeline against the carbon e2e fixture. Flags: `--runs <n>`, `--cache`, `--entry <path>`. Output goes to a temp dir; compare medians from one invocation, not absolute times across sessions. |
 | `bun run lint:fix:changed` | Lint, format, and organize imports for files changed vs `main` (`biome check --write --unsafe --changed`). Use this while iterating. |
@@ -125,6 +126,7 @@ Name cases after the behavior under test, grouping by feature prefix to match th
 
 - `bun run typecheck` — `tsc --noEmit` over `src/` and `tests/`.
 - `bun run test:fixtures-types` — type-checks the generated fixture outputs through [`tsconfig.fixtures.json`](tsconfig.fixtures.json), so a `.d.ts` that compiles in isolation but is wrong as a type is caught.
+- `bun run test:types-matrix` — the same check for non-default options. [`scripts/typecheck-option-matrix.ts`](scripts/typecheck-option-matrix.ts) regenerates every fixture's `.d.ts` under each set in `OPTION_MATRIX` (`format`, `exportTypes`, `typeNames`, `comments`, `propsDeclaration`, and one combination) and runs one `tsc` per set. A writer path that only one option reaches, such as `propsDeclaration: "interface"`, is covered here and nowhere else. **When you add an emit option to `WriteTsDefinitionOptions`,** add a set for it.
 
 ### End-to-end tests
 
@@ -171,7 +173,8 @@ It imports the parser and writers from `../src` directly (see [`playground/vite.
 3. `bun run build`
 4. `bun run test`
 5. `bun run test:fixtures-types`
-6. `bun run test:e2e`
+6. `bun run test:types-matrix`
+7. `bun run test:e2e`
 
 Run those locally before pushing. The cross-platform matrix is why path normalization is non-negotiable — a separator bug passes on macOS and fails on Windows.
 
