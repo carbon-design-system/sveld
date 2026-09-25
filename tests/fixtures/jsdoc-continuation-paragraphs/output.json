@@ -140,9 +140,9 @@
   ],
   "typedefs": [
     {
-      "type": "{\n  /**\n   * The item id.\n   * \n   * Unique within one menu.\n   */\n  id: string;\n}",
+      "type": "{\n  /**\n   * The item id.\n   *\n   * Unique within one menu.\n   */\n  id: string;\n}",
       "name": "Item",
-      "ts": "type Item = {\n  /**\n   * The item id.\n   * \n   * Unique within one menu.\n   */\n  id: string;\n};",
+      "ts": "type Item = {\n  /**\n   * The item id.\n   *\n   * Unique within one menu.\n   */\n  id: string;\n};",
       "source": {
         "start": {
           "line": 11,
