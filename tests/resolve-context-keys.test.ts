@@ -227,7 +227,7 @@ describe("cross-file setContext key resolution", () => {
   import { setContext } from "svelte";
   import { MODAL_KEY } from "./key.js";
 
-  const close = () => {};
+  const close = makeClose();
 
   setContext(MODAL_KEY, { close });
 </script>
@@ -256,7 +256,7 @@ describe("cross-file setContext key resolution", () => {
   import { setContext } from "svelte";
   import { MODAL_KEY } from "./key.js";
 
-  const close = () => {};
+  const close = makeClose();
 
   setContext(MODAL_KEY, { close });
 </script>

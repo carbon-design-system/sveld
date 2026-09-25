@@ -24,10 +24,12 @@ import type {
   ComponentPropDefaultValue,
   ComponentPropDefaultValueKind,
   ComponentPropParam,
+  ModernRunesTypeNode,
   ProcessedInitializer,
 } from "../ComponentParser";
 import type { ParserContext } from "./context";
 import { NEWLINE_CR_REGEX, sourceAtPos, sourceForExpression } from "./source-position";
+import { trackAdditionalTypeDependencyNode } from "./type-resolution";
 import { assignValueOrUndefined } from "./utils";
 
 export function addProp(parser: ComponentParser, ctx: ParserContext, prop_name: string, data: ComponentProp) {
@@ -440,6 +442,36 @@ function isLiteralTypeText(node: unknown): boolean {
     default:
       return false;
   }
+}
+
+/**
+ * Type of an unannotated script variable from its initializer, the way a
+ * prop default is typed: `let count = 0`, `let count = $state(0)`,
+ * `$state.raw([1])`, `$derived(count * 2)`. A rune's type argument
+ * (`$state<number>(0)`) wins over its argument. `undefined` when unknown.
+ */
+export function inferVariableInitializerType(
+  parser: ComponentParser,
+  ctx: ParserContext,
+  name: string,
+): string | undefined {
+  const init = resolveLocalVarInitializer(ctx, name);
+  if (!init || typeof init !== "object" || !("type" in init)) return undefined;
+
+  if (init.type === "CallExpression") {
+    const call = init as CallExpression;
+    const callee = sourceForExpression(ctx, call.callee);
+    if (callee === "$state" || callee === "$state.raw" || callee === "$derived") {
+      const typeArgument = (call as { typeArguments?: { params?: ModernRunesTypeNode[] } }).typeArguments?.params?.[0];
+      if (typeArgument) {
+        trackAdditionalTypeDependencyNode(ctx, typeArgument);
+        return sourceForExpression(ctx, typeArgument);
+      }
+      if (callee === "$state.raw") return processInitializer(parser, ctx, call.arguments[0], 1).type;
+    }
+  }
+
+  return processInitializer(parser, ctx, init).type;
 }
 
 /**

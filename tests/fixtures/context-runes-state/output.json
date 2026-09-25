@@ -1,0 +1,106 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 25,
+      "column": 0
+    }
+  },
+  "syntaxMode": "runes",
+  "scriptLanguage": "ts",
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>",
+      "source": {
+        "start": {
+          "line": 24,
+          "column": 0
+        },
+        "end": {
+          "line": 24,
+          "column": 22
+        }
+      }
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [
+    {
+      "key": "menu",
+      "typeName": "MenuContext",
+      "properties": [
+        {
+          "name": "count",
+          "type": "number",
+          "optional": false
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "optional": false
+        },
+        {
+          "name": "open",
+          "type": "boolean",
+          "optional": false
+        },
+        {
+          "name": "items",
+          "type": "Item[]",
+          "optional": false
+        },
+        {
+          "name": "selected",
+          "type": "string | null",
+          "optional": false
+        },
+        {
+          "name": "doubled",
+          "type": "number",
+          "optional": false
+        },
+        {
+          "name": "offset",
+          "type": "number",
+          "optional": false
+        }
+      ],
+      "source": {
+        "start": {
+          "line": 18,
+          "column": 2
+        },
+        "end": {
+          "line": 18,
+          "column": 78
+        }
+      }
+    },
+    {
+      "key": "total",
+      "typeName": "TotalContext",
+      "type": "number",
+      "properties": [],
+      "source": {
+        "start": {
+          "line": 21,
+          "column": 2
+        },
+        "end": {
+          "line": 21,
+          "column": 28
+        }
+      }
+    }
+  ],
+  "diagnostics": []
+}

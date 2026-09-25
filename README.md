@@ -3876,7 +3876,7 @@ There are several ways to type contexts:
 export type ModalContext = import("./types").ModalAPI;
 ```
 
-When the variable's type is an object type literal (`@type {{ open: () => void }}` or `const api: { open: () => void } = ...`), its members become the context type's members instead. An untyped `const` holding an object literal is described from that literal, as with `{ ...api }`. Any other untyped variable gives `any` with a `sveld/context-any-type` diagnostic. In `COMPONENT_API.json`, a context typed this way has a `type` field holding the whole type and an empty `properties` array.
+When the variable's type is an object type literal (`@type {{ open: () => void }}` or `const api: { open: () => void } = ...`), its members become the context type's members instead. An untyped `const` holding an object literal is described from that literal, as with `{ ...api }`. Any other untyped variable is typed from its initializer the way a prop default is (`let count = $state(0)` or `let count = 0` gives `number`, `$state<Item[]>([])` gives `Item[]`), and one sveld can't type gives `any` with a `sveld/context-any-type` diagnostic. In `COMPONENT_API.json`, a context typed this way has a `type` field holding the whole type and an empty `properties` array.
 
 **Option 4: Direct object literal with inline functions**
 
@@ -3897,7 +3897,7 @@ When the variable's type is an object type literal (`@type {{ open: () => void }
 #### Notes
 
 - Context keys must be statically resolvable: a string literal, a static template literal, a `const`-bound string, or a `Symbol()` / `Symbol.for()` call with a static description, either local or an imported `export const`. Dynamic expressions (runtime identifiers, template interpolation, other function calls) are skipped with a `sveld/context-key-unresolved` diagnostic.
-- Variables passed to `setContext` should have JSDoc `@type` annotations (or native TypeScript types) for accurate types. A variable passed as the whole value (`setContext("modal", modalAPI)`) types the context as that variable's type; one passed inside an object literal (`setContext("modal", { modalAPI })`) becomes a property
+- Variables passed to `setContext` should have JSDoc `@type` annotations (or native TypeScript types) for accurate types. Without one, a variable is typed from its initializer the way a prop default is, unwrapping `$state`, `$state.raw`, and `$derived` (a rune's type argument, as in `$state<number>(0)`, wins). A variable passed as the whole value (`setContext("modal", modalAPI)`) types the context as that variable's type; one passed inside an object literal (`setContext("modal", { modalAPI })`) becomes a property
 - The value must be an object literal or a variable. Any other expression (such as `setContext("store", writable(0))`) is skipped with a `sveld/context-value-unresolved` diagnostic.
 - The generated type name follows the pattern: `{PascalCase}Context`. Separators (underscores and any character that can't appear in an identifier, such as hyphens, dots, colons, slashes, `@`, and spaces) are stripped and each segment is capitalized. A name starting with a digit gets a leading `_`:
   | Context Key | Generated Type Name |
