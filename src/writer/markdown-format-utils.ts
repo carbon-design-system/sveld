@@ -23,10 +23,12 @@ const GT_REGEX = />/g;
 const NEWLINE_REGEX = /\n/g;
 const IDENTIFIER_REGEX = /^[A-Za-z_$][\w$]*$/;
 const LINE_BREAK_REGEX = /\s*\n\s*/g;
-const ENTITY_AMPERSAND_REGEX = /&(?=#?\w+;)/g;
-const TAG_OPEN_REGEX = /<(?=[A-Za-z/!?])/g;
-const CODE_SPECIAL_CHAR_REGEX = /[|`*]|\\(?=[!-/:-@[-`{-~])/g;
-const EMPHASIS_UNDERSCORE_REGEX = /(?<![A-Za-z0-9])_|_(?![A-Za-z0-9])/g;
+/**
+ * An entity-like `&`, a tag-opening `<`, `|`, a backtick, `*`, a backslash
+ * escape, or a word-edge `_`, matched in one pass.
+ */
+const CODE_ESCAPE_REGEX = /&(?=#?\w+;)|<(?=[A-Za-z/!?])|[|`*]|\\(?=[!-/:-@[-`{-~])|(?<![A-Za-z0-9])_|_(?![A-Za-z0-9])/g;
+const CODE_ESCAPE_CHAR_REGEX = /[&<|`*\\_]/;
 
 /**
  * Markdown still parses the text inside a `<code>` element, so `Promise<void>`
@@ -35,16 +37,15 @@ const EMPHASIS_UNDERSCORE_REGEX = /(?<![A-Za-z0-9])_|_(?![A-Za-z0-9])/g;
  * the raw Markdown stays readable.
  */
 function escapeCodeText(text: string): string {
-  return text
-    .replace(ENTITY_AMPERSAND_REGEX, "&amp;")
-    .replace(TAG_OPEN_REGEX, "&lt;")
-    .replace(CODE_SPECIAL_CHAR_REGEX, (match) => `&#${match.charCodeAt(0)};`)
-    .replace(EMPHASIS_UNDERSCORE_REGEX, "&#95;");
+  if (!CODE_ESCAPE_CHAR_REGEX.test(text)) return text;
+  return text.replace(CODE_ESCAPE_REGEX, (match) =>
+    match === "&" ? "&amp;" : match === "<" ? "&lt;" : match === "_" ? "&#95;" : `&#${match.charCodeAt(0)};`,
+  );
 }
 
 /** A `<code>` table cell; a multi-line type or value joins onto one line so it can't split the row. */
 function codeCell(text: string): string {
-  return `<code>${escapeCodeText(text.replace(LINE_BREAK_REGEX, " "))}</code>`;
+  return `<code>${escapeCodeText(text.includes("\n") ? text.replace(LINE_BREAK_REGEX, " ") : text)}</code>`;
 }
 
 /** `{@link target}` or `{@link target|display text}`, per the inline JSDoc `@link` tag grammar. */
@@ -56,6 +57,7 @@ const JSDOC_LINK_REGEX = /\{@link\s+([^{}\s|]+)(?:\|([^{}]+))?\}/g;
  * keep the JSDoc tag verbatim.
  */
 function rewriteJsDocLinks(text: string): string {
+  if (!text.includes("{@link")) return text;
   return text.replace(JSDOC_LINK_REGEX, (_match, target: string, label: string | undefined) => {
     const linkText = label === undefined ? target : label.trim();
     return `[${linkText}](${target})`;
@@ -74,6 +76,15 @@ interface CellCodeBlock {
 /** Prose is already HTML-escaped with `{@link}` rewritten; pipes and newlines are left for {@link renderCellParts}. */
 type CellPart = { kind: "prose"; text: string } | { kind: "code"; block: CellCodeBlock };
 
+function hasCodeFence(text: string): boolean {
+  return text.includes("```") || text.includes("~~~");
+}
+
+/** Cell prose: HTML-escaped, with `{@link}` rewritten. */
+function proseText(text: string): string {
+  return escapeHtml(rewriteJsDocLinks(text));
+}
+
 const FENCE_OPEN_REGEX = /^([ \t]*)(`{3,}|~{3,})(.*)$/;
 const LEADING_NEWLINE_REGEX = /^\n/;
 const TRAILING_NEWLINE_REGEX = /\n$/;
@@ -86,11 +97,8 @@ const TRAILING_NEWLINE_REGEX = /\n$/;
  * joining the parts' text back up gives the original line structure.
  */
 function splitCodeFences(text: string): CellPart[] {
-  const prose = (lines: string[]): CellPart => ({
-    kind: "prose",
-    text: escapeHtml(rewriteJsDocLinks(lines.join("\n"))),
-  });
-  if (!text.includes("```") && !text.includes("~~~")) return [prose([text])];
+  const prose = (lines: string[]): CellPart => ({ kind: "prose", text: proseText(lines.join("\n")) });
+  if (!hasCodeFence(text)) return [prose([text])];
 
   const lines = text.split("\n");
   const parts: CellPart[] = [];
@@ -133,7 +141,8 @@ function splitCodeFences(text: string): CellPart[] {
  */
 function renderCellParts(parts: CellPart[], codeBelow: CellCodeBlock[] | undefined): string {
   let cell = "";
-  for (const [index, part] of parts.entries()) {
+  for (let index = 0; index < parts.length; index++) {
+    const part = parts[index];
     if (part.kind === "code") {
       if (codeBelow) {
         codeBelow.push(part.block);
@@ -209,6 +218,7 @@ export function formatExportType(prop: Pick<ComponentProp, "type" | "reExport">)
 }
 
 function escapeHtml(text: string) {
+  if (!text.includes("<") && !text.includes(">")) return text;
   return text.replace(LT_REGEX, "&lt;").replace(GT_REGEX, "&gt;");
 }
 
@@ -251,6 +261,17 @@ export function formatDescriptionWithTags(
   tags?: Array<{ name: string; body: string }>,
   codeBelow?: CellCodeBlock[],
 ) {
+  const hasDescription = description !== undefined && description.trim().length > 0;
+  if (!(hasDescription && hasCodeFence(description)) && !tags?.some(({ body }) => body && hasCodeFence(body))) {
+    const segments = hasDescription ? [proseText(description)] : [];
+    for (const { name, body } of tags ?? []) {
+      const trimmed = body?.trim();
+      segments.push(trimmed ? `@${name} ${proseText(trimmed)}` : `@${name}`);
+    }
+    if (segments.length === 0) return MD_TYPE_UNDEFINED;
+    return segments.join("\n").replace(PIPE_REGEX, "&#124;").replace(NEWLINE_REGEX, "<br />");
+  }
+
   const parts: CellPart[] = [];
   const appendProse = (text: string) => {
     const last = parts.at(-1);
@@ -266,7 +287,7 @@ export function formatDescriptionWithTags(
     }
   };
 
-  if (description !== undefined && description.trim().length > 0) appendSegment("", description);
+  if (hasDescription) appendSegment("", description);
 
   for (const { name, body } of tags ?? []) {
     const trimmed = body?.trim();
