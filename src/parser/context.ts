@@ -97,6 +97,8 @@ export interface ParserContext {
   readonly typedRunesPropsDeclarations: RunesPropsDeclarationMetadata[];
   readonly explicitPropTypesByName: Map<string, string>;
   readonly explicitVariableTypesByName: Map<string, string>;
+  /** The annotation node behind each {@link explicitVariableTypesByName} entry. */
+  readonly explicitVariableTypeNodesByName: Map<string, ModernRunesTypeNode>;
   readonly typeImportBindingsByLocalName: Map<string, TypeImportBinding>;
   readonly localTypeDeclarationsByName: Map<string, LocalTypeDeclaration>;
   /**
@@ -190,6 +192,7 @@ export function createParserContext(): ParserContext {
     typedRunesPropsDeclarations: [],
     explicitPropTypesByName: new Map(),
     explicitVariableTypesByName: new Map(),
+    explicitVariableTypeNodesByName: new Map(),
     typeImportBindingsByLocalName: new Map(),
     localTypeDeclarationsByName: new Map(),
     additionalTypeDependencyNodes: [],

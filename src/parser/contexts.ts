@@ -8,6 +8,20 @@ import { parseObjectTypeLiteralMembers } from "./object-type-literal";
 import { literalValueType, resolveConstInitializer } from "./props";
 import { isBoundInNestedScope } from "./scopes";
 import { sourceForExpression, sourceRangeFromNode } from "./source-position";
+import { trackAdditionalTypeDependencyNode } from "./type-resolution";
+
+/**
+ * {@link ComponentParser.findVariableTypeAndDescription} for a variable whose
+ * type ends up in a context type. A TS annotation's local types and type
+ * imports are then pulled into the `.d.ts`, as a prop annotation's are.
+ */
+function findContextVariableType(ctx: ParserContext, parser: ComponentParser, name: string) {
+  const varInfo = parser.findVariableTypeAndDescription(name);
+  if (varInfo && varInfo.type === ctx.explicitVariableTypesByName.get(name)) {
+    trackAdditionalTypeDependencyNode(ctx, ctx.explicitVariableTypeNodesByName.get(name));
+  }
+  return varInfo;
+}
 
 /**
  * Resolves `{...identifier}` inside a `setContext` object literal to a property
@@ -29,7 +43,7 @@ function resolveSpreadShape(
     return parseContextObjectProperties(ctx, parser, initializer, key).properties;
   }
 
-  const varInfo = parser.findVariableTypeAndDescription(argument.name);
+  const varInfo = findContextVariableType(ctx, parser, argument.name);
   if (!varInfo) return null;
 
   const members = parseObjectTypeLiteralMembers(varInfo.type);
@@ -78,7 +92,7 @@ function describeContextValue(
   value: Node | undefined,
 ): { type: string; description?: string; internal?: boolean } {
   if (isIdentifier(value)) {
-    const varInfo = parser.findVariableTypeAndDescription(value.name);
+    const varInfo = findContextVariableType(ctx, parser, value.name);
     if (varInfo) return { type: varInfo.type, description: varInfo.description, internal: varInfo.internal };
     recordDiagnostic(
       ctx,
@@ -206,7 +220,7 @@ function parseContextValue(
     // `getContext(key)` returns the variable itself, so the context's type is
     // the variable's type, not an object wrapping it.
     const varName = node.name;
-    const varInfo = parser.findVariableTypeAndDescription(varName);
+    const varInfo = findContextVariableType(ctx, parser, varName);
 
     if (varInfo) {
       const members = parseObjectTypeLiteralMembers(varInfo.type);
