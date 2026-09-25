@@ -37,7 +37,7 @@
       "tags": [
         {
           "name": "example",
-          "body": " ```svelte\n <span slot=\"after\">After</span>\n ```"
+          "body": "```svelte\n<span slot=\"after\">After</span>\n```"
         }
       ],
       "source": {

@@ -10,9 +10,9 @@ type $Props = {
   /**
    * Renders before the list.
    * @example
-   *  ```svelte
-   *  <span slot="after">After</span>
-   *  ```
+   * ```svelte
+   * <span slot="after">After</span>
+   * ```
    */
   before?: (this: void) => void;
 
@@ -45,9 +45,9 @@ export default class JsdocTagBodyBeforeDescribedTag extends SvelteComponentTyped
     /**
      * Renders before the list.
      * @example
-     *  ```svelte
-     *  <span slot="after">After</span>
-     *  ```
+     * ```svelte
+     * <span slot="after">After</span>
+     * ```
      */
     before: Record<string, never>;
     /**

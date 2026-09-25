@@ -10,14 +10,14 @@ export type JsdocTypeParamsExports = {
    * By default, the matching node will be expanded, selected, and focused.
    * Use the options parameter to customize this behavior.
    * @example
-   *  // Show node with all default behaviors (expand, select, focus)
-   *  treeView.showNode("node-1");
+   * // Show node with all default behaviors (expand, select, focus)
+   * treeView.showNode("node-1");
    *
-   *  // Expand node without selecting it
-   *  treeView.showNode("node-2", { select: false });
+   * // Expand node without selecting it
+   * treeView.showNode("node-2", { select: false });
    *
-   *  // Select node without expanding or focusing
-   *  treeView.showNode("node-3", { expand: false, focus: false });
+   * // Select node without expanding or focusing
+   * treeView.showNode("node-3", { expand: false, focus: false });
    */
   showNode: (id: TreeNodeId, options?: {
       expand?: boolean;

@@ -5,9 +5,9 @@ export type PropJsdocSinceExampleProps = {
    * The accessible label for the button.
    * @since 1.4.0
    * @example
-   *  ```svelte
-   *  <Button label="Save" />
-   *  ```
+   * ```svelte
+   * <Button label="Save" />
+   * ```
    * @default "Click"
    */
   label?: string;

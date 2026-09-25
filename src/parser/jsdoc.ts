@@ -231,7 +231,7 @@ export function extractJsDocDeprecatedAndTags(commentValue: string): {
   const { deprecated, passthrough: passthroughTags, internal } = getCommentTags(comment);
 
   const tags: JsDocPassthroughTag[] | undefined =
-    passthroughTags.length > 0 ? passthroughTags.map((tag) => ({ name: tag.tag, body: tag.raw })) : undefined;
+    passthroughTags.length > 0 ? passthroughTags.map((tag) => ({ name: tag.tag, body: tag.text })) : undefined;
 
   return { deprecated, tags, internal };
 }
@@ -584,7 +584,7 @@ function processJSDocComment(
     passthroughTags.length > 0
       ? passthroughTags.map((tag) => ({
           name: tag.tag,
-          body: tag.raw,
+          body: tag.text,
         }))
       : undefined;
 
@@ -1126,7 +1126,7 @@ export function parseCustomTypes(
         description,
         optional,
         default: defaultValue,
-        raw,
+        text,
         lines: tagSource,
       } = tags[tagIndex];
       // Sections are split in line order, so neighbors in `tags` are neighbors in the block.
@@ -1398,7 +1398,6 @@ export function parseCustomTypes(
           break;
         }
         case "deprecated": {
-          const { text } = tags[tagIndex];
           const forEvent = currentEventName !== undefined;
           // The first `@deprecated` wins.
           if (forEvent ? currentEventDeprecated !== undefined : pendingDeprecated !== undefined) break;
@@ -1440,10 +1439,10 @@ export function parseCustomTypes(
           {
             const passthroughTag = {
               name: tag,
-              body: raw,
+              body: text,
             };
             claimBodyLines(tags[tagIndex], (droppedLineCount) => {
-              passthroughTag.body = dropLastLines(raw, droppedLineCount);
+              passthroughTag.body = dropLastLines(text, droppedLineCount);
             });
             if (!IDE_PASSTHROUGH_TAGS.has(tag) && !OTHER_KNOWN_JSDOC_TAGS.has(tag)) {
               recordDiagnostic(

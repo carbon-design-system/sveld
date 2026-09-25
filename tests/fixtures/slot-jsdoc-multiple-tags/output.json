@@ -23,7 +23,7 @@
       "tags": [
         {
           "name": "example",
-          "body": " ```svelte\n <BreadcrumbItem let:props>\n   <a {...props} href=\"/\">Home</a>\n </BreadcrumbItem>\n ```"
+          "body": "```svelte\n<BreadcrumbItem let:props>\n  <a {...props} href=\"/\">Home</a>\n</BreadcrumbItem>\n```"
         }
       ],
       "source": {

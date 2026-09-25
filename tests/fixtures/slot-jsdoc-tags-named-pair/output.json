@@ -22,7 +22,7 @@
       "tags": [
         {
           "name": "example",
-          "body": " ```svelte\n <Toolbar><Icon /></Toolbar>\n ```"
+          "body": "```svelte\n<Toolbar><Icon /></Toolbar>\n```"
         }
       ],
       "source": {

@@ -5,9 +5,9 @@ export type RunesPropJsdocSinceExampleProps = {
    * Whether the disclosure is open.
    * @since 2.0.0
    * @example
-   *  ```svelte
-   *  <Disclosure open />
-   *  ```
+   * ```svelte
+   * <Disclosure open />
+   * ```
    * @default false
    */
   open?: boolean;
