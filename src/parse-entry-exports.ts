@@ -194,9 +194,30 @@ export function resolveModuleFile(specifier: string, fromDir: string): string | 
   return typeScriptCounterpart(base) ?? null;
 }
 
+/**
+ * `text` without the comments that may sit between a JSDoc block and its
+ * declaration: whole `//` lines and `/* *\/` blocks that aren't JSDoc.
+ */
+function withoutTrailingComments(text: string): string {
+  let rest = text.trimEnd();
+  for (;;) {
+    const lineStart = rest.lastIndexOf("\n") + 1;
+    if (rest.slice(lineStart).trimStart().startsWith("//")) {
+      rest = rest.slice(0, lineStart).trimEnd();
+      continue;
+    }
+    const open = rest.endsWith("*/") ? rest.lastIndexOf("/*", rest.length - 3) : -1;
+    if (open !== -1 && rest[open + 2] !== "*") {
+      rest = rest.slice(0, open).trimEnd();
+      continue;
+    }
+    return rest;
+  }
+}
+
 function leadingJsDoc(text: string, start: number): string | undefined {
-  // JSDoc must sit directly above the declaration (whitespace only); anchor on nearest `*/`.
-  const before = text.slice(0, start).trimEnd();
+  // JSDoc must sit directly above the declaration (whitespace or other comments only); anchor on nearest `*/`.
+  const before = withoutTrailingComments(text.slice(0, start));
   if (!before.endsWith("*/")) return undefined;
 
   const close = before.length - 2;
@@ -215,7 +236,7 @@ function leadingJsDoc(text: string, start: number): string | undefined {
 
 /** Like {@link leadingJsDoc}, but returns the full `/** ... *\/` block. */
 function leadingJsDocBlock(text: string, start: number): string | undefined {
-  const before = text.slice(0, start).trimEnd();
+  const before = withoutTrailingComments(text.slice(0, start));
   if (!before.endsWith("*/")) return undefined;
 
   const close = before.length - 2;

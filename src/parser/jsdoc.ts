@@ -39,7 +39,17 @@ function normalizeGenericNameSpacing(name: string): string {
   return `${base}<${normalizedParams}>`;
 }
 
-export const ONLY_WHITESPACE_REGEX = /^\s*$/;
+/** Whitespace, `//` lines, and `/* *\/` blocks that aren't JSDoc. */
+const COMMENT_GAP_REGEX = /^(?:\s+|\/\/[^\n]*|\/\*(?!\*)[\s\S]*?\*\/)*$/;
+
+/**
+ * Whether `text` may sit between a JSDoc block and the declaration it
+ * documents: whitespace, or comments that aren't JSDoc, such as a
+ * `// biome-ignore ...` or `/* istanbul ignore next *\/` line.
+ */
+export function isJsDocGap(text: string): boolean {
+  return COMMENT_GAP_REGEX.test(text);
+}
 
 const TRAILING_SEMICOLON_REGEX = /;$/;
 
@@ -375,9 +385,11 @@ function findAdjacentJSDocComment(
     const comment = leadingComments[index];
     if (!comment || typeof comment !== "object" || !("value" in comment) || !("end" in comment)) continue;
     if (typeof comment.end !== "number" || !("start" in comment) || typeof comment.start !== "number") continue;
+    // A `//` line or plain `/* *\/` block (e.g. a lint suppression) isn't the doc comment.
+    if (("type" in comment && comment.type === "Line") || !String(comment.value).startsWith("*")) continue;
 
     const between = ctx.source.slice(comment.end, nodeStart);
-    if (ONLY_WHITESPACE_REGEX.test(between)) {
+    if (isJsDocGap(between)) {
       return comment as { value: string; start: number };
     }
   }

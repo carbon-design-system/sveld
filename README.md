@@ -1926,6 +1926,8 @@ listing one exported component name per line.
 
 ## API Reference
 
+A JSDoc block documents the declaration below it. Blank lines and ordinary comments may sit between the two, such as a `// biome-ignore ...` or `/* istanbul ignore next */` line.
+
 ### `reactive`
 
 The `reactive` field in generated JSON is a heuristic. It does not fully answer whether a parent can use `bind:prop` in Svelte.
