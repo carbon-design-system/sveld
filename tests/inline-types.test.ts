@@ -436,7 +436,7 @@ describe("inlineLocalTypeImports (via generateBundle typesInline)", () => {
     const messages = result.diagnostics.filter((d) => d.kind === "types-inline-unresolved").map((d) => d.message);
     expect(messages).toEqual([
       `Cannot inline "A": "X" collides with a name the component's .d.ts already declares or imports.`,
-      `Cannot inline "E": "E" is a enum, which cannot be inlined.`,
+      `Cannot inline "E": "E" is an enum, which cannot be inlined.`,
     ]);
   });
 
