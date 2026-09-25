@@ -123,6 +123,11 @@ export interface ResolveContext {
   onAmbiguousStarExport?: (filePath: string, name: string, entries: InternalExport[]) => void;
 }
 
+/** A fresh cache and cycle set, shared by the cross-file passes of one `generateBundle()` run. */
+export function createResolveContext(): ResolveContext {
+  return { cache: new Map(), computing: new Set() };
+}
+
 export function asNode(value: unknown): AstNode | undefined {
   return value && typeof value === "object" ? (value as AstNode) : undefined;
 }
@@ -1016,8 +1021,7 @@ export async function parseEntryExports(
   // the entry's own, since the author likely meant to export it. A nested
   // barrel's was never one of the entry's exports.
   const collected = collectModuleExports(resolved, {
-    cache: new Map(),
-    computing: new Set(),
+    ...createResolveContext(),
     onAmbiguousStarExport: (filePath, name, entries) => {
       if (filePath !== resolved || !options.diagnostics) return;
       // Components get their own docs, from `parse-exports.ts`.

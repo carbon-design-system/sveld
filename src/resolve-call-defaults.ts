@@ -13,11 +13,6 @@ export interface CallDefaultResolution {
   failureReason?: CallDefaultFailureReason;
 }
 
-/** Shared cache/cycle set for one `generateBundle()` run. */
-export function createCallDefaultResolveContext(): ResolveContext {
-  return { cache: new Map(), computing: new Set() };
-}
-
 const FILE_EXTENSION_REGEX = /\.[^./\\]+$/;
 
 /** Sibling `foo.d.ts` for `foo.js` when it exists. */
