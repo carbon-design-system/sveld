@@ -1,6 +1,7 @@
 import { watch } from "node:fs";
 import { resolve } from "node:path";
 import { $, build } from "bun";
+import { computeBuildId } from "./build-id";
 import { bundleDts } from "./bundle-dts";
 
 const isWatchMode = process.argv.includes("-w") || process.argv.includes("--watch");
@@ -27,6 +28,8 @@ async function emitTypeDeclarations() {
 
 async function buildEntry(entrypoints: string[], target: "node" | "browser") {
   const result = await build({
+    // Read by `src/parse-cache.ts`: a rebuild from changed sources invalidates the parse cache.
+    define: { __SVELD_BUILD_ID__: JSON.stringify(computeBuildId(resolve(root, "src"))) },
     entrypoints,
     outdir: "./lib",
     format: "esm",

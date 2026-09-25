@@ -37,8 +37,14 @@ interface ParseCacheFile {
   entries: Record<string, ParseCacheEntry>;
 }
 
+/** Replaced at build time (`scripts/build.ts`) with a fingerprint of `src/`. */
+declare const __SVELD_BUILD_ID__: string | undefined;
+
+/** Unset when running from source, where tests use fresh caches anyway. */
+const BUILD_ID = typeof __SVELD_BUILD_ID__ === "string" ? __SVELD_BUILD_ID__ : "source";
+
 function currentToolchainVersion(): string {
-  return `${sveldVersion}+svelte@${svelteVersion}`;
+  return `${sveldVersion}+${BUILD_ID}+svelte@${svelteVersion}`;
 }
 
 /**
