@@ -6,6 +6,7 @@ import {
   buildCustomElementsManifest,
   type ComponentDocApi,
   ComponentParser,
+  finalizeWithoutCrossFileResolution,
   writeMarkdownCore,
   writeTsDefinition,
 } from "../src/browser";
@@ -126,5 +127,125 @@ describe("sveld/browser", () => {
 
     expect(first.props.map((p) => p.name)).toEqual(["a"]);
     expect(second.props.map((p) => p.name)).toEqual(["b"]);
+  });
+
+  describe("finalizeWithoutCrossFileResolution", () => {
+    const filePath = "Panel.svelte";
+    const source = `<script>
+  import { createEventDispatcher, setContext } from "svelte";
+  import * as keys from "./keys.js";
+  import * as ns from "./ns.js";
+  import { DELAY } from "./constants.js";
+  import * as C from "./constants.js";
+  import { uniqueId } from "./ids.js";
+  import * as helpers from "./helpers.js";
+
+  /** @event {string} change */
+  /** @event close */
+  export let delay = DELAY;
+  export let timeout = C.timing.TIMEOUT;
+  export let id = uniqueId();
+  const dispatch = createEventDispatcher();
+  helpers.wire(dispatch);
+  setContext(keys.THEME, { dark: true });
+  setContext(ns.keys.SIZE, { size: 1 });
+</script>
+`;
+
+    function parse(text = source) {
+      return new ComponentParser().parseSvelteComponent(text, { moduleName: "Panel", filePath });
+    }
+
+    function crossFileDiagnostics(parsed: ReturnType<typeof parse>) {
+      return (parsed.diagnostics ?? []).filter((diagnostic) => diagnostic.code === "sveld/cross-file-unresolved");
+    }
+
+    test("the parser alone records no cross-file-unresolved diagnostics", () => {
+      expect(crossFileDiagnostics(parse())).toEqual([]);
+    });
+
+    test("records one warning per pending candidate, naming the import", () => {
+      const finalized = finalizeWithoutCrossFileResolution(parse(), { filePath });
+      const diagnostics = crossFileDiagnostics(finalized);
+
+      expect(diagnostics.map(({ name }) => name).sort()).toEqual(
+        ["THEME", "keys.SIZE", "delay", "timeout", "id", "helpers.wire"].sort(),
+      );
+      for (const diagnostic of diagnostics) {
+        expect(diagnostic.kind).toBe("cross-file-unresolved");
+        expect(diagnostic.severity).toBe("warning");
+        expect(diagnostic.component).toBe(filePath);
+        expect(diagnostic.source).toBeDefined();
+      }
+
+      const messageFor = (name: string) => diagnostics.find((diagnostic) => diagnostic.name === name)?.message;
+      expect(messageFor("THEME")).toContain('setContext key `THEME` is imported from "./keys.js"');
+      expect(messageFor("THEME")).toContain("the context is omitted");
+      expect(messageFor("keys.SIZE")).toContain('setContext key `keys.SIZE` is imported from "./ns.js"');
+      expect(messageFor("delay")).toContain('`DELAY` imported from "./constants.js"');
+      expect(messageFor("timeout")).toContain('`timing.TIMEOUT` imported from "./constants.js"');
+      expect(messageFor("id")).toContain('`uniqueId()` imported from "./ids.js"');
+      expect(messageFor("helpers.wire")).toContain(
+        '`dispatch` is passed to `helpers.wire`, imported from "./helpers.js"',
+      );
+      for (const diagnostic of diagnostics) {
+        expect(diagnostic.message).toContain("file access");
+      }
+    });
+
+    test("releases the held-back event-no-source diagnostics", () => {
+      const parsed = parse();
+      expect((parsed.diagnostics ?? []).filter((d) => d.kind === "event-no-source")).toEqual([]);
+
+      const released = (finalizeWithoutCrossFileResolution(parsed, { filePath }).diagnostics ?? []).filter(
+        (diagnostic) => diagnostic.kind === "event-no-source",
+      );
+      expect(released.map(({ name }) => name).sort()).toEqual(["change", "close"]);
+      for (const diagnostic of released) {
+        expect(diagnostic.message).toContain("`helpers.wire`");
+      }
+    });
+
+    test("returns a new component and leaves the parse untouched; a second call adds nothing", () => {
+      const parsed = parse();
+      const before = structuredClone(parsed.diagnostics);
+      const once = finalizeWithoutCrossFileResolution(parsed, { filePath });
+      const twice = finalizeWithoutCrossFileResolution(once, { filePath });
+
+      expect(once).not.toBe(parsed);
+      expect(parsed.diagnostics).toEqual(before);
+      expect(twice.diagnostics).toEqual(once.diagnostics);
+    });
+
+    test("keeps the component-level fields a ComponentDocApi carries", () => {
+      const component = toComponentDocApi(parse(), "Panel", filePath);
+      const finalized = finalizeWithoutCrossFileResolution(component);
+
+      expect(finalized.moduleName).toBe("Panel");
+      expect(crossFileDiagnostics(finalized).every((diagnostic) => diagnostic.component === filePath)).toBe(true);
+    });
+
+    test("a dispatcher with @sveld-ignore sveld/dispatch-escapes gets an ignored warning", () => {
+      const parsed = parse(`<script>
+  import { createEventDispatcher } from "svelte";
+  import { wire } from "./helpers.js";
+
+  /** @sveld-ignore sveld/dispatch-escapes */
+  const dispatch = createEventDispatcher();
+  wire(dispatch);
+</script>
+`);
+      const [diagnostic] = crossFileDiagnostics(finalizeWithoutCrossFileResolution(parsed, { filePath }));
+
+      expect(diagnostic?.name).toBe("wire");
+      expect(diagnostic?.ignored).toBe(true);
+    });
+
+    test("a component with nothing to resolve is returned unchanged", () => {
+      const parsed = parse("<script>export let a = 1;</script>");
+      const finalized = finalizeWithoutCrossFileResolution(parsed, { filePath });
+
+      expect(finalized.diagnostics).toEqual(parsed.diagnostics);
+    });
   });
 });
