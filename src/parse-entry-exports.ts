@@ -87,7 +87,7 @@ export interface InternalExport extends Omit<EntryExport, "source"> {
   /**
    * The module a namespace export (`export * as ns from "./x"`, or an
    * `import * as ns` the module re-exports) is the namespace object of. Its
-   * members aren't exports of this module; {@link findModuleExportPath}
+   * members aren't exports of this module; {@link findImportedExport}
    * reads `ns.member` through it.
    */
   namespaceFile?: string;
@@ -123,7 +123,7 @@ export interface ResolveContext {
   onAmbiguousStarExport?: (filePath: string, name: string, entries: InternalExport[]) => void;
 }
 
-function asNode(value: unknown): AstNode | undefined {
+export function asNode(value: unknown): AstNode | undefined {
   return value && typeof value === "object" ? (value as AstNode) : undefined;
 }
 
@@ -215,7 +215,8 @@ function withoutTrailingComments(text: string): string {
   }
 }
 
-function leadingJsDoc(text: string, start: number): string | undefined {
+/** The `/** ... *\/` block directly before `start`, if any. */
+function leadingJsDocBlock(text: string, start: number): string | undefined {
   // JSDoc must sit directly above the declaration (whitespace or other comments only); anchor on nearest `*/`.
   const before = withoutTrailingComments(text.slice(0, start));
   if (!before.endsWith("*/")) return undefined;
@@ -224,26 +225,19 @@ function leadingJsDoc(text: string, start: number): string | undefined {
   const open = before.lastIndexOf("/**", close);
   if (open === -1) return undefined;
 
+  return before.slice(open, close + 2);
+}
+
+/** A JSDoc block's description: its text up to the first tag, joined into one line. */
+function jsDocDescription(block: string): string | undefined {
   const description: string[] = [];
-  for (const line of before.slice(open + 3, close).split(NEWLINE_REGEX)) {
+  for (const line of block.slice(3, -2).split(NEWLINE_REGEX)) {
     const cleaned = line.replace(JSDOC_LINE_PREFIX_REGEX, "").trim();
     if (cleaned.startsWith("@")) break;
     if (cleaned) description.push(cleaned);
   }
 
   return description.join(" ") || undefined;
-}
-
-/** Like {@link leadingJsDoc}, but returns the full `/** ... *\/` block. */
-function leadingJsDocBlock(text: string, start: number): string | undefined {
-  const before = withoutTrailingComments(text.slice(0, start));
-  if (!before.endsWith("*/")) return undefined;
-
-  const close = before.length - 2;
-  const open = before.lastIndexOf("/**", close);
-  if (open === -1) return undefined;
-
-  return before.slice(open, close + 2);
 }
 
 function textOf(source: ModuleSource, node: AstNode | undefined): string | undefined {
@@ -507,8 +501,8 @@ function describeDeclaration(
   anonymousName?: string,
 ): InternalExport[] {
   const declFile = source.filePath;
-  const description = leadingJsDoc(source.text, jsdocStart);
   const rawJsDoc = leadingJsDocBlock(source.text, jsdocStart);
+  const description = rawJsDoc ? jsDocDescription(rawJsDoc) : undefined;
   const jsDocReturnType = rawJsDoc ? extractJsDocReturnType(rawJsDoc) : undefined;
   const { deprecated, tags, internal } = rawJsDoc
     ? extractJsDocDeprecatedAndTags(rawJsDoc)
@@ -680,10 +674,8 @@ function describeDeclaration(
 
 /**
  * The entry a module's `export default` contributes, named `default`: a
- * function or class declared in place (`export default function helper(d) {}`),
- * described with its JSDoc as a named one is, a function expression, or
- * the local binding it names (`export default helper`). Anything else isn't
- * read.
+ * function or class declared in place (with its JSDoc), a function
+ * expression, or the local binding it names (`export default helper`).
  */
 function describeDefaultExport(
   source: ModuleSource,
@@ -849,7 +841,7 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
     if (!target) return null;
 
     if (imported.importedName === "*") return namespaceExport(name, target, imported.isTypeOnly);
-    return findModuleExport(collectModuleExports(target, ctx), imported.importedName) ?? null;
+    return findModuleExport(target, imported.importedName, ctx) ?? null;
   };
 
   /** Entries each `export *` brings in, by name; merged after the explicit exports below. */
@@ -915,7 +907,7 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
       if (moduleSpecifier) {
         const target = resolveModuleFile(moduleSpecifier, source.dir);
         if (target) {
-          resolved = findModuleExport(collectModuleExports(target, ctx), localName) ?? null;
+          resolved = findModuleExport(target, localName, ctx) ?? null;
         }
       } else {
         resolved = resolveLocal(localName);
@@ -957,33 +949,31 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
 }
 
 /**
- * The entry for `name` in a module's export list, or `undefined`.
+ * The entry for `name` among `filePath`'s exports, or `undefined`.
  *
  * `findLast`, not `find`: overloaded declarations (`export function f(...): A;` /
  * `export function f(...): B;` / `export function f(...) { ... }`) all describe
  * to the same name, in source order, with the implementation last. Any other
  * name appears at most once (see {@link collectModuleExports}).
  */
-export function findModuleExport(exports: InternalExport[], name: string): InternalExport | undefined {
-  return exports.findLast((entry) => entry.name === name);
+export function findModuleExport(filePath: string, name: string, ctx: ResolveContext): InternalExport | undefined {
+  return collectModuleExports(filePath, ctx).findLast((entry) => entry.name === name);
 }
 
 /**
- * The export `names` reaches from `filePath`: the first name is an export of
- * `filePath`, and each one after it a member of the namespace export before
- * it (`["ns", "helper"]` for `ns.helper`, with `export * as ns from "./x"`).
+ * The export an import of `filePath` reads: `importedName`, then each of
+ * `members` through the namespace export before it (`members: ["helper"]`
+ * for `ns.helper`, with `export * as ns from "./x"`).
  */
-export function findModuleExportPath(
+export function findImportedExport(
   filePath: string,
-  names: readonly string[],
+  { importedName, members = [] }: { importedName: string; members?: readonly string[] },
   ctx: ResolveContext,
 ): InternalExport | undefined {
-  let match: InternalExport | undefined;
-  let file: string | undefined = filePath;
-  for (const name of names) {
-    if (file === undefined) return undefined;
-    match = findModuleExport(collectModuleExports(file, ctx), name);
-    file = match?.namespaceFile;
+  let match = findModuleExport(filePath, importedName, ctx);
+  for (const member of members) {
+    if (match?.namespaceFile === undefined) return undefined;
+    match = findModuleExport(match.namespaceFile, member, ctx);
   }
   return match;
 }
@@ -1022,11 +1012,9 @@ export async function parseEntryExports(
   const entryDir = dirname(resolved);
   const relativeSource = (declFile: string) => normalizeSeparators(`./${relative(entryDir, declFile)}`);
 
-  // A name two of the entry's `export *` statements bring in from different
-  // files is ambiguous, so the module doesn't export it and the docs leave
-  // it out, as `collectModuleExports` already does. Say so, since the author
-  // likely meant to export it. A nested barrel's ambiguous name was never
-  // one of the entry's exports to begin with.
+  // `collectModuleExports` already drops an ambiguous `export *` name; report
+  // the entry's own, since the author likely meant to export it. A nested
+  // barrel's was never one of the entry's exports.
   const collected = collectModuleExports(resolved, {
     cache: new Map(),
     computing: new Set(),
@@ -1055,7 +1043,7 @@ export async function parseEntryExports(
     // The barrel's default export isn't a named export, and components get
     // their own docs.
     if (entry.name === "default" || entry.declFile.endsWith(".svelte")) continue;
-    // Drop internal returnType/literalValue/primitiveLiteral/declaredType/functionNode/namespaceFile; public EntryExport does not expose them.
+    // Drop the fields public `EntryExport` doesn't expose.
     const {
       declFile,
       returnType: _returnType,
