@@ -2,7 +2,7 @@ import type ComponentParser from "../ComponentParser";
 import type { CommentWithLocation } from "../template-parse/comments";
 import type { ParserContext } from "./context";
 import { recordSveldIgnore } from "./diagnostics";
-import { getCommentTags, ONLY_WHITESPACE_REGEX, parseCommentText } from "./jsdoc";
+import { getCommentTags, ONLY_WHITESPACE_REGEX, parseCommentText, typeTagDescription } from "./jsdoc";
 
 interface ScriptComment {
   /** Offset (into the full component source) right after the closing delimiter. */
@@ -140,7 +140,7 @@ export function buildVariableJsDocTable(
 
     table.set(declaration.name, {
       type: typeTag ? parser.aliasType(typeTag.type) : undefined,
-      description: description || typeTag?.description,
+      description: description || (typeTag && typeTagDescription(typeTag)),
       internal: internal || undefined,
     });
   }

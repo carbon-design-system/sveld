@@ -86,6 +86,15 @@ function cleanDescription(description: string | undefined): string | undefined {
 }
 
 /**
+ * The prose after a `@type {T}` tag's type, same line or below it. Tag parsing reads its first
+ * word as a name (`@type {T} Opens the modal`), so that word is joined back on.
+ */
+export function typeTagDescription(tag: JSDocTag): string | undefined {
+  const text = tag.name ? `${tag.name} ${tag.description}` : tag.description;
+  return cleanDescription(joinDescriptionLines(text.split("\n")));
+}
+
+/**
  * Tags that take the description lines directly above them when they have none on their own
  * line (sveld's description-above-the-tag convention), e.g. a line of prose then `@event`.
  */
