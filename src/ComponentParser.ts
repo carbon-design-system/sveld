@@ -300,6 +300,10 @@ export interface PendingContextKeyCandidate {
   type?: string;
   properties: ComponentContextProp[];
   description?: string;
+  /** See {@link ComponentContext.hasUnresolvedSpread}. */
+  hasUnresolvedSpread?: boolean;
+  /** See {@link ComponentContext.internal}. */
+  internal?: boolean;
   /** Source range of the `setContext(...)` call, when available. */
   source?: SourceRange;
 }
