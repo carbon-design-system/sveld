@@ -34,6 +34,7 @@ const INDEX_FILENAMES = ["index.ts", "index.d.ts"];
 const MAX_REEXPORT_DEPTH = 10;
 /** Extracts the declared name from a `localTypeDeclarations` code string (e.g. `"interface Foo {"`). */
 const DECL_NAME_REGEX = /^\s*(?:export\s+)?(?:declare\s+)?(?:type|interface)\s+([A-Za-z_$][\w$]*)/;
+const VOWEL_START_REGEX = /^[aeiou]/;
 
 /**
  * Bare imports from exactly these sources always stay imports under `typesOptions.inline: "all"`,
@@ -139,6 +140,11 @@ function resolveModuleSpecifier(source: string, fromAbsoluteFilePath: string): M
   }
   const counterpart = typeScriptCounterpart(base);
   return counterpart ? { kind: "resolved", path: counterpart } : { kind: "missing" };
+}
+
+/** `"enum"` -> `"an enum"`, `"class"` -> `"a class"`. */
+function withArticle(kind: string): string {
+  return `${VOWEL_START_REGEX.test(kind) ? "an" : "a"} ${kind}`;
 }
 
 function asNode(value: unknown): WalkableNode | undefined {
@@ -725,7 +731,7 @@ async function inlineImportedName(
   const found = findExportedDeclaration(ctx, filePath, name, new Set(), 0);
   if (found.kind === "not-found") return { ok: false, reason: `"${name}" is not exported from "${filePath}"` };
   if (found.kind === "unsupported") {
-    return { ok: false, reason: `"${name}" is a ${found.reason}, which cannot be inlined` };
+    return { ok: false, reason: `"${name}" is ${withArticle(found.reason)}, which cannot be inlined` };
   }
   return emitDeclaration(ctx, found.node, found.filePath, found.source, wantedLocalName);
 }
@@ -758,7 +764,7 @@ async function inlineBareImportedName(
         reason: `"${importedName}" resolves to "${resolved.declaredName}" in "${resolved.filePath}", where sveld could not locate that declaration`,
       };
     case "unsupported":
-      return { ok: false, reason: `"${importedName}" is a ${resolved.reason}, which cannot be inlined` };
+      return { ok: false, reason: `"${importedName}" is ${withArticle(resolved.reason)}, which cannot be inlined` };
     case "found":
       return emitDeclaration(ctx, resolved.node, resolved.filePath, resolved.source, wantedLocalName);
     default: {
