@@ -962,52 +962,90 @@ export async function inlineLocalTypeImports(
       const barePlan = bareSession
         ? planBareOverlay(componentAbsPath, component.moduleName, typeImportStatements)
         : null;
+      const reads = typeImportStatements.map((statement) => readStatement(statement, componentAbsPath, bareSession));
+      const baseReservedNames = collectComponentReservedNames(component, typeNames);
+      // An import that stays in the `.d.ts` keeps its names: reserve those known up front.
+      for (const read of reads) {
+        if (read.status !== "attempt") for (const name of read.localNames) baseReservedNames.add(name);
+      }
 
-      const ctx: InlineContext = {
-        files: new Map(),
-        reservedNames: collectComponentReservedNames(component, typeNames),
+      const files = new Map<string, ParsedFile | null>();
+      const dependencies = new Set<string>();
+      const newContext = (): InlineContext => ({
+        files,
+        reservedNames: new Set(baseReservedNames),
         nameOwner: new Map(),
         textByKey: new Map(),
         order: [],
         pending: new Set(),
-        dependencies: new Set(),
+        dependencies,
         tx: { orderStart: 0, keys: [] },
         bareSession,
         barePlan,
-      };
+      });
+
+      // A statement refused after an earlier one inlined can still bind a name that earlier
+      // copy declares (`type X` copied along with `A`, then `import type { X }` kept), which
+      // would declare it twice. Such a statement goes first on the next pass, where it either
+      // inlines or reserves its names before anything else can copy them; one that clashes
+      // even going first is kept outright. Each statement moves at most twice, so this ends.
+      const promoted = new Set<number>();
+      const keptOutright = new Map<number, StatementFailure[]>();
+      let ctx: InlineContext;
+      let outcomes: Map<number, StatementOutcome>;
+      for (;;) {
+        ctx = newContext();
+        outcomes = new Map();
+        for (const index of keptOutright.keys()) {
+          for (const name of reads[index].localNames) ctx.reservedNames.add(name);
+        }
+        const indices = reads.map((_, index) => index).filter((index) => !keptOutright.has(index));
+        const passOrder = [
+          ...indices.filter((index) => promoted.has(index)),
+          ...indices.filter((index) => !promoted.has(index)),
+        ];
+
+        // Sequential by necessity: statements share `ctx` (name reservations, emission order), so
+        // processing order determines dedup/collision outcomes and must stay stable.
+        for (const index of passOrder) {
+          // biome-ignore lint/performance/noAwaitInLoops: shared, order-dependent ctx state (see above the loop).
+          const outcome = await processStatement(ctx, reads[index]);
+          outcomes.set(index, outcome);
+          // A refused statement's names are reserved for the statements after it.
+          if (outcome.status === "refused") for (const name of reads[index].localNames) ctx.reservedNames.add(name);
+        }
+
+        const inlinedNames = ctx.nameOwner;
+        const clashing = passOrder.filter(
+          (index) =>
+            outcomes.get(index)?.status !== "inlined" && reads[index].localNames.some((name) => inlinedNames.has(name)),
+        );
+        if (clashing.length === 0) break;
+        for (const index of clashing) {
+          const outcome = outcomes.get(index);
+          if (promoted.has(index)) keptOutright.set(index, outcome?.status === "refused" ? outcome.failures : []);
+          else promoted.add(index);
+        }
+      }
 
       const droppedImportStatements: string[] = [];
       // Idempotent: drop any diagnostics from a previous run of this pass on the same component
       // (e.g. a prior watch-mode flush) before adding this run's.
       const diagnostics = (component.diagnostics ?? []).filter((d) => d.kind !== "types-inline-unresolved");
 
-      // An import that stays in the `.d.ts` keeps its names: reserve those known up front, and a
-      // refused statement's once it's refused (for the statements after it).
-      const reads = typeImportStatements.map((statement) => readStatement(statement, componentAbsPath, bareSession));
-      for (const read of reads) {
-        if (read.status !== "attempt") for (const name of read.localNames) ctx.reservedNames.add(name);
-      }
-
-      // Sequential by necessity: statements share `ctx` (name reservations, emission order), so
-      // processing order determines dedup/collision outcomes and must stay stable.
       for (const [index, statement] of typeImportStatements.entries()) {
-        const read = reads[index];
-        // biome-ignore lint/performance/noAwaitInLoops: shared, order-dependent ctx state (see above the loop).
-        const outcome = await processStatement(ctx, read);
-        if (outcome.status === "inlined") {
-          droppedImportStatements.push(statement);
-        } else if (outcome.status === "refused") {
-          for (const name of read.localNames) ctx.reservedNames.add(name);
-          for (const failure of outcome.failures) {
-            diagnostics.push(
-              createDiagnostic({
-                component: component.filePath,
-                kind: "types-inline-unresolved",
-                name: failure.name,
-                message: `Cannot inline "${failure.name}": ${failure.reason}.`,
-              }),
-            );
-          }
+        const outcome = outcomes.get(index);
+        const failures = outcome?.status === "refused" ? outcome.failures : keptOutright.get(index);
+        if (outcome?.status === "inlined") droppedImportStatements.push(statement);
+        for (const failure of failures ?? []) {
+          diagnostics.push(
+            createDiagnostic({
+              component: component.filePath,
+              kind: "types-inline-unresolved",
+              name: failure.name,
+              message: `Cannot inline "${failure.name}": ${failure.reason}.`,
+            }),
+          );
         }
       }
 
@@ -1018,7 +1056,7 @@ export async function inlineLocalTypeImports(
       result.set(component.filePath, {
         droppedImportStatements,
         declarations: ctx.order.map((key) => ctx.textByKey.get(key) ?? ""),
-        dependencies: Array.from(ctx.dependencies),
+        dependencies: Array.from(dependencies),
       });
     }),
   );
