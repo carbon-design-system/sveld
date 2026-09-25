@@ -81,6 +81,9 @@ const WHITESPACE_CHAR_REGEX = /\s/;
 const TAG_SECTION_START_REGEX = /^@[^\s/]+(?=\s|$)/;
 const TAG_PREFIX_REGEX = /^@(\S+)\s*/;
 
+/** Tags that mean nothing without a name, so the name may wrap onto a line of its own. */
+const NAME_REQUIRED_TAGS = new Set(["extends", "extendProps", "generics", "template", "typedef"]);
+
 /** Length of the leading `\s` run in `text`; same set of characters as `LEADING_WS_REGEX`. */
 export function leadingWhitespaceLength(text: string): number {
   let index = 0;
@@ -349,7 +352,14 @@ function parseTagSection(sectionLines: CommentLine[]): JSDocTag {
 
   // The name shares the line the type ends on. A type with nothing after it
   // (`@slot {{ item: string }}`) has no name, so the next line stays description.
-  const nameLineIndex = typeResult?.endIndex ?? 0;
+  // A tag that can't go without a name (`@extends {...}` wrapped before
+  // `ButtonProps`) takes it from the next non-empty line instead.
+  let nameLineIndex = typeResult?.endIndex ?? 0;
+  if (NAME_REQUIRED_TAGS.has(tag)) {
+    while (nameLineIndex < sectionLines.length - 1 && sectionLines[nameLineIndex].content.trim() === "") {
+      nameLineIndex++;
+    }
+  }
   const nameResult = extractName(sectionLines[nameLineIndex]);
 
   const description = joinLines(sectionLines.slice(nameLineIndex));
