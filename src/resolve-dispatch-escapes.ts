@@ -1,8 +1,8 @@
 import { dirname } from "node:path";
-import { isIdentifier, resolveStaticStringLiteral } from "./ast-guards";
+import { isIdentifier, isLiteral, resolveStaticStringLiteral } from "./ast-guards";
 import type { PendingDispatchEscapeCandidate } from "./ComponentParser";
 import { type AstNode, findModuleExportPath, type ResolveContext, resolveModuleFile } from "./parse-entry-exports";
-import { literalDetailToTypeText } from "./parser/events";
+import { type DetailTypeSource, deriveLiteralDetailType, literalDetailToTypeText } from "./parser/events";
 import { type WalkableNode, walkNodes } from "./parser/walk";
 
 export type DispatchEscapeFailureReason =
@@ -100,9 +100,24 @@ function staticEventNames(node: AstNode | undefined): string[] | null {
   return name ? [name] : null;
 }
 
-/** Detail type of one `dispatch(name, detail)` call. Only literals are typed; the helper's locals aren't. */
+/** Literal detail inference inside a helper: its locals aren't typed, so an identifier member is `any`. */
+const helperDetailTypeSource: DetailTypeSource = {
+  findVariableTypeAndDescription: () => null,
+  getPropertyName: (key) => {
+    if (isIdentifier(key)) return key.name;
+    return isLiteral(key) && key.value != null ? String(key.value) : undefined;
+  },
+};
+
+/**
+ * Detail type of one `dispatch(name, detail)` call, inferred as a
+ * same-file dispatch's is: object and array literals structurally, other
+ * literals as their value. Anything else is `any`.
+ */
 function detailType(node: AstNode | undefined): string {
   if (!node) return "null";
+  const structural = deriveLiteralDetailType(helperDetailTypeSource, node);
+  if (structural !== undefined) return structural;
   if (node.type === "Literal") return literalDetailToTypeText(node.value);
   return "any";
 }

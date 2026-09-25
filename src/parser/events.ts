@@ -11,20 +11,27 @@ const NEWLINES_REGEX = /\n/g;
 const IDENTIFIER_REGEX = /^[A-Za-z_$][\w$]*$/;
 
 /**
+ * What {@link deriveLiteralDetailType} reads identifier types and property
+ * names through: the component's parser, or a stand-in for a module sveld
+ * reads without one (an imported dispatch helper).
+ */
+export type DetailTypeSource = Pick<ComponentParser, "findVariableTypeAndDescription" | "getPropertyName">;
+
+/**
  * Structurally infers a dispatched event's detail type from an object or array literal `dispatch()`
  * argument (`{ id: string }`, `number[]`), resolving identifier property values through the
  * existing variable-type lookup and falling back to `any` per property/element rather than for the
  * whole detail. Returns `undefined` for anything else so callers keep their own scalar-literal
  * narrowing (`dispatch("count", 5)` still types as `5`).
  */
-export function deriveLiteralDetailType(parser: ComponentParser, node: unknown): string | undefined {
+export function deriveLiteralDetailType(parser: DetailTypeSource, node: unknown): string | undefined {
   if (!node || typeof node !== "object" || !("type" in node)) return undefined;
   if (isObjectExpression(node)) return buildObjectLiteralDetailType(parser, node);
   if (node.type === "ArrayExpression") return buildArrayLiteralDetailType(parser, node as ArrayExpression);
   return undefined;
 }
 
-function inferLiteralMemberType(parser: ComponentParser, node: unknown): string {
+function inferLiteralMemberType(parser: DetailTypeSource, node: unknown): string {
   if (!node || typeof node !== "object" || !("type" in node)) return "any";
   if (isIdentifier(node)) return parser.findVariableTypeAndDescription(node.name)?.type ?? "any";
 
@@ -41,7 +48,7 @@ function inferLiteralMemberType(parser: ComponentParser, node: unknown): string 
  * computed key adds members sveld can't name, so it becomes a `[key: string]: any` index
  * signature alongside the known members, or `Record<string, any>` when there are none.
  */
-function buildObjectLiteralDetailType(parser: ComponentParser, node: ObjectExpression): string {
+function buildObjectLiteralDetailType(parser: DetailTypeSource, node: ObjectExpression): string {
   if (node.properties.length === 0) return "Record<string, never>";
 
   const properties: Array<{ name: string; type: string }> = [];
@@ -63,7 +70,7 @@ function buildObjectLiteralDetailType(parser: ComponentParser, node: ObjectExpre
   return buildEventDetailFromProperties([...properties, { name: "[key: string]", type: "any" }]);
 }
 
-function buildArrayLiteralDetailType(parser: ComponentParser, node: ArrayExpression): string {
+function buildArrayLiteralDetailType(parser: DetailTypeSource, node: ArrayExpression): string {
   const elementTypes = new Set(
     node.elements.filter((element) => element != null).map((element) => inferLiteralMemberType(parser, element)),
   );
