@@ -412,6 +412,34 @@ describe("inlineLocalTypeImports (via generateBundle typesInline)", () => {
     expect(diagnostic?.message).toContain("already inlined from a different source");
   });
 
+  test("refuses an earlier import whose copy declares a name a later refused import keeps", async () => {
+    writeFileSync(
+      join(dir, "Comp.svelte"),
+      `<script lang="ts">
+  import type { A } from "./a";
+  import type { E, X } from "./x";
+  let { a, e, x }: { a: A; e: E; x: X } = $props();
+</script>
+<div />
+`,
+    );
+    writeFileSync(join(dir, "a.ts"), `import type { X } from "./x";\nexport type A = { x: X };\n`);
+    writeFileSync(join(dir, "x.ts"), "export type X = string;\nexport enum E {\n  One,\n}\n");
+
+    const result = await generateBundle(dir, true, { cache: false, typesInline: "local" });
+    const component = byModuleName(result.allComponentsForTypes, "Comp");
+    // biome-ignore lint/style/noNonNullAssertion: parsed above
+    const inlined = result.inlinedTypesByFilePath?.get(component!.filePath);
+
+    // Copying `A` would copy `X` too, next to the kept `import type { E, X }`.
+    expect(inlined).toBeUndefined();
+    const messages = result.diagnostics.filter((d) => d.kind === "types-inline-unresolved").map((d) => d.message);
+    expect(messages).toEqual([
+      `Cannot inline "A": "X" collides with a name the component's .d.ts already declares or imports.`,
+      `Cannot inline "E": "E" is a enum, which cannot be inlined.`,
+    ]);
+  });
+
   test("a cycle between two files terminates and inlines both", async () => {
     writeFileSync(
       join(dir, "Comp.svelte"),
@@ -477,60 +505,93 @@ describe("inlineLocalTypeImports fixture-level snapshots", () => {
   });
 });
 
+/**
+ * Bundles `files` with `typesInline: "local"`, writes `Comp.svelte.d.ts`, and type-checks it with
+ * tsc. Created inside the repo (not the system tmpdir) so `moduleResolution: "bundler"` can walk
+ * up to the repo's own `node_modules/svelte` when type-checking the generated `.d.ts`.
+ */
+async function bundleAndTypecheck(files: Record<string, string>) {
+  const tempDir = mkdtempSync(join(process.cwd(), ".tmp-sveld-inline-types-tsc-"));
+  try {
+    for (const [name, content] of Object.entries(files)) writeFileSync(join(tempDir, name), content);
+
+    const writeTsDefinitions = (await import("../src/writer/writer-ts-definitions")).default;
+    const result = await generateBundle(tempDir, true, { cache: false, typesInline: "local" });
+    // Next to the sources, so an import the `.d.ts` keeps resolves as it would for a consumer.
+    const outDirAbsolute = tempDir;
+    // `writeTsDefinitions` resolves `outDir` against `process.cwd()`, so it must be relative
+    // here (an absolute path would get joined onto `process.cwd()` instead of used as-is).
+    const outDir = relative(process.cwd(), outDirAbsolute);
+
+    await writeTsDefinitions(result.allComponentsForTypes, {
+      outDir,
+      inputDir: tempDir,
+      preamble: "",
+      exports: result.exports,
+      inlinedTypesByFilePath: result.inlinedTypesByFilePath,
+      inline: "local",
+    });
+
+    const dtsPath = join(outDirAbsolute, "Comp.svelte.d.ts");
+    const dtsText = await Bun.file(dtsPath).text();
+
+    const configPath = join(process.cwd(), "tsconfig.fixtures.json");
+    const configFile = ts.readConfigFile(configPath, ts.sys.readFile);
+    const parsedConfig = ts.parseJsonConfigFileContent(configFile.config, ts.sys, process.cwd());
+
+    const program = ts.createProgram([dtsPath], parsedConfig.options);
+    const tscDiagnostics = ts.getPreEmitDiagnostics(program).map((diagnostic) =>
+      ts.formatDiagnostic(diagnostic, {
+        getCanonicalFileName: (fileName) => fileName,
+        getCurrentDirectory: () => outDirAbsolute,
+        getNewLine: () => "\n",
+      }),
+    );
+    return { result, dtsText, tscDiagnostics };
+  } finally {
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+}
+
 describe("typesOptions.inline output type-checks", () => {
   test("a component with an inlined type produces valid TypeScript, verified with tsc", async () => {
-    // Created inside the repo (not the system tmpdir) so `moduleResolution: "bundler"` can walk
-    // up to the repo's own `node_modules/svelte` when type-checking the generated `.d.ts`.
-    const tempDir = mkdtempSync(join(process.cwd(), ".tmp-sveld-inline-types-tsc-"));
-    try {
-      writeFileSync(
-        join(tempDir, "Comp.svelte"),
-        `<script lang="ts">
+    const { dtsText, tscDiagnostics } = await bundleAndTypecheck({
+      "Comp.svelte": `<script lang="ts">
   import type { Size } from "./types";
   let { size }: { size: Size } = $props();
 </script>
 <div>{size}</div>
 `,
-      );
-      writeFileSync(join(tempDir, "types.ts"), `export type Size = "sm" | "md" | "lg";\n`);
+      "types.ts": `export type Size = "sm" | "md" | "lg";\n`,
+    });
 
-      const writeTsDefinitions = (await import("../src/writer/writer-ts-definitions")).default;
-      const result = await generateBundle(tempDir, true, { cache: false, typesInline: "local" });
-      const outDirAbsolute = join(tempDir, "out");
-      // `writeTsDefinitions` resolves `outDir` against `process.cwd()`, so it must be relative
-      // here (an absolute path would get joined onto `process.cwd()` instead of used as-is).
-      const outDir = relative(process.cwd(), outDirAbsolute);
+    expect(dtsText).not.toContain('from "./types"');
+    expect(dtsText).toContain('type Size = "sm" | "md" | "lg";');
+    expect(tscDiagnostics).toEqual([]);
+  });
 
-      await writeTsDefinitions(result.allComponentsForTypes, {
-        outDir,
-        inputDir: tempDir,
-        preamble: "",
-        exports: result.exports,
-        inlinedTypesByFilePath: result.inlinedTypesByFilePath,
-        inline: "local",
-      });
+  test("an import kept after a refusal doesn't clash with a name an earlier import copied", async () => {
+    // Inlining `A` copies a.ts's own `X`; the import of b.ts's `X` can't reuse that name, but
+    // keeping it as an import next to the copied `type X` would declare `X` twice.
+    const { result, dtsText, tscDiagnostics } = await bundleAndTypecheck({
+      "Comp.svelte": `<script lang="ts">
+  import type { A } from "./a";
+  import type { X } from "./b";
+  let { a, x }: { a: A; x: X } = $props();
+</script>
+<div />
+`,
+      "a.ts": "type X = string;\nexport type A = { x: X };\n",
+      "b.ts": "export type X = number;\n",
+    });
 
-      const dtsPath = join(outDirAbsolute, "Comp.svelte.d.ts");
-      const dtsText = await Bun.file(dtsPath).text();
-      expect(dtsText).not.toContain('from "./types"');
-      expect(dtsText).toContain('type Size = "sm" | "md" | "lg";');
-
-      const configPath = join(process.cwd(), "tsconfig.fixtures.json");
-      const configFile = ts.readConfigFile(configPath, ts.sys.readFile);
-      const parsedConfig = ts.parseJsonConfigFileContent(configFile.config, ts.sys, process.cwd());
-
-      const program = ts.createProgram([dtsPath], parsedConfig.options);
-      const diagnostics = ts.getPreEmitDiagnostics(program).map((diagnostic) =>
-        ts.formatDiagnostic(diagnostic, {
-          getCanonicalFileName: (fileName) => fileName,
-          getCurrentDirectory: () => outDirAbsolute,
-          getNewLine: () => "\n",
-        }),
-      );
-      expect(diagnostics).toEqual([]);
-    } finally {
-      rmSync(tempDir, { recursive: true, force: true });
-    }
+    expect(tscDiagnostics).toEqual([]);
+    expect(dtsText).toContain('import type { A } from "./a";');
+    expect(dtsText).toContain("type X = number;");
+    expect(dtsText).not.toContain("type X = string;");
+    expect(
+      result.diagnostics.filter((d) => d.kind === "types-inline-unresolved").map((d) => [d.name, d.message]),
+    ).toEqual([["A", 'Cannot inline "A": "X" was already inlined from a different source.']]);
   });
 });
 
