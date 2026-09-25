@@ -553,6 +553,16 @@ function typeDeclarationUsesAny(
   return parameters.some(({ name }) => identifiers.has(name));
 }
 
+/**
+ * Whether `@property` tags below a `@typedef` of this type describe its members. As in
+ * TypeScript, only an untyped or `object`/`Object` typedef takes them; a `@property` under
+ * `@typedef {string | Fn} Name` is ignored rather than turning it into an object type.
+ */
+function typedefTakesProperties(typedefType: string | undefined): boolean {
+  const type = typedefType?.trim();
+  return !type || type === "object" || type === "Object";
+}
+
 function processJSDocComment(
   ctx: ParserContext,
   parser: ComponentParser,
@@ -1346,7 +1356,7 @@ export function parseCustomTypes(
               currentEventName,
               sourceRangeFromCommentTag(ctx, tagSource),
             );
-          } else if (currentTypedefName !== undefined) {
+          } else if (currentTypedefName !== undefined && typedefTakesProperties(currentTypedefType)) {
             pushOrReplaceProperty(
               typedefProperties,
               propertyData,
