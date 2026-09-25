@@ -1411,7 +1411,7 @@
           "tags": [
             {
               "name": "example",
-              "body": " ```svelte\n <Button>\n   <Icon slot=\"icon\" size={20} />\n </Button>\n ```"
+              "body": "```svelte\n<Button>\n  <Icon slot=\"icon\" size={20} />\n</Button>\n```"
             }
           ],
           "type": "any",
@@ -1555,7 +1555,7 @@
           "tags": [
             {
               "name": "example",
-              "body": " ```svelte\n <Button let:props>\n   <div {...props}>Custom Element</div>\n </Button>\n ```"
+              "body": "```svelte\n<Button let:props>\n  <div {...props}>Custom Element</div>\n</Button>\n```"
             }
           ],
           "type": "boolean",

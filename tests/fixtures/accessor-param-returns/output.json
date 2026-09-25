@@ -194,7 +194,7 @@
       "tags": [
         {
           "name": "example",
-          "body": " ```js\n let nodeElement;\n $: depth = computeTreeLeafDepth(nodeElement);\n ```"
+          "body": "```js\nlet nodeElement;\n$: depth = computeTreeLeafDepth(nodeElement);\n```"
         }
       ],
       "type": "(node: HTMLLIElement) => number",

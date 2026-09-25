@@ -19,7 +19,7 @@
       "tags": [
         {
           "name": "example",
-          "body": " ```svelte\n <Switch>\n   <span>Custom Text</span>\n </Switch>\n ```"
+          "body": "```svelte\n<Switch>\n  <span>Custom Text</span>\n</Switch>\n```"
         }
       ],
       "type": "string",
@@ -53,7 +53,7 @@
       "tags": [
         {
           "name": "example",
-          "body": " ```svelte\n <Button>\n   <Icon slot=\"icon\" size={20} />\n </Button>\n ```"
+          "body": "```svelte\n<Button>\n  <Icon slot=\"icon\" size={20} />\n</Button>\n```"
         }
       ],
       "type": "any",

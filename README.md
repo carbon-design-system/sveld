@@ -3656,9 +3656,9 @@ Output (`.d.ts`):
 /**
  * Formats a value.
  * @example
- *  ```js
- *  formatValue("ok");
- *  ```
+ * ```js
+ * formatValue("ok");
+ * ```
  */
 formatValue: (value: string) => string;
 ```

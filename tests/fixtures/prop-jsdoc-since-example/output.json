@@ -23,7 +23,7 @@
         },
         {
           "name": "example",
-          "body": " ```svelte\n <Button label=\"Save\" />\n ```"
+          "body": "```svelte\n<Button label=\"Save\" />\n```"
         }
       ],
       "type": "string",

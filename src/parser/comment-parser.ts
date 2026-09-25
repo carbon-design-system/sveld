@@ -32,8 +32,6 @@ interface CommentLine {
    * gutter's own canonical single separator space - what's left is meaningful indentation.
    */
   indent: string;
-  /** The full, unreduced whitespace between the gutter and the line's content (`" " + indent` when the gutter's canonical space was present, `indent` alone otherwise). */
-  separator: string;
   /** Content after the gutter and, for a tag's opening line, whatever tag/type/name parsing has consumed so far. */
   content: string;
   /** Set only on a tag section's first line, once tag parsing has run. */
@@ -54,14 +52,10 @@ export interface JSDocTag {
   default?: string;
   description: string;
   /**
-   * The tag's full original body text (after `@tag`), indentation preserved, untouched by
-   * type/name parsing - for tags sveld treats as opaque prose (`@since`, `@example`, and any
-   * tag it doesn't otherwise structurally interpret).
-   */
-  raw: string;
-  /**
-   * The same body text as `raw`, braces included, but with continuation lines keeping only their
-   * meaningful `indent` (as `description` does) - for tags read as prose, like `@deprecated`.
+   * The tag's full original body text (after `@tag`), untouched by type/name parsing (braces
+   * included), with continuation lines keeping only their meaningful `indent` (as `description`
+   * does) - for tags read as prose (`@deprecated`) or kept verbatim (`@since`, `@example`, and any
+   * tag sveld doesn't otherwise structurally interpret).
    */
   text: string;
   /** This tag's own physical lines, post type/name extraction (shares objects with the parent `JSDocComment.lines`). */
@@ -101,8 +95,8 @@ export function leadingWhitespaceLength(text: string): number {
   return index;
 }
 
-/** Strips the comment gutter from one physical line, splitting what's left into `indent`/`separator` + `content`. */
-function tokenizeLine(text: string, isOpeningLine: boolean): { indent: string; separator: string; content: string } {
+/** Strips the comment gutter from one physical line, splitting what's left into `indent` + `content`. */
+function tokenizeLine(text: string, isOpeningLine: boolean): { indent: string; content: string } {
   let rest = text.slice(leadingWhitespaceLength(text));
   let hasMarker = false;
 
@@ -123,7 +117,7 @@ function tokenizeLine(text: string, isOpeningLine: boolean): { indent: string; s
   // The gutter convention is "marker + exactly one separator space"; anything past that first
   // space is meaningful indentation and gets preserved as part of `indent`.
   const indent = hasMarker ? separator.slice(1) : separator;
-  return { indent, separator, content };
+  return { indent, content };
 }
 
 /** `\r`-stripped text of the physical line spanning `[lineStart, lineEnd)`. */
@@ -168,8 +162,8 @@ function findCommentBlocks(source: string): Array<{ start: number; end: number; 
       const lineEnd = newlineIndex === -1 ? source.length : newlineIndex;
       const text = physicalLineText(source, currentLineStart, lineEnd);
 
-      const { indent, separator, content } = tokenizeLine(text, lines.length === 0);
-      lines.push({ raw: text, start: currentLineStart, number: lines.length, indent, separator, content });
+      const { indent, content } = tokenizeLine(text, lines.length === 0);
+      lines.push({ raw: text, start: currentLineStart, number: lines.length, indent, content });
 
       const trimmedText = text.trimEnd();
       if (trimmedText.endsWith(BLOCK_CLOSE)) {
@@ -346,8 +340,6 @@ function parseTagSection(sectionLines: CommentLine[]): JSDocTag {
   // line with nothing after the tag itself (e.g. a bare `@example` before a fenced code block)
   // contributes no line of its own - only its continuation lines make up the body.
   const firstBodyLine = afterTagPrefix.trimEnd();
-  const continuationLines = sectionLines.slice(1).map((line) => line.separator + line.content);
-  const raw = (firstBodyLine ? [firstBodyLine, ...continuationLines] : continuationLines).join("\n");
   const proseLines = sectionLines.slice(1).map((line) => line.indent + line.content);
   const text = (firstBodyLine ? [firstBodyLine, ...proseLines] : proseLines).join("\n");
 
@@ -370,7 +362,6 @@ function parseTagSection(sectionLines: CommentLine[]): JSDocTag {
     optional: nameResult?.optional ?? false,
     default: nameResult?.default,
     description,
-    raw,
     text,
     lines: sectionLines,
   };

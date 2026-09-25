@@ -10,9 +10,9 @@ type $Props = {
   /**
    * Renders before the list.
    * @example
-   *  ```svelte
-   *  <span slot="after">After</span>
-   *  ```
+   * ```svelte
+   * <span slot="after">After</span>
+   * ```
    */
   before?: (this: void) => void;
 

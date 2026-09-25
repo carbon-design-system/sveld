@@ -489,8 +489,35 @@ describe("ComponentParser", () => {
     expect(value?.tags).toEqual([
       {
         name: "example",
-        body: ' ```js\n // @ts-expect-error value must be a number\n value = "x";\n ```',
+        body: '```js\n// @ts-expect-error value must be a number\nvalue = "x";\n```',
       },
+    ]);
+  });
+
+  test("strips only the gutter's separator space from verbatim tag bodies", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /**
+         * Value.
+         * @example
+         * \`\`\`js
+         * if (ready) {
+         *   value = 2;
+         * }
+         * \`\`\`
+         * @see first line
+         * second line
+         */
+        export let value = 1;
+      </script>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    const value = result.props.find((p) => p.name === "value");
+    expect(value?.tags).toEqual([
+      { name: "example", body: "```js\nif (ready) {\n  value = 2;\n}\n```" },
+      { name: "see", body: "first line\nsecond line" },
     ]);
   });
 

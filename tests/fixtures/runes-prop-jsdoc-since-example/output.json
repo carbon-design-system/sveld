@@ -23,7 +23,7 @@
         },
         {
           "name": "example",
-          "body": " ```svelte\n <Disclosure open />\n ```"
+          "body": "```svelte\n<Disclosure open />\n```"
         }
       ],
       "type": "boolean",

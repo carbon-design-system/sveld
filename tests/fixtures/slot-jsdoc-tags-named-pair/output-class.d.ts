@@ -4,9 +4,9 @@ export type SlotJsdocTagsNamedPairProps = {
   /**
    * Toolbar: icon-only mode uses low-contrast - same as hover-state.
    * @example
-   *  ```svelte
-   *  <Toolbar><Icon /></Toolbar>
-   *  ```
+   * ```svelte
+   * <Toolbar><Icon /></Toolbar>
+   * ```
    */
   actions?: (this: void, ...args: [{ compact: boolean }]) => void;
 
@@ -24,9 +24,9 @@ export default class SlotJsdocTagsNamedPair extends SvelteComponentTyped<
     /**
      * Toolbar: icon-only mode uses low-contrast - same as hover-state.
      * @example
-     *  ```svelte
-     *  <Toolbar><Icon /></Toolbar>
-     *  ```
+     * ```svelte
+     * <Toolbar><Icon /></Toolbar>
+     * ```
      */
     actions: { compact: boolean };
     /**

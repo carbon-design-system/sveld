@@ -55,7 +55,7 @@
         },
         {
           "name": "example",
-          "body": " ```svelte\n <Field on:change={(e) => console.log(e.detail)} />\n ```"
+          "body": "```svelte\n<Field on:change={(e) => console.log(e.detail)} />\n```"
         }
       ],
       "source": {
