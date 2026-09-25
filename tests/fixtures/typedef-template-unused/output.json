@@ -1,0 +1,69 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 14,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "nodes",
+      "kind": "let",
+      "type": "ReadonlyArray<Node>",
+      "typeSource": "jsdoc",
+      "value": "[]",
+      "defaultValue": {
+        "raw": "[]",
+        "kind": "array",
+        "value": []
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 12,
+          "column": 2
+        },
+        "end": {
+          "line": 12,
+          "column": 24
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{\n  text?: string;\n  nodes?: TreeNode[];\n}",
+      "name": "TreeNode",
+      "ts": "type TreeNode = {\n  text?: string;\n  nodes?: TreeNode[];\n};",
+      "source": {
+        "start": {
+          "line": 6,
+          "column": 5
+        },
+        "end": {
+          "line": 6,
+          "column": 31
+        }
+      }
+    }
+  ],
+  "generics": [
+    "Node",
+    "Node extends TreeNode = TreeNode"
+  ],
+  "contexts": [],
+  "diagnostics": []
+}
