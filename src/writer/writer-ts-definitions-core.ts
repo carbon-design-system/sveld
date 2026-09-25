@@ -1163,7 +1163,8 @@ function genModuleClassExport(prop: ComponentProp, commentLevel: CommentLevel, d
       return [comment, `${formatClassMemberSignature(member)};`].filter(Boolean).join("\n");
     })
     .join("\n\n");
-  const header = `${renamed ? "" : "export "}declare ${prop.abstract ? "abstract " : ""}class ${localName}${typeParameters}`;
+  const heritage = `${prop.extends ? ` extends ${prop.extends}` : ""}${prop.implements?.length ? ` implements ${prop.implements.join(", ")}` : ""}`;
+  const header = `${renamed ? "" : "export "}declare ${prop.abstract ? "abstract " : ""}class ${localName}${typeParameters}${heritage}`;
   const declaration = [
     wrapCommentInJSDoc(createPropComment(prop.description, prop.deprecated, prop.tags, commentLevel)),
     members ? `${header} {\n${members}\n}` : `${header} {}`,

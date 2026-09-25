@@ -279,6 +279,17 @@ export function formatEventDetail(detail?: string) {
   return formatPropType(detail.replace(NEWLINE_REGEX, " "));
 }
 
+/** `Extends <code>Base&lt;T></code>. Implements <code>Disposable</code>.`, or `undefined`. */
+function classHeritageLine(moduleExport: ComponentProp): string | undefined {
+  const parts = [
+    moduleExport.extends ? `Extends ${formatPropType(moduleExport.extends)}.` : "",
+    moduleExport.implements?.length
+      ? `Implements ${moduleExport.implements.map((name) => formatPropType(name)).join(", ")}.`
+      : "",
+  ].filter(Boolean);
+  return parts.length > 0 ? parts.join(" ") : undefined;
+}
+
 /**
  * A `#### \`Store\` members` table after the module exports table, for each
  * class module export with members. A class exported under several names
@@ -291,12 +302,16 @@ export function renderClassMemberTables(
 ) {
   const rendered = new Set<string>();
   for (const moduleExport of moduleExports) {
-    if (moduleExport.kind !== "class" || !moduleExport.members?.length) continue;
+    if (moduleExport.kind !== "class") continue;
+    const heritage = classHeritageLine(moduleExport);
+    if (!moduleExport.members?.length && !heritage) continue;
     const className = moduleExport.localName ?? moduleExport.name;
     if (rendered.has(className)) continue;
     rendered.add(className);
 
     document.append("h4", `\`${className}\` members`);
+    if (heritage) document.append("raw", `${heritage}\n\n`);
+    if (!moduleExport.members?.length) continue;
     document.append("raw", CLASS_MEMBER_TABLE_HEADER);
     const below: CodeBelowTable = [];
     for (const member of moduleExport.members) {
