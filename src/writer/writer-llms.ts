@@ -10,6 +10,7 @@ import { MarkdownWriterBaseImpl } from "./MarkdownWriterBase";
 import {
   type CodeBelowTable,
   EVENT_TABLE_HEADER,
+  endCodeBelowTable,
   formatDescriptionWithCodeBelow,
   formatEventDetail,
   formatExportType,
@@ -20,7 +21,6 @@ import {
   formatSlotProps,
   MD_TYPE_UNDEFINED,
   renderClassMemberTables,
-  renderCodeBelowTable,
   SLOT_TABLE_HEADER,
 } from "./markdown-format-utils";
 import Writer from "./Writer";
@@ -58,16 +58,6 @@ function firstSentence(text: string | undefined, fallback: string): string {
   return match ? firstParagraph.slice(0, match.index + 1) : firstParagraph;
 }
 
-/**
- * Ends a table, then prints the fenced code lifted out of its cells as real
- * multi-line blocks: models read this file as text, where an inline
- * `<pre><code>` with `<br />` and entities would only be noise.
- */
-function endTable(document: MarkdownWriterBaseImpl, below: CodeBelowTable) {
-  document.append("raw", "\n");
-  if (below.length > 0) document.append("raw", renderCodeBelowTable(below));
-}
-
 function renderPropsTableSection(document: MarkdownWriterBaseImpl, heading: string, props: ComponentProp[]) {
   if (props.length === 0) return;
 
@@ -82,7 +72,7 @@ function renderPropsTableSection(document: MarkdownWriterBaseImpl, heading: stri
       )} | ${prop.isRequired ? "Yes" : "No"} | ${formatDescriptionWithCodeBelow(below, prop.name, prop.description, prop.tags)} |\n`,
     );
   }
-  endTable(document, below);
+  endCodeBelowTable(document, below);
 }
 
 function renderEventsSection(document: MarkdownWriterBaseImpl, events: SerializedComponentEvent[]) {
@@ -99,7 +89,7 @@ function renderEventsSection(document: MarkdownWriterBaseImpl, events: Serialize
       )} | ${formatDescriptionWithCodeBelow(below, event.name, event.description, event.tags)} |\n`,
     );
   }
-  endTable(document, below);
+  endCodeBelowTable(document, below);
 }
 
 function renderSlotsSection(document: MarkdownWriterBaseImpl, heading: string, slots: ComponentSlot[]) {
@@ -121,7 +111,7 @@ function renderSlotsSection(document: MarkdownWriterBaseImpl, heading: string, s
       )} |\n`,
     );
   }
-  endTable(document, below);
+  endCodeBelowTable(document, below);
 }
 
 function renderTypedefsSection(document: MarkdownWriterBaseImpl, component: ComponentDocApi) {

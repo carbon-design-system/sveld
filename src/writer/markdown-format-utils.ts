@@ -12,7 +12,7 @@ export const SLOT_TABLE_HEADER =
   "| Slot name | Default | Props | Fallback | Description |\n| :- | :- | :- | :- | :- |\n";
 export const EVENT_TABLE_HEADER = "| Event name | Type | Detail | Description |\n| :- | :- | :- | :- |\n";
 export const EXPORT_TABLE_HEADER = "| Name | Kind | Type | Description |\n| :- | :- | :- | :- |\n";
-export const CLASS_MEMBER_TABLE_HEADER = "| Member | Signature | Description |\n| :- | :- | :- |\n";
+const CLASS_MEMBER_TABLE_HEADER = "| Member | Signature | Description |\n| :- | :- | :- |\n";
 export const CSS_PART_TABLE_HEADER = "| Part name | Description |\n| :- | :- |\n";
 export const CSS_PROPERTY_TABLE_HEADER =
   "| Property name | Type | Default value | Description |\n| :- | :- | :- | :- |\n";
@@ -63,7 +63,7 @@ function rewriteJsDocLinks(text: string): string {
 }
 
 /** A fenced code block from a table cell's text, verbatim. */
-export interface CellCodeBlock {
+interface CellCodeBlock {
   /** The opening fence marker, e.g. "```" or "~~~~". */
   fence: string;
   /** The info string after the opening fence, e.g. "svelte"; may be empty. */
@@ -173,8 +173,14 @@ export function formatDescriptionWithCodeBelow(
   return cell;
 }
 
-/** Real multi-line fenced blocks, each under a "Code for `label`:" line, for after a table. */
-export function renderCodeBelowTable(below: CodeBelowTable): string {
+/**
+ * Ends a table, then prints the fenced code lifted out of its cells as real
+ * multi-line blocks, each under a "Code for `label`:" line. Plain-text
+ * readers (llms.txt) would see an inline `<pre><code>` with `<br />` as noise.
+ */
+export function endCodeBelowTable(document: { append(type: "raw", raw: string): unknown }, below: CodeBelowTable) {
+  document.append("raw", "\n");
+  if (below.length === 0) return;
   let out = "";
   for (const { label, blocks } of below) {
     out += `Code for \`${label}\`:\n\n`;
@@ -182,7 +188,7 @@ export function renderCodeBelowTable(below: CodeBelowTable): string {
       out += `${fence}${info}\n${code}${code ? "\n" : ""}${fence}\n\n`;
     }
   }
-  return out;
+  document.append("raw", out);
 }
 
 export function formatPropType(type?: string) {
@@ -220,13 +226,9 @@ export function formatNameWithDeprecation(name: string, deprecated: DeprecatedVa
   return `<s>${name}</s><br />**Deprecated**${suffix}`;
 }
 
-/**
- * @param codeBelow When given, fenced code blocks are collected here and
- * the cell says "(code below)" in their place; otherwise they render inline.
- */
-export function formatPropDescription(description: string | undefined, codeBelow?: CellCodeBlock[]) {
+export function formatPropDescription(description: string | undefined) {
   if (description === undefined || description.trim().length === 0) return MD_TYPE_UNDEFINED;
-  return renderCellParts(splitCodeFences(description), codeBelow);
+  return renderCellParts(splitCodeFences(description), undefined);
 }
 
 export function formatSlotProps(props?: string) {
@@ -241,7 +243,8 @@ export function formatSlotFallback(fallback?: string) {
 
 /**
  * The description, then one line per tag (`@since 1.2.0`), as one table
- * cell. See {@link formatPropDescription} for `codeBelow`.
+ * cell. With `codeBelow`, fenced code blocks are collected there and the
+ * cell says "(code below)" in their place; otherwise they render inline.
  */
 export function formatDescriptionWithTags(
   description?: string,
@@ -323,7 +326,6 @@ export function renderClassMemberTables(
         `| ${formatNameWithDeprecation(member.name, member.deprecated)} | ${formatPropType(formatClassMemberSignature(member))} | ${description} |\n`,
       );
     }
-    document.append("raw", "\n");
-    if (below.length > 0) document.append("raw", renderCodeBelowTable(below));
+    endCodeBelowTable(document, below);
   }
 }

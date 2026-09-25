@@ -895,6 +895,11 @@ function genEventCallbackProps(
     .filter((entry): entry is string => entry !== undefined);
 }
 
+/** `a: string, b?: number` */
+function formatParamList(params: Array<{ name: string; type: string; optional?: boolean }>): string {
+  return params.map((param) => `${param.name}${param.optional ? "?" : ""}: ${param.type}`).join(", ");
+}
+
 /**
  * Generates a function type string from a prop's type, params, and returnType.
  * Priority: `@type` tag > `@param`/`@returns` tags > fallback to prop.type
@@ -909,13 +914,7 @@ function generateFunctionType(prop: {
   if (prop.type && FUNCTION_TYPE_REGEX.test(prop.type) && !isDefaultFunctionType) {
     return prop.type;
   } else if (prop.params && prop.params.length > 0) {
-    const paramStrings = prop.params.map((param) => {
-      const optional = param.optional ? "?" : "";
-      return `${param.name}${optional}: ${param.type}`;
-    });
-    const paramsString = paramStrings.join(", ");
-    const returnType = prop.returnType || ANY_TYPE;
-    return `(${paramsString}) => ${returnType}`;
+    return `(${formatParamList(prop.params)}) => ${prop.returnType || ANY_TYPE}`;
   } else if (prop.returnType) {
     return `() => ${prop.returnType}`;
   } else {
@@ -988,13 +987,19 @@ function genBindingsUnion(def: Pick<ComponentDocApi, "props">): string {
 }
 
 /**
+ * The component's identifier in the `.d.ts`: `$$Component` stands in for an
+ * anonymous default export (`moduleName` "default"), since a declaration needs a name.
+ */
+export function componentIdentifier(moduleName: string): string {
+  return moduleName === "default" ? "$$Component" : moduleName;
+}
+
+/**
  * Generates the `declare const <Name>: Component<Props, Exports, Bindings>;`
  * shell for `"component"` format, in place of the `SvelteComponentTyped` class.
- * `$$Component` stands in for the identifier when `moduleName` is "default"
- * (an anonymous default export), since `declare const` requires a name.
  */
 function genComponentDeclaration(def: { moduleName: string; propsRef: string; exportsRef: string; bindings: string }) {
-  const identifier = def.moduleName === "default" ? "$$Component" : def.moduleName;
+  const identifier = componentIdentifier(def.moduleName);
   const bindingsLiteral = def.bindings === EMPTY_STR ? '""' : def.bindings;
 
   return `declare const ${identifier}: Component<
@@ -1035,7 +1040,7 @@ function genGenericComponentDeclaration(def: {
   exportsRef: string;
   bindings: string;
 }) {
-  const identifier = def.moduleName === "default" ? "$$Component" : def.moduleName;
+  const identifier = componentIdentifier(def.moduleName);
   const interfaceName = `${identifier}Component`;
   const bindingsLiteral = def.bindings === EMPTY_STR ? '""' : def.bindings;
 
@@ -1133,9 +1138,7 @@ export function formatClassMemberSignature(member: ComponentClassMember): string
   ].join("");
   const optional = member.optional ? "?" : "";
   if (member.kind === "property") return `${modifiers}${formatKey(member.name)}${optional}: ${member.type ?? ANY_TYPE}`;
-  const params = (member.params ?? [])
-    .map((param) => `${param.name}${param.optional ? "?" : ""}: ${param.type}`)
-    .join(", ");
+  const params = formatParamList(member.params ?? []);
   if (member.kind === "constructor") return `constructor(${params})`;
   const typeParameters = member.typeParameters ? `<${member.typeParameters}>` : "";
   return `${modifiers}${formatKey(member.name)}${optional}${typeParameters}(${params}): ${member.returnType ?? ANY_TYPE}`;
@@ -1202,13 +1205,7 @@ function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">, commentLe
          */
         type_def = `export declare const ${prop.name}: ${prop.type || ANY_TYPE};\n`;
       } else if (prop.params && prop.params.length > 0) {
-        const paramStrings = prop.params.map((param) => {
-          const optional = param.optional ? "?" : "";
-          return `${param.name}${optional}: ${param.type}`;
-        });
-        const paramsString = paramStrings.join(", ");
-        const returnType = prop.returnType || ANY_TYPE;
-        type_def = `export declare function ${prop.name}${typeParameters}(${paramsString}): ${returnType};`;
+        type_def = `export declare function ${prop.name}${typeParameters}(${formatParamList(prop.params)}): ${prop.returnType || ANY_TYPE};`;
       } else if (prop.returnType) {
         type_def = `export declare function ${prop.name}${typeParameters}(): ${prop.returnType};`;
       } else if (is_function && prop.type && !isDefaultFunctionType) {
@@ -1374,7 +1371,7 @@ function resolveTypeNames(
     );
   }
 
-  const componentName = moduleName === "default" ? "$$Component" : moduleName;
+  const componentName = componentIdentifier(moduleName);
   for (const [kind, name] of [
     ["props", props],
     ["exports", exports],
