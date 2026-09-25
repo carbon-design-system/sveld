@@ -65,6 +65,14 @@ describe("renderComponentsToMarkdown (entry exports)", () => {
     );
   });
 
+  test("renders a namespace re-export's module type", () => {
+    const output = render(new Map(), [
+      { name: "utils", kind: "const", type: 'typeof import("./utils.js")', source: "./utils.js", isTypeOnly: false },
+    ]);
+
+    expect(output).toContain('| utils | <code>const</code> | <code>typeof import("./utils.js")</code> | -- |');
+  });
+
   test("omits the Exports section when there are no entry exports", () => {
     expect(render(new Map(), [])).not.toContain("## Exports");
     expect(render(new Map())).not.toContain("## Exports");
