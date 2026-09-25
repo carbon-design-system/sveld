@@ -297,13 +297,22 @@ export function getContextDefs(
        * that aren't referenced are omitted so the type stays as narrow as possible.
        */
       const referencedConstraints = genericParams
-        .filter(({ name }) => context.properties.some((prop) => referencesGeneric(prop.type, name)))
+        .filter(
+          ({ name }) =>
+            (context.type !== undefined && referencesGeneric(context.type, name)) ||
+            context.properties.some((prop) => referencesGeneric(prop.type, name)),
+        )
         .map(({ constraint }) => constraint);
 
       const genericSuffix =
         referencedConstraints.length > 0
           ? `<${referencedConstraints.map(stripConstModifierForTypeAlias).join(", ")}>`
           : "";
+
+      // A variable passed as the whole value: `getContext` returns it as-is.
+      if (context.type !== undefined) {
+        return `${contextComment}${exportKw}type ${context.typeName}${genericSuffix} = ${context.type};`;
+      }
 
       /**
        * Use Record<string, never> for empty context objects instead of {}.

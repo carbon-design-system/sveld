@@ -1,9 +1,9 @@
 import { SvelteComponentTyped } from "svelte";
 
-export type MyLoggerContext = {
-  /** Log a message to the console */
-  log: (message: string) => void;
-};
+/**
+ * Log a message to the console
+ */
+export type MyLoggerContext = (message: string) => void;
 
 export type ContextIssue103Props = {
   children?: (this: void) => void;

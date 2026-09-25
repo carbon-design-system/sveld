@@ -5,10 +5,10 @@ export type ModalAPI = {
   close: () => void;
 };
 
-export type ModalContext = {
-  /** Modal API object */
-  modalAPI: ModalAPI;
-};
+/**
+ * Modal API object
+ */
+export type ModalContext = ModalAPI;
 
 export type ContextImportedTypeProps = {
   children?: (this: void) => void;

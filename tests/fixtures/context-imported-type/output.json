@@ -53,14 +53,9 @@
     {
       "key": "modal",
       "typeName": "ModalContext",
-      "properties": [
-        {
-          "name": "modalAPI",
-          "type": "ModalAPI",
-          "description": "Modal API object",
-          "optional": false
-        }
-      ],
+      "type": "ModalAPI",
+      "properties": [],
+      "description": "Modal API object",
       "source": {
         "start": {
           "line": 23,
