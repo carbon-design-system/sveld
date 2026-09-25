@@ -102,9 +102,9 @@ export function resolvePropTypeAndDocs(input: ResolvePropTypeAndDocsInput): Reso
   const params = input.jsdocParams ?? input.resolvedParams;
   const returnType = input.jsdocReturnType ?? input.resolvedReturnType;
 
-  // A bare `export function foo() {}` has no `@type` placeholder of its own, and an
-  // arrow or function initializer only an untyped one inferred from its parameters; if
-  // JSDoc supplies `@param`/`@returns` but no `@type`, build a signature from them.
+  // A function declaration or function initializer only has a placeholder signature
+  // (`() => any`, or one inferred from its params); if JSDoc supplies `@param`/`@returns`
+  // but no `@type`, build the signature from them.
   const hasPlaceholderSignature = input.isFunctionDeclaration
     ? type === "() => any"
     : input.initializerIsFunction && type === input.typeSeed;

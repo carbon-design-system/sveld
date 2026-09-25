@@ -9,7 +9,13 @@ import type {
   VariableDeclaration,
   VariableDeclarator,
 } from "estree";
-import { isCallExpressionNamed, isVariableDeclaration, unwrapTypeCastExpression } from "../ast-guards";
+import {
+  isCallExpressionNamed,
+  isIdentifier,
+  isMemberExpression,
+  isVariableDeclaration,
+  unwrapTypeCastExpression,
+} from "../ast-guards";
 import type ComponentParser from "../ComponentParser";
 import type { LexicalScope, ScopeBinding, ScopeBindingKind } from "../ComponentParser";
 import type { ParserContext } from "./context";
@@ -45,9 +51,9 @@ export function isBoundInNestedScope(ctx: ParserContext, name: string): boolean 
 
 /** {@link isBoundInNestedScope} for the identifier a callee starts with (`helper`, or `h` in `h.fn`). */
 export function isCalleeBoundInNestedScope(ctx: ParserContext, callee: unknown): boolean {
-  let node = callee as { type?: string; name?: string; object?: unknown } | undefined;
-  while (node?.type === "MemberExpression") node = node.object as typeof node;
-  return node?.type === "Identifier" && typeof node.name === "string" && isBoundInNestedScope(ctx, node.name);
+  let node = callee;
+  while (isMemberExpression(node)) node = node.object;
+  return isIdentifier(node) && isBoundInNestedScope(ctx, node.name);
 }
 
 /** Collects all identifier names bound by a destructuring/assignment pattern (or plain expression). */

@@ -86,7 +86,7 @@ export interface ParserContext {
   readonly pendingCallDefaultCandidates: PendingCallDefaultCandidate[];
   /** Identifier defaults bound to a named value import, resolved after AST parsing. */
   readonly pendingConstDefaultCandidates: PendingConstDefaultCandidate[];
-  /** Named-import `setContext` keys that need a string value after AST parsing. */
+  /** Imported `setContext` keys that need a string value after AST parsing. */
   readonly pendingContextKeyCandidates: PendingContextKeyCandidate[];
   /** Dispatchers passed to imported functions, resolved after AST parsing. */
   readonly pendingDispatchEscapeCandidates: PendingDispatchEscapeCandidate[];

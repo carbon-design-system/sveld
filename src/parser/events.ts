@@ -3,10 +3,10 @@ import { isIdentifier, isLiteral, isNewExpressionNamed, isObjectExpression } fro
 import type ComponentParser from "../ComponentParser";
 import type { DispatchedEvent, SerializedComponentEvent } from "../ComponentParser";
 import type { ParserContext } from "./context";
+import { findTrackedVariableType } from "./contexts";
 import { inferVariableInitializerType, literalValueType } from "./props";
 import { isBoundInNestedScope } from "./scopes";
 import { sourceRangeFromNode } from "./source-position";
-import { trackAdditionalTypeDependencyNode } from "./type-resolution";
 import { assignValueOrUndefined, compareText, escapeCommentText } from "./utils";
 
 const NEWLINES_REGEX = /\n/g;
@@ -38,12 +38,7 @@ export function componentDetailTypeSource(
   return {
     variableType: (name) => {
       if (nestedBoundNames?.has(name)) return undefined;
-      const declaredType = parser.findVariableTypeAndDescription(name)?.type;
-      if (declaredType === undefined) return inferVariableInitializerType(parser, ctx, name);
-      if (declaredType === ctx.explicitVariableTypesByName.get(name)) {
-        trackAdditionalTypeDependencyNode(ctx, ctx.explicitVariableTypeNodesByName.get(name));
-      }
-      return declaredType;
+      return findTrackedVariableType(ctx, parser, name)?.type ?? inferVariableInitializerType(parser, ctx, name);
     },
     getPropertyName: (key) => parser.getPropertyName(key),
   };

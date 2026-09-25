@@ -142,7 +142,8 @@ function readMethodSignature(
  * `@internal`/`@ignore` members are left out. An overloaded method keeps
  * its overload signatures, not its implementation's.
  *
- * Returns the class's own TS type parameters too (without angle brackets).
+ * Also returns the class's TS type parameters (without angle brackets) and
+ * heritage clauses.
  */
 export function readClassDeclaration(
   ctx: ParserContext,
@@ -277,26 +278,29 @@ function readClassHeritage(
       start: superClass.start,
       end: classDecl.superTypeParameters?.end ?? superClass.end,
     });
-    if (superClass.type === "Identifier") {
-      trackAdditionalTypeDependencyNode(ctx, {
-        type: "TSTypeReference",
-        typeName: superClass,
-        ...(classDecl.superTypeParameters ? { typeParameters: classDecl.superTypeParameters } : {}),
-      } as ModernRunesTypeNode);
-    }
+    if (superClass.type === "Identifier") trackTypeReference(ctx, superClass, classDecl.superTypeParameters);
   }
   const implemented = (classDecl.implements ?? [])
     .map((clause) => {
-      trackAdditionalTypeDependencyNode(ctx, {
-        type: "TSTypeReference",
-        typeName: clause.expression,
-        ...(clause.typeParameters ? { typeParameters: clause.typeParameters } : {}),
-      } as ModernRunesTypeNode);
+      trackTypeReference(ctx, clause.expression, clause.typeParameters);
       return getTypeNodeText(ctx, clause);
     })
     .filter((text): text is string => Boolean(text));
   if (implemented.length > 0) heritage.implements = implemented;
   return heritage;
+}
+
+/** Tracks `typeName<typeParameters>` as a type dependency, as if written as a type annotation. */
+function trackTypeReference(
+  ctx: ParserContext,
+  typeName: unknown,
+  typeParameters: { params?: ModernRunesTypeNode[] } | undefined,
+) {
+  trackAdditionalTypeDependencyNode(ctx, {
+    type: "TSTypeReference",
+    typeName,
+    ...(typeParameters ? { typeParameters } : {}),
+  } as ModernRunesTypeNode);
 }
 
 /**

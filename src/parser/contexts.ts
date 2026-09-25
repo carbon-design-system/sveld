@@ -13,10 +13,25 @@ import { importedMemberBinding } from "./value-imports";
 
 /**
  * {@link ComponentParser.findVariableTypeAndDescription} for a variable whose
- * type ends up in a context type. A TS annotation's local types and type
- * imports are then pulled into the `.d.ts`, as a prop annotation's are.
- * Without an annotation, `inferFromInitializer` types it from its initializer
- * (`let count = $state(0)` is a `number`), as a prop default is typed.
+ * type ends up in a generated type (a context, an event detail): a TS
+ * annotation's local types and type imports are pulled into the `.d.ts`, as a
+ * prop annotation's are.
+ */
+export function findTrackedVariableType(
+  ctx: ParserContext,
+  parser: ComponentParser,
+  name: string,
+): { type: string; description?: string; internal?: boolean } | null {
+  const varInfo = parser.findVariableTypeAndDescription(name);
+  if (varInfo && varInfo.type === ctx.explicitVariableTypesByName.get(name)) {
+    trackAdditionalTypeDependencyNode(ctx, ctx.explicitVariableTypeNodesByName.get(name));
+  }
+  return varInfo;
+}
+
+/**
+ * {@link findTrackedVariableType}, else with `inferFromInitializer` typed from
+ * its initializer (`let count = $state(0)` is a `number`), as a prop default is.
  */
 function findContextVariableType(
   ctx: ParserContext,
@@ -24,10 +39,7 @@ function findContextVariableType(
   name: string,
   inferFromInitializer = true,
 ): { type: string; description?: string; internal?: boolean } | null {
-  const varInfo = parser.findVariableTypeAndDescription(name);
-  if (varInfo && varInfo.type === ctx.explicitVariableTypesByName.get(name)) {
-    trackAdditionalTypeDependencyNode(ctx, ctx.explicitVariableTypeNodesByName.get(name));
-  }
+  const varInfo = findTrackedVariableType(ctx, parser, name);
   if (varInfo || !inferFromInitializer) return varInfo;
 
   const inferredType = inferVariableInitializerType(parser, ctx, name);
@@ -55,16 +67,7 @@ function resolveSpreadShape(
   }
 
   const varInfo = findContextVariableType(ctx, parser, argument.name);
-  if (!varInfo) return null;
-
-  const members = parseObjectTypeLiteralMembers(varInfo.type);
-  if (!members) return null;
-
-  return members.map((member) => ({
-    name: member.name,
-    type: member.type,
-    optional: member.optional,
-  }));
+  return varInfo ? parseObjectTypeLiteralMembers(varInfo.type) : null;
 }
 
 /** Whether `objExpr` has a `get` accessor named `name`. */
@@ -104,7 +107,7 @@ function describeContextValue(
 ): { type: string; description?: string; internal?: boolean } {
   if (isIdentifier(value)) {
     const varInfo = findContextVariableType(ctx, parser, value.name);
-    if (varInfo) return { type: varInfo.type, description: varInfo.description, internal: varInfo.internal };
+    if (varInfo) return varInfo;
     recordDiagnostic(
       ctx,
       "context-any-type",
@@ -204,6 +207,23 @@ export function generateContextTypeName(key: string): string {
   return IDENTIFIER_START_REGEX.test(typeName) ? typeName : `_${typeName}`;
 }
 
+/** A context shaped by an object literal's properties. */
+function objectLiteralContext(
+  ctx: ParserContext,
+  parser: ComponentParser,
+  objExpr: ObjectExpression,
+  key: string,
+): ComponentContext {
+  const { properties, hasUnresolvedSpread } = parseContextObjectProperties(ctx, parser, objExpr, key);
+  return {
+    key,
+    typeName: generateContextTypeName(key),
+    properties,
+    description: undefined,
+    ...(hasUnresolvedSpread ? { hasUnresolvedSpread } : {}),
+  };
+}
+
 /** Build a {@link ComponentContext} from an object literal or variable reference. */
 function parseContextValue(
   ctx: ParserContext,
@@ -211,22 +231,8 @@ function parseContextValue(
   node: Node,
   key: string,
 ): ComponentContext | null {
-  if (!node || typeof node !== "object" || !("type" in node)) return null;
-
-  if (node.type === "ObjectExpression") {
-    if (!isObjectExpression(node)) {
-      return null;
-    }
-
-    const { properties, hasUnresolvedSpread } = parseContextObjectProperties(ctx, parser, node, key);
-
-    return {
-      key,
-      typeName: generateContextTypeName(key),
-      properties,
-      description: undefined,
-      ...(hasUnresolvedSpread ? { hasUnresolvedSpread } : {}),
-    };
+  if (isObjectExpression(node)) {
+    return objectLiteralContext(ctx, parser, node, key);
   } else if (isIdentifier(node)) {
     // `getContext(key)` returns the variable itself, so the context's type is
     // the variable's type, not an object wrapping it.
@@ -235,16 +241,7 @@ function parseContextValue(
 
     // An untyped `const` object literal describes itself, as it does when spread.
     const initializer = annotated ? undefined : resolveConstInitializer(ctx, varName);
-    if (isObjectExpression(initializer)) {
-      const { properties, hasUnresolvedSpread } = parseContextObjectProperties(ctx, parser, initializer, key);
-      return {
-        key,
-        typeName: generateContextTypeName(key),
-        properties,
-        description: undefined,
-        ...(hasUnresolvedSpread ? { hasUnresolvedSpread } : {}),
-      };
-    }
+    if (isObjectExpression(initializer)) return objectLiteralContext(ctx, parser, initializer, key);
 
     const varInfo = annotated ?? findContextVariableType(ctx, parser, varName);
     if (varInfo) {
@@ -253,11 +250,7 @@ function parseContextValue(
         key,
         typeName: generateContextTypeName(key),
         ...(members ? {} : { type: varInfo.type }),
-        properties: (members ?? []).map((member) => ({
-          name: member.name,
-          type: member.type,
-          optional: member.optional,
-        })),
+        properties: members ?? [],
         description: varInfo.description,
         ...(varInfo.internal ? { internal: true } : {}),
       };
@@ -310,12 +303,23 @@ function resolveSymbolKeyDescription(node: CallExpression | NewExpression): stri
   return "";
 }
 
+type PendingContextKey = { kind: "pending"; importSource: string; importedName: string; members?: string[] };
+
 /** How a `setContext` key expression resolved. */
 type ContextKeyResolution =
   | { kind: "resolved"; key: string }
   /** Named import, or a member of a namespace import. Resolved later by reading the other file. */
-  | { kind: "pending"; importSource: string; importedName: string; members?: string[] }
+  | PendingContextKey
   | { kind: "unresolved" };
+
+function pendingContextKey(binding: { source: string; importedName: string; members?: string[] }): PendingContextKey {
+  return {
+    kind: "pending",
+    importSource: binding.source,
+    importedName: binding.importedName,
+    ...(binding.members ? { members: binding.members } : {}),
+  };
+}
 
 /**
  * The export an imported key names, from the module it's imported from:
@@ -369,25 +373,14 @@ function resolveContextKey(ctx: ParserContext, keyArg: unknown, depth = 0): Cont
       depth === 0 && isBoundInNestedScope(ctx, node.name)
         ? undefined
         : ctx.valueImportBindingsByLocalName.get(node.name);
-    if (importBinding) {
-      return { kind: "pending", importSource: importBinding.source, importedName: importBinding.importedName };
-    }
-
-    return { kind: "unresolved" };
+    return importBinding ? pendingContextKey(importBinding) : { kind: "unresolved" };
   }
 
   if (node.type === "MemberExpression") {
     // As for an identifier: a parameter or nested declaration named like the import hides it.
     const importBinding =
       depth === 0 && isCalleeBoundInNestedScope(ctx, node) ? undefined : importedMemberBinding(ctx, node);
-    if (importBinding) {
-      return {
-        kind: "pending",
-        importSource: importBinding.source,
-        importedName: importBinding.importedName,
-        ...(importBinding.members ? { members: importBinding.members } : {}),
-      };
-    }
+    if (importBinding) return pendingContextKey(importBinding);
   }
 
   return { kind: "unresolved" };
