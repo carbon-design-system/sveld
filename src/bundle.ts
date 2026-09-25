@@ -19,7 +19,7 @@ import { hashSource, ParseCache, resolveCacheFilePath } from "./parse-cache";
 import { type EntryExports, parseEntryExports } from "./parse-entry-exports";
 import { type ParsedExports, parseExports } from "./parse-exports";
 import { applyResolvedProps, getParsedComponentTypeScriptMetadata } from "./parsed-component-metadata";
-import { generateContextTypeName } from "./parser/contexts";
+import { generateContextTypeName, importedContextKeyLabel } from "./parser/contexts";
 import { compareSerializedEvents } from "./parser/events";
 import { compareText } from "./parser/utils";
 import { getParserStack, loadParserStack } from "./parser-stack";
@@ -1021,13 +1021,14 @@ function applyConstDefaultResolutions(component: ComponentDocApi, resolutions: C
 function applyContextKeyResolutions(component: ComponentDocApi, resolutions: ContextKeyResolution[]): void {
   for (const { candidate, key } of resolutions) {
     if (!key) {
+      const label = importedContextKeyLabel(candidate);
       component.diagnostics = [
         ...(component.diagnostics ?? []),
         createDiagnostic({
           component: component.filePath,
           kind: "context-key-unresolved",
-          name: candidate.importedName,
-          message: `setContext key \`${candidate.importedName}\` from "${candidate.importSource}" isn't an \`export const\` string or Symbol() sveld can read; the context is skipped.`,
+          name: label,
+          message: `setContext key \`${label}\` from "${candidate.importSource}" isn't an \`export const\` string or Symbol() sveld can read; the context is skipped.`,
           ...(candidate.source ? { source: candidate.source } : {}),
         }),
       ];

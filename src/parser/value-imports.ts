@@ -90,6 +90,20 @@ export function importedCalleeBinding(
   return undefined;
 }
 
+/**
+ * The imported value a member expression reads (`keys.THEME`, `C.timing.DELAY`),
+ * as {@link importedCalleeBinding} reads a callee, searching the component's
+ * instance and module scripts. `undefined` for anything else, including a
+ * plain identifier.
+ */
+export function importedMemberBinding(
+  ctx: ParserContext,
+  node: unknown,
+): { source: string; importedName: string; members?: string[] } | undefined {
+  if ((node as { type?: string } | null | undefined)?.type !== "MemberExpression") return undefined;
+  return importedCalleeBinding(ctx, node, [ctx.parsed?.instance, ctx.parsed?.module]);
+}
+
 function identifierName(node: unknown): string | undefined {
   const identifier = node as { type?: string; name?: string } | null | undefined;
   return identifier?.type === "Identifier" ? identifier.name : undefined;

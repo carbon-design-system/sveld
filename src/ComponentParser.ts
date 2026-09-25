@@ -277,7 +277,8 @@ export interface PendingCallDefaultCandidate {
 }
 
 /**
- * Prop default is a named value import (`export let delay = DELAY_MS`).
+ * Prop default is a named value import (`export let delay = DELAY_MS`), or
+ * a member of a namespace import (`C.DELAY_MS`).
  * `generateBundle` reads the other file via `resolve-const-defaults.ts` and,
  * for an `export const` primitive literal, writes the literal as the default.
  */
@@ -286,16 +287,21 @@ export interface PendingConstDefaultCandidate {
   location: "props" | "moduleExports";
   importSource: string;
   importedName: string;
+  /** Members read off the import, through namespace exports: `["DELAY"]` for `C.timing.DELAY`. */
+  members?: string[];
 }
 
 /**
- * Named-import `setContext` key (`import { KEY } from "./mod.js"`).
- * `generateBundle` reads the other file via `resolve-context-keys.ts`.
- * Properties and description are already filled in from the value argument.
+ * Imported `setContext` key (`import { KEY } from "./mod.js"`, or `keys.KEY`
+ * off a namespace import). `generateBundle` reads the other file via
+ * `resolve-context-keys.ts`. Properties and description are already filled
+ * in from the value argument.
  */
 export interface PendingContextKeyCandidate {
   importSource: string;
   importedName: string;
+  /** Members read off the import, through namespace exports: `["THEME"]` for `ns.keys.THEME`. */
+  members?: string[];
   /** See {@link ComponentContext.type}. */
   type?: string;
   properties: ComponentContextProp[];

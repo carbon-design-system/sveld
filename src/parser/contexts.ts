@@ -6,9 +6,10 @@ import type { ParserContext } from "./context";
 import { recordDiagnostic } from "./diagnostics";
 import { parseObjectTypeLiteralMembers } from "./object-type-literal";
 import { inferVariableInitializerType, literalValueType, resolveConstInitializer } from "./props";
-import { isBoundInNestedScope } from "./scopes";
+import { isBoundInNestedScope, isCalleeBoundInNestedScope } from "./scopes";
 import { sourceForExpression, sourceRangeFromNode } from "./source-position";
 import { trackAdditionalTypeDependencyNode } from "./type-resolution";
+import { importedMemberBinding } from "./value-imports";
 
 /**
  * {@link ComponentParser.findVariableTypeAndDescription} for a variable whose
@@ -312,15 +313,25 @@ function resolveSymbolKeyDescription(node: CallExpression | NewExpression): stri
 /** How a `setContext` key expression resolved. */
 type ContextKeyResolution =
   | { kind: "resolved"; key: string }
-  /** Named import. Resolved later by reading the other file. */
-  | { kind: "pending"; importSource: string; importedName: string }
+  /** Named import, or a member of a namespace import. Resolved later by reading the other file. */
+  | { kind: "pending"; importSource: string; importedName: string; members?: string[] }
   | { kind: "unresolved" };
+
+/**
+ * The export an imported key names, from the module it's imported from:
+ * `KEY`, or `keys.KEY` read through a namespace export. Labels the context
+ * in diagnostics until the key is known.
+ */
+export function importedContextKeyLabel(key: { importedName: string; members?: string[] }): string {
+  return [key.importedName, ...(key.members ?? [])].join(".");
+}
 
 /**
  * Resolve a `setContext` key. Literals, static templates, local `const`
  * chains (depth 5), and `Symbol()` become `{ kind: "resolved" }`. A
- * `Symbol()` with no description uses the binding name. A named import is
- * `{ kind: "pending" }` so `generateBundle` can read the other file.
+ * `Symbol()` with no description uses the binding name. A named import,
+ * or a member of a namespace import (`keys.THEME`), is `{ kind: "pending" }`
+ * so `generateBundle` can read the other file.
  */
 function resolveContextKey(ctx: ParserContext, keyArg: unknown, depth = 0): ContextKeyResolution {
   if (!keyArg || typeof keyArg !== "object" || !("type" in keyArg)) return { kind: "unresolved" };
@@ -363,6 +374,20 @@ function resolveContextKey(ctx: ParserContext, keyArg: unknown, depth = 0): Cont
     }
 
     return { kind: "unresolved" };
+  }
+
+  if (node.type === "MemberExpression") {
+    // As for an identifier: a parameter or nested declaration named like the import hides it.
+    const importBinding =
+      depth === 0 && isCalleeBoundInNestedScope(ctx, node) ? undefined : importedMemberBinding(ctx, node);
+    if (importBinding) {
+      return {
+        kind: "pending",
+        importSource: importBinding.source,
+        importedName: importBinding.importedName,
+        ...(importBinding.members ? { members: importBinding.members } : {}),
+      };
+    }
   }
 
   return { kind: "unresolved" };
@@ -419,11 +444,13 @@ export function parseSetContextCall(ctx: ParserContext, parser: ComponentParser,
      * Properties come from the local value. The key is resolved later; until
      * then the imported name labels this context in diagnostics.
      */
-    const contextInfo = parseContextValue(ctx, parser, valueArg, resolution.importedName);
+    const label = importedContextKeyLabel(resolution);
+    const contextInfo = parseContextValue(ctx, parser, valueArg, label);
     if (contextInfo) {
       ctx.pendingContextKeyCandidates.push({
         importSource: resolution.importSource,
         importedName: resolution.importedName,
+        ...(resolution.members ? { members: resolution.members } : {}),
         ...(contextInfo.type === undefined ? {} : { type: contextInfo.type }),
         properties: contextInfo.properties,
         description: contextInfo.description,
@@ -432,7 +459,7 @@ export function parseSetContextCall(ctx: ParserContext, parser: ComponentParser,
         source: callSource,
       });
     } else {
-      recordContextValueUnresolved(ctx, resolution.importedName, resolution.importedName, valueArg, callSource);
+      recordContextValueUnresolved(ctx, label, label, valueArg, callSource);
     }
     return;
   }

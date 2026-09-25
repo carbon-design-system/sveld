@@ -423,6 +423,50 @@ describe("cross-file setContext key resolution", () => {
     expect(result.diagnostics).toMatchObject([{ kind: "context-key-unresolved", name: "KEY" }]);
   });
 
+  test("resolves a key read off a namespace import, through `export * as` chains", async () => {
+    writeFileSync(path.join(dir, "keys.js"), 'export const THEME = "theme";\nexport const TABS = Symbol("tabs");\n');
+    writeFileSync(path.join(dir, "barrel.js"), 'export * as keys from "./keys.js";\n');
+    writeFileSync(path.join(dir, "outer.js"), 'import * as inner from "./barrel.js";\nexport { inner };\n');
+    writeFileSync(
+      path.join(dir, "Theme.svelte"),
+      `<script>
+  import { setContext } from "svelte";
+  import * as keys from "./keys.js";
+  import * as barrel from "./barrel.js";
+  import { inner } from "./outer.js";
+
+  setContext(keys.THEME, { a: 1 });
+  setContext(barrel.keys.TABS, { b: 1 });
+  setContext(inner.keys.MISSING, { c: 1 });
+
+  function register(keys) {
+    setContext(keys.THEME, { d: 1 });
+  }
+  register({ THEME: "runtime" });
+</script>
+`,
+    );
+    writeFileSync(path.join(dir, "index.js"), `export { default as Theme } from "./Theme.svelte";\n`);
+
+    const result = await generateBundle(path.join(dir, "index.js"), true);
+    const component = byModuleName(result.allComponentsForTypes, "Theme");
+
+    expect(component?.contexts).toMatchObject([
+      { key: "theme", properties: [{ name: "a" }] },
+      { key: "tabs", properties: [{ name: "b" }] },
+    ]);
+    const diagnostics = result.diagnostics.toSorted(
+      (a, b) => (a.source?.start.line ?? 0) - (b.source?.start.line ?? 0),
+    );
+    expect(diagnostics.map((d) => [d.kind, d.name, d.source?.start.line])).toEqual([
+      ["context-key-unresolved", "inner.keys.MISSING", 9],
+      ["context-key-unresolved", "keys.THEME", 12],
+    ]);
+    expect(diagnostics[0].message).toBe(
+      'setContext key `inner.keys.MISSING` from "./outer.js" isn\'t an `export const` string or Symbol() sveld can read; the context is skipped.',
+    );
+  });
+
   test("local const resolves without an import", async () => {
     writeFileSync(
       path.join(dir, "Modal.svelte"),
