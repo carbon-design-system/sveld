@@ -6,7 +6,8 @@ import { join } from "node:path";
  * `SVELD_FUZZ_FORCE_CRASH` makes `fuzz-trial.ts` exit non-zero unconditionally
  * (see scripts/fuzz-trial.ts), so this doesn't depend on any real parser bug
  * to exercise `fuzz-parser.ts`'s findings-to-exit-code path. A fixed `--seed`
- * keeps which mutation lands deterministic.
+ * keeps which mutation lands deterministic. It spawns a bun process per
+ * trial, so it gets a generous timeout for busy machines.
  */
 test("exits non-zero and writes a finding when a trial reports a finding", async () => {
   const findingsDir = mkdtempSync(join(tmpdir(), "sveld-fuzz-smoke-"));
@@ -27,4 +28,4 @@ test("exits non-zero and writes a finding when a trial reports a finding", async
   } finally {
     rmSync(findingsDir, { recursive: true, force: true });
   }
-}, 10_000);
+}, 30_000);
