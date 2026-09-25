@@ -1,4 +1,4 @@
-import type { DeprecatedValue } from "../ComponentParser";
+import type { ComponentClassMember, ComponentProp, DeprecatedValue } from "../ComponentParser";
 import type { InlinedTypes } from "../inline-types";
 import { getParsedComponentTypeScriptMetadata } from "../parsed-component-metadata";
 import { splitTopLevelCommas } from "../parser/generics";
@@ -1119,11 +1119,66 @@ function genModuleReExports(def: Pick<ComponentDocApi, "moduleExports">, comment
     .join("\n\n");
 }
 
+/**
+ * One class member as a declaration signature, without the trailing `;`:
+ * `static create<U>(value: U): Store<U>`, `readonly size: number`,
+ * `constructor(initial: T)`. Shared by the `.d.ts` class body and the
+ * Markdown members table.
+ */
+export function formatClassMemberSignature(member: ComponentClassMember): string {
+  const modifiers = [
+    member.static ? "static " : "",
+    member.abstract ? "abstract " : "",
+    member.readonly ? "readonly " : "",
+  ].join("");
+  const optional = member.optional ? "?" : "";
+  if (member.kind === "property") return `${modifiers}${formatKey(member.name)}${optional}: ${member.type ?? ANY_TYPE}`;
+  const params = (member.params ?? [])
+    .map((param) => `${param.name}${param.optional ? "?" : ""}: ${param.type}`)
+    .join(", ");
+  if (member.kind === "constructor") return `constructor(${params})`;
+  const typeParameters = member.typeParameters ? `<${member.typeParameters}>` : "";
+  return `${modifiers}${formatKey(member.name)}${optional}${typeParameters}(${params}): ${member.returnType ?? ANY_TYPE}`;
+}
+
+/**
+ * A module-script class as `export declare class`. A class exported under
+ * another name (`export { Store as Alias }`, or a string name) is declared
+ * under its own name, which its members may refer to, then exported by the
+ * public one; `declared` keeps a class exported twice from being declared twice.
+ */
+function genModuleClassExport(prop: ComponentProp, commentLevel: CommentLevel, declared: Set<string>): string {
+  const localName = prop.localName ?? prop.name;
+  const renamed = localName !== prop.name;
+  const exportClause = `export { ${localName}${renamed ? ` as ${moduleExportNameText(prop.name)}` : ""} };`;
+  if (declared.has(localName)) return exportClause;
+  declared.add(localName);
+
+  const typeParameters = prop.typeParameters ? `<${prop.typeParameters}>` : "";
+  const members = (prop.members ?? [])
+    .map((member) => {
+      const comment = wrapCommentInJSDoc(
+        createPropComment(member.description, member.deprecated, member.tags, commentLevel),
+      );
+      return [comment, `${formatClassMemberSignature(member)};`].filter(Boolean).join("\n");
+    })
+    .join("\n\n");
+  const header = `${renamed ? "" : "export "}declare ${prop.abstract ? "abstract " : ""}class ${localName}${typeParameters}`;
+  const declaration = [
+    wrapCommentInJSDoc(createPropComment(prop.description, prop.deprecated, prop.tags, commentLevel)),
+    members ? `${header} {\n${members}\n}` : `${header} {}`,
+    renamed ? exportClause : "",
+  ];
+  return `\n${declaration.filter(Boolean).join("\n")}`;
+}
+
 function genModuleExports(def: Pick<ComponentDocApi, "moduleExports">, commentLevel: CommentLevel = "all") {
   const reExports = genModuleReExports(def, commentLevel);
+  const declaredClasses = new Set<string>();
   const declarations = def.moduleExports
     .filter((prop) => prop.kind !== "re-export")
     .map((exported) => {
+      if (exported.kind === "class") return genModuleClassExport(exported, commentLevel, declaredClasses);
       // `export { a as "some-name" }`: declare under a private identifier, then export it by the string name.
       const quoted = !IDENTIFIER_REGEX.test(exported.name);
       const prop = quoted ? { ...exported, name: privateExportName(exported.name) } : exported;

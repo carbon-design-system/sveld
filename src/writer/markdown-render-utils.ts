@@ -19,6 +19,7 @@ import {
   formatSlotProps,
   MD_TYPE_UNDEFINED,
   PROP_TABLE_HEADER,
+  renderClassMemberTables,
   SLOT_TABLE_HEADER,
   WHITESPACE_REGEX,
 } from "./markdown-format-utils";
@@ -117,6 +118,7 @@ function renderModuleExports(document: MarkdownDocument, moduleExports: Componen
     );
   }
   document.append("raw", "\n");
+  renderClassMemberTables(document, moduleExports);
 }
 
 function renderSectionIfNotEmpty<TItem>(

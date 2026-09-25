@@ -175,7 +175,7 @@
       "component": "export-specifier-bindings/input.svelte",
       "kind": "export-unresolved",
       "name": "Foo",
-      "message": "export \"Foo\" was skipped because it's a class; sveld doesn't document exported classes.",
+      "message": "export \"Foo\" was skipped because a class can't be a prop; export it from the module script instead.",
       "source": {
         "start": {
           "line": 27,

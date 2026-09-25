@@ -431,6 +431,61 @@ describe("ComponentParser diagnostics", () => {
     expect(diagnostics).toContainEqual(expect.objectContaining({ kind: "module-export-conflict", name: "default" }));
   });
 
+  test("documents a module-script class instead of flagging it", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script module>
+        export class Store {}
+        class Other {}
+        export { Other };
+      </script>
+    `;
+
+    const { diagnostics, moduleExports } = parser.parseSvelteComponent(source, parseContext);
+
+    expect(diagnostics?.some((d) => d.kind === "export-unresolved")).toBe(false);
+    expect(moduleExports.map(({ name, kind }) => ({ name, kind }))).toEqual([
+      { name: "Store", kind: "class" },
+      { name: "Other", kind: "class" },
+    ]);
+  });
+
+  test("skips and flags a module-script class exported as default", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script module>
+        class Store {}
+        export { Store as default };
+      </script>
+    `;
+
+    const { diagnostics, moduleExports } = parser.parseSvelteComponent(source, parseContext);
+
+    expect(moduleExports).toEqual([]);
+    expect(diagnostics).toContainEqual(expect.objectContaining({ kind: "module-export-conflict", name: "default" }));
+  });
+
+  test("flags an instance-script class export, which can't be a prop", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        class Store {}
+        export { Store };
+      </script>
+    `;
+
+    const { diagnostics, props } = parser.parseSvelteComponent(source, parseContext);
+
+    expect(props).toEqual([]);
+    expect(diagnostics).toContainEqual(
+      expect.objectContaining({
+        kind: "export-unresolved",
+        name: "Store",
+        message: expect.stringContaining("module script"),
+      }),
+    );
+  });
+
   test("does not flag a specifier export resolving to a local declaration", () => {
     const parser = new ComponentParser();
     const source = `

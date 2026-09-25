@@ -27,6 +27,7 @@ import type { SveldDiagnostic } from "./diagnostics";
 import { getElementByTag } from "./element-tag-map";
 import { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "./parsed-component-metadata";
 import { resolveMemberExpressionType } from "./parser/bindings";
+import { type ClassDeclarationLike, readClassDeclaration } from "./parser/classes";
 import { createParserContext, type ParserContext } from "./parser/context";
 import { parseSetContextCall } from "./parser/contexts";
 import { buildDiagnostic, isSveldIgnored, recordDiagnostic, recordSveldIgnore } from "./parser/diagnostics";
@@ -491,6 +492,34 @@ export interface ComponentPropReExport {
   imported: string;
 }
 
+/**
+ * One public member of a module-script class export
+ * ({@link ComponentProp.members}). Private (`#x`, `private`) and
+ * `protected` members, and `@internal`/`@ignore` ones, are left out.
+ */
+export interface ComponentClassMember {
+  /** `"property"` covers fields, constructor parameter properties, and getter/setter pairs. */
+  kind: "constructor" | "method" | "property";
+  /** Member name; `"constructor"` for the constructor. */
+  name: string;
+  /** Property type text; `"any"` when neither TypeScript nor JSDoc types it. */
+  type?: string;
+  /** Method or constructor parameters, typed from TypeScript or JSDoc `@param`, else `"any"`. A rest parameter's name starts with `...`. */
+  params?: ComponentPropParam[];
+  /** Method return type from TypeScript or JSDoc `@returns`; unset when neither gives one. */
+  returnType?: string;
+  /** A method's own type parameter list (`U extends object`), without the angle brackets. */
+  typeParameters?: string;
+  static?: true;
+  /** A `readonly` field, or a getter with no setter. */
+  readonly?: true;
+  optional?: true;
+  abstract?: true;
+  description?: string;
+  deprecated?: DeprecatedValue;
+  tags?: JsDocPassthroughTag[];
+}
+
 export interface ComponentProp {
   /** Public prop name; `"*"` for a bare `export * from "..."`. */
   name: string;
@@ -498,8 +527,10 @@ export interface ComponentProp {
    * `"let"` (required), `"const"` (default), or `"function"`. `"re-export"`
    * is module-export only: `export { x } from "..."`, `export * from "..."`,
    * or `export { x }` of an imported binding, written to the `.d.ts` as-is.
+   * `"class"` is module-export only too: a class the module script declares,
+   * with its public surface in {@link ComponentProp.members}.
    */
-  kind: "let" | "const" | "function" | "re-export";
+  kind: "let" | "const" | "function" | "re-export" | "class";
   /** True when declared with `const`. */
   constant: boolean;
   /** TypeScript type text. */
@@ -522,8 +553,13 @@ export interface ComponentProp {
    * A function's own type parameter list from its `@template` tags (e.g.
    * `T extends { id: string }`), without the angle brackets. Also prefixed
    * onto `type` when that signature is built from `@param`/`@returns`.
+   * For a `"class"`, the class's type parameters, from TypeScript or `@template`.
    */
   typeParameters?: string;
+  /** Set when `kind` is `"class"`: its public constructor, methods, and properties, in source order. */
+  members?: ComponentClassMember[];
+  /** Set when `kind` is `"class"` and the class is `abstract`. */
+  abstract?: true;
   /**
    * True for arrow/function-expression initializers and bare `function`
    * declarations in every mode; additionally true for a function-shaped
@@ -1149,15 +1185,49 @@ export default class ComponentParser {
     return { ...declarationJSDoc, ...listFields, internal: listJSDoc.internal || declarationJSDoc.internal };
   }
 
-  /** `export class Foo {}` or `export { Foo }` of a class: neither a prop nor a documented accessor. */
+  /** An instance-script `export class Foo {}` or `export { Foo }` of a class: neither a prop nor a documented accessor. */
   private recordClassExport(node: ExportNamedDeclaration, exportedName: string) {
     recordDiagnostic(
       this.ctx,
       "export-unresolved",
       exportedName,
-      `export "${exportedName}" was skipped because it's a class; sveld doesn't document exported classes.`,
+      `export "${exportedName}" was skipped because a class can't be a prop; export it from the module script instead.`,
       sourceRangeFromNode(this.ctx, node),
     );
+  }
+
+  /** A module-script `export class Foo {}` or `export { Foo }` of a class, with its public members. */
+  private addModuleClassExport(
+    node: ExportNamedDeclaration,
+    declaration: ClassDeclaration,
+    specifier: ResolvedExportSpecifier | undefined,
+  ) {
+    const localName = declaration.id?.name;
+    if (!localName) return;
+    const name = specifier?.exportedName ?? localName;
+    const jsdocInfo = this.exportJSDoc(node, specifier);
+    const { members, typeParameters } = readClassDeclaration(this.ctx, this, declaration as ClassDeclarationLike);
+    const classTypeParameters = typeParameters ?? jsdocInfo?.typeParameters;
+
+    this.addModuleExport(name, {
+      name,
+      ...(localName === name ? {} : { localName }),
+      kind: "class",
+      description: jsdocInfo?.description,
+      deprecated: jsdocInfo?.deprecated,
+      tags: jsdocInfo?.tags,
+      ...(jsdocInfo?.internal ? { internal: true as const } : {}),
+      type: `typeof ${localName}`,
+      ...(classTypeParameters ? { typeParameters: classTypeParameters } : {}),
+      members,
+      ...((declaration as { abstract?: boolean }).abstract ? { abstract: true as const } : {}),
+      isFunction: false,
+      isFunctionDeclaration: false,
+      isRequired: false,
+      constant: false,
+      reactive: false,
+      source: sourceRangeFromNode(this.ctx, node),
+    });
   }
 
   /**
@@ -1490,9 +1560,7 @@ export default class ComponentParser {
 
           if (declarators.length === 0) return;
         } else {
-          if (declaration.type === "ClassDeclaration" && declaration.id) {
-            this.recordClassExport(node, specifier?.exportedName ?? declaration.id.name);
-          }
+          if (declaration.type === "ClassDeclaration") this.addModuleClassExport(node, declaration, specifier);
           return;
         }
 

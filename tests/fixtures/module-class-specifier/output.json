@@ -1,0 +1,154 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 28,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [
+    {
+      "name": "Counter",
+      "kind": "class",
+      "description": "Counts things.",
+      "type": "typeof Counter",
+      "members": [
+        {
+          "kind": "constructor",
+          "name": "constructor",
+          "params": [
+            {
+              "name": "start",
+              "type": "number"
+            }
+          ]
+        },
+        {
+          "kind": "property",
+          "name": "count",
+          "type": "number"
+        },
+        {
+          "kind": "method",
+          "name": "increment",
+          "returnType": "Counter"
+        }
+      ],
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 20,
+          "column": 2
+        },
+        "end": {
+          "line": 20,
+          "column": 67
+        }
+      }
+    },
+    {
+      "name": "Tally",
+      "localName": "Counter",
+      "kind": "class",
+      "description": "Counts things.",
+      "type": "typeof Counter",
+      "members": [
+        {
+          "kind": "constructor",
+          "name": "constructor",
+          "params": [
+            {
+              "name": "start",
+              "type": "number"
+            }
+          ]
+        },
+        {
+          "kind": "property",
+          "name": "count",
+          "type": "number"
+        },
+        {
+          "kind": "method",
+          "name": "increment",
+          "returnType": "Counter"
+        }
+      ],
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 20,
+          "column": 2
+        },
+        "end": {
+          "line": 20,
+          "column": 67
+        }
+      }
+    },
+    {
+      "name": "counter-class",
+      "localName": "Counter",
+      "kind": "class",
+      "description": "Counts things.",
+      "type": "typeof Counter",
+      "members": [
+        {
+          "kind": "constructor",
+          "name": "constructor",
+          "params": [
+            {
+              "name": "start",
+              "type": "number"
+            }
+          ]
+        },
+        {
+          "kind": "property",
+          "name": "count",
+          "type": "number"
+        },
+        {
+          "kind": "method",
+          "name": "increment",
+          "returnType": "Counter"
+        }
+      ],
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 20,
+          "column": 2
+        },
+        "end": {
+          "line": 20,
+          "column": 67
+        }
+      }
+    }
+  ],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}

@@ -183,6 +183,26 @@ describe("renderLlmsDocuments", () => {
     expect(llmsFullTxt).toContain("DEFAULT_OPTION");
   });
 
+  test("llms-full.txt lists a class module export's members", () => {
+    const example = mockComponentDocApi("Example", "Example.svelte", {
+      syntaxMode: "legacy",
+      moduleExports: [
+        mockProp("Store", {
+          kind: "class",
+          type: "typeof Store",
+          isRequired: false,
+          members: [{ kind: "method", name: "reset", returnType: "void", description: "Clears it." }],
+        }),
+      ],
+    });
+
+    const { llmsFullTxt } = renderLlmsDocuments(new Map([["Example", example]]), { title: "lib" });
+
+    expect(llmsFullTxt).toContain("| Store | <code>typeof Store</code> | -- | No |");
+    expect(llmsFullTxt).toContain("#### `Store` members");
+    expect(llmsFullTxt).toContain("| reset | <code>reset(): void</code> | Clears it. |");
+  });
+
   test("props and events tables render pass-through tags like slots do", () => {
     const example = mockComponentDocApi("Example", "Example.svelte", {
       syntaxMode: "legacy",

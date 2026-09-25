@@ -1,0 +1,238 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 94,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "ts",
+  "props": [
+    {
+      "name": "store",
+      "kind": "let",
+      "type": "Store<{ id: string }>",
+      "typeSource": "typescript",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 90,
+          "column": 2
+        },
+        "end": {
+          "line": 90,
+          "column": 42
+        }
+      }
+    }
+  ],
+  "moduleExports": [
+    {
+      "name": "Store",
+      "kind": "class",
+      "description": "A value holder.",
+      "tags": [
+        {
+          "name": "since",
+          "body": "1.2.0"
+        }
+      ],
+      "type": "typeof Store",
+      "typeParameters": "T extends object = Record<string, unknown>",
+      "members": [
+        {
+          "kind": "property",
+          "name": "value",
+          "type": "T",
+          "description": "Current value."
+        },
+        {
+          "kind": "property",
+          "name": "count",
+          "type": "number",
+          "static": true,
+          "readonly": true
+        },
+        {
+          "kind": "property",
+          "name": "label",
+          "type": "string",
+          "optional": true
+        },
+        {
+          "kind": "constructor",
+          "name": "constructor",
+          "params": [
+            {
+              "name": "initial",
+              "type": "T"
+            },
+            {
+              "name": "name",
+              "type": "any",
+              "optional": true
+            },
+            {
+              "name": "options",
+              "type": "Options",
+              "optional": true
+            }
+          ]
+        },
+        {
+          "kind": "property",
+          "name": "name",
+          "type": "any",
+          "readonly": true
+        },
+        {
+          "kind": "method",
+          "name": "create",
+          "static": true,
+          "params": [
+            {
+              "name": "value",
+              "type": "U"
+            }
+          ],
+          "returnType": "Store<U>",
+          "typeParameters": "U extends object",
+          "description": "Creates a store."
+        },
+        {
+          "kind": "method",
+          "name": "subscribe",
+          "params": [
+            {
+              "name": "run",
+              "type": "(value: T) => void"
+            }
+          ],
+          "returnType": "() => void",
+          "description": "Subscribes to changes.",
+          "deprecated": "Use `listen` instead."
+        },
+        {
+          "kind": "method",
+          "name": "snapshot",
+          "returnType": "Snapshot<T>"
+        },
+        {
+          "kind": "method",
+          "name": "format",
+          "params": [
+            {
+              "name": "value",
+              "type": "string"
+            }
+          ],
+          "returnType": "string"
+        },
+        {
+          "kind": "method",
+          "name": "format",
+          "params": [
+            {
+              "name": "value",
+              "type": "number"
+            }
+          ],
+          "returnType": "string"
+        },
+        {
+          "kind": "method",
+          "name": "load",
+          "params": [
+            {
+              "name": "...keys",
+              "type": "string[]"
+            }
+          ],
+          "returnType": "Promise<any>"
+        },
+        {
+          "kind": "property",
+          "name": "size",
+          "type": "number",
+          "readonly": true
+        },
+        {
+          "kind": "property",
+          "name": "mode",
+          "type": "\"a\" | \"b\""
+        },
+        {
+          "kind": "method",
+          "name": "maybe",
+          "optional": true,
+          "returnType": "void"
+        }
+      ],
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 16,
+          "column": 2
+        },
+        "end": {
+          "line": 81,
+          "column": 3
+        }
+      }
+    },
+    {
+      "name": "Base",
+      "kind": "class",
+      "type": "typeof Base",
+      "members": [
+        {
+          "kind": "method",
+          "name": "run",
+          "abstract": true,
+          "returnType": "void"
+        },
+        {
+          "kind": "property",
+          "name": "id",
+          "type": "string",
+          "abstract": true,
+          "readonly": true
+        }
+      ],
+      "abstract": true,
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 83,
+          "column": 2
+        },
+        "end": {
+          "line": 86,
+          "column": 3
+        }
+      }
+    }
+  ],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}

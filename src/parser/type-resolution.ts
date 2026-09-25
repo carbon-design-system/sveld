@@ -379,16 +379,21 @@ export function buildEnumLocalTypeDeclarationCode(
   return verbatim ? `declare ${verbatim}` : undefined;
 }
 
+/** A function parameter's AST shape, read for signature text. */
+type FunctionParamLike = {
+  type?: string;
+  name?: string;
+  optional?: boolean;
+  typeAnnotation?: { start?: number; end?: number; typeAnnotation?: ModernRunesTypeNode };
+  left?: { name?: string; typeAnnotation?: { start?: number; end?: number; typeAnnotation?: ModernRunesTypeNode } };
+  argument?: { name?: string };
+  /** `TSParameterProperty` (`constructor(public x: T)`): the parameter it wraps. */
+  parameter?: FunctionParamLike;
+};
+
 /** A `FunctionDeclaration` param/return-type AST shape, read for accessor signature text. */
 export type FunctionDeclarationLike = {
-  params?: Array<{
-    type?: string;
-    name?: string;
-    optional?: boolean;
-    typeAnnotation?: { start?: number; end?: number; typeAnnotation?: ModernRunesTypeNode };
-    left?: { name?: string; typeAnnotation?: { start?: number; end?: number; typeAnnotation?: ModernRunesTypeNode } };
-    argument?: { name?: string };
-  }>;
+  params?: FunctionParamLike[];
   returnType?: { start?: number; end?: number; typeAnnotation?: ModernRunesTypeNode };
   typeParameters?: {
     start?: number;
@@ -396,6 +401,71 @@ export type FunctionDeclarationLike = {
     params?: Array<{ constraint?: ModernRunesTypeNode; default?: ModernRunesTypeNode }>;
   };
 };
+
+/** One parameter of {@link FunctionDeclarationParts}. `type` is unset when it has no annotation. */
+export interface FunctionDeclarationParam {
+  name: string;
+  type?: string;
+  optional: boolean;
+  rest: boolean;
+}
+
+/** A function's own TS annotations, as text. Each unset field had no annotation. */
+export interface FunctionDeclarationParts {
+  params: FunctionDeclarationParam[];
+  returnType?: string;
+  /** `<V extends Item = Item>`, with the angle brackets. */
+  typeParameters?: string;
+}
+
+/**
+ * Reads a function's type parameters, params (name, annotation, optional,
+ * rest), and return type from its own TS annotations, and records each
+ * annotation so the `.d.ts` pulls in the types it names.
+ */
+export function readFunctionDeclarationParts(
+  ctx: ParserContext,
+  funcDecl: FunctionDeclarationLike,
+): FunctionDeclarationParts {
+  const params: FunctionDeclarationParam[] = [];
+
+  for (const rawParam of funcDecl.params ?? []) {
+    const param = rawParam.type === "TSParameterProperty" && rawParam.parameter ? rawParam.parameter : rawParam;
+    if (param.type === "RestElement") {
+      trackAdditionalTypeDependencyNode(ctx, param.typeAnnotation?.typeAnnotation);
+      params.push({
+        name: param.argument?.name ?? "rest",
+        type: getTypeAnnotationText(ctx, param.typeAnnotation),
+        optional: false,
+        rest: true,
+      });
+      continue;
+    }
+
+    const hasDefault = param.type === "AssignmentPattern";
+    const target = hasDefault ? param.left : param;
+    trackAdditionalTypeDependencyNode(ctx, target?.typeAnnotation?.typeAnnotation);
+    params.push({
+      name: target?.name ?? "arg",
+      type: getTypeAnnotationText(ctx, target?.typeAnnotation),
+      optional: hasDefault || param.optional === true,
+      rest: false,
+    });
+  }
+
+  trackAdditionalTypeDependencyNode(ctx, funcDecl.returnType?.typeAnnotation);
+  for (const typeParameter of funcDecl.typeParameters?.params ?? []) {
+    trackAdditionalTypeDependencyNode(ctx, typeParameter.constraint);
+    trackAdditionalTypeDependencyNode(ctx, typeParameter.default);
+  }
+
+  return {
+    params,
+    returnType: getTypeAnnotationText(ctx, funcDecl.returnType),
+    // Verbatim, so the parameter and return types that name `V` still resolve.
+    typeParameters: getTypeNodeText(ctx, funcDecl.typeParameters) || undefined,
+  };
+}
 
 /**
  * Builds a `<T>(params) => ReturnType` signature string from a `FunctionDeclaration`'s
@@ -408,43 +478,15 @@ export function buildFunctionDeclarationSignature(
   ctx: ParserContext,
   funcDecl: FunctionDeclarationLike,
 ): { signature: string; hasAnnotations: boolean } {
-  let hasAnnotations = false;
-  const paramTexts: string[] = [];
-
-  for (const param of funcDecl.params ?? []) {
-    if (param.type === "RestElement") {
-      const name = param.argument?.name ?? "rest";
-      const typeText = getTypeAnnotationText(ctx, param.typeAnnotation);
-      if (typeText) hasAnnotations = true;
-      trackAdditionalTypeDependencyNode(ctx, param.typeAnnotation?.typeAnnotation);
-      paramTexts.push(`...${name}: ${typeText ?? "any[]"}`);
-      continue;
-    }
-
-    const hasDefault = param.type === "AssignmentPattern";
-    const target = hasDefault ? param.left : param;
-    const name = target?.name ?? "arg";
-    const typeText = getTypeAnnotationText(ctx, target?.typeAnnotation);
-    if (typeText) hasAnnotations = true;
-    trackAdditionalTypeDependencyNode(ctx, target?.typeAnnotation?.typeAnnotation);
-    const optional = hasDefault || param.optional === true;
-    paramTexts.push(`${name}${optional ? "?" : ""}: ${typeText ?? "any"}`);
-  }
-
-  const returnTypeText = getTypeAnnotationText(ctx, funcDecl.returnType);
-  if (returnTypeText) hasAnnotations = true;
-  trackAdditionalTypeDependencyNode(ctx, funcDecl.returnType?.typeAnnotation);
-
-  // `<V extends Item = Item>`, verbatim, so the parameter and return types that name `V` still resolve.
-  const typeParametersText = getTypeNodeText(ctx, funcDecl.typeParameters) ?? "";
-  if (typeParametersText) hasAnnotations = true;
-  for (const typeParameter of funcDecl.typeParameters?.params ?? []) {
-    trackAdditionalTypeDependencyNode(ctx, typeParameter.constraint);
-    trackAdditionalTypeDependencyNode(ctx, typeParameter.default);
-  }
+  const { params, returnType, typeParameters } = readFunctionDeclarationParts(ctx, funcDecl);
+  const paramTexts = params.map(({ name, type, optional, rest }) =>
+    rest ? `...${name}: ${type ?? "any[]"}` : `${name}${optional ? "?" : ""}: ${type ?? "any"}`,
+  );
+  const hasAnnotations =
+    returnType !== undefined || typeParameters !== undefined || params.some((param) => param.type !== undefined);
 
   return {
-    signature: `${typeParametersText}(${paramTexts.join(", ")}) => ${returnTypeText ?? "any"}`,
+    signature: `${typeParameters ?? ""}(${paramTexts.join(", ")}) => ${returnType ?? "any"}`,
     hasAnnotations,
   };
 }

@@ -438,7 +438,7 @@ Every diagnostic carries a stable, namespaced `code` (`"sveld/<kind>"`) alongsid
 | `sveld/context-key-unresolved` | `warning` | Use a string literal, a `const`-bound string, `Symbol()`, or a string or `Symbol()` `export const` imported from a relative module as the `setContext` key; otherwise the context is left out of every output. |
 | `sveld/context-value-unresolved` | `warning` | Pass an object literal or a typed variable as the `setContext` value (e.g. `const store = writable(0);` with a `@type` annotation, or `{ store }`); a call or other expression has no shape sveld can describe, so the context is left out of every output. |
 | `sveld/spread-unresolved` | `warning` | Spread a local object literal or a variable with a resolvable type instead; otherwise the spread widens the generated type to `Record<string, any>`. |
-| `sveld/export-unresolved` | `warning` | Export a local declaration directly. Instance-script exports are props, so move a re-export (`export { x } from "..."`, or `export { x }` of an import) into `<script context="module">`, where sveld writes it to the `.d.ts` as-is. Exported classes aren't documented; export them from a separate `.js`/`.ts` module instead. |
+| `sveld/export-unresolved` | `warning` | Export a local declaration directly. Instance-script exports are props, so move a re-export (`export { x } from "..."`, or `export { x }` of an import) into `<script context="module">`, where sveld writes it to the `.d.ts` as-is. A class can't be a prop either, so export it from `<script context="module">`, where sveld documents it. |
 | `sveld/module-export-conflict` | `warning` | Rename the module-script export. `default` is always skipped (it collides with the component itself); a name matching the generated `<Name>Props`/`<Name>Exports` type breaks the `.d.ts` if the export carries a type. |
 | `sveld/extend-props-target-missing` | `error` | Point `@extends`/`@extendProps` at a file that exists, and (for a bundled `.svelte` target) name its generated `<Name>Props` interface exactly. |
 | `sveld/extend-props-duplicate` | `warning` | Remove the extra `@extends`/`@extendProps` tag; only the last one is used. |
@@ -1058,7 +1058,23 @@ typesOptions: {
 
 Any key left out defaults to `true`.
 
-`<script context="module">` exports (`export declare const` / `export declare function`) are real runtime exports and are always emitted as exports, regardless of `exportTypes`. So are the types a module script exports (`export interface Item`, `export type Mode`, `export type { Local }`), since they're part of the component module's API.
+`<script context="module">` exports (`export declare const` / `export declare function` / `export declare class`) are real runtime exports and are always emitted as exports, regardless of `exportTypes`. So are the types a module script exports (`export interface Item`, `export type Mode`, `export type { Local }`), since they're part of the component module's API.
+
+A module-script class (`export class Store {}`, or `class Store {}` then `export { Store }`) is emitted with its public surface: the constructor, methods (with their overload signatures, if any), fields, constructor parameter properties, getter/setter pairs, and `static`/`readonly`/`abstract`/optional modifiers. Types come from TypeScript annotations, then JSDoc (`@param`, `@returns`, `@type`, and `@template` on the class or a method), and are `any` otherwise. In a JS script, a `this.x = ...` assignment in the constructor declares property `x`. Private (`#x`, `private`), `protected`, computed-key, and `@internal` members are left out, as are `extends` and `implements` clauses.
+
+```ts
+export declare class Store<T> {
+  constructor(initial: T);
+
+  value: T;
+
+  static create<U>(value: U): Store<U>;
+
+  subscribe(run: (value: T) => void): () => void;
+}
+```
+
+In JSON the class is a `moduleExports` entry with `kind: "class"`, `type: "typeof Store"`, and its members under `members`; the Markdown and `llms-full.txt` output list them in a members table after the Module exports table.
 
 One exception: when a bundled component uses [`@extendProps`](#extendprops) to extend another bundled component, sveld emits `import type { ButtonProps } from "./Button.svelte"` in the extending component's `.d.ts`. If `Button`'s props type stopped being exported, that import would break — so sveld always keeps a component's props type exported when another component in the same run extends it, even under `exportTypes: false`.
 
@@ -1543,7 +1559,8 @@ interface ComponentDocApi {
 interface ComponentProp {
   name: string;
   localName?: string;
-  kind: "let" | "const" | "function";
+  // "re-export" and "class" are module exports only.
+  kind: "let" | "const" | "function" | "re-export" | "class";
   constant: boolean;
   type?: string;
   typeSource?: "typescript" | "jsdoc" | "default" | "inferred" | "unknown";
@@ -1562,6 +1579,23 @@ interface ComponentProp {
   reactive: boolean;
   binding?: "readonly" | "writable";
   bindable?: true;
+  // Set when `kind` is "class".
+  members?: Array<{
+    kind: "constructor" | "method" | "property";
+    name: string;
+    type?: string;
+    params?: Array<{ name: string; type: string; description?: string; optional?: boolean }>;
+    returnType?: string;
+    typeParameters?: string;
+    static?: true;
+    readonly?: true;
+    optional?: true;
+    abstract?: true;
+    description?: string;
+    deprecated?: string | true;
+    tags?: Array<{ name: string; body: string }>;
+  }>;
+  abstract?: true;
   source?: SourceRange;
 }
 

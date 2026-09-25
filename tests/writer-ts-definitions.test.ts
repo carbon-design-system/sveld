@@ -552,6 +552,37 @@ describe("writerTsDefinition", () => {
     expect(output).toContain("```svelte");
   });
 
+  test("declares a module-script class once when it's exported under several names", () => {
+    const source = `
+      <script context="module">
+        /** Counts. */
+        class Counter {
+          /** Adds one. */
+          increment() {}
+        }
+        export { Counter as Tally };
+        export { Counter };
+      </script>
+    `;
+    const parsed = new ComponentParser().parseSvelteComponent(source, {
+      moduleName: "Test",
+      filePath: "./Test.svelte",
+    });
+    const component = { ...parsed, moduleName: "Test", filePath: asNormalizedPath("./Test.svelte") };
+
+    const output = writeTsDefinition(component);
+    expect(output.match(/class Counter\b/g)).toHaveLength(1);
+    expect(output).toContain("\ndeclare class Counter {");
+    expect(output).toContain("export { Counter as Tally };");
+    expect(output).toContain("export { Counter };");
+    expect(output).toContain("Adds one.");
+
+    const bare = writeTsDefinition(component, { comments: "none" });
+    expect(bare).not.toContain("Counts.");
+    expect(bare).not.toContain("Adds one.");
+    expect(bare).toContain("increment(): any;");
+  });
+
   test("generates snippet props for named slots (Svelte 5 compatibility)", () => {
     const component_api: ComponentDocApi = {
       moduleName: "CardComponent",

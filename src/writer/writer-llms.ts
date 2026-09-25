@@ -18,6 +18,7 @@ import {
   formatSlotFallback,
   formatSlotProps,
   MD_TYPE_UNDEFINED,
+  renderClassMemberTables,
   SLOT_TABLE_HEADER,
 } from "./markdown-format-utils";
 import Writer from "./Writer";
@@ -134,6 +135,7 @@ function renderComponentFull(document: MarkdownWriterBaseImpl, component: Compon
   renderSlotsSection(document, component.syntaxMode === "runes" ? "Snippets" : "Slots", component.slots);
   renderTypedefsSection(document, component);
   renderPropsTableSection(document, "Module exports", component.moduleExports);
+  renderClassMemberTables(document, component.moduleExports);
 }
 
 function renderLlmsTxt(
