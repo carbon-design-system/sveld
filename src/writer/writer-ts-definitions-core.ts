@@ -2,7 +2,7 @@ import type { ComponentClassMember, ComponentProp, DeprecatedValue } from "../Co
 import type { InlinedTypes } from "../inline-types";
 import { getParsedComponentTypeScriptMetadata } from "../parsed-component-metadata";
 import { splitTopLevelCommas } from "../parser/generics";
-import { escapeCommentText } from "../parser/utils";
+import { escapeCommentText, formatParamList } from "../parser/utils";
 import type { ComponentDocApi } from "../plugin";
 import { formatGeneratedTypeScript } from "./format-generated-ts";
 
@@ -893,11 +893,6 @@ function genEventCallbackProps(
       ${description}${formatKey(propName)}?: (event: ${computeEventTypeString(event)}) => void;`;
     })
     .filter((entry): entry is string => entry !== undefined);
-}
-
-/** `a: string, b?: number` */
-function formatParamList(params: Array<{ name: string; type: string; optional?: boolean }>): string {
-  return params.map((param) => `${param.name}${param.optional ? "?" : ""}: ${param.type}`).join(", ");
 }
 
 /**
