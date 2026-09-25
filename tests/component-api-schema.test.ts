@@ -387,9 +387,9 @@ describe("component API JSON schema", () => {
 });
 
 // Representative directory-name prefixes chosen to cover every syntax mode
-// (runes/legacy), the typedef/context/slot metadata shapes, and entry-barrel
+// (runes/legacy), the typedef/context/slot/module-export metadata shapes, and entry-barrel
 // exports, without validating all ~90 fixtures on every run.
-const FIXTURE_PREFIXES = ["runes-", "legacy-", "typedef-", "context-", "slot-"];
+const FIXTURE_PREFIXES = ["runes-", "legacy-", "typedef-", "context-", "slot-", "module-"];
 
 async function buildRepresentativeFixtureComponents(): Promise<ComponentDocs> {
   const fixturesRoot = path.join(root, "tests", "fixtures");

@@ -1,5 +1,5 @@
 import type { ComponentProp, DeprecatedValue } from "../ComponentParser";
-import { formatTsProps } from "./writer-ts-definitions-core";
+import { formatClassMemberSignature, formatTsProps } from "./writer-ts-definitions-core";
 
 export const BACKTICK_REGEX = /`/g;
 export const WHITESPACE_REGEX = /\s+/g;
@@ -12,6 +12,7 @@ export const SLOT_TABLE_HEADER =
   "| Slot name | Default | Props | Fallback | Description |\n| :- | :- | :- | :- | :- |\n";
 export const EVENT_TABLE_HEADER = "| Event name | Type | Detail | Description |\n| :- | :- | :- | :- |\n";
 export const EXPORT_TABLE_HEADER = "| Name | Kind | Type | Description |\n| :- | :- | :- | :- |\n";
+export const CLASS_MEMBER_TABLE_HEADER = "| Member | Signature | Description |\n| :- | :- | :- |\n";
 export const CSS_PART_TABLE_HEADER = "| Part name | Description |\n| :- | :- |\n";
 export const CSS_PROPERTY_TABLE_HEADER =
   "| Property name | Type | Default value | Description |\n| :- | :- | :- | :- |\n";
@@ -131,4 +132,32 @@ export function formatDescriptionWithTags(description?: string, tags?: Array<{ n
 export function formatEventDetail(detail?: string) {
   if (detail === undefined) return MD_TYPE_UNDEFINED;
   return formatPropType(detail.replace(NEWLINE_REGEX, " "));
+}
+
+/**
+ * A `#### \`Store\` members` table after the module exports table, for each
+ * class module export with members. A class exported under several names
+ * (`export { Store as Alias }`) gets one table, under its own name.
+ */
+export function renderClassMemberTables(
+  document: { append(type: "h4" | "raw", raw?: string): unknown },
+  moduleExports: ComponentProp[],
+) {
+  const rendered = new Set<string>();
+  for (const moduleExport of moduleExports) {
+    if (moduleExport.kind !== "class" || !moduleExport.members?.length) continue;
+    const className = moduleExport.localName ?? moduleExport.name;
+    if (rendered.has(className)) continue;
+    rendered.add(className);
+
+    document.append("h4", `\`${className}\` members`);
+    document.append("raw", CLASS_MEMBER_TABLE_HEADER);
+    for (const member of moduleExport.members) {
+      document.append(
+        "raw",
+        `| ${formatNameWithDeprecation(member.name, member.deprecated)} | ${formatPropType(formatClassMemberSignature(member))} | ${formatDescriptionWithTags(member.description, member.tags)} |\n`,
+      );
+    }
+    document.append("raw", "\n");
+  }
 }

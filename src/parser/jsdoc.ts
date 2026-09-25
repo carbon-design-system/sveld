@@ -387,8 +387,9 @@ function findAdjacentJSDocComment(
 
 /**
  * Absolute `/**` start offsets of every JSDoc comment directly documenting a function: a
- * `function` declaration (module or instance script, exported or not), or a variable initialized
- * with an arrow or function expression, except an instance-script `export let`. A `@template`
+ * `function` declaration (module or instance script, exported or not), a variable initialized
+ * with an arrow or function expression, except an instance-script `export let`, or a
+ * module-script class or one of its methods. A `@template`
  * tag in one of these blocks types that function's own generic parameter, standard JSDoc usage
  * unrelated to sveld's `@generics`/`@template` component-generics feature, and must not be
  * folded into the component's class/props generic parameter list the way a `@generics`-adjacent
@@ -416,6 +417,12 @@ function functionDocCommentStarts(ctx: ParserContext): Set<number> {
       const declaration = isExported ? node.declaration : (node as FunctionDocCandidate);
       if (declaration?.type === "FunctionDeclaration") {
         if (isExported) addDocumented(node);
+      } else if (declaration?.type === "ClassDeclaration" && isModule) {
+        // A module-script class's `@template`s are its own, as are its methods'.
+        addDocumented(isExported ? node : declaration);
+        for (const member of declaration.body?.body ?? []) {
+          if (member.type === "MethodDefinition") addDocumented(member);
+        }
       } else if (
         declaration?.type === "VariableDeclaration" &&
         (isModule || !isExported || declaration.kind === "const") &&
@@ -433,6 +440,8 @@ type FunctionDocCandidate = {
   type: string;
   kind?: string;
   declarations?: Array<{ init?: { type?: string } | null }>;
+  /** A class's members. */
+  body?: { body?: Array<{ type: string }> };
 };
 
 const FUNCTION_EXPRESSION_TYPES = new Set(["ArrowFunctionExpression", "FunctionExpression"]);

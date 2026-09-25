@@ -734,6 +734,64 @@ describe("WriterMarkdown", () => {
     expect(output).toContain("| reset | <code>function</code> | -- | Resets shared state. |");
   });
 
+  test("renders a members table for a class module export, once per class", () => {
+    const store = {
+      name: "Store",
+      kind: "class" as const,
+      constant: false,
+      type: "typeof Store",
+      typeParameters: "T",
+      description: "Holds a value.",
+      members: [
+        { kind: "constructor" as const, name: "constructor", params: [{ name: "initial", type: "T" }] },
+        { kind: "property" as const, name: "value", type: "T", description: "Current value." },
+        {
+          kind: "method" as const,
+          name: "create",
+          static: true as const,
+          typeParameters: "U",
+          params: [{ name: "value", type: "U" }],
+          returnType: "Store<U>",
+          deprecated: "Use `new Store` instead." as const,
+        },
+      ],
+      isFunction: false,
+      isFunctionDeclaration: false,
+      isRequired: false,
+      reactive: false,
+    };
+    const output = writeMarkdownCore(
+      new Map([
+        [
+          "Example",
+          {
+            filePath: asNormalizedPath("Example.svelte"),
+            moduleName: "Example",
+            syntaxMode: "legacy",
+            props: [],
+            moduleExports: [store, { ...store, name: "Alias", localName: "Store" }],
+            slots: [],
+            events: [],
+            typedefs: [],
+            generics: null,
+            rest_props: undefined,
+            contexts: [],
+          },
+        ],
+      ]),
+    );
+
+    expect(output).toContain("| Store | <code>class</code> | <code>typeof Store</code> | Holds a value. |");
+    expect(output).toContain("| Alias | <code>class</code> | <code>typeof Store</code> | Holds a value. |");
+    expect(output.match(/#### `Store` members/g)).toHaveLength(1);
+    expect(output).toContain("| Member | Signature | Description |");
+    expect(output).toContain("| constructor | <code>constructor(initial: T)</code> | -- |");
+    expect(output).toContain("| value | <code>value: T</code> | Current value. |");
+    expect(output).toContain(
+      "| <s>create</s><br />**Deprecated**: Use `new Store` instead. | <code>static create&lt;U>(value: U): Store&lt;U></code> | -- |",
+    );
+  });
+
   test("omits the Module exports table when there are no module exports", () => {
     const output = writeMarkdownCore(
       new Map([

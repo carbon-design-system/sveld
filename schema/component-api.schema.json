@@ -202,8 +202,8 @@
         "name": { "type": "string" },
         "localName": { "type": "string" },
         "kind": {
-          "enum": ["let", "const", "function", "re-export"],
-          "description": "`re-export` is module-export only: `export { x } from \"...\"`, `export * from \"...\"`, or `export { x }` of an imported binding."
+          "enum": ["let", "const", "function", "re-export", "class"],
+          "description": "`re-export` is module-export only: `export { x } from \"...\"`, `export * from \"...\"`, or `export { x }` of an imported binding. `class` is module-export only too: a class the module script declares, with its public surface in `members`."
         },
         "constant": { "type": "boolean" },
         "type": { "type": "string" },
@@ -220,7 +220,16 @@
         "returnType": { "type": "string" },
         "typeParameters": {
           "type": "string",
-          "description": "A function's own type parameter list from its `@template` tags, without angle brackets."
+          "description": "A function's own type parameter list from its `@template` tags, or a class's type parameters, without angle brackets."
+        },
+        "members": {
+          "type": "array",
+          "description": "Set when `kind` is `class`: its public constructor, methods, and properties, in source order.",
+          "items": { "$ref": "#/$defs/classMember" }
+        },
+        "abstract": {
+          "const": true,
+          "description": "Set when `kind` is `class` and the class is abstract."
         },
         "isFunction": { "type": "boolean" },
         "isFunctionDeclaration": { "type": "boolean" },
@@ -240,6 +249,40 @@
         },
         "reExport": { "$ref": "#/$defs/reExport" },
         "source": { "$ref": "#/$defs/sourceRange" }
+      }
+    },
+    "classMember": {
+      "type": "object",
+      "required": ["kind", "name"],
+      "additionalProperties": false,
+      "description": "A public member of a `kind: \"class\"` module export. Private, protected, and `@internal` members are left out.",
+      "properties": {
+        "kind": {
+          "enum": ["constructor", "method", "property"],
+          "description": "`property` covers fields, constructor parameter properties, and getter/setter pairs."
+        },
+        "name": { "type": "string" },
+        "type": { "type": "string", "description": "A property's type." },
+        "params": {
+          "type": "array",
+          "description": "A method or constructor's parameters. A rest parameter's name starts with `...`.",
+          "items": { "$ref": "#/$defs/propParam" }
+        },
+        "returnType": { "type": "string" },
+        "typeParameters": {
+          "type": "string",
+          "description": "A method's own type parameter list, without angle brackets."
+        },
+        "static": { "const": true },
+        "readonly": { "const": true, "description": "A readonly field, or a getter with no setter." },
+        "optional": { "const": true },
+        "abstract": { "const": true },
+        "description": { "type": "string" },
+        "deprecated": { "$ref": "#/$defs/deprecated" },
+        "tags": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/jsdocTag" }
+        }
       }
     },
     "reExport": {

@@ -1,0 +1,114 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 50,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [],
+  "moduleExports": [
+    {
+      "name": "List",
+      "kind": "class",
+      "description": "An observable list.",
+      "type": "typeof List",
+      "typeParameters": "T",
+      "members": [
+        {
+          "kind": "property",
+          "name": "items",
+          "type": "T[]"
+        },
+        {
+          "kind": "property",
+          "name": "limit",
+          "type": "any",
+          "static": true,
+          "description": "Max length; untyped."
+        },
+        {
+          "kind": "property",
+          "name": "untyped",
+          "type": "any"
+        },
+        {
+          "kind": "constructor",
+          "name": "constructor",
+          "params": [
+            {
+              "name": "initial",
+              "type": "T[]",
+              "description": "First items"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "optional": true
+            }
+          ]
+        },
+        {
+          "kind": "property",
+          "name": "label",
+          "type": "any",
+          "description": "The list's label."
+        },
+        {
+          "kind": "method",
+          "name": "push",
+          "params": [
+            {
+              "name": "item",
+              "type": "T"
+            }
+          ],
+          "returnType": "number",
+          "description": "Adds an item."
+        },
+        {
+          "kind": "method",
+          "name": "map",
+          "params": [
+            {
+              "name": "fn",
+              "type": "(item: T) => U"
+            }
+          ],
+          "returnType": "List<U>",
+          "typeParameters": "U"
+        },
+        {
+          "kind": "method",
+          "name": "clear"
+        }
+      ],
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 6,
+          "column": 2
+        },
+        "end": {
+          "line": 46,
+          "column": 3
+        }
+      }
+    }
+  ],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
