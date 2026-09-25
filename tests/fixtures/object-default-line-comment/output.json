@@ -1,0 +1,85 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 16,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "spacing",
+      "kind": "let",
+      "description": "Spacing scale",
+      "type": "{     small: 4,      large: 16 ,   }",
+      "typeSource": "default",
+      "value": "{     small: 4, // px     large: 16 /* px */,   }",
+      "defaultValue": {
+        "raw": "{     small: 4, // px     large: 16 /* px */,   }",
+        "kind": "object",
+        "value": {
+          "small": 4,
+          "large": 16
+        }
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 2
+        },
+        "end": {
+          "line": 6,
+          "column": 4
+        }
+      }
+    },
+    {
+      "name": "breakpoints",
+      "kind": "let",
+      "description": "Breakpoints",
+      "type": "[     320,      768,   ]",
+      "typeSource": "default",
+      "value": "[     320, // phone     768,   ]",
+      "defaultValue": {
+        "raw": "[     320, // phone     768,   ]",
+        "kind": "array",
+        "value": [
+          320,
+          768
+        ]
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 9,
+          "column": 2
+        },
+        "end": {
+          "line": 12,
+          "column": 4
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
