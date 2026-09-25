@@ -188,8 +188,11 @@ export function collectReferencedTypeDependencies(
         }
       }
 
-      if ("typeParameters" in typeNode && typeNode.typeParameters && typeof typeNode.typeParameters === "object") {
-        const paramsNode = typeNode.typeParameters as { params?: ModernRunesTypeNode[] };
+      // `Array<Item>`: the parser puts type arguments on `typeArguments`; a synthesized
+      // heritage-clause reference (above) uses `typeParameters`.
+      const typeArgumentsNode = (typeNode as { typeArguments?: unknown }).typeArguments ?? typeNode.typeParameters;
+      if (typeArgumentsNode && typeof typeArgumentsNode === "object") {
+        const paramsNode = typeArgumentsNode as { params?: ModernRunesTypeNode[] };
         for (const param of paramsNode.params ?? []) {
           collectReferencedTypeDependencies(
             ctx,
