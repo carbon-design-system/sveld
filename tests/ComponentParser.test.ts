@@ -153,6 +153,48 @@ describe("ComponentParser", () => {
     });
   });
 
+  test("keeps a JSDoc block separated from its declaration by line or block comments", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script context="module">
+        /** Formats a value */
+        // eslint-disable-next-line no-unused-vars
+        export function format(value) {
+          return String(value);
+        }
+      </script>
+
+      <script>
+        import { setContext } from "svelte";
+
+        /** The size */
+        // biome-ignore lint/style/useConst: it's a prop
+        export let size = "md";
+
+        /** The label */
+        /* eslint-disable-next-line */
+        export let label = "x";
+
+        /**
+         * Shared theme
+         * @type {{ dark: boolean }}
+         */
+        // biome-ignore lint/style/useConst: reassigned elsewhere
+        let theme = { dark: false };
+        setContext("theme", theme);
+      </script>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+
+    expect(result.props.map((prop) => [prop.name, prop.description])).toEqual([
+      ["size", "The size"],
+      ["label", "The label"],
+    ]);
+    expect(result.moduleExports.find((entry) => entry.name === "format")?.description).toBe("Formats a value");
+    expect(result.contexts?.[0]).toMatchObject({ key: "theme", description: "Shared theme" });
+  });
+
   test("detects legacy syntax with TypeScript script", () => {
     const parser = new ComponentParser();
     const source = `

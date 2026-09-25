@@ -445,6 +445,36 @@ describe("parseEntryExports", () => {
     }
   });
 
+  test("keeps a JSDoc block separated from the export by line comments", async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "sveld-entry-exports-line-comment-"));
+    try {
+      writeFileSync(
+        path.join(dir, "index.ts"),
+        [
+          "/** Library version */",
+          "// eslint-disable-next-line",
+          'export const VERSION = "1.0.0";',
+          "",
+          "/** Clamps a value */",
+          "/* istanbul ignore next */",
+          "export function clamp(n: number): number {",
+          "  return n;",
+          "}",
+          "",
+        ].join("\n"),
+      );
+
+      const exports = await parseEntryExports(path.join(dir, "index.ts"));
+
+      expect(exports.map((entry) => [entry.name, entry.description])).toEqual([
+        ["clamp", "Clamps a value"],
+        ["VERSION", "Library version"],
+      ]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   test("warns and skips a re-exported module the underlying parser can't handle, instead of throwing", async () => {
     // Not written under tests/fixtures-entry-exports because the redeclaration
     // below (valid to acorn-typescript, rejected by tsc/biome) would otherwise

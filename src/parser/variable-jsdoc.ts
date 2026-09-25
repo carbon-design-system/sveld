@@ -2,7 +2,7 @@ import type ComponentParser from "../ComponentParser";
 import type { CommentWithLocation } from "../template-parse/comments";
 import type { ParserContext } from "./context";
 import { recordSveldIgnore } from "./diagnostics";
-import { getCommentTags, ONLY_WHITESPACE_REGEX, parseCommentText, typeTagDescription } from "./jsdoc";
+import { getCommentTags, isJsDocGap, parseCommentText, typeTagDescription } from "./jsdoc";
 
 interface ScriptComment {
   /** Offset (into the full component source) right after the closing delimiter. */
@@ -81,14 +81,14 @@ function collectTopLevelDeclarations(body: unknown[]): TopLevelDeclaration[] {
   return declarations;
 }
 
-/** The closest JSDoc block comment with only whitespace between its end and `declStart`, if any. */
+/** The closest JSDoc block comment with only whitespace or other comments between it and `declStart`, if any. */
 function findAttachedComment(comments: ScriptComment[], declStart: number, source: string): ScriptComment | undefined {
   let attached: ScriptComment | undefined;
 
   for (const comment of comments) {
     if (comment.end > declStart) break;
     if (!comment.isJsDoc) continue;
-    if (!ONLY_WHITESPACE_REGEX.test(source.slice(comment.end, declStart))) continue;
+    if (!isJsDocGap(source.slice(comment.end, declStart))) continue;
     attached = comment;
   }
 
