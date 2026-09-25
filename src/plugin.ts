@@ -292,6 +292,7 @@ export async function writeOutput(
       dryRun,
       cache: result.cache,
       resolvedPathByFilePath: result.resolvedPathByFilePath,
+      crossFileResolvedPathByFilePath: result.crossFileResolvedPathByFilePath,
       inlinedTypesByFilePath: result.inlinedTypesByFilePath,
     } satisfies WriteTsDefinitionsOptions);
   }
