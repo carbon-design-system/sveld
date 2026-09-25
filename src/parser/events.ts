@@ -248,9 +248,13 @@ export function buildEventDetailFromProperties(
 
       if (comment) {
         if (multiline) {
-          // A multi-line `@property` description (continuation lines) gets a block comment.
+          // A multi-line `@property` description (continuation lines) gets a block comment; a
+          // blank line (paragraph break) gets a bare `*`, with no trailing space.
           const docComment = comment.includes("\n")
-            ? `/**\n   * ${comment.split("\n").join("\n   * ")}\n   */`
+            ? `/**\n${comment
+                .split("\n")
+                .map((line) => (line ? `   * ${line}` : "   *"))
+                .join("\n")}\n   */`
             : `/** ${comment} */`;
           return `${docComment}\n  ${key}${optionalMarker}: ${type};`;
         }

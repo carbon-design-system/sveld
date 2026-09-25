@@ -1,0 +1,85 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 28,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "range",
+      "kind": "let",
+      "type": "Range",
+      "typeSource": "jsdoc",
+      "value": "{ start: 0, end: 0 }",
+      "defaultValue": {
+        "raw": "{ start: 0, end: 0 }",
+        "kind": "object",
+        "value": {
+          "start": 0,
+          "end": 0
+        }
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 22,
+          "column": 2
+        },
+        "end": {
+          "line": 22,
+          "column": 42
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [
+    {
+      "type": "dispatched",
+      "name": "select",
+      "detail": "{\n  /**\n   * The selected item's id.\n   *\n   * Stable across re-renders.\n   */\n  id: string;\n  /** The item's position. */\n  index: number;\n}",
+      "source": {
+        "start": {
+          "line": 26,
+          "column": 5
+        },
+        "end": {
+          "line": 26,
+          "column": 46
+        }
+      }
+    }
+  ],
+  "typedefs": [
+    {
+      "type": "{\n  /**\n   * First index.\n   *\n   * Inclusive.\n   */\n  start: number;\n  /** Last index. */\n  end: number;\n}",
+      "name": "Range",
+      "ts": "type Range = {\n  /**\n   * First index.\n   *\n   * Inclusive.\n   */\n  start: number;\n  /** Last index. */\n  end: number;\n};",
+      "source": {
+        "start": {
+          "line": 12,
+          "column": 5
+        },
+        "end": {
+          "line": 12,
+          "column": 28
+        }
+      }
+    }
+  ],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
