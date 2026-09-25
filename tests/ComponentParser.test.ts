@@ -195,6 +195,24 @@ describe("ComponentParser", () => {
     expect(result.contexts?.[0]).toMatchObject({ key: "theme", description: "Shared theme" });
   });
 
+  test("doesn't attach a JSDoc block across code between two block comments", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        import { setContext } from "svelte";
+
+        /** Not the theme's */
+        /* a */ setup(); /* b */
+        let theme = { dark: false };
+        setContext("theme", theme);
+      </script>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+
+    expect(result.contexts?.[0]?.description).toBeUndefined();
+  });
+
   test("detects legacy syntax with TypeScript script", () => {
     const parser = new ComponentParser();
     const source = `
