@@ -653,9 +653,13 @@ export async function generateBundle(
     documentExports,
   );
 
-  // File entry only; directory inputs have no barrel.
+  // File entry only; directory inputs have no barrel. Its diagnostics are
+  // attributed to the barrel file rather than a component.
+  const entryDiagnostics: SveldDiagnostic[] = [];
   const entryExports: EntryExports =
-    documentExports && lstatSync(input).isFile() ? await parseEntryExports(resolve(input)) : [];
+    documentExports && lstatSync(input).isFile()
+      ? await parseEntryExports(resolve(input), { diagnostics: entryDiagnostics })
+      : [];
 
   const exportEntries = Object.entries(exports);
 
@@ -862,7 +866,10 @@ export async function generateBundle(
 
   // Dedupe diagnostics from export and all-components passes.
   const diagnostics = applyDiagnosticIgnores(
-    dedupeDiagnostics(Array.from(allComponentsForTypes.values()).flatMap((component) => component.diagnostics ?? [])),
+    dedupeDiagnostics([
+      ...Array.from(allComponentsForTypes.values()).flatMap((component) => component.diagnostics ?? []),
+      ...entryDiagnostics,
+    ]),
     options.diagnostics?.ignore,
   );
 

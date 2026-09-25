@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
 import ComponentParser from "../src/ComponentParser";
 import {
@@ -1052,6 +1052,84 @@ describe("sveld() strict mode", () => {
     });
 
     expect(exitCode).toBe(4);
+  });
+});
+
+describe("sveld() reports an ambiguous `export *` in the entry barrel", () => {
+  // `export * from` trips the repo's own `noReExportAll` lint rule, so the
+  // barrel is written at test time rather than committed as a fixture.
+  let absoluteDir: string;
+  let relativeDir: string;
+  let previousExitCode: typeof process.exitCode;
+  let warnSpy: ReturnType<typeof jest.spyOn>;
+
+  beforeEach(() => {
+    previousExitCode = process.exitCode;
+    process.exitCode = undefined;
+    jest.spyOn(console, "error").mockImplementation(() => {});
+    jest.spyOn(console, "log").mockImplementation(() => {});
+    warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+    absoluteDir = mkdtempSync(join(process.cwd(), "sveld-export-ambiguous-"));
+    relativeDir = basename(absoluteDir);
+    writeFileSync(join(absoluteDir, "a.js"), "export const format = 1;\nexport const onlyA = 1;\n");
+    writeFileSync(join(absoluteDir, "b.js"), "export function format() {}\n");
+    writeFileSync(join(absoluteDir, "index.js"), 'export * from "./a.js";\nexport * from "./b.js";\n');
+  });
+
+  afterEach(() => {
+    rmSync(absoluteDir, { recursive: true, force: true });
+    process.exitCode = previousExitCode;
+    jest.restoreAllMocks();
+  });
+
+  const run = (options: Parameters<typeof sveld>[0] = {}) =>
+    sveld({
+      entry: join(relativeDir, "index.js"),
+      documentExports: true,
+      types: false,
+      json: true,
+      jsonOptions: { outFile: join(relativeDir, "api.json") },
+      markdown: true,
+      markdownOptions: { outFile: join(relativeDir, "api.md") },
+      ...options,
+    });
+
+  test("leaves the name out of the JSON and Markdown docs and reports one diagnostic", async () => {
+    const { diagnostics, exitCode } = await run();
+
+    const json = JSON.parse(readFileSync(join(absoluteDir, "api.json"), "utf-8"));
+    expect(json.exports.map((entry: { name: string }) => entry.name)).toEqual(["onlyA"]);
+    const markdown = readFileSync(join(absoluteDir, "api.md"), "utf-8");
+    expect(markdown).toContain("onlyA");
+    expect(markdown).not.toContain("format");
+
+    const ambiguous = diagnostics.filter((d) => d.kind === "export-ambiguous");
+    expect(ambiguous).toHaveLength(1);
+    expect(ambiguous[0]).toMatchObject({
+      component: "./index.js",
+      code: "sveld/export-ambiguous",
+      severity: "warning",
+      name: "format",
+    });
+    expect(ambiguous[0].message).toContain('"./a.js" and "./b.js"');
+    expect(exitCode).toBe(0);
+    expect(warnSpy.mock.calls.some((call: unknown[]) => String(call[0]).includes("format"))).toBe(false);
+  });
+
+  test("fails strict: true", async () => {
+    const { exitCode } = await run({ strict: true });
+
+    expect(exitCode).toBe(4);
+  });
+
+  test("diagnostics.ignore by code clears strict: true", async () => {
+    const { diagnostics, exitCode } = await run({
+      strict: true,
+      diagnostics: { ignore: [{ code: "sveld/export-ambiguous", component: "./index.js" }] },
+    });
+
+    expect(diagnostics.find((d) => d.kind === "export-ambiguous")?.ignored).toBe(true);
+    expect(exitCode).toBe(0);
   });
 });
 
