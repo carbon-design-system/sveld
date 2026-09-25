@@ -308,7 +308,7 @@ Parsed output is written to disk and reused when the source file has not changed
 await sveld({ json: true });
 ```
 
-By default this writes to `node_modules/.cache/sveld/parse-cache.json`. Pass a string to use a different location, e.g. `cache: ".cache/sveld.json"`, or `cache: false` to disable it. Also available as `--cache` / `--cache=<path>` / `--cache=false` on the CLI.
+By default this writes to `node_modules/.cache/sveld/parse-cache.json` in the project root, the nearest directory above the entry that has a `package.json`. Pass a string to use a different location, e.g. `cache: ".cache/sveld.json"` (relative paths resolve against the same project root), or `cache: false` to disable it. Also available as `--cache` / `--cache=<path>` / `--cache=false` on the CLI.
 
 If a component [`@extendProps`](#extendprops) / [`@extends`](#extendprops) another file, it is re-parsed when that dependency changes, same as in [`watch`](#available-options) mode. Bumping the `sveld` or Svelte version clears the cache.
 

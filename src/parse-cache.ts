@@ -1,5 +1,5 @@
 import { hash as cryptoHash } from "node:crypto";
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { version as sveldVersion } from "../package.json";
 import type { ParsedComponent, ParsedComponentTypeScriptMetadata } from "./ComponentParser";
@@ -41,12 +41,28 @@ function currentToolchainVersion(): string {
   return `${sveldVersion}+svelte@${svelteVersion}`;
 }
 
-/** Resolves the effective cache file path for `cache: true | string`. */
-export function resolveCacheFilePath(rootDir: string, cache: boolean | string): string {
-  if (typeof cache === "string") {
-    return isAbsolute(cache) ? cache : resolve(rootDir, cache);
+/**
+ * The directory of the nearest `package.json` at or above `dir`, or `dir`
+ * itself when there's none. The input is often `src/`; the cache belongs next
+ * to the project's own `node_modules`, not in a new one inside `src/`.
+ */
+function findProjectRoot(dir: string): string {
+  for (let current = resolve(dir); ; current = dirname(current)) {
+    if (existsSync(join(current, "package.json"))) return current;
+    if (dirname(current) === current) return resolve(dir);
   }
-  return resolve(rootDir, DEFAULT_CACHE_FILE);
+}
+
+/**
+ * Resolves the effective cache file path for `cache: true | string`. A
+ * relative path is resolved against the project root (see `findProjectRoot`).
+ */
+export function resolveCacheFilePath(rootDir: string, cache: boolean | string): string {
+  const projectRoot = findProjectRoot(rootDir);
+  if (typeof cache === "string") {
+    return isAbsolute(cache) ? cache : resolve(projectRoot, cache);
+  }
+  return resolve(projectRoot, DEFAULT_CACHE_FILE);
 }
 
 export function hashSource(source: string): string {
