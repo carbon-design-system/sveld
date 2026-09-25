@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { type EntryExport, parseEntryExports } from "../src/parse-entry-exports";
@@ -271,6 +271,37 @@ describe("parseEntryExports", () => {
       expect(exports).toEqual([
         { name: "track", kind: "function", type: "(id: string) => void", source: "./track.ts", isTypeOnly: false },
       ]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("skips components re-exported through a nested barrel", async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "sveld-entry-exports-nested-component-"));
+    try {
+      mkdirSync(path.join(dir, "dir"));
+      writeFileSync(path.join(dir, "dir", "X.svelte"), "<div />\n");
+      writeFileSync(path.join(dir, "dir", "Y.svelte"), "<div />\n");
+      writeFileSync(path.join(dir, "dir", "Z.svelte"), "<div />\n");
+      writeFileSync(
+        path.join(dir, "dir", "index.ts"),
+        [
+          'export { default as X } from "./X.svelte";',
+          'import Y from "./Y.svelte";',
+          "export { Y };",
+          'export { default as Z } from "./Z.svelte";',
+          "",
+        ].join("\n"),
+      );
+      writeFileSync(path.join(dir, "star.ts"), 'export * from "./dir";\n');
+      writeFileSync(
+        path.join(dir, "index.ts"),
+        ['export { X, Y } from "./dir";', 'export { Z } from "./star";', 'export const VERSION = "1";', ""].join("\n"),
+      );
+
+      const exports = await parseEntryExports(path.join(dir, "index.ts"));
+
+      expect(exports.map((entry) => entry.name)).toEqual(["VERSION"]);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
