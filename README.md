@@ -1728,7 +1728,7 @@ With that in place:
 
 ## llms.txt Output
 
-Set `llms: true` to emit an [`llms.txt`](https://llmstxt.org) / `llms-full.txt` pair: `llms.txt` is an index of every exported component (one link plus a one-line summary each), and `llms-full.txt` is the flattened full reference (every component's Props, Bindings, Events, Slots/Snippets, Typedefs, and Module exports, as terse Markdown tables). Props and Events Description columns include `@since`/`@example` tags, same as `COMPONENT_INDEX.md`.
+Set `llms: true` to emit an [`llms.txt`](https://llmstxt.org) / `llms-full.txt` pair: `llms.txt` is an index of every exported component (one link plus a one-line summary each), and `llms-full.txt` is the flattened full reference (every component's Props, Bindings, Events, Slots/Snippets, Typedefs, and Module exports, as terse Markdown tables). Props and Events Description columns include `@since`/`@example` tags, same as `COMPONENT_INDEX.md`. Fenced code in a Description cell is printed after its table as a regular fenced block, with `(code below)` left in the cell.
 
 ```diff
 sveld({
@@ -3645,7 +3645,7 @@ A width prop.<br />@see https://example.com/width-docs
 
 `{@link target}` (optionally `{@link target|display text}`) is an inline JSDoc tag used inside prose, not a block-level tag like the others on this page. `sveld`'s comment parser only treats a *line* as starting a new tag when it begins with `@` — `{@link ...}` always starts with `{`, so it's never intercepted. It is always literal text.
 
-**Valid contexts:** anywhere free-form description text is read — prop and module export descriptions, event descriptions, slot descriptions, entry export descriptions, typedef descriptions, `@component` HTML comments, and `@example` bodies. `sveld` never resolves or validates the target. JSON `description` and `.d.ts` JSDoc always keep the tag verbatim. **Markdown is the one exception:** in a prop, event, slot, or entry export's Description table cell, `{@link target|text}` / `{@link target}` is rewritten to a Markdown link, `[text](target)` / `[target](target)`. Typedef descriptions (rendered as a `.d.ts`-style code block) and `@component` comments keep the tag literal in Markdown too, since neither goes through the table-cell renderer.
+**Valid contexts:** anywhere free-form description text is read — prop and module export descriptions, event descriptions, slot descriptions, entry export descriptions, typedef descriptions, `@component` HTML comments, and `@example` bodies. `sveld` never resolves or validates the target. JSON `description` and `.d.ts` JSDoc always keep the tag verbatim. **Markdown is the one exception:** in a prop, event, slot, or entry export's Description table cell, `{@link target|text}` / `{@link target}` is rewritten to a Markdown link, `[text](target)` / `[target](target)`, except inside a fenced code block. Typedef descriptions (rendered as a `.d.ts`-style code block) and `@component` comments keep the tag literal in Markdown too, since neither goes through the table-cell renderer.
 
 **Example:**
 
@@ -3718,6 +3718,14 @@ formatValue: (value: string) => string;
 ```
 
 `@param`/`@returns` are consumed into the function's type signature rather than kept as separate JSDoc lines.
+
+In Markdown table cells, a fenced block (in an `@example` body or anywhere in a description) renders as `<pre><code>` with one `<br />` per line, since a table row can't span lines. `<pre>` keeps the indentation, and GitHub renders it as a monospaced block inside the cell. The example above shows up in the Description column as:
+
+```
+Formats a value.<br />@example <pre><code>formatValue("ok");</code></pre>
+```
+
+`llms-full.txt` instead puts `(code below)` in the cell and prints the code after the table as a regular multi-line fenced block, under a ``Code for `formatValue`:`` line.
 
 Output (Markdown props table Description column, newlines rendered as `<br />`):
 

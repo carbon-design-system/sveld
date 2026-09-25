@@ -62,6 +62,129 @@ function rewriteJsDocLinks(text: string): string {
   });
 }
 
+/** A fenced code block from a table cell's text, verbatim. */
+export interface CellCodeBlock {
+  /** The opening fence marker, e.g. "```" or "~~~~". */
+  fence: string;
+  /** The info string after the opening fence, e.g. "svelte"; may be empty. */
+  info: string;
+  code: string;
+}
+
+/** Prose is already HTML-escaped with `{@link}` rewritten; pipes and newlines are left for {@link renderCellParts}. */
+type CellPart = { kind: "prose"; text: string } | { kind: "code"; block: CellCodeBlock };
+
+const FENCE_OPEN_REGEX = /^([ \t]*)(`{3,}|~{3,})(.*)$/;
+const LEADING_NEWLINE_REGEX = /^\n/;
+const TRAILING_NEWLINE_REGEX = /\n$/;
+
+/**
+ * Splits text on its fenced code blocks, CommonMark-style: a fence closes
+ * on a line of the same marker character at least as long, an unclosed
+ * fence runs to the end, and code lines lose up to the opening fence's
+ * indentation. A prose part keeps the line breaks that border a fence, so
+ * joining the parts' text back up gives the original line structure.
+ */
+function splitCodeFences(text: string): CellPart[] {
+  const prose = (lines: string[]): CellPart => ({
+    kind: "prose",
+    text: escapeHtml(rewriteJsDocLinks(lines.join("\n"))),
+  });
+  if (!text.includes("```") && !text.includes("~~~")) return [prose([text])];
+
+  const lines = text.split("\n");
+  const parts: CellPart[] = [];
+  // A "" entry at either end of `proseLines` stands in for a bordering fence, so join("\n") keeps that line break.
+  let proseLines: string[] = [];
+
+  for (let index = 0; index < lines.length; index++) {
+    const open = FENCE_OPEN_REGEX.exec(lines[index]);
+    const [, indent = "", fence = "", info = ""] = open ?? [];
+    if (!open || (fence[0] === "`" && info.includes("`"))) {
+      proseLines.push(lines[index]);
+      continue;
+    }
+
+    proseLines.push("");
+    if (proseLines.length > 1) parts.push(prose(proseLines));
+
+    const codeLines: string[] = [];
+    const closeRegex = new RegExp(`^[ \\t]*${fence[0]}{${fence.length},}[ \\t]*$`);
+    for (index++; index < lines.length && !closeRegex.test(lines[index]); index++) {
+      const line = lines[index];
+      let strip = 0;
+      while (strip < indent.length && (line[strip] === " " || line[strip] === "\t")) strip++;
+      codeLines.push(line.slice(strip));
+    }
+    parts.push({ kind: "code", block: { fence, info: info.trim(), code: codeLines.join("\n") } });
+    proseLines = [""];
+  }
+
+  if (proseLines.length > 1 || parts.length === 0) parts.push(prose(proseLines));
+  return parts;
+}
+
+/**
+ * Renders a table cell from its parts on one line. A fence becomes
+ * `<pre><code>`, a block, so the line breaks bordering it are dropped; its
+ * lines join with `<br />` since a cell can't hold a raw newline, and
+ * `<pre>` keeps their indentation. With `codeBelow`, fences are collected
+ * there instead and the cell reads "(code below)".
+ */
+function renderCellParts(parts: CellPart[], codeBelow: CellCodeBlock[] | undefined): string {
+  let cell = "";
+  for (const [index, part] of parts.entries()) {
+    if (part.kind === "code") {
+      if (codeBelow) {
+        codeBelow.push(part.block);
+        cell += "(code below)";
+      } else {
+        cell += `<pre><code>${escapeCodeText(part.block.code).replace(NEWLINE_REGEX, "<br />")}</code></pre>`;
+      }
+      continue;
+    }
+
+    let text = part.text;
+    if (!codeBelow) {
+      if (parts[index - 1]?.kind === "code") text = text.replace(LEADING_NEWLINE_REGEX, "");
+      if (parts[index + 1]?.kind === "code") text = text.replace(TRAILING_NEWLINE_REGEX, "");
+    }
+    cell += text.replace(PIPE_REGEX, "&#124;").replace(NEWLINE_REGEX, "<br />");
+  }
+  return cell;
+}
+
+/** Fenced code lifted out of a table's Description cells, keyed by row. */
+export type CodeBelowTable = Array<{ label: string; blocks: CellCodeBlock[] }>;
+
+/**
+ * {@link formatDescriptionWithTags} for a table whose fenced code prints
+ * below it: records the row's blocks under `label` in `below`.
+ */
+export function formatDescriptionWithCodeBelow(
+  below: CodeBelowTable,
+  label: string,
+  description?: string,
+  tags?: Array<{ name: string; body: string }>,
+) {
+  const blocks: CellCodeBlock[] = [];
+  const cell = formatDescriptionWithTags(description, tags, blocks);
+  if (blocks.length > 0) below.push({ label, blocks });
+  return cell;
+}
+
+/** Real multi-line fenced blocks, each under a "Code for `label`:" line, for after a table. */
+export function renderCodeBelowTable(below: CodeBelowTable): string {
+  let out = "";
+  for (const { label, blocks } of below) {
+    out += `Code for \`${label}\`:\n\n`;
+    for (const { fence, info, code } of blocks) {
+      out += `${fence}${info}\n${code}${code ? "\n" : ""}${fence}\n\n`;
+    }
+  }
+  return out;
+}
+
 export function formatPropType(type?: string) {
   if (type === undefined) return MD_TYPE_UNDEFINED;
   return codeCell(type);
@@ -97,9 +220,13 @@ export function formatNameWithDeprecation(name: string, deprecated: DeprecatedVa
   return `<s>${name}</s><br />**Deprecated**${suffix}`;
 }
 
-export function formatPropDescription(description: string | undefined) {
+/**
+ * @param codeBelow When given, fenced code blocks are collected here and
+ * the cell says "(code below)" in their place; otherwise they render inline.
+ */
+export function formatPropDescription(description: string | undefined, codeBelow?: CellCodeBlock[]) {
   if (description === undefined || description.trim().length === 0) return MD_TYPE_UNDEFINED;
-  return escapeHtml(rewriteJsDocLinks(description)).replace(PIPE_REGEX, "&#124;").replace(NEWLINE_REGEX, "<br />");
+  return renderCellParts(splitCodeFences(description), codeBelow);
 }
 
 export function formatSlotProps(props?: string) {
@@ -112,21 +239,39 @@ export function formatSlotFallback(fallback?: string) {
   return `<code>${escapeCodeText(fallback).replace(NEWLINE_REGEX, "<br />")}</code>`;
 }
 
-export function formatDescriptionWithTags(description?: string, tags?: Array<{ name: string; body: string }>) {
-  const segments: string[] = [];
+/**
+ * The description, then one line per tag (`@since 1.2.0`), as one table
+ * cell. See {@link formatPropDescription} for `codeBelow`.
+ */
+export function formatDescriptionWithTags(
+  description?: string,
+  tags?: Array<{ name: string; body: string }>,
+  codeBelow?: CellCodeBlock[],
+) {
+  const parts: CellPart[] = [];
+  const appendProse = (text: string) => {
+    const last = parts.at(-1);
+    if (last?.kind === "prose") last.text += text;
+    else parts.push({ kind: "prose", text });
+  };
+  const appendSegment = (prefix: string, text: string) => {
+    if (parts.length > 0) appendProse("\n");
+    if (prefix) appendProse(prefix);
+    for (const part of splitCodeFences(text)) {
+      if (part.kind === "prose") appendProse(part.text);
+      else parts.push(part);
+    }
+  };
 
-  if (description !== undefined && description.trim().length > 0) {
-    segments.push(escapeHtml(rewriteJsDocLinks(description)));
-  }
+  if (description !== undefined && description.trim().length > 0) appendSegment("", description);
 
   for (const { name, body } of tags ?? []) {
     const trimmed = body?.trim();
-    segments.push(trimmed ? `@${name} ${escapeHtml(rewriteJsDocLinks(trimmed))}` : `@${name}`);
+    appendSegment(trimmed ? `@${name} ` : `@${name}`, trimmed ?? "");
   }
 
-  if (segments.length === 0) return MD_TYPE_UNDEFINED;
-
-  return segments.join("\n").replace(PIPE_REGEX, "&#124;").replace(NEWLINE_REGEX, "<br />");
+  if (parts.length === 0) return MD_TYPE_UNDEFINED;
+  return renderCellParts(parts, codeBelow);
 }
 
 export function formatEventDetail(detail?: string) {
@@ -142,6 +287,7 @@ export function formatEventDetail(detail?: string) {
 export function renderClassMemberTables(
   document: { append(type: "h4" | "raw", raw?: string): unknown },
   moduleExports: ComponentProp[],
+  options?: { codeBelow?: boolean },
 ) {
   const rendered = new Set<string>();
   for (const moduleExport of moduleExports) {
@@ -152,12 +298,17 @@ export function renderClassMemberTables(
 
     document.append("h4", `\`${className}\` members`);
     document.append("raw", CLASS_MEMBER_TABLE_HEADER);
+    const below: CodeBelowTable = [];
     for (const member of moduleExport.members) {
+      const description = options?.codeBelow
+        ? formatDescriptionWithCodeBelow(below, member.name, member.description, member.tags)
+        : formatDescriptionWithTags(member.description, member.tags);
       document.append(
         "raw",
-        `| ${formatNameWithDeprecation(member.name, member.deprecated)} | ${formatPropType(formatClassMemberSignature(member))} | ${formatDescriptionWithTags(member.description, member.tags)} |\n`,
+        `| ${formatNameWithDeprecation(member.name, member.deprecated)} | ${formatPropType(formatClassMemberSignature(member))} | ${description} |\n`,
       );
     }
     document.append("raw", "\n");
+    if (below.length > 0) document.append("raw", renderCodeBelowTable(below));
   }
 }
