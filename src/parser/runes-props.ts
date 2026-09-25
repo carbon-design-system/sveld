@@ -326,6 +326,7 @@ export function buildRunesPropTypeMetadata(parser: ComponentParser, ctx: ParserC
   ctx.runesPropsDeclarationMetadataByDeclaratorStart.clear();
   ctx.explicitPropTypesByName.clear();
   ctx.explicitVariableTypesByName.clear();
+  ctx.explicitVariableTypeNodesByName.clear();
   ctx.typeImportBindingsByLocalName.clear();
   ctx.localTypeDeclarationsByName.clear();
   ctx.additionalTypeDependencyNodes.length = 0;
@@ -392,6 +393,8 @@ export function buildRunesPropTypeMetadata(parser: ComponentParser, ctx: ParserC
         const explicitType = getTypeAnnotationText(ctx, declarator.id.typeAnnotation);
         if (explicitType) {
           ctx.explicitVariableTypesByName.set(declarator.id.name, explicitType);
+          const typeNode = declarator.id.typeAnnotation?.typeAnnotation;
+          if (typeNode) ctx.explicitVariableTypeNodesByName.set(declarator.id.name, typeNode);
         }
       }
     }
