@@ -310,6 +310,8 @@ export interface PendingContextKeyCandidate {
 export interface PendingDispatchEscapeCandidate {
   importSource: string;
   importedName: string;
+  /** Members read off the import, through namespace exports: `["helper"]` for `ns.helper`. */
+  members?: string[];
   /** Callee as written, for messages. */
   calleeText: string;
   /** Local name of the `createEventDispatcher()` result. */
@@ -2454,6 +2456,7 @@ export default class ComponentParser {
         this.ctx.pendingDispatchEscapeCandidates.push({
           importSource: importBinding.source,
           importedName: importBinding.importedName,
+          ...(importBinding.members ? { members: importBinding.members } : {}),
           calleeText: sourceForExpression(this.ctx, call.callee) ?? importBinding.importedName,
           dispatcherName,
           argumentIndex,

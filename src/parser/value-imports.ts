@@ -40,25 +40,36 @@ export function collectValueImportBindings(ctx: ParserContext, node: ImportDecla
 /**
  * The imported function a call's callee names, for following a dispatcher
  * into it: a named import (`helper`), a default import (`helper`, read as the
- * module's `default` export), or a namespace member (`h.helper`). `roots` are
- * the component's scripts, searched for the default and namespace imports
- * {@link collectValueImportBindings} doesn't record.
+ * module's `default` export), or a namespace member (`h.helper`). A member
+ * of an imported binding (`ns.helper`, with `ns` a namespace the module
+ * re-exports) comes back with `members: ["helper"]`, for the resolver to read
+ * through that namespace. `roots` are the component's scripts, searched for
+ * the default and namespace imports {@link collectValueImportBindings}
+ * doesn't record.
  */
 export function importedCalleeBinding(
   ctx: ParserContext,
   callee: unknown,
   roots: Array<Node | undefined>,
-): { source: string; importedName: string } | undefined {
-  const node = callee as { type?: string; name?: string; computed?: boolean; object?: unknown; property?: unknown };
-  const objectName = node.type === "MemberExpression" && !node.computed ? identifierName(node.object) : undefined;
-  const propertyName = objectName === undefined ? undefined : identifierName(node.property);
-  const localName = node.type === "Identifier" ? node.name : objectName;
+): { source: string; importedName: string; members?: string[] } | undefined {
+  type CalleeNode = { type?: string; computed?: boolean; object?: unknown; property?: unknown };
+  // `a.b.c` -> `a`, with members `["b", "c"]`.
+  const members: string[] = [];
+  let node = callee as CalleeNode;
+  while (node.type === "MemberExpression") {
+    const property = node.computed ? undefined : identifierName(node.property);
+    if (!property) return undefined;
+    members.unshift(property);
+    node = node.object as CalleeNode;
+  }
+  const localName = identifierName(node);
   if (!localName) return undefined;
 
-  if (node.type === "Identifier") {
-    const named = ctx.valueImportBindingsByLocalName.get(localName);
-    if (named) return named;
-  }
+  const binding = (source: string, importedName: string, rest: string[]) =>
+    rest.length > 0 ? { source, importedName, members: rest } : { source, importedName };
+
+  const named = ctx.valueImportBindingsByLocalName.get(localName);
+  if (named) return binding(named.source, named.importedName, members);
 
   for (const root of roots) {
     for (const statement of (root ? scriptBody(root) : undefined) ?? []) {
@@ -68,11 +79,11 @@ export function importedCalleeBinding(
         continue;
       }
       const specifier = declaration.specifiers?.find((candidate) => candidate.local?.name === localName);
-      if (specifier?.type === "ImportDefaultSpecifier" && node.type === "Identifier") {
-        return { source, importedName: "default" };
+      if (specifier?.type === "ImportDefaultSpecifier") {
+        return binding(source, "default", members);
       }
-      if (specifier?.type === "ImportNamespaceSpecifier" && propertyName) {
-        return { source, importedName: propertyName };
+      if (specifier?.type === "ImportNamespaceSpecifier" && members.length > 0) {
+        return binding(source, members[0], members.slice(1));
       }
     }
   }

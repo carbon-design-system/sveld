@@ -1466,7 +1466,7 @@ Nested barrels are followed too: `export { X } from "./dir"`, where `./dir/index
 
 JSON adds `exports` and `totalExports`. Markdown adds an "Exports" section. Each item has `name`, `kind`, type text, optional JSDoc `description`, `source`, and — same as props — optional `@deprecated` and pass-through `tags`. A deprecated export's name is struck through in the Markdown table, same as a deprecated prop. See [`@deprecated`](#deprecated).
 
-An overloaded function (repeated `export function f(...)` signatures, or an import re-exported through a barrel) always documents the implementation signature, i.e. the last declaration. An `enum` export's `type` is the literal union of its members' values (`"A" | "B"` for a string enum, `0 | 1` for a numeric one), falling back to the bare enum name when a member's value can't be determined (e.g. a computed initializer). A name the barrel exports itself (`export const X` or `export { X } from "./x"`) wins over the same name from an `export *`, as it does at runtime. When two `export *` statements bring in the same name from different modules (`export * from "./a"; export * from "./b"`), `sveld` keeps whichever was declared first and prints a warning; it does not silently pick one or emit both.
+An overloaded function (repeated `export function f(...)` signatures, or an import re-exported through a barrel) always documents the implementation signature, i.e. the last declaration. An `enum` export's `type` is the literal union of its members' values (`"A" | "B"` for a string enum, `0 | 1` for a numeric one), falling back to the bare enum name when a member's value can't be determined (e.g. a computed initializer). A name the barrel exports itself (`export const X` or `export { X } from "./x"`) wins over the same name from an `export *`, as it does at runtime. When two `export *` statements bring in the same name from different modules (`export * from "./a"; export * from "./b"`), `sveld` keeps whichever was declared first and prints a warning; it does not silently pick one or emit both. A namespace re-export (`export * as utils from "./utils"`) documents the one `const` export `utils`, with the wrapped module as its `source`; the names inside `./utils` aren't exports of the barrel, so they aren't listed.
 
 ## JSON Output
 
@@ -3018,7 +3018,7 @@ In Svelte 5 runes components, callback props like `onclick` are props, not event
 
 Use `null` as the value if no event detail is provided.
 
-`sveld` infers events from `dispatch("name")` calls. When the dispatcher is passed to a function imported from a local module, as `helper(dispatch)` or `helper({ dispatch })` (a named or default import) or `helpers.open(dispatch)` (a namespace import), it reads that function too and picks up the events it dispatches:
+`sveld` infers events from `dispatch("name")` calls. When the dispatcher is passed to a function imported from a local module, as `helper(dispatch)` or `helper({ dispatch })` (a named or default import) or `helpers.open(dispatch)` (a namespace import, or a namespace another module re-exports with `export * as helpers from "./helpers.js"`), it reads that function too and picks up the events it dispatches:
 
 ```js
 // dispatch-open-close.js
