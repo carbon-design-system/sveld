@@ -3,6 +3,15 @@ import { join } from "node:path";
 import { $ } from "bun";
 import { name } from "../package.json";
 
+// `bun link` registers the package in one global directory, so two checkouts
+// running e2e at once (e.g. parallel worktrees) would link each other's
+// build. Keep this checkout's link registry inside it.
+$.env({
+  ...process.env,
+  BUN_INSTALL_GLOBAL_DIR:
+    process.env.BUN_INSTALL_GLOBAL_DIR ?? join(import.meta.dir, "..", "node_modules", ".cache", "e2e-link"),
+});
+
 await $`bun link`;
 
 let hasError = false;
