@@ -16,7 +16,11 @@ import { parseProgram } from "./template-parse/acorn-bridge";
 export interface EntryExport {
   name: string;
   kind: "const" | "let" | "var" | "function" | "class" | "type" | "interface" | "enum";
-  /** Type text from the source, when present. */
+  /**
+   * Type text from the source, when present. A namespace export
+   * (`export * as ns from "./x"`) gets `typeof import("./x.ts")`, the
+   * wrapped module relative to the entry file.
+   */
   type?: string;
   /** Initializer text for simple constants. */
   value?: string;
@@ -1021,10 +1025,15 @@ export async function parseEntryExports(entryFile: string): Promise<EntryExports
       primitiveLiteral: _primitiveLiteral,
       declaredType: _declaredType,
       functionNode: _functionNode,
-      namespaceFile: _namespaceFile,
+      namespaceFile,
       ...rest
     } = entry;
-    byName.set(entry.name, { ...rest, source: relativeSource(declFile) });
+    const source = relativeSource(declFile);
+    // A namespace export has no declaration to copy type text from; name the
+    // module it wraps, as component docs do for a module-script re-export.
+    // `kind` stays "const": the binding is a const namespace object.
+    if (namespaceFile !== undefined) rest.type = `typeof import(${JSON.stringify(relativeSource(namespaceFile))})`;
+    byName.set(entry.name, { ...rest, source });
   }
 
   return Array.from(byName.values()).sort((a, b) => compareText(a.name, b.name));

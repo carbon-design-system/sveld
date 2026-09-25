@@ -228,6 +228,9 @@ describe("parseEntryExports", () => {
     try {
       writeFileSync(path.join(dir, "utils.ts"), "export const clamp = 1;\nexport type Size = number;\n");
       writeFileSync(path.join(dir, "local.ts"), "export const local = 1;\n");
+      mkdirSync(path.join(dir, "lib"));
+      writeFileSync(path.join(dir, "lib", "math.ts"), "export const add = 1;\n");
+      writeFileSync(path.join(dir, "lib", "index.ts"), 'export * as math from "./math";\n');
       writeFileSync(
         path.join(dir, "index.ts"),
         [
@@ -235,16 +238,44 @@ describe("parseEntryExports", () => {
           'export type * as types from "./utils";',
           'import * as localNs from "./local";',
           "export { localNs };",
+          'export { math } from "./lib";',
           "",
         ].join("\n"),
       );
 
       const exports = await parseEntryExports(path.join(dir, "index.ts"));
 
+      // The type names the wrapped module relative to the entry, even when
+      // the namespace comes through a nested barrel.
       expect(exports).toEqual([
-        { name: "localNs", kind: "const", source: "./local.ts", isTypeOnly: false },
-        { name: "types", kind: "const", source: "./utils.ts", isTypeOnly: true },
-        { name: "utils", kind: "const", source: "./utils.ts", isTypeOnly: false },
+        {
+          name: "localNs",
+          kind: "const",
+          type: 'typeof import("./local.ts")',
+          source: "./local.ts",
+          isTypeOnly: false,
+        },
+        {
+          name: "math",
+          kind: "const",
+          type: 'typeof import("./lib/math.ts")',
+          source: "./lib/math.ts",
+          isTypeOnly: false,
+        },
+        {
+          name: "types",
+          kind: "const",
+          type: 'typeof import("./utils.ts")',
+          source: "./utils.ts",
+          isTypeOnly: true,
+        },
+        {
+          name: "utils",
+          kind: "const",
+          type: 'typeof import("./utils.ts")',
+          source: "./utils.ts",
+          isTypeOnly: false,
+        },
       ]);
     } finally {
       rmSync(dir, { recursive: true, force: true });
