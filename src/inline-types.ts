@@ -24,7 +24,12 @@ import { normalizeSeparators } from "./path";
 import { resolveAliasLookup } from "./resolve-alias";
 import type { BareTypeSession } from "./resolve-types";
 import { parseProgram } from "./template-parse/acorn-bridge";
-import { exportsTypeName, propsTypeName, type WriteTsDefinitionOptions } from "./writer/writer-ts-definitions-core";
+import {
+  componentIdentifier,
+  exportsTypeName,
+  propsTypeName,
+  type WriteTsDefinitionOptions,
+} from "./writer/writer-ts-definitions-core";
 
 /** Extensions probed, in order, for a resolved specifier with no extension of its own. */
 const RESOLVE_EXTENSIONS = [".ts", ".d.ts", ".mts", ".cts"];
@@ -539,6 +544,18 @@ function findExportedDeclaration(
   return { kind: "not-found" };
 }
 
+/** Why `key` can't claim `name` in the `.d.ts`, or `undefined` when it's free (or already `key`'s). */
+function nameClash(ctx: InlineContext, name: string, key: string): Outcome | undefined {
+  const owner = ctx.nameOwner.get(name);
+  if (owner !== undefined && owner !== key) {
+    return { ok: false, reason: `"${name}" was already inlined from a different source` };
+  }
+  if (ctx.reservedNames.has(name)) {
+    return { ok: false, reason: `"${name}" collides with a name the component's .d.ts already declares or imports` };
+  }
+  return undefined;
+}
+
 /** Registers `wantedLocalName` as an alias of `declaredName` when they differ, collision-checked like any other name. */
 function applyAlias(ctx: InlineContext, declaredName: string, wantedLocalName: string): Outcome {
   if (wantedLocalName === declaredName) return { ok: true };
@@ -546,16 +563,8 @@ function applyAlias(ctx: InlineContext, declaredName: string, wantedLocalName: s
   const aliasKey = `alias#${wantedLocalName}`;
   if (ctx.textByKey.has(aliasKey)) return { ok: true };
 
-  const owner = ctx.nameOwner.get(wantedLocalName);
-  if (owner !== undefined && owner !== aliasKey) {
-    return { ok: false, reason: `"${wantedLocalName}" was already inlined from a different source` };
-  }
-  if (ctx.reservedNames.has(wantedLocalName)) {
-    return {
-      ok: false,
-      reason: `"${wantedLocalName}" collides with a name the component's .d.ts already declares or imports`,
-    };
-  }
+  const clash = nameClash(ctx, wantedLocalName, aliasKey);
+  if (clash) return clash;
 
   ctx.nameOwner.set(wantedLocalName, aliasKey);
   ctx.tx.keys.push(aliasKey);
@@ -620,16 +629,8 @@ async function emitDeclaration(
     return applyAlias(ctx, declaredName, wantedLocalName);
   }
 
-  const owner = ctx.nameOwner.get(declaredName);
-  if (owner !== undefined && owner !== realKey) {
-    return { ok: false, reason: `"${declaredName}" was already inlined from a different source` };
-  }
-  if (ctx.reservedNames.has(declaredName)) {
-    return {
-      ok: false,
-      reason: `"${declaredName}" collides with a name the component's .d.ts already declares or imports`,
-    };
-  }
+  const clash = nameClash(ctx, declaredName, realKey);
+  if (clash) return clash;
 
   ctx.pending.add(realKey);
   ctx.nameOwner.set(declaredName, realKey);
@@ -822,29 +823,26 @@ function readStatement(
   }
 
   const importDecls = program.body.filter((stmt) => stmt.type === "ImportDeclaration");
-  const specifierPairs = importDecls.flatMap((decl) => asNodeArray(decl.specifiers).map((spec) => ({ decl, spec })));
-  const localNames = specifierPairs
-    .map(({ spec }) => nodeName(asNode(spec.local)))
-    .filter((name): name is string => name !== undefined);
-  if (importDecls.length === 0) return { status: "kept", localNames };
-
-  if (specifierPairs.some(({ spec }) => spec.type === "ImportNamespaceSpecifier"))
-    return { status: "kept", localNames };
-
-  const sourceValue = sourceValueOf(asNode(importDecls[0]?.source));
-  if (sourceValue === undefined) return { status: "kept", localNames };
-
-  const resolution = resolveModuleSpecifier(sourceValue, componentAbsPath);
-  if (resolution.kind === "svelte") return { status: "kept", localNames };
-
+  const specifiers = importDecls.flatMap((decl) => asNodeArray(decl.specifiers));
   const names: Array<{ importedName: string; localName: string }> = [];
-  for (const { spec } of specifierPairs) {
+  for (const spec of specifiers) {
     const localName = nodeName(asNode(spec.local));
     if (!localName) continue;
     const importedName =
       spec.type === "ImportDefaultSpecifier" ? "default" : (nodeName(asNode(spec.imported)) ?? localName);
     names.push({ importedName, localName });
   }
+  const localNames = names.map(({ localName }) => localName);
+
+  if (importDecls.length === 0 || specifiers.some((spec) => spec.type === "ImportNamespaceSpecifier")) {
+    return { status: "kept", localNames };
+  }
+
+  const sourceValue = sourceValueOf(asNode(importDecls[0]?.source));
+  if (sourceValue === undefined) return { status: "kept", localNames };
+
+  const resolution = resolveModuleSpecifier(sourceValue, componentAbsPath);
+  if (resolution.kind === "svelte") return { status: "kept", localNames };
 
   if (resolution.kind === "missing") {
     return {
@@ -856,8 +854,7 @@ function readStatement(
 
   // A bare import is never attempted under `"local"`, for the svelte/svelte-elements allow-list,
   // or when no checker session exists (e.g. `"all"` found nothing bare anywhere else in the
-  // bundle and skipped creating one): kept exactly as sveld has always kept a bare import, no
-  // diagnostic.
+  // bundle and skipped creating one): it stays an import, with no diagnostic.
   if (resolution.kind === "bare" && (isFrameworkAllowlisted(sourceValue) || !bareSession)) {
     return { status: "kept", localNames };
   }
@@ -914,7 +911,7 @@ function collectComponentReservedNames(
   // What the writer itself declares or imports around the copied declarations: the component
   // (`$$Component` stands in for an anonymous default) and its generic-component interface,
   // the `$Props`/`$RestProps` helpers, and the svelte types it imports, in either format.
-  const componentName = component.moduleName === "default" ? "$$Component" : component.moduleName;
+  const componentName = componentIdentifier(component.moduleName);
   names.add(componentName);
   names.add(`${componentName}Component`);
   for (const name of WRITER_DECLARED_NAMES) names.add(name);
