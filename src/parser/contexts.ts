@@ -5,7 +5,7 @@ import type { ComponentContext, ComponentContextProp, SourceRange } from "../Com
 import type { ParserContext } from "./context";
 import { recordDiagnostic } from "./diagnostics";
 import { parseObjectTypeLiteralMembers } from "./object-type-literal";
-import { literalValueType, resolveConstInitializer } from "./props";
+import { inferVariableInitializerType, literalValueType, resolveConstInitializer } from "./props";
 import { isBoundInNestedScope } from "./scopes";
 import { sourceForExpression, sourceRangeFromNode } from "./source-position";
 import { trackAdditionalTypeDependencyNode } from "./type-resolution";
@@ -14,13 +14,23 @@ import { trackAdditionalTypeDependencyNode } from "./type-resolution";
  * {@link ComponentParser.findVariableTypeAndDescription} for a variable whose
  * type ends up in a context type. A TS annotation's local types and type
  * imports are then pulled into the `.d.ts`, as a prop annotation's are.
+ * Without an annotation, `inferFromInitializer` types it from its initializer
+ * (`let count = $state(0)` is a `number`), as a prop default is typed.
  */
-function findContextVariableType(ctx: ParserContext, parser: ComponentParser, name: string) {
+function findContextVariableType(
+  ctx: ParserContext,
+  parser: ComponentParser,
+  name: string,
+  inferFromInitializer = true,
+): { type: string; description?: string; internal?: boolean } | null {
   const varInfo = parser.findVariableTypeAndDescription(name);
   if (varInfo && varInfo.type === ctx.explicitVariableTypesByName.get(name)) {
     trackAdditionalTypeDependencyNode(ctx, ctx.explicitVariableTypeNodesByName.get(name));
   }
-  return varInfo;
+  if (varInfo || !inferFromInitializer) return varInfo;
+
+  const inferredType = inferVariableInitializerType(parser, ctx, name);
+  return inferredType ? { type: inferredType } : null;
 }
 
 /**
@@ -220,8 +230,22 @@ function parseContextValue(
     // `getContext(key)` returns the variable itself, so the context's type is
     // the variable's type, not an object wrapping it.
     const varName = node.name;
-    const varInfo = findContextVariableType(ctx, parser, varName);
+    const annotated = findContextVariableType(ctx, parser, varName, false);
 
+    // An untyped `const` object literal describes itself, as it does when spread.
+    const initializer = annotated ? undefined : resolveConstInitializer(ctx, varName);
+    if (isObjectExpression(initializer)) {
+      const { properties, hasUnresolvedSpread } = parseContextObjectProperties(ctx, parser, initializer, key);
+      return {
+        key,
+        typeName: generateContextTypeName(key),
+        properties,
+        description: undefined,
+        ...(hasUnresolvedSpread ? { hasUnresolvedSpread } : {}),
+      };
+    }
+
+    const varInfo = annotated ?? findContextVariableType(ctx, parser, varName);
     if (varInfo) {
       const members = parseObjectTypeLiteralMembers(varInfo.type);
       return {
@@ -235,19 +259,6 @@ function parseContextValue(
         })),
         description: varInfo.description,
         ...(varInfo.internal ? { internal: true } : {}),
-      };
-    }
-
-    // An untyped `const` object literal describes itself, as it does when spread.
-    const initializer = resolveConstInitializer(ctx, varName);
-    if (isObjectExpression(initializer)) {
-      const { properties, hasUnresolvedSpread } = parseContextObjectProperties(ctx, parser, initializer, key);
-      return {
-        key,
-        typeName: generateContextTypeName(key),
-        properties,
-        description: undefined,
-        ...(hasUnresolvedSpread ? { hasUnresolvedSpread } : {}),
       };
     }
 

@@ -1909,7 +1909,7 @@ describe("ComponentParser", () => {
         <script>
           import { setContext } from "svelte";
           /* @type {string} */
-          const value = 5;
+          const value = compute();
           setContext("k", { value });
         </script>
       `;
