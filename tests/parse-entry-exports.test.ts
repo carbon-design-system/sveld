@@ -276,6 +276,58 @@ describe("parseEntryExports", () => {
     }
   });
 
+  test("documents a default-exported class or function like a named one", async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "sveld-entry-exports-default-class-"));
+    try {
+      writeFileSync(path.join(dir, "foo.ts"), "/** A foo. */\nexport default class Foo {}\n");
+      writeFileSync(path.join(dir, "bar.ts"), "/** A bar. */\nexport class Bar {}\n");
+      writeFileSync(path.join(dir, "anon.ts"), "/** Unnamed. */\nexport default class {}\n");
+      writeFileSync(
+        path.join(dir, "track.ts"),
+        "/**\n * Tracks an id.\n * @since 1.0.0\n */\nexport default function track(id: string): void {}\n",
+      );
+      writeFileSync(path.join(dir, "log.ts"), "/** Logs an id. */\nexport function log(id: string): void {}\n");
+      writeFileSync(
+        path.join(dir, "index.ts"),
+        [
+          'export { default as Foo } from "./foo";',
+          'export { Bar } from "./bar";',
+          'export { default as Anon } from "./anon";',
+          'export { default as track } from "./track";',
+          'export { log } from "./log";',
+          "",
+        ].join("\n"),
+      );
+
+      const exports = await parseEntryExports(path.join(dir, "index.ts"));
+
+      expect(exports).toEqual([
+        { name: "Anon", kind: "class", description: "Unnamed.", source: "./anon.ts", isTypeOnly: false },
+        { name: "Bar", kind: "class", type: "Bar", description: "A bar.", source: "./bar.ts", isTypeOnly: false },
+        { name: "Foo", kind: "class", type: "Foo", description: "A foo.", source: "./foo.ts", isTypeOnly: false },
+        {
+          name: "log",
+          kind: "function",
+          type: "(id: string) => void",
+          description: "Logs an id.",
+          source: "./log.ts",
+          isTypeOnly: false,
+        },
+        {
+          name: "track",
+          kind: "function",
+          type: "(id: string) => void",
+          description: "Tracks an id.",
+          tags: [{ name: "since", body: "1.0.0" }],
+          source: "./track.ts",
+          isTypeOnly: false,
+        },
+      ]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   test("skips components re-exported through a nested barrel", async () => {
     const dir = mkdtempSync(path.join(tmpdir(), "sveld-entry-exports-nested-component-"));
     try {

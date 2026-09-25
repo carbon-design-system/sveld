@@ -469,7 +469,17 @@ function enumMemberUnionType(declaration: AstNode): string | undefined {
   return literals.join(" | ");
 }
 
-function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocStart: number): InternalExport[] {
+/**
+ * The entries a declaration contributes, with JSDoc read from before
+ * `jsdocStart`. `anonymousName` names a function or class declared without
+ * one (`export default class {}`).
+ */
+function describeDeclaration(
+  source: ModuleSource,
+  declaration: AstNode,
+  jsdocStart: number,
+  anonymousName?: string,
+): InternalExport[] {
   const declFile = source.filePath;
   const description = leadingJsDoc(source.text, jsdocStart);
   const rawJsDoc = leadingJsDocBlock(source.text, jsdocStart);
@@ -544,7 +554,7 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
 
   // Ambient signature in a `.d.ts`: `export function uniqueId(prefix?: string): string;`
   if (declaration.type === "FunctionDeclaration" || declaration.type === "TSDeclareFunction") {
-    const name = identifierName(asNode(declaration.id));
+    const name = identifierName(asNode(declaration.id)) ?? anonymousName;
     if (!name) return [];
     return [
       {
@@ -567,10 +577,21 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
   }
 
   if (declaration.type === "ClassDeclaration") {
-    const name = identifierName(asNode(declaration.id));
+    const className = identifierName(asNode(declaration.id));
+    const name = className ?? anonymousName;
     if (!name) return [];
     return [
-      { name, kind: "class", type: name, description, deprecated, tags, ...internalField, declFile, isTypeOnly: false },
+      {
+        name,
+        kind: "class",
+        ...(className ? { type: className } : {}),
+        description,
+        deprecated,
+        tags,
+        ...internalField,
+        declFile,
+        isTypeOnly: false,
+      },
     ];
   }
 
@@ -633,22 +654,29 @@ function describeDeclaration(source: ModuleSource, declaration: AstNode, jsdocSt
 
 /**
  * The entry a module's `export default` contributes, named `default`: a
- * function declared in place (`export default function helper(d) {}`), or
+ * function or class declared in place (`export default function helper(d) {}`),
+ * described with its JSDoc as a named one is, a function expression, or
  * the local binding it names (`export default helper`). Anything else isn't
  * read.
  */
 function describeDefaultExport(
   source: ModuleSource,
-  declaration: AstNode | undefined,
+  node: AstNode,
   resolveLocal: (name: string) => InternalExport | null,
 ): InternalExport | undefined {
+  const declaration = asNode(node.declaration);
   if (!declaration) return undefined;
 
   if (
     declaration.type === "FunctionDeclaration" ||
-    declaration.type === "FunctionExpression" ||
-    declaration.type === "ArrowFunctionExpression"
+    declaration.type === "TSDeclareFunction" ||
+    declaration.type === "ClassDeclaration"
   ) {
+    const [described] = describeDeclaration(source, declaration, node.start, "default");
+    return described ? { ...described, name: "default" } : undefined;
+  }
+
+  if (declaration.type === "FunctionExpression" || declaration.type === "ArrowFunctionExpression") {
     return {
       name: "default",
       kind: "function",
@@ -738,7 +766,7 @@ function namespaceExport(name: string, namespaceFile: string, isTypeOnly: boolea
  * Collects every named export declared or re-exported by a module.
  *
  * Walks `export ... from` and `export *` chains. Skips `.svelte` re-exports.
- * A default export that's a function or a local binding is listed as
+ * A default export that's a function, a class, or a local binding is listed as
  * `default` (see {@link describeDefaultExport}). A namespace export
  * (`export * as ns from "./x"`) is the one entry `ns`, with `namespaceFile`
  * set; the names `x` exports aren't this module's.
@@ -823,7 +851,7 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
     }
 
     if (node.type === "ExportDefaultDeclaration") {
-      const defaultExport = describeDefaultExport(source, asNode(node.declaration), resolveLocal);
+      const defaultExport = describeDefaultExport(source, node, resolveLocal);
       if (defaultExport) results.push(defaultExport);
       continue;
     }
