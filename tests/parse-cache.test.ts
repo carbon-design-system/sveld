@@ -178,6 +178,36 @@ describe("parse cache", () => {
   });
 });
 
+test("a prop typed from an imported value keeps its key order on a warm-cache run", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "sveld-cache-key-order-"));
+  try {
+    writeFileSync(join(dir, "constants.js"), "export const DELAY = 100;\n");
+    writeFileSync(join(dir, "id.js"), '/** @returns {string} */\nexport function uniqueId() { return "id"; }\n');
+    writeFileSync(
+      join(dir, "Tip.svelte"),
+      `<script>
+  import { DELAY } from "./constants.js";
+  import { uniqueId } from "./id.js";
+  export let delay = DELAY;
+  export let id = uniqueId();
+</script>`,
+    );
+    const cache = join(dir, ".cache", "parse-cache.json");
+    const propsJson = async () => {
+      const result = await generateBundle(dir, true, { cache });
+      result.cache?.save();
+      return JSON.stringify(byModuleName(result.allComponentsForTypes, "Tip")?.props);
+    };
+
+    const cold = await propsJson();
+    expect(cold).toContain('"type":"number"');
+    expect(cold).toContain('"type":"string"');
+    expect(await propsJson()).toBe(cold);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 describe("generated .d.ts text cache", () => {
   const classKey = serializeEmitOptions({ format: "class" });
   const componentKey = serializeEmitOptions({ format: "component" });
