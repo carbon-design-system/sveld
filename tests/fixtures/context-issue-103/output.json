@@ -37,14 +37,9 @@
     {
       "key": "my-logger",
       "typeName": "MyLoggerContext",
-      "properties": [
-        {
-          "name": "log",
-          "type": "(message: string) => void",
-          "description": "Log a message to the console",
-          "optional": false
-        }
-      ],
+      "type": "(message: string) => void",
+      "properties": [],
+      "description": "Log a message to the console",
       "source": {
         "start": {
           "line": 12,

@@ -370,6 +370,10 @@
       "properties": {
         "key": { "type": "string" },
         "typeName": { "type": "string" },
+        "type": {
+          "type": "string",
+          "description": "The context's whole type, when the setContext value is a variable whose type isn't an object type literal (e.g. ModalAPI, or any when untyped). properties is empty then."
+        },
         "description": { "type": "string" },
         "properties": {
           "type": "array",

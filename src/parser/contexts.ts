@@ -203,23 +203,37 @@ function parseContextValue(
       ...(hasUnresolvedSpread ? { hasUnresolvedSpread } : {}),
     };
   } else if (isIdentifier(node)) {
+    // `getContext(key)` returns the variable itself, so the context's type is
+    // the variable's type, not an object wrapping it.
     const varName = node.name;
     const varInfo = parser.findVariableTypeAndDescription(varName);
 
     if (varInfo) {
+      const members = parseObjectTypeLiteralMembers(varInfo.type);
       return {
         key,
         typeName: generateContextTypeName(key),
-        properties: [
-          {
-            name: varName,
-            type: varInfo.type,
-            description: varInfo.description,
-            optional: false,
-          },
-        ],
-        description: undefined,
+        ...(members ? {} : { type: varInfo.type }),
+        properties: (members ?? []).map((member) => ({
+          name: member.name,
+          type: member.type,
+          optional: member.optional,
+        })),
+        description: varInfo.description,
         ...(varInfo.internal ? { internal: true } : {}),
+      };
+    }
+
+    // An untyped `const` object literal describes itself, as it does when spread.
+    const initializer = resolveConstInitializer(ctx, varName);
+    if (isObjectExpression(initializer)) {
+      const { properties, hasUnresolvedSpread } = parseContextObjectProperties(ctx, parser, initializer, key);
+      return {
+        key,
+        typeName: generateContextTypeName(key),
+        properties,
+        description: undefined,
+        ...(hasUnresolvedSpread ? { hasUnresolvedSpread } : {}),
       };
     }
 
@@ -234,14 +248,8 @@ function parseContextValue(
     return {
       key,
       typeName: generateContextTypeName(key),
-      properties: [
-        {
-          name: varName,
-          type: "any",
-          description: undefined,
-          optional: false,
-        },
-      ],
+      type: "any",
+      properties: [],
     };
   }
 
@@ -391,6 +399,7 @@ export function parseSetContextCall(ctx: ParserContext, parser: ComponentParser,
       ctx.pendingContextKeyCandidates.push({
         importSource: resolution.importSource,
         importedName: resolution.importedName,
+        ...(contextInfo.type === undefined ? {} : { type: contextInfo.type }),
         properties: contextInfo.properties,
         description: contextInfo.description,
         source: callSource,

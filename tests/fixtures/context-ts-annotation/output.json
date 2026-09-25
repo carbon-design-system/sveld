@@ -39,8 +39,8 @@
       "typeName": "AppContext",
       "properties": [
         {
-          "name": "ctx",
-          "type": "{ theme: string }",
+          "name": "theme",
+          "type": "string",
           "optional": false
         }
       ],
@@ -60,12 +60,12 @@
       "typeName": "LegacyContext",
       "properties": [
         {
-          "name": "jsdocCtx",
-          "type": "{ label: string }",
-          "description": "",
+          "name": "label",
+          "type": "string",
           "optional": false
         }
       ],
+      "description": "",
       "source": {
         "start": {
           "line": 9,

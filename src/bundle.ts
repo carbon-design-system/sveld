@@ -1057,6 +1057,7 @@ function applyContextKeyResolutions(component: ComponentDocApi, resolutions: Con
     contexts.splice(laterIndex === -1 ? contexts.length : laterIndex, 0, {
       key,
       typeName: generateContextTypeName(key),
+      ...(candidate.type === undefined ? {} : { type: candidate.type }),
       description: candidate.description,
       properties: candidate.properties,
       source: candidate.source,

@@ -1,11 +1,11 @@
 import type { Component } from "svelte";
 
 export type AppContext = {
-  ctx: { theme: string };
+  theme: string;
 };
 
 export type LegacyContext = {
-  jsdocCtx: { label: string };
+  label: string;
 };
 
 export type ContextTsAnnotationProps = {

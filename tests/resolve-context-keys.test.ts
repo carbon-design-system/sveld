@@ -84,6 +84,41 @@ describe("cross-file setContext key resolution", () => {
     }
   });
 
+  test("an imported key keeps a variable value's whole type", async () => {
+    writeFileSync(path.join(dir, "keys.js"), `export const MODAL_KEY = "carbon:Modal";\n`);
+    writeFileSync(
+      path.join(dir, "Modal.svelte"),
+      `<script>
+  import { setContext } from "svelte";
+  import { MODAL_KEY } from "./keys.js";
+
+  /**
+   * Modal controls
+   * @type {AbortController}
+   */
+  const controller = new AbortController();
+
+  setContext(MODAL_KEY, controller);
+</script>
+<div><slot /></div>
+`,
+    );
+    writeFileSync(path.join(dir, "index.js"), `export { default as Modal } from "./Modal.svelte";\n`);
+
+    const result = await generateBundle(path.join(dir, "index.js"), true);
+    const component = byModuleName(result.allComponentsForTypes, "Modal");
+
+    expect(component?.contexts).toMatchObject([
+      {
+        key: "carbon:Modal",
+        typeName: "CarbonModalContext",
+        type: "AbortController",
+        description: "Modal controls",
+        properties: [],
+      },
+    ]);
+  });
+
   test("keeps an imported key in source order among same-file keys", async () => {
     writeFileSync(path.join(dir, "keys.js"), `export const MODAL_KEY = "carbon:Modal";\n`);
     writeFileSync(

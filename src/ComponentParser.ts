@@ -296,6 +296,8 @@ export interface PendingConstDefaultCandidate {
 export interface PendingContextKeyCandidate {
   importSource: string;
   importedName: string;
+  /** See {@link ComponentContext.type}. */
+  type?: string;
   properties: ComponentContextProp[];
   description?: string;
   /** Source range of the `setContext(...)` call, when available. */
@@ -793,9 +795,15 @@ export interface ComponentContext {
   key: string;
   /** Generated type name (e.g. `"ModalContext"`). */
   typeName: string;
+  /**
+   * The context's whole type, when the `setContext` value is a variable whose
+   * type isn't an object type literal (`ModalAPI`, `Writable<number>`, or `any`
+   * when untyped). `properties` is empty then.
+   */
+  type?: string;
   /** From JSDoc. */
   description?: string;
-  /** Context object properties. */
+  /** Context object properties. Empty when {@link ComponentContext.type} is set. */
   properties: ComponentContextProp[];
   /** True when a `{...spread}` in the context's object literal couldn't be resolved; the generated type intersects with `Record<string, any>`. */
   hasUnresolvedSpread?: boolean;
@@ -2578,6 +2586,7 @@ export default class ComponentParser {
 
       for (const context of contextsArray) {
         if (context.internal) continue;
+        if (context.type !== undefined) scanForInternalReference(context.typeName, context.type, context.source);
         for (const property of context.properties) {
           scanForInternalReference(property.name, property.type);
         }

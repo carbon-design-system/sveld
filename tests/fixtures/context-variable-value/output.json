@@ -1,0 +1,161 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 24,
+      "column": 0
+    }
+  },
+  "syntaxMode": "legacy",
+  "scriptLanguage": "ts",
+  "props": [],
+  "moduleExports": [],
+  "slots": [
+    {
+      "name": null,
+      "default": true,
+      "slot_props": "Record<string, never>",
+      "source": {
+        "start": {
+          "line": 23,
+          "column": 0
+        },
+        "end": {
+          "line": 23,
+          "column": 8
+        }
+      }
+    }
+  ],
+  "events": [],
+  "typedefs": [],
+  "generics": [
+    "Item",
+    "Item"
+  ],
+  "contexts": [
+    {
+      "key": "abort",
+      "typeName": "AbortContext",
+      "type": "AbortController",
+      "properties": [],
+      "source": {
+        "start": {
+          "line": 8,
+          "column": 2
+        },
+        "end": {
+          "line": 8,
+          "column": 33
+        }
+      }
+    },
+    {
+      "key": "selected",
+      "typeName": "SelectedContext",
+      "type": "Item[]",
+      "properties": [],
+      "source": {
+        "start": {
+          "line": 11,
+          "column": 2
+        },
+        "end": {
+          "line": 11,
+          "column": 34
+        }
+      }
+    },
+    {
+      "key": "settings",
+      "typeName": "SettingsContext",
+      "properties": [
+        {
+          "name": "dense",
+          "type": "boolean",
+          "optional": false
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "optional": true
+        }
+      ],
+      "source": {
+        "start": {
+          "line": 14,
+          "column": 2
+        },
+        "end": {
+          "line": 14,
+          "column": 34
+        }
+      }
+    },
+    {
+      "key": "api",
+      "typeName": "ApiContext",
+      "properties": [
+        {
+          "name": "reset",
+          "type": "() => any",
+          "optional": false
+        },
+        {
+          "name": "version",
+          "type": "string",
+          "optional": false
+        }
+      ],
+      "source": {
+        "start": {
+          "line": 17,
+          "column": 2
+        },
+        "end": {
+          "line": 17,
+          "column": 24
+        }
+      }
+    },
+    {
+      "key": "store",
+      "typeName": "StoreContext",
+      "type": "any",
+      "properties": [],
+      "source": {
+        "start": {
+          "line": 20,
+          "column": 2
+        },
+        "end": {
+          "line": 20,
+          "column": 28
+        }
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "component": "context-variable-value/input.svelte",
+      "kind": "context-any-type",
+      "name": "store",
+      "message": "Context \"store\" variable \"store\" has no type annotation; defaulted to \"any\".",
+      "source": {
+        "start": {
+          "line": 20,
+          "column": 22
+        },
+        "end": {
+          "line": 20,
+          "column": 27
+        }
+      },
+      "code": "sveld/context-any-type",
+      "severity": "warning"
+    }
+  ]
+}
