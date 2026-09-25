@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 import { basename, dirname, extname, isAbsolute, join, parse, relative, resolve } from "node:path";
 import { asRelativeSourcePath, type NormalizedPath } from "./brands";
 import type {
+  ComponentProp,
   DispatchedEvent,
   ParsedComponent,
   PendingConstDefaultCandidate,
@@ -983,8 +984,8 @@ function applyCallDefaultResolutions(component: ComponentDocApi, resolutions: Ca
     if (prop?.typeSource !== "unknown") continue;
 
     if (type) {
-      prop.type = type;
-      prop.typeSource = "typescript";
+      setResolvedField(prop, "type", type);
+      setResolvedField(prop, "typeSource", "typescript");
       dropUnknownTypeDiagnostic(component, candidate);
       continue;
     }
@@ -1010,14 +1011,25 @@ function applyConstDefaultResolutions(component: ComponentDocApi, resolutions: C
     const prop = findCandidateProp(component, candidate);
     if (!prop) continue;
 
-    prop.value = literal.raw;
-    prop.defaultValue = { raw: literal.raw, kind: "literal", value: literal.value };
+    setResolvedField(prop, "value", literal.raw);
+    setResolvedField(prop, "defaultValue", { raw: literal.raw, kind: "literal", value: literal.value });
     if (prop.typeSource !== "unknown") continue;
 
-    prop.type = declaredType?.type ?? literal.type;
-    prop.typeSource = declaredType?.source ?? "default";
+    setResolvedField(prop, "type", declaredType?.type ?? literal.type);
+    setResolvedField(prop, "typeSource", declaredType?.source ?? "default");
     dropUnknownTypeDiagnostic(component, candidate);
   }
+}
+
+/**
+ * Sets a field a cross-file pass resolved. A fresh parse can hold the field
+ * as `undefined` where one read back from the cache file has no key, so an
+ * undefined field is re-added last, as it would be when missing, and the
+ * output's key order doesn't depend on cache state.
+ */
+function setResolvedField<K extends keyof ComponentProp>(prop: ComponentProp, key: K, value: ComponentProp[K]): void {
+  if (prop[key] === undefined) delete prop[key];
+  prop[key] = value;
 }
 
 type PropDefaultCandidate = Pick<PendingConstDefaultCandidate, "propName" | "location">;
