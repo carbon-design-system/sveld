@@ -61,6 +61,16 @@ export interface SveldBundle {
   update(changedFilePaths: string[]): Promise<SveldBundleUpdate>;
 }
 
+/** Adds `value` to the set `map` holds for `key`, creating it on first use. */
+function addReverseEdge(map: Map<string, Set<string>>, key: string, value: string): void {
+  let values = map.get(key);
+  if (!values) {
+    values = new Set();
+    map.set(key, values);
+  }
+  values.add(value);
+}
+
 /**
  * Creates a watch-mode bundle for the given entry point, performing the initial
  * full parse up front.
@@ -118,8 +128,11 @@ export async function createSveldBundle(
   // The barrel's own diagnostics, attributed to it rather than a component.
   // Replaced whenever the barrel is re-read.
   let entryDiagnostics: SveldDiagnostic[] = [];
-  let entryExports: EntryExports =
-    documentExports && inputIsFile ? await parseEntryExports(resolve(input), { diagnostics: entryDiagnostics }) : [];
+  const readEntryExports = async (): Promise<EntryExports> => {
+    entryDiagnostics = [];
+    return documentExports && inputIsFile ? parseEntryExports(resolve(input), { diagnostics: entryDiagnostics }) : [];
+  };
+  let entryExports = await readEntryExports();
 
   let exportEntries = Object.entries(exports);
 
@@ -165,14 +178,7 @@ export async function createSveldBundle(
     const reads = await resolveCrossFileCandidates(scope, resolveComponentFilePath);
     for (const [filePath, modules] of reads) {
       const componentPath = resolveComponentFilePath(filePath);
-      for (const module of modules) {
-        let readers = crossFileDepsReverse.get(module);
-        if (!readers) {
-          readers = new Set();
-          crossFileDepsReverse.set(module, readers);
-        }
-        readers.add(componentPath);
-      }
+      for (const module of modules) addReverseEdge(crossFileDepsReverse, module, componentPath);
     }
     validateExtendsTargets(allComponentsForTypes, resolveComponentFilePath, typesTypeNames, scope);
     validateModuleReExportNames(scope, typesTypeNames);
@@ -231,17 +237,17 @@ export async function createSveldBundle(
       const fresh = await inlineLocalTypeImports(scope, resolveComponentFilePath, typesTypeNames, bareSession);
       for (const [filePath, inlined] of fresh) {
         inlinedTypesByFilePath.set(filePath, inlined);
-        for (const dependency of inlined.dependencies) {
-          let dependents = inlineDepsReverse.get(dependency);
-          if (!dependents) {
-            dependents = new Set();
-            inlineDepsReverse.set(dependency, dependents);
-          }
-          dependents.add(filePath);
-        }
+        for (const dependency of inlined.dependencies) addReverseEdge(inlineDepsReverse, dependency, filePath);
       }
     } finally {
       if (bareSession) await bareSession.dispose();
+    }
+  };
+
+  /** Drops inline results for components no longer in the bundle. */
+  const pruneInlinedTypes = (): void => {
+    for (const filePath of inlinedTypesByFilePath.keys()) {
+      if (!allComponentsForTypes.has(filePath)) inlinedTypesByFilePath.delete(filePath);
     }
   };
 
@@ -364,10 +370,7 @@ export async function createSveldBundle(
       exportEntries = Object.entries(exports);
       globMergeState = createGlobMergeState(allComponentEntries, resolveComponentFilePath);
 
-      if (documentExports && inputIsFile) {
-        entryDiagnostics = [];
-        entryExports = await parseEntryExports(resolve(input), { diagnostics: entryDiagnostics });
-      }
+      entryExports = await readEntryExports();
     }
 
     // Pick up components created since the last parse.
@@ -388,9 +391,7 @@ export async function createSveldBundle(
       for (const [key, error] of parseErrors) {
         if (!listed.has(resolveComponentFilePath(error.filePath))) parseErrors.delete(key);
       }
-      for (const filePath of inlinedTypesByFilePath.keys()) {
-        if (!allComponentsForTypes.has(filePath)) inlinedTypesByFilePath.delete(filePath);
-      }
+      pruneInlinedTypes();
     }
 
     // Non-`.svelte` changes only matter when they're a known dependency
@@ -462,9 +463,7 @@ export async function createSveldBundle(
       }
     }
     await refreshInlinedTypes(reparsedForTypes);
-    for (const filePath of inlinedTypesByFilePath.keys()) {
-      if (!allComponentsForTypes.has(filePath)) inlinedTypesByFilePath.delete(filePath);
-    }
+    pruneInlinedTypes();
 
     const result = buildResult();
     reportParseErrors(result.errors);
