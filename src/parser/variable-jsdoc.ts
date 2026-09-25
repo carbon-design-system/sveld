@@ -99,13 +99,14 @@ function findAttachedComment(comments: ScriptComment[], declStart: number, sourc
  * Maps every top-level variable/function name declared in a component's module and instance
  * scripts to the `@type`/description from its attached JSDoc block. Used by
  * {@link ComponentParser.findVariableTypeAndDescription} to resolve plain identifiers (e.g. a
- * value passed to `setContext`) that aren't otherwise typed by a prop or a TS annotation.
+ * value passed to `setContext`) that aren't otherwise typed by a prop or a TS annotation. A block
+ * without `@type` still records its description and `@internal`, for a TS-annotated variable.
  */
 export function buildVariableJsDocTable(
   ctx: ParserContext,
   parser: ComponentParser,
-): Map<string, { type: string; description?: string; internal?: boolean }> {
-  const table = new Map<string, { type: string; description?: string; internal?: boolean }>();
+): Map<string, { type?: string; description?: string; internal?: boolean }> {
+  const table = new Map<string, { type?: string; description?: string; internal?: boolean }>();
   if (!ctx.source) return table;
 
   const scripts = [ctx.parsed?.module, ctx.parsed?.instance] as unknown as Array<
@@ -135,11 +136,11 @@ export function buildVariableJsDocTable(
     if (ignoreCodes.length > 0) {
       recordSveldIgnore(ctx, "context-any-type", declaration.name, ignoreCodes);
     }
-    if (!typeTag) continue;
+    if (!typeTag && !description && !internal) continue;
 
     table.set(declaration.name, {
-      type: parser.aliasType(typeTag.type),
-      description: description || typeTag.description,
+      type: typeTag ? parser.aliasType(typeTag.type) : undefined,
+      description: description || typeTag?.description,
       internal: internal || undefined,
     });
   }
