@@ -31,5 +31,5 @@ export function readStyle(state: TemplateParserState, start: number, attributes:
       styles: state.source.slice(contentStart, contentEnd),
       comment: null,
     },
-  } as unknown as AST.CSS.StyleSheet;
+  };
 }

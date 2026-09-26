@@ -4,7 +4,7 @@ import { matchBracket } from "./bracket";
 import { readPattern } from "./context";
 import { readExpression } from "./expression";
 import { createFragment, type Fragment } from "./reader";
-import type { StackNode, TemplateParserState } from "./state";
+import type { TemplateParserState } from "./state";
 
 const REGEX_WHITESPACE_THEN_CLOSING_BRACE = /\s*}/y;
 const REGEX_GENERIC_BRACKETS: Record<string, string> = { "<": ">" };
@@ -32,7 +32,7 @@ export function openBlock(state: TemplateParserState): void {
     state.append(block);
     state.allowWhitespace();
     state.eat("}", true);
-    state.push(block as unknown as StackNode, block.consequent);
+    state.push(block, block.consequent);
     return;
   }
 
@@ -101,7 +101,7 @@ export function openBlock(state: TemplateParserState): void {
       key: key as AST.EachBlock["key"],
     };
     state.append(block);
-    state.push(block as unknown as StackNode, block.body);
+    state.push(block, block.body);
     return;
   }
 
@@ -144,7 +144,7 @@ export function openBlock(state: TemplateParserState): void {
 
     state.eat("}", true);
     state.append(block);
-    state.push(block as unknown as StackNode, (block.then ?? block.catch ?? block.pending) as Fragment);
+    state.push(block, (block.then ?? block.catch ?? block.pending) as Fragment);
     return;
   }
 
@@ -156,7 +156,7 @@ export function openBlock(state: TemplateParserState): void {
 
     const block: AST.KeyBlock = { type: "KeyBlock", start, end: -1, expression, fragment: createFragment() };
     state.append(block);
-    state.push(block as unknown as StackNode, block.fragment);
+    state.push(block, block.fragment);
     return;
   }
 
@@ -203,7 +203,7 @@ export function openBlock(state: TemplateParserState): void {
       body: createFragment(),
     };
     state.append(block);
-    state.push(block as unknown as StackNode, block.body);
+    state.push(block, block.body);
     return;
   }
 
@@ -213,7 +213,7 @@ export function openBlock(state: TemplateParserState): void {
 /** `{:else}` / `{:else if}` / `{:then}` / `{:catch}`. From svelte's `next()`. */
 export function nextBlockClause(state: TemplateParserState): void {
   const start = state.index - 1;
-  const block = state.current() as unknown as AST.IfBlock | AST.EachBlock | AST.AwaitBlock;
+  const block = state.current();
 
   if (block.type === "IfBlock") {
     if (!state.eat("else")) throw new Error("sveld: expected {:else} or {:else if}");
@@ -243,7 +243,7 @@ export function nextBlockClause(state: TemplateParserState): void {
         alternate: null,
       };
       state.append(child);
-      state.stack.push(child as unknown as StackNode);
+      state.stack.push(child);
       state.fragments.pop();
       state.fragments.push(child.consequent);
     } else {
@@ -301,10 +301,8 @@ export function nextBlockClause(state: TemplateParserState): void {
 }
 
 /** `{/if}` / `{/each}` / `{/await}` / `{/key}` / `{/snippet}`. From svelte's `close()`. */
-type ClosableBlock = (AST.IfBlock | AST.EachBlock | AST.KeyBlock | AST.AwaitBlock | AST.SnippetBlock) & StackNode;
-
 export function closeBlock(state: TemplateParserState): void {
-  let block = state.current() as unknown as ClosableBlock;
+  let block = state.current();
 
   switch (block.type) {
     case "IfBlock": {
@@ -315,7 +313,7 @@ export function closeBlock(state: TemplateParserState): void {
       while (block.type === "IfBlock" && block.elseif) {
         block.end = state.index;
         state.stack.pop();
-        block = state.current() as unknown as ClosableBlock;
+        block = state.current();
       }
 
       block.end = state.index;

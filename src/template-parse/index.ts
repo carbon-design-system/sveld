@@ -35,9 +35,7 @@ export function parse(source: string): TemplateRoot {
   const optionsIndex = state.root.fragment.nodes.findIndex((node) => node.type === "SvelteOptions");
   if (optionsIndex !== -1) {
     const [optionsNode] = state.root.fragment.nodes.splice(optionsIndex, 1);
-    state.root.options = readOptions(
-      optionsNode as unknown as { start: number; end: number; attributes: AST.Attribute[] },
-    );
+    state.root.options = readOptions(optionsNode as AST.SvelteOptionsRaw);
   }
 
   return state.root;

@@ -7,15 +7,8 @@ import { createFragment, type Fragment, Reader } from "./reader";
 const REGEX_LANG_TS_ATTRIBUTE =
   /<script\s+(?:[^>]*|(?:[^=>'"/]+=(?:"[^"]*"|'[^']*'|[^>\s]+)\s+)*)lang=(["'])?ts\1[^>]*>/;
 
-/** Node on the open-element stack. Has its own fragment. */
-export interface StackNode {
-  type: string;
-  name?: string;
-  fragment: Fragment;
-  start: number;
-  end: number;
-  [key: string]: unknown;
-}
+/** Node on the open-element stack: the root, an element, or a block. */
+export type StackNode = TemplateRoot | AST.ElementLike | AST.Block;
 
 /** estree's `Program`, plus the `start`/`end` offsets acorn sets on every node. */
 export type ScriptProgram = Program & { start: number; end: number };
@@ -90,7 +83,7 @@ export class TemplateParserState extends Reader {
       comments: [],
     };
 
-    this.stack.push(this.root as unknown as StackNode);
+    this.stack.push(this.root);
     this.fragments.push(fragment);
   }
 
