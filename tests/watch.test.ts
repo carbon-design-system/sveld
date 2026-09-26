@@ -1,8 +1,8 @@
-import { mkdirSync, mkdtempSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, relative, resolve } from "node:path";
 import type { ComponentDocApi, ComponentDocs } from "../src/bundle";
-import pluginSveld, { createSerialQueue } from "../src/plugin";
+import pluginSveld, { createSerialQueue, writeOutput } from "../src/plugin";
 import { TypeResolver } from "../src/resolve-types";
 import { createSveldBundle } from "../src/watch";
 
@@ -159,6 +159,27 @@ describe("watch mode (createSveldBundle)", () => {
     const propNames = button?.props.map((p) => p.name) ?? [];
     expect(propNames).toContain("danger");
     expect(propNames).not.toContain("primary");
+  });
+
+  test("writing an updated result rewrites the .d.ts and JSON output", async () => {
+    const bundle = await createSveldBundle(dir, true);
+    const outDir = join(dir, "types");
+    const outFile = join(dir, "COMPONENT_API.json");
+    const opts = { types: true, json: true, typesOptions: { outDir }, jsonOptions: { outFile }, quiet: true };
+    const input = join(dir, "index.js");
+    await writeOutput(await bundle.result, opts, input);
+
+    const buttonPath = resolve(dir, "Button.svelte");
+    writeFileSync(buttonPath, BUTTON.replace("export let primary = false;", "export let danger = false;"));
+    const { result } = await bundle.update([buttonPath]);
+    await writeOutput(result, opts, input);
+
+    const dts = readFileSync(join(outDir, "Button.svelte.d.ts"), "utf8");
+    expect(dts).toContain("danger?: boolean");
+    expect(dts).not.toContain("primary?: boolean");
+    const api = JSON.parse(readFileSync(outFile, "utf8"));
+    const button = api.components.find((c: { moduleName: string }) => c.moduleName === "Button");
+    expect(button.props.map((p: { name: string }) => p.name)).toEqual(["danger"]);
   });
 
   test("editing a non-.svelte @extendProps target reparses its dependent", async () => {
