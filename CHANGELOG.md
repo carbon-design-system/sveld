@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.37.9](https://github.com/carbon-design-system/sveld/releases/tag/v0.37.9) - 2026-09-26
+
+**Features**
+
+- keep the parser stack out of a fully cached run (2d7c819)
+- skip saving the parse cache when nothing changed (e7e0f6b)
+- enable Node's compile cache in the bin shim (eddd920)
+
+**Fixes**
+
+- follow a symlink the import specifier names exactly (ca39956)
+- regenerate a component's `.d.ts` when its export is renamed (41b33fd)
+- roll up `src/index.ts` as the package's `index.d.ts` (51cc288)
+- name a lone default export with a valid identifier (f3b7bba)
+- print a config file's load error without sveld's stack (77a861a)
+- suggest the intended tag for a mistyped JSDoc tag (3e5beeb)
+- count diagnostics by severity in the summary header (ad49fa0)
+- punctuate the unknown-flag error like the unknown-option one (6ecd3fd)
+- say where `.d.ts` files went and how many changed (9683ff7)
+- warn about config keys the Vite plugin ignores (2d93746)
+- keep snippets rendered with positional args as props (f2d9054)
+- read prop docs from a TS props interface's members (a00478e)
+- split generics correctly around `=>` and string literals (b88129b)
+- type `$props()` from a JSDoc `@type` on the declaration (b79adde)
+- rewrite outputs after a watch-mode update (d9bc910)
+- write absolute output paths where they point (eeda396)
+
 ## [0.37.8](https://github.com/carbon-design-system/sveld/releases/tag/v0.37.8) - 2026-09-25
 
 **Fixes**
