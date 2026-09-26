@@ -124,14 +124,25 @@ export class ParseCache {
 
   /** True when `get()` would return a hit for `resolvedPath` and `hash`. */
   has(resolvedPath: string, hash: string): boolean {
-    const entry = this.file.entries[resolvedPath];
-    return entry !== undefined && entry.hash === hash;
+    return this.lookup(resolvedPath, hash) !== undefined;
+  }
+
+  /**
+   * This run's entry for `resolvedPath`, else the one read from disk, when
+   * its hash matches. A long-lived cache (watch mode) sees a file it parsed
+   * earlier in the session, not just the ones it was loaded with.
+   */
+  private lookup(resolvedPath: string, hash: string): ParseCacheEntry | undefined {
+    const current = this.next.get(resolvedPath);
+    if (current?.hash === hash) return current;
+    const saved = this.file.entries[resolvedPath];
+    return saved?.hash === hash ? saved : undefined;
   }
 
   /** Returns the cached parse for `resolvedPath` when its content hash still matches. */
   get(resolvedPath: string, hash: string): ComponentParseResult | null {
-    const entry = this.file.entries[resolvedPath];
-    if (entry === undefined || entry.hash !== hash) return null;
+    const entry = this.lookup(resolvedPath, hash);
+    if (entry === undefined) return null;
 
     // Keep the entry for save() even if nothing else touches it this run.
     this.next.set(resolvedPath, entry);

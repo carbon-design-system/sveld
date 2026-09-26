@@ -443,6 +443,9 @@ describe("watch mode (createSveldBundle)", () => {
       writeFileSync(standalonePath, STANDALONE.replace("export let label", "export let text"));
       await first.update([standalonePath]);
       expect(parseSpy).toHaveBeenCalledTimes(4);
+      // Saved again unchanged: a hit on the parse the update just cached.
+      await first.update([standalonePath]);
+      expect(parseSpy).toHaveBeenCalledTimes(4);
 
       parseSpy.mockClear();
       const restarted = await createSveldBundle(dir, true, { cache });
