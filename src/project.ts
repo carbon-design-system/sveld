@@ -153,11 +153,8 @@ export class Project {
     this.parseErrors.clear();
     this.indexEntries();
 
-    const parsed = await this.parse(this.componentPaths());
+    await this.process(this.componentPaths());
     reportParseErrors(Array.from(this.parseErrors.values()));
-    this.cache?.save();
-    await this.settle(parsed);
-
     return this.assemble();
   }
 
@@ -199,18 +196,11 @@ export class Project {
     );
     const affected = new Set([...changed.filter((path) => SVELTE_EXT_REGEX.test(path)), ...added, ...readers]);
     const targets = new Set(Array.from(listed).filter((path) => affected.has(path)));
-    for (const path of targets) {
-      this.records.delete(path);
-      this.parseErrors.delete(path);
-    }
-
-    const parsed = await this.parse(targets);
-    this.cache?.save();
-    await this.settle(parsed);
+    const reparsed = await this.process(targets);
 
     const result = this.assemble();
     reportParseErrors(result.errors);
-    return { result, reparsed: Array.from(parsed.keys()) };
+    return { result, reparsed };
   }
 
   /**
@@ -275,11 +265,34 @@ export class Project {
   }
 
   /**
+   * Parses and settles `paths`, replacing their records and parse errors.
+   * Nothing is replaced if a step throws, so a failed update leaves the
+   * previous output in place. Returns the paths that now have a record.
+   */
+  private async process(paths: Set<string>): Promise<string[]> {
+    const errors = new Map<string, ComponentParseError>();
+    const parsed = await this.parse(paths, errors);
+    this.cache?.save();
+    const records = await this.settle(parsed);
+
+    for (const path of paths) {
+      this.records.delete(path);
+      this.parseErrors.delete(path);
+    }
+    for (const [path, record] of records) this.records.set(path, record);
+    for (const [path, error] of errors) this.parseErrors.set(path, error);
+    return Array.from(records.keys());
+  }
+
+  /**
    * Parses `paths`, reusing the parse cache where a file's content is
    * unchanged. A file that can't be read is left out; one that fails to
-   * parse is recorded in {@link parseErrors} (or thrown with `failFast`).
+   * parse is recorded in `errors` (or thrown with `failFast`).
    */
-  private async parse(paths: Set<string>): Promise<Map<string, ComponentParseResult>> {
+  private async parse(
+    paths: Set<string>,
+    errors: Map<string, ComponentParseError>,
+  ): Promise<Map<string, ComponentParseResult>> {
     const sources = await readFileMap(paths);
     const cache = this.cache;
 
@@ -305,14 +318,19 @@ export class Project {
     for (const path of paths) {
       const source = sources.get(path);
       if (source === null || source === undefined) continue;
-      const result = this.parseOne(path, source, hashes.get(path));
+      const result = this.parseOne(path, source, hashes.get(path), errors);
       if (result) parsed.set(path, result);
     }
 
     return parsed;
   }
 
-  private parseOne(path: string, source: string, hash: string | undefined): ComponentParseResult | undefined {
+  private parseOne(
+    path: string,
+    source: string,
+    hash: string | undefined,
+    errors: Map<string, ComponentParseError>,
+  ): ComponentParseResult | undefined {
     const cached = hash === undefined ? null : this.cache?.get(path, hash);
     if (cached) return cached;
 
@@ -324,7 +342,7 @@ export class Project {
       // Capture the failure so the remaining components can still be
       // processed, unless `failFast` asks to abort on the first one.
       if (this.options.failFast) throw error;
-      this.parseErrors.set(path, {
+      errors.set(path, {
         filePath,
         moduleName,
         message: error instanceof Error ? error.message : String(error),
@@ -337,8 +355,8 @@ export class Project {
     return result;
   }
 
-  /** Checks examples and resolves cross-file candidates for freshly parsed components, then records them. */
-  private async settle(parsed: Map<string, ComponentParseResult>): Promise<void> {
+  /** Checks examples and resolves cross-file candidates for freshly parsed components. */
+  private async settle(parsed: Map<string, ComponentParseResult>): Promise<Map<string, ComponentRecord>> {
     const { rootDir, resolveComponentFilePath } = this.collected;
     const docs = new Map<string, ComponentDocApi>();
     const pendingByDoc = new Map<ComponentDocApi, PendingCrossFileCandidates | undefined>();
@@ -358,11 +376,13 @@ export class Project {
       pendingByDoc.get(doc),
     );
 
+    const records = new Map<string, ComponentRecord>();
     for (const [path, doc] of docs) {
       const { moduleName: _moduleName, filePath, ...component } = doc;
       const crossFileReads = reads.get(filePath);
-      this.records.set(path, crossFileReads === undefined ? { component } : { component, crossFileReads });
+      records.set(path, crossFileReads === undefined ? { component } : { component, crossFileReads });
     }
+    return records;
   }
 
   /** Builds a fresh result from the records: one view per entry, then the bundle-wide checks. */

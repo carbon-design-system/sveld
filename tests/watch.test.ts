@@ -4,6 +4,7 @@ import { join, relative, resolve } from "node:path";
 import { type ComponentDocApi, type ComponentDocs, type GenerateBundleResult, generateBundle } from "../src/bundle";
 import ComponentParser from "../src/ComponentParser";
 import pluginSveld, { createSerialQueue, writeOutput } from "../src/plugin";
+import { TypeResolver } from "../src/resolve-types";
 import { createSveldBundle } from "../src/watch";
 import { writeTsDefinition } from "../src/writer/writer-ts-definitions-core";
 
@@ -415,6 +416,32 @@ describe("watch mode (createSveldBundle)", () => {
 
     writeFileSync(examplePath, example("<Example value={1} />"));
     expect(syntaxErrors((await bundle.update([examplePath])).result)).toEqual([]);
+  });
+
+  test("an update that fails partway keeps the previous output for the files it touched", async () => {
+    const bundle = await createSveldBundle(dir, true, { checkExamples: true });
+    const buttonPath = resolve(dir, "Button.svelte");
+    writeFileSync(
+      buttonPath,
+      BUTTON.replace(
+        "export let primary",
+        "/**\n   * @example\n   * ```ts\n   * primary;\n   * ```\n   */\n  export let primary",
+      ),
+    );
+
+    const create = jest
+      .spyOn(TypeResolver, "create")
+      .mockResolvedValue({ ok: false, reason: "no-tsconfig", message: "is unavailable" });
+    try {
+      await expect(bundle.update([buttonPath])).rejects.toThrow("is unavailable");
+    } finally {
+      create.mockRestore();
+    }
+
+    const standalonePath = resolve(dir, "Standalone.svelte");
+    writeFileSync(standalonePath, STANDALONE.replace('"standalone"', '"changed"'));
+    const { result } = await bundle.update([standalonePath]);
+    expect(byModuleName(result.allComponentsForTypes, "Button")?.props.map((prop) => prop.name)).toEqual(["primary"]);
   });
 
   test("marks diagnostics matched by diagnostics.ignore as ignored", async () => {
