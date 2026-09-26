@@ -1,6 +1,7 @@
-import type ComponentParser from "../ComponentParser";
 import { splitTopLevel } from "../type-text";
 import type { ParserContext } from "./context";
+import { getPropTypeByLocalOrPublic } from "./context";
+import { findVariableTypeAndDescription } from "./variable-jsdoc";
 
 /** Matches a single word character; used to reject partial-name matches in {@link extractPropertyType}. */
 const WORD_CHAR_REGEX = /\w/;
@@ -25,11 +26,7 @@ function extractPropertyType(typeStr: string, propName: string): string | undefi
   return undefined;
 }
 
-export function resolveMemberExpressionType(
-  ctx: ParserContext,
-  parser: ComponentParser,
-  expr: unknown,
-): string | undefined {
+export function resolveMemberExpressionType(ctx: ParserContext, expr: unknown): string | undefined {
   const memberExpr = expr as {
     object?: { type?: string; name?: string };
     property?: { type?: string; name?: string };
@@ -45,10 +42,10 @@ export function resolveMemberExpressionType(
   if (!objName || !propName) return undefined;
 
   if (ctx.wholePropsLocals.has(objName)) {
-    return parser.getPropTypeByLocalOrPublic(propName);
+    return getPropTypeByLocalOrPublic(ctx, propName);
   }
 
-  const objType = parser.getPropTypeByLocalOrPublic(objName) ?? parser.findVariableTypeAndDescription(objName)?.type;
+  const objType = getPropTypeByLocalOrPublic(ctx, objName) ?? findVariableTypeAndDescription(ctx, objName)?.type;
   if (!objType) return undefined;
 
   return extractPropertyType(objType, propName);

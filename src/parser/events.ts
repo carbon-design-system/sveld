@@ -1,6 +1,5 @@
 import type { ArrayExpression, CallExpression, ObjectExpression, Property } from "estree";
-import { isIdentifier, isLiteral, isNewExpressionNamed, isObjectExpression } from "../ast-guards";
-import type ComponentParser from "../ComponentParser";
+import { getPropertyName, isIdentifier, isLiteral, isNewExpressionNamed, isObjectExpression } from "../ast-guards";
 import type { DispatchedEvent } from "../model";
 import type { ParserContext } from "./context";
 import { findTrackedVariableType } from "./contexts";
@@ -13,14 +12,13 @@ const NEWLINES_REGEX = /\n/g;
 const IDENTIFIER_REGEX = /^[A-Za-z_$][\w$]*$/;
 
 /**
- * What {@link deriveLiteralDetailType} reads identifier types and property
- * names through: the component's parser ({@link componentDetailTypeSource}),
- * or a stand-in for a module sveld reads without one (an imported dispatch
- * helper). `variableType` is `undefined` for a variable it can't type.
+ * What {@link deriveLiteralDetailType} reads identifier types through: the
+ * component's parse ({@link componentDetailTypeSource}), or a stand-in for a
+ * module sveld reads without one (an imported dispatch helper).
+ * `variableType` is `undefined` for a variable it can't type.
  */
 export type DetailTypeSource = {
   variableType(name: string): string | undefined;
-  getPropertyName: ComponentParser["getPropertyName"];
 };
 
 /**
@@ -31,16 +29,14 @@ export type DetailTypeSource = {
  * one dispatched, so they stay `any`.
  */
 export function componentDetailTypeSource(
-  parser: ComponentParser,
   ctx: ParserContext,
   nestedBoundNames?: ReadonlySet<string>,
 ): DetailTypeSource {
   return {
     variableType: (name) => {
       if (nestedBoundNames?.has(name)) return undefined;
-      return findTrackedVariableType(ctx, parser, name)?.type ?? inferVariableInitializerType(parser, ctx, name);
+      return findTrackedVariableType(ctx, name)?.type ?? inferVariableInitializerType(ctx, name);
     },
-    getPropertyName: (key) => parser.getPropertyName(key),
   };
 }
 
@@ -92,21 +88,21 @@ export function deriveDetailType(source: DetailTypeSource, node: unknown): strin
  * whole detail. Returns `undefined` for anything else so callers keep their own scalar-literal
  * narrowing (`dispatch("count", 5)` still types as `5`).
  */
-export function deriveLiteralDetailType(parser: DetailTypeSource, node: unknown): string | undefined {
+export function deriveLiteralDetailType(source: DetailTypeSource, node: unknown): string | undefined {
   if (!node || typeof node !== "object" || !("type" in node)) return undefined;
-  if (isObjectExpression(node)) return buildObjectLiteralDetailType(parser, node);
-  if (node.type === "ArrayExpression") return buildArrayLiteralDetailType(parser, node as ArrayExpression);
+  if (isObjectExpression(node)) return buildObjectLiteralDetailType(source, node);
+  if (node.type === "ArrayExpression") return buildArrayLiteralDetailType(source, node as ArrayExpression);
   return undefined;
 }
 
-function inferLiteralMemberType(parser: DetailTypeSource, node: unknown): string {
+function inferLiteralMemberType(source: DetailTypeSource, node: unknown): string {
   if (!node || typeof node !== "object" || !("type" in node)) return "any";
-  if (isIdentifier(node)) return parser.variableType(node.name) ?? "any";
+  if (isIdentifier(node)) return source.variableType(node.name) ?? "any";
 
   if (isLiteral(node)) return literalValueType(node) ?? "null";
 
-  if (isObjectExpression(node)) return buildObjectLiteralDetailType(parser, node);
-  if (node.type === "ArrayExpression") return buildArrayLiteralDetailType(parser, node as ArrayExpression);
+  if (isObjectExpression(node)) return buildObjectLiteralDetailType(source, node);
+  if (node.type === "ArrayExpression") return buildArrayLiteralDetailType(source, node as ArrayExpression);
 
   return "any";
 }
@@ -116,21 +112,19 @@ function inferLiteralMemberType(parser: DetailTypeSource, node: unknown): string
  * computed key adds members sveld can't name, so it becomes a `[key: string]: any` index
  * signature alongside the known members, or `Record<string, any>` when there are none.
  */
-function buildObjectLiteralDetailType(parser: DetailTypeSource, node: ObjectExpression): string {
+function buildObjectLiteralDetailType(source: DetailTypeSource, node: ObjectExpression): string {
   if (node.properties.length === 0) return "Record<string, never>";
 
   const properties: Array<{ name: string; type: string }> = [];
   let hasUnknownMembers = false;
   for (const property of node.properties) {
     const name =
-      property.type === "Property" && !property.computed
-        ? parser.getPropertyName(property.key as Property["key"])
-        : undefined;
+      property.type === "Property" && !property.computed ? getPropertyName(property.key as Property["key"]) : undefined;
     if (property.type !== "Property" || !name) {
       hasUnknownMembers = true;
       continue;
     }
-    properties.push({ name, type: inferLiteralMemberType(parser, property.value) });
+    properties.push({ name, type: inferLiteralMemberType(source, property.value) });
   }
 
   if (!hasUnknownMembers) return buildEventDetailFromProperties(properties);
@@ -138,9 +132,9 @@ function buildObjectLiteralDetailType(parser: DetailTypeSource, node: ObjectExpr
   return buildEventDetailFromProperties([...properties, { name: "[key: string]", type: "any" }]);
 }
 
-function buildArrayLiteralDetailType(parser: DetailTypeSource, node: ArrayExpression): string {
+function buildArrayLiteralDetailType(source: DetailTypeSource, node: ArrayExpression): string {
   const elementTypes = new Set(
-    node.elements.filter((element) => element != null).map((element) => inferLiteralMemberType(parser, element)),
+    node.elements.filter((element) => element != null).map((element) => inferLiteralMemberType(source, element)),
   );
   if (elementTypes.size === 0) return "any[]";
   if (elementTypes.size === 1) return `${[...elementTypes][0]}[]`;
@@ -290,8 +284,8 @@ export function parseHostDispatchEventCall(
 }
 
 /** Records a {@link parseHostDispatchEventCall} event, its detail typed as a `dispatch()` detail is. */
-export function addHostDispatchedEvent(parser: ComponentParser, ctx: ParserContext, dispatch: HostDispatch) {
-  const typed = deriveDetailType(componentDetailTypeSource(parser, ctx, dispatch.nestedBoundNames), dispatch.detail);
+export function addHostDispatchedEvent(ctx: ParserContext, dispatch: HostDispatch) {
+  const typed = deriveDetailType(componentDetailTypeSource(ctx, dispatch.nestedBoundNames), dispatch.detail);
   const literal = typed === undefined && isLiteral(dispatch.detail) ? dispatch.detail.value : undefined;
   addDispatchedEvent(ctx, {
     name: dispatch.name,

@@ -1,6 +1,5 @@
 import type { CallExpression, Expression, Identifier, Literal, MemberExpression, ObjectExpression } from "estree";
-import { isIdentifier, isObjectExpression } from "../ast-guards";
-import type ComponentParser from "../ComponentParser";
+import { getPropertyName, isIdentifier, isObjectExpression } from "../ast-guards";
 import type { DeprecatedValue, JsDocPassthroughTag, SlotProps, SlotPropValue, SourceRange } from "../model";
 import { resolveMemberExpressionType } from "./bindings";
 import type { ParserContext } from "./context";
@@ -9,14 +8,11 @@ import { parseObjectTypeLiteralMembers } from "./object-type-literal";
 import { resolveConstInitializer } from "./props";
 import { sourceAtPos, sourceRangeFromNode } from "./source-position";
 import { assignValueOrUndefined } from "./utils";
+import { findVariableTypeAndDescription } from "./variable-jsdoc";
 
 const DEFAULT_SLOT_NAME = null;
 
-function inferSlotPropValueFromExpression(
-  ctx: ParserContext,
-  parser: ComponentParser,
-  expression: unknown,
-): SlotPropValue {
+function inferSlotPropValueFromExpression(ctx: ParserContext, expression: unknown): SlotPropValue {
   const slot_prop_value: SlotPropValue = {
     value: undefined,
     replace: false,
@@ -32,7 +28,7 @@ function inferSlotPropValueFromExpression(
   } else if (expression.type === "Literal") {
     slot_prop_value.value = String((expression as Literal).value);
   } else if (expression.type === "MemberExpression") {
-    slot_prop_value.value = resolveMemberExpressionType(ctx, parser, expression);
+    slot_prop_value.value = resolveMemberExpressionType(ctx, expression);
   } else if (
     (expression.type === "ObjectExpression" || expression.type === "TemplateLiteral") &&
     "start" in expression &&
@@ -53,15 +49,15 @@ function inferSlotPropValueFromExpression(
  * annotation, that type's members. Returns `null` when neither resolves, so
  * the caller can widen the slot's props to `Record<string, any>`.
  */
-function resolveSlotSpreadShape(ctx: ParserContext, parser: ComponentParser, argument: unknown): SlotProps | null {
+function resolveSlotSpreadShape(ctx: ParserContext, argument: unknown): SlotProps | null {
   if (!isIdentifier(argument)) return null;
 
   const initializer = resolveConstInitializer(ctx, argument.name);
   if (isObjectExpression(initializer)) {
-    return buildSlotPropsFromObjectExpression(ctx, parser, initializer).slot_props;
+    return buildSlotPropsFromObjectExpression(ctx, initializer).slot_props;
   }
 
-  const varInfo = parser.findVariableTypeAndDescription(argument.name);
+  const varInfo = findVariableTypeAndDescription(ctx, argument.name);
   if (!varInfo) return null;
 
   const members = parseObjectTypeLiteralMembers(varInfo.type);
@@ -76,7 +72,6 @@ function resolveSlotSpreadShape(ctx: ParserContext, parser: ComponentParser, arg
 
 export function buildSlotPropsFromObjectExpression(
   ctx: ParserContext,
-  parser: ComponentParser,
   expression: ObjectExpression,
 ): { slot_props: SlotProps; hasUnresolvedSpread: boolean } {
   const slot_props: SlotProps = {};
@@ -84,7 +79,7 @@ export function buildSlotPropsFromObjectExpression(
 
   for (const property of expression.properties) {
     if (property.type === "SpreadElement") {
-      const merged = resolveSlotSpreadShape(ctx, parser, property.argument);
+      const merged = resolveSlotSpreadShape(ctx, property.argument);
       if (merged) {
         Object.assign(slot_props, merged);
       } else {
@@ -102,9 +97,9 @@ export function buildSlotPropsFromObjectExpression(
 
     if (property.type !== "Property" || property.computed) continue;
 
-    const propName = parser.getPropertyName(property.key);
+    const propName = getPropertyName(property.key);
     if (!propName) continue;
-    slot_props[propName] = inferSlotPropValueFromExpression(ctx, parser, property.value);
+    slot_props[propName] = inferSlotPropValueFromExpression(ctx, property.value);
   }
 
   return { slot_props, hasUnresolvedSpread };

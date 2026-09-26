@@ -235,3 +235,20 @@ export function createParserContext(): ParserContext {
     sveldIgnoreDirectives: new Map(),
   };
 }
+
+/** The public name of the prop bound locally as `name` (`let { class: klass } = $props()`), else `name`. */
+export function resolvePublicPropName(ctx: ParserContext, name: string): string {
+  return ctx.propLocalToPublicName.get(name) ?? name;
+}
+
+export function trackPropLocalName(ctx: ParserContext, propName: string, localName = propName): void {
+  ctx.propLocalToPublicName.set(localName, propName);
+}
+
+export function getPropByLocalOrPublic(ctx: ParserContext, name: string): ComponentProp | undefined {
+  return ctx.props.get(resolvePublicPropName(ctx, name));
+}
+
+export function getPropTypeByLocalOrPublic(ctx: ParserContext, name: string): string | undefined {
+  return getPropByLocalOrPublic(ctx, name)?.type;
+}

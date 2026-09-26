@@ -1,5 +1,5 @@
 import { dirname } from "node:path";
-import { isIdentifier, isLiteral, resolveStaticStringLiteral } from "./ast-guards";
+import { isIdentifier, resolveStaticStringLiteral } from "./ast-guards";
 import type { ComponentDocApi } from "./bundle";
 import type { CrossFilePass } from "./cross-file-pass";
 import { createDiagnostic } from "./diagnostics";
@@ -109,10 +109,6 @@ function staticEventNames(node: AstNode | undefined): string[] | null {
 /** Literal detail inference inside a helper: its locals aren't typed, so an identifier member is `any`. */
 const helperDetailTypeSource: DetailTypeSource = {
   variableType: () => undefined,
-  getPropertyName: (key) => {
-    if (isIdentifier(key)) return key.name;
-    return isLiteral(key) && key.value != null ? String(key.value) : undefined;
-  },
 };
 
 /**

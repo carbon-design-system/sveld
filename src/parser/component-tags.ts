@@ -4,7 +4,6 @@
  * `@csspart`/`@cssprop` tags anywhere in a component's comments, which
  * describe the component rather than the declaration they sit on.
  */
-import type ComponentParser from "../ComponentParser";
 import { closestMatch } from "../levenshtein";
 import type { DeprecatedValue, JsDocPassthroughTag, SourceRange } from "../model";
 import { indexOfClosingBracket, splitTopLevel } from "../type-text";
@@ -13,7 +12,9 @@ import { parseComments, togglesCodeFence } from "./comment-parser";
 import type { ParserContext } from "./context";
 import { recordDiagnostic, recordSveldIgnore } from "./diagnostics";
 import { addDispatchedEvent, buildEventDetailFromProperties } from "./events";
+import { accumulateGeneric } from "./generics";
 import {
+  aliasType,
   cleanDescription,
   deprecatedValueFromBody,
   functionDocCommentStarts,
@@ -223,11 +224,7 @@ function typedefTakesProperties(typedefType: string | undefined): boolean {
   return !type || type === "object" || type === "Object";
 }
 
-export function parseCustomTypes(
-  ctx: ParserContext,
-  parser: ComponentParser,
-  scanSource: string | undefined = ctx.source,
-) {
+export function parseCustomTypes(ctx: ParserContext, scanSource: string | undefined = ctx.source) {
   if (!scanSource) return;
   /** Cross-block bookkeeping for `@generics`/`@template` duplicate/mixed-tag warnings. */
   let usedGenericsTag = false;
@@ -267,7 +264,7 @@ export function parseCustomTypes(
         return;
       }
     }
-    parser.accumulateGeneric(declaredName, constraint);
+    accumulateGeneric(ctx, declaredName, constraint);
   };
   /** `ctx.typedefs` holds both `@typedef` and `@callback` declarations, keyed by name; both finalizers share this check. */
   const warnDuplicateTypedefName = (name: string, source: SourceRange | undefined) => {
@@ -765,7 +762,7 @@ export function parseCustomTypes(
       } = tags[tagIndex];
       // Sections are split in line order, so neighbors in `tags` are neighbors in the block.
       const nextTag = tags[tagIndex + 1];
-      const type = parser.aliasType(tagType);
+      const type = aliasType(tagType);
       trimBodyAbove = trimThisBody;
       trimThisBody = undefined;
 
