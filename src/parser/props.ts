@@ -17,8 +17,7 @@ import type {
   TemplateLiteral,
   UnaryExpression,
 } from "estree";
-import { isCallExpressionNamed } from "../ast-guards";
-import type ComponentParser from "../ComponentParser";
+import { getPropertyName, isCallExpressionNamed } from "../ast-guards";
 import type {
   ComponentProp,
   ComponentPropDefaultValue,
@@ -30,14 +29,16 @@ import type {
 import type { CommentWithLocation } from "../template-parse/comments";
 import { returnTypeOfFunctionType } from "../type-text";
 import type { ParserContext } from "./context";
+import { trackPropLocalName } from "./context";
 import { NEWLINE_CR_REGEX, sourceAtPos, sourceForExpression } from "./source-position";
 import { trackAdditionalTypeDependencyNode } from "./type-resolution";
 import { assignValueOrUndefined, formatParamList } from "./utils";
 import { importedMemberBinding } from "./value-imports";
+import { findVariableTypeAndDescription, resolveLocalVarJSDoc } from "./variable-jsdoc";
 
-export function addProp(parser: ComponentParser, ctx: ParserContext, prop_name: string, data: ComponentProp) {
+export function addProp(ctx: ParserContext, prop_name: string, data: ComponentProp) {
   if (assignValueOrUndefined(prop_name) === undefined) return;
-  parser.trackPropLocalName(prop_name);
+  trackPropLocalName(ctx, prop_name);
 
   if (ctx.props.has(prop_name)) {
     const existing_slot = ctx.props.get(prop_name);
@@ -69,12 +70,7 @@ export function queuePendingCrossFileDefault(
 /** A line break plus the indentation around it, folded to one space in default text. */
 const LINE_BREAK_WITH_INDENT_REGEX = /[^\S\r\n]*[\r\n]\s*/g;
 
-export function processInitializer(
-  parser: ComponentParser,
-  ctx: ParserContext,
-  init: unknown,
-  depth = 0,
-): ProcessedInitializer {
+export function processInitializer(ctx: ParserContext, init: unknown, depth = 0): ProcessedInitializer {
   let value: string | undefined;
   let type: string | undefined;
   let isFunction = false;
@@ -83,7 +79,7 @@ export function processInitializer(
     return { value, type, isFunction };
   }
 
-  const defaultValue = classifyDefaultValue(parser, ctx, init);
+  const defaultValue = classifyDefaultValue(ctx, init);
 
   if (
     init.type === "ObjectExpression" ||
@@ -99,7 +95,7 @@ export function processInitializer(
     isFunction = init.type === "ArrowFunctionExpression" || init.type === "FunctionExpression";
 
     if (init.type === "BinaryExpression") {
-      type = inferExpressionType(parser, ctx, init, depth);
+      type = inferExpressionType(ctx, init, depth);
     } else if (init.type === "ObjectExpression" || init.type === "ArrayExpression") {
       // The literal's own text doubles as its type (`{ dense: true }`, `[1, 2]`)
       // only when every member is itself a literal; `{ x: a }` isn't a type.
@@ -121,7 +117,7 @@ export function processInitializer(
     ) {
       value = sourceAtPos(ctx, unaryExpr.start, unaryExpr.end);
     }
-    type = inferExpressionType(parser, ctx, unaryExpr, depth);
+    type = inferExpressionType(ctx, unaryExpr, depth);
   } else if (
     init.type === "LogicalExpression" ||
     init.type === "ConditionalExpression" ||
@@ -135,7 +131,7 @@ export function processInitializer(
         ? undefined
         : sourceAtPos(ctx, start, end)?.replace(LINE_BREAK_WITH_INDENT_REGEX, " ");
     value = text !== undefined && init.type === "SequenceExpression" ? `(${text})` : text;
-    type = inferExpressionType(parser, ctx, init, depth);
+    type = inferExpressionType(ctx, init, depth);
   } else if (init.type === "NewExpression") {
     const newExpr = init as NewExpression;
     if (
@@ -193,13 +189,13 @@ export function processInitializer(
     // `$derived`/`$state` wrap a value. Unwrap like `$bindable`, keep the rune
     // call text as `@default`.
     if ((calleeName === "$derived" || calleeName === "$state") && callExpr.arguments.length === 1 && depth < 5) {
-      const inner = processInitializer(parser, ctx, callExpr.arguments[0], depth + 1);
+      const inner = processInitializer(ctx, callExpr.arguments[0], depth + 1);
       return { ...inner, value, defaultValue };
     }
 
     // Same-file function/const-arrow, or a named value import.
     if (calleeName) {
-      const sameFileReturnType = resolveSameFileCallReturnType(parser, ctx, calleeName);
+      const sameFileReturnType = resolveSameFileCallReturnType(ctx, calleeName);
       if (sameFileReturnType) {
         // Value prop: only resolvedType. resolvedReturnType would show up on
         // prop.returnType even when isFunction is false.
@@ -246,8 +242,8 @@ export function processInitializer(
     if (depth < 5) {
       const resolvedInit = resolveLocalVarInitializer(ctx, ident.name);
       if (resolvedInit) {
-        const inner = processInitializer(parser, ctx, resolvedInit, depth + 1);
-        const resolvedJSDoc = parser.resolveLocalVarJSDoc(ident.name);
+        const inner = processInitializer(ctx, resolvedInit, depth + 1);
+        const resolvedJSDoc = resolveLocalVarJSDoc(ctx, ident.name);
         return {
           ...inner,
           resolvedType: resolvedJSDoc?.type ?? inner.resolvedType,
@@ -259,13 +255,13 @@ export function processInitializer(
 
       // `function defaultX() {}` has no initializer. Read JSDoc off the declaration.
       if (ctx.funcDecls.has(ident.name)) {
-        const resolvedJSDoc = parser.resolveLocalVarJSDoc(ident.name);
+        const resolvedJSDoc = resolveLocalVarJSDoc(ctx, ident.name);
         const funcNode = ctx.funcDecls.get(ident.name);
         return {
           value: funcNode ? conciseFunctionDefaultText(ctx, funcNode) : undefined,
           type: undefined,
           isFunction: true,
-          defaultValue: funcNode ? classifyDefaultValue(parser, ctx, funcNode) : undefined,
+          defaultValue: funcNode ? classifyDefaultValue(ctx, funcNode) : undefined,
           resolvedType: resolvedJSDoc?.type ?? buildFunctionTypeFromParts(resolvedJSDoc, funcNode),
           resolvedDescription: resolvedJSDoc?.description,
           resolvedParams: resolvedJSDoc?.params,
@@ -298,7 +294,7 @@ export function processInitializer(
     ) {
       value = sourceAtPos(ctx, memberExpr.start, memberExpr.end);
     }
-    if (parser.isNumericConstant(init)) {
+    if (isNumericConstant(init)) {
       type = "number";
     }
 
@@ -355,12 +351,7 @@ const BOOLEAN_BINARY_OPERATORS = new Set(["==", "!=", "===", "!==", "<", "<=", "
  * operators and operand types. `undefined` when that needs a type checker (`a + b`
  * of untyped values), so the caller falls back to `any`, not the expression text.
  */
-function inferExpressionType(
-  parser: ComponentParser,
-  ctx: ParserContext,
-  node: unknown,
-  depth: number,
-): string | undefined {
+function inferExpressionType(ctx: ParserContext, node: unknown, depth: number): string | undefined {
   if (!node || typeof node !== "object" || !("type" in node)) return undefined;
 
   switch (node.type) {
@@ -370,13 +361,13 @@ function inferExpressionType(
       if (unary.operator === "typeof") return "string";
       if (unary.operator === "void") return undefined;
       if (unary.operator === "+") return "number";
-      return inferExpressionType(parser, ctx, unary.argument, depth) === "bigint" ? "bigint" : "number";
+      return inferExpressionType(ctx, unary.argument, depth) === "bigint" ? "bigint" : "number";
     }
     case "BinaryExpression": {
       const binary = node as BinaryExpression;
       if (BOOLEAN_BINARY_OPERATORS.has(binary.operator)) return "boolean";
-      const left = inferExpressionType(parser, ctx, binary.left, depth);
-      const right = inferExpressionType(parser, ctx, binary.right, depth);
+      const left = inferExpressionType(ctx, binary.left, depth);
+      const right = inferExpressionType(ctx, binary.right, depth);
       if (left === "bigint" && right === "bigint") return "bigint";
       if (NUMERIC_BINARY_OPERATORS.has(binary.operator)) return "number";
       if (binary.operator !== "+") return undefined;
@@ -387,33 +378,33 @@ function inferExpressionType(
     case "LogicalExpression": {
       const logical = node as LogicalExpression;
       return unionOfBranchTypes([
-        inferExpressionType(parser, ctx, logical.left, depth),
-        inferExpressionType(parser, ctx, logical.right, depth),
+        inferExpressionType(ctx, logical.left, depth),
+        inferExpressionType(ctx, logical.right, depth),
       ]);
     }
     case "ConditionalExpression": {
       const conditional = node as ConditionalExpression;
       return unionOfBranchTypes([
-        inferExpressionType(parser, ctx, conditional.consequent, depth),
-        inferExpressionType(parser, ctx, conditional.alternate, depth),
+        inferExpressionType(ctx, conditional.consequent, depth),
+        inferExpressionType(ctx, conditional.alternate, depth),
       ]);
     }
     case "SequenceExpression": {
       const expressions = (node as SequenceExpression).expressions;
-      return inferExpressionType(parser, ctx, expressions[expressions.length - 1], depth);
+      return inferExpressionType(ctx, expressions[expressions.length - 1], depth);
     }
     case "Identifier": {
       const name = (node as Identifier).name;
       if (name === "NaN" || name === "Infinity") return "number";
       if (name === "undefined") return undefined;
-      const variableType = parser.findVariableTypeAndDescription(name)?.type;
+      const variableType = findVariableTypeAndDescription(ctx, name)?.type;
       if (variableType) return variableType;
       if (depth >= 5) return undefined;
-      return inferExpressionType(parser, ctx, resolveLocalVarInitializer(ctx, name), depth + 1);
+      return inferExpressionType(ctx, resolveLocalVarInitializer(ctx, name), depth + 1);
     }
     default: {
       if (depth >= 5) return undefined;
-      const result = processInitializer(parser, ctx, node, depth + 1);
+      const result = processInitializer(ctx, node, depth + 1);
       return result.type ?? result.resolvedType;
     }
   }
@@ -504,11 +495,7 @@ function isLiteralTypeText(node: unknown): boolean {
  * `$state.raw([1])`, `$derived(count * 2)`. A rune's type argument
  * (`$state<number>(0)`) wins over its argument. `undefined` when unknown.
  */
-export function inferVariableInitializerType(
-  parser: ComponentParser,
-  ctx: ParserContext,
-  name: string,
-): string | undefined {
+export function inferVariableInitializerType(ctx: ParserContext, name: string): string | undefined {
   const init = resolveLocalVarInitializer(ctx, name);
   if (!init || typeof init !== "object" || !("type" in init)) return undefined;
 
@@ -521,11 +508,11 @@ export function inferVariableInitializerType(
         trackAdditionalTypeDependencyNode(ctx, typeArgument);
         return sourceForExpression(ctx, typeArgument);
       }
-      if (callee === "$state.raw") return processInitializer(parser, ctx, call.arguments[0], 1).type;
+      if (callee === "$state.raw") return processInitializer(ctx, call.arguments[0], 1).type;
     }
   }
 
-  return processInitializer(parser, ctx, init).type;
+  return processInitializer(ctx, init).type;
 }
 
 /**
@@ -601,12 +588,8 @@ function calleeDisplayText(ctx: ParserContext, callee: unknown): string {
  * literal returns via {@link inferReturnTypeFromNode}. Returns `undefined`
  * (not `"any"`) when nothing confident turns up.
  */
-function resolveSameFileCallReturnType(
-  parser: ComponentParser,
-  ctx: ParserContext,
-  calleeName: string,
-): string | undefined {
-  const resolvedJSDoc = parser.resolveLocalVarJSDoc(calleeName);
+function resolveSameFileCallReturnType(ctx: ParserContext, calleeName: string): string | undefined {
+  const resolvedJSDoc = resolveLocalVarJSDoc(ctx, calleeName);
   if (resolvedJSDoc?.returnType) return resolvedJSDoc.returnType;
 
   const funcNode = ctx.funcDecls.get(calleeName) ?? localFunctionValuedInitializer(ctx, calleeName);
@@ -950,11 +933,7 @@ function conciseFunctionDefaultText(
   return undefined;
 }
 
-function classifyDefaultValue(
-  parser: ComponentParser,
-  ctx: ParserContext,
-  init: unknown,
-): ComponentPropDefaultValue | undefined {
+function classifyDefaultValue(ctx: ParserContext, init: unknown): ComponentPropDefaultValue | undefined {
   const raw = sourceForExpression(ctx, init);
   if (!raw || !init || typeof init !== "object" || !("type" in init)) return undefined;
 
@@ -977,7 +956,7 @@ function classifyDefaultValue(
 
   const defaultValue: ComponentPropDefaultValue = { raw, kind };
   if (kind === "literal" || kind === "array" || kind === "object") {
-    const parsed = jsonSafeValueFromExpression(parser, init);
+    const parsed = jsonSafeValueFromExpression(init);
     if (parsed.ok) {
       defaultValue.value = parsed.value;
     }
@@ -986,10 +965,7 @@ function classifyDefaultValue(
   return defaultValue;
 }
 
-function jsonSafeValueFromExpression(
-  parser: ComponentParser,
-  node: unknown,
-): { ok: true; value: unknown } | { ok: false } {
+function jsonSafeValueFromExpression(node: unknown): { ok: true; value: unknown } | { ok: false } {
   if (!node || typeof node !== "object" || !("type" in node)) return { ok: false };
 
   if (node.type === "Literal") {
@@ -1027,7 +1003,7 @@ function jsonSafeValueFromExpression(
     const values: unknown[] = [];
     for (const element of array.elements) {
       if (!element) return { ok: false };
-      const result = jsonSafeValueFromExpression(parser, element);
+      const result = jsonSafeValueFromExpression(element);
       if (!result.ok) return { ok: false };
       values.push(result.value);
     }
@@ -1039,9 +1015,9 @@ function jsonSafeValueFromExpression(
     const value: Record<string, unknown> = {};
     for (const property of object.properties) {
       if (property.type !== "Property" || property.computed) return { ok: false };
-      const key = parser.getPropertyName(property.key as Property["key"]);
+      const key = getPropertyName(property.key as Property["key"]);
       if (!key) return { ok: false };
-      const propertyValue = jsonSafeValueFromExpression(parser, property.value);
+      const propertyValue = jsonSafeValueFromExpression(property.value);
       if (!propertyValue.ok) return { ok: false };
       value[key] = propertyValue.value;
     }
@@ -1049,4 +1025,31 @@ function jsonSafeValueFromExpression(
   }
 
   return { ok: false };
+}
+
+const NUMBER_CONSTANTS = new Set([
+  "POSITIVE_INFINITY",
+  "NEGATIVE_INFINITY",
+  "MAX_VALUE",
+  "MIN_VALUE",
+  "MAX_SAFE_INTEGER",
+  "MIN_SAFE_INTEGER",
+  "EPSILON",
+  "NaN",
+]);
+const MATH_CONSTANTS = new Set(["PI", "E", "LN2", "LN10", "LOG2E", "LOG10E", "SQRT2", "SQRT1_2"]);
+
+/** `Number.MAX_SAFE_INTEGER`, `Math.PI`, and the other numeric constants on `Number` and `Math`. */
+function isNumericConstant(memberExpr: unknown): boolean {
+  if (!memberExpr || typeof memberExpr !== "object" || !("type" in memberExpr)) return false;
+  if (memberExpr.type !== "MemberExpression") return false;
+
+  const expr = memberExpr as MemberExpression;
+  const objectName = expr.object && "name" in expr.object ? (expr.object as Identifier).name : undefined;
+  const propertyName = expr.property && "name" in expr.property ? (expr.property as Identifier).name : undefined;
+
+  if (!objectName || !propertyName) return false;
+  if (objectName === "Number") return NUMBER_CONSTANTS.has(propertyName);
+  if (objectName === "Math") return MATH_CONSTANTS.has(propertyName);
+  return false;
 }

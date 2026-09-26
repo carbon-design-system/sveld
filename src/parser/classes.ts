@@ -1,4 +1,3 @@
-import type ComponentParser from "../ComponentParser";
 import type { ComponentClassMember, ComponentPropParam, ModernRunesTypeNode } from "../model";
 import type { ParserContext } from "./context";
 import { processNodeJSDoc } from "./jsdoc";
@@ -147,7 +146,6 @@ function readMethodSignature(
  */
 export function readClassDeclaration(
   ctx: ParserContext,
-  parser: ComponentParser,
   classDecl: ClassDeclarationLike,
 ): { members: ComponentClassMember[]; typeParameters?: string; extends?: string; implements?: string[] } {
   const members: ComponentClassMember[] = [];
@@ -164,7 +162,7 @@ export function readClassDeclaration(
     if (!MEMBER_NODE_TYPES.has(member.type) || isHidden(member.accessibility)) continue;
     const name = memberName(member);
     if (name === undefined) continue;
-    const jsdoc = processNodeJSDoc(ctx, parser, member);
+    const jsdoc = processNodeJSDoc(ctx, member);
     if (jsdoc?.internal) continue;
 
     const key = `${member.static ? "static " : ""}${name}`;
@@ -246,11 +244,7 @@ export function readClassDeclaration(
   }
 
   if (ctx.scriptLanguage !== "ts" && constructorBody) {
-    members.splice(
-      constructorIndex,
-      0,
-      ...readConstructorAssignments(ctx, parser, constructorBody, instanceProperties),
-    );
+    members.splice(constructorIndex, 0, ...readConstructorAssignments(ctx, constructorBody, instanceProperties));
   }
 
   for (const typeParameter of classDecl.typeParameters?.params ?? []) {
@@ -310,7 +304,6 @@ function trackTypeReference(
  */
 function readConstructorAssignments(
   ctx: ParserContext,
-  parser: ComponentParser,
   body: StatementNode[],
   declared: Set<string>,
 ): ComponentClassMember[] {
@@ -323,7 +316,7 @@ function readConstructorAssignments(
     const name = target.property?.type === "Identifier" ? target.property.name : undefined;
     if (!name || declared.has(name)) continue;
     declared.add(name);
-    const jsdoc = processNodeJSDoc(ctx, parser, statement);
+    const jsdoc = processNodeJSDoc(ctx, statement);
     if (jsdoc?.internal) continue;
     properties.push({ kind: "property", name, type: jsdoc?.type ?? "any", ...memberDocs(jsdoc) });
   }

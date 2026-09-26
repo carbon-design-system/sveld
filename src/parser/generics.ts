@@ -59,3 +59,12 @@ export function collectGenericsAttributeTypeDependencies(
     collectReferencedTypeDependencies(ctx, localDeclaration.node, referencedImportedTypes, referencedLocalTypes);
   }
 }
+
+/** Appends one component generic (`name`, `constraint`) to {@link ParserContext.generics}. */
+export function accumulateGeneric(ctx: ParserContext, name: string, constraint: string): void {
+  if (ctx.generics) {
+    ctx.generics = [`${ctx.generics[0]}, ${name}`, `${ctx.generics[1]}, ${constraint}`];
+  } else {
+    ctx.generics = [name, constraint];
+  }
+}

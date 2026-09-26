@@ -1,5 +1,4 @@
 import type { Node } from "estree";
-import type ComponentParser from "../ComponentParser";
 import type { ComponentPropBinding, ComponentPropParam, DeprecatedValue, JsDocPassthroughTag } from "../model";
 import type { JSDocComment, JSDocTag } from "./comment-parser";
 import { leadingWhitespaceLength, parseComments, togglesCodeFence } from "./comment-parser";
@@ -129,7 +128,15 @@ function formatComment(comment: string) {
   return formatted_comment;
 }
 
-/** Map JSDoc `"*"` to `"any"`; otherwise trim. Same rules as {@link ComponentParser.aliasType}. */
+/**
+ * A JSDoc `{type}` as TypeScript text: trimmed, with the JSDoc wildcard `*` as `any`.
+ *
+ * @example
+ * ```ts
+ * aliasType("*"); // "any"
+ * aliasType(" string "); // "string"
+ * ```
+ */
 export function aliasType(type: string): string {
   if (type === "*") return "any";
   return type.trim();
@@ -361,7 +368,6 @@ const FUNCTION_EXPRESSION_TYPES = new Set(["ArrowFunctionExpression", "FunctionE
 
 export function processNodeJSDoc(
   ctx: ParserContext,
-  parser: ComponentParser,
   node:
     | {
         leadingComments?: unknown[];
@@ -375,12 +381,11 @@ export function processNodeJSDoc(
   const jsdoc_comment = findAdjacentJSDocComment(ctx, node.leadingComments, node.start);
   if (!jsdoc_comment) return undefined;
 
-  return processJSDocComment(ctx, parser, [jsdoc_comment]);
+  return processJSDocComment(ctx, [jsdoc_comment]);
 }
 
 export function processLeadingCommentsJSDoc(
   ctx: ParserContext,
-  parser: ComponentParser,
   node:
     | {
         leadingComments?: unknown[];
@@ -390,7 +395,7 @@ export function processLeadingCommentsJSDoc(
     | undefined,
 ) {
   if (!node?.leadingComments) return undefined;
-  return processNodeJSDoc(ctx, parser, node);
+  return processNodeJSDoc(ctx, node);
 }
 
 /** One `@template` tag as a type parameter: `T`, `T extends Foo`, or `T extends Foo = Bar`. */
@@ -423,7 +428,6 @@ export function templateTagParameters(tag: JSDocTag, type: string): Array<{ name
 
 function processJSDocComment(
   ctx: ParserContext,
-  parser: ComponentParser,
   leadingComments: unknown[],
 ):
   | {
@@ -468,20 +472,20 @@ function processJSDocComment(
   let description: string | undefined;
 
   // `@type` overrides inferred initializer type
-  if (typeTag) type = parser.aliasType(typeTag.type);
+  if (typeTag) type = aliasType(typeTag.type);
 
   if (paramTags.length > 0) {
     params = paramTags
       .filter((tag) => !tag.name.includes("."))
       .map((tag) => ({
         name: tag.name,
-        type: parser.aliasType(tag.type),
+        type: aliasType(tag.type),
         description: cleanDescription(joinDescriptionLines(tag.description.split("\n"))),
         optional: tag.optional || false,
       }));
   }
 
-  if (returnsTag) returnType = parser.aliasType(returnsTag.type);
+  if (returnsTag) returnType = aliasType(returnsTag.type);
 
   // A function's own `@template`s become its type parameters instead of description text.
   let typeParameters: string | undefined;
@@ -490,7 +494,7 @@ function processJSDocComment(
     const templateTags = additionalTags.filter((tag) => tag.tag === "template" && tag.name);
     if (templateTags.length > 0) {
       typeParameters = templateTags
-        .flatMap((tag) => templateTagParameters(tag, parser.aliasType(tag.type)))
+        .flatMap((tag) => templateTagParameters(tag, aliasType(tag.type)))
         .map(({ constraint }) => constraint)
         .join(", ");
       descriptionTags = additionalTags.filter((tag) => tag.tag !== "template");

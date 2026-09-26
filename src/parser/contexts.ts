@@ -1,6 +1,11 @@
 import type { CallExpression, Expression, FunctionExpression, NewExpression, Node, ObjectExpression } from "estree";
-import { isIdentifier, isLiteral, isObjectExpression, resolveStaticStringLiteral } from "../ast-guards";
-import type ComponentParser from "../ComponentParser";
+import {
+  getPropertyName,
+  isIdentifier,
+  isLiteral,
+  isObjectExpression,
+  resolveStaticStringLiteral,
+} from "../ast-guards";
 import type { ComponentContext, ComponentContextProp, SourceRange } from "../model";
 import type { ParserContext } from "./context";
 import { generateContextTypeName } from "./context-type-name";
@@ -11,19 +16,19 @@ import { isBoundInNestedScope, isCalleeBoundInNestedScope } from "./scopes";
 import { sourceForExpression, sourceRangeFromNode } from "./source-position";
 import { trackAdditionalTypeDependencyNode } from "./type-resolution";
 import { importedMemberBinding, importPath } from "./value-imports";
+import { findVariableJsDoc, findVariableTypeAndDescription } from "./variable-jsdoc";
 
 /**
- * {@link ComponentParser.findVariableTypeAndDescription} for a variable whose
+ * {@link findVariableTypeAndDescription} for a variable whose
  * type ends up in a generated type (a context, an event detail): a TS
  * annotation's local types and type imports are pulled into the `.d.ts`, as a
  * prop annotation's are.
  */
 export function findTrackedVariableType(
   ctx: ParserContext,
-  parser: ComponentParser,
   name: string,
 ): { type: string; description?: string; internal?: boolean } | null {
-  const varInfo = parser.findVariableTypeAndDescription(name);
+  const varInfo = findVariableTypeAndDescription(ctx, name);
   if (varInfo && varInfo.type === ctx.explicitVariableTypesByName.get(name)) {
     trackAdditionalTypeDependencyNode(ctx, ctx.explicitVariableTypeNodesByName.get(name));
   }
@@ -36,15 +41,14 @@ export function findTrackedVariableType(
  */
 function findContextVariableType(
   ctx: ParserContext,
-  parser: ComponentParser,
   name: string,
   inferFromInitializer = true,
 ): { type: string; description?: string; internal?: boolean } | null {
-  const varInfo = findTrackedVariableType(ctx, parser, name);
+  const varInfo = findTrackedVariableType(ctx, name);
   if (varInfo || !inferFromInitializer) return varInfo;
 
-  const inferredType = inferVariableInitializerType(parser, ctx, name);
-  return inferredType ? { type: inferredType, ...parser.findVariableJsDoc(name) } : null;
+  const inferredType = inferVariableInitializerType(ctx, name);
+  return inferredType ? { type: inferredType, ...findVariableJsDoc(ctx, name) } : null;
 }
 
 /**
@@ -54,27 +58,22 @@ function findContextVariableType(
  * only has a resolvable JSDoc/native object-type annotation, that type's members.
  * Returns `null` when neither resolves, so the caller can widen to `Record<string, any>`.
  */
-function resolveSpreadShape(
-  ctx: ParserContext,
-  parser: ComponentParser,
-  argument: unknown,
-  key: string,
-): ComponentContextProp[] | null {
+function resolveSpreadShape(ctx: ParserContext, argument: unknown, key: string): ComponentContextProp[] | null {
   if (!isIdentifier(argument)) return null;
 
   const initializer = resolveConstInitializer(ctx, argument.name);
   if (isObjectExpression(initializer)) {
-    return parseContextObjectProperties(ctx, parser, initializer, key).properties;
+    return parseContextObjectProperties(ctx, initializer, key).properties;
   }
 
-  const varInfo = findContextVariableType(ctx, parser, argument.name);
+  const varInfo = findContextVariableType(ctx, argument.name);
   return varInfo ? parseObjectTypeLiteralMembers(varInfo.type) : null;
 }
 
 /** Whether `objExpr` has a `get` accessor named `name`. */
-function hasGetter(parser: ComponentParser, objExpr: ObjectExpression, name: string): boolean {
+function hasGetter(objExpr: ObjectExpression, name: string): boolean {
   return objExpr.properties.some(
-    (other) => other.type === "Property" && other.kind === "get" && parser.getPropertyName(other.key) === name,
+    (other) => other.type === "Property" && other.kind === "get" && getPropertyName(other.key) === name,
   );
 }
 
@@ -100,14 +99,13 @@ function returnedValue(getter: FunctionExpression | undefined): Node | undefined
 /** Type (and description, for a documented variable) of one context property's value. */
 function describeContextValue(
   ctx: ParserContext,
-  parser: ComponentParser,
   key: string,
   propName: string,
   prop: Node,
   value: Node | undefined,
 ): { type: string; description?: string; internal?: boolean } {
   if (isIdentifier(value)) {
-    const varInfo = findContextVariableType(ctx, parser, value.name);
+    const varInfo = findContextVariableType(ctx, value.name);
     if (varInfo) return varInfo;
     recordDiagnostic(
       ctx,
@@ -131,7 +129,6 @@ function describeContextValue(
 /** Build a context's property list from an object literal, merging or flagging spreads. */
 function parseContextObjectProperties(
   ctx: ParserContext,
-  parser: ComponentParser,
   objExpr: ObjectExpression,
   key: string,
 ): { properties: ComponentContextProp[]; hasUnresolvedSpread: boolean } {
@@ -140,7 +137,7 @@ function parseContextObjectProperties(
 
   for (const prop of objExpr.properties) {
     if (prop.type === "SpreadElement") {
-      const merged = resolveSpreadShape(ctx, parser, prop.argument, key);
+      const merged = resolveSpreadShape(ctx, prop.argument, key);
       if (merged) {
         properties.push(...merged);
       } else {
@@ -158,12 +155,12 @@ function parseContextObjectProperties(
 
     if (prop.type !== "Property") continue;
 
-    const propName = parser.getPropertyName(prop.key);
+    const propName = getPropertyName(prop.key);
     if (!propName) continue;
 
     // `get x() {}` / `set x(v) {}` describe one property, typed by the
     // getter; a setter alone is typed by its parameter.
-    if (prop.kind === "set" && hasGetter(parser, objExpr, propName)) continue;
+    if (prop.kind === "set" && hasGetter(objExpr, propName)) continue;
     const accessor = prop.kind === "get" || prop.kind === "set" ? (prop.value as FunctionExpression) : undefined;
     const annotated = accessor
       ? prop.kind === "get"
@@ -174,7 +171,6 @@ function parseContextObjectProperties(
       ? { type: annotated }
       : describeContextValue(
           ctx,
-          parser,
           key,
           propName,
           prop,
@@ -194,13 +190,8 @@ function parseContextObjectProperties(
 }
 
 /** A context shaped by an object literal's properties. */
-function objectLiteralContext(
-  ctx: ParserContext,
-  parser: ComponentParser,
-  objExpr: ObjectExpression,
-  key: string,
-): ComponentContext {
-  const { properties, hasUnresolvedSpread } = parseContextObjectProperties(ctx, parser, objExpr, key);
+function objectLiteralContext(ctx: ParserContext, objExpr: ObjectExpression, key: string): ComponentContext {
+  const { properties, hasUnresolvedSpread } = parseContextObjectProperties(ctx, objExpr, key);
   return {
     key,
     typeName: generateContextTypeName(key),
@@ -211,25 +202,20 @@ function objectLiteralContext(
 }
 
 /** Build a {@link ComponentContext} from an object literal or variable reference. */
-function parseContextValue(
-  ctx: ParserContext,
-  parser: ComponentParser,
-  node: Node,
-  key: string,
-): ComponentContext | null {
+function parseContextValue(ctx: ParserContext, node: Node, key: string): ComponentContext | null {
   if (isObjectExpression(node)) {
-    return objectLiteralContext(ctx, parser, node, key);
+    return objectLiteralContext(ctx, node, key);
   } else if (isIdentifier(node)) {
     // `getContext(key)` returns the variable itself, so the context's type is
     // the variable's type, not an object wrapping it.
     const varName = node.name;
-    const annotated = findContextVariableType(ctx, parser, varName, false);
+    const annotated = findContextVariableType(ctx, varName, false);
 
     // An untyped `const` object literal describes itself, as it does when spread.
     const initializer = annotated ? undefined : resolveConstInitializer(ctx, varName);
-    if (isObjectExpression(initializer)) return objectLiteralContext(ctx, parser, initializer, key);
+    if (isObjectExpression(initializer)) return objectLiteralContext(ctx, initializer, key);
 
-    const varInfo = annotated ?? findContextVariableType(ctx, parser, varName);
+    const varInfo = annotated ?? findContextVariableType(ctx, varName);
     if (varInfo) {
       const members = parseObjectTypeLiteralMembers(varInfo.type);
       return {
@@ -382,7 +368,7 @@ function recordContextValueUnresolved(
 }
 
 /** Parse `setContext(key, value)`. Imported keys go to `pendingContextKeyCandidates`. */
-export function parseSetContextCall(ctx: ParserContext, parser: ComponentParser, node: Node, _parent?: Node) {
+export function parseSetContextCall(ctx: ParserContext, node: Node, _parent?: Node) {
   if (!node || typeof node !== "object" || !("type" in node) || node.type !== "CallExpression") {
     return;
   }
@@ -415,7 +401,7 @@ export function parseSetContextCall(ctx: ParserContext, parser: ComponentParser,
      * then the imported name labels this context in diagnostics.
      */
     const label = importPath(resolution);
-    const contextInfo = parseContextValue(ctx, parser, valueArg, label);
+    const contextInfo = parseContextValue(ctx, valueArg, label);
     if (contextInfo) {
       ctx.pendingContextKeyCandidates.push({
         importSource: resolution.importSource,
@@ -435,7 +421,7 @@ export function parseSetContextCall(ctx: ParserContext, parser: ComponentParser,
   }
 
   const contextKey = resolution.key;
-  const contextInfo = parseContextValue(ctx, parser, valueArg, contextKey);
+  const contextInfo = parseContextValue(ctx, valueArg, contextKey);
   if (!contextInfo) {
     recordContextValueUnresolved(ctx, contextKey, JSON.stringify(contextKey), valueArg, callSource);
     return;

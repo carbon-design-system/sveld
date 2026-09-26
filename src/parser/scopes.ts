@@ -6,17 +6,16 @@ import type {
   FunctionExpression,
   Identifier,
   Pattern,
-  VariableDeclaration,
   VariableDeclarator,
 } from "estree";
 import {
+  getPropertyName,
   isCallExpressionNamed,
   isIdentifier,
   isMemberExpression,
   isVariableDeclaration,
   unwrapTypeCastExpression,
 } from "../ast-guards";
-import type ComponentParser from "../ComponentParser";
 import type { LexicalScope, ScopeBinding, ScopeBindingKind } from "../model";
 import type { ParserContext } from "./context";
 
@@ -163,11 +162,7 @@ function getOrCreateScope(ctx: ParserContext, node: object) {
 }
 
 /** Scope bindings from `const { a, b: c } = $props()`. Destructured props are `prop`; rest is `local`. */
-function extractRunesScopeBindings(
-  parser: ComponentParser,
-  _node: VariableDeclaration,
-  declarator: VariableDeclarator,
-) {
+function extractRunesScopeBindings(declarator: VariableDeclarator) {
   const bindings: Array<{ kind: ScopeBindingKind; name: string; publicPropName?: string }> = [];
 
   if (declarator.id.type === "Identifier") {
@@ -189,7 +184,7 @@ function extractRunesScopeBindings(
 
     if (property.computed) continue;
 
-    const propName = parser.getPropertyName(property.key);
+    const propName = getPropertyName(property.key);
     if (!propName) continue;
 
     let localName: string | undefined;
@@ -210,7 +205,6 @@ function extractRunesScopeBindings(
 
 /** Declares bindings for every declarator in a `var`/`let`/`const` declaration into the appropriate scope. */
 function declareVariableDeclaration(
-  parser: ComponentParser,
   declaration: unknown,
   lexicalScope: LexicalScope,
   varScope: LexicalScope,
@@ -226,7 +220,7 @@ function declareVariableDeclaration(
 
   for (const declarator of variableDeclaration.declarations) {
     if (allowRunesProps && isCallExpressionNamed(unwrapTypeCastExpression(declarator.init), "$props")) {
-      for (const binding of extractRunesScopeBindings(parser, variableDeclaration, declarator)) {
+      for (const binding of extractRunesScopeBindings(declarator)) {
         declareScopeBinding(
           binding.kind === "prop" ? lexicalScope : varScope,
           binding.name,
@@ -266,12 +260,7 @@ function declareFunctionLikeScopeBindings(
 }
 
 /** Declares top-level `var`/`function`/`class` bindings directly within a block's statement list. */
-function collectDirectBlockDeclarations(
-  parser: ComponentParser,
-  body: unknown,
-  lexicalScope: LexicalScope,
-  varScope: LexicalScope,
-) {
+function collectDirectBlockDeclarations(body: unknown, lexicalScope: LexicalScope, varScope: LexicalScope) {
   if (!Array.isArray(body)) return;
 
   for (const statement of body) {
@@ -279,7 +268,7 @@ function collectDirectBlockDeclarations(
 
     switch (statement.type) {
       case "VariableDeclaration":
-        declareVariableDeclaration(parser, statement, lexicalScope, varScope);
+        declareVariableDeclaration(statement, lexicalScope, varScope);
         break;
       case "FunctionDeclaration":
         if (statement.id?.name) {
@@ -310,7 +299,7 @@ function declareExportSpecifierProps(ctx: ParserContext, specifiers: ExportSpeci
 }
 
 /** Declares all component-instance-level (`<script>`) bindings into `ctx.componentScope`. */
-function collectComponentScopeDeclarations(parser: ComponentParser, ctx: ParserContext, instance: unknown) {
+function collectComponentScopeDeclarations(ctx: ParserContext, instance: unknown) {
   if (!instance || typeof instance !== "object") return;
 
   const program =
@@ -338,7 +327,7 @@ function collectComponentScopeDeclarations(parser: ComponentParser, ctx: ParserC
         }
         break;
       case "VariableDeclaration":
-        declareVariableDeclaration(parser, statement, ctx.componentScope, ctx.componentScope, {
+        declareVariableDeclaration(statement, ctx.componentScope, ctx.componentScope, {
           allowRunesProps: true,
         });
         break;
@@ -359,7 +348,7 @@ function collectComponentScopeDeclarations(parser: ComponentParser, ctx: ParserC
         }
 
         if (statement.declaration.type === "VariableDeclaration") {
-          declareVariableDeclaration(parser, statement.declaration, ctx.componentScope, ctx.componentScope, {
+          declareVariableDeclaration(statement.declaration, ctx.componentScope, ctx.componentScope, {
             forceProp: true,
           });
         } else if (statement.declaration.type === "FunctionDeclaration" && statement.declaration.id?.name) {
@@ -379,12 +368,12 @@ function collectComponentScopeDeclarations(parser: ComponentParser, ctx: ParserC
  * built incrementally by {@link enterNestedScopeDeclarationNode} inside the caller's own traversal
  * of `componentRoot` (fused with prop/slot/event extraction there rather than walked separately).
  */
-export function initComponentScope(parser: ComponentParser, ctx: ParserContext) {
+export function initComponentScope(ctx: ParserContext) {
   ctx.componentScope.clear();
   ctx.scopeDeclarations = new Map();
   ctx.activeScopes.length = 0;
 
-  collectComponentScopeDeclarations(parser, ctx, ctx.parsed?.instance);
+  collectComponentScopeDeclarations(ctx, ctx.parsed?.instance);
 }
 
 /** Mutable stack tracking the enclosing `var`-hoisting scope while walking `componentRoot`. */
@@ -403,7 +392,6 @@ export function createScopeWalkState(ctx: ParserContext): ScopeWalkState {
  * `ctx.scopeDeclarations` for `node` itself (its own scope is only created here, on entry).
  */
 export function enterNestedScopeDeclarationNode(
-  parser: ComponentParser,
   ctx: ParserContext,
   state: ScopeWalkState,
   node: unknown,
@@ -424,7 +412,7 @@ export function enterNestedScopeDeclarationNode(
       );
       break;
     case "BlockStatement":
-      collectDirectBlockDeclarations(parser, (node as { body?: unknown }).body, scope, currentVarScope);
+      collectDirectBlockDeclarations((node as { body?: unknown }).body, scope, currentVarScope);
       break;
     case "CatchClause":
       if ("param" in (node as object)) {

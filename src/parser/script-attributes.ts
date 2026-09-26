@@ -1,0 +1,74 @@
+import type { ModernScriptAttribute, ModernScriptNode, ScriptLanguage, SourceRange } from "../model";
+import type { ParserContext } from "./context";
+import { recordDiagnostic } from "./diagnostics";
+import { sourceRangeFromNode } from "./source-position";
+
+function getStaticAttributeValue(attribute: ModernScriptAttribute) {
+  if (!Array.isArray(attribute.value)) return undefined;
+
+  return attribute.value
+    .map((value) => value.data ?? value.raw ?? "")
+    .join("")
+    .trim();
+}
+
+export function resolveScriptLanguage(parsed: {
+  instance?: ModernScriptNode;
+  module?: ModernScriptNode;
+}): ScriptLanguage | undefined {
+  const scripts = [parsed.instance, parsed.module].filter((script): script is ModernScriptNode => script !== undefined);
+  let hasPlainScript = false;
+
+  for (const script of scripts) {
+    const langAttribute = script.attributes?.find((attribute) => attribute.name === "lang");
+    if (!langAttribute) {
+      hasPlainScript = true;
+      continue;
+    }
+
+    const language = getStaticAttributeValue(langAttribute)?.toLowerCase();
+    if (language === "ts") {
+      return "ts";
+    }
+  }
+
+  return hasPlainScript ? "js" : undefined;
+}
+
+/**
+ * Reads the `generics` attribute off the instance script (Svelte only allows
+ * it there, and only alongside `lang="ts"`). Returns the raw value for later
+ * precedence resolution against `@generics`/`@template` JSDoc tags, or
+ * `undefined` if absent. Records a `syntax-skipped` diagnostic and returns
+ * `undefined` if the attribute is present without `lang="ts"`, since sveld
+ * can't safely guess how to parse it as plain JavaScript.
+ */
+export function resolveScriptGenericsAttribute(
+  ctx: ParserContext,
+  parsed: {
+    instance?: ModernScriptNode;
+  },
+): { value: string; source?: SourceRange } | undefined {
+  const genericsAttribute = parsed.instance?.attributes?.find((attribute) => attribute.name === "generics");
+  if (!genericsAttribute) return undefined;
+
+  const source = sourceRangeFromNode(ctx, genericsAttribute);
+  const langAttribute = parsed.instance?.attributes?.find((attribute) => attribute.name === "lang");
+  const language = langAttribute ? getStaticAttributeValue(langAttribute)?.toLowerCase() : undefined;
+
+  if (language !== "ts") {
+    recordDiagnostic(
+      ctx,
+      "syntax-skipped",
+      "generics",
+      `<script generics="..."> requires lang="ts"; the generics attribute was ignored because the script is not TypeScript.`,
+      source,
+    );
+    return undefined;
+  }
+
+  const value = getStaticAttributeValue(genericsAttribute);
+  if (!value) return undefined;
+
+  return { value, source };
+}

@@ -1,6 +1,5 @@
 import type { AssignmentPattern, Identifier, Property, VariableDeclaration, VariableDeclarator } from "estree";
-import { getTypeCastAnnotation, isCallExpressionNamed, unwrapTypeCastExpression } from "../ast-guards";
-import type ComponentParser from "../ComponentParser";
+import { getPropertyName, getTypeCastAnnotation, isCallExpressionNamed, unwrapTypeCastExpression } from "../ast-guards";
 import type {
   CustomElementPropConfig,
   CustomElementPropType,
@@ -14,6 +13,7 @@ import type {
 } from "../model";
 import { indexOfClosingBracket, indexOfTopLevel, splitTopLevel } from "../type-text";
 import type { ParserContext, TypedefMember } from "./context";
+import { trackPropLocalName } from "./context";
 import { recordSveldIgnore } from "./diagnostics";
 import { addDispatchedEvent } from "./events";
 import { collectGenericsAttributeTypeDependencies } from "./generics";
@@ -21,6 +21,7 @@ import { processLeadingCommentsJSDoc, processNodeJSDoc } from "./jsdoc";
 import { parseObjectTypeLiteralMembers } from "./object-type-literal";
 import { resolvePropTypeAndDocs } from "./prop-shared";
 import { addProp, processInitializer, queuePendingCrossFileDefault, unwrapBindableInitializer } from "./props";
+import { resolveScriptGenericsAttribute, resolveScriptLanguage } from "./script-attributes";
 import { sourceAtPos, sourceRangeFromNode } from "./source-position";
 import {
   buildEnumLocalTypeDeclarationCode,
@@ -32,6 +33,7 @@ import {
   getTypeReferenceName,
   trackAdditionalTypeDependencyNode,
 } from "./type-resolution";
+import { resolveLocalVarJSDoc } from "./variable-jsdoc";
 
 /** Any identifier-shaped token, used to substitute type-parameter names within a type's source text. */
 const IDENTIFIER_TOKEN_REGEX = /[A-Za-z_$][\w$]*/g;
@@ -70,7 +72,6 @@ function substituteTypeParameters(type: string, substitutions: Map<string, strin
 
 /** Flatten a runes `$props()` type node into prop name -> metadata, following local aliases and intersections. */
 function buildRunesPropTypeMetadataMap(
-  parser: ComponentParser,
   ctx: ParserContext,
   typeNode: ModernRunesTypeNode | undefined,
   localTypeDeclarations: Map<string, ModernRunesTypeNode>,
@@ -84,7 +85,7 @@ function buildRunesPropTypeMetadataMap(
       if (member?.type !== "TSPropertySignature" || member.computed) continue;
       if (!member.key) continue;
 
-      const propName = parser.getPropertyName(member.key as Property["key"]);
+      const propName = getPropertyName(member.key as Property["key"]);
       if (!propName) continue;
 
       const typeStart = member.typeAnnotation?.start;
@@ -96,7 +97,7 @@ function buildRunesPropTypeMetadataMap(
 
       trackAdditionalTypeDependencyNode(ctx, member.typeAnnotation?.typeAnnotation);
 
-      const jsdoc = processLeadingCommentsJSDoc(ctx, parser, member as { leadingComments?: unknown[]; start?: number });
+      const jsdoc = processLeadingCommentsJSDoc(ctx, member as { leadingComments?: unknown[]; start?: number });
       metadata.set(propName, {
         type,
         optional: member.optional === true,
@@ -115,7 +116,6 @@ function buildRunesPropTypeMetadataMap(
       break;
     case "TSTypeAliasDeclaration": {
       const nestedMetadata = buildRunesPropTypeMetadataMap(
-        parser,
         ctx,
         typeNode.typeAnnotation,
         localTypeDeclarations,
@@ -134,13 +134,7 @@ function buildRunesPropTypeMetadataMap(
       if (!declaration) break;
 
       visitedTypeNames.add(typeName);
-      const nestedMetadata = buildRunesPropTypeMetadataMap(
-        parser,
-        ctx,
-        declaration,
-        localTypeDeclarations,
-        visitedTypeNames,
-      );
+      const nestedMetadata = buildRunesPropTypeMetadataMap(ctx, declaration, localTypeDeclarations, visitedTypeNames);
       visitedTypeNames.delete(typeName);
 
       const substitutions = buildTypeParameterSubstitutions(ctx, declaration, typeNode);
@@ -156,13 +150,7 @@ function buildRunesPropTypeMetadataMap(
     }
     case "TSIntersectionType":
       for (const nestedType of typeNode.types ?? []) {
-        const nestedMetadata = buildRunesPropTypeMetadataMap(
-          parser,
-          ctx,
-          nestedType,
-          localTypeDeclarations,
-          visitedTypeNames,
-        );
+        const nestedMetadata = buildRunesPropTypeMetadataMap(ctx, nestedType, localTypeDeclarations, visitedTypeNames);
         for (const [propName, memberMetadata] of nestedMetadata) {
           metadata.set(propName, memberMetadata);
         }
@@ -170,7 +158,6 @@ function buildRunesPropTypeMetadataMap(
       break;
     case "TSParenthesizedType": {
       const nestedMetadata = buildRunesPropTypeMetadataMap(
-        parser,
         ctx,
         typeNode.typeAnnotation,
         localTypeDeclarations,
@@ -317,7 +304,7 @@ function collectScriptTypeDeclaration(ctx: ParserContext, statement: ModernScrip
  * this tree, read only during this call. After that, only the extracted
  * `.code` string is used.
  */
-export function buildRunesPropTypeMetadata(parser: ComponentParser, ctx: ParserContext, modernParsedRoot: unknown) {
+export function buildRunesPropTypeMetadata(ctx: ParserContext, modernParsedRoot: unknown) {
   ctx.runesPropsDeclarationMetadataByDeclaratorStart.clear();
   ctx.explicitPropTypesByName.clear();
   ctx.explicitVariableTypesByName.clear();
@@ -330,7 +317,7 @@ export function buildRunesPropTypeMetadata(parser: ComponentParser, ctx: ParserC
 
   const modernParsed = modernParsedRoot as ModernParsedRoot;
 
-  ctx.scriptLanguage = parser.resolveScriptLanguage(modernParsed);
+  ctx.scriptLanguage = resolveScriptLanguage(modernParsed);
   const customElement = modernParsed.options?.customElement;
   ctx.customElementTag = customElement?.tag;
   ctx.customElement = customElement
@@ -342,7 +329,7 @@ export function buildRunesPropTypeMetadata(parser: ComponentParser, ctx: ParserC
       }
     : undefined;
   ctx.runesOptionOverride = modernParsed.options?.runes;
-  ctx.scriptGenericsAttribute = parser.resolveScriptGenericsAttribute(modernParsed);
+  ctx.scriptGenericsAttribute = resolveScriptGenericsAttribute(ctx, modernParsed);
   // Module-script type imports and declarations are in scope for the
   // instance script. Collected first, so an instance declaration of the
   // same name wins.
@@ -413,7 +400,6 @@ export function buildRunesPropTypeMetadata(parser: ComponentParser, ctx: ParserC
         ? getTypeAnnotationText(ctx, declarator.id.typeAnnotation)
         : getTypeNodeText(ctx, castTypeNode as { start?: number; end?: number } | undefined);
       const metadata = buildRunesPropTypeMetadataMap(
-        parser,
         ctx,
         effectiveTypeNode,
         new Map(
@@ -456,7 +442,7 @@ function getJsDocPropsMembers(
 }
 
 /** Top-level `$props()` declarations in runes components. */
-export function parseRunesPropsDeclaration(parser: ComponentParser, ctx: ParserContext, node: VariableDeclaration) {
+export function parseRunesPropsDeclaration(ctx: ParserContext, node: VariableDeclaration) {
   for (const declarator of node.declarations) {
     if (!isCallExpressionNamed(unwrapTypeCastExpression(declarator.init), "$props")) continue;
 
@@ -470,9 +456,9 @@ export function parseRunesPropsDeclaration(parser: ComponentParser, ctx: ParserC
       );
       const jsDocMembers = metadata?.props.size
         ? undefined
-        : getJsDocPropsMembers(ctx, processNodeJSDoc(ctx, parser, node)?.type);
+        : getJsDocPropsMembers(ctx, processNodeJSDoc(ctx, node)?.type);
       for (const member of jsDocMembers?.values() ?? []) {
-        addProp(parser, ctx, member.name, {
+        addProp(ctx, member.name, {
           name: member.name,
           kind: "let",
           description: member.description,
@@ -487,7 +473,7 @@ export function parseRunesPropsDeclaration(parser: ComponentParser, ctx: ParserC
       }
       if (metadata) {
         for (const [propName, typeMetadata] of metadata.props) {
-          addProp(parser, ctx, propName, {
+          addProp(ctx, propName, {
             name: propName,
             kind: "let",
             description: typeMetadata.jsdoc?.description,
@@ -511,7 +497,7 @@ export function parseRunesPropsDeclaration(parser: ComponentParser, ctx: ParserC
       continue;
     }
 
-    const declarationJSDoc = processNodeJSDoc(ctx, parser, node);
+    const declarationJSDoc = processNodeJSDoc(ctx, node);
     // `/** @type {Props} */ let { a, b } = $props()` types the whole object, so each
     // prop takes its member's type and docs instead of the declaration's JSDoc.
     const jsDocMembers = getRunesPropsDeclarationMetadata(
@@ -523,7 +509,7 @@ export function parseRunesPropsDeclaration(parser: ComponentParser, ctx: ParserC
 
     const supportedPublicPropCount = declarator.id.properties.filter((property) => {
       if (property.type !== "Property" || property.computed) return false;
-      const propName = parser.getPropertyName(property.key);
+      const propName = getPropertyName(property.key);
       if (!propName) return false;
       if (property.value.type === "Identifier") return true;
       return property.value.type === "AssignmentPattern" && property.value.left.type === "Identifier";
@@ -539,7 +525,7 @@ export function parseRunesPropsDeclaration(parser: ComponentParser, ctx: ParserC
 
       // Svelte's own `$props()` analysis (VariableDeclarator.js) already rejects computed keys
       // and non-Identifier destructuring targets as a compile error, so neither can reach here.
-      const propName = parser.getPropertyName(property.key);
+      const propName = getPropertyName(property.key);
       if (!propName) {
         continue;
       }
@@ -557,7 +543,7 @@ export function parseRunesPropsDeclaration(parser: ComponentParser, ctx: ParserC
 
       if (!localName) continue;
 
-      parser.trackPropLocalName(propName, localName);
+      trackPropLocalName(ctx, propName, localName);
       if (propName === "children") {
         ctx.snippetPropLocals.add(localName);
       }
@@ -569,11 +555,11 @@ export function parseRunesPropsDeclaration(parser: ComponentParser, ctx: ParserC
         propName,
       );
       const propertyJSDoc =
-        processLeadingCommentsJSDoc(ctx, parser, property) ??
+        processLeadingCommentsJSDoc(ctx, property) ??
         typeMetadata?.jsdoc ??
         (supportedPublicPropCount === 1 && !jsDocMembers ? declarationJSDoc : undefined);
       const { init: unwrappedInit, bindable } = unwrapBindableInitializer(init);
-      const initResult = unwrappedInit == null ? { isFunction: false } : processInitializer(parser, ctx, unwrappedInit);
+      const initResult = unwrappedInit == null ? { isFunction: false } : processInitializer(ctx, unwrappedInit);
       const { value, type: inferredType, isFunction: initializerIsFunction, defaultValue } = initResult;
       // Only trust the identifier default's own JSDoc type when nothing more explicit already
       // won; an explicit TS/JSDoc type on the prop itself must not be overridden by it.
@@ -604,7 +590,7 @@ export function parseRunesPropsDeclaration(parser: ComponentParser, ctx: ParserC
 
       recordSveldIgnore(ctx, "prop-unknown-type", propName, propertyJSDoc?.sveldIgnore);
 
-      addProp(parser, ctx, propName, {
+      addProp(ctx, propName, {
         name: propName,
         ...(localName === propName ? {} : { localName }),
         kind: "let",
@@ -672,7 +658,6 @@ function splitMemberNameAndType(member: string): { name: string; type: string } 
  * An `@event` JSDoc tag for the same name still wins (`addDispatchedEvent` keeps its `detail`).
  */
 export function registerTypedDispatcherEvents(
-  parser: ComponentParser,
   ctx: ParserContext,
   typeArgument: ModernRunesTypeNode | undefined,
   dispatcherName: string,
@@ -682,14 +667,14 @@ export function registerTypedDispatcherEvents(
     const localTypeDeclarations = new Map(
       Array.from(ctx.localTypeDeclarationsByName.entries(), ([name, declaration]) => [name, declaration.node]),
     );
-    const members = buildRunesPropTypeMetadataMap(parser, ctx, typeArgument, localTypeDeclarations);
+    const members = buildRunesPropTypeMetadataMap(ctx, typeArgument, localTypeDeclarations);
     for (const [name, member] of members) {
       addDispatchedEvent(ctx, { name, detail: member.type, has_argument: true, source: member.source });
     }
     return;
   }
 
-  const jsdocType = parser.resolveLocalVarJSDoc(dispatcherName)?.type;
+  const jsdocType = resolveLocalVarJSDoc(ctx, dispatcherName)?.type;
   const genericText = jsdocType ? extractEventDispatcherGenericText(jsdocType) : undefined;
   if (!genericText) return;
 

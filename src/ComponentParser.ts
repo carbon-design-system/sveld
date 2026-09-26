@@ -8,21 +8,13 @@ import type {
   FunctionDeclaration,
   Identifier,
   Literal,
-  MemberExpression,
   Node,
   ObjectExpression,
-  Property,
   UpdateExpression,
   VariableDeclaration,
   VariableDeclarator,
 } from "estree";
-import {
-  isCallExpressionNamed,
-  isIdentifier,
-  isLiteral,
-  isMemberExpression,
-  unwrapTypeCastExpression,
-} from "./ast-guards";
+import { isCallExpressionNamed, isIdentifier, isMemberExpression, unwrapTypeCastExpression } from "./ast-guards";
 import { getElementByTag } from "./element-tag-map";
 import type {
   ComponentElement,
@@ -35,11 +27,8 @@ import type {
   ForwardedEvent,
   ModernAstRoot,
   ModernRunesTypeNode,
-  ModernScriptAttribute,
-  ModernScriptNode,
   ParsedComponent,
   ProcessedInitializer,
-  ScriptLanguage,
   SerializedComponentEvent,
   SlotProps,
   SlotPropValue,
@@ -49,7 +38,12 @@ import { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "./parsed-component-metada
 import { resolveMemberExpressionType } from "./parser/bindings";
 import { type ClassDeclarationLike, readClassDeclaration } from "./parser/classes";
 import { parseCustomTypes } from "./parser/component-tags";
-import { createParserContext, type ParserContext } from "./parser/context";
+import {
+  createParserContext,
+  getPropTypeByLocalOrPublic,
+  type ParserContext,
+  resolvePublicPropName,
+} from "./parser/context";
 import { parseSetContextCall } from "./parser/contexts";
 import { buildDiagnostic, isSveldIgnored, recordDiagnostic, recordSveldIgnore } from "./parser/diagnostics";
 import { isComponentLikeType, isElementLikeType } from "./parser/element-kind";
@@ -65,7 +59,7 @@ import {
   literalDetailToTypeText,
   parseHostDispatchEventCall,
 } from "./parser/events";
-import { parseGenericsAttribute } from "./parser/generics";
+import { accumulateGeneric, parseGenericsAttribute } from "./parser/generics";
 import { processNodeJSDoc } from "./parser/jsdoc";
 import { resolvePropTypeAndDocs } from "./parser/prop-shared";
 import { addProp, processInitializer, queuePendingCrossFileDefault } from "./parser/props";
@@ -111,7 +105,7 @@ import {
   importedCalleeBinding,
   scriptBody,
 } from "./parser/value-imports";
-import { buildVariableJsDocTable } from "./parser/variable-jsdoc";
+import { resolveLocalVarJSDoc } from "./parser/variable-jsdoc";
 import { type WalkableNode, type WalkEnter, type WalkLeave, walkNodes } from "./parser/walk";
 import { parse as parseModernAst } from "./svelte-template-parse";
 import { isValidTypeText } from "./template-parse/acorn-bridge";
@@ -251,163 +245,6 @@ export default class ComponentParser {
     return Array.from(map, ([_key, value]) => value);
   }
 
-  private static getStaticAttributeValue(attribute: ModernScriptAttribute) {
-    if (!Array.isArray(attribute.value)) return undefined;
-
-    return attribute.value
-      .map((value) => value.data ?? value.raw ?? "")
-      .join("")
-      .trim();
-  }
-
-  resolveScriptLanguage(parsed: {
-    instance?: ModernScriptNode;
-    module?: ModernScriptNode;
-  }): ScriptLanguage | undefined {
-    const scripts = [parsed.instance, parsed.module].filter(
-      (script): script is ModernScriptNode => script !== undefined,
-    );
-    let hasPlainScript = false;
-
-    for (const script of scripts) {
-      const langAttribute = script.attributes?.find((attribute) => attribute.name === "lang");
-      if (!langAttribute) {
-        hasPlainScript = true;
-        continue;
-      }
-
-      const language = ComponentParser.getStaticAttributeValue(langAttribute)?.toLowerCase();
-      if (language === "ts") {
-        return "ts";
-      }
-    }
-
-    return hasPlainScript ? "js" : undefined;
-  }
-
-  /**
-   * Reads the `generics` attribute off the instance script (Svelte only allows
-   * it there, and only alongside `lang="ts"`). Returns the raw value for later
-   * precedence resolution against `@generics`/`@template` JSDoc tags, or
-   * `undefined` if absent. Records a `syntax-skipped` diagnostic and returns
-   * `undefined` if the attribute is present without `lang="ts"`, since sveld
-   * can't safely guess how to parse it as plain JavaScript.
-   */
-  resolveScriptGenericsAttribute(parsed: {
-    instance?: ModernScriptNode;
-  }): { value: string; source?: SourceRange } | undefined {
-    const genericsAttribute = parsed.instance?.attributes?.find((attribute) => attribute.name === "generics");
-    if (!genericsAttribute) return undefined;
-
-    const source = sourceRangeFromNode(this.ctx, genericsAttribute);
-    const langAttribute = parsed.instance?.attributes?.find((attribute) => attribute.name === "lang");
-    const language = langAttribute ? ComponentParser.getStaticAttributeValue(langAttribute)?.toLowerCase() : undefined;
-
-    if (language !== "ts") {
-      recordDiagnostic(
-        this.ctx,
-        "syntax-skipped",
-        "generics",
-        `<script generics="..."> requires lang="ts"; the generics attribute was ignored because the script is not TypeScript.`,
-        source,
-      );
-      return undefined;
-    }
-
-    const value = ComponentParser.getStaticAttributeValue(genericsAttribute);
-    if (!value) return undefined;
-
-    return { value, source };
-  }
-
-  private resolvePublicPropName(name: string) {
-    return this.ctx.propLocalToPublicName.get(name) ?? name;
-  }
-
-  trackPropLocalName(propName: string, localName = propName) {
-    this.ctx.propLocalToPublicName.set(localName, propName);
-  }
-
-  private getPropByLocalOrPublic(name: string) {
-    return this.ctx.props.get(this.resolvePublicPropName(name));
-  }
-
-  getPropTypeByLocalOrPublic(name: string) {
-    return this.getPropByLocalOrPublic(name)?.type;
-  }
-
-  getExplicitPropType(name: string) {
-    return this.ctx.explicitPropTypesByName.get(name);
-  }
-
-  getPropertyName(node: Property["key"]): string | undefined {
-    if (!node || typeof node !== "object" || !("type" in node)) return undefined;
-
-    if (isIdentifier(node)) {
-      return node.name;
-    }
-
-    if (isLiteral(node)) {
-      return node.value == null ? undefined : String(node.value);
-    }
-
-    return undefined;
-  }
-
-  isNumericConstant(memberExpr: unknown): boolean {
-    if (!memberExpr || typeof memberExpr !== "object" || !("type" in memberExpr)) return false;
-    if (memberExpr.type !== "MemberExpression") return false;
-
-    const expr = memberExpr as MemberExpression;
-    const objectName = expr.object && "name" in expr.object ? (expr.object as Identifier).name : undefined;
-    const propertyName = expr.property && "name" in expr.property ? (expr.property as Identifier).name : undefined;
-
-    if (!objectName || !propertyName) return false;
-
-    if (objectName === "Number") {
-      return [
-        "POSITIVE_INFINITY",
-        "NEGATIVE_INFINITY",
-        "MAX_VALUE",
-        "MIN_VALUE",
-        "MAX_SAFE_INTEGER",
-        "MIN_SAFE_INTEGER",
-        "EPSILON",
-        "NaN",
-      ].includes(propertyName);
-    }
-
-    if (objectName === "Math") {
-      return ["PI", "E", "LN2", "LN10", "LOG2E", "LOG10E", "SQRT2", "SQRT1_2"].includes(propertyName);
-    }
-
-    return false;
-  }
-
-  resolveLocalVarJSDoc(name: string) {
-    for (const decl of this.ctx.vars) {
-      const matches = decl.declarations.some(
-        (declarator) =>
-          declarator.id &&
-          typeof declarator.id === "object" &&
-          "type" in declarator.id &&
-          declarator.id.type === "Identifier" &&
-          "name" in declarator.id &&
-          declarator.id.name === name,
-      );
-      if (matches) {
-        return processNodeJSDoc(this.ctx, this, decl as unknown as { leadingComments?: unknown[]; start?: number });
-      }
-    }
-
-    const funcDecl = this.ctx.funcDecls.get(name);
-    if (funcDecl) {
-      return processNodeJSDoc(this.ctx, this, funcDecl as unknown as { leadingComments?: unknown[]; start?: number });
-    }
-
-    return undefined;
-  }
-
   private addModuleExport(prop_name: string, data: ComponentProp) {
     if (assignValueOrUndefined(prop_name) === undefined) return;
 
@@ -479,9 +316,9 @@ export default class ComponentParser {
    * its tags and description then override the declaration's.
    */
   private exportJSDoc(node: ExportNamedDeclaration, specifier: ResolvedExportSpecifier | undefined) {
-    if (!specifier) return processNodeJSDoc(this.ctx, this, node);
-    const listJSDoc = node.specifiers.length === 1 ? processNodeJSDoc(this.ctx, this, node) : undefined;
-    const declarationJSDoc = processNodeJSDoc(this.ctx, this, specifier.statement);
+    if (!specifier) return processNodeJSDoc(this.ctx, node);
+    const listJSDoc = node.specifiers.length === 1 ? processNodeJSDoc(this.ctx, node) : undefined;
+    const declarationJSDoc = processNodeJSDoc(this.ctx, specifier.statement);
     if (!listJSDoc || !declarationJSDoc) return listJSDoc ?? declarationJSDoc;
     const listFields = Object.fromEntries(Object.entries(listJSDoc).filter(([, value]) => value !== undefined));
     return { ...declarationJSDoc, ...listFields, internal: listJSDoc.internal || declarationJSDoc.internal };
@@ -544,7 +381,7 @@ export default class ComponentParser {
       typeParameters,
       extends: baseClass,
       implements: implemented,
-    } = readClassDeclaration(this.ctx, this, declaration as ClassDeclarationLike);
+    } = readClassDeclaration(this.ctx, declaration as ClassDeclarationLike);
     const classTypeParameters = typeParameters ?? jsdocInfo?.typeParameters;
 
     this.addModuleExport(name, {
@@ -568,88 +405,6 @@ export default class ComponentParser {
       reactive: false,
       source: sourceRangeFromNode(this.ctx, node),
     });
-  }
-
-  /**
-   * @example
-   * ```ts
-   * aliasType("*"); // "any"
-   * aliasType(" string "); // "string"
-   * ```
-   */
-  aliasType(type: string): string {
-    if (type === "*") return "any";
-    return type.trim();
-  }
-
-  /**
-   * @example
-   * ```ts
-   * // Given:
-   * // /**
-   * //  * @type {number}
-   * //  * The count value
-   * //  *\/
-   * // const count = 0;
-   *
-   * findVariableTypeAndDescription("count");
-   * // { type: "number", description: "The count value" }
-   * ```
-   */
-  findVariableTypeAndDescription(varName: string): { type: string; description?: string; internal?: boolean } | null {
-    const prop = this.getPropByLocalOrPublic(varName);
-    if (prop?.type) {
-      return {
-        type: prop.type,
-        description: prop.description,
-        internal: prop.internal,
-      };
-    }
-
-    const cached = this.variableJsDocEntry(varName);
-
-    const explicitType = this.ctx.explicitVariableTypesByName.get(varName);
-    if (explicitType) {
-      return {
-        type: explicitType,
-        description: cached?.description,
-        internal: cached?.internal,
-      };
-    }
-
-    // A JSDoc block without `@type` only types a TS-annotated variable (above).
-    if (!cached?.type) return null;
-    return { type: cached.type, description: cached.description, internal: cached.internal };
-  }
-
-  /**
-   * The description and `@internal` flag of the JSDoc above `varName`,
-   * whether or not it has a `@type`. For a variable typed some other way,
-   * such as from its initializer.
-   */
-  findVariableJsDoc(varName: string): { description?: string; internal?: boolean } {
-    const cached = this.variableJsDocEntry(varName);
-    return {
-      ...(cached?.description ? { description: cached.description } : {}),
-      ...(cached?.internal ? { internal: true } : {}),
-    };
-  }
-
-  /** The JSDoc table entry for `varName`, building the table on first use. */
-  private variableJsDocEntry(varName: string) {
-    if (!this.ctx.variableInfoCacheBuilt) {
-      this.ctx.variableInfoCache = buildVariableJsDocTable(this.ctx, this);
-      this.ctx.variableInfoCacheBuilt = true;
-    }
-    return this.ctx.variableInfoCache.get(varName);
-  }
-
-  accumulateGeneric(name: string, constraint: string): void {
-    if (this.ctx.generics) {
-      this.ctx.generics = [`${this.ctx.generics[0]}, ${name}`, `${this.ctx.generics[1]}, ${constraint}`];
-    } else {
-      this.ctx.generics = [name, constraint];
-    }
   }
 
   /**
@@ -726,7 +481,7 @@ export default class ComponentParser {
      * main walk. There's no conversion step in between, so order doesn't matter.
      */
     const modernParsed = parseModernAst(cleanedSource);
-    buildRunesPropTypeMetadata(this, this.ctx, modernParsed);
+    buildRunesPropTypeMetadata(this.ctx, modernParsed);
     this.ctx.parsed = modernParsed as unknown as ModernAstRoot;
 
     /**
@@ -772,7 +527,7 @@ export default class ComponentParser {
     collectHoistedScriptBindings(this.ctx, this.ctx.parsed?.module as unknown as Node | undefined);
     collectHoistedScriptBindings(this.ctx, this.ctx.parsed?.instance as unknown as Node | undefined);
 
-    parseCustomTypes(this.ctx, this, scanSource);
+    parseCustomTypes(this.ctx, scanSource);
 
     const componentRoot = {
       type: "ComponentRoot",
@@ -792,7 +547,7 @@ export default class ComponentParser {
       const reExportableImports = collectReExportableImports(this.ctx.parsed.module);
       /** Records an `export ... from` (or `export { imported }`) as-is; the `.d.ts` writer emits it verbatim. */
       const addModuleReExport = (node: Node, name: string, reExport: ComponentPropReExport) => {
-        const jsdocInfo = processNodeJSDoc(this.ctx, this, node);
+        const jsdocInfo = processNodeJSDoc(this.ctx, node);
         // Each `export * from` shares the name "*", so key those by source instead.
         this.addModuleExport(name === "*" ? `* from ${reExport.from}` : name, {
           name,
@@ -899,7 +654,7 @@ export default class ComponentParser {
 
             const localPropName = id.name;
             const declaratorPropName = specifier?.exportedName ?? localPropName;
-            const initResult = init == null ? { isFunction: false } : processInitializer(this, this.ctx, init);
+            const initResult = init == null ? { isFunction: false } : processInitializer(this.ctx, init);
             const { value, type: typeSeed, isFunction: initializerIsFunction, defaultValue } = initResult;
             const resolvedJSDoc = initResult;
             queuePendingCrossFileDefault(this.ctx, initResult, declaratorPropName, "moduleExports");
@@ -910,7 +665,7 @@ export default class ComponentParser {
               isFunctionDeclaration: false,
               value,
               typeSeed,
-              explicitType: this.getExplicitPropType(localPropName),
+              explicitType: this.ctx.explicitPropTypesByName.get(localPropName),
               initializerIsFunction,
               defaultValue,
               inferredTypeForSource: typeSeed,
@@ -1062,7 +817,7 @@ export default class ComponentParser {
     /** Those whose callee a function parameter or nested declaration binds, so it isn't an import. */
     const locallyBoundCalls = new Set<CallExpression>();
 
-    initComponentScope(this, this.ctx);
+    initComponentScope(this.ctx);
     this.ctx.activeScopes.push(this.ctx.componentScope);
     const scopeWalkState = createScopeWalkState(this.ctx);
 
@@ -1153,7 +908,7 @@ export default class ComponentParser {
           const localPropName = id.name;
           const declaratorPropName = specifier?.exportedName ?? localPropName;
           const isRequired = kind === "let" && init == null;
-          const initResult = init == null ? { isFunction: false } : processInitializer(this, this.ctx, init);
+          const initResult = init == null ? { isFunction: false } : processInitializer(this.ctx, init);
           const { value, type: typeSeed, isFunction: initializerIsFunction, defaultValue } = initResult;
           const resolvedJSDoc = initResult;
           queuePendingCrossFileDefault(this.ctx, initResult, declaratorPropName, "props");
@@ -1164,7 +919,7 @@ export default class ComponentParser {
             isFunctionDeclaration: false,
             value,
             typeSeed,
-            explicitType: this.getExplicitPropType(localPropName),
+            explicitType: this.ctx.explicitPropTypesByName.get(localPropName),
             initializerIsFunction,
             isRequired,
             localName: localPropName,
@@ -1219,7 +974,7 @@ export default class ComponentParser {
 
         recordSveldIgnore(this.ctx, "prop-unknown-type", prop_name, jsdocInfo?.sveldIgnore);
 
-        addProp(this, this.ctx, prop_name, {
+        addProp(this.ctx, prop_name, {
           name: prop_name,
           ...(localName !== undefined && localName !== prop_name ? { localName } : {}),
           kind,
@@ -1251,7 +1006,7 @@ export default class ComponentParser {
         // Fuse scope declaration into this walk (see enterNestedScopeDeclarationNode).
         // Only scope-owner nodes get a scope, so the returned scope is the
         // same one a `scopeDeclarations.get(node)` lookup would find.
-        const nodeScope = enterNestedScopeDeclarationNode(this, this.ctx, scopeWalkState, node);
+        const nodeScope = enterNestedScopeDeclarationNode(this.ctx, scopeWalkState, node);
         if (nodeScope) {
           this.ctx.activeScopes.push(nodeScope);
         }
@@ -1309,7 +1064,7 @@ export default class ComponentParser {
           }
 
           if (calleeName === "setContext") {
-            parseSetContextCall(this.ctx, this, node, parent ?? undefined);
+            parseSetContextCall(this.ctx, node, parent ?? undefined);
           }
 
           if (callExpr.arguments.length > 0) {
@@ -1374,7 +1129,7 @@ export default class ComponentParser {
               isCallExpressionNamed(unwrapTypeCastExpression(declarator.init), "$props"),
             )
           ) {
-            parseRunesPropsDeclaration(this, this.ctx, node as VariableDeclaration);
+            parseRunesPropsDeclaration(this.ctx, node as VariableDeclaration);
           }
         }
 
@@ -1464,7 +1219,7 @@ export default class ComponentParser {
                     slot_prop_value.value =
                       typeof literalValue === "string" ? JSON.stringify(literalValue) : String(literalValue);
                   } else if (expression.type === "MemberExpression") {
-                    slot_prop_value.value = resolveMemberExpressionType(this.ctx, this, expression);
+                    slot_prop_value.value = resolveMemberExpressionType(this.ctx, expression);
                   } else if (expression.type !== "Identifier") {
                     if (start !== undefined && end !== undefined) {
                       if (expression.type === "ObjectExpression" || expression.type === "TemplateLiteral") {
@@ -1512,11 +1267,7 @@ export default class ComponentParser {
               "type" in renderInfo.arguments[0] &&
               renderInfo.arguments[0].type === "ObjectExpression"
             ) {
-              const built = buildSlotPropsFromObjectExpression(
-                this.ctx,
-                this,
-                renderInfo.arguments[0] as ObjectExpression,
-              );
+              const built = buildSlotPropsFromObjectExpression(this.ctx, renderInfo.arguments[0] as ObjectExpression);
               slot_props = built.slot_props;
               slot_props_unresolved_spread = built.hasUnresolvedSpread;
             }
@@ -1650,11 +1401,10 @@ export default class ComponentParser {
       { skipTypeOnlySubtrees: true },
     );
 
-    for (const hostDispatch of hostDispatches) addHostDispatchedEvent(this, this.ctx, hostDispatch);
+    for (const hostDispatch of hostDispatches) addHostDispatchedEvent(this.ctx, hostDispatch);
 
     if (dispatcher_name !== undefined) {
       registerTypedDispatcherEvents(
-        this,
         this.ctx,
         dispatcherTypeArgument,
         dispatcher_name,
@@ -1668,7 +1418,7 @@ export default class ComponentParser {
             firstArg && typeof firstArg === "object" && "value" in firstArg ? (firstArg as Literal).value : undefined;
           const event_argument = callee.arguments[1];
           const structuralDetail = deriveDetailType(
-            componentDetailTypeSource(this, this.ctx, callee.nestedBoundDetailNames),
+            componentDetailTypeSource(this.ctx, callee.nestedBoundDetailNames),
             event_argument,
           );
           const event_detail =
@@ -1738,7 +1488,7 @@ export default class ComponentParser {
 
     const snippetPropNames =
       this.ctx.syntaxMode === "runes"
-        ? new Set(Array.from(this.ctx.snippetPropLocals, (localName) => this.resolvePublicPropName(localName)))
+        ? new Set(Array.from(this.ctx.snippetPropLocals, (localName) => resolvePublicPropName(this.ctx, localName)))
         : new Set<string>();
 
     // A snippet prop is emitted from its slot, unless its render call took
@@ -1793,7 +1543,7 @@ export default class ComponentParser {
 
         for (const key of Object.keys(slot_props)) {
           if (slot_props[key].replace && slot_props[key].value !== undefined) {
-            slot_props[key].value = this.getPropTypeByLocalOrPublic(slot_props[key].value);
+            slot_props[key].value = getPropTypeByLocalOrPublic(this.ctx, slot_props[key].value);
           }
 
           if (slot_props[key].value === undefined) slot_props[key].value = "any";
@@ -1830,7 +1580,7 @@ export default class ComponentParser {
       for (const { name, constraint } of this.ctx.deferredSlotBlockGenerics) {
         const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         if (!new RegExp(`\\b${escapedName}\\b`).test(referencedTypeText)) continue;
-        this.accumulateGeneric(name, constraint);
+        accumulateGeneric(this.ctx, name, constraint);
       }
     }
 
@@ -1954,7 +1704,7 @@ export default class ComponentParser {
           this.ctx,
           "dispatch-escapes",
           dispatcherName,
-          this.resolveLocalVarJSDoc(dispatcherName)?.sveldIgnore,
+          resolveLocalVarJSDoc(this.ctx, dispatcherName)?.sveldIgnore,
         );
       }
       const ignored = isSveldIgnored(this.ctx, "dispatch-escapes", dispatcherName);

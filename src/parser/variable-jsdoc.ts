@@ -1,8 +1,7 @@
-import type ComponentParser from "../ComponentParser";
 import type { CommentWithLocation } from "../template-parse/comments";
-import type { ParserContext } from "./context";
+import { getPropByLocalOrPublic, type ParserContext } from "./context";
 import { recordSveldIgnore } from "./diagnostics";
-import { getCommentTags, isJsDocGap, parseCommentText, typeTagDescription } from "./jsdoc";
+import { aliasType, getCommentTags, isJsDocGap, parseCommentText, processNodeJSDoc, typeTagDescription } from "./jsdoc";
 
 interface ScriptComment {
   /** Offsets into the full component source, delimiters included. */
@@ -109,13 +108,12 @@ function findAttachedComment(comments: ScriptComment[], declStart: number, sourc
 /**
  * Maps every top-level variable/function name declared in a component's module and instance
  * scripts to the `@type`/description from its attached JSDoc block. Used by
- * {@link ComponentParser.findVariableTypeAndDescription} to resolve plain identifiers (e.g. a
+ * {@link findVariableTypeAndDescription} to resolve plain identifiers (e.g. a
  * value passed to `setContext`) that aren't otherwise typed by a prop or a TS annotation. A block
  * without `@type` still records its description and `@internal`, for a TS-annotated variable.
  */
-export function buildVariableJsDocTable(
+function buildVariableJsDocTable(
   ctx: ParserContext,
-  parser: ComponentParser,
 ): Map<string, { type?: string; description?: string; internal?: boolean }> {
   const table = new Map<string, { type?: string; description?: string; internal?: boolean }>();
   if (!ctx.source) return table;
@@ -150,11 +148,101 @@ export function buildVariableJsDocTable(
     if (!typeTag && !description && !internal) continue;
 
     table.set(declaration.name, {
-      type: typeTag ? parser.aliasType(typeTag.type) : undefined,
+      type: typeTag ? aliasType(typeTag.type) : undefined,
       description: description || (typeTag && typeTagDescription(typeTag)),
       internal: internal || undefined,
     });
   }
 
   return table;
+}
+
+/** The JSDoc table entry for `varName`, building the table on first use. */
+function variableJsDocEntry(ctx: ParserContext, varName: string) {
+  if (!ctx.variableInfoCacheBuilt) {
+    ctx.variableInfoCache = buildVariableJsDocTable(ctx);
+    ctx.variableInfoCacheBuilt = true;
+  }
+  return ctx.variableInfoCache.get(varName);
+}
+
+/**
+ * @example
+ * ```ts
+ * // Given:
+ * // /**
+ * //  * @type {number}
+ * //  * The count value
+ * //  *\/
+ * // const count = 0;
+ *
+ * findVariableTypeAndDescription(ctx, "count");
+ * // { type: "number", description: "The count value" }
+ * ```
+ */
+export function findVariableTypeAndDescription(
+  ctx: ParserContext,
+  varName: string,
+): { type: string; description?: string; internal?: boolean } | null {
+  const prop = getPropByLocalOrPublic(ctx, varName);
+  if (prop?.type) {
+    return {
+      type: prop.type,
+      description: prop.description,
+      internal: prop.internal,
+    };
+  }
+
+  const cached = variableJsDocEntry(ctx, varName);
+
+  const explicitType = ctx.explicitVariableTypesByName.get(varName);
+  if (explicitType) {
+    return {
+      type: explicitType,
+      description: cached?.description,
+      internal: cached?.internal,
+    };
+  }
+
+  // A JSDoc block without `@type` only types a TS-annotated variable (above).
+  if (!cached?.type) return null;
+  return { type: cached.type, description: cached.description, internal: cached.internal };
+}
+
+/**
+ * The description and `@internal` flag of the JSDoc above `varName`,
+ * whether or not it has a `@type`. For a variable typed some other way,
+ * such as from its initializer.
+ */
+export function findVariableJsDoc(ctx: ParserContext, varName: string): { description?: string; internal?: boolean } {
+  const cached = variableJsDocEntry(ctx, varName);
+  return {
+    ...(cached?.description ? { description: cached.description } : {}),
+    ...(cached?.internal ? { internal: true } : {}),
+  };
+}
+
+/** The JSDoc on the local variable or function declaration named `name`. */
+export function resolveLocalVarJSDoc(ctx: ParserContext, name: string) {
+  for (const decl of ctx.vars) {
+    const matches = decl.declarations.some(
+      (declarator) =>
+        declarator.id &&
+        typeof declarator.id === "object" &&
+        "type" in declarator.id &&
+        declarator.id.type === "Identifier" &&
+        "name" in declarator.id &&
+        declarator.id.name === name,
+    );
+    if (matches) {
+      return processNodeJSDoc(ctx, decl as unknown as { leadingComments?: unknown[]; start?: number });
+    }
+  }
+
+  const funcDecl = ctx.funcDecls.get(name);
+  if (funcDecl) {
+    return processNodeJSDoc(ctx, funcDecl as unknown as { leadingComments?: unknown[]; start?: number });
+  }
+
+  return undefined;
 }
