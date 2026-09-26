@@ -37,17 +37,23 @@ const getMetadata = (fixture: { filePath: string; source: string }) => {
 // input.svelte, instead of a shared snapshot file. This keeps regressions
 // scoped to the fixture that changed and avoids merge conflicts between
 // unrelated fixture updates.
+//
+// `bun run test:update` (SVELD_UPDATE_FIXTURES=1) rewrites the outputs so the
+// change shows up in `git diff`; a plain run only compares, so a regression
+// keeps failing and a missing output file fails instead of being created.
+const updateFixtures = process.env.SVELD_UPDATE_FIXTURES === "1";
+
 const expectMatchesFixtureFile = async (outputPath: string, actual: string) => {
-  const file = Bun.file(outputPath);
-  const expected = (await file.exists()) ? await file.text() : null;
-
-  // Always write the current output so the diff is visible in `git diff`;
-  // if this is an intentional change, review and commit the updated file.
-  await Bun.write(outputPath, actual);
-
-  if (expected !== null) {
-    expect(actual).toBe(expected);
+  if (updateFixtures) {
+    await Bun.write(outputPath, actual);
+    return;
   }
+
+  const file = Bun.file(outputPath);
+  if (!(await file.exists())) {
+    throw new Error(`Missing ${path.relative(process.cwd(), outputPath)}; run \`bun run test:update\` and review it.`);
+  }
+  expect(actual).toBe(await file.text());
 };
 
 describe("fixtures (JSON)", async () => {

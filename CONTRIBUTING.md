@@ -38,6 +38,7 @@ bun install
 | Script | What it does |
 | --- | --- |
 | `bun test` | Unit and fixture snapshot tests (`bun test --parallel`). |
+| `bun run test:update` | Rewrite the fixture outputs (`tests/fixtures/**`) to match the current parser and writers. |
 | `bun run build` | Bundle `src/index.ts` to `lib/` and emit `.d.ts`. Add `-w` / `--watch` for watch mode. |
 | `bun run typecheck` | `tsc --noEmit` over `src/` and `tests/`. |
 | `bun run test:fixtures-types` | Type-check the generated fixture outputs (`tests/fixtures/**`). |
@@ -110,11 +111,11 @@ tests/fixtures/<case-name>/
   output-component.d.ts  # emitted TypeScript definition, "component" format (generated)
 ```
 
-[`fixtures.test.ts`](tests/fixtures.test.ts) globs every `input.svelte`, parses it, and rewrites `output.json`, `output-class.d.ts`, and `output-component.d.ts` next to the input on every run — there's no separate snapshot file, so `git diff` shows behavior changes directly. The test then asserts the freshly written content matches what was already committed, so a changed output fails until you review and commit it. The directory name becomes the `moduleName` (kebab-case → PascalCase: `runes-props-basic` → `RunesPropsBasic`).
+[`fixtures.test.ts`](tests/fixtures.test.ts) globs every `input.svelte`, parses it, and compares the result with the committed `output.json`, `output-class.d.ts`, and `output-component.d.ts` next to the input. A changed or missing output fails. `bun run test:update` rewrites the outputs instead, so `git diff` shows behavior changes directly; there's no separate snapshot file. The directory name becomes the `moduleName` (kebab-case → PascalCase: `runes-props-basic` → `RunesPropsBasic`).
 
-**To add a case:** create `tests/fixtures/<case-name>/input.svelte` and run `bun test tests/fixtures.test.ts -t "<case-name>"`. The output files don't exist yet, so the test writes them and passes; review the generated `output.json` / `output-class.d.ts` / `output-component.d.ts`, confirm the `.d.ts` is what a consumer should see, and commit them as part of the change.
+**To add a case:** create `tests/fixtures/<case-name>/input.svelte` and run `bun run test:update -t "<case-name>"` to write its outputs. Review the generated `output.json` / `output-class.d.ts` / `output-component.d.ts`, confirm the `.d.ts` is what a consumer should see, and commit them as part of the change.
 
-**When you change the parser or a writer,** expect existing fixture outputs to move. There's no `--update-snapshots` step — run `bun test tests/fixtures.test.ts` once, inspect every diff with `git diff`, and commit only the changes that are an intentional result of your change.
+**When you change the parser or a writer,** expect existing fixture outputs to move. Run `bun run test:update`, inspect every diff with `git diff`, and commit only the changes that are an intentional result of your change.
 
 Name cases after the behavior under test, grouping by feature prefix to match the existing layout (`runes-*`, `context-*`, `typedef-*`, `slot-*`, `forwarded-events-*`, `dispatched-events-*`). Add a focused case per behavior rather than overloading one fixture. Cover the syntax modes a change touches — there are parallel `legacy-*` and `runes-*` families because the same feature must work in both.
 

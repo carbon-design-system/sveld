@@ -40,6 +40,12 @@ jobs:
       - name: Run e2e tests
         run: bun run test:e2e
 
+      - name: Check generated output is committed
+        # The e2e run regenerates tests/e2e outputs; a diff means a behavior
+        # change nobody reviewed. The generator version header is excluded.
+        if: matrix.os == 'ubuntu-latest'
+        run: git diff --exit-code -I '"(version|svelteVersion)": ' -- tests
+
       - name: Deploy docs
         # Only trigger deploy if previous steps pass on main branch.
         # Only fire once per branch push.
