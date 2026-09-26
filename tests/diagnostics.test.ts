@@ -648,6 +648,29 @@ describe("ComponentParser diagnostics", () => {
     const unknownTagDiagnostic = diagnostics?.find((d) => d.kind === "jsdoc-unknown-tag");
 
     expect(unknownTagDiagnostic).toMatchObject({ kind: "jsdoc-unknown-tag", name: "depreacted" });
+    expect(unknownTagDiagnostic?.message).toContain('did you mean "@deprecated"?');
+  });
+
+  test("suggests a sveld tag for a typo, but not for a standard JSDoc tag it resembles", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /**
+         * @typ {string}
+         * @todo tighten this
+         */
+        export let label = "a";
+        /** @evnet {CustomEvent<null>} close */
+      </script>
+    `;
+
+    const { diagnostics } = parser.parseSvelteComponent(source, parseContext);
+    const messageFor = (name: string) =>
+      diagnostics?.find((d) => d.kind === "jsdoc-unknown-tag" && d.name === name)?.message;
+
+    expect(messageFor("typ")).toContain('did you mean "@type"?');
+    expect(messageFor("evnet")).toContain('did you mean "@event"?');
+    expect(messageFor("todo")).not.toContain("did you mean");
   });
 
   test("does not flag @bindable/@default/@required as unknown tags", () => {
