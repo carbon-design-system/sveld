@@ -7,6 +7,7 @@ import type {
   JsDocPassthroughTag,
   SourceRange,
 } from "../ComponentParser";
+import { closestMatch } from "../levenshtein";
 import type { JSDocComment, JSDocTag } from "./comment-parser";
 import { leadingWhitespaceLength, parseComments, togglesCodeFence } from "./comment-parser";
 import type { ParserContext } from "./context";
@@ -181,6 +182,92 @@ const IDE_PASSTHROUGH_TAGS = new Set(["since", "example", "see"]);
  * as `jsdoc-unknown-tag`.
  */
 const OTHER_KNOWN_JSDOC_TAGS = new Set(["bindable", "default", "required"]);
+
+/**
+ * Standard JSDoc/TSDoc tags sveld passes through: close enough to a sveld
+ * tag to look like a typo (`@todo`/`@type`, `@prop`/`@param`), but meant.
+ */
+const STANDARD_JSDOC_TAGS = new Set([
+  "abstract",
+  "access",
+  "alias",
+  "alpha",
+  "arg",
+  "argument",
+  "async",
+  "augments",
+  "author",
+  "beta",
+  "borrows",
+  "const",
+  "constructs",
+  "copyright",
+  "defaultValue",
+  "description",
+  "emits",
+  "experimental",
+  "exports",
+  "external",
+  "fires",
+  "function",
+  "global",
+  "import",
+  "inner",
+  "instance",
+  "kind",
+  "lends",
+  "license",
+  "link",
+  "listens",
+  "member",
+  "name",
+  "override",
+  "package",
+  "private",
+  "prop",
+  "protected",
+  "public",
+  "readonly",
+  "remarks",
+  "requires",
+  "satisfies",
+  "sealed",
+  "static",
+  "summary",
+  "throws",
+  "todo",
+  "tutorial",
+  "typeParam",
+  "version",
+  "virtual",
+  "yields",
+]);
+
+/** Tags a `jsdoc-unknown-tag` typo (`@typ`, `@evnet`) is matched against for a suggestion. */
+const SUGGESTED_JSDOC_TAGS = [
+  ...IDE_PASSTHROUGH_TAGS,
+  ...OTHER_KNOWN_JSDOC_TAGS,
+  "type",
+  "param",
+  "returns",
+  "typedef",
+  "property",
+  "callback",
+  "template",
+  "generics",
+  "slot",
+  "snippet",
+  "event",
+  "restProps",
+  "extends",
+  "extendProps",
+  "deprecated",
+  "ignore",
+  "internal",
+  "sveld-ignore",
+  "csspart",
+  "cssprop",
+];
 
 function toPassthroughTags(tags: JSDocTag[]): JsDocPassthroughTag[] | undefined {
   return tags.length > 0 ? tags.map((tag) => ({ name: tag.tag, body: tag.text })) : undefined;
@@ -1523,11 +1610,17 @@ export function parseCustomTypes(
               passthroughTag.body = dropLastLines(text, droppedLineCount);
             });
             if (!IDE_PASSTHROUGH_TAGS.has(tag) && !OTHER_KNOWN_JSDOC_TAGS.has(tag)) {
+              // One edit for a short tag name, two for a longer one: tag names are short.
+              const suggestion = STANDARD_JSDOC_TAGS.has(tag)
+                ? undefined
+                : closestMatch(tag, SUGGESTED_JSDOC_TAGS, tag.length <= 4 ? 1 : 2);
               recordDiagnostic(
                 ctx,
                 "jsdoc-unknown-tag",
                 tag,
-                `Unknown JSDoc tag "@${tag}"; passed through unchanged. If this is a typo, fix the tag name.`,
+                suggestion
+                  ? `Unknown JSDoc tag "@${tag}"; did you mean "@${suggestion}"? Passed through unchanged.`
+                  : `Unknown JSDoc tag "@${tag}"; passed through unchanged. If this is a typo, fix the tag name.`,
                 sourceRangeFromCommentTag(ctx, tagSource),
               );
             }
