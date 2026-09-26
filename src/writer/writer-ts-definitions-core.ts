@@ -127,9 +127,8 @@ export function formatTsProps(props?: string) {
   return `${props}\n`;
 }
 
-export function getTypeDefs(def: Pick<ComponentDocApi, "typedefs">, emit: { export: boolean } = { export: true }) {
+export function getTypeDefs(def: Pick<ComponentDocApi, "typedefs">) {
   if (def.typedefs.length === 0) return EMPTY_STR;
-  const exportKw = emit.export ? "export " : "";
   return def.typedefs
     .map((typedef) => {
       let typedefComment: string;
@@ -142,7 +141,7 @@ export function getTypeDefs(def: Pick<ComponentDocApi, "typedefs">, emit: { expo
       }
       // Markdown and llms.txt print this as is, not through the .d.ts formatter, so drop the
       // trailing space a paragraph break leaves on its ` * ` line.
-      return `${typedefComment}${exportKw}${typedef.ts}`.replace(BLANK_COMMENT_LINE_REGEX, "$1");
+      return `${typedefComment}export ${typedef.ts}`.replace(BLANK_COMMENT_LINE_REGEX, "$1");
     })
     .join("\n\n");
 }
@@ -231,13 +230,8 @@ function computeReferencedGenerics(generics: ComponentDocApi["generics"], text: 
  * // };
  * ```
  */
-export function getContextDefs(
-  def: Pick<ComponentDocApi, "contexts" | "generics">,
-  emit: { export: boolean } = { export: true },
-) {
+export function getContextDefs(def: Pick<ComponentDocApi, "contexts" | "generics">) {
   if (!def.contexts || def.contexts.length === 0) return EMPTY_STR;
-
-  const exportKw = emit.export ? "export " : "";
 
   /**
    * Pair each generic name with its constraint declaration so the context type
@@ -289,7 +283,7 @@ export function getContextDefs(
 
       // A variable passed as the whole value: `getContext` returns it as-is.
       if (context.type !== undefined) {
-        return `${contextComment}${exportKw}type ${context.typeName}${genericSuffix} = ${context.type};`;
+        return `${contextComment}export type ${context.typeName}${genericSuffix} = ${context.type};`;
       }
 
       /**
@@ -298,13 +292,13 @@ export function getContextDefs(
        */
       if (context.properties.length === 0) {
         return context.hasUnresolvedSpread
-          ? `${contextComment}${exportKw}type ${context.typeName} = Record<string, any>;`
-          : `${contextComment}${exportKw}type ${context.typeName} = Record<string, never>;`;
+          ? `${contextComment}export type ${context.typeName} = Record<string, any>;`
+          : `${contextComment}export type ${context.typeName} = Record<string, never>;`;
       }
 
       const widenSuffix = context.hasUnresolvedSpread ? " & Record<string, any>" : "";
 
-      return `${contextComment}${exportKw}type ${context.typeName}${genericSuffix} = {\n  ${props}\n}${widenSuffix};`;
+      return `${contextComment}export type ${context.typeName}${genericSuffix} = {\n  ${props}\n}${widenSuffix};`;
     })
     .join("\n\n");
 }
@@ -365,10 +359,7 @@ function genPropDef(
     canonicalPropNames?: Set<string>;
     canonicalPropsType?: string;
   },
-  emit: { export: boolean } = { export: true },
 ) {
-  const exportKw = emit.export ? "export " : "";
-
   /**
    * Props that render as regular `$Props` members, i.e. everything except
    * accessor-style exports (`export function ...` / `export const ...`),
@@ -586,7 +577,7 @@ function genPropDef(
     };`
     }
 
-    ${exportKw}type ${props_name}${genericsName} = Omit<$RestProps, keyof $Props${genericsNameRef}> & $Props${genericsNameRef};
+    export type ${props_name}${genericsName} = Omit<$RestProps, keyof $Props${genericsNameRef}> & $Props${genericsNameRef};
   `;
     } else {
       prop_def = `
@@ -604,7 +595,7 @@ function genPropDef(
     };`
     }
 
-    ${exportKw}type ${props_name}${genericsName} = Omit<$RestProps, keyof ($Props${genericsNameRef} & ${def.extends.interface})> & Omit<${def.extends.interface}, keyof $Props${genericsNameRef}> & $Props${genericsNameRef};
+    export type ${props_name}${genericsName} = Omit<$RestProps, keyof ($Props${genericsNameRef} & ${def.extends.interface})> & Omit<${def.extends.interface}, keyof $Props${genericsNameRef}> & $Props${genericsNameRef};
   `;
     }
   } else {
@@ -615,16 +606,16 @@ function genPropDef(
      */
     if (props.trim() === "" && def.extends === undefined && !def.canonicalPropsType) {
       prop_def = `
-    ${exportKw}type ${props_name}${genericsName} = ${EMPTY_OBJECT};
+    export type ${props_name}${genericsName} = ${EMPTY_OBJECT};
   `;
     } else if (def.canonicalPropsType) {
       prop_def = `
     ${basePropsDef}
-    ${exportKw}type ${props_name}${genericsName} = ${def.extends === undefined ? "" : `Omit<${def.extends.interface}, keyof $Props${genericsNameRef}> & `}$Props${genericsNameRef};
+    export type ${props_name}${genericsName} = ${def.extends === undefined ? "" : `Omit<${def.extends.interface}, keyof $Props${genericsNameRef}> & `}$Props${genericsNameRef};
   `;
     } else if (def.extends === undefined) {
       prop_def = `
-    ${exportKw}type ${props_name}${genericsName} = {
+    export type ${props_name}${genericsName} = {
       ${props}
     };
   `;
@@ -634,7 +625,7 @@ function genPropDef(
       ${props}
     };
 
-    ${exportKw}type ${props_name}${genericsName} = Omit<${def.extends.interface}, keyof $Props${genericsNameRef}> & $Props${genericsNameRef};
+    export type ${props_name}${genericsName} = Omit<${def.extends.interface}, keyof $Props${genericsNameRef}> & $Props${genericsNameRef};
   `;
     }
   }
@@ -860,11 +851,7 @@ function genAccessors(def: Pick<ComponentDocApi, "props">) {
  * `exports_ref` is the corresponding reference form (e.g. `FooExports<Row>`)
  * for use at the call site.
  */
-function genExportsDef(
-  def: Pick<ComponentDocApi, "props" | "moduleName" | "generics">,
-  emit: { export: boolean } = { export: true },
-) {
-  const exportKw = emit.export ? "export " : "";
+function genExportsDef(def: Pick<ComponentDocApi, "props" | "moduleName" | "generics">) {
   const exports_name = exportsTypeName(def.moduleName);
   const accessors = genAccessors({ props: def.props });
 
@@ -872,7 +859,7 @@ function genExportsDef(
     return {
       exports_name,
       exports_ref: exports_name,
-      exports_def: `${exportKw}type ${exports_name} = ${EMPTY_OBJECT};`,
+      exports_def: `export type ${exports_name} = ${EMPTY_OBJECT};`,
     };
   }
 
@@ -881,7 +868,7 @@ function genExportsDef(
   return {
     exports_name,
     exports_ref: `${exports_name}${refSuffix}`,
-    exports_def: `${exportKw}type ${exports_name}${declSuffix} = {${accessors}\n  };`,
+    exports_def: `export type ${exports_name}${declSuffix} = {${accessors}\n  };`,
   };
 }
 
@@ -1202,15 +1189,6 @@ export interface WriteTsDefinitionOptions {
    */
   format?: "class" | "component";
   /**
-   * Which generated type declarations get an `export` keyword. `true`
-   * (default) exports all; `false` exports none; an object picks per kind.
-   * Module-script exports (`export declare const/function`) are runtime
-   * exports and are always emitted as exports.
-   */
-  exportTypes?: boolean | { props?: boolean; exports?: boolean; typedefs?: boolean; contexts?: boolean };
-  /** @internal Set by `writeTsDefinitions` for `@extends` targets; overrides `exportTypes.props`. */
-  forceExportProps?: boolean;
-  /**
    * Copies `type`/`interface` declarations imported from a relative source (or a
    * tsconfig/jsconfig path alias) directly into the `.d.ts`, dropping the import. `"local"`
    * follows relative sources, path aliases, re-exports, and same-file dependencies; bare package
@@ -1240,64 +1218,10 @@ export function exportsTypeName(moduleName: string): string {
   return `${moduleName}Exports`;
 }
 
-/** The `{props, exports, typedefs, contexts}` shape every per-kind `typesOptions` toggle resolves to. */
-export interface PerKindFlags {
-  props: boolean;
-  exports: boolean;
-  typedefs: boolean;
-  contexts: boolean;
-}
-
-/**
- * Resolves a `boolean | { props?, exports?, typedefs?, contexts? }` toggle into concrete flags:
- * `true` resolves to `whenTrue` verbatim (callers differ on what "all on" means - `exportTypes`'s
- * `true` really is all four, `indexTypes`'s isn't); `false` resolves to all-false; an object
- * defaults each omitted key to `objectDefault` (also caller-specific - `exportTypes` defaults an
- * omitted key to keeping that kind exported, `indexTypes` defaults it to *not* re-exporting that
- * kind from the barrel).
- */
-export function resolvePerKindFlags(
-  value: boolean | Partial<PerKindFlags> | undefined,
-  whenTrue: PerKindFlags,
-  objectDefault: boolean,
-): PerKindFlags {
-  // Always a fresh object, never `whenTrue` itself: a caller (`resolveExportTypes`) mutates its
-  // result to apply `forceExportProps`, which must never leak into a shared default constant.
-  if (value === undefined || value === true) return { ...whenTrue };
-  if (value === false) return { props: false, exports: false, typedefs: false, contexts: false };
-  return {
-    props: value.props ?? objectDefault,
-    exports: value.exports ?? objectDefault,
-    typedefs: value.typedefs ?? objectDefault,
-    contexts: value.contexts ?? objectDefault,
-  };
-}
-
-/** `exportTypes`'s all-kinds-on resolution. */
-export const ALL_KINDS_EXPORTED: PerKindFlags = { props: true, exports: true, typedefs: true, contexts: true };
-
-/**
- * Resolves `exportTypes` (and the `forceExportProps` override) into a
- * concrete per-kind export decision. `true`/`undefined` exports everything;
- * `false` exports nothing; an object defaults each omitted key to `true`.
- * `forceExportProps: true` always wins for `props`, since a bundled
- * `@extends` target's props type must stay exported for the extending
- * component's `import type` to resolve.
- */
-export function resolveExportTypes(options: WriteTsDefinitionOptions | undefined): PerKindFlags {
-  const resolved = resolvePerKindFlags(options?.exportTypes, ALL_KINDS_EXPORTED, true);
-
-  if (options?.forceExportProps === true) resolved.props = true;
-
-  return resolved;
-}
-
 /** Picks the pure emit options out of the wider Node writer options. */
 export function pickEmitOptions(options: WriteTsDefinitionOptions): WriteTsDefinitionOptions {
   return {
     format: options.format,
-    exportTypes: options.exportTypes,
-    forceExportProps: options.forceExportProps,
     inline: options.inline,
   };
 }
@@ -1310,8 +1234,6 @@ export function pickEmitOptions(options: WriteTsDefinitionOptions): WriteTsDefin
  */
 const EMIT_OPTION_DEFAULTS: Record<string, unknown> = {
   format: "class",
-  exportTypes: true,
-  forceExportProps: false,
   inline: false,
 };
 
@@ -1348,21 +1270,17 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
 
   const useComponentFormat = options?.format === "component";
   const isGenericComponent = generics !== null;
-  const exportFlags = resolveExportTypes(options);
 
-  const { props_name, prop_def } = genPropDef(
-    {
-      moduleName,
-      props,
-      rest_props,
-      extends: _extends,
-      generics,
-      slots,
-      canonicalPropNames: new Set(typeScriptMetadata?.canonicalPropNames ?? []),
-      canonicalPropsType: typeScriptMetadata?.canonicalPropsType,
-    },
-    { export: exportFlags.props },
-  );
+  const { props_name, prop_def } = genPropDef({
+    moduleName,
+    props,
+    rest_props,
+    extends: _extends,
+    generics,
+    slots,
+    canonicalPropNames: new Set(typeScriptMetadata?.canonicalPropNames ?? []),
+    canonicalPropsType: typeScriptMetadata?.canonicalPropsType,
+  });
 
   const generic = generics ? `<${generics[1]}>` : "";
   const genericProps = generics ? `${props_name}<${generics[0]}>` : props_name;
@@ -1372,8 +1290,8 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
   const eventsRef = generics ? `$Events<${generics[0]}>` : "$Events";
   const useComponentInterface = useComponentFormat && (isGenericComponent || eventsDef !== "");
   const moduleExportsDef = genModuleExports({ moduleExports });
-  const typeDefs = getTypeDefs({ typedefs }, { export: exportFlags.typedefs });
-  const contextDefs = getContextDefs({ contexts, generics }, { export: exportFlags.contexts });
+  const typeDefs = getTypeDefs({ typedefs });
+  const contextDefs = getContextDefs({ contexts, generics });
   const droppedImportStatements = new Set(options?.inlined?.droppedImportStatements ?? []);
   const preservedTypeImports = (typeScriptMetadata?.typeImportStatements ?? [])
     .filter((statement) => !droppedImportStatements.has(statement))
@@ -1385,7 +1303,7 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
   ].join("\n\n");
 
   const { exports_ref, exports_def } = useComponentFormat
-    ? genExportsDef({ props, moduleName, generics }, { export: exportFlags.exports })
+    ? genExportsDef({ props, moduleName, generics })
     : { exports_ref: EMPTY_STR, exports_def: EMPTY_STR };
   const bindings = useComponentFormat ? genBindingsUnion({ props }) : EMPTY_STR;
 
