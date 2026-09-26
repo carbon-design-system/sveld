@@ -210,7 +210,7 @@ export function collectReferencedTypeDependencies(
 
   // `for...in` rather than `Object.values`: no per-node array allocation.
   for (const key in typeNode) {
-    const value = (typeNode as unknown as Record<string, unknown>)[key];
+    const value = (typeNode as Record<string, unknown>)[key];
     if (!value || typeof value !== "object") continue;
 
     if (Array.isArray(value)) {

@@ -3,8 +3,9 @@
  * module's exports and the imports, functions, and variables the instance
  * script can see.
  */
-import type { ClassDeclaration, ExportNamedDeclaration, FunctionDeclaration, Node, VariableDeclaration } from "estree";
+import type { ClassDeclaration, ExportNamedDeclaration, Node } from "estree";
 import type { ComponentProp, ComponentPropReExport } from "../model";
+import type { TemplateAstNode } from "../svelte-template-parse";
 import { type ClassDeclarationLike, readClassDeclaration } from "./classes";
 import type { ParserContext } from "./context";
 import { recordDiagnostic } from "./diagnostics";
@@ -20,8 +21,8 @@ import {
 import { processNodeJSDoc } from "./jsdoc";
 import { sourceRangeFromNode } from "./source-position";
 import { assignValueOrUndefined } from "./utils";
-import { collectReExportableImports, collectValueImportBindings, type ImportDeclarationNode } from "./value-imports";
-import { type WalkableNode, type WalkEnter, walkNodes } from "./walk";
+import { collectReExportableImports, collectValueImportBindings } from "./value-imports";
+import { walkNodes } from "./walk";
 
 /** The bare base-class name in an `extends` clause: `Base` in `Base<T>`; none for `mixin(Base)` or `ns.Base`. */
 const CLASS_BASE_NAME_REGEX = /^[A-Za-z_$][\w$]*(?=\s*(?:<|$))/;
@@ -203,67 +204,63 @@ function dropUndeclaredClassBases(ctx: ParserContext) {
  * are rare) - not worth the added complexity here.
  */
 export function walkModuleScript(ctx: ParserContext): void {
-  if (!ctx.parsed?.module) return;
+  const module = ctx.parsed?.module;
+  if (!module) return;
 
-  const reExportableImports = collectReExportableImports(ctx.parsed.module);
+  const reExportableImports = collectReExportableImports(module);
 
-  walkNodes(
-    ctx.parsed?.module as unknown as WalkableNode,
-    ((node: Node, parent: Node | null) => {
-      // Module script is in scope for instance. Record imports/funcs/vars
-      // the same way so instance CallExpression defaults can see them.
-      if (node.type === "ImportDeclaration") {
-        collectValueImportBindings(ctx, node as unknown as ImportDeclarationNode);
+  walkNodes<TemplateAstNode>(module, (node, parent) => {
+    // Module script is in scope for instance. Record imports/funcs/vars
+    // the same way so instance CallExpression defaults can see them.
+    if (node.type === "ImportDeclaration") {
+      collectValueImportBindings(ctx, node);
+    }
+
+    if (node.type === "FunctionDeclaration" && node.id?.name) {
+      ctx.funcDecls.set(node.id.name, node);
+    }
+
+    if (node.type === "VariableDeclaration") {
+      ctx.vars.add(node);
+    }
+
+    if (node.type === "ExportNamedDeclaration") {
+      if (node.declaration != null) {
+        addModuleDeclarationExports(ctx, node, node.declaration);
+        return;
       }
-
-      if (node.type === "FunctionDeclaration") {
-        const funcDecl = node as unknown as FunctionDeclaration;
-        if (funcDecl.id?.name) {
-          ctx.funcDecls.set(funcDecl.id.name, funcDecl);
-        }
-      }
-
-      if (node.type === "VariableDeclaration") {
-        ctx.vars.add(node as unknown as VariableDeclaration);
-      }
-
-      if (node.type === "ExportNamedDeclaration") {
-        if (node.declaration != null) {
-          addModuleDeclarationExports(ctx, node, node.declaration);
-          return;
-        }
-        const from = node.source?.value;
-        for (const specifier of node.specifiers) {
-          const resolved = resolveExportSpecifier(ctx, node, specifier, parent, "module");
-          if (!resolved) continue;
-          if (resolved.exportedName === "default") {
-            recordDefaultExportConflict(ctx, node);
-            continue;
-          }
-          const reExport =
-            typeof from === "string"
-              ? { from, imported: resolved.localName }
-              : reExportableImports.get(resolved.localName);
-          if (resolved.declaration) {
-            addModuleDeclarationExports(ctx, node, resolved.declaration, resolved);
-          } else if (reExport) {
-            addModuleReExport(ctx, node, resolved.exportedName, reExport);
-          } else if (!ctx.localTypeDeclarationsByName.get(resolved.localName)?.exported) {
-            // A type exported this way is emitted with the module's other types.
-            recordUnresolvedExportSpecifier(ctx, node, resolved.localName, resolved.exportedName);
-          }
-        }
-      }
-
-      if (node.type === "ExportAllDeclaration" && typeof node.source.value === "string") {
-        const name = (node.exported && moduleExportName(node.exported)) ?? "*";
-        if (name === "default") {
+      const from = node.source?.value;
+      const program = parent?.type === "Program" ? parent : null;
+      for (const specifier of node.specifiers) {
+        const resolved = resolveExportSpecifier(ctx, node, specifier, program, "module");
+        if (!resolved) continue;
+        if (resolved.exportedName === "default") {
           recordDefaultExportConflict(ctx, node);
-          return;
+          continue;
         }
-        addModuleReExport(ctx, node, name, { from: node.source.value, imported: "*" });
+        const reExport =
+          typeof from === "string"
+            ? { from, imported: resolved.localName }
+            : reExportableImports.get(resolved.localName);
+        if (resolved.declaration) {
+          addModuleDeclarationExports(ctx, node, resolved.declaration, resolved);
+        } else if (reExport) {
+          addModuleReExport(ctx, node, resolved.exportedName, reExport);
+        } else if (!ctx.localTypeDeclarationsByName.get(resolved.localName)?.exported) {
+          // A type exported this way is emitted with the module's other types.
+          recordUnresolvedExportSpecifier(ctx, node, resolved.localName, resolved.exportedName);
+        }
       }
-    }) as unknown as WalkEnter,
-  );
+    }
+
+    if (node.type === "ExportAllDeclaration" && typeof node.source.value === "string") {
+      const name = (node.exported && moduleExportName(node.exported)) ?? "*";
+      if (name === "default") {
+        recordDefaultExportConflict(ctx, node);
+        return;
+      }
+      addModuleReExport(ctx, node, name, { from: node.source.value, imported: "*" });
+    }
+  });
   dropUndeclaredClassBases(ctx);
 }

@@ -623,6 +623,13 @@ function localFunctionValuedInitializer(
 }
 
 /**
+ * A `: T` annotation as acorn-typescript attaches it to an identifier
+ * (`typeAnnotation`) or a function (`returnType`). estree doesn't declare
+ * either field.
+ */
+type TsTypeAnnotation = { type?: string; typeAnnotation?: { start?: number; end?: number } };
+
+/**
  * Return type from `const f: () => string = ...` when the arrow omits `): string`.
  */
 function bindingCallableReturnTypeText(ctx: ParserContext, name: string): string | undefined {
@@ -639,9 +646,8 @@ function bindingCallableReturnTypeText(ctx: ParserContext, name: string): string
       ) {
         continue;
       }
-      const annotation = (
-        id as unknown as { typeAnnotation?: { type?: string; typeAnnotation?: { start?: number; end?: number } } }
-      ).typeAnnotation;
+      const annotated: Identifier & { typeAnnotation?: TsTypeAnnotation } = id;
+      const annotation = annotated.typeAnnotation;
       if (annotation?.type !== "TSTypeAnnotation") return undefined;
       const typeNode = annotation.typeAnnotation;
       if (!typeNode || typeof typeNode.start !== "number" || typeof typeNode.end !== "number") return undefined;
@@ -654,11 +660,9 @@ function bindingCallableReturnTypeText(ctx: ParserContext, name: string): string
 /** Explicit TS return annotation text on a function (`): T`). */
 function functionReturnTypeAnnotationText(
   ctx: ParserContext,
-  node: FunctionDeclaration | FunctionExpression | ArrowFunctionExpression,
+  node: (FunctionDeclaration | FunctionExpression | ArrowFunctionExpression) & { returnType?: TsTypeAnnotation },
 ): string | undefined {
-  const returnType = (
-    node as unknown as { returnType?: { type?: string; typeAnnotation?: { start?: number; end?: number } } }
-  ).returnType;
+  const returnType = node.returnType;
   if (returnType?.type !== "TSTypeAnnotation") return undefined;
 
   const annotation = returnType.typeAnnotation;

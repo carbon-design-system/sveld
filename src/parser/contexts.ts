@@ -368,7 +368,7 @@ function recordContextValueUnresolved(
 }
 
 /** Parse `setContext(key, value)`. Imported keys go to `pendingContextKeyCandidates`. */
-export function parseSetContextCall(ctx: ParserContext, node: Node, _parent?: Node) {
+export function parseSetContextCall(ctx: ParserContext, node: Node) {
   if (!node || typeof node !== "object" || !("type" in node) || node.type !== "CallExpression") {
     return;
   }
