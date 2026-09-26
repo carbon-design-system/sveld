@@ -21,9 +21,8 @@
  *     blocks, a snippet)
  *   - write: writeTsDefinition on the parsed doc for those same components,
  *     including the runes/TS and pathological ones
- *   - write: renderJsonDocument / renderMarkdownDocument /
- *     renderCustomElementsManifest (the pure, I/O-free cores the real
- *     writers call) over all 160
+ *   - write: renderJsonDocument / renderMarkdownDocument (the pure,
+ *     I/O-free cores the real writers call) over all 160
  *   - document model: buildComponentApiDocument's sort/strip over all 160
  *   - watch: buildReverseDeps over all 160 and expandAffected on the result
  *   - cache: hashSource (sha256, paid once per file every run) and
@@ -57,7 +56,6 @@ import { hashSource, ParseCache } from "../src/parse-cache";
 import { getParserStack, loadParserStack } from "../src/parser-stack";
 import { parse as parseTemplate } from "../src/svelte-template-parse";
 import { buildComponentApiDocument } from "../src/writer/document-model";
-import { renderCustomElementsManifest } from "../src/writer/writer-custom-elements";
 import { renderJsonDocument } from "../src/writer/writer-json";
 import { renderMarkdownDocument } from "../src/writer/writer-markdown";
 import { writeTsDefinition } from "../src/writer/writer-ts-definitions-core";
@@ -343,17 +341,13 @@ group("write: document model", () => {
 // writers call after resolving output paths, so this measures the same
 // render cost as a real run without touching disk.
 const inputDir = dirname(ENTRY);
-group("write: json/markdown/custom-elements (full fixture)", () => {
+group("write: json/markdown (full fixture)", () => {
   task(`renderJsonDocument (${document.components.length} components)`, () =>
     renderJsonDocument(pipelineResult.components, { inputDir, entryExports: pipelineResult.entryExports }),
   );
 
   task(`renderMarkdownDocument (${document.components.length} components)`, () =>
     renderMarkdownDocument(pipelineResult.components, { entryExports: pipelineResult.entryExports }),
-  );
-
-  task(`renderCustomElementsManifest (${document.components.length} components)`, () =>
-    renderCustomElementsManifest(pipelineResult.components, { inputDir }),
   );
 });
 

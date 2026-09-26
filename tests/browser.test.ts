@@ -3,7 +3,6 @@ import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import {
   asNormalizedPath,
   buildComponentApiDocument,
-  buildCustomElementsManifest,
   type ComponentDocApi,
   ComponentParser,
   finalizeWithoutCrossFileResolution,
@@ -106,11 +105,6 @@ describe("sveld/browser", () => {
 
     const dts = writeTsDefinition(jsonDoc.components[0]);
     expect(dts).toContain("label");
-
-    const cem = buildCustomElementsManifest(components, {
-      resolveModulePath: (component) => component.filePath,
-    });
-    expect(cem.modules).toHaveLength(1);
   });
 
   test("a single ComponentParser instance can be reused across parses", () => {

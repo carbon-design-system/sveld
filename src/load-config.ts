@@ -35,9 +35,9 @@ export interface SveldRuntimeOptions extends PluginSveldOptions {
   /** Suppress writer progress logs (`created "..."` / `unchanged "..."`). */
   quiet?: boolean;
   /**
-   * Print the single selected `json` / `markdown` / `customElements` document
-   * to stdout instead of writing it to disk. Requires exactly one of those
-   * three outputs; CLI-only (the Vite plugin ignores it).
+   * Print the single selected `json` / `markdown` document to stdout
+   * instead of writing it to disk. Requires exactly one of those two
+   * outputs; CLI-only (the Vite plugin ignores it).
    */
   stdout?: boolean;
   /**
@@ -139,9 +139,9 @@ export async function loadConfig(cwd: string = process.cwd()): Promise<SveldConf
 /**
  * Merge option sources. Later sources override earlier ones. Keys whose
  * value is a plain object (e.g. `typesOptions`, `jsonOptions`,
- * `markdownOptions`, `customElementsOptions`) are merged one level deep
- * instead of replaced outright, so setting one nested key from a later
- * source doesn't drop sibling keys set by an earlier one.
+ * `markdownOptions`) are merged one level deep instead of replaced
+ * outright, so setting one nested key from a later source doesn't drop
+ * sibling keys set by an earlier one.
  * Arrays and functions always replace; they are never merged.
  */
 export function mergeConfig<T extends PluginSveldOptions = PluginSveldOptions>(
@@ -176,8 +176,6 @@ const KNOWN_TOP_LEVEL_KEYS = [
   "jsonOptions",
   "markdown",
   "markdownOptions",
-  "customElements",
-  "customElementsOptions",
   "failFast",
   "watch",
   "config",
@@ -207,7 +205,6 @@ const KNOWN_NESTED_KEYS: Record<string, string[]> = {
   ],
   jsonOptions: ["input", "outFile", "outDir", "entryExports", "source"],
   markdownOptions: ["write", "outFile", "outDir", "entryExports", "onAppend"],
-  customElementsOptions: ["outFile"],
   diagnostics: ["ignore"],
 };
 

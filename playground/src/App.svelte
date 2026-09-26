@@ -11,7 +11,6 @@
     Tabs,
   } from "carbon-components-svelte";
   import Code from "carbon-icons-svelte/lib/Code.svelte";
-  import Cube from "carbon-icons-svelte/lib/Cube.svelte";
   import Json from "carbon-icons-svelte/lib/Json.svelte";
   import TextCreation from "carbon-icons-svelte/lib/TextCreation.svelte";
   import { type Component, onMount } from "svelte";
@@ -41,8 +40,6 @@
         return import("./TabJson.svelte");
       case 2:
         return import("./TabMarkdown.svelte");
-      case 3:
-        return import("./TabCustomElements.svelte");
       default:
         throw new Error(`Unknown tab index: ${index}`);
     }
@@ -139,10 +136,6 @@
             label="Markdown"
             icon={TextCreation}
           />
-          <Tab
-            label="Custom Elements"
-            icon={Cube}
-          />
           <div
             class="tab-content-slot"
             slot="content"
@@ -181,19 +174,6 @@
                 {#if tabComponents[2]}
                   <svelte:component
                     this={tabComponents[2]}
-                    {parsed_component}
-                    {moduleName}
-                  />
-                {:else}
-                  <InlineLoading style="margin: var(--cds-spacing-05)" />
-                {/if}
-              {/if}
-            </TabContent>
-            <TabContent>
-              {#if selectedTab === 3}
-                {#if tabComponents[3]}
-                  <svelte:component
-                    this={tabComponents[3]}
                     {parsed_component}
                     {moduleName}
                   />

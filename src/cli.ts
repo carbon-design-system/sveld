@@ -54,10 +54,9 @@ Options:
   --types               Generate TypeScript definitions (default: true)
   --json                Generate component documentation in JSON format
   --markdown            Generate component documentation in Markdown format
-  --custom-elements     Generate a Custom Elements Manifest (custom-elements.json)
   --fail-fast           Abort the run when a single component fails to parse
   --quiet               Suppress progress logs (errors, the diagnostics summary, and the --check report are unaffected)
-  --stdout              Print the document from exactly one of --json, --markdown, or --custom-elements to stdout and write nothing to disk (rejects --types and --check)
+  --stdout              Print the document from exactly one of --json or --markdown to stdout and write nothing to disk (rejects --types and --check)
   --cache[=<path>]      Persist parsed output and skip re-parsing unchanged files (on by default, default path: node_modules/.cache/sveld/parse-cache.json; pass --cache=false to disable)
   --check-examples[=syntax]  Check @example blocks: TS/JS against the TypeScript program, svelte/html markup against sveld's own parser (alias: --checkExamples, deprecated); --check-examples=syntax runs only the markup path and never loads TypeScript
   --report-diagnostics  Print unresolved-type diagnostics to stderr
@@ -101,7 +100,6 @@ const KNOWN_FLAGS = [
   "markdown",
   "quiet",
   "stdout",
-  "custom-elements",
   "strict",
   "report-diagnostics",
   "check-examples",
@@ -126,7 +124,6 @@ const BOOLEAN_FLAGS = new Set([
   "markdown",
   "quiet",
   "stdout",
-  "custom-elements",
   "strict",
   "report-diagnostics",
   "check-examples",
@@ -199,8 +196,6 @@ function parseCliFlagValue(flag: string, value: string | boolean, arg: string, r
       if (value === true || value === "true") return { kind: "option", option: { stdout: true } };
       if (value === "false") return { kind: "option", option: { stdout: false } };
       return { kind: "usage-error", message: `sveld: --stdout does not take a value; got "${value}".` };
-    case "custom-elements":
-      return { kind: "option", option: { customElements: value === true || value === "true" } };
     case "strict":
       // The value is validated in `cli()` once it can be reported as a usage
       // error (`--strict=oops`); a bare `--strict` means `true`.
@@ -353,10 +348,10 @@ export async function cli(process: NodeJS.Process) {
   validateOptions(options);
 
   if (options.stdout) {
-    const selectedOutputs = [options.json, options.markdown, options.customElements].filter(Boolean).length;
+    const selectedOutputs = [options.json, options.markdown].filter(Boolean).length;
 
     if (selectedOutputs !== 1) {
-      console.error("sveld: --stdout requires exactly one of --json, --markdown, or --custom-elements.");
+      console.error("sveld: --stdout requires exactly one of --json or --markdown.");
       process.exitCode = EXIT_CODES.USAGE_ERROR;
       return;
     }

@@ -10,10 +10,6 @@ import { loadConfig, loadConfigFrom, mergeConfig, validateOptions } from "./load
 import { setQuiet } from "./logger";
 import { WATCH_RELEVANT_EXT_REGEX } from "./path";
 import { createSveldBundle, type SveldBundle } from "./watch";
-import writeCustomElements, {
-  renderCustomElementsManifest,
-  type WriteCustomElementsOptions,
-} from "./writer/writer-custom-elements";
 import writeJson, { renderJsonDocument, type WriteJsonOptions } from "./writer/writer-json";
 import writeMarkdown, { renderMarkdownDocument, type WriteMarkdownOptions } from "./writer/writer-markdown";
 import writeTsDefinitions, { type WriteTsDefinitionsOptions } from "./writer/writer-ts-definitions";
@@ -46,9 +42,6 @@ export interface PluginSveldOptions extends Pick<GenerateBundleOptions, "cache" 
   jsonOptions?: Partial<Omit<WriteJsonOptions, "inputDir">>;
   markdown?: boolean;
   markdownOptions?: Partial<WriteMarkdownOptions>;
-  /** Generate a Custom Elements Manifest (`custom-elements.json`, schemaVersion "1.0.0"). */
-  customElements?: boolean;
-  customElementsOptions?: Partial<Omit<WriteCustomElementsOptions, "inputDir">>;
   /**
    * Abort the entire run when a single component fails to parse.
    * When `false` (the default), parse failures are collected as diagnostics
@@ -299,25 +292,13 @@ export async function writeOutput(result: GenerateBundleResult, opts: PluginSvel
       entryExports: result.entryExports,
     } satisfies WriteMarkdownOptions);
   }
-
-  if (opts?.customElements) {
-    /**
-     * Use components (exported only) for the Custom Elements Manifest, matching
-     * the JSON/Markdown outputs' public-API-surface convention.
-     */
-    await writeCustomElements(result.components, {
-      outFile: "custom-elements.json",
-      ...opts?.customElementsOptions,
-      inputDir,
-    } satisfies WriteCustomElementsOptions);
-  }
 }
 
 /**
- * Prints the single selected `json` / `markdown` / `customElements` document
- * to stdout instead of writing it to disk. CLI-only: the caller (`cli()`) is
- * responsible for enforcing that exactly one of those three options is set
- * before calling this.
+ * Prints the single selected `json` / `markdown` document to stdout instead
+ * of writing it to disk. CLI-only: the caller (`cli()`) is responsible for
+ * enforcing that exactly one of those two options is set before calling
+ * this.
  */
 export async function writeStdout(result: GenerateBundleResult, opts: PluginSveldOptions, input: string) {
   const inputDir = dirname(input);
@@ -337,15 +318,6 @@ export async function writeStdout(result: GenerateBundleResult, opts: PluginSvel
       ...opts?.markdownOptions,
       entryExports: result.entryExports,
     } satisfies Pick<WriteMarkdownOptions, "entryExports" | "onAppend">);
-    process.stdout.write(rendered);
-    return;
-  }
-
-  if (opts?.customElements) {
-    const rendered = renderCustomElementsManifest(result.components, {
-      ...opts?.customElementsOptions,
-      inputDir,
-    } satisfies Pick<WriteCustomElementsOptions, "inputDir">);
     process.stdout.write(rendered);
   }
 }

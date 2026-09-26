@@ -1,6 +1,6 @@
 import { SvelteComponentTyped } from "svelte";
 
-export type CemCssPartsAndPropsProps = {
+export type CssPartsAndPropsProps = {
   /**
    * The card's title.
    * @default ""
@@ -10,8 +10,8 @@ export type CemCssPartsAndPropsProps = {
   children?: (this: void) => void;
 };
 
-export default class CemCssPartsAndProps extends SvelteComponentTyped<
-  CemCssPartsAndPropsProps,
+export default class CssPartsAndProps extends SvelteComponentTyped<
+  CssPartsAndPropsProps,
   Record<string, any>,
   { default: Record<string, never> }
 > {}

@@ -1,6 +1,6 @@
 import { SvelteComponentTyped } from "svelte";
 
-export type CemCustomElementObjectConfigProps = {
+export type CustomElementObjectConfigProps = {
   /**
    * @default "default"
    */
@@ -17,8 +17,8 @@ export type CemCustomElementObjectConfigProps = {
   tags?: string[];
 };
 
-export default class CemCustomElementObjectConfig extends SvelteComponentTyped<
-  CemCustomElementObjectConfigProps,
+export default class CustomElementObjectConfig extends SvelteComponentTyped<
+  CustomElementObjectConfigProps,
   Record<string, any>,
   Record<string, never>
 > {}

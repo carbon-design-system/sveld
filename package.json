@@ -46,7 +46,6 @@
     "acorn": "^8.18.0",
     "ajv": "^8.20.0",
     "culls": "^0.2.0",
-    "custom-elements-manifest": "^2.1.0",
     "ostia": "^0.2.7",
     "svelte": "^5.57.1",
     "typescript": "^7.0.2"

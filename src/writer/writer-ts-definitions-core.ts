@@ -743,7 +743,7 @@ const STANDARD_DOM_EVENTS = new Set([
 ] satisfies readonly string[]);
 
 /** `CustomEvent<detail>`, leaving a detail that already names `CustomEvent` (`@event {CustomEvent<null>}`) unwrapped. */
-export function createDispatchedEventType(detail: string = ANY_TYPE) {
+function createDispatchedEventType(detail: string = ANY_TYPE) {
   if (CUSTOM_EVENT_REGEX.test(detail)) return detail;
   return `CustomEvent<${detail}>`;
 }

@@ -114,13 +114,13 @@ describe("component API JSON schema", () => {
     expect(stringArrayProperty(objectProperty(defs, "cssProperty"), "required")).toEqual(["name"]);
 
     const parser = new ComponentParser();
-    const filePath = path.join(root, "tests", "fixtures", "cem-custom-element-object-config", "input.svelte");
+    const filePath = path.join(root, "tests", "fixtures", "custom-element-object-config", "input.svelte");
     const source = readFileSync(filePath, "utf-8");
-    const parsed = parser.parseSvelteComponent(source, { filePath, moduleName: "CemCustomElementObjectConfig" });
+    const parsed = parser.parseSvelteComponent(source, { filePath, moduleName: "CustomElementObjectConfig" });
     const components: ComponentDocs = new Map([
       [
-        "CemCustomElementObjectConfig",
-        { ...parsed, moduleName: "CemCustomElementObjectConfig", filePath: asNormalizedPath(filePath) },
+        "CustomElementObjectConfig",
+        { ...parsed, moduleName: "CustomElementObjectConfig", filePath: asNormalizedPath(filePath) },
       ],
     ]);
 

@@ -141,8 +141,7 @@ export default class Button extends SvelteComponentTyped<
 - [Available Options](#available-options)
 - [Documenting Entry Exports](#documenting-entry-exports)
 - [JSON Output](#json-output)
-- [Custom Elements Manifest](#custom-elements-manifest)
-  - [Consuming the manifest](#consuming-the-manifest)
+- [Custom Element Metadata](#custom-element-metadata)
 - [Custom Output Formats](#custom-output-formats)
 - [API Reference](#api-reference)
   - [reactive](#reactive)
@@ -584,11 +583,11 @@ npx sveld --json --markdown
 
 If no entry point is configured (no `package.json#svelte` field and no `--entry`), the CLI exits `1` and prints the reason to `stderr`, unless `src/index.js` exists relative to your working directory: then sveld uses it and prints a one-line note asking you to set `package.json#svelte` (or `--entry`). An `--entry` or `package.json#svelte` path that doesn't exist always exits `1`.
 
-Flags are kebab-case: `--entry`, `--glob`, `--types`, `--json`, `--markdown`, `--custom-elements`, `--fail-fast`, `--cache`, `--check-examples`, `--report-diagnostics`, `--strict`, `--check`, `--check-level`, `--types-format`, `--types-index-types`, `--quiet`, `--stdout`, `--format`. The camelCase spelling `--checkExamples` still works as a deprecated alias for compatibility with existing scripts. `--entry`, `--cache`, `--check`, and `--types-format` take their value either as `--flag=value` or as a separate `--flag value` argument (`sveld --entry src/index.js` and `sveld --entry=src/index.js` are equivalent); if the next argument starts with `--` it's not consumed as a value, so `--cache` and `--check` fall back to their default location and the rest of that list report a usage error naming the flag. Boolean flags (`--json`, `--glob`, `--strict`, `--types-index-types`, and the like) never consume a following argument. An unrecognized flag (e.g. `--markdwon`) prints `sveld: unknown flag "--markdwon".` to `stderr`, exits `1`, and skips generation; when a close match exists it appends a suggestion, e.g. `Did you mean "--markdown"?`. sveld takes no positional arguments, so any non-flag argument errors the same way.
+Flags are kebab-case: `--entry`, `--glob`, `--types`, `--json`, `--markdown`, `--fail-fast`, `--cache`, `--check-examples`, `--report-diagnostics`, `--strict`, `--check`, `--check-level`, `--types-format`, `--types-index-types`, `--quiet`, `--stdout`, `--format`. The camelCase spelling `--checkExamples` still works as a deprecated alias for compatibility with existing scripts. `--entry`, `--cache`, `--check`, and `--types-format` take their value either as `--flag=value` or as a separate `--flag value` argument (`sveld --entry src/index.js` and `sveld --entry=src/index.js` are equivalent); if the next argument starts with `--` it's not consumed as a value, so `--cache` and `--check` fall back to their default location and the rest of that list report a usage error naming the flag. Boolean flags (`--json`, `--glob`, `--strict`, `--types-index-types`, and the like) never consume a following argument. An unrecognized flag (e.g. `--markdwon`) prints `sveld: unknown flag "--markdwon".` to `stderr`, exits `1`, and skips generation; when a close match exists it appends a suggestion, e.g. `Did you mean "--markdown"?`. sveld takes no positional arguments, so any non-flag argument errors the same way.
 
 Writer progress lines (`created "..."` / `unchanged "..."`) print to `stderr`, keeping `stdout` reserved for machine-readable data. Pass `--quiet` (or `quiet: true` in `sveld.config.*`) to suppress them; it does not suppress error messages, the diagnostics summary (`--report-diagnostics` / `--strict`), or the `--check` report.
 
-Pass `--stdout` alongside exactly one of `--json`, `--markdown`, or `--custom-elements` to print that single document to `stdout` instead of writing it to disk, e.g. `sveld --json --stdout | jq '.components[].moduleName'`. Zero or more than one of those three flags, `--types`, or `--check` combined with `--stdout` is a usage error that prints to `stderr` and exits `1` without generating anything; the default `.d.ts` generation is skipped in `--stdout` mode since type definitions span multiple files.
+Pass `--stdout` alongside exactly one of `--json` or `--markdown` to print that single document to `stdout` instead of writing it to disk, e.g. `sveld --json --stdout | jq '.components[].moduleName'`. Zero or both of those flags, `--types`, or `--check` combined with `--stdout` is a usage error that prints to `stderr` and exits `1` without generating anything; the default `.d.ts` generation is skipped in `--stdout` mode since type definitions span multiple files.
 
 `--format=json` switches the `--check` report and the `--report-diagnostics` / `--strict` diagnostics summary from prose to JSON, so scripts and agents don't have to regex the text output, e.g. `sveld --json --check --format=json | jq '.bump'`. Channels are unchanged: the check report prints to `stdout` and the diagnostics summary to `stderr`, same as the text format. Each envelope (`{ kind: "check-report", schemaVersion: 1, ... }` / `{ kind: "diagnostics", schemaVersion: 1, diagnostics: [...] }`) carries its own `schemaVersion`, bumped independently of `COMPONENT_API.json`'s if either shape ever changes incompatibly. The default remains `--format=text`; an unrecognized value (e.g. `--format=yaml`) is a usage error that prints to `stderr` and exits `1` without generating anything.
 
@@ -770,7 +769,7 @@ sveld({
 
 `sveld/browser` is a Node-free subpath export for running `sveld` client-side — e.g. an in-browser Svelte playground or REPL that parses whatever `.svelte` source the user typed and renders docs for it live. It bundles with Vite, esbuild, webpack, or Rollup without a `node:fs`/`node:path` polyfill.
 
-It covers parsing one component's source and rendering that result to any output format `sveld` supports (JSON, Markdown, `.d.ts`, Custom Elements Manifest). It does not cover project-wide glob scanning, the config file, or the CLI/Vite plugin (`sveld()`/`pluginSveld()`) — those walk the filesystem and only make sense in Node. Use the main `sveld` entry point for those.
+It covers parsing one component's source and rendering that result to any output format `sveld` supports (JSON, Markdown, `.d.ts`). It does not cover project-wide glob scanning, the config file, or the CLI/Vite plugin (`sveld()`/`pluginSveld()`) — those walk the filesystem and only make sense in Node. Use the main `sveld` entry point for those.
 
 ```ts
 import {
@@ -780,7 +779,6 @@ import {
   buildComponentApiDocument,
   writeMarkdownCore,
   writeTsDefinition,
-  buildCustomElementsManifest,
 } from "sveld/browser";
 
 const parser = new ComponentParser();
@@ -804,18 +802,13 @@ const markdown = writeMarkdownCore(components);
 
 // TypeScript definitions (per component)
 const dts = writeTsDefinition(jsonDoc.components[0]);
-
-// Custom Elements Manifest
-const cem = buildCustomElementsManifest(components, {
-  resolveModulePath: (component) => component.filePath,
-});
 ```
 
 A standalone parse can't read the files a component imports from, so some output the CLI and `generateBundle` produce is missing: a context whose `setContext` key is imported, the value of a prop default that names an imported `const`, the return type of a default that calls an imported function, and events dispatched by an imported helper (`wire(dispatch)`). `parseSvelteComponent` leaves these pending for the cross-file pass, which never runs here. Pass the result through `finalizeWithoutCrossFileResolution(parsed, { filePath })` to record a `sveld/cross-file-unresolved` warning for each one, naming the import (e.g. `` setContext key `keys.THEME` is imported from "./keys.js" ``), and to release the `sveld/event-no-source` warnings held back while a helper's events were unknown. It returns a new component and leaves the input unchanged.
 
 `ComponentParser` is stateful but reusable across parses — call `parseSvelteComponent` again on the same instance for the next component instead of constructing a new one each time.
 
-See [`playground/`](playground) in this repo for a working example: it parses Svelte source typed into an editor and renders JSON, Markdown, TypeScript, and Custom Elements Manifest tabs, all client-side. Deployed at [sveld.onrender.com](https://sveld.onrender.com).
+See [`playground/`](playground) in this repo for a working example: it parses Svelte source typed into an editor and renders JSON, Markdown, and TypeScript tabs, all client-side. Deployed at [sveld.onrender.com](https://sveld.onrender.com).
 
 ### Config File
 
@@ -851,7 +844,7 @@ export default {
 };
 ```
 
-Merging is one level deep for object-valued options (`typesOptions`, `jsonOptions`, `markdownOptions`, `customElementsOptions`): setting one nested key at the CLI or in `sveld()` doesn't drop sibling keys set in the config file. Arrays and functions (e.g. `markdownOptions.onAppend`) are replaced outright, never merged.
+Merging is one level deep for object-valued options (`typesOptions`, `jsonOptions`, `markdownOptions`): setting one nested key at the CLI or in `sveld()` doesn't drop sibling keys set in the config file. Arrays and functions (e.g. `markdownOptions.onAppend`) are replaced outright, never merged.
 
 ```js
 // sveld.config.js
@@ -916,9 +909,6 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
   - **`outDir`** (string, optional): Emit one `<ModuleName>.md` file per component into this directory, plus an index `README.md` linking to each, instead of a single combined file. See [`markdownOptions.outDir`](#markdownoptionsoutdir).
   - **`write`** (boolean, optional, default: `true`): Set to `false` to skip writing to disk — the rendered combined document is still returned, or (with `outDir` set) no files are written at all.
   - **`onAppend`** (function, optional): Callback invoked every time a heading, quote, paragraph, divider, or raw block is appended to the document. Lets you inject extra content, e.g. a summary line under the title. See [`markdownOptions.onAppend`](#markdownoptionsonappend) below.
-- **`customElements`** (boolean, optional): Generate a [Custom Elements Manifest](#custom-elements-manifest) (`custom-elements.json`). Also available as the `--custom-elements` CLI flag.
-- **`customElementsOptions`** (object, optional): Options for Custom Elements Manifest output.
-  - **`outFile`** (string, optional, default: `"custom-elements.json"`): Path (relative to the project root) for the generated manifest file.
 - **`config`** (boolean | string, optional, default: `false`): Load `sveld.config.{js,mjs,ts}` and merge it with these options; these options win when a key is set in both. `true` resolves the config from the Vite project root (or `process.cwd()` outside Vite); a string is an explicit path to the config file. The plugin warns about keys only the CLI and `sveld()` act on (`reportDiagnostics`, `strict`, `check`, `checkLevel`, `stdout`, `format`). See [Config File](#config-file).
 - **`watch`** (boolean, optional, default: `false`): Regenerate output incrementally when relevant source changes during `vite dev` / `vite build --watch`. A reparse is triggered by: editing a component; editing the entry barrel itself, which adds/removes the corresponding component; or editing a non-`.svelte` file a component depends on via [`@extendProps`](#extendprops) / `@extends` or a typedef `import("./x")` reference. Only the affected components are re-parsed, rather than rebuilding every component. Overlapping regenerations are queued, never run concurrently. Without this option, the plugin only runs during `vite build`.
 - **`failFast`** (boolean, optional, default: `false`): Abort the entire run when a single component fails to parse. By default, parse failures are reported to `stderr` and the remaining components still emit their output; the CLI then exits `2`. Also available as the `--fail-fast` CLI flag.
@@ -1255,35 +1245,13 @@ Prop metadata is additive and keeps the older public fields:
 - `value` remains the raw default expression string. `defaultValue` adds structured metadata with the same raw expression, a coarse `kind`, and a parsed `value` only for JSON-safe literals, arrays, and plain objects. `sveld` does not evaluate arbitrary code.
 - `bindable: true` is emitted only for props explicitly declared with Svelte 5 `$bindable(...)`. Missing `bindable` should be treated as false.
 
-## Custom Elements Manifest
+## Custom Element Metadata
 
-Set `customElements: true` to emit a [Custom Elements Manifest](https://github.com/webcomponents/custom-elements-manifest) (`custom-elements.json`, `schemaVersion: "1.0.0"`). This is the interchange format the web-components ecosystem standardized on: Storybook autodocs, VS Code/JetBrains HTML data, and other CEM-aware tooling can all read it directly.
+`<svelte:options customElement />` config and `@csspart`/`@cssprop` tags are recorded on each component in the JSON output (`COMPONENT_API.json`) and in the `document` that `sveld()` returns. sveld doesn't emit a [Custom Elements Manifest](https://github.com/webcomponents/custom-elements-manifest); a separate tool can build one from this data. See [Custom Output Formats](#custom-output-formats).
 
-```diff
-sveld({
-+  customElements: true,
-})
-```
+### `customElement` options
 
-- **`customElements`** (boolean, optional): Generate `custom-elements.json`.
-- **`customElementsOptions.outFile`** (string, optional, default: `"custom-elements.json"`): Override the output path.
-- Also available as the `--custom-elements` CLI flag.
-
-Each exported component becomes one `javascript-module` with a class declaration:
-
-- **Members** — every `export let`/`const` prop becomes a `ClassField` (`name`, `type.text`, `default`, `description`, `deprecated`; `readonly: true` for an `export const`). An accessor prop (`export function`) becomes a `ClassMethod` (`name`, `static: false`, `parameters`, `return.type.text`) instead — see [Accessor methods](#accessor-methods) below.
-- **Attributes** — every prop becomes an attribute (Svelte's custom-element runtime observes one for every prop by default), excluding `export function` accessors. The attribute name is `prop.toLowerCase()` by default, or the `customElement.props.<name>.attribute` config when set — see [Object-form `customElement` config](#object-form-customelement-config) below. Props that collide on the same attribute name keep the first (in declaration order); the rest are skipped with a console warning, since which one wins at runtime is ambiguous.
-- **Events** — dispatched events (`createEventDispatcher()`, and `$host().dispatchEvent(...)` from inside a custom element) become `{ name, type: { text: "CustomEvent<...>" } }`. Forwarded (`on:click`) events are left out, since they aren't dispatched by the component's own class.
-- **Slots** — named and default slots, with descriptions. The default slot's `name` is `""`, matching the CEM convention.
-- **`cssParts`/`cssProperties`** — from `@csspart`/`@cssprop` JSDoc tags — see [CSS parts and custom properties](#css-parts-and-custom-properties) below.
-
-When a component sets `<svelte:options customElement="x-foo" />` (or the object form, `<svelte:options customElement={{ tag: "x-foo" }} />`), its declaration gets `tagName: "x-foo"` and `customElement: true`, and the module's `exports` include a `custom-element-definition` export alongside the plain `js` export.
-
-Components without `customElement` still emit a plain class declaration (no `tagName`/`customElement`) — useful for documenting the class shape even before it's compiled as a custom element, but the manifest is most useful for `customElement`-compiled builds, where downstream tooling can resolve `tagName`, `attributes`, and `events` for actual custom-element usage.
-
-### Object-form `customElement` config
-
-The object form of `<svelte:options customElement={{ ... }} />` is read in full, not just `tag`:
+`<svelte:options customElement="x-foo" />` sets `customElementTag: "x-foo"`. The object form is read in full, not just `tag`:
 
 ```svelte
 <svelte:options
@@ -1300,18 +1268,7 @@ The object form of `<svelte:options customElement={{ ... }} />` is read in full,
 />
 ```
 
-| Config | Effect on the manifest |
-| --- | --- |
-| `props.<name>.attribute` | Overrides that prop's attribute name (default: `name.toLowerCase()`). `attribute: false` omits the prop's attribute entirely. |
-| `props.<name>.reflect` | Adds `reflects: true` to that prop's attribute. |
-| `props.<name>.type` | `"Array"`/`"Object"` appends a note to the attribute's description that the value is JSON-serialized (matching Svelte's runtime `JSON.stringify`/`JSON.parse` for those types); the attribute's `type.text` is still the prop's own TS type, not this config value. |
-| `shadow`, `extend` | Parsed and available on the raw `ParsedComponent.customElement` (Node API), but don't affect the manifest. |
-
-This full config (`tag`, `shadow`, `props`, `extend`) is also on `ParsedComponent.customElement` in the JSON output (`COMPONENT_API.json`), alongside the existing `customElementTag` shorthand.
-
-### Accessor methods
-
-An `export function` prop (a Svelte accessor, e.g. `export function focus() { ... }`) becomes a `ClassMethod`, not a `ClassField`, and is excluded from `attributes` (accessors aren't part of Svelte's props definition). `parameters`/`return` come from `@param`/`@returns` JSDoc when present, otherwise from splitting the function's TypeScript signature text (e.g. `(id: string) => boolean`).
+The whole config appears as `customElement` (`tag`, `shadow`, `props`, and `extend: true` when an `extend` function is set), alongside the `customElementTag` shorthand.
 
 ### CSS parts and custom properties
 
@@ -1325,23 +1282,7 @@ Document shadow-DOM styling hooks with `@csspart`/`@cssprop` (alias `@csspropert
  */
 ```
 
-`@cssprop`'s `{type}` and `[--name=default]` are both optional, following the [Custom Elements Manifest analyzer](https://custom-elements-manifest.open-wc.org/analyzer/getting-started/#css-custom-properties) grammar. These populate `cssParts`/`cssProperties` on the class declaration, and `ParsedComponent.cssParts`/`cssProperties` in the JSON output; the Markdown writer renders them as two extra tables when present.
-
-### Consuming the manifest
-
-Most tools discover `custom-elements.json` through a `customElements` field in `package.json`, pointing at the generated file:
-
-```json
-{
-  "customElements": "custom-elements.json"
-}
-```
-
-With that in place:
-
-- The [VS Code custom elements extension](https://marketplace.visualstudio.com/items?itemName=BendingSpoons.vscode-custom-elements) and JetBrains IDEs pick it up automatically, giving tag name, attribute, and slot completion/hover in HTML and Svelte templates.
-- [Storybook](https://storybook.js.org/docs/api/doc-blocks/doc-block-argtypes#extracting-argtypes) for web components reads the manifest to auto-generate `argTypes` (controls, docs tables) for `customElement`-compiled components, once you point it at the file (e.g. `setCustomElementsManifest` from `@storybook/web-components`, or `customElements: "custom-elements.json"` in `.storybook/main.js`).
-- Any other tool built against the [Custom Elements Manifest spec](https://github.com/webcomponents/custom-elements-manifest) (API viewers, doc generators, linters) can read the file directly without sveld-specific integration.
+`@cssprop`'s `{type}` and `[--name=default]` are both optional, following the [Custom Elements Manifest analyzer](https://custom-elements-manifest.open-wc.org/analyzer/getting-started/#css-custom-properties) grammar. They appear as `cssParts`/`cssProperties` in the JSON output; the Markdown writer renders them as two extra tables when present.
 
 ## Custom Output Formats
 
@@ -2871,7 +2812,7 @@ Any free-text prose after the tags is attached to the event description, not to 
 
 ### `@ignore` / `@internal`
 
-`@ignore` and `@internal` are equivalent aliases: either one excludes a prop, event, slot, typedef, module export, entry export, or context from every output — JSON, Markdown, `.d.ts`, and the Custom Elements Manifest. Use them for implementation details that would otherwise leak into the public API docs.
+`@ignore` and `@internal` are equivalent aliases: either one excludes a prop, event, slot, typedef, module export, entry export, or context from every output — JSON, Markdown, and `.d.ts`. Use them for implementation details that would otherwise leak into the public API docs.
 
 The tag's position mirrors [`@deprecated`](#deprecated): before `@slot`/`@snippet`/`@typedef`/`@callback`, alongside the description, and after the `@event` line.
 
@@ -2904,7 +2845,7 @@ The tag's position mirrors [`@deprecated`](#deprecated): before `@slot`/`@snippe
 </script>
 ```
 
-`debugId`, the `debug` event, and the `debug-panel` slot never appear in `COMPONENT_INDEX.md`, `COMPONENT_API.json`, the generated `.d.ts`, or the Custom Elements Manifest — as if they were never declared. Internally, the parser still records them (with an `internal: true` flag) on the raw parsed component; only `buildComponentApiDocument` — the shared step every writer runs through — filters them out, so a custom writer built on the raw parse result can still see them if it chooses to.
+`debugId`, the `debug` event, and the `debug-panel` slot never appear in `COMPONENT_INDEX.md`, `COMPONENT_API.json`, or the generated `.d.ts` — as if they were never declared. Internally, the parser still records them (with an `internal: true` flag) on the raw parsed component; only `buildComponentApiDocument` — the shared step every writer runs through — filters them out, so a custom writer built on the raw parse result can still see them if it chooses to.
 
 For a context (`setContext(key, value)`), tag the JSDoc on the *value* variable, the same place its type annotation and description already live:
 
