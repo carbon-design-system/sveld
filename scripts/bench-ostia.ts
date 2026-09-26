@@ -51,7 +51,8 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { group, task } from "ostia";
 import { asNormalizedPath } from "../src/brands";
-import { collectComponents, generateBundle } from "../src/bundle";
+import { generateBundle } from "../src/bundle";
+import { collectComponents } from "../src/collect-components";
 import { buildReverseDeps, expandAffected } from "../src/dependency-graph";
 import { setQuiet } from "../src/logger";
 import { hashSource, ParseCache } from "../src/parse-cache";
@@ -364,13 +365,15 @@ group("write: json/markdown (full fixture)", () => {
 // Watch mode rebuilds the reverse-dependency map after every parse and
 // expands each changed file through it; both scale with fixture size.
 const { resolveComponentFilePath } = collectComponents(ENTRY, false);
-const reverseDeps = buildReverseDeps(pipelineResult.allComponentsForTypes, resolveComponentFilePath);
+const componentsByPath = Array.from(
+  pipelineResult.allComponentsForTypes.values(),
+  (component) => [resolveComponentFilePath(component.filePath), component] as const,
+);
+const reverseDeps = buildReverseDeps(componentsByPath);
 const allComponentPaths = [...pipelineResult.allComponentsForTypes.keys()];
 
 group("watch: dependency graph", () => {
-  task(`buildReverseDeps (${document.components.length} components)`, () =>
-    buildReverseDeps(pipelineResult.allComponentsForTypes, resolveComponentFilePath),
-  );
+  task(`buildReverseDeps (${document.components.length} components)`, () => buildReverseDeps(componentsByPath));
 
   task(`expandAffected (all ${allComponentPaths.length} paths changed)`, () =>
     expandAffected(allComponentPaths, reverseDeps),

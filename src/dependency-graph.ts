@@ -1,5 +1,7 @@
 import { dirname, resolve } from "node:path";
-import type { ComponentDocApi, ComponentDocs, ResolveComponentFilePath } from "./bundle";
+import type { ParsedComponent } from "./ComponentParser";
+
+type DependencySource = Pick<ParsedComponent, "extends" | "typedefs" | "props">;
 
 /** Strips matching surrounding single/double quotes from an import specifier. */
 const SURROUNDING_QUOTES_REGEX = /^(['"])(.*)\1$/;
@@ -16,7 +18,7 @@ const TYPE_IMPORT_REGEX = /import\(\s*(['"])((?:(?!\1).)+)\1\s*\)/g;
  * package interface like `carbon-components-svelte`). The target need not be
  * `.svelte`: `@extendProps {./types.ts}` names a `.ts` interface.
  */
-function resolveExtendsDependency(api: ComponentDocApi, componentPath: string): string | null {
+function resolveExtendsDependency(api: DependencySource, componentPath: string): string | null {
   const raw = api.extends?.import;
   if (raw === undefined) return null;
   // `extends.import` is stored verbatim from the JSDoc tag, including any
@@ -44,7 +46,7 @@ function resolveTypeImportDependencies(typeText: string, componentPath: string):
  * files must re-parse the component even though they're never `.svelte`
  * themselves and so are never components in their own right.
  */
-function resolveDependencies(api: ComponentDocApi, componentPath: string): string[] {
+function resolveDependencies(api: DependencySource, componentPath: string): string[] {
   const dependencies: string[] = [];
 
   const extendsDependency = resolveExtendsDependency(api, componentPath);
@@ -61,21 +63,17 @@ function resolveDependencies(api: ComponentDocApi, componentPath: string): strin
 }
 
 /**
- * Builds a reverse-dependency map: `dependencyPath -> set of dependent paths`.
+ * Builds a reverse-dependency map: `dependencyPath -> set of dependent paths`,
+ * from `[absolute component path, component]` pairs.
  *
  * A component is a dependent of `X` when it extends `X` via `@extendProps` /
  * `@extends`, or references it via a `import("./x")` type. When `X` changes,
  * every dependent must be re-parsed.
  */
-export function buildReverseDeps(
-  components: ComponentDocs,
-  resolveComponentFilePath: ResolveComponentFilePath,
-): Map<string, Set<string>> {
+export function buildReverseDeps(components: Iterable<readonly [string, DependencySource]>): Map<string, Set<string>> {
   const reverse = new Map<string, Set<string>>();
 
-  for (const api of components.values()) {
-    const componentPath = resolveComponentFilePath(api.filePath);
-
+  for (const [componentPath, api] of components) {
     for (const dependency of resolveDependencies(api, componentPath)) {
       let dependents = reverse.get(dependency);
       if (dependents === undefined) {

@@ -1,4 +1,4 @@
-import type { SourceRange } from "./ComponentParser";
+import type { ParsedComponent, SourceRange } from "./ComponentParser";
 import { matchesGlob } from "./glob-match";
 
 /**
@@ -387,4 +387,10 @@ export interface DiagnosticsJson {
 export function formatDiagnosticsSummaryJson(diagnostics: SveldDiagnostic[]): string {
   const document: DiagnosticsJson = { kind: "diagnostics", schemaVersion: DIAGNOSTICS_SCHEMA_VERSION, diagnostics };
   return `${JSON.stringify(document, null, 2)}\n`;
+}
+
+/** Adds `diagnostics` to `component`'s own, as a new array (the old one may be shared). */
+export function appendDiagnostics(component: ParsedComponent, diagnostics: SveldDiagnostic[]): void {
+  if (diagnostics.length === 0) return;
+  component.diagnostics = [...(component.diagnostics ?? []), ...diagnostics];
 }

@@ -1,31 +1,167 @@
 import { lstatSync } from "node:fs";
 import { resolve } from "node:path";
-import {
-  appendDiagnostics,
-  type ComponentDocApi,
-  type ComponentDocs,
-  type ComponentParseError,
-  collectComponents,
-  collectSvelteFilePaths,
-  createExtendsTargetValidator,
-  createGlobMergeState,
-  type GenerateBundleResult,
-  mergeGlobbedComponents,
-  type ProcessComponentOptions,
-  processComponent,
-  readFileMap,
-  reportParseErrors,
-  syncCrossFileResults,
-  validateModuleReExportNames,
+import type {
+  ComponentDocApi,
+  ComponentDocs,
+  ComponentParseError,
+  GenerateBundleResult,
+  ResolveComponentFilePath,
 } from "./bundle";
+import { createExtendsTargetValidator, validateModuleReExportNames } from "./bundle-validation";
+import type { ComponentParseResult } from "./ComponentParser";
+import {
+  collectComponents,
+  componentModuleName,
+  createGlobMergeState,
+  mergeGlobbedComponents,
+} from "./collect-components";
 import { resolveCrossFileCandidates } from "./cross-file";
 import { buildReverseDeps, expandAffected } from "./dependency-graph";
-import { dedupeDiagnostics, type SveldDiagnostic } from "./diagnostics";
+import { appendDiagnostics, dedupeDiagnostics, type SveldDiagnostic } from "./diagnostics";
 import { resetDirectoryListings } from "./fs-listing";
 import { type EntryExports, parseEntryExports } from "./parse-entry-exports";
 import type { ParsedExports } from "./parse-exports";
-import { loadParserStack } from "./parser-stack";
-import { SVELTE_EXT_REGEX } from "./path";
+import { getParserStack, loadParserStack } from "./parser-stack";
+import { hasSvelteExtension, normalizeSeparators, SVELTE_EXT_REGEX } from "./path";
+import { readFileMap, reportParseErrors } from "./project";
+
+/** Options controlling how a single component parse failure is handled. */
+interface ProcessComponentOptions {
+  /** Rethrow on parse failure instead of reporting it via `onParseError`. */
+  failFast?: boolean;
+  /** Invoked with a diagnostic when a component fails to parse (and `failFast` is off). */
+  onParseError?: (error: ComponentParseError) => void;
+  /**
+   * In-run memo of parsed components, keyed by resolved file path and shared
+   * across the exported and all-components passes so a component that
+   * appears in both is parsed once and both maps share its props. Also where
+   * the cross-file pass finds each component's pending candidates.
+   */
+  memo?: Map<string, ComponentParseResult>;
+}
+
+/**
+ * Parses a single component entry into its documentation API.
+ *
+ * Reads the component contents from `fileMap` and parses it to extract
+ * component metadata (a top-level `<style>` block, if present, is masked out
+ * of the text scanned for JSDoc comments inside `ComponentParser`, without a
+ * separate parse). Returns `null` for non-Svelte entries or files that could
+ * not be read.
+ *
+ * A component that throws while parsing is captured via `options.onParseError`
+ * (and `null` is returned) so callers can continue with the rest, unless
+ * `options.failFast` is set, in which case the error is rethrown.
+ *
+ * @param entry - Export entry tuple `[exportName, exportInfo]`
+ * @param entries - All sibling entries, used to resolve the module name
+ * @param fileMap - Map of resolved file paths to their contents
+ * @param resolveComponentFilePath - Resolves a component `source` to its absolute path
+ * @param options - Parse-failure handling (`failFast` / `onParseError`)
+ */
+function processComponent(
+  [exportName, entry]: [string, ParsedExports[string]],
+  entries: Array<[string, ParsedExports[string]]>,
+  fileMap: Map<string, string | null>,
+  resolveComponentFilePath: ResolveComponentFilePath,
+  options: ProcessComponentOptions = {},
+): ComponentDocApi | null {
+  const filePath = entry.source;
+
+  const moduleName = componentModuleName(exportName, filePath, entries.length);
+
+  if (hasSvelteExtension(filePath)) {
+    const resolvedPath = resolveComponentFilePath(filePath);
+    const source = fileMap.get(resolvedPath);
+
+    if (source === null || source === undefined) {
+      /**
+       * File was not found or failed to read, skip this component.
+       * This can happen if the file doesn't exist or if there was an error
+       * reading it (already logged as a warning).
+       */
+      return null;
+    }
+
+    const normalizedFilePath = normalizeSeparators(filePath);
+
+    const memoized = options.memo?.get(resolvedPath);
+
+    let parsed: ComponentParseResult;
+    if (memoized === undefined) {
+      const parser = new (getParserStack().ComponentParser)();
+      try {
+        parsed = parser.parse(source, {
+          moduleName,
+          filePath: normalizedFilePath,
+        });
+      } catch (error) {
+        /**
+         * Capture the failure as a diagnostic so the remaining components can
+         * still be processed. When `failFast` is enabled we rethrow to restore
+         * the abort-on-first-error behavior.
+         */
+        if (options.failFast) {
+          throw error;
+        }
+
+        const message = error instanceof Error ? error.message : String(error);
+        const stack = error instanceof Error ? error.stack : undefined;
+        options.onParseError?.({
+          filePath: normalizedFilePath,
+          moduleName,
+          message,
+          stack,
+        });
+        return null;
+      }
+    } else {
+      parsed = memoized;
+    }
+    // Both maps must share one parse: the cross-file passes resolve props in place.
+    options.memo?.set(resolvedPath, parsed);
+
+    return {
+      moduleName,
+      filePath: normalizedFilePath,
+      ...parsed.component,
+    };
+  }
+
+  return null;
+}
+
+function collectSvelteFilePaths(
+  entriesList: Array<Array<[string, ParsedExports[string]]>>,
+  resolveComponentFilePath: ResolveComponentFilePath,
+): Set<string> {
+  const uniqueFilePaths = new Set<string>();
+  for (const entries of entriesList) {
+    for (const [, entry] of entries) {
+      if (hasSvelteExtension(entry.source)) {
+        uniqueFilePaths.add(resolveComponentFilePath(entry.source));
+      }
+    }
+  }
+  return uniqueFilePaths;
+}
+
+/**
+ * The cross-file passes and the example and bundle-wide checks run on
+ * `allComponentsForTypes` and reassign `contexts`, `events`, and
+ * `diagnostics` there. Exported components are separate
+ * shallow copies of the same parse, so JSON and Markdown would otherwise
+ * miss a context whose key was imported, or an event a helper dispatches.
+ */
+function syncCrossFileResults(components: ComponentDocs, allComponentsForTypes: ComponentDocs): void {
+  for (const component of components.values()) {
+    const resolved = allComponentsForTypes.get(component.filePath);
+    if (!resolved || resolved === component) continue;
+    component.contexts = resolved.contexts;
+    component.events = resolved.events;
+    component.diagnostics = resolved.diagnostics;
+  }
+}
 
 /** Result of an incremental update. */
 interface SveldBundleUpdate {
@@ -184,7 +320,12 @@ export async function createSveldBundle(input: string, glob: boolean, documentEx
   }
 
   // Rebuilt after every update so `@extends` edges stay current.
-  let reverseDeps = buildReverseDeps(allComponentsForTypes, resolveComponentFilePath);
+  let reverseDeps = buildReverseDeps(
+    Array.from(allComponentsForTypes.values(), (component) => [
+      resolveComponentFilePath(component.filePath),
+      component,
+    ]),
+  );
 
   /**
    * Re-parses only the entries whose resolved source is in `affected`, writing
@@ -324,7 +465,12 @@ export async function createSveldBundle(input: string, glob: boolean, documentEx
     }
 
     // Refresh the dependency graph after re-parsing.
-    reverseDeps = buildReverseDeps(allComponentsForTypes, resolveComponentFilePath);
+    reverseDeps = buildReverseDeps(
+      Array.from(allComponentsForTypes.values(), (component) => [
+        resolveComponentFilePath(component.filePath),
+        component,
+      ]),
+    );
 
     await resolveCrossFile(
       Array.from(allComponentsForTypes.values()).filter((component) =>
