@@ -3,11 +3,10 @@ import type { ComponentDocApi } from "../src/plugin";
 import { type WriteTsDefinitionOptions, writeTsDefinition } from "../src/writer/writer-ts-definitions-core";
 
 /**
- * Smoke tests for the option-matrix harness. CI runs the full matrix over
- * every fixture with `bun run test:types-matrix`; these only cover a few
- * fixtures so the harness itself can't silently stop detecting errors.
+ * Tests for the option-matrix harness itself. CI runs the full matrix over
+ * every fixture with `bun run test:types-matrix`; these check that the
+ * harness covers every option and can't silently stop detecting errors.
  */
-const SAMPLE_FIXTURES = ["typedef-description", "rest-props-multiple", "module-script-types", "context-module"];
 
 test("the matrix sets a non-default value for every emit option", () => {
   const set = (key: keyof WriteTsDefinitionOptions) =>
@@ -22,13 +21,6 @@ test("the matrix sets a non-default value for every emit option", () => {
   expect(set("comments")).toContain("descriptions");
   expect(set("propsDeclaration")).toContain("interface");
 });
-
-test("sample fixtures typecheck under every option set", async () => {
-  const result = await runOptionMatrix({ fixtures: SAMPLE_FIXTURES });
-
-  expect(result.sets.map((set) => set.name)).toEqual(OPTION_MATRIX.map((set) => set.name));
-  expect(result.failures).toEqual([]);
-}, 30_000); // Spawns one `tsc` per option set.
 
 test("fails only the option sets whose output doesn't typecheck", async () => {
   // Break the output only under `propsDeclaration: "interface"`, the way a
