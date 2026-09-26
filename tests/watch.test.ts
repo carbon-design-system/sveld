@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, relative, resolve } from "node:path";
 import type { ComponentDocApi, ComponentDocs } from "../src/bundle";
@@ -565,6 +565,53 @@ describe("pluginSveld watch option", () => {
     const plugin = pluginSveld({ watch: true });
     // Should not throw when no bundle exists yet (e.g. invalid entry).
     expect(() => plugin.handleHotUpdate?.({ file: "/tmp/Anything.svelte" })).not.toThrow();
+  });
+
+  test("a hot update regenerates the output, and one failed flush doesn't stop the next", async () => {
+    const dir = mkdtempSync(join(process.cwd(), ".tmp-sveld-watch-hot-"));
+    const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const buttonPath = join(dir, "Button.svelte");
+      writeFileSync(buttonPath, BUTTON);
+      writeFileSync(join(dir, "index.js"), 'export { default as Button } from "./Button.svelte";\n');
+      const outDir = join(dir, "types");
+      const dtsPath = join(outDir, "Button.svelte.d.ts");
+      const plugin = pluginSveld({
+        entry: relative(process.cwd(), join(dir, "index.js")),
+        watch: true,
+        quiet: true,
+        typesOptions: { outDir },
+      });
+
+      await plugin.buildStart();
+      expect(readFileSync(dtsPath, "utf8")).toContain("primary?: boolean");
+
+      /** Waits out the debounce and the serial flush queue. */
+      const waitFor = async (condition: () => boolean) => {
+        for (let attempt = 0; attempt < 100 && !condition(); attempt++) {
+          // biome-ignore lint/performance/noAwaitInLoops: polling; each check must see the previous wait.
+          await Bun.sleep(20);
+        }
+        expect(condition()).toBe(true);
+      };
+
+      // A flush whose write fails (the output dir is now a file) is logged, not thrown.
+      rmSync(outDir, { recursive: true, force: true });
+      writeFileSync(outDir, "");
+      writeFileSync(buttonPath, BUTTON.replace("export let primary = false;", "export let danger = false;"));
+      plugin.handleHotUpdate?.({ file: buttonPath });
+      await waitFor(() =>
+        errorSpy.mock.calls.some((call) => call[0] === "sveld: failed to regenerate types in watch mode:"),
+      );
+
+      rmSync(outDir, { force: true });
+      writeFileSync(buttonPath, BUTTON.replace("export let primary = false;", 'export let kind = "a";'));
+      plugin.handleHotUpdate?.({ file: buttonPath });
+      await waitFor(() => existsSync(dtsPath) && readFileSync(dtsPath, "utf8").includes("kind?: string"));
+    } finally {
+      errorSpy.mockRestore();
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   test("a bad config does not crash buildStart; it logs and leaves the dev server running", async () => {
