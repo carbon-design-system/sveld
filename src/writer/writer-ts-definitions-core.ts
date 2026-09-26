@@ -393,10 +393,7 @@ function genPropDef(
     canonicalPropNames?: Set<string>;
     canonicalPropsType?: string;
   },
-  emit: {
-    export: boolean;
-    propsDeclaration?: WriteTsDefinitionOptions["propsDeclaration"];
-  } = { export: true },
+  emit: { export: boolean } = { export: true },
   commentLevel: CommentLevel = "all",
 ) {
   const exportKw = emit.export ? "export " : "";
@@ -657,14 +654,7 @@ function genPropDef(
     ${exportKw}type ${props_name}${genericsName} = ${def.extends === undefined ? "" : `Omit<${def.extends.interface}, keyof $Props${genericsNameRef}> & `}$Props${genericsNameRef};
   `;
     } else if (def.extends === undefined) {
-      prop_def =
-        emit.propsDeclaration === "interface" && props.trim() !== ""
-          ? `
-    ${exportKw}interface ${props_name}${genericsName} {
-      ${props}
-    }
-  `
-          : `
+      prop_def = `
     ${exportKw}type ${props_name}${genericsName} = {
       ${props}
     };
@@ -1262,13 +1252,6 @@ export interface WriteTsDefinitionOptions {
    */
   comments?: "all" | "descriptions" | "none";
   /**
-   * `"type"` (default) emits the props type as a type alias.
-   * `"interface"` emits `interface <Name>Props { ... }` when the props are a
-   * plain object (no `@restProps`, no `@extendProps`, no whole-object
-   * `$props()` type); other shapes are intersections and stay aliases.
-   */
-  propsDeclaration?: "type" | "interface";
-  /**
    * Copies `type`/`interface` declarations imported from a relative source (or a
    * tsconfig/jsconfig path alias) directly into the `.d.ts`, dropping the import. `"local"`
    * follows relative sources, path aliases, re-exports, and same-file dependencies; bare package
@@ -1357,7 +1340,6 @@ export function pickEmitOptions(options: WriteTsDefinitionOptions): WriteTsDefin
     exportTypes: options.exportTypes,
     forceExportProps: options.forceExportProps,
     comments: options.comments,
-    propsDeclaration: options.propsDeclaration,
     inline: options.inline,
   };
 }
@@ -1373,7 +1355,6 @@ const EMIT_OPTION_DEFAULTS: Record<string, unknown> = {
   exportTypes: true,
   forceExportProps: false,
   comments: "all",
-  propsDeclaration: "type",
   inline: false,
 };
 
@@ -1424,7 +1405,7 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
       canonicalPropNames: new Set(typeScriptMetadata?.canonicalPropNames ?? []),
       canonicalPropsType: typeScriptMetadata?.canonicalPropsType,
     },
-    { export: exportFlags.props, propsDeclaration: options?.propsDeclaration },
+    { export: exportFlags.props },
     commentLevel,
   );
 

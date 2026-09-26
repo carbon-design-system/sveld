@@ -212,13 +212,6 @@ describe("parseCliOptions", () => {
     });
   });
 
-  test("--types-props-declaration=interface sets typesOptions.propsDeclaration", () => {
-    expect(parseCliOptions(["--types-props-declaration=interface"])).toEqual({
-      kind: "options",
-      options: { typesOptions: { propsDeclaration: "interface" } },
-    });
-  });
-
   test("--types-index-types enables typesOptions.indexTypes", () => {
     expect(parseCliOptions(["--types-index-types"])).toEqual({
       kind: "options",
@@ -334,13 +327,6 @@ describe("parseCliOptions", () => {
     });
   });
 
-  test("--types-props-declaration accepts its value as the next argument", () => {
-    expect(parseCliOptions(["--types-props-declaration", "interface"])).toEqual({
-      kind: "options",
-      options: { typesOptions: { propsDeclaration: "interface" } },
-    });
-  });
-
   test("space-separated and = forms combine across multiple flags", () => {
     expect(parseCliOptions(["--entry", "src/index.js", "--json", "--cache=.cache/sveld.json"])).toEqual({
       kind: "options",
@@ -349,12 +335,10 @@ describe("parseCliOptions", () => {
   });
 
   test("multiple flags that each set a typesOptions key merge into one object instead of clobbering each other", () => {
-    expect(
-      parseCliOptions(["--types-export=none", "--types-comments=none", "--types-props-declaration=interface"]),
-    ).toEqual({
+    expect(parseCliOptions(["--types-format=component", "--types-inline=local", "--types-index-types"])).toEqual({
       kind: "options",
       options: {
-        typesOptions: { exportTypes: "none", comments: "none", propsDeclaration: "interface" },
+        typesOptions: { format: "component", inline: "local", indexTypes: true },
       },
     });
   });
@@ -391,15 +375,6 @@ describe("parseCliOptions", () => {
     expect(parseCliOptions(["--types-inline", "--json"])).toEqual({
       kind: "usage-error",
       message: "sveld: --types-inline requires a value (pass --types-inline=<value> or --types-inline <value>).",
-    });
-  });
-
-  test("--types-props-declaration followed by another flag falls back to a usage error naming the flag", () => {
-    expect(parseCliOptions(["--types-props-declaration", "--json"])).toEqual({
-      kind: "usage-error",
-      message:
-        "sveld: --types-props-declaration requires a value (pass --types-props-declaration=<value> or " +
-        "--types-props-declaration <value>).",
     });
   });
 
@@ -1038,18 +1013,6 @@ describe("cli() --types-* usage errors", () => {
     expect(process.exitCode).toBe(1);
     expect(errorSpy).toHaveBeenCalledWith(
       expect.stringContaining('--types-inline must be "local" or "all"; got "oops"'),
-    );
-    expect(existsSync(join(dir, "types"))).toBe(false);
-  });
-
-  test("--types-props-declaration=oops errors and generates nothing", async () => {
-    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types-props-declaration=oops"];
-
-    await cli(process);
-
-    expect(process.exitCode).toBe(1);
-    expect(errorSpy).toHaveBeenCalledWith(
-      expect.stringContaining('--types-props-declaration must be "type" or "interface"; got "oops"'),
     );
     expect(existsSync(join(dir, "types"))).toBe(false);
   });

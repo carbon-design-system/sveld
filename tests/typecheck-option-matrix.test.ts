@@ -18,21 +18,18 @@ test("the matrix sets a non-default value for every emit option", () => {
   expect(set("exportTypes").some((value) => typeof value === "object")).toBe(true);
   expect(set("comments")).toContain("none");
   expect(set("comments")).toContain("descriptions");
-  expect(set("propsDeclaration")).toContain("interface");
 });
 
 test("fails only the option sets whose output doesn't typecheck", async () => {
-  // Break the output only under `propsDeclaration: "interface"`, the way a
-  // writer bug confined to one code path would.
+  // Break the output only under `format: "component"`, the way a writer bug
+  // confined to one code path would.
   const write = (component: ComponentDocApi, options: WriteTsDefinitionOptions) => {
     const output = writeTsDefinition(component, options);
-    return options.propsDeclaration === "interface" ? `${output}\ndeclare const broken: MissingType;\n` : output;
+    return options.format === "component" ? `${output}\ndeclare const broken: MissingType;\n` : output;
   };
   const result = await runOptionMatrix({ fixtures: ["typedef-description"], write });
 
-  const broken = OPTION_MATRIX.filter(({ options }) => options.propsDeclaration === "interface").map(
-    ({ name }) => name,
-  );
+  const broken = OPTION_MATRIX.filter(({ options }) => options.format === "component").map(({ name }) => name);
   expect(broken.length).toBeGreaterThan(0);
   expect(result.failures.map((failure) => failure.name)).toEqual(broken);
   for (const failure of result.failures) {
