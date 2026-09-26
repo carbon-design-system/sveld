@@ -2025,6 +2025,21 @@ For `lang="ts"` components, prefer native TypeScript annotations when you alread
 
 For runes components with multiple destructured props, put JSDoc on the property you want to document. A declaration-level block is a fallback when the destructure exposes a single public prop.
 
+A declaration-level `@type` naming an object `@typedef` (or an inline `{ ... }` type) types the whole `$props()` object instead, the form Svelte's docs recommend for JavaScript components. Each prop takes its type, optionality, and description from the matching member:
+
+```svelte
+<script>
+  /**
+   * @typedef {object} Props
+   * @property {string} title Card title
+   * @property {boolean} [elevated=false] Raise the card
+   */
+
+  /** @type {Props} */
+  let { title, elevated = false } = $props();
+</script>
+```
+
 <details>
 <summary>Svelte 3/4 (legacy) syntax</summary>
 
