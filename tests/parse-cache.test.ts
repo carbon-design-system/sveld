@@ -401,7 +401,6 @@ describe("generated .d.ts text cache", () => {
         before: { exportTypes: false },
         after: { exportTypes: false, forceExportProps: true },
       },
-      { label: "typeNames", after: { typeNames: { props: "I{name}Props" } } },
       { label: "comments", after: { comments: "none" } },
       { label: "propsDeclaration", after: { propsDeclaration: "interface" } },
     ];

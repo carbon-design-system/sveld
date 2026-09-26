@@ -24,12 +24,7 @@ import { normalizeSeparators } from "./path";
 import { resolveAliasLookup } from "./resolve-alias";
 import type { BareTypeSession } from "./resolve-types";
 import { parseProgram } from "./template-parse/acorn-bridge";
-import {
-  componentIdentifier,
-  exportsTypeName,
-  propsTypeName,
-  type WriteTsDefinitionOptions,
-} from "./writer/writer-ts-definitions-core";
+import { componentIdentifier, exportsTypeName, propsTypeName } from "./writer/writer-ts-definitions-core";
 
 /** Extensions probed, in order, for a resolved specifier with no extension of its own. */
 const RESOLVE_EXTENSIONS = [".ts", ".d.ts", ".mts", ".cts"];
@@ -891,10 +886,7 @@ async function processStatement(ctx: InlineContext, read: StatementRead): Promis
  * one of these. The names its kept imports bind are added per statement (see
  * `inlineLocalTypeImports`).
  */
-function collectComponentReservedNames(
-  component: ComponentDocApi,
-  typeNames: WriteTsDefinitionOptions["typeNames"] | undefined,
-): Set<string> {
+function collectComponentReservedNames(component: ComponentDocApi): Set<string> {
   const names = new Set<string>();
   for (const typedef of component.typedefs) names.add(typedef.name);
   for (const context of component.contexts ?? []) names.add(context.typeName);
@@ -905,8 +897,8 @@ function collectComponentReservedNames(
     if (match) names.add(match[1]);
   }
 
-  names.add(propsTypeName(component.moduleName, typeNames));
-  names.add(exportsTypeName(component.moduleName, typeNames));
+  names.add(propsTypeName(component.moduleName));
+  names.add(exportsTypeName(component.moduleName));
 
   // What the writer itself declares or imports around the copied declarations: the component
   // (`$$Component` stands in for an anonymous default) and its generic-component interface,
@@ -948,7 +940,6 @@ const WRITER_DECLARED_NAMES = [
 export async function inlineLocalTypeImports(
   components: ComponentDocs,
   resolveComponentFilePath: ResolveComponentFilePath,
-  typeNames?: WriteTsDefinitionOptions["typeNames"],
   bareSession?: BareTypeSession,
 ): Promise<Map<string, InlinedTypes>> {
   const result = new Map<string, InlinedTypes>();
@@ -966,7 +957,7 @@ export async function inlineLocalTypeImports(
         ? planBareOverlay(componentAbsPath, component.moduleName, typeImportStatements)
         : null;
       const reads = typeImportStatements.map((statement) => readStatement(statement, componentAbsPath, bareSession));
-      const baseReservedNames = collectComponentReservedNames(component, typeNames);
+      const baseReservedNames = collectComponentReservedNames(component);
       // An import that stays in the `.d.ts` keeps its names: reserve those known up front.
       for (const read of reads) {
         if (read.status !== "attempt") for (const name of read.localNames) baseReservedNames.add(name);

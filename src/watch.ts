@@ -82,15 +82,12 @@ function addReverseEdge(map: Map<string, Set<string>>, key: string, value: strin
  *   `generateBundle` path, watch mode creates that checker eagerly here (not gated on whether a
  *   bare import exists yet), failing the same way `resolveTypes` does if it can't start, since a
  *   later edit could add a bare import at any point in a long-lived session.
- * @param typesTypeNames - Mirrors `typesOptions.typeNames`, so inlining's collision check against
- *   the component's own `Props`/`Exports` type names uses the actual templated names.
  */
 export async function createSveldBundle(
   input: string,
   glob: boolean,
   documentExports = false,
   typesInline?: WriteTsDefinitionOptions["inline"],
-  typesTypeNames?: WriteTsDefinitionOptions["typeNames"],
 ): Promise<SveldBundle> {
   const inputIsFile = lstatSync(input).isFile();
   // Watched so editing the barrel (adding/removing/renaming an export) is
@@ -176,8 +173,8 @@ export async function createSveldBundle(
       const componentPath = resolveComponentFilePath(filePath);
       for (const module of modules) addReverseEdge(crossFileDepsReverse, module, componentPath);
     }
-    validateExtendsTargets(allComponentsForTypes, resolveComponentFilePath, typesTypeNames, scope);
-    validateModuleReExportNames(scope, typesTypeNames);
+    validateExtendsTargets(allComponentsForTypes, resolveComponentFilePath, scope);
+    validateModuleReExportNames(scope);
     syncCrossFileResults(components, allComponentsForTypes);
   };
 
@@ -231,7 +228,7 @@ export async function createSveldBundle(
         bareSession = await bareResolver.openBareTypeSession(bareOverlay);
       }
 
-      const fresh = await inlineLocalTypeImports(scope, resolveComponentFilePath, typesTypeNames, bareSession);
+      const fresh = await inlineLocalTypeImports(scope, resolveComponentFilePath, bareSession);
       for (const [filePath, inlined] of fresh) {
         inlinedTypesByFilePath.set(filePath, inlined);
         for (const dependency of inlined.dependencies) addReverseEdge(inlineDepsReverse, dependency, filePath);

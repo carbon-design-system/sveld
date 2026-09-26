@@ -17,12 +17,7 @@ import writeTsDefinitions, {
   getTypeDefs,
   writeTsDefinition,
 } from "../src/writer/writer-ts-definitions";
-import {
-  exportsTypeName,
-  pickEmitOptions,
-  propsTypeName,
-  serializeEmitOptions,
-} from "../src/writer/writer-ts-definitions-core";
+import { pickEmitOptions, serializeEmitOptions } from "../src/writer/writer-ts-definitions-core";
 import { mockComponentDocApi, mockParsedExport, mockParsedExports } from "./test-brands";
 
 const DEFAULT_SLOT_SNIPPET_PROP_REGEX = /default\?\s*:\s*\(\)\s*=>\s*void/;
@@ -1308,75 +1303,6 @@ describe("typesOptions.exportTypes", () => {
   });
 });
 
-describe("typesOptions.typeNames", () => {
-  test("propsTypeName defaults to <Name>Props", () => {
-    expect(propsTypeName("Button", undefined)).toEqual("ButtonProps");
-  });
-
-  test("propsTypeName substitutes {name} in a custom template", () => {
-    expect(propsTypeName("Button", { props: "I{name}Props" })).toEqual("IButtonProps");
-  });
-
-  test("exportsTypeName defaults to <Name>Exports", () => {
-    expect(exportsTypeName("Button", undefined)).toEqual("ButtonExports");
-  });
-
-  test("exportsTypeName substitutes {name} in a custom template", () => {
-    expect(exportsTypeName("Button", { exports: "{name}Api" })).toEqual("ButtonApi");
-  });
-
-  test("propsTypeName throws when the template omits {name}", () => {
-    expect(() => propsTypeName("Button", { props: "FixedProps" })).toThrow(
-      'sveld: typesOptions.typeNames.props must contain "{name}" and produce a valid identifier; got "FixedProps".',
-    );
-  });
-
-  test("propsTypeName throws when the substituted result is not a valid identifier", () => {
-    expect(() => propsTypeName("Button", { props: "{name}-Props" })).toThrow(
-      'sveld: typesOptions.typeNames.props must contain "{name}" and produce a valid identifier; got "{name}-Props".',
-    );
-  });
-
-  test("rejects props and exports templates that produce the same name", () => {
-    for (const typeNames of [{ props: "{name}T", exports: "{name}T" }, { props: "{name}Exports" }]) {
-      expect(() => propsTypeName("Button", typeNames)).toThrow(
-        "typesOptions.typeNames.props and typesOptions.typeNames.exports both produce",
-      );
-      expect(() => exportsTypeName("Button", typeNames)).toThrow("they must differ");
-    }
-  });
-
-  test.each([
-    ["props", { props: "{name}" }, "Button"],
-    ["props", { props: "{name}Component" }, "ButtonComponent"],
-    ["exports", { exports: "{name}" }, "Button"],
-    ["exports", { exports: "{name}Component" }, "ButtonComponent"],
-  ] as const)("rejects a %s template %o that produces the component's own %s", (kind, typeNames, name) => {
-    const resolve = kind === "props" ? propsTypeName : exportsTypeName;
-    expect(() => resolve("Button", typeNames)).toThrow(
-      `sveld: typesOptions.typeNames.${kind} produces "${name}" for component "Button", which the .d.ts already declares for the component itself; use a different template.`,
-    );
-  });
-
-  test('writeTsDefinition applies typeNames templates for "component" format', () => {
-    const component_api = mockComponentDocApi("Button", "./src/Button.svelte");
-
-    const output = writeTsDefinition(component_api, {
-      format: "component",
-      typeNames: { props: "I{name}Props", exports: "{name}Api" },
-    });
-
-    expect(output).toContain("export type IButtonProps");
-    expect(output).toContain(
-      `declare const Button: Component<
-  IButtonProps,
-  ButtonApi,
-  ""
->;`,
-    );
-  });
-});
-
 describe("serializeEmitOptions", () => {
   test(`undefined, {}, and { format: "class" } all produce the same key`, () => {
     const undefinedKey = serializeEmitOptions(undefined);
@@ -1389,10 +1315,6 @@ describe("serializeEmitOptions", () => {
 
   test("a different format produces a different key", () => {
     expect(serializeEmitOptions({ format: "component" })).not.toEqual(serializeEmitOptions({ format: "class" }));
-  });
-
-  test("a different typeNames template produces a different key", () => {
-    expect(serializeEmitOptions({ typeNames: { props: "I{name}Props" } })).not.toEqual(serializeEmitOptions({}));
   });
 
   // Every other field the cache key must fold in, so a future option added to
@@ -1416,7 +1338,6 @@ describe("pickEmitOptions", () => {
       format: "component",
       exportTypes: false,
       forceExportProps: true,
-      typeNames: { props: "I{name}Props" },
       comments: "none",
       propsDeclaration: "interface",
       inline: "local",
@@ -1433,7 +1354,6 @@ describe("pickEmitOptions", () => {
       format: "component",
       exportTypes: false,
       forceExportProps: true,
-      typeNames: { props: "I{name}Props" },
       comments: "none",
       propsDeclaration: "interface",
       inline: "local",
