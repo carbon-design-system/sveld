@@ -212,6 +212,8 @@ export interface RunesPropTypeMetadata {
   optional: boolean;
   source?: SourceRange;
   type: string;
+  /** JSDoc on the type's member (`interface Props { /** ... *\/ label: string }`). */
+  jsdoc?: ReturnType<typeof processNodeJSDoc>;
 }
 
 export interface RunesPropsDeclarationMetadata {
