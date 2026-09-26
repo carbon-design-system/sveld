@@ -143,6 +143,16 @@ for (const dir of dirs) {
         hasError = true;
       }
     }
+
+    // Consumer components under `test/` checked against the generated types,
+    // unless the project's own script already ran svelte-check.
+    if (pkg.scripts?.["svelte-check"] && !pkg.scripts[script].includes("svelte-check")) {
+      const svelteCheck = await $`cd ${dir} && bun run svelte-check`.nothrow();
+      if (svelteCheck.exitCode !== 0) {
+        console.error(`svelte-check failed in ${dir}`);
+        hasError = true;
+      }
+    }
   } catch (error) {
     console.error(`Error in ${dir}:`, error);
     hasError = true;
