@@ -1,5 +1,11 @@
 import type { Node } from "estree";
-import type { ComponentPropBinding, ComponentPropParam, DeprecatedValue, JsDocPassthroughTag } from "../model";
+import type {
+  ComponentPropBinding,
+  ComponentPropParam,
+  DeprecatedValue,
+  JsDocPassthroughTag,
+  NodeJsDoc,
+} from "../model";
 import type { JSDocComment, JSDocTag } from "./comment-parser";
 import { leadingWhitespaceLength, parseComments, togglesCodeFence } from "./comment-parser";
 import type { ParserContext } from "./context";
@@ -426,26 +432,7 @@ export function templateTagParameters(tag: JSDocTag, type: string): Array<{ name
   return parameters;
 }
 
-function processJSDocComment(
-  ctx: ParserContext,
-  leadingComments: unknown[],
-):
-  | {
-      type?: string;
-      params?: ComponentPropParam[];
-      returnType?: string;
-      description?: string;
-      binding?: ComponentPropBinding;
-      deprecated?: DeprecatedValue;
-      tags?: JsDocPassthroughTag[];
-      /** `@sveld-ignore <code>` codes from this comment; `""` means "ignore anything for this symbol". */
-      sveldIgnore?: string[];
-      /** True when `@ignore` or `@internal` is present; excludes this prop from every output. */
-      internal: boolean;
-      /** `@template` tags of a comment documenting a function, as its type parameter list (`T extends Foo, U`). */
-      typeParameters?: string;
-    }
-  | undefined {
+function processJSDocComment(ctx: ParserContext, leadingComments: unknown[]): NodeJsDoc | undefined {
   if (!leadingComments) return undefined;
 
   const jsdoc_comment = findJSDocComment(leadingComments);
