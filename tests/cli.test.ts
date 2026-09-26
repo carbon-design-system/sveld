@@ -267,6 +267,19 @@ describe("parseCliOptions", () => {
     });
   });
 
+  test("--config takes its path as --config=<path> or --config <path>", () => {
+    const expected = { kind: "options", options: { config: "configs/sveld.config.js" } };
+    expect(parseCliOptions(["--config=configs/sveld.config.js"])).toEqual(expected);
+    expect(parseCliOptions(["--config", "configs/sveld.config.js"])).toEqual(expected);
+  });
+
+  test("--config followed by another flag falls back to a usage error naming the flag", () => {
+    expect(parseCliOptions(["--config", "--json"])).toEqual({
+      kind: "usage-error",
+      message: "sveld: --config requires a value (pass --config=<value> or --config <value>).",
+    });
+  });
+
   test("--cache followed by another flag falls back to the default cache location", () => {
     expect(parseCliOptions(["--cache", "--json"])).toEqual({
       kind: "options",
@@ -418,6 +431,59 @@ describe("cli() config file errors", () => {
       .find((message: string) => message.startsWith("sveld: failed to load config file"));
     expect(printed).toBeDefined();
     expect(printed).not.toContain("    at ");
+  });
+});
+
+describe("cli() --config", () => {
+  let dir: string;
+  let previousCwd: string;
+  let previousArgv: string[];
+  let errorSpy: ReturnType<typeof jest.spyOn>;
+
+  beforeEach(() => {
+    previousCwd = process.cwd();
+    previousArgv = process.argv;
+    process.exitCode = 0;
+    dir = mkdtempSync(join(tmpdir(), "sveld-cli-config-flag-"));
+    process.chdir(dir);
+    mkdirSync(join(dir, "src"), { recursive: true });
+    mkdirSync(join(dir, "configs"), { recursive: true });
+    writeFileSync(join(dir, "src", "Button.svelte"), "<script></script>\n<button>Click</button>\n");
+    writeFileSync(join(dir, "src", "index.js"), 'export { default as Button } from "./Button.svelte";\n');
+    writeFileSync(
+      join(dir, "sveld.config.js"),
+      'export default { json: true, jsonOptions: { outFile: "root.json" } };\n',
+    );
+    writeFileSync(join(dir, "configs", "custom.config.js"), "export default { markdown: true };\n");
+    errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    process.chdir(previousCwd);
+    process.argv = previousArgv;
+    process.exitCode = 0;
+    rmSync(dir, { recursive: true, force: true });
+    jest.restoreAllMocks();
+  });
+
+  test("loads the given file instead of the discovered sveld.config.js", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--config", "configs/custom.config.js", "--quiet"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(0);
+    expect(existsSync(join(dir, "COMPONENT_INDEX.md"))).toBe(true);
+    expect(existsSync(join(dir, "root.json"))).toBe(false);
+  });
+
+  test("a path that does not exist exits 1 without generating anything", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--config=configs/missing.config.js"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(1);
+    expect(errorSpy).toHaveBeenCalledWith('sveld: config file "configs/missing.config.js" does not exist.');
+    expect(existsSync(join(dir, "types"))).toBe(false);
   });
 });
 

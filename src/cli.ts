@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import pkg from "../package.json" with { type: "json" };
 import { asSvelteEntryPoint } from "./brands";
 import {
@@ -13,7 +13,14 @@ import {
 import { filterSpeculativeDiagnostics, formatDiagnosticsSummary, formatDiagnosticsSummaryJson } from "./diagnostics";
 import { resolveSvelteEntry } from "./get-svelte-entry";
 import { closestMatch } from "./levenshtein";
-import { loadConfig, mergeConfig, type SveldRuntimeOptions, validateOptions } from "./load-config";
+import {
+  loadConfig,
+  loadConfigFrom,
+  mergeConfig,
+  type SveldConfig,
+  type SveldRuntimeOptions,
+  validateOptions,
+} from "./load-config";
 import { setQuiet } from "./logger";
 import { normalizeSeparators } from "./path";
 import { generateBundle, toGenerateBundleOptions, writeOutput, writeStdout } from "./plugin";
@@ -45,11 +52,12 @@ Generate TypeScript definitions and component documentation for a Svelte
 library. With no flags, only TypeScript definitions are generated for the
 entry resolved from package.json#svelte.
 
---entry, --cache, --check, and --types-format accept their value as
---flag=value or as a separate --flag value argument.
+--entry, --config, --cache, --check, and --types-format accept their
+value as --flag=value or as a separate --flag value argument.
 
 Options:
   --entry=<path>        Entry point to uncompiled Svelte source (default: package.json "svelte" field)
+  --config=<path>       Load this config file (relative to the working directory) instead of discovering sveld.config.{js,mjs,ts}
   --glob                Analyze all *.svelte files instead of the entry barrel
   --types               Generate TypeScript definitions (default: true)
   --json                Generate component documentation in JSON format
@@ -100,6 +108,7 @@ const KNOWN_FLAGS = [
   "check-examples",
   "fail-fast",
   "entry",
+  "config",
   "cache",
   "check",
   "check-level",
@@ -134,10 +143,10 @@ const BOOLEAN_FLAGS = new Set([
 ]);
 
 /** Value-taking flags that also accept their value as the next argument. */
-const SPACE_SEPARATED_VALUE_FLAGS = new Set(["entry", "cache", "check", "types-format"]);
+const SPACE_SEPARATED_VALUE_FLAGS = new Set(["entry", "config", "cache", "check", "types-format"]);
 
 /** Of those, the flags that error (rather than falling back to a bare default) when no value is given. */
-const REQUIRES_VALUE_FLAGS = new Set(["entry", "types-format"]);
+const REQUIRES_VALUE_FLAGS = new Set(["entry", "config", "types-format"]);
 
 /**
  * Closest known flag to an unrecognized raw flag name, or undefined if none
@@ -220,6 +229,8 @@ function parseCliFlagValue(flag: string, value: string | boolean, arg: string): 
       return { kind: "option", option: { failFast: value === true || value === "true" } };
     case "entry":
       return typeof value === "string" ? { kind: "option", option: { entry: value } } : { kind: "option", option: {} };
+    case "config":
+      return typeof value === "string" ? { kind: "option", option: { config: value } } : { kind: "option", option: {} };
     case "cache":
       // The cache is on by default; bare `--cache` re-affirms the default
       // location, `--cache=<path>` overrides it, and `--cache=false` disables it.
@@ -293,6 +304,19 @@ export function parseCliOptions(argv: string[]): CliParseResult {
 }
 
 /**
+ * Loads the config file named by `--config` (relative to the working
+ * directory), or discovers `sveld.config.{js,mjs,ts}` when it isn't set.
+ */
+async function loadCliConfig(configPath: SveldConfig["config"]): Promise<SveldConfig> {
+  if (typeof configPath !== "string") return loadConfig();
+  const resolved = resolve(configPath);
+  if (!existsSync(resolved)) {
+    throw new Error(`sveld: config file "${configPath}" does not exist.`);
+  }
+  return loadConfigFrom(resolved);
+}
+
+/**
  * CLI entry point: parse flags, load any config file, generate docs, write
  * outputs.
  *
@@ -339,9 +363,9 @@ export async function cli(process: NodeJS.Process) {
   }
 
   const cliOptions = parsed.options;
-  let fileConfig: Awaited<ReturnType<typeof loadConfig>>;
+  let fileConfig: SveldConfig;
   try {
-    fileConfig = await loadConfig();
+    fileConfig = await loadCliConfig(cliOptions.config);
   } catch (error) {
     // A config file that fails to load is the user's to fix, not a crash:
     // print the reason, not sveld's (minified) stack.
