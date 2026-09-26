@@ -1020,7 +1020,7 @@ Also available as `--types-index-types` on the CLI. Pass `--types-index-types=fa
 
 #### `markdownOptions.onAppend`
 
-`markdownOptions.onAppend` fires on every heading, quote, paragraph, divider, and raw block written to the Markdown document, and receives the block's `type`, the in-progress `WriterMarkdown` document, and the full component map. Use it to inject extra content, e.g. a summary line under the `h1` title.
+`markdownOptions.onAppend` fires on every heading, quote, paragraph, divider, and raw block written to the Markdown document, and receives the block's `type`, the in-progress `MarkdownDocument`, and the full component map. Use it to inject extra content, e.g. a summary line under the `h1` title.
 
 ```js
 import pkg from "./package.json" with { type: "json" };

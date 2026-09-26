@@ -4,16 +4,15 @@ import path from "node:path";
 import { asNormalizedPath } from "../src/brands";
 import ComponentParser from "../src/ComponentParser";
 import type { ComponentDocs } from "../src/plugin";
+import { type AppendType, MarkdownDocument } from "../src/writer/markdown-document";
 import { formatDescriptionWithTags, formatPropDescription } from "../src/writer/markdown-format-utils";
-import type { AppendType } from "../src/writer/WriterMarkdown";
-import WriterMarkdown from "../src/writer/WriterMarkdown";
 import writeMarkdown from "../src/writer/writer-markdown";
 import { writeMarkdownCore } from "../src/writer/writer-markdown-core";
 import { mockComponentDocApi } from "./test-brands";
 
-describe("WriterMarkdown", () => {
+describe("MarkdownDocument", () => {
   test("inserts table-of-contents headings verbatim, even ones that look like replacement patterns", () => {
-    const document = new WriterMarkdown({});
+    const document = new MarkdownDocument({});
     document.append("h1", "Index");
     document.append("h2", "Components").tableOfContents();
     document.append("h2", "Price $& Co");
@@ -26,7 +25,7 @@ describe("WriterMarkdown", () => {
   });
 
   test("does not scan for a table of contents when none was requested", () => {
-    const document = new WriterMarkdown({});
+    const document = new MarkdownDocument({});
     document.append("h1", "Index");
     document.append("h2", "Components");
     expect(document.end()).toBe("# Index\n\n## Components\n\n");
@@ -34,7 +33,7 @@ describe("WriterMarkdown", () => {
 
   test("basic functionality", () => {
     const types: AppendType[] = [];
-    const document = new WriterMarkdown({
+    const document = new MarkdownDocument({
       onAppend: (type) => types.push(type),
     });
 
@@ -52,7 +51,7 @@ describe("WriterMarkdown", () => {
   });
 
   test("heading levels and table of contents", () => {
-    const document = new WriterMarkdown({});
+    const document = new MarkdownDocument({});
 
     document.append("h1", "Main Title");
     document.append("h2", "Section 1");
@@ -65,7 +64,7 @@ describe("WriterMarkdown", () => {
   });
 
   test("quote formatting", () => {
-    const document = new WriterMarkdown({});
+    const document = new MarkdownDocument({});
 
     document.append("quote", "This is a quote");
     document.append("p", "This is a paragraph");
@@ -76,7 +75,7 @@ describe("WriterMarkdown", () => {
   });
 
   test("raw content and dividers", () => {
-    const document = new WriterMarkdown({});
+    const document = new MarkdownDocument({});
 
     document.append("raw", "No line break");
     document.append("raw", " after this.");
@@ -88,9 +87,9 @@ describe("WriterMarkdown", () => {
 
   test("onAppend callback receives correct arguments", () => {
     let lastType: AppendType | undefined;
-    let lastDocument: WriterMarkdown | undefined;
+    let lastDocument: MarkdownDocument | undefined;
 
-    const document = new WriterMarkdown({
+    const document = new MarkdownDocument({
       onAppend: (type, doc) => {
         lastType = type;
         lastDocument = doc;
@@ -531,7 +530,7 @@ describe("WriterMarkdown", () => {
   });
 
   test("TOC anchors match GitHub's heading slugger, including duplicate suffixes", () => {
-    const document = new WriterMarkdown({});
+    const document = new MarkdownDocument({});
     document.tableOfContents();
     document.append("h2", "Button (legacy) v2");
     document.append("h2", "Button (legacy) v2");

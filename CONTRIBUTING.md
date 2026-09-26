@@ -62,7 +62,7 @@ The pipeline, end to end:
 4. **Write output.** The `writer/` modules turn `ParsedComponent` into artifacts:
    - [`writer-ts-definitions.ts`](src/writer/writer-ts-definitions.ts) + [`writer-ts-definitions-core.ts`](src/writer/writer-ts-definitions-core.ts) → `.d.ts` extending `SvelteComponentTyped`.
    - [`writer-json.ts`](src/writer/writer-json.ts) → `COMPONENT_API.json` (carries a `schemaVersion`).
-   - [`writer-markdown.ts`](src/writer/writer-markdown.ts) and the `WriterMarkdown` / `MarkdownWriterBase` / `markdown-*-utils` modules → Markdown.
+   - [`writer-markdown.ts`](src/writer/writer-markdown.ts) and the `markdown-document` / `markdown-*-utils` modules → Markdown.
    - [`Writer.ts`](src/writer/Writer.ts) handles file I/O for emitted output; [`format-generated-ts.ts`](src/writer/format-generated-ts.ts) reindents generated `.d.ts` source (no external formatter dependency).
 
 Orchestration and entry surfaces:

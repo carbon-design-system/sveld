@@ -48,13 +48,15 @@ export {
   COMPONENT_API_SCHEMA_VERSION,
   type ComponentApiDocument,
 } from "./writer/document-model";
-export type { AppendType, MarkdownWriterBase, TocLine } from "./writer/MarkdownWriterBase";
-export { renderComponentsToMarkdown } from "./writer/markdown-render-utils";
 export {
+  type AppendType,
   BrowserWriterMarkdown,
-  type WriteMarkdownCoreOptions,
-  writeMarkdownCore,
-} from "./writer/writer-markdown-core";
+  MarkdownDocument,
+  type MarkdownWriterBase,
+  type TocLine,
+} from "./writer/markdown-document";
+export { renderComponentsToMarkdown } from "./writer/markdown-render-utils";
+export { type WriteMarkdownCoreOptions, writeMarkdownCore } from "./writer/writer-markdown-core";
 export {
   formatTsProps,
   getContextDefs,

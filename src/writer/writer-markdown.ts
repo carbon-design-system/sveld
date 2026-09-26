@@ -3,13 +3,13 @@ import { info } from "../logger";
 import type { EntryExports } from "../parse-entry-exports";
 import type { ComponentDocs } from "../plugin";
 import { buildComponentApiDocument } from "./document-model";
+import { type AppendType, MarkdownDocument } from "./markdown-document";
 import {
   renderComponentIndexToMarkdown,
   renderComponentsToMarkdown,
   renderComponentToMarkdown,
 } from "./markdown-render-utils";
 import Writer from "./Writer";
-import WriterMarkdown, { type AppendType } from "./WriterMarkdown";
 
 /** User-settable `markdownOptions`. */
 export interface MarkdownOptions {
@@ -30,7 +30,7 @@ export interface MarkdownOptions {
    * Called every time a heading, quote, paragraph, divider, or raw block is
    * appended to the document, to inject extra content.
    */
-  onAppend?: (type: AppendType, document: WriterMarkdown, components: ComponentDocs) => void;
+  onAppend?: (type: AppendType, document: MarkdownDocument, components: ComponentDocs) => void;
 }
 
 /** `MarkdownOptions` plus the fields the caller (`plugin.ts`) always injects. */
@@ -40,8 +40,8 @@ export interface WriteMarkdownOptions extends MarkdownOptions {
   entryExports?: EntryExports;
 }
 
-function newDocument(options: Pick<WriteMarkdownOptions, "onAppend">, components: ComponentDocs): WriterMarkdown {
-  return new WriterMarkdown({
+function newDocument(options: Pick<WriteMarkdownOptions, "onAppend">, components: ComponentDocs): MarkdownDocument {
+  return new MarkdownDocument({
     onAppend: (type, document) => {
       options.onAppend?.call(null, type, document, components);
     },

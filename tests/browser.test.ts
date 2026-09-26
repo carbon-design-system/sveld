@@ -2,10 +2,13 @@ import { readFileSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import {
   asNormalizedPath,
+  BrowserWriterMarkdown,
   buildComponentApiDocument,
   type ComponentDocApi,
   ComponentParser,
   finalizeWithoutCrossFileResolution,
+  MarkdownDocument,
+  type MarkdownWriterBase,
   writeMarkdownCore,
   writeTsDefinition,
 } from "../src/browser";
@@ -105,6 +108,14 @@ describe("sveld/browser", () => {
 
     const dts = writeTsDefinition(jsonDoc.components[0]);
     expect(dts).toContain("label");
+  });
+
+  test("keeps BrowserWriterMarkdown and MarkdownWriterBase as MarkdownDocument aliases", () => {
+    const document: MarkdownWriterBase = new BrowserWriterMarkdown({});
+    document.append("h1", "Index");
+
+    expect(document).toBeInstanceOf(MarkdownDocument);
+    expect(document.end()).toBe("# Index\n\n");
   });
 
   test("a single ComponentParser instance can be reused across parses", () => {

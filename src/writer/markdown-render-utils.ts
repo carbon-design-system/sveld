@@ -2,7 +2,7 @@ import type { ComponentProp } from "../ComponentParser";
 import type { EntryExports } from "../parse-entry-exports";
 import type { ComponentDocApi, ComponentDocs } from "../plugin";
 import { buildComponentApiDocument } from "./document-model";
-import type { AppendType } from "./MarkdownWriterBase";
+import type { AppendType } from "./markdown-document";
 import {
   CSS_PART_TABLE_HEADER,
   CSS_PROPERTY_TABLE_HEADER,
@@ -25,14 +25,17 @@ import {
 } from "./markdown-format-utils";
 import { getTypeDefs } from "./writer-ts-definitions-core";
 
-/** Minimal markdown writer surface used by JSON and browser renderers. */
-interface MarkdownDocument {
-  append(type: AppendType, raw?: string): MarkdownDocument;
-  tableOfContents(): MarkdownDocument;
+/**
+ * The part of `MarkdownDocument` the renderers call. `renderComponentsToMarkdown`
+ * is public, so it keeps accepting any object with this shape.
+ */
+interface MarkdownRenderTarget {
+  append(type: AppendType, raw?: string): MarkdownRenderTarget;
+  tableOfContents(): MarkdownRenderTarget;
 }
 
 export function renderComponentsToMarkdown(
-  document: MarkdownDocument,
+  document: MarkdownRenderTarget,
   components: ComponentDocs,
   entryExports?: EntryExports,
 ) {
@@ -59,7 +62,7 @@ export function renderComponentsToMarkdown(
  * themselves, which live in their own files.
  */
 export function renderComponentIndexToMarkdown(
-  document: MarkdownDocument,
+  document: MarkdownRenderTarget,
   components: ComponentDocApi[],
   entryExports?: EntryExports,
 ) {
@@ -76,7 +79,7 @@ export function renderComponentIndexToMarkdown(
   }
 }
 
-function renderExports(document: MarkdownDocument, entryExports: EntryExports) {
+function renderExports(document: MarkdownRenderTarget, entryExports: EntryExports) {
   document.append("h2", "Exports");
   document.append("raw", EXPORT_TABLE_HEADER);
 
@@ -108,7 +111,7 @@ function isAccessorProp(prop: ComponentProp): boolean {
   return prop.kind === "const" || prop.isFunctionDeclaration;
 }
 
-function renderModuleExports(document: MarkdownDocument, moduleExports: ComponentProp[]) {
+function renderModuleExports(document: MarkdownRenderTarget, moduleExports: ComponentProp[]) {
   document.append("h3", "Module exports");
   document.append("raw", EXPORT_TABLE_HEADER);
   for (const moduleExport of moduleExports) {
@@ -122,7 +125,7 @@ function renderModuleExports(document: MarkdownDocument, moduleExports: Componen
 }
 
 function renderSectionIfNotEmpty<TItem>(
-  document: MarkdownDocument,
+  document: MarkdownRenderTarget,
   items: TItem[],
   renderFn: () => void,
   emptyMessage?: string,
@@ -137,11 +140,11 @@ function renderSectionIfNotEmpty<TItem>(
 }
 
 /** Renders one component's section, for both the combined document and `markdownOptions.outDir`'s per-component files. */
-export function renderComponentToMarkdown(document: MarkdownDocument, component: ComponentDocApi) {
+export function renderComponentToMarkdown(document: MarkdownRenderTarget, component: ComponentDocApi) {
   renderComponent(document, component);
 }
 
-function renderComponent(document: MarkdownDocument, component: ComponentDocApi) {
+function renderComponent(document: MarkdownRenderTarget, component: ComponentDocApi) {
   document.append("h2", `\`${component.moduleName}\``);
 
   // Prop/slot types can reference the component's own type parameters (e.g. `Row`

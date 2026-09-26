@@ -1,10 +1,10 @@
 import type { EntryExports } from "../src/parse-entry-exports";
 import type { ComponentDocs } from "../src/plugin";
+import { MarkdownDocument } from "../src/writer/markdown-document";
 import { renderComponentsToMarkdown } from "../src/writer/markdown-render-utils";
-import { BrowserWriterMarkdown } from "../src/writer/writer-markdown-core";
 
 function render(components: ComponentDocs, entryExports?: EntryExports): string {
-  const document = new BrowserWriterMarkdown({});
+  const document = new MarkdownDocument({});
   renderComponentsToMarkdown(document, components, entryExports);
   return document.end();
 }
