@@ -629,7 +629,7 @@ Pass `--glob` with a directory as `--entry` (no barrel file) to document every `
 |------|---------|
 | `0` | Success |
 | `1` | Usage or configuration error (unknown flag, bad flag value, unresolvable entry, unresolved re-export or path alias) |
-| `2` | Generation failure (a component failed to parse under `--fail-fast`, or an unrecoverable pipeline error) |
+| `2` | Generation failure (a component failed to parse, or an unrecoverable pipeline error). Without `--fail-fast`, the other components' output is still written. |
 | `3` | Breaking API change detected by `--check` |
 | `4` | Diagnostics present under `--strict` |
 
@@ -751,7 +751,7 @@ const { diagnostics } = await sveld({
 
 `diagnostics` is always populated; printing is opt-in via `reportDiagnostics` or `strict` (see [Type inference diagnostics](#type-inference-diagnostics)). `errors` is always populated too: components that failed to parse, whether or not `failFast` is set.
 
-Pass `check: true` (or `check: "<path>"` for a custom snapshot location) to diff against a committed `COMPONENT_API.json`, the same way `--check` does on the CLI. The result lands on `SveldResult.check`. `sveld()` never touches `process.exitCode` itself; it returns a suggested `exitCode` (`0`, `3` for a breaking `check` result, or `4` for `strict` diagnostics — the same mapping the CLI uses, `3` winning over `4`) so you can assign it yourself:
+Pass `check: true` (or `check: "<path>"` for a custom snapshot location) to diff against a committed `COMPONENT_API.json`, the same way `--check` does on the CLI. The result lands on `SveldResult.check`. `sveld()` never touches `process.exitCode` itself; it returns a suggested `exitCode` (`0`, `2` when a component failed to parse, `3` for a breaking `check` result, or `4` for `strict` diagnostics; the same mapping the CLI uses, lowest code winning) so you can assign it yourself:
 
 ```js
 import { formatCheckReport } from "sveld";
@@ -967,7 +967,7 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
   - **`summary`** (string, optional, default: the `"description"` field from `package.json`): The `> <summary>` blockquote under the title.
 - **`config`** (boolean | string, optional, default: `false`): Load `sveld.config.{js,mjs,ts}` and merge it with these options; these options win when a key is set in both. `true` resolves the config from the Vite project root (or `process.cwd()` outside Vite); a string is an explicit path to the config file. The plugin warns about keys only the CLI and `sveld()` act on (`reportDiagnostics`, `strict`, `check`, `checkLevel`, `stdout`, `format`, `dryRun`). See [Config File](#config-file).
 - **`watch`** (boolean, optional, default: `false`): Regenerate output incrementally when relevant source changes during `vite dev` / `vite build --watch`. A reparse is triggered by: editing a component; editing the entry barrel itself, which adds/removes the corresponding component; or editing a non-`.svelte` file a component depends on via [`@extendProps`](#extendprops) / `@extends` or a typedef `import("./x")` reference. Only the affected components are re-parsed, rather than rebuilding every component. Overlapping regenerations are queued, never run concurrently. Without this option, the plugin only runs during `vite build`.
-- **`failFast`** (boolean, optional, default: `false`): Abort the entire run when a single component fails to parse. By default, parse failures are collected as diagnostics (and reported to `stderr`) so the remaining components still emit their output. Also available as the `--fail-fast` CLI flag.
+- **`failFast`** (boolean, optional, default: `false`): Abort the entire run when a single component fails to parse. By default, parse failures are reported to `stderr` and the remaining components still emit their output; the CLI then exits `2`. Also available as the `--fail-fast` CLI flag.
 - **`resolveTypes`** (boolean, optional, default: `false`): Load the TypeScript program to expand opaque imported whole-object `$props()` types into JSON. Also available as `--resolve-types` (`--resolveTypes` remains as a deprecated alias). See [Opt-in semantic resolution](#opt-in-semantic-resolution-resolvetypes).
 - **`cache`** (boolean | string, optional, default: `true`): Write parsed component output to disk and skip re-parsing unchanged files on later runs. On by default, writing to `node_modules/.cache/sveld/parse-cache.json`; a string sets a custom path; pass `false` to disable. Also available as `--cache` / `--cache=<path>` / `--cache=false`. See [Persistent parse cache](#persistent-parse-cache-cache).
 - **`checkExamples`** (`boolean | "syntax"`, optional, default: `false`): `true` runs plain TS/JS `@example` blocks through the TypeScript program (`example-compile-error` diagnostics) and `svelte`/`html` blocks through sveld's own template parser (`example-syntax-error` diagnostics). `"syntax"` runs only the markup path, so `typescript` is never loaded. Also available as `--check-examples` / `--check-examples=syntax` (`--checkExamples` remains as a deprecated alias). See [Compile-checked `@example` blocks](#compile-checked-example-blocks-checkexamples).

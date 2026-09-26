@@ -122,6 +122,16 @@ describe("sveld() exitCode and errors", () => {
     expect(result.exitCode).toBe(4);
   });
 
+  test("result.exitCode is 2 when a component fails to parse", async () => {
+    writeFileSync(join(absoluteDir, "Broken.svelte"), "<script>\n  export let label = ;\n</script>\n");
+    writeFileSync(join(absoluteDir, "index.js"), 'export { default as Broken } from "./Broken.svelte";\n');
+
+    const result = await sveld({ entry, types: false });
+
+    expect(result.errors).toHaveLength(1);
+    expect(result.exitCode).toBe(2);
+  });
+
   test("result.exitCode is 3 when --check finds a breaking change", async () => {
     writeFileSync(join(absoluteDir, "Button.svelte"), "<script></script>\n<button>Click</button>\n");
     writeFileSync(join(absoluteDir, "index.js"), 'export { default as Button } from "./Button.svelte";\n');
