@@ -381,32 +381,6 @@ describe("generateBundle validates @extends/@extendProps targets", () => {
 
     expect(component?.diagnostics?.some((d) => d.kind.startsWith("extend-props-"))).toBeFalsy();
   });
-
-  test("typesTypeNames.props: an @extendProps tag naming the templated interface produces no diagnostic", async () => {
-    writeFileSync(
-      path.join(dir, "Templated.svelte"),
-      `<script>\n  /** @extendProps {"./Base.svelte"} IBaseProps */\n</script>\n`,
-    );
-
-    const result = await generateBundle(dir, true, { typesTypeNames: { props: "I{name}Props" } });
-    const component = byModuleName(result.allComponentsForTypes, "Templated");
-
-    expect(component?.diagnostics?.some((d) => d.kind.startsWith("extend-props-"))).toBeFalsy();
-  });
-
-  test("typesTypeNames.props: an @extendProps tag naming the untemplated interface is flagged", async () => {
-    writeFileSync(
-      path.join(dir, "Untemplated.svelte"),
-      `<script>\n  /** @extendProps {"./Base.svelte"} BaseProps */\n</script>\n`,
-    );
-
-    const result = await generateBundle(dir, true, { typesTypeNames: { props: "I{name}Props" } });
-    const component = byModuleName(result.allComponentsForTypes, "Untemplated");
-
-    expect(component?.diagnostics).toContainEqual(
-      expect.objectContaining({ kind: "extend-props-target-missing", name: "BaseProps" }),
-    );
-  });
 });
 
 describe("generateBundle flags module-script re-exports named like a generated type", () => {
@@ -431,17 +405,5 @@ describe("generateBundle flags module-script re-exports named like a generated t
 
     expect(diagnostics).toContainEqual(expect.objectContaining({ kind: "module-export-conflict", name: "TreeProps" }));
     expect(diagnostics.filter((d) => d.kind === "module-export-conflict")).toHaveLength(1);
-  });
-
-  test("typesTypeNames.props: checks against the templated name", async () => {
-    writeFileSync(
-      path.join(dir, "Tree.svelte"),
-      `<script context="module">\n  export { TreeProps, ITreeProps } from "./types.js";\n</script>\n`,
-    );
-
-    const result = await generateBundle(dir, true, { typesTypeNames: { props: "I{name}Props" } });
-    const diagnostics = byModuleName(result.allComponentsForTypes, "Tree")?.diagnostics ?? [];
-
-    expect(diagnostics.filter((d) => d.kind === "module-export-conflict").map((d) => d.name)).toEqual(["ITreeProps"]);
   });
 });

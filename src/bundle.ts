@@ -160,11 +160,6 @@ export interface GenerateBundleOptions {
    */
   diagnostics?: { ignore?: DiagnosticIgnoreMatcher[] };
   /**
-   * Mirrors `typesOptions.typeNames`: templates for the `<Name>Props`
-   * interface name that `@extends`/`@extendProps` validation checks against.
-   */
-  typesTypeNames?: WriteTsDefinitionOptions["typeNames"];
-  /**
    * Mirrors `typesOptions.inline`: `"local"`/`"all"` runs the cross-file
    * inlining pass (see `inline-types.ts`) after every component has parsed.
    */
@@ -176,7 +171,7 @@ export function toGenerateBundleOptions(
     GenerateBundleOptions,
     "failFast" | "resolveTypes" | "documentExports" | "cache" | "checkExamples" | "dryRun" | "diagnostics"
   > & {
-    typesOptions?: { typeNames?: WriteTsDefinitionOptions["typeNames"]; inline?: WriteTsDefinitionOptions["inline"] };
+    typesOptions?: { inline?: WriteTsDefinitionOptions["inline"] };
   },
 ): GenerateBundleOptions {
   return {
@@ -187,7 +182,6 @@ export function toGenerateBundleOptions(
     checkExamples: opts?.checkExamples === "syntax" ? "syntax" : opts?.checkExamples === true,
     dryRun: opts?.dryRun === true,
     diagnostics: opts?.diagnostics,
-    typesTypeNames: opts?.typesOptions?.typeNames,
     typesInline: opts?.typesOptions?.inline,
   };
 }
@@ -868,19 +862,14 @@ export async function generateBundle(
     }
   }
 
-  validateExtendsTargets(allComponentsForTypes, resolveComponentFilePath, options.typesTypeNames);
-  validateModuleReExportNames(allComponentsForTypes.values(), options.typesTypeNames);
+  validateExtendsTargets(allComponentsForTypes, resolveComponentFilePath);
+  validateModuleReExportNames(allComponentsForTypes.values());
 
   let inlinedTypesByFilePath: Map<string, InlinedTypes> | undefined;
   try {
     inlinedTypesByFilePath =
       inlineTypes && (options.typesInline === "local" || options.typesInline === "all")
-        ? await inlineTypes.inlineLocalTypeImports(
-            allComponentsForTypes,
-            resolveComponentFilePath,
-            options.typesTypeNames,
-            bareSession,
-          )
+        ? await inlineTypes.inlineLocalTypeImports(allComponentsForTypes, resolveComponentFilePath, bareSession)
         : undefined;
   } finally {
     if (bareSession) await bareSession.dispose();
@@ -1426,24 +1415,17 @@ function resolveExtendsTargetPath(fromAbsoluteFilePath: string, specifier: strin
 
 /**
  * Flags a module-script re-export named like the component's generated
- * `<Name>Props`/`<Name>Exports` type. Checked here rather than at parse time
- * because `typesOptions.typeNames` decides those names. The `.d.ts` only
- * breaks if the re-exported binding also carries a type, which isn't
- * knowable without resolving the source, so this is a warning. Pushes onto
- * each component's diagnostics, so only pass freshly parsed components.
+ * `<Name>Props`/`<Name>Exports` type. The `.d.ts` only breaks if the
+ * re-exported binding also carries a type, which isn't knowable without
+ * resolving the source, so this is a warning. Pushes onto each component's
+ * diagnostics, so only pass freshly parsed components.
  */
-export function validateModuleReExportNames(
-  components: Iterable<ComponentDocApi>,
-  typeNames?: WriteTsDefinitionOptions["typeNames"],
-): void {
+export function validateModuleReExportNames(components: Iterable<ComponentDocApi>): void {
   for (const component of components) {
     const reExports = component.moduleExports.filter((moduleExport) => moduleExport.kind === "re-export");
     if (reExports.length === 0) continue;
 
-    const generatedTypeNames = new Set([
-      propsTypeName(component.moduleName, typeNames),
-      exportsTypeName(component.moduleName, typeNames),
-    ]);
+    const generatedTypeNames = new Set([propsTypeName(component.moduleName), exportsTypeName(component.moduleName)]);
     const diagnostics = component.diagnostics ?? [];
     for (const reExport of reExports) {
       if (!generatedTypeNames.has(reExport.name)) continue;
@@ -1479,7 +1461,6 @@ export function validateModuleReExportNames(
 export function validateExtendsTargets(
   components: ComponentDocs,
   resolveComponentFilePath: ResolveComponentFilePath,
-  typeNames?: WriteTsDefinitionOptions["typeNames"],
   scope: Iterable<ComponentDocApi> = components.values(),
 ): void {
   const componentsByAbsolutePath = new Map(
@@ -1515,7 +1496,7 @@ export function validateExtendsTargets(
     const target = componentsByAbsolutePath.get(targetPath);
     if (!target) continue;
 
-    const expectedInterface = propsTypeName(target.moduleName, typeNames);
+    const expectedInterface = propsTypeName(target.moduleName);
     if (extendsInfo.interface !== expectedInterface) {
       diagnostics.push(
         createDiagnostic({

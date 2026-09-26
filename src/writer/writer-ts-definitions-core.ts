@@ -31,7 +31,6 @@ const PRESERVED_SNIPPET_IMPORT_REGEX = /import\s+type\s+[^;]*\bSnippet\b[^;]*fro
 // a user-authored generic name into a RegExp.
 const REGEX_METACHARS = /[.*+?^${}()|[\]\\]/g;
 const LEADING_CONST_MODIFIER_REGEX = /^const\s+/;
-const NAME_PLACEHOLDER_REGEX = /\{name\}/g;
 const LEADING_EXPORT_REGEX = /^export /;
 const NON_IDENTIFIER_CHAR_REGEX = /[^\w$]/g;
 
@@ -396,7 +395,6 @@ function genPropDef(
   },
   emit: {
     export: boolean;
-    typeNames?: WriteTsDefinitionOptions["typeNames"];
     propsDeclaration?: WriteTsDefinitionOptions["propsDeclaration"];
   } = { export: true },
   commentLevel: CommentLevel = "all",
@@ -513,7 +511,7 @@ function genPropDef(
 
   const props = [...extra_initial_props, ...snippet_props].join("\n");
 
-  const props_name = propsTypeName(def.moduleName, emit.typeNames);
+  const props_name = propsTypeName(def.moduleName);
 
   let prop_def = EMPTY_STR;
 
@@ -905,11 +903,11 @@ function genAccessors(def: Pick<ComponentDocApi, "props">, commentLevel: Comment
  */
 function genExportsDef(
   def: Pick<ComponentDocApi, "props" | "moduleName" | "generics">,
-  emit: { export: boolean; typeNames?: WriteTsDefinitionOptions["typeNames"] } = { export: true },
+  emit: { export: boolean } = { export: true },
   commentLevel: CommentLevel = "all",
 ) {
   const exportKw = emit.export ? "export " : "";
-  const exports_name = exportsTypeName(def.moduleName, emit.typeNames);
+  const exports_name = exportsTypeName(def.moduleName);
   const accessors = genAccessors({ props: def.props }, commentLevel);
 
   if (accessors.trim() === "") {
@@ -1257,11 +1255,6 @@ export interface WriteTsDefinitionOptions {
   /** @internal Set by `writeTsDefinitions` for `@extends` targets; overrides `exportTypes.props`. */
   forceExportProps?: boolean;
   /**
-   * Templates for generated type names. `{name}` is replaced with the
-   * component's module name. Defaults: `"{name}Props"`, `"{name}Exports"`.
-   */
-  typeNames?: { props?: string; exports?: string };
-  /**
    * How much JSDoc to emit. `"all"` (default) keeps descriptions,
    * `@deprecated`, `@default`, and passthrough tags (`@since`, `@see`,
    * `@example`, `@link`). `"descriptions"` keeps descriptions and
@@ -1295,61 +1288,14 @@ export interface WriteTsDefinitionOptions {
   inlined?: InlinedTypes;
 }
 
-/**
- * Substitutes `{name}` in a `typesOptions.typeNames` template with
- * `moduleName` and validates the result. The template must contain `{name}`
- * (otherwise every component would collide on the same literal name) and the
- * substituted result must be a valid TypeScript identifier.
- */
-function applyNameTemplate(kind: "props" | "exports", moduleName: string, template: string): string {
-  const result = template.replace(NAME_PLACEHOLDER_REGEX, moduleName);
-  if (!template.includes("{name}") || !IDENTIFIER_REGEX.test(result)) {
-    throw new Error(
-      `sveld: typesOptions.typeNames.${kind} must contain "{name}" and produce a valid identifier; got "${template}".`,
-    );
-  }
-  return result;
+/** The generated props type name for a component: `<Name>Props`. */
+export function propsTypeName(moduleName: string): string {
+  return `${moduleName}Props`;
 }
 
-/**
- * Both generated type names for `moduleName`, rejecting templates whose names
- * collide with each other, with the component itself, or with the
- * `<Name>Component` interface a generic component declares.
- */
-function resolveTypeNames(
-  moduleName: string,
-  typeNames: WriteTsDefinitionOptions["typeNames"],
-): { props: string; exports: string } {
-  const props = applyNameTemplate("props", moduleName, typeNames?.props ?? "{name}Props");
-  const exports = applyNameTemplate("exports", moduleName, typeNames?.exports ?? "{name}Exports");
-  if (props === exports) {
-    throw new Error(
-      `sveld: typesOptions.typeNames.props and typesOptions.typeNames.exports both produce "${props}" for component "${moduleName}"; they must differ.`,
-    );
-  }
-
-  const componentName = componentIdentifier(moduleName);
-  for (const [kind, name] of [
-    ["props", props],
-    ["exports", exports],
-  ] as const) {
-    if (name === componentName || name === `${componentName}Component`) {
-      throw new Error(
-        `sveld: typesOptions.typeNames.${kind} produces "${name}" for component "${moduleName}", which the .d.ts already declares for the component itself; use a different template.`,
-      );
-    }
-  }
-  return { props, exports };
-}
-
-/** Resolves the generated props type name from `typesOptions.typeNames.props` (default `"{name}Props"`). */
-export function propsTypeName(moduleName: string, typeNames?: WriteTsDefinitionOptions["typeNames"]): string {
-  return resolveTypeNames(moduleName, typeNames).props;
-}
-
-/** Resolves the generated exports type name from `typesOptions.typeNames.exports` (default `"{name}Exports"`). */
-export function exportsTypeName(moduleName: string, typeNames?: WriteTsDefinitionOptions["typeNames"]): string {
-  return resolveTypeNames(moduleName, typeNames).exports;
+/** The generated exports type name for a component: `<Name>Exports`. */
+export function exportsTypeName(moduleName: string): string {
+  return `${moduleName}Exports`;
 }
 
 /** The `{props, exports, typedefs, contexts}` shape every per-kind `typesOptions` toggle resolves to. */
@@ -1410,7 +1356,6 @@ export function pickEmitOptions(options: WriteTsDefinitionOptions): WriteTsDefin
     format: options.format,
     exportTypes: options.exportTypes,
     forceExportProps: options.forceExportProps,
-    typeNames: options.typeNames,
     comments: options.comments,
     propsDeclaration: options.propsDeclaration,
     inline: options.inline,
@@ -1427,7 +1372,6 @@ const EMIT_OPTION_DEFAULTS: Record<string, unknown> = {
   format: "class",
   exportTypes: true,
   forceExportProps: false,
-  typeNames: null,
   comments: "all",
   propsDeclaration: "type",
   inline: false,
@@ -1480,7 +1424,7 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
       canonicalPropNames: new Set(typeScriptMetadata?.canonicalPropNames ?? []),
       canonicalPropsType: typeScriptMetadata?.canonicalPropsType,
     },
-    { export: exportFlags.props, typeNames: options?.typeNames, propsDeclaration: options?.propsDeclaration },
+    { export: exportFlags.props, propsDeclaration: options?.propsDeclaration },
     commentLevel,
   );
 
@@ -1505,11 +1449,7 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
   ].join("\n\n");
 
   const { exports_ref, exports_def } = useComponentFormat
-    ? genExportsDef(
-        { props, moduleName, generics },
-        { export: exportFlags.exports, typeNames: options?.typeNames },
-        commentLevel,
-      )
+    ? genExportsDef({ props, moduleName, generics }, { export: exportFlags.exports }, commentLevel)
     : { exports_ref: EMPTY_STR, exports_def: EMPTY_STR };
   const bindings = useComponentFormat ? genBindingsUnion({ props }) : EMPTY_STR;
 

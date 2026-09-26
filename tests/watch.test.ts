@@ -634,11 +634,17 @@ describe("pluginSveld watch option", () => {
       writeFileSync(join(dir, "types.ts"), `export type Size = "sm" | "md";\n`);
 
       const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+      // `inline: "all"` needs a live checker; failing to start one is a config error.
+      const createSpy = jest.spyOn(TypeResolver, "create").mockResolvedValue({
+        ok: false,
+        reason: "no-tsconfig",
+        message: 'could not locate a tsconfig.json starting from "/fake"',
+      });
       try {
         const plugin = pluginSveld({
           entry: relative(process.cwd(), join(dir, "Comp.svelte")),
           watch: true,
-          typesOptions: { inline: "local", typeNames: { props: "NoPlaceholder" } },
+          typesOptions: { inline: "all" },
         });
 
         await expect(plugin.buildStart()).resolves.toBeUndefined();
@@ -648,6 +654,7 @@ describe("pluginSveld watch option", () => {
         );
       } finally {
         errorSpy.mockRestore();
+        createSpy.mockRestore();
       }
     } finally {
       rmSync(dir, { recursive: true, force: true });
