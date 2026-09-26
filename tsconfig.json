@@ -9,5 +9,5 @@
     "esModuleInterop": true,
     "types": ["bun", "jest"]
   },
-  "include": ["src/**/*", "tests/**/*"]
+  "include": ["src/**/*", "tests/**/*", "scripts/**/*"]
 }

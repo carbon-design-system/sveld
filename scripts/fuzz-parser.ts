@@ -178,9 +178,9 @@ function mutateSnippetMangle(rng: Rng, seeds: Seed[]): Mutation | null {
   const isTs = SCRIPT_LANG_TS_REGEX.test(seed.source);
   const option = pick(
     rng,
-    (isTs
-      ? ["unclosed-generic", "unclosed-paren", "nested-generic", "empty-generic"]
-      : ["unclosed-paren", "no-parens", "extra-parens"]) as const,
+    isTs
+      ? (["unclosed-generic", "unclosed-paren", "nested-generic", "empty-generic"] as const)
+      : (["unclosed-paren", "no-parens", "extra-parens"] as const),
   );
   let block: string;
   switch (option) {

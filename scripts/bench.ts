@@ -33,7 +33,7 @@ import { buildComponentApiDocument } from "../src/writer/document-model";
 import Writer from "../src/writer/Writer";
 import writeJson from "../src/writer/writer-json";
 import writeMarkdown from "../src/writer/writer-markdown";
-import writeTsDefinitions from "../src/writer/writer-ts-definitions";
+import writeTsDefinitions, { generatedTextCacheKey } from "../src/writer/writer-ts-definitions";
 import { writeTsDefinition } from "../src/writer/writer-ts-definitions-core";
 
 const DEFAULT_ENTRY = join(import.meta.dir, "..", "tests", "e2e", "carbon", "src", "index.js");
@@ -135,17 +135,17 @@ function formatTiming(timing: RunTiming, stages: boolean): string {
 async function timeTypesStages(
   result: Awaited<ReturnType<typeof generateBundle>>,
 ): Promise<{ typesGenerate: number; typesIo: number }> {
-  const writer = new Writer({});
+  const writer = new Writer();
   const document = buildComponentApiDocument(result.allComponentsForTypes);
-  const cacheFormatKey = "class";
 
   const generateStart = performance.now();
   const generated = document.components.map((component) => {
-    const resolvedPath = result.resolvedPathByModule?.get(component.moduleName);
-    let text = resolvedPath ? result.cache?.getGeneratedText(resolvedPath, cacheFormatKey) : undefined;
+    const resolvedPath = result.resolvedPathByFilePath?.get(component.filePath);
+    const cacheKey = generatedTextCacheKey(component.moduleName, {});
+    let text = resolvedPath ? result.cache?.getGeneratedText(resolvedPath, cacheKey) : undefined;
     if (text === undefined) {
-      text = writeTsDefinition(component, { format: undefined });
-      if (resolvedPath) result.cache?.setGeneratedText(resolvedPath, cacheFormatKey, text);
+      text = writeTsDefinition(component, {});
+      if (resolvedPath) result.cache?.setGeneratedText(resolvedPath, cacheKey, text);
     }
     return { filePath: convertSvelteExt(join("types", component.filePath)), text };
   });
