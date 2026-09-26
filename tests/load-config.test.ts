@@ -171,22 +171,19 @@ describe("mergeConfig", () => {
     });
   });
 
-  test("deep-merges jsonOptions, markdownOptions, and llmsOptions", () => {
+  test("deep-merges jsonOptions and markdownOptions", () => {
     const fileConfig: Partial<PluginSveldOptions> = {
       jsonOptions: { outFile: "api.json" },
       markdownOptions: { outFile: "index.md" },
-      llmsOptions: { outDir: "docs" },
     };
     expect(
       mergeConfig(fileConfig, {
         jsonOptions: { outDir: "docs" },
         markdownOptions: { write: false },
-        llmsOptions: { title: "Docs" },
       }),
     ).toEqual({
       jsonOptions: { outFile: "api.json", outDir: "docs" },
       markdownOptions: { outFile: "index.md", write: false },
-      llmsOptions: { outDir: "docs", title: "Docs" },
     });
   });
 

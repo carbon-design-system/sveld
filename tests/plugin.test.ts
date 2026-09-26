@@ -185,8 +185,6 @@ describe("writeOutput output paths", () => {
         markdownOptions: { outFile: path.join(dir, "index.md") },
         customElements: true,
         customElementsOptions: { outFile: path.join(dir, "custom-elements.json") },
-        llms: true,
-        llmsOptions: { outDir: path.join(dir, "llms") },
       },
       path.join(dir, "index.js"),
     );
@@ -197,8 +195,6 @@ describe("writeOutput output paths", () => {
       "api.json",
       "index.md",
       "custom-elements.json",
-      "llms/llms.txt",
-      "llms/llms-full.txt",
     ]) {
       expect(fs.existsSync(path.join(dir, file))).toBe(true);
     }

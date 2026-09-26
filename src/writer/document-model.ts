@@ -40,7 +40,7 @@ function excludeInternal<T extends { internal?: boolean }>(items: T[]): T[] {
 
 /**
  * Strips `@ignore`/`@internal` members from every list a component exposes, so no writer -
- * Markdown, JSON, `.d.ts`, custom elements, `llms.txt` - has to filter independently. The raw,
+ * Markdown, JSON, `.d.ts`, custom elements - has to filter independently. The raw,
  * unfiltered `ParsedComponent` (props/events/slots/etc. still carrying `internal: true`) remains
  * available to callers that read the parser output directly, e.g. `sveld --check`.
  */
