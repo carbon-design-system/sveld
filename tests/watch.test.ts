@@ -1,10 +1,11 @@
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, relative, resolve } from "node:path";
-import type { ComponentDocApi, ComponentDocs } from "../src/bundle";
+import { type ComponentDocApi, type ComponentDocs, type GenerateBundleResult, generateBundle } from "../src/bundle";
 import ComponentParser from "../src/ComponentParser";
 import pluginSveld, { createSerialQueue, writeOutput } from "../src/plugin";
 import { createSveldBundle } from "../src/watch";
+import { writeTsDefinition } from "../src/writer/writer-ts-definitions-core";
 
 /** Look up `allComponentsForTypes` by filePath; moduleName is not unique. */
 function byModuleName(components: ComponentDocs, moduleName: string): ComponentDocApi | undefined {
@@ -324,6 +325,53 @@ describe("watch mode (createSveldBundle)", () => {
       "extend-props-target-missing",
       "module-export-conflict",
     ]);
+  });
+
+  test("an update after an @extendProps target changes matches a fresh build", async () => {
+    const outputOf = (result: GenerateBundleResult) =>
+      JSON.stringify({
+        components: Array.from(result.allComponentsForTypes, ([key, component]) => [
+          key,
+          component,
+          writeTsDefinition(component),
+        ]),
+        diagnostics: result.diagnostics,
+      });
+    const fresh = async () => outputOf(await generateBundle(dir, true, { cache: false }));
+    const typesPath = join(dir, "types.ts");
+    writeFileSync(typesPath, "export interface ExternalProps {\n  size: string;\n}\n");
+    writeFileSync(
+      join(dir, "WithExternalProps.svelte"),
+      `<script>\n  /** @extendProps {"./types.ts"} ExternalProps */\n  export let size = "medium";\n</script>\n`,
+    );
+    const bundle = await createSveldBundle(dir, true, { cache: false });
+
+    // Button's `primary` becomes a string, which SecondaryButton now overrides.
+    writeFileSync(
+      join(dir, "SecondaryButton.svelte"),
+      SECONDARY_BUTTON.replace(
+        "export let secondary = true;",
+        "export let secondary = true;\n  export let primary = false;",
+      ),
+    );
+    await bundle.update([join(dir, "SecondaryButton.svelte")]);
+    const buttonPath = join(dir, "Button.svelte");
+    writeFileSync(buttonPath, BUTTON.replace("primary = false", 'primary = "yes"'));
+    const edited = await bundle.update([buttonPath]);
+    expect(outputOf(edited.result)).toBe(await fresh());
+    expect(edited.result.diagnostics).toContainEqual(
+      expect.objectContaining({ component: "./SecondaryButton.svelte", kind: "extend-props-override" }),
+    );
+
+    unlinkSync(buttonPath);
+    expect(outputOf((await bundle.update([buttonPath])).result)).toBe(await fresh());
+
+    unlinkSync(typesPath);
+    const removed = await bundle.update([typesPath]);
+    expect(outputOf(removed.result)).toBe(await fresh());
+    expect(removed.result.diagnostics).toContainEqual(
+      expect.objectContaining({ component: "./WithExternalProps.svelte", kind: "extend-props-target-missing" }),
+    );
   });
 
   test("an update returns a new result and leaves the previous one as it was", async () => {

@@ -6,6 +6,7 @@ import { generateBundle } from "../src/bundle";
 import ComponentParser from "../src/ComponentParser";
 import { DEFAULT_CACHE_FILE, ParseCache } from "../src/parse-cache";
 import writeTsDefinitions, { generatedTextCacheKey } from "../src/writer/writer-ts-definitions";
+import { writeTsDefinition } from "../src/writer/writer-ts-definitions-core";
 
 /** Look up `allComponentsForTypes` by filePath; moduleName is not unique. */
 function byModuleName(components: ComponentDocs, moduleName: string): ComponentDocApi | undefined {
@@ -120,6 +121,48 @@ describe("parse cache", () => {
     expect(reparsedPaths.sort()).toEqual(["./Button.svelte", "./SecondaryButton.svelte"].sort());
     expect(result.components.has("SecondaryButton")).toBe(true);
     expect(byModuleName(result.allComponentsForTypes, "SecondaryButton")).toBeDefined();
+  });
+
+  test("a warm run after an @extendProps target changes matches a cold run", async () => {
+    // A parse reads only its own file, so a dependent's cached parse stays
+    // valid when its target changes; only the `@extends` checks, which run on
+    // every build, look at the target.
+    const variantButton = (type: string) =>
+      BUTTON.replace(
+        "export let primary = false;",
+        `export let primary = false;\n  /** @type {${type}} */\n  export let variant;`,
+      );
+    writeFileSync(join(dir, "Button.svelte"), variantButton("string"));
+    writeFileSync(
+      join(dir, "SecondaryButton.svelte"),
+      SECONDARY_BUTTON.replace(
+        "export let secondary = true;",
+        "export let secondary = true;\n  /** @type {string} */\n  export let variant;",
+      ),
+    );
+    const outputOf = (result: Awaited<ReturnType<typeof generateBundle>>) =>
+      JSON.stringify({
+        components: Array.from(result.allComponentsForTypes, ([key, component]) => [
+          key,
+          component,
+          writeTsDefinition(component),
+        ]),
+        diagnostics: result.diagnostics,
+      });
+
+    await generateBundle(dir, true, { cache: cacheFile });
+    writeFileSync(join(dir, "Button.svelte"), variantButton("number"));
+    const warm = await generateBundle(dir, true, { cache: cacheFile });
+    const cold = await generateBundle(dir, true, { cache: false });
+
+    expect(outputOf(warm)).toBe(outputOf(cold));
+    expect(warm.diagnostics).toContainEqual(
+      expect.objectContaining({
+        component: "./SecondaryButton.svelte",
+        kind: "extend-props-override",
+        name: "variant",
+      }),
+    );
   });
 
   test("values resolved from an imported module aren't saved as part of the cached parse", async () => {
