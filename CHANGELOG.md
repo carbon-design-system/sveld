@@ -5,6 +5,51 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.38.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.38.0) - 2026-09-26
+
+**Breaking Changes**
+
+- remove the Custom Elements Manifest writer (04d59ba)
+- remove the `llms.txt` writer (799f0dc)
+- remove the custom-writer registry (`registerWriter`, `additionalWriters`) (73aa36b)
+- remove `resolveTypes` / `--resolve-types` (664ede6)
+- remove `typesOptions.inline` / `--types-inline` (50c257f)
+- remove `typesOptions.exportTypes` / `--types-export` (ce23ef6)
+- remove `typesOptions.comments` / `--types-comments` (ac584e3)
+- remove `typesOptions.propsDeclaration` / `--types-props-declaration` (f92602f)
+- remove `typesOptions.typeNames` / `--types-type-names` (059ce0f)
+- reduce `typesOptions.indexTypes` to a boolean (f47273d)
+- remove `--dry-run` (e16a983)
+- remove `--stdout=ndjson` (`stdout` is now a boolean) (d721aa3)
+- remove `--format=github` (`format` is now `"text" | "json"`) (c02994d)
+- remove the `strict` `ci` / `local` profiles (`strict` is `boolean | "errors"`) (5cd9618)
+- drop the camelCase flag aliases (e.g. `--checkExamples`) (041c3bb)
+- stop exporting `cli` from the package root (7dbb580)
+- merge the Markdown writers into `MarkdownDocument` (drops accidental `write()` on `onAppend` docs) (8f839a9)
+- make `ComponentParser` helper methods plain functions (ae2da9a)
+
+**Features**
+
+- return the component API `document` from `sveld()` (4b5780d)
+- add `--config <path>` to load a specific config file (d06d8b5)
+- add `-h`, `-v`, and `-q` short flags (6cab3f7)
+- recognize common JSDoc types without the TS parser (cb1b59d)
+- hit parses recorded earlier in a watch session (1ee8dc2)
+
+**Fixes**
+
+- resolve `@extends` targets the way imports resolve (b7cb7db)
+- regenerate in watch mode when a `.tsx` or `.jsx` module changes (aa4316e)
+- keep a component's output when its update fails partway (28575cf)
+- keep internal writer fields out of the public option types (17b5237)
+- drop `@default undefined` from optional props (ef221b4)
+- fail `--check` when the snapshot is missing (522ea42)
+- honor `checkLevel` in `sveld()`'s `exitCode` (be9ddb5)
+- exit 1 on a missing `--entry` instead of falling back (8de0bc0)
+- type events via `$on` in component format, not `on*` props (ec54c63)
+- type an invalid JSDoc type as `any`, with an error (78f4595)
+- exit 2 when a component fails to parse (49e6925)
+
 ## [0.37.9](https://github.com/carbon-design-system/sveld/releases/tag/v0.37.9) - 2026-09-26
 
 **Features**
