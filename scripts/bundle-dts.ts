@@ -108,8 +108,10 @@ function norm(p: string): string {
 
 function sourceToDtsPath(source: string, srcRoot: string, emitted: Map<string, string>): string {
   const rel = relative(srcRoot, source).replace(TS_EXT_RE, ".d.ts").replaceAll("\\", "/");
+  // Match the whole path relative to `src/`: a suffix match on `index.d.ts`
+  // also matched `template-parse/index.d.ts`, and whichever came first won.
   for (const key of emitted.keys()) {
-    if (key.endsWith(`/${rel}`) || key.endsWith(rel)) return key;
+    if (relative(srcRoot, key).replaceAll("\\", "/") === rel) return key;
   }
   throw new Error(`no declaration emit for ${source} (expected …/${rel})\nhave: ${[...emitted.keys()].join("\n")}`);
 }
