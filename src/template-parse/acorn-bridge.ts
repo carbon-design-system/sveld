@@ -71,6 +71,12 @@ const EXPRESSION_OPTIONS = {
   // biome-ignore lint/suspicious/noExplicitAny: acorn's own option types don't expose this
 } as any;
 
+const STATEMENT_OPTIONS_NO_COMMENTS = {
+  sourceType: "module",
+  ecmaVersion: 16,
+  // biome-ignore lint/suspicious/noExplicitAny: see PROGRAM_OPTIONS
+} as any;
+
 const STATEMENT_OPTIONS = {
   onComment,
   sourceType: "module",
@@ -160,6 +166,28 @@ export function parseProgram(fullSource: string, isTypeScript: boolean, comments
     attachComments(ast as unknown as Parameters<typeof attachComments>[0], fullSource, comments, commentsBefore);
   }
   return ast;
+}
+
+const typeTextValidity = new Map<string, boolean>();
+
+/**
+ * Whether `typeText` parses as a single TypeScript type, e.g. to catch a
+ * JSDoc `{"a" | }` before it's copied into a `.d.ts`. Memoized: a library
+ * repeats the same few type strings across components.
+ */
+export function isValidTypeText(typeText: string): boolean {
+  const cached = typeTextValidity.get(typeText);
+  if (cached !== undefined) return cached;
+
+  let valid: boolean;
+  try {
+    const program = TSParser.parse(`type T = ${typeText}\n;`, STATEMENT_OPTIONS_NO_COMMENTS) as unknown as Program;
+    valid = program.body.length === 1;
+  } catch {
+    valid = false;
+  }
+  typeTextValidity.set(typeText, valid);
+  return valid;
 }
 
 /**

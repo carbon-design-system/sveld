@@ -52,6 +52,32 @@ describe("ComponentParser diagnostics", () => {
     expect(propDiagnostic?.source?.start.line).toBe(3);
   });
 
+  test("types an invalid JSDoc type as any and flags it type-syntax-error", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        /** @type {"a" | } */
+        export let kind = "a";
+        /** @type {Array<string} */
+        export let items = [];
+        /** @typedef {?string} MaybeName */
+        /** @event {{ id: string; }} change */
+        export let valid = 1;
+      </script>
+    `;
+
+    const { props, typedefs, events, diagnostics } = parser.parseSvelteComponent(source, parseContext);
+    const syntaxErrors = diagnostics?.filter((d) => d.kind === "type-syntax-error") ?? [];
+
+    expect(syntaxErrors.map((d) => d.name).sort()).toEqual(["MaybeName", "items", "kind"]);
+    expect(syntaxErrors[0]).toMatchObject({ code: "sveld/type-syntax-error", severity: "error" });
+    expect(props.find((p) => p.name === "kind")?.type).toBe("any");
+    expect(props.find((p) => p.name === "items")?.type).toBe("any");
+    expect(props.find((p) => p.name === "valid")?.type).toBe("number");
+    expect(typedefs.find((t) => t.name === "MaybeName")).toMatchObject({ type: "any", ts: "type MaybeName = any;" });
+    expect(events.find((e) => e.name === "change")).toMatchObject({ detail: "{ id: string; }" });
+  });
+
   test("flags setContext values that default to any", () => {
     const parser = new ComponentParser();
     const source = `

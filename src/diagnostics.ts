@@ -12,6 +12,7 @@ import { matchesGlob } from "./glob-match";
  * - `example-compile-error`: a TS/JS `@example` block failed to type-check (opt-in, `checkExamples`).
  * - `example-syntax-error`: a `svelte`/`html` `@example` block failed to parse (opt-in, `checkExamples`).
  * - `syntax-skipped`: `$props()`/`{@render}` syntax the parser can't model; omitted from output.
+ * - `type-syntax-error`: a JSDoc `{type}` isn't valid TypeScript (e.g. `{"a" | }`, or closure-style `{?string}`), so it would break the `.d.ts`; typed as `any` instead.
  * - `rest-props-unresolved`: every `{...$$restProps}` target was a component, so `$RestProps` couldn't be typed.
  * - `context-duplicate-key`: `setContext` called more than once with the same key; only the first call's shape is used.
  * - `context-key-unresolved`: a `setContext` key isn't a string literal, a `const`-bound string, `Symbol()`, or an imported `export const` string; the context is skipped.
@@ -42,6 +43,7 @@ export type SveldDiagnosticKind =
   | "example-compile-error"
   | "example-syntax-error"
   | "syntax-skipped"
+  | "type-syntax-error"
   | "rest-props-unresolved"
   | "context-duplicate-key"
   | "context-key-unresolved"
@@ -81,6 +83,7 @@ export const DIAGNOSTIC_CODES: Record<SveldDiagnosticKind, string> = {
   "example-compile-error": "sveld/example-compile-error",
   "example-syntax-error": "sveld/example-syntax-error",
   "syntax-skipped": "sveld/syntax-skipped",
+  "type-syntax-error": "sveld/type-syntax-error",
   "rest-props-unresolved": "sveld/rest-props-unresolved",
   "context-duplicate-key": "sveld/context-duplicate-key",
   "context-key-unresolved": "sveld/context-key-unresolved",
@@ -104,8 +107,8 @@ export const DIAGNOSTIC_CODES: Record<SveldDiagnosticKind, string> = {
 };
 
 /**
- * `example-compile-error`, `example-syntax-error`, and `syntax-skipped` are
- * errors (sveld emitted broken or unmodeled output); the rest are warnings
+ * `example-compile-error`, `example-syntax-error`, `syntax-skipped`, and
+ * `type-syntax-error` are errors (sveld emitted broken or unmodeled output); the rest are warnings
  * (a type fell back to `any`).
  */
 const DIAGNOSTIC_SEVERITIES: Record<SveldDiagnosticKind, SveldDiagnosticSeverity> = {
@@ -117,6 +120,7 @@ const DIAGNOSTIC_SEVERITIES: Record<SveldDiagnosticKind, SveldDiagnosticSeverity
   "example-compile-error": "error",
   "example-syntax-error": "error",
   "syntax-skipped": "error",
+  "type-syntax-error": "error",
   "rest-props-unresolved": "warning",
   "context-duplicate-key": "warning",
   "context-key-unresolved": "warning",
@@ -254,6 +258,7 @@ const KIND_LABELS: Record<SveldDiagnosticKind, string> = {
   "example-compile-error": "@example blocks that failed to compile",
   "example-syntax-error": "@example blocks that failed to parse",
   "syntax-skipped": "Component syntax sveld skipped",
+  "type-syntax-error": "JSDoc types that aren't valid TypeScript",
   "rest-props-unresolved": "$$restProps spread only onto components",
   "context-duplicate-key": "Duplicate setContext keys",
   "context-key-unresolved": "setContext keys sveld couldn't resolve",
@@ -285,6 +290,7 @@ const KIND_ORDER: SveldDiagnosticKind[] = [
   "example-compile-error",
   "example-syntax-error",
   "syntax-skipped",
+  "type-syntax-error",
   "rest-props-unresolved",
   "context-duplicate-key",
   "context-key-unresolved",

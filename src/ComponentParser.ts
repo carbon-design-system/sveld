@@ -92,6 +92,7 @@ import {
 import { buildVariableJsDocTable } from "./parser/variable-jsdoc";
 import { type WalkableNode, type WalkEnter, type WalkLeave, walkNodes } from "./parser/walk";
 import { parse as parseModernAst } from "./svelte-template-parse";
+import { isValidTypeText } from "./template-parse/acorn-bridge";
 
 /** Structured JSDoc tag (e.g. `{ name: "since", body: "1.2.0" }`). */
 export interface JsDocPassthroughTag {
@@ -2591,6 +2592,38 @@ export default class ComponentParser {
     for (const moduleExport of moduleExportsArray) {
       if (moduleExport.typeSource === "unknown" && pendingCallDefaultsByLocation.moduleExports.has(moduleExport.name)) {
         moduleExport.type = "any";
+      }
+    }
+
+    /**
+     * A JSDoc `{type}` is copied into the `.d.ts` as written, so one that
+     * doesn't parse (`{"a" | }`, closure-style `{?string}`) would break the
+     * whole file. It's typed `any` instead, with an error diagnostic.
+     */
+    const isValidType = (type: string | undefined, name: string, source?: SourceRange): boolean => {
+      if (type === undefined || isValidTypeText(type)) return true;
+      recordDiagnostic(
+        this.ctx,
+        "type-syntax-error",
+        name,
+        `Type \`${type}\` of "${name}" is not valid TypeScript; falling back to "any".`,
+        source,
+      );
+      return false;
+    };
+    for (const prop of processedProps) {
+      if (prop.typeSource === "jsdoc" && !isValidType(prop.type, prop.name, prop.source)) prop.type = "any";
+    }
+    for (const event of eventsArray) {
+      if (event.type === "dispatched" && !isValidType(event.detail, event.name, event.source)) event.detail = "any";
+    }
+    for (const slot of processedSlots) {
+      if (!isValidType(slot.slot_props, slot.name ?? "default", slot.source)) slot.slot_props = "any";
+    }
+    for (const typedef of typedefsArray) {
+      if (!isValidType(typedef.type, typedef.name, typedef.source)) {
+        typedef.type = "any";
+        typedef.ts = `type ${typedef.name} = any;`;
       }
     }
 
