@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
 import { sveld } from "../src/sveld";
@@ -85,6 +85,22 @@ describe("sveld() check", () => {
     const result = await sveld({ entry, types: false });
 
     expect(result.check).toBeUndefined();
+  });
+
+  test("returns the component API document without writing JSON", async () => {
+    const result = await sveld({ entry, types: false });
+
+    expect(result.document.schemaVersion).toBe(1);
+    expect(result.document.total).toBe(1);
+    expect(result.document.components.map((component) => component.moduleName)).toEqual(["Button"]);
+    expect(result.document.components[0].props.map((prop) => prop.name)).toEqual(["label"]);
+  });
+
+  test("returns exactly the document the json writer writes", async () => {
+    const outFile = join(relativeDir, "api.json");
+    const result = await sveld({ entry, types: false, json: true, jsonOptions: { outFile } });
+
+    expect(result.document).toEqual(JSON.parse(readFileSync(join(absoluteDir, "api.json"), "utf8")));
   });
 });
 

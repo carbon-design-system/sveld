@@ -756,6 +756,21 @@ process.exitCode = exitCode;
 
 See [CI: API-drift checks (`--check`)](#ci-api-drift-checks---check) for how changes are classified.
 
+`sveld()` also returns `document`, the component API document for the exported components: exactly what `json: true` writes to `COMPONENT_API.json` (see [JSON Output](#json-output)). It's populated whether or not `json` is enabled, so rendering a custom output format is a few lines of your own code:
+
+```js
+import { writeFile } from "node:fs/promises";
+import { sveld } from "sveld";
+
+const { document } = await sveld({ types: false });
+
+const lines = document.components.map(
+  (component) => `${component.moduleName}: ${component.props.map((prop) => prop.name).join(", ")}`,
+);
+
+await writeFile("components.txt", `${lines.join("\n")}\n`);
+```
+
 #### `jsonOptions.outDir`
 
 With `json: true`, `sveld` writes `COMPONENT_API.json` at the project root. The file documents all components.

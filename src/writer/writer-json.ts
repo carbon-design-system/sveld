@@ -121,22 +121,28 @@ async function writeJsonComponents(components: ComponentDocs, options: WriteJson
 }
 
 /**
- * Renders the single combined JSON document (the same shape written to
- * `COMPONENT_API.json`) without touching disk. Used by both `writeJsonLocal`
- * and the CLI's `--stdout` mode so the two channels can't drift.
+ * The single combined JSON document, exactly as written to
+ * `COMPONENT_API.json`. Shared by `writeJsonLocal`, the CLI's `--stdout`
+ * mode, and `sveld()`'s `document`, so the three can't drift.
  */
+export function buildJsonDocument(
+  components: ComponentDocs,
+  options: Pick<WriteJsonOptions, "inputDir" | "entryExports" | "source">,
+): ComponentApiDocument {
+  const document = buildComponentApiDocument(components, { entryExports: options.entryExports });
+  const output: ComponentApiDocument = {
+    ...document,
+    components: withNormalizedFilePaths(document.components, options.inputDir),
+  };
+  return options.source === false ? stripSourceRanges(output) : output;
+}
+
+/** {@link buildJsonDocument}, serialized. */
 export function renderJsonDocument(
   components: ComponentDocs,
   options: Pick<WriteJsonOptions, "inputDir" | "entryExports" | "source">,
 ): string {
-  const document = buildComponentApiDocument(components, { entryExports: options.entryExports });
-  let output: ComponentApiDocument = {
-    ...document,
-    components: withNormalizedFilePaths(document.components, options.inputDir),
-  };
-  if (options.source === false) output = stripSourceRanges(output);
-
-  return formatJsonOutput(output);
+  return formatJsonOutput(buildJsonDocument(components, options));
 }
 
 /**
