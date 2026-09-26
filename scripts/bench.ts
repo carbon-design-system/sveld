@@ -27,14 +27,13 @@ import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, relative, resolve } from "node:path";
 import { generateBundle } from "../src/bundle";
-import { setQuiet } from "../src/logger";
-// Side-effect import: registers the built-in writers ("types"/"json"/"markdown")
-// with the registry, same as src/plugin.ts does.
-import "../src/writer/built-in-writers";
 import { convertSvelteExt, createExports } from "../src/create-exports";
+import { setQuiet } from "../src/logger";
 import { buildComponentApiDocument } from "../src/writer/document-model";
-import { getWriter } from "../src/writer/registry";
 import Writer from "../src/writer/Writer";
+import writeJson from "../src/writer/writer-json";
+import writeMarkdown from "../src/writer/writer-markdown";
+import writeTsDefinitions from "../src/writer/writer-ts-definitions";
 import { writeTsDefinition } from "../src/writer/writer-ts-definitions-core";
 
 const DEFAULT_ENTRY = join(import.meta.dir, "..", "tests", "e2e", "carbon", "src", "index.js");
@@ -194,22 +193,21 @@ async function benchOnce(
   let stageTimes: { typesGenerate: number; typesIo: number } | undefined;
   try {
     if (stages) {
-      // Bypasses the registered "types" writer so generation and I/O are
+      // Bypasses the "types" writer so generation and I/O are
       // timed separately instead of double-counted.
       stageTimes = await timeTypesStages(result);
       types = stageTimes.typesGenerate + stageTimes.typesIo;
     } else {
-      const typesWriter = getWriter("types");
-      if (!typesWriter) throw new Error('sveld bench: built-in writer "types" is not registered.');
       const typesStart = performance.now();
-      await typesWriter.write(result.allComponentsForTypes, {
+      await writeTsDefinitions(result.allComponentsForTypes, {
         outDir: "types",
         preamble: "",
         exports: result.exports,
         inputDir,
         dryRun: false,
         cache: result.cache,
-        resolvedPathByModule: result.resolvedPathByModule,
+        resolvedPathByFilePath: result.resolvedPathByFilePath,
+        crossFileResolvedPathByFilePath: result.crossFileResolvedPathByFilePath,
       });
       types = performance.now() - typesStart;
     }
@@ -218,10 +216,8 @@ async function benchOnce(
     // next run's fresh ParseCache would never see it.
     result.cache?.save();
 
-    const jsonWriter = getWriter("json");
-    if (!jsonWriter) throw new Error('sveld bench: built-in writer "json" is not registered.');
     const jsonStart = performance.now();
-    await jsonWriter.write(result.components, {
+    await writeJson(result.components, {
       outFile: "COMPONENT_API.json",
       input,
       inputDir,
@@ -230,10 +226,8 @@ async function benchOnce(
     });
     json = performance.now() - jsonStart;
 
-    const markdownWriter = getWriter("markdown");
-    if (!markdownWriter) throw new Error('sveld bench: built-in writer "markdown" is not registered.');
     const markdownStart = performance.now();
-    await markdownWriter.write(result.components, {
+    await writeMarkdown(result.components, {
       outFile: "COMPONENT_INDEX.md",
       entryExports: result.entryExports,
       dryRun: false,

@@ -191,13 +191,6 @@ describe("mergeConfig", () => {
     });
   });
 
-  test("deep-merges additionalWriters at the writer-name level", () => {
-    const fileConfig: Partial<PluginSveldOptions> = { additionalWriters: { llms: { outFile: "llms.txt" } } };
-    expect(mergeConfig(fileConfig, { additionalWriters: { other: { outFile: "other.txt" } } })).toEqual({
-      additionalWriters: { llms: { outFile: "llms.txt" }, other: { outFile: "other.txt" } },
-    });
-  });
-
   test("replaces arrays and functions instead of merging them", () => {
     const onAppend = () => {};
     const fileConfig: Partial<PluginSveldOptions> = { markdownOptions: { onAppend } };
@@ -294,11 +287,6 @@ describe("validateOptions", () => {
 
   test("does not warn about typesOptions.indexTypes", () => {
     validateOptions({ typesOptions: { indexTypes: true } });
-    expect(warnSpy).not.toHaveBeenCalled();
-  });
-
-  test("does not validate inside additionalWriters (userland-defined shape)", () => {
-    validateOptions({ additionalWriters: { llms: { anything: true } } });
     expect(warnSpy).not.toHaveBeenCalled();
   });
 });

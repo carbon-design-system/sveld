@@ -1,6 +1,5 @@
 import { dirname, isAbsolute, resolve } from "node:path";
 import {
-  type ComponentDocs,
   type GenerateBundleOptions,
   type GenerateBundleResult,
   generateBundle,
@@ -11,14 +10,14 @@ import { loadConfig, loadConfigFrom, mergeConfig, validateOptions } from "./load
 import { setQuiet } from "./logger";
 import { WATCH_RELEVANT_EXT_REGEX } from "./path";
 import { createSveldBundle, type SveldBundle } from "./watch";
-// Side-effect import: registers the built-in "json"/"markdown"/"types"/"custom-elements" writers.
-import "./writer/built-in-writers";
-import { getWriter, type OutputWriter } from "./writer/registry";
-import { renderCustomElementsManifest, type WriteCustomElementsOptions } from "./writer/writer-custom-elements";
-import { renderJsonDocument, renderJsonLines, type WriteJsonOptions } from "./writer/writer-json";
-import type { WriteLlmsOptions } from "./writer/writer-llms";
-import { renderMarkdownDocument, type WriteMarkdownOptions } from "./writer/writer-markdown";
-import type { WriteTsDefinitionsOptions } from "./writer/writer-ts-definitions";
+import writeCustomElements, {
+  renderCustomElementsManifest,
+  type WriteCustomElementsOptions,
+} from "./writer/writer-custom-elements";
+import writeJson, { renderJsonDocument, renderJsonLines, type WriteJsonOptions } from "./writer/writer-json";
+import writeLlms, { type WriteLlmsOptions } from "./writer/writer-llms";
+import writeMarkdown, { renderMarkdownDocument, type WriteMarkdownOptions } from "./writer/writer-markdown";
+import writeTsDefinitions, { type WriteTsDefinitionsOptions } from "./writer/writer-ts-definitions";
 
 export type { ComponentDocApi, ComponentDocs, GenerateBundleResult } from "./bundle";
 export { generateBundle, toGenerateBundleOptions } from "./bundle";
@@ -54,12 +53,6 @@ export interface PluginSveldOptions extends Pick<GenerateBundleOptions, "cache" 
   /** Generate a first-party `llms.txt` / `llms-full.txt` pair (per https://llmstxt.org). */
   llms?: boolean;
   llmsOptions?: Partial<WriteLlmsOptions>;
-  /**
-   * Run additional, userland-registered writers (via `registerWriter` from
-   * "sveld") beyond the built-in `json`/`markdown`/`types` outputs. Keyed by
-   * the writer's registered `name`, valued by that writer's options.
-   */
-  additionalWriters?: Record<string, unknown>;
   /**
    * Abort the entire run when a single component fails to parse.
    * When `false` (the default), parse failures are collected as diagnostics
@@ -241,17 +234,6 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
   };
 }
 
-/** Looks up a built-in writer by name; throws if `built-in-writers` never registered it. */
-function runBuiltInWriter(
-  name: "types" | "json" | "markdown" | "custom-elements" | "llms",
-  components: ComponentDocs,
-  options: unknown,
-) {
-  const writer = getWriter(name);
-  if (!writer) throw new Error(`sveld: built-in writer "${name}" is not registered.`);
-  return writer.write(components, options);
-}
-
 /**
  * Writes output files based on plugin options.
  *
@@ -287,7 +269,7 @@ export async function writeOutput(
      * This ensures TypeScript definitions are available for all components,
      * not just exported ones, which is useful for type checking.
      */
-    await runBuiltInWriter("types", result.allComponentsForTypes, {
+    await writeTsDefinitions(result.allComponentsForTypes, {
       outDir: "types",
       preamble: "",
       ...opts?.typesOptions,
@@ -306,7 +288,7 @@ export async function writeOutput(
      * JSON output should only include components that are actually exported,
      * matching the public API surface.
      */
-    await runBuiltInWriter("json", result.components, {
+    await writeJson(result.components, {
       outFile: "COMPONENT_API.json",
       ...opts?.jsonOptions,
       input,
@@ -322,7 +304,7 @@ export async function writeOutput(
      * Documentation should only include exported components that are
      * part of the public API.
      */
-    await runBuiltInWriter("markdown", result.components, {
+    await writeMarkdown(result.components, {
       outFile: "COMPONENT_INDEX.md",
       ...opts?.markdownOptions,
       entryExports: result.entryExports,
@@ -335,7 +317,7 @@ export async function writeOutput(
      * Use components (exported only) for the Custom Elements Manifest, matching
      * the JSON/Markdown outputs' public-API-surface convention.
      */
-    await runBuiltInWriter("custom-elements", result.components, {
+    await writeCustomElements(result.components, {
       outFile: "custom-elements.json",
       ...opts?.customElementsOptions,
       inputDir,
@@ -348,47 +330,11 @@ export async function writeOutput(
      * Use components (exported only) for llms.txt/llms-full.txt, matching
      * the JSON/Markdown outputs' public-API-surface convention.
      */
-    await runBuiltInWriter("llms", result.components, {
+    await writeLlms(result.components, {
       ...opts?.llmsOptions,
       entryExports: result.entryExports,
       dryRun,
     } satisfies WriteLlmsOptions);
-  }
-
-  const additionalWrites = Object.entries(opts?.additionalWriters ?? {}).map(([name, writerOptions]) => {
-    const writer = getWriter(name);
-    if (!writer) {
-      console.warn(`sveld: no writer registered with name "${name}"; skipping.`);
-      return undefined;
-    }
-    const components = writer.componentSet === "all" ? result.allComponentsForTypes : result.components;
-    // Same `dryRun` contract as every built-in writer above: report the
-    // resolved path instead of writing, from `sveld --dry-run`.
-    const options = { ...(writerOptions as Record<string, unknown>), dryRun };
-    return runCustomWriter(name, writer, components, options);
-  });
-
-  await Promise.all(additionalWrites);
-}
-
-/**
- * Runs a userland writer registered via `additionalWriters`, attributing any
- * failure to its registered `name`. Wrapping the call in an `async` function
- * (rather than calling `writer.write` directly in the `.map()` above) turns a
- * *synchronous* throw into a rejected promise instead of one that escapes
- * `.map()` itself, so the other writers in the batch still run to completion.
- */
-async function runCustomWriter(
-  name: string,
-  writer: OutputWriter<unknown>,
-  components: ComponentDocs,
-  options: unknown,
-): Promise<unknown> {
-  try {
-    return await writer.write(components, options);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    throw new Error(`sveld: writer "${name}" failed: ${message}`, { cause: error });
   }
 }
 

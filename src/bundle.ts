@@ -74,8 +74,8 @@ export interface GenerateBundleResult {
   /**
    * Every `--glob`-discovered `.svelte` file, keyed by resolved `filePath`
    * rather than `moduleName`: two files in different directories can share a
-   * basename. See `WriterComponentSet` in `writer/registry.ts` for what this
-   * means for a custom writer that receives this map.
+   * basename, so `moduleName` is not unique in this map. Derive output
+   * locations from `filePath`, or check for a `moduleName` collision first.
    */
   allComponentsForTypes: ComponentDocs;
   /**
