@@ -439,7 +439,16 @@ export async function cli(process: NodeJS.Process) {
   }
 
   const cliOptions = parsed.options;
-  const fileConfig = await loadConfig();
+  let fileConfig: Awaited<ReturnType<typeof loadConfig>>;
+  try {
+    fileConfig = await loadConfig();
+  } catch (error) {
+    // A config file that fails to load is the user's to fix, not a crash:
+    // print the reason, not sveld's (minified) stack.
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exitCode = EXIT_CODES.USAGE_ERROR;
+    return;
+  }
   const options = expandStrictProfile(mergeConfig<CliOptions>(fileConfig, cliOptions));
   validateOptions(options);
 

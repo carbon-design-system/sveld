@@ -480,6 +480,44 @@ describe("cli() entry resolution failures", () => {
   });
 });
 
+describe("cli() config file errors", () => {
+  let dir: string;
+  let previousCwd: string;
+  let previousArgv: string[];
+
+  beforeEach(() => {
+    previousCwd = process.cwd();
+    previousArgv = process.argv;
+    process.exitCode = 0;
+    process.argv = ["bun", "cli.js"];
+    dir = mkdtempSync(join(tmpdir(), "sveld-cli-config-error-"));
+    process.chdir(dir);
+  });
+
+  afterEach(() => {
+    process.chdir(previousCwd);
+    process.argv = previousArgv;
+    process.exitCode = 0;
+    rmSync(dir, { recursive: true, force: true });
+    jest.restoreAllMocks();
+  });
+
+  test("a config file with a syntax error exits 1 with its message, not a stack trace", async () => {
+    writeFileSync(join(dir, "sveld.config.js"), "export default { json: true,, };\n");
+    const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(1);
+    // Other test files log concurrently under --parallel, so find this call by content.
+    const printed = errorSpy.mock.calls
+      .map((call: unknown[]) => String(call[0]))
+      .find((message: string) => message.startsWith("sveld: failed to load config file"));
+    expect(printed).toBeDefined();
+    expect(printed).not.toContain("    at ");
+  });
+});
+
 describe("cli() unknown flag", () => {
   let dir: string;
   let previousCwd: string;
