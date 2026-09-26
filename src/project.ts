@@ -20,7 +20,6 @@ import {
   mergeGlobbedComponents,
 } from "./collect-components";
 import { resolveCrossFileCandidates } from "./cross-file";
-import { buildReverseDeps, expandAffected } from "./dependency-graph";
 import { appendDiagnostics, applyDiagnosticIgnores, dedupeDiagnostics, type SveldDiagnostic } from "./diagnostics";
 import { checkComponentExamples } from "./example-check";
 import { resetDirectoryListings } from "./fs-listing";
@@ -55,11 +54,10 @@ export interface ProjectUpdate {
   /** The full, updated result (all components, with the affected ones re-parsed). */
   result: GenerateBundleResult;
   /**
-   * Absolute paths of the components that were re-parsed: the changed files,
-   * newly barrel-exported components, and components that read a changed
-   * module, plus their transitive dependents via `@extendProps` / `@extends`
-   * or a typedef `import("./x")` reference. Other components are reused
-   * from the previous parse.
+   * Absolute paths of the components that were re-parsed (or re-read from
+   * the parse cache) and re-resolved: the changed files, newly
+   * barrel-exported components, and components that read a changed module.
+   * Other components are reused from the previous parse.
    */
   reparsed: string[];
 }
@@ -167,8 +165,8 @@ export class Project {
    * Re-parses the components `changedFilePaths` affect and returns the
    * updated result. A change to the entry barrel re-reads its exports; under
    * `glob`, new component files are picked up. A non-`.svelte` file only
-   * matters as an `@extends` / typedef `import()` target or a module the
-   * cross-file pass read. Must follow a {@link build}.
+   * re-parses the components the cross-file pass read it for. Must follow a
+   * {@link build}.
    */
   async update(changedFilePaths: string[]): Promise<ProjectUpdate> {
     const changed = changedFilePaths.map((path) => resolve(path));
@@ -193,16 +191,13 @@ export class Project {
       if (!listed.has(path)) this.parseErrors.delete(path);
     }
 
-    const reverseDeps = buildReverseDeps(Array.from(this.records, ([path, { component }]) => [path, component]));
-    const relevant = changed.filter((path) => SVELTE_EXT_REGEX.test(path) || reverseDeps.has(path));
+    // A parse reads only its own file, so a component that `@extends` or
+    // `import()`s a changed file keeps its parse: the checks that read the
+    // target run on every result.
     const readers = Array.from(this.records).flatMap(([path, { crossFileReads }]) =>
       crossFileReads?.some((module) => changed.includes(module)) ? [path] : [],
     );
-    if (relevant.length === 0 && added.length === 0 && readers.length === 0) {
-      return { result: this.assemble(), reparsed: [] };
-    }
-
-    const affected = expandAffected([...relevant, ...added, ...readers], reverseDeps);
+    const affected = new Set([...changed.filter((path) => SVELTE_EXT_REGEX.test(path)), ...added, ...readers]);
     const targets = new Set(Array.from(listed).filter((path) => affected.has(path)));
     for (const path of targets) {
       this.records.delete(path);
@@ -312,21 +307,6 @@ export class Project {
       if (source === null || source === undefined) continue;
       const result = this.parseOne(path, source, hashes.get(path));
       if (result) parsed.set(path, result);
-    }
-
-    if (cache && misses.size > 0) {
-      // Reparse unchanged files that extend something that changed.
-      const affected = expandAffected(
-        misses,
-        buildReverseDeps(Array.from(parsed, ([path, { component }]) => [path, component])),
-      );
-      for (const path of affected) {
-        const source = sources.get(path);
-        if (misses.has(path) || !parsed.has(path) || source === null || source === undefined) continue;
-        cache.invalidate(path);
-        const result = this.parseOne(path, source, hashes.get(path));
-        if (result) parsed.set(path, result);
-      }
     }
 
     return parsed;

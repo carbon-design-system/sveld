@@ -57,7 +57,7 @@ describe("watch mode (createSveldBundle)", () => {
     expect(names).toEqual(["Button", "SecondaryButton", "Standalone"]);
   });
 
-  test("editing a component re-parses it plus its @extendProps dependents only", async () => {
+  test("editing a component re-parses only it, not its @extendProps dependents", async () => {
     const bundle = await createSveldBundle(dir, true);
 
     const buttonPath = resolve(dir, "Button.svelte");
@@ -65,11 +65,8 @@ describe("watch mode (createSveldBundle)", () => {
 
     const { reparsed } = await bundle.update([buttonPath]);
 
-    // Button changed; SecondaryButton depends on it via @extendProps.
-    // Standalone is unrelated and must NOT be re-parsed.
-    expect(reparsed.sort()).toEqual([resolve(dir, "Button.svelte"), resolve(dir, "SecondaryButton.svelte")].sort());
-    expect(reparsed).not.toContain(resolve(dir, "Standalone.svelte"));
-    expect(reparsed.length).toBeLessThan((await bundle.result).allComponentsForTypes.size);
+    // SecondaryButton's parse doesn't read Button, so it's kept.
+    expect(reparsed).toEqual([buttonPath]);
   });
 
   test("editing an independent component re-parses only that component", async () => {
@@ -129,7 +126,7 @@ describe("watch mode (createSveldBundle)", () => {
     expect(byModuleName(result.allComponentsForTypes, "Standalone")).toBeUndefined();
   });
 
-  test("deleting an @extendProps dependency reparses its dependent without crashing", async () => {
+  test("deleting an @extendProps target flags its dependent without re-parsing it", async () => {
     const bundle = await createSveldBundle(dir, true);
 
     const buttonPath = resolve(dir, "Button.svelte");
@@ -137,8 +134,11 @@ describe("watch mode (createSveldBundle)", () => {
 
     const { result, reparsed } = await bundle.update([buttonPath]);
 
-    expect(reparsed).toContain(resolve(dir, "SecondaryButton.svelte"));
+    expect(reparsed).toEqual([]);
     expect(byModuleName(result.allComponentsForTypes, "Button")).toBeUndefined();
+    expect(result.diagnostics).toContainEqual(
+      expect.objectContaining({ component: "./SecondaryButton.svelte", kind: "extend-props-target-missing" }),
+    );
   });
 
   test("ignores non-svelte changes", async () => {
@@ -181,7 +181,7 @@ describe("watch mode (createSveldBundle)", () => {
     expect(button.props.map((p: { name: string }) => p.name)).toEqual(["danger"]);
   });
 
-  test("editing a non-.svelte @extendProps target reparses its dependent", async () => {
+  test("editing a non-.svelte @extendProps target re-parses nothing", async () => {
     const typesPath = join(dir, "types.ts");
     writeFileSync(typesPath, "export interface ExternalProps {\n  size: string;\n}\n");
     writeFileSync(
@@ -199,7 +199,7 @@ describe("watch mode (createSveldBundle)", () => {
     writeFileSync(typesPath, "export interface ExternalProps {\n  size: string;\n  color: string;\n}\n");
     const { reparsed } = await bundle.update([resolve(typesPath)]);
 
-    expect(reparsed).toEqual([resolve(dir, "WithExternalProps.svelte")]);
+    expect(reparsed).toEqual([]);
   });
 
   test("editing the entry barrel to add an export re-parses the newly exported component", async () => {
