@@ -63,7 +63,7 @@ describe("TS expression start locations", () => {
     // the other two go through acorn.
     const source =
       '<script lang="ts">\n  let n = 1;\n</script>\n\n<p>{n}</p>\n<p class={n > 1 ? "big" : "small"}>{n + 1}</p>';
-    const root = parse(source) as { fragment: { nodes: Array<{ type: string; [key: string]: unknown }> } };
+    const root = parse(source);
     const found: Array<{ line: number; column: number }> = [];
     (function walk(node: unknown) {
       if (!node || typeof node !== "object") return;

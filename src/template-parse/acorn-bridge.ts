@@ -3,6 +3,7 @@ import type { Node as AcornNode } from "acorn";
 import { Parser } from "acorn";
 import type { Program } from "estree";
 import { attachComments, bindOnComment, type CommentWithLocation, onComment } from "./comments";
+import type { ScriptProgram } from "./state";
 
 /**
  * acorn + `@sveltejs/acorn-typescript`, same as svelte's `phases/1-parse/acorn.js`.
@@ -155,11 +156,15 @@ function attachNewComments(
 }
 
 /** Parses a `<script>` / `<script module>` body into a `Program` at `index` in `fullSource`. */
-export function parseProgram(fullSource: string, isTypeScript: boolean, comments: CommentWithLocation[]): Program {
+export function parseProgram(
+  fullSource: string,
+  isTypeScript: boolean,
+  comments: CommentWithLocation[],
+): ScriptProgram {
   const commentsBefore = comments.length;
   bindOnComment(fullSource, comments);
 
-  const ast = parserFor(isTypeScript).parse(fullSource, PROGRAM_OPTIONS) as unknown as Program;
+  const ast = parserFor(isTypeScript).parse(fullSource, PROGRAM_OPTIONS) as unknown as ScriptProgram;
 
   // Skip the Program walk when no comments exist yet.
   if (comments.length > 0) {

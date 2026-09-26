@@ -1,3 +1,4 @@
+import type { Program } from "estree";
 import type { AST } from "svelte/compiler";
 import type { LineTable } from "./acorn-bridge";
 import type { CommentWithLocation } from "./comments";
@@ -16,24 +17,42 @@ export interface StackNode {
   [key: string]: unknown;
 }
 
+/** estree's `Program`, plus the `start`/`end` offsets acorn sets on every node. */
+export type ScriptProgram = Program & { start: number; end: number };
+
+/** svelte's `AST.Script`, with its `content`'s offsets typed. */
+export type TemplateScript = AST.Script & { content: ScriptProgram };
+
 /**
- * `instance`/`module` are missing, not `null`, until a matching `<script>`
- * is found. `root.js` is always `[]` after a bare `parse()`.
+ * What `parse()` returns: svelte's `AST.Root` (`parse(source, { modern: true })`)
+ * with these differences.
+ *
+ * - `instance`/`module` are missing, not `null`, when there's no such
+ *   `<script>`. svelte's own modern AST does the same, despite its types.
+ * - `comments` are {@link CommentWithLocation}s: `AST.JSComment` without `loc`.
+ * - `js` is svelte's legacy root field, always `[]` after a bare `parse()`.
+ * - Fields sveld never reads are left out even where svelte's node types
+ *   require them: `name_loc`, expression `.loc`, directive `modifiers`,
+ *   `TransitionDirective.intro`/`.outro`, `SnippetBlock.parameters`/
+ *   `.typeParams`, and `trailingComments`. Body `Text.data` is the raw text,
+ *   not entity-decoded, and `StyleSheet` has no parsed CSS.
+ *   `tests/svelte-template-parse-shim.test.ts` drops the same fields before
+ *   comparing against svelte.
+ *
+ * A `lang="ts"` script's `content` is typed as estree's `Program`, but also
+ * holds the TS nodes and fields acorn-typescript adds (`TSInterfaceDeclaration`,
+ * `typeAnnotation`, `importKind`, ...), which estree's types don't name.
  */
-type RootInProgress = Omit<AST.Root, "instance" | "module" | "comments"> & {
+export type TemplateRoot = Omit<AST.Root, "instance" | "module" | "comments"> & {
   js: unknown[];
-  instance?: AST.Script;
-  module?: AST.Script;
-  /**
-   * Kept as `CommentWithLocation` while parsing. Public `AST.JSComment[]` is
-   * the same shape, just narrower.
-   */
+  instance?: TemplateScript;
+  module?: TemplateScript;
   comments: CommentWithLocation[];
 };
 
 /** Cursor plus the open-element stack. */
 export class TemplateParserState extends Reader {
-  readonly root: RootInProgress;
+  readonly root: TemplateRoot;
   readonly stack: StackNode[] = [];
   readonly fragments: Fragment[] = [];
   readonly isTypeScript: boolean;

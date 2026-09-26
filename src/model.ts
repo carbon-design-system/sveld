@@ -2,7 +2,7 @@
  * The parsed-component model: what `ComponentParser` produces, and what the
  * cross-file pass, the writers, and the parse cache read.
  */
-import type { Node, Property } from "estree";
+import type { Property } from "estree";
 import type { SveldDiagnostic } from "./diagnostics";
 import { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "./parsed-component-metadata";
 
@@ -16,14 +16,6 @@ export interface JsDocPassthroughTag {
  * From `@deprecated` JSDoc: a message string, or `true` when the tag has no message.
  */
 export type DeprecatedValue = string | true;
-
-/** The modern AST `Root` that `ctx.parsed` holds. */
-export interface ModernAstRoot {
-  module?: Node;
-  fragment?: Node & { nodes?: Node[] };
-  instance?: Node;
-  css?: { start?: number; end?: number };
-}
 
 export interface SourcePosition {
   /** 1-based source line number */
@@ -277,17 +269,6 @@ export interface ProcessedInitializer {
   /** Identifier default bound to a named value import ({@link PendingConstDefaultCandidate}). */
   pendingConstDefault?: Omit<PendingConstDefaultCandidate, "propName" | "location">;
 }
-
-export type ModernScriptAttribute = {
-  name?: string;
-  value?: Array<{ data?: string; raw?: string }> | boolean;
-  start?: number;
-  end?: number;
-};
-
-export type ModernScriptNode = {
-  attributes?: ModernScriptAttribute[];
-};
 
 export type ComponentPropBinding = "readonly" | "writable";
 

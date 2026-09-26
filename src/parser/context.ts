@@ -15,7 +15,6 @@ import type {
   InternalComponentSlot,
   LexicalScope,
   LocalTypeDeclaration,
-  ModernAstRoot,
   ModernRunesTypeNode,
   PendingCallDefaultCandidate,
   PendingConstDefaultCandidate,
@@ -30,6 +29,7 @@ import type {
   TypeImportBinding,
   ValueImportBinding,
 } from "../model";
+import type { TemplateRoot } from "../svelte-template-parse";
 import type { JSDocComment } from "./comment-parser";
 
 /** One top-level member of an object `@typedef`, from a `@property` tag or an inline `{ ... }` type. */
@@ -45,7 +45,7 @@ export interface ParserContext {
   syntaxMode: SyntaxMode;
   scriptLanguage?: ScriptLanguage;
   source?: string;
-  parsed?: ModernAstRoot;
+  parsed?: TemplateRoot;
 
   /**
    * Explicit `<svelte:options runes={...} />` value. When set, overrides rune-reference detection.

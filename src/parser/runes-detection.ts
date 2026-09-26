@@ -252,24 +252,6 @@ function scanNode(node: ScannableNode, parent: ScannableNode | undefined, scopeS
   return found;
 }
 
-/** `<script>` / `<script module>` wrap their `Program` in `.content`. Same shape check as `scopes.ts`. */
-function getScriptProgramBody(script: unknown): unknown[] | undefined {
-  if (!script || typeof script !== "object") return undefined;
-
-  if ("content" in script) {
-    const content = (script as { content?: unknown }).content;
-    const body =
-      content && typeof content === "object" && "body" in content ? (content as { body?: unknown }).body : undefined;
-    if (Array.isArray(body)) return body;
-  }
-
-  if ("body" in script && Array.isArray((script as { body?: unknown }).body)) {
-    return (script as { body: unknown[] }).body;
-  }
-
-  return undefined;
-}
-
 /**
  * Determines a component's syntax mode without running the svelte compiler's analyze phase.
  *
@@ -296,10 +278,10 @@ export function detectSyntaxMode(ctx: ParserContext): SyntaxMode {
   if (ctx.source !== undefined && !mayContainRuneReference(ctx.source)) return "legacy";
 
   const moduleScope = new Set<string>();
-  collectDirectBlockNames(getScriptProgramBody(root.module), moduleScope);
+  collectDirectBlockNames(root.module?.content.body, moduleScope);
 
   const instanceScope = new Set<string>();
-  collectDirectBlockNames(getScriptProgramBody(root.instance), instanceScope);
+  collectDirectBlockNames(root.instance?.content.body, instanceScope);
 
   const runes =
     scanForRuneReference(root.module, [moduleScope]) ||

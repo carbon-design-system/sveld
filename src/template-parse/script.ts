@@ -1,6 +1,6 @@
 import type { AST } from "svelte/compiler";
 import { parseProgram } from "./acorn-bridge";
-import type { TemplateParserState } from "./state";
+import type { TemplateParserState, TemplateScript } from "./state";
 
 // `g` flag required: `readUntil()` drives this via `lastIndex`.
 const REGEX_CLOSING_SCRIPT_TAG = /<\/script\s*>/g;
@@ -14,7 +14,7 @@ const RESERVED_ATTRIBUTES = new Set(["server", "client", "worker", "test", "defa
  * padded with spaces, so acorn's `start`/`end` land on real offsets without a
  * second pass to shift them.
  */
-export function readScript(state: TemplateParserState, start: number, attributes: AST.Attribute[]): AST.Script {
+export function readScript(state: TemplateParserState, start: number, attributes: AST.Attribute[]): TemplateScript {
   const scriptStart = state.index;
   const data = state.readUntil(REGEX_CLOSING_SCRIPT_TAG);
   if (state.index >= state.source.length) {
@@ -24,7 +24,7 @@ export function readScript(state: TemplateParserState, start: number, attributes
   const padded = state.source.slice(0, scriptStart).replace(REGEX_NOT_NEWLINE, " ") + data;
   state.read(REGEX_STARTS_WITH_CLOSING_SCRIPT_TAG);
 
-  const program = parseProgram(padded, state.isTypeScript, state.root.comments) as unknown as { start: number };
+  const program = parseProgram(padded, state.isTypeScript, state.root.comments);
   // Acorn numbers a `Program` from 0. Pin `.start` to the real `<script>` content offset.
   program.start = scriptStart;
 
@@ -59,7 +59,7 @@ export function readScript(state: TemplateParserState, start: number, attributes
     start,
     end: state.index,
     context,
-    content: program as unknown as AST.Script["content"],
+    content: program,
     attributes,
   };
 }

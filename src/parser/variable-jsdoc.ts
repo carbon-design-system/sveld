@@ -118,17 +118,15 @@ function buildVariableJsDocTable(
   const table = new Map<string, { type?: string; description?: string; internal?: boolean }>();
   if (!ctx.source) return table;
 
-  const scripts = [ctx.parsed?.module, ctx.parsed?.instance] as unknown as Array<
-    { content?: { start?: number; end?: number; body?: unknown[] } } | undefined
-  >;
+  const scripts = [ctx.parsed?.module, ctx.parsed?.instance];
 
   const allComments: ScriptComment[] = [];
   const allDeclarations: TopLevelDeclaration[] = [];
-  const comments = (ctx.parsed as unknown as { comments?: CommentWithLocation[] } | undefined)?.comments ?? [];
+  const comments = ctx.parsed?.comments ?? [];
 
   for (const script of scripts) {
     const program = script?.content;
-    if (!program?.body || program.start === undefined || program.end === undefined) continue;
+    if (!program) continue;
 
     collectBlockComments(comments, ctx.source, program.start, program.end, allComments);
     allDeclarations.push(...collectTopLevelDeclarations(program.body));
@@ -235,13 +233,13 @@ export function resolveLocalVarJSDoc(ctx: ParserContext, name: string) {
         declarator.id.name === name,
     );
     if (matches) {
-      return processNodeJSDoc(ctx, decl as unknown as { leadingComments?: unknown[]; start?: number });
+      return processNodeJSDoc(ctx, decl);
     }
   }
 
   const funcDecl = ctx.funcDecls.get(name);
   if (funcDecl) {
-    return processNodeJSDoc(ctx, funcDecl as unknown as { leadingComments?: unknown[]; start?: number });
+    return processNodeJSDoc(ctx, funcDecl);
   }
 
   return undefined;

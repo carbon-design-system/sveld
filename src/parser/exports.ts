@@ -11,6 +11,7 @@ import type {
   Identifier,
   Literal,
   Node,
+  Program,
   VariableDeclaration,
   VariableDeclarator,
 } from "estree";
@@ -23,7 +24,6 @@ import { addProp, processInitializer, queuePendingCrossFileDefault } from "./pro
 import { collectPatternIdentifiers } from "./scopes";
 import { sourceRangeFromNode } from "./source-position";
 import { buildFunctionDeclarationSignature, type FunctionDeclarationLike } from "./type-resolution";
-import { scriptBody } from "./value-imports";
 
 /** Name of an export/import specifier's `local`/`exported`/`imported` (an identifier or a string literal). */
 export function moduleExportName(node: Identifier | Literal | undefined): string | undefined {
@@ -42,6 +42,11 @@ export interface ResolvedExportSpecifier {
   statement?: Node;
 }
 
+/** `program`'s top-level statements, or none when `program` isn't a `Program`. */
+function programBody(program: Node | null | undefined): Program["body"] {
+  return program?.type === "Program" ? program.body : [];
+}
+
 /**
  * The top-level function, class, or variable declarator in `program` that binds
  * `localName`, which can come before or after the export naming it.
@@ -50,8 +55,7 @@ function findTopLevelBinding(
   program: Node | null | undefined,
   localName: string,
 ): Pick<ResolvedExportSpecifier, "declaration" | "declarator" | "statement"> | undefined {
-  for (const statement of (program && scriptBody(program)) ?? []) {
-    const node = statement as Node;
+  for (const node of programBody(program)) {
     const declaration = node.type === "ExportNamedDeclaration" && node.declaration ? node.declaration : node;
     if (declaration.type === "VariableDeclaration") {
       const declarator = declaration.declarations.find((decl) =>
@@ -77,8 +81,7 @@ function findReactiveDeclaration(
   program: Node | null,
   localName: string,
 ): Pick<ResolvedExportSpecifier, "declaration" | "declarator" | "statement"> | undefined {
-  for (const statement of (program && scriptBody(program)) ?? []) {
-    const node = statement as Node;
+  for (const node of programBody(program)) {
     if (node.type !== "LabeledStatement" || node.label.name !== "$") continue;
     if (node.body.type !== "ExpressionStatement") continue;
     const assignment = node.body.expression;
@@ -136,8 +139,8 @@ export function resolveExportSpecifier(
 
   let binding = findTopLevelBinding(program, localName);
   if (!binding && script === "instance") {
-    const module = ctx.parsed?.module as unknown as Node | undefined;
-    binding = findTopLevelBinding(module, localName) ?? findReactiveDeclaration(program, localName);
+    binding =
+      findTopLevelBinding(ctx.parsed?.module?.content, localName) ?? findReactiveDeclaration(program, localName);
   }
   return { localName, exportedName, ...binding };
 }

@@ -218,8 +218,7 @@ function parseModule(filePath: string): ParsedModule {
   try {
     let body: AstNode[];
     if (filePath.endsWith(".svelte")) {
-      const ast = getParserStack().parseSvelte(text) as { module?: { content?: { body?: unknown } } };
-      body = asNodeArray(ast.module?.content?.body);
+      body = asNodeArray(getParserStack().parseSvelte(text).module?.content.body);
     } else {
       body = asNodeArray(getParserStack().parseProgram(text, true, []).body);
     }
