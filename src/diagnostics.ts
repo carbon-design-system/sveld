@@ -30,7 +30,6 @@ import { matchesGlob } from "./glob-match";
  * - `event-description-ambiguous`: unindented text after an `@event` in the same comment block was read as the next tag's description; the author may have meant it for the event.
  * - `jsdoc-tag-dropped`: a passthrough JSDoc tag (e.g. `@see`) couldn't attach to a following or preceding structural tag.
  * - `internal-typedef-referenced`: a public prop/typedef/event/slot/module-export/context type references an `@internal` typedef by name, which is excluded from output; the generated `.d.ts` will contain a dangling reference.
- * - `types-inline-unresolved`: `typesOptions.inline` could not safely copy an imported type (missing file, missing export, an unsupported export kind, or a name collision); the import is kept as-is.
  * - `cross-file-unresolved`: output depends on an import that was never read, because the component was parsed standalone (`sveld/browser`, or `ComponentParser` directly) and finalized with `finalizeWithoutCrossFileResolution`. `generateBundle` and the CLI resolve these and never record it.
  * - `export-ambiguous`: two `export *` statements in the entry barrel bring in the same name from different modules, so the barrel doesn't export it and the entry-exports docs leave it out (`documentExports` only). Attributed to the barrel file, not a component.
  */
@@ -61,7 +60,6 @@ export type SveldDiagnosticKind =
   | "event-description-ambiguous"
   | "jsdoc-tag-dropped"
   | "internal-typedef-referenced"
-  | "types-inline-unresolved"
   | "cross-file-unresolved"
   | "export-ambiguous";
 
@@ -101,7 +99,6 @@ export const DIAGNOSTIC_CODES: Record<SveldDiagnosticKind, string> = {
   "event-description-ambiguous": "sveld/event-description-ambiguous",
   "jsdoc-tag-dropped": "sveld/jsdoc-tag-dropped",
   "internal-typedef-referenced": "sveld/internal-typedef-referenced",
-  "types-inline-unresolved": "sveld/types-inline-unresolved",
   "cross-file-unresolved": "sveld/cross-file-unresolved",
   "export-ambiguous": "sveld/export-ambiguous",
 };
@@ -138,7 +135,6 @@ const DIAGNOSTIC_SEVERITIES: Record<SveldDiagnosticKind, SveldDiagnosticSeverity
   "event-description-ambiguous": "warning",
   "jsdoc-tag-dropped": "warning",
   "internal-typedef-referenced": "error",
-  "types-inline-unresolved": "warning",
   "cross-file-unresolved": "warning",
   "export-ambiguous": "warning",
 };
@@ -276,7 +272,6 @@ const KIND_LABELS: Record<SveldDiagnosticKind, string> = {
   "event-description-ambiguous": "Text after an @event read as the next tag's description",
   "jsdoc-tag-dropped": "Passthrough JSDoc tags that couldn't attach",
   "internal-typedef-referenced": "Public types referencing an @internal typedef",
-  "types-inline-unresolved": "typesOptions.inline could not safely copy an imported type",
   "cross-file-unresolved": "Imports a standalone parse couldn't read",
   "export-ambiguous": "Ambiguous `export *` names left out of the entry exports",
 };
@@ -308,7 +303,6 @@ const KIND_ORDER: SveldDiagnosticKind[] = [
   "event-description-ambiguous",
   "jsdoc-tag-dropped",
   "internal-typedef-referenced",
-  "types-inline-unresolved",
   "cross-file-unresolved",
   "export-ambiguous",
 ];

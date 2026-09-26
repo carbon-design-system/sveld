@@ -3,10 +3,7 @@ import { tmpdir } from "node:os";
 import { join, relative, resolve } from "node:path";
 import type { ComponentDocApi, ComponentDocs } from "../src/bundle";
 import pluginSveld, { createSerialQueue, writeOutput } from "../src/plugin";
-import { TypeResolver } from "../src/resolve-types";
 import { createSveldBundle } from "../src/watch";
-
-const INLINE_ALL_RESOLVER_FAILURE_MESSAGE_REGEX = /typesOptions\.inline: "all".*tsconfig\.json/s;
 
 /** Look up `allComponentsForTypes` by filePath; moduleName is not unique. */
 function byModuleName(components: ComponentDocs, moduleName: string): ComponentDocApi | undefined {
@@ -392,165 +389,6 @@ describe("watch mode (createSveldBundle)", () => {
   });
 });
 
-describe("watch mode with typesOptions.inline", () => {
-  let dir: string;
-
-  beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), "sveld-watch-inline-"));
-    writeFileSync(
-      join(dir, "A.svelte"),
-      `<script lang="ts">
-  import type { Size } from "./a-types";
-  let { size }: { size: Size } = $props();
-</script>
-<div>{size}</div>
-`,
-    );
-    writeFileSync(join(dir, "a-types.ts"), `export type Size = "sm" | "md";\n`);
-    writeFileSync(
-      join(dir, "B.svelte"),
-      `<script lang="ts">
-  export let label = "b";
-</script>
-<span>{label}</span>
-`,
-    );
-  });
-
-  afterEach(() => {
-    rmSync(dir, { recursive: true, force: true });
-  });
-
-  test("editing a component's inline dependency refreshes only that component's inlined types", async () => {
-    const bundle = await createSveldBundle(dir, true, false, "local");
-
-    const initial = await bundle.result;
-    const componentA = byModuleName(initial.allComponentsForTypes, "A");
-    expect(componentA).toBeDefined();
-    // biome-ignore lint/style/noNonNullAssertion: asserted above
-    const before = initial.inlinedTypesByFilePath?.get(componentA!.filePath);
-    expect(before?.declarations).toEqual(['type Size = "sm" | "md";']);
-
-    // Not itself a component, so it's never in `update()`'s `reparsed` set - only the
-    // inline-dependency reverse map lets this be picked up.
-    writeFileSync(join(dir, "a-types.ts"), `export type Size = "sm" | "md" | "lg";\n`);
-    const { result, reparsed } = await bundle.update([resolve(dir, "a-types.ts")]);
-
-    expect(reparsed).toEqual([]);
-    // biome-ignore lint/style/noNonNullAssertion: asserted above
-    const after = result.inlinedTypesByFilePath?.get(componentA!.filePath);
-    expect(after?.declarations).toEqual(['type Size = "sm" | "md" | "lg";']);
-  });
-
-  test("editing an unrelated component does not recompute another component's inlined types", async () => {
-    const bundle = await createSveldBundle(dir, true, false, "local");
-
-    const initial = await bundle.result;
-    const componentA = byModuleName(initial.allComponentsForTypes, "A");
-    // biome-ignore lint/style/noNonNullAssertion: asserted above
-    const before = initial.inlinedTypesByFilePath?.get(componentA!.filePath);
-
-    writeFileSync(
-      join(dir, "B.svelte"),
-      `<script lang="ts">
-  export let label = "changed";
-</script>
-<span>{label}</span>
-`,
-    );
-    const { result, reparsed } = await bundle.update([resolve(dir, "B.svelte")]);
-
-    expect(reparsed).toEqual([resolve(dir, "B.svelte")]);
-    // biome-ignore lint/style/noNonNullAssertion: asserted above
-    const after = result.inlinedTypesByFilePath?.get(componentA!.filePath);
-    // Same object reference: A's inline result was carried forward, not recomputed.
-    expect(after).toBe(before);
-  });
-});
-
-/**
- * `typesInline: "all"` needs the real TypeScript checker, so (unlike the rest of this file's
- * system-tmpdir components) these fixtures live inside the repo, same reasoning as the
- * `tsc`-verification test in `inline-types.test.ts`: module resolution needs to walk up to the
- * repo's own `node_modules` for both `typescript` and the fabricated bare package below.
- */
-describe('watch mode with typesInline: "all"', () => {
-  let allDir: string;
-  let createSpy: ReturnType<typeof jest.spyOn> | undefined;
-
-  beforeEach(() => {
-    allDir = mkdtempSync(join(process.cwd(), ".tmp-sveld-watch-inline-all-"));
-    writeFileSync(
-      join(allDir, "tsconfig.json"),
-      JSON.stringify({
-        compilerOptions: {
-          target: "ES2022",
-          module: "ESNext",
-          moduleResolution: "bundler",
-          strict: true,
-          skipLibCheck: true,
-        },
-        include: ["**/*"],
-      }),
-    );
-    const libDir = join(allDir, "node_modules", "some-lib");
-    mkdirSync(libDir, { recursive: true });
-    writeFileSync(join(libDir, "package.json"), JSON.stringify({ name: "some-lib", types: "index.d.ts" }));
-    writeFileSync(join(libDir, "index.d.ts"), `export type Size = "sm" | "md" | "lg";\n`);
-  });
-
-  afterEach(() => {
-    createSpy?.mockRestore();
-    createSpy = undefined;
-    rmSync(allDir, { recursive: true, force: true });
-  });
-
-  test("inlines a bare package import and picks up an edit to it on the next result", async () => {
-    const compPath = join(allDir, "Comp.svelte");
-    writeFileSync(
-      compPath,
-      `<script lang="ts">
-  import type { Size } from "some-lib";
-  let { size }: { size: Size } = $props();
-</script>
-<div />
-`,
-    );
-
-    const bundle = await createSveldBundle(allDir, true, false, "all");
-    const initial = await bundle.result;
-    const component = Array.from(initial.allComponentsForTypes.values()).find((c) => c.moduleName === "Comp");
-    expect(component).toBeDefined();
-    // biome-ignore lint/style/noNonNullAssertion: asserted above
-    const inlined = initial.inlinedTypesByFilePath?.get(component!.filePath);
-    expect(inlined?.declarations).toEqual(['type Size = "sm" | "md" | "lg";']);
-
-    // Editing the bare package's own source (not the component) must be picked up on the next
-    // `result`/`update()` access, same contract `"local"` already has for a relative source.
-    writeFileSync(
-      join(allDir, "node_modules", "some-lib", "index.d.ts"),
-      `export type Size = "xs" | "sm" | "md" | "lg" | "xl";\n`,
-    );
-
-    const { result } = await bundle.update([compPath]);
-    // biome-ignore lint/style/noNonNullAssertion: asserted above
-    const reInlined = result.inlinedTypesByFilePath?.get(component!.filePath);
-    expect(reInlined?.declarations).toEqual(['type Size = "xs" | "sm" | "md" | "lg" | "xl";']);
-  }, 30_000);
-
-  test("fails loudly at creation when the checker can't start, same contract as resolveTypes", async () => {
-    createSpy = jest.spyOn(TypeResolver, "create").mockResolvedValue({
-      ok: false,
-      reason: "no-tsconfig",
-      message: 'could not locate a tsconfig.json starting from "/fake"',
-    });
-
-    await expect(createSveldBundle(allDir, true, false, "all")).rejects.toThrow(
-      INLINE_ALL_RESOLVER_FAILURE_MESSAGE_REGEX,
-    );
-  });
-});
-
 describe("pluginSveld watch option", () => {
   test("defaults to build-only apply when watch is not set", () => {
     expect(pluginSveld().apply).toBe("build");
@@ -614,49 +452,33 @@ describe("pluginSveld watch option", () => {
     }
   });
 
-  test("a bad config does not crash buildStart; it logs and leaves the dev server running", async () => {
+  test("a failed initial build does not crash buildStart; it logs and leaves the dev server running", async () => {
     // `getSvelteEntry` joins `entry` onto `process.cwd()` rather than treating an absolute path
     // as already-absolute, so the fixture lives under `process.cwd()` itself (as elsewhere in this
     // suite) rather than `os.tmpdir()`: on Windows CI, the checkout and the OS temp dir can sit on
     // different drives, and `path.relative` across drives falls back to an absolute path, which
     // `getSvelteEntry` then mangles into a bogus one.
     const dir = mkdtempSync(join(process.cwd(), ".tmp-sveld-watch-buildstart-"));
+    const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
     try {
-      writeFileSync(
-        join(dir, "Comp.svelte"),
-        `<script lang="ts">
-  import type { Size } from "./types";
-  let { size }: { size: Size } = $props();
-</script>
-<div>{size}</div>
-`,
-      );
-      writeFileSync(join(dir, "types.ts"), `export type Size = "sm" | "md";\n`);
-
-      const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
-      // `inline: "all"` needs a live checker; failing to start one is a config error.
-      const createSpy = jest.spyOn(TypeResolver, "create").mockResolvedValue({
-        ok: false,
-        reason: "no-tsconfig",
-        message: 'could not locate a tsconfig.json starting from "/fake"',
+      writeFileSync(join(dir, "Button.svelte"), BUTTON);
+      // The output dir is a file, so the initial write fails.
+      const outDir = join(dir, "types");
+      writeFileSync(outDir, "");
+      const plugin = pluginSveld({
+        entry: relative(process.cwd(), join(dir, "Button.svelte")),
+        watch: true,
+        quiet: true,
+        typesOptions: { outDir },
       });
-      try {
-        const plugin = pluginSveld({
-          entry: relative(process.cwd(), join(dir, "Comp.svelte")),
-          watch: true,
-          typesOptions: { inline: "all" },
-        });
 
-        await expect(plugin.buildStart()).resolves.toBeUndefined();
-        expect(errorSpy).toHaveBeenCalledWith(
-          "sveld: failed to generate initial types in watch mode:",
-          expect.any(Error),
-        );
-      } finally {
-        errorSpy.mockRestore();
-        createSpy.mockRestore();
-      }
+      await expect(plugin.buildStart()).resolves.toBeUndefined();
+      expect(errorSpy).toHaveBeenCalledWith(
+        "sveld: failed to generate initial types in watch mode:",
+        expect.anything(),
+      );
     } finally {
+      errorSpy.mockRestore();
       rmSync(dir, { recursive: true, force: true });
     }
   });

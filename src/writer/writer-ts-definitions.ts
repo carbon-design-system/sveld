@@ -1,6 +1,5 @@
 import { join, resolve } from "node:path";
 import { convertSvelteExt, createExports, createTypeExports, type TypeExportEntry } from "../create-exports";
-import type { InlinedTypes } from "../inline-types";
 import { info } from "../logger";
 import { hashSource, type ParseCache } from "../parse-cache";
 import type { ParsedExports } from "../parse-exports";
@@ -133,11 +132,6 @@ export interface WriteTsDefinitionsOptions extends WriteTsDefinitionOptions {
    */
   crossFileResolvedPathByFilePath?: Map<string, string>;
   /**
-   * @internal From `GenerateBundleResult.inlinedTypesByFilePath`, populated when
-   * `typesOptions.inline` is `"local"`/`"all"`. Lookups use `component.filePath`.
-   */
-  inlinedTypesByFilePath?: Map<string, InlinedTypes>;
-  /**
    * Post-processes each generated file's text before it is written. Runs
    * after the generated-text cache, so it applies on every run. Config file
    * or `sveld()` only.
@@ -179,27 +173,21 @@ export default async function writeTsDefinitions(components: ComponentDocs, opti
   const indexDTs =
     options.preamble + [createExports(options.exports), typeExports].filter((section) => section !== "").join("\n\n");
 
-  const baseEmitOptions = pickEmitOptions(options);
+  const emitOptions = pickEmitOptions(options);
   const writePromises = document.components.map(async (component) => {
     const ts_filepath = convertSvelteExt(join(options.outDir, component.filePath));
     const relativeFilePath = normalizeSeparators(convertSvelteExt(component.filePath));
     const ownPath = options.resolvedPathByFilePath?.get(component.filePath);
     const crossFilePath = ownPath ? undefined : options.crossFileResolvedPathByFilePath?.get(component.filePath);
     const resolvedPath = ownPath ?? crossFilePath;
-    const inlined = options.inlinedTypesByFilePath?.get(component.filePath);
-    const emitOptions = inlined ? { ...baseEmitOptions, inlined } : baseEmitOptions;
-    // A component with inlined declarations depends on other files' contents, which aren't part
-    // of its own source hash, so the generated-text cache can't safely be trusted for it.
-    const bypassCache = (inlined?.declarations.length ?? 0) > 0;
     // A cross-file component's source is fixed by its cache entry, but not
     // what it read from other files, which lands in its serialized content.
     const optionsKey = generatedTextCacheKey(component.moduleName, emitOptions);
-    const cacheKey =
-      !bypassCache && crossFilePath ? `${optionsKey}\n${hashSource(JSON.stringify(component))}` : optionsKey;
-    let text = !bypassCache && resolvedPath ? options.cache?.getGeneratedText(resolvedPath, cacheKey) : undefined;
+    const cacheKey = crossFilePath ? `${optionsKey}\n${hashSource(JSON.stringify(component))}` : optionsKey;
+    let text = resolvedPath ? options.cache?.getGeneratedText(resolvedPath, cacheKey) : undefined;
     if (text === undefined) {
       text = writeTsDefinition(component, emitOptions);
-      if (!bypassCache && resolvedPath) options.cache?.setGeneratedText(resolvedPath, cacheKey, text);
+      if (resolvedPath) options.cache?.setGeneratedText(resolvedPath, cacheKey, text);
     }
     const transformedText = await applyTransform(options.transform, text, {
       kind: "component",

@@ -8,7 +8,6 @@ import {
   collectSvelteFilePaths,
   createGlobMergeState,
   type GenerateBundleResult,
-  loadInlineTypes,
   mergeGlobbedComponents,
   type ProcessComponentOptions,
   processComponent,
@@ -22,13 +21,10 @@ import {
 import { buildReverseDeps, expandAffected } from "./dependency-graph";
 import { dedupeDiagnostics, type SveldDiagnostic } from "./diagnostics";
 import { resetDirectoryListings } from "./fs-listing";
-import type { InlinedTypes } from "./inline-types";
 import { type EntryExports, parseEntryExports } from "./parse-entry-exports";
 import type { ParsedExports } from "./parse-exports";
 import { loadParserStack } from "./parser-stack";
 import { SVELTE_EXT_REGEX } from "./path";
-import type { BareTypeSession, TypeResolver } from "./resolve-types";
-import type { WriteTsDefinitionOptions } from "./writer/writer-ts-definitions-core";
 
 /** Result of an incremental update. */
 interface SveldBundleUpdate {
@@ -74,21 +70,8 @@ function addReverseEdge(map: Map<string, Set<string>>, key: string, value: strin
  * @param input - Entry point file or directory containing Svelte components
  * @param glob - Whether to glob for all `.svelte` files in the directory
  * @param documentExports - Record consts, functions, and types from the entry barrel
- * @param typesInline - Mirrors `typesOptions.inline`; scoped to the components actually affected
- *   by each `update()` (the reparsed ones, plus any component whose inline dependency file itself
- *   changed), so edits to an inlined source are picked up on the next debounced flush without
- *   re-resolving every other component's type imports too. `"all"` additionally needs a live
- *   TypeScript checker for bare/package imports (see `inline-types.ts`); unlike the one-shot
- *   `generateBundle` path, watch mode creates that checker eagerly here (not gated on whether a
- *   bare import exists yet), failing the same way `resolveTypes` does if it can't start, since a
- *   later edit could add a bare import at any point in a long-lived session.
  */
-export async function createSveldBundle(
-  input: string,
-  glob: boolean,
-  documentExports = false,
-  typesInline?: WriteTsDefinitionOptions["inline"],
-): Promise<SveldBundle> {
+export async function createSveldBundle(input: string, glob: boolean, documentExports = false): Promise<SveldBundle> {
   const inputIsFile = lstatSync(input).isFile();
   // Watched so editing the barrel (adding/removing/renaming an export) is
   // picked up without restarting the dev server; `null` for a directory
@@ -103,20 +86,6 @@ export async function createSveldBundle(
   let exports = initial.exports;
   let allComponentEntries = initial.allComponentEntries;
   let resolveComponentFilePath = initial.resolveComponentFilePath;
-
-  // Eager, unconditional (unlike the one-shot `generateBundle` path, which only pays this cost
-  // when a bare import already exists): watch mode is long-lived, and a bare import can be added
-  // by a later edit, so there's no single point where "nothing bare exists yet" can be trusted to
-  // stay true. Same fail-loud contract as `resolveTypes`.
-  let bareResolver: TypeResolver | undefined;
-  if (typesInline === "all") {
-    const { TypeResolver } = await import("./resolve-types");
-    const created = await TypeResolver.create(rootDir);
-    if (!created.ok) {
-      throw new Error(`sveld: \`typesOptions.inline: "all"\` ${created.message}.`);
-    }
-    bareResolver = created.resolver;
-  }
 
   // The barrel's own diagnostics, attributed to it rather than a component.
   // Replaced whenever the barrel is re-read.
@@ -178,73 +147,6 @@ export async function createSveldBundle(
     syncCrossFileResults(components, allComponentsForTypes);
   };
 
-  // Persisted across accesses/flushes so an unaffected component's inline result is reused rather
-  // than recomputed (re-reading and re-parsing its type-import dependency files, or under `"all"`
-  // re-resolving through the checker) on every single `.result`/`update()` call. Kept in sync with
-  // `allComponentsForTypes` by `refreshInlinedTypes`.
-  const inlinedTypesByFilePath = new Map<string, InlinedTypes>();
-  // Absolute path of a file read while inlining -> the component `filePath`s whose inline result
-  // depends on it. A dependency is never itself re-parsed as a component (it's a plain `.ts` file,
-  // not a barrel export), so without this, an edit to it would go unnoticed by the reparse-scoping
-  // above; `update()` consults this to fold the dependency's owners into the refresh scope.
-  const inlineDepsReverse = new Map<string, Set<string>>();
-
-  /**
-   * Recomputes `typesOptions.inline` results for exactly `scope`, merging into the persisted map
-   * and refreshing `inlineDepsReverse` for it. Called with the full component set after the
-   * initial parse, then with the reparsed subset (plus any component whose recorded dependency
-   * changed) after each `update()` - an edit to one component's type-import dependency never pays
-   * for re-resolving every other component's.
-   *
-   * Under `"all"`, the bare-import overlay/session is likewise rebuilt for just `scope` rather
-   * than the whole bundle: cheap when `scope` has nothing bare to resolve (an empty overlay skips
-   * creating a session at all), and `forgetOverlayFiles` clears each scoped component's *previous*
-   * virtual overlay file first, since `openBareTypeSession` only ever adds to the resolver's
-   * long-lived overlay - without this, a component whose bare imports were all removed would leave
-   * a stale entry there for the rest of the dev-server session.
-   */
-  const refreshInlinedTypes = async (scope: ComponentDocs): Promise<void> => {
-    if (typesInline !== "local" && typesInline !== "all") return;
-    const { bareOverlayVirtualFilePath, collectBareImportOverlay, inlineLocalTypeImports } = await loadInlineTypes();
-
-    for (const component of scope.values()) {
-      inlinedTypesByFilePath.delete(component.filePath);
-      for (const dependents of inlineDepsReverse.values()) dependents.delete(component.filePath);
-    }
-
-    let bareOverlay: Map<string, string> = new Map();
-    if (typesInline === "all" && bareResolver) {
-      bareResolver.forgetOverlayFiles(
-        Array.from(scope.values(), (component) =>
-          bareOverlayVirtualFilePath(resolveComponentFilePath(component.filePath), component.moduleName),
-        ),
-      );
-      bareOverlay = collectBareImportOverlay(scope, resolveComponentFilePath);
-    }
-
-    let bareSession: BareTypeSession | undefined;
-    try {
-      if (bareResolver && bareOverlay.size > 0) {
-        bareSession = await bareResolver.openBareTypeSession(bareOverlay);
-      }
-
-      const fresh = await inlineLocalTypeImports(scope, resolveComponentFilePath, bareSession);
-      for (const [filePath, inlined] of fresh) {
-        inlinedTypesByFilePath.set(filePath, inlined);
-        for (const dependency of inlined.dependencies) addReverseEdge(inlineDepsReverse, dependency, filePath);
-      }
-    } finally {
-      if (bareSession) await bareSession.dispose();
-    }
-  };
-
-  /** Drops inline results for components no longer in the bundle. */
-  const pruneInlinedTypes = (): void => {
-    for (const filePath of inlinedTypesByFilePath.keys()) {
-      if (!allComponentsForTypes.has(filePath)) inlinedTypesByFilePath.delete(filePath);
-    }
-  };
-
   const buildResult = (): GenerateBundleResult => ({
     exports,
     entryExports,
@@ -255,7 +157,6 @@ export async function createSveldBundle(
       ...Array.from(allComponentsForTypes.values()).flatMap((component) => component.diagnostics ?? []),
       ...entryDiagnostics,
     ]),
-    inlinedTypesByFilePath: typesInline === "local" || typesInline === "all" ? inlinedTypesByFilePath : undefined,
   });
 
   // Initial full parse.
@@ -272,7 +173,6 @@ export async function createSveldBundle(
       if (result) allComponentsForTypes.set(result.filePath, result);
     }
     await resolveCrossFile(Array.from(allComponentsForTypes.values()));
-    await refreshInlinedTypes(allComponentsForTypes);
     reportParseErrors(Array.from(parseErrors.values()));
   }
 
@@ -322,15 +222,6 @@ export async function createSveldBundle(
 
     if (resolvedChanged.length === 0) {
       return { result: buildResult(), reparsed: [] };
-    }
-
-    // Components whose inline result depends on a file that just changed, even though the
-    // component's own source didn't - resolved from the reverse map built by the last
-    // `refreshInlinedTypes` call, since `reverseDeps` only tracks `@extendProps`/typedef edges.
-    const inlineTypeAffectedFilePaths = new Set<string>();
-    for (const changed of resolvedChanged) {
-      const dependents = inlineDepsReverse.get(changed);
-      if (dependents) for (const filePath of dependents) inlineTypeAffectedFilePaths.add(filePath);
     }
 
     const entryChanged = resolvedInput !== null && resolvedChanged.includes(resolvedInput);
@@ -385,7 +276,6 @@ export async function createSveldBundle(
       for (const [key, error] of parseErrors) {
         if (!listed.has(resolveComponentFilePath(error.filePath))) parseErrors.delete(key);
       }
-      pruneInlinedTypes();
     }
 
     // Non-`.svelte` changes only matter when they're a known dependency
@@ -396,14 +286,6 @@ export async function createSveldBundle(
     const crossFileReaders = resolvedChanged.flatMap((path) => Array.from(crossFileDepsReverse.get(path) ?? []));
 
     if (relevantChanged.length === 0 && addedComponentPaths.length === 0 && crossFileReaders.length === 0) {
-      // Nothing needs a component re-parse, but a changed file may still be an inline dependency.
-      if (inlineTypeAffectedFilePaths.size > 0) {
-        const affectedForTypes: ComponentDocs = new Map();
-        for (const [key, component] of allComponentsForTypes) {
-          if (inlineTypeAffectedFilePaths.has(component.filePath)) affectedForTypes.set(key, component);
-        }
-        await refreshInlinedTypes(affectedForTypes);
-      }
       return { result: buildResult(), reparsed: [] };
     }
 
@@ -442,22 +324,6 @@ export async function createSveldBundle(
         reparsed.has(resolveComponentFilePath(component.filePath)),
       ),
     );
-
-    // Only the reparsed components, plus any component whose inline dependency just changed, need
-    // their inline results recomputed; every other component's type-import dependencies are
-    // unchanged. Drop entries for components removed since the last update (a deleted file no
-    // longer has anything to carry forward).
-    const reparsedForTypes: ComponentDocs = new Map();
-    for (const [key, component] of allComponentsForTypes) {
-      if (
-        reparsed.has(resolveComponentFilePath(component.filePath)) ||
-        inlineTypeAffectedFilePaths.has(component.filePath)
-      ) {
-        reparsedForTypes.set(key, component);
-      }
-    }
-    await refreshInlinedTypes(reparsedForTypes);
-    pruneInlinedTypes();
 
     const result = buildResult();
     reportParseErrors(result.errors);

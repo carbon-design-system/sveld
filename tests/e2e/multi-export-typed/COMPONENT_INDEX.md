@@ -1,6 +1,6 @@
 # Component Index
 
-> 5 components exported from multi-export-typed@0.0.1.
+> 4 components exported from multi-export-typed@0.0.1.
 
 ## Components
 
@@ -8,7 +8,6 @@
 - [`Link`](#link)
 - [`Quote`](#quote)
 - [`SecondaryButton`](#secondarybutton)
-- [`TypedThing`](#typedthing)
 
 ---
 
@@ -89,22 +88,4 @@ None.
 | Event name | Type | Detail | Description |
 | :- | :- | :- | :- |
 | click | forwarded | -- | -- |
-
-## `TypedThing`
-
-### Props
-
-| Prop name | Required | Kind | Reactive | Binding | Type | Default value | Description |
-| :- | :- | :- | :- | :- | :- | :- | :- |
-| size | No | <code>let</code> | No | -- | <code>Size</code> | <code>"sm"</code> | -- |
-
-### Slots
-
-| Slot name | Default | Props | Fallback | Description |
-| :- | :- | :- | :- | :- |
-| -- | Yes | <code>Record&lt;string, never> </code> | -- | -- |
-
-### Events
-
-None.
 

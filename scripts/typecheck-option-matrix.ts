@@ -13,9 +13,8 @@
  * own `node_modules/svelte`.
  *
  * The matrix is representative, not the cartesian product: every emit
- * option at a non-default value at least once.
- * `inline` and `transform` aren't covered: `inline` needs a full bundle
- * (`generateBundle`) to resolve imports, and `transform` is consumer code.
+ * option at a non-default value at least once. `transform` isn't covered:
+ * it's consumer code.
  *
  * Usage:
  *   bun run test:types-matrix

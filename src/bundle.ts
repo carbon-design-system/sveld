@@ -21,7 +21,6 @@ import {
 } from "./diagnostics";
 import { collectExampleSources, type ExampleCheckSource } from "./example-check";
 import { readDirectoryListing, resetDirectoryListings } from "./fs-listing";
-import type { InlinedTypes } from "./inline-types";
 import { hashSource, ParseCache, resolveCacheFilePath } from "./parse-cache";
 import { createResolveContext, type EntryExports, parseEntryExports, type ResolveContext } from "./parse-entry-exports";
 import { type ParsedExports, parseExports } from "./parse-exports";
@@ -44,9 +43,9 @@ import {
   describeDispatchEscapeFailure,
   resolveDispatchEscapeCandidates,
 } from "./resolve-dispatch-escapes";
-import type { BareTypeSession, TypeResolver } from "./resolve-types";
+import type { TypeResolver } from "./resolve-types";
 import { TemplateParseNotImplementedError } from "./template-parse/not-implemented";
-import { exportsTypeName, propsTypeName, type WriteTsDefinitionOptions } from "./writer/writer-ts-definitions-core";
+import { exportsTypeName, propsTypeName } from "./writer/writer-ts-definitions-core";
 
 export interface ComponentDocApi extends ParsedComponent {
   filePath: NormalizedPath;
@@ -108,12 +107,6 @@ export interface GenerateBundleResult {
    * their own source doesn't determine it.
    */
   crossFileResolvedPathByFilePath?: Map<string, string>;
-  /**
-   * @internal Populated when `typesInline` is `"local"`/`"all"`, keyed by
-   * `component.filePath`. Passed to the types writer (see `writeTsDefinitions`)
-   * so it can drop successfully-inlined imports and emit the copied declarations.
-   */
-  inlinedTypesByFilePath?: Map<string, InlinedTypes>;
 }
 
 export interface GenerateBundleOptions {
@@ -159,20 +152,13 @@ export interface GenerateBundleOptions {
    * fail `--strict` / `--strict=errors`.
    */
   diagnostics?: { ignore?: DiagnosticIgnoreMatcher[] };
-  /**
-   * Mirrors `typesOptions.inline`: `"local"`/`"all"` runs the cross-file
-   * inlining pass (see `inline-types.ts`) after every component has parsed.
-   */
-  typesInline?: WriteTsDefinitionOptions["inline"];
 }
 
 export function toGenerateBundleOptions(
   opts?: Pick<
     GenerateBundleOptions,
     "failFast" | "resolveTypes" | "documentExports" | "cache" | "checkExamples" | "dryRun" | "diagnostics"
-  > & {
-    typesOptions?: { inline?: WriteTsDefinitionOptions["inline"] };
-  },
+  >,
 ): GenerateBundleOptions {
   return {
     failFast: opts?.failFast,
@@ -182,7 +168,6 @@ export function toGenerateBundleOptions(
     checkExamples: opts?.checkExamples === "syntax" ? "syntax" : opts?.checkExamples === true,
     dryRun: opts?.dryRun === true,
     diagnostics: opts?.diagnostics,
-    typesInline: opts?.typesOptions?.inline,
   };
 }
 
@@ -793,21 +778,8 @@ export async function generateBundle(
     await checkComponentExamplesSyntax(checkExamplesSyntaxCandidates);
   }
 
-  // Only loaded (with the parser stack it parses with) when `typesOptions.inline` is on.
-  const inlineTypes = options.typesInline ? await loadInlineTypes() : undefined;
-
-  // An `"all"` run with nothing bare to resolve behaves exactly like `"local"`, so an empty
-  // overlay skips loading TypeScript entirely.
-  const bareOverlay: Map<string, string> =
-    options.typesInline === "all" && inlineTypes
-      ? inlineTypes.collectBareImportOverlay(allComponentsForTypes, resolveComponentFilePath)
-      : new Map();
-
-  let bareSession: BareTypeSession | undefined;
-  let resolverToDisposeAfterInline: TypeResolver | undefined;
-
-  if (resolveTypesCandidates.length > 0 || checkExamplesCompileCandidates.length > 0 || bareOverlay.size > 0) {
-    // Share one TypeResolver across resolveTypes, checkExamples, and typesOptions.inline: "all".
+  if (resolveTypesCandidates.length > 0 || checkExamplesCompileCandidates.length > 0) {
+    // Share one TypeResolver across resolveTypes and checkExamples.
     // Guarded on `checkExamplesCompileCandidates` (not `checkExamplesCandidates`) so
     // `checkExamples: true`/`"syntax"` with only markup fences never loads TypeScript.
     const { TypeResolver } = await import("./resolve-types");
@@ -816,7 +788,6 @@ export async function generateBundle(
       const features = [
         resolveTypesCandidates.length > 0 ? "resolveTypes" : null,
         checkExamplesCompileCandidates.length > 0 ? "checkExamples" : null,
-        bareOverlay.size > 0 ? 'typesOptions.inline: "all"' : null,
       ]
         .filter((feature): feature is string => feature !== null)
         .join(" and ");
@@ -831,17 +802,8 @@ export async function generateBundle(
       if (checkExamplesCompileCandidates.length > 0) {
         await checkComponentExamples(checkExamplesCompileCandidates, resolver, resolveComponentFilePath);
       }
-      if (bareOverlay.size > 0) {
-        // Kept alive past this block: the inline pass runs later, after the AST/JSDoc-only
-        // passes below. Disposed together with the resolver right after that pass runs.
-        bareSession = await resolver.openBareTypeSession(bareOverlay);
-        resolverToDisposeAfterInline = resolver;
-      } else {
-        await resolver.dispose();
-      }
-    } catch (error) {
+    } finally {
       await resolver.dispose();
-      throw error;
     }
   }
 
@@ -865,17 +827,6 @@ export async function generateBundle(
   validateExtendsTargets(allComponentsForTypes, resolveComponentFilePath);
   validateModuleReExportNames(allComponentsForTypes.values());
 
-  let inlinedTypesByFilePath: Map<string, InlinedTypes> | undefined;
-  try {
-    inlinedTypesByFilePath =
-      inlineTypes && (options.typesInline === "local" || options.typesInline === "all")
-        ? await inlineTypes.inlineLocalTypeImports(allComponentsForTypes, resolveComponentFilePath, bareSession)
-        : undefined;
-  } finally {
-    if (bareSession) await bareSession.dispose();
-    if (resolverToDisposeAfterInline) await resolverToDisposeAfterInline.dispose();
-  }
-
   // Dedupe diagnostics from export and all-components passes.
   const diagnostics = applyDiagnosticIgnores(
     dedupeDiagnostics([
@@ -895,7 +846,6 @@ export async function generateBundle(
     cache,
     resolvedPathByFilePath,
     crossFileResolvedPathByFilePath,
-    inlinedTypesByFilePath,
   };
 }
 
@@ -1307,12 +1257,6 @@ function candidatesForKind(
   }
 
   return filtered;
-}
-
-/** `inline-types.ts` and the parser stack it parses imported files with. */
-export async function loadInlineTypes(): Promise<typeof import("./inline-types")> {
-  await loadParserStack();
-  return import("./inline-types");
 }
 
 /**
