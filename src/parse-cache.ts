@@ -103,10 +103,19 @@ export class ParseCache {
   private readonly next = new Map<string, ParseCacheEntry>();
   /** Paths forced to miss this run (e.g. dependents of a changed `@extends` target). */
   private readonly blocked = new Set<string>();
+  /**
+   * Whether `next` differs from what's on disk: an entry was added or its
+   * generated text changed. Dropped entries show up as `next` holding fewer
+   * entries than `savedEntryCount`, since without a `set()` every entry in
+   * `next` came from the file.
+   */
+  private dirty = false;
+  private savedEntryCount: number;
 
   constructor(cacheFilePath: string) {
     this.cacheFilePath = cacheFilePath;
     this.file = readCacheFile(cacheFilePath);
+    this.savedEntryCount = Object.keys(this.file.entries).length;
   }
 
   /** True when `get()` would return a hit for `resolvedPath` and `hash`. */
@@ -141,6 +150,7 @@ export class ParseCache {
    * Stores a copy, for the same reason `get()` returns one.
    */
   set(resolvedPath: string, hash: string, parsed: ParsedComponent): void {
+    this.dirty = true;
     this.next.set(resolvedPath, {
       hash,
       parsed: structuredClone(parsed),
@@ -174,7 +184,9 @@ export class ParseCache {
   setGeneratedText(resolvedPath: string, key: string, text: string): void {
     const entry = this.next.get(resolvedPath);
     if (entry === undefined) return;
+    if (entry.generatedText?.key === key && entry.generatedText.text === text) return;
     entry.generatedText = { key, text };
+    this.dirty = true;
   }
 
   /**
@@ -183,8 +195,14 @@ export class ParseCache {
    * sharing a cache dir can't interleave writes into a truncated file; a
    * failed rename (e.g. read-only cache dir) falls back to a direct write so
    * generation never fails just because the cache couldn't be saved.
+   * Skipped when nothing changed since the file was read or last saved.
    */
   save(): void {
+    // A fully cached run would otherwise rewrite an identical file, twice.
+    if (!this.dirty && this.next.size === this.savedEntryCount) return;
+    this.dirty = false;
+    this.savedEntryCount = this.next.size;
+
     mkdirSync(dirname(this.cacheFilePath), { recursive: true });
     const file: ParseCacheFile = {
       formatVersion: CACHE_FORMAT_VERSION,
