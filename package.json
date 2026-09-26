@@ -24,6 +24,7 @@
     "test:update": "SVELD_UPDATE_FIXTURES=1 bun test tests/fixtures.test.ts",
     "test:fixtures-types": "tsc --project tsconfig.fixtures.json",
     "test:types-matrix": "bun scripts/typecheck-option-matrix.ts",
+    "test:svelte-versions": "bun scripts/typecheck-svelte-versions.ts",
     "test:e2e": "bun tests/test-e2e.ts",
     "format": "biome format --write .",
     "lint": "biome check --error-on-warnings .",

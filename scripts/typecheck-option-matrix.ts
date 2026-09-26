@@ -91,6 +91,16 @@ export interface RunOptionMatrixOptions {
   write?: (component: ComponentDocApi, options: WriteTsDefinitionOptions) => string;
   /** Keep the temp dir instead of deleting it. */
   keep?: boolean;
+  /**
+   * Where to create the temp dir. Defaults to the repo, so `svelte` resolves
+   * to the repo's own; point it at a dir with another `node_modules/svelte`
+   * to check against that version.
+   */
+  root?: string;
+  /** Only fixtures whose parsed component passes, e.g. legacy-only for Svelte 3/4. */
+  filter?: (component: ComponentDocApi) => boolean;
+  /** Added to each set's `tsconfig.json`. Not `skipLibCheck`: it skips the generated `.d.ts` too. */
+  compilerOptions?: Record<string, unknown>;
 }
 
 interface Fixture {
@@ -144,7 +154,13 @@ function resolveTscBin(): string {
   return path.join(path.dirname(packageJson), "bin", "tsc");
 }
 
-function writeSet(setDir: string, set: OptionSet, fixtures: Fixture[], write: RunOptionMatrixOptions["write"]) {
+function writeSet(
+  setDir: string,
+  set: OptionSet,
+  fixtures: Fixture[],
+  write: RunOptionMatrixOptions["write"],
+  compilerOptions: RunOptionMatrixOptions["compilerOptions"],
+) {
   const emit = write ?? writeTsDefinition;
   for (const { dir, component, siblings } of fixtures) {
     const fixtureDir = path.join(setDir, dir);
@@ -158,6 +174,7 @@ function writeSet(setDir: string, set: OptionSet, fixtures: Fixture[], write: Ru
   const tsconfig = {
     extends: path.relative(setDir, FIXTURES_TSCONFIG).replace(BACKSLASH_REGEX, "/"),
     include: ["**/*.ts"],
+    ...(compilerOptions ? { compilerOptions } : {}),
   };
   writeFileSync(path.join(setDir, "tsconfig.json"), `${JSON.stringify(tsconfig, null, 2)}\n`);
 }
@@ -183,11 +200,15 @@ async function typecheckSet(tscBin: string, setDir: string, name: string): Promi
 export async function runOptionMatrix(options: RunOptionMatrixOptions = {}): Promise<MatrixResult> {
   const sets = options.sets ?? OPTION_MATRIX;
   const t0 = performance.now();
-  const fixtures = await loadFixtures(options.fixtures);
-  const tmpDir = mkdtempSync(path.join(REPO_ROOT, ".tmp-sveld-types-matrix-"));
+  const fixtures = (await loadFixtures(options.fixtures)).filter(
+    (fixture) => options.filter?.(fixture.component) ?? true,
+  );
+  const tmpDir = mkdtempSync(path.join(options.root ?? REPO_ROOT, ".tmp-sveld-types-matrix-"));
   try {
     const t1 = performance.now();
-    for (const set of sets) writeSet(path.join(tmpDir, set.name), set, fixtures, options.write);
+    for (const set of sets) {
+      writeSet(path.join(tmpDir, set.name), set, fixtures, options.write, options.compilerOptions);
+    }
     const t2 = performance.now();
     const tscBin = resolveTscBin();
     const results = await Promise.all(sets.map((set) => typecheckSet(tscBin, path.join(tmpDir, set.name), set.name)));
