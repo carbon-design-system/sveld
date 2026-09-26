@@ -98,13 +98,6 @@ describe("parseCliOptions", () => {
     expect(alias).toEqual(canonical);
   });
 
-  test("--resolve-types and --resolveTypes produce identical options", () => {
-    const canonical = parseCliOptions(["--resolve-types"]);
-    const alias = parseCliOptions(["--resolveTypes"]);
-    expect(canonical).toEqual({ kind: "options", options: { resolveTypes: true } });
-    expect(alias).toEqual(canonical);
-  });
-
   test("--llms enables llms", () => {
     expect(parseCliOptions(["--llms"])).toEqual({ kind: "options", options: { llms: true } });
   });
@@ -208,10 +201,10 @@ describe("parseCliOptions", () => {
   });
 
   test("a close typo of a deprecated alias suggests the canonical spelling", () => {
-    expect(parseCliOptions(["--resolvTypes"])).toEqual({
+    expect(parseCliOptions(["--checkExampls"])).toEqual({
       kind: "unknown",
-      arg: "--resolvTypes",
-      suggestion: "resolve-types",
+      arg: "--checkExampls",
+      suggestion: "check-examples",
     });
   });
 

@@ -1,16 +1,8 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
-import type { ParsedComponentTypeScriptMetadata, ResolvedComponentProp } from "./ComponentParser";
 import type { ExampleCheckSource } from "./example-check";
-import { compareText } from "./parser/utils";
 import { normalizeSeparators } from "./path";
-
-export interface ResolveTarget {
-  moduleName: string;
-  filePath: string;
-  metadata: ParsedComponentTypeScriptMetadata;
-}
 
 export interface ExampleCheckTarget {
   moduleName: string;
@@ -29,9 +21,6 @@ export interface ExampleCheckDiagnostic {
 // biome-ignore lint/suspicious/noExplicitAny: native-preview API is loaded lazily and typed structurally.
 type TS = any;
 
-const VIRTUAL_PROPS_BINDING = "__sveld_resolved_props__";
-const VIRTUAL_PROPS_TYPE = "__SveldResolvedProps__";
-const TRAILING_UNDEFINED = / \| undefined$/;
 const NON_FILENAME_CHAR_REGEX = /[^A-Za-z0-9_-]/g;
 const NON_IDENTIFIER_CHAR_REGEX = /[^A-Za-z0-9_$]/g;
 const LEADING_DIGIT_REGEX = /^[0-9]/;
@@ -95,27 +84,23 @@ async function defaultImportTs(cwd: string): Promise<TypeScriptLoadResult> {
 }
 
 /**
- * Expands opaque imported `$props()` types using the project's TypeScript program.
- * Loaded only when `resolveTypes` is enabled.
+ * Type-checks `@example` blocks against the project's TypeScript program.
+ * Loaded only when `checkExamples` has plain TS/JS examples to check.
  */
 export class TypeResolver {
   private readonly api: TS;
-  private readonly symbolFlags: TS;
-  private readonly typeFlags: TS;
   private readonly tsconfigPath: string;
   private readonly overlay = new Map<string, string>();
 
-  private constructor(api: TS, symbolFlags: TS, typeFlags: TS, tsconfigPath: string) {
+  private constructor(api: TS, tsconfigPath: string) {
     this.api = api;
-    this.symbolFlags = symbolFlags;
-    this.typeFlags = typeFlags;
     this.tsconfigPath = tsconfigPath;
   }
 
   /**
    * Loads `typescript` and the nearest `tsconfig.json`.
    *
-   * These features are explicitly opt-in, so a failure to start here is
+   * `checkExamples` is explicitly opt-in, so a failure to start here is
    * reported as a structured failure rather than swallowed: the caller
    * decides whether that's fatal.
    */
@@ -151,134 +136,11 @@ export class TypeResolver {
     }
 
     const mod = loaded.module;
-    const resolver = new TypeResolver(null, mod.SymbolFlags, mod.TypeFlags, tsconfigPath);
+    const resolver = new TypeResolver(null, tsconfigPath);
     const api = new mod.API({ cwd, fs: resolver.createFileSystem() });
     // biome-ignore lint/suspicious/noExplicitAny: assign after fs closure is created.
     (resolver as any).api = api;
     return { ok: true, resolver };
-  }
-
-  /**
-   * Resolves every target in one program snapshot.
-   *
-   * Keyed by `filePath`, not `moduleName`: two components discovered via
-   * `--glob` can share a basename (e.g. `Menu/Menu.svelte` and
-   * `icons/Menu.svelte`), and `moduleName` alone is not unique.
-   */
-  async expandAll(targets: ResolveTarget[]): Promise<Map<string, ResolvedComponentProp[]>> {
-    const results = new Map<string, ResolvedComponentProp[]>();
-    if (targets.length === 0) return results;
-
-    const virtualFiles = new Map<string, ResolveTarget>();
-    for (const target of targets) {
-      if (!target.metadata.canonicalPropsType) continue;
-      // Skip when props type references component generics; the virtual module has no binding for `T`.
-      if (target.metadata.referencesComponentGenerics) continue;
-      const virtualFile = this.virtualFileName(target.filePath, target.moduleName);
-      this.overlay.set(virtualFile, buildVirtualModule(target.metadata));
-      virtualFiles.set(virtualFile, target);
-    }
-
-    if (virtualFiles.size === 0) return results;
-
-    const snapshot = await this.api.updateSnapshot({
-      openProject: this.tsconfigPath,
-      fileChanges: { created: Array.from(virtualFiles.keys()) },
-    });
-
-    try {
-      // One project lookup per snapshot; each checker call is a round trip to the TS server.
-      const [firstFile] = virtualFiles.keys();
-      const project = await snapshot.getDefaultProjectForFile(firstFile);
-      if (!project) return results;
-      const checker = project.checker;
-
-      // Phase 1: per-file type lookup. Union constituents need separate walks or variant-only props are dropped.
-      const perFile = await Promise.all(
-        Array.from(virtualFiles, async ([virtualFile, target]) => {
-          const content = this.overlay.get(virtualFile);
-          if (!content) return null;
-          const position = bindingPosition(content);
-          const type = await checker.getTypeAtPosition(virtualFile, position);
-          if (!type) return null;
-
-          const groups = new Map<string, { name: string; symbols: TS[]; forceOptional: boolean }>();
-          const sharedProperties: TS[] = await checker.getPropertiesOfType(type);
-          for (const symbol of sharedProperties) {
-            if (!symbol.name || symbol.name.startsWith("__")) continue;
-            groups.set(symbol.name, { name: symbol.name, symbols: [symbol], forceOptional: false });
-          }
-
-          const isUnion = (type.flags & this.typeFlags.Union) !== 0;
-          if (isUnion) {
-            const constituents: TS[] = await type.getTypes();
-            const perConstituentProperties = await Promise.all(
-              constituents.map((constituent) => checker.getPropertiesOfType(constituent)),
-            );
-            for (const constituentProperties of perConstituentProperties) {
-              for (const symbol of constituentProperties) {
-                if (!symbol.name || symbol.name.startsWith("__") || groups.has(symbol.name)) continue;
-                const existing = groups.get(symbol.name);
-                if (existing) existing.symbols.push(symbol);
-                else groups.set(symbol.name, { name: symbol.name, symbols: [symbol], forceOptional: true });
-              }
-            }
-          }
-
-          return { filePath: target.filePath, groups: Array.from(groups.values()) };
-        }),
-      );
-
-      // Phase 2: batch getTypeOfSymbol in one round trip.
-      const allSymbols: TS[] = [];
-      const owner: Array<{ fileIndex: number; groupIndex: number }> = [];
-      perFile.forEach((entry, fileIndex) => {
-        if (!entry) return;
-        entry.groups.forEach((group, groupIndex) => {
-          for (const symbol of group.symbols) {
-            allSymbols.push(symbol);
-            owner.push({ fileIndex, groupIndex });
-          }
-        });
-      });
-      const propTypes: TS[] = allSymbols.length > 0 ? await checker.getTypeOfSymbol(allSymbols) : [];
-
-      // Phase 3: typeToString has no batch API; run concurrently.
-      const typeTexts = await Promise.all(
-        propTypes.map((propType) => (propType ? checker.typeToString(propType) : Promise.resolve("any"))),
-      );
-
-      const textsByGroup = new Map<number, Map<number, string[]>>();
-      allSymbols.forEach((symbol, i) => {
-        const { fileIndex, groupIndex } = owner[i];
-        const isOptional = (symbol.flags & this.symbolFlags.Optional) !== 0;
-        let typeText = typeTexts[i];
-        if (isOptional) typeText = typeText.replace(TRAILING_UNDEFINED, "");
-        const fileGroups = textsByGroup.get(fileIndex) ?? new Map<number, string[]>();
-        const texts = fileGroups.get(groupIndex) ?? [];
-        texts.push(typeText);
-        fileGroups.set(groupIndex, texts);
-        textsByGroup.set(fileIndex, fileGroups);
-      });
-
-      perFile.forEach((entry, fileIndex) => {
-        if (!entry) return;
-        const fileGroups = textsByGroup.get(fileIndex);
-        const resolved: ResolvedComponentProp[] = entry.groups.map((group, groupIndex) => {
-          const texts = fileGroups?.get(groupIndex) ?? [];
-          const isRequired = !(
-            group.forceOptional || group.symbols.some((symbol) => (symbol.flags & this.symbolFlags.Optional) !== 0)
-          );
-          return { name: group.name, type: Array.from(new Set(texts)).join(" | "), isRequired };
-        });
-        resolved.sort((a, b) => compareText(a.name, b.name));
-        results.set(entry.filePath, resolved);
-      });
-    } finally {
-      await snapshot.dispose?.();
-    }
-
-    return results;
   }
 
   /**
@@ -383,25 +245,11 @@ export class TypeResolver {
     };
   }
 
-  private virtualFileName(componentFilePath: string, moduleName: string) {
-    const dir = path.dirname(path.resolve(componentFilePath));
-    return normalizeSeparators(path.join(dir, `__sveld_resolved_${moduleName}.ts`));
-  }
-
   private exampleFileName(componentFilePath: string, moduleName: string, exampleId: string) {
     const dir = path.dirname(path.resolve(componentFilePath));
     const safeId = exampleId.replace(NON_FILENAME_CHAR_REGEX, "_");
     return normalizeSeparators(path.join(dir, `__sveld_example_${moduleName}_${safeId}.ts`));
   }
-}
-
-function buildVirtualModule(metadata: ParsedComponentTypeScriptMetadata): string {
-  return [
-    ...metadata.typeImportStatements,
-    ...metadata.localTypeDeclarations,
-    `type ${VIRTUAL_PROPS_TYPE} = ${metadata.canonicalPropsType};`,
-    `declare const ${VIRTUAL_PROPS_BINDING}: ${VIRTUAL_PROPS_TYPE};`,
-  ].join("\n");
 }
 
 function declarationIdentifier(name: string): string {
@@ -420,11 +268,6 @@ function formatExampleDiagnostic(diagnostic: TS, content: string): { line: numbe
   const virtualLine = content.slice(0, pos).split("\n").length;
   const line = Math.max(1, virtualLine - EXAMPLE_CODE_START_LINE + 1);
   return { line, text: String(diagnostic.text ?? "").trim() };
-}
-
-function bindingPosition(content: string): number {
-  const declareIndex = content.lastIndexOf("declare const");
-  return content.indexOf(VIRTUAL_PROPS_BINDING, declareIndex) + 2;
 }
 
 /** Walks upward from `dir` to find the nearest `tsconfig.json`. */

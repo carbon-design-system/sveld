@@ -361,13 +361,6 @@ export interface ParsedComponentTypeScriptMetadata {
   /** Types the module script exports (`export interface Item`), emitted with `export`. */
   moduleTypeDeclarations?: string[];
   typeImportStatements: string[];
-  /**
-   * Whether `canonicalPropsType` mentions one of the component's own
-   * `<script generics="...">` parameters (e.g. `Props<T>`). The semantic
-   * resolver has no binding for `T`, so `resolveTypes` must leave this
-   * component's props as their AST-derived text rather than expand them.
-   */
-  referencesComponentGenerics?: boolean;
   /** Unresolved CallExpression defaults for the cross-file pass in `generateBundle`. */
   pendingCallDefaultCandidates?: PendingCallDefaultCandidate[];
   /** Imported-identifier defaults for the cross-file pass in `generateBundle`. */
@@ -389,18 +382,9 @@ export interface ParsedComponentTypeScriptMetadata {
 }
 
 export {
-  applyResolvedProps,
   getParsedComponentTypeScriptMetadata,
   PARSED_COMPONENT_TYPE_SCRIPT_METADATA,
 } from "./parsed-component-metadata";
-
-/** One prop returned by the TypeScript checker during `resolveTypes`. */
-export interface ResolvedComponentProp {
-  name: string;
-  type: string;
-  isRequired: boolean;
-  description?: string;
-}
 
 export type SyntaxMode = "legacy" | "runes";
 export type ScriptLanguage = "js" | "ts";

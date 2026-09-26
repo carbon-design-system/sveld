@@ -24,7 +24,7 @@ import { readDirectoryListing, resetDirectoryListings } from "./fs-listing";
 import { hashSource, ParseCache, resolveCacheFilePath } from "./parse-cache";
 import { createResolveContext, type EntryExports, parseEntryExports, type ResolveContext } from "./parse-entry-exports";
 import { type ParsedExports, parseExports } from "./parse-exports";
-import { applyResolvedProps, getParsedComponentTypeScriptMetadata } from "./parsed-component-metadata";
+import { getParsedComponentTypeScriptMetadata } from "./parsed-component-metadata";
 import { generateContextTypeName } from "./parser/context-type-name";
 import { compareSerializedEvents } from "./parser/event-order";
 import { compareText } from "./parser/utils";
@@ -115,11 +115,6 @@ export interface GenerateBundleOptions {
    * the failure and continuing with the remaining components.
    */
   failFast?: boolean;
-  /**
-   * Load the TypeScript program to expand opaque imported whole-object `$props()`
-   * types into JSON/Markdown props. Off by default; requires `typescript`.
-   */
-  resolveTypes?: boolean;
   /** Record consts, functions, and types from the entry barrel. Off by default. */
   documentExports?: boolean;
   /**
@@ -157,12 +152,11 @@ export interface GenerateBundleOptions {
 export function toGenerateBundleOptions(
   opts?: Pick<
     GenerateBundleOptions,
-    "failFast" | "resolveTypes" | "documentExports" | "cache" | "checkExamples" | "dryRun" | "diagnostics"
+    "failFast" | "documentExports" | "cache" | "checkExamples" | "dryRun" | "diagnostics"
   >,
 ): GenerateBundleOptions {
   return {
     failFast: opts?.failFast,
-    resolveTypes: opts?.resolveTypes === true,
     documentExports: opts?.documentExports === true,
     cache: opts?.cache,
     checkExamples: opts?.checkExamples === "syntax" ? "syntax" : opts?.checkExamples === true,
@@ -619,7 +613,7 @@ export function reportParseErrors(errors: ComponentParseError[]): void {
  *
  * @param input - Entry point file or directory containing Svelte components
  * @param glob - Whether to glob for all .svelte files in the directory
- * @param options - Bundle options (e.g. `failFast`, `resolveTypes`, `documentExports`)
+ * @param options - Bundle options (e.g. `failFast`, `checkExamples`, `documentExports`)
  * @returns Bundle result containing exports, entryExports, components, allComponentsForTypes, and errors
  *
  * @example
@@ -764,7 +758,6 @@ export async function generateBundle(
   if (!options.dryRun) cache?.save();
 
   // checkExamples runs over all discovered components, not just barrel exports.
-  const resolveTypesCandidates = options.resolveTypes ? collectResolveTypesCandidates(components) : [];
   const checkExamplesCandidates = options.checkExamples ? collectCheckExamplesCandidates(allComponentsForTypes) : [];
   // `checkExamples: "syntax"` only runs the template-parser path, so plain
   // TS/JS examples never reach the TypeScript program.
@@ -778,30 +771,16 @@ export async function generateBundle(
     await checkComponentExamplesSyntax(checkExamplesSyntaxCandidates);
   }
 
-  if (resolveTypesCandidates.length > 0 || checkExamplesCompileCandidates.length > 0) {
-    // Share one TypeResolver across resolveTypes and checkExamples.
+  if (checkExamplesCompileCandidates.length > 0) {
     // Guarded on `checkExamplesCompileCandidates` (not `checkExamplesCandidates`) so
     // `checkExamples: true`/`"syntax"` with only markup fences never loads TypeScript.
     const { TypeResolver } = await import("./resolve-types");
     const created = await TypeResolver.create(rootDir);
-    if (!created.ok) {
-      const features = [
-        resolveTypesCandidates.length > 0 ? "resolveTypes" : null,
-        checkExamplesCompileCandidates.length > 0 ? "checkExamples" : null,
-      ]
-        .filter((feature): feature is string => feature !== null)
-        .join(" and ");
-      throw new Error(`sveld: \`${features}\` ${created.message}.`);
-    }
+    if (!created.ok) throw new Error(`sveld: \`checkExamples\` ${created.message}.`);
     const resolver = created.resolver;
 
     try {
-      if (resolveTypesCandidates.length > 0) {
-        await resolveImportedPropTypes(resolveTypesCandidates, resolver, resolveComponentFilePath);
-      }
-      if (checkExamplesCompileCandidates.length > 0) {
-        await checkComponentExamples(checkExamplesCompileCandidates, resolver, resolveComponentFilePath);
-      }
+      await checkComponentExamples(checkExamplesCompileCandidates, resolver, resolveComponentFilePath);
     } finally {
       await resolver.dispose();
     }
@@ -811,12 +790,11 @@ export async function generateBundle(
   syncCrossFileResults(components, allComponentsForTypes);
 
   // The generated-text cache is keyed on a component's own source, so it
-  // can't see an edit to the module a default, context key, event, or
-  // resolved props type was read from.
+  // can't see an edit to the module a default, context key, or event was
+  // read from.
   const crossFileResolvedPathByFilePath = resolvedPathByFilePath ? new Map<string, string>() : undefined;
   if (resolvedPathByFilePath && crossFileResolvedPathByFilePath) {
-    const dependents = [...crossFileReads.keys(), ...resolveTypesCandidates.map(({ component }) => component.filePath)];
-    for (const filePath of dependents) {
+    for (const filePath of crossFileReads.keys()) {
       const resolvedPath = resolvedPathByFilePath.get(filePath);
       if (resolvedPath === undefined) continue;
       resolvedPathByFilePath.delete(filePath);
@@ -1185,44 +1163,6 @@ export function syncCrossFileResults(components: ComponentDocs, allComponentsFor
     component.contexts = resolved.contexts;
     component.events = resolved.events;
     component.diagnostics = resolved.diagnostics;
-  }
-}
-
-interface ResolveTypesCandidate {
-  component: ComponentDocApi;
-  metadata: NonNullable<ReturnType<typeof getParsedComponentTypeScriptMetadata>>;
-}
-
-function collectResolveTypesCandidates(components: ComponentDocs): ResolveTypesCandidate[] {
-  const candidates: ResolveTypesCandidate[] = [];
-
-  for (const component of components.values()) {
-    const metadata = getParsedComponentTypeScriptMetadata(component);
-    if (!metadata?.canonicalPropsType || component.props.length > 0) continue;
-    candidates.push({ component, metadata });
-  }
-
-  return candidates;
-}
-
-async function resolveImportedPropTypes(
-  candidates: ResolveTypesCandidate[],
-  resolver: TypeResolver,
-  resolveComponentFilePath: ResolveComponentFilePath,
-): Promise<void> {
-  // Keyed by resolved filePath, not moduleName: two components discovered via
-  // `--glob` can share a basename, and moduleName alone isn't unique.
-  const resolvedByFilePath = await resolver.expandAll(
-    candidates.map(({ component, metadata }) => ({
-      moduleName: component.moduleName,
-      metadata,
-      filePath: resolveComponentFilePath(component.filePath),
-    })),
-  );
-
-  for (const { component } of candidates) {
-    const resolved = resolvedByFilePath.get(resolveComponentFilePath(component.filePath));
-    if (resolved) applyResolvedProps(component, resolved);
   }
 }
 

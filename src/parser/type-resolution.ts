@@ -1,5 +1,4 @@
 import type {
-  ComponentGenerics,
   LocalTypeDeclaration,
   ModernRunesTypeNode,
   ParsedComponentTypeScriptMetadata,
@@ -8,25 +7,6 @@ import type {
 import type { ParserContext } from "./context";
 import { sourceAtPos } from "./source-position";
 import { compareText } from "./utils";
-
-const GENERIC_TYPE_TEXT_IDENTIFIER_REGEX = /[A-Za-z_$][\w$]*/g;
-
-/**
- * Whether `typeText` (e.g. a canonical `$props()` type like `Props<T>`)
- * mentions one of `generics`' own parameter names as a bare identifier.
- * Used to detect whole-props types parameterized by the component's own
- * generic, which the semantic type resolver can't safely expand: it has no
- * binding for the generic in its virtual module, so TypeScript treats it as
- * an unresolved identifier and fabricates concrete-looking types instead.
- */
-function typeTextReferencesGenerics(typeText: string, generics: ComponentGenerics): boolean {
-  if (!generics) return false;
-  const names = new Set(generics[0].split(",").map((name) => name.trim()));
-  for (const [name] of typeText.matchAll(GENERIC_TYPE_TEXT_IDENTIFIER_REGEX)) {
-    if (names.has(name)) return true;
-  }
-  return false;
-}
 
 export function getRunesPropsDeclarationMetadata(ctx: ParserContext, declaratorStart: number | undefined) {
   if (declaratorStart === undefined) return undefined;
@@ -565,7 +545,6 @@ export function buildTypeScriptMetadata(ctx: ParserContext): ParsedComponentType
     localTypeDeclarations,
     ...(moduleTypeDeclarations.length > 0 ? { moduleTypeDeclarations } : {}),
     typeImportStatements: buildTypeImportStatements(ctx, referencedImportedTypes),
-    referencesComponentGenerics: canonicalType ? typeTextReferencesGenerics(canonicalType, ctx.generics) : false,
     ...pendingCrossFileCandidates,
   };
 }

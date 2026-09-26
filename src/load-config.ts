@@ -225,7 +225,6 @@ const KNOWN_TOP_LEVEL_KEYS = [
   "failFast",
   "watch",
   "config",
-  "resolveTypes",
   "cache",
   "checkExamples",
   "reportDiagnostics",
