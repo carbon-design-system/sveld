@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { type Node, parse } from "acorn";
 import { asRelativeSourcePath, type RelativeSourcePath } from "./brands";
-import { resolveModuleFile } from "./parse-entry-exports";
+import { resolveModuleFile } from "./module-graph";
 import { normalizeSeparators, SVELTE_EXT_REGEX } from "./path";
 import { resolveAliasLookup, resolvePathAlias, UnresolvedModuleError } from "./resolve-alias";
 

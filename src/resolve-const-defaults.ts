@@ -2,13 +2,8 @@ import { dirname } from "node:path";
 import type { ComponentDocApi } from "./bundle";
 import type { PendingConstDefaultCandidate } from "./ComponentParser";
 import { type CrossFilePass, dropUnknownTypeDiagnostic, findCandidateProp, setResolvedField } from "./cross-file-pass";
-import {
-  findImportedExport,
-  type InternalExport,
-  type PrimitiveLiteral,
-  type ResolveContext,
-  resolveModuleFile,
-} from "./parse-entry-exports";
+import { findImportedExport, type InternalExport, type PrimitiveLiteral, type ResolveContext } from "./module-exports";
+import { resolveModuleFile } from "./module-graph";
 
 export interface ConstDefaultResolution {
   candidate: PendingConstDefaultCandidate;

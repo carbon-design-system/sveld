@@ -1,7 +1,7 @@
 import type { ComponentDocApi, ResolveComponentFilePath } from "./bundle";
 import type { PendingCrossFileCandidates } from "./ComponentParser";
 import type { CrossFilePass } from "./cross-file-pass";
-import { createResolveContext, type ResolveContext } from "./parse-entry-exports";
+import { createResolveContext, type ResolveContext } from "./module-exports";
 import { loadParserStack } from "./parser-stack";
 import { callDefaultsPass } from "./resolve-call-defaults";
 import { constDefaultsPass } from "./resolve-const-defaults";

@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync 
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { resetDirectoryListings } from "../src/fs-listing";
-import { resolveModuleFile } from "../src/parse-entry-exports";
+import { resolveModuleFile } from "../src/module-graph";
 
 /**
  * `resolveModuleFile` decides file-vs-directory from the cached `readdir`

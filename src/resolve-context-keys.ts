@@ -3,7 +3,8 @@ import type { ComponentDocApi } from "./bundle";
 import type { PendingContextKeyCandidate, SourceRange } from "./ComponentParser";
 import type { CrossFilePass } from "./cross-file-pass";
 import { createDiagnostic } from "./diagnostics";
-import { findImportedExport, type ResolveContext, resolveModuleFile } from "./parse-entry-exports";
+import { findImportedExport, type ResolveContext } from "./module-exports";
+import { resolveModuleFile } from "./module-graph";
 import { generateContextTypeName } from "./parser/context-type-name";
 import { importPath } from "./parser/value-imports";
 
