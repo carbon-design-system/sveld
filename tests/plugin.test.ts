@@ -313,6 +313,22 @@ describe("pluginSveld config option", () => {
     expect(fs.existsSync(path.join(dir, "COMPONENT_API.json"))).toBe(false);
   });
 
+  test("warns about config keys only the CLI and sveld() act on", async () => {
+    fs.writeFileSync(
+      path.join(dir, "sveld.config.mjs"),
+      "export default { json: true, strict: true, check: true, reportDiagnostics: true };",
+    );
+    const warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+    const plugin = pluginSveld({ entry: ".", glob: true, types: false, config: true });
+
+    await runBuild(plugin);
+
+    expect(warnSpy).toHaveBeenCalledWith(
+      'sveld: the Vite plugin ignores "reportDiagnostics", "strict", "check"; run the sveld CLI or sveld() for them.',
+    );
+    warnSpy.mockRestore();
+  });
+
   test("config: true loads sveld.config.mjs and applies its options", async () => {
     fs.writeFileSync(path.join(dir, "sveld.config.mjs"), "export default { json: true };");
     const plugin = pluginSveld({ entry: ".", glob: true, types: false, config: true });
