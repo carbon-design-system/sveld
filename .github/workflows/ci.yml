@@ -37,6 +37,10 @@ jobs:
       - name: Type check fixtures across typesOptions
         run: bun run test:types-matrix
 
+      - name: Type check legacy fixtures against Svelte 3 and 4
+        if: matrix.os == 'ubuntu-latest'
+        run: bun run test:svelte-versions
+
       - name: Run e2e tests
         run: bun run test:e2e
 
