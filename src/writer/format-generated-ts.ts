@@ -1,3 +1,5 @@
+import { scanTypeText } from "../type-text";
+
 const INDENT_UNIT = "  ";
 // Conservative width for collapsing `{...}` onto one line; ignores surrounding indent.
 const INLINE_WIDTH_BUDGET = 120;
@@ -29,8 +31,6 @@ const CH_STAR = 42;
 const CH_DOT = 46;
 const CH_SLASH = 47;
 const CH_SEMICOLON = 59;
-const CH_LT = 60;
-const CH_EQUALS = 61;
 const CH_GT = 62;
 const CH_OPEN_BRACKET = 91;
 const CH_BACKSLASH = 92;
@@ -585,21 +585,7 @@ function reindentAndTidy(text: string): string {
     // scan reads the uncollapsed text in place.)
     if (hasDocClose) continue;
 
-    let quote = 0;
-    for (let i = start; i < end; i++) {
-      const c = text.charCodeAt(i);
-
-      if (quote !== 0) {
-        if (c === quote && text.charCodeAt(i - 1) !== CH_BACKSLASH) quote = 0;
-        continue;
-      }
-
-      if (c === CH_DOUBLE_QUOTE || c === CH_SINGLE_QUOTE || c === CH_BACKTICK) quote = c;
-      else if (c === CH_OPEN_BRACE || c === CH_OPEN_PAREN || c === CH_OPEN_BRACKET || c === CH_LT) depth++;
-      else if (c === CH_CLOSE_BRACE || c === CH_CLOSE_PAREN || c === CH_CLOSE_BRACKET) depth = Math.max(0, depth - 1);
-      // Excludes the `>` in `=>`, which isn't a generic-list closer.
-      else if (c === CH_GT && text.charCodeAt(i - 1) !== CH_EQUALS) depth = Math.max(0, depth - 1);
-    }
+    depth = scanTypeText(text, undefined, start, end, depth);
   }
 
   let count = outContent.length;

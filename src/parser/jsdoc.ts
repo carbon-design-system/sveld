@@ -8,6 +8,7 @@ import type {
   SourceRange,
 } from "../ComponentParser";
 import { closestMatch } from "../levenshtein";
+import { indexOfClosingBracket, splitTopLevel } from "../type-text";
 import type { JSDocComment, JSDocTag } from "./comment-parser";
 import { leadingWhitespaceLength, parseComments, togglesCodeFence } from "./comment-parser";
 import type { ParserContext } from "./context";
@@ -16,7 +17,6 @@ import { addDispatchedEvent, buildEventDetailFromProperties } from "./events";
 import { parseObjectTypeLiteralMembers } from "./object-type-literal";
 import { addSlot } from "./slots";
 import { sourceRangeFromCommentTag } from "./source-position";
-import { splitTopLevelCommas } from "./split-top-level";
 import { assignValueOrUndefined } from "./utils";
 import { scriptBody } from "./value-imports";
 
@@ -34,7 +34,7 @@ function normalizeGenericNameSpacing(name: string): string {
 
   const base = name.slice(0, openIndex);
   const params = name.slice(openIndex + 1, -1);
-  const normalizedParams = splitTopLevelCommas(params)
+  const normalizedParams = splitTopLevel(params, ",")
     .map((param) => param.trim().replace(GENERIC_DEFAULT_EQUALS_REGEX, " = "))
     .join(", ");
 
@@ -286,31 +286,9 @@ function isSingleObjectLiteral(source: string): boolean {
   const s = source.trim().replace(TRAILING_SEMICOLON_REGEX, "").trimEnd();
   if (!s.startsWith("{") || !s.endsWith("}")) return false;
 
-  let depth = 0;
-  let stringDelimiter: '"' | "'" | "`" | null = null;
-  for (let i = 0; i < s.length; i++) {
-    const ch = s[i];
-    if (stringDelimiter !== null) {
-      if (ch === "\\") {
-        i++;
-        continue;
-      }
-      if (ch === stringDelimiter) stringDelimiter = null;
-      continue;
-    }
-    if (ch === '"' || ch === "'" || ch === "`") {
-      stringDelimiter = ch;
-      continue;
-    }
-    if (ch === "{" || ch === "[" || ch === "(") depth++;
-    else if (ch === "}" || ch === "]" || ch === ")") {
-      depth--;
-      // The opening `{` closed before the end of the string, so there must
-      // be additional top-level content (e.g. `{...} | {...}`).
-      if (depth === 0 && i < s.length - 1) return false;
-    }
-  }
-  return depth === 0;
+  // The opening `{` must close at the very end, not before other top-level
+  // content (e.g. `{...} | {...}`).
+  return indexOfClosingBracket(s, 0) === s.length - 1;
 }
 
 function formatComment(comment: string) {
@@ -789,10 +767,10 @@ export function parseCustomTypes(
    */
   const accumulateOrReplaceGeneric = (declaredName: string, constraint: string) => {
     if (ctx.generics) {
-      const names = splitTopLevelCommas(ctx.generics[0]).map((n) => n.trim());
+      const names = splitTopLevel(ctx.generics[0], ",").map((n) => n.trim());
       const existingIndex = names.indexOf(declaredName.trim());
       if (existingIndex !== -1) {
-        const constraints = splitTopLevelCommas(ctx.generics[1]).map((c) => c.trim());
+        const constraints = splitTopLevel(ctx.generics[1], ",").map((c) => c.trim());
         constraints[existingIndex] = constraint;
         ctx.generics = [ctx.generics[0], constraints.join(", ")];
         return;
@@ -1512,7 +1490,7 @@ export function parseCustomTypes(
           // A bare `@generics Name` (no `{constraint}`) falls back to the name
           // itself, mirroring `@template`'s unconstrained-parameter fallback.
           const constraint = type || name;
-          for (const genericName of splitTopLevelCommas(name)) {
+          for (const genericName of splitTopLevel(name, ",")) {
             warnAndTrackGenericName(genericName.trim(), sourceRangeFromCommentTag(ctx, tagSource));
           }
           usedGenericsTag = true;

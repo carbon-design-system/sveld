@@ -1,6 +1,6 @@
 import type { ComponentGenerics } from "../ComponentParser";
+import { splitTopLevel } from "../type-text";
 import type { ParserContext } from "./context";
-import { splitTopLevelCommas } from "./split-top-level";
 import { collectReferencedTypeDependencies } from "./type-resolution";
 
 const LEADING_IDENTIFIER_REGEX = /^[A-Za-z_$][\w$]*/;
@@ -13,7 +13,7 @@ const LEADING_TYPE_PARAM_MODIFIER_REGEX = /^(?:const|in|out)\s+/;
  * same `[names, constraints]` tuple the `@generics`/`@template` JSDoc tags produce.
  */
 export function parseGenericsAttribute(value: string): ComponentGenerics {
-  const constraints = splitTopLevelCommas(value)
+  const constraints = splitTopLevel(value, ",")
     .map((part) => part.trim())
     .filter((part) => part.length > 0);
 

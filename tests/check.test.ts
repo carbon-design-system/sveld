@@ -202,6 +202,30 @@ describe("diffApiDocuments", () => {
       expect(changes[0]).toMatchObject({ bump: "major" });
     });
 
+    test("a function type with a callback param gaining a trailing optional param is additive", () => {
+      const before = mockComponentDocApi("Button", "Button.svelte", {
+        props: [makeProp("onLoad", { type: "(done: () => void) => void" })],
+      });
+      const after = mockComponentDocApi("Button", "Button.svelte", {
+        props: [makeProp("onLoad", { type: "(done: () => void, index?: number) => void" })],
+      });
+
+      const changes = diffApiDocuments(document([before]), document([after]));
+      expect(changes[0]).toMatchObject({ bump: "minor" });
+    });
+
+    test("widening a union with a parenthesized function member is additive", () => {
+      const before = mockComponentDocApi("Button", "Button.svelte", {
+        props: [makeProp("render", { type: "(() => string) | string" })],
+      });
+      const after = mockComponentDocApi("Button", "Button.svelte", {
+        props: [makeProp("render", { type: "(() => string) | string | number" })],
+      });
+
+      const changes = diffApiDocuments(document([before]), document([after]));
+      expect(changes[0]).toMatchObject({ bump: "minor" });
+    });
+
     test("a function type's changed return type is breaking", () => {
       const before = mockComponentDocApi("Button", "Button.svelte", {
         props: [makeProp("getValue", { type: "() => string" })],

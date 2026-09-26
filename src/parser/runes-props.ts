@@ -12,6 +12,7 @@ import type {
   SourceRange,
   TypeImportBinding,
 } from "../ComponentParser";
+import { indexOfClosingBracket, indexOfTopLevel, splitTopLevel } from "../type-text";
 import type { ParserContext, TypedefMember } from "./context";
 import { recordSveldIgnore } from "./diagnostics";
 import { addDispatchedEvent } from "./events";
@@ -630,7 +631,7 @@ export function parseRunesPropsDeclaration(parser: ComponentParser, ctx: ParserC
   }
 }
 
-/** Balance-scans for `EventDispatcher<...>` and returns the generic argument's raw text (unparsed). */
+/** Returns the raw (unparsed) text of the generic argument in `EventDispatcher<...>`. */
 function extractEventDispatcherGenericText(typeText: string): string | undefined {
   const marker = "EventDispatcher";
   const markerIndex = typeText.indexOf(marker);
@@ -640,47 +641,8 @@ function extractEventDispatcherGenericText(typeText: string): string | undefined
   while (typeText[index] === " ") index++;
   if (typeText[index] !== "<") return undefined;
 
-  let depth = 0;
-  const start = index;
-  for (; index < typeText.length; index++) {
-    if (typeText[index] === "<") depth++;
-    else if (typeText[index] === ">") {
-      depth--;
-      if (depth === 0) return typeText.slice(start + 1, index);
-    }
-  }
-  return undefined;
-}
-
-/** Returns the index of the quote closing the string that opens at `start`, so a scan can skip it. */
-function skipQuotedText(text: string, start: number): number {
-  const quote = text[start];
-  for (let i = start + 1; i < text.length; i++) {
-    if (text[i] === "\\") i++;
-    else if (text[i] === quote) return i;
-  }
-  return text.length;
-}
-
-/** Splits a `{ a: X; b: Y }` type-literal body on top-level `;`/`,`, ignoring separators nested inside brackets. */
-function splitTypeLiteralMembers(body: string): string[] {
-  const members: string[] = [];
-  let depth = 0;
-  let start = 0;
-
-  for (let i = 0; i < body.length; i++) {
-    const char = body[i];
-    if (char === '"' || char === "'") i = skipQuotedText(body, i);
-    else if (char === "{" || char === "(" || char === "[" || char === "<") depth++;
-    else if (char === "}" || char === ")" || char === "]" || char === ">") depth = Math.max(depth - 1, 0);
-    else if (depth === 0 && (char === ";" || char === ",")) {
-      members.push(body.slice(start, i));
-      start = i + 1;
-    }
-  }
-  members.push(body.slice(start));
-
-  return members.map((member) => member.trim()).filter((member) => member.length > 0);
+  const closeIndex = indexOfClosingBracket(typeText, index);
+  return closeIndex === -1 ? undefined : typeText.slice(index + 1, closeIndex);
 }
 
 const QUOTED_MEMBER_NAME_REGEX = /^["']|["']$/g;
@@ -690,24 +652,16 @@ const TRAILING_BRACE_REGEX = /\}$/;
 
 /** Splits a `name: Type` (or `name?: Type`) member on its top-level `:`, skipping a quoted name's own colons. */
 function splitMemberNameAndType(member: string): { name: string; type: string } | undefined {
-  let depth = 0;
-  for (let i = 0; i < member.length; i++) {
-    const char = member[i];
-    if (char === '"' || char === "'") i = skipQuotedText(member, i);
-    else if (char === "{" || char === "(" || char === "[" || char === "<") depth++;
-    else if (char === "}" || char === ")" || char === "]" || char === ">") depth = Math.max(depth - 1, 0);
-    else if (depth === 0 && char === ":") {
-      const name = member
-        .slice(0, i)
-        .trim()
-        .replace(OPTIONAL_MEMBER_NAME_SUFFIX_REGEX, "")
-        .replace(QUOTED_MEMBER_NAME_REGEX, "");
-      const type = member.slice(i + 1).trim();
-      if (!name || !type) return undefined;
-      return { name, type };
-    }
-  }
-  return undefined;
+  const colonIndex = indexOfTopLevel(member, ":");
+  if (colonIndex === -1) return undefined;
+  const name = member
+    .slice(0, colonIndex)
+    .trim()
+    .replace(OPTIONAL_MEMBER_NAME_SUFFIX_REGEX, "")
+    .replace(QUOTED_MEMBER_NAME_REGEX, "");
+  const type = member.slice(colonIndex + 1).trim();
+  if (!name || !type) return undefined;
+  return { name, type };
 }
 
 /**
@@ -740,8 +694,8 @@ export function registerTypedDispatcherEvents(
   if (!genericText) return;
 
   const body = genericText.trim().replace(LEADING_BRACE_REGEX, "").replace(TRAILING_BRACE_REGEX, "");
-  for (const rawMember of splitTypeLiteralMembers(body)) {
-    const parsedMember = splitMemberNameAndType(rawMember);
+  for (const rawMember of splitTopLevel(body, ";,")) {
+    const parsedMember = splitMemberNameAndType(rawMember.trim());
     if (!parsedMember) continue;
     addDispatchedEvent(ctx, {
       name: parsedMember.name,

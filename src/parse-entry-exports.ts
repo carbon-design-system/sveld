@@ -10,6 +10,7 @@ import { compareText } from "./parser/utils";
 import { getParserStack, loadParserStack } from "./parser-stack";
 import { normalizeSeparators } from "./path";
 import { resolvePathAliasAbsolute } from "./resolve-alias";
+import { returnTypeOfFunctionType } from "./type-text";
 
 /** One named export from the entry barrel (not a `.svelte` component). */
 export interface EntryExport {
@@ -381,15 +382,6 @@ function portableDeclaredType(
   return names.every((name) => PORTABLE_TYPE_KEYWORDS.has(name)) ? declared : undefined;
 }
 
-/** Trailing return from a callable type (`() => string` → `string`). */
-function returnTypeFromCallableTypeText(type: string | undefined): string | undefined {
-  if (!type) return undefined;
-  const idx = type.lastIndexOf("=>");
-  if (idx === -1) return undefined;
-  const ret = type.slice(idx + 2).trim();
-  return ret || undefined;
-}
-
 /**
  * Literal-only return inference for a function/arrow (same idea as
  * `inferReturnTypeFromNode` in props.ts). string/number/boolean/template only.
@@ -548,7 +540,7 @@ function describeDeclaration(
           returnType =
             functionReturnAnnotationText(source, init) ??
             jsDocReturnType ??
-            returnTypeFromCallableTypeText(type) ??
+            returnTypeOfFunctionType(type) ??
             inferAstLiteralReturnType(init);
         } else {
           value = textOf(source, init);

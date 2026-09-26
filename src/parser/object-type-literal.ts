@@ -1,37 +1,4 @@
-/**
- * Splits a TypeScript object-type body on top-level `;`/`,` member separators,
- * ignoring separators nested inside `<>`, `()`, `[]`, or `{}`.
- */
-function splitTopLevelMembers(value: string): string[] {
-  const parts: string[] = [];
-  let depth = 0;
-  let start = 0;
-
-  for (let i = 0; i < value.length; i++) {
-    const char = value[i];
-    if (char === "<" || char === "(" || char === "[" || char === "{") depth++;
-    else if (char === ">" || char === ")" || char === "]" || char === "}") depth = Math.max(depth - 1, 0);
-    else if (depth === 0 && (char === ";" || char === ",")) {
-      parts.push(value.slice(start, i));
-      start = i + 1;
-    }
-  }
-
-  parts.push(value.slice(start));
-  return parts;
-}
-
-/** Index of the first top-level `:` (name/type separator), or -1 if none. */
-function findTopLevelColon(value: string): number {
-  let depth = 0;
-  for (let i = 0; i < value.length; i++) {
-    const char = value[i];
-    if (char === "<" || char === "(" || char === "[" || char === "{") depth++;
-    else if (char === ">" || char === ")" || char === "]" || char === "}") depth = Math.max(depth - 1, 0);
-    else if (depth === 0 && char === ":") return i;
-  }
-  return -1;
-}
+import { indexOfTopLevel, splitTopLevel } from "../type-text";
 
 const OBJECT_TYPE_LITERAL_REGEX = /^\{([\s\S]*)\}$/;
 const MEMBER_NAME_REGEX = /^[A-Za-z_$][\w$]*$/;
@@ -58,11 +25,11 @@ export function parseObjectTypeLiteralMembers(typeText: string): ObjectTypeLiter
 
   const members: ObjectTypeLiteralMember[] = [];
 
-  for (const rawMember of splitTopLevelMembers(body)) {
+  for (const rawMember of splitTopLevel(body, ";,")) {
     const member = rawMember.trim();
     if (!member) continue;
 
-    const colonIndex = findTopLevelColon(member);
+    const colonIndex = indexOfTopLevel(member, ":");
     if (colonIndex === -1) return null;
 
     let name = member.slice(0, colonIndex).trim();

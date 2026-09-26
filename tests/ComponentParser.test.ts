@@ -2116,4 +2116,51 @@ describe("ComponentParser", () => {
     expect(result.generics).toBeNull();
     expect(result.diagnostics).toContainEqual(expect.objectContaining({ kind: "syntax-skipped", name: "generics" }));
   });
+
+  describe("type text with arrows and string literals", () => {
+    test("reads a JSDoc EventDispatcher generic whose members contain an arrow", () => {
+      const parser = new ComponentParser();
+      const source = `
+        <script>
+          import { createEventDispatcher } from "svelte";
+          /** @type {import('svelte').EventDispatcher<{ select: { onDone: () => void }; close: null }>} */
+          const dispatch = createEventDispatcher();
+        </script>
+      `;
+
+      const result = parser.parseSvelteComponent(source, diagnostics);
+      expect(result.events.map((event) => [event.name, "detail" in event ? event.detail : undefined])).toEqual([
+        ["close", "null"],
+        ["select", "{ onDone: () => void }"],
+      ]);
+    });
+
+    test("resolves a dotted slot prop next to a function-typed member", () => {
+      const parser = new ComponentParser();
+      const source = `
+        <script>
+          /** @type {{ onClick: (e: MouseEvent) => void; label: string }} */
+          export let item;
+        </script>
+
+        <slot text={item.label} />
+      `;
+
+      const result = parser.parseSvelteComponent(source, diagnostics);
+      expect(result.slots.find((s) => s.default)?.slot_props).toBe("{ text: string }");
+    });
+
+    test("reads a JSDoc type containing an astral character", () => {
+      const parser = new ComponentParser();
+      const source = `
+        <script>
+          /** @type {"😀" | "b"} */
+          export let icon = "b";
+        </script>
+      `;
+
+      const result = parser.parseSvelteComponent(source, diagnostics);
+      expect(result.props.find((prop) => prop.name === "icon")?.type).toBe('"😀" | "b"');
+    });
+  });
 });
