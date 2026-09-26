@@ -21,7 +21,6 @@ export default defineConfig({
           if (id.includes("/TabTypeScript") || id.includes("languages/typescript")) return "tab-typescript";
           if (id.includes("/TabMarkdown") || id.includes("languages/markdown")) return "tab-markdown";
           if (id.includes("/TabJson") || id.includes("languages/json")) return "tab-json";
-          if (id.includes("/TabCustomElements")) return "tab-custom-elements";
           if (id.includes("/CodeHighlighter")) return "code-highlighter";
         },
       },

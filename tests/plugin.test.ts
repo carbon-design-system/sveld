@@ -183,19 +183,11 @@ describe("writeOutput output paths", () => {
         jsonOptions: { outFile: path.join(dir, "api.json") },
         markdown: true,
         markdownOptions: { outFile: path.join(dir, "index.md") },
-        customElements: true,
-        customElementsOptions: { outFile: path.join(dir, "custom-elements.json") },
       },
       path.join(dir, "index.js"),
     );
 
-    for (const file of [
-      "types/index.d.ts",
-      "types/Button.svelte.d.ts",
-      "api.json",
-      "index.md",
-      "custom-elements.json",
-    ]) {
+    for (const file of ["types/index.d.ts", "types/Button.svelte.d.ts", "api.json", "index.md"]) {
       expect(fs.existsSync(path.join(dir, file))).toBe(true);
     }
   });

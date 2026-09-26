@@ -5,7 +5,7 @@
   "type": "module",
   "svelte": "./component/index.js",
   "scripts": {
-    "gen": "sveld --json --markdown --custom-elements",
+    "gen": "sveld --json --markdown",
     "check-minor": "sveld --check=snapshots/minor-change.json --format=json",
     "check-removed": "sveld --check=snapshots/removed-prop.json",
     "strict": "sveld --strict"

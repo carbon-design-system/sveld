@@ -4,9 +4,9 @@
  * Everything exported here avoids Node built-ins (`node:fs`, `node:path`, ...),
  * so it bundles for the browser (Vite, esbuild, webpack, Rollup) without a
  * polyfill. It covers parsing a single component's source and rendering that
- * result to JSON, Markdown, TypeScript definitions, or a Custom Elements
- * Manifest — everything except the filesystem-driven project scanning
- * (`sveld()`/`pluginSveld()`) and CLI, which only make sense in Node.
+ * result to JSON, Markdown, or TypeScript definitions: everything except the
+ * filesystem-driven project scanning (`sveld()`/`pluginSveld()`) and CLI,
+ * which only make sense in Node.
  *
  * @example
  * ```ts
@@ -50,21 +50,6 @@ export {
 } from "./writer/document-model";
 export type { AppendType, MarkdownWriterBase, TocLine } from "./writer/MarkdownWriterBase";
 export { renderComponentsToMarkdown } from "./writer/markdown-render-utils";
-export {
-  type BuildCustomElementsManifestOptions,
-  buildCustomElementsManifest,
-  type CemAttribute,
-  type CemClassDeclaration,
-  type CemClassField,
-  type CemCustomElementExport,
-  type CemEvent,
-  type CemExport,
-  type CemJavaScriptExport,
-  type CemModule,
-  type CemSlot,
-  type CemType,
-  type CustomElementsManifest,
-} from "./writer/writer-custom-elements-core";
 export {
   BrowserWriterMarkdown,
   type WriteMarkdownCoreOptions,

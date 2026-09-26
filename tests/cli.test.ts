@@ -610,18 +610,17 @@ describe("cli() --quiet", () => {
   });
 
   test("a plain run prints writer progress lines to stderr", async () => {
-    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--markdown", "--custom-elements"];
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--markdown"];
 
     await cli(process);
 
     expect(errorSpy).toHaveBeenCalledWith('created 2 of 2 TypeScript definitions in "types".');
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('created "COMPONENT_API.json".'));
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('created "COMPONENT_INDEX.md".'));
-    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('created "custom-elements.json".'));
   });
 
   test("--quiet suppresses writer progress lines but still writes output files", async () => {
-    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--markdown", "--custom-elements", "--quiet"];
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--markdown", "--quiet"];
 
     await cli(process);
 
@@ -629,7 +628,6 @@ describe("cli() --quiet", () => {
     expect(existsSync(join(dir, "types", "Button.svelte.d.ts"))).toBe(true);
     expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(true);
     expect(existsSync(join(dir, "COMPONENT_INDEX.md"))).toBe(true);
-    expect(existsSync(join(dir, "custom-elements.json"))).toBe(true);
   });
 
   test("quiet: true in the config file suppresses progress lines", async () => {
@@ -780,19 +778,6 @@ describe("cli() --stdout", () => {
     expect(stdoutSpy).toHaveBeenCalledTimes(1);
     expect(stdoutSpy.mock.calls[0][0]).toContain("Button");
     expect(existsSync(join(dir, "COMPONENT_INDEX.md"))).toBe(false);
-    expect(existsSync(join(dir, "types"))).toBe(false);
-  });
-
-  test("--custom-elements --stdout prints the manifest to stdout and writes nothing to disk", async () => {
-    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--custom-elements", "--stdout"];
-
-    await cli(process);
-
-    expect(process.exitCode).toBe(0);
-    expect(stdoutSpy).toHaveBeenCalledTimes(1);
-    const printed = JSON.parse(stdoutSpy.mock.calls[0][0] as string);
-    expect(printed.schemaVersion).toBe("1.0.0");
-    expect(existsSync(join(dir, "custom-elements.json"))).toBe(false);
     expect(existsSync(join(dir, "types"))).toBe(false);
   });
 
