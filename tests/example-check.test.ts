@@ -164,3 +164,84 @@ describe("checkExamples: syntax-checking svelte/html fences", () => {
     expect(createSpy).not.toHaveBeenCalled();
   });
 });
+
+describe("checkExamples: true through generateBundle", () => {
+  let dir: string;
+
+  beforeEach(() => {
+    // Inside the repo: `typescript` resolves from the project, like a real install.
+    dir = mkdtempSync(path.join(process.cwd(), ".tmp-sveld-example-compile-"));
+  });
+
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("attaches example-compile-error diagnostics for props, module exports, slots, and events", async () => {
+    writeFileSync(path.join(dir, "tsconfig.json"), JSON.stringify({ compilerOptions: { strict: true } }));
+    writeFileSync(path.join(dir, "index.js"), `export { default as Widget } from "./Widget.svelte";\n`);
+    writeFileSync(
+      path.join(dir, "Widget.svelte"),
+      `<script context="module">
+  /**
+   * @example
+   * \`\`\`ts
+   * missingHelper();
+   * \`\`\`
+   */
+  export function helper() {}
+</script>
+
+<script>
+  import { createEventDispatcher } from "svelte";
+
+  /**
+   * @example
+   * \`\`\`ts
+   * const n: number = "not a number";
+   * \`\`\`
+   */
+  export let size = 1;
+
+  /**
+   * @example
+   * \`\`\`ts
+   * const ok: number = 1;
+   * \`\`\`
+   */
+  export let valid = 1;
+
+  const dispatch = createEventDispatcher();
+
+  /**
+   * @event {CustomEvent<null>} close
+   * @example
+   * \`\`\`ts
+   * undefinedCloseHandler();
+   * \`\`\`
+   */
+
+  /**
+   * @slot {{}} footer
+   * @example
+   * \`\`\`ts
+   * undefinedFooter();
+   * \`\`\`
+   */
+</script>
+
+<button on:click={() => dispatch("close")}>{size}{valid}</button>
+<slot name="footer" />
+`,
+    );
+
+    const result = await generateBundle(path.join(dir, "index.js"), true, { checkExamples: true });
+    const compileErrors = result.diagnostics.filter((d) => d.kind === "example-compile-error");
+
+    expect(compileErrors.map((d) => d.name).sort()).toEqual(["close", "footer", "helper", "size"]);
+    expect(compileErrors.every((d) => d.severity === "error" && d.source !== undefined)).toBe(true);
+    // Also on the component itself, where the JSON writer and `--strict` read them.
+    const widget = Array.from(result.allComponentsForTypes.values()).find((c) => c.moduleName === "Widget");
+    expect(widget?.diagnostics?.filter((d) => d.kind === "example-compile-error")).toHaveLength(4);
+  }, 30_000);
+});
