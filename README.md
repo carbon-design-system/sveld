@@ -631,7 +631,7 @@ Pass `--glob` with a directory as `--entry` (no barrel file) to document every `
 | Code | Meaning |
 |------|---------|
 | `0` | Success |
-| `1` | Usage or configuration error (unknown flag, bad flag value, unresolvable entry, unresolved re-export or path alias) |
+| `1` | Usage or configuration error (unknown flag, bad flag value, unresolvable entry, unresolved re-export or path alias, missing or outdated `--check` snapshot) |
 | `2` | Generation failure (a component failed to parse, or an unrecoverable pipeline error). Without `--fail-fast`, the other components' output is still written. |
 | `3` | Breaking API change detected by `--check` |
 | `4` | Diagnostics present under `--strict` |
@@ -685,7 +685,7 @@ Suggested semver bump: major.
 | `generics`, `@restProps`, `@extends`, or context shape changed | `major` (not classified further) |
 | Description-only change | not reported |
 
-`--check` does not write the snapshot. Run `sveld --json` (or `sveld --json --check`) and commit the file when you want to update it. If there is no snapshot yet, `--check` prints a notice and exits `0`.
+`--check` does not write the snapshot. Run `sveld --json` (or `sveld --json --check`) and commit the file when you want to update it. If there is no snapshot, `--check` exits `1` so a mistyped path can't pass CI, unless the same run writes it (`sveld --json --check`), which prints a notice and exits `0`.
 
 Use `--check=<path>` to diff against a snapshot at a custom location (defaults to `jsonOptions.outFile`, or `COMPONENT_API.json`).
 
@@ -754,7 +754,7 @@ const { diagnostics } = await sveld({
 
 `diagnostics` is always populated; printing is opt-in via `reportDiagnostics` or `strict` (see [Type inference diagnostics](#type-inference-diagnostics)). `errors` is always populated too: components that failed to parse, whether or not `failFast` is set.
 
-Pass `check: true` (or `check: "<path>"` for a custom snapshot location) to diff against a committed `COMPONENT_API.json`, the same way `--check` does on the CLI. The result lands on `SveldResult.check`. `sveld()` never touches `process.exitCode` itself; it returns a suggested `exitCode` (`0`, `1` for a snapshot with a different `schemaVersion`, `2` when a component failed to parse, `3` for a `check` result at or above `checkLevel`, or `4` for `strict` diagnostics; the same mapping the CLI uses, lowest code winning) so you can assign it yourself:
+Pass `check: true` (or `check: "<path>"` for a custom snapshot location) to diff against a committed `COMPONENT_API.json`, the same way `--check` does on the CLI. The result lands on `SveldResult.check`. `sveld()` never touches `process.exitCode` itself; it returns a suggested `exitCode` (`0`, `1` for a `check` snapshot that's missing or has a different `schemaVersion`, `2` when a component failed to parse, `3` for a `check` result at or above `checkLevel`, or `4` for `strict` diagnostics; the same mapping the CLI uses, lowest code winning) so you can assign it yourself:
 
 ```js
 import { formatCheckReport } from "sveld";

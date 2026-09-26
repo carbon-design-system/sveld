@@ -1,5 +1,12 @@
 import type { ComponentParseError } from "./bundle";
-import { bumpMeetsLevel, type CheckLevel, type CheckResult, resolveCheckSnapshotFile, runCheck } from "./check";
+import {
+  bumpMeetsLevel,
+  type CheckLevel,
+  type CheckResult,
+  resolveCheckSnapshotFile,
+  runCheck,
+  writesCheckSnapshot,
+} from "./check";
 import {
   failingDiagnostics,
   filterSpeculativeDiagnostics,
@@ -36,18 +43,22 @@ type ExitCode = 0 | 1 | 2 | 3 | 4;
 
 /**
  * The exit-code contract shared by the CLI and `sveld()`. The lowest
- * applicable code wins: `1` for a snapshot whose `schemaVersion` doesn't
- * match, `2` when a component failed to parse, `3` when `check` finds a
- * change at or above `checkLevel`, `4` when `strict` diagnostics exist.
+ * applicable code wins: `1` for a `check` snapshot that's missing (unless
+ * this run writes it) or whose `schemaVersion` doesn't match, `2` when a
+ * component failed to parse, `3` when `check` finds a change at or above
+ * `checkLevel`, `4` when `strict` diagnostics exist.
  */
 export function resolveExitCode(run: {
   errors: readonly unknown[];
   check?: CheckResult;
+  /** From {@link writesCheckSnapshot}. */
+  writesSnapshot?: boolean;
   checkLevel?: CheckLevel;
   diagnostics: SveldDiagnostic[];
   /** After {@link expandStrictProfile}, so never a `"ci"`/`"local"` profile name. */
   strict?: boolean | "errors";
 }): ExitCode {
+  if (run.check && !run.check.snapshotExists && !run.writesSnapshot) return 1;
   if (run.check?.changes.some((change) => change.kind === "schema")) return 1;
   if (run.errors.length > 0) return 2;
   if (run.check && bumpMeetsLevel(run.check.bump, run.checkLevel ?? "major")) return 3;
@@ -114,6 +125,7 @@ export async function sveld(opts?: SveldOptions): Promise<SveldResult> {
   const exitCode = resolveExitCode({
     errors: result.errors,
     check: checkResult,
+    writesSnapshot: checkResult ? writesCheckSnapshot(merged, checkResult.snapshotFile) : false,
     checkLevel: merged.checkLevel,
     diagnostics,
     strict: merged.strict,

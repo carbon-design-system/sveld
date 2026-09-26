@@ -526,10 +526,22 @@ export function resolveCheckSnapshotFile(options: Pick<SveldRuntimeOptions, "che
 }
 
 /**
+ * Whether this run's `json` writer writes the `--check` snapshot itself, as
+ * `sveld --json --check` does. Only then is a missing snapshot the first run
+ * rather than a misconfigured path.
+ */
+export function writesCheckSnapshot(
+  options: Pick<SveldRuntimeOptions, "json" | "jsonOptions" | "dryRun" | "stdout">,
+  snapshotFile: string,
+): boolean {
+  if (!options.json || options.dryRun || options.stdout || options.jsonOptions?.outDir) return false;
+  return path.resolve(options.jsonOptions?.outFile ?? "COMPONENT_API.json") === path.resolve(snapshotFile);
+}
+
+/**
  * Diffs the current component set against a committed `COMPONENT_API.json`
  * snapshot and assigns a semver bump to each change. Returns
- * `snapshotExists: false` when no snapshot file exists yet, so the first
- * run does not fail CI.
+ * `snapshotExists: false` when no snapshot file exists yet.
  */
 export async function runCheck(
   components: ComponentDocs,
@@ -573,7 +585,11 @@ const BUMP_LABELS: Record<SemverBump, string> = {
 /** Groups changes by component for CLI output. */
 export function formatCheckReport(result: CheckResult): string {
   if (!result.snapshotExists) {
-    return `sveld --check: no snapshot found at "${result.snapshotFile}". Run \`sveld --json\` and commit the output first.`;
+    const generate =
+      result.snapshotFile === "COMPONENT_API.json"
+        ? "`sveld --json`"
+        : `\`sveld --json\` with \`jsonOptions.outFile: "${result.snapshotFile}"\``;
+    return `sveld --check: no snapshot found at "${result.snapshotFile}". Generate it with ${generate} and commit it.`;
   }
 
   if (result.changes.length === 0) {

@@ -8,6 +8,7 @@ import {
   formatCheckReportJson,
   resolveCheckSnapshotFile,
   runCheck,
+  writesCheckSnapshot,
 } from "./check";
 import { filterSpeculativeDiagnostics, formatDiagnosticsSummary, formatDiagnosticsSummaryJson } from "./diagnostics";
 import { resolveSvelteEntry } from "./get-svelte-entry";
@@ -640,6 +641,7 @@ export async function cli(process: NodeJS.Process) {
   const exitCode = resolveExitCode({
     errors: result.errors,
     check: checkResult,
+    writesSnapshot: checkResult ? writesCheckSnapshot(options, checkResult.snapshotFile) : false,
     checkLevel: options.checkLevel,
     diagnostics,
     strict: options.strict,

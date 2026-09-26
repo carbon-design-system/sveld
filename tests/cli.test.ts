@@ -1378,6 +1378,55 @@ describe("cli() --format with --check", () => {
   });
 });
 
+describe("cli() --check with no snapshot", () => {
+  let dir: string;
+  let previousCwd: string;
+  let previousArgv: string[];
+  let logSpy: ReturnType<typeof jest.spyOn>;
+
+  beforeEach(() => {
+    previousCwd = process.cwd();
+    previousArgv = process.argv;
+    process.exitCode = 0;
+    dir = mkdtempSync(join(tmpdir(), "sveld-cli-check-missing-"));
+    process.chdir(dir);
+    mkdirSync(join(dir, "src"), { recursive: true });
+    writeFileSync(join(dir, "src", "index.js"), 'export { default as Button } from "./Button.svelte";\n');
+    writeFileSync(join(dir, "src", "Button.svelte"), "<script></script>\n<button>Click</button>\n");
+    jest.spyOn(console, "error").mockImplementation(() => {});
+    logSpy = jest.spyOn(console, "log").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    process.chdir(previousCwd);
+    process.argv = previousArgv;
+    process.exitCode = 0;
+    rmSync(dir, { recursive: true, force: true });
+    jest.restoreAllMocks();
+  });
+
+  test("exits 1 when the snapshot is missing, so a mistyped path can't pass CI", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--check=snapshots/api.json"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(1);
+    expect(logSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Generate it with `sveld --json` with `jsonOptions.outFile: "snapshots/api.json"`'),
+    );
+  });
+
+  test("exits 0 when this run writes the snapshot (`--json --check`)", async () => {
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--json", "--check"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(0);
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("no snapshot found"));
+    expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(true);
+  });
+});
+
 describe("cli() --check-level", () => {
   let dir: string;
   let previousCwd: string;
