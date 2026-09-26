@@ -32,10 +32,10 @@ import { createParserContext, type ParserContext } from "./parser/context";
 import { parseSetContextCall } from "./parser/contexts";
 import { buildDiagnostic, isSveldIgnored, recordDiagnostic, recordSveldIgnore } from "./parser/diagnostics";
 import { isComponentLikeType, isElementLikeType } from "./parser/element-kind";
+import { compareSerializedEvents } from "./parser/event-order";
 import {
   addDispatchedEvent,
   addHostDispatchedEvent,
-  compareSerializedEvents,
   componentDetailTypeSource,
   deriveDetailType,
   detailNamesBoundInNestedScope,

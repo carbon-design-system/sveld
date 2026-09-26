@@ -12,10 +12,10 @@ import { leadingWhitespaceLength, parseComments, togglesCodeFence } from "./comm
 import type { ParserContext } from "./context";
 import { recordDiagnostic, recordSveldIgnore } from "./diagnostics";
 import { addDispatchedEvent, buildEventDetailFromProperties } from "./events";
-import { splitTopLevelCommas } from "./generics";
 import { parseObjectTypeLiteralMembers } from "./object-type-literal";
 import { addSlot } from "./slots";
 import { sourceRangeFromCommentTag } from "./source-position";
+import { splitTopLevelCommas } from "./split-top-level";
 import { assignValueOrUndefined } from "./utils";
 import { scriptBody } from "./value-imports";
 

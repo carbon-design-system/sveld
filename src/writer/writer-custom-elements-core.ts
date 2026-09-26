@@ -1,5 +1,5 @@
 import type { DeprecatedValue } from "../ComponentParser";
-import { splitTopLevelCommas } from "../parser/generics";
+import { splitTopLevelCommas } from "../parser/split-top-level";
 import type { ComponentDocApi, ComponentDocs } from "../plugin";
 import { buildComponentApiDocument } from "./document-model";
 import { createDispatchedEventType } from "./writer-ts-definitions-core";
