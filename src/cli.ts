@@ -52,8 +52,8 @@ library. With no flags, only TypeScript definitions are generated for the
 entry resolved from package.json#svelte.
 
 --entry, --cache, --check, --types-format, --types-export,
---types-comments, --types-inline, and --types-props-declaration accept
-their value as --flag=value or as a separate --flag value argument.
+--types-comments, and --types-inline accept their value as --flag=value
+or as a separate --flag value argument.
 
 Options:
   --entry=<path>        Entry point to uncompiled Svelte source (default: package.json "svelte" field)
@@ -77,7 +77,6 @@ Options:
   --types-comments=<all|descriptions|none>  Sets typesOptions.comments; how much JSDoc lands in the generated .d.ts (default: all)
   --types-inline=<local|all>  Sets typesOptions.inline; copies imported types into the .d.ts instead of importing them (default: false; pass --types-inline=false to reset)
   --types-index-types    Sets typesOptions.indexTypes; also re-exports generated types from index.d.ts (pass --types-index-types=false to disable)
-  --types-props-declaration=<type|interface>  Sets typesOptions.propsDeclaration; emits the props type as a type alias (default) or an interface
   --check[=<path>]      Diff the parsed API against a committed snapshot; exit 3 on a breaking change (default path: COMPONENT_API.json)
   --check-level=<major|minor|patch>  Minimum bump --check fails the run on (default: major)
   --format=<text|json|github>  Output format for the --check report and the diagnostics summary (default: text); "github" prints GitHub Actions ::error/::warning lines and appends a GITHUB_STEP_SUMMARY table when that env var is set
@@ -133,7 +132,6 @@ const KNOWN_FLAGS = [
   "types-comments",
   "types-inline",
   "types-index-types",
-  "types-props-declaration",
   "format",
 ];
 
@@ -167,18 +165,10 @@ const SPACE_SEPARATED_VALUE_FLAGS = new Set([
   "types-export",
   "types-comments",
   "types-inline",
-  "types-props-declaration",
 ]);
 
 /** Of those, the flags that error (rather than falling back to a bare default) when no value is given. */
-const REQUIRES_VALUE_FLAGS = new Set([
-  "entry",
-  "types-format",
-  "types-export",
-  "types-comments",
-  "types-inline",
-  "types-props-declaration",
-]);
+const REQUIRES_VALUE_FLAGS = new Set(["entry", "types-format", "types-export", "types-comments", "types-inline"]);
 
 /** Closest known flag (canonical spelling) to an unrecognized raw flag name, or undefined if none is close enough. */
 function suggestFlag(rawFlag: string): string | undefined {
@@ -304,10 +294,6 @@ function parseCliFlagValue(flag: string, value: string | boolean, arg: string, r
         : { kind: "option", option: {} };
     case "types-index-types":
       return { kind: "option", option: { typesOptions: { indexTypes: value === true || value === "true" } } };
-    case "types-props-declaration":
-      return typeof value === "string"
-        ? { kind: "option", option: { typesOptions: { propsDeclaration: value as "type" | "interface" } } }
-        : { kind: "option", option: {} };
     case "format":
       // The value is validated in `cli()` once it can be reported as a usage
       // error (`--format=yaml`); a bare `--format` is silently ignored.
@@ -371,7 +357,7 @@ export function parseCliOptions(argv: string[]): CliParseResult {
  */
 interface TypesEnumFlag {
   flagName: string;
-  key: "format" | "comments" | "inline" | "propsDeclaration";
+  key: "format" | "comments" | "inline";
   values: readonly string[];
 }
 
@@ -379,7 +365,6 @@ const TYPES_ENUM_FLAGS: readonly TypesEnumFlag[] = [
   { flagName: "types-format", key: "format", values: ["class", "component"] },
   { flagName: "types-comments", key: "comments", values: ["all", "descriptions", "none"] },
   { flagName: "types-inline", key: "inline", values: ["local", "all"] },
-  { flagName: "types-props-declaration", key: "propsDeclaration", values: ["type", "interface"] },
 ];
 
 /** `["a", "b"]` -> `"a" or "b"`; `["a", "b", "c"]` -> `"a", "b", or "c"` - the `--format`-style usage-error phrasing. */
