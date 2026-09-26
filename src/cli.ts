@@ -13,7 +13,7 @@ import {
 import { filterSpeculativeDiagnostics, formatDiagnosticsSummary, formatDiagnosticsSummaryJson } from "./diagnostics";
 import { resolveSvelteEntry } from "./get-svelte-entry";
 import { closestMatch } from "./levenshtein";
-import { expandStrictProfile, loadConfig, mergeConfig, type SveldRuntimeOptions, validateOptions } from "./load-config";
+import { loadConfig, mergeConfig, type SveldRuntimeOptions, validateOptions } from "./load-config";
 import { setQuiet } from "./logger";
 import { normalizeSeparators } from "./path";
 import { generateBundle, toGenerateBundleOptions, writeOutput, writeStdout } from "./plugin";
@@ -62,7 +62,7 @@ Options:
   --cache[=<path>]      Persist parsed output and skip re-parsing unchanged files (on by default, default path: node_modules/.cache/sveld/parse-cache.json; pass --cache=false to disable)
   --check-examples[=syntax]  Check @example blocks: TS/JS against the TypeScript program, svelte/html markup against sveld's own parser (alias: --checkExamples, deprecated); --check-examples=syntax runs only the markup path and never loads TypeScript
   --report-diagnostics  Print unresolved-type diagnostics to stderr
-  --strict[=errors|ci|local]  Exit with code 4 when diagnostics exist (implies --report-diagnostics); --strict=errors only fails on error-severity diagnostics; --strict=ci expands to {strict:true, reportDiagnostics:true, check:true, checkExamples:true}, --strict=local to {reportDiagnostics:true}
+  --strict[=errors]     Exit with code 4 when diagnostics exist (implies --report-diagnostics); --strict=errors only fails on error-severity diagnostics
   --types-format=<format>  ".d.ts" output format: "class" (default) or "component" (Svelte 5 Component<...>)
   --types-index-types    Sets typesOptions.indexTypes; also re-exports generated types from index.d.ts (pass --types-index-types=false to disable)
   --check[=<path>]      Diff the parsed API against a committed snapshot; exit 3 on a breaking change (default path: COMPONENT_API.json)
@@ -211,7 +211,7 @@ function parseCliFlagValue(flag: string, value: string | boolean, arg: string, r
       // error (`--strict=oops`); a bare `--strict` means `true`.
       if (value === true || value === "true") return { kind: "option", option: { strict: true } };
       if (value === "false") return { kind: "option", option: { strict: false } };
-      return { kind: "option", option: { strict: value as "errors" | "ci" | "local" } };
+      return { kind: "option", option: { strict: value as "errors" } };
     case "report-diagnostics":
       return { kind: "option", option: { reportDiagnostics: value === true || value === "true" } };
     case "check-examples":
@@ -354,7 +354,7 @@ export async function cli(process: NodeJS.Process) {
     process.exitCode = EXIT_CODES.USAGE_ERROR;
     return;
   }
-  const options = expandStrictProfile(mergeConfig<CliOptions>(fileConfig, cliOptions));
+  const options = mergeConfig<CliOptions>(fileConfig, cliOptions);
   validateOptions(options);
 
   if (options.stdout) {
@@ -391,7 +391,7 @@ export async function cli(process: NodeJS.Process) {
     options.strict !== false &&
     options.strict !== "errors"
   ) {
-    console.error(`sveld: --strict must be "errors", "ci", or "local" when given a value; got "${options.strict}".`);
+    console.error(`sveld: --strict must be "errors" when given a value; got "${options.strict}".`);
     process.exitCode = EXIT_CODES.USAGE_ERROR;
     return;
   }
