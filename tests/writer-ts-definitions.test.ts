@@ -12,6 +12,7 @@ import type { ComponentDocApi, ComponentDocs } from "../src/plugin";
 import type { TransformContext, WriteTsDefinitionsOptions } from "../src/writer/writer-ts-definitions";
 import writeTsDefinitions, {
   formatTsProps,
+  generatedTextCacheKey,
   getContextDefs,
   getTypeDefs,
   writeTsDefinition,
@@ -1908,7 +1909,7 @@ describe("typesOptions.transform", () => {
 
       // The cache stores the untransformed text, not the transformed output.
       const buttonPath = path.resolve(dir, "Button.svelte");
-      const cacheKey = serializeEmitOptions({});
+      const cacheKey = generatedTextCacheKey("Button", {});
       expect(first.cache?.getGeneratedText(buttonPath, cacheKey)).toBeDefined();
       expect(first.cache?.getGeneratedText(buttonPath, cacheKey)).not.toContain("// first");
 
