@@ -32,6 +32,14 @@ import type {
 import type { SveldDiagnostic } from "../diagnostics";
 import type { JSDocComment } from "./comment-parser";
 
+/** One top-level member of an object `@typedef`, from a `@property` tag or an inline `{ ... }` type. */
+export interface TypedefMember {
+  name: string;
+  type: string;
+  optional: boolean;
+  description?: string;
+}
+
 /** Per-parse mutable state for {@link ComponentParser}. Reset via {@link createParserContext} on each parse. */
 export interface ParserContext {
   syntaxMode: SyntaxMode;
@@ -139,6 +147,11 @@ export interface ParserContext {
   readonly bindings: Map<string, ComponentPropBindings>;
   readonly contexts: Map<string, ComponentContext>;
   readonly typedefs: Map<string, TypeDef>;
+  /**
+   * Top-level members of each object `@typedef`, keyed by typedef name, so a
+   * `/** @type {Props} *\/ let { ... } = $props()` can type each prop.
+   */
+  readonly typedefMembersByName: Map<string, TypedefMember[]>;
   /** No `type` for a variable whose JSDoc has no `@type` (a TS annotation may still type it). */
   variableInfoCache: Map<string, { type?: string; description?: string; internal?: boolean }>;
 
@@ -216,6 +229,7 @@ export function createParserContext(): ParserContext {
     bindings: new Map(),
     contexts: new Map(),
     typedefs: new Map(),
+    typedefMembersByName: new Map(),
     variableInfoCache: new Map(),
     variableInfoCacheBuilt: false,
     sveldIgnoreDirectives: new Map(),

@@ -1,0 +1,111 @@
+{
+  "source": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 19,
+      "column": 0
+    }
+  },
+  "syntaxMode": "runes",
+  "scriptLanguage": "js",
+  "props": [
+    {
+      "name": "title",
+      "kind": "let",
+      "description": "Card title",
+      "type": "string",
+      "typeSource": "jsdoc",
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": true,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 10,
+          "column": 8
+        },
+        "end": {
+          "line": 10,
+          "column": 13
+        }
+      }
+    },
+    {
+      "name": "elevated",
+      "kind": "let",
+      "description": "Elevated look",
+      "type": "boolean",
+      "typeSource": "jsdoc",
+      "value": "false",
+      "defaultValue": {
+        "raw": "false",
+        "kind": "literal",
+        "value": false
+      },
+      "isFunction": false,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 10,
+          "column": 15
+        },
+        "end": {
+          "line": 10,
+          "column": 31
+        }
+      }
+    },
+    {
+      "name": "onclick",
+      "kind": "let",
+      "description": "Click handler",
+      "type": "(e: MouseEvent) => void",
+      "typeSource": "jsdoc",
+      "isFunction": true,
+      "isFunctionDeclaration": false,
+      "isRequired": false,
+      "constant": false,
+      "reactive": false,
+      "source": {
+        "start": {
+          "line": 10,
+          "column": 33
+        },
+        "end": {
+          "line": 10,
+          "column": 40
+        }
+      }
+    }
+  ],
+  "moduleExports": [],
+  "slots": [],
+  "events": [],
+  "typedefs": [
+    {
+      "type": "{\n  /** Card title */\n  title: string;\n  /** Elevated look @default false */\n  elevated?: boolean;\n  /** Click handler */\n  onclick?: (e: MouseEvent) => void;\n}",
+      "name": "Props",
+      "ts": "type Props = {\n  /** Card title */\n  title: string;\n  /** Elevated look @default false */\n  elevated?: boolean;\n  /** Click handler */\n  onclick?: (e: MouseEvent) => void;\n};",
+      "source": {
+        "start": {
+          "line": 3,
+          "column": 5
+        },
+        "end": {
+          "line": 3,
+          "column": 28
+        }
+      }
+    }
+  ],
+  "generics": null,
+  "contexts": [],
+  "diagnostics": []
+}
