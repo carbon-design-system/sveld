@@ -25,10 +25,3 @@ export { defineConfig, type SveldConfig, type SveldRuntimeOptions } from "./load
 export { default } from "./plugin";
 export { type SveldResult, sveld } from "./sveld";
 export { buildComponentApiDocument, type ComponentApiDocument } from "./writer/document-model";
-export {
-  getWriter,
-  listWriters,
-  type OutputWriter,
-  type RegisterWriterOptions,
-  registerWriter,
-} from "./writer/registry";

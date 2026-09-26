@@ -65,8 +65,7 @@ export type TransformContext =
  * generated `.d.ts` text, called after the generated-text cache lookup so a
  * changed transform can never serve stale cached output. A transform that
  * throws, or resolves to something other than a string, fails the run with a
- * `sveld:`-prefixed error naming the file - same shape as the writer-failure
- * error in `src/writer/registry.ts`.
+ * `sveld:`-prefixed error naming the file.
  */
 async function applyTransform(
   transform: WriteTsDefinitionsOptions["transform"],

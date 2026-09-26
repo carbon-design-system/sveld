@@ -3,9 +3,8 @@ import * as fs from "node:fs";
 import { tmpdir } from "node:os";
 // biome-ignore lint/performance/noNamespaceImport: needed for jest.spyOn
 import * as path from "node:path";
-import type { ComponentDocs, GenerateBundleResult } from "../src/plugin";
+import type { GenerateBundleResult } from "../src/plugin";
 import pluginSveld, { generateBundle, writeOutput } from "../src/plugin";
-import { registerWriter } from "../src/writer/registry";
 import { mockComponentDocApi } from "./test-brands";
 
 /** Mock Rollup plugin context: throws (instead of `never`-returning) so `this.error(...)` surfaces as a rejected promise. */
@@ -148,80 +147,6 @@ describe("generateBundle", () => {
       expect(byName.get("clamp")).toMatchObject({ kind: "function" });
       expect(byName.get("Theme")).toMatchObject({ kind: "type", isTypeOnly: true });
     });
-  });
-});
-
-describe("writeOutput additionalWriters", () => {
-  afterEach(() => {
-    jest.restoreAllMocks();
-  });
-
-  test('componentSet: "all" gets allComponentsForTypes, keyed by filePath so colliding moduleNames both survive', async () => {
-    let received: ComponentDocs | undefined;
-    registerWriter({
-      name: "test-all-componentset-writer",
-      componentSet: "all",
-      write: (components) => {
-        received = components;
-      },
-    });
-
-    // Two --glob-discovered components sharing a basename in different
-    // directories, same shape as the collision #402 fixed.
-    const allComponentsForTypes: ComponentDocs = new Map([
-      ["Menu/Menu.svelte", mockComponentDocApi("Menu", "Menu/Menu.svelte")],
-      ["icons/Menu.svelte", mockComponentDocApi("Menu", "icons/Menu.svelte")],
-    ]);
-
-    const result: GenerateBundleResult = {
-      exports: {},
-      entryExports: [],
-      components: new Map(),
-      allComponentsForTypes,
-      errors: [],
-      diagnostics: [],
-    };
-
-    await writeOutput(
-      result,
-      { types: false, additionalWriters: { "test-all-componentset-writer": {} } },
-      "/mock/src/index.js",
-    );
-
-    // The custom writer sees the same, filePath-keyed map: both "Menu"
-    // components are present, not collapsed into one via moduleName.
-    expect(received).toBe(allComponentsForTypes);
-    expect(received?.size).toBe(2);
-    expect(Array.from(received?.values() ?? []).map((component) => component.moduleName)).toEqual(["Menu", "Menu"]);
-  });
-
-  test('componentSet: "exported" (the default) gets components, not allComponentsForTypes', async () => {
-    let received: ComponentDocs | undefined;
-    registerWriter({
-      name: "test-exported-componentset-writer",
-      write: (components) => {
-        received = components;
-      },
-    });
-
-    const components: ComponentDocs = new Map([["Button", mockComponentDocApi("Button", "Button.svelte")]]);
-
-    const result: GenerateBundleResult = {
-      exports: {},
-      entryExports: [],
-      components,
-      allComponentsForTypes: new Map(),
-      errors: [],
-      diagnostics: [],
-    };
-
-    await writeOutput(
-      result,
-      { types: false, additionalWriters: { "test-exported-componentset-writer": {} } },
-      "/mock/src/index.js",
-    );
-
-    expect(received).toBe(components);
   });
 });
 
