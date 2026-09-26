@@ -42,7 +42,7 @@ export function renderCustomElementsManifest(
 export default async function writeCustomElements(components: ComponentDocs, options: WriteCustomElementsOptions) {
   const raw = renderCustomElementsManifest(components, options);
 
-  const output_path = path.join(process.cwd(), options.outFile);
+  const output_path = path.resolve(options.outFile);
   const writer = new Writer({ dryRun: options.dryRun });
   const wasWritten = await writer.write(output_path, raw);
 

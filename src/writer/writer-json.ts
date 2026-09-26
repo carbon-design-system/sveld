@@ -157,7 +157,7 @@ export function renderJsonLines(
 
 async function writeJsonLocal(components: ComponentDocs, options: WriteJsonOptions) {
   const raw = renderJsonDocument(components, options);
-  const output_path = path.join(process.cwd(), options.outFile);
+  const output_path = path.resolve(options.outFile);
   const writer = new Writer({ dryRun: options.dryRun });
   const wasWritten = await writer.write(output_path, raw);
 
