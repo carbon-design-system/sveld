@@ -13,6 +13,7 @@ import type { ParserContext } from "./context";
 import { recordDiagnostic, recordSveldIgnore } from "./diagnostics";
 import { addDispatchedEvent, buildEventDetailFromProperties } from "./events";
 import { splitTopLevelCommas } from "./generics";
+import { parseObjectTypeLiteralMembers } from "./object-type-literal";
 import { addSlot } from "./slots";
 import { sourceRangeFromCommentTag } from "./source-position";
 import { assignValueOrUndefined } from "./utils";
@@ -1110,6 +1111,19 @@ export function parseCustomTypes(
           typedefType = "{}";
           typedefTs = `type ${currentTypedefName} = ${typedefType};`;
         }
+
+        const members =
+          typedefProperties.length > 0
+            ? typedefProperties
+                .filter(({ name }) => !name.includes(".") && !name.startsWith("["))
+                .map(({ name, type, optional, description }) => ({
+                  name,
+                  type,
+                  optional: optional === true,
+                  ...(description ? { description } : {}),
+                }))
+            : parseObjectTypeLiteralMembers(typedefType);
+        if (members) ctx.typedefMembersByName.set(currentTypedefName, members);
 
         warnDuplicateTypedefName(currentTypedefName, currentTypedefSource);
         ctx.typedefs.set(currentTypedefName, {

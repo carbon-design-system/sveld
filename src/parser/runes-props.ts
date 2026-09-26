@@ -12,11 +12,12 @@ import type {
   SourceRange,
   TypeImportBinding,
 } from "../ComponentParser";
-import type { ParserContext } from "./context";
+import type { ParserContext, TypedefMember } from "./context";
 import { recordSveldIgnore } from "./diagnostics";
 import { addDispatchedEvent } from "./events";
 import { collectGenericsAttributeTypeDependencies } from "./generics";
 import { processLeadingCommentsJSDoc, processNodeJSDoc } from "./jsdoc";
+import { parseObjectTypeLiteralMembers } from "./object-type-literal";
 import { resolvePropTypeAndDocs } from "./prop-shared";
 import { addProp, processInitializer, queuePendingCrossFileDefault, unwrapBindableInitializer } from "./props";
 import { sourceAtPos, sourceRangeFromNode } from "./source-position";
@@ -437,6 +438,20 @@ export function buildRunesPropTypeMetadata(parser: ComponentParser, ctx: ParserC
   }
 }
 
+/**
+ * Members of the whole-object type a JSDoc `@type` puts on a `$props()`
+ * declaration: a local object `@typedef` by name, or an inline `{ ... }`.
+ */
+function getJsDocPropsMembers(
+  ctx: ParserContext,
+  typeText: string | undefined,
+): Map<string, TypedefMember> | undefined {
+  const text = typeText?.trim();
+  if (!text) return undefined;
+  const members = ctx.typedefMembersByName.get(text) ?? parseObjectTypeLiteralMembers(text);
+  return members ? new Map(members.map((member) => [member.name, member])) : undefined;
+}
+
 /** Top-level `$props()` declarations in runes components. */
 export function parseRunesPropsDeclaration(parser: ComponentParser, ctx: ParserContext, node: VariableDeclaration) {
   for (const declarator of node.declarations) {
@@ -450,6 +465,23 @@ export function parseRunesPropsDeclaration(parser: ComponentParser, ctx: ParserC
         ctx,
         (declarator as VariableDeclarator & { start?: number }).start,
       );
+      const jsDocMembers = metadata?.props.size
+        ? undefined
+        : getJsDocPropsMembers(ctx, processNodeJSDoc(ctx, parser, node)?.type);
+      for (const member of jsDocMembers?.values() ?? []) {
+        addProp(parser, ctx, member.name, {
+          name: member.name,
+          kind: "let",
+          description: member.description,
+          type: member.type,
+          typeSource: "jsdoc",
+          isFunction: member.type.includes("=>"),
+          isFunctionDeclaration: false,
+          isRequired: !member.optional,
+          constant: false,
+          reactive: false,
+        });
+      }
       if (metadata) {
         for (const [propName, typeMetadata] of metadata.props) {
           addProp(parser, ctx, propName, {
@@ -474,6 +506,14 @@ export function parseRunesPropsDeclaration(parser: ComponentParser, ctx: ParserC
     }
 
     const declarationJSDoc = processNodeJSDoc(ctx, parser, node);
+    // `/** @type {Props} */ let { a, b } = $props()` types the whole object, so each
+    // prop takes its member's type and docs instead of the declaration's JSDoc.
+    const jsDocMembers = getRunesPropsDeclarationMetadata(
+      ctx,
+      (declarator as VariableDeclarator & { start?: number }).start,
+    )?.props.size
+      ? undefined
+      : getJsDocPropsMembers(ctx, declarationJSDoc?.type);
 
     const supportedPublicPropCount = declarator.id.properties.filter((property) => {
       if (property.type !== "Property" || property.computed) return false;
@@ -516,9 +556,10 @@ export function parseRunesPropsDeclaration(parser: ComponentParser, ctx: ParserC
         ctx.snippetPropLocals.add(localName);
       }
 
+      const member = jsDocMembers?.get(propName);
       const propertyJSDoc =
         processLeadingCommentsJSDoc(ctx, parser, property) ??
-        (supportedPublicPropCount === 1 ? declarationJSDoc : undefined);
+        (supportedPublicPropCount === 1 && !jsDocMembers ? declarationJSDoc : undefined);
       const typeMetadata = getRunesPropTypeMetadata(
         ctx,
         (declarator as VariableDeclarator & { start?: number }).start,
@@ -537,8 +578,8 @@ export function parseRunesPropsDeclaration(parser: ComponentParser, ctx: ParserC
         explicitType: typeMetadata?.type,
         typeSeed: inferredType,
         inferredTypeForSource: inferredType,
-        jsdocType: propertyJSDoc?.type,
-        jsdocDescription: propertyJSDoc?.description,
+        jsdocType: propertyJSDoc?.type ?? member?.type,
+        jsdocDescription: propertyJSDoc?.description ?? member?.description,
         jsdocParams: propertyJSDoc?.params,
         jsdocReturnType: propertyJSDoc?.returnType,
         resolvedType: inheritedType,
@@ -574,7 +615,7 @@ export function parseRunesPropsDeclaration(parser: ComponentParser, ctx: ParserC
         returnType,
         isFunction,
         isFunctionDeclaration: false,
-        isRequired: !bindable && unwrappedInit == null && typeMetadata?.optional !== true,
+        isRequired: !bindable && unwrappedInit == null && typeMetadata?.optional !== true && member?.optional !== true,
         constant: false,
         reactive: bindable,
         source: sourceRangeFromNode(ctx, property),
