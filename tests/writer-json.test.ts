@@ -34,7 +34,6 @@ describe("writeJson", () => {
 
     try {
       await writeJson(components, {
-        input: "src",
         inputDir: "src",
         outFile,
       });
@@ -62,7 +61,7 @@ describe("writeJson", () => {
     const components: ComponentDocs = new Map([["Alpha", createComponent("Alpha", "Alpha.svelte")]]);
 
     try {
-      await writeJson(components, { input: "src", inputDir: "src", outFile });
+      await writeJson(components, { inputDir: "src", outFile });
 
       const output = JSON.parse(readFileSync(path.join(tempDir, "COMPONENT_API.json"), "utf-8"));
       expect(output.exports).toBeUndefined();
@@ -79,7 +78,6 @@ describe("writeJson", () => {
 
     try {
       await writeJson(components, {
-        input: "src",
         inputDir: "src",
         outFile,
         entryExports: [
@@ -119,7 +117,6 @@ describe("writeJson", () => {
 
     try {
       await writeJson(new Map([["Alpha", createComponent("Alpha", "Alpha.svelte")]]), {
-        input: "src",
         inputDir: "src",
         outFile,
       });
@@ -136,9 +133,9 @@ describe("writeJson", () => {
     const components = new Map([["Alpha", createComponent("Alpha", "Alpha.svelte")]]);
 
     try {
-      await writeJson(components, { input: "src", inputDir: "src", outFile });
+      await writeJson(components, { inputDir: "src", outFile });
       errorSpy.mockClear();
-      await writeJson(components, { input: "src", inputDir: "src", outFile });
+      await writeJson(components, { inputDir: "src", outFile });
       expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining(`unchanged "${outFile}".`));
     } finally {
       rmSync(tempDir, { recursive: true, force: true });
@@ -152,7 +149,6 @@ describe("writeJson", () => {
 
     try {
       await writeJson(new Map([["Alpha", createComponent("Alpha", "Alpha.svelte")]]), {
-        input: "src",
         inputDir: "src",
         outFile,
       });
@@ -184,7 +180,7 @@ describe("writeJson (outDir mode, one file per component)", () => {
     ]);
 
     try {
-      await writeJson(components, { input: "src", inputDir: "src", outFile: "COMPONENT_API.json", outDir });
+      await writeJson(components, { inputDir: "src", outFile: "COMPONENT_API.json", outDir });
 
       expect(JSON.parse(readFileSync(path.join(tempDir, "Zeta.api.json"), "utf-8")).moduleName).toBe("Zeta");
       expect(JSON.parse(readFileSync(path.join(tempDir, "Alpha.api.json"), "utf-8")).moduleName).toBe("Alpha");
@@ -204,7 +200,7 @@ describe("writeJson (outDir mode, one file per component)", () => {
     ]);
 
     try {
-      await writeJson(components, { input: "src", inputDir: "src", outFile: "COMPONENT_API.json", outDir });
+      await writeJson(components, { inputDir: "src", outFile: "COMPONENT_API.json", outDir });
 
       // Flat Menu.api.json must not exist; each file lives under its source path.
       expect(() => readFileSync(path.join(tempDir, "Menu.api.json"), "utf-8")).toThrow();
@@ -239,7 +235,7 @@ describe("renderJsonDocument", () => {
     const outFile = path.relative(process.cwd(), path.join(tempDir, "COMPONENT_API.json"));
 
     try {
-      await writeJson(components, { input: "src", inputDir: "src", outFile });
+      await writeJson(components, { inputDir: "src", outFile });
       const written = readFileSync(path.join(tempDir, "COMPONENT_API.json"), "utf-8");
 
       expect(rendered).toBe(written);

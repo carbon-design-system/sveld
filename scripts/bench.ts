@@ -218,7 +218,6 @@ async function benchOnce(
     const jsonStart = performance.now();
     await writeJson(result.components, {
       outFile: "COMPONENT_API.json",
-      input,
       inputDir,
       entryExports: result.entryExports,
     });

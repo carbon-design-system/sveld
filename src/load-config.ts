@@ -192,19 +192,9 @@ const KNOWN_TOP_LEVEL_KEYS = [
 
 /** Known keys inside each `*Options` object, keyed by the top-level option name. */
 const KNOWN_NESTED_KEYS: Record<string, string[]> = {
-  typesOptions: [
-    "outDir",
-    "preamble",
-    "format",
-    "transform",
-    "indexTypes",
-    "exports",
-    "cache",
-    "resolvedPathByFilePath",
-    "crossFileResolvedPathByFilePath",
-  ],
-  jsonOptions: ["input", "outFile", "outDir", "entryExports", "source"],
-  markdownOptions: ["write", "outFile", "outDir", "entryExports", "onAppend"],
+  typesOptions: ["outDir", "preamble", "format", "transform", "indexTypes"],
+  jsonOptions: ["outFile", "outDir", "source"],
+  markdownOptions: ["outFile", "outDir", "onAppend"],
   diagnostics: ["ignore"],
 };
 

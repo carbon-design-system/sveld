@@ -10,12 +10,17 @@ import { loadConfig, loadConfigFrom, mergeConfig, validateOptions } from "./load
 import { setQuiet } from "./logger";
 import { WATCH_RELEVANT_EXT_REGEX } from "./path";
 import { createSveldBundle, type SveldBundle } from "./watch";
-import writeJson, { renderJsonDocument, type WriteJsonOptions } from "./writer/writer-json";
-import writeMarkdown, { renderMarkdownDocument, type WriteMarkdownOptions } from "./writer/writer-markdown";
-import writeTsDefinitions, { type WriteTsDefinitionsOptions } from "./writer/writer-ts-definitions";
+import writeJson, { type JsonOptions, renderJsonDocument, type WriteJsonOptions } from "./writer/writer-json";
+import writeMarkdown, {
+  type MarkdownOptions,
+  renderMarkdownDocument,
+  type WriteMarkdownOptions,
+} from "./writer/writer-markdown";
+import writeTsDefinitions, { type TypesOptions, type WriteTsDefinitionsOptions } from "./writer/writer-ts-definitions";
 
 export type { ComponentDocApi, ComponentDocs, GenerateBundleResult } from "./bundle";
 export { generateBundle, toGenerateBundleOptions } from "./bundle";
+export type { JsonOptions, MarkdownOptions, TypesOptions };
 
 export interface PluginSveldOptions extends Pick<GenerateBundleOptions, "cache" | "checkExamples" | "diagnostics"> {
   /**
@@ -37,11 +42,11 @@ export interface PluginSveldOptions extends Pick<GenerateBundleOptions, "cache" 
   /** Record consts, functions, and types from the entry barrel. Off by default. */
   documentExports?: boolean;
   types?: boolean;
-  typesOptions?: Partial<Omit<WriteTsDefinitionsOptions, "inputDir">>;
+  typesOptions?: TypesOptions;
   json?: boolean;
-  jsonOptions?: Partial<Omit<WriteJsonOptions, "inputDir">>;
+  jsonOptions?: JsonOptions;
   markdown?: boolean;
-  markdownOptions?: Partial<WriteMarkdownOptions>;
+  markdownOptions?: MarkdownOptions;
   /**
    * Abort the entire run when a single component fails to parse.
    * When `false` (the default), parse failures are collected as diagnostics
@@ -274,7 +279,6 @@ export async function writeOutput(result: GenerateBundleResult, opts: PluginSvel
     await writeJson(result.components, {
       outFile: "COMPONENT_API.json",
       ...opts?.jsonOptions,
-      input,
       inputDir,
       entryExports: result.entryExports,
     } satisfies WriteJsonOptions);
