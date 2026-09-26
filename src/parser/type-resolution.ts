@@ -2,6 +2,7 @@ import type {
   LocalTypeDeclaration,
   ModernRunesTypeNode,
   ParsedComponentTypeScriptMetadata,
+  PendingCrossFileCandidates,
   TypeImportBinding,
 } from "../ComponentParser";
 import type { ParserContext } from "./context";
@@ -469,7 +470,8 @@ export function buildFunctionDeclarationSignature(
   };
 }
 
-export function buildTypeScriptMetadata(ctx: ParserContext): ParsedComponentTypeScriptMetadata | undefined {
+/** What the parse leaves for the cross-file pass, or `undefined` when it depends on no other file. */
+export function buildPendingCrossFileCandidates(ctx: ParserContext): PendingCrossFileCandidates | undefined {
   const pendingCallDefaultCandidates =
     ctx.pendingCallDefaultCandidates.length > 0 ? ctx.pendingCallDefaultCandidates.slice() : undefined;
   const pendingConstDefaultCandidates =
@@ -478,13 +480,23 @@ export function buildTypeScriptMetadata(ctx: ParserContext): ParsedComponentType
     ctx.pendingContextKeyCandidates.length > 0 ? ctx.pendingContextKeyCandidates.slice() : undefined;
   const pendingDispatchEscapeCandidates =
     ctx.pendingDispatchEscapeCandidates.length > 0 ? ctx.pendingDispatchEscapeCandidates.slice() : undefined;
+  if (
+    !pendingCallDefaultCandidates &&
+    !pendingConstDefaultCandidates &&
+    !pendingContextKeyCandidates &&
+    !pendingDispatchEscapeCandidates
+  ) {
+    return undefined;
+  }
+
+  // Both only matter to an escaped dispatcher's helpers.
   const deferredEventNoSourceDiagnostics =
     ctx.deferredEventNoSourceDiagnostics.length > 0 ? ctx.deferredEventNoSourceDiagnostics.slice() : undefined;
   const untypedJsDocEventNames =
     pendingDispatchEscapeCandidates && ctx.untypedJsDocEventNames.size > 0
       ? Array.from(ctx.untypedJsDocEventNames)
       : undefined;
-  const pendingCrossFileCandidates = {
+  return {
     ...(pendingCallDefaultCandidates ? { pendingCallDefaultCandidates } : {}),
     ...(pendingConstDefaultCandidates ? { pendingConstDefaultCandidates } : {}),
     ...(pendingContextKeyCandidates ? { pendingContextKeyCandidates } : {}),
@@ -492,12 +504,10 @@ export function buildTypeScriptMetadata(ctx: ParserContext): ParsedComponentType
     ...(deferredEventNoSourceDiagnostics ? { deferredEventNoSourceDiagnostics } : {}),
     ...(untypedJsDocEventNames ? { untypedJsDocEventNames } : {}),
   };
-  const hasPendingCrossFileCandidates =
-    pendingCallDefaultCandidates !== undefined ||
-    pendingConstDefaultCandidates !== undefined ||
-    pendingContextKeyCandidates !== undefined ||
-    pendingDispatchEscapeCandidates !== undefined;
+}
 
+/** Writer-only metadata, or `undefined` when the writer needs none. */
+export function buildTypeScriptMetadata(ctx: ParserContext): ParsedComponentTypeScriptMetadata | undefined {
   const referencedImportedTypes = new Set<string>();
   const referencedLocalTypes = new Set<string>();
   for (const typeNode of ctx.additionalTypeDependencyNodes) {
@@ -528,9 +538,7 @@ export function buildTypeScriptMetadata(ctx: ParserContext): ParsedComponentType
     referencedLocalTypes.size === 0 &&
     moduleTypeDeclarations.length === 0
   ) {
-    return hasPendingCrossFileCandidates
-      ? { canonicalPropNames: [], localTypeDeclarations: [], typeImportStatements: [], ...pendingCrossFileCandidates }
-      : undefined;
+    return undefined;
   }
 
   const localTypeDeclarations = Array.from(referencedLocalTypes)
@@ -545,6 +553,5 @@ export function buildTypeScriptMetadata(ctx: ParserContext): ParsedComponentType
     localTypeDeclarations,
     ...(moduleTypeDeclarations.length > 0 ? { moduleTypeDeclarations } : {}),
     typeImportStatements: buildTypeImportStatements(ctx, referencedImportedTypes),
-    ...pendingCrossFileCandidates,
   };
 }

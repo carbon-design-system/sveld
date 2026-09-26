@@ -4,10 +4,12 @@ import { readFile } from "node:fs/promises";
 import { basename, dirname, extname, isAbsolute, join, parse, relative, resolve } from "node:path";
 import { asRelativeSourcePath, type NormalizedPath } from "./brands";
 import type {
+  ComponentParseResult,
   ComponentProp,
   DispatchedEvent,
   ParsedComponent,
   PendingConstDefaultCandidate,
+  PendingCrossFileCandidates,
   SerializedComponentEvent,
   SourceRange,
 } from "./ComponentParser";
@@ -24,7 +26,6 @@ import { readDirectoryListing, resetDirectoryListings } from "./fs-listing";
 import { hashSource, ParseCache, resolveCacheFilePath } from "./parse-cache";
 import { createResolveContext, type EntryExports, parseEntryExports, type ResolveContext } from "./parse-entry-exports";
 import { type ParsedExports, parseExports } from "./parse-exports";
-import { getParsedComponentTypeScriptMetadata } from "./parsed-component-metadata";
 import { generateContextTypeName } from "./parser/context-type-name";
 import { compareSerializedEvents } from "./parser/event-order";
 import { compareText } from "./parser/utils";
@@ -175,9 +176,10 @@ export interface ProcessComponentOptions {
    * all-components passes so a component that appears in both is parsed
    * once and both maps share its props. An entry is cleared wherever the
    * disk cache is invalidated so the `@extends` dependency-invalidation flow
-   * still forces a re-parse.
+   * still forces a re-parse. Also where the cross-file pass finds each
+   * component's pending candidates.
    */
-  memo?: Map<string, ParsedComponent>;
+  memo?: Map<string, ComponentParseResult>;
 }
 
 const HYPHEN_REGEX = /-/g;
@@ -516,7 +518,7 @@ export function processComponent(
     const hash = options.hashes?.get(resolvedPath);
     const cached = memoized === undefined ? (hash === undefined ? null : options.cache?.get(resolvedPath, hash)) : null;
 
-    let parsed: ParsedComponent;
+    let parsed: ComponentParseResult;
     if (memoized !== undefined) {
       parsed = memoized;
     } else if (cached) {
@@ -524,7 +526,7 @@ export function processComponent(
     } else {
       const parser = new (getParserStack().ComponentParser)();
       try {
-        parsed = parser.parseSvelteComponent(source, {
+        parsed = parser.parse(source, {
           moduleName,
           filePath: normalizedFilePath,
         });
@@ -561,7 +563,7 @@ export function processComponent(
     return {
       moduleName,
       filePath: normalizedFilePath,
-      ...parsed,
+      ...parsed.component,
     };
   }
 
@@ -681,7 +683,7 @@ export async function generateBundle(
    * set and once for the all-components set, via the in-run memo below.
    */
   const parseErrors = new Map<string, ComponentParseError>();
-  const memo = new Map<string, ParsedComponent>();
+  const memo = new Map<string, ComponentParseResult>();
   const processOptions: ProcessComponentOptions = {
     failFast: options.failFast === true,
     onParseError: (error) => parseErrors.set(error.filePath, error),
@@ -779,7 +781,11 @@ export async function generateBundle(
     }
   }
 
-  const crossFileReads = await resolveCrossFileCandidates(allComponentsForTypes.values(), resolveComponentFilePath);
+  const crossFileReads = await resolveCrossFileCandidates(
+    allComponentsForTypes.values(),
+    resolveComponentFilePath,
+    (component) => memo.get(resolveComponentFilePath(component.filePath))?.pending,
+  );
 
   // The generated-text cache is keyed on a component's own source, so it
   // can't see an edit to the module a default, context key, or event was
@@ -835,9 +841,10 @@ export async function generateBundle(
 export async function resolveCrossFileCandidates(
   scope: Iterable<ComponentDocApi>,
   resolveComponentFilePath: ResolveComponentFilePath,
+  pendingFor: (component: ComponentDocApi) => PendingCrossFileCandidates | undefined,
 ): Promise<Map<string, string[]>> {
   const pending = Array.from(scope, (component) => {
-    const metadata = getParsedComponentTypeScriptMetadata(component);
+    const metadata = pendingFor(component);
     return {
       component,
       callDefaults:

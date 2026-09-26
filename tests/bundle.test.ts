@@ -57,7 +57,7 @@ describe("generateBundle in-run parse dedupe", () => {
     dir = mkdtempSync(path.join(tmpdir(), "sveld-bundle-dedupe-"));
     writeFileSync(path.join(dir, "Button.svelte"), BUTTON);
     writeFileSync(path.join(dir, "entry.js"), 'export { default as Button } from "./Button.svelte";\n');
-    parseSpy = jest.spyOn(ComponentParser.prototype, "parseSvelteComponent");
+    parseSpy = jest.spyOn(ComponentParser.prototype, "parse");
   });
 
   afterEach(() => {

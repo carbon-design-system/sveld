@@ -45,7 +45,7 @@ describe("parse cache", () => {
     writeFileSync(join(dir, "Button.svelte"), BUTTON);
     writeFileSync(join(dir, "SecondaryButton.svelte"), SECONDARY_BUTTON);
     writeFileSync(join(dir, "Standalone.svelte"), STANDALONE);
-    parseSpy = jest.spyOn(ComponentParser.prototype, "parseSvelteComponent");
+    parseSpy = jest.spyOn(ComponentParser.prototype, "parse");
   });
 
   afterEach(() => {
@@ -374,7 +374,7 @@ describe("cache default", () => {
   beforeEach(() => {
     dir = mkdtempSync(join(tmpdir(), "sveld-parse-cache-default-"));
     writeFileSync(join(dir, "Standalone.svelte"), STANDALONE);
-    parseSpy = jest.spyOn(ComponentParser.prototype, "parseSvelteComponent");
+    parseSpy = jest.spyOn(ComponentParser.prototype, "parse");
   });
 
   afterEach(() => {
@@ -424,7 +424,7 @@ describe("ParseCache.save() atomicity", () => {
     dir = mkdtempSync(join(tmpdir(), "sveld-parse-cache-atomic-"));
     cacheFile = join(dir, ".cache", "parse-cache.json");
     writeFileSync(join(dir, "Standalone.svelte"), STANDALONE);
-    parseSpy = jest.spyOn(ComponentParser.prototype, "parseSvelteComponent");
+    parseSpy = jest.spyOn(ComponentParser.prototype, "parse");
   });
 
   afterEach(() => {
