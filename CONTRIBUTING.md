@@ -1,6 +1,6 @@
 # Contributing
 
-`sveld` statically analyzes Svelte components and generates TypeScript definitions (`.d.ts`), JSON (`COMPONENT_API.json`), and Markdown documentation. It parses each component once with its own template parser (`src/template-parse/`) and walks the resulting AST; that single path powers output for Svelte 3, Svelte 4, Svelte 5 without runes, and Svelte 5 Runes. The public API surface is in [README.md](README.md) (JSDoc tags, options, output shapes) — that file is the source of truth for _what_ sveld supports. This file covers _how the code is built and changed_.
+`sveld` statically analyzes Svelte components and generates TypeScript definitions (`.d.ts`), JSON (`COMPONENT_API.json`), and Markdown documentation. It parses each component once with its own template parser (`src/template-parse/`) and walks the resulting AST; that single path powers output for Svelte 3, Svelte 4, Svelte 5 without runes, and Svelte 5 Runes. The public API surface is documented in [README.md](README.md) and [`docs/`](docs) ([options](docs/options.md), [JSDoc tags](docs/jsdoc-tags.md), [output](docs/output.md), [CI](docs/ci.md)); those files are the source of truth for _what_ sveld supports. This file covers _how the code is built and changed_.
 
 If you're not sure what to build or how to approach a change, [file an issue](https://github.com/carbon-design-system/sveld/issues) before opening a PR.
 
