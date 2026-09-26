@@ -33,16 +33,6 @@ export interface BuildComponentApiDocumentOptions {
   entryExports?: EntryExports;
 }
 
-/**
- * Caches by `components` identity, then by `entryExports` identity, so that
- * `writeOutput()`'s json/markdown/custom-elements writers - which are
- * commonly called with the same `components` map and the same (or absent)
- * `entryExports` reference in one run - only pay the sort/strip cost once.
- * A fresh `components` map (new run, tests) is a fresh WeakMap entry, so
- * staleness across runs isn't possible.
- */
-const documentCache = new WeakMap<ComponentDocs, Map<EntryExports | undefined, ComponentApiDocument>>();
-
 /** Drops `@ignore`/`@internal`-tagged entries. The raw, unfiltered list lives on `ParsedComponent`. */
 function excludeInternal<T extends { internal?: boolean }>(items: T[]): T[] {
   return items.some((item) => item.internal) ? items.filter((item) => !item.internal) : items;
@@ -82,10 +72,6 @@ export function buildComponentApiDocument(
   components: ComponentDocs,
   options: BuildComponentApiDocumentOptions = {},
 ): ComponentApiDocument {
-  let byEntryExports = documentCache.get(components);
-  const cached = byEntryExports?.get(options.entryExports);
-  if (cached) return cached;
-
   const sorted = Array.from(components, ([, component]) => {
     // `diagnostics` is for the Node API only; rendered output skips it.
     const { diagnostics: _diagnostics, ...rest } = component;
@@ -108,12 +94,6 @@ export function buildComponentApiDocument(
     document.totalExports = entryExports.length;
     document.exports = entryExports;
   }
-
-  if (!byEntryExports) {
-    byEntryExports = new Map();
-    documentCache.set(components, byEntryExports);
-  }
-  byEntryExports.set(options.entryExports, document);
 
   return document;
 }

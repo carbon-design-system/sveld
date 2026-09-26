@@ -2,42 +2,16 @@ import type { ComponentDocs } from "../src/plugin";
 import { buildComponentApiDocument } from "../src/writer/document-model";
 import { mockComponentDocApi } from "./test-brands";
 
-describe("buildComponentApiDocument caching", () => {
-  test("returns the same document instance for repeat calls with the same components and entryExports", () => {
+describe("buildComponentApiDocument freshness", () => {
+  test("reflects a components map mutated in place between calls", () => {
+    // Watch mode keeps one map per bundle and updates it in place, so a
+    // document cached on the map's identity would go stale after the
+    // first write.
     const components: ComponentDocs = new Map([["Alpha", mockComponentDocApi("Alpha", "Alpha.svelte")]]);
+    expect(buildComponentApiDocument(components).components.map((c) => c.moduleName)).toEqual(["Alpha"]);
 
-    const first = buildComponentApiDocument(components);
-    const second = buildComponentApiDocument(components);
-
-    expect(second).toBe(first);
-  });
-
-  test("does not reuse the document across different entryExports references", () => {
-    const components: ComponentDocs = new Map([["Alpha", mockComponentDocApi("Alpha", "Alpha.svelte")]]);
-    const entryExports = [
-      { name: "VERSION", kind: "const" as const, type: "string", isTypeOnly: false, source: "./constants.ts" },
-    ];
-
-    const withoutExports = buildComponentApiDocument(components);
-    const withExports = buildComponentApiDocument(components, { entryExports });
-
-    expect(withExports).not.toBe(withoutExports);
-    expect(withExports.totalExports).toBe(1);
-    expect(withoutExports.totalExports).toBeUndefined();
-
-    // Same entryExports reference on a later call still hits the cache.
-    expect(buildComponentApiDocument(components, { entryExports })).toBe(withExports);
-  });
-
-  test("does not reuse the document across different components maps", () => {
-    const components: ComponentDocs = new Map([["Alpha", mockComponentDocApi("Alpha", "Alpha.svelte")]]);
-    const otherComponents: ComponentDocs = new Map([["Beta", mockComponentDocApi("Beta", "Beta.svelte")]]);
-
-    const first = buildComponentApiDocument(components);
-    const second = buildComponentApiDocument(otherComponents);
-
-    expect(second).not.toBe(first);
-    expect(second.components.map((c) => c.moduleName)).toEqual(["Beta"]);
+    components.set("Beta", mockComponentDocApi("Beta", "Beta.svelte"));
+    expect(buildComponentApiDocument(components).components.map((c) => c.moduleName)).toEqual(["Alpha", "Beta"]);
   });
 });
 
