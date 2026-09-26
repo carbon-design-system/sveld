@@ -46,9 +46,11 @@
  *   bun run bench:ostia > /tmp/after.txt
  *   diff /tmp/before.txt /tmp/after.txt
  */
+
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { group, task } from "ostia";
+import { asNormalizedPath } from "../src/brands";
 import { collectComponents, generateBundle } from "../src/bundle";
 import { buildReverseDeps, expandAffected } from "../src/dependency-graph";
 import { setQuiet } from "../src/logger";
@@ -295,7 +297,14 @@ const pathologicalParsed = new ComponentParser().parseSvelteComponent(pathologic
   moduleName: "Pathological",
   filePath: pathologicalFilePath,
 });
-const pathologicalDoc = buildComponentApiDocument(new Map([[pathologicalFilePath, pathologicalParsed]])).components[0];
+const pathologicalDoc = buildComponentApiDocument(
+  new Map([
+    [
+      pathologicalFilePath,
+      { moduleName: "Pathological", filePath: asNormalizedPath(pathologicalFilePath), ...pathologicalParsed },
+    ],
+  ]),
+).components[0];
 
 const runesDocsBySize = Object.fromEntries(
   Object.entries(RUNES_SAMPLES).map(([size, sample]) => {
@@ -304,7 +313,8 @@ const runesDocsBySize = Object.fromEntries(
       moduleName: sample.moduleName,
       filePath,
     });
-    return [size, buildComponentApiDocument(new Map([[filePath, parsed]])).components[0]];
+    const component = { moduleName: sample.moduleName, filePath: asNormalizedPath(filePath), ...parsed };
+    return [size, buildComponentApiDocument(new Map([[filePath, component]])).components[0]];
   }),
 );
 
