@@ -14,7 +14,7 @@ import writeCustomElements, {
   renderCustomElementsManifest,
   type WriteCustomElementsOptions,
 } from "./writer/writer-custom-elements";
-import writeJson, { renderJsonDocument, renderJsonLines, type WriteJsonOptions } from "./writer/writer-json";
+import writeJson, { renderJsonDocument, type WriteJsonOptions } from "./writer/writer-json";
 import writeLlms, { type WriteLlmsOptions } from "./writer/writer-llms";
 import writeMarkdown, { renderMarkdownDocument, type WriteMarkdownOptions } from "./writer/writer-markdown";
 import writeTsDefinitions, { type WriteTsDefinitionsOptions } from "./writer/writer-ts-definitions";
@@ -334,25 +334,15 @@ export async function writeOutput(result: GenerateBundleResult, opts: PluginSvel
  * responsible for enforcing that exactly one of those three options is set
  * before calling this.
  */
-export async function writeStdout(
-  result: GenerateBundleResult,
-  opts: PluginSveldOptions & { stdout?: boolean | "json" | "ndjson" },
-  input: string,
-) {
+export async function writeStdout(result: GenerateBundleResult, opts: PluginSveldOptions, input: string) {
   const inputDir = dirname(input);
 
   if (opts?.json) {
-    const jsonOptions = {
+    const rendered = renderJsonDocument(result.components, {
       ...opts?.jsonOptions,
       inputDir,
       entryExports: result.entryExports,
-    } satisfies Pick<WriteJsonOptions, "inputDir" | "entryExports" | "source">;
-
-    const rendered =
-      opts.stdout === "ndjson"
-        ? renderJsonLines(result.components, jsonOptions)
-        : renderJsonDocument(result.components, jsonOptions);
-
+    } satisfies Pick<WriteJsonOptions, "inputDir" | "entryExports" | "source">);
     process.stdout.write(rendered);
     return;
   }
