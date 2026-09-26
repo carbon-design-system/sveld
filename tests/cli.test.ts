@@ -71,11 +71,21 @@ describe("parseCliOptions", () => {
     expect(parseCliOptions(["--check-level=minor"])).toEqual({ kind: "options", options: { checkLevel: "minor" } });
   });
 
-  test("--check-examples and --checkExamples produce identical options", () => {
-    const canonical = parseCliOptions(["--check-examples"]);
-    const alias = parseCliOptions(["--checkExamples"]);
-    expect(canonical).toEqual({ kind: "options", options: { checkExamples: true } });
-    expect(alias).toEqual(canonical);
+  test("--check-examples enables checkExamples", () => {
+    expect(parseCliOptions(["--check-examples"])).toEqual({ kind: "options", options: { checkExamples: true } });
+  });
+
+  test("a camelCase flag is rejected with the kebab-case spelling as the suggestion", () => {
+    expect(parseCliOptions(["--checkExamples"])).toEqual({
+      kind: "unknown",
+      arg: "--checkExamples",
+      suggestion: "check-examples",
+    });
+    expect(parseCliOptions(["--reportDiagnostics"])).toEqual({
+      kind: "unknown",
+      arg: "--reportDiagnostics",
+      suggestion: "report-diagnostics",
+    });
   });
 
   test("--report-diagnostics enables reportDiagnostics", () => {
@@ -163,7 +173,7 @@ describe("parseCliOptions", () => {
     expect(parseCliOptions(["--markdwon"])).toEqual({ kind: "unknown", arg: "--markdwon", suggestion: "markdown" });
   });
 
-  test("a close typo of a deprecated alias suggests the canonical spelling", () => {
+  test("a close typo of a camelCase flag suggests the kebab-case spelling", () => {
     expect(parseCliOptions(["--checkExampls"])).toEqual({
       kind: "unknown",
       arg: "--checkExampls",
