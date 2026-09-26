@@ -5,7 +5,6 @@
 import type { Node, Property } from "estree";
 import type { SveldDiagnostic } from "./diagnostics";
 import { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "./parsed-component-metadata";
-import type { processNodeJSDoc } from "./parser/jsdoc";
 
 /** Structured JSDoc tag (e.g. `{ name: "since", body: "1.2.0" }`). */
 export interface JsDocPassthroughTag {
@@ -43,7 +42,24 @@ export interface RunesPropTypeMetadata {
   source?: SourceRange;
   type: string;
   /** JSDoc on the type's member (`interface Props { /** ... *\/ label: string }`). */
-  jsdoc?: ReturnType<typeof processNodeJSDoc>;
+  jsdoc?: NodeJsDoc;
+}
+
+/** What a declaration's JSDoc comment says, as `processNodeJSDoc` reads it. */
+export interface NodeJsDoc {
+  type?: string;
+  params?: ComponentPropParam[];
+  returnType?: string;
+  description?: string;
+  binding?: ComponentPropBinding;
+  deprecated?: DeprecatedValue;
+  tags?: JsDocPassthroughTag[];
+  /** `@sveld-ignore <code>` codes from this comment; `""` means "ignore anything for this symbol". */
+  sveldIgnore?: string[];
+  /** True when `@ignore` or `@internal` is present; excludes this prop from every output. */
+  internal: boolean;
+  /** `@template` tags of a comment documenting a function, as its type parameter list (`T extends Foo, U`). */
+  typeParameters?: string;
 }
 
 export interface RunesPropsDeclarationMetadata {
