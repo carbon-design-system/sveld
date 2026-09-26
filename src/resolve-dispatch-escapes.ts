@@ -8,8 +8,9 @@ import {
   type ResolveContext,
   resolveModuleFile,
 } from "./parse-entry-exports";
-import { type DetailTypeSource, deriveLiteralDetailType, literalDetailToTypeText } from "./parser/events";
+import type { DetailTypeSource } from "./parser/events";
 import { type WalkableNode, walkNodes } from "./parser/walk";
+import { getParserStack } from "./parser-stack";
 
 export type DispatchEscapeFailureReason =
   | "module-not-found"
@@ -117,6 +118,7 @@ const helperDetailTypeSource: DetailTypeSource = {
  */
 function detailType(node: AstNode | undefined): string {
   if (!node) return "null";
+  const { deriveLiteralDetailType, literalDetailToTypeText } = getParserStack();
   if (node.type === "Literal") return literalDetailToTypeText(node.value);
   return deriveLiteralDetailType(helperDetailTypeSource, node) ?? "any";
 }

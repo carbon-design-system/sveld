@@ -8,6 +8,7 @@ import {
   collectSvelteFilePaths,
   createGlobMergeState,
   type GenerateBundleResult,
+  loadInlineTypes,
   mergeGlobbedComponents,
   type ProcessComponentOptions,
   processComponent,
@@ -21,12 +22,7 @@ import {
 import { buildReverseDeps, expandAffected } from "./dependency-graph";
 import { dedupeDiagnostics, type SveldDiagnostic } from "./diagnostics";
 import { resetDirectoryListings } from "./fs-listing";
-import {
-  bareOverlayVirtualFilePath,
-  collectBareImportOverlay,
-  type InlinedTypes,
-  inlineLocalTypeImports,
-} from "./inline-types";
+import type { InlinedTypes } from "./inline-types";
 import { type EntryExports, parseEntryExports } from "./parse-entry-exports";
 import type { ParsedExports } from "./parse-exports";
 import { loadParserStack } from "./parser-stack";
@@ -212,6 +208,7 @@ export async function createSveldBundle(
    */
   const refreshInlinedTypes = async (scope: ComponentDocs): Promise<void> => {
     if (typesInline !== "local" && typesInline !== "all") return;
+    const { bareOverlayVirtualFilePath, collectBareImportOverlay, inlineLocalTypeImports } = await loadInlineTypes();
 
     for (const component of scope.values()) {
       inlinedTypesByFilePath.delete(component.filePath);

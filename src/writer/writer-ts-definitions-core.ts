@@ -1,7 +1,7 @@
 import type { ComponentClassMember, ComponentProp, DeprecatedValue } from "../ComponentParser";
 import type { InlinedTypes } from "../inline-types";
 import { getParsedComponentTypeScriptMetadata } from "../parsed-component-metadata";
-import { splitTopLevelCommas } from "../parser/generics";
+import { splitTopLevelCommas } from "../parser/split-top-level";
 import { escapeCommentText, formatParamList } from "../parser/utils";
 import type { ComponentDocApi } from "../plugin";
 import { formatGeneratedTypeScript } from "./format-generated-ts";

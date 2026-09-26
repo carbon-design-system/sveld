@@ -21,13 +21,13 @@ import {
 } from "./diagnostics";
 import { collectExampleSources, type ExampleCheckSource } from "./example-check";
 import { readDirectoryListing, resetDirectoryListings } from "./fs-listing";
-import { collectBareImportOverlay, type InlinedTypes, inlineLocalTypeImports } from "./inline-types";
+import type { InlinedTypes } from "./inline-types";
 import { hashSource, ParseCache, resolveCacheFilePath } from "./parse-cache";
 import { createResolveContext, type EntryExports, parseEntryExports, type ResolveContext } from "./parse-entry-exports";
 import { type ParsedExports, parseExports } from "./parse-exports";
 import { applyResolvedProps, getParsedComponentTypeScriptMetadata } from "./parsed-component-metadata";
-import { generateContextTypeName } from "./parser/contexts";
-import { compareSerializedEvents } from "./parser/events";
+import { generateContextTypeName } from "./parser/context-type-name";
+import { compareSerializedEvents } from "./parser/event-order";
 import { compareText } from "./parser/utils";
 import { importPath } from "./parser/value-imports";
 import { getParserStack, loadParserStack } from "./parser-stack";
@@ -45,7 +45,7 @@ import {
   resolveDispatchEscapeCandidates,
 } from "./resolve-dispatch-escapes";
 import type { BareTypeSession, TypeResolver } from "./resolve-types";
-import { parse as parseTemplate, TemplateParseNotImplementedError } from "./svelte-template-parse";
+import { TemplateParseNotImplementedError } from "./template-parse/not-implemented";
 import { exportsTypeName, propsTypeName, type WriteTsDefinitionOptions } from "./writer/writer-ts-definitions-core";
 
 export interface ComponentDocApi extends ParsedComponent {
@@ -795,14 +795,17 @@ export async function generateBundle(
     : [];
 
   if (checkExamplesSyntaxCandidates.length > 0) {
-    checkComponentExamplesSyntax(checkExamplesSyntaxCandidates);
+    await checkComponentExamplesSyntax(checkExamplesSyntaxCandidates);
   }
+
+  // Only loaded (with the parser stack it parses with) when `typesOptions.inline` is on.
+  const inlineTypes = options.typesInline ? await loadInlineTypes() : undefined;
 
   // An `"all"` run with nothing bare to resolve behaves exactly like `"local"`, so an empty
   // overlay skips loading TypeScript entirely.
   const bareOverlay: Map<string, string> =
-    options.typesInline === "all"
-      ? collectBareImportOverlay(allComponentsForTypes, resolveComponentFilePath)
+    options.typesInline === "all" && inlineTypes
+      ? inlineTypes.collectBareImportOverlay(allComponentsForTypes, resolveComponentFilePath)
       : new Map();
 
   let bareSession: BareTypeSession | undefined;
@@ -870,8 +873,8 @@ export async function generateBundle(
   let inlinedTypesByFilePath: Map<string, InlinedTypes> | undefined;
   try {
     inlinedTypesByFilePath =
-      options.typesInline === "local" || options.typesInline === "all"
-        ? await inlineLocalTypeImports(
+      inlineTypes && (options.typesInline === "local" || options.typesInline === "all")
+        ? await inlineTypes.inlineLocalTypeImports(
             allComponentsForTypes,
             resolveComponentFilePath,
             options.typesTypeNames,
@@ -1316,6 +1319,12 @@ function candidatesForKind(
   return filtered;
 }
 
+/** `inline-types.ts` and the parser stack it parses imported files with. */
+export async function loadInlineTypes(): Promise<typeof import("./inline-types")> {
+  await loadParserStack();
+  return import("./inline-types");
+}
+
 /**
  * Syntax-checks `kind: "syntax"` `@example` blocks (Svelte/HTML markup) with
  * sveld's own template parser: parse only, discard the AST. A parser error
@@ -1323,13 +1332,14 @@ function candidatesForKind(
  * doesn't model yet ({@link TemplateParseNotImplementedError}) is not the
  * example's fault, so it's skipped rather than reported.
  */
-function checkComponentExamplesSyntax(candidates: CheckExamplesCandidate[]): void {
+async function checkComponentExamplesSyntax(candidates: CheckExamplesCandidate[]): Promise<void> {
+  const { parseSvelte } = await loadParserStack();
   for (const { component, sources } of candidates) {
     const diagnostics = component.diagnostics ?? [];
 
     for (const source of sources) {
       try {
-        parseTemplate(source.code);
+        parseSvelte(source.code);
       } catch (error) {
         if (error instanceof TemplateParseNotImplementedError) continue;
         diagnostics.push(

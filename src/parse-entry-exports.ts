@@ -6,12 +6,10 @@ import { createDiagnostic, type SveldDiagnostic } from "./diagnostics";
 import { directoryEntry, directoryHasEntry, typeScriptCounterpart } from "./fs-listing";
 import { warn } from "./logger";
 import { parseComments } from "./parser/comment-parser";
-import { extractJsDocDeprecatedAndTags, extractJsDocReturnType, getCommentTags } from "./parser/jsdoc";
 import { compareText } from "./parser/utils";
 import { getParserStack, loadParserStack } from "./parser-stack";
 import { normalizeSeparators } from "./path";
 import { resolvePathAliasAbsolute } from "./resolve-alias";
-import { parseProgram } from "./template-parse/acorn-bridge";
 
 /** One named export from the entry barrel (not a `.svelte` component). */
 export interface EntryExport {
@@ -371,7 +369,7 @@ function portableDeclaredType(
   annotation: string | undefined,
   rawJsDoc: string | undefined,
 ): InternalExport["declaredType"] {
-  const jsDocType = rawJsDoc ? getCommentTags(parseComments(rawJsDoc)).type?.type.trim() : undefined;
+  const jsDocType = rawJsDoc ? getParserStack().getCommentTags(parseComments(rawJsDoc)).type?.type.trim() : undefined;
   const declared = annotation
     ? { type: annotation, source: "typescript" as const }
     : jsDocType
@@ -517,9 +515,9 @@ function describeDeclaration(
   const declFile = source.filePath;
   const rawJsDoc = leadingJsDocBlock(source.text, jsdocStart);
   const description = rawJsDoc ? jsDocDescription(rawJsDoc) : undefined;
-  const jsDocReturnType = rawJsDoc ? extractJsDocReturnType(rawJsDoc) : undefined;
+  const jsDocReturnType = rawJsDoc ? getParserStack().extractJsDocReturnType(rawJsDoc) : undefined;
   const { deprecated, tags, internal } = rawJsDoc
-    ? extractJsDocDeprecatedAndTags(rawJsDoc)
+    ? getParserStack().extractJsDocDeprecatedAndTags(rawJsDoc)
     : { deprecated: undefined, tags: undefined, internal: false };
   const internalField = internal ? ({ internal: true } as const) : {};
 
@@ -747,7 +745,7 @@ function parseModule(filePath: string): ParsedModule {
       const ast = getParserStack().parseSvelte(text) as { module?: { content?: { body?: unknown } } };
       body = asNodeArray(ast.module?.content?.body);
     } else {
-      body = asNodeArray(parseProgram(text, true, []).body);
+      body = asNodeArray(getParserStack().parseProgram(text, true, []).body);
     }
     return { source: { text, filePath, dir: dirname(filePath) }, body };
   } catch (error) {

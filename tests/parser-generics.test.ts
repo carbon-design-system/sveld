@@ -1,4 +1,5 @@
-import { parseGenericsAttribute, splitTopLevelCommas } from "../src/parser/generics";
+import { parseGenericsAttribute } from "../src/parser/generics";
+import { splitTopLevelCommas } from "../src/parser/split-top-level";
 
 describe("splitTopLevelCommas", () => {
   test("splits a simple comma-separated list", () => {
