@@ -471,13 +471,12 @@ Every diagnostic carries a stable, namespaced `code` (`"sveld/<kind>"`) alongsid
 | `sveld/event-description-ambiguous` | `warning` | Put an event's description above its `@event` tag (or indent it as a continuation of the tag's line), or give each event its own comment block. Unindented text after an `@event` is read as the description of the tag below it. |
 | `sveld/jsdoc-tag-dropped` | `warning` | Move the tag next to a `@slot`/`@snippet`/`@event`/`@typedef`/`@callback` tag in the same comment block so it has something to attach to. |
 | `sveld/internal-typedef-referenced` | `error` | Remove `@internal`/`@ignore` from the referenced typedef, or stop referencing it from public type text (inline the shape, or make the referencing item `@internal` too). |
-| `sveld/types-inline-unresolved` | `warning` | The import is kept as-is. Point it at a relative `.ts` file that exports a `type`/`interface`, or rename the colliding type. |
 | `sveld/cross-file-unresolved` | `warning` | Only recorded by [`finalizeWithoutCrossFileResolution`](#browser) on a standalone parse: an imported `setContext` key, prop default, or dispatch helper needs the imported file read. Run `sveld` through the CLI or `generateBundle` to resolve it, or inline the value in the component. |
 | `sveld/export-ambiguous` | `warning` | Two `export *` statements in the entry barrel bring in the same name from different modules, so (as in ES modules) the barrel doesn't export it and the [entry exports](#documenting-entry-exports) leave it out. Export it explicitly from the barrel (`export { format } from "./a.js"`) to pick one. Reported with the barrel file (e.g. `./index.js`) as its `component`, and only when `documentExports` is on. |
 
 #### Severity and `--strict=errors`
 
-Each diagnostic's `severity` is `"error"` (`example-compile-error`, `example-syntax-error`, `syntax-skipped`, `type-syntax-error`, `extend-props-target-missing`, `internal-typedef-referenced` — sveld emitted broken or unmodeled output) or `"warning"` (`prop-unknown-type`, `context-any-type`, `slot-missing-type`, `event-no-source`, `dispatch-escapes`, `rest-props-unresolved`, `context-duplicate-key`, `context-key-unresolved`, `context-value-unresolved`, `spread-unresolved`, `export-unresolved`, `module-export-conflict`, `extend-props-duplicate`, `extend-props-override`, `jsdoc-unknown-tag`, `typedef-duplicate`, `property-duplicate`, `generics-conflict`, `event-description-ambiguous`, `jsdoc-tag-dropped`, `types-inline-unresolved`, `cross-file-unresolved`, `export-ambiguous` — a type fell back to `any`, or something was left out of the docs). Plain `strict: true` / `--strict` fails on both, unchanged from before. Pass `strict: "errors"` (or `--strict=errors`) to fail CI only on `error`-severity diagnostics, letting `any`-fallback warnings through:
+Each diagnostic's `severity` is `"error"` (`example-compile-error`, `example-syntax-error`, `syntax-skipped`, `type-syntax-error`, `extend-props-target-missing`, `internal-typedef-referenced` — sveld emitted broken or unmodeled output) or `"warning"` (`prop-unknown-type`, `context-any-type`, `slot-missing-type`, `event-no-source`, `dispatch-escapes`, `rest-props-unresolved`, `context-duplicate-key`, `context-key-unresolved`, `context-value-unresolved`, `spread-unresolved`, `export-unresolved`, `module-export-conflict`, `extend-props-duplicate`, `extend-props-override`, `jsdoc-unknown-tag`, `typedef-duplicate`, `property-duplicate`, `generics-conflict`, `event-description-ambiguous`, `jsdoc-tag-dropped`, `cross-file-unresolved`, `export-ambiguous` — a type fell back to `any`, or something was left out of the docs). Plain `strict: true` / `--strict` fails on both, unchanged from before. Pass `strict: "errors"` (or `--strict=errors`) to fail CI only on `error`-severity diagnostics, letting `any`-fallback warnings through:
 
 ```sh
 npx sveld --json --strict=errors
@@ -536,7 +535,7 @@ A bare `@sveld-ignore` (no code) suppresses every diagnostic for that symbol.
 - `sveld` is ESM-only. `require("sveld")` does not work — use `import` or dynamic `import()`.
 - The [persistent parse cache](#persistent-parse-cache-cache) hashes source with `node:crypto`'s one-shot `hash()`, which needs Node 22 (or Bun).
 - `sveld` bundles its own template parser to parse `.svelte` files, kept in parity with `svelte/compiler` (see [Approach](#approach)). Parsing does not depend on the Svelte version installed in your project, so Svelte 3 and Svelte 4 codebases parse the same way Svelte 5 codebases do — there is no compiler version to match up.
-- [`resolveTypes`](#opt-in-semantic-resolution-resolvetypes), [`checkExamples`](#compile-checked-example-blocks-checkexamples), and [`typesOptions.inline: "all"`](#typesoptionsinline) are optional and need `typescript` 7 or later (which provides `typescript/unstable/async`) plus a `tsconfig.json`. Everything else, including `.d.ts` generation and `typesOptions.inline: "local"`, is AST-only and never loads TypeScript. If any of the three is enabled and TypeScript can't be started (missing, too old, or no `tsconfig.json`), the run fails loudly: `sveld()` throws and the CLI exits `2` naming the requirement, rather than silently skipping the check. For `typesOptions.inline: "all"` this only actually triggers when there's a non-allow-listed bare import somewhere in the bundle to resolve; see [`typesOptions.inline`](#typesoptionsinline).
+- [`resolveTypes`](#opt-in-semantic-resolution-resolvetypes) and [`checkExamples`](#compile-checked-example-blocks-checkexamples) are optional and need `typescript` 7 or later (which provides `typescript/unstable/async`) plus a `tsconfig.json`. Everything else, including `.d.ts` generation, is AST-only and never loads TypeScript. If either is enabled and TypeScript can't be started (missing, too old, or no `tsconfig.json`), the run fails loudly: `sveld()` throws and the CLI exits `2` naming the requirement, rather than silently skipping the check.
 
 ## Usage
 
@@ -622,7 +621,7 @@ npx sveld --json --markdown
 
 If no entry point is configured (no `package.json#svelte` field and no `--entry`), the CLI exits `1` and prints the reason to `stderr`, unless `src/index.js` exists relative to your working directory: then sveld uses it and prints a one-line note asking you to set `package.json#svelte` (or `--entry`). An `--entry` or `package.json#svelte` path that doesn't exist always exits `1`.
 
-Flags are kebab-case: `--entry`, `--glob`, `--types`, `--json`, `--markdown`, `--custom-elements`, `--llms`, `--fail-fast`, `--dry-run`, `--cache`, `--resolve-types`, `--check-examples`, `--report-diagnostics`, `--strict`, `--check`, `--check-level`, `--types-format`, `--types-inline`, `--types-index-types`, `--quiet`, `--stdout`, `--format`. The camelCase spellings `--resolveTypes` and `--checkExamples` still work as deprecated aliases for compatibility with existing scripts. `--entry`, `--cache`, `--check`, `--types-format`, and `--types-inline` take their value either as `--flag=value` or as a separate `--flag value` argument (`sveld --entry src/index.js` and `sveld --entry=src/index.js` are equivalent); if the next argument starts with `--` it's not consumed as a value, so `--cache` and `--check` fall back to their default location and the rest of that list report a usage error naming the flag. Boolean flags (`--json`, `--glob`, `--strict`, `--types-index-types`, and the like) never consume a following argument. An unrecognized flag (e.g. `--markdwon`) prints `sveld: unknown flag "--markdwon".` to `stderr`, exits `1`, and skips generation; when a close match exists it appends a suggestion, e.g. `Did you mean "--markdown"?`. sveld takes no positional arguments, so any non-flag argument errors the same way.
+Flags are kebab-case: `--entry`, `--glob`, `--types`, `--json`, `--markdown`, `--custom-elements`, `--llms`, `--fail-fast`, `--dry-run`, `--cache`, `--resolve-types`, `--check-examples`, `--report-diagnostics`, `--strict`, `--check`, `--check-level`, `--types-format`, `--types-index-types`, `--quiet`, `--stdout`, `--format`. The camelCase spellings `--resolveTypes` and `--checkExamples` still work as deprecated aliases for compatibility with existing scripts. `--entry`, `--cache`, `--check`, and `--types-format` take their value either as `--flag=value` or as a separate `--flag value` argument (`sveld --entry src/index.js` and `sveld --entry=src/index.js` are equivalent); if the next argument starts with `--` it's not consumed as a value, so `--cache` and `--check` fall back to their default location and the rest of that list report a usage error naming the flag. Boolean flags (`--json`, `--glob`, `--strict`, `--types-index-types`, and the like) never consume a following argument. An unrecognized flag (e.g. `--markdwon`) prints `sveld: unknown flag "--markdwon".` to `stderr`, exits `1`, and skips generation; when a close match exists it appends a suggestion, e.g. `Did you mean "--markdown"?`. sveld takes no positional arguments, so any non-flag argument errors the same way.
 
 Writer progress lines (`created "..."` / `unchanged "..."`) print to `stderr`, keeping `stdout` reserved for machine-readable data. Pass `--quiet` (or `quiet: true` in `sveld.config.*`) to suppress them; it does not suppress error messages, the diagnostics summary (`--report-diagnostics` / `--strict`), or the `--check` report.
 
@@ -961,7 +960,6 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
   - **`format`** (`"class"` | `"component"`, optional, default: `"class"`): `.d.ts` output shape. `"class"` extends `SvelteComponentTyped`; `"component"` emits the Svelte 5 `Component` type. Also available as `--types-format`. See [`.d.ts` output format](#dts-output-format-typesoptionsformat).
   - **`transform`** (function, optional): Post-processes each generated file's text before it is written. Runs after the generated-text cache, so it applies on every run. No CLI flag; config file or `sveld()` only. See [`typesOptions.transform`](#typesoptionstransform).
   - **`indexTypes`** (boolean, optional, default: `false`): Also re-export generated types from `index.d.ts`: each component's `Props` type, and its `Exports` type under `format: "component"`. Also available as `--types-index-types`. See [`typesOptions.indexTypes`](#typesoptionsindextypes).
-  - **`inline`** (`false | "local" | "all"`, optional, default: `false`): Copies `type`/`interface` declarations imported from a relative source (or a tsconfig/jsconfig path alias) directly into the `.d.ts`, dropping the import. Also available as `--types-inline=<local|all>` (`--types-inline=false` resets to the default). See [`typesOptions.inline`](#typesoptionsinline).
 - **`json`** (boolean, optional): Generate component documentation in JSON format.
 - **`jsonOptions`** (object, optional): Options for JSON output.
   - **`outFile`** (string, optional, default: `"COMPONENT_API.json"`): Path (relative to the project root) for the single combined JSON document. Ignored when `outDir` is set.
@@ -1089,140 +1087,6 @@ import type { ButtonProps } from "my-lib";
 It re-exports each component's `Props` type, and (under [`format: "component"`](#dts-output-format-typesoptionsformat)) its `Exports` type. Both names are derived from the component's module name, so they never collide across components.
 
 Also available as `--types-index-types` on the CLI. Pass `--types-index-types=false` to disable it explicitly.
-
-#### `typesOptions.inline`
-
-A TypeScript component that imports a type keeps that import in its `.d.ts`:
-
-```svelte
-<script lang="ts">
-  import type { Size } from "./types";
-  let { size }: { size: Size } = $props();
-</script>
-```
-
-```ts
-import type { Component } from "svelte";
-import type { Size } from "./types";
-
-type $Props = { size: Size };
-export type MyComponentProps = $Props;
-```
-
-Publishers who don't ship their `.svelte` sources need `.d.ts` files without relative imports:
-`./types.ts` might sit outside the published `types/` output directory, or the package might be
-bundled to a single file. `typesOptions.inline: "local"` copies the imported declaration into
-the `.d.ts` instead of importing it:
-
-```js
-sveld({
-  types: true,
-  typesOptions: {
-    inline: "local",
-  },
-});
-```
-
-```ts
-import type { Component } from "svelte";
-
-type Size = "sm" | "md" | "lg";
-
-type $Props = { size: Size };
-export type MyComponentProps = $Props;
-```
-
-`"local"` follows:
-
-- relative sources (`./types`) and tsconfig/jsconfig `paths` aliases;
-- re-exports (`export { X as Y } from "./z"` and `export * from "./z"`);
-- same-file dependencies (a copied type that itself references another type or interface
-  declared in the same file copies that one too, before the type that references it).
-
-It leaves alone:
-
-- bare/package imports (`import type { CSSProperties } from "some-package"`) and `.svelte`
-  sources — `"all"` covers bare imports, see below;
-- `@extendProps`/`@extends` imports and `import("./x")` inline import types inside typedefs,
-  which are unrelated mechanisms;
-- `enum`, `class`, and `function` exports, which can't be safely copied as a `type`/`interface`.
-
-An import that can't be safely inlined (a missing file, a missing export, one of the unsupported
-export kinds above, or a name collision with something the component's `.d.ts` already declares
-or imports — a typedef, a context type, a local `type`/`interface`, its `Props`/`Exports` type
-name, the component's own name, `$Props`/`$RestProps`, the svelte types the `.d.ts` imports, or a
-name bound by an import that stays) is left
-as an import, with a [`types-inline-unresolved`](#diagnostic-codes) warning explaining why. If an
-`import type { A, B } from "./x"` statement imports several names and even one of them can't be
-inlined, the whole statement is kept and nothing from it is inlined — simpler, and always correct.
-
-**`"all"`** additionally inlines bare/package imports:
-
-```svelte
-<script lang="ts">
-  import type { HTMLButtonAttributes } from "svelte/elements";
-  import type { Alignment } from "some-design-system";
-  let { rest, align }: { rest: HTMLButtonAttributes; align: Alignment } = $props();
-</script>
-```
-
-```js
-sveld({
-  types: true,
-  typesOptions: {
-    inline: "all",
-  },
-});
-```
-
-```ts
-import type { Component } from "svelte";
-import type { HTMLButtonAttributes } from "svelte/elements";
-
-type Alignment = "start" | "center" | "end";
-
-type $Props = { rest: HTMLButtonAttributes; align: Alignment };
-export type MyComponentProps = $Props;
-```
-
-`some-design-system`'s `Alignment` got copied in, exactly like a `"local"` relative import would.
-`svelte`/`svelte/elements` did not, even though `HTMLButtonAttributes` is itself a bare import a
-real TypeScript checker could resolve and copy just as easily: those two specifiers are a
-hard-coded allow-list and always stay imports under `"all"`, regardless of what they resolve to.
-Copying framework types would freeze whatever Svelte version happened to be installed at
-generation time into every consumer's `.d.ts` output, which defeats the point of importing them
-from `svelte` in the first place.
-
-Resolving a bare specifier to a file needs a real module resolver, so `"all"` uses the actual
-TypeScript checker (the same one behind [`resolveTypes`](#opt-in-semantic-resolution-resolvetypes)
-and [`checkExamples`](#compile-checked-example-blocks-checkexamples), shared across all three when
-more than one is enabled) rather than sveld's own AST-only pass. This makes `"all"` a **hard
-requirement** on `typescript` 7+ and a resolvable `tsconfig.json` — same contract `resolveTypes`
-already has (see [Requirements](#requirements)): if TypeScript can't be started, the run fails
-loudly rather than silently falling back to `"local"` behavior. The requirement only actually
-kicks in when there's at least one non-allow-listed bare import somewhere in the bundle to
-resolve; an `"all"` run with nothing bare to inline never loads TypeScript at all.
-
-A reference inside a copied bare declaration is chased exactly like a local one: a same-file
-helper type is copied and recursed into, a relative/aliased import is followed the same way
-`"local"` already does, and a further bare import goes back through the checker (again skipping
-the svelte/svelte-elements allow-list). A reference that resolves to a TypeScript default-lib file
-(e.g. `Element`, `EventTarget` from `lib.dom.d.ts`) is left alone — it's already global and needs
-no import — the same way a local pass leaves an unimported name alone.
-
-`@extendProps`/`@extends` inlining (replacing `import type { ButtonProps } from "./Button.svelte"`
-with a copy of `Button`'s own generated declaration) is out of scope for both `"local"` and
-`"all"`; that's a distinct, deferred mechanism, not covered here.
-
-Copying from a large package can produce a large `.d.ts`: `svelte/elements`'s attribute-map
-interfaces (`HTMLButtonAttributes` and friends) are individually sizable, and every type they
-transitively reference gets copied too. Prefer `"local"` if you don't specifically need bare
-imports inlined.
-
-A component with at least one inlined declaration skips the generated-text cache (its output now
-depends on another file's contents, not just its own source hash), though its *parse* is still
-cached as usual. Also available as `--types-inline=<local|all>` on the CLI; `--types-inline=false`
-resets to the default.
 
 #### `markdownOptions.onAppend`
 

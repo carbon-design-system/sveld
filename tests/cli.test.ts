@@ -177,20 +177,6 @@ describe("parseCliOptions", () => {
     });
   });
 
-  test("--types-inline=local sets typesOptions.inline", () => {
-    expect(parseCliOptions(["--types-inline=local"])).toEqual({
-      kind: "options",
-      options: { typesOptions: { inline: "local" } },
-    });
-  });
-
-  test("--types-inline=false disables typesOptions.inline", () => {
-    expect(parseCliOptions(["--types-inline=false"])).toEqual({
-      kind: "options",
-      options: { typesOptions: { inline: false } },
-    });
-  });
-
   test("--types-index-types enables typesOptions.indexTypes", () => {
     expect(parseCliOptions(["--types-index-types"])).toEqual({
       kind: "options",
@@ -285,13 +271,6 @@ describe("parseCliOptions", () => {
     });
   });
 
-  test("--types-inline accepts its value as the next argument", () => {
-    expect(parseCliOptions(["--types-inline", "all"])).toEqual({
-      kind: "options",
-      options: { typesOptions: { inline: "all" } },
-    });
-  });
-
   test("space-separated and = forms combine across multiple flags", () => {
     expect(parseCliOptions(["--entry", "src/index.js", "--json", "--cache=.cache/sveld.json"])).toEqual({
       kind: "options",
@@ -300,10 +279,10 @@ describe("parseCliOptions", () => {
   });
 
   test("multiple flags that each set a typesOptions key merge into one object instead of clobbering each other", () => {
-    expect(parseCliOptions(["--types-format=component", "--types-inline=local", "--types-index-types"])).toEqual({
+    expect(parseCliOptions(["--types-format=component", "--types-index-types"])).toEqual({
       kind: "options",
       options: {
-        typesOptions: { format: "component", inline: "local", indexTypes: true },
+        typesOptions: { format: "component", indexTypes: true },
       },
     });
   });
@@ -319,13 +298,6 @@ describe("parseCliOptions", () => {
     expect(parseCliOptions(["--types-format", "--json"])).toEqual({
       kind: "usage-error",
       message: "sveld: --types-format requires a value (pass --types-format=<value> or --types-format <value>).",
-    });
-  });
-
-  test("--types-inline followed by another flag falls back to a usage error naming the flag", () => {
-    expect(parseCliOptions(["--types-inline", "--json"])).toEqual({
-      kind: "usage-error",
-      message: "sveld: --types-inline requires a value (pass --types-inline=<value> or --types-inline <value>).",
     });
   });
 
@@ -916,18 +888,6 @@ describe("cli() --types-* usage errors", () => {
     expect(process.exitCode).toBe(1);
     expect(errorSpy).toHaveBeenCalledWith(
       expect.stringContaining('--types-format must be "class" or "component"; got "oops"'),
-    );
-    expect(existsSync(join(dir, "types"))).toBe(false);
-  });
-
-  test("--types-inline=oops errors and generates nothing", async () => {
-    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types-inline=oops"];
-
-    await cli(process);
-
-    expect(process.exitCode).toBe(1);
-    expect(errorSpy).toHaveBeenCalledWith(
-      expect.stringContaining('--types-inline must be "local" or "all"; got "oops"'),
     );
     expect(existsSync(join(dir, "types"))).toBe(false);
   });

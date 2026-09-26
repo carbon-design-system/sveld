@@ -51,8 +51,8 @@ Generate TypeScript definitions and component documentation for a Svelte
 library. With no flags, only TypeScript definitions are generated for the
 entry resolved from package.json#svelte.
 
---entry, --cache, --check, --types-format, and --types-inline accept
-their value as --flag=value or as a separate --flag value argument.
+--entry, --cache, --check, and --types-format accept their value as
+--flag=value or as a separate --flag value argument.
 
 Options:
   --entry=<path>        Entry point to uncompiled Svelte source (default: package.json "svelte" field)
@@ -72,7 +72,6 @@ Options:
   --report-diagnostics  Print unresolved-type diagnostics to stderr
   --strict[=errors|ci|local]  Exit with code 4 when diagnostics exist (implies --report-diagnostics); --strict=errors only fails on error-severity diagnostics; --strict=ci expands to {strict:true, reportDiagnostics:true, check:true, checkExamples:true}, --strict=local to {reportDiagnostics:true}
   --types-format=<format>  ".d.ts" output format: "class" (default) or "component" (Svelte 5 Component<...>)
-  --types-inline=<local|all>  Sets typesOptions.inline; copies imported types into the .d.ts instead of importing them (default: false; pass --types-inline=false to reset)
   --types-index-types    Sets typesOptions.indexTypes; also re-exports generated types from index.d.ts (pass --types-index-types=false to disable)
   --check[=<path>]      Diff the parsed API against a committed snapshot; exit 3 on a breaking change (default path: COMPONENT_API.json)
   --check-level=<major|minor|patch>  Minimum bump --check fails the run on (default: major)
@@ -125,7 +124,6 @@ const KNOWN_FLAGS = [
   "check",
   "check-level",
   "types-format",
-  "types-inline",
   "types-index-types",
   "format",
 ];
@@ -152,10 +150,10 @@ const BOOLEAN_FLAGS = new Set([
 ]);
 
 /** Value-taking flags that also accept their value as the next argument. */
-const SPACE_SEPARATED_VALUE_FLAGS = new Set(["entry", "cache", "check", "types-format", "types-inline"]);
+const SPACE_SEPARATED_VALUE_FLAGS = new Set(["entry", "cache", "check", "types-format"]);
 
 /** Of those, the flags that error (rather than falling back to a bare default) when no value is given. */
-const REQUIRES_VALUE_FLAGS = new Set(["entry", "types-format", "types-inline"]);
+const REQUIRES_VALUE_FLAGS = new Set(["entry", "types-format"]);
 
 /** Closest known flag (canonical spelling) to an unrecognized raw flag name, or undefined if none is close enough. */
 function suggestFlag(rawFlag: string): string | undefined {
@@ -260,13 +258,6 @@ function parseCliFlagValue(flag: string, value: string | boolean, arg: string, r
       return typeof value === "string"
         ? { kind: "option", option: { typesOptions: { format: value as "class" | "component" } } }
         : { kind: "option", option: {} };
-    case "types-inline":
-      // `--types-inline=false` resets to the default (imports stay imports);
-      // `"local"`/`"all"` are validated in `cli()`.
-      if (value === "false") return { kind: "option", option: { typesOptions: { inline: false } } };
-      return typeof value === "string"
-        ? { kind: "option", option: { typesOptions: { inline: value as "local" | "all" } } }
-        : { kind: "option", option: {} };
     case "types-index-types":
       return { kind: "option", option: { typesOptions: { indexTypes: value === true || value === "true" } } };
     case "format":
@@ -313,7 +304,7 @@ export function parseCliOptions(argv: string[]): CliParseResult {
 
     // One-level-deep merge (not `Object.assign`) so multiple flags that each
     // set a different `typesOptions` key (e.g. `--types-format` and
-    // `--types-inline`) don't clobber each other's nested object.
+    // `--types-index-types`) don't clobber each other's nested object.
     options = mergeConfig<CliOptions>(options, result.option) as CliOptions;
     previousFlagWasBoolean = BOOLEAN_FLAGS.has(flag);
 
@@ -323,27 +314,6 @@ export function parseCliOptions(argv: string[]): CliParseResult {
   }
 
   return { kind: "options", options };
-}
-
-/**
- * A `--types-*` flag whose value must be one of a fixed set of strings, stored on `typesOptions`
- * verbatim. Validated in `cli()` once merged with the config file, same as `--format`.
- */
-interface TypesEnumFlag {
-  flagName: string;
-  key: "format" | "inline";
-  values: readonly string[];
-}
-
-const TYPES_ENUM_FLAGS: readonly TypesEnumFlag[] = [
-  { flagName: "types-format", key: "format", values: ["class", "component"] },
-  { flagName: "types-inline", key: "inline", values: ["local", "all"] },
-];
-
-/** `["a", "b"]` -> `"a" or "b"`; `["a", "b", "c"]` -> `"a", "b", or "c"` - the `--format`-style usage-error phrasing. */
-function formatEnumValues(values: readonly string[]): string {
-  const quoted = values.map((value) => `"${value}"`);
-  return quoted.length <= 2 ? quoted.join(" or ") : `${quoted.slice(0, -1).join(", ")}, or ${quoted.at(-1)}`;
 }
 
 /**
@@ -484,15 +454,11 @@ export async function cli(process: NodeJS.Process) {
     return;
   }
 
-  for (const { flagName, key, values } of TYPES_ENUM_FLAGS) {
-    const value = options.typesOptions?.[key];
-    // `false` is `--types-inline`'s reset sentinel, not an enum member; every other key never has it.
-    if (value === undefined || value === false) continue;
-    if (!values.includes(value)) {
-      console.error(`sveld: --${flagName} must be ${formatEnumValues(values)}; got "${value}".`);
-      process.exitCode = EXIT_CODES.USAGE_ERROR;
-      return;
-    }
+  const typesFormat = options.typesOptions?.format;
+  if (typesFormat !== undefined && typesFormat !== "class" && typesFormat !== "component") {
+    console.error(`sveld: --types-format must be "class" or "component"; got "${typesFormat}".`);
+    process.exitCode = EXIT_CODES.USAGE_ERROR;
+    return;
   }
 
   setQuiet(options.quiet === true);

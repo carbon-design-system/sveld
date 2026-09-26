@@ -1,5 +1,4 @@
 import type { ComponentClassMember, ComponentProp, DeprecatedValue } from "../ComponentParser";
-import type { InlinedTypes } from "../inline-types";
 import { getParsedComponentTypeScriptMetadata } from "../parsed-component-metadata";
 import { splitTopLevelCommas } from "../parser/split-top-level";
 import { escapeCommentText, formatParamList } from "../parser/utils";
@@ -889,7 +888,7 @@ function genBindingsUnion(def: Pick<ComponentDocApi, "props">): string {
  * The component's identifier in the `.d.ts`: `$$Component` stands in for an
  * anonymous default export (`moduleName` "default"), since a declaration needs a name.
  */
-export function componentIdentifier(moduleName: string): string {
+function componentIdentifier(moduleName: string): string {
   return moduleName === "default" ? "$$Component" : moduleName;
 }
 
@@ -1188,24 +1187,6 @@ export interface WriteTsDefinitionOptions {
    * parameter (see `genGenericComponentDeclaration`).
    */
   format?: "class" | "component";
-  /**
-   * Copies `type`/`interface` declarations imported from a relative source (or a
-   * tsconfig/jsconfig path alias) directly into the `.d.ts`, dropping the import. `"local"`
-   * follows relative sources, path aliases, re-exports, and same-file dependencies; bare package
-   * imports, `.svelte` sources, and unsupported exports (enums, classes, functions, consts,
-   * namespaces) stay imports and get a `types-inline-unresolved` warning. `"all"` additionally
-   * inlines bare/package imports (e.g. `import type { Foo } from "some-lib"`) using the real
-   * TypeScript checker - same unsupported-export/collision rules, same warning on failure - with
-   * two exceptions kept as plain imports regardless: `svelte`/`svelte/elements` (a hard-coded
-   * allow-list; copying framework types would freeze a Svelte version into consumer output) and
-   * `@extendProps`/`@extends` targets (deferred; unrelated mechanism). `"all"` needs `typescript`
-   * 7+ and a `tsconfig.json`, same hard requirement as `resolveTypes`. `false` (default)
-   * preserves every import as-is.
-   * @default false
-   */
-  inline?: false | "local" | "all";
-  /** @internal Set by `writeTsDefinitions` from `GenerateBundleResult.inlinedTypesByFilePath` when `inline` resolved something for this component. */
-  inlined?: InlinedTypes;
 }
 
 /** The generated props type name for a component: `<Name>Props`. */
@@ -1222,7 +1203,6 @@ export function exportsTypeName(moduleName: string): string {
 export function pickEmitOptions(options: WriteTsDefinitionOptions): WriteTsDefinitionOptions {
   return {
     format: options.format,
-    inline: options.inline,
   };
 }
 
@@ -1234,7 +1214,6 @@ export function pickEmitOptions(options: WriteTsDefinitionOptions): WriteTsDefin
  */
 const EMIT_OPTION_DEFAULTS: Record<string, unknown> = {
   format: "class",
-  inline: false,
 };
 
 /**
@@ -1292,12 +1271,8 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
   const moduleExportsDef = genModuleExports({ moduleExports });
   const typeDefs = getTypeDefs({ typedefs });
   const contextDefs = getContextDefs({ contexts, generics });
-  const droppedImportStatements = new Set(options?.inlined?.droppedImportStatements ?? []);
-  const preservedTypeImports = (typeScriptMetadata?.typeImportStatements ?? [])
-    .filter((statement) => !droppedImportStatements.has(statement))
-    .join("\n");
+  const preservedTypeImports = (typeScriptMetadata?.typeImportStatements ?? []).join("\n");
   const preservedLocalTypeDeclarations = [
-    ...(options?.inlined?.declarations ?? []),
     ...(typeScriptMetadata?.localTypeDeclarations ?? []),
     ...(typeScriptMetadata?.moduleTypeDeclarations ?? []),
   ].join("\n\n");
