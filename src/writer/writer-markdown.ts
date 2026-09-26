@@ -28,8 +28,6 @@ export interface WriteMarkdownOptions {
    */
   entryExports?: EntryExports;
   onAppend?: (type: AppendType, document: WriterMarkdown, components: ComponentDocs) => void;
-  /** @internal Report the resolved path instead of writing. Always set by the caller from `sveld --dry-run`. */
-  dryRun?: boolean;
 }
 
 function newDocument(options: Pick<WriteMarkdownOptions, "onAppend">, components: ComponentDocs): WriterMarkdown {
@@ -50,13 +48,13 @@ function newDocument(options: Pick<WriteMarkdownOptions, "onAppend">, components
 async function writeMarkdownComponents(components: ComponentDocs, options: WriteMarkdownOptions) {
   const outDir = options.outDir as string;
   const document = buildComponentApiDocument(components, { entryExports: options.entryExports });
-  const writer = new Writer({ dryRun: options.dryRun });
+  const writer = new Writer();
 
   const indexDocument = newDocument(options, components);
   renderComponentIndexToMarkdown(indexDocument, document.components, options.entryExports);
   const indexFile = resolve(join(outDir, "README.md"));
   const wroteIndex = await writer.write(indexFile, indexDocument.end());
-  if (!options.dryRun) info(`${wroteIndex ? "created" : "unchanged"} "${indexFile}".`);
+  info(`${wroteIndex ? "created" : "unchanged"} "${indexFile}".`);
 
   await Promise.all(
     document.components.map(async (component) => {
@@ -64,7 +62,7 @@ async function writeMarkdownComponents(components: ComponentDocs, options: Write
       renderComponentToMarkdown(componentDocument, component);
       const outFile = resolve(join(outDir, `${component.moduleName}.md`));
       const wasWritten = await writer.write(outFile, componentDocument.end());
-      if (!options.dryRun) info(`${wasWritten ? "created" : "unchanged"} "${outFile}".`);
+      info(`${wasWritten ? "created" : "unchanged"} "${outFile}".`);
     }),
   );
 }
@@ -108,8 +106,8 @@ export default async function writeMarkdown(components: ComponentDocs, options: 
 
   if (write) {
     const outFile = resolve(options.outFile);
-    const wasWritten = await new Writer({ dryRun: options.dryRun }).write(outFile, rendered);
-    if (!options.dryRun) info(`${wasWritten ? "created" : "unchanged"} "${options.outFile}".`);
+    const wasWritten = await new Writer().write(outFile, rendered);
+    info(`${wasWritten ? "created" : "unchanged"} "${options.outFile}".`);
   }
 
   return rendered;

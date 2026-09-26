@@ -531,10 +531,10 @@ export function resolveCheckSnapshotFile(options: Pick<SveldRuntimeOptions, "che
  * rather than a misconfigured path.
  */
 export function writesCheckSnapshot(
-  options: Pick<SveldRuntimeOptions, "json" | "jsonOptions" | "dryRun" | "stdout">,
+  options: Pick<SveldRuntimeOptions, "json" | "jsonOptions" | "stdout">,
   snapshotFile: string,
 ): boolean {
-  if (!options.json || options.dryRun || options.stdout || options.jsonOptions?.outDir) return false;
+  if (!options.json || options.stdout || options.jsonOptions?.outDir) return false;
   return path.resolve(options.jsonOptions?.outFile ?? "COMPONENT_API.json") === path.resolve(snapshotFile);
 }
 

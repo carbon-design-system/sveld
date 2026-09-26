@@ -135,11 +135,6 @@ export interface GenerateBundleOptions {
    */
   checkExamples?: boolean | "syntax";
   /**
-   * Parse as usual (so cache reads and real errors still apply) but skip
-   * persisting the parse cache to disk. Set by the CLI's `--dry-run`.
-   */
-  dryRun?: boolean;
-  /**
    * `ignore`: diagnostics matching at least one `{ code?, component?, name? }`
    * matcher are marked `ignored` (an omitted field matches anything;
    * `component` is a glob). Ignored diagnostics still appear in
@@ -150,17 +145,13 @@ export interface GenerateBundleOptions {
 }
 
 export function toGenerateBundleOptions(
-  opts?: Pick<
-    GenerateBundleOptions,
-    "failFast" | "documentExports" | "cache" | "checkExamples" | "dryRun" | "diagnostics"
-  >,
+  opts?: Pick<GenerateBundleOptions, "failFast" | "documentExports" | "cache" | "checkExamples" | "diagnostics">,
 ): GenerateBundleOptions {
   return {
     failFast: opts?.failFast,
     documentExports: opts?.documentExports === true,
     cache: opts?.cache,
     checkExamples: opts?.checkExamples === "syntax" ? "syntax" : opts?.checkExamples === true,
-    dryRun: opts?.dryRun === true,
     diagnostics: opts?.diagnostics,
   };
 }
@@ -754,8 +745,7 @@ export async function generateBundle(
   const errors = Array.from(parseErrors.values());
   reportParseErrors(errors);
 
-  // Dry runs must not persist cache state from a run that wrote nothing else.
-  if (!options.dryRun) cache?.save();
+  cache?.save();
 
   // checkExamples runs over all discovered components, not just barrel exports.
   const checkExamplesCandidates = options.checkExamples ? collectCheckExamplesCandidates(allComponentsForTypes) : [];

@@ -63,7 +63,6 @@ Options:
   --custom-elements     Generate a Custom Elements Manifest (custom-elements.json)
   --llms                Generate an llms.txt / llms-full.txt pair (https://llmstxt.org)
   --fail-fast           Abort the run when a single component fails to parse
-  --dry-run             Resolve, parse, and print "would write" lines for each output file instead of writing anything (including the parse cache)
   --quiet               Suppress progress logs (errors, the diagnostics summary, and the --check report are unaffected)
   --stdout[=json|ndjson] Print the document from exactly one of --json, --markdown, or --custom-elements to stdout and write nothing to disk (rejects --types and --check); --stdout=ndjson prints one JSON object per component per line and requires --json
   --cache[=<path>]      Persist parsed output and skip re-parsing unchanged files (on by default, default path: node_modules/.cache/sveld/parse-cache.json; pass --cache=false to disable)
@@ -115,7 +114,6 @@ const KNOWN_FLAGS = [
   "report-diagnostics",
   "check-examples",
   "fail-fast",
-  "dry-run",
   "entry",
   "cache",
   "check",
@@ -141,7 +139,6 @@ const BOOLEAN_FLAGS = new Set([
   "report-diagnostics",
   "check-examples",
   "fail-fast",
-  "dry-run",
   "types-index-types",
 ]);
 
@@ -234,8 +231,6 @@ function parseCliFlagValue(flag: string, value: string | boolean, arg: string, r
       return { kind: "option", option: { checkExamples: value as "syntax" } };
     case "fail-fast":
       return { kind: "option", option: { failFast: value === true || value === "true" } };
-    case "dry-run":
-      return { kind: "option", option: { dryRun: value === true || value === "true" } };
     case "entry":
       return typeof value === "string" ? { kind: "option", option: { entry: value } } : { kind: "option", option: {} };
     case "cache":
@@ -494,7 +489,7 @@ export async function cli(process: NodeJS.Process) {
       await writeOutput(result, options, input);
       // Persists any generated `.d.ts` text writeOutput just cached, on top
       // of the parse-only save generateBundle() already did.
-      if (!options.dryRun) result.cache?.save();
+      result.cache?.save();
     }
   } catch (error) {
     if (error instanceof UnresolvedModuleError) {

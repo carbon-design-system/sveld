@@ -172,22 +172,22 @@ describe("mergeConfig", () => {
     });
   });
 
-  test("deep-merges jsonOptions, markdownOptions, and customElementsOptions", () => {
+  test("deep-merges jsonOptions, markdownOptions, and llmsOptions", () => {
     const fileConfig: Partial<PluginSveldOptions> = {
       jsonOptions: { outFile: "api.json" },
       markdownOptions: { outFile: "index.md" },
-      customElementsOptions: { outFile: "ce.json" },
+      llmsOptions: { outDir: "docs" },
     };
     expect(
       mergeConfig(fileConfig, {
         jsonOptions: { outDir: "docs" },
         markdownOptions: { write: false },
-        customElementsOptions: { dryRun: true },
+        llmsOptions: { title: "Docs" },
       }),
     ).toEqual({
       jsonOptions: { outFile: "api.json", outDir: "docs" },
       markdownOptions: { outFile: "index.md", write: false },
-      customElementsOptions: { outFile: "ce.json", dryRun: true },
+      llmsOptions: { outDir: "docs", title: "Docs" },
     });
   });
 

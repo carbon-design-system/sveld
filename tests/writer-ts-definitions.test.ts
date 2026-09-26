@@ -1135,7 +1135,6 @@ describe("pickEmitOptions", () => {
       preamble: "// preamble\n",
       exports: mockParsedExports({}),
       cache: new ParseCache(path.join(process.cwd(), ".tmp-sveld-pick-emit-options-nonexistent-cache.json")),
-      dryRun: true,
       resolvedPathByFilePath: new Map(),
     };
 
@@ -1182,12 +1181,11 @@ describe("typesOptions.transform", () => {
     }
   });
 
-  // These error-path tests run under `dryRun: true` so the write phase never
-  // touches disk: with a mix of a rejecting (component) and a resolving
-  // (index) write promise, `Promise.all` settles as soon as the first one
-  // rejects while the other keeps running in the background, so a real write
-  // could still land on disk (or recreate a just-removed temp dir) after the
-  // test's cleanup already ran.
+  // These error-path tests fail the transform for every file, the index
+  // included, so the write phase never touches disk: `Promise.all` settles as
+  // soon as the first write promise rejects, and a resolving index transform
+  // would keep writing in the background after the test finished. The
+  // component's transform runs first, so its failure is the one reported.
   test("a throwing transform rejects with a message naming the failing file", async () => {
     const components: ComponentDocs = new Map([["Button", mockComponentDocApi("Button", "Button.svelte")]]);
 
@@ -1197,10 +1195,8 @@ describe("typesOptions.transform", () => {
         inputDir: "src",
         preamble: "",
         exports: mockParsedExports({}),
-        dryRun: true,
-        transform: (text, context) => {
-          if (context.kind === "component") throw new Error("boom");
-          return text;
+        transform: () => {
+          throw new Error("boom");
         },
       }),
     ).rejects.toThrow('sveld: typesOptions.transform failed for "Button.svelte.d.ts": boom');
@@ -1215,30 +1211,10 @@ describe("typesOptions.transform", () => {
         inputDir: "src",
         preamble: "",
         exports: mockParsedExports({}),
-        dryRun: true,
         // biome-ignore lint/suspicious/noExplicitAny: intentionally violating the return type to test the guard
-        transform: (text, context) => (context.kind === "component" ? (undefined as any) : text),
+        transform: () => undefined as any,
       }),
     ).rejects.toThrow('sveld: typesOptions.transform failed for "Button.svelte.d.ts"');
-  });
-
-  test("dry run still calls the transform for every generated file, without writing anything", async () => {
-    const components: ComponentDocs = new Map([["Button", mockComponentDocApi("Button", "Button.svelte")]]);
-    const seenContexts: TransformContext[] = [];
-
-    await writeTsDefinitions(components, {
-      outDir: "types",
-      inputDir: "src",
-      preamble: "",
-      exports: mockParsedExports({}),
-      dryRun: true,
-      transform: (text, context) => {
-        seenContexts.push(context);
-        return text;
-      },
-    });
-
-    expect(seenContexts.map((context) => context.kind).sort()).toEqual(["component", "index"]);
   });
 
   test("second run's output reflects the second transform even on a generated-text cache hit", async () => {
