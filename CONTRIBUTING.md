@@ -58,7 +58,11 @@ The pipeline, end to end:
 
 1. **Resolve the entry point.** [`get-svelte-entry.ts`](src/get-svelte-entry.ts) takes an explicit entry or falls back to `package.json#svelte`.
 2. **Parse exports.** [`parse-exports.ts`](src/parse-exports.ts) reads the barrel (for example `src/index.js`) to learn which components are public and under what names; [`create-exports.ts`](src/create-exports.ts) builds the export map. With `glob: true`, every `.svelte` file under the entry directory is discovered instead.
-3. **Parse each component.** [`ComponentParser.ts`](src/ComponentParser.ts) is the core. It parses the component via [`svelte-template-parse.ts`](src/svelte-template-parse.ts) (see that file for why it isn't just `import { parse } from "svelte/compiler"`), walks the ESTree AST with `estree-walker`, and reads JSDoc with sveld's own [`comment-parser.ts`](src/parser/comment-parser.ts) to extract props, events, slots, typedefs, generics, contexts, and rest props into a `ParsedComponent`.
+3. **Parse each component.** [`ComponentParser.ts`](src/ComponentParser.ts) is the entry point; a parse runs four phases over one `ParserContext` ([`parser/context.ts`](src/parser/context.ts)):
+   - [`prepare.ts`](src/parser/prepare.ts) parses the component via [`svelte-template-parse.ts`](src/svelte-template-parse.ts) (see that file for why it isn't just `import { parse } from "svelte/compiler"`), reads type annotations and hoisted bindings, and reads component-level JSDoc tags (`@event`, `@slot`, `@typedef`, ...) in [`component-tags.ts`](src/parser/component-tags.ts) with sveld's own [`comment-parser.ts`](src/parser/comment-parser.ts).
+   - [`module-script.ts`](src/parser/module-script.ts) walks `<script context="module">` for module exports.
+   - [`component-walk.ts`](src/parser/component-walk.ts) walks the instance script and the template in one pass for props, slots, events, contexts, bindings, and rest props.
+   - [`finalize.ts`](src/parser/finalize.ts) settles events, slot props, and generics, records whole-component diagnostics, and builds the `ParsedComponent`. Its types live in [`model.ts`](src/model.ts).
 4. **Write output.** The `writer/` modules turn `ParsedComponent` into artifacts:
    - [`writer-ts-definitions.ts`](src/writer/writer-ts-definitions.ts) + [`writer-ts-definitions-core.ts`](src/writer/writer-ts-definitions-core.ts) → `.d.ts` extending `SvelteComponentTyped`.
    - [`writer-json.ts`](src/writer/writer-json.ts) → `COMPONENT_API.json` (carries a `schemaVersion`).
@@ -74,21 +78,21 @@ Orchestration and entry surfaces:
 
 Supporting modules: [`ast-guards.ts`](src/ast-guards.ts) (ESTree node type guards), [`element-tag-map.ts`](src/element-tag-map.ts) (HTML element → attribute/event maps for forwarded events and `$$restProps`), [`resolve-alias.ts`](src/resolve-alias.ts) (tsconfig/jsconfig path aliases), [`brands.ts`](src/brands.ts) and [`path.ts`](src/path.ts) (path types and normalization), [`validate.ts`](src/validate.ts) (`package.json` parsing).
 
-`ComponentParser.ts` is ~1.9k lines and orchestrates the parse; most feature work and bug fixes land in [`src/parser/*.ts`](src/parser) (props, runes-props, events, slots, contexts, jsdoc, comment-parser, rest-props, generics, type-resolution, and more) or in a writer. When a change spans both, the parser produces the metadata and the writer decides how it renders.
+Most feature work and bug fixes land in [`src/parser/*.ts`](src/parser) (the phases above, plus props, runes-props, events, slots, contexts, exports, jsdoc, rest-props, generics, type-resolution, and more) or in a writer. Parser helpers are plain functions that take the `ParserContext` first. When a change spans both, the parser produces the metadata and the writer decides how it renders.
 
 ## Conventions
 
 Biome enforces most of this in CI (`biome ci --error-on-warnings`); the rest is by convention across `src/`. Config: [`biome.json`](biome.json) — 120-column lines, space indent, multiline attributes.
 
 - **No `any`.** `noExplicitAny` is an error. Prefer `unknown` and narrow with a guard from [`ast-guards.ts`](src/ast-guards.ts). Add a guard there rather than casting inline; the parser leans on these to keep AST handling type-safe.
-- **Hoist regexes to module scope.** `useTopLevelRegex` is an error — a regex literal inside a function fails lint. Declare it as a named top-level `const` with a comment describing what it matches, as `ComponentParser.ts` does with `VAR_DECLARATION_REGEX` and friends.
+- **Hoist regexes to module scope.** `useTopLevelRegex` is an error — a regex literal inside a function fails lint. Declare it as a named top-level `const` with a comment describing what it matches, as the [`src/parser/`](src/parser) modules do.
 - **Normalize paths; never compare raw separators.** CI runs on Windows, macOS, and Linux. Route paths through [`normalizeSeparators`](src/path.ts) and the branded helpers in [`brands.ts`](src/brands.ts) (`asNormalizedPath`, `asRelativeSourcePath`, `asSvelteEntryPoint`). The brands are compile-time tags that keep a normalized path from being confused with a raw one — keep a value branded once it's normalized instead of re-deriving it. Tests that touch file paths normalize separators too (see [`fixtures.test.ts`](tests/fixtures.test.ts)).
 - **Use `node:` import specifiers.** `useNodejsImportProtocol` is an error: `import { join } from "node:path"`, not `"path"`.
 - **No barrel re-exports, namespace imports, or import cycles.** `noReExportAll`, `noNamespaceImport`, and `noImportCycles` are errors. Export named bindings explicitly (see [`index.ts`](src/index.ts)).
 - **No `await` inside loops and no `Array#forEach`.** `noAwaitInLoops` and `noForEach` are errors. Build the work and `await Promise.all(...)`, or use a `for...of` with the awaits hoisted; use `for...of` / `map` instead of `forEach`.
 - **ESM only in `src/`.** `noCommonJs` is an error. The lone exception is [`cli.js`](cli.js), the published bin shim, which is overridden in `biome.json`.
 - **No parameter reassignment, no implicit booleans, default params last.** `noParameterAssign`, `noImplicitBoolean`, `useDefaultParameterLast`.
-- Document non-obvious parser and build logic with a short comment explaining _why_ (see the bundling notes in [`scripts/build.ts`](scripts/build.ts) and the regex docblocks in `ComponentParser.ts`). Skip comments that restate the code.
+- Document non-obvious parser and build logic with a short comment explaining _why_ (see the bundling notes in [`scripts/build.ts`](scripts/build.ts) and the regex docblocks in `src/parser/`). Skip comments that restate the code.
 
 Fixtures (`tests/fixtures/**`) and the downstream e2e projects (`tests/e2e/**`) run under relaxed lint rules on purpose — they intentionally contain odd or invalid component code to exercise the parser. Don't "fix" their lint warnings.
 
