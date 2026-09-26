@@ -5,7 +5,7 @@ import { TemplateParserState, type TemplateRoot } from "./state";
 import { readTag } from "./tag";
 import { readText } from "./text";
 
-export type { TemplateRoot } from "./state";
+export type { TemplateAstNode, TemplateRoot, TemplateScript } from "./state";
 
 /**
  * Top-level dispatch. From svelte's `Parser` constructor (`phases/1-parse/index.js`).

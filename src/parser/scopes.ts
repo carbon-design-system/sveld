@@ -1,10 +1,11 @@
 import type {
   ArrowFunctionExpression,
+  BlockStatement,
+  CatchClause,
   ExportSpecifier,
   Expression,
   FunctionDeclaration,
   FunctionExpression,
-  Identifier,
   Pattern,
   VariableDeclarator,
 } from "estree";
@@ -118,6 +119,16 @@ export function markReactivePropsFromMutationTarget(
   }
 }
 
+/** A node {@link isScopeOwner} accepts. */
+type ScopeOwnerNode =
+  | BlockStatement
+  | FunctionDeclaration
+  | FunctionExpression
+  | ArrowFunctionExpression
+  | CatchClause
+  | AST.EachBlock
+  | AST.AwaitBlock;
+
 /**
  * True for node types that introduce a new lexical scope.
  *
@@ -128,7 +139,7 @@ export function markReactivePropsFromMutationTarget(
  * the same as a prop and relies on cross-branch shadowing. Not worth
  * three scope objects for one block.
  */
-export function isScopeOwner(node: unknown) {
+export function isScopeOwner(node: unknown): node is ScopeOwnerNode {
   if (!node || typeof node !== "object" || !("type" in node)) return false;
 
   switch (String(node.type)) {
@@ -382,51 +393,39 @@ export function enterNestedScopeDeclarationNode(
 ): LexicalScope | undefined {
   if (!isScopeOwner(node)) return undefined;
 
-  const scope = getOrCreateScope(ctx, node as unknown as object);
+  const scope = getOrCreateScope(ctx, node);
   const currentVarScope = state.varScopeStack[state.varScopeStack.length - 1] ?? ctx.componentScope;
-  const nodeType = String((node as { type: string }).type);
 
-  switch (nodeType) {
+  switch (node.type) {
     case "FunctionDeclaration":
     case "FunctionExpression":
     case "ArrowFunctionExpression":
-      declareFunctionLikeScopeBindings(
-        node as FunctionExpression | ArrowFunctionExpression | FunctionDeclaration,
-        scope,
-      );
+      declareFunctionLikeScopeBindings(node, scope);
       break;
     case "BlockStatement":
-      collectDirectBlockDeclarations((node as { body?: unknown }).body, scope, currentVarScope);
+      collectDirectBlockDeclarations(node.body, scope, currentVarScope);
       break;
     case "CatchClause":
-      if ("param" in (node as object)) {
-        for (const identifier of collectPatternIdentifiers((node as { param?: Pattern }).param)) {
-          declareScopeBinding(scope, identifier, { kind: "local" });
-        }
-      }
-      break;
-    case "EachBlock": {
-      const eachBlock = node as { context?: Pattern; index?: Identifier | string };
-      for (const identifier of collectPatternIdentifiers(eachBlock.context)) {
-        declareScopeBinding(scope, identifier, { kind: "local" });
-      }
-      if (typeof eachBlock.index === "string") {
-        declareScopeBinding(scope, eachBlock.index, { kind: "local" });
-      } else if (eachBlock.index && "name" in eachBlock.index) {
-        declareScopeBinding(scope, eachBlock.index.name, { kind: "local" });
-      }
-      break;
-    }
-    case "AwaitBlock": {
-      const awaitBlock = node as { value?: Pattern | null; error?: Pattern | null };
-      for (const identifier of collectPatternIdentifiers(awaitBlock.value)) {
-        declareScopeBinding(scope, identifier, { kind: "local" });
-      }
-      for (const identifier of collectPatternIdentifiers(awaitBlock.error)) {
+      for (const identifier of collectPatternIdentifiers(node.param)) {
         declareScopeBinding(scope, identifier, { kind: "local" });
       }
       break;
-    }
+    case "EachBlock":
+      for (const identifier of collectPatternIdentifiers(node.context)) {
+        declareScopeBinding(scope, identifier, { kind: "local" });
+      }
+      if (typeof node.index === "string") {
+        declareScopeBinding(scope, node.index, { kind: "local" });
+      }
+      break;
+    case "AwaitBlock":
+      for (const identifier of collectPatternIdentifiers(node.value)) {
+        declareScopeBinding(scope, identifier, { kind: "local" });
+      }
+      for (const identifier of collectPatternIdentifiers(node.error)) {
+        declareScopeBinding(scope, identifier, { kind: "local" });
+      }
+      break;
   }
 
   if (isFunctionScopeOwner(node)) {

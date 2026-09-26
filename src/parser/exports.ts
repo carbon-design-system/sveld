@@ -42,20 +42,15 @@ export interface ResolvedExportSpecifier {
   statement?: Node;
 }
 
-/** `program`'s top-level statements, or none when `program` isn't a `Program`. */
-function programBody(program: Node | null | undefined): Program["body"] {
-  return program?.type === "Program" ? program.body : [];
-}
-
 /**
  * The top-level function, class, or variable declarator in `program` that binds
  * `localName`, which can come before or after the export naming it.
  */
 function findTopLevelBinding(
-  program: Node | null | undefined,
+  program: Program | null | undefined,
   localName: string,
 ): Pick<ResolvedExportSpecifier, "declaration" | "declarator" | "statement"> | undefined {
-  for (const node of programBody(program)) {
+  for (const node of program?.body ?? []) {
     const declaration = node.type === "ExportNamedDeclaration" && node.declaration ? node.declaration : node;
     if (declaration.type === "VariableDeclaration") {
       const declarator = declaration.declarations.find((decl) =>
@@ -78,10 +73,10 @@ function findTopLevelBinding(
  * implied `let localName = value`.
  */
 function findReactiveDeclaration(
-  program: Node | null,
+  program: Program | null,
   localName: string,
 ): Pick<ResolvedExportSpecifier, "declaration" | "declarator" | "statement"> | undefined {
-  for (const node of programBody(program)) {
+  for (const node of program?.body ?? []) {
     if (node.type !== "LabeledStatement" || node.label.name !== "$") continue;
     if (node.body.type !== "ExpressionStatement") continue;
     const assignment = node.body.expression;
@@ -128,7 +123,7 @@ export function resolveExportSpecifier(
   ctx: ParserContext,
   node: ExportNamedDeclaration,
   specifier: ExportSpecifier,
-  program: Node | null,
+  program: Program | null,
   script: "instance" | "module",
 ): ResolvedExportSpecifier | undefined {
   const localName = moduleExportName(specifier.local);
@@ -398,13 +393,13 @@ function addInstanceDeclarationExports(
 }
 
 /** An instance-script `export` statement: its declaration's props, or each specifier's. */
-export function addInstanceExports(ctx: ParserContext, node: ExportNamedDeclaration, parent: Node | null) {
+export function addInstanceExports(ctx: ParserContext, node: ExportNamedDeclaration, program: Program | null) {
   if (node.declaration != null) {
     addInstanceDeclarationExports(ctx, node, node.declaration);
     return;
   }
   for (const specifier of node.specifiers) {
-    const resolved = resolveExportSpecifier(ctx, node, specifier, parent, "instance");
+    const resolved = resolveExportSpecifier(ctx, node, specifier, program, "instance");
     if (!resolved) continue;
     if (resolved.declaration) {
       addInstanceDeclarationExports(ctx, node, resolved.declaration, resolved);

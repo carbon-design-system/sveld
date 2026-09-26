@@ -4,21 +4,11 @@
  * props, and collects the calls that phase 4 ({@link finalizeComponent})
  * turns into dispatched events once the dispatcher's name is known.
  */
-import type {
-  AssignmentExpression,
-  CallExpression,
-  ExportNamedDeclaration,
-  Expression,
-  FunctionDeclaration,
-  Identifier,
-  Literal,
-  Node,
-  ObjectExpression,
-  UpdateExpression,
-  VariableDeclaration,
-} from "estree";
+import type { CallExpression, Expression, Identifier, Literal, ObjectExpression } from "estree";
+import type { AST } from "svelte/compiler";
 import { isCallExpressionNamed, isIdentifier, isMemberExpression, unwrapTypeCastExpression } from "../ast-guards";
 import type { ComponentElement, ComponentInlineElement, ModernRunesTypeNode, SlotProps, SlotPropValue } from "../model";
+import type { TemplateAstNode, TemplateScript } from "../svelte-template-parse";
 import { resolveMemberExpressionType } from "./bindings";
 import type { ParserContext } from "./context";
 import { parseSetContextCall } from "./contexts";
@@ -39,15 +29,25 @@ import {
 } from "./scopes";
 import { addSlot, buildSlotPropsFromObjectExpression, DEFAULT_SLOT_NAME, extractRenderTagInfo } from "./slots";
 import { sourceAtPos, sourceRangeFromNode } from "./source-position";
-import { collectValueImportBindings, type ImportDeclarationNode } from "./value-imports";
-import { type WalkableNode, type WalkEnter, type WalkLeave, walkNodes } from "./walk";
+import { collectValueImportBindings } from "./value-imports";
+import { walkNodes } from "./walk";
 
 /** Matches `@component` in HTML comments. */
 const COMPONENT_COMMENT_REGEX = /^@component/;
 
 const CARRIAGE_RETURN_REGEX = /\r/g;
 
-type TemplateNode = { start?: number; end?: number };
+/**
+ * The synthetic root the component walk starts from, so one walk covers
+ * both the instance script and the template.
+ */
+interface ComponentRootNode {
+  type: "ComponentRoot";
+  instance: TemplateScript | undefined;
+  fragment: AST.Fragment | undefined;
+}
+
+type ComponentWalkNode = TemplateAstNode | ComponentRootNode;
 
 /**
  * Node types the component walk acts on. Keep in sync with the cases in
@@ -99,45 +99,41 @@ export interface ComponentWalkResult {
   locallyBoundCalls: Set<CallExpression>;
 }
 
-function enterCallExpression(ctx: ParserContext, walk: ComponentWalkResult, node: Node, parent: Node | null) {
-  const callExpr = node as CallExpression;
-  const calleeName =
-    callExpr.callee && typeof callExpr.callee === "object" && "name" in callExpr.callee
-      ? (callExpr.callee as Identifier).name
-      : undefined;
+/**
+ * A call as acorn-typescript parses it: estree's, plus `f<T>()`'s explicit
+ * type arguments.
+ */
+type TsCallExpression = CallExpression & { typeArguments?: { params?: ModernRunesTypeNode[] } };
+
+/** The name `parent` binds a call's result to: `x` in `const x = call()`. */
+function parentIdName(parent: ComponentWalkNode | null): string | undefined {
+  return parent && "id" in parent && parent.id && "name" in parent.id ? parent.id.name : undefined;
+}
+
+function enterCallExpression(
+  ctx: ParserContext,
+  walk: ComponentWalkResult,
+  callExpr: TsCallExpression,
+  parent: ComponentWalkNode | null,
+) {
+  const calleeName = callExpr.callee.type === "Identifier" ? callExpr.callee.name : undefined;
 
   if (calleeName === "createEventDispatcher") {
-    if (
-      parent &&
-      typeof parent === "object" &&
-      "id" in parent &&
-      parent.id &&
-      typeof parent.id === "object" &&
-      "name" in parent.id
-    ) {
-      walk.dispatcherName = (parent.id as Identifier).name;
+    const name = parentIdName(parent);
+    if (name !== undefined) {
+      walk.dispatcherName = name;
       walk.dispatcherDeclaratorNode = parent;
     }
-    walk.dispatcherTypeArgument = (
-      callExpr as unknown as { typeArguments?: { params?: ModernRunesTypeNode[] } }
-    ).typeArguments?.params?.[0];
+    walk.dispatcherTypeArgument = callExpr.typeArguments?.params?.[0];
   }
 
   if (calleeName === "$host") {
-    if (
-      parent &&
-      typeof parent === "object" &&
-      "id" in parent &&
-      parent.id &&
-      typeof parent.id === "object" &&
-      "name" in parent.id
-    ) {
-      walk.hostLocalNames.add((parent.id as Identifier).name);
-    }
+    const name = parentIdName(parent);
+    if (name !== undefined) walk.hostLocalNames.add(name);
   }
 
   if (calleeName === "setContext") {
-    parseSetContextCall(ctx, node, parent ?? undefined);
+    parseSetContextCall(ctx, callExpr);
   }
 
   if (callExpr.arguments.length > 0) {
@@ -170,7 +166,7 @@ function enterCallExpression(ctx: ParserContext, walk: ComponentWalkResult, node
 }
 
 /** A `<slot>` element: its name, props from its attributes, and fallback content. */
-function addSlotElement(ctx: ParserContext, node: Node) {
+function addSlotElement(ctx: ParserContext, node: AST.SlotElement) {
   type AttributeValueChunk = {
     type?: string;
     expression?: unknown;
@@ -179,12 +175,12 @@ function addSlotElement(ctx: ParserContext, node: Node) {
     end?: number;
     data?: string;
   };
+  // Spreads and directives read as attributes without a value.
   const slotNode = node as {
     attributes?: Array<{
       name?: string;
       value?: true | AttributeValueChunk | AttributeValueChunk[];
     }>;
-    fragment?: { nodes?: Array<{ start?: number; end?: number }> };
   };
   const nameAttributeValue = slotNode.attributes?.find((attr) => attr.name === "name")?.value;
   const slot_name = (Array.isArray(nameAttributeValue) ? nameAttributeValue[0] : undefined)?.data;
@@ -247,11 +243,8 @@ function addSlotElement(ctx: ParserContext, node: Node) {
       return slot_props;
     }, {});
 
-  const fallback = (slotNode.fragment?.nodes as TemplateNode[] | undefined)
-    ?.map(({ start, end }) => {
-      if (start === undefined || end === undefined) return "";
-      return sourceAtPos(ctx, start, end) ?? "";
-    })
+  const fallback = node.fragment.nodes
+    .map(({ start, end }) => sourceAtPos(ctx, start, end) ?? "")
     .join("")
     .trim();
 
@@ -264,9 +257,8 @@ function addSlotElement(ctx: ParserContext, node: Node) {
 }
 
 /** `{@render name(...)}`: the snippet prop `name` becomes a slot, typed from an object argument. */
-function addRenderTagSlot(ctx: ParserContext, node: Node) {
-  const renderTag = node as { expression?: unknown };
-  const renderInfo = extractRenderTagInfo(ctx, renderTag.expression);
+function addRenderTagSlot(ctx: ParserContext, node: AST.RenderTag) {
+  const renderInfo = extractRenderTagInfo(ctx, node.expression);
   if (!renderInfo) return;
 
   let slot_props: SlotProps | undefined;
@@ -308,31 +300,31 @@ function addRenderTagSlot(ctx: ParserContext, node: Node) {
 }
 
 /** A bare `on:event` (no handler) forwards the event; dispatched events win and are reconciled after the walk. */
-function addForwardedEvent(ctx: ParserContext, node: Node, parent: Node | null) {
-  const eventHandlerNode = node as { expression?: unknown; name?: string };
-  if (eventHandlerNode.expression != null || !eventHandlerNode.name) return;
-  if (parent == null || typeof parent !== "object" || !("name" in parent)) return;
+function addForwardedEvent(ctx: ParserContext, node: AST.OnDirective, parent: ComponentWalkNode | null) {
+  const eventName = node.name;
+  if (node.expression != null || !eventName) return;
+  if (parent == null || !("name" in parent)) return;
 
   const parentName = typeof parent.name === "string" ? parent.name : undefined;
-  const parentType = "type" in parent ? String(parent.type) : undefined;
+  const parentType = parent.type;
   if (!parentName || !parentType) return;
 
   const element: ComponentInlineElement | ComponentElement = isComponentLikeType(parentType)
     ? { type: "InlineComponent", name: parentName }
     : { type: "Element", name: parentName };
 
-  ctx.forwardedEvents.set(eventHandlerNode.name, element);
+  ctx.forwardedEvents.set(eventName, element);
 
-  const existing_event = ctx.events.get(eventHandlerNode.name);
+  const existing_event = ctx.events.get(eventName);
 
-  const event_description = ctx.eventDescriptions.get(eventHandlerNode.name);
+  const event_description = ctx.eventDescriptions.get(eventName);
   const event_deprecated = existing_event?.deprecated;
   const event_internal = existing_event?.internal;
 
   if (!existing_event) {
-    ctx.events.set(eventHandlerNode.name, {
+    ctx.events.set(eventName, {
       type: "forwarded",
-      name: eventHandlerNode.name,
+      name: eventName,
       element: element,
       description: event_description,
       deprecated: event_deprecated,
@@ -340,7 +332,7 @@ function addForwardedEvent(ctx: ParserContext, node: Node, parent: Node | null) 
       source: sourceRangeFromNode(ctx, node),
     });
   } else if (existing_event.type === "forwarded" && event_description && !existing_event.description) {
-    ctx.events.set(eventHandlerNode.name, {
+    ctx.events.set(eventName, {
       ...existing_event,
       description: event_description,
       deprecated: existing_event.deprecated ?? event_deprecated,
@@ -351,34 +343,27 @@ function addForwardedEvent(ctx: ParserContext, node: Node, parent: Node | null) 
 }
 
 /** `bind:*` marks props reactive; `bind:this` on elements also narrows the prop type. */
-function recordBindDirective(ctx: ParserContext, node: Node, parent: Node | null) {
-  if (
-    !(
-      parent &&
-      typeof parent === "object" &&
-      "type" in parent &&
-      (isElementLikeType(String(parent.type)) || isComponentLikeType(String(parent.type)))
-    )
-  ) {
+function recordBindDirective(ctx: ParserContext, node: AST.BindDirective, parent: ComponentWalkNode | null) {
+  if (!(parent && (isElementLikeType(parent.type) || isComponentLikeType(parent.type)))) {
     return;
   }
 
-  const bindingNode = node as { name?: string; expression?: { name?: string } };
-  if (bindingNode.expression?.name) {
-    const prop_name = resolveIdentifierToReactiveProp(ctx, bindingNode.expression.name);
+  const expressionName = node.expression.type === "Identifier" ? node.expression.name : undefined;
+  if (expressionName) {
+    const prop_name = resolveIdentifierToReactiveProp(ctx, expressionName);
     if (prop_name) {
       ctx.reactive_vars.add(prop_name);
     }
   }
 
   if (
-    isElementLikeType(String(parent.type)) &&
-    bindingNode.name === "this" &&
-    bindingNode.expression?.name &&
+    isElementLikeType(parent.type) &&
+    node.name === "this" &&
+    expressionName &&
     "name" in parent &&
     typeof parent.name === "string"
   ) {
-    const prop_name = resolveIdentifierToReactiveProp(ctx, bindingNode.expression.name);
+    const prop_name = resolveIdentifierToReactiveProp(ctx, expressionName);
     if (!prop_name) {
       return;
     }
@@ -415,7 +400,7 @@ export function walkComponent(ctx: ParserContext): ComponentWalkResult {
     locallyBoundCalls: new Set(),
   };
 
-  const componentRoot = {
+  const componentRoot: ComponentRootNode = {
     type: "ComponentRoot",
     instance: ctx.parsed?.instance,
     fragment: ctx.parsed?.fragment,
@@ -425,9 +410,9 @@ export function walkComponent(ctx: ParserContext): ComponentWalkResult {
   ctx.activeScopes.push(ctx.componentScope);
   const scopeWalkState = createScopeWalkState(ctx);
 
-  walkNodes(
-    componentRoot as unknown as WalkableNode,
-    ((node: Node, parent: Node | null, _prop: string | null) => {
+  walkNodes<ComponentWalkNode>(
+    componentRoot,
+    (node, parent) => {
       // Fuse scope declaration into this walk (see enterNestedScopeDeclarationNode).
       // Only scope-owner nodes get a scope, so the returned scope is the
       // same one a `scopeDeclarations.get(node)` lookup would find.
@@ -436,65 +421,52 @@ export function walkComponent(ctx: ParserContext): ComponentWalkResult {
         ctx.activeScopes.push(nodeScope);
       }
 
-      // Svelte template node types aren't in estree's `Node["type"]` union;
-      // read the type once as a plain string for the markup checks below.
-      const type: string = node.type;
-
       // Every case below is keyed on one of these types; most nodes
       // (identifiers, literals, text, elements) match none of them.
-      if (!MAIN_WALK_NODE_TYPES.has(type)) return;
+      if (!MAIN_WALK_NODE_TYPES.has(node.type)) return;
 
-      switch (type) {
+      switch (node.type) {
         case "AssignmentExpression":
-          markReactivePropsFromMutationTarget(ctx, (node as AssignmentExpression).left);
+          markReactivePropsFromMutationTarget(ctx, node.left);
           break;
         case "UpdateExpression":
-          markReactivePropsFromMutationTarget(ctx, (node as UpdateExpression).argument);
+          markReactivePropsFromMutationTarget(ctx, node.argument);
           break;
         case "CallExpression":
           enterCallExpression(ctx, walk, node, parent);
           break;
         case "SpreadAttribute": {
           // Svelte spread attribute nodes: `{...$$restProps}` and rest-prop locals.
-          const spreadNode = node as { type: string; expression?: { name?: string } };
-          if (
-            spreadNode.expression?.name === "$$restProps" ||
-            ctx.restPropLocals.has(spreadNode.expression?.name ?? "")
-          ) {
+          const name = node.expression.type === "Identifier" ? node.expression.name : undefined;
+          if (name === "$$restProps" || ctx.restPropLocals.has(name ?? "")) {
             maybeSetRestProps(ctx, parent);
           }
           break;
         }
-        case "FunctionDeclaration": {
-          const funcDecl = node as unknown as FunctionDeclaration;
-          if (funcDecl.id?.name) {
-            ctx.funcDecls.set(funcDecl.id.name, funcDecl);
+        case "FunctionDeclaration":
+          if (node.id?.name) {
+            ctx.funcDecls.set(node.id.name, node);
           }
           break;
-        }
         case "ImportDeclaration":
-          collectValueImportBindings(ctx, node as unknown as ImportDeclarationNode);
+          collectValueImportBindings(ctx, node);
           break;
         case "VariableDeclaration":
-          ctx.vars.add(node as unknown as VariableDeclaration);
+          ctx.vars.add(node);
           if (
-            parent &&
-            typeof parent === "object" &&
-            "type" in parent &&
-            parent.type === "Program" &&
-            (node as VariableDeclaration).declarations.some((declarator) =>
+            parent?.type === "Program" &&
+            node.declarations.some((declarator) =>
               isCallExpressionNamed(unwrapTypeCastExpression(declarator.init), "$props"),
             )
           ) {
-            parseRunesPropsDeclaration(ctx, node as VariableDeclaration);
+            parseRunesPropsDeclaration(ctx, node);
           }
           break;
         case "ExportNamedDeclaration":
-          addInstanceExports(ctx, node as ExportNamedDeclaration, parent);
+          addInstanceExports(ctx, node, parent?.type === "Program" ? parent : null);
           break;
         case "Comment": {
-          const commentNode = node as { data?: string };
-          const data: string = commentNode?.data?.trim() ?? "";
+          const data = node.data.trim();
 
           if (COMPONENT_COMMENT_REGEX.test(data)) {
             ctx.componentComment = data.replace(COMPONENT_COMMENT_REGEX, "").replace(CARRIAGE_RETURN_REGEX, "");
@@ -515,15 +487,15 @@ export function walkComponent(ctx: ParserContext): ComponentWalkResult {
           recordBindDirective(ctx, node, parent);
           break;
       }
-    }) as unknown as WalkEnter,
-    ((node: Node) => {
+    },
+    (node) => {
       // Scopes exist exactly for scope-owner nodes (see `enter` above), and
       // function-scope owners are a subset, so one type check covers both.
       if (isScopeOwner(node)) {
         ctx.activeScopes.pop();
         leaveNestedScopeDeclarationNode(scopeWalkState, node);
       }
-    }) as unknown as WalkLeave,
+    },
     // Every type this walk acts on is value-level (calls, declarations,
     // assignments, directives, slots), and scopes only come from
     // functions/blocks, so type-level TS subtrees have nothing for it.

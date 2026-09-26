@@ -50,6 +50,14 @@ export type TemplateRoot = Omit<AST.Root, "instance" | "module" | "comments"> & 
   comments: CommentWithLocation[];
 };
 
+/**
+ * A node in {@link TemplateRoot}'s tree: svelte's `AST.SvelteNode` (template,
+ * CSS, and estree nodes). The acorn-typescript nodes under a `lang="ts"`
+ * script (`TSTypeAnnotation`, `TSInterfaceDeclaration`, ...) are in the tree
+ * too but not in the union, so checking `type` never narrows to one.
+ */
+export type TemplateAstNode = AST.SvelteNode;
+
 /** Cursor plus the open-element stack. */
 export class TemplateParserState extends Reader {
   readonly root: TemplateRoot;

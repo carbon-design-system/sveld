@@ -14,8 +14,8 @@ export interface WalkableNode {
   [key: string]: unknown;
 }
 
-export type WalkEnter = (node: WalkableNode, parent: WalkableNode | null, prop: string | null) => void;
-export type WalkLeave = (node: WalkableNode) => void;
+export type WalkEnter<N = WalkableNode> = (node: N, parent: N | null, prop: string | null) => void;
+export type WalkLeave<N = WalkableNode> = (node: N) => void;
 
 export interface WalkOptions {
   /**
@@ -43,26 +43,39 @@ export function isTypeOnlySubtree(type: string): boolean {
   );
 }
 
-export function walkNodes(root: WalkableNode, enter: WalkEnter, leave?: WalkLeave, options?: WalkOptions): void {
+/**
+ * Walks `root` and every node under it. `N` is the caller's node type: every
+ * object with a string `type` found under `root` is passed as an `N`, so it
+ * must cover whatever the tree can hold (e.g. `TemplateAstNode` for the
+ * template parser's tree).
+ */
+export function walkNodes<N extends { type: string }>(
+  root: N,
+  enter: WalkEnter<N>,
+  leave?: WalkLeave<N>,
+  options?: WalkOptions,
+): void {
   visit(root, null, null, enter, leave, options?.skipTypeOnlySubtrees === true);
 }
 
-function visit(
-  node: WalkableNode,
-  parent: WalkableNode | null,
+function visit<N extends { type: string }>(
+  node: N,
+  parent: N | null,
   prop: string | null,
-  enter: WalkEnter,
-  leave: WalkLeave | undefined,
+  enter: WalkEnter<N>,
+  leave: WalkLeave<N> | undefined,
   skipTypeOnly: boolean,
 ): void {
   enter(node, parent, prop);
+
+  const fields: Record<string, unknown> = node;
 
   // Leaves first: identifiers and literals are the bulk of any AST and have
   // no child nodes, so skip enumerating their keys. An identifier with a TS
   // `typeAnnotation` (or a literal with one, e.g. a typed default) does have
   // one, so those still take the general path.
   const type = node.type;
-  if ((type === "Identifier" || type === "Literal" || type === "Text") && node.typeAnnotation === undefined) {
+  if ((type === "Identifier" || type === "Literal" || type === "Text") && fields.typeAnnotation === undefined) {
     if (leave) leave(node);
     return;
   }
@@ -72,20 +85,20 @@ function visit(
   }
 
   // `for...in` on acorn/svelte nodes: plain objects, no enumerable prototype keys.
-  for (const key in node) {
+  for (const key in fields) {
     if (key === "leadingComments") continue;
-    const value = node[key];
+    const value = fields[key];
     if (!value || typeof value !== "object") continue;
 
     if (Array.isArray(value)) {
       for (let i = 0; i < value.length; i++) {
         const item = value[i];
         if (item && typeof item === "object" && typeof (item as WalkableNode).type === "string") {
-          visit(item as WalkableNode, node, key, enter, leave, skipTypeOnly);
+          visit(item as N, node, key, enter, leave, skipTypeOnly);
         }
       }
     } else if (typeof (value as WalkableNode).type === "string") {
-      visit(value as WalkableNode, node, key, enter, leave, skipTypeOnly);
+      visit(value as N, node, key, enter, leave, skipTypeOnly);
     }
   }
 
