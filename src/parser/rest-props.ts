@@ -1,4 +1,4 @@
-import type { ComponentElement, RestProps } from "../ComponentParser";
+import type { ComponentElement, RestProps } from "../model";
 import type { ParserContext } from "./context";
 import { isComponentLikeType, isElementLikeType } from "./element-kind";
 

@@ -1,4 +1,4 @@
-import type { ComponentPropParam, ComponentPropTypeSource } from "../ComponentParser";
+import type { ComponentPropParam, ComponentPropTypeSource } from "../model";
 import { formatParamList } from "./utils";
 
 /**

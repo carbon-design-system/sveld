@@ -4,7 +4,7 @@
  * write this field (`parse-cache.ts`, `writer/writer-ts-definitions-core.ts`,
  * `finalize-standalone.ts`) don't have to import the parser stack to get it.
  */
-import type { ParsedComponentTypeScriptMetadata } from "./ComponentParser";
+import type { ParsedComponentTypeScriptMetadata } from "./model";
 
 export const PARSED_COMPONENT_TYPE_SCRIPT_METADATA = Symbol("sveld.parsedComponentTypeScriptMetadata");
 

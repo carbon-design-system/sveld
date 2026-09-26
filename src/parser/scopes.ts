@@ -17,7 +17,7 @@ import {
   unwrapTypeCastExpression,
 } from "../ast-guards";
 import type ComponentParser from "../ComponentParser";
-import type { LexicalScope, ScopeBinding, ScopeBindingKind } from "../ComponentParser";
+import type { LexicalScope, ScopeBinding, ScopeBindingKind } from "../model";
 import type { ParserContext } from "./context";
 
 function declareScopeBinding(scope: LexicalScope, name: string, binding: ScopeBinding) {

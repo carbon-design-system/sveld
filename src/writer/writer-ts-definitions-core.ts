@@ -1,4 +1,4 @@
-import type { ComponentClassMember, ComponentProp, DeprecatedValue } from "../ComponentParser";
+import type { ComponentClassMember, ComponentProp, DeprecatedValue } from "../model";
 import { getParsedComponentTypeScriptMetadata } from "../parsed-component-metadata";
 import { escapeCommentText, formatParamList } from "../parser/utils";
 import type { ComponentDocApi } from "../plugin";

@@ -1,4 +1,5 @@
-import ComponentParser, { getParsedComponentTypeScriptMetadata } from "../src/ComponentParser";
+import ComponentParser from "../src/ComponentParser";
+import { getParsedComponentTypeScriptMetadata } from "../src/parsed-component-metadata";
 
 describe("ComponentParser", () => {
   const diagnostics = {

@@ -26,7 +26,7 @@ import type {
   ComponentPropParam,
   ModernRunesTypeNode,
   ProcessedInitializer,
-} from "../ComponentParser";
+} from "../model";
 import type { CommentWithLocation } from "../template-parse/comments";
 import { returnTypeOfFunctionType } from "../type-text";
 import type { ParserContext } from "./context";

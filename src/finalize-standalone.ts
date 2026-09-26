@@ -2,8 +2,9 @@
  * Finalize a standalone parse (`sveld/browser`, or `ComponentParser` used
  * directly), where nothing reads the other files a component imports from.
  */
-import type { ParsedComponent, ParsedComponentTypeScriptMetadata, SourceRange } from "./ComponentParser";
+
 import { createDiagnostic, type SveldDiagnostic } from "./diagnostics";
+import type { ParsedComponent, ParsedComponentTypeScriptMetadata, SourceRange } from "./model";
 import { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "./parsed-component-metadata";
 import { importPath } from "./parser/value-imports";
 

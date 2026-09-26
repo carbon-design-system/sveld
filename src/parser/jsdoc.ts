@@ -1,13 +1,13 @@
 import type { Node } from "estree";
 import type ComponentParser from "../ComponentParser";
+import { closestMatch } from "../levenshtein";
 import type {
   ComponentPropBinding,
   ComponentPropParam,
   DeprecatedValue,
   JsDocPassthroughTag,
   SourceRange,
-} from "../ComponentParser";
-import { closestMatch } from "../levenshtein";
+} from "../model";
 import { indexOfClosingBracket, splitTopLevel } from "../type-text";
 import type { JSDocComment, JSDocTag } from "./comment-parser";
 import { leadingWhitespaceLength, parseComments, togglesCodeFence } from "./comment-parser";

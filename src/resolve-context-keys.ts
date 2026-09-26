@@ -1,8 +1,8 @@
 import { dirname } from "node:path";
 import type { ComponentDocApi } from "./bundle";
-import type { PendingContextKeyCandidate, SourceRange } from "./ComponentParser";
 import type { CrossFilePass } from "./cross-file-pass";
 import { createDiagnostic } from "./diagnostics";
+import type { PendingContextKeyCandidate, SourceRange } from "./model";
 import { findImportedExport, type ResolveContext } from "./module-exports";
 import { generateContextTypeName } from "./parser/context-type-name";
 import { importPath } from "./parser/value-imports";

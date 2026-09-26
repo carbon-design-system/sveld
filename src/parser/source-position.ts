@@ -1,4 +1,4 @@
-import type { SourcePosition, SourceRange } from "../ComponentParser";
+import type { SourcePosition, SourceRange } from "../model";
 import type { ParserContext } from "./context";
 
 /** Matches one or more consecutive `\r`/`\n` so multiline source can collapse to a single space. */

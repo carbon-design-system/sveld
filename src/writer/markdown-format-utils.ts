@@ -1,4 +1,4 @@
-import type { ComponentProp, DeprecatedValue } from "../ComponentParser";
+import type { ComponentProp, DeprecatedValue } from "../model";
 import { formatClassMemberSignature, formatTsProps } from "./writer-ts-definitions-core";
 
 export const BACKTICK_REGEX = /`/g;

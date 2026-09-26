@@ -1,5 +1,5 @@
-import type { ParsedComponent, SourceRange } from "./ComponentParser";
 import { matchesGlob } from "./glob-match";
+import type { ParsedComponent, SourceRange } from "./model";
 
 /**
  * Why sveld could not pin a type during parsing.

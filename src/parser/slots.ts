@@ -1,7 +1,7 @@
 import type { CallExpression, Expression, Identifier, Literal, MemberExpression, ObjectExpression } from "estree";
 import { isIdentifier, isObjectExpression } from "../ast-guards";
 import type ComponentParser from "../ComponentParser";
-import type { DeprecatedValue, JsDocPassthroughTag, SlotProps, SlotPropValue, SourceRange } from "../ComponentParser";
+import type { DeprecatedValue, JsDocPassthroughTag, SlotProps, SlotPropValue, SourceRange } from "../model";
 import { resolveMemberExpressionType } from "./bindings";
 import type { ParserContext } from "./context";
 import { recordDiagnostic } from "./diagnostics";

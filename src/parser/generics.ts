@@ -1,4 +1,4 @@
-import type { ComponentGenerics } from "../ComponentParser";
+import type { ComponentGenerics } from "../model";
 import { splitTopLevel } from "../type-text";
 import type { ParserContext } from "./context";
 import { collectReferencedTypeDependencies } from "./type-resolution";

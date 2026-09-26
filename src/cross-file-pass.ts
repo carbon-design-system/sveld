@@ -6,7 +6,7 @@
  * runs every pass over them once all components have parsed.
  */
 import type { ComponentDocApi } from "./bundle";
-import type { ComponentProp, PendingConstDefaultCandidate, PendingCrossFileCandidates } from "./ComponentParser";
+import type { ComponentProp, PendingConstDefaultCandidate, PendingCrossFileCandidates } from "./model";
 import type { ResolveContext } from "./module-exports";
 
 export interface CrossFilePass<Candidate, Resolution> {

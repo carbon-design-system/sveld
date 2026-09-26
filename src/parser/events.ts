@@ -1,7 +1,7 @@
 import type { ArrayExpression, CallExpression, ObjectExpression, Property } from "estree";
 import { isIdentifier, isLiteral, isNewExpressionNamed, isObjectExpression } from "../ast-guards";
 import type ComponentParser from "../ComponentParser";
-import type { DispatchedEvent } from "../ComponentParser";
+import type { DispatchedEvent } from "../model";
 import type { ParserContext } from "./context";
 import { findTrackedVariableType } from "./contexts";
 import { inferVariableInitializerType, literalValueType } from "./props";

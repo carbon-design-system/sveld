@@ -4,7 +4,7 @@ import type {
   ParsedComponentTypeScriptMetadata,
   PendingCrossFileCandidates,
   TypeImportBinding,
-} from "../ComponentParser";
+} from "../model";
 import type { ParserContext } from "./context";
 import { sourceAtPos } from "./source-position";
 import { compareText } from "./utils";

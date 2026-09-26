@@ -1,6 +1,6 @@
 import { dirname, relative, resolve } from "node:path";
-import type { DeprecatedValue, JsDocPassthroughTag } from "./ComponentParser";
 import { createDiagnostic, type SveldDiagnostic } from "./diagnostics";
+import type { DeprecatedValue, JsDocPassthroughTag } from "./model";
 import { collectModuleExports, createResolveContext } from "./module-exports";
 import { ModuleGraph } from "./module-graph";
 import { compareText } from "./parser/utils";

@@ -3,10 +3,11 @@ import { mkdtemp } from "node:fs/promises";
 import path from "node:path";
 import { asNormalizedPath } from "../src/brands";
 import { generateBundle } from "../src/bundle";
-import type { ParsedComponent } from "../src/ComponentParser";
-import ComponentParser, { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "../src/ComponentParser";
+import ComponentParser from "../src/ComponentParser";
 import { setQuiet } from "../src/logger";
+import type { ParsedComponent } from "../src/model";
 import { ParseCache } from "../src/parse-cache";
+import { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "../src/parsed-component-metadata";
 import type { ComponentDocApi, ComponentDocs } from "../src/plugin";
 import type { TransformContext, WriteTsDefinitionsOptions } from "../src/writer/writer-ts-definitions";
 import writeTsDefinitions, {
