@@ -22,7 +22,7 @@ import {
 import { resolveCrossFileCandidates } from "./cross-file";
 import { appendDiagnostics, applyDiagnosticIgnores, dedupeDiagnostics, type SveldDiagnostic } from "./diagnostics";
 import { checkComponentExamples } from "./example-check";
-import { resetDirectoryListings } from "./fs-listing";
+import { ModuleGraph } from "./module-graph";
 import { hashSource, ParseCache, resolveCacheFilePath } from "./parse-cache";
 import { type EntryExports, parseEntryExports } from "./parse-entry-exports";
 import type { ParsedExports } from "./parse-exports";
@@ -107,6 +107,8 @@ export class Project {
   private readonly input: string;
   private readonly glob: boolean;
   private readonly options: GenerateBundleOptions;
+  /** The modules the components and the barrel read, for one {@link build} and its updates. */
+  private graph = new ModuleGraph();
   private collected!: CollectedComponents;
   /** The entry barrel's resolved path, or `null` for a directory entry. */
   private entryFile: string | null = null;
@@ -136,7 +138,8 @@ export class Project {
 
   /** Collects and parses every component from scratch. */
   async build(): Promise<GenerateBundleResult> {
-    this.collected = collectComponents(this.input, this.glob, this.documentExports);
+    this.graph = new ModuleGraph();
+    this.collected = collectComponents(this.input, this.glob, this.documentExports, this.graph);
     this.globMergeState = createGlobMergeState(
       this.collected.allComponentEntries,
       this.collected.resolveComponentFilePath,
@@ -167,14 +170,22 @@ export class Project {
    */
   async update(changedFilePaths: string[]): Promise<ProjectUpdate> {
     const changed = changedFilePaths.map((path) => resolve(path));
-    // A rebuild may resolve imports against files added since the last pass.
-    resetDirectoryListings();
+    // A rebuild must see the changed files, and resolve imports against
+    // files added since the last pass.
+    this.graph.invalidate(...changed);
     if (changed.length === 0) return { result: this.assemble(), reparsed: [] };
 
     const added = this.entryFile !== null && changed.includes(this.entryFile) ? await this.recollect() : [];
     if (this.glob) {
       const { rootDir, exports, allComponentEntries, resolveComponentFilePath } = this.collected;
-      mergeGlobbedComponents(rootDir, exports, allComponentEntries, resolveComponentFilePath, this.globMergeState);
+      mergeGlobbedComponents(
+        this.graph,
+        rootDir,
+        exports,
+        allComponentEntries,
+        resolveComponentFilePath,
+        this.globMergeState,
+      );
     }
     this.indexEntries();
 
@@ -210,7 +221,7 @@ export class Project {
    */
   private async recollect(): Promise<string[]> {
     const previous = this.collected;
-    const next = collectComponents(this.input, this.glob, this.documentExports);
+    const next = collectComponents(this.input, this.glob, this.documentExports, this.graph);
     const added: string[] = [];
     for (const [name, entry] of Object.entries(next.exports)) {
       const path = next.resolveComponentFilePath(entry.source);
@@ -229,7 +240,7 @@ export class Project {
     this.entryDiagnostics = [];
     this.entryExports =
       this.documentExports && lstatSync(this.input).isFile()
-        ? await parseEntryExports(resolve(this.input), { diagnostics: this.entryDiagnostics })
+        ? await parseEntryExports(resolve(this.input), { diagnostics: this.entryDiagnostics, graph: this.graph })
         : [];
   }
 
@@ -372,8 +383,11 @@ export class Project {
       for (const [doc, diagnostics] of found) appendDiagnostics(doc, diagnostics);
     }
 
-    const reads = await resolveCrossFileCandidates(docs.values(), resolveComponentFilePath, (doc) =>
-      pendingByDoc.get(doc),
+    const reads = await resolveCrossFileCandidates(
+      docs.values(),
+      resolveComponentFilePath,
+      (doc) => pendingByDoc.get(doc),
+      this.graph,
     );
 
     const records = new Map<string, ComponentRecord>();

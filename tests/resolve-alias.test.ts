@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { clearConfigCache, resolveAliasLookup, resolvePathAlias, resolvePathAliasAbsolute } from "../src/resolve-alias";
+import { PathAliases } from "../src/resolve-alias";
 
 const TEST_DIR = join(import.meta.dir, ".tmp-alias-test");
 
@@ -26,16 +26,18 @@ function setupTestDir(structure: Record<string, string | Record<string, unknown>
   }
 }
 
-describe("resolvePathAlias", () => {
+describe("PathAliases", () => {
+  let aliases: PathAliases;
+
   beforeEach(() => {
-    clearConfigCache();
+    // A fresh instance per test: `TEST_DIR` is reused, and an instance reads each config once.
+    aliases = new PathAliases();
     if (existsSync(TEST_DIR)) {
       rmSync(TEST_DIR, { recursive: true, force: true });
     }
   });
 
   afterEach(() => {
-    clearConfigCache();
     if (existsSync(TEST_DIR)) {
       rmSync(TEST_DIR, { recursive: true, force: true });
     }
@@ -53,8 +55,8 @@ describe("resolvePathAlias", () => {
       },
     });
 
-    expect(resolvePathAlias("./components/Button.svelte", TEST_DIR)).toBe("./components/Button.svelte");
-    expect(resolvePathAlias("../utils/helper.ts", TEST_DIR)).toBe("../utils/helper.ts");
+    expect(aliases.relative("./components/Button.svelte", TEST_DIR)).toBe("./components/Button.svelte");
+    expect(aliases.relative("../utils/helper.ts", TEST_DIR)).toBe("../utils/helper.ts");
   });
 
   test("returns absolute paths unchanged", () => {
@@ -69,7 +71,7 @@ describe("resolvePathAlias", () => {
       },
     });
 
-    expect(resolvePathAlias("/absolute/path/to/file.ts", TEST_DIR)).toBe("/absolute/path/to/file.ts");
+    expect(aliases.relative("/absolute/path/to/file.ts", TEST_DIR)).toBe("/absolute/path/to/file.ts");
   });
 
   test("resolves $lib/* alias pattern to relative path", () => {
@@ -84,7 +86,7 @@ describe("resolvePathAlias", () => {
       },
     });
 
-    const result = resolvePathAlias("$lib/components/Button.svelte", TEST_DIR);
+    const result = aliases.relative("$lib/components/Button.svelte", TEST_DIR);
     expect(result).toBe("./src/lib/components/Button.svelte");
   });
 
@@ -100,7 +102,7 @@ describe("resolvePathAlias", () => {
       },
     });
 
-    const result = resolvePathAliasAbsolute("$lib/components/Button.svelte", TEST_DIR);
+    const result = aliases.absolute("$lib/components/Button.svelte", TEST_DIR);
     expect(result).toBe(join(TEST_DIR, "src/lib/components/Button.svelte"));
   });
 
@@ -116,7 +118,7 @@ describe("resolvePathAlias", () => {
       },
     });
 
-    const result = resolvePathAlias("$lib", TEST_DIR);
+    const result = aliases.relative("$lib", TEST_DIR);
     expect(result).toBe("./src/lib");
   });
 
@@ -133,10 +135,10 @@ describe("resolvePathAlias", () => {
       },
     });
 
-    const componentResult = resolvePathAlias("@components/Button.svelte", TEST_DIR);
+    const componentResult = aliases.relative("@components/Button.svelte", TEST_DIR);
     expect(componentResult).toBe("./src/components/Button.svelte");
 
-    const utilResult = resolvePathAlias("@utils/format.ts", TEST_DIR);
+    const utilResult = aliases.relative("@utils/format.ts", TEST_DIR);
     expect(utilResult).toBe("./src/utils/format.ts");
   });
 
@@ -146,7 +148,7 @@ describe("resolvePathAlias", () => {
     }
     mkdirSync(TEST_DIR, { recursive: true });
 
-    const result = resolvePathAlias("$lib/components/Button.svelte", TEST_DIR);
+    const result = aliases.relative("$lib/components/Button.svelte", TEST_DIR);
     expect(result).toBe("$lib/components/Button.svelte");
   });
 
@@ -160,7 +162,7 @@ describe("resolvePathAlias", () => {
       },
     });
 
-    const result = resolvePathAlias("$lib/components/Button.svelte", TEST_DIR);
+    const result = aliases.relative("$lib/components/Button.svelte", TEST_DIR);
     // Should return original since no paths are configured
     expect(result).toBe("$lib/components/Button.svelte");
   });
@@ -177,7 +179,7 @@ describe("resolvePathAlias", () => {
       },
     });
 
-    const result = resolvePathAlias("$lib/components/Button.svelte", TEST_DIR);
+    const result = aliases.relative("$lib/components/Button.svelte", TEST_DIR);
     expect(result).toBe("./src/lib/components/Button.svelte");
   });
 
@@ -193,7 +195,7 @@ describe("resolvePathAlias", () => {
       },
     });
 
-    const result = resolvePathAlias("~/components/Button.svelte", TEST_DIR);
+    const result = aliases.relative("~/components/Button.svelte", TEST_DIR);
     expect(result).toBe("./src/components/Button.svelte");
   });
 
@@ -218,10 +220,10 @@ describe("resolvePathAlias", () => {
     });
 
     // Both base and extended paths should work
-    const libResult = resolvePathAlias("$lib/utils/helper.ts", TEST_DIR);
+    const libResult = aliases.relative("$lib/utils/helper.ts", TEST_DIR);
     expect(libResult).toBe("./src/lib/utils/helper.ts");
 
-    const componentResult = resolvePathAlias("@components/Button.svelte", TEST_DIR);
+    const componentResult = aliases.relative("@components/Button.svelte", TEST_DIR);
     expect(componentResult).toBe("./src/components/Button.svelte");
   });
 
@@ -240,7 +242,7 @@ describe("resolvePathAlias", () => {
     const subDir = join(TEST_DIR, "src/components");
     mkdirSync(subDir, { recursive: true });
 
-    const result = resolvePathAlias("$lib/utils/helper.ts", subDir);
+    const result = aliases.relative("$lib/utils/helper.ts", subDir);
     // Should resolve relative to the subDir
     expect(result).toBe("../lib/utils/helper.ts");
   });
@@ -250,7 +252,7 @@ describe("resolvePathAlias", () => {
       "tsconfig.json": "{ invalid json }",
     });
 
-    const result = resolvePathAlias("$lib/components/Button.svelte", TEST_DIR);
+    const result = aliases.relative("$lib/components/Button.svelte", TEST_DIR);
     expect(result).toBe("$lib/components/Button.svelte");
   });
 
@@ -268,7 +270,7 @@ describe("resolvePathAlias", () => {
       }`,
     });
 
-    const result = resolvePathAlias("$lib/components/Button.svelte", TEST_DIR);
+    const result = aliases.relative("$lib/components/Button.svelte", TEST_DIR);
     expect(result).toBe("./src/lib/components/Button.svelte");
   });
 
@@ -289,7 +291,7 @@ describe("resolvePathAlias", () => {
     const subDir = join(TEST_DIR, "src");
     mkdirSync(subDir, { recursive: true });
 
-    const result = resolvePathAlias("$lib/components/Button.svelte", subDir);
+    const result = aliases.relative("$lib/components/Button.svelte", subDir);
     expect(result).toBe("./lib/components/Button.svelte");
   });
 
@@ -305,7 +307,7 @@ describe("resolvePathAlias", () => {
       },
     });
 
-    const result = resolvePathAlias("$lib/components/Button.svelte", TEST_DIR);
+    const result = aliases.relative("$lib/components/Button.svelte", TEST_DIR);
     expect(result).toBe("./src/lib/components/Button.svelte");
   });
 
@@ -322,7 +324,7 @@ describe("resolvePathAlias", () => {
       "lib/Button.svelte": "<div />",
     });
 
-    const result = resolvePathAlias("$lib/Button.svelte", TEST_DIR);
+    const result = aliases.relative("$lib/Button.svelte", TEST_DIR);
     expect(result).toBe("./lib/Button.svelte");
   });
 
@@ -339,12 +341,12 @@ describe("resolvePathAlias", () => {
       },
     });
 
-    const result = resolvePathAlias("$lib/components/Button.svelte", TEST_DIR);
+    const result = aliases.relative("$lib/components/Button.svelte", TEST_DIR);
     expect(result).toBe("./special/Button.svelte");
   });
 
   test("reports an unresolved alias when no tsconfig/jsconfig exists", () => {
-    const result = resolveAliasLookup("$lib/Button.svelte", TEST_DIR);
+    const result = aliases.lookup("$lib/Button.svelte", TEST_DIR);
     expect(result.unresolved).toBe(true);
     expect(result.resolved).toBe("$lib/Button.svelte");
     expect(result.searched).toBe("no tsconfig/jsconfig paths found");
@@ -362,13 +364,13 @@ describe("resolvePathAlias", () => {
       },
     });
 
-    const result = resolveAliasLookup("$missing/Button.svelte", TEST_DIR);
+    const result = aliases.lookup("$missing/Button.svelte", TEST_DIR);
     expect(result.unresolved).toBe(true);
     expect(result.resolved).toBe("$missing/Button.svelte");
   });
 
   test("does not report a relative specifier as unresolved", () => {
-    const result = resolveAliasLookup("./Button.svelte", TEST_DIR);
+    const result = aliases.lookup("./Button.svelte", TEST_DIR);
     expect(result.unresolved).toBe(false);
   });
 });

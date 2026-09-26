@@ -1,10 +1,9 @@
-import { existsSync } from "node:fs";
 import { dirname } from "node:path";
 import type { ComponentDocApi } from "./bundle";
 import type { PendingCallDefaultCandidate } from "./ComponentParser";
 import { type CrossFilePass, dropUnknownTypeDiagnostic, findCandidateProp, setResolvedField } from "./cross-file-pass";
 import { findModuleExport, type ResolveContext } from "./module-exports";
-import { resolveModuleFile } from "./module-graph";
+import type { ModuleGraph } from "./module-graph";
 
 export type CallDefaultFailureReason = "module-not-found" | "export-not-found" | "return-type-unresolved";
 
@@ -19,10 +18,10 @@ export interface CallDefaultResolution {
 const FILE_EXTENSION_REGEX = /\.[^./\\]+$/;
 
 /** Sibling `foo.d.ts` for `foo.js` when it exists. */
-function siblingDeclarationFile(resolvedFile: string): string | null {
+function siblingDeclarationFile(resolvedFile: string, graph: ModuleGraph): string | null {
   if (resolvedFile.endsWith(".d.ts")) return null;
   const dtsPath = resolvedFile.replace(FILE_EXTENSION_REGEX, ".d.ts");
-  return existsSync(dtsPath) ? dtsPath : null;
+  return graph.exists(dtsPath) ? dtsPath : null;
 }
 
 /**
@@ -44,14 +43,14 @@ export function resolveCallDefaultCandidates(
       return { candidate };
     }
 
-    const resolvedFile = resolveModuleFile(candidate.importSource, fromDir);
+    const resolvedFile = ctx.graph.resolve(candidate.importSource, fromDir);
     if (!resolvedFile) return { candidate, failureReason: "module-not-found" };
 
     const match = findModuleExport(resolvedFile, candidate.importedName, ctx);
     if (!match) return { candidate, failureReason: "export-not-found" };
     if (match.returnType) return { candidate, type: match.returnType };
 
-    const siblingDts = siblingDeclarationFile(resolvedFile);
+    const siblingDts = siblingDeclarationFile(resolvedFile, ctx.graph);
     if (siblingDts) {
       const dtsMatch = findModuleExport(siblingDts, candidate.importedName, ctx);
       if (dtsMatch?.returnType) return { candidate, type: dtsMatch.returnType };

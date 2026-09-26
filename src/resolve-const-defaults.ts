@@ -3,7 +3,6 @@ import type { ComponentDocApi } from "./bundle";
 import type { PendingConstDefaultCandidate } from "./ComponentParser";
 import { type CrossFilePass, dropUnknownTypeDiagnostic, findCandidateProp, setResolvedField } from "./cross-file-pass";
 import { findImportedExport, type InternalExport, type PrimitiveLiteral, type ResolveContext } from "./module-exports";
-import { resolveModuleFile } from "./module-graph";
 
 export interface ConstDefaultResolution {
   candidate: PendingConstDefaultCandidate;
@@ -27,7 +26,7 @@ export function resolveConstDefaultCandidates(
   const fromDir = dirname(componentFilePath);
 
   return candidates.map((candidate): ConstDefaultResolution => {
-    const resolvedFile = resolveModuleFile(candidate.importSource, fromDir);
+    const resolvedFile = ctx.graph.resolve(candidate.importSource, fromDir);
     if (!resolvedFile) return { candidate };
 
     const match = findImportedExport(resolvedFile, candidate, ctx);

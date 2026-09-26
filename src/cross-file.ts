@@ -2,6 +2,7 @@ import type { ComponentDocApi, ResolveComponentFilePath } from "./bundle";
 import type { PendingCrossFileCandidates } from "./ComponentParser";
 import type { CrossFilePass } from "./cross-file-pass";
 import { createResolveContext, type ResolveContext } from "./module-exports";
+import type { ModuleGraph } from "./module-graph";
 import { loadParserStack } from "./parser-stack";
 import { callDefaultsPass } from "./resolve-call-defaults";
 import { constDefaultsPass } from "./resolve-const-defaults";
@@ -39,6 +40,7 @@ export async function resolveCrossFileCandidates(
   scope: Iterable<ComponentDocApi>,
   resolveComponentFilePath: ResolveComponentFilePath,
   pendingFor: (component: ComponentDocApi) => PendingCrossFileCandidates | undefined,
+  graph: ModuleGraph,
 ): Promise<Map<string, string[]>> {
   const work: Array<{ component: ComponentDocApi; passes: BoundPass[] }> = [];
   for (const component of scope) {
@@ -55,11 +57,9 @@ export async function resolveCrossFileCandidates(
   await loadParserStack();
 
   // Per-component contexts keep each result independent of order; the
-  // modules they parse are shared.
-  const modules: ResolveContext["modules"] = new Map();
-
+  // graph's parses are shared.
   for (const { component, passes } of work) {
-    const ctx = createResolveContext(modules);
+    const ctx = createResolveContext(graph);
     const filePath = resolveComponentFilePath(component.filePath);
     for (const pass of passes) pass(component, filePath, ctx);
     readsByFilePath.set(component.filePath, Array.from(ctx.cache.keys()));

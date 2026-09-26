@@ -10,7 +10,7 @@ import type {
 import type { CrossFilePass } from "./cross-file-pass";
 import { createDiagnostic } from "./diagnostics";
 import { findImportedExport, type ResolveContext } from "./module-exports";
-import { type AstNode, asNode, resolveModuleFile } from "./module-graph";
+import { type AstNode, asNode } from "./module-graph";
 import { compareSerializedEvents } from "./parser/event-order";
 import type { DetailTypeSource } from "./parser/events";
 import { type WalkableNode, walkNodes } from "./parser/walk";
@@ -56,7 +56,7 @@ export function resolveDispatchEscapeCandidates(
   const fromDir = dirname(componentFilePath);
 
   return candidates.map((candidate): DispatchEscapeResolution => {
-    const resolvedFile = resolveModuleFile(candidate.importSource, fromDir);
+    const resolvedFile = ctx.graph.resolve(candidate.importSource, fromDir);
     if (!resolvedFile) return { candidate, failureReason: "module-not-found" };
 
     const fn = findImportedExport(resolvedFile, candidate, ctx)?.functionNode;

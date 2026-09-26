@@ -1,12 +1,22 @@
+import type { Dirent } from "node:fs";
 import { readFileSync, statSync } from "node:fs";
 import { basename, dirname, isAbsolute, join, resolve } from "node:path";
-import { directoryEntry, directoryHasEntry, typeScriptCounterpart } from "./fs-listing";
+import { type Program, parse as parseJavaScript } from "acorn";
+import { DirectoryListings } from "./fs-listing";
 import { warn } from "./logger";
 import { getParserStack } from "./parser-stack";
-import { resolvePathAliasAbsolute } from "./resolve-alias";
+import { MODULE_EXTENSIONS } from "./path";
+import { PathAliases } from "./resolve-alias";
 
-/** Extensions probed when resolving a bare module specifier to a file. */
-const CANDIDATE_EXTENSIONS = [".ts", ".mts", ".cts", ".tsx", ".js", ".mjs", ".cjs", ".jsx", ".d.ts"];
+const JS_FAMILY_EXTENSION_REGEX = /\.[mc]?jsx?$/;
+
+/** What each `.js`-family extension maps to under TypeScript's module resolution, in the order `tsc` tries them. */
+const TYPESCRIPT_COUNTERPART_EXTENSIONS: Record<string, string[]> = {
+  ".js": [".ts", ".tsx", ".d.ts"],
+  ".jsx": [".tsx", ".d.ts"],
+  ".mjs": [".mts", ".d.mts"],
+  ".cjs": [".cts", ".d.cts"],
+};
 
 /** Minimal AST node shape exposed by the Svelte/acorn-typescript parser. */
 export interface AstNode {
@@ -49,52 +59,142 @@ function isPathSpecifier(specifier: string): boolean {
 }
 
 /**
- * Resolves a module specifier to an on-disk source file.
+ * The files one project reads besides its components: how import
+ * specifiers resolve to them, and their parses. Directory listings,
+ * tsconfig/jsconfig `paths`, and parsed modules are cached for the
+ * graph's lifetime, one build or watch session, so nothing a project read
+ * leaks into the next.
  *
- * Tries the path verbatim, with each candidate extension, then an
- * `index.*` file when the specifier points at a directory, and finally the
- * `.ts` file a missing `.js` specifier stands for. Only relative, absolute,
- * and tsconfig/jsconfig path-alias specifiers resolve; a bare package
- * specifier (`"helpers"`) never names a file next to the importer.
- *
- * @example
- * ```ts
- * resolveModuleFile("./utils", "/abs/src") // "/abs/src/utils.ts"
- * ```
+ * Export lookups build on {@link parse} in `module-exports.ts`; they're
+ * cached per lookup rather than here, since an import cycle leaves one
+ * lookup's view of a module incomplete.
  */
-export function resolveModuleFile(specifier: string, fromDir: string): string | null {
-  const aliased = resolvePathAliasAbsolute(specifier, fromDir);
-  if (aliased === specifier && !isPathSpecifier(specifier)) return null;
-  const base = resolve(fromDir, aliased);
-  const parentDir = dirname(base);
-  const baseName = basename(base);
+export class ModuleGraph {
+  /** tsconfig/jsconfig `paths` mappings. */
+  readonly aliases = new PathAliases();
+  private readonly listings = new DirectoryListings();
+  /** Per file: its text and top-level statements, from the TypeScript-aware parser. */
+  private readonly modules = new Map<string, ParsedModule>();
+  /** Per file: the last plain-JavaScript AST read for it, reused while its source is unchanged. */
+  private readonly programs = new Map<string, { source: string; ast: Program }>();
 
-  if (directoryHasEntry(parentDir, baseName)) {
-    // The cached listing already knows the entry's type; only a symlink,
-    // whose target's type the listing doesn't record, or a name that
-    // matched by case/normalization variant (not in the listing under this
-    // exact name) still needs the `stat`.
-    const entry = directoryEntry(parentDir, baseName);
-    const stat = entry && !entry.isSymbolicLink() ? entry : statSync(base, { throwIfNoEntry: false });
-    if (stat?.isFile()) return base;
+  /** The entries of `dir`, or `null` when it can't be read. */
+  listDirectory(dir: string): Dirent[] | null {
+    return this.listings.entries(dir);
+  }
 
-    for (const ext of CANDIDATE_EXTENSIONS) {
-      if (directoryHasEntry(parentDir, baseName + ext)) return base + ext;
-    }
+  /** Whether `filePath` exists, from its directory's listing. */
+  exists(filePath: string): boolean {
+    return this.listings.has(dirname(filePath), basename(filePath));
+  }
 
-    if (stat?.isDirectory()) {
-      for (const ext of CANDIDATE_EXTENSIONS) {
-        if (directoryHasEntry(base, `index${ext}`)) return join(base, `index${ext}`);
+  /**
+   * Resolves a module specifier to an on-disk source file.
+   *
+   * Tries the path verbatim, with each of {@link MODULE_EXTENSIONS}, then an
+   * `index.*` file when the specifier points at a directory, and finally the
+   * `.ts` file a missing `.js` specifier stands for. Only relative, absolute,
+   * and tsconfig/jsconfig path-alias specifiers resolve; a bare package
+   * specifier (`"helpers"`) never names a file next to the importer.
+   *
+   * @param fromDir - The importing file's directory.
+   *
+   * @example
+   * ```ts
+   * graph.resolve("./utils", "/abs/src") // "/abs/src/utils.ts"
+   * ```
+   */
+  resolve(specifier: string, fromDir: string): string | null {
+    const aliased = this.aliases.absolute(specifier, fromDir);
+    if (aliased === specifier && !isPathSpecifier(specifier)) return null;
+    const base = resolve(fromDir, aliased);
+    const parentDir = dirname(base);
+    const baseName = basename(base);
+
+    if (this.listings.has(parentDir, baseName)) {
+      // The cached listing already knows the entry's type; only a symlink,
+      // whose target's type the listing doesn't record, or a name that
+      // matched by case/normalization variant (not in the listing under this
+      // exact name) still needs the `stat`.
+      const entry = this.listings.entry(parentDir, baseName);
+      const stat = entry && !entry.isSymbolicLink() ? entry : statSync(base, { throwIfNoEntry: false });
+      if (stat?.isFile()) return base;
+
+      for (const ext of MODULE_EXTENSIONS) {
+        if (this.listings.has(parentDir, baseName + ext)) return base + ext;
       }
+
+      if (stat?.isDirectory()) {
+        for (const ext of MODULE_EXTENSIONS) {
+          if (this.listings.has(base, `index${ext}`)) return join(base, `index${ext}`);
+        }
+      }
+      return null;
     }
-    return null;
+
+    for (const ext of MODULE_EXTENSIONS) {
+      if (this.listings.has(parentDir, baseName + ext)) return base + ext;
+    }
+
+    return this.typeScriptCounterpart(base) ?? null;
   }
 
-  for (const ext of CANDIDATE_EXTENSIONS) {
-    if (directoryHasEntry(parentDir, baseName + ext)) return base + ext;
+  /**
+   * `filePath`'s text and top-level statements (see {@link parseModule}),
+   * parsed once. Needs the parser stack loaded.
+   */
+  parse(filePath: string): ParsedModule {
+    let parsed = this.modules.get(filePath);
+    if (parsed === undefined) {
+      parsed = parseModule(filePath);
+      this.modules.set(filePath, parsed);
+    }
+    return parsed;
   }
 
-  return typeScriptCounterpart(base) ?? null;
+  /**
+   * `source` parsed as plain JavaScript, as a component barrel is read
+   * (TypeScript syntax throws). Reused while `filePath`'s source is unchanged.
+   */
+  parseJavaScript(filePath: string, source: string): Program {
+    const cached = this.programs.get(filePath);
+    if (cached?.source === source) return cached.ast;
+    const ast = parseJavaScript(source, { ecmaVersion: "latest", sourceType: "module" });
+    this.programs.set(filePath, { source, ast });
+    return ast;
+  }
+
+  /**
+   * Forgets the parses of `filePaths`, and every directory listing: an edit
+   * can add or remove files anywhere, so the next lookups re-read the
+   * directories they probe. Watch mode calls this with each batch of
+   * changed files.
+   */
+  invalidate(...filePaths: string[]): void {
+    this.listings.clear();
+    for (const filePath of filePaths) {
+      this.modules.delete(filePath);
+      this.programs.delete(filePath);
+    }
+  }
+
+  /**
+   * The TypeScript file a `.js`-family path names when only that file exists:
+   * TypeScript projects import `./util.ts` as `./util.js` (and a Svelte 5
+   * `x.svelte.ts` module as `./x.svelte.js`), since that's the emitted name.
+   */
+  private typeScriptCounterpart(filePath: string): string | undefined {
+    const extension = JS_FAMILY_EXTENSION_REGEX.exec(filePath)?.[0];
+    if (extension === undefined) return undefined;
+
+    const stem = filePath.slice(0, -extension.length);
+    const dir = dirname(stem);
+    const name = basename(stem);
+    for (const candidate of TYPESCRIPT_COUNTERPART_EXTENSIONS[extension] ?? []) {
+      if (this.listings.has(dir, name + candidate)) return stem + candidate;
+    }
+    return undefined;
+  }
 }
 
 /**
@@ -106,7 +206,7 @@ export function resolveModuleFile(specifier: string, fromDir: string): string | 
  * (`<script module>` / `<script context="module">`), the only place a
  * component declares exports other than its default.
  */
-export function parseModule(filePath: string): ParsedModule {
+function parseModule(filePath: string): ParsedModule {
   let text: string;
   try {
     text = readFileSync(filePath, "utf-8");
