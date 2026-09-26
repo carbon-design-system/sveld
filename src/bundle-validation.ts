@@ -2,13 +2,15 @@
  * Checks that span components, run on the whole bundle once every component
  * has parsed and been resolved. Each returns the diagnostics it found.
  */
-import { existsSync, statSync } from "node:fs";
-import { dirname, extname, resolve } from "node:path";
+import { dirname } from "node:path";
 import type { ComponentDocApi, ComponentDocs, ResolveComponentFilePath } from "./bundle";
 import { createDiagnostic, type SveldDiagnostic } from "./diagnostics";
+import type { ModuleGraph } from "./module-graph";
+import { MODULE_EXTENSIONS } from "./path";
 import { exportsTypeName, propsTypeName } from "./writer/writer-ts-definitions-core";
 
-const RESOLVABLE_EXTENDS_EXTENSIONS = [".ts", ".tsx", ".d.ts", ".svelte"];
+/** An import's extensions, and a component's: `"./Base"` may name `Base.svelte`. */
+const EXTENDS_TARGET_EXTENSIONS = [...MODULE_EXTENSIONS, ".svelte"];
 
 /** Strips a matching pair of quote characters from an `@extends`/`@extendProps` import specifier, stored verbatim. */
 function stripQuotes(text: string): string | undefined {
@@ -18,19 +20,6 @@ function stripQuotes(text: string): string | undefined {
   const last = trimmed[trimmed.length - 1];
   if ((first === '"' || first === "'" || first === "`") && first === last) {
     return trimmed.slice(1, -1);
-  }
-  return undefined;
-}
-
-/** Resolves a relative/absolute `@extends` import specifier to a file on disk, trying common extensions. */
-function resolveExtendsTargetPath(fromAbsoluteFilePath: string, specifier: string): string | undefined {
-  const base = resolve(dirname(fromAbsoluteFilePath), specifier);
-  if (existsSync(base) && statSync(base).isFile()) return base;
-  if (extname(specifier) !== "") return undefined;
-
-  for (const ext of RESOLVABLE_EXTENDS_EXTENSIONS) {
-    const candidate = `${base}${ext}`;
-    if (existsSync(candidate)) return candidate;
   }
   return undefined;
 }
@@ -71,12 +60,13 @@ export function validateModuleReExportNames(component: ComponentDocApi): SveldDi
  * bundled target, since `Base & $Props` silently collapses that prop to
  * `never` in the generated type.
  *
- * Bare/package specifiers (not starting with `.` or `/`) aren't verifiable
- * without a module resolver and are left alone.
+ * The target resolves as an import of it would (see `ModuleGraph.resolve`).
+ * Bare/package specifiers (not starting with `.` or `/`) are left alone.
  */
 export function createExtendsTargetValidator(
   components: ComponentDocs,
   resolveComponentFilePath: ResolveComponentFilePath,
+  graph: ModuleGraph,
 ): (component: ComponentDocApi) => SveldDiagnostic[] {
   const componentsByAbsolutePath = new Map(
     Array.from(components.values()).map((component) => [resolveComponentFilePath(component.filePath), component]),
@@ -90,9 +80,9 @@ export function createExtendsTargetValidator(
     if (specifier === undefined || (!specifier.startsWith(".") && !specifier.startsWith("/"))) return [];
 
     const fromAbsoluteFilePath = resolveComponentFilePath(component.filePath);
-    const targetPath = resolveExtendsTargetPath(fromAbsoluteFilePath, specifier);
+    const targetPath = graph.resolve(specifier, dirname(fromAbsoluteFilePath), EXTENDS_TARGET_EXTENSIONS);
 
-    if (targetPath === undefined) {
+    if (targetPath === null) {
       return [
         createDiagnostic({
           component: component.filePath,
