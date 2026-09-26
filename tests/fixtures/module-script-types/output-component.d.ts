@@ -21,9 +21,6 @@ export type ModuleScriptTypesProps = {
    */
   mode?: Mode;
 
-  /**
-   * @default undefined
-   */
   internal?: Internal | undefined;
 };
 

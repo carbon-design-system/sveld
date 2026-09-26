@@ -8,7 +8,6 @@ type $RestProps = SvelteHTMLElements["div"];
 type $Props = {
   /**
    * Set the size of the input
-   * @default undefined
    */
   size?: "sm" | "xl";
 
@@ -26,13 +25,11 @@ type $Props = {
 
   /**
    * Specify the maximum value
-   * @default undefined
    */
   max?: number;
 
   /**
    * Specify the minimum value
-   * @default undefined
    */
   min?: number;
 
@@ -128,7 +125,6 @@ type $Props = {
 
   /**
    * Specify a name attribute for the input
-   * @default undefined
    */
   name?: string;
 

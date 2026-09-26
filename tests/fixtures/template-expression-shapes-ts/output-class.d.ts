@@ -6,9 +6,6 @@ export type TemplateExpressionShapesTsProps = {
    */
   size?: "sm" | "lg";
 
-  /**
-   * @default undefined
-   */
   label?: string | undefined;
 
   /**

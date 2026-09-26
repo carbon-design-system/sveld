@@ -13,7 +13,6 @@ type $RestProps = SvelteHTMLElements["button"];
 type $Props = {
   /**
    * Specify the size of the overflow menu
-   * @default undefined
    */
   size?: "sm" | "xl";
 
@@ -43,7 +42,6 @@ type $Props = {
 
   /**
    * Specify the menu options class
-   * @default undefined
    */
   menuOptionsClass?: string;
 
@@ -55,7 +53,6 @@ type $Props = {
 
   /**
    * Specify the icon class
-   * @default undefined
    */
   iconClass?: string;
 

@@ -7,7 +7,6 @@ type $Props = {
   /**
    * Specify the ARIA label for the nav
    * @deprecated use "aria-label" instead
-   * @default undefined
    */
   ariaLabel?: string;
 

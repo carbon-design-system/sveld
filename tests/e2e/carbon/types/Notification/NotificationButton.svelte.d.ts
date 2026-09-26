@@ -18,7 +18,6 @@ type $Props = {
 
   /**
    * Specify the title of the icon
-   * @default undefined
    */
   title?: string;
 

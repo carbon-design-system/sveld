@@ -65,7 +65,6 @@ export type NonLiteralDefaultsProps = {
 
   /**
    * Optional handler with undefined
-   * @default undefined
    */
   handler?: any;
 

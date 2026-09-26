@@ -10,7 +10,6 @@ export type BreakpointValue = 320 | 672 | 1056 | 1312 | 1584;
 export type TypedefEventSharedBlockProps = {
   /**
    * Determine the current breakpoint size.
-   * @default undefined
    */
   size?: BreakpointSize;
 

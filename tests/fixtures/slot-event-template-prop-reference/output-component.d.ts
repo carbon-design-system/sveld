@@ -1,9 +1,6 @@
 import type { SvelteComponent, ComponentConstructorOptions, ComponentInternals } from "svelte";
 
 export type SlotEventTemplatePropReferenceProps<Icon = any> = {
-  /**
-   * @default undefined
-   */
   icon?: Icon;
 };
 

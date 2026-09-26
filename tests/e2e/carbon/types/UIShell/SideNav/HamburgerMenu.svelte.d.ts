@@ -6,7 +6,6 @@ type $RestProps = SvelteHTMLElements["button"];
 type $Props = {
   /**
    * Specify the ARIA label for the button
-   * @default undefined
    */
   ariaLabel?: string;
 

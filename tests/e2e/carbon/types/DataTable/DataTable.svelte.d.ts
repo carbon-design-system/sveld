@@ -64,7 +64,6 @@ type $Props<Row extends DataTableRow = DataTableRow> = {
 
   /**
    * Set the size of the data table
-   * @default undefined
    */
   size?: "compact" | "short" | "medium" | "tall";
 

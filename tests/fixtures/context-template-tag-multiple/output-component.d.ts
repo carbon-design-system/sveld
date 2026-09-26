@@ -6,14 +6,8 @@ export type DemoWrapperContext<Value extends string = string, Icon = any> = {
 };
 
 export type ContextTemplateTagMultipleProps<Value extends string = string, Icon = any> = {
-  /**
-   * @default undefined
-   */
   selected?: Value | undefined;
 
-  /**
-   * @default undefined
-   */
   icon?: Icon;
 
   children?: (this: void) => void;

@@ -40,7 +40,6 @@ type $Props = {
 
   /**
    * Specify the size of the dropdown field
-   * @default undefined
    */
   size?: "sm" | "lg" | "xl";
 
@@ -106,13 +105,11 @@ type $Props = {
 
   /**
    * Specify the list box label
-   * @default undefined
    */
   label?: string;
 
   /**
    * Override the default translation ids
-   * @default undefined
    */
   translateWithId?: (id: any) => string;
 
@@ -124,7 +121,6 @@ type $Props = {
 
   /**
    * Specify a name attribute for the list box
-   * @default undefined
    */
   name?: string;
 

@@ -6,13 +6,11 @@ type $RestProps = SvelteHTMLElements["a"] & SvelteHTMLElements["p"];
 type $Props = {
   /**
    * Specify the size of the link
-   * @default undefined
    */
   size?: "sm" | "lg";
 
   /**
    * Specify the href value
-   * @default undefined
    */
   href?: string;
 

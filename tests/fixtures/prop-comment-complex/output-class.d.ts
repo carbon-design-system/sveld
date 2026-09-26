@@ -23,7 +23,6 @@ export type PropCommentComplexProps = {
    *   <Icon slot="icon" size={20} />
    * </Button>
    * ```
-   * @default undefined
    */
   icon?: any;
 

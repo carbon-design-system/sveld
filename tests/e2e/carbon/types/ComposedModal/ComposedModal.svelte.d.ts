@@ -12,7 +12,6 @@ type $RestProps = SvelteHTMLElements["div"];
 type $Props = {
   /**
    * Set the size of the composed modal
-   * @default undefined
    */
   size?: "xs" | "sm" | "lg";
 

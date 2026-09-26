@@ -18,7 +18,6 @@ type $Props = {
 
   /**
    * Specify the text
-   * @default undefined
    */
   text?: string;
 

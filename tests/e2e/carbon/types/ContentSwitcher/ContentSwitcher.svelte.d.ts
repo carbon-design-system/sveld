@@ -25,7 +25,6 @@ type $Props = {
 
   /**
    * Specify the size of the content switcher
-   * @default undefined
    */
   size?: "sm" | "xl";
 

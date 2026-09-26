@@ -18,7 +18,6 @@ type $Props = {
 
   /**
    * Specify a class for the primary button
-   * @default undefined
    */
   primaryClass?: string;
 
@@ -30,7 +29,6 @@ type $Props = {
 
   /**
    * Specify a class for the secondary button
-   * @default undefined
    */
   secondaryClass?: string;
 

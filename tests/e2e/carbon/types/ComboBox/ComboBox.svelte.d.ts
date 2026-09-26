@@ -35,7 +35,6 @@ type $Props = {
 
   /**
    * Set the size of the combobox
-   * @default undefined
    */
   size?: "sm" | "xl";
 
@@ -95,7 +94,6 @@ type $Props = {
 
   /**
    * Override the default translation ids
-   * @default undefined
    */
   translateWithId?: (id: any) => string;
 
@@ -107,7 +105,6 @@ type $Props = {
 
   /**
    * Specify a name attribute for the input
-   * @default undefined
    */
   name?: string;
 

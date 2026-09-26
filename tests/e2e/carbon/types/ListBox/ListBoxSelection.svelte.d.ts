@@ -8,7 +8,6 @@ type $RestProps = SvelteHTMLElements["div"];
 type $Props = {
   /**
    * Specify the number of selected items
-   * @default undefined
    */
   selectionCount?: any;
 

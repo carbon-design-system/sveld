@@ -432,9 +432,10 @@ function genPropDef(
      * `conciseFunctionDefaultText`); anything more elaborate is omitted so
      * docs aren't cluttered with function bodies (#203). An explicit
      * `@default` in the description always wins either way. Props with no
-     * initializer at all never get a `@default` line.
+     * initializer at all never get a `@default` line, and neither does
+     * `= undefined`, which the optional `?` already says.
      */
-    const suppressDefault = descriptionHasDefault || prop.value === undefined;
+    const suppressDefault = descriptionHasDefault || prop.value === undefined || prop.value === "undefined";
 
     const prop_comments = [
       createPropComment(prop.description, prop.deprecated, prop.tags, commentLevel),

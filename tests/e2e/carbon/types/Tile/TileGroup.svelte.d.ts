@@ -12,7 +12,6 @@ type $RestProps = SvelteHTMLElements["fieldset"];
 type $Props = {
   /**
    * Specify the selected tile value
-   * @default undefined
    */
   selected?: string;
 
