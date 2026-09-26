@@ -144,6 +144,7 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
     try {
       const { result: next } = await bundle.update(changed);
       await writeOutput(next, mergedOpts, input);
+      next.cache?.save();
     } catch (error) {
       console.error("sveld: failed to regenerate types in watch mode:", error);
     }
@@ -194,8 +195,11 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
         // later flush's failure: an error here must degrade to "no output
         // yet" rather than crashing the dev server on startup.
         try {
-          bundle = await createSveldBundle(input, mergedOpts.glob === true, mergedOpts.documentExports === true);
-          await writeOutput(await bundle.result, mergedOpts, input);
+          bundle = await createSveldBundle(input, mergedOpts.glob === true, toGenerateBundleOptions(mergedOpts));
+          const initial = await bundle.result;
+          await writeOutput(initial, mergedOpts, input);
+          // Persists the generated `.d.ts` text writeOutput just cached.
+          initial.cache?.save();
         } catch (error) {
           console.error("sveld: failed to generate initial types in watch mode:", error);
         }

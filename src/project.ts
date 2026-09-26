@@ -11,16 +11,24 @@ import type {
 } from "./bundle";
 import { createExtendsTargetValidator, validateModuleReExportNames } from "./bundle-validation";
 import type { ComponentParseResult, ParsedComponent, PendingCrossFileCandidates } from "./ComponentParser";
-import { type CollectedComponents, collectComponents, componentModuleName } from "./collect-components";
+import {
+  type CollectedComponents,
+  collectComponents,
+  componentModuleName,
+  createGlobMergeState,
+  type GlobMergeState,
+  mergeGlobbedComponents,
+} from "./collect-components";
 import { resolveCrossFileCandidates } from "./cross-file";
 import { buildReverseDeps, expandAffected } from "./dependency-graph";
 import { appendDiagnostics, applyDiagnosticIgnores, dedupeDiagnostics, type SveldDiagnostic } from "./diagnostics";
 import { checkComponentExamples } from "./example-check";
+import { resetDirectoryListings } from "./fs-listing";
 import { hashSource, ParseCache, resolveCacheFilePath } from "./parse-cache";
 import { type EntryExports, parseEntryExports } from "./parse-entry-exports";
 import type { ParsedExports } from "./parse-exports";
 import { getParserStack, loadParserStack } from "./parser-stack";
-import { hasSvelteExtension, normalizeSeparators } from "./path";
+import { hasSvelteExtension, normalizeSeparators, SVELTE_EXT_REGEX } from "./path";
 
 type ComponentEntry = [string, ParsedExports[string]];
 
@@ -40,6 +48,20 @@ interface ComponentRecord {
 interface CanonicalEntry {
   moduleName: string;
   filePath: NormalizedPath;
+}
+
+/** Result of {@link Project.update}. */
+export interface ProjectUpdate {
+  /** The full, updated result (all components, with the affected ones re-parsed). */
+  result: GenerateBundleResult;
+  /**
+   * Absolute paths of the components that were re-parsed: the changed files,
+   * newly barrel-exported components, and components that read a changed
+   * module, plus their transitive dependents via `@extendProps` / `@extends`
+   * or a typedef `import("./x")` reference. Other components are reused
+   * from the previous parse.
+   */
+  reparsed: string[];
 }
 
 /**
@@ -78,14 +100,20 @@ export function reportParseErrors(errors: ComponentParseError[]): void {
  * checks on each result. Keeps one record per component file, which both
  * of a result's maps are views of.
  *
- * Every {@link build} returns a fresh result, with fresh maps and component
- * objects, so a caller holding an older result never sees it change.
+ * {@link build} parses everything; {@link update} then re-parses only the
+ * components a set of changed files affects (watch mode). Each returns a
+ * fresh result, with fresh maps and component objects, so a caller holding
+ * an older result never sees it change.
  */
 export class Project {
   private readonly input: string;
   private readonly glob: boolean;
   private readonly options: GenerateBundleOptions;
   private collected!: CollectedComponents;
+  /** The entry barrel's resolved path, or `null` for a directory entry. */
+  private entryFile: string | null = null;
+  /** Dedupes the files `update()` re-globs, across updates. */
+  private globMergeState!: GlobMergeState;
   private cache: ParseCache | undefined;
   private entryExports: EntryExports = [];
   /** The barrel's own diagnostics, attributed to it rather than a component. */
@@ -111,6 +139,11 @@ export class Project {
   /** Collects and parses every component from scratch. */
   async build(): Promise<GenerateBundleResult> {
     this.collected = collectComponents(this.input, this.glob, this.documentExports);
+    this.globMergeState = createGlobMergeState(
+      this.collected.allComponentEntries,
+      this.collected.resolveComponentFilePath,
+    );
+    this.entryFile = lstatSync(this.input).isFile() ? resolve(this.input) : null;
     // `cache` is on by default; only an explicit `false` disables it.
     this.cache =
       this.options.cache === false
@@ -128,6 +161,82 @@ export class Project {
     await this.settle(parsed);
 
     return this.assemble();
+  }
+
+  /**
+   * Re-parses the components `changedFilePaths` affect and returns the
+   * updated result. A change to the entry barrel re-reads its exports; under
+   * `glob`, new component files are picked up. A non-`.svelte` file only
+   * matters as an `@extends` / typedef `import()` target or a module the
+   * cross-file pass read. Must follow a {@link build}.
+   */
+  async update(changedFilePaths: string[]): Promise<ProjectUpdate> {
+    const changed = changedFilePaths.map((path) => resolve(path));
+    // A rebuild may resolve imports against files added since the last pass.
+    resetDirectoryListings();
+    if (changed.length === 0) return { result: this.assemble(), reparsed: [] };
+
+    const added = this.entryFile !== null && changed.includes(this.entryFile) ? await this.recollect() : [];
+    if (this.glob) {
+      const { rootDir, exports, allComponentEntries, resolveComponentFilePath } = this.collected;
+      mergeGlobbedComponents(rootDir, exports, allComponentEntries, resolveComponentFilePath, this.globMergeState);
+    }
+    this.indexEntries();
+
+    // A file the barrel stopped exporting (and, under `glob`, that no longer
+    // exists) is out of the bundle, along with its parse error.
+    const listed = this.componentPaths();
+    for (const path of this.records.keys()) {
+      if (!listed.has(path)) this.records.delete(path);
+    }
+    for (const path of this.parseErrors.keys()) {
+      if (!listed.has(path)) this.parseErrors.delete(path);
+    }
+
+    const reverseDeps = buildReverseDeps(Array.from(this.records, ([path, { component }]) => [path, component]));
+    const relevant = changed.filter((path) => SVELTE_EXT_REGEX.test(path) || reverseDeps.has(path));
+    const readers = Array.from(this.records).flatMap(([path, { crossFileReads }]) =>
+      crossFileReads?.some((module) => changed.includes(module)) ? [path] : [],
+    );
+    if (relevant.length === 0 && added.length === 0 && readers.length === 0) {
+      return { result: this.assemble(), reparsed: [] };
+    }
+
+    const affected = expandAffected([...relevant, ...added, ...readers], reverseDeps);
+    const targets = new Set(Array.from(listed).filter((path) => affected.has(path)));
+    for (const path of targets) {
+      this.records.delete(path);
+      this.parseErrors.delete(path);
+    }
+
+    const parsed = await this.parse(targets);
+    this.cache?.save();
+    await this.settle(parsed);
+
+    const result = this.assemble();
+    reportParseErrors(result.errors);
+    return { result, reparsed: Array.from(parsed.keys()) };
+  }
+
+  /**
+   * Re-reads the entry barrel's exports. Returns the paths of components
+   * that are newly exported, or whose export now points at another file:
+   * those need parsing even if they didn't change.
+   */
+  private async recollect(): Promise<string[]> {
+    const previous = this.collected;
+    const next = collectComponents(this.input, this.glob, this.documentExports);
+    const added: string[] = [];
+    for (const [name, entry] of Object.entries(next.exports)) {
+      const path = next.resolveComponentFilePath(entry.source);
+      const before = Object.hasOwn(previous.exports, name) ? previous.exports[name] : undefined;
+      if (before === undefined || previous.resolveComponentFilePath(before.source) !== path) added.push(path);
+    }
+
+    this.collected = next;
+    this.globMergeState = createGlobMergeState(next.allComponentEntries, next.resolveComponentFilePath);
+    await this.readEntryExports();
+    return added;
   }
 
   private async readEntryExports(): Promise<void> {

@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, unlinkSync, w
 import { tmpdir } from "node:os";
 import { join, relative, resolve } from "node:path";
 import type { ComponentDocApi, ComponentDocs } from "../src/bundle";
+import ComponentParser from "../src/ComponentParser";
 import pluginSveld, { createSerialQueue, writeOutput } from "../src/plugin";
 import { createSveldBundle } from "../src/watch";
 
@@ -245,7 +246,7 @@ describe("watch mode (createSveldBundle)", () => {
     writeFileSync(join(dir, "b.js"), "export const format = 2;\n");
     writeFileSync(entryPath, 'export * from "./a.js";\nexport * from "./b.js";\n');
 
-    const bundle = await createSveldBundle(entryPath, false, true);
+    const bundle = await createSveldBundle(entryPath, false, { documentExports: true });
     const initial = await bundle.result;
     expect(initial.entryExports).toEqual([]);
     expect(initial.diagnostics).toContainEqual(
@@ -323,6 +324,86 @@ describe("watch mode (createSveldBundle)", () => {
       "extend-props-target-missing",
       "module-export-conflict",
     ]);
+  });
+
+  test("an update returns a new result and leaves the previous one as it was", async () => {
+    const bundle = await createSveldBundle(dir, true);
+    const before = await bundle.result;
+    const buttonBefore = byModuleName(before.allComponentsForTypes, "Button");
+
+    const buttonPath = resolve(dir, "Button.svelte");
+    writeFileSync(buttonPath, BUTTON.replace("export let primary = false;", "export let danger = false;"));
+    const { result } = await bundle.update([buttonPath]);
+
+    expect(result).not.toBe(before);
+    expect(result.allComponentsForTypes).not.toBe(before.allComponentsForTypes);
+    expect(byModuleName(before.allComponentsForTypes, "Button")).toBe(buttonBefore);
+    expect(buttonBefore?.props.map((prop) => prop.name)).toEqual(["primary"]);
+    expect(await bundle.result).toBe(result);
+  });
+
+  test("checks @example blocks with checkExamples, re-checking only re-parsed components", async () => {
+    const example = (markup: string) => `<script>
+  /**
+   * @example
+   * \`\`\`svelte
+   * ${markup}
+   * \`\`\`
+   */
+  export let value = 0;
+</script>`;
+    const examplePath = join(dir, "Example.svelte");
+    writeFileSync(examplePath, example("<Example value={1}></div>"));
+
+    const bundle = await createSveldBundle(dir, true, { checkExamples: "syntax" });
+    const syntaxErrors = (result: Awaited<typeof bundle.result>) =>
+      result.diagnostics.filter((diagnostic) => diagnostic.kind === "example-syntax-error").map((d) => d.name);
+    expect(syntaxErrors(await bundle.result)).toEqual(["value"]);
+
+    // An unrelated edit keeps the diagnostic without re-checking it.
+    const standalonePath = resolve(dir, "Standalone.svelte");
+    writeFileSync(standalonePath, STANDALONE.replace('"standalone"', '"changed"'));
+    expect(syntaxErrors((await bundle.update([standalonePath])).result)).toEqual(["value"]);
+
+    writeFileSync(examplePath, example("<Example value={1} />"));
+    expect(syntaxErrors((await bundle.update([examplePath])).result)).toEqual([]);
+  });
+
+  test("marks diagnostics matched by diagnostics.ignore as ignored", async () => {
+    writeFileSync(join(dir, "Untyped.svelte"), "<script>\n  export let value;\n</script>\n");
+    const ignore = [{ code: "sveld/prop-unknown-type" as const, component: "**/Untyped.svelte" }];
+
+    const bundle = await createSveldBundle(dir, true, { diagnostics: { ignore } });
+    const unknownType = (result: Awaited<typeof bundle.result>) =>
+      result.diagnostics.find((diagnostic) => diagnostic.kind === "prop-unknown-type");
+    expect(unknownType(await bundle.result)).toMatchObject({ name: "value", ignored: true });
+
+    const untypedPath = resolve(dir, "Untyped.svelte");
+    writeFileSync(untypedPath, "<script>\n  export let other;\n</script>\n");
+    expect(unknownType((await bundle.update([untypedPath])).result)).toMatchObject({ name: "other", ignored: true });
+  });
+
+  test("reuses the parse cache across dev-server restarts and keeps it current on update", async () => {
+    const cache = join(dir, ".cache", "parse-cache.json");
+    const parseSpy = jest.spyOn(ComponentParser.prototype, "parse");
+    try {
+      const first = await createSveldBundle(dir, true, { cache });
+      expect(parseSpy).toHaveBeenCalledTimes(3);
+      expect(existsSync(cache)).toBe(true);
+
+      const standalonePath = resolve(dir, "Standalone.svelte");
+      writeFileSync(standalonePath, STANDALONE.replace("export let label", "export let text"));
+      await first.update([standalonePath]);
+      expect(parseSpy).toHaveBeenCalledTimes(4);
+
+      parseSpy.mockClear();
+      const restarted = await createSveldBundle(dir, true, { cache });
+      expect(parseSpy).not.toHaveBeenCalled();
+      const standalone = byModuleName((await restarted.result).allComponentsForTypes, "Standalone");
+      expect(standalone?.props.map((prop) => prop.name)).toEqual(["text"]);
+    } finally {
+      parseSpy.mockRestore();
+    }
   });
 
   describe("values read from other modules", () => {

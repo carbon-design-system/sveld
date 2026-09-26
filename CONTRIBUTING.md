@@ -68,6 +68,7 @@ The pipeline, end to end:
 Orchestration and entry surfaces:
 
 - [`plugin.ts`](src/plugin.ts) is the Vite plugin and holds `PluginSveldOptions`, `generateBundle`, and `writeOutput`. The plugin, the programmatic [`sveld.ts`](src/sveld.ts), and the [`cli.ts`](src/cli.ts) all funnel into `generateBundle` → `writeOutput`.
+- [`project.ts`](src/project.ts) runs steps 2 and 3 for a whole bundle: a `Project` collects components ([`collect-components.ts`](src/collect-components.ts)), parses each file once (reusing the parse cache), checks `@example` blocks, resolves values read from other files ([`cross-file.ts`](src/cross-file.ts) runs the `CrossFilePass` each `resolve-*.ts` exports), then runs the bundle-wide checks ([`bundle-validation.ts`](src/bundle-validation.ts)). `generateBundle` is `Project.build()`; watch mode ([`watch.ts`](src/watch.ts)) keeps one `Project` and calls `update(changed)`.
 - [`index.ts`](src/index.ts) is the public export barrel: the default Vite plugin, `sveld`, `cli`, and `ComponentParser`.
 
 Supporting modules: [`ast-guards.ts`](src/ast-guards.ts) (ESTree node type guards), [`element-tag-map.ts`](src/element-tag-map.ts) (HTML element → attribute/event maps for forwarded events and `$$restProps`), [`resolve-alias.ts`](src/resolve-alias.ts) (tsconfig/jsconfig path aliases), [`brands.ts`](src/brands.ts) and [`path.ts`](src/path.ts) (path types and normalization), [`validate.ts`](src/validate.ts) (`package.json` parsing).
