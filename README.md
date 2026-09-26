@@ -229,7 +229,7 @@ export default class Button extends SvelteComponentTyped<
 ```ts
 import type { Component } from "svelte";
 
-export type ButtonProps = { label?: string; onclick?: (event: WindowEventMap["click"]) => void };
+export type ButtonProps = { label?: string; onclick?: (event: MouseEvent) => void };
 export type ButtonExports = Record<string, never>;
 
 declare const Button: Component<ButtonProps, ButtonExports, "">;
@@ -246,9 +246,11 @@ Also available as `--types-format=component` on the CLI.
 
 `"component"`'s three type parameters:
 
-- **Props**: the same `$Props`/`<Name>Props` type as `"class"`. Runes components already declare callback props (e.g. `onclick`) as regular props. Legacy (non-runes) components additionally get `on<name>?: (event: Type) => void` callback props for every dispatched and forwarded event, so Svelte 5 consumers can attach handlers as props instead of `on:event`.
+- **Props**: the same `$Props`/`<Name>Props` type as `"class"`. Runes components declare callback props (e.g. `onclick`) as regular props.
 - **Exports**: the component's accessor props (exported `function`/`const` members), the same members that render as class members under `"class"`.
 - **Bindings**: a union of string literals for props declared with `$bindable(...)` (runes) or marked `@bindable writable` ([see `binding`](#binding)) (legacy) — e.g. `"value"`, or `"value" | "open"` for more than one. `""` when the component declares none, matching Svelte's own convention for "no bindings."
+
+**Events.** `Component` has no events parameter, and in Svelte 5 an event from `createEventDispatcher` or an `on:click` forward only reaches `on:event` listeners, never an `onclick` prop. So a component with events gets the per-component interface below, with its events in a `$Events` map that types `on:event` usage: `<Panel on:close={(e) => e.detail.reason} />` type-checks and `on:bogus` doesn't.
 
 **Generic components.** A `declare const X: Component<...>` value can't itself carry a generic type parameter the way a class can, so generic components (`@template`/`generics`) get a per-component interface instead of `Component<...>` directly:
 

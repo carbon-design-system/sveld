@@ -1,4 +1,4 @@
-import type { Component } from "svelte";
+import type { SvelteComponent, ComponentConstructorOptions, ComponentInternals } from "svelte";
 
 /**
  * Breakpoint size names
@@ -32,29 +32,38 @@ export type TypedefEventSharedBlockProps = {
         size: BreakpointSize;
         sizes: Record<BreakpointSize, boolean>;
       }]) => void;
-
-  onchange?: (event: CustomEvent<{
-        size: BreakpointSize;
-        breakpointValue: BreakpointValue;
-      }>) => void;
-
-  /** Event fired when item is dequeued from the queue */
-  ondequeue?: (event: CustomEvent<null>) => void;
-
-  /** Event fired when queue is updated */
-  onqueue?: (event: CustomEvent<null>) => void;
-
-  /** Event fired when size changes */
-  onresize?: (event: CustomEvent<null>) => void;
-
-  onscroll?: (event: CustomEvent<null>) => void;
 };
 
 export type TypedefEventSharedBlockExports = Record<string, never>;
 
-declare const TypedefEventSharedBlock: Component<
-  TypedefEventSharedBlockProps,
-  TypedefEventSharedBlockExports,
-  ""
->;
+type $Events = {
+  change: CustomEvent<{
+      size: BreakpointSize;
+      breakpointValue: BreakpointValue;
+    }>;
+  /** Event fired when item is dequeued from the queue */
+  dequeue: CustomEvent<null>;
+  /** Event fired when queue is updated */
+  queue: CustomEvent<null>;
+  /** Event fired when size changes */
+  resize: CustomEvent<null>;
+  scroll: CustomEvent<null>;
+};
+
+interface TypedefEventSharedBlockComponent {
+  new (
+    options: ComponentConstructorOptions<TypedefEventSharedBlockProps>
+  ): SvelteComponent<TypedefEventSharedBlockProps, $Events> & TypedefEventSharedBlockExports;
+  (
+    this: void,
+    internals: ComponentInternals,
+    props: TypedefEventSharedBlockProps
+  ): {
+    $on?<K extends keyof $Events & string>(type: K, callback: (e: $Events[K]) => void): () => void;
+    $set?(props: Partial<TypedefEventSharedBlockProps>): void;
+  } & TypedefEventSharedBlockExports;
+  element?: typeof HTMLElement;
+  z_$$bindings?: "";
+}
+declare const TypedefEventSharedBlock: TypedefEventSharedBlockComponent;
 export default TypedefEventSharedBlock;

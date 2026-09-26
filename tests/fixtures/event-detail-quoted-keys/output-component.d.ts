@@ -1,4 +1,4 @@
-import type { Component } from "svelte";
+import type { SvelteComponent, ComponentConstructorOptions, ComponentInternals } from "svelte";
 
 export type Attributes = {
   /** The element's data id. */
@@ -6,26 +6,38 @@ export type Attributes = {
   "aria-hidden": boolean;
 };
 
-export type EventDetailQuotedKeysProps = {
-  onchange?: (event: CustomEvent<{
-        "a-b": number;
-        ok: boolean;
-        "3": string;
-        "with space": string;
-      }>) => void;
-
-  onselect?: (event: CustomEvent<{
-        /** The selected item's id. */
-        "item-id": string;
-        index?: number;
-      }>) => void;
-};
+export type EventDetailQuotedKeysProps = Record<string, never>;
 
 export type EventDetailQuotedKeysExports = Record<string, never>;
 
-declare const EventDetailQuotedKeys: Component<
-  EventDetailQuotedKeysProps,
-  EventDetailQuotedKeysExports,
-  ""
->;
+type $Events = {
+  change: CustomEvent<{
+      "a-b": number;
+      ok: boolean;
+      "3": string;
+      "with space": string;
+    }>;
+  select: CustomEvent<{
+      /** The selected item's id. */
+      "item-id": string;
+      index?: number;
+    }>;
+};
+
+interface EventDetailQuotedKeysComponent {
+  new (
+    options: ComponentConstructorOptions<EventDetailQuotedKeysProps>
+  ): SvelteComponent<EventDetailQuotedKeysProps, $Events> & EventDetailQuotedKeysExports;
+  (
+    this: void,
+    internals: ComponentInternals,
+    props: EventDetailQuotedKeysProps
+  ): {
+    $on?<K extends keyof $Events & string>(type: K, callback: (e: $Events[K]) => void): () => void;
+    $set?(props: Partial<EventDetailQuotedKeysProps>): void;
+  } & EventDetailQuotedKeysExports;
+  element?: typeof HTMLElement;
+  z_$$bindings?: "";
+}
+declare const EventDetailQuotedKeys: EventDetailQuotedKeysComponent;
 export default EventDetailQuotedKeys;

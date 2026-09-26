@@ -1,22 +1,32 @@
-import type { Component } from "svelte";
+import type { SvelteComponent, ComponentConstructorOptions, ComponentInternals } from "svelte";
 
 export type ForwardedEventsProps = {
   children?: (this: void) => void;
-
-  onblur?: (event: WindowEventMap["blur"]) => void;
-
-  onclick?: (event: WindowEventMap["click"]) => void;
-
-  onfocus?: (event: WindowEventMap["focus"]) => void;
-
-  onmouseover?: (event: WindowEventMap["mouseover"]) => void;
 };
 
 export type ForwardedEventsExports = Record<string, never>;
 
-declare const ForwardedEvents: Component<
-  ForwardedEventsProps,
-  ForwardedEventsExports,
-  ""
->;
+type $Events = {
+  blur: WindowEventMap["blur"];
+  click: WindowEventMap["click"];
+  focus: WindowEventMap["focus"];
+  mouseover: WindowEventMap["mouseover"];
+};
+
+interface ForwardedEventsComponent {
+  new (
+    options: ComponentConstructorOptions<ForwardedEventsProps>
+  ): SvelteComponent<ForwardedEventsProps, $Events> & ForwardedEventsExports;
+  (
+    this: void,
+    internals: ComponentInternals,
+    props: ForwardedEventsProps
+  ): {
+    $on?<K extends keyof $Events & string>(type: K, callback: (e: $Events[K]) => void): () => void;
+    $set?(props: Partial<ForwardedEventsProps>): void;
+  } & ForwardedEventsExports;
+  element?: typeof HTMLElement;
+  z_$$bindings?: "";
+}
+declare const ForwardedEvents: ForwardedEventsComponent;
 export default ForwardedEvents;

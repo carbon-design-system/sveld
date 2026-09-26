@@ -882,7 +882,7 @@ export default Button;`,
     );
   });
 
-  test("legacy dispatched and forwarded events become on* callback props", () => {
+  test("dispatched and forwarded events type `$on`, not on* callback props that never fire", () => {
     const component_api: ComponentDocApi = {
       moduleName: "Modal",
       filePath: asNormalizedPath("./src/Modal.svelte"),
@@ -904,8 +904,19 @@ export default Button;`,
     };
 
     const output = writeTsDefinition(component_api, { format: "component" });
-    expect(output).toContain("onclose?: (event: CustomEvent<{ id: string }>) => void;");
-    expect(output).toContain('onclick?: (event: WindowEventMap["click"]) => void;');
+    // `createEventDispatcher` and `on:` forwarding only reach `on:event`
+    // listeners in Svelte 5, so an `onclose` prop would type-check and
+    // never be called.
+    expect(output).not.toContain("onclose");
+    expect(output).not.toContain("onclick");
+    expect(output).toContain(
+      'type $Events = {\n  close: CustomEvent<{ id: string }>;\n  click: WindowEventMap["click"];\n};',
+    );
+    expect(output).toContain("SvelteComponent<ModalProps, $Events>");
+    expect(output).toContain(
+      "$on?<K extends keyof $Events & string>(type: K, callback: (e: $Events[K]) => void): () => void;",
+    );
+    expect(output).toContain("declare const Modal: ModalComponent;");
   });
 
   test("does not add on* callback props for runes components", () => {

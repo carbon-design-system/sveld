@@ -1,4 +1,4 @@
-import type { Component } from "svelte";
+import type { SvelteComponent, ComponentConstructorOptions, ComponentInternals } from "svelte";
 import type { SvelteHTMLElements } from "svelte/elements";
 
 /** Rest props go to the wrapper. */
@@ -25,14 +25,6 @@ type $Props = {
   /** Renders the header. */
   header?: (this: void) => void;
 
-  /** Fired when the menu closes. */
-  onclose?: (event: CustomEvent<null>) => void;
-
-  /**
-   * @since 1.0
-   */
-  onopen?: (event: CustomEvent<null>) => void;
-
   [key: `data-${string}`]: unknown;
 };
 
@@ -40,9 +32,29 @@ export type JsdocTagBodyBeforeDescribedTagProps = Omit<$RestProps, keyof $Props>
 
 export type JsdocTagBodyBeforeDescribedTagExports = Record<string, never>;
 
-declare const JsdocTagBodyBeforeDescribedTag: Component<
-  JsdocTagBodyBeforeDescribedTagProps,
-  JsdocTagBodyBeforeDescribedTagExports,
-  ""
->;
+type $Events = {
+  /** Fired when the menu closes. */
+  close: CustomEvent<null>;
+  /**
+   * @since 1.0
+   */
+  open: CustomEvent<null>;
+};
+
+interface JsdocTagBodyBeforeDescribedTagComponent {
+  new (
+    options: ComponentConstructorOptions<JsdocTagBodyBeforeDescribedTagProps>
+  ): SvelteComponent<JsdocTagBodyBeforeDescribedTagProps, $Events> & JsdocTagBodyBeforeDescribedTagExports;
+  (
+    this: void,
+    internals: ComponentInternals,
+    props: JsdocTagBodyBeforeDescribedTagProps
+  ): {
+    $on?<K extends keyof $Events & string>(type: K, callback: (e: $Events[K]) => void): () => void;
+    $set?(props: Partial<JsdocTagBodyBeforeDescribedTagProps>): void;
+  } & JsdocTagBodyBeforeDescribedTagExports;
+  element?: typeof HTMLElement;
+  z_$$bindings?: "";
+}
+declare const JsdocTagBodyBeforeDescribedTag: JsdocTagBodyBeforeDescribedTagComponent;
 export default JsdocTagBodyBeforeDescribedTag;

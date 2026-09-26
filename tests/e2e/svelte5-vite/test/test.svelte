@@ -20,8 +20,8 @@
 
 <LegacyPanel
   title="Settings"
-  onclose={(event) => console.log(event.detail.reason)}
-  onclick={(event) => console.log(event.clientX)}
+  on:close={(event) => console.log(event.detail.reason)}
+  on:click={(event) => console.log(event.clientX)}
 />
 
 <RunesGenericList items={todos}>
