@@ -334,12 +334,16 @@ export function formatDiagnosticsSummary(diagnostics: SveldDiagnostic[]): string
   const ignoredSuffix = ignoredCount > 0 ? ` (${ignoredCount} ignored)` : "";
 
   if (active.length === 0) {
-    return `sveld: all types resolved${ignoredSuffix}.`;
+    return `sveld: no diagnostics${ignoredSuffix}.`;
   }
 
+  // Not all diagnostics are unresolved types (unknown tags, duplicate
+  // keys, ...), and `--strict=errors` only fails on errors.
   const lines: string[] = [];
-  const total = active.length;
-  lines.push(`sveld: ${total} unresolved type${total === 1 ? "" : "s"} found${ignoredSuffix}.`);
+  const plural = (count: number, noun: string) => `${count} ${noun}${count === 1 ? "" : "s"}`;
+  const errors = active.filter((diagnostic) => diagnostic.severity === "error").length;
+  const severities = `${plural(errors, "error")}, ${plural(active.length - errors, "warning")}`;
+  lines.push(`sveld: ${plural(active.length, "diagnostic")} (${severities})${ignoredSuffix}.`);
 
   for (const kind of KIND_ORDER) {
     const forKind = active.filter((diagnostic) => diagnostic.kind === kind);

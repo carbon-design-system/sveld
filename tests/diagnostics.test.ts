@@ -769,7 +769,7 @@ describe("diagnostics helpers", () => {
   });
 
   test("formatDiagnosticsSummary reports a clean run", () => {
-    expect(formatDiagnosticsSummary([])).toBe("sveld: all types resolved.");
+    expect(formatDiagnosticsSummary([])).toBe("sveld: no diagnostics.");
   });
 
   test("formatDiagnosticsSummary groups records by kind and component", () => {
@@ -778,7 +778,7 @@ describe("diagnostics helpers", () => {
       make({ kind: "event-no-source", name: "phantom", message: "event fallback" }),
     ]);
 
-    expect(summary).toContain("2 unresolved types found.");
+    expect(summary).toContain("sveld: 2 diagnostics (0 errors, 2 warnings).");
     expect(summary).toContain("Props without inferred types (1):");
     expect(summary).toContain("@event tags with no dispatch or callback (1):");
     expect(summary).toContain("prop fallback");
@@ -847,7 +847,7 @@ describe("diagnostics helpers", () => {
       make({ name: "b", message: "dropped", ignored: true }),
     ]);
 
-    expect(summary).toContain("1 unresolved type found (1 ignored).");
+    expect(summary).toContain("sveld: 1 diagnostic (0 errors, 1 warning) (1 ignored).");
     expect(summary).toContain("kept");
     expect(summary).not.toContain("dropped");
   });
@@ -855,7 +855,7 @@ describe("diagnostics helpers", () => {
   test("formatDiagnosticsSummary reports an all-ignored run distinctly from a clean one", () => {
     const summary = formatDiagnosticsSummary([make({ ignored: true })]);
 
-    expect(summary).toBe("sveld: all types resolved (1 ignored).");
+    expect(summary).toBe("sveld: no diagnostics (1 ignored).");
   });
 });
 
@@ -978,7 +978,7 @@ describe("sveld() strict mode", () => {
   const summaryCalls = (spy: ReturnType<typeof jest.spyOn>) =>
     spy.mock.calls
       .map((call: unknown[]) => String(call[0]))
-      .filter((message: string) => message.includes("unresolved types found"));
+      .filter((message: string) => message.includes(" diagnostics ("));
 
   test("returns the aggregated diagnostics array and stays non-failing by default", async () => {
     // Bun ignores `process.exitCode = undefined` once a numeric code has been
