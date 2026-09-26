@@ -150,6 +150,20 @@ describe("sveld() exitCode and errors", () => {
     expect(result.exitCode).toBe(3);
   });
 
+  test("result.exitCode honors checkLevel, like the CLI", async () => {
+    writeFileSync(join(absoluteDir, "Button.svelte"), "<script>\n  export let label = 'a';\n</script>\n");
+    writeFileSync(join(absoluteDir, "index.js"), 'export { default as Button } from "./Button.svelte";\n');
+    const snapshotFile = join(relativeDir, "COMPONENT_API.json");
+    const snapshot = buildComponentApiDocument(
+      new Map([["Button", mockComponentDocApi("Button", "Button.svelte", { props: [] })]]),
+    );
+    writeFileSync(join(absoluteDir, "COMPONENT_API.json"), JSON.stringify(snapshot));
+
+    // An optional prop added is a minor bump: passes by default, fails at checkLevel "minor".
+    expect((await sveld({ entry, types: false, check: snapshotFile })).exitCode).toBe(0);
+    expect((await sveld({ entry, types: false, check: snapshotFile, checkLevel: "minor" })).exitCode).toBe(3);
+  });
+
   test("result.exitCode is 3 (not 4) when a breaking check and strict diagnostics both apply", async () => {
     writeFileSync(
       join(absoluteDir, "Phantom.svelte"),

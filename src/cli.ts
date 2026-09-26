@@ -3,19 +3,13 @@ import { join } from "node:path";
 import pkg from "../package.json" with { type: "json" };
 import { asSvelteEntryPoint } from "./brands";
 import {
-  bumpMeetsLevel,
   type CheckResult,
   formatCheckReport,
   formatCheckReportJson,
   resolveCheckSnapshotFile,
   runCheck,
 } from "./check";
-import {
-  failingDiagnostics,
-  filterSpeculativeDiagnostics,
-  formatDiagnosticsSummary,
-  formatDiagnosticsSummaryJson,
-} from "./diagnostics";
+import { filterSpeculativeDiagnostics, formatDiagnosticsSummary, formatDiagnosticsSummaryJson } from "./diagnostics";
 import { resolveSvelteEntry } from "./get-svelte-entry";
 import {
   formatCheckGitHub,
@@ -29,6 +23,7 @@ import { setQuiet } from "./logger";
 import { normalizeSeparators } from "./path";
 import { generateBundle, toGenerateBundleOptions, writeOutput, writeStdout } from "./plugin";
 import { UnresolvedModuleError } from "./resolve-alias";
+import { resolveExitCode } from "./sveld";
 
 /** Relative fallback entry used only when entry resolution otherwise fails. */
 const FALLBACK_ENTRY = "src/index.js";
@@ -641,25 +636,13 @@ export async function cli(process: NodeJS.Process) {
     appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${stepSummaryParts.join("\n\n")}\n`);
   }
 
-  // Lowest applicable code wins (1 beats 2 beats 3 beats 4); every failure is still reported above.
-  let exitCode: number | undefined;
-
-  const hasSchemaMismatch = checkResult?.changes.some((change) => change.kind === "schema") ?? false;
-
-  if (hasSchemaMismatch) {
-    exitCode = EXIT_CODES.USAGE_ERROR;
-  } else if (result.errors.length > 0) {
-    // The other components were still written, but these have no output.
-    exitCode = EXIT_CODES.GENERATION_FAILURE;
-  } else if (checkResult && bumpMeetsLevel(checkResult.bump, options.checkLevel ?? "major")) {
-    exitCode = EXIT_CODES.BREAKING_CHANGE;
-  }
-
-  if (failingDiagnostics(diagnostics, options.strict).length > 0) {
-    exitCode = exitCode === undefined ? EXIT_CODES.DIAGNOSTICS : Math.min(exitCode, EXIT_CODES.DIAGNOSTICS);
-  }
-
-  if (exitCode !== undefined) {
-    process.exitCode = exitCode;
-  }
+  // Every failure is still reported above; the lowest applicable code wins.
+  const exitCode = resolveExitCode({
+    errors: result.errors,
+    check: checkResult,
+    checkLevel: options.checkLevel,
+    diagnostics,
+    strict: options.strict,
+  });
+  if (exitCode !== EXIT_CODES.SUCCESS) process.exitCode = exitCode;
 }
