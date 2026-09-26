@@ -9,13 +9,8 @@ import type {
 } from "./ComponentParser";
 import type { CrossFilePass } from "./cross-file-pass";
 import { createDiagnostic } from "./diagnostics";
-import {
-  type AstNode,
-  asNode,
-  findImportedExport,
-  type ResolveContext,
-  resolveModuleFile,
-} from "./parse-entry-exports";
+import { findImportedExport, type ResolveContext } from "./module-exports";
+import { type AstNode, asNode, resolveModuleFile } from "./module-graph";
 import { compareSerializedEvents } from "./parser/event-order";
 import type { DetailTypeSource } from "./parser/events";
 import { type WalkableNode, walkNodes } from "./parser/walk";

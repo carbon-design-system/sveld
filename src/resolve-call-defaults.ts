@@ -3,7 +3,8 @@ import { dirname } from "node:path";
 import type { ComponentDocApi } from "./bundle";
 import type { PendingCallDefaultCandidate } from "./ComponentParser";
 import { type CrossFilePass, dropUnknownTypeDiagnostic, findCandidateProp, setResolvedField } from "./cross-file-pass";
-import { findModuleExport, type ResolveContext, resolveModuleFile } from "./parse-entry-exports";
+import { findModuleExport, type ResolveContext } from "./module-exports";
+import { resolveModuleFile } from "./module-graph";
 
 export type CallDefaultFailureReason = "module-not-found" | "export-not-found" | "return-type-unresolved";
 

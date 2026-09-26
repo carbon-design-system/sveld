@@ -7,7 +7,7 @@
  */
 import type { ComponentDocApi } from "./bundle";
 import type { ComponentProp, PendingConstDefaultCandidate, PendingCrossFileCandidates } from "./ComponentParser";
-import type { ResolveContext } from "./parse-entry-exports";
+import type { ResolveContext } from "./module-exports";
 
 export interface CrossFilePass<Candidate, Resolution> {
   /** This pass's candidates out of what the parse left pending. */
