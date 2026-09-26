@@ -1,11 +1,15 @@
-import type { Component } from "svelte";
+import type { SvelteComponent, ComponentConstructorOptions, ComponentInternals } from "svelte";
 
 export type EventJsdocSinceProps = {
   /**
    * @default ""
    */
   value?: string;
+};
 
+export type EventJsdocSinceExports = Record<string, never>;
+
+type $Events = {
   /**
    * Fired when the value changes.
    * @since 1.1.0
@@ -14,14 +18,23 @@ export type EventJsdocSinceProps = {
    * <Field on:change={(e) => console.log(e.detail)} />
    * ```
    */
-  onchange?: (event: CustomEvent<string>) => void;
+  change: CustomEvent<string>;
 };
 
-export type EventJsdocSinceExports = Record<string, never>;
-
-declare const EventJsdocSince: Component<
-  EventJsdocSinceProps,
-  EventJsdocSinceExports,
-  ""
->;
+interface EventJsdocSinceComponent {
+  new (
+    options: ComponentConstructorOptions<EventJsdocSinceProps>
+  ): SvelteComponent<EventJsdocSinceProps, $Events> & EventJsdocSinceExports;
+  (
+    this: void,
+    internals: ComponentInternals,
+    props: EventJsdocSinceProps
+  ): {
+    $on?<K extends keyof $Events & string>(type: K, callback: (e: $Events[K]) => void): () => void;
+    $set?(props: Partial<EventJsdocSinceProps>): void;
+  } & EventJsdocSinceExports;
+  element?: typeof HTMLElement;
+  z_$$bindings?: "";
+}
+declare const EventJsdocSince: EventJsdocSinceComponent;
 export default EventJsdocSince;

@@ -1,4 +1,4 @@
-import type { Component } from "svelte";
+import type { SvelteComponent, ComponentConstructorOptions, ComponentInternals } from "svelte";
 
 export declare const themes: Record<CarbonTheme, string>;
 
@@ -31,17 +31,30 @@ export type ThemeComponentProps = {
   persistKey?: string;
 
   children?: (this: void, ...args: [{ theme: CarbonTheme }]) => void;
-
-  onupdate?: (event: CustomEvent<{
-        theme: CarbonTheme;
-      }>) => void;
 };
 
 export type ThemeComponentExports = Record<string, never>;
 
-declare const ThemeComponent: Component<
-  ThemeComponentProps,
-  ThemeComponentExports,
-  ""
->;
+type $Events = {
+  update: CustomEvent<{
+      theme: CarbonTheme;
+    }>;
+};
+
+interface ThemeComponentComponent {
+  new (
+    options: ComponentConstructorOptions<ThemeComponentProps>
+  ): SvelteComponent<ThemeComponentProps, $Events> & ThemeComponentExports;
+  (
+    this: void,
+    internals: ComponentInternals,
+    props: ThemeComponentProps
+  ): {
+    $on?<K extends keyof $Events & string>(type: K, callback: (e: $Events[K]) => void): () => void;
+    $set?(props: Partial<ThemeComponentProps>): void;
+  } & ThemeComponentExports;
+  element?: typeof HTMLElement;
+  z_$$bindings?: "";
+}
+declare const ThemeComponent: ThemeComponentComponent;
 export default ThemeComponent;

@@ -1,4 +1,4 @@
-import type { Component } from "svelte";
+import type { SvelteComponent, ComponentConstructorOptions, ComponentInternals } from "svelte";
 
 export type Header = {
   /**
@@ -60,17 +60,6 @@ export type JsdocMultilineTypeDescriptionProps = {
         item: string;
         index: number
       }]) => void;
-
-  onclose?: (event: CustomEvent<null>) => void;
-
-  /**
-   * Fired when a row is selected,
-   * with its position.
-   */
-  onselect?: (event: CustomEvent<{
-        id: string;
-        index: number
-      }>) => void;
 };
 
 export type JsdocMultilineTypeDescriptionExports = {
@@ -82,9 +71,32 @@ export type JsdocMultilineTypeDescriptionExports = {
     | undefined;
 };
 
-declare const JsdocMultilineTypeDescription: Component<
-  JsdocMultilineTypeDescriptionProps,
-  JsdocMultilineTypeDescriptionExports,
-  ""
->;
+type $Events = {
+  close: CustomEvent<null>;
+  /**
+   * Fired when a row is selected,
+   * with its position.
+   */
+  select: CustomEvent<{
+      id: string;
+      index: number
+    }>;
+};
+
+interface JsdocMultilineTypeDescriptionComponent {
+  new (
+    options: ComponentConstructorOptions<JsdocMultilineTypeDescriptionProps>
+  ): SvelteComponent<JsdocMultilineTypeDescriptionProps, $Events> & JsdocMultilineTypeDescriptionExports;
+  (
+    this: void,
+    internals: ComponentInternals,
+    props: JsdocMultilineTypeDescriptionProps
+  ): {
+    $on?<K extends keyof $Events & string>(type: K, callback: (e: $Events[K]) => void): () => void;
+    $set?(props: Partial<JsdocMultilineTypeDescriptionProps>): void;
+  } & JsdocMultilineTypeDescriptionExports;
+  element?: typeof HTMLElement;
+  z_$$bindings?: "";
+}
+declare const JsdocMultilineTypeDescription: JsdocMultilineTypeDescriptionComponent;
 export default JsdocMultilineTypeDescription;

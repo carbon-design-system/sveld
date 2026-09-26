@@ -1,4 +1,4 @@
-import type { Component } from "svelte";
+import type { SvelteComponent, ComponentConstructorOptions, ComponentInternals } from "svelte";
 
 export type Item = {
   /**
@@ -37,15 +37,6 @@ export type JsdocContinuationParagraphsProps = {
    * ```
    */
   item?: (this: void, ...args: [{ item: Item }]) => void;
-
-  onclose?: (event: CustomEvent<null>) => void;
-
-  /**
-   * Fired when the menu opens.
-   *
-   * Not fired on the first render.
-   */
-  onopen?: (event: CustomEvent<null>) => void;
 };
 
 export type JsdocContinuationParagraphsExports = {
@@ -55,9 +46,30 @@ export type JsdocContinuationParagraphsExports = {
   format: (item: Item) => string;
 };
 
-declare const JsdocContinuationParagraphs: Component<
-  JsdocContinuationParagraphsProps,
-  JsdocContinuationParagraphsExports,
-  ""
->;
+type $Events = {
+  close: CustomEvent<null>;
+  /**
+   * Fired when the menu opens.
+   *
+   * Not fired on the first render.
+   */
+  open: CustomEvent<null>;
+};
+
+interface JsdocContinuationParagraphsComponent {
+  new (
+    options: ComponentConstructorOptions<JsdocContinuationParagraphsProps>
+  ): SvelteComponent<JsdocContinuationParagraphsProps, $Events> & JsdocContinuationParagraphsExports;
+  (
+    this: void,
+    internals: ComponentInternals,
+    props: JsdocContinuationParagraphsProps
+  ): {
+    $on?<K extends keyof $Events & string>(type: K, callback: (e: $Events[K]) => void): () => void;
+    $set?(props: Partial<JsdocContinuationParagraphsProps>): void;
+  } & JsdocContinuationParagraphsExports;
+  element?: typeof HTMLElement;
+  z_$$bindings?: "";
+}
+declare const JsdocContinuationParagraphs: JsdocContinuationParagraphsComponent;
 export default JsdocContinuationParagraphs;

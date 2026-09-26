@@ -1,4 +1,4 @@
-import type { Component } from "svelte";
+import type { SvelteComponent, ComponentConstructorOptions, ComponentInternals } from "svelte";
 
 /**
  * Options desc
@@ -22,16 +22,29 @@ export type EventScopeEndsAtTypedefProps = {
    * continued footer.
    */
   footer?: (this: void) => void;
-
-  /** Go desc. */
-  ongo?: (event: CustomEvent<null>) => void;
 };
 
 export type EventScopeEndsAtTypedefExports = Record<string, never>;
 
-declare const EventScopeEndsAtTypedef: Component<
-  EventScopeEndsAtTypedefProps,
-  EventScopeEndsAtTypedefExports,
-  ""
->;
+type $Events = {
+  /** Go desc. */
+  go: CustomEvent<null>;
+};
+
+interface EventScopeEndsAtTypedefComponent {
+  new (
+    options: ComponentConstructorOptions<EventScopeEndsAtTypedefProps>
+  ): SvelteComponent<EventScopeEndsAtTypedefProps, $Events> & EventScopeEndsAtTypedefExports;
+  (
+    this: void,
+    internals: ComponentInternals,
+    props: EventScopeEndsAtTypedefProps
+  ): {
+    $on?<K extends keyof $Events & string>(type: K, callback: (e: $Events[K]) => void): () => void;
+    $set?(props: Partial<EventScopeEndsAtTypedefProps>): void;
+  } & EventScopeEndsAtTypedefExports;
+  element?: typeof HTMLElement;
+  z_$$bindings?: "";
+}
+declare const EventScopeEndsAtTypedef: EventScopeEndsAtTypedefComponent;
 export default EventScopeEndsAtTypedef;

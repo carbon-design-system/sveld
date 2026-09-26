@@ -1,4 +1,4 @@
-import type { Component } from "svelte";
+import type { SvelteComponent, ComponentConstructorOptions, ComponentInternals } from "svelte";
 
 export type MatcherContext = {
   pattern: RegExp;
@@ -17,18 +17,31 @@ export type RegexBigintLiteralsProps = {
    * @default 10n
    */
   total?: bigint;
-
-  onmatch?: (event: CustomEvent<{
-        pattern: RegExp;
-        count: bigint;
-      }>) => void;
 };
 
 export type RegexBigintLiteralsExports = Record<string, never>;
 
-declare const RegexBigintLiterals: Component<
-  RegexBigintLiteralsProps,
-  RegexBigintLiteralsExports,
-  ""
->;
+type $Events = {
+  match: CustomEvent<{
+      pattern: RegExp;
+      count: bigint;
+    }>;
+};
+
+interface RegexBigintLiteralsComponent {
+  new (
+    options: ComponentConstructorOptions<RegexBigintLiteralsProps>
+  ): SvelteComponent<RegexBigintLiteralsProps, $Events> & RegexBigintLiteralsExports;
+  (
+    this: void,
+    internals: ComponentInternals,
+    props: RegexBigintLiteralsProps
+  ): {
+    $on?<K extends keyof $Events & string>(type: K, callback: (e: $Events[K]) => void): () => void;
+    $set?(props: Partial<RegexBigintLiteralsProps>): void;
+  } & RegexBigintLiteralsExports;
+  element?: typeof HTMLElement;
+  z_$$bindings?: "";
+}
+declare const RegexBigintLiterals: RegexBigintLiteralsComponent;
 export default RegexBigintLiterals;

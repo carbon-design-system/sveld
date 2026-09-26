@@ -1,23 +1,34 @@
-import type { Component } from "svelte";
+import type { SvelteComponent, ComponentConstructorOptions, ComponentInternals } from "svelte";
 
 export type ForwardedStandardEventCustomDetailProps = {
   /**
    * @default []
    */
   files?: [];
-
-  onadd?: (event: CustomEvent<ReadonlyArray<File>>) => void;
-
-  onchange?: (event: CustomEvent<ReadonlyArray<File>>) => void;
-
-  onremove?: (event: CustomEvent<ReadonlyArray<File>>) => void;
 };
 
 export type ForwardedStandardEventCustomDetailExports = Record<string, never>;
 
-declare const ForwardedStandardEventCustomDetail: Component<
-  ForwardedStandardEventCustomDetailProps,
-  ForwardedStandardEventCustomDetailExports,
-  ""
->;
+type $Events = {
+  add: CustomEvent<ReadonlyArray<File>>;
+  change: CustomEvent<ReadonlyArray<File>>;
+  remove: CustomEvent<ReadonlyArray<File>>;
+};
+
+interface ForwardedStandardEventCustomDetailComponent {
+  new (
+    options: ComponentConstructorOptions<ForwardedStandardEventCustomDetailProps>
+  ): SvelteComponent<ForwardedStandardEventCustomDetailProps, $Events> & ForwardedStandardEventCustomDetailExports;
+  (
+    this: void,
+    internals: ComponentInternals,
+    props: ForwardedStandardEventCustomDetailProps
+  ): {
+    $on?<K extends keyof $Events & string>(type: K, callback: (e: $Events[K]) => void): () => void;
+    $set?(props: Partial<ForwardedStandardEventCustomDetailProps>): void;
+  } & ForwardedStandardEventCustomDetailExports;
+  element?: typeof HTMLElement;
+  z_$$bindings?: "";
+}
+declare const ForwardedStandardEventCustomDetail: ForwardedStandardEventCustomDetailComponent;
 export default ForwardedStandardEventCustomDetail;

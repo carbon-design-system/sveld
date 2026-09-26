@@ -1,23 +1,33 @@
-import type { Component } from "svelte";
+import type { SvelteComponent, ComponentConstructorOptions, ComponentInternals } from "svelte";
 
-export type DispatchedEventsObjectDetailUnknownKeysProps = {
-  oncomputed?: (event: CustomEvent<Record<string, any>>) => void;
-
-  onempty?: (event: CustomEvent<Record<string, never>>) => void;
-
-  onmixed?: (event: CustomEvent<{
-        id: number;
-        [key: string]: any;
-      }>) => void;
-
-  onspread?: (event: CustomEvent<Record<string, any>>) => void;
-};
+export type DispatchedEventsObjectDetailUnknownKeysProps = Record<string, never>;
 
 export type DispatchedEventsObjectDetailUnknownKeysExports = Record<string, never>;
 
-declare const DispatchedEventsObjectDetailUnknownKeys: Component<
-  DispatchedEventsObjectDetailUnknownKeysProps,
-  DispatchedEventsObjectDetailUnknownKeysExports,
-  ""
->;
+type $Events = {
+  computed: CustomEvent<Record<string, any>>;
+  empty: CustomEvent<Record<string, never>>;
+  mixed: CustomEvent<{
+      id: number;
+      [key: string]: any;
+    }>;
+  spread: CustomEvent<Record<string, any>>;
+};
+
+interface DispatchedEventsObjectDetailUnknownKeysComponent {
+  new (
+    options: ComponentConstructorOptions<DispatchedEventsObjectDetailUnknownKeysProps>
+  ): SvelteComponent<DispatchedEventsObjectDetailUnknownKeysProps, $Events> & DispatchedEventsObjectDetailUnknownKeysExports;
+  (
+    this: void,
+    internals: ComponentInternals,
+    props: DispatchedEventsObjectDetailUnknownKeysProps
+  ): {
+    $on?<K extends keyof $Events & string>(type: K, callback: (e: $Events[K]) => void): () => void;
+    $set?(props: Partial<DispatchedEventsObjectDetailUnknownKeysProps>): void;
+  } & DispatchedEventsObjectDetailUnknownKeysExports;
+  element?: typeof HTMLElement;
+  z_$$bindings?: "";
+}
+declare const DispatchedEventsObjectDetailUnknownKeys: DispatchedEventsObjectDetailUnknownKeysComponent;
 export default DispatchedEventsObjectDetailUnknownKeys;

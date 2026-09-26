@@ -5,23 +5,25 @@ export type SlotEventTemplatePropReferenceProps<Icon = any> = {
    * @default undefined
    */
   icon?: Icon;
-
-  /** `@template` shared by `@event` and `@slot` still becomes a component generic when a prop uses it. */
-  onselect?: (event: CustomEvent<Icon>) => void;
 };
 
 export type SlotEventTemplatePropReferenceExports = Record<string, never>;
 
+type $Events<Icon = any> = {
+  /** `@template` shared by `@event` and `@slot` still becomes a component generic when a prop uses it. */
+  select: CustomEvent<Icon>;
+};
+
 interface SlotEventTemplatePropReferenceComponent {
   new <Icon = any>(
     options: ComponentConstructorOptions<SlotEventTemplatePropReferenceProps<Icon>>
-  ): SvelteComponent<SlotEventTemplatePropReferenceProps<Icon>> & SlotEventTemplatePropReferenceExports;
+  ): SvelteComponent<SlotEventTemplatePropReferenceProps<Icon>, $Events<Icon>> & SlotEventTemplatePropReferenceExports;
   <Icon = any>(
     this: void,
     internals: ComponentInternals,
     props: SlotEventTemplatePropReferenceProps<Icon>
   ): {
-    $on?(type: string, callback: (e: any) => void): () => void;
+    $on?<K extends keyof $Events<Icon> & string>(type: K, callback: (e: $Events<Icon>[K]) => void): () => void;
     $set?(props: Partial<SlotEventTemplatePropReferenceProps<Icon>>): void;
   } & SlotEventTemplatePropReferenceExports;
   element?: typeof HTMLElement;

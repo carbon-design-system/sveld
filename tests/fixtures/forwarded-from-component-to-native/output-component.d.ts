@@ -1,24 +1,32 @@
-import type { Component } from "svelte";
+import type { SvelteComponent, ComponentConstructorOptions, ComponentInternals } from "svelte";
 
-export type ForwardedFromComponentToNativeProps = {
-  onclick?: (event: WindowEventMap["click"]) => void;
-
-  oncollapse?: (event: CustomEvent<null>) => void;
-
-  onexpand?: (event: CustomEvent<null>) => void;
-
-  onmouseenter?: (event: WindowEventMap["mouseenter"]) => void;
-
-  onmouseleave?: (event: WindowEventMap["mouseleave"]) => void;
-
-  onmouseover?: (event: WindowEventMap["mouseover"]) => void;
-};
+export type ForwardedFromComponentToNativeProps = Record<string, never>;
 
 export type ForwardedFromComponentToNativeExports = Record<string, never>;
 
-declare const ForwardedFromComponentToNative: Component<
-  ForwardedFromComponentToNativeProps,
-  ForwardedFromComponentToNativeExports,
-  ""
->;
+type $Events = {
+  click: WindowEventMap["click"];
+  collapse: CustomEvent<null>;
+  expand: CustomEvent<null>;
+  mouseenter: WindowEventMap["mouseenter"];
+  mouseleave: WindowEventMap["mouseleave"];
+  mouseover: WindowEventMap["mouseover"];
+};
+
+interface ForwardedFromComponentToNativeComponent {
+  new (
+    options: ComponentConstructorOptions<ForwardedFromComponentToNativeProps>
+  ): SvelteComponent<ForwardedFromComponentToNativeProps, $Events> & ForwardedFromComponentToNativeExports;
+  (
+    this: void,
+    internals: ComponentInternals,
+    props: ForwardedFromComponentToNativeProps
+  ): {
+    $on?<K extends keyof $Events & string>(type: K, callback: (e: $Events[K]) => void): () => void;
+    $set?(props: Partial<ForwardedFromComponentToNativeProps>): void;
+  } & ForwardedFromComponentToNativeExports;
+  element?: typeof HTMLElement;
+  z_$$bindings?: "";
+}
+declare const ForwardedFromComponentToNative: ForwardedFromComponentToNativeComponent;
 export default ForwardedFromComponentToNative;

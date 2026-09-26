@@ -1,4 +1,4 @@
-import type { Component } from "svelte";
+import type { SvelteComponent, ComponentConstructorOptions, ComponentInternals } from "svelte";
 
 /**
  * Internal-only module export.
@@ -42,19 +42,31 @@ export type JsdocInternalIgnoreProps = {
 
   /** Internal-only slot. */
   "debug-panel"?: (this: void) => void;
-
-  /** Fired when the value changes. */
-  onchange?: (event: CustomEvent<{ value: string }>) => void;
-
-  /** Fired for internal diagnostics only. */
-  ondebug?: (event: CustomEvent<{ reason: string }>) => void;
 };
 
 export type JsdocInternalIgnoreExports = Record<string, never>;
 
-declare const JsdocInternalIgnore: Component<
-  JsdocInternalIgnoreProps,
-  JsdocInternalIgnoreExports,
-  ""
->;
+type $Events = {
+  /** Fired when the value changes. */
+  change: CustomEvent<{ value: string }>;
+  /** Fired for internal diagnostics only. */
+  debug: CustomEvent<{ reason: string }>;
+};
+
+interface JsdocInternalIgnoreComponent {
+  new (
+    options: ComponentConstructorOptions<JsdocInternalIgnoreProps>
+  ): SvelteComponent<JsdocInternalIgnoreProps, $Events> & JsdocInternalIgnoreExports;
+  (
+    this: void,
+    internals: ComponentInternals,
+    props: JsdocInternalIgnoreProps
+  ): {
+    $on?<K extends keyof $Events & string>(type: K, callback: (e: $Events[K]) => void): () => void;
+    $set?(props: Partial<JsdocInternalIgnoreProps>): void;
+  } & JsdocInternalIgnoreExports;
+  element?: typeof HTMLElement;
+  z_$$bindings?: "";
+}
+declare const JsdocInternalIgnore: JsdocInternalIgnoreComponent;
 export default JsdocInternalIgnore;

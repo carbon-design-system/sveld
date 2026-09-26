@@ -1,4 +1,4 @@
-import type { Component } from "svelte";
+import type { SvelteComponent, ComponentConstructorOptions, ComponentInternals } from "svelte";
 
 export type DeprecatedTagsProps = {
   /**
@@ -19,12 +19,6 @@ export type DeprecatedTagsProps = {
    * @deprecated Render the badge inline instead.
    */
   badge?: (this: void, ...args: [{ count: number }]) => void;
-
-  /**
-   * Fired when the value changes.
-   * @deprecated Listen for the native `input` event instead.
-   */
-  onchange?: (event: CustomEvent<{ value: string }>) => void;
 };
 
 export type DeprecatedTagsExports = {
@@ -35,9 +29,28 @@ export type DeprecatedTagsExports = {
   focus: () => any;
 };
 
-declare const DeprecatedTags: Component<
-  DeprecatedTagsProps,
-  DeprecatedTagsExports,
-  ""
->;
+type $Events = {
+  /**
+   * Fired when the value changes.
+   * @deprecated Listen for the native `input` event instead.
+   */
+  change: CustomEvent<{ value: string }>;
+};
+
+interface DeprecatedTagsComponent {
+  new (
+    options: ComponentConstructorOptions<DeprecatedTagsProps>
+  ): SvelteComponent<DeprecatedTagsProps, $Events> & DeprecatedTagsExports;
+  (
+    this: void,
+    internals: ComponentInternals,
+    props: DeprecatedTagsProps
+  ): {
+    $on?<K extends keyof $Events & string>(type: K, callback: (e: $Events[K]) => void): () => void;
+    $set?(props: Partial<DeprecatedTagsProps>): void;
+  } & DeprecatedTagsExports;
+  element?: typeof HTMLElement;
+  z_$$bindings?: "";
+}
+declare const DeprecatedTags: DeprecatedTagsComponent;
 export default DeprecatedTags;

@@ -393,13 +393,6 @@ function genPropDef(
   def: Pick<ComponentDocApi, "props" | "rest_props" | "moduleName" | "extends" | "generics" | "slots"> & {
     canonicalPropNames?: Set<string>;
     canonicalPropsType?: string;
-    /**
-     * Legacy component events to render as `on<name>?: (event: Type) => void`
-     * callback props. Only passed for `"component"` format on legacy
-     * components; runes components already have callback props declared
-     * as regular props.
-     */
-    events?: ComponentDocApi["events"];
   },
   emit: {
     export: boolean;
@@ -515,11 +508,7 @@ function genPropDef(
         })()
       : "";
 
-  const event_callback_props = def.events
-    ? genEventCallbackProps({ events: def.events }, existingPropNames, commentLevel)
-    : [];
-
-  const snippet_props = [...named_snippet_props, children_snippet_prop, ...event_callback_props].filter(Boolean);
+  const snippet_props = [...named_snippet_props, children_snippet_prop].filter(Boolean);
 
   const props = [...extra_initial_props, ...snippet_props].join("\n");
 
@@ -816,9 +805,8 @@ function isStandardDomEvent(eventName: string): boolean {
 }
 
 /**
- * Computes the TypeScript type for a single component event, shared between
- * the `{ event: Type }` map (`class` format) and the `on<name>` callback prop
- * type (`component` format).
+ * Computes the TypeScript type for a single component event in the
+ * `{ event: Type }` map.
  */
 function computeEventTypeString(event: ComponentDocApi["events"][number]): string {
   switch (event.type) {
@@ -865,34 +853,6 @@ function genEventDef(def: Pick<ComponentDocApi, "events">, commentLevel: Comment
 
   // Force multiline when count > 1 (matches interface body formatting).
   return def.events.length === 1 ? `{${events_map}}` : `{\n${events_map}}`;
-}
-
-/**
- * Generates `on<name>?: (event: Type) => void;` prop entries for legacy
- * (non-runes) components in `"component"` format. Runes components already
- * declare callback props (e.g. `onclick`) as regular props, so this is only
- * called for legacy components. Skips names that collide with an existing prop.
- */
-function genEventCallbackProps(
-  def: Pick<ComponentDocApi, "events">,
-  existingPropNames: Set<string>,
-  commentLevel: CommentLevel = "all",
-): string[] {
-  return def.events
-    .map((event) => {
-      const propName = `on${event.name}`;
-      if (existingPropNames.has(propName)) return undefined;
-
-      let description = "";
-      const eventComment = formatSlotJsDoc(event.description, event.tags, event.deprecated, commentLevel);
-      if (eventComment) {
-        description = `${eventComment}\n      `;
-      }
-
-      return `
-      ${description}${formatKey(propName)}?: (event: ${computeEventTypeString(event)}) => void;`;
-    })
-    .filter((entry): entry is string => entry !== undefined);
 }
 
 /**
@@ -1006,49 +966,50 @@ function genComponentDeclaration(def: { moduleName: string; propsRef: string; ex
 }
 
 /**
- * Generates the `"component"` format shell for a GENERIC component. A
- * `declare const` can't itself carry a generic type parameter the way a
- * class can, so instead of `Component<Props, Exports, Bindings>` this emits
- * a per-component interface with two generic signatures instead:
+ * Generates the `"component"` format shell for a generic component or one
+ * with events, as a per-component interface instead of `Component<...>`:
  *
- * - a `(internals, props) => {...} & Exports` call signature, mirroring the
- *   `Component` interface's own shape, for consumers that call/mount the
- *   component directly;
- * - a `new (options) => SvelteComponent<...> & Exports` construct signature,
- *   because the Svelte language server's template checker resolves generic
- *   inference for `<Comp prop={...} />` usage through `new`, not the call
- *   signature - confirmed empirically against `@sveltejs/package`'s own
- *   generated output, which emits both for the same reason. Omitting it
- *   silently breaks per-usage inference: attributes type-check against the
- *   generic's default/constraint instead of the actual usage, which is
- *   exactly the "silent wrong types" failure this format must avoid.
+ * - A `declare const` can't itself carry a generic type parameter the way a
+ *   class can, so both signatures below carry it instead.
+ * - `Component` has no events parameter, and `createEventDispatcher` and
+ *   forwarded `on:` events only reach `on:event` listeners, never an
+ *   `on<name>` prop. The typed `$on` is what the Svelte language server
+ *   checks `on:event` usage against.
  *
- * This is the one place `"component"` format still touches a legacy type
- * (`SvelteComponent`/`ComponentConstructorOptions`, not the deprecated
- * `SvelteComponentTyped`), because it's the only way to get correct
- * generic inference for template usage.
+ * The `new (options) => SvelteComponent<...> & Exports` signature is there
+ * because the language server's template checker resolves generic inference
+ * for `<Comp prop={...} />` usage through `new`, not the call signature
+ * (confirmed against `@sveltejs/package`'s own output, which emits both).
+ * Omitting it silently breaks per-usage inference. This is the one place
+ * `"component"` format touches a legacy type (`SvelteComponent`/
+ * `ComponentConstructorOptions`, not the deprecated `SvelteComponentTyped`).
  */
-function genGenericComponentDeclaration(def: {
+function genComponentInterfaceDeclaration(def: {
   moduleName: string;
   generic: string;
   propsRef: string;
   exportsRef: string;
   bindings: string;
+  /** The `$Events` map, when the component has events. */
+  eventsRef?: string;
 }) {
   const identifier = componentIdentifier(def.moduleName);
   const interfaceName = `${identifier}Component`;
   const bindingsLiteral = def.bindings === EMPTY_STR ? '""' : def.bindings;
+  const onSignature = def.eventsRef
+    ? `$on?<K extends keyof ${def.eventsRef} & string>(type: K, callback: (e: ${def.eventsRef}[K]) => void): () => void;`
+    : "$on?(type: string, callback: (e: any) => void): () => void;";
 
   return `interface ${interfaceName} {
       new ${def.generic}(
         options: ComponentConstructorOptions<${def.propsRef}>
-      ): SvelteComponent<${def.propsRef}> & ${def.exportsRef};
+      ): SvelteComponent<${def.propsRef}${def.eventsRef ? `, ${def.eventsRef}` : ""}> & ${def.exportsRef};
       ${def.generic}(
         this: void,
         internals: ComponentInternals,
         props: ${def.propsRef}
       ): {
-        $on?(type: string, callback: (e: any) => void): () => void;
+        ${onSignature}
         $set?(props: Partial<${def.propsRef}>): void;
       } & ${def.exportsRef};
       element?: typeof HTMLElement;
@@ -1500,7 +1461,6 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
     extends: _extends,
     componentComment,
     contexts,
-    syntaxMode,
   } = component;
 
   const useComponentFormat = options?.format === "component";
@@ -1518,7 +1478,6 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
       slots,
       canonicalPropNames: new Set(typeScriptMetadata?.canonicalPropNames ?? []),
       canonicalPropsType: typeScriptMetadata?.canonicalPropsType,
-      events: useComponentFormat && syntaxMode === "legacy" ? events : undefined,
     },
     { export: exportFlags.props, typeNames: options?.typeNames, propsDeclaration: options?.propsDeclaration },
     commentLevel,
@@ -1526,6 +1485,11 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
 
   const generic = generics ? `<${generics[1]}>` : "";
   const genericProps = generics ? `${props_name}<${generics[0]}>` : props_name;
+  // An event detail can use the component's generics, so `$Events` takes them too.
+  const eventsDef =
+    useComponentFormat && events.length > 0 ? `type $Events${generic} = ${genEventDef({ events }, commentLevel)};` : "";
+  const eventsRef = generics ? `$Events<${generics[0]}>` : "$Events";
+  const useComponentInterface = useComponentFormat && (isGenericComponent || eventsDef !== "");
   const moduleExportsDef = genModuleExports({ moduleExports }, commentLevel);
   const typeDefs = getTypeDefs({ typedefs }, { export: exportFlags.typedefs }, commentLevel);
   const contextDefs = getContextDefs({ contexts, generics }, { export: exportFlags.contexts }, commentLevel);
@@ -1569,15 +1533,15 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
     rest_props?.type === "Element" && rest_props.name === "svelte:element" && !rest_props.thisValue;
 
   /**
-   * Generic components can't use `Component<...>` directly (a `declare const`
-   * can't carry its own generic type parameter), so they hand-roll an
-   * interface instead (see `genGenericComponentDeclaration`). It needs
-   * `SvelteComponent`/`ComponentConstructorOptions` for the `new` signature
-   * template-checking depends on, plus `ComponentInternals` for the call
-   * signature. Not `SvelteComponentTyped`, which stays avoided.
+   * Generic components and components with events can't use `Component<...>`
+   * directly, so they hand-roll an interface instead (see
+   * `genComponentInterfaceDeclaration`). It needs `SvelteComponent`/
+   * `ComponentConstructorOptions` for the `new` signature template-checking
+   * depends on, plus `ComponentInternals` for the call signature. Not
+   * `SvelteComponentTyped`, which stays avoided.
    */
   const componentTypeImport = useComponentFormat
-    ? isGenericComponent
+    ? useComponentInterface
       ? `import type { SvelteComponent, ComponentConstructorOptions, ComponentInternals${snippetImportNeeded ? ", Snippet" : ""} } from "svelte";`
       : `import type { Component${snippetImportNeeded ? ", Snippet" : ""} } from "svelte";`
     : `import { SvelteComponentTyped${snippetImportNeeded ? ", type Snippet" : ""} } from "svelte";`;
@@ -1593,13 +1557,14 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
     .join("\n");
 
   const componentDeclaration = useComponentFormat
-    ? isGenericComponent
-      ? genGenericComponentDeclaration({
+    ? useComponentInterface
+      ? genComponentInterfaceDeclaration({
           moduleName,
           generic,
           propsRef: genericProps,
           exportsRef: exports_ref,
           bindings,
+          ...(eventsDef ? { eventsRef } : {}),
         })
       : genComponentDeclaration({ moduleName, propsRef: genericProps, exportsRef: exports_ref, bindings })
     : genComponentShell({
@@ -1618,6 +1583,7 @@ export function writeTsDefinition(component: ComponentDocApi, options?: WriteTsD
     contextDefs,
     prop_def,
     exports_def,
+    eventsDef,
     [genComponentComment({ componentComment }, commentLevel), componentDeclaration].filter(Boolean).join("\n"),
   ]
     .map((section) => section.trim())
