@@ -366,7 +366,7 @@ A prop with no type annotation, no `@type` JSDoc, and no initializer has nothing
 With `reportDiagnostics` or `strict`, the grouped summary looks like this:
 
 ```
-sveld: 5 unresolved types found.
+sveld: 5 diagnostics (1 error, 4 warnings).
 
 Props without inferred types (1):
   ./icons/Add.svelte
@@ -468,7 +468,7 @@ await sveld({ json: true, strict: "errors" });
 
 #### Ignoring diagnostics
 
-Two ways to suppress a diagnostic without disabling `strict` for the whole run. Either way, the diagnostic still appears in `SveldResult.diagnostics` (with `ignored: true`) and is still counted in the text summary (`sveld: 2 unresolved types found (1 ignored).`), but never fails `--strict` / `--strict=errors`.
+Two ways to suppress a diagnostic without disabling `strict` for the whole run. Either way, the diagnostic still appears in `SveldResult.diagnostics` (with `ignored: true`) and is still counted in the text summary (`sveld: 2 diagnostics (0 errors, 2 warnings) (1 ignored).`), but never fails `--strict` / `--strict=errors`.
 
 **Config matchers** (`diagnostics.ignore`, an array of `{ code?, component?, name? }`): every field you set on a matcher must match for it to apply; an omitted field matches anything. `component` is a glob (`*` within a path segment, `**` across segments):
 

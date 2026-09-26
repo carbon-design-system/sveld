@@ -5,6 +5,8 @@ import { cli, parseCliOptions } from "../src/cli";
 import { setQuiet } from "../src/logger";
 import { normalizeSeparators } from "../src/path";
 
+const DIAGNOSTICS_SUMMARY_REGEX = /^sveld: \d+ diagnostics? \(/;
+
 const GITHUB_EVENT_NO_SOURCE_WARNING_REGEX =
   /::warning file=\.\/Phantom\.svelte,line=\d+,col=\d+,title=sveld sveld\/event-no-source::/;
 const GITHUB_BREAKING_CHANGE_ERROR_REGEX = /^::error file=Phantom,title=sveld breaking change::/;
@@ -1434,7 +1436,7 @@ describe("cli() --format with --report-diagnostics", () => {
     await cli(process);
 
     expect(stderrSpy).not.toHaveBeenCalled();
-    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("unresolved type"));
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringMatching(DIAGNOSTICS_SUMMARY_REGEX));
   });
 
   test("--format=json with no diagnostics prints nothing, same as text", async () => {
@@ -1685,7 +1687,7 @@ describe("cli() exit codes", () => {
     await cli(process);
 
     expect(process.exitCode).toBe(4);
-    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("unresolved type"));
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringMatching(DIAGNOSTICS_SUMMARY_REGEX));
     // `check: true` from the profile ran (no snapshot committed yet, so it just notices and doesn't fail).
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("no snapshot found"));
   });
@@ -1701,7 +1703,7 @@ describe("cli() exit codes", () => {
     await cli(process);
 
     expect(process.exitCode).toBe(0);
-    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("unresolved type"));
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringMatching(DIAGNOSTICS_SUMMARY_REGEX));
   });
 
   test("--strict=ci --check-examples=false opts back out of the profile's checkExamples", async () => {
@@ -1750,7 +1752,7 @@ describe("cli() exit codes", () => {
 
     expect(process.exitCode).toBe(3);
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("Suggested semver bump: major."));
-    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("unresolved type"));
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringMatching(DIAGNOSTICS_SUMMARY_REGEX));
   });
 
   test("sets exitCode 2 and names the requirement when --check-examples finds an incompatible typescript", async () => {
