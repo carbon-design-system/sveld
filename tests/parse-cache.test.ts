@@ -509,3 +509,59 @@ describe("ParseCache.save() atomicity", () => {
     await expect(generateBundle(dir, true, { cache: cacheFile })).resolves.toBeDefined();
   });
 });
+
+describe("ParseCache.save() skips an unchanged cache", () => {
+  let dir: string;
+  let cacheFile: string;
+
+  beforeEach(() => {
+    dir = mkdtempSync(join(tmpdir(), "sveld-parse-cache-dirty-"));
+    cacheFile = join(dir, ".cache", "parse-cache.json");
+    writeFileSync(join(dir, "Standalone.svelte"), STANDALONE);
+    writeFileSync(join(dir, "Button.svelte"), BUTTON);
+  });
+
+  afterEach(() => {
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  /** Replaces the cache file with a marker so a later write is detectable. */
+  const markCacheFile = () => {
+    const contents = readFileSync(cacheFile, "utf8");
+    writeFileSync(cacheFile, `${contents.slice(0, -1)}, "marker": true}`);
+  };
+
+  test("a fully cached run doesn't rewrite the file", async () => {
+    await generateBundle(dir, true, { cache: cacheFile });
+    markCacheFile();
+
+    const result = await generateBundle(dir, true, { cache: cacheFile });
+    result.cache?.save();
+
+    expect(readFileSync(cacheFile, "utf8")).toContain('"marker": true');
+  });
+
+  test("a removed component rewrites the file without its entry", async () => {
+    await generateBundle(dir, true, { cache: cacheFile });
+    markCacheFile();
+    rmSync(join(dir, "Button.svelte"));
+
+    await generateBundle(dir, true, { cache: cacheFile });
+
+    const saved = readFileSync(cacheFile, "utf8");
+    expect(saved).not.toContain('"marker": true');
+    expect(saved).not.toContain("Button.svelte");
+  });
+
+  test("new generated text rewrites the file", async () => {
+    await generateBundle(dir, true, { cache: cacheFile });
+    markCacheFile();
+
+    const result = await generateBundle(dir, true, { cache: cacheFile });
+    const [resolvedPath] = Object.keys(JSON.parse(readFileSync(cacheFile, "utf8")).entries);
+    result.cache?.setGeneratedText(resolvedPath, "key", "declare const x: 1;");
+    result.cache?.save();
+
+    expect(readFileSync(cacheFile, "utf8")).not.toContain('"marker": true');
+  });
+});
