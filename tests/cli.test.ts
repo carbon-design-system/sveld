@@ -761,6 +761,23 @@ describe("cli() --dry-run", () => {
     expect(logSpy).not.toHaveBeenCalledWith(expect.stringContaining("would write"));
   });
 
+  test("without --fail-fast, a parse error still exits 2 after writing the other components", async () => {
+    writeFileSync(
+      join(dir, "src", "Broken.svelte"),
+      "<script>\n  export let label = ;\n</script>\n<button>{label}</button>\n",
+    );
+    writeFileSync(
+      join(dir, "src", "index.js"),
+      'export { default as Button } from "./Button.svelte";\nexport { default as Broken } from "./Broken.svelte";\n',
+    );
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--dry-run"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(2);
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("would write"));
+  });
+
   test("an unresolved re-export alias prints one clear line and exits 1, not a raw stack trace", async () => {
     writeFileSync(join(dir, "src", "index.js"), 'export { default as Button } from "$components/Button.svelte";\n');
     process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--dry-run"];

@@ -26,12 +26,12 @@ export interface SveldResult {
   errors: ComponentParseError[];
   /**
    * Suggested process exit code for this run, using the same mapping as the
-   * CLI (a breaking `check` result wins over `strict` diagnostics): `0` on
-   * success, `3` on a breaking API change, `4` when `strict` diagnostics
-   * exist. `sveld()` never mutates `process.exitCode` itself; assign this
+   * CLI (the lowest applicable code wins): `0` on success, `2` when a
+   * component failed to parse, `3` on a breaking API change, `4` when
+   * `strict` diagnostics exist. `sveld()` never mutates `process.exitCode` itself; assign this
    * value yourself if you want the process to exit non-zero.
    */
-  exitCode: 0 | 3 | 4;
+  exitCode: 0 | 2 | 3 | 4;
 }
 
 /**
@@ -90,10 +90,12 @@ export async function sveld(opts?: SveldOptions): Promise<SveldResult> {
     }
   }
 
-  // Lowest applicable code wins (3 beats 4), matching the CLI's exit-code contract.
-  let exitCode: 0 | 3 | 4 = 0;
+  // Lowest applicable code wins (2 beats 3 beats 4), matching the CLI's exit-code contract.
+  let exitCode: 0 | 2 | 3 | 4 = 0;
 
-  if (checkResult?.bump === "major") {
+  if (result.errors.length > 0) {
+    exitCode = 2;
+  } else if (checkResult?.bump === "major") {
     exitCode = 3;
   } else if (failingDiagnostics(diagnostics, merged.strict).length > 0) {
     exitCode = 4;
