@@ -1655,7 +1655,7 @@ describe("cli() exit codes", () => {
   test("--strict=errors sets exitCode 4 when an error-severity diagnostic exists", async () => {
     writeFileSync(
       join(dir, "src", "Broken.svelte"),
-      "<script>\n  let { children, title } = $props();\n</script>\n<div>{title}{@render children(getProps())}</div>\n",
+      '<script>\n  /**\n   * @internal\n   * @typedef {{ id: string }} Secret\n   */\n  /** @type {Secret} */\n  export let value = { id: "a" };\n</script>\n',
     );
     writeFileSync(join(dir, "src", "index.js"), 'export { default as Broken } from "./Broken.svelte";\n');
     process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types=false", "--json", "--strict=errors"];

@@ -2209,20 +2209,12 @@ export default class ComponentParser {
               );
               slot_props = built.slot_props;
               slot_props_unresolved_spread = built.hasUnresolvedSpread;
-            } else if (renderInfo.arguments.length === 1) {
-              /**
-               * Multiple positional arguments (e.g. `{@render row(item, index)}`) are a
-               * supported pattern typed via `Snippet<[...]>` and intentionally left unmodeled
-               * here; only a single non-object argument loses information sveld can't recover.
-               */
-              recordDiagnostic(
-                this.ctx,
-                "syntax-skipped",
-                renderInfo.publicName,
-                `{@render ${renderInfo.publicName}(...)} argument is not a plain object literal; the render call was not mapped to slot metadata.`,
-                sourceRangeFromNode(this.ctx, node),
-              );
             }
+            /**
+             * Positional arguments (`{@render icon(16)}`, `{@render row(item, index)}`) aren't
+             * mapped to slot props: the snippet prop's own type (`Snippet<[...]>`) describes
+             * them, and an untyped one is reported as `prop-unknown-type`.
+             */
 
             const slot_name = renderInfo.publicName === "children" ? undefined : renderInfo.publicName;
             const slotKey: string | null = slot_name === undefined ? DEFAULT_SLOT_NAME : slot_name;
@@ -2439,8 +2431,16 @@ export default class ComponentParser {
         ? new Set(Array.from(this.ctx.snippetPropLocals, (localName) => this.resolvePublicPropName(localName)))
         : new Set<string>();
 
+    // A snippet prop is emitted from its slot, unless its render call took
+    // positional arguments and left no slot to stand in for it.
     const processedProps = ComponentParser.mapToArray(this.ctx.props)
-      .filter((prop) => !snippetPropNames.has(prop.name))
+      .filter(
+        (prop) =>
+          !(
+            snippetPropNames.has(prop.name) &&
+            this.ctx.slots.has(prop.name === "children" ? DEFAULT_SLOT_NAME : prop.name)
+          ),
+      )
       .map((prop) => {
         if (this.ctx.bindings.has(prop.name)) {
           const elementTypes = this.ctx.bindings

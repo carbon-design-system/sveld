@@ -382,8 +382,8 @@ Context values typed as `any` (1):
     - @event "close" has no matching dispatch or callback prop. (./Modal.svelte:4:5) [sveld/event-no-source]
 
 Component syntax sveld skipped (1):
-  ./Tabs.svelte
-    - {@render tabs(getTabProps())} argument is not a plain object literal; the render call was not mapped to slot metadata. (./Tabs.svelte:6:4) [sveld/syntax-skipped]
+  ./List.svelte
+    - Both the "generics" script attribute and @generics/@template JSDoc tags declare component generics; the script attribute takes precedence and the JSDoc declaration was ignored. (./List.svelte:1:1) [sveld/syntax-skipped]
 ```
 
 When `checkExamples` is also enabled, `@example` failures appear as additional groups: TS/JS failures under `example-compile-error`, `svelte`/`html` failures under `example-syntax-error`.
