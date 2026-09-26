@@ -10,7 +10,8 @@ import { TemplateParseNotImplementedError, parse as templateParse } from "../src
  * Structural `toEqual`, not `JSON.stringify`. This parser is independent of
  * svelte's, so field order can differ without meaning anything.
  *
- * `TemplateParseNotImplementedError` means the fixture isn't covered yet.
+ * `TemplateParseNotImplementedError` means the fixture isn't covered yet,
+ * which fails the final test: every fixture must be.
  * `normalize` drops fields sveld never reads: `name_loc`, expression `.loc`,
  * `SnippetBlock.parameters`/`.typeParams`, `trailingComments`, directive
  * modifiers, `TransitionDirective.intro`/`.outro`, body `Text.data`, and
@@ -86,6 +87,11 @@ describe("parse() output matches svelte/compiler's modern AST, for constructs im
       expect(normalize(shim)).toEqual(normalize(real));
     });
   }
+
+  // Runs after the per-file tests above, so the count is final.
+  test("no fixture hits a construct the parser reports as not implemented", () => {
+    expect(notImplementedCount).toBe(0);
+  });
 
   afterAll(() => {
     console.log(
