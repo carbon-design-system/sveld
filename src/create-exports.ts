@@ -85,7 +85,7 @@ export interface TypeExportEntry {
 /**
  * Builds `export type { ... } from "..."` statements, one per entry, in the
  * order given. Used by `typesOptions.indexTypes` to re-export generated
- * `Props`/`Exports`/typedef/context types from the barrel.
+ * `Props`/`Exports` types from the barrel.
  *
  * @example
  * ```ts

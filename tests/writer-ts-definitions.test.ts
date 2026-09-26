@@ -1346,48 +1346,23 @@ describe("typesOptions.transform", () => {
 });
 
 describe("typesOptions.indexTypes", () => {
-  let errorSpy: ReturnType<typeof jest.spyOn>;
-
   beforeEach(() => {
-    errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    jest.spyOn(console, "error").mockImplementation(() => {});
   });
 
   afterEach(() => {
     jest.restoreAllMocks();
   });
 
-  const componentA = mockComponentDocApi("A", "./A.svelte", {
-    typedefs: [
-      {
-        type: "{ x: number }",
-        name: "Shared",
-        ts: "type Shared = { x: number };",
-      },
-    ],
-    contexts: [
-      {
-        key: "a-context",
-        typeName: "Shared",
-        properties: [],
-      },
-    ],
-  });
-  const componentB = mockComponentDocApi("B", "./B.svelte", {
-    contexts: [
-      {
-        key: "b-context",
-        typeName: "Shared",
-        properties: [],
-      },
-    ],
-  });
+  const componentA = mockComponentDocApi("A", "./A.svelte");
+  const componentB = mockComponentDocApi("B", "./B.svelte");
 
   const indexTypesExports = mockParsedExports({
     A: mockParsedExport("./A.svelte", { default: true }),
     B: mockParsedExport("./B.svelte", { default: true }),
   });
 
-  test("re-exports Props, Exports, typedefs, and contexts, deduping in barrel order", async () => {
+  test('indexTypes: true with format: "component" emits Props and Exports', async () => {
     const tempDir = await mkdtemp(path.join(process.cwd(), ".tmp-sveld-ts-defs-index-types-"));
     const outDir = path.relative(process.cwd(), tempDir);
     const components: ComponentDocs = new Map([
@@ -1402,16 +1377,13 @@ describe("typesOptions.indexTypes", () => {
         preamble: "",
         exports: indexTypesExports,
         format: "component",
-        indexTypes: { props: true, exports: true, typedefs: true, contexts: true },
+        indexTypes: true,
       });
 
       const indexDts = readFileSync(path.join(tempDir, "index.d.ts"), "utf-8");
 
-      expect(indexDts).toContain('export type { AProps, AExports, Shared } from "./A.svelte";');
+      expect(indexDts).toContain('export type { AProps, AExports } from "./A.svelte";');
       expect(indexDts).toContain('export type { BProps, BExports } from "./B.svelte";');
-      expect(errorSpy).toHaveBeenCalledWith(
-        'sveld: index.d.ts skips duplicate type export "Shared" from "./B.svelte" (already exported from "./A.svelte").',
-      );
     } finally {
       rmSync(tempDir, { recursive: true, force: true });
     }
