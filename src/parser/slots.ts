@@ -10,7 +10,7 @@ import { sourceAtPos, sourceRangeFromNode } from "./source-position";
 import { assignValueOrUndefined } from "./utils";
 import { findVariableTypeAndDescription } from "./variable-jsdoc";
 
-const DEFAULT_SLOT_NAME = null;
+export const DEFAULT_SLOT_NAME = null;
 
 function inferSlotPropValueFromExpression(ctx: ParserContext, expression: unknown): SlotPropValue {
   const slot_prop_value: SlotPropValue = {
