@@ -58,7 +58,7 @@ Options:
   --quiet               Suppress progress logs (errors, the diagnostics summary, and the --check report are unaffected)
   --stdout              Print the document from exactly one of --json or --markdown to stdout and write nothing to disk (rejects --types and --check)
   --cache[=<path>]      Persist parsed output and skip re-parsing unchanged files (on by default, default path: node_modules/.cache/sveld/parse-cache.json; pass --cache=false to disable)
-  --check-examples[=syntax]  Check @example blocks: TS/JS against the TypeScript program, svelte/html markup against sveld's own parser (alias: --checkExamples, deprecated); --check-examples=syntax runs only the markup path and never loads TypeScript
+  --check-examples[=syntax]  Check @example blocks: TS/JS against the TypeScript program, svelte/html markup against sveld's own parser; --check-examples=syntax runs only the markup path and never loads TypeScript
   --report-diagnostics  Print unresolved-type diagnostics to stderr
   --strict[=errors]     Exit with code 4 when diagnostics exist (implies --report-diagnostics); --strict=errors only fails on error-severity diagnostics
   --types-format=<format>  ".d.ts" output format: "class" (default) or "component" (Svelte 5 Component<...>)
@@ -85,11 +85,6 @@ type CliFlagResult =
   | { kind: "unknown"; arg: string; suggestion?: string }
   | { kind: "usage-error"; message: string };
 
-/** Maps deprecated camelCase flag spellings to their canonical kebab-case form. */
-const FLAG_ALIASES: Record<string, string> = {
-  checkExamples: "check-examples",
-};
-
 /** Every recognized canonical flag name, used to suggest a fix for a typo'd flag. */
 const KNOWN_FLAGS = [
   "help",
@@ -113,8 +108,8 @@ const KNOWN_FLAGS = [
   "format",
 ];
 
-/** Candidate spellings for typo suggestions: canonical flags plus deprecated aliases. */
-const FLAG_SUGGESTION_CANDIDATES = [...KNOWN_FLAGS, ...Object.keys(FLAG_ALIASES)];
+/** An uppercase letter, i.e. a camelCase word boundary. */
+const UPPERCASE_RE = /[A-Z]/g;
 
 /** Boolean flags that never consume a following argument as a value. */
 const BOOLEAN_FLAGS = new Set([
@@ -137,27 +132,30 @@ const SPACE_SEPARATED_VALUE_FLAGS = new Set(["entry", "cache", "check", "types-f
 /** Of those, the flags that error (rather than falling back to a bare default) when no value is given. */
 const REQUIRES_VALUE_FLAGS = new Set(["entry", "types-format"]);
 
-/** Closest known flag (canonical spelling) to an unrecognized raw flag name, or undefined if none is close enough. */
+/**
+ * Closest known flag to an unrecognized raw flag name, or undefined if none
+ * is close enough. camelCase input is kebab-cased first, so `--failFast`
+ * suggests `--fail-fast`.
+ */
 function suggestFlag(rawFlag: string): string | undefined {
-  const closest = closestMatch(rawFlag, FLAG_SUGGESTION_CANDIDATES);
-  return closest === undefined ? undefined : (FLAG_ALIASES[closest] ?? closest);
+  const kebab = rawFlag.replace(UPPERCASE_RE, (letter) => `-${letter.toLowerCase()}`);
+  return closestMatch(kebab, KNOWN_FLAGS);
 }
 
 /**
  * Parses one `--flag` argument, given the raw next argument so value-taking
  * flags can decide whether to consume it as a space-separated value. `arg`
  * is assumed to start with `--`; positional (non-flag) arguments are handled
- * by the caller. Returns the resolved canonical flag name alongside the
- * result so the caller can track flag-adjacent parsing state (for example,
- * whether the previous flag was boolean) without re-parsing `arg`.
+ * by the caller. Returns the flag name alongside the result so the caller
+ * can track flag-adjacent parsing state (for example, whether the previous
+ * flag was boolean) without re-parsing `arg`.
  */
 function parseCliFlag(
   arg: string,
   rawNextArg: string | undefined,
 ): { result: CliFlagResult; consumedNext: boolean; flag: string } {
   const eqIndex = arg.indexOf("=");
-  const rawFlag = eqIndex === -1 ? arg.slice(2) : arg.slice(2, eqIndex);
-  const flag = FLAG_ALIASES[rawFlag] ?? rawFlag;
+  const flag = eqIndex === -1 ? arg.slice(2) : arg.slice(2, eqIndex);
   let value: string | boolean = eqIndex === -1 ? true : arg.slice(eqIndex + 1);
   let consumedNext = false;
 
@@ -177,10 +175,10 @@ function parseCliFlag(
     }
   }
 
-  return { result: parseCliFlagValue(flag, value, arg, rawFlag), consumedNext, flag };
+  return { result: parseCliFlagValue(flag, value, arg), consumedNext, flag };
 }
 
-function parseCliFlagValue(flag: string, value: string | boolean, arg: string, rawFlag: string): CliFlagResult {
+function parseCliFlagValue(flag: string, value: string | boolean, arg: string): CliFlagResult {
   switch (flag) {
     case "help":
       return { kind: "help" };
@@ -244,7 +242,7 @@ function parseCliFlagValue(flag: string, value: string | boolean, arg: string, r
         ? { kind: "option", option: { checkLevel: value as "major" | "minor" | "patch" } }
         : { kind: "option", option: {} };
     default:
-      return { kind: "unknown", arg, suggestion: suggestFlag(rawFlag) };
+      return { kind: "unknown", arg, suggestion: suggestFlag(flag) };
   }
 }
 
