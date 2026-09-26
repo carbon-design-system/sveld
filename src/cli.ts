@@ -16,7 +16,7 @@ import {
   formatDiagnosticsSummary,
   formatDiagnosticsSummaryJson,
 } from "./diagnostics";
-import { getSvelteEntry } from "./get-svelte-entry";
+import { resolveSvelteEntry } from "./get-svelte-entry";
 import {
   formatCheckGitHub,
   formatCheckGitHubSummary,
@@ -557,17 +557,20 @@ export async function cli(process: NodeJS.Process) {
 
   setQuiet(options.quiet === true);
 
-  const resolvedEntry = getSvelteEntry(options.entry);
+  const resolution = resolveSvelteEntry(options.entry);
   let input: string;
 
-  if (resolvedEntry !== null) {
-    input = resolvedEntry;
-  } else if (existsSync(join(process.cwd(), FALLBACK_ENTRY))) {
+  if (resolution.entry !== null) {
+    input = resolution.entry;
+  } else if (!resolution.configured && existsSync(join(process.cwd(), FALLBACK_ENTRY))) {
+    // Only when nothing named an entry: a mistyped --entry or package.json#svelte
+    // must fail rather than quietly document a different file.
     console.error(
-      `sveld: could not resolve an entry point; falling back to "${FALLBACK_ENTRY}". Set package.json#svelte (or pass --entry) to avoid relying on this fallback.`,
+      `sveld: no entry point configured; using "${FALLBACK_ENTRY}". Set package.json#svelte (or pass --entry) to silence this.`,
     );
     input = asSvelteEntryPoint(normalizeSeparators(FALLBACK_ENTRY));
   } else {
+    console.error(`sveld: ${resolution.message}`);
     process.exitCode = EXIT_CODES.USAGE_ERROR;
     return;
   }
