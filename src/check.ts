@@ -4,6 +4,7 @@ import type { ComponentDocApi, ComponentDocs } from "./bundle";
 import type { SveldRuntimeOptions } from "./load-config";
 import type { EntryExports } from "./parse-entry-exports";
 import { formatJsonOutput } from "./path";
+import { indexOfTopLevelArrow, splitTopLevel } from "./type-text";
 import {
   buildComponentApiDocument,
   COMPONENT_API_SCHEMA_VERSION,
@@ -58,89 +59,15 @@ export function bumpMeetsLevel(bump: SemverBump, level: CheckLevel): boolean {
 }
 
 /**
- * Splits `text` on top-level occurrences of `separator`, ignoring the
- * separator when nested inside `<>`/`()`/`{}`/`[]` or string literals (e.g. a
- * `"a|b"` literal member).
- */
-function splitTopLevel(text: string, separator: string): string[] {
-  const parts: string[] = [];
-  let depth = 0;
-  let current = "";
-  let quote: string | null = null;
-
-  for (let i = 0; i < text.length; i++) {
-    const ch = text[i];
-
-    if (quote) {
-      current += ch;
-      if (ch === "\\") {
-        i++;
-        current += text[i] ?? "";
-      } else if (ch === quote) {
-        quote = null;
-      }
-      continue;
-    }
-
-    if (ch === '"' || ch === "'" || ch === "`") {
-      quote = ch;
-      current += ch;
-      continue;
-    }
-
-    if (ch === "<" || ch === "(" || ch === "{" || ch === "[") depth++;
-    if (ch === ">" || ch === ")" || ch === "}" || ch === "]") depth--;
-
-    if (ch === separator && depth === 0) {
-      parts.push(current.trim());
-      current = "";
-      continue;
-    }
-
-    current += ch;
-  }
-  parts.push(current.trim());
-
-  return parts;
-}
-
-/**
  * Splits a type string on top-level `|`, ignoring `|` nested inside
  * `<>`/`()`/`{}`/`[]` or string literals (e.g. a `"a|b"` literal member).
  */
 function splitUnionMembers(type: string): Set<string> {
-  return new Set(splitTopLevel(type, "|").filter((member) => member.length > 0));
-}
-
-/** Index of the top-level `=>` in `type`, or -1 when none exists outside nesting/quotes. */
-function findTopLevelArrowIndex(type: string): number {
-  let depth = 0;
-  let quote: string | null = null;
-
-  for (let i = 0; i < type.length; i++) {
-    const ch = type[i];
-
-    if (quote) {
-      if (ch === "\\") {
-        i++;
-      } else if (ch === quote) {
-        quote = null;
-      }
-      continue;
-    }
-
-    if (ch === '"' || ch === "'" || ch === "`") {
-      quote = ch;
-      continue;
-    }
-
-    if (ch === "<" || ch === "(" || ch === "{" || ch === "[") depth++;
-    if (ch === ">" || ch === ")" || ch === "}" || ch === "]") depth--;
-
-    if (depth === 0 && ch === "=" && type[i + 1] === ">") return i;
-  }
-
-  return -1;
+  return new Set(
+    splitTopLevel(type, "|")
+      .map((member) => member.trim())
+      .filter((member) => member.length > 0),
+  );
 }
 
 interface ParsedFunctionType {
@@ -155,7 +82,7 @@ interface ParsedFunctionType {
  * in a single parenthesized group).
  */
 function parseFunctionType(type: string): ParsedFunctionType | undefined {
-  const arrowIndex = findTopLevelArrowIndex(type);
+  const arrowIndex = indexOfTopLevelArrow(type);
   if (arrowIndex === -1) return undefined;
 
   const paramsPart = type.slice(0, arrowIndex).trim();
@@ -163,7 +90,7 @@ function parseFunctionType(type: string): ParsedFunctionType | undefined {
   if (!paramsPart.startsWith("(") || !paramsPart.endsWith(")")) return undefined;
 
   const inner = paramsPart.slice(1, -1).trim();
-  const params = inner.length === 0 ? [] : splitTopLevel(inner, ",");
+  const params = inner.length === 0 ? [] : splitTopLevel(inner, ",").map((param) => param.trim());
 
   return { params, returnType };
 }

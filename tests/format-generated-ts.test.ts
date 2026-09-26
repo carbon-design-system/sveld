@@ -67,6 +67,11 @@ describe("formatGeneratedTypeScript", () => {
     );
   });
 
+  test("closes a string literal that ends in an escaped backslash", () => {
+    const raw = 'type A = {\n  a: "\\\\" | {\n  b: string\n}\n};';
+    expect(formatGeneratedTypeScript(raw)).toBe('type A = {\n  a: "\\\\" | {\n    b: string\n  }\n};\n');
+  });
+
   test("indents a wrapped union member or member access one level past the line it continues", () => {
     const raw =
       'type Size = "sm"\n| "lg";\ntype A = import("svelte/elements")\n.SvelteHTMLElements["a"];\ntype P = {\ndir?: "ascending"\n| "none";\n};\ntype F = (\n...args: any[]\n) => void;';

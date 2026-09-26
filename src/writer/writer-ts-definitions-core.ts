@@ -1,8 +1,8 @@
 import type { ComponentClassMember, ComponentProp, DeprecatedValue } from "../ComponentParser";
 import { getParsedComponentTypeScriptMetadata } from "../parsed-component-metadata";
-import { splitTopLevelCommas } from "../parser/split-top-level";
 import { escapeCommentText, formatParamList } from "../parser/utils";
 import type { ComponentDocApi } from "../plugin";
+import { splitTopLevel } from "../type-text";
 import { formatGeneratedTypeScript } from "./format-generated-ts";
 
 const ANY_TYPE = "any";
@@ -168,7 +168,7 @@ function referencesGeneric(propType: string, name: string): boolean {
 }
 
 /**
- * `splitTopLevelCommas` is called with the same `generics[1]` constraint
+ * `splitTopLevel` is called with the same `generics[1]` constraint
  * string from a few sites (`getGenericParams`, `getContextDefs`, and the
  * `$Props` generics suffix below) while generating a single component, so a
  * single last-input memo avoids re-splitting the same string repeatedly.
@@ -178,7 +178,7 @@ let lastSplitTopLevelCommasResult: string[] = [];
 function splitTopLevelCommasMemo(input: string): string[] {
   if (input !== lastSplitTopLevelCommasInput) {
     lastSplitTopLevelCommasInput = input;
-    lastSplitTopLevelCommasResult = splitTopLevelCommas(input);
+    lastSplitTopLevelCommasResult = splitTopLevel(input, ",");
   }
   return lastSplitTopLevelCommasResult;
 }

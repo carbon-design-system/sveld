@@ -20,6 +20,8 @@
  * without re-deriving offsets by walking line lengths.
  */
 
+import { indexOfClosingBracket } from "../type-text";
+
 interface CommentLine {
   /** Raw, unmodified text of this physical source line. */
   raw: string;
@@ -241,34 +243,23 @@ function extractType(lines: CommentLine[], fromIndex: number): { type: string; e
   while (start < lines.length - 1 && lines[start].content.trim() === "") start++;
   if (lines[start].content[0] !== "{") return null;
 
-  let depth = 0;
-  // Braces inside a string literal type (`{"}"}`, `{{ "a}": string }}`) don't count.
-  let quote: string | undefined;
-  let escaped = false;
-  const consumedPerLine: number[] = [];
-  let i = start;
-  for (; i < lines.length; i++) {
-    const content = lines[i].content;
-    let consumed = 0;
-    for (const ch of content) {
-      consumed++;
-      if (quote !== undefined) {
-        if (escaped) escaped = false;
-        else if (ch === "\\") escaped = true;
-        else if (ch === quote) quote = undefined;
-        continue;
-      }
-      if (ch === '"' || ch === "'" || ch === "`") quote = ch;
-      else if (ch === "{") depth++;
-      else if (ch === "}") depth--;
-      if (depth === 0) break;
-    }
-    consumedPerLine.push(consumed);
-    if (depth === 0) break;
-  }
-  if (depth !== 0) return null;
+  // Scanned as one text so a string literal type (`{"}"}`) that spans lines still hides its brackets.
+  const text = lines
+    .slice(start)
+    .map((line) => line.content)
+    .join("\n");
+  const closeIndex = indexOfClosingBracket(text, 0);
+  if (closeIndex === -1) return null;
 
-  const endIndex = i;
+  const consumedPerLine: number[] = [];
+  let remaining = closeIndex + 1;
+  for (let i = start; remaining > 0; i++) {
+    const length = lines[i].content.length;
+    consumedPerLine.push(Math.min(remaining, length));
+    remaining -= length + 1;
+  }
+
+  const endIndex = start + consumedPerLine.length - 1;
   const fragments = consumedPerLine.map((count, idx) => {
     const lineIndex = start + idx;
     const fragment = lines[lineIndex].content.slice(0, count);

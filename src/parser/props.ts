@@ -28,6 +28,7 @@ import type {
   ProcessedInitializer,
 } from "../ComponentParser";
 import type { CommentWithLocation } from "../template-parse/comments";
+import { returnTypeOfFunctionType } from "../type-text";
 import type { ParserContext } from "./context";
 import { NEWLINE_CR_REGEX, sourceAtPos, sourceForExpression } from "./source-position";
 import { trackAdditionalTypeDependencyNode } from "./type-resolution";
@@ -662,19 +663,10 @@ function bindingCallableReturnTypeText(ctx: ParserContext, name: string): string
       if (annotation?.type !== "TSTypeAnnotation") return undefined;
       const typeNode = annotation.typeAnnotation;
       if (!typeNode || typeof typeNode.start !== "number" || typeof typeNode.end !== "number") return undefined;
-      return returnTypeFromCallableTypeText(sourceAtPos(ctx, typeNode.start, typeNode.end));
+      return returnTypeOfFunctionType(sourceAtPos(ctx, typeNode.start, typeNode.end));
     }
   }
   return undefined;
-}
-
-/** Trailing return from a callable type (`() => string` → `string`). */
-function returnTypeFromCallableTypeText(type: string | undefined): string | undefined {
-  if (!type) return undefined;
-  const idx = type.lastIndexOf("=>");
-  if (idx === -1) return undefined;
-  const ret = type.slice(idx + 2).trim();
-  return ret || undefined;
 }
 
 /** Explicit TS return annotation text on a function (`): T`). */

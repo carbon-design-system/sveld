@@ -1,4 +1,5 @@
 import type ComponentParser from "../ComponentParser";
+import { splitTopLevel } from "../type-text";
 import type { ParserContext } from "./context";
 
 /** Matches a single word character; used to reject partial-name matches in {@link extractPropertyType}. */
@@ -8,26 +9,7 @@ function extractPropertyType(typeStr: string, propName: string): string | undefi
   const trimmed = typeStr.trim();
   if (!trimmed.startsWith("{") || !trimmed.endsWith("}")) return undefined;
 
-  const inner = trimmed.slice(1, -1);
-  const segments: string[] = [];
-  let depth = 0;
-  let current = "";
-
-  for (const char of inner) {
-    if (char === "{" || char === "<" || char === "(" || char === "[") {
-      depth++;
-      current += char;
-    } else if (char === "}" || char === ">" || char === ")" || char === "]") {
-      depth--;
-      current += char;
-    } else if ((char === ";" || char === ",") && depth === 0) {
-      segments.push(current.trim());
-      current = "";
-    } else {
-      current += char;
-    }
-  }
-  if (current.trim()) segments.push(current.trim());
+  const segments = splitTopLevel(trimmed.slice(1, -1), ";,").map((segment) => segment.trim());
 
   for (const segment of segments) {
     if (!segment.startsWith(propName)) continue;
