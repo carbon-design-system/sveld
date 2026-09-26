@@ -16,7 +16,7 @@ import {
   type SveldDiagnostic,
 } from "./diagnostics";
 import { getSvelteEntry } from "./get-svelte-entry";
-import { expandStrictProfile, loadConfig, mergeConfig, type SveldRuntimeOptions, validateOptions } from "./load-config";
+import { loadConfig, mergeConfig, type SveldRuntimeOptions, validateOptions } from "./load-config";
 import { setQuiet } from "./logger";
 import { generateBundle, toGenerateBundleOptions, writeOutput } from "./plugin";
 import type { ComponentApiDocument } from "./writer/document-model";
@@ -64,7 +64,6 @@ export function resolveExitCode(run: {
   writesSnapshot?: boolean;
   checkLevel?: CheckLevel;
   diagnostics: SveldDiagnostic[];
-  /** After {@link expandStrictProfile}, so never a `"ci"`/`"local"` profile name. */
   strict?: boolean | "errors";
 }): ExitCode {
   if (run.check && !run.check.snapshotExists && !run.writesSnapshot) return 1;
@@ -102,7 +101,7 @@ export async function sveld(opts?: SveldOptions): Promise<SveldResult> {
       'sveld: could not resolve a Svelte entry point. Set package.json#svelte, or pass the "entry" option.',
     );
   }
-  const merged = expandStrictProfile(mergeConfig<SveldRuntimeOptions>(fileConfig, runtimeOpts, { entry: input }));
+  const merged = mergeConfig<SveldRuntimeOptions>(fileConfig, runtimeOpts, { entry: input });
   validateOptions(merged);
   setQuiet(merged.quiet === true);
   const result = await generateBundle(input, merged.glob === true, toGenerateBundleOptions(merged));
