@@ -758,7 +758,9 @@ export async function generateBundle(
     : [];
 
   if (checkExamplesSyntaxCandidates.length > 0) {
-    await checkComponentExamplesSyntax(checkExamplesSyntaxCandidates);
+    for (const [component, diagnostics] of await checkComponentExamplesSyntax(checkExamplesSyntaxCandidates)) {
+      appendDiagnostics(component, diagnostics);
+    }
   }
 
   if (checkExamplesCompileCandidates.length > 0) {
@@ -770,14 +772,14 @@ export async function generateBundle(
     const resolver = created.resolver;
 
     try {
-      await checkComponentExamples(checkExamplesCompileCandidates, resolver, resolveComponentFilePath);
+      const found = await checkComponentExamples(checkExamplesCompileCandidates, resolver, resolveComponentFilePath);
+      for (const [component, diagnostics] of found) appendDiagnostics(component, diagnostics);
     } finally {
       await resolver.dispose();
     }
   }
 
   const crossFileReads = await resolveCrossFileCandidates(allComponentsForTypes.values(), resolveComponentFilePath);
-  syncCrossFileResults(components, allComponentsForTypes);
 
   // The generated-text cache is keyed on a component's own source, so it
   // can't see an edit to the module a default, context key, or event was
@@ -792,8 +794,11 @@ export async function generateBundle(
     }
   }
 
-  validateExtendsTargets(allComponentsForTypes, resolveComponentFilePath);
-  validateModuleReExportNames(allComponentsForTypes.values());
+  const validateExtendsTarget = createExtendsTargetValidator(allComponentsForTypes, resolveComponentFilePath);
+  for (const component of allComponentsForTypes.values()) {
+    appendDiagnostics(component, [...validateExtendsTarget(component), ...validateModuleReExportNames(component)]);
+  }
+  syncCrossFileResults(components, allComponentsForTypes);
 
   // Dedupe diagnostics from export and all-components passes.
   const diagnostics = applyDiagnosticIgnores(
@@ -1141,8 +1146,9 @@ function applyDispatchEscapeResolutions(
 }
 
 /**
- * The cross-file passes run on `allComponentsForTypes` and reassign
- * `contexts`, `events`, and `diagnostics` there. Exported components are separate
+ * The cross-file passes and the example and bundle-wide checks run on
+ * `allComponentsForTypes` and reassign `contexts`, `events`, and
+ * `diagnostics` there. Exported components are separate
  * shallow copies of the same parse, so JSON and Markdown would otherwise
  * miss a context whose key was imported, or an event a helper dispatches.
  */
@@ -1189,6 +1195,12 @@ function candidatesForKind(
   return filtered;
 }
 
+/** Adds `diagnostics` to `component`'s own, as a new array (the old one may be shared). */
+export function appendDiagnostics(component: ParsedComponent, diagnostics: SveldDiagnostic[]): void {
+  if (diagnostics.length === 0) return;
+  component.diagnostics = [...(component.diagnostics ?? []), ...diagnostics];
+}
+
 /**
  * Syntax-checks `kind: "syntax"` `@example` blocks (Svelte/HTML markup) with
  * sveld's own template parser: parse only, discard the AST. A parser error
@@ -1196,10 +1208,13 @@ function candidatesForKind(
  * doesn't model yet ({@link TemplateParseNotImplementedError}) is not the
  * example's fault, so it's skipped rather than reported.
  */
-async function checkComponentExamplesSyntax(candidates: CheckExamplesCandidate[]): Promise<void> {
+async function checkComponentExamplesSyntax(
+  candidates: CheckExamplesCandidate[],
+): Promise<Map<ComponentDocApi, SveldDiagnostic[]>> {
   const { parseSvelte } = await loadParserStack();
+  const found = new Map<ComponentDocApi, SveldDiagnostic[]>();
   for (const { component, sources } of candidates) {
-    const diagnostics = component.diagnostics ?? [];
+    const diagnostics: SveldDiagnostic[] = [];
 
     for (const source of sources) {
       try {
@@ -1218,15 +1233,16 @@ async function checkComponentExamplesSyntax(candidates: CheckExamplesCandidate[]
       }
     }
 
-    component.diagnostics = diagnostics;
+    found.set(component, diagnostics);
   }
+  return found;
 }
 
 async function checkComponentExamples(
   candidates: CheckExamplesCandidate[],
   resolver: TypeResolver,
   resolveComponentFilePath: ResolveComponentFilePath,
-): Promise<void> {
+): Promise<Map<ComponentDocApi, SveldDiagnostic[]>> {
   // Keyed by resolved filePath, not moduleName: two components discovered via
   // `--glob` can share a basename, and moduleName alone isn't unique.
   const diagnosticsByFilePath = await resolver.checkExamples(
@@ -1237,27 +1253,27 @@ async function checkComponentExamples(
     })),
   );
 
+  const found = new Map<ComponentDocApi, SveldDiagnostic[]>();
   for (const { component, sources } of candidates) {
-    const found = diagnosticsByFilePath.get(resolveComponentFilePath(component.filePath));
-    if (!found || found.length === 0) continue;
+    const items = diagnosticsByFilePath.get(resolveComponentFilePath(component.filePath));
+    if (!items || items.length === 0) continue;
 
     const sourceById = new Map(sources.map((source) => [source.id, source.source]));
-
-    const diagnostics = component.diagnostics ?? [];
-    for (const item of found) {
-      const source = sourceById.get(item.id);
-      diagnostics.push(
-        createDiagnostic({
+    found.set(
+      component,
+      items.map((item) => {
+        const source = sourceById.get(item.id);
+        return createDiagnostic({
           component: component.filePath,
           kind: "example-compile-error",
           name: item.name,
           message: item.message,
           ...(source ? { source } : {}),
-        }),
-      );
-    }
-    component.diagnostics = diagnostics;
+        });
+      }),
+    );
   }
+  return found;
 }
 
 const RESOLVABLE_EXTENDS_EXTENSIONS = [".ts", ".tsx", ".d.ts", ".svelte"];
@@ -1291,99 +1307,88 @@ function resolveExtendsTargetPath(fromAbsoluteFilePath: string, specifier: strin
  * Flags a module-script re-export named like the component's generated
  * `<Name>Props`/`<Name>Exports` type. The `.d.ts` only breaks if the
  * re-exported binding also carries a type, which isn't knowable without
- * resolving the source, so this is a warning. Pushes onto each component's
- * diagnostics, so only pass freshly parsed components.
+ * resolving the source, so this is a warning.
  */
-export function validateModuleReExportNames(components: Iterable<ComponentDocApi>): void {
-  for (const component of components) {
-    const reExports = component.moduleExports.filter((moduleExport) => moduleExport.kind === "re-export");
-    if (reExports.length === 0) continue;
+export function validateModuleReExportNames(component: ComponentDocApi): SveldDiagnostic[] {
+  const diagnostics: SveldDiagnostic[] = [];
+  const reExports = component.moduleExports.filter((moduleExport) => moduleExport.kind === "re-export");
+  if (reExports.length === 0) return diagnostics;
 
-    const generatedTypeNames = new Set([propsTypeName(component.moduleName), exportsTypeName(component.moduleName)]);
-    const diagnostics = component.diagnostics ?? [];
-    for (const reExport of reExports) {
-      if (!generatedTypeNames.has(reExport.name)) continue;
-      diagnostics.push(
-        createDiagnostic({
-          component: component.filePath,
-          kind: "module-export-conflict",
-          name: reExport.name,
-          message: `Re-export "${reExport.name}" has the same name as the generated "${reExport.name}" type; the .d.ts won't type-check if "${reExport.reExport?.from}" exports a type by that name.`,
-          source: reExport.source,
-        }),
-      );
-    }
-    component.diagnostics = diagnostics;
+  const generatedTypeNames = new Set([propsTypeName(component.moduleName), exportsTypeName(component.moduleName)]);
+  for (const reExport of reExports) {
+    if (!generatedTypeNames.has(reExport.name)) continue;
+    diagnostics.push(
+      createDiagnostic({
+        component: component.filePath,
+        kind: "module-export-conflict",
+        name: reExport.name,
+        message: `Re-export "${reExport.name}" has the same name as the generated "${reExport.name}" type; the .d.ts won't type-check if "${reExport.reExport?.from}" exports a type by that name.`,
+        source: reExport.source,
+      }),
+    );
   }
+  return diagnostics;
 }
 
 /**
- * Verifies every component's `@extends`/`@extendProps` target once all
- * components have parsed: the referenced file must exist, and when it's a
- * `.svelte` file in the bundle, the named interface must match that file's
- * generated `<Name>Props`. Also flags an own prop that shares a name with a
- * same-named prop of a different type on a bundled target, since `Base &
- * $Props` silently collapses that prop to `never` in the generated type.
+ * Returns a check of a component's `@extends`/`@extendProps` target against
+ * `components`, run once all of them have parsed: the referenced file must
+ * exist, and when it's a `.svelte` file in the bundle, the named interface
+ * must match that file's generated `<Name>Props`. Also flags an own prop
+ * that shares a name with a same-named prop of a different type on a
+ * bundled target, since `Base & $Props` silently collapses that prop to
+ * `never` in the generated type.
  *
  * Bare/package specifiers (not starting with `.` or `/`) aren't verifiable
  * without a module resolver and are left alone.
- *
- * Checks `scope` (default: every component) against targets anywhere in
- * `components`. Pushes onto each checked component's diagnostics, so `scope`
- * should only hold freshly parsed components.
  */
-export function validateExtendsTargets(
+export function createExtendsTargetValidator(
   components: ComponentDocs,
   resolveComponentFilePath: ResolveComponentFilePath,
-  scope: Iterable<ComponentDocApi> = components.values(),
-): void {
+): (component: ComponentDocApi) => SveldDiagnostic[] {
   const componentsByAbsolutePath = new Map(
     Array.from(components.values()).map((component) => [resolveComponentFilePath(component.filePath), component]),
   );
 
-  for (const component of scope) {
+  return (component) => {
     const extendsInfo = component.extends;
-    if (!extendsInfo) continue;
+    if (!extendsInfo) return [];
 
     const specifier = stripQuotes(extendsInfo.import);
-    if (specifier === undefined || (!specifier.startsWith(".") && !specifier.startsWith("/"))) continue;
+    if (specifier === undefined || (!specifier.startsWith(".") && !specifier.startsWith("/"))) return [];
 
     const fromAbsoluteFilePath = resolveComponentFilePath(component.filePath);
     const targetPath = resolveExtendsTargetPath(fromAbsoluteFilePath, specifier);
-    const diagnostics = component.diagnostics ?? [];
 
     if (targetPath === undefined) {
-      diagnostics.push(
+      return [
         createDiagnostic({
           component: component.filePath,
           kind: "extend-props-target-missing",
           name: extendsInfo.interface,
           message: `@extends/@extendProps target "${specifier}" was not found on disk.`,
         }),
-      );
-      component.diagnostics = diagnostics;
-      continue;
+      ];
     }
 
     // A real file outside the bundle (e.g. a hand-written .ts interface): file
     // existence is all that's verifiable without a module resolver.
     const target = componentsByAbsolutePath.get(targetPath);
-    if (!target) continue;
+    if (!target) return [];
 
     const expectedInterface = propsTypeName(target.moduleName);
     if (extendsInfo.interface !== expectedInterface) {
-      diagnostics.push(
+      return [
         createDiagnostic({
           component: component.filePath,
           kind: "extend-props-target-missing",
           name: extendsInfo.interface,
           message: `@extends/@extendProps names "${extendsInfo.interface}", but "${specifier}" generates "${expectedInterface}".`,
         }),
-      );
-      component.diagnostics = diagnostics;
-      continue;
+      ];
     }
 
+    const diagnostics: SveldDiagnostic[] = [];
     for (const ownProp of component.props) {
       const baseProp = target.props.find((prop) => prop.name === ownProp.name);
       if (baseProp && baseProp.type !== ownProp.type) {
@@ -1397,6 +1402,6 @@ export function validateExtendsTargets(
         );
       }
     }
-    component.diagnostics = diagnostics;
-  }
+    return diagnostics;
+  };
 }

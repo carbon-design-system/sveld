@@ -1,11 +1,13 @@
 import { lstatSync } from "node:fs";
 import { resolve } from "node:path";
 import {
+  appendDiagnostics,
   type ComponentDocApi,
   type ComponentDocs,
   type ComponentParseError,
   collectComponents,
   collectSvelteFilePaths,
+  createExtendsTargetValidator,
   createGlobMergeState,
   type GenerateBundleResult,
   mergeGlobbedComponents,
@@ -15,7 +17,6 @@ import {
   reportParseErrors,
   resolveCrossFileCandidates,
   syncCrossFileResults,
-  validateExtendsTargets,
   validateModuleReExportNames,
 } from "./bundle";
 import { buildReverseDeps, expandAffected } from "./dependency-graph";
@@ -129,7 +130,7 @@ export async function createSveldBundle(input: string, glob: boolean, documentEx
    * Resolves cross-file candidates for `scope`, records what each component
    * read, then runs the bundle-wide checks (`@extends` targets, module
    * re-export names) on `scope`, which must hold only freshly parsed
-   * components: the checks push onto their diagnostics.
+   * components: the checks add to their diagnostics.
    */
   const resolveCrossFile = async (scope: ComponentDocApi[]): Promise<void> => {
     const scopePaths = new Set(scope.map((component) => resolveComponentFilePath(component.filePath)));
@@ -142,8 +143,10 @@ export async function createSveldBundle(input: string, glob: boolean, documentEx
       const componentPath = resolveComponentFilePath(filePath);
       for (const module of modules) addReverseEdge(crossFileDepsReverse, module, componentPath);
     }
-    validateExtendsTargets(allComponentsForTypes, resolveComponentFilePath, scope);
-    validateModuleReExportNames(scope);
+    const validateExtendsTarget = createExtendsTargetValidator(allComponentsForTypes, resolveComponentFilePath);
+    for (const component of scope) {
+      appendDiagnostics(component, [...validateExtendsTarget(component), ...validateModuleReExportNames(component)]);
+    }
     syncCrossFileResults(components, allComponentsForTypes);
   };
 
