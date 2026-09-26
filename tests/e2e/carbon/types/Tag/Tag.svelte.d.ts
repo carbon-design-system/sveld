@@ -6,7 +6,6 @@ type $RestProps = SvelteHTMLElements["div"] & SvelteHTMLElements["span"];
 type $Props = {
   /**
    * Specify the type of tag
-   * @default undefined
    */
   type?: "red" | "magenta" | "purple" | "blue" | "cyan" | "teal" | "green" | "gray" | "cool-gray" | "warm-gray" | "high-contrast";
 
@@ -36,7 +35,6 @@ type $Props = {
 
   /**
    * Specify the icon from `carbon-icons-svelte` to render
-   * @default undefined
    */
   icon?: typeof import("carbon-icons-svelte").CarbonIcon;
 

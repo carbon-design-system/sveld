@@ -6,7 +6,6 @@ type $RestProps = SvelteHTMLElements["section"];
 type $Props = {
   /**
    * Set the size of the table
-   * @default undefined
    */
   size?: "compact" | "short" | "tall";
 

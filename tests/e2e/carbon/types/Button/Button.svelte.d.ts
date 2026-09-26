@@ -38,13 +38,11 @@ type $Props = {
    *   <Icon slot="icon" size={20} />
    * </Button>
    * ```
-   * @default undefined
    */
   icon?: any;
 
   /**
    * Specify the ARIA label for the button icon.
-   * @default undefined
    */
   iconDescription?: string;
 
@@ -96,7 +94,6 @@ type $Props = {
 
   /**
    * Set the `href` to use an anchor link.
-   * @default undefined
    */
   href?: string;
 

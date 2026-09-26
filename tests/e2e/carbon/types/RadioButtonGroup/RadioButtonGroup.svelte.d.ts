@@ -12,7 +12,6 @@ type $RestProps = SvelteHTMLElements["div"];
 type $Props = {
   /**
    * Set the selected radio button value
-   * @default undefined
    */
   selected?: string;
 
@@ -36,7 +35,6 @@ type $Props = {
 
   /**
    * Set an id for the container div element
-   * @default undefined
    */
   id?: string;
 

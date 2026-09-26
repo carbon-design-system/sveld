@@ -18,7 +18,6 @@ type $Props = {
 
   /**
    * Specify the title attribute for the label element
-   * @default undefined
    */
   title?: string;
 

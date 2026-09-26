@@ -18,7 +18,6 @@ type $Props = {
 
   /**
    * Set the `href`
-   * @default undefined
    */
   href?: string;
 

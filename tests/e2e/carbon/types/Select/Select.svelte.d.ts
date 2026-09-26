@@ -10,13 +10,11 @@ type $RestProps = SvelteHTMLElements["div"];
 type $Props = {
   /**
    * Specify the selected item value
-   * @default undefined
    */
   selected?: string;
 
   /**
    * Set the size of the select input
-   * @default undefined
    */
   size?: "sm" | "xl";
 
@@ -46,7 +44,6 @@ type $Props = {
 
   /**
    * Specify a name attribute for the select element
-   * @default undefined
    */
   name?: string;
 

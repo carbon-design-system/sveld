@@ -3,7 +3,6 @@ import type { Component } from "svelte";
 export type BindableDirectionRunesProps = {
   /**
    * Bind to the current value emitted by the component.
-   * @default undefined
    */
   size?: any;
 

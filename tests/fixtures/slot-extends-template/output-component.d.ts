@@ -2,9 +2,6 @@ import type { SvelteComponent, ComponentConstructorOptions, ComponentInternals }
 import type { ButtonProps } from "./Button.svelte";
 
 type $Props<Icon = any> = {
-  /**
-   * @default undefined
-   */
   icon?: Icon;
 
   /** Optional badge overlay. */

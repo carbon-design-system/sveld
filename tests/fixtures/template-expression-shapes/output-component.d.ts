@@ -24,9 +24,6 @@ type $Props = {
    */
   refs?: [];
 
-  /**
-   * @default undefined
-   */
   label?: any;
 
   [key: `data-${string}`]: unknown;

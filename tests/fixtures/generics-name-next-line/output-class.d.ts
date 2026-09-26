@@ -11,9 +11,6 @@ export type GenericsNameNextLineProps<Row extends DataTableRow = DataTableRow, K
    */
   rows?: ReadonlyArray<Row>;
 
-  /**
-   * @default undefined
-   */
   sortKey?: Key | undefined;
 
   children?: (this: void, ...args: [{

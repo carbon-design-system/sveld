@@ -12,13 +12,11 @@ type $Props = {
 
   /**
    * Specify the `href` attribute
-   * @default undefined
    */
   href?: string;
 
   /**
    * Specify the icon from `carbon-icons-svelte` to render
-   * @default undefined
    */
   icon?: typeof import("carbon-icons-svelte").CarbonIcon;
 

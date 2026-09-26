@@ -3,7 +3,6 @@ import { SvelteComponentTyped } from "svelte";
 export type SlotTemplatePropReferenceProps<Icon = any> = {
   /**
    * Specify the icon to render.
-   * @default undefined
    */
   icon?: Icon;
 };

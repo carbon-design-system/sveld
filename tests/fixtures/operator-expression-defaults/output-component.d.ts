@@ -11,9 +11,6 @@ export type OperatorExpressionDefaultsProps = {
    */
   label?: string;
 
-  /**
-   * @default undefined
-   */
   prefix?: string | undefined;
 
   /**

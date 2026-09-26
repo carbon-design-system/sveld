@@ -47,7 +47,6 @@ type $Props = {
 
   /**
    * Specify a name attribute for the select element
-   * @default undefined
    */
   name?: string;
 

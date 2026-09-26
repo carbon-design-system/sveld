@@ -78,7 +78,6 @@ type $Props = {
 
   /**
    * Specify a name attribute for the input
-   * @default undefined
    */
   name?: string;
 

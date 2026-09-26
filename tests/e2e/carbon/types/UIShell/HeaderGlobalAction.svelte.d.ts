@@ -12,7 +12,6 @@ type $Props = {
 
   /**
    * Specify the icon to render
-   * @default undefined
    */
   icon?: typeof import("carbon-icons-svelte").CarbonIcon;
 

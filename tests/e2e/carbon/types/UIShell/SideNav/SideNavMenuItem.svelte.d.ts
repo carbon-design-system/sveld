@@ -6,19 +6,16 @@ type $RestProps = SvelteHTMLElements["a"];
 type $Props = {
   /**
    * Set to `true` to select the item
-   * @default undefined
    */
   isSelected?: boolean;
 
   /**
    * Specify the `href` attribute
-   * @default undefined
    */
   href?: string;
 
   /**
    * Specify the item text
-   * @default undefined
    */
   text?: string;
 

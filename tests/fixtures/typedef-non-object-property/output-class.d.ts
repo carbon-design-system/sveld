@@ -3,9 +3,6 @@ import { SvelteComponentTyped } from "svelte";
 export type RowClass = string | ((row: string) => string | undefined);
 
 export type TypedefNonObjectPropertyProps = {
-  /**
-   * @default undefined
-   */
   rowClass?: RowClass;
 };
 

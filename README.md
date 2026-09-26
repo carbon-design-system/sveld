@@ -2117,13 +2117,9 @@ export interface TableContext {
 }
 
 export type ComponentProps = {
-  /** @default undefined */
   value: import("svelte/store").Writable<string>;
-  /** @default undefined */
   createStore: typeof import("svelte/store").writable;
-  /** @default undefined */
   buttonProps: import("svelte").ComponentProps<import("svelte").SvelteComponent>;
-  /** @default undefined */
   context: TableContext;
 };
 ```
@@ -2158,9 +2154,7 @@ Output:
 
 ```ts
 export type ComponentProps = {
-  /** @default undefined */
   payload: unknown;
-  /** @default undefined */
   raw: any;
 };
 ```
@@ -2608,13 +2602,11 @@ export type ComponentProps = {
   /**
    * A branded string. At runtime it is a plain `string`, but the brand makes it
    * a distinct domain type that other strings cannot be assigned to.
-   * @default undefined
    */
   userId: string & { readonly __brand: "UserId" };
 
   /**
    * A branded number representing a monetary amount in cents.
-   * @default undefined
    */
   amount: number & { readonly __brand: "Cents" };
 };

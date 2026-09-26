@@ -6,7 +6,6 @@ type $RestProps = SvelteHTMLElements["li"];
 type $Props = {
   /**
    * Set the `href` to use an anchor link
-   * @default undefined
    */
   href?: string;
 

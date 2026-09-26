@@ -7,7 +7,6 @@ type $RestProps = SvelteHTMLElements["svg"];
 type $Props = {
   /**
    * Specify the icon from `carbon-icons-svelte` to render
-   * @default undefined
    */
   render?: typeof import("carbon-icons-svelte").CarbonIcon;
 

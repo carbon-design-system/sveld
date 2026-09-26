@@ -20,7 +20,6 @@ type $Props = {
 
   /**
    * Set the size of the data table
-   * @default undefined
    */
   size?: "compact" | "short" | "tall";
 

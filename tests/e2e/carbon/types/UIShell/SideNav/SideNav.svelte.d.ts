@@ -12,7 +12,6 @@ type $Props = {
 
   /**
    * Specify the ARIA label for the nav
-   * @default undefined
    */
   ariaLabel?: string;
 

@@ -3,7 +3,6 @@ import { SvelteComponentTyped } from "svelte";
 export type BindableDirectionLegacyProps = {
   /**
    * Bind to the current value emitted by the component.
-   * @default undefined
    */
   size?: any;
 
