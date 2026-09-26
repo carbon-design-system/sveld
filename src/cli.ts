@@ -64,7 +64,7 @@ Options:
   --llms                Generate an llms.txt / llms-full.txt pair (https://llmstxt.org)
   --fail-fast           Abort the run when a single component fails to parse
   --quiet               Suppress progress logs (errors, the diagnostics summary, and the --check report are unaffected)
-  --stdout[=json|ndjson] Print the document from exactly one of --json, --markdown, or --custom-elements to stdout and write nothing to disk (rejects --types and --check); --stdout=ndjson prints one JSON object per component per line and requires --json
+  --stdout              Print the document from exactly one of --json, --markdown, or --custom-elements to stdout and write nothing to disk (rejects --types and --check)
   --cache[=<path>]      Persist parsed output and skip re-parsing unchanged files (on by default, default path: node_modules/.cache/sveld/parse-cache.json; pass --cache=false to disable)
   --check-examples[=syntax]  Check @example blocks: TS/JS against the TypeScript program, svelte/html markup against sveld's own parser (alias: --checkExamples, deprecated); --check-examples=syntax runs only the markup path and never loads TypeScript
   --report-diagnostics  Print unresolved-type diagnostics to stderr
@@ -133,6 +133,7 @@ const BOOLEAN_FLAGS = new Set([
   "json",
   "markdown",
   "quiet",
+  "stdout",
   "custom-elements",
   "llms",
   "strict",
@@ -204,12 +205,9 @@ function parseCliFlagValue(flag: string, value: string | boolean, arg: string, r
     case "quiet":
       return { kind: "option", option: { [flag]: value === true || value === "true" } };
     case "stdout":
-      // Bare `--stdout` (or `--stdout=true`) keeps the single-document
-      // default; `--stdout=json`/`--stdout=ndjson` select the format
-      // explicitly. Any other value is validated (and rejected) in `cli()`.
       if (value === true || value === "true") return { kind: "option", option: { stdout: true } };
       if (value === "false") return { kind: "option", option: { stdout: false } };
-      return { kind: "option", option: { stdout: value as "json" | "ndjson" } };
+      return { kind: "usage-error", message: `sveld: --stdout does not take a value; got "${value}".` };
     case "custom-elements":
       return { kind: "option", option: { customElements: value === true || value === "true" } };
     case "llms":
@@ -366,22 +364,10 @@ export async function cli(process: NodeJS.Process) {
   validateOptions(options);
 
   if (options.stdout) {
-    if (options.stdout !== true && options.stdout !== "json" && options.stdout !== "ndjson") {
-      console.error(`sveld: --stdout must be "json" or "ndjson"; got "${options.stdout}".`);
-      process.exitCode = EXIT_CODES.USAGE_ERROR;
-      return;
-    }
-
     const selectedOutputs = [options.json, options.markdown, options.customElements].filter(Boolean).length;
 
     if (selectedOutputs !== 1) {
       console.error("sveld: --stdout requires exactly one of --json, --markdown, or --custom-elements.");
-      process.exitCode = EXIT_CODES.USAGE_ERROR;
-      return;
-    }
-
-    if (options.stdout === "ndjson" && !options.json) {
-      console.error("sveld: --stdout=ndjson is only valid with --json.");
       process.exitCode = EXIT_CODES.USAGE_ERROR;
       return;
     }

@@ -39,10 +39,8 @@ interface E2eScriptStep {
   script: string;
   /** Defaults to 0. */
   expectExitCode?: number;
-  /** Asserts stdout is a single JSON document, or one JSON object per non-empty line. */
-  expectStdout?: "json" | "ndjson";
-  /** With `expectStdout: "ndjson"`, the exact number of JSON lines expected. */
-  expectLines?: number;
+  /** Asserts stdout is a single JSON document. */
+  expectStdout?: "json";
 }
 
 /**
@@ -71,27 +69,6 @@ async function runE2eScripts(dir: string, steps: E2eScriptStep[]): Promise<boole
       } catch {
         console.error(`${dir}: "${step.script}" stdout is not valid JSON`);
         ok = false;
-      }
-    }
-
-    if (step.expectStdout === "ndjson") {
-      const lines = result.stdout
-        .toString()
-        .split("\n")
-        .filter((line) => line.length > 0);
-
-      if (step.expectLines !== undefined && lines.length !== step.expectLines) {
-        console.error(`${dir}: "${step.script}" printed ${lines.length} ndjson lines, expected ${step.expectLines}`);
-        ok = false;
-      }
-
-      for (const line of lines) {
-        try {
-          JSON.parse(line);
-        } catch {
-          console.error(`${dir}: "${step.script}" printed a non-JSON ndjson line: ${line}`);
-          ok = false;
-        }
       }
     }
   }
