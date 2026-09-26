@@ -49,13 +49,11 @@ export interface SveldRuntimeOptions extends PluginSveldOptions {
   stdout?: boolean;
   /**
    * Output format for the `--check` report and the `--report-diagnostics` /
-   * `--strict` diagnostics summary: `"text"` (default), `"json"`, or
-   * `"github"` (GitHub Actions `::error`/`::warning` workflow commands, plus
-   * a `GITHUB_STEP_SUMMARY` Markdown table when that env var is set).
+   * `--strict` diagnostics summary: `"text"` (default) or `"json"`.
    * Channels are unchanged, the check report on stdout and diagnostics on
    * stderr. CLI-only; `sveld()` ignores `format` for its own console output.
    */
-  format?: "text" | "json" | "github";
+  format?: "text" | "json";
 }
 
 /**
