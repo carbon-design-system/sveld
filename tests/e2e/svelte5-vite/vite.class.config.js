@@ -10,7 +10,6 @@ export default defineConfig({
       types: true,
       typesOptions: {
         outDir: "types-class",
-        printWidth: 80,
         format: "class",
       },
     }),
