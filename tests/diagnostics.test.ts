@@ -135,22 +135,25 @@ describe("ComponentParser diagnostics", () => {
     expect(diagnostics?.some((d) => d.kind === "event-no-source")).toBe(false);
   });
 
-  test("flags a non-trivial {@render} argument as syntax-skipped", () => {
+  test("keeps an untyped snippet rendered with a positional argument as a prop-unknown-type prop", () => {
     const parser = new ComponentParser();
     const source = `
       <script>
-        let { children, title } = $props();
+        let { children, icon, title } = $props();
       </script>
-      <div>{title}{@render children(getProps())}</div>
+      <div>{title}{@render children(getProps())}{@render icon?.(16)}</div>
     `;
 
     const { diagnostics, props } = parser.parseSvelteComponent(source, parseContext);
-    const syntaxDiagnostic = diagnostics?.find((d) => d.kind === "syntax-skipped");
 
-    expect(syntaxDiagnostic).toMatchObject({ kind: "syntax-skipped", name: "children" });
-    expect(typeof syntaxDiagnostic?.message).toBe("string");
-    expect(syntaxDiagnostic?.source).toBeDefined();
-    expect(props.map((p) => p.name)).toContain("title");
+    expect(diagnostics?.some((d) => d.kind === "syntax-skipped")).toBe(false);
+    expect(props.map((p) => p.name).sort()).toEqual(["children", "icon", "title"]);
+    expect(
+      diagnostics
+        ?.filter((d) => d.kind === "prop-unknown-type")
+        .map((d) => d.name)
+        .sort(),
+    ).toEqual(["children", "icon", "title"]);
   });
 
   test("@sveld-ignore on a prop's JSDoc suppresses its prop-unknown-type diagnostic", () => {
