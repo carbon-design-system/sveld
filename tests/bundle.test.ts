@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { type ComponentDocApi, type ComponentDocs, generateBundle } from "../src/bundle";
@@ -245,6 +245,44 @@ describe("generateBundle validates @extends/@extendProps targets", () => {
     const component = byModuleName(result.allComponentsForTypes, "Clean");
 
     expect(component?.diagnostics?.some((d) => d.kind.startsWith("extend-props-"))).toBeFalsy();
+  });
+
+  test("finds a target the way an import resolves it", async () => {
+    writeFileSync(path.join(dir, "types.ts"), "export interface TypesProps {}\n");
+    mkdirSync(path.join(dir, "shared"));
+    writeFileSync(path.join(dir, "shared", "index.ts"), "export interface SharedProps {}\n");
+    writeFileSync(path.join(dir, "legacy.mjs"), "export {};\n");
+    for (const [name, specifier, iface] of [
+      ["JsSpecifier", "./types.js", "TypesProps"],
+      ["DirectoryIndex", "./shared", "SharedProps"],
+      ["ModuleJs", "./legacy", "LegacyProps"],
+    ]) {
+      writeFileSync(
+        path.join(dir, `${name}.svelte`),
+        `<script>\n  /** @extendProps {"${specifier}"} ${iface} */\n</script>\n`,
+      );
+    }
+
+    const result = await generateBundle(dir, true);
+
+    for (const name of ["JsSpecifier", "DirectoryIndex", "ModuleJs"]) {
+      const component = byModuleName(result.allComponentsForTypes, name);
+      expect((component?.diagnostics ?? []).filter((d) => d.kind.startsWith("extend-props-"))).toEqual([]);
+    }
+  });
+
+  test("checks an extensionless target against the component it names", async () => {
+    writeFileSync(
+      path.join(dir, "NoExtension.svelte"),
+      `<script>\n  /** @extendProps {"./Base"} WrongProps */\n</script>\n`,
+    );
+
+    const result = await generateBundle(dir, true);
+    const component = byModuleName(result.allComponentsForTypes, "NoExtension");
+
+    expect(component?.diagnostics).toContainEqual(
+      expect.objectContaining({ kind: "extend-props-target-missing", name: "WrongProps" }),
+    );
   });
 
   test("does not attempt to verify a bare/package import specifier", async () => {

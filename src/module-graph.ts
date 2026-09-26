@@ -91,20 +91,21 @@ export class ModuleGraph {
   /**
    * Resolves a module specifier to an on-disk source file.
    *
-   * Tries the path verbatim, with each of {@link MODULE_EXTENSIONS}, then an
+   * Tries the path verbatim, with each of `extensions`, then an
    * `index.*` file when the specifier points at a directory, and finally the
    * `.ts` file a missing `.js` specifier stands for. Only relative, absolute,
    * and tsconfig/jsconfig path-alias specifiers resolve; a bare package
    * specifier (`"helpers"`) never names a file next to the importer.
    *
    * @param fromDir - The importing file's directory.
+   * @param extensions - Probed in order when the path names no file.
    *
    * @example
    * ```ts
    * graph.resolve("./utils", "/abs/src") // "/abs/src/utils.ts"
    * ```
    */
-  resolve(specifier: string, fromDir: string): string | null {
+  resolve(specifier: string, fromDir: string, extensions: readonly string[] = MODULE_EXTENSIONS): string | null {
     const aliased = this.aliases.absolute(specifier, fromDir);
     if (aliased === specifier && !isPathSpecifier(specifier)) return null;
     const base = resolve(fromDir, aliased);
@@ -120,19 +121,19 @@ export class ModuleGraph {
       const stat = entry && !entry.isSymbolicLink() ? entry : statSync(base, { throwIfNoEntry: false });
       if (stat?.isFile()) return base;
 
-      for (const ext of MODULE_EXTENSIONS) {
+      for (const ext of extensions) {
         if (this.listings.has(parentDir, baseName + ext)) return base + ext;
       }
 
       if (stat?.isDirectory()) {
-        for (const ext of MODULE_EXTENSIONS) {
+        for (const ext of extensions) {
           if (this.listings.has(base, `index${ext}`)) return join(base, `index${ext}`);
         }
       }
       return null;
     }
 
-    for (const ext of MODULE_EXTENSIONS) {
+    for (const ext of extensions) {
       if (this.listings.has(parentDir, baseName + ext)) return base + ext;
     }
 

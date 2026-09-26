@@ -441,7 +441,11 @@ export class Project {
       }
     }
 
-    const validateExtendsTarget = createExtendsTargetValidator(allComponentsForTypes, resolveComponentFilePath);
+    const validateExtendsTarget = createExtendsTargetValidator(
+      allComponentsForTypes,
+      resolveComponentFilePath,
+      this.graph,
+    );
     for (const component of allComponentsForTypes.values()) {
       appendDiagnostics(component, [...validateExtendsTarget(component), ...validateModuleReExportNames(component)]);
     }
