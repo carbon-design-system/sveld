@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 17,
-      "column": 0
-    }
-  },
   "syntaxMode": "runes",
   "scriptLanguage": "js",
   "props": [
@@ -27,17 +17,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 3,
-          "column": 4
-        },
-        "end": {
-          "line": 3,
-          "column": 15
-        }
-      }
+      "reactive": false
     },
     {
       "name": "prop1",
@@ -60,17 +40,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 5,
-          "column": 4
-        },
-        "end": {
-          "line": 5,
-          "column": 16
-        }
-      }
+      "reactive": false
     },
     {
       "name": "prop2",
@@ -88,17 +58,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 10,
-          "column": 4
-        },
-        "end": {
-          "line": 10,
-          "column": 16
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],

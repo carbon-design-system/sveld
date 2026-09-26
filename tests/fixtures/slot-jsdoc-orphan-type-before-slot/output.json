@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 13,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -18,17 +8,7 @@
       "name": "row",
       "default": false,
       "slot_props": "{ flag: boolean }",
-      "description": "`@type` without a preceding `@event` is ignored for events and must not become a passthrough tag.",
-      "source": {
-        "start": {
-          "line": 9,
-          "column": 0
-        },
-        "end": {
-          "line": 12,
-          "column": 2
-        }
-      }
+      "description": "`@type` without a preceding `@event` is ignored for events and must not become a passthrough tag."
     }
   ],
   "events": [],

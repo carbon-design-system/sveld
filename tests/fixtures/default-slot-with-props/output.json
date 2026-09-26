@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 17,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -27,17 +17,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 4,
-          "column": 2
-        },
-        "end": {
-          "line": 4,
-          "column": 24
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -46,17 +26,7 @@
       "name": null,
       "default": true,
       "fallback": "<span>{item}</span>",
-      "slot_props": "{ item: string; index: number; isFirst: boolean; isLast: boolean; }",
-      "source": {
-        "start": {
-          "line": 8,
-          "column": 2
-        },
-        "end": {
-          "line": 15,
-          "column": 9
-        }
-      }
+      "slot_props": "{ item: string; index: number; isFirst: boolean; isLast: boolean; }"
     }
   ],
   "events": [],

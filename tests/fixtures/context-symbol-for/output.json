@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 14,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -17,17 +7,7 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "Record<string, never>",
-      "source": {
-        "start": {
-          "line": 13,
-          "column": 27
-        },
-        "end": {
-          "line": 13,
-          "column": 35
-        }
-      }
+      "slot_props": "Record<string, never>"
     }
   ],
   "events": [],
@@ -44,17 +24,7 @@
           "description": "Push a notification message.",
           "optional": false
         }
-      ],
-      "source": {
-        "start": {
-          "line": 10,
-          "column": 2
-        },
-        "end": {
-          "line": 10,
-          "column": 52
-        }
-      }
+      ]
     }
   ],
   "diagnostics": []

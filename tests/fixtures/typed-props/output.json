@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 28,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -22,17 +12,7 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 7,
-          "column": 2
-        },
-        "end": {
-          "line": 7,
-          "column": 19
-        }
-      }
+      "reactive": false
     },
     {
       "name": "prop2",
@@ -49,17 +29,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 13,
-          "column": 2
-        },
-        "end": {
-          "line": 13,
-          "column": 26
-        }
-      }
+      "reactive": false
     },
     {
       "name": "prop3",
@@ -76,17 +46,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 18,
-          "column": 2
-        },
-        "end": {
-          "line": 18,
-          "column": 23
-        }
-      }
+      "reactive": false
     },
     {
       "name": "prop4",
@@ -103,17 +63,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 21,
-          "column": 2
-        },
-        "end": {
-          "line": 21,
-          "column": 27
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -128,16 +78,6 @@
       "kind": "prop-unknown-type",
       "name": "prop2",
       "message": "Prop \"prop2\" type could not be inferred; falling back to \"any\".",
-      "source": {
-        "start": {
-          "line": 13,
-          "column": 2
-        },
-        "end": {
-          "line": 13,
-          "column": 26
-        }
-      },
       "code": "sveld/prop-unknown-type",
       "severity": "warning"
     }

@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 17,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -19,65 +9,25 @@
       "type": "dispatched",
       "name": "close",
       "detail": "{ reason: string; }",
-      "description": "Fired on close.",
-      "source": {
-        "start": {
-          "line": 13,
-          "column": 5
-        },
-        "end": {
-          "line": 13,
-          "column": 42
-        }
-      }
+      "description": "Fired on close."
     },
     {
       "type": "dispatched",
       "name": "open",
       "detail": "null",
-      "description": "Fired on open.",
-      "source": {
-        "start": {
-          "line": 14,
-          "column": 5
-        },
-        "end": {
-          "line": 14,
-          "column": 21
-        }
-      }
+      "description": "Fired on open."
     },
     {
       "type": "dispatched",
       "name": "reset",
       "detail": "null",
-      "description": "Fired on reset.",
-      "source": {
-        "start": {
-          "line": 15,
-          "column": 5
-        },
-        "end": {
-          "line": 15,
-          "column": 36
-        }
-      }
+      "description": "Fired on reset."
     },
     {
       "type": "dispatched",
       "name": "toggle",
       "detail": "null",
-      "description": "Fired on toggle.",
-      "source": {
-        "start": {
-          "line": 6,
-          "column": 5
-        },
-        "end": {
-          "line": 6,
-          "column": 35
-        }
-      }
+      "description": "Fired on toggle."
     }
   ],
   "typedefs": [],
@@ -89,16 +39,6 @@
       "kind": "event-no-source",
       "name": "toggle",
       "message": "@event \"toggle\" has no matching dispatch or callback prop.",
-      "source": {
-        "start": {
-          "line": 6,
-          "column": 5
-        },
-        "end": {
-          "line": 6,
-          "column": 35
-        }
-      },
       "code": "sveld/event-no-source",
       "severity": "warning"
     }

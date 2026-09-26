@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 31,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "ts",
   "props": [
@@ -21,17 +11,7 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 25,
-          "column": 2
-        },
-        "end": {
-          "line": 25,
-          "column": 24
-        }
-      }
+      "reactive": false
     },
     {
       "name": "mode",
@@ -48,17 +28,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 26,
-          "column": 2
-        },
-        "end": {
-          "line": 26,
-          "column": 33
-        }
-      }
+      "reactive": false
     },
     {
       "name": "internal",
@@ -74,17 +44,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 27,
-          "column": 2
-        },
-        "end": {
-          "line": 27,
-          "column": 56
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [
@@ -97,17 +57,7 @@
       "isFunctionDeclaration": true,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 19,
-          "column": 2
-        },
-        "end": {
-          "line": 21,
-          "column": 3
-        }
-      }
+      "reactive": false
     }
   ],
   "slots": [],

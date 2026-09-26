@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 24,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "ts",
   "props": [],
@@ -17,17 +7,7 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "Record<string, never>",
-      "source": {
-        "start": {
-          "line": 23,
-          "column": 0
-        },
-        "end": {
-          "line": 23,
-          "column": 8
-        }
-      }
+      "slot_props": "Record<string, never>"
     }
   ],
   "events": [],
@@ -38,17 +18,7 @@
       "key": "modal",
       "typeName": "ModalContext",
       "type": "ModalAPI",
-      "properties": [],
-      "source": {
-        "start": {
-          "line": 16,
-          "column": 2
-        },
-        "end": {
-          "line": 16,
-          "column": 31
-        }
-      }
+      "properties": []
     },
     {
       "key": "layout",
@@ -64,17 +34,7 @@
           "type": "Writable<number>",
           "optional": false
         }
-      ],
-      "source": {
-        "start": {
-          "line": 20,
-          "column": 2
-        },
-        "end": {
-          "line": 20,
-          "column": 41
-        }
-      }
+      ]
     }
   ],
   "diagnostics": []

@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 48,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -28,17 +18,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 15,
-          "column": 2
-        },
-        "end": {
-          "line": 15,
-          "column": 23
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -46,17 +26,7 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "Record<string, never>",
-      "source": {
-        "start": {
-          "line": 47,
-          "column": 5
-        },
-        "end": {
-          "line": 47,
-          "column": 13
-        }
-      }
+      "slot_props": "Record<string, never>"
     }
   ],
   "events": [],
@@ -64,32 +34,12 @@
     {
       "type": "{ id: any; [key: string]: any; }",
       "name": "DataTableRow",
-      "ts": "interface DataTableRow { id: any; [key: string]: any; }",
-      "source": {
-        "start": {
-          "line": 6,
-          "column": 5
-        },
-        "end": {
-          "line": 6,
-          "column": 61
-        }
-      }
+      "ts": "interface DataTableRow { id: any; [key: string]: any; }"
     },
     {
       "type": "any",
       "name": "DataTableRowId",
-      "ts": "type DataTableRowId = any;",
-      "source": {
-        "start": {
-          "line": 7,
-          "column": 5
-        },
-        "end": {
-          "line": 7,
-          "column": 34
-        }
-      }
+      "ts": "type DataTableRowId = any;"
     }
   ],
   "generics": [
@@ -125,17 +75,7 @@
           "description": "Filter rows by search value",
           "optional": false
         }
-      ],
-      "source": {
-        "start": {
-          "line": 39,
-          "column": 2
-        },
-        "end": {
-          "line": 44,
-          "column": 4
-        }
-      }
+      ]
     }
   ],
   "diagnostics": []

@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 11,
-      "column": 0
-    }
-  },
   "syntaxMode": "runes",
   "scriptLanguage": "js",
   "props": [
@@ -20,17 +10,7 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 7,
-          "column": 8
-        },
-        "end": {
-          "line": 7,
-          "column": 11
-        }
-      }
+      "reactive": false
     },
     {
       "name": "col",
@@ -40,17 +20,7 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 7,
-          "column": 13
-        },
-        "end": {
-          "line": 7,
-          "column": 16
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -59,17 +29,7 @@
       "name": null,
       "default": true,
       "slot_props": "{ row: string; col: string }",
-      "description": "First line documents `row-id` binding.\nSecond line: column-id and drag-and-drop targets share one surface.",
-      "source": {
-        "start": {
-          "line": 10,
-          "column": 5
-        },
-        "end": {
-          "line": 10,
-          "column": 39
-        }
-      }
+      "description": "First line documents `row-id` binding.\nSecond line: column-id and drag-and-drop targets share one surface."
     }
   ],
   "events": [],
@@ -82,16 +42,6 @@
       "kind": "prop-unknown-type",
       "name": "row",
       "message": "Prop \"row\" type could not be inferred; falling back to \"any\".",
-      "source": {
-        "start": {
-          "line": 7,
-          "column": 8
-        },
-        "end": {
-          "line": 7,
-          "column": 11
-        }
-      },
       "code": "sveld/prop-unknown-type",
       "severity": "warning"
     },
@@ -100,16 +50,6 @@
       "kind": "prop-unknown-type",
       "name": "col",
       "message": "Prop \"col\" type could not be inferred; falling back to \"any\".",
-      "source": {
-        "start": {
-          "line": 7,
-          "column": 13
-        },
-        "end": {
-          "line": 7,
-          "column": 16
-        }
-      },
       "code": "sveld/prop-unknown-type",
       "severity": "warning"
     }

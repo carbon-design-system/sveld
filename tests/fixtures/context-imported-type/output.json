@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 27,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -17,17 +7,7 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "Record<string, never>",
-      "source": {
-        "start": {
-          "line": 26,
-          "column": 27
-        },
-        "end": {
-          "line": 26,
-          "column": 35
-        }
-      }
+      "slot_props": "Record<string, never>"
     }
   ],
   "events": [],
@@ -35,17 +15,7 @@
     {
       "type": "{\n  open: () => void;\n  close: () => void;\n}",
       "name": "ModalAPI",
-      "ts": "type ModalAPI = {\n  open: () => void;\n  close: () => void;\n};",
-      "source": {
-        "start": {
-          "line": 5,
-          "column": 5
-        },
-        "end": {
-          "line": 5,
-          "column": 31
-        }
-      }
+      "ts": "type ModalAPI = {\n  open: () => void;\n  close: () => void;\n};"
     }
   ],
   "generics": null,
@@ -55,17 +25,7 @@
       "typeName": "ModalContext",
       "type": "ModalAPI",
       "properties": [],
-      "description": "Modal API object",
-      "source": {
-        "start": {
-          "line": 23,
-          "column": 2
-        },
-        "end": {
-          "line": 23,
-          "column": 31
-        }
-      }
+      "description": "Modal API object"
     }
   ],
   "diagnostics": []

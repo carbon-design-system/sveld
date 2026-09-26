@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 20,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -22,17 +12,7 @@
       "isFunctionDeclaration": true,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 3,
-          "column": 2
-        },
-        "end": {
-          "line": 5,
-          "column": 3
-        }
-      }
+      "reactive": false
     },
     {
       "name": "fetchData",
@@ -52,17 +32,7 @@
       "isFunctionDeclaration": true,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 11,
-          "column": 2
-        },
-        "end": {
-          "line": 13,
-          "column": 3
-        }
-      }
+      "reactive": false
     },
     {
       "name": "validate",
@@ -78,17 +48,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 16,
-          "column": 2
-        },
-        "end": {
-          "line": 16,
-          "column": 45
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],

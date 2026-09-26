@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 15,
-      "column": 0
-    }
-  },
   "syntaxMode": "runes",
   "scriptLanguage": "js",
   "props": [],
@@ -18,17 +8,7 @@
     {
       "type": "dispatched",
       "name": "click",
-      "detail": "1",
-      "source": {
-        "start": {
-          "line": 5,
-          "column": 4
-        },
-        "end": {
-          "line": 5,
-          "column": 66
-        }
-      }
+      "detail": "1"
     }
   ],
   "typedefs": [],

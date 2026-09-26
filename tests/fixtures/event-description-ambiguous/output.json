@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 38,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -19,95 +9,35 @@
       "type": "dispatched",
       "name": "blur",
       "detail": "null",
-      "description": "Fired when the menu loses focus.",
-      "source": {
-        "start": {
-          "line": 33,
-          "column": 4
-        },
-        "end": {
-          "line": 33,
-          "column": 26
-        }
-      }
+      "description": "Fired when the menu loses focus."
     },
     {
       "type": "dispatched",
       "name": "clear",
       "detail": "null",
-      "description": "Fired when the user selects an item.",
-      "source": {
-        "start": {
-          "line": 29,
-          "column": 4
-        },
-        "end": {
-          "line": 29,
-          "column": 27
-        }
-      }
+      "description": "Fired when the user selects an item."
     },
     {
       "type": "dispatched",
       "name": "close",
-      "detail": "null",
-      "source": {
-        "start": {
-          "line": 31,
-          "column": 4
-        },
-        "end": {
-          "line": 31,
-          "column": 27
-        }
-      }
+      "detail": "null"
     },
     {
       "type": "dispatched",
       "name": "focus",
       "detail": "null",
-      "description": "Fired when the menu gains focus.",
-      "source": {
-        "start": {
-          "line": 32,
-          "column": 4
-        },
-        "end": {
-          "line": 32,
-          "column": 27
-        }
-      }
+      "description": "Fired when the menu gains focus."
     },
     {
       "type": "dispatched",
       "name": "open",
       "detail": "{ value: string }",
-      "description": "Fired when the menu opens.",
-      "source": {
-        "start": {
-          "line": 30,
-          "column": 4
-        },
-        "end": {
-          "line": 30,
-          "column": 36
-        }
-      }
+      "description": "Fired when the menu opens."
     },
     {
       "type": "dispatched",
       "name": "select",
-      "detail": "{ value: string }",
-      "source": {
-        "start": {
-          "line": 28,
-          "column": 4
-        },
-        "end": {
-          "line": 28,
-          "column": 38
-        }
-      }
+      "detail": "{ value: string }"
     }
   ],
   "typedefs": [],
@@ -119,16 +49,6 @@
       "kind": "event-description-ambiguous",
       "name": "select",
       "message": "Text after @event \"select\" was used as the description of @event \"clear\". Move it above the tag it describes, indent it as a continuation line, or give each event its own comment block.",
-      "source": {
-        "start": {
-          "line": 5,
-          "column": 5
-        },
-        "end": {
-          "line": 5,
-          "column": 24
-        }
-      },
       "code": "sveld/event-description-ambiguous",
       "severity": "warning"
     }

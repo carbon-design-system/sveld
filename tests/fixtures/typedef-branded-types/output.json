@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 23,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -22,17 +12,7 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 16,
-          "column": 2
-        },
-        "end": {
-          "line": 16,
-          "column": 20
-        }
-      }
+      "reactive": false
     },
     {
       "name": "amount",
@@ -44,17 +24,7 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 19,
-          "column": 2
-        },
-        "end": {
-          "line": 19,
-          "column": 20
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -65,33 +35,13 @@
       "type": "string & { readonly __brand: \"UserId\" }",
       "name": "UserId",
       "description": "A branded string. At runtime it is a plain `string`, but the brand makes it\na distinct domain type that other strings cannot be assigned to.",
-      "ts": "type UserId = string & { readonly __brand: \"UserId\" };",
-      "source": {
-        "start": {
-          "line": 6,
-          "column": 5
-        },
-        "end": {
-          "line": 6,
-          "column": 62
-        }
-      }
+      "ts": "type UserId = string & { readonly __brand: \"UserId\" };"
     },
     {
       "type": "number & { readonly __brand: \"Cents\" }",
       "name": "Cents",
       "description": "A branded number representing a monetary amount in cents.",
-      "ts": "type Cents = number & { readonly __brand: \"Cents\" };",
-      "source": {
-        "start": {
-          "line": 12,
-          "column": 5
-        },
-        "end": {
-          "line": 12,
-          "column": 60
-        }
-      }
+      "ts": "type Cents = number & { readonly __brand: \"Cents\" };"
     }
   ],
   "generics": null,

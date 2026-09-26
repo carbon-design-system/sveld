@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 18,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "ts",
   "props": [
@@ -27,17 +17,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": true,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 2,
-          "column": 2
-        },
-        "end": {
-          "line": 2,
-          "column": 33
-        }
-      }
+      "reactive": false
     },
     {
       "name": "setLabel",
@@ -57,17 +37,7 @@
       "isFunctionDeclaration": true,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 8,
-          "column": 2
-        },
-        "end": {
-          "line": 10,
-          "column": 3
-        }
-      }
+      "reactive": false
     },
     {
       "name": "getCount",
@@ -78,17 +48,7 @@
       "isFunctionDeclaration": true,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 12,
-          "column": 2
-        },
-        "end": {
-          "line": 14,
-          "column": 3
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],

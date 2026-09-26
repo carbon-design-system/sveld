@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 37,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -29,17 +19,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 29,
-          "column": 2
-        },
-        "end": {
-          "line": 29,
-          "column": 32
-        }
-      }
+      "reactive": false
     },
     {
       "name": "entry",
@@ -59,17 +39,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 32,
-          "column": 2
-        },
-        "end": {
-          "line": 32,
-          "column": 44
-        }
-      }
+      "reactive": false
     },
     {
       "name": "mapper",
@@ -85,17 +55,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 35,
-          "column": 2
-        },
-        "end": {
-          "line": 35,
-          "column": 40
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -106,62 +66,22 @@
       "type": "{ value: T }",
       "name": "Box<T>",
       "description": "A boxed value.",
-      "ts": "interface Box<T> { value: T }",
-      "source": {
-        "start": {
-          "line": 5,
-          "column": 5
-        },
-        "end": {
-          "line": 5,
-          "column": 32
-        }
-      }
+      "ts": "interface Box<T> { value: T }"
     },
     {
       "type": "{\n  /** The key. */\n  key: K;\n  /** The value. */\n  value: V;\n}",
       "name": "Entry<K extends string, V = unknown>",
-      "ts": "type Entry<K extends string, V = unknown> = {\n  /** The key. */\n  key: K;\n  /** The value. */\n  value: V;\n};",
-      "source": {
-        "start": {
-          "line": 11,
-          "column": 5
-        },
-        "end": {
-          "line": 11,
-          "column": 28
-        }
-      }
+      "ts": "type Entry<K extends string, V = unknown> = {\n  /** The key. */\n  key: K;\n  /** The value. */\n  value: V;\n};"
     },
     {
       "type": "(item: T) => string",
       "name": "Mapper<T>",
-      "ts": "type Mapper<T> = (item: T) => string;",
-      "source": {
-        "start": {
-          "line": 18,
-          "column": 5
-        },
-        "end": {
-          "line": 18,
-          "column": 21
-        }
-      }
+      "ts": "type Mapper<T> = (item: T) => string;"
     },
     {
       "type": "{ id: string }",
       "name": "Row",
-      "ts": "interface Row { id: string }",
-      "source": {
-        "start": {
-          "line": 24,
-          "column": 5
-        },
-        "end": {
-          "line": 24,
-          "column": 34
-        }
-      }
+      "ts": "interface Row { id: string }"
     }
   ],
   "generics": [

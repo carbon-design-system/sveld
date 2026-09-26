@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 21,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -30,17 +20,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 15,
-          "column": 2
-        },
-        "end": {
-          "line": 15,
-          "column": 47
-        }
-      }
+      "reactive": false
     },
     {
       "name": "theme",
@@ -60,17 +40,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 17,
-          "column": 2
-        },
-        "end": {
-          "line": 17,
-          "column": 56
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -80,32 +50,12 @@
     {
       "type": "{\n  /** User identifier */\n  id: string;\n  /** User display name */\n  name: string;\n}",
       "name": "UserConfig",
-      "ts": "type UserConfig = {\n  /** User identifier */\n  id: string;\n  /** User display name */\n  name: string;\n};",
-      "source": {
-        "start": {
-          "line": 3,
-          "column": 5
-        },
-        "end": {
-          "line": 3,
-          "column": 33
-        }
-      }
+      "ts": "type UserConfig = {\n  /** User identifier */\n  id: string;\n  /** User display name */\n  name: string;\n};"
     },
     {
       "type": "{\n  /** Theme identifier */\n  id: string;\n  /** Theme display name */\n  name: string;\n}",
       "name": "ThemeConfig",
-      "ts": "type ThemeConfig = {\n  /** Theme identifier */\n  id: string;\n  /** Theme display name */\n  name: string;\n};",
-      "source": {
-        "start": {
-          "line": 9,
-          "column": 5
-        },
-        "end": {
-          "line": 9,
-          "column": 34
-        }
-      }
+      "ts": "type ThemeConfig = {\n  /** Theme identifier */\n  id: string;\n  /** Theme display name */\n  name: string;\n};"
     }
   ],
   "generics": null,

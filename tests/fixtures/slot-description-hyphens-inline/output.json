@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 9,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -18,17 +8,7 @@
       "name": "item",
       "default": false,
       "slot_props": "{ id: string }",
-      "description": "Row id maps to server-side UUID v4 (not v1-v3).",
-      "source": {
-        "start": {
-          "line": 5,
-          "column": 0
-        },
-        "end": {
-          "line": 8,
-          "column": 2
-        }
-      }
+      "description": "Row id maps to server-side UUID v4 (not v1-v3)."
     }
   ],
   "events": [],

@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 25,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -22,17 +12,7 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 12,
-          "column": 2
-        },
-        "end": {
-          "line": 12,
-          "column": 20
-        }
-      }
+      "reactive": false
     },
     {
       "name": "validate",
@@ -44,17 +24,7 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 21,
-          "column": 2
-        },
-        "end": {
-          "line": 21,
-          "column": 22
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -64,33 +34,13 @@
     {
       "type": "{ id: string; name: string }",
       "name": "User",
-      "ts": "interface User { id: string; name: string }",
-      "source": {
-        "start": {
-          "line": 3,
-          "column": 5
-        },
-        "end": {
-          "line": 3,
-          "column": 49
-        }
-      }
+      "ts": "interface User { id: string; name: string }"
     },
     {
       "type": "(value: unknown) => value is User",
       "name": "UserGuard",
       "description": "A type guard expressed as a `@callback`.",
-      "ts": "type UserGuard = (value: unknown) => value is User;",
-      "source": {
-        "start": {
-          "line": 17,
-          "column": 5
-        },
-        "end": {
-          "line": 17,
-          "column": 59
-        }
-      }
+      "ts": "type UserGuard = (value: unknown) => value is User;"
     }
   ],
   "generics": null,

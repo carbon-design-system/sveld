@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 26,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -27,17 +17,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 5,
-          "column": 2
-        },
-        "end": {
-          "line": 5,
-          "column": 54
-        }
-      }
+      "reactive": false
     },
     {
       "name": "prefix",
@@ -55,17 +35,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 10,
-          "column": 2
-        },
-        "end": {
-          "line": 10,
-          "column": 32
-        }
-      }
+      "reactive": false
     },
     {
       "name": "suffix",
@@ -82,17 +52,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 11,
-          "column": 2
-        },
-        "end": {
-          "line": 11,
-          "column": 32
-        }
-      }
+      "reactive": false
     },
     {
       "name": "message",
@@ -109,17 +69,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 16,
-          "column": 2
-        },
-        "end": {
-          "line": 16,
-          "column": 57
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],

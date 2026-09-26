@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 17,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -21,17 +11,7 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 13,
-          "column": 2
-        },
-        "end": {
-          "line": 13,
-          "column": 20
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -41,17 +21,7 @@
     {
       "type": "{\n  /** Count */\n  count: number;\n}",
       "name": "Config",
-      "ts": "type Config = {\n  /** Count */\n  count: number;\n};",
-      "source": {
-        "start": {
-          "line": 8,
-          "column": 5
-        },
-        "end": {
-          "line": 8,
-          "column": 29
-        }
-      }
+      "ts": "type Config = {\n  /** Count */\n  count: number;\n};"
     }
   ],
   "generics": null,
@@ -62,16 +32,6 @@
       "kind": "typedef-duplicate",
       "name": "Config",
       "message": "Duplicate typedef/callback name \"Config\"; the later declaration overwrites the earlier one.",
-      "source": {
-        "start": {
-          "line": 8,
-          "column": 5
-        },
-        "end": {
-          "line": 8,
-          "column": 29
-        }
-      },
       "code": "sveld/typedef-duplicate",
       "severity": "warning"
     }

@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 21,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -36,17 +26,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": true,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 7,
-          "column": 2
-        },
-        "end": {
-          "line": 7,
-          "column": 48
-        }
-      }
+      "reactive": false
     },
     {
       "name": "identity",
@@ -72,17 +52,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": true,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 14,
-          "column": 2
-        },
-        "end": {
-          "line": 14,
-          "column": 43
-        }
-      }
+      "reactive": false
     },
     {
       "name": "size",
@@ -99,17 +69,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 17,
-          "column": 2
-        },
-        "end": {
-          "line": 17,
-          "column": 22
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],

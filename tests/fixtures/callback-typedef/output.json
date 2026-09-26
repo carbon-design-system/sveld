@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 19,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -27,17 +17,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 12,
-          "column": 2
-        },
-        "end": {
-          "line": 12,
-          "column": 31
-        }
-      }
+      "reactive": false
     },
     {
       "name": "sort",
@@ -53,17 +33,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 15,
-          "column": 2
-        },
-        "end": {
-          "line": 15,
-          "column": 43
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -73,32 +43,12 @@
     {
       "type": "\"asc\" | \"desc\"",
       "name": "SortDirection",
-      "ts": "type SortDirection = \"asc\" | \"desc\";",
-      "source": {
-        "start": {
-          "line": 3,
-          "column": 5
-        },
-        "end": {
-          "line": 3,
-          "column": 44
-        }
-      }
+      "ts": "type SortDirection = \"asc\" | \"desc\";"
     },
     {
       "type": "(a: any, b: any, direction: SortDirection) => number",
       "name": "SortFn",
-      "ts": "type SortFn = (a: any, b: any, direction: SortDirection) => number;",
-      "source": {
-        "start": {
-          "line": 4,
-          "column": 5
-        },
-        "end": {
-          "line": 4,
-          "column": 21
-        }
-      }
+      "ts": "type SortFn = (a: any, b: any, direction: SortDirection) => number;"
     }
   ],
   "generics": null,

@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 29,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -21,17 +11,7 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 21,
-          "column": 2
-        },
-        "end": {
-          "line": 21,
-          "column": 19
-        }
-      }
+      "reactive": false
     },
     {
       "name": "second",
@@ -42,17 +22,7 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 24,
-          "column": 2
-        },
-        "end": {
-          "line": 24,
-          "column": 20
-        }
-      }
+      "reactive": false
     },
     {
       "name": "map",
@@ -63,17 +33,7 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 27,
-          "column": 2
-        },
-        "end": {
-          "line": 27,
-          "column": 17
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [
@@ -103,17 +63,7 @@
       "isFunctionDeclaration": true,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 9,
-          "column": 2
-        },
-        "end": {
-          "line": 11,
-          "column": 3
-        }
-      }
+      "reactive": false
     }
   ],
   "slots": [],

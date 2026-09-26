@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 20,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -21,17 +11,7 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 7,
-          "column": 2
-        },
-        "end": {
-          "line": 7,
-          "column": 16
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -40,32 +20,12 @@
     {
       "type": "dispatched",
       "name": "items",
-      "detail": "number[]",
-      "source": {
-        "start": {
-          "line": 14,
-          "column": 4
-        },
-        "end": {
-          "line": 14,
-          "column": 29
-        }
-      }
+      "detail": "number[]"
     },
     {
       "type": "dispatched",
       "name": "save",
-      "detail": "{ id: string; }",
-      "source": {
-        "start": {
-          "line": 10,
-          "column": 4
-        },
-        "end": {
-          "line": 10,
-          "column": 28
-        }
-      }
+      "detail": "{ id: string; }"
     }
   ],
   "typedefs": [],

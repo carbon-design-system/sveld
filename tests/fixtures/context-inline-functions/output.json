@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 16,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -17,17 +7,7 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "Record<string, never>",
-      "source": {
-        "start": {
-          "line": 15,
-          "column": 19
-        },
-        "end": {
-          "line": 15,
-          "column": 27
-        }
-      }
+      "slot_props": "Record<string, never>"
     }
   ],
   "events": [],
@@ -48,17 +28,7 @@
           "type": "() => any",
           "optional": false
         }
-      ],
-      "source": {
-        "start": {
-          "line": 5,
-          "column": 2
-        },
-        "end": {
-          "line": 12,
-          "column": 4
-        }
-      }
+      ]
     }
   ],
   "diagnostics": []

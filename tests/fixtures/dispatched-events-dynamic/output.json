@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 18,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -18,17 +8,7 @@
     {
       "type": "dispatched",
       "name": "KEY",
-      "detail": "{key: string;}",
-      "source": {
-        "start": {
-          "line": 3,
-          "column": 5
-        },
-        "end": {
-          "line": 3,
-          "column": 32
-        }
-      }
+      "detail": "{key: string;}"
     }
   ],
   "typedefs": [],
@@ -40,16 +20,6 @@
       "kind": "event-no-source",
       "name": "KEY",
       "message": "@event \"KEY\" has no matching dispatch or callback prop.",
-      "source": {
-        "start": {
-          "line": 3,
-          "column": 5
-        },
-        "end": {
-          "line": 3,
-          "column": 32
-        }
-      },
       "code": "sveld/event-no-source",
       "severity": "warning"
     }

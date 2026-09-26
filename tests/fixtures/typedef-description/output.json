@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 51,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -28,17 +18,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 30,
-          "column": 2
-        },
-        "end": {
-          "line": 30,
-          "column": 21
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -46,17 +26,7 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "Record<string, never>",
-      "source": {
-        "start": {
-          "line": 49,
-          "column": 2
-        },
-        "end": {
-          "line": 49,
-          "column": 10
-        }
-      }
+      "slot_props": "Record<string, never>"
     }
   ],
   "events": [],
@@ -65,32 +35,12 @@
       "type": "0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13",
       "name": "StackScale",
       "description": "The stack scale maps to the following `@carbon/layout` values:\n- 0  --> 0 (no gap)\n- 1  --> 0.125rem\n- 2  --> 0.25rem\n- 3  --> 0.5rem\n- 4  --> 0.75rem\n- 5  --> 1rem\n- 6  --> 1.5rem\n- 7  --> 2rem\n- 8  --> 2.5rem\n- 9  --> 3rem\n- 10 --> 4rem\n- 11 --> 5rem\n- 12 --> 6rem\n- 13 --> 10rem",
-      "ts": "type StackScale = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13;",
-      "source": {
-        "start": {
-          "line": 18,
-          "column": 5
-        },
-        "end": {
-          "line": 18,
-          "column": 84
-        }
-      }
+      "ts": "type StackScale = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13;"
     },
     {
       "type": "StackScale | string",
       "name": "StackScaleOrString",
-      "ts": "type StackScaleOrString = StackScale | string;",
-      "source": {
-        "start": {
-          "line": 19,
-          "column": 5
-        },
-        "end": {
-          "line": 19,
-          "column": 54
-        }
-      }
+      "ts": "type StackScaleOrString = StackScale | string;"
     }
   ],
   "generics": null,

@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 82,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -31,17 +21,7 @@
       "isFunctionDeclaration": true,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 15,
-          "column": 2
-        },
-        "end": {
-          "line": 18,
-          "column": 3
-        }
-      }
+      "reactive": false
     },
     {
       "name": "remove",
@@ -62,17 +42,7 @@
       "isFunctionDeclaration": true,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 25,
-          "column": 2
-        },
-        "end": {
-          "line": 27,
-          "column": 3
-        }
-      }
+      "reactive": false
     },
     {
       "name": "clear",
@@ -85,17 +55,7 @@
       "isFunctionDeclaration": true,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 33,
-          "column": 2
-        },
-        "end": {
-          "line": 33,
-          "column": 28
-        }
-      }
+      "reactive": false
     },
     {
       "name": "getCount",
@@ -108,17 +68,7 @@
       "isFunctionDeclaration": true,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 39,
-          "column": 2
-        },
-        "end": {
-          "line": 41,
-          "column": 3
-        }
-      }
+      "reactive": false
     },
     {
       "name": "update",
@@ -145,17 +95,7 @@
       "isFunctionDeclaration": true,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 49,
-          "column": 2
-        },
-        "end": {
-          "line": 51,
-          "column": 3
-        }
-      }
+      "reactive": false
     },
     {
       "name": "log",
@@ -175,17 +115,7 @@
       "isFunctionDeclaration": true,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 57,
-          "column": 2
-        },
-        "end": {
-          "line": 59,
-          "column": 3
-        }
-      }
+      "reactive": false
     },
     {
       "name": "computeTreeLeafDepth",
@@ -212,17 +142,7 @@
       "isFunctionDeclaration": true,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 71,
-          "column": 2
-        },
-        "end": {
-          "line": 80,
-          "column": 3
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -232,17 +152,7 @@
     {
       "type": "{\n  /** Optional id for deduplication */\n  id?: string;\n  kind?: \"error\" | \"info\" | \"success\";\n  title?: string;\n}",
       "name": "NotificationData",
-      "ts": "type NotificationData = {\n  /** Optional id for deduplication */\n  id?: string;\n  kind?: \"error\" | \"info\" | \"success\";\n  title?: string;\n};",
-      "source": {
-        "start": {
-          "line": 3,
-          "column": 5
-        },
-        "end": {
-          "line": 3,
-          "column": 39
-        }
-      }
+      "ts": "type NotificationData = {\n  /** Optional id for deduplication */\n  id?: string;\n  kind?: \"error\" | \"info\" | \"success\";\n  title?: string;\n};"
     }
   ],
   "generics": null,

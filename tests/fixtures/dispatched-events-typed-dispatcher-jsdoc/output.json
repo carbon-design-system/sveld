@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 13,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -18,32 +8,12 @@
     {
       "type": "dispatched",
       "name": "cancel",
-      "detail": "null",
-      "source": {
-        "start": {
-          "line": 5,
-          "column": 8
-        },
-        "end": {
-          "line": 5,
-          "column": 42
-        }
-      }
+      "detail": "null"
     },
     {
       "type": "dispatched",
       "name": "save",
-      "detail": "{ id: string }",
-      "source": {
-        "start": {
-          "line": 8,
-          "column": 4
-        },
-        "end": {
-          "line": 8,
-          "column": 28
-        }
-      }
+      "detail": "{ id: string }"
     }
   ],
   "typedefs": [],

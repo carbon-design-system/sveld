@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 26,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -26,17 +16,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 2,
-          "column": 2
-        },
-        "end": {
-          "line": 2,
-          "column": 24
-        }
-      }
+      "reactive": false
     },
     {
       "name": "propBool",
@@ -53,17 +33,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": true,
-      "source": {
-        "start": {
-          "line": 3,
-          "column": 2
-        },
-        "end": {
-          "line": 3,
-          "column": 29
-        }
-      }
+      "reactive": true
     },
     {
       "name": "propString",
@@ -80,17 +50,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 4,
-          "column": 2
-        },
-        "end": {
-          "line": 4,
-          "column": 29
-        }
-      }
+      "reactive": false
     },
     {
       "name": "name",
@@ -100,17 +60,7 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 5,
-          "column": 2
-        },
-        "end": {
-          "line": 5,
-          "column": 18
-        }
-      }
+      "reactive": false
     },
     {
       "name": "id",
@@ -126,17 +76,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 6,
-          "column": 2
-        },
-        "end": {
-          "line": 6,
-          "column": 50
-        }
-      }
+      "reactive": false
     },
     {
       "name": "propConst",
@@ -155,17 +95,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": true,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 7,
-          "column": 2
-        },
-        "end": {
-          "line": 7,
-          "column": 39
-        }
-      }
+      "reactive": false
     },
     {
       "name": "fn",
@@ -176,17 +106,7 @@
       "isFunctionDeclaration": true,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 8,
-          "column": 2
-        },
-        "end": {
-          "line": 10,
-          "column": 3
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -195,17 +115,7 @@
       "name": null,
       "default": true,
       "fallback": "{name}",
-      "slot_props": "Record<string, never>",
-      "source": {
-        "start": {
-          "line": 24,
-          "column": 2
-        },
-        "end": {
-          "line": 24,
-          "column": 21
-        }
-      }
+      "slot_props": "Record<string, never>"
     }
   ],
   "events": [],
@@ -218,16 +128,6 @@
       "kind": "prop-unknown-type",
       "name": "ref",
       "message": "Prop \"ref\" type could not be inferred; falling back to \"any\".",
-      "source": {
-        "start": {
-          "line": 2,
-          "column": 2
-        },
-        "end": {
-          "line": 2,
-          "column": 24
-        }
-      },
       "code": "sveld/prop-unknown-type",
       "severity": "warning"
     },
@@ -236,16 +136,6 @@
       "kind": "prop-unknown-type",
       "name": "name",
       "message": "Prop \"name\" type could not be inferred; falling back to \"any\".",
-      "source": {
-        "start": {
-          "line": 5,
-          "column": 2
-        },
-        "end": {
-          "line": 5,
-          "column": 18
-        }
-      },
       "code": "sveld/prop-unknown-type",
       "severity": "warning"
     }

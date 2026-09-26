@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 16,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -27,17 +17,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 4,
-          "column": 2
-        },
-        "end": {
-          "line": 4,
-          "column": 34
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -45,17 +25,7 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "Record<string, never>",
-      "source": {
-        "start": {
-          "line": 15,
-          "column": 19
-        },
-        "end": {
-          "line": 15,
-          "column": 27
-        }
-      }
+      "slot_props": "Record<string, never>"
     }
   ],
   "events": [],
@@ -68,16 +38,6 @@
       "kind": "context-key-unresolved",
       "name": "dynamicKey",
       "message": "setContext key `dynamicKey` isn't a string literal, const-bound string, Symbol(), or imported `export const` string; the context is skipped.",
-      "source": {
-        "start": {
-          "line": 12,
-          "column": 2
-        },
-        "end": {
-          "line": 12,
-          "column": 35
-        }
-      },
       "code": "sveld/context-key-unresolved",
       "severity": "warning"
     }

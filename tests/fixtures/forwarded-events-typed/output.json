@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 14,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -18,33 +8,13 @@
     {
       "type": "forwarded",
       "name": "blur",
-      "element": "button",
-      "source": {
-        "start": {
-          "line": 12,
-          "column": 2
-        },
-        "end": {
-          "line": 12,
-          "column": 9
-        }
-      }
+      "element": "button"
     },
     {
       "type": "forwarded",
       "name": "click",
       "element": "button",
       "description": "Fired when the button is clicked",
-      "source": {
-        "start": {
-          "line": 3,
-          "column": 5
-        },
-        "end": {
-          "line": 3,
-          "column": 52
-        }
-      },
       "detail": "null"
     },
     {
@@ -52,16 +22,6 @@
       "name": "focus",
       "element": "button",
       "description": "Fired when the button receives focus",
-      "source": {
-        "start": {
-          "line": 4,
-          "column": 5
-        },
-        "end": {
-          "line": 4,
-          "column": 56
-        }
-      },
       "detail": "null"
     }
   ],

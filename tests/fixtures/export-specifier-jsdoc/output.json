@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 37,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -28,17 +18,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 18,
-          "column": 2
-        },
-        "end": {
-          "line": 18,
-          "column": 35
-        }
-      }
+      "reactive": false
     },
     {
       "name": "size",
@@ -56,17 +36,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 18,
-          "column": 2
-        },
-        "end": {
-          "line": 18,
-          "column": 35
-        }
-      }
+      "reactive": false
     },
     {
       "name": "count",
@@ -83,17 +53,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 24,
-          "column": 2
-        },
-        "end": {
-          "line": 24,
-          "column": 26
-        }
-      }
+      "reactive": false
     },
     {
       "name": "title",
@@ -110,17 +70,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 24,
-          "column": 2
-        },
-        "end": {
-          "line": 24,
-          "column": 26
-        }
-      }
+      "reactive": false
     },
     {
       "name": "state",
@@ -138,17 +88,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 33,
-          "column": 2
-        },
-        "end": {
-          "line": 33,
-          "column": 19
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [
@@ -168,17 +108,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": true,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 8,
-          "column": 2
-        },
-        "end": {
-          "line": 8,
-          "column": 19
-        }
-      }
+      "reactive": false
     }
   ],
   "slots": [],

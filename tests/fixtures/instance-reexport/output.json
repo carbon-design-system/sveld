@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 19,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -28,17 +18,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 8,
-          "column": 2
-        },
-        "end": {
-          "line": 8,
-          "column": 23
-        }
-      }
+      "reactive": false
     },
     {
       "name": "showDetails",
@@ -56,17 +36,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 11,
-          "column": 2
-        },
-        "end": {
-          "line": 11,
-          "column": 33
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -81,16 +51,6 @@
       "kind": "export-unresolved",
       "name": "helper",
       "message": "export \"helper\" was skipped because it re-exports an imported binding; sveld only resolves exports of a local declaration.",
-      "source": {
-        "start": {
-          "line": 5,
-          "column": 2
-        },
-        "end": {
-          "line": 5,
-          "column": 31
-        }
-      },
       "code": "sveld/export-unresolved",
       "severity": "warning"
     },
@@ -99,16 +59,6 @@
       "kind": "export-unresolved",
       "name": "validator",
       "message": "export \"validator\" was skipped because it re-exports an imported binding; sveld only resolves exports of a local declaration.",
-      "source": {
-        "start": {
-          "line": 5,
-          "column": 2
-        },
-        "end": {
-          "line": 5,
-          "column": 31
-        }
-      },
       "code": "sveld/export-unresolved",
       "severity": "warning"
     }

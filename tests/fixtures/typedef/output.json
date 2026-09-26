@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 13,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -26,17 +16,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 6,
-          "column": 2
-        },
-        "end": {
-          "line": 6,
-          "column": 53
-        }
-      }
+      "reactive": false
     },
     {
       "name": "prop1",
@@ -55,17 +35,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 9,
-          "column": 2
-        },
-        "end": {
-          "line": 9,
-          "column": 33
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -73,17 +43,7 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "{ prop1: MyTypedef }",
-      "source": {
-        "start": {
-          "line": 12,
-          "column": 10
-        },
-        "end": {
-          "line": 12,
-          "column": 26
-        }
-      }
+      "slot_props": "{ prop1: MyTypedef }"
     }
   ],
   "events": [],
@@ -91,17 +51,7 @@
     {
       "type": "{ [key: string]: boolean; }",
       "name": "MyTypedef",
-      "ts": "interface MyTypedef { [key: string]: boolean; }",
-      "source": {
-        "start": {
-          "line": 3,
-          "column": 5
-        },
-        "end": {
-          "line": 3,
-          "column": 53
-        }
-      }
+      "ts": "interface MyTypedef { [key: string]: boolean; }"
     }
   ],
   "generics": null,
