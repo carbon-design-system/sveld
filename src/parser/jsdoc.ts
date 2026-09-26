@@ -1,4 +1,3 @@
-import type { Node } from "estree";
 import type {
   ComponentPropBinding,
   ComponentPropParam,
@@ -10,7 +9,6 @@ import type { JSDocComment, JSDocTag } from "./comment-parser";
 import { leadingWhitespaceLength, parseComments, togglesCodeFence } from "./comment-parser";
 import type { ParserContext } from "./context";
 import { assignValueOrUndefined } from "./utils";
-import { scriptBody } from "./value-imports";
 
 const WHITESPACE_CHAR_REGEX = /\s/;
 
@@ -337,38 +335,29 @@ export function functionDocCommentStarts(ctx: ParserContext): Set<number> {
     { root: ctx.parsed?.instance, isModule: false },
   ];
   for (const { root, isModule } of scripts) {
-    for (const statement of (root && scriptBody(root as Node)) ?? []) {
-      const node = statement as { type: string; declaration?: FunctionDocCandidate | null };
-      const isExported = node.type === "ExportNamedDeclaration";
-      const declaration = isExported ? node.declaration : (node as FunctionDocCandidate);
+    for (const statement of root?.content.body ?? []) {
+      const isExported = statement.type === "ExportNamedDeclaration";
+      const declaration = statement.type === "ExportNamedDeclaration" ? statement.declaration : statement;
       if (declaration?.type === "FunctionDeclaration") {
-        if (isExported) addDocumented(node);
+        if (isExported) addDocumented(statement);
       } else if (declaration?.type === "ClassDeclaration" && isModule) {
         // A module-script class's `@template`s are its own, as are its methods'.
-        addDocumented(isExported ? node : declaration);
-        for (const member of declaration.body?.body ?? []) {
+        addDocumented(isExported ? statement : declaration);
+        for (const member of declaration.body.body) {
           if (member.type === "MethodDefinition") addDocumented(member);
         }
       } else if (
         declaration?.type === "VariableDeclaration" &&
         (isModule || !isExported || declaration.kind === "const") &&
-        declaration.declarations?.length === 1 &&
+        declaration.declarations.length === 1 &&
         FUNCTION_EXPRESSION_TYPES.has(declaration.declarations[0].init?.type ?? "")
       ) {
-        addDocumented(node);
+        addDocumented(statement);
       }
     }
   }
   return starts;
 }
-
-type FunctionDocCandidate = {
-  type: string;
-  kind?: string;
-  declarations?: Array<{ init?: { type?: string } | null }>;
-  /** A class's members. */
-  body?: { body?: Array<{ type: string }> };
-};
 
 const FUNCTION_EXPRESSION_TYPES = new Set(["ArrowFunctionExpression", "FunctionExpression"]);
 

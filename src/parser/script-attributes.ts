@@ -1,26 +1,27 @@
-import type { ModernScriptAttribute, ModernScriptNode, ScriptLanguage, SourceRange } from "../model";
+import type { AST } from "svelte/compiler";
+import type { ScriptLanguage, SourceRange } from "../model";
 import type { ParserContext } from "./context";
 import { recordDiagnostic } from "./diagnostics";
 import { sourceRangeFromNode } from "./source-position";
 
-function getStaticAttributeValue(attribute: ModernScriptAttribute) {
+function getStaticAttributeValue(attribute: AST.Attribute) {
   if (!Array.isArray(attribute.value)) return undefined;
 
   return attribute.value
-    .map((value) => value.data ?? value.raw ?? "")
+    .map((value) => (value.type === "Text" ? value.data : ""))
     .join("")
     .trim();
 }
 
 export function resolveScriptLanguage(parsed: {
-  instance?: ModernScriptNode;
-  module?: ModernScriptNode;
+  instance?: AST.Script;
+  module?: AST.Script;
 }): ScriptLanguage | undefined {
-  const scripts = [parsed.instance, parsed.module].filter((script): script is ModernScriptNode => script !== undefined);
+  const scripts = [parsed.instance, parsed.module].filter((script) => script !== undefined);
   let hasPlainScript = false;
 
   for (const script of scripts) {
-    const langAttribute = script.attributes?.find((attribute) => attribute.name === "lang");
+    const langAttribute = script.attributes.find((attribute) => attribute.name === "lang");
     if (!langAttribute) {
       hasPlainScript = true;
       continue;
@@ -46,14 +47,14 @@ export function resolveScriptLanguage(parsed: {
 export function resolveScriptGenericsAttribute(
   ctx: ParserContext,
   parsed: {
-    instance?: ModernScriptNode;
+    instance?: AST.Script;
   },
 ): { value: string; source?: SourceRange } | undefined {
-  const genericsAttribute = parsed.instance?.attributes?.find((attribute) => attribute.name === "generics");
+  const genericsAttribute = parsed.instance?.attributes.find((attribute) => attribute.name === "generics");
   if (!genericsAttribute) return undefined;
 
   const source = sourceRangeFromNode(ctx, genericsAttribute);
-  const langAttribute = parsed.instance?.attributes?.find((attribute) => attribute.name === "lang");
+  const langAttribute = parsed.instance?.attributes.find((attribute) => attribute.name === "lang");
   const language = langAttribute ? getStaticAttributeValue(langAttribute)?.toLowerCase() : undefined;
 
   if (language !== "ts") {

@@ -26,7 +26,6 @@ import type {
   ModernRunesTypeNode,
   ProcessedInitializer,
 } from "../model";
-import type { CommentWithLocation } from "../template-parse/comments";
 import { returnTypeOfFunctionType } from "../type-text";
 import type { ParserContext } from "./context";
 import { trackPropLocalName } from "./context";
@@ -433,7 +432,7 @@ function literalTypeText(
   text: string | undefined,
 ): string | undefined {
   if (text === undefined || start === undefined || end === undefined) return text;
-  const comments = (ctx.parsed as unknown as { comments?: CommentWithLocation[] } | undefined)?.comments ?? [];
+  const comments = ctx.parsed?.comments ?? [];
   let withoutComments = "";
   let position = start;
   for (const comment of comments) {

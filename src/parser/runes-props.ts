@@ -1,16 +1,16 @@
 import type { AssignmentPattern, Identifier, Property, VariableDeclaration, VariableDeclarator } from "estree";
+import type { AST } from "svelte/compiler";
 import { getPropertyName, getTypeCastAnnotation, isCallExpressionNamed, unwrapTypeCastExpression } from "../ast-guards";
 import type {
   CustomElementPropConfig,
-  CustomElementPropType,
   ModernRunesTypeMember,
   ModernRunesTypeNode,
-  ModernScriptNode,
   RunesPropsDeclarationMetadata,
   RunesPropTypeMetadata,
   SourceRange,
   TypeImportBinding,
 } from "../model";
+import type { TemplateRoot } from "../svelte-template-parse";
 import { indexOfClosingBracket, indexOfTopLevel, splitTopLevel } from "../type-text";
 import type { ParserContext, TypedefMember } from "./context";
 import { trackPropLocalName } from "./context";
@@ -173,7 +173,12 @@ function buildRunesPropTypeMetadataMap(
   return metadata;
 }
 
-/** The modern-AST shape `buildRunesPropTypeMetadata` reads from. */
+/**
+ * The fields `buildRunesPropTypeMetadata` reads off a top-level script
+ * statement. estree's statement types don't name the TS nodes and fields
+ * acorn-typescript adds (`TSInterfaceDeclaration`, `importKind`, an
+ * identifier's `typeAnnotation`), so statements are read through this.
+ */
 type ModernScriptStatement = {
   type?: string;
   start?: number;
@@ -205,27 +210,14 @@ type ModernScriptStatement = {
   }>;
 };
 
-type ModernScript = ModernScriptNode & { content?: { body?: ModernScriptStatement[] } };
+/** A script's top-level statements, TS nodes included. */
+function scriptStatements(script: AST.Script | undefined): ModernScriptStatement[] {
+  return (script?.content.body ?? []) as ModernScriptStatement[];
+}
 
-type ModernParsedRoot = {
-  instance?: ModernScript;
-  module?: ModernScript;
-  options?: {
-    customElement?: {
-      tag?: string;
-      shadow?: "open" | "none" | unknown;
-      props?: Record<string, ModernCustomElementPropConfig>;
-      extend?: unknown;
-    };
-    runes?: boolean;
-  } | null;
-};
-
-type ModernCustomElementPropConfig = { attribute?: string; reflect?: boolean; type?: CustomElementPropType };
-
-/** JSON-safe copy of the raw `customElement.props` config read off `modernParsedRoot.options`. */
+/** JSON-safe copy of the raw `customElement.props` config read off `parsed.options`. */
 function buildCustomElementPropConfigs(
-  props: Record<string, ModernCustomElementPropConfig>,
+  props: Record<string, CustomElementPropConfig>,
 ): Record<string, CustomElementPropConfig> {
   const result: Record<string, CustomElementPropConfig> = {};
   for (const [name, config] of Object.entries(props)) {
@@ -299,12 +291,12 @@ function collectScriptTypeDeclaration(ctx: ParserContext, statement: ModernScrip
 
 /**
  * Reads type imports, local types, explicit `export let` annotations, and
- * `$props()` metadata off `modernParsedRoot`. Same tree the caller assigns
+ * `$props()` metadata off `parsed`. Same tree the caller assigns
  * to `ctx.parsed`. `localTypeDeclarationsByName` holds a live `node` from
  * this tree, read only during this call. After that, only the extracted
  * `.code` string is used.
  */
-export function buildRunesPropTypeMetadata(ctx: ParserContext, modernParsedRoot: unknown) {
+export function buildRunesPropTypeMetadata(ctx: ParserContext, parsed: TemplateRoot) {
   ctx.runesPropsDeclarationMetadataByDeclaratorStart.clear();
   ctx.explicitPropTypesByName.clear();
   ctx.explicitVariableTypesByName.clear();
@@ -315,10 +307,8 @@ export function buildRunesPropTypeMetadata(ctx: ParserContext, modernParsedRoot:
   ctx.typedRunesPropsDeclarations.length = 0;
   if (!ctx.source) return;
 
-  const modernParsed = modernParsedRoot as ModernParsedRoot;
-
-  ctx.scriptLanguage = resolveScriptLanguage(modernParsed);
-  const customElement = modernParsed.options?.customElement;
+  ctx.scriptLanguage = resolveScriptLanguage(parsed);
+  const customElement = parsed.options?.customElement;
   ctx.customElementTag = customElement?.tag;
   ctx.customElement = customElement
     ? {
@@ -328,12 +318,12 @@ export function buildRunesPropTypeMetadata(ctx: ParserContext, modernParsedRoot:
         ...(customElement.extend === undefined ? {} : { extend: true as const }),
       }
     : undefined;
-  ctx.runesOptionOverride = modernParsed.options?.runes;
-  ctx.scriptGenericsAttribute = resolveScriptGenericsAttribute(ctx, modernParsed);
+  ctx.runesOptionOverride = parsed.options?.runes;
+  ctx.scriptGenericsAttribute = resolveScriptGenericsAttribute(ctx, parsed);
   // Module-script type imports and declarations are in scope for the
   // instance script. Collected first, so an instance declaration of the
   // same name wins.
-  const moduleBody = modernParsed.module?.content?.body ?? [];
+  const moduleBody = scriptStatements(parsed.module);
   const typeOnlyExportNames = new Set<string>();
   for (const statement of moduleBody) {
     if (!statement?.type) continue;
@@ -354,7 +344,7 @@ export function buildRunesPropTypeMetadata(ctx: ParserContext, modernParsedRoot:
     if (declaration) declaration.exported = true;
   }
 
-  const body = modernParsed.instance?.content?.body ?? [];
+  const body = scriptStatements(parsed.instance);
 
   for (const statement of body) {
     if (!statement?.type) continue;

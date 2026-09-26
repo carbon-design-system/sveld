@@ -8,6 +8,7 @@ import type {
   Pattern,
   VariableDeclarator,
 } from "estree";
+import type { AST } from "svelte/compiler";
 import {
   getPropertyName,
   isCallExpressionNamed,
@@ -299,29 +300,12 @@ function declareExportSpecifierProps(ctx: ParserContext, specifiers: ExportSpeci
 }
 
 /** Declares all component-instance-level (`<script>`) bindings into `ctx.componentScope`. */
-function collectComponentScopeDeclarations(ctx: ParserContext, instance: unknown) {
-  if (!instance || typeof instance !== "object") return;
-
-  const program =
-    "content" in instance &&
-    instance.content &&
-    typeof instance.content === "object" &&
-    "body" in instance.content &&
-    Array.isArray(instance.content.body)
-      ? instance.content
-      : "body" in instance && Array.isArray(instance.body)
-        ? instance
-        : undefined;
-
-  if (!program || !("body" in program) || !Array.isArray(program.body)) return;
-
-  for (const statement of program.body) {
-    if (!statement || typeof statement !== "object" || !("type" in statement)) continue;
-
+function collectComponentScopeDeclarations(ctx: ParserContext, instance: AST.Script | undefined) {
+  for (const statement of instance?.content.body ?? []) {
     switch (statement.type) {
       case "ImportDeclaration":
-        for (const specifier of statement.specifiers ?? []) {
-          if (specifier.local?.name) {
+        for (const specifier of statement.specifiers) {
+          if (specifier.local.name) {
             declareScopeBinding(ctx.componentScope, specifier.local.name, { kind: "local" });
           }
         }
@@ -342,8 +326,8 @@ function collectComponentScopeDeclarations(ctx: ParserContext, instance: unknown
         }
         break;
       case "ExportNamedDeclaration":
-        if (!statement.declaration || typeof statement.declaration !== "object" || !("type" in statement.declaration)) {
-          if (statement.source == null) declareExportSpecifierProps(ctx, statement.specifiers ?? []);
+        if (!statement.declaration) {
+          if (statement.source == null) declareExportSpecifierProps(ctx, statement.specifiers);
           break;
         }
 

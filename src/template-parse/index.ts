@@ -1,9 +1,11 @@
 import type { AST } from "svelte/compiler";
 import { readElement } from "./elements";
 import { readOptions } from "./read-options";
-import { TemplateParserState } from "./state";
+import { TemplateParserState, type TemplateRoot } from "./state";
 import { readTag } from "./tag";
 import { readText } from "./text";
+
+export type { TemplateRoot } from "./state";
 
 /**
  * Top-level dispatch. From svelte's `Parser` constructor (`phases/1-parse/index.js`).
@@ -12,12 +14,9 @@ import { readText } from "./text";
  * against the trimmed source. `Root.end` is still the original length,
  * set in `state.ts`.
  *
- * Not a full `AST.Root`. Omitted fields (`name_loc`, expression `.loc`,
- * `SnippetBlock.parameters`/`.typeParams`, body-text entity decoding,
- * `trailingComments`) keep the return type `unknown`. The shim test strips
- * the same fields before comparing.
+ * Returns svelte's `AST.Root`, with the differences listed on {@link TemplateRoot}.
  */
-export function parse(source: string): unknown {
+export function parse(source: string): TemplateRoot {
   const trimmed = source.trimEnd();
   const state = new TemplateParserState(trimmed, source.length);
 

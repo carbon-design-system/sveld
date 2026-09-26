@@ -3,8 +3,6 @@
  * front (script language, type annotations, hoisted bindings, and the
  * component-level JSDoc tags).
  */
-import type { Node } from "estree";
-import type { ModernAstRoot } from "../model";
 import { parse as parseModernAst } from "../svelte-template-parse";
 import { parseCustomTypes } from "./component-tags";
 import type { ParserContext } from "./context";
@@ -41,9 +39,9 @@ export function prepareComponent(ctx: ParserContext, source: string, filePath: s
    * One modern-AST parse feeds both `buildRunesPropTypeMetadata` and the
    * main walk. There's no conversion step in between, so order doesn't matter.
    */
-  const modernParsed = parseModernAst(cleanedSource);
-  buildRunesPropTypeMetadata(ctx, modernParsed);
-  ctx.parsed = modernParsed as unknown as ModernAstRoot;
+  const parsed = parseModernAst(cleanedSource);
+  buildRunesPropTypeMetadata(ctx, parsed);
+  ctx.parsed = parsed;
 
   /**
    * compile() strips TS-only wrapper expressions (`as`/`satisfies`/`!`/type assertions/explicit
@@ -51,9 +49,9 @@ export function prepareComponent(ctx: ParserContext, source: string, filePath: s
    * TS-tagged scripts can contain them, so skip the walk entirely for plain JS components.
    */
   if (ctx.scriptLanguage === "ts") {
-    stripTypeCastWrappers(ctx.parsed.module);
-    stripTypeCastWrappers(ctx.parsed.instance);
-    stripTypeCastWrappers(ctx.parsed.fragment);
+    stripTypeCastWrappers(parsed.module);
+    stripTypeCastWrappers(parsed.instance);
+    stripTypeCastWrappers(parsed.fragment);
   }
 
   ctx.syntaxMode = detectSyntaxMode(ctx);
@@ -67,13 +65,12 @@ export function prepareComponent(ctx: ParserContext, source: string, filePath: s
    * scan only; `ctx.source` itself stays the untouched parsed source so every other
    * offset computation (source ranges, `sourceAtPos`, ...) is unaffected.
    */
-  const cssBlock = ctx.parsed.css;
-  const scanSource =
-    cssBlock?.start !== undefined && cssBlock?.end !== undefined
-      ? cleanedSource.slice(0, cssBlock.start) +
-        " ".repeat(cssBlock.end - cssBlock.start) +
-        cleanedSource.slice(cssBlock.end)
-      : cleanedSource;
+  const cssBlock = parsed.css;
+  const scanSource = cssBlock
+    ? cleanedSource.slice(0, cssBlock.start) +
+      " ".repeat(cssBlock.end - cssBlock.start) +
+      cleanedSource.slice(cssBlock.end)
+    : cleanedSource;
 
   /**
    * Imports and function declarations hoist, so `export let id = uniqueId()` must
@@ -85,8 +82,8 @@ export function prepareComponent(ctx: ParserContext, source: string, filePath: s
    * Skip the template. Imports and function declarations never appear in the template
    * fragment, so walking markup here would re-traverse the largest part of the AST for nothing.
    */
-  collectHoistedScriptBindings(ctx, ctx.parsed?.module as unknown as Node | undefined);
-  collectHoistedScriptBindings(ctx, ctx.parsed?.instance as unknown as Node | undefined);
+  collectHoistedScriptBindings(ctx, parsed.module);
+  collectHoistedScriptBindings(ctx, parsed.instance);
 
   parseCustomTypes(ctx, scanSource);
 }

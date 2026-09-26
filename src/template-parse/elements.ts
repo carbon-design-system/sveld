@@ -567,9 +567,7 @@ export function readElement(state: TemplateParserState): void {
       // svelte stores the HTML comment right before `<script>` as the
       // Program's only leading comment, as a `Line` with the comment's text.
       if (prevComment) {
-        (content.content as unknown as { leadingComments: unknown[] }).leadingComments = [
-          { type: "Line", value: prevComment.data },
-        ];
+        content.content.leadingComments = [{ type: "Line", value: prevComment.data }];
       }
       if (content.context === "module") {
         if (state.root.module) throw new Error("sveld: duplicate <script module>");
