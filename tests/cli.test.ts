@@ -787,7 +787,7 @@ describe("cli() --quiet", () => {
 
     await cli(process);
 
-    expect(errorSpy).toHaveBeenCalledWith("created TypeScript definitions.");
+    expect(errorSpy).toHaveBeenCalledWith('created 2 of 2 TypeScript definitions in "types".');
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('created "COMPONENT_API.json".'));
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('created "COMPONENT_INDEX.md".'));
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('created "custom-elements.json".'));

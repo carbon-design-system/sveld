@@ -1061,7 +1061,7 @@ describe("writeTsDefinitions", () => {
     jest.restoreAllMocks();
   });
 
-  test("prints the progress line to stderr", async () => {
+  test("prints the progress line to stderr, with how many files changed", async () => {
     const tempDir = await mkdtemp(path.join(process.cwd(), ".tmp-sveld-ts-defs-"));
     const outDir = path.relative(process.cwd(), tempDir);
     const components: ComponentDocs = new Map([["Button", mockComponentDocApi("Button", "Button.svelte")]]);
@@ -1074,7 +1074,16 @@ describe("writeTsDefinitions", () => {
         exports: mockParsedExports({}),
       });
 
-      expect(errorSpy).toHaveBeenCalledWith("created TypeScript definitions.");
+      expect(errorSpy).toHaveBeenCalledWith(`created 2 of 2 TypeScript definitions in "${outDir}".`);
+
+      errorSpy.mockClear();
+      await writeTsDefinitions(components, {
+        outDir,
+        inputDir: "src",
+        preamble: "",
+        exports: mockParsedExports({}),
+      });
+      expect(errorSpy).toHaveBeenCalledWith(`unchanged 2 TypeScript definitions in "${outDir}".`);
     } finally {
       rmSync(tempDir, { recursive: true, force: true });
     }
