@@ -1,4 +1,4 @@
-import { lstatSync, readFileSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
 import { basename, dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { isIdentifier, resolveStaticStringLiteral, unwrapTypeCastExpression } from "./ast-guards";
 import type { DeprecatedValue, JsDocPassthroughTag } from "./ComponentParser";
@@ -180,11 +180,12 @@ export function resolveModuleFile(specifier: string, fromDir: string): string | 
   const baseName = basename(base);
 
   if (directoryHasEntry(parentDir, baseName)) {
-    // The cached listing already knows the entry's type; only a name that
+    // The cached listing already knows the entry's type; only a symlink,
+    // whose target's type the listing doesn't record, or a name that
     // matched by case/normalization variant (not in the listing under this
-    // exact name) still needs the `lstat`.
+    // exact name) still needs the `stat`.
     const entry = directoryEntry(parentDir, baseName);
-    const stat = entry ?? lstatSync(base, { throwIfNoEntry: false });
+    const stat = entry && !entry.isSymbolicLink() ? entry : statSync(base, { throwIfNoEntry: false });
     if (stat?.isFile()) return base;
 
     for (const ext of CANDIDATE_EXTENSIONS) {

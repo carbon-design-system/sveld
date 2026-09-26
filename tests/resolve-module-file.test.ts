@@ -7,8 +7,8 @@ import { resolveModuleFile } from "../src/parse-entry-exports";
 /**
  * `resolveModuleFile` decides file-vs-directory from the cached `readdir`
  * listing (`Dirent`) when the specifier names an entry exactly, and only
- * falls back to `lstat` for a case/normalization variant. Both describe a
- * symlink itself rather than its target, so the two paths must agree.
+ * falls back to `stat` for a symlink or a case/normalization variant. Both
+ * paths follow a symlink to its target, as an import would.
  */
 describe("resolveModuleFile", () => {
   let dir: string;
@@ -69,14 +69,17 @@ describe("resolveModuleFile", () => {
     expect(resolveModuleFile("../utils", path.join(dir, "Button"))).toBe(path.join(dir, "utils.ts"));
   });
 
-  test("treats a symlink named exactly by the specifier like lstat does: neither file nor directory", () => {
-    // Neither `Dirent` nor `lstat` reports a symlink as a file or directory,
-    // so an exactly-named symlink has never resolved here, while the
-    // extension probe (which never inspects the entry type) still finds a
-    // symlinked `.ts`. Pinned so a change to either path is deliberate.
-    expect(resolveModuleFile("./LinkedFile.ts", dir)).toBeNull();
-    expect(resolveModuleFile("./LinkedDir", dir)).toBeNull();
+  test("follows a symlink named exactly by the specifier, as the extension probe does", () => {
+    expect(resolveModuleFile("./LinkedFile.ts", dir)).toBe(path.join(dir, "LinkedFile.ts"));
+    expect(resolveModuleFile("./LinkedDir", dir)).toBe(path.join(dir, "LinkedDir", "index.js"));
     expect(resolveModuleFile("./LinkedFile", dir)).toBe(path.join(dir, "LinkedFile.ts"));
+  });
+
+  test("skips a broken symlink named exactly by the specifier", () => {
+    symlinkSync(path.join(dir, "missing.ts"), path.join(dir, "Dangling"));
+    writeFileSync(path.join(dir, "Dangling.ts"), "export {};\n");
+    resetDirectoryListings();
+    expect(resolveModuleFile("./Dangling", dir)).toBe(path.join(dir, "Dangling.ts"));
   });
 
   test("resolves a case variant through the lstat fallback on a case-insensitive filesystem", () => {
