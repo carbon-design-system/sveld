@@ -95,10 +95,12 @@ function buildRunesPropTypeMetadataMap(
 
       trackAdditionalTypeDependencyNode(ctx, member.typeAnnotation?.typeAnnotation);
 
+      const jsdoc = processLeadingCommentsJSDoc(ctx, parser, member as { leadingComments?: unknown[]; start?: number });
       metadata.set(propName, {
         type,
         optional: member.optional === true,
         source: sourceRangeFromNode(ctx, member),
+        ...(jsdoc ? { jsdoc } : {}),
       });
     }
   };
@@ -487,6 +489,9 @@ export function parseRunesPropsDeclaration(parser: ComponentParser, ctx: ParserC
           addProp(parser, ctx, propName, {
             name: propName,
             kind: "let",
+            description: typeMetadata.jsdoc?.description,
+            deprecated: typeMetadata.jsdoc?.deprecated,
+            tags: typeMetadata.jsdoc?.tags,
             type: typeMetadata.type,
             typeSource: "typescript",
             isFunction: false,
@@ -557,14 +562,15 @@ export function parseRunesPropsDeclaration(parser: ComponentParser, ctx: ParserC
       }
 
       const member = jsDocMembers?.get(propName);
-      const propertyJSDoc =
-        processLeadingCommentsJSDoc(ctx, parser, property) ??
-        (supportedPublicPropCount === 1 && !jsDocMembers ? declarationJSDoc : undefined);
       const typeMetadata = getRunesPropTypeMetadata(
         ctx,
         (declarator as VariableDeclarator & { start?: number }).start,
         propName,
       );
+      const propertyJSDoc =
+        processLeadingCommentsJSDoc(ctx, parser, property) ??
+        typeMetadata?.jsdoc ??
+        (supportedPublicPropCount === 1 && !jsDocMembers ? declarationJSDoc : undefined);
       const { init: unwrappedInit, bindable } = unwrapBindableInitializer(init);
       const initResult = unwrappedInit == null ? { isFunction: false } : processInitializer(parser, ctx, unwrappedInit);
       const { value, type: inferredType, isFunction: initializerIsFunction, defaultValue } = initResult;
