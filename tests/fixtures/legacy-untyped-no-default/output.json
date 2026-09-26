@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 9,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -20,17 +10,7 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 2,
-          "column": 2
-        },
-        "end": {
-          "line": 2,
-          "column": 15
-        }
-      }
+      "reactive": false
     },
     {
       "name": "b",
@@ -41,17 +21,7 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 5,
-          "column": 2
-        },
-        "end": {
-          "line": 5,
-          "column": 15
-        }
-      }
+      "reactive": false
     },
     {
       "name": "c",
@@ -68,17 +38,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 7,
-          "column": 2
-        },
-        "end": {
-          "line": 7,
-          "column": 19
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -93,16 +53,6 @@
       "kind": "prop-unknown-type",
       "name": "a",
       "message": "Prop \"a\" type could not be inferred; falling back to \"any\".",
-      "source": {
-        "start": {
-          "line": 2,
-          "column": 2
-        },
-        "end": {
-          "line": 2,
-          "column": 15
-        }
-      },
       "code": "sveld/prop-unknown-type",
       "severity": "warning"
     }

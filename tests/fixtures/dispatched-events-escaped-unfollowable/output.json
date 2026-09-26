@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 18,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -19,17 +9,7 @@
       "type": "dispatched",
       "name": "open",
       "detail": "null",
-      "description": "Fired by `registry.track`.",
-      "source": {
-        "start": {
-          "line": 4,
-          "column": 5
-        },
-        "end": {
-          "line": 4,
-          "column": 23
-        }
-      }
+      "description": "Fired by `registry.track`."
     }
   ],
   "typedefs": [],
@@ -41,16 +21,6 @@
       "kind": "dispatch-escapes",
       "name": "dispatch",
       "message": "`dispatch` is passed to `notify`, which sveld can't follow: it only reads a function imported from another module, by name, as its default export, or through a namespace import. Document the events dispatched there with @event tags.",
-      "source": {
-        "start": {
-          "line": 16,
-          "column": 2
-        },
-        "end": {
-          "line": 16,
-          "column": 18
-        }
-      },
       "code": "sveld/dispatch-escapes",
       "severity": "warning"
     }

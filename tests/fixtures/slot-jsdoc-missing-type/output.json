@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 12,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -27,17 +17,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 5,
-          "column": 2
-        },
-        "end": {
-          "line": 5,
-          "column": 24
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -45,17 +25,7 @@
     {
       "name": "named",
       "default": false,
-      "slot_props": "Record<string, never>",
-      "source": {
-        "start": {
-          "line": 9,
-          "column": 2
-        },
-        "end": {
-          "line": 9,
-          "column": 23
-        }
-      }
+      "slot_props": "Record<string, never>"
     }
   ],
   "events": [],
@@ -68,16 +38,6 @@
       "kind": "slot-missing-type",
       "name": "named",
       "message": "@slot \"named\" is missing a required {Type} annotation; falling back to \"Record<string, never>\".",
-      "source": {
-        "start": {
-          "line": 3,
-          "column": 5
-        },
-        "end": {
-          "line": 3,
-          "column": 16
-        }
-      },
       "code": "sveld/slot-missing-type",
       "severity": "warning"
     }

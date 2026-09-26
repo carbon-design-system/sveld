@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 13,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -28,17 +18,7 @@
           "description": "",
           "optional": false
         }
-      ],
-      "source": {
-        "start": {
-          "line": 7,
-          "column": 2
-        },
-        "end": {
-          "line": 7,
-          "column": 37
-        }
-      }
+      ]
     },
     {
       "key": "123",
@@ -50,17 +30,7 @@
           "description": "",
           "optional": false
         }
-      ],
-      "source": {
-        "start": {
-          "line": 8,
-          "column": 2
-        },
-        "end": {
-          "line": 8,
-          "column": 30
-        }
-      }
+      ]
     },
     {
       "key": "my key!",
@@ -72,17 +42,7 @@
           "description": "",
           "optional": false
         }
-      ],
-      "source": {
-        "start": {
-          "line": 9,
-          "column": 2
-        },
-        "end": {
-          "line": 9,
-          "column": 34
-        }
-      }
+      ]
     }
   ],
   "diagnostics": []

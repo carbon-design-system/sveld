@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 24,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -30,17 +20,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 16,
-          "column": 2
-        },
-        "end": {
-          "line": 16,
-          "column": 37
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -49,17 +29,7 @@
       "name": "footer",
       "default": false,
       "slot_props": "Record<string, never>",
-      "description": "Footer desc\ncontinued footer.",
-      "source": {
-        "start": {
-          "line": 23,
-          "column": 0
-        },
-        "end": {
-          "line": 23,
-          "column": 22
-        }
-      }
+      "description": "Footer desc\ncontinued footer."
     }
   ],
   "events": [
@@ -67,17 +37,7 @@
       "type": "dispatched",
       "name": "go",
       "detail": "null",
-      "description": "Go desc.",
-      "source": {
-        "start": {
-          "line": 20,
-          "column": 5
-        },
-        "end": {
-          "line": 20,
-          "column": 19
-        }
-      }
+      "description": "Go desc."
     }
   ],
   "typedefs": [
@@ -85,17 +45,7 @@
       "type": "{\n  /** Label desc. */\n  label: string;\n}",
       "name": "Options",
       "description": "Options desc\ncontinued unindented.",
-      "ts": "type Options = {\n  /** Label desc. */\n  label: string;\n};",
-      "source": {
-        "start": {
-          "line": 4,
-          "column": 5
-        },
-        "end": {
-          "line": 5,
-          "column": 26
-        }
-      }
+      "ts": "type Options = {\n  /** Label desc. */\n  label: string;\n};"
     }
   ],
   "generics": null,

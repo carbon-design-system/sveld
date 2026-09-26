@@ -17,6 +17,32 @@ for await (const file of new Glob("**/input.svelte").scan(folder)) {
 const parser = new ComponentParser();
 const files = Array.from(fixtures_map.keys());
 
+/**
+ * Fixtures whose `output.json` keeps source ranges, together covering every
+ * kind of item that carries one. Every other fixture drops them: a parser
+ * change that shifts positions would otherwise rewrite hundreds of goldens.
+ */
+const SOURCE_RANGE_FIXTURES = new Set([
+  "jsdoc-internal-ignore",
+  "module-reexport",
+  "runes-generics",
+  "runes-props-basic",
+  "theme-component",
+  "typedef-event-shared-block",
+]);
+
+/** Drops every `source: { start, end }` range; string `source` fields (module paths) stay. */
+const stripSourceRanges = (value: unknown): unknown => {
+  if (Array.isArray(value)) return value.map(stripSourceRanges);
+  if (!value || typeof value !== "object") return value;
+  const result: Record<string, unknown> = {};
+  for (const [key, entry] of Object.entries(value)) {
+    if (key === "source" && entry && typeof entry === "object" && "start" in entry) continue;
+    result[key] = stripSourceRanges(entry);
+  }
+  return result;
+};
+
 const getMetadata = (fixture: { filePath: string; source: string }) => {
   const { filePath, source } = fixture;
   const { dir } = path.parse(filePath);
@@ -63,7 +89,8 @@ describe("fixtures (JSON)", async () => {
       throw new Error(`Source not found for: ${filePath}`);
     }
     const { dir, parsed_component } = getMetadata({ filePath, source });
-    const api_json = `${JSON.stringify(parsed_component, null, 2)}\n`;
+    const api = SOURCE_RANGE_FIXTURES.has(dir) ? parsed_component : stripSourceRanges(parsed_component);
+    const api_json = `${JSON.stringify(api, null, 2)}\n`;
 
     await expectMatchesFixtureFile(path.join(folder, dir, "output.json"), api_json);
   });

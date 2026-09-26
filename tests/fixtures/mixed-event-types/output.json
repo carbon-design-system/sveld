@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 27,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -18,33 +8,13 @@
     {
       "type": "forwarded",
       "name": "change",
-      "element": "input",
-      "source": {
-        "start": {
-          "line": 20,
-          "column": 2
-        },
-        "end": {
-          "line": 20,
-          "column": 11
-        }
-      }
+      "element": "input"
     },
     {
       "type": "forwarded",
       "name": "customEvent",
       "element": "CustomComponent",
       "description": "Custom event from component (component forwarded event)",
-      "source": {
-        "start": {
-          "line": 7,
-          "column": 5
-        },
-        "end": {
-          "line": 7,
-          "column": 90
-        }
-      },
       "detail": "number"
     },
     {
@@ -52,32 +22,12 @@
       "name": "input",
       "element": "input",
       "description": "Input value changed (native forwarded event)",
-      "source": {
-        "start": {
-          "line": 6,
-          "column": 5
-        },
-        "end": {
-          "line": 6,
-          "column": 73
-        }
-      },
       "detail": "string"
     },
     {
       "type": "dispatched",
       "name": "submit",
-      "detail": "{ data: string; }",
-      "source": {
-        "start": {
-          "line": 13,
-          "column": 4
-        },
-        "end": {
-          "line": 13,
-          "column": 40
-        }
-      }
+      "detail": "{ data: string; }"
     }
   ],
   "typedefs": [],

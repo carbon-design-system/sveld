@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 46,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -29,17 +19,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 10,
-          "column": 2
-        },
-        "end": {
-          "line": 10,
-          "column": 24
-        }
-      }
+      "reactive": false
     },
     {
       "name": "id",
@@ -57,17 +37,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 15,
-          "column": 2
-        },
-        "end": {
-          "line": 15,
-          "column": 21
-        }
-      }
+      "reactive": false
     },
     {
       "name": "focus",
@@ -80,17 +50,7 @@
       "isFunctionDeclaration": true,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 21,
-          "column": 2
-        },
-        "end": {
-          "line": 21,
-          "column": 28
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -100,17 +60,7 @@
       "default": false,
       "slot_props": "{ count: number }",
       "description": "Badge content rendered next to the label.",
-      "deprecated": "Render the badge inline instead.",
-      "source": {
-        "start": {
-          "line": 41,
-          "column": 2
-        },
-        "end": {
-          "line": 44,
-          "column": 4
-        }
-      }
+      "deprecated": "Render the badge inline instead."
     }
   ],
   "events": [
@@ -119,17 +69,7 @@
       "name": "change",
       "detail": "{ value: string }",
       "description": "Fired when the value changes.",
-      "deprecated": "Listen for the native `input` event instead.",
-      "source": {
-        "start": {
-          "line": 35,
-          "column": 4
-        },
-        "end": {
-          "line": 35,
-          "column": 40
-        }
-      }
+      "deprecated": "Listen for the native `input` event instead."
     }
   ],
   "typedefs": [],

@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 25,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -24,34 +14,14 @@
           "name": "example",
           "body": "```svelte\n<Toolbar><Icon /></Toolbar>\n```"
         }
-      ],
-      "source": {
-        "start": {
-          "line": 17,
-          "column": 0
-        },
-        "end": {
-          "line": 20,
-          "column": 2
-        }
-      }
+      ]
     },
     {
       "name": "status",
       "default": false,
       "slot_props": "{ message: string }",
       "description": "Status text for live regions; prefer `aria-current=\"page\"` on the active link.",
-      "deprecated": "Use the `live` region pattern instead.",
-      "source": {
-        "start": {
-          "line": 21,
-          "column": 0
-        },
-        "end": {
-          "line": 24,
-          "column": 2
-        }
-      }
+      "deprecated": "Use the `live` region pattern instead."
     }
   ],
   "events": [],

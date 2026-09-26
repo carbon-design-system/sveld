@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 13,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -30,17 +20,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 8,
-          "column": 2
-        },
-        "end": {
-          "line": 8,
-          "column": 55
-        }
-      }
+      "reactive": false
     },
     {
       "name": "status",
@@ -57,17 +37,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 11,
-          "column": 2
-        },
-        "end": {
-          "line": 11,
-          "column": 32
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -77,32 +47,12 @@
     {
       "type": "{ kind: \"success\"; value: string } | { kind: \"error\"; error: Error }",
       "name": "Result",
-      "ts": "type Result = { kind: \"success\"; value: string } | { kind: \"error\"; error: Error };",
-      "source": {
-        "start": {
-          "line": 3,
-          "column": 5
-        },
-        "end": {
-          "line": 3,
-          "column": 91
-        }
-      }
+      "ts": "type Result = { kind: \"success\"; value: string } | { kind: \"error\"; error: Error };"
     },
     {
       "type": "{ ok: true; data: number } | { ok: false; reason: string } | \"pending\"",
       "name": "Status",
-      "ts": "type Status = { ok: true; data: number } | { ok: false; reason: string } | \"pending\";",
-      "source": {
-        "start": {
-          "line": 4,
-          "column": 5
-        },
-        "end": {
-          "line": 4,
-          "column": 93
-        }
-      }
+      "ts": "type Status = { ok: true; data: number } | { ok: false; reason: string } | \"pending\";"
     }
   ],
   "generics": null,

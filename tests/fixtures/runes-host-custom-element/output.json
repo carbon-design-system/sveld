@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 24,
-      "column": 0
-    }
-  },
   "syntaxMode": "runes",
   "scriptLanguage": "js",
   "props": [
@@ -20,17 +10,7 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 4,
-          "column": 8
-        },
-        "end": {
-          "line": 4,
-          "column": 13
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -39,46 +19,16 @@
     {
       "type": "dispatched",
       "name": "close",
-      "detail": "null",
-      "source": {
-        "start": {
-          "line": 17,
-          "column": 4
-        },
-        "end": {
-          "line": 17,
-          "column": 45
-        }
-      }
+      "detail": "null"
     },
     {
       "type": "dispatched",
-      "name": "notify",
-      "source": {
-        "start": {
-          "line": 9,
-          "column": 4
-        },
-        "end": {
-          "line": 9,
-          "column": 68
-        }
-      }
+      "name": "notify"
     },
     {
       "type": "dispatched",
       "name": "ready",
-      "detail": "\"loaded\"",
-      "source": {
-        "start": {
-          "line": 13,
-          "column": 4
-        },
-        "end": {
-          "line": 13,
-          "column": 73
-        }
-      }
+      "detail": "\"loaded\""
     }
   ],
   "typedefs": [],
@@ -94,16 +44,6 @@
       "kind": "prop-unknown-type",
       "name": "value",
       "message": "Prop \"value\" type could not be inferred; falling back to \"any\".",
-      "source": {
-        "start": {
-          "line": 4,
-          "column": 8
-        },
-        "end": {
-          "line": 4,
-          "column": 13
-        }
-      },
       "code": "sveld/prop-unknown-type",
       "severity": "warning"
     }

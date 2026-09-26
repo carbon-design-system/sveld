@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 18,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -28,17 +18,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 14,
-          "column": 2
-        },
-        "end": {
-          "line": 14,
-          "column": 35
-        }
-      }
+      "reactive": false
     },
     {
       "name": "size",
@@ -55,17 +35,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 14,
-          "column": 2
-        },
-        "end": {
-          "line": 14,
-          "column": 35
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [
@@ -84,17 +54,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": true,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 6,
-          "column": 2
-        },
-        "end": {
-          "line": 6,
-          "column": 34
-        }
-      }
+      "reactive": false
     },
     {
       "name": "unit",
@@ -111,17 +71,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": true,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 6,
-          "column": 2
-        },
-        "end": {
-          "line": 6,
-          "column": 34
-        }
-      }
+      "reactive": false
     }
   ],
   "slots": [],

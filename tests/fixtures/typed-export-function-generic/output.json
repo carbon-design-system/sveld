@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 24,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "ts",
   "props": [
@@ -22,17 +12,7 @@
       "isFunctionDeclaration": true,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 16,
-          "column": 2
-        },
-        "end": {
-          "line": 18,
-          "column": 3
-        }
-      }
+      "reactive": false
     },
     {
       "name": "pick",
@@ -43,17 +23,7 @@
       "isFunctionDeclaration": true,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 20,
-          "column": 2
-        },
-        "end": {
-          "line": 22,
-          "column": 3
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [
@@ -66,17 +36,7 @@
       "isFunctionDeclaration": true,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 5,
-          "column": 2
-        },
-        "end": {
-          "line": 7,
-          "column": 3
-        }
-      }
+      "reactive": false
     }
   ],
   "slots": [],

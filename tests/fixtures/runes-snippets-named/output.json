@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 6,
-      "column": 0
-    }
-  },
   "syntaxMode": "runes",
   "scriptLanguage": "js",
   "props": [
@@ -20,17 +10,7 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 2,
-          "column": 8
-        },
-        "end": {
-          "line": 2,
-          "column": 12
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -38,17 +18,7 @@
     {
       "name": "header",
       "default": false,
-      "slot_props": "{ title: any }",
-      "source": {
-        "start": {
-          "line": 5,
-          "column": 9
-        },
-        "end": {
-          "line": 5,
-          "column": 44
-        }
-      }
+      "slot_props": "{ title: any }"
     }
   ],
   "events": [],
@@ -61,16 +31,6 @@
       "kind": "prop-unknown-type",
       "name": "item",
       "message": "Prop \"item\" type could not be inferred; falling back to \"any\".",
-      "source": {
-        "start": {
-          "line": 2,
-          "column": 8
-        },
-        "end": {
-          "line": 2,
-          "column": 12
-        }
-      },
       "code": "sveld/prop-unknown-type",
       "severity": "warning"
     }

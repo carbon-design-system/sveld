@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 36,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "ts",
   "props": [
@@ -21,17 +11,7 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 8,
-          "column": 2
-        },
-        "end": {
-          "line": 8,
-          "column": 27
-        }
-      }
+      "reactive": false
     },
     {
       "name": "documented",
@@ -49,17 +29,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 14,
-          "column": 2
-        },
-        "end": {
-          "line": 14,
-          "column": 28
-        }
-      }
+      "reactive": false
     },
     {
       "name": "literalDefault",
@@ -76,17 +46,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 16,
-          "column": 2
-        },
-        "end": {
-          "line": 16,
-          "column": 35
-        }
-      }
+      "reactive": false
     },
     {
       "name": "boolDefault",
@@ -103,17 +63,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 17,
-          "column": 2
-        },
-        "end": {
-          "line": 17,
-          "column": 32
-        }
-      }
+      "reactive": false
     },
     {
       "name": "arrayDefault",
@@ -134,17 +84,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 18,
-          "column": 2
-        },
-        "end": {
-          "line": 18,
-          "column": 46
-        }
-      }
+      "reactive": false
     },
     {
       "name": "objectDefault",
@@ -164,17 +104,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 19,
-          "column": 2
-        },
-        "end": {
-          "line": 19,
-          "column": 54
-        }
-      }
+      "reactive": false
     },
     {
       "name": "callbackDefault",
@@ -190,17 +120,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 20,
-          "column": 2
-        },
-        "end": {
-          "line": 20,
-          "column": 70
-        }
-      }
+      "reactive": false
     },
     {
       "name": "callDefault",
@@ -216,17 +136,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 21,
-          "column": 2
-        },
-        "end": {
-          "line": 21,
-          "column": 41
-        }
-      }
+      "reactive": false
     },
     {
       "name": "memberDefault",
@@ -242,17 +152,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 22,
-          "column": 2
-        },
-        "end": {
-          "line": 22,
-          "column": 46
-        }
-      }
+      "reactive": false
     },
     {
       "name": "expressionDefault",
@@ -268,17 +168,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 27,
-          "column": 2
-        },
-        "end": {
-          "line": 27,
-          "column": 43
-        }
-      }
+      "reactive": false
     },
     {
       "name": "unknown",
@@ -288,17 +178,7 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 29,
-          "column": 2
-        },
-        "end": {
-          "line": 29,
-          "column": 21
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -313,16 +193,6 @@
       "kind": "prop-unknown-type",
       "name": "unknown",
       "message": "Prop \"unknown\" type could not be inferred; falling back to \"any\".",
-      "source": {
-        "start": {
-          "line": 29,
-          "column": 2
-        },
-        "end": {
-          "line": 29,
-          "column": 21
-        }
-      },
       "code": "sveld/prop-unknown-type",
       "severity": "warning"
     }

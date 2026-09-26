@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 13,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "props": [],
   "moduleExports": [],
@@ -16,79 +6,29 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "Record<string, never>",
-      "source": {
-        "start": {
-          "line": 11,
-          "column": 2
-        },
-        "end": {
-          "line": 11,
-          "column": 10
-        }
-      }
+      "slot_props": "Record<string, never>"
     }
   ],
   "events": [
     {
       "type": "forwarded",
       "name": "blur",
-      "element": "button",
-      "source": {
-        "start": {
-          "line": 5,
-          "column": 2
-        },
-        "end": {
-          "line": 5,
-          "column": 9
-        }
-      }
+      "element": "button"
     },
     {
       "type": "forwarded",
       "name": "click",
-      "element": "button",
-      "source": {
-        "start": {
-          "line": 3,
-          "column": 2
-        },
-        "end": {
-          "line": 3,
-          "column": 10
-        }
-      }
+      "element": "button"
     },
     {
       "type": "forwarded",
       "name": "focus",
-      "element": "button",
-      "source": {
-        "start": {
-          "line": 4,
-          "column": 2
-        },
-        "end": {
-          "line": 4,
-          "column": 10
-        }
-      }
+      "element": "button"
     },
     {
       "type": "forwarded",
       "name": "mouseover",
-      "element": "h1",
-      "source": {
-        "start": {
-          "line": 8,
-          "column": 2
-        },
-        "end": {
-          "line": 8,
-          "column": 14
-        }
-      }
+      "element": "h1"
     }
   ],
   "typedefs": [],

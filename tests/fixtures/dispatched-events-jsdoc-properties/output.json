@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 64,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -19,65 +9,25 @@
       "type": "dispatched",
       "name": "change",
       "detail": "null",
-      "description": "Will be fired if value has been changed",
-      "source": {
-        "start": {
-          "line": 48,
-          "column": 4
-        },
-        "end": {
-          "line": 48,
-          "column": 24
-        }
-      }
+      "description": "Will be fired if value has been changed"
     },
     {
       "type": "dispatched",
       "name": "items:change",
       "detail": "ChangeDetail",
-      "description": "Fired when the collection changes. The detail carries the up-to-date,\nwell-formed set of items (hyphenated prose must survive verbatim).",
-      "source": {
-        "start": {
-          "line": 56,
-          "column": 4
-        },
-        "end": {
-          "line": 56,
-          "column": 69
-        }
-      }
+      "description": "Fired when the collection changes. The detail carries the up-to-date,\nwell-formed set of items (hyphenated prose must survive verbatim)."
     },
     {
       "type": "dispatched",
       "name": "snowball",
       "detail": "{\n  /** Indicates whether the snowball is tightly packed. */\n  isPacked: boolean;\n  /** The speed of the snowball in mph. */\n  speed: number;\n  /** Optional color of the snowball. */\n  color?: string;\n  /** Optional density with default value. @default 0.9 */\n  density?: number;\n}",
-      "description": "Snowball event fired when throwing a snowball.",
-      "source": {
-        "start": {
-          "line": 41,
-          "column": 4
-        },
-        "end": {
-          "line": 44,
-          "column": 6
-        }
-      }
+      "description": "Snowball event fired when throwing a snowball."
     },
     {
       "type": "dispatched",
       "name": "submit",
       "detail": "{ value: string }",
-      "description": "Form submission with value",
-      "source": {
-        "start": {
-          "line": 52,
-          "column": 4
-        },
-        "end": {
-          "line": 52,
-          "column": 43
-        }
-      }
+      "description": "Form submission with value"
     }
   ],
   "typedefs": [
@@ -85,17 +35,7 @@
       "type": "{\n  /** The full new set of items. */\n  items: string[];\n  /** Items added since the last change. */\n  added: string[];\n  /** Items removed since the last change. */\n  removed?: string[];\n}",
       "name": "ChangeDetail",
       "description": "The event detail described once as a named typedef, then reused via `@event`.",
-      "ts": "type ChangeDetail = {\n  /** The full new set of items. */\n  items: string[];\n  /** Items added since the last change. */\n  added: string[];\n  /** Items removed since the last change. */\n  removed?: string[];\n};",
-      "source": {
-        "start": {
-          "line": 24,
-          "column": 5
-        },
-        "end": {
-          "line": 24,
-          "column": 35
-        }
-      }
+      "ts": "type ChangeDetail = {\n  /** The full new set of items. */\n  items: string[];\n  /** Items added since the last change. */\n  added: string[];\n  /** Items removed since the last change. */\n  removed?: string[];\n};"
     }
   ],
   "generics": null,

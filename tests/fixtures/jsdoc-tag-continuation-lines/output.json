@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 59,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -29,17 +19,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 39,
-          "column": 2
-        },
-        "end": {
-          "line": 39,
-          "column": 40
-        }
-      }
+      "reactive": false
     },
     {
       "name": "format",
@@ -60,17 +40,7 @@
       "isFunctionDeclaration": true,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 47,
-          "column": 2
-        },
-        "end": {
-          "line": 51,
-          "column": 3
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -78,33 +48,13 @@
     {
       "name": "footer",
       "default": false,
-      "slot_props": "Record<string, never>",
-      "source": {
-        "start": {
-          "line": 58,
-          "column": 0
-        },
-        "end": {
-          "line": 58,
-          "column": 22
-        }
-      }
+      "slot_props": "Record<string, never>"
     },
     {
       "name": "item",
       "default": false,
       "slot_props": "{ item: string }",
-      "description": "Renders one item,\nwith its props.",
-      "source": {
-        "start": {
-          "line": 54,
-          "column": 0
-        },
-        "end": {
-          "line": 57,
-          "column": 2
-        }
-      }
+      "description": "Renders one item,\nwith its props."
     }
   ],
   "events": [
@@ -112,50 +62,20 @@
       "type": "dispatched",
       "name": "change",
       "detail": "{\n  /**\n   * The new page, counted\n   * from one.\n   */\n  page: number;\n  pageSize: number;\n}",
-      "description": "Fired when the page changes.",
-      "source": {
-        "start": {
-          "line": 48,
-          "column": 4
-        },
-        "end": {
-          "line": 48,
-          "column": 49
-        }
-      }
+      "description": "Fired when the page changes."
     },
     {
       "type": "dispatched",
       "name": "select",
       "detail": "{\n  /**\n   * The selected id,\n   * never empty.\n   */\n  id: string;\n  index: number;\n}",
-      "description": "Fired when a row is selected.",
-      "source": {
-        "start": {
-          "line": 49,
-          "column": 4
-        },
-        "end": {
-          "line": 49,
-          "column": 47
-        }
-      }
+      "description": "Fired when a row is selected."
     }
   ],
   "typedefs": [
     {
       "type": "{\n  /**\n   * Height of each item in pixels, used for\n   * virtualization math.\n   */\n  itemHeight: number;\n  /**\n   * Rows rendered outside the viewport,\n   * above and below it.\n   */\n  overscan?: number;\n  sticky?: boolean;\n}",
       "name": "Config",
-      "ts": "type Config = {\n  /**\n   * Height of each item in pixels, used for\n   * virtualization math.\n   */\n  itemHeight: number;\n  /**\n   * Rows rendered outside the viewport,\n   * above and below it.\n   */\n  overscan?: number;\n  sticky?: boolean;\n};",
-      "source": {
-        "start": {
-          "line": 3,
-          "column": 5
-        },
-        "end": {
-          "line": 3,
-          "column": 29
-        }
-      }
+      "ts": "type Config = {\n  /**\n   * Height of each item in pixels, used for\n   * virtualization math.\n   */\n  itemHeight: number;\n  /**\n   * Rows rendered outside the viewport,\n   * above and below it.\n   */\n  overscan?: number;\n  sticky?: boolean;\n};"
     }
   ],
   "generics": null,

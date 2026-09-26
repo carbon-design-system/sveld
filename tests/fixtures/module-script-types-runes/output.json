@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 19,
-      "column": 0
-    }
-  },
   "syntaxMode": "runes",
   "scriptLanguage": "ts",
   "props": [
@@ -21,17 +11,7 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 15,
-          "column": 8
-        },
-        "end": {
-          "line": 15,
-          "column": 12
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [
@@ -44,17 +24,7 @@
       "isFunctionDeclaration": true,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 9,
-          "column": 2
-        },
-        "end": {
-          "line": 11,
-          "column": 3
-        }
-      }
+      "reactive": false
     }
   ],
   "slots": [],

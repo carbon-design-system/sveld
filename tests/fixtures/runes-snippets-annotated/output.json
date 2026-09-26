@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 17,
-      "column": 0
-    }
-  },
   "syntaxMode": "runes",
   "scriptLanguage": "js",
   "props": [
@@ -27,17 +17,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 8,
-          "column": 8
-        },
-        "end": {
-          "line": 8,
-          "column": 16
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -45,48 +25,18 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "{ prop: number; doubled: number; }",
-      "source": {
-        "start": {
-          "line": 12,
-          "column": 2
-        },
-        "end": {
-          "line": 12,
-          "column": 51
-        }
-      }
+      "slot_props": "{ prop: number; doubled: number; }"
     },
     {
       "name": "body",
       "default": false,
       "slot_props": "{ prop: number }",
-      "description": "Customize the paragraph text.",
-      "source": {
-        "start": {
-          "line": 16,
-          "column": 3
-        },
-        "end": {
-          "line": 16,
-          "column": 29
-        }
-      }
+      "description": "Customize the paragraph text."
     },
     {
       "name": "title",
       "default": false,
-      "slot_props": "Record<string, never>",
-      "source": {
-        "start": {
-          "line": 13,
-          "column": 2
-        },
-        "end": {
-          "line": 13,
-          "column": 21
-        }
-      }
+      "slot_props": "Record<string, never>"
     }
   ],
   "events": [],

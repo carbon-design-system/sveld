@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 18,
-      "column": 0
-    }
-  },
   "syntaxMode": "runes",
   "scriptLanguage": "js",
   "props": [],
@@ -18,32 +8,12 @@
     {
       "type": "dispatched",
       "name": "change",
-      "detail": "{ count: number; label: string; }",
-      "source": {
-        "start": {
-          "line": 8,
-          "column": 4
-        },
-        "end": {
-          "line": 8,
-          "column": 82
-        }
-      }
+      "detail": "{ count: number; label: string; }"
     },
     {
       "type": "dispatched",
       "name": "tick",
-      "detail": "number",
-      "source": {
-        "start": {
-          "line": 12,
-          "column": 4
-        },
-        "end": {
-          "line": 12,
-          "column": 69
-        }
-      }
+      "detail": "number"
     }
   ],
   "typedefs": [],

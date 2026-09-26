@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 12,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -24,16 +14,6 @@
       "reExport": {
         "from": "./other.js",
         "imported": "*"
-      },
-      "source": {
-        "start": {
-          "line": 5,
-          "column": 2
-        },
-        "end": {
-          "line": 5,
-          "column": 29
-        }
       }
     },
     {
@@ -47,16 +27,6 @@
       "reExport": {
         "from": "./other.js",
         "imported": "a"
-      },
-      "source": {
-        "start": {
-          "line": 6,
-          "column": 2
-        },
-        "end": {
-          "line": 6,
-          "column": 41
-        }
       }
     },
     {
@@ -70,16 +40,6 @@
       "reExport": {
         "from": "./other.js",
         "imported": "c"
-      },
-      "source": {
-        "start": {
-          "line": 6,
-          "column": 2
-        },
-        "end": {
-          "line": 6,
-          "column": 41
-        }
       }
     },
     {
@@ -93,16 +53,6 @@
       "reExport": {
         "from": "./to-hierarchy.js",
         "imported": "toHierarchy"
-      },
-      "source": {
-        "start": {
-          "line": 7,
-          "column": 2
-        },
-        "end": {
-          "line": 7,
-          "column": 50
-        }
       }
     },
     {
@@ -116,16 +66,6 @@
       "reExport": {
         "from": "./initials.js",
         "imported": "formatName"
-      },
-      "source": {
-        "start": {
-          "line": 8,
-          "column": 2
-        },
-        "end": {
-          "line": 8,
-          "column": 40
-        }
       }
     },
     {
@@ -139,16 +79,6 @@
       "reExport": {
         "from": "./initials.js",
         "imported": "getInitials"
-      },
-      "source": {
-        "start": {
-          "line": 8,
-          "column": 2
-        },
-        "end": {
-          "line": 8,
-          "column": 40
-        }
       }
     },
     {
@@ -162,16 +92,6 @@
       "reExport": {
         "from": "./to-hierarchy.js",
         "imported": "*"
-      },
-      "source": {
-        "start": {
-          "line": 8,
-          "column": 2
-        },
-        "end": {
-          "line": 8,
-          "column": 40
-        }
       }
     }
   ],

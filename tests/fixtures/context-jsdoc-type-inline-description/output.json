@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 22,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -17,17 +7,7 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "Record<string, never>",
-      "source": {
-        "start": {
-          "line": 21,
-          "column": 0
-        },
-        "end": {
-          "line": 21,
-          "column": 8
-        }
-      }
+      "slot_props": "Record<string, never>"
     }
   ],
   "events": [],
@@ -44,17 +24,7 @@
           "optional": false
         }
       ],
-      "description": "Opens the modal",
-      "source": {
-        "start": {
-          "line": 6,
-          "column": 2
-        },
-        "end": {
-          "line": 6,
-          "column": 28
-        }
-      }
+      "description": "Opens the modal"
     },
     {
       "key": "menu",
@@ -66,17 +36,7 @@
           "optional": false
         }
       ],
-      "description": "Toggles the menu\nwhen clicked.",
-      "source": {
-        "start": {
-          "line": 14,
-          "column": 2
-        },
-        "end": {
-          "line": 14,
-          "column": 26
-        }
-      }
+      "description": "Toggles the menu\nwhen clicked."
     },
     {
       "key": "drawer",
@@ -88,17 +48,7 @@
           "description": "Closes the drawer",
           "optional": false
         }
-      ],
-      "source": {
-        "start": {
-          "line": 18,
-          "column": 2
-        },
-        "end": {
-          "line": 18,
-          "column": 33
-        }
-      }
+      ]
     }
   ],
   "diagnostics": []

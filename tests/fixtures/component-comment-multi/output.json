@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 8,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "props": [],
   "moduleExports": [],
@@ -16,17 +6,7 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "Record<string, never>",
-      "source": {
-        "start": {
-          "line": 7,
-          "column": 5
-        },
-        "end": {
-          "line": 7,
-          "column": 13
-        }
-      }
+      "slot_props": "Record<string, never>"
     }
   ],
   "events": [],

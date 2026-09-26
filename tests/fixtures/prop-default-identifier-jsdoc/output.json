@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 95,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -26,17 +16,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 10,
-          "column": 2
-        },
-        "end": {
-          "line": 10,
-          "column": 32
-        }
-      }
+      "reactive": false
     },
     {
       "name": "size",
@@ -54,17 +34,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 18,
-          "column": 2
-        },
-        "end": {
-          "line": 18,
-          "column": 33
-        }
-      }
+      "reactive": false
     },
     {
       "name": "config",
@@ -85,17 +55,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 26,
-          "column": 2
-        },
-        "end": {
-          "line": 26,
-          "column": 37
-        }
-      }
+      "reactive": false
     },
     {
       "name": "items",
@@ -116,17 +76,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 34,
-          "column": 2
-        },
-        "end": {
-          "line": 34,
-          "column": 35
-        }
-      }
+      "reactive": false
     },
     {
       "name": "label",
@@ -144,17 +94,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 39,
-          "column": 2
-        },
-        "end": {
-          "line": 39,
-          "column": 35
-        }
-      }
+      "reactive": false
     },
     {
       "name": "shouldFilterItem",
@@ -171,17 +111,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 52,
-          "column": 2
-        },
-        "end": {
-          "line": 52,
-          "column": 52
-        }
-      }
+      "reactive": false
     },
     {
       "name": "format",
@@ -197,17 +127,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 58,
-          "column": 2
-        },
-        "end": {
-          "line": 58,
-          "column": 36
-        }
-      }
+      "reactive": false
     },
     {
       "name": "renderEmpty",
@@ -224,17 +144,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 65,
-          "column": 2
-        },
-        "end": {
-          "line": 65,
-          "column": 46
-        }
-      }
+      "reactive": false
     },
     {
       "name": "getKey",
@@ -266,17 +176,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 77,
-          "column": 2
-        },
-        "end": {
-          "line": 77,
-          "column": 36
-        }
-      }
+      "reactive": false
     },
     {
       "name": "translate",
@@ -293,17 +193,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 88,
-          "column": 2
-        },
-        "end": {
-          "line": 88,
-          "column": 42
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],

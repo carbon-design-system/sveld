@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 40,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -22,17 +12,7 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 8,
-          "column": 2
-        },
-        "end": {
-          "line": 8,
-          "column": 19
-        }
-      }
+      "reactive": false
     },
     {
       "name": "count",
@@ -44,17 +24,7 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 14,
-          "column": 2
-        },
-        "end": {
-          "line": 14,
-          "column": 19
-        }
-      }
+      "reactive": false
     },
     {
       "name": "createStore",
@@ -66,17 +36,7 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 22,
-          "column": 2
-        },
-        "end": {
-          "line": 22,
-          "column": 25
-        }
-      }
+      "reactive": false
     },
     {
       "name": "buttonProps",
@@ -88,17 +48,7 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 28,
-          "column": 2
-        },
-        "end": {
-          "line": 28,
-          "column": 25
-        }
-      }
+      "reactive": false
     },
     {
       "name": "context",
@@ -110,17 +60,7 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 38,
-          "column": 2
-        },
-        "end": {
-          "line": 38,
-          "column": 21
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -131,17 +71,7 @@
       "type": "{ rows: import(\"svelte/store\").Writable<string[]>; selected: import(\"svelte/store\").Readable<number> }",
       "name": "TableContext",
       "description": "The value stored under a Svelte context key, typed with imported store\ntypes. `import(...)` works inside a `@typedef` too.",
-      "ts": "interface TableContext { rows: import(\"svelte/store\").Writable<string[]>; selected: import(\"svelte/store\").Readable<number> }",
-      "source": {
-        "start": {
-          "line": 34,
-          "column": 5
-        },
-        "end": {
-          "line": 34,
-          "column": 131
-        }
-      }
+      "ts": "interface TableContext { rows: import(\"svelte/store\").Writable<string[]>; selected: import(\"svelte/store\").Readable<number> }"
     }
   ],
   "generics": null,

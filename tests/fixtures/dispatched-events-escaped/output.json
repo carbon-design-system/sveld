@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 22,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -27,17 +17,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": true,
-      "source": {
-        "start": {
-          "line": 6,
-          "column": 2
-        },
-        "end": {
-          "line": 6,
-          "column": 26
-        }
-      }
+      "reactive": true
     }
   ],
   "moduleExports": [],
@@ -46,17 +26,7 @@
     {
       "type": "dispatched",
       "name": "close",
-      "detail": "null",
-      "source": {
-        "start": {
-          "line": 16,
-          "column": 4
-        },
-        "end": {
-          "line": 16,
-          "column": 21
-        }
-      }
+      "detail": "null"
     }
   ],
   "typedefs": [],

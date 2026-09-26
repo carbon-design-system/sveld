@@ -112,7 +112,7 @@ tests/fixtures/<case-name>/
   output-component.d.ts  # emitted TypeScript definition, "component" format (generated)
 ```
 
-[`fixtures.test.ts`](tests/fixtures.test.ts) globs every `input.svelte`, parses it, and compares the result with the committed `output.json`, `output-class.d.ts`, and `output-component.d.ts` next to the input. A changed or missing output fails. `bun run test:update` rewrites the outputs instead, so `git diff` shows behavior changes directly; there's no separate snapshot file. The directory name becomes the `moduleName` (kebab-case → PascalCase: `runes-props-basic` → `RunesPropsBasic`).
+[`fixtures.test.ts`](tests/fixtures.test.ts) globs every `input.svelte`, parses it, and compares the result with the committed `output.json`, `output-class.d.ts`, and `output-component.d.ts` next to the input. A changed or missing output fails. `bun run test:update` rewrites the outputs instead, so `git diff` shows behavior changes directly; there's no separate snapshot file. The directory name becomes the `moduleName` (kebab-case → PascalCase: `runes-props-basic` → `RunesPropsBasic`). Only the few fixtures in `SOURCE_RANGE_FIXTURES` keep `source` ranges in `output.json`, so a change that shifts positions doesn't rewrite every golden.
 
 **To add a case:** create `tests/fixtures/<case-name>/input.svelte` and run `bun run test:update -t "<case-name>"` to write its outputs. Review the generated `output.json` / `output-class.d.ts` / `output-component.d.ts`, confirm the `.d.ts` is what a consumer should see, and commit them as part of the change.
 

@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 20,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -27,17 +17,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 10,
-          "column": 2
-        },
-        "end": {
-          "line": 10,
-          "column": 23
-        }
-      }
+      "reactive": false
     },
     {
       "name": "sortKey",
@@ -53,17 +33,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 13,
-          "column": 2
-        },
-        "end": {
-          "line": 13,
-          "column": 33
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -71,17 +41,7 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "{\n  rows: ReadonlyArray<Row>;\n  sortKey: Key | undefined;\n}",
-      "source": {
-        "start": {
-          "line": 16,
-          "column": 0
-        },
-        "end": {
-          "line": 19,
-          "column": 2
-        }
-      }
+      "slot_props": "{\n  rows: ReadonlyArray<Row>;\n  sortKey: Key | undefined;\n}"
     }
   ],
   "events": [],
@@ -89,17 +49,7 @@
     {
       "type": "{ id: string | number; [key: string]: any; }",
       "name": "DataTableRow",
-      "ts": "interface DataTableRow { id: string | number; [key: string]: any; }",
-      "source": {
-        "start": {
-          "line": 3,
-          "column": 5
-        },
-        "end": {
-          "line": 3,
-          "column": 73
-        }
-      }
+      "ts": "interface DataTableRow { id: string | number; [key: string]: any; }"
     }
   ],
   "generics": [

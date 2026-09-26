@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 24,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -18,92 +8,32 @@
     {
       "type": "forwarded",
       "name": "click",
-      "element": "ChildComponent",
-      "source": {
-        "start": {
-          "line": 15,
-          "column": 2
-        },
-        "end": {
-          "line": 15,
-          "column": 10
-        }
-      }
+      "element": "ChildComponent"
     },
     {
       "type": "dispatched",
       "name": "collapse",
-      "detail": "null",
-      "source": {
-        "start": {
-          "line": 23,
-          "column": 24
-        },
-        "end": {
-          "line": 23,
-          "column": 44
-        }
-      }
+      "detail": "null"
     },
     {
       "type": "dispatched",
       "name": "expand",
-      "detail": "null",
-      "source": {
-        "start": {
-          "line": 22,
-          "column": 24
-        },
-        "end": {
-          "line": 22,
-          "column": 42
-        }
-      }
+      "detail": "null"
     },
     {
       "type": "forwarded",
       "name": "mouseenter",
-      "element": "ChildComponent",
-      "source": {
-        "start": {
-          "line": 17,
-          "column": 2
-        },
-        "end": {
-          "line": 17,
-          "column": 15
-        }
-      }
+      "element": "ChildComponent"
     },
     {
       "type": "forwarded",
       "name": "mouseleave",
-      "element": "ChildComponent",
-      "source": {
-        "start": {
-          "line": 18,
-          "column": 2
-        },
-        "end": {
-          "line": 18,
-          "column": 15
-        }
-      }
+      "element": "ChildComponent"
     },
     {
       "type": "forwarded",
       "name": "mouseover",
-      "element": "ChildComponent",
-      "source": {
-        "start": {
-          "line": 16,
-          "column": 2
-        },
-        "end": {
-          "line": 16,
-          "column": 14
-        }
-      }
+      "element": "ChildComponent"
     }
   ],
   "typedefs": [],

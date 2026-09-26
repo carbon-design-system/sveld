@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 36,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -27,17 +17,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 7,
-          "column": 2
-        },
-        "end": {
-          "line": 7,
-          "column": 40
-        }
-      }
+      "reactive": false
     },
     {
       "name": "items",
@@ -53,17 +33,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 10,
-          "column": 2
-        },
-        "end": {
-          "line": 10,
-          "column": 33
-        }
-      }
+      "reactive": false
     },
     {
       "name": "showIcon",
@@ -80,17 +50,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 13,
-          "column": 2
-        },
-        "end": {
-          "line": 13,
-          "column": 40
-        }
-      }
+      "reactive": false
     },
     {
       "name": "label",
@@ -107,17 +67,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 16,
-          "column": 2
-        },
-        "end": {
-          "line": 16,
-          "column": 44
-        }
-      }
+      "reactive": false
     },
     {
       "name": "tone",
@@ -134,17 +84,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 19,
-          "column": 2
-        },
-        "end": {
-          "line": 24,
-          "column": 20
-        }
-      }
+      "reactive": false
     },
     {
       "name": "last",
@@ -160,17 +100,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 27,
-          "column": 2
-        },
-        "end": {
-          "line": 27,
-          "column": 34
-        }
-      }
+      "reactive": false
     },
     {
       "name": "explicit",
@@ -187,17 +117,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 32,
-          "column": 2
-        },
-        "end": {
-          "line": 32,
-          "column": 44
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -212,16 +132,6 @@
       "kind": "prop-unknown-type",
       "name": "items",
       "message": "Prop \"items\" type could not be inferred; falling back to \"any\".",
-      "source": {
-        "start": {
-          "line": 10,
-          "column": 2
-        },
-        "end": {
-          "line": 10,
-          "column": 33
-        }
-      },
       "code": "sveld/prop-unknown-type",
       "severity": "warning"
     }

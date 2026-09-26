@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 22,
-      "column": 0
-    }
-  },
   "syntaxMode": "runes",
   "scriptLanguage": "js",
   "props": [
@@ -21,17 +11,7 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 4,
-          "column": 8
-        },
-        "end": {
-          "line": 4,
-          "column": 27
-        }
-      }
+      "reactive": false
     },
     {
       "name": "123abc",
@@ -42,17 +22,7 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 4,
-          "column": 29
-        },
-        "end": {
-          "line": 4,
-          "column": 46
-        }
-      }
+      "reactive": false
     },
     {
       "name": "normal",
@@ -62,17 +32,7 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 4,
-          "column": 48
-        },
-        "end": {
-          "line": 4,
-          "column": 54
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -80,34 +40,14 @@
     {
       "name": "icon-left",
       "default": false,
-      "slot_props": "Record<string, never>",
-      "source": {
-        "start": {
-          "line": 18,
-          "column": 2
-        },
-        "end": {
-          "line": 18,
-          "column": 27
-        }
-      }
+      "slot_props": "Record<string, never>"
     }
   ],
   "events": [
     {
       "type": "dispatched",
       "name": "item:select",
-      "detail": "null",
-      "source": {
-        "start": {
-          "line": 9,
-          "column": 4
-        },
-        "end": {
-          "line": 9,
-          "column": 27
-        }
-      }
+      "detail": "null"
     }
   ],
   "typedefs": [],
@@ -119,16 +59,6 @@
       "kind": "prop-unknown-type",
       "name": "data-foo",
       "message": "Prop \"data-foo\" type could not be inferred; falling back to \"any\".",
-      "source": {
-        "start": {
-          "line": 4,
-          "column": 8
-        },
-        "end": {
-          "line": 4,
-          "column": 27
-        }
-      },
       "code": "sveld/prop-unknown-type",
       "severity": "warning"
     },
@@ -137,16 +67,6 @@
       "kind": "prop-unknown-type",
       "name": "123abc",
       "message": "Prop \"123abc\" type could not be inferred; falling back to \"any\".",
-      "source": {
-        "start": {
-          "line": 4,
-          "column": 29
-        },
-        "end": {
-          "line": 4,
-          "column": 46
-        }
-      },
       "code": "sveld/prop-unknown-type",
       "severity": "warning"
     },
@@ -155,16 +75,6 @@
       "kind": "prop-unknown-type",
       "name": "normal",
       "message": "Prop \"normal\" type could not be inferred; falling back to \"any\".",
-      "source": {
-        "start": {
-          "line": 4,
-          "column": 48
-        },
-        "end": {
-          "line": 4,
-          "column": 54
-        }
-      },
       "code": "sveld/prop-unknown-type",
       "severity": "warning"
     }

@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 51,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -37,17 +27,7 @@
       "isFunctionDeclaration": true,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 11,
-          "column": 2
-        },
-        "end": {
-          "line": 13,
-          "column": 3
-        }
-      }
+      "reactive": false
     },
     {
       "name": "newFormatName",
@@ -74,17 +54,7 @@
       "isFunctionDeclaration": true,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 25,
-          "column": 2
-        },
-        "end": {
-          "line": 27,
-          "column": 3
-        }
-      }
+      "reactive": false
     },
     {
       "name": "tooManyArgs",
@@ -111,17 +81,7 @@
       "isFunctionDeclaration": true,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 38,
-          "column": 2
-        },
-        "end": {
-          "line": 40,
-          "column": 3
-        }
-      }
+      "reactive": false
     },
     {
       "name": "widgetSlot",
@@ -145,17 +105,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 49,
-          "column": 2
-        },
-        "end": {
-          "line": 49,
-          "column": 35
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],

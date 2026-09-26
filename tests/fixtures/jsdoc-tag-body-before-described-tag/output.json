@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 44,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -17,17 +7,7 @@
     {
       "name": "after",
       "default": false,
-      "slot_props": "Record<string, never>",
-      "source": {
-        "start": {
-          "line": 41,
-          "column": 2
-        },
-        "end": {
-          "line": 41,
-          "column": 23
-        }
-      }
+      "slot_props": "Record<string, never>"
     },
     {
       "name": "before",
@@ -39,50 +19,20 @@
           "name": "example",
           "body": "```svelte\n<span slot=\"after\">After</span>\n```"
         }
-      ],
-      "source": {
-        "start": {
-          "line": 40,
-          "column": 2
-        },
-        "end": {
-          "line": 40,
-          "column": 24
-        }
-      }
+      ]
     },
     {
       "name": "footer",
       "default": false,
       "slot_props": "Record<string, never>",
       "description": "Renders the footer.",
-      "deprecated": "Use the body slot.",
-      "source": {
-        "start": {
-          "line": 42,
-          "column": 2
-        },
-        "end": {
-          "line": 42,
-          "column": 24
-        }
-      }
+      "deprecated": "Use the body slot."
     },
     {
       "name": "header",
       "default": false,
       "slot_props": "Record<string, never>",
-      "description": "Renders the header.",
-      "source": {
-        "start": {
-          "line": 39,
-          "column": 2
-        },
-        "end": {
-          "line": 39,
-          "column": 24
-        }
-      }
+      "description": "Renders the header."
     }
   ],
   "events": [
@@ -90,17 +40,7 @@
       "type": "dispatched",
       "name": "close",
       "detail": "null",
-      "description": "Fired when the menu closes.",
-      "source": {
-        "start": {
-          "line": 35,
-          "column": 5
-        },
-        "end": {
-          "line": 35,
-          "column": 22
-        }
-      }
+      "description": "Fired when the menu closes."
     },
     {
       "type": "dispatched",
@@ -111,17 +51,7 @@
           "name": "since",
           "body": "1.0"
         }
-      ],
-      "source": {
-        "start": {
-          "line": 34,
-          "column": 5
-        },
-        "end": {
-          "line": 34,
-          "column": 21
-        }
-      }
+      ]
     }
   ],
   "typedefs": [],

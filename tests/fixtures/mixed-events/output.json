@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 20,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -18,32 +8,12 @@
     {
       "type": "dispatched",
       "name": "blur",
-      "detail": "FocusEvent | CustomEvent<FocusEvent>",
-      "source": {
-        "start": {
-          "line": 17,
-          "column": 4
-        },
-        "end": {
-          "line": 17,
-          "column": 25
-        }
-      }
+      "detail": "FocusEvent | CustomEvent<FocusEvent>"
     },
     {
       "type": "dispatched",
       "name": "custom-focus",
-      "detail": "FocusEvent | number",
-      "source": {
-        "start": {
-          "line": 13,
-          "column": 4
-        },
-        "end": {
-          "line": 13,
-          "column": 37
-        }
-      }
+      "detail": "FocusEvent | number"
     }
   ],
   "typedefs": [],

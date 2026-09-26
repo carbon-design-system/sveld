@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 20,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -29,17 +19,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 8,
-          "column": 2
-        },
-        "end": {
-          "line": 8,
-          "column": 33
-        }
-      }
+      "reactive": false
     },
     {
       "name": "prop2",
@@ -56,17 +36,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 11,
-          "column": 2
-        },
-        "end": {
-          "line": 11,
-          "column": 24
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -74,17 +44,7 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "{\n  prop1: MyTypedef;\n  prop2: MyTypedefArray;\n}",
-      "source": {
-        "start": {
-          "line": 15,
-          "column": 2
-        },
-        "end": {
-          "line": 18,
-          "column": 4
-        }
-      }
+      "slot_props": "{\n  prop1: MyTypedef;\n  prop2: MyTypedefArray;\n}"
     }
   ],
   "events": [],
@@ -92,32 +52,12 @@
     {
       "type": "{ [key: string]: boolean; }",
       "name": "MyTypedef",
-      "ts": "interface MyTypedef { [key: string]: boolean; }",
-      "source": {
-        "start": {
-          "line": 3,
-          "column": 5
-        },
-        "end": {
-          "line": 3,
-          "column": 53
-        }
-      }
+      "ts": "interface MyTypedef { [key: string]: boolean; }"
     },
     {
       "type": "MyTypedef[]",
       "name": "MyTypedefArray",
-      "ts": "type MyTypedefArray = MyTypedef[];",
-      "source": {
-        "start": {
-          "line": 4,
-          "column": 5
-        },
-        "end": {
-          "line": 4,
-          "column": 42
-        }
-      }
+      "ts": "type MyTypedefArray = MyTypedef[];"
     }
   ],
   "generics": null,

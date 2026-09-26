@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 16,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "ts",
   "props": [
@@ -21,17 +11,7 @@
       "isFunctionDeclaration": true,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 2,
-          "column": 2
-        },
-        "end": {
-          "line": 4,
-          "column": 3
-        }
-      }
+      "reactive": false
     },
     {
       "name": "log",
@@ -42,17 +22,7 @@
       "isFunctionDeclaration": true,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 6,
-          "column": 2
-        },
-        "end": {
-          "line": 8,
-          "column": 3
-        }
-      }
+      "reactive": false
     },
     {
       "name": "sum",
@@ -63,17 +33,7 @@
       "isFunctionDeclaration": true,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 10,
-          "column": 2
-        },
-        "end": {
-          "line": 12,
-          "column": 3
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -81,17 +41,7 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "Record<string, never>",
-      "source": {
-        "start": {
-          "line": 15,
-          "column": 0
-        },
-        "end": {
-          "line": 15,
-          "column": 8
-        }
-      }
+      "slot_props": "Record<string, never>"
     }
   ],
   "events": [],

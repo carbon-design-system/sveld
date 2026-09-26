@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 31,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [],
@@ -17,17 +7,7 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "Record<string, never>",
-      "source": {
-        "start": {
-          "line": 30,
-          "column": 18
-        },
-        "end": {
-          "line": 30,
-          "column": 26
-        }
-      }
+      "slot_props": "Record<string, never>"
     }
   ],
   "events": [],
@@ -35,17 +15,7 @@
     {
       "type": "{\n  id: string;\n  label: string;\n  disabled?: boolean;\n}",
       "name": "TabData",
-      "ts": "type TabData = {\n  id: string;\n  label: string;\n  disabled?: boolean;\n};",
-      "source": {
-        "start": {
-          "line": 5,
-          "column": 5
-        },
-        "end": {
-          "line": 5,
-          "column": 30
-        }
-      }
+      "ts": "type TabData = {\n  id: string;\n  label: string;\n  disabled?: boolean;\n};"
     }
   ],
   "generics": null,
@@ -66,17 +36,7 @@
           "description": "Remove a tab by ID",
           "optional": false
         }
-      ],
-      "source": {
-        "start": {
-          "line": 27,
-          "column": 2
-        },
-        "end": {
-          "line": 27,
-          "column": 43
-        }
-      }
+      ]
     }
   ],
   "diagnostics": []

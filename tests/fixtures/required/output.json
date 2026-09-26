@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 26,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -28,17 +18,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 5,
-          "column": 2
-        },
-        "end": {
-          "line": 5,
-          "column": 25
-        }
-      }
+      "reactive": false
     },
     {
       "name": "prop1",
@@ -56,17 +36,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 12,
-          "column": 2
-        },
-        "end": {
-          "line": 12,
-          "column": 26
-        }
-      }
+      "reactive": false
     },
     {
       "name": "prop2",
@@ -76,17 +46,7 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 14,
-          "column": 2
-        },
-        "end": {
-          "line": 14,
-          "column": 19
-        }
-      }
+      "reactive": false
     },
     {
       "name": "prop3",
@@ -97,17 +57,7 @@
       "isFunctionDeclaration": false,
       "isRequired": true,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 17,
-          "column": 2
-        },
-        "end": {
-          "line": 17,
-          "column": 19
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -115,17 +65,7 @@
     {
       "name": null,
       "default": true,
-      "slot_props": "{\n  prop: boolean;\n  prop1: boolean | string;\n  prop2: any;\n  prop3: boolean;\n}",
-      "source": {
-        "start": {
-          "line": 20,
-          "column": 0
-        },
-        "end": {
-          "line": 25,
-          "column": 2
-        }
-      }
+      "slot_props": "{\n  prop: boolean;\n  prop1: boolean | string;\n  prop2: any;\n  prop3: boolean;\n}"
     }
   ],
   "events": [],
@@ -138,16 +78,6 @@
       "kind": "prop-unknown-type",
       "name": "prop2",
       "message": "Prop \"prop2\" type could not be inferred; falling back to \"any\".",
-      "source": {
-        "start": {
-          "line": 14,
-          "column": 2
-        },
-        "end": {
-          "line": 14,
-          "column": 19
-        }
-      },
       "code": "sveld/prop-unknown-type",
       "severity": "warning"
     }

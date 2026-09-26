@@ -1,14 +1,4 @@
 {
-  "source": {
-    "start": {
-      "line": 1,
-      "column": 0
-    },
-    "end": {
-      "line": 18,
-      "column": 0
-    }
-  },
   "syntaxMode": "legacy",
   "scriptLanguage": "js",
   "props": [
@@ -27,17 +17,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 5,
-          "column": 2
-        },
-        "end": {
-          "line": 5,
-          "column": 35
-        }
-      }
+      "reactive": false
     },
     {
       "name": "total",
@@ -54,17 +34,7 @@
       "isFunctionDeclaration": false,
       "isRequired": false,
       "constant": false,
-      "reactive": false,
-      "source": {
-        "start": {
-          "line": 8,
-          "column": 2
-        },
-        "end": {
-          "line": 8,
-          "column": 25
-        }
-      }
+      "reactive": false
     }
   ],
   "moduleExports": [],
@@ -73,17 +43,7 @@
     {
       "type": "dispatched",
       "name": "match",
-      "detail": "{ pattern: RegExp; count: bigint; }",
-      "source": {
-        "start": {
-          "line": 14,
-          "column": 5
-        },
-        "end": {
-          "line": 14,
-          "column": 52
-        }
-      }
+      "detail": "{ pattern: RegExp; count: bigint; }"
     }
   ],
   "typedefs": [],
@@ -103,17 +63,7 @@
           "type": "bigint",
           "optional": false
         }
-      ],
-      "source": {
-        "start": {
-          "line": 12,
-          "column": 2
-        },
-        "end": {
-          "line": 12,
-          "column": 52
-        }
-      }
+      ]
     }
   ],
   "diagnostics": []
