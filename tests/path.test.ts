@@ -1,4 +1,4 @@
-import { normalizeSeparators } from "../src/path";
+import { normalizeSeparators, WATCH_RELEVANT_EXT_REGEX } from "../src/path";
 
 describe("normalizeSeparators", () => {
   afterEach(() => {
@@ -38,5 +38,15 @@ describe("normalizeSeparators", () => {
   test("handles relative paths", () => {
     expect(normalizeSeparators("../parent/file.js")).toBe("../parent/file.js");
     expect(normalizeSeparators("../../grandparent/file.js")).toBe("../../grandparent/file.js");
+  });
+});
+
+describe("WATCH_RELEVANT_EXT_REGEX", () => {
+  test("matches every kind of module a component can read values from", () => {
+    for (const file of ["a.svelte", "a.ts", "a.mts", "a.cts", "a.tsx", "a.js", "a.mjs", "a.cjs", "a.jsx", "a.d.ts"]) {
+      expect(WATCH_RELEVANT_EXT_REGEX.test(file)).toBe(true);
+    }
+    expect(WATCH_RELEVANT_EXT_REGEX.test("a.json")).toBe(false);
+    expect(WATCH_RELEVANT_EXT_REGEX.test("a.css")).toBe(false);
   });
 });
