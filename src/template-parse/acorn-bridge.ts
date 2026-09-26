@@ -4,6 +4,7 @@ import { Parser } from "acorn";
 import type { Program } from "estree";
 import { attachComments, bindOnComment, type CommentWithLocation, onComment } from "./comments";
 import type { ScriptProgram } from "./state";
+import { isRecognizedTypeText } from "./type-syntax";
 
 /**
  * acorn + `@sveltejs/acorn-typescript`, same as svelte's `phases/1-parse/acorn.js`.
@@ -181,6 +182,8 @@ const typeTextValidity = new Map<string, boolean>();
  * repeats the same few type strings across components.
  */
 export function isValidTypeText(typeText: string): boolean {
+  // Most JSDoc types are recognized without warming up the TypeScript parser.
+  if (isRecognizedTypeText(typeText)) return true;
   const cached = typeTextValidity.get(typeText);
   if (cached !== undefined) return cached;
 
