@@ -112,6 +112,13 @@ interface SveldPlugin {
 const UNRESOLVED_ENTRY_MESSAGE =
   'sveld: could not resolve a Svelte entry point. Set package.json#svelte, or pass the "entry" option.';
 
+/**
+ * `sveld.config` keys that only the CLI and `sveld()` act on: the plugin
+ * neither reports diagnostics nor diffs a snapshot, so a config shared with
+ * the CLI would otherwise look like it applies here too.
+ */
+const RUNTIME_ONLY_KEYS = ["reportDiagnostics", "strict", "check", "checkLevel", "stdout", "format", "dryRun"];
+
 /** Debounce window (ms) for coalescing rapid file changes into one regeneration. */
 const WATCH_DEBOUNCE_MS = 50;
 
@@ -186,6 +193,12 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
         mergedOpts = mergeConfig<PluginSveldOptions>(fileConfig, opts);
       }
       validateOptions(mergedOpts);
+      const ignored = RUNTIME_ONLY_KEYS.filter((key) => key in mergedOpts);
+      if (ignored.length > 0) {
+        console.warn(
+          `sveld: the Vite plugin ignores ${ignored.map((key) => `"${key}"`).join(", ")}; run the sveld CLI or sveld() for them.`,
+        );
+      }
       setQuiet(mergedOpts.quiet === true);
       input = getSvelteEntry(mergedOpts.entry);
       if (watch && input != null) {
