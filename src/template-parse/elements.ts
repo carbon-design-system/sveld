@@ -560,7 +560,7 @@ export function readElement(state: TemplateParserState): void {
   if (isTopLevelScriptOrStyle) {
     state.eat(">", true);
 
-    const prevComment = findCommentBeforeTag(current.fragment.nodes, start);
+    const prevComment = findCommentBeforeTag(state.root.fragment.nodes, start);
 
     if (tag.name === "script") {
       const content = readScript(state, start, element.attributes as AST.Attribute[]);
@@ -585,7 +585,7 @@ export function readElement(state: TemplateParserState): void {
     return;
   }
 
-  state.append(element as unknown as AST.Fragment["nodes"][number]);
+  state.append(element);
 
   const selfClosing = state.eat("/") || isVoidElement(tag.name);
   state.eat(">", true);
@@ -600,7 +600,7 @@ export function readElement(state: TemplateParserState): void {
     state.read(REGEX_CLOSING_TEXTAREA_TAG);
     element.end = state.index;
   } else {
-    state.push(element as unknown as StackNode, element.fragment);
+    state.push(element, element.fragment);
   }
 }
 

@@ -11,11 +11,12 @@ import type { AST } from "svelte/compiler";
  * `AST.SvelteOptions['customElement']` exactly (e.g. `extend` stays the raw
  * expression node, not a boolean).
  */
-export function readOptions(node: { start: number; end: number; attributes: AST.Attribute[] }): AST.SvelteOptions {
+export function readOptions(node: AST.SvelteOptionsRaw): AST.SvelteOptions {
   const options: AST.SvelteOptions = {
     start: node.start,
     end: node.end,
-    attributes: node.attributes,
+    // svelte's own `read_options` stores every attribute here too.
+    attributes: node.attributes as AST.Attribute[],
   };
 
   for (const attribute of node.attributes) {
