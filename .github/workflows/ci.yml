@@ -5,6 +5,11 @@ on:
   push:
     branches: [main]
 
+# A new push to a PR supersedes the run in progress; runs on main all finish.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   build:
     strategy:
@@ -23,6 +28,7 @@ jobs:
         run: bun ci
 
       - name: Lint and format
+        if: matrix.os == 'ubuntu-latest'
         run: bunx biome ci --error-on-warnings
 
       - name: Build the library
@@ -30,9 +36,6 @@ jobs:
 
       - name: Run unit tests
         run: bun run test
-
-      - name: Type check fixtures
-        run: bun run test:fixtures-types
 
       - name: Type check fixtures across typesOptions
         run: bun run test:types-matrix
