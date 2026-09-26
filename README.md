@@ -960,7 +960,7 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
   - **`preamble`** (string, optional, default: `""`): Raw text prepended to the top of the generated `index.d.ts` barrel file, before the `export * from "./..."` lines. Useful for license headers or lint-disable comments. See [`typesOptions.preamble`](#typesoptionspreamble) below.
   - **`format`** (`"class"` | `"component"`, optional, default: `"class"`): `.d.ts` output shape. `"class"` extends `SvelteComponentTyped`; `"component"` emits the Svelte 5 `Component` type. Also available as `--types-format`. See [`.d.ts` output format](#dts-output-format-typesoptionsformat).
   - **`transform`** (function, optional): Post-processes each generated file's text before it is written. Runs after the generated-text cache, so it applies on every run. No CLI flag; config file or `sveld()` only. See [`typesOptions.transform`](#typesoptionstransform).
-  - **`indexTypes`** (`boolean | { props?, exports?, typedefs?, contexts? }`, optional, default: `false`): Also re-export generated types from `index.d.ts`. `true` re-exports each component's `Props` type (and `Exports` under `format: "component"`); an object can additionally include typedefs and contexts. Also available as `--types-index-types` (the CLI can only set the boolean form, not the per-kind object). See [`typesOptions.indexTypes`](#typesoptionsindextypes).
+  - **`indexTypes`** (boolean, optional, default: `false`): Also re-export generated types from `index.d.ts`: each component's `Props` type, and its `Exports` type under `format: "component"`. Also available as `--types-index-types`. See [`typesOptions.indexTypes`](#typesoptionsindextypes).
   - **`inline`** (`false | "local" | "all"`, optional, default: `false`): Copies `type`/`interface` declarations imported from a relative source (or a tsconfig/jsconfig path alias) directly into the `.d.ts`, dropping the import. Also available as `--types-inline=<local|all>` (`--types-inline=false` resets to the default). See [`typesOptions.inline`](#typesoptionsinline).
 - **`json`** (boolean, optional): Generate component documentation in JSON format.
 - **`jsonOptions`** (object, optional): Options for JSON output.
@@ -1086,21 +1086,9 @@ export type { ButtonProps } from "./Button.svelte";
 import type { ButtonProps } from "my-lib";
 ```
 
-`true` is shorthand for `{ props: true, exports: true }`: it re-exports each component's `Props` type, and (under [`format: "component"`](#dts-output-format-typesoptionsformat)) its `Exports` type. Pass an object to also re-export typedefs and/or contexts:
+It re-exports each component's `Props` type, and (under [`format: "component"`](#dts-output-format-typesoptionsformat)) its `Exports` type. Both names are derived from the component's module name, so they never collide across components.
 
-```js
-typesOptions: {
-  indexTypes: { props: true, typedefs: true, contexts: true },
-}
-```
-
-`Props`/`Exports` names are unique per component by construction (they're derived from the module name), so they're always safe to re-export together. Typedef and context names are user-authored and can collide across components - when two components generate the same name, the first one in barrel order wins and every later collision is dropped with a one-line warning to `stderr`:
-
-```
-sveld: index.d.ts skips duplicate type export "TabsContext" from "./Tabs2.svelte" (already exported from "./Tabs.svelte").
-```
-
-Also available as `--types-index-types` on the CLI, mapped to the boolean form (`true` re-exports `Props`/`Exports` only) — the CLI can't express the per-kind object form. Pass `--types-index-types=false` to disable it explicitly.
+Also available as `--types-index-types` on the CLI. Pass `--types-index-types=false` to disable it explicitly.
 
 #### `typesOptions.inline`
 

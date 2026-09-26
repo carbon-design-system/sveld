@@ -1,7 +1,7 @@
 import { join, resolve } from "node:path";
 import { convertSvelteExt, createExports, createTypeExports, type TypeExportEntry } from "../create-exports";
 import type { InlinedTypes } from "../inline-types";
-import { info, warn } from "../logger";
+import { info } from "../logger";
 import { hashSource, type ParseCache } from "../parse-cache";
 import type { ParsedExports } from "../parse-exports";
 import { normalizeSeparators, SVELTE_EXT_REGEX } from "../path";
@@ -18,50 +18,23 @@ import {
   writeTsDefinition,
 } from "./writer-ts-definitions-core";
 
-/** Which generated types `typesOptions.indexTypes` re-exports from the barrel. */
-interface IndexTypeKinds {
-  props: boolean;
-  exports: boolean;
-  typedefs: boolean;
-  contexts: boolean;
-}
-
-/**
- * Resolves `typesOptions.indexTypes`: `true` re-exports `Props`/`Exports`
- * only, never typedefs/contexts; an object defaults each omitted kind to off.
- */
-function resolveIndexTypes(indexTypes: WriteTsDefinitionsOptions["indexTypes"]): IndexTypeKinds | undefined {
-  if (!indexTypes) return undefined;
-  if (indexTypes === true) return { props: true, exports: true, typedefs: false, contexts: false };
-  return {
-    props: indexTypes.props ?? false,
-    exports: indexTypes.exports ?? false,
-    typedefs: indexTypes.typedefs ?? false,
-    contexts: indexTypes.contexts ?? false,
-  };
-}
-
 /**
  * Builds the `export type { ... } from "./X.svelte";` entries for
- * `typesOptions.indexTypes`, in barrel (export-map) order.
+ * `typesOptions.indexTypes`, in barrel (export-map) order: each component's
+ * `Props` type, plus its `Exports` type under `format: "component"`. Both
+ * names derive from the module name, so they never collide across components.
  *
  * Deduped by source, not export id: `export { default } from` and
  * `export { default as Button } from` name the same component, which would
  * otherwise emit the same type names twice under different specifiers.
- *
- * A name already claimed by an earlier component is dropped with a warning:
- * typedef and context names are user-authored and can collide, while
- * `Props`/`Exports` names are unique per component by construction.
  */
 function collectIndexTypeExports(
   document: ComponentApiDocument,
   options: WriteTsDefinitionsOptions,
 ): TypeExportEntry[] {
-  const indexTypes = resolveIndexTypes(options.indexTypes);
-  if (!indexTypes) return [];
+  if (!options.indexTypes) return [];
 
   const useComponentFormat = options.format === "component";
-  const claimedBySource = new Map<string, string>();
   const processedSources = new Set<string>();
   const entries: TypeExportEntry[] = [];
 
@@ -75,30 +48,9 @@ function collectIndexTypeExports(
     const component = document.components.find((candidate) => candidate.filePath === normalizedSource);
     if (!component) continue;
 
-    const names: string[] = [];
-    if (indexTypes.props) names.push(propsTypeName(component.moduleName));
-    if (indexTypes.exports && useComponentFormat) names.push(exportsTypeName(component.moduleName));
-    if (indexTypes.typedefs) {
-      for (const typedef of component.typedefs) names.push(typedef.name);
-    }
-    if (indexTypes.contexts) {
-      for (const context of component.contexts ?? []) names.push(context.typeName);
-    }
-
-    const uniqueNames: string[] = [];
-    for (const name of names) {
-      const claimedFrom = claimedBySource.get(name);
-      if (claimedFrom !== undefined) {
-        warn(
-          `sveld: index.d.ts skips duplicate type export "${name}" from "${exportee.source}" (already exported from "${claimedFrom}").`,
-        );
-        continue;
-      }
-      claimedBySource.set(name, exportee.source);
-      uniqueNames.push(name);
-    }
-
-    if (uniqueNames.length > 0) entries.push({ source: exportee.source, names: uniqueNames });
+    const names = [propsTypeName(component.moduleName)];
+    if (useComponentFormat) names.push(exportsTypeName(component.moduleName));
+    entries.push({ source: exportee.source, names });
   }
 
   return entries;
@@ -192,11 +144,10 @@ export interface WriteTsDefinitionsOptions extends WriteTsDefinitionOptions {
    */
   transform?: (text: string, context: TransformContext) => string | Promise<string>;
   /**
-   * Also re-export generated types from `index.d.ts`. `true` re-exports each
-   * component's `Props` type (and `Exports` under `format: "component"`); an
-   * object can additionally include typedefs and contexts.
+   * Also re-export generated types from `index.d.ts`: each component's
+   * `Props` type, and its `Exports` type under `format: "component"`.
    */
-  indexTypes?: boolean | { props?: boolean; exports?: boolean; typedefs?: boolean; contexts?: boolean };
+  indexTypes?: boolean;
 }
 
 /**
