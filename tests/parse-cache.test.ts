@@ -5,8 +5,8 @@ import type { ComponentDocApi, ComponentDocs } from "../src/bundle";
 import { generateBundle } from "../src/bundle";
 import ComponentParser from "../src/ComponentParser";
 import { DEFAULT_CACHE_FILE, ParseCache } from "../src/parse-cache";
-import writeTsDefinitions from "../src/writer/writer-ts-definitions";
-import { serializeEmitOptions, type WriteTsDefinitionOptions } from "../src/writer/writer-ts-definitions-core";
+import writeTsDefinitions, { generatedTextCacheKey } from "../src/writer/writer-ts-definitions";
+import type { WriteTsDefinitionOptions } from "../src/writer/writer-ts-definitions-core";
 
 /** Look up `allComponentsForTypes` by filePath; moduleName is not unique. */
 function byModuleName(components: ComponentDocs, moduleName: string): ComponentDocApi | undefined {
@@ -209,8 +209,8 @@ test("a prop typed from an imported value keeps its key order on a warm-cache ru
 });
 
 describe("generated .d.ts text cache", () => {
-  const classKey = serializeEmitOptions({ format: "class" });
-  const componentKey = serializeEmitOptions({ format: "component" });
+  const classKey = (moduleName: string) => generatedTextCacheKey(moduleName, { format: "class" });
+  const componentKey = (moduleName: string) => generatedTextCacheKey(moduleName, { format: "component" });
 
   let dir: string;
   let outDirAbs: string;
@@ -251,8 +251,8 @@ describe("generated .d.ts text cache", () => {
     first.cache?.save();
 
     // Both components' generated text is now cached against the first run's parse.
-    expect(first.cache?.getGeneratedText(secondaryButtonPath, classKey)).toBeDefined();
-    expect(first.cache?.getGeneratedText(standalonePath, classKey)).toBeDefined();
+    expect(first.cache?.getGeneratedText(secondaryButtonPath, classKey("SecondaryButton"))).toBeDefined();
+    expect(first.cache?.getGeneratedText(standalonePath, classKey("Standalone"))).toBeDefined();
 
     writeFileSync(join(dir, "Button.svelte"), BUTTON.replace("primary = false", "primary = true"));
     const second = await generateBundle(dir, true, { cache: cacheFile });
@@ -260,10 +260,10 @@ describe("generated .d.ts text cache", () => {
     // SecondaryButton depends on Button via @extendProps, so it's invalidated
     // and reparsed even though its own source didn't change; its fresh parse
     // entry must not carry over the stale cached text.
-    expect(second.cache?.getGeneratedText(secondaryButtonPath, classKey)).toBeUndefined();
+    expect(second.cache?.getGeneratedText(secondaryButtonPath, classKey("SecondaryButton"))).toBeUndefined();
     // Standalone is unrelated and still a parse-cache hit, so its previously
     // cached text is legitimately reused.
-    expect(second.cache?.getGeneratedText(standalonePath, classKey)).toBeDefined();
+    expect(second.cache?.getGeneratedText(standalonePath, classKey("Standalone"))).toBeDefined();
   });
 
   test("a component with a default, context key, or event read from another module is regenerated when that module changes", async () => {
@@ -320,7 +320,31 @@ describe("generated .d.ts text cache", () => {
     expect(text).toContain("TwoContext");
     expect(text).toContain("beta: CustomEvent<null>");
     // Standalone reads nothing from other files, so it still reuses its cached text.
-    expect(second.cache?.getGeneratedText(resolve(dir, "Standalone.svelte"), classKey)).toBeDefined();
+    expect(second.cache?.getGeneratedText(resolve(dir, "Standalone.svelte"), classKey("Standalone"))).toBeDefined();
+  });
+
+  test("renaming a barrel export regenerates the component's text under its new name", async () => {
+    const entry = join(dir, "index.js");
+    const write = async (result: Awaited<ReturnType<typeof generateBundle>>) => {
+      await writeTsDefinitions(result.allComponentsForTypes, {
+        outDir,
+        inputDir: dir,
+        preamble: "",
+        exports: result.exports,
+        cache: result.cache,
+        resolvedPathByFilePath: result.resolvedPathByFilePath,
+      });
+      result.cache?.save();
+    };
+
+    writeFileSync(entry, 'export { default as Foo } from "./Standalone.svelte";\n');
+    await write(await generateBundle(entry, false, { cache: cacheFile }));
+    writeFileSync(entry, 'export { default as Bar } from "./Standalone.svelte";\n');
+    await write(await generateBundle(entry, false, { cache: cacheFile }));
+
+    const text = readFileSync(join(outDir, "Standalone.svelte.d.ts"), "utf8");
+    expect(text).toContain("class Bar extends");
+    expect(text).not.toContain("Foo");
   });
 
   test("--types-format switch doesn't serve a component's other-format cached text", async () => {
@@ -339,8 +363,8 @@ describe("generated .d.ts text cache", () => {
     first.cache?.save();
 
     const second = await generateBundle(dir, true, { cache: cacheFile });
-    expect(second.cache?.getGeneratedText(buttonPath, classKey)).toBeDefined();
-    expect(second.cache?.getGeneratedText(buttonPath, componentKey)).toBeUndefined();
+    expect(second.cache?.getGeneratedText(buttonPath, classKey("Button"))).toBeDefined();
+    expect(second.cache?.getGeneratedText(buttonPath, componentKey("Button"))).toBeUndefined();
   });
 
   test("every other typesOptions key that affects output busts the cache too, not just format", async () => {
@@ -388,8 +412,8 @@ describe("generated .d.ts text cache", () => {
     // pair, exactly like `--types-format switch...` above does for a single option.
     for (const { label, before: beforeOptions, after: afterOptions } of variants) {
       const variantCacheFile = join(dir, `.cache-${label}`, "parse-cache.json");
-      const beforeKey = serializeEmitOptions(beforeOptions ?? {});
-      const afterKey = serializeEmitOptions(afterOptions);
+      const beforeKey = generatedTextCacheKey("Widget", beforeOptions ?? {});
+      const afterKey = generatedTextCacheKey("Widget", afterOptions);
       expect(afterKey).not.toEqual(beforeKey);
 
       // biome-ignore lint/performance/noAwaitInLoops: each variant's before/after pair must run in order, not concurrently.

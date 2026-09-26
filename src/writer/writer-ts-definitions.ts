@@ -231,6 +231,15 @@ export interface WriteTsDefinitionsOptions extends WriteTsDefinitionOptions {
 }
 
 /**
+ * Key for a component's cached `.d.ts` text: the emit options, plus its
+ * name, which comes from the entry barrel rather than its source, so
+ * renaming an export (`as Foo` to `as Bar`) misses.
+ */
+export function generatedTextCacheKey(moduleName: string, emitOptions: WriteTsDefinitionOptions): string {
+  return `${moduleName}\n${serializeEmitOptions(emitOptions)}`;
+}
+
+/**
  * @example
  * ```ts
  * await writeTsDefinitions(components, {
@@ -270,10 +279,9 @@ export default async function writeTsDefinitions(components: ComponentDocs, opti
     const bypassCache = (inlined?.declarations.length ?? 0) > 0;
     // A cross-file component's source is fixed by its cache entry, but not
     // what it read from other files, which lands in its serialized content.
+    const optionsKey = generatedTextCacheKey(component.moduleName, emitOptions);
     const cacheKey =
-      !bypassCache && crossFilePath
-        ? `${serializeEmitOptions(emitOptions)}\n${hashSource(JSON.stringify(component))}`
-        : serializeEmitOptions(emitOptions);
+      !bypassCache && crossFilePath ? `${optionsKey}\n${hashSource(JSON.stringify(component))}` : optionsKey;
     let text = !bypassCache && resolvedPath ? options.cache?.getGeneratedText(resolvedPath, cacheKey) : undefined;
     if (text === undefined) {
       text = writeTsDefinition(component, emitOptions);
