@@ -268,12 +268,7 @@ function rollupDts(
     }
   }
 
-  let output = `${chunks.join("\n\n")}\n`;
-  // Node entry surfaces `NodeJS.Process` on `cli()`; point consumers at @types/node.
-  if (entryName === "index") {
-    output = `/// <reference types="node" />\n\n${output}`;
-  }
-  return output;
+  return `${chunks.join("\n\n")}\n`;
 }
 
 /**

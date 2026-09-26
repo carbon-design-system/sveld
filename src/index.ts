@@ -10,7 +10,6 @@ export {
   runCheck,
   type SemverBump,
 } from "./check";
-export { cli } from "./cli";
 export {
   DIAGNOSTIC_CODES,
   DIAGNOSTICS_SCHEMA_VERSION,
