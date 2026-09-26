@@ -2,12 +2,17 @@ import { hash as cryptoHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
 import { version as sveldVersion } from "../package.json";
-import type { ParsedComponent, ParsedComponentTypeScriptMetadata } from "./ComponentParser";
+import type {
+  ComponentParseResult,
+  ParsedComponent,
+  ParsedComponentTypeScriptMetadata,
+  PendingCrossFileCandidates,
+} from "./ComponentParser";
 import { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "./parsed-component-metadata";
 import { VERSION as svelteVersion } from "./svelte-version";
 
 /** Bumped whenever the on-disk cache shape changes in a way old caches can't read. */
-const CACHE_FORMAT_VERSION = 9;
+const CACHE_FORMAT_VERSION = 10;
 
 /** Default on-disk location for the persistent parse cache, relative to the project root. */
 export const DEFAULT_CACHE_FILE = join("node_modules", ".cache", "sveld", "parse-cache.json");
@@ -16,13 +21,14 @@ export const DEFAULT_CACHE_FILE = join("node_modules", ".cache", "sveld", "parse
 interface ParseCacheEntry {
   /** sha256 of the raw source at cache time. */
   hash: string;
-  parsed: ParsedComponent;
+  component: ParsedComponent;
   /**
-   * `parsed[PARSED_COMPONENT_TYPE_SCRIPT_METADATA]`, captured explicitly:
+   * `component[PARSED_COMPONENT_TYPE_SCRIPT_METADATA]`, captured explicitly:
    * `JSON.stringify` drops symbol-keyed properties, so it can't ride along
-   * on `parsed` through a disk round-trip.
+   * on `component` through a disk round-trip.
    */
   typeScriptMetadata?: ParsedComponentTypeScriptMetadata;
+  pending?: PendingCrossFileCandidates;
   /**
    * Generated `.d.ts` text for this entry's `hash`, keyed additionally by the
    * serialized emit options since those change the output shape.
@@ -126,7 +132,7 @@ export class ParseCache {
   }
 
   /** Returns the cached parse for `resolvedPath` when its content hash still matches. */
-  get(resolvedPath: string, hash: string): ParsedComponent | null {
+  get(resolvedPath: string, hash: string): ComponentParseResult | null {
     if (this.blocked.has(resolvedPath)) return null;
 
     const entry = this.file.entries[resolvedPath];
@@ -138,23 +144,30 @@ export class ParseCache {
     // Hand out a copy: the cross-file passes in `generateBundle` resolve
     // props and diagnostics in place, and those results must not be saved
     // as if they came from this file's source alone.
-    const parsed = structuredClone(entry.parsed);
-    if (entry.typeScriptMetadata !== undefined) {
-      parsed[PARSED_COMPONENT_TYPE_SCRIPT_METADATA] = structuredClone(entry.typeScriptMetadata);
+    const { component, typeScriptMetadata, pending } = structuredClone({
+      component: entry.component,
+      typeScriptMetadata: entry.typeScriptMetadata,
+      pending: entry.pending,
+    });
+    if (typeScriptMetadata !== undefined) {
+      component[PARSED_COMPONENT_TYPE_SCRIPT_METADATA] = typeScriptMetadata;
     }
-    return parsed;
+    return pending === undefined ? { component } : { component, pending };
   }
 
   /**
    * Records a freshly parsed component so it can be reused on a future run.
    * Stores a copy, for the same reason `get()` returns one.
    */
-  set(resolvedPath: string, hash: string, parsed: ParsedComponent): void {
+  set(resolvedPath: string, hash: string, { component, pending }: ComponentParseResult): void {
     this.dirty = true;
     this.next.set(resolvedPath, {
       hash,
-      parsed: structuredClone(parsed),
-      typeScriptMetadata: structuredClone(parsed[PARSED_COMPONENT_TYPE_SCRIPT_METADATA]),
+      ...structuredClone({
+        component,
+        typeScriptMetadata: component[PARSED_COMPONENT_TYPE_SCRIPT_METADATA],
+        pending,
+      }),
     });
   }
 

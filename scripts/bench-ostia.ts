@@ -400,7 +400,7 @@ const warmCache = new ParseCache(join(FIXTURE_DIR, ".bench-ostia-cache.json"));
 for (const [path, api] of pipelineResult.allComponentsForTypes) {
   const resolved = resolveComponentFilePath(path);
   const hash = carbonHashes.get(resolved);
-  if (hash !== undefined) warmCache.set(resolved, hash, api);
+  if (hash !== undefined) warmCache.set(resolved, hash, { component: api });
 }
 
 group("cache: ParseCache.get (full fixture)", () => {

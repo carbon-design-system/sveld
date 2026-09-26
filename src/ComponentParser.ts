@@ -76,6 +76,7 @@ import {
 } from "./parser/source-position";
 import {
   buildFunctionDeclarationSignature,
+  buildPendingCrossFileCandidates,
   buildTypeScriptMetadata,
   type FunctionDeclarationLike,
 } from "./parser/type-resolution";
@@ -354,24 +355,23 @@ export interface LocalTypeDeclaration {
   exported?: boolean;
 }
 
-export interface ParsedComponentTypeScriptMetadata {
-  canonicalPropsType?: string;
-  canonicalPropNames: string[];
-  localTypeDeclarations: string[];
-  /** Types the module script exports (`export interface Item`), emitted with `export`. */
-  moduleTypeDeclarations?: string[];
-  typeImportStatements: string[];
-  /** Unresolved CallExpression defaults for the cross-file pass in `generateBundle`. */
+/**
+ * What a parse leaves for a pass that can read the files a component
+ * imports from: `generateBundle` resolves these, and
+ * `finalizeWithoutCrossFileResolution` settles them without file access.
+ */
+export interface PendingCrossFileCandidates {
+  /** Unresolved CallExpression defaults. */
   pendingCallDefaultCandidates?: PendingCallDefaultCandidate[];
-  /** Imported-identifier defaults for the cross-file pass in `generateBundle`. */
+  /** Imported-identifier defaults. */
   pendingConstDefaultCandidates?: PendingConstDefaultCandidate[];
-  /** Unresolved `setContext` import keys for the cross-file pass in `generateBundle`. */
+  /** Unresolved `setContext` import keys. */
   pendingContextKeyCandidates?: PendingContextKeyCandidate[];
-  /** Dispatchers passed to imported functions, for the cross-file pass in `generateBundle`. */
+  /** Dispatchers passed to imported functions. */
   pendingDispatchEscapeCandidates?: PendingDispatchEscapeCandidate[];
   /**
    * `event-no-source` diagnostics held back while the dispatcher escapes to
-   * imported functions: `generateBundle` keeps those the functions don't dispatch.
+   * imported functions: the cross-file pass keeps those the functions don't dispatch.
    */
   deferredEventNoSourceDiagnostics?: SveldDiagnostic[];
   /**
@@ -379,6 +379,27 @@ export interface ParsedComponentTypeScriptMetadata {
    * same-file dispatch replaced; an escaped dispatcher's helper may still.
    */
   untypedJsDocEventNames?: string[];
+}
+
+/**
+ * Writer-only metadata on a parsed component. `parseSvelteComponent` also
+ * folds the {@link PendingCrossFileCandidates} in here; {@link ComponentParser.parse}
+ * returns them separately instead.
+ */
+export interface ParsedComponentTypeScriptMetadata extends PendingCrossFileCandidates {
+  canonicalPropsType?: string;
+  canonicalPropNames: string[];
+  localTypeDeclarations: string[];
+  /** Types the module script exports (`export interface Item`), emitted with `export`. */
+  moduleTypeDeclarations?: string[];
+  typeImportStatements: string[];
+}
+
+/** A component parse, with what's left for the cross-file pass kept apart. */
+export interface ComponentParseResult {
+  component: ParsedComponent;
+  /** Undefined when the component depends on no other file's contents. */
+  pending?: PendingCrossFileCandidates;
 }
 
 export {
@@ -1391,6 +1412,26 @@ export default class ComponentParser {
    * ```
    */
   public parseSvelteComponent(source: string, diagnostics: ComponentParserDiagnostics): ParsedComponent {
+    const { component, pending } = this.parse(source, diagnostics);
+    if (pending) {
+      component[PARSED_COMPONENT_TYPE_SCRIPT_METADATA] = {
+        ...(component[PARSED_COMPONENT_TYPE_SCRIPT_METADATA] ?? {
+          canonicalPropNames: [],
+          localTypeDeclarations: [],
+          typeImportStatements: [],
+        }),
+        ...pending,
+      };
+    }
+    return component;
+  }
+
+  /**
+   * Like {@link parseSvelteComponent}, but returns the candidates only a
+   * pass with file access can resolve beside the component rather than
+   * inside its metadata.
+   */
+  public parse(source: string, diagnostics: ComponentParserDiagnostics): ComponentParseResult {
     this.cleanup();
     this.ctx.componentFilePath = diagnostics.filePath;
     const cleanedSource = ComponentParser.stripTypeScriptDirectivesFromScripts(source);
@@ -2799,6 +2840,7 @@ export default class ComponentParser {
       parsedComponent[PARSED_COMPONENT_TYPE_SCRIPT_METADATA] = typeScriptMetadata;
     }
 
-    return parsedComponent;
+    const pending = buildPendingCrossFileCandidates(this.ctx);
+    return pending ? { component: parsedComponent, pending } : { component: parsedComponent };
   }
 }

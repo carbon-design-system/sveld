@@ -138,7 +138,11 @@ export async function createSveldBundle(input: string, glob: boolean, documentEx
       for (const path of scopePaths) readers.delete(path);
     }
 
-    const reads = await resolveCrossFileCandidates(scope, resolveComponentFilePath);
+    const reads = await resolveCrossFileCandidates(
+      scope,
+      resolveComponentFilePath,
+      (component) => processOptions.memo?.get(resolveComponentFilePath(component.filePath))?.pending,
+    );
     for (const [filePath, modules] of reads) {
       const componentPath = resolveComponentFilePath(filePath);
       for (const module of modules) addReverseEdge(crossFileDepsReverse, module, componentPath);
