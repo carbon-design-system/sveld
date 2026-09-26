@@ -139,9 +139,9 @@ export async function loadConfig(cwd: string = process.cwd()): Promise<SveldConf
 /**
  * Merge option sources. Later sources override earlier ones. Keys whose
  * value is a plain object (e.g. `typesOptions`, `jsonOptions`,
- * `markdownOptions`, `customElementsOptions`, `llmsOptions`) are
- * merged one level deep instead of replaced outright, so setting one nested
- * key from a later source doesn't drop sibling keys set by an earlier one.
+ * `markdownOptions`, `customElementsOptions`) are merged one level deep
+ * instead of replaced outright, so setting one nested key from a later
+ * source doesn't drop sibling keys set by an earlier one.
  * Arrays and functions always replace; they are never merged.
  */
 export function mergeConfig<T extends PluginSveldOptions = PluginSveldOptions>(
@@ -178,8 +178,6 @@ const KNOWN_TOP_LEVEL_KEYS = [
   "markdownOptions",
   "customElements",
   "customElementsOptions",
-  "llms",
-  "llmsOptions",
   "failFast",
   "watch",
   "config",
@@ -210,7 +208,6 @@ const KNOWN_NESTED_KEYS: Record<string, string[]> = {
   jsonOptions: ["input", "outFile", "outDir", "entryExports", "source"],
   markdownOptions: ["write", "outFile", "outDir", "entryExports", "onAppend"],
   customElementsOptions: ["outFile"],
-  llmsOptions: ["outDir", "linkBase", "title", "summary", "entryExports"],
   diagnostics: ["ignore"],
 };
 

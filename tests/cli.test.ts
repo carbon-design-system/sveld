@@ -78,14 +78,6 @@ describe("parseCliOptions", () => {
     expect(alias).toEqual(canonical);
   });
 
-  test("--llms enables llms", () => {
-    expect(parseCliOptions(["--llms"])).toEqual({ kind: "options", options: { llms: true } });
-  });
-
-  test("--llms=false disables llms", () => {
-    expect(parseCliOptions(["--llms=false"])).toEqual({ kind: "options", options: { llms: false } });
-  });
-
   test("--report-diagnostics enables reportDiagnostics", () => {
     expect(parseCliOptions(["--report-diagnostics"])).toEqual({
       kind: "options",
@@ -618,7 +610,7 @@ describe("cli() --quiet", () => {
   });
 
   test("a plain run prints writer progress lines to stderr", async () => {
-    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--markdown", "--custom-elements", "--llms"];
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--markdown", "--custom-elements"];
 
     await cli(process);
 
@@ -626,21 +618,10 @@ describe("cli() --quiet", () => {
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('created "COMPONENT_API.json".'));
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('created "COMPONENT_INDEX.md".'));
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('created "custom-elements.json".'));
-    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('created "llms.txt".'));
-    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('created "llms-full.txt".'));
   });
 
   test("--quiet suppresses writer progress lines but still writes output files", async () => {
-    process.argv = [
-      "bun",
-      "cli.js",
-      "--entry=src/index.js",
-      "--json",
-      "--markdown",
-      "--custom-elements",
-      "--llms",
-      "--quiet",
-    ];
+    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--json", "--markdown", "--custom-elements", "--quiet"];
 
     await cli(process);
 
@@ -649,8 +630,6 @@ describe("cli() --quiet", () => {
     expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(true);
     expect(existsSync(join(dir, "COMPONENT_INDEX.md"))).toBe(true);
     expect(existsSync(join(dir, "custom-elements.json"))).toBe(true);
-    expect(existsSync(join(dir, "llms.txt"))).toBe(true);
-    expect(existsSync(join(dir, "llms-full.txt"))).toBe(true);
   });
 
   test("quiet: true in the config file suppresses progress lines", async () => {

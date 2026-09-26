@@ -15,7 +15,6 @@ import writeCustomElements, {
   type WriteCustomElementsOptions,
 } from "./writer/writer-custom-elements";
 import writeJson, { renderJsonDocument, type WriteJsonOptions } from "./writer/writer-json";
-import writeLlms, { type WriteLlmsOptions } from "./writer/writer-llms";
 import writeMarkdown, { renderMarkdownDocument, type WriteMarkdownOptions } from "./writer/writer-markdown";
 import writeTsDefinitions, { type WriteTsDefinitionsOptions } from "./writer/writer-ts-definitions";
 
@@ -50,9 +49,6 @@ export interface PluginSveldOptions extends Pick<GenerateBundleOptions, "cache" 
   /** Generate a Custom Elements Manifest (`custom-elements.json`, schemaVersion "1.0.0"). */
   customElements?: boolean;
   customElementsOptions?: Partial<Omit<WriteCustomElementsOptions, "inputDir">>;
-  /** Generate a first-party `llms.txt` / `llms-full.txt` pair (per https://llmstxt.org). */
-  llms?: boolean;
-  llmsOptions?: Partial<WriteLlmsOptions>;
   /**
    * Abort the entire run when a single component fails to parse.
    * When `false` (the default), parse failures are collected as diagnostics
@@ -314,17 +310,6 @@ export async function writeOutput(result: GenerateBundleResult, opts: PluginSvel
       ...opts?.customElementsOptions,
       inputDir,
     } satisfies WriteCustomElementsOptions);
-  }
-
-  if (opts?.llms) {
-    /**
-     * Use components (exported only) for llms.txt/llms-full.txt, matching
-     * the JSON/Markdown outputs' public-API-surface convention.
-     */
-    await writeLlms(result.components, {
-      ...opts?.llmsOptions,
-      entryExports: result.entryExports,
-    } satisfies WriteLlmsOptions);
   }
 }
 

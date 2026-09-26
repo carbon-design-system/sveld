@@ -143,7 +143,6 @@ export default class Button extends SvelteComponentTyped<
 - [JSON Output](#json-output)
 - [Custom Elements Manifest](#custom-elements-manifest)
   - [Consuming the manifest](#consuming-the-manifest)
-- [llms.txt Output](#llmstxt-output)
 - [Custom Output Formats](#custom-output-formats)
 - [API Reference](#api-reference)
   - [reactive](#reactive)
@@ -282,7 +281,7 @@ export declare class Store<T> {
 }
 ```
 
-In JSON the class is a `moduleExports` entry with `kind: "class"`, `type: "typeof Store"`, and its members under `members`; the Markdown and `llms-full.txt` output list them in a members table after the Module exports table.
+In JSON the class is a `moduleExports` entry with `kind: "class"`, `type: "typeof Store"`, and its members under `members`; the Markdown output lists them in a members table after the Module exports table.
 
 ### Persistent parse cache (`cache`)
 
@@ -585,7 +584,7 @@ npx sveld --json --markdown
 
 If no entry point is configured (no `package.json#svelte` field and no `--entry`), the CLI exits `1` and prints the reason to `stderr`, unless `src/index.js` exists relative to your working directory: then sveld uses it and prints a one-line note asking you to set `package.json#svelte` (or `--entry`). An `--entry` or `package.json#svelte` path that doesn't exist always exits `1`.
 
-Flags are kebab-case: `--entry`, `--glob`, `--types`, `--json`, `--markdown`, `--custom-elements`, `--llms`, `--fail-fast`, `--cache`, `--check-examples`, `--report-diagnostics`, `--strict`, `--check`, `--check-level`, `--types-format`, `--types-index-types`, `--quiet`, `--stdout`, `--format`. The camelCase spelling `--checkExamples` still works as a deprecated alias for compatibility with existing scripts. `--entry`, `--cache`, `--check`, and `--types-format` take their value either as `--flag=value` or as a separate `--flag value` argument (`sveld --entry src/index.js` and `sveld --entry=src/index.js` are equivalent); if the next argument starts with `--` it's not consumed as a value, so `--cache` and `--check` fall back to their default location and the rest of that list report a usage error naming the flag. Boolean flags (`--json`, `--glob`, `--strict`, `--types-index-types`, and the like) never consume a following argument. An unrecognized flag (e.g. `--markdwon`) prints `sveld: unknown flag "--markdwon".` to `stderr`, exits `1`, and skips generation; when a close match exists it appends a suggestion, e.g. `Did you mean "--markdown"?`. sveld takes no positional arguments, so any non-flag argument errors the same way.
+Flags are kebab-case: `--entry`, `--glob`, `--types`, `--json`, `--markdown`, `--custom-elements`, `--fail-fast`, `--cache`, `--check-examples`, `--report-diagnostics`, `--strict`, `--check`, `--check-level`, `--types-format`, `--types-index-types`, `--quiet`, `--stdout`, `--format`. The camelCase spelling `--checkExamples` still works as a deprecated alias for compatibility with existing scripts. `--entry`, `--cache`, `--check`, and `--types-format` take their value either as `--flag=value` or as a separate `--flag value` argument (`sveld --entry src/index.js` and `sveld --entry=src/index.js` are equivalent); if the next argument starts with `--` it's not consumed as a value, so `--cache` and `--check` fall back to their default location and the rest of that list report a usage error naming the flag. Boolean flags (`--json`, `--glob`, `--strict`, `--types-index-types`, and the like) never consume a following argument. An unrecognized flag (e.g. `--markdwon`) prints `sveld: unknown flag "--markdwon".` to `stderr`, exits `1`, and skips generation; when a close match exists it appends a suggestion, e.g. `Did you mean "--markdown"?`. sveld takes no positional arguments, so any non-flag argument errors the same way.
 
 Writer progress lines (`created "..."` / `unchanged "..."`) print to `stderr`, keeping `stdout` reserved for machine-readable data. Pass `--quiet` (or `quiet: true` in `sveld.config.*`) to suppress them; it does not suppress error messages, the diagnostics summary (`--report-diagnostics` / `--strict`), or the `--check` report.
 
@@ -852,7 +851,7 @@ export default {
 };
 ```
 
-Merging is one level deep for object-valued options (`typesOptions`, `jsonOptions`, `markdownOptions`, `customElementsOptions`, `llmsOptions`): setting one nested key at the CLI or in `sveld()` doesn't drop sibling keys set in the config file. Arrays and functions (e.g. `markdownOptions.onAppend`) are replaced outright, never merged.
+Merging is one level deep for object-valued options (`typesOptions`, `jsonOptions`, `markdownOptions`, `customElementsOptions`): setting one nested key at the CLI or in `sveld()` doesn't drop sibling keys set in the config file. Arrays and functions (e.g. `markdownOptions.onAppend`) are replaced outright, never merged.
 
 ```js
 // sveld.config.js
@@ -920,12 +919,6 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
 - **`customElements`** (boolean, optional): Generate a [Custom Elements Manifest](#custom-elements-manifest) (`custom-elements.json`). Also available as the `--custom-elements` CLI flag.
 - **`customElementsOptions`** (object, optional): Options for Custom Elements Manifest output.
   - **`outFile`** (string, optional, default: `"custom-elements.json"`): Path (relative to the project root) for the generated manifest file.
-- **`llms`** (boolean, optional): Generate an [`llms.txt` / `llms-full.txt`](#llmstxt-output) pair. Also available as the `--llms` CLI flag.
-- **`llmsOptions`** (object, optional): Options for `llms.txt` / `llms-full.txt` output.
-  - **`outDir`** (string, optional): Directory (relative to the project root) both files are written into. Defaults to the project root.
-  - **`linkBase`** (string, optional, default: `""`): Prefixed to each component's link in `llms.txt`.
-  - **`title`** (string, optional, default: the `"name"` field from `package.json`): The `# <title>` heading both files start with.
-  - **`summary`** (string, optional, default: the `"description"` field from `package.json`): The `> <summary>` blockquote under the title.
 - **`config`** (boolean | string, optional, default: `false`): Load `sveld.config.{js,mjs,ts}` and merge it with these options; these options win when a key is set in both. `true` resolves the config from the Vite project root (or `process.cwd()` outside Vite); a string is an explicit path to the config file. The plugin warns about keys only the CLI and `sveld()` act on (`reportDiagnostics`, `strict`, `check`, `checkLevel`, `stdout`, `format`). See [Config File](#config-file).
 - **`watch`** (boolean, optional, default: `false`): Regenerate output incrementally when relevant source changes during `vite dev` / `vite build --watch`. A reparse is triggered by: editing a component; editing the entry barrel itself, which adds/removes the corresponding component; or editing a non-`.svelte` file a component depends on via [`@extendProps`](#extendprops) / `@extends` or a typedef `import("./x")` reference. Only the affected components are re-parsed, rather than rebuilding every component. Overlapping regenerations are queued, never run concurrently. Without this option, the plugin only runs during `vite build`.
 - **`failFast`** (boolean, optional, default: `false`): Abort the entire run when a single component fails to parse. By default, parse failures are reported to `stderr` and the remaining components still emit their output; the CLI then exits `2`. Also available as the `--fail-fast` CLI flag.
@@ -1349,25 +1342,6 @@ With that in place:
 - The [VS Code custom elements extension](https://marketplace.visualstudio.com/items?itemName=BendingSpoons.vscode-custom-elements) and JetBrains IDEs pick it up automatically, giving tag name, attribute, and slot completion/hover in HTML and Svelte templates.
 - [Storybook](https://storybook.js.org/docs/api/doc-blocks/doc-block-argtypes#extracting-argtypes) for web components reads the manifest to auto-generate `argTypes` (controls, docs tables) for `customElement`-compiled components, once you point it at the file (e.g. `setCustomElementsManifest` from `@storybook/web-components`, or `customElements: "custom-elements.json"` in `.storybook/main.js`).
 - Any other tool built against the [Custom Elements Manifest spec](https://github.com/webcomponents/custom-elements-manifest) (API viewers, doc generators, linters) can read the file directly without sveld-specific integration.
-
-## llms.txt Output
-
-Set `llms: true` to emit an [`llms.txt`](https://llmstxt.org) / `llms-full.txt` pair: `llms.txt` is an index of every exported component (one link plus a one-line summary each), and `llms-full.txt` is the flattened full reference (every component's Props, Bindings, Events, Slots/Snippets, Typedefs, and Module exports, as terse Markdown tables). Props and Events Description columns include `@since`/`@example` tags, same as `COMPONENT_INDEX.md`. Fenced code in a Description cell is printed after its table as a regular fenced block, with `(code below)` left in the cell.
-
-```diff
-sveld({
-+  llms: true,
-})
-```
-
-- **`llms`** (boolean, optional): Generate `llms.txt` and `llms-full.txt`. Also available as the `--llms` CLI flag.
-- **`llmsOptions`** (object, optional):
-  - **`outDir`** (string, optional): Directory (relative to the project root) both files are written into. Defaults to the project root.
-  - **`linkBase`** (string, optional, default: `""`): Prefixed to each component's link in `llms.txt`, e.g. `[Button](<linkBase>/Button)`. Set this to your published docs site's base path.
-  - **`title`** (string, optional, default: the `"name"` field from `package.json`): The `# <title>` heading both files start with.
-  - **`summary`** (string, optional, default: the `"description"` field from `package.json`): The `> <summary>` blockquote under the title. Omitted when neither is set.
-
-Each component's one-line summary in `llms.txt` is the first sentence of its [`@component` comment](#component-comments), falling back to `"Component"`. Set `documentExports: true` to also list entry-barrel exports (consts, functions, types) in `llms.txt` under an `## Exports` heading.
 
 ## Custom Output Formats
 
@@ -3190,8 +3164,6 @@ In Markdown table cells, a fenced block (in an `@example` body or anywhere in a 
 ```
 Formats a value.<br />@example <pre><code>formatValue("ok");</code></pre>
 ```
-
-`llms-full.txt` instead puts `(code below)` in the cell and prints the code after the table as a regular multi-line fenced block, under a ``Code for `formatValue`:`` line.
 
 Output (Markdown props table Description column, newlines rendered as `<br />`):
 

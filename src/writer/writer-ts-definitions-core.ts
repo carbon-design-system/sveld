@@ -138,7 +138,7 @@ export function getTypeDefs(def: Pick<ComponentDocApi, "typedefs">) {
         const lines = typedef.description ? [...typedef.description.split("\n"), ...tagLines] : tagLines;
         typedefComment = `/**\n * ${escapeCommentText(lines.join("\n * "))}\n */\n`;
       }
-      // Markdown and llms.txt print this as is, not through the .d.ts formatter, so drop the
+      // Markdown prints this as is, not through the .d.ts formatter, so drop the
       // trailing space a paragraph break leaves on its ` * ` line.
       return `${typedefComment}export ${typedef.ts}`.replace(BLANK_COMMENT_LINE_REGEX, "$1");
     })

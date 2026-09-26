@@ -22,8 +22,8 @@
  *   - write: writeTsDefinition on the parsed doc for those same components,
  *     including the runes/TS and pathological ones
  *   - write: renderJsonDocument / renderMarkdownDocument /
- *     renderCustomElementsManifest / renderLlmsDocuments (the pure, I/O-free
- *     cores the real writers call) over all 160
+ *     renderCustomElementsManifest (the pure, I/O-free cores the real
+ *     writers call) over all 160
  *   - document model: buildComponentApiDocument's sort/strip over all 160
  *   - watch: buildReverseDeps over all 160 and expandAffected on the result
  *   - cache: hashSource (sha256, paid once per file every run) and
@@ -59,7 +59,6 @@ import { parse as parseTemplate } from "../src/svelte-template-parse";
 import { buildComponentApiDocument } from "../src/writer/document-model";
 import { renderCustomElementsManifest } from "../src/writer/writer-custom-elements";
 import { renderJsonDocument } from "../src/writer/writer-json";
-import { renderLlmsDocuments } from "../src/writer/writer-llms";
 import { renderMarkdownDocument } from "../src/writer/writer-markdown";
 import { writeTsDefinition } from "../src/writer/writer-ts-definitions-core";
 
@@ -340,13 +339,11 @@ group("write: document model", () => {
   });
 });
 
-// These render* functions are the pure, I/O-free cores the registered
+// These render* functions are the pure, I/O-free cores the
 // writers call after resolving output paths, so this measures the same
-// render cost as a real run without touching disk. (renderLlmsDocuments does
-// read package.json once per call for its title/summary fallback, exactly as
-// a real run does; `title`/`summary` are passed so only the read remains.)
+// render cost as a real run without touching disk.
 const inputDir = dirname(ENTRY);
-group("write: json/markdown/custom-elements/llms (full fixture)", () => {
+group("write: json/markdown/custom-elements (full fixture)", () => {
   task(`renderJsonDocument (${document.components.length} components)`, () =>
     renderJsonDocument(pipelineResult.components, { inputDir, entryExports: pipelineResult.entryExports }),
   );
@@ -357,14 +354,6 @@ group("write: json/markdown/custom-elements/llms (full fixture)", () => {
 
   task(`renderCustomElementsManifest (${document.components.length} components)`, () =>
     renderCustomElementsManifest(pipelineResult.components, { inputDir }),
-  );
-
-  task(`renderLlmsDocuments (${document.components.length} components)`, () =>
-    renderLlmsDocuments(pipelineResult.components, {
-      title: "carbon-components-svelte",
-      summary: "Bench fixture",
-      entryExports: pipelineResult.entryExports,
-    }),
   );
 });
 

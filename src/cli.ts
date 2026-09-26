@@ -55,7 +55,6 @@ Options:
   --json                Generate component documentation in JSON format
   --markdown            Generate component documentation in Markdown format
   --custom-elements     Generate a Custom Elements Manifest (custom-elements.json)
-  --llms                Generate an llms.txt / llms-full.txt pair (https://llmstxt.org)
   --fail-fast           Abort the run when a single component fails to parse
   --quiet               Suppress progress logs (errors, the diagnostics summary, and the --check report are unaffected)
   --stdout              Print the document from exactly one of --json, --markdown, or --custom-elements to stdout and write nothing to disk (rejects --types and --check)
@@ -103,7 +102,6 @@ const KNOWN_FLAGS = [
   "quiet",
   "stdout",
   "custom-elements",
-  "llms",
   "strict",
   "report-diagnostics",
   "check-examples",
@@ -129,7 +127,6 @@ const BOOLEAN_FLAGS = new Set([
   "quiet",
   "stdout",
   "custom-elements",
-  "llms",
   "strict",
   "report-diagnostics",
   "check-examples",
@@ -204,8 +201,6 @@ function parseCliFlagValue(flag: string, value: string | boolean, arg: string, r
       return { kind: "usage-error", message: `sveld: --stdout does not take a value; got "${value}".` };
     case "custom-elements":
       return { kind: "option", option: { customElements: value === true || value === "true" } };
-    case "llms":
-      return { kind: "option", option: { llms: value === true || value === "true" } };
     case "strict":
       // The value is validated in `cli()` once it can be reported as a usage
       // error (`--strict=oops`); a bare `--strict` means `true`.
