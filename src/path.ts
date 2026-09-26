@@ -7,9 +7,10 @@ export const SVELTE_EXT_REGEX = /\.svelte$/;
 /**
  * Extensions the watch mode plugin hooks react to: components themselves,
  * the entry barrel (which may be `.js`/`.ts`), modules a component reads
- * values from, and `@extendProps`/`@extends` targets.
+ * values from (any extension module resolution probes), and
+ * `@extendProps`/`@extends` targets.
  */
-export const WATCH_RELEVANT_EXT_REGEX = /\.(?:svelte|[mc]?ts|[mc]?js)$/;
+export const WATCH_RELEVANT_EXT_REGEX = /\.(?:svelte|[mc]?ts|[mc]?js|tsx|jsx)$/;
 
 /**
  * Same answer as `path.parse(filePath).ext === ".svelte"`, without building
