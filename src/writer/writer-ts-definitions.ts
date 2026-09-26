@@ -1,4 +1,4 @@
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { convertSvelteExt, createExports, createTypeExports, type TypeExportEntry } from "../create-exports";
 import type { InlinedTypes } from "../inline-types";
 import { info, warn } from "../logger";
@@ -243,7 +243,7 @@ export interface WriteTsDefinitionsOptions extends WriteTsDefinitionOptions {
  * ```
  */
 export default async function writeTsDefinitions(components: ComponentDocs, options: WriteTsDefinitionsOptions) {
-  const ts_base_path = join(process.cwd(), options.outDir, "index.d.ts");
+  const ts_base_path = resolve(options.outDir, "index.d.ts");
   const writer = new Writer({ dryRun: options.dryRun });
   const document = buildComponentApiDocument(components);
   const extendsTargetInterfaces = collectExtendsTargetInterfaces(document.components);

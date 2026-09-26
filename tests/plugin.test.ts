@@ -225,6 +225,61 @@ describe("writeOutput additionalWriters", () => {
   });
 });
 
+describe("writeOutput output paths", () => {
+  let dir: string;
+
+  beforeEach(() => {
+    dir = fs.mkdtempSync(path.join(tmpdir(), "sveld-abs-out-"));
+    jest.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  test("writes every built-in output to an absolute path as given, not under cwd", async () => {
+    const button = mockComponentDocApi("Button", "Button.svelte");
+    const result: GenerateBundleResult = {
+      exports: { Button: { source: "./Button.svelte", default: true } },
+      entryExports: [],
+      components: new Map([["Button", button]]),
+      allComponentsForTypes: new Map([["Button.svelte", button]]),
+      errors: [],
+      diagnostics: [],
+    };
+
+    await writeOutput(
+      result,
+      {
+        types: true,
+        typesOptions: { outDir: path.join(dir, "types") },
+        json: true,
+        jsonOptions: { outFile: path.join(dir, "api.json") },
+        markdown: true,
+        markdownOptions: { outFile: path.join(dir, "index.md") },
+        customElements: true,
+        customElementsOptions: { outFile: path.join(dir, "custom-elements.json") },
+        llms: true,
+        llmsOptions: { outDir: path.join(dir, "llms") },
+      },
+      path.join(dir, "index.js"),
+    );
+
+    for (const file of [
+      "types/index.d.ts",
+      "types/Button.svelte.d.ts",
+      "api.json",
+      "index.md",
+      "custom-elements.json",
+      "llms/llms.txt",
+      "llms/llms-full.txt",
+    ]) {
+      expect(fs.existsSync(path.join(dir, file))).toBe(true);
+    }
+  });
+});
+
 describe("pluginSveld config option", () => {
   const BUTTON = `<script>\n  export let label = "button";\n</script>\n\n<button>{label}</button>`;
 

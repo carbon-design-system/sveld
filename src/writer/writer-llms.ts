@@ -227,8 +227,8 @@ export default async function writeLlms(components: ComponentDocs, options: Writ
   const llmsFullRelPath = normalizeSeparators(path.join(options.outDir ?? "", "llms-full.txt"));
 
   const [llmsWritten, llmsFullWritten] = await Promise.all([
-    writer.write(path.join(process.cwd(), llmsRelPath), llmsTxt),
-    writer.write(path.join(process.cwd(), llmsFullRelPath), llmsFullTxt),
+    writer.write(path.resolve(llmsRelPath), llmsTxt),
+    writer.write(path.resolve(llmsFullRelPath), llmsFullTxt),
   ]);
 
   if (!options.dryRun) {
