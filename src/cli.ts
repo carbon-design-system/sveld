@@ -422,14 +422,14 @@ export async function cli(process: NodeJS.Process) {
   }
 
   if (parsed.kind === "unknown") {
-    let message = `Unknown flag: ${parsed.arg}`;
+    let message = `sveld: unknown flag "${parsed.arg}".`;
 
     if (parsed.suggestion) {
-      message += ` Did you mean --${parsed.suggestion}?`;
+      message += ` Did you mean "--${parsed.suggestion}"?`;
     }
 
     if (parsed.positionalHint) {
-      message += " (values are passed as --flag=value or --flag value)";
+      message += " Values are passed as --flag=value or --flag value.";
     }
 
     console.error(message);
