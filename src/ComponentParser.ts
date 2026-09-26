@@ -48,6 +48,7 @@ import type {
 import { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "./parsed-component-metadata";
 import { resolveMemberExpressionType } from "./parser/bindings";
 import { type ClassDeclarationLike, readClassDeclaration } from "./parser/classes";
+import { parseCustomTypes } from "./parser/component-tags";
 import { createParserContext, type ParserContext } from "./parser/context";
 import { parseSetContextCall } from "./parser/contexts";
 import { buildDiagnostic, isSveldIgnored, recordDiagnostic, recordSveldIgnore } from "./parser/diagnostics";
@@ -65,7 +66,7 @@ import {
   parseHostDispatchEventCall,
 } from "./parser/events";
 import { parseGenericsAttribute } from "./parser/generics";
-import { parseCustomTypes, processNodeJSDoc } from "./parser/jsdoc";
+import { processNodeJSDoc } from "./parser/jsdoc";
 import { resolvePropTypeAndDocs } from "./parser/prop-shared";
 import { addProp, processInitializer, queuePendingCrossFileDefault } from "./parser/props";
 import { maybeSetRestProps } from "./parser/rest-props";
