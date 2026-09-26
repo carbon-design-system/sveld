@@ -16,8 +16,6 @@ test("the matrix sets a non-default value for every emit option", () => {
   expect(set("format")).toContain("component");
   expect(set("exportTypes")).toContain(false);
   expect(set("exportTypes").some((value) => typeof value === "object")).toBe(true);
-  expect(set("comments")).toContain("none");
-  expect(set("comments")).toContain("descriptions");
 });
 
 test("fails only the option sets whose output doesn't typecheck", async () => {

@@ -128,7 +128,7 @@ Name cases after the behavior under test, grouping by feature prefix to match th
 
 - `bun run typecheck` — `tsc --noEmit` over `src/` and `tests/`.
 - `bun run test:fixtures-types` — type-checks the generated fixture outputs through [`tsconfig.fixtures.json`](tsconfig.fixtures.json), so a `.d.ts` that compiles in isolation but is wrong as a type is caught.
-- `bun run test:types-matrix` — the same check for non-default options. [`scripts/typecheck-option-matrix.ts`](scripts/typecheck-option-matrix.ts) regenerates every fixture's `.d.ts` under each set in `OPTION_MATRIX` (`format`, `exportTypes`, `comments`, and one combination) and runs one `tsc` per set. A writer path that only one option reaches, such as `format: "component"`, is covered here and nowhere else. **When you add an emit option to `WriteTsDefinitionOptions`,** add a set for it.
+- `bun run test:types-matrix` — the same check for non-default options. [`scripts/typecheck-option-matrix.ts`](scripts/typecheck-option-matrix.ts) regenerates every fixture's `.d.ts` under each set in `OPTION_MATRIX` (`format`, `exportTypes`, and one combination) and runs one `tsc` per set. A writer path that only one option reaches, such as `format: "component"`, is covered here and nowhere else. **When you add an emit option to `WriteTsDefinitionOptions`,** add a set for it.
 - `bun run test:svelte-versions` — the `class` format promises Svelte 3, 4, and 5 support; [`scripts/typecheck-svelte-versions.ts`](scripts/typecheck-svelte-versions.ts) checks every legacy fixture's output against Svelte 3 and 4 as well.
 
 ### End-to-end tests

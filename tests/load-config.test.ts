@@ -292,11 +292,6 @@ describe("validateOptions", () => {
     expect(warnSpy).not.toHaveBeenCalled();
   });
 
-  test("does not warn about typesOptions.comments", () => {
-    validateOptions({ typesOptions: { comments: "descriptions" } });
-    expect(warnSpy).not.toHaveBeenCalled();
-  });
-
   test("does not warn about typesOptions.transform", () => {
     validateOptions({ typesOptions: { transform: (text: string) => text } });
     expect(warnSpy).not.toHaveBeenCalled();
