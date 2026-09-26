@@ -107,8 +107,6 @@ export class ParseCache {
   private readonly cacheFilePath: string;
   private readonly file: ParseCacheFile;
   private readonly next = new Map<string, ParseCacheEntry>();
-  /** Paths forced to miss this run (e.g. dependents of a changed `@extends` target). */
-  private readonly blocked = new Set<string>();
   /**
    * Whether `next` differs from what's on disk: an entry was added or its
    * generated text changed. Dropped entries show up as `next` holding fewer
@@ -126,15 +124,12 @@ export class ParseCache {
 
   /** True when `get()` would return a hit for `resolvedPath` and `hash`. */
   has(resolvedPath: string, hash: string): boolean {
-    if (this.blocked.has(resolvedPath)) return false;
     const entry = this.file.entries[resolvedPath];
     return entry !== undefined && entry.hash === hash;
   }
 
   /** Returns the cached parse for `resolvedPath` when its content hash still matches. */
   get(resolvedPath: string, hash: string): ComponentParseResult | null {
-    if (this.blocked.has(resolvedPath)) return null;
-
     const entry = this.file.entries[resolvedPath];
     if (entry === undefined || entry.hash !== hash) return null;
 
@@ -169,11 +164,6 @@ export class ParseCache {
         pending,
       }),
     });
-  }
-
-  /** Skip cache for `resolvedPath` this run (e.g. an @extends dependent). */
-  invalidate(resolvedPath: string): void {
-    this.blocked.add(resolvedPath);
   }
 
   /**

@@ -12,7 +12,7 @@ import { Project, type ProjectUpdate } from "./project";
 export interface SveldBundle {
   /** The latest result: the initial build's, then each update's. */
   readonly result: Promise<GenerateBundleResult>;
-  /** Re-parse the changed files plus their dependents and return the updated bundle. */
+  /** Re-parse the changed files and the components that read them, and return the updated bundle. */
   update(changedFilePaths: string[]): Promise<ProjectUpdate>;
 }
 

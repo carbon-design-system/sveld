@@ -91,7 +91,7 @@ describe("parse cache", () => {
     );
   });
 
-  test("editing an @extendProps target also invalidates its dependent, even though the dependent's own content is unchanged", async () => {
+  test("editing an @extendProps target re-parses only the target, not its dependent", async () => {
     await generateBundle(dir, true, { cache: cacheFile });
     parseSpy.mockClear();
 
@@ -99,11 +99,10 @@ describe("parse cache", () => {
     await generateBundle(dir, true, { cache: cacheFile });
 
     const calls = parseSpy.mock.calls as unknown as Array<[string, { filePath: string }]>;
-    const reparsedPaths = calls.map(([, diagnostics]) => diagnostics.filePath);
-    expect(reparsedPaths.sort()).toEqual(["./Button.svelte", "./SecondaryButton.svelte"].sort());
+    expect(calls.map(([, diagnostics]) => diagnostics.filePath)).toEqual(["./Button.svelte"]);
   });
 
-  test("editing an @extendProps target invalidates its exported dependent exactly once, even though the dependent is also discovered via glob", async () => {
+  test("editing an @extendProps target keeps the cached parse of a dependent that's both exported and globbed", async () => {
     const entry = join(dir, "entry.js");
     writeFileSync(entry, 'export { default as SecondaryButton } from "./SecondaryButton.svelte";\n');
 
@@ -116,9 +115,7 @@ describe("parse cache", () => {
     const result = await generateBundle(entry, true, { cache: cacheFile });
 
     const calls = parseSpy.mock.calls as unknown as Array<[string, { filePath: string }]>;
-    const reparsedPaths = calls.map(([, diagnostics]) => diagnostics.filePath);
-    // The dependent must be re-parsed once, not once per pass.
-    expect(reparsedPaths.sort()).toEqual(["./Button.svelte", "./SecondaryButton.svelte"].sort());
+    expect(calls.map(([, diagnostics]) => diagnostics.filePath)).toEqual(["./Button.svelte"]);
     expect(result.components.has("SecondaryButton")).toBe(true);
     expect(byModuleName(result.allComponentsForTypes, "SecondaryButton")).toBeDefined();
   });
@@ -277,7 +274,7 @@ describe("generated .d.ts text cache", () => {
     rmSync(outDirAbs, { recursive: true, force: true });
   });
 
-  test("a component whose @extendProps target changed is regenerated, not served stale cached text", async () => {
+  test("a component whose @extendProps target changed reuses its cached text, which doesn't depend on the target", async () => {
     const secondaryButtonPath = resolve(dir, "SecondaryButton.svelte");
     const standalonePath = resolve(dir, "Standalone.svelte");
 
@@ -299,12 +296,13 @@ describe("generated .d.ts text cache", () => {
     writeFileSync(join(dir, "Button.svelte"), BUTTON.replace("primary = false", "primary = true"));
     const second = await generateBundle(dir, true, { cache: cacheFile });
 
-    // SecondaryButton depends on Button via @extendProps, so it's invalidated
-    // and reparsed even though its own source didn't change; its fresh parse
-    // entry must not carry over the stale cached text.
-    expect(second.cache?.getGeneratedText(secondaryButtonPath, classKey("SecondaryButton"))).toBeUndefined();
-    // Standalone is unrelated and still a parse-cache hit, so its previously
-    // cached text is legitimately reused.
+    // SecondaryButton's `.d.ts` only names `ButtonProps`, so Button's edit
+    // leaves it, like its parse, as it was.
+    const secondaryButton = byModuleName(second.allComponentsForTypes, "SecondaryButton");
+    expect(secondaryButton).toBeDefined();
+    expect(second.cache?.getGeneratedText(secondaryButtonPath, classKey("SecondaryButton"))).toBe(
+      writeTsDefinition(secondaryButton as ComponentDocApi),
+    );
     expect(second.cache?.getGeneratedText(standalonePath, classKey("Standalone"))).toBeDefined();
   });
 

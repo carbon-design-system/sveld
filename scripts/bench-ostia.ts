@@ -24,7 +24,6 @@
  *   - write: renderJsonDocument / renderMarkdownDocument (the pure,
  *     I/O-free cores the real writers call) over all 160
  *   - document model: buildComponentApiDocument's sort/strip over all 160
- *   - watch: buildReverseDeps over all 160 and expandAffected on the result
  *   - cache: hashSource (sha256, paid once per file every run) and
  *     ParseCache.get over every carbon component (hit vs. miss)
  *   - pipeline: generateBundle end-to-end, no cache, in both entry-barrel
@@ -53,7 +52,6 @@ import { group, task } from "ostia";
 import { asNormalizedPath } from "../src/brands";
 import { generateBundle } from "../src/bundle";
 import { collectComponents } from "../src/collect-components";
-import { buildReverseDeps, expandAffected } from "../src/dependency-graph";
 import { setQuiet } from "../src/logger";
 import { hashSource, ParseCache } from "../src/parse-cache";
 import { getParserStack, loadParserStack } from "../src/parser-stack";
@@ -362,23 +360,8 @@ group("write: json/markdown (full fixture)", () => {
   );
 });
 
-// Watch mode rebuilds the reverse-dependency map after every parse and
-// expands each changed file through it; both scale with fixture size.
 const { resolveComponentFilePath } = collectComponents(ENTRY, false);
-const componentsByPath = Array.from(
-  pipelineResult.allComponentsForTypes.values(),
-  (component) => [resolveComponentFilePath(component.filePath), component] as const,
-);
-const reverseDeps = buildReverseDeps(componentsByPath);
 const allComponentPaths = [...pipelineResult.allComponentsForTypes.keys()];
-
-group("watch: dependency graph", () => {
-  task(`buildReverseDeps (${document.components.length} components)`, () => buildReverseDeps(componentsByPath));
-
-  task(`expandAffected (all ${allComponentPaths.length} paths changed)`, () =>
-    expandAffected(allComponentPaths, reverseDeps),
-  );
-});
 
 // hashSource runs once per file on every invocation (parse-cache hit or not),
 // so its cost scales with fixture size regardless of cache state.

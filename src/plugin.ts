@@ -56,9 +56,10 @@ export interface PluginSveldOptions extends Pick<GenerateBundleOptions, "cache" 
   /**
    * Regenerate output incrementally when relevant source changes during
    * `vite dev` / `vite build --watch`: a component, the entry barrel itself
-   * (adding/removing an export), or a non-`.svelte` file a component depends
-   * on via `@extendProps` / `@extends` or a typedef `import("./x")`
-   * reference. Only the affected components are re-parsed.
+   * (adding/removing an export), a module a component reads a value from,
+   * or a non-`.svelte` file a component names via `@extendProps` /
+   * `@extends`. Only the edited components and those that read an edited
+   * module are re-parsed.
    * @default false
    */
   watch?: boolean;
