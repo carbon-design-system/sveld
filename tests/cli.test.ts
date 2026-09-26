@@ -296,6 +296,20 @@ describe("parseCliOptions", () => {
   test("--version short-circuits before later flags are parsed", () => {
     expect(parseCliOptions(["--version", "--markdwon"])).toEqual({ kind: "version" });
   });
+
+  test("-h, -v, and -q are short for --help, --version, and --quiet", () => {
+    expect(parseCliOptions(["-h"])).toEqual({ kind: "help" });
+    expect(parseCliOptions(["-v"])).toEqual({ kind: "version" });
+    expect(parseCliOptions(["-q", "--json"])).toEqual({ kind: "options", options: { quiet: true, json: true } });
+  });
+
+  test("a value-taking flag does not consume a following short flag", () => {
+    expect(parseCliOptions(["--cache", "-q"])).toEqual({ kind: "options", options: { cache: true, quiet: true } });
+  });
+
+  test("an unknown single-dash flag is rejected", () => {
+    expect(parseCliOptions(["-x"])).toEqual({ kind: "unknown", arg: "-x" });
+  });
 });
 
 describe("cli() entry resolution failures", () => {

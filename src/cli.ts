@@ -55,7 +55,7 @@ Options:
   --json                Generate component documentation in JSON format
   --markdown            Generate component documentation in Markdown format
   --fail-fast           Abort the run when a single component fails to parse
-  --quiet               Suppress progress logs (errors, the diagnostics summary, and the --check report are unaffected)
+  -q, --quiet           Suppress progress logs (errors, the diagnostics summary, and the --check report are unaffected)
   --stdout              Print the document from exactly one of --json or --markdown to stdout and write nothing to disk (rejects --types and --check)
   --cache[=<path>]      Persist parsed output and skip re-parsing unchanged files (on by default, default path: node_modules/.cache/sveld/parse-cache.json; pass --cache=false to disable)
   --check-examples[=syntax]  Check @example blocks: TS/JS against the TypeScript program, svelte/html markup against sveld's own parser; --check-examples=syntax runs only the markup path and never loads TypeScript
@@ -66,8 +66,8 @@ Options:
   --check[=<path>]      Diff the parsed API against a committed snapshot; exit 3 on a breaking change (default path: COMPONENT_API.json)
   --check-level=<major|minor|patch>  Minimum bump --check fails the run on (default: major)
   --format=<text|json>  Output format for the --check report and the diagnostics summary (default: text)
-  --help                Print this help message and exit
-  --version             Print the installed sveld version and exit
+  -h, --help            Print this help message and exit
+  -v, --version         Print the installed sveld version and exit
 
 Exit codes:
   0  success
@@ -107,6 +107,13 @@ const KNOWN_FLAGS = [
   "types-index-types",
   "format",
 ];
+
+/** Single-dash short flags and the long flag each one stands for. */
+const SHORT_FLAGS = new Map([
+  ["-h", "--help"],
+  ["-v", "--version"],
+  ["-q", "--quiet"],
+]);
 
 /** An uppercase letter, i.e. a camelCase word boundary. */
 const UPPERCASE_RE = /[A-Z]/g;
@@ -160,7 +167,7 @@ function parseCliFlag(
   let consumedNext = false;
 
   if (eqIndex === -1 && SPACE_SEPARATED_VALUE_FLAGS.has(flag)) {
-    if (rawNextArg !== undefined && !rawNextArg.startsWith("--")) {
+    if (rawNextArg !== undefined && !rawNextArg.startsWith("--") && !SHORT_FLAGS.has(rawNextArg)) {
       value = rawNextArg;
       consumedNext = true;
     } else if (REQUIRES_VALUE_FLAGS.has(flag)) {
@@ -259,7 +266,7 @@ export function parseCliOptions(argv: string[]): CliParseResult {
   let previousFlagWasBoolean = false;
 
   for (let i = 0; i < argv.length; i++) {
-    const arg = argv[i];
+    const arg = SHORT_FLAGS.get(argv[i]) ?? argv[i];
 
     if (!arg.startsWith("--")) {
       return { kind: "unknown", arg, positionalHint: previousFlagWasBoolean ? true : undefined };
