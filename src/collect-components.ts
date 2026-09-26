@@ -1,9 +1,8 @@
-import type { Dirent } from "node:fs";
 import { lstatSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { basename, dirname, isAbsolute, join, parse, relative, resolve } from "node:path";
 import { asRelativeSourcePath } from "./brands";
 import type { ResolveComponentFilePath } from "./bundle";
-import { readDirectoryListing, resetDirectoryListings } from "./fs-listing";
+import type { ModuleGraph } from "./module-graph";
 import { type ParsedExports, parseExports } from "./parse-exports";
 import { compareText } from "./parser/utils";
 import { hasSvelteExtension, normalizeSeparators } from "./path";
@@ -59,6 +58,7 @@ interface GlobbedComponentSource {
  * missing `dir` (returns no matches) instead of throwing.
  */
 function findSvelteFiles(
+  graph: ModuleGraph,
   dir: string,
   results: string[] = [],
   visited = new Set<string>(),
@@ -73,9 +73,8 @@ function findSvelteFiles(
   }
   if (visited.has(real)) return results;
   visited.add(real);
-  const listing = readDirectoryListing(dir);
-  if (listing === null) return results;
-  const entries: Dirent[] = listing.entries;
+  const entries = graph.listDirectory(dir);
+  if (entries === null) return results;
 
   for (const entry of entries) {
     if (entry.name.startsWith(".")) continue;
@@ -88,7 +87,7 @@ function findSvelteFiles(
       // A non-symlink child of a directory whose real path is `real` has real
       // path `real/name`: no `realpathSync` syscall needed. Only symlinked
       // directories can point elsewhere and must be resolved.
-      findSvelteFiles(entryPath, results, visited, isSymbolicLink ? undefined : join(real, entry.name));
+      findSvelteFiles(graph, entryPath, results, visited, isSymbolicLink ? undefined : join(real, entry.name));
     } else if (stat.isFile() && entry.name.endsWith(".svelte")) {
       results.push(entryPath);
     }
@@ -103,8 +102,8 @@ function findSvelteFiles(
  * Sorted by `source` so walk order does not depend on `readdirSync`, which
  * varies by OS.
  */
-function globComponentSources(rootDir: string): GlobbedComponentSource[] {
-  return findSvelteFiles(rootDir)
+function globComponentSources(graph: ModuleGraph, rootDir: string): GlobbedComponentSource[] {
+  return findSvelteFiles(graph, rootDir)
     .map((file) => {
       // Every hit ends in `.svelte` and is not a dotfile, so this is `parse(file).name`.
       const moduleName = sanitizeModuleName(basename(file, ".svelte").replace(HYPHEN_REGEX, ""));
@@ -165,13 +164,14 @@ export function createGlobMergeState(
  * edit and skips paths already seen.
  */
 export function mergeGlobbedComponents(
+  graph: ModuleGraph,
   rootDir: string,
   exports: ParsedExports,
   allComponentEntries: Array<[string, ParsedExports[string]]>,
   resolveComponentFilePath: ResolveComponentFilePath,
   state: GlobMergeState,
 ): void {
-  for (const { moduleName, source } of globComponentSources(rootDir)) {
+  for (const { moduleName, source } of globComponentSources(graph, rootDir)) {
     const resolvedPath = resolveComponentFilePath(source);
 
     const exportEntry = exports[moduleName];
@@ -212,11 +212,15 @@ export function mergeGlobbedComponents(
  *
  * @param documentExports - When `true`, log and continue if the entry file fails
  *   the acorn component-export parse (TypeScript-only syntax is common).
+ * @param graph - Lists directories for the glob walk and resolves the
+ *   barrel's re-exports.
  */
-export function collectComponents(input: string, glob: boolean, documentExports = false): CollectedComponents {
-  // Directory listings are cached across the glob walk and module resolution;
-  // a new discovery pass must see files created since the last one.
-  resetDirectoryListings();
+export function collectComponents(
+  input: string,
+  glob: boolean,
+  documentExports: boolean,
+  graph: ModuleGraph,
+): CollectedComponents {
   const isFile = lstatSync(input).isFile();
   const dir = isFile ? dirname(input) : input;
   const rootDir = resolve(dir);
@@ -240,7 +244,7 @@ export function collectComponents(input: string, glob: boolean, documentExports 
   if (isFile) {
     const entry = readFileSync(input, "utf-8");
     try {
-      exports = parseExports(entry, rootDir, new Set([resolve(input)]));
+      exports = parseExports(entry, rootDir, graph, new Set([resolve(input)]));
     } catch (error) {
       // Without documentExports, throw. With it, warn and continue.
       if (!documentExports) throw error;
@@ -253,7 +257,7 @@ export function collectComponents(input: string, glob: boolean, documentExports 
 
   if (glob) {
     const state = createGlobMergeState(allComponentEntries, resolveComponentFilePath);
-    mergeGlobbedComponents(rootDir, exports, allComponentEntries, resolveComponentFilePath, state);
+    mergeGlobbedComponents(graph, rootDir, exports, allComponentEntries, resolveComponentFilePath, state);
 
     // A directory entry has no barrel to parse exports from (`exports` is
     // still `{}` at this point), so without this every globbed component

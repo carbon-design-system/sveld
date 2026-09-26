@@ -2,6 +2,7 @@ import { dirname, relative, resolve } from "node:path";
 import type { DeprecatedValue, JsDocPassthroughTag } from "./ComponentParser";
 import { createDiagnostic, type SveldDiagnostic } from "./diagnostics";
 import { collectModuleExports, createResolveContext } from "./module-exports";
+import { ModuleGraph } from "./module-graph";
 import { compareText } from "./parser/utils";
 import { loadParserStack } from "./parser-stack";
 import { normalizeSeparators } from "./path";
@@ -38,6 +39,8 @@ export interface ParseEntryExportsOptions {
    * entry's `export *` statements bring in from different modules.
    */
   diagnostics?: SveldDiagnostic[];
+  /** Resolves and parses the modules the barrel re-exports from; a fresh one by default. */
+  graph?: ModuleGraph;
 }
 
 /**
@@ -70,7 +73,7 @@ export async function parseEntryExports(
   // the entry's own, since the author likely meant to export it. A nested
   // barrel's was never one of the entry's exports.
   const collected = collectModuleExports(resolved, {
-    ...createResolveContext(),
+    ...createResolveContext(options.graph ?? new ModuleGraph()),
     onAmbiguousStarExport: (filePath, name, entries) => {
       if (filePath !== resolved || !options.diagnostics) return;
       // Components get their own docs, from `parse-exports.ts`.

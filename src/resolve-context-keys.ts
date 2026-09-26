@@ -4,7 +4,6 @@ import type { PendingContextKeyCandidate, SourceRange } from "./ComponentParser"
 import type { CrossFilePass } from "./cross-file-pass";
 import { createDiagnostic } from "./diagnostics";
 import { findImportedExport, type ResolveContext } from "./module-exports";
-import { resolveModuleFile } from "./module-graph";
 import { generateContextTypeName } from "./parser/context-type-name";
 import { importPath } from "./parser/value-imports";
 
@@ -29,7 +28,7 @@ export function resolveContextKeyCandidates(
   const fromDir = dirname(componentFilePath);
 
   return candidates.map((candidate): ContextKeyResolution => {
-    const resolvedFile = resolveModuleFile(candidate.importSource, fromDir);
+    const resolvedFile = ctx.graph.resolve(candidate.importSource, fromDir);
     if (!resolvedFile) return { candidate };
 
     const match = findImportedExport(resolvedFile, candidate, ctx);

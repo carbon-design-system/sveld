@@ -1,14 +1,6 @@
 import { resolve } from "node:path";
 import { isIdentifier, resolveStaticStringLiteral, unwrapTypeCastExpression } from "./ast-guards";
-import {
-  type AstNode,
-  asNode,
-  asNodeArray,
-  type ModuleSource,
-  type ParsedModule,
-  parseModule,
-  resolveModuleFile,
-} from "./module-graph";
+import { type AstNode, asNode, asNodeArray, type ModuleGraph, type ModuleSource } from "./module-graph";
 import type { EntryExport } from "./parse-entry-exports";
 import { parseComments } from "./parser/comment-parser";
 import { getParserStack } from "./parser-stack";
@@ -66,16 +58,17 @@ export interface PrimitiveLiteral {
 
 /** Resolution state shared across the recursive module walk. */
 export interface ResolveContext {
-  /** Memoized exports per file so repeated lookups stay cheap. */
+  /** Resolves specifiers and parses modules; shared by every context of a project. */
+  graph: ModuleGraph;
+  /**
+   * Memoized exports per file so repeated lookups stay cheap. Unlike a
+   * parse, which depends only on the file, a cycle cut short can leave an
+   * entry incomplete, so each lookup that must not depend on another's
+   * order gets its own.
+   */
   cache: Map<string, InternalExport[]>;
   /** Files currently being resolved, used to break import cycles. */
   computing: Set<string>;
-  /**
-   * Parsed modules per file. Unlike `cache`, which a cycle cut short can
-   * leave incomplete, a parse depends only on the file, so contexts may
-   * share this map.
-   */
-  modules: Map<string, ParsedModule>;
   /**
    * Called for a name two `export *` statements of `filePath` bring in from
    * different declarations. The module doesn't export such a name.
@@ -83,9 +76,9 @@ export interface ResolveContext {
   onAmbiguousStarExport?: (filePath: string, name: string, entries: InternalExport[]) => void;
 }
 
-/** A fresh cache and cycle set, reading parsed modules from (and adding them to) `modules`. */
-export function createResolveContext(modules: Map<string, ParsedModule> = new Map()): ResolveContext {
-  return { cache: new Map(), computing: new Set(), modules };
+/** A fresh cache and cycle set, parsing modules through `graph`. */
+export function createResolveContext(graph: ModuleGraph): ResolveContext {
+  return { graph, cache: new Map(), computing: new Set() };
 }
 
 function identifierName(node: AstNode | undefined): string | undefined {
@@ -652,11 +645,7 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
   if (ctx.computing.has(filePath)) return [];
   ctx.computing.add(filePath);
 
-  let parsed = ctx.modules.get(filePath);
-  if (parsed === undefined) {
-    parsed = parseModule(filePath);
-    ctx.modules.set(filePath, parsed);
-  }
+  const parsed = ctx.graph.parse(filePath);
   if (!parsed) {
     ctx.computing.delete(filePath);
     ctx.cache.set(filePath, []);
@@ -697,7 +686,7 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
     if (!imported) return null;
     if (imported.specifier.endsWith(".svelte")) return componentExport(name, imported.specifier);
 
-    const target = resolveModuleFile(imported.specifier, source.dir);
+    const target = ctx.graph.resolve(imported.specifier, source.dir);
     if (!target) return null;
 
     if (imported.importedName === "*") return namespaceExport(name, target, imported.isTypeOnly);
@@ -711,7 +700,7 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
     if (node.type === "ExportAllDeclaration") {
       const specifierValue = asNode(node.source)?.value;
       if (typeof specifierValue !== "string" || specifierValue.endsWith(".svelte")) continue;
-      const target = resolveModuleFile(specifierValue, source.dir);
+      const target = ctx.graph.resolve(specifierValue, source.dir);
       if (!target) continue;
       const isTypeOnly = node.exportKind === "type";
       // `export * as ns from "./x"` exports the one name `ns`, like an explicit export.
@@ -765,7 +754,7 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
 
       let resolved: InternalExport | null = null;
       if (moduleSpecifier) {
-        const target = resolveModuleFile(moduleSpecifier, source.dir);
+        const target = ctx.graph.resolve(moduleSpecifier, source.dir);
         if (target) {
           resolved = findModuleExport(target, localName, ctx) ?? null;
         }

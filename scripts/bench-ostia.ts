@@ -53,6 +53,7 @@ import { asNormalizedPath } from "../src/brands";
 import { generateBundle } from "../src/bundle";
 import { collectComponents } from "../src/collect-components";
 import { setQuiet } from "../src/logger";
+import { ModuleGraph } from "../src/module-graph";
 import { hashSource, ParseCache } from "../src/parse-cache";
 import { getParserStack, loadParserStack } from "../src/parser-stack";
 import { parse as parseTemplate } from "../src/svelte-template-parse";
@@ -360,7 +361,7 @@ group("write: json/markdown (full fixture)", () => {
   );
 });
 
-const { resolveComponentFilePath } = collectComponents(ENTRY, false);
+const { resolveComponentFilePath } = collectComponents(ENTRY, false, false, new ModuleGraph());
 const allComponentPaths = [...pipelineResult.allComponentsForTypes.keys()];
 
 // hashSource runs once per file on every invocation (parse-cache hit or not),

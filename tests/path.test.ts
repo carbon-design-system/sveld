@@ -1,4 +1,4 @@
-import { normalizeSeparators, WATCH_RELEVANT_EXT_REGEX } from "../src/path";
+import { MODULE_EXTENSIONS, normalizeSeparators, WATCH_RELEVANT_EXT_REGEX } from "../src/path";
 
 describe("normalizeSeparators", () => {
   afterEach(() => {
@@ -43,8 +43,8 @@ describe("normalizeSeparators", () => {
 
 describe("WATCH_RELEVANT_EXT_REGEX", () => {
   test("matches every kind of module a component can read values from", () => {
-    for (const file of ["a.svelte", "a.ts", "a.mts", "a.cts", "a.tsx", "a.js", "a.mjs", "a.cjs", "a.jsx", "a.d.ts"]) {
-      expect(WATCH_RELEVANT_EXT_REGEX.test(file)).toBe(true);
+    for (const extension of [".svelte", ...MODULE_EXTENSIONS]) {
+      expect(WATCH_RELEVANT_EXT_REGEX.test(`a${extension}`)).toBe(true);
     }
     expect(WATCH_RELEVANT_EXT_REGEX.test("a.json")).toBe(false);
     expect(WATCH_RELEVANT_EXT_REGEX.test("a.css")).toBe(false);
