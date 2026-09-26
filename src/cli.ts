@@ -51,9 +51,9 @@ Generate TypeScript definitions and component documentation for a Svelte
 library. With no flags, only TypeScript definitions are generated for the
 entry resolved from package.json#svelte.
 
---entry, --cache, --check, --types-format, --types-export,
---types-comments, and --types-inline accept their value as --flag=value
-or as a separate --flag value argument.
+--entry, --cache, --check, --types-format, --types-export, and
+--types-inline accept their value as --flag=value or as a separate
+--flag value argument.
 
 Options:
   --entry=<path>        Entry point to uncompiled Svelte source (default: package.json "svelte" field)
@@ -74,7 +74,6 @@ Options:
   --strict[=errors|ci|local]  Exit with code 4 when diagnostics exist (implies --report-diagnostics); --strict=errors only fails on error-severity diagnostics; --strict=ci expands to {strict:true, reportDiagnostics:true, check:true, checkExamples:true}, --strict=local to {reportDiagnostics:true}
   --types-format=<format>  ".d.ts" output format: "class" (default) or "component" (Svelte 5 Component<...>)
   --types-export=<all|none>  Sets typesOptions.exportTypes; "all" exports every generated type (default), "none" keeps them all local
-  --types-comments=<all|descriptions|none>  Sets typesOptions.comments; how much JSDoc lands in the generated .d.ts (default: all)
   --types-inline=<local|all>  Sets typesOptions.inline; copies imported types into the .d.ts instead of importing them (default: false; pass --types-inline=false to reset)
   --types-index-types    Sets typesOptions.indexTypes; also re-exports generated types from index.d.ts (pass --types-index-types=false to disable)
   --check[=<path>]      Diff the parsed API against a committed snapshot; exit 3 on a breaking change (default path: COMPONENT_API.json)
@@ -129,7 +128,6 @@ const KNOWN_FLAGS = [
   "check-level",
   "types-format",
   "types-export",
-  "types-comments",
   "types-inline",
   "types-index-types",
   "format",
@@ -163,12 +161,11 @@ const SPACE_SEPARATED_VALUE_FLAGS = new Set([
   "check",
   "types-format",
   "types-export",
-  "types-comments",
   "types-inline",
 ]);
 
 /** Of those, the flags that error (rather than falling back to a bare default) when no value is given. */
-const REQUIRES_VALUE_FLAGS = new Set(["entry", "types-format", "types-export", "types-comments", "types-inline"]);
+const REQUIRES_VALUE_FLAGS = new Set(["entry", "types-format", "types-export", "types-inline"]);
 
 /** Closest known flag (canonical spelling) to an unrecognized raw flag name, or undefined if none is close enough. */
 function suggestFlag(rawFlag: string): string | undefined {
@@ -281,10 +278,6 @@ function parseCliFlagValue(flag: string, value: string | boolean, arg: string, r
       return typeof value === "string"
         ? { kind: "option", option: { typesOptions: { exportTypes: value as unknown as boolean } } }
         : { kind: "option", option: {} };
-    case "types-comments":
-      return typeof value === "string"
-        ? { kind: "option", option: { typesOptions: { comments: value as "all" | "descriptions" | "none" } } }
-        : { kind: "option", option: {} };
     case "types-inline":
       // `--types-inline=false` resets to the default (imports stay imports);
       // `"local"`/`"all"` are validated in `cli()`.
@@ -337,8 +330,8 @@ export function parseCliOptions(argv: string[]): CliParseResult {
     }
 
     // One-level-deep merge (not `Object.assign`) so multiple flags that each
-    // set a different `typesOptions` key (e.g. `--types-export` and
-    // `--types-comments`) don't clobber each other's nested object.
+    // set a different `typesOptions` key (e.g. `--types-format` and
+    // `--types-inline`) don't clobber each other's nested object.
     options = mergeConfig<CliOptions>(options, result.option) as CliOptions;
     previousFlagWasBoolean = BOOLEAN_FLAGS.has(flag);
 
@@ -357,13 +350,12 @@ export function parseCliOptions(argv: string[]): CliParseResult {
  */
 interface TypesEnumFlag {
   flagName: string;
-  key: "format" | "comments" | "inline";
+  key: "format" | "inline";
   values: readonly string[];
 }
 
 const TYPES_ENUM_FLAGS: readonly TypesEnumFlag[] = [
   { flagName: "types-format", key: "format", values: ["class", "component"] },
-  { flagName: "types-comments", key: "comments", values: ["all", "descriptions", "none"] },
   { flagName: "types-inline", key: "inline", values: ["local", "all"] },
 ];
 

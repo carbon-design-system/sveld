@@ -58,11 +58,7 @@ export const OPTION_MATRIX: OptionSet[] = [
   { name: "component", options: { format: "component" } },
   { name: "export-types-none", options: { exportTypes: false } },
   { name: "export-types-partial", options: { exportTypes: { props: false, typedefs: false } } },
-  { name: "comments-none", options: { comments: "none" } },
-  {
-    name: "component-private-descriptions",
-    options: { format: "component", exportTypes: false, comments: "descriptions" },
-  },
+  { name: "component-private", options: { format: "component", exportTypes: false } },
 ];
 
 export interface SetResult {

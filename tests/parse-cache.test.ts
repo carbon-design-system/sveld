@@ -368,8 +368,6 @@ describe("generated .d.ts text cache", () => {
   });
 
   test("every other typesOptions key that affects output busts the cache too, not just format", async () => {
-    // Deliberately documented, so every option below actually changes its generated text:
-    // comments needs something to strip.
     writeFileSync(
       join(dir, "Widget.svelte"),
       `<script lang="ts">
@@ -400,7 +398,6 @@ describe("generated .d.ts text cache", () => {
         before: { exportTypes: false },
         after: { exportTypes: false, forceExportProps: true },
       },
-      { label: "comments", after: { comments: "none" } },
     ];
 
     // The generated-text cache is a single `{key, text}` slot per component, not a history keyed

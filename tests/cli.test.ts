@@ -191,13 +191,6 @@ describe("parseCliOptions", () => {
     });
   });
 
-  test("--types-comments=descriptions sets typesOptions.comments", () => {
-    expect(parseCliOptions(["--types-comments=descriptions"])).toEqual({
-      kind: "options",
-      options: { typesOptions: { comments: "descriptions" } },
-    });
-  });
-
   test("--types-inline=local sets typesOptions.inline", () => {
     expect(parseCliOptions(["--types-inline=local"])).toEqual({
       kind: "options",
@@ -313,13 +306,6 @@ describe("parseCliOptions", () => {
     });
   });
 
-  test("--types-comments accepts its value as the next argument", () => {
-    expect(parseCliOptions(["--types-comments", "none"])).toEqual({
-      kind: "options",
-      options: { typesOptions: { comments: "none" } },
-    });
-  });
-
   test("--types-inline accepts its value as the next argument", () => {
     expect(parseCliOptions(["--types-inline", "all"])).toEqual({
       kind: "options",
@@ -361,13 +347,6 @@ describe("parseCliOptions", () => {
     expect(parseCliOptions(["--types-export", "--json"])).toEqual({
       kind: "usage-error",
       message: "sveld: --types-export requires a value (pass --types-export=<value> or --types-export <value>).",
-    });
-  });
-
-  test("--types-comments followed by another flag falls back to a usage error naming the flag", () => {
-    expect(parseCliOptions(["--types-comments", "--json"])).toEqual({
-      kind: "usage-error",
-      message: "sveld: --types-comments requires a value (pass --types-comments=<value> or --types-comments <value>).",
     });
   });
 
@@ -989,18 +968,6 @@ describe("cli() --types-* usage errors", () => {
     expect(process.exitCode).toBe(1);
     expect(errorSpy).toHaveBeenCalledWith(
       expect.stringContaining('--types-format must be "class" or "component"; got "oops"'),
-    );
-    expect(existsSync(join(dir, "types"))).toBe(false);
-  });
-
-  test("--types-comments=oops errors and generates nothing", async () => {
-    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types-comments=oops"];
-
-    await cli(process);
-
-    expect(process.exitCode).toBe(1);
-    expect(errorSpy).toHaveBeenCalledWith(
-      expect.stringContaining('--types-comments must be "all", "descriptions", or "none"; got "oops"'),
     );
     expect(existsSync(join(dir, "types"))).toBe(false);
   });
