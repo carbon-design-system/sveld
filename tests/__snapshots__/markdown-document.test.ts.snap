@@ -1,6 +1,6 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`WriterMarkdown props table includes binding metadata 1`] = `
+exports[`MarkdownDocument props table includes binding metadata 1`] = `
 "# Component Index
 
 ## Components
@@ -30,7 +30,7 @@ None.
 "
 `;
 
-exports[`WriterMarkdown slots table renders descriptions and pass-through tags 1`] = `
+exports[`MarkdownDocument slots table renders descriptions and pass-through tags 1`] = `
 "# Component Index
 
 ## Components
@@ -60,7 +60,7 @@ None.
 "
 `;
 
-exports[`WriterMarkdown defines the component's type parameters for generic components 1`] = `
+exports[`MarkdownDocument defines the component's type parameters for generic components 1`] = `
 "# Component Index
 
 ## Components
