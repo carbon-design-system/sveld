@@ -11,7 +11,7 @@ import type {
   RunesPropTypeMetadata,
   SourceRange,
   TypeImportBinding,
-} from "../ComponentParser";
+} from "../model";
 import { indexOfClosingBracket, indexOfTopLevel, splitTopLevel } from "../type-text";
 import type { ParserContext, TypedefMember } from "./context";
 import { recordSveldIgnore } from "./diagnostics";

@@ -35,12 +35,13 @@
  * ```
  */
 export { asNormalizedPath, type NormalizedPath } from "./brands";
-export { default as ComponentParser, type SerializedComponentEvent } from "./ComponentParser";
+export { default as ComponentParser } from "./ComponentParser";
 export type { SveldDiagnostic, SveldDiagnosticKind } from "./diagnostics";
 export {
   type FinalizeWithoutCrossFileResolutionOptions,
   finalizeWithoutCrossFileResolution,
 } from "./finalize-standalone";
+export type { SerializedComponentEvent } from "./model";
 export type { ComponentDocApi, ComponentDocs } from "./plugin";
 export {
   type BuildComponentApiDocumentOptions,

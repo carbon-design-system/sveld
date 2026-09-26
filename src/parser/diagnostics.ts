@@ -1,5 +1,5 @@
-import type { SourceRange } from "../ComponentParser";
 import { createDiagnostic, DIAGNOSTIC_CODES, type SveldDiagnosticKind } from "../diagnostics";
+import type { SourceRange } from "../model";
 import type { ParserContext } from "./context";
 
 /**

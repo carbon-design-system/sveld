@@ -1,6 +1,6 @@
 import type { ComponentDocApi, ResolveComponentFilePath } from "./bundle";
-import type { ComponentProp, ComponentSlot, ParsedComponent, SourceRange } from "./ComponentParser";
 import { createDiagnostic, type SveldDiagnostic } from "./diagnostics";
+import type { ComponentProp, ComponentSlot, ParsedComponent, SourceRange } from "./model";
 import { loadParserStack } from "./parser-stack";
 import type { TypeResolver } from "./resolve-types";
 import { TemplateParseNotImplementedError } from "./template-parse/not-implemented";

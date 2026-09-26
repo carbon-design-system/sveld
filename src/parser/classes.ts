@@ -1,5 +1,5 @@
 import type ComponentParser from "../ComponentParser";
-import type { ComponentClassMember, ComponentPropParam, ModernRunesTypeNode } from "../ComponentParser";
+import type { ComponentClassMember, ComponentPropParam, ModernRunesTypeNode } from "../model";
 import type { ParserContext } from "./context";
 import { processNodeJSDoc } from "./jsdoc";
 import {

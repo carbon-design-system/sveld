@@ -1,5 +1,5 @@
 import type { Pattern } from "estree";
-import type { SyntaxMode } from "../ComponentParser";
+import type { SyntaxMode } from "../model";
 import type { ParserContext } from "./context";
 import { collectPatternIdentifiers, isScopeOwner } from "./scopes";
 import { isTypeOnlySubtree } from "./walk";

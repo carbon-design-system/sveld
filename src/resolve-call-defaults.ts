@@ -1,7 +1,7 @@
 import { dirname } from "node:path";
 import type { ComponentDocApi } from "./bundle";
-import type { PendingCallDefaultCandidate } from "./ComponentParser";
 import { type CrossFilePass, dropUnknownTypeDiagnostic, findCandidateProp, setResolvedField } from "./cross-file-pass";
+import type { PendingCallDefaultCandidate } from "./model";
 import { findModuleExport, type ResolveContext } from "./module-exports";
 import type { ModuleGraph } from "./module-graph";
 

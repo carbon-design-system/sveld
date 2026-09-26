@@ -1,6 +1,6 @@
 import type { NormalizedPath } from "./brands";
-import type { ParsedComponent } from "./ComponentParser";
 import type { DiagnosticIgnoreMatcher, SveldDiagnostic } from "./diagnostics";
+import type { ParsedComponent } from "./model";
 import type { ParseCache } from "./parse-cache";
 import type { EntryExports } from "./parse-entry-exports";
 import type { ParsedExports } from "./parse-exports";

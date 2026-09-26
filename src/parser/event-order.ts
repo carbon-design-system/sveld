@@ -1,4 +1,4 @@
-import type { SerializedComponentEvent } from "../ComponentParser";
+import type { SerializedComponentEvent } from "../model";
 import { compareText } from "./utils";
 
 /** Event order in every output: by name, then dispatched before forwarded, then by element and detail. */

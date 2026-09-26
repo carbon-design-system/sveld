@@ -1,7 +1,7 @@
 import type { CallExpression, Expression, FunctionExpression, NewExpression, Node, ObjectExpression } from "estree";
 import { isIdentifier, isLiteral, isObjectExpression, resolveStaticStringLiteral } from "../ast-guards";
 import type ComponentParser from "../ComponentParser";
-import type { ComponentContext, ComponentContextProp, SourceRange } from "../ComponentParser";
+import type { ComponentContext, ComponentContextProp, SourceRange } from "../model";
 import type { ParserContext } from "./context";
 import { generateContextTypeName } from "./context-type-name";
 import { recordDiagnostic } from "./diagnostics";

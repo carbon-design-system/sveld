@@ -1,6 +1,6 @@
 import type { ComponentDocApi, ResolveComponentFilePath } from "./bundle";
-import type { PendingCrossFileCandidates } from "./ComponentParser";
 import type { CrossFilePass } from "./cross-file-pass";
+import type { PendingCrossFileCandidates } from "./model";
 import { createResolveContext, type ResolveContext } from "./module-exports";
 import type { ModuleGraph } from "./module-graph";
 import { loadParserStack } from "./parser-stack";

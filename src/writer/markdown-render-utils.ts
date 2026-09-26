@@ -1,4 +1,4 @@
-import type { ComponentProp } from "../ComponentParser";
+import type { ComponentProp } from "../model";
 import type { EntryExports } from "../parse-entry-exports";
 import type { ComponentDocApi, ComponentDocs } from "../plugin";
 import { buildComponentApiDocument } from "./document-model";

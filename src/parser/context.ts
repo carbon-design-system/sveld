@@ -1,4 +1,5 @@
 import type { FunctionDeclaration, VariableDeclaration } from "estree";
+import type { SveldDiagnostic } from "../diagnostics";
 import type {
   ComponentContext,
   ComponentCssPart,
@@ -28,8 +29,7 @@ import type {
   TypeDef,
   TypeImportBinding,
   ValueImportBinding,
-} from "../ComponentParser";
-import type { SveldDiagnostic } from "../diagnostics";
+} from "../model";
 import type { JSDocComment } from "./comment-parser";
 
 /** One top-level member of an object `@typedef`, from a `@property` tag or an inline `{ ... }` type. */

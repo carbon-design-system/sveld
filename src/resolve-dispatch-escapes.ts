@@ -1,14 +1,14 @@
 import { dirname } from "node:path";
 import { isIdentifier, isLiteral, resolveStaticStringLiteral } from "./ast-guards";
 import type { ComponentDocApi } from "./bundle";
+import type { CrossFilePass } from "./cross-file-pass";
+import { createDiagnostic } from "./diagnostics";
 import type {
   DispatchedEvent,
   PendingCrossFileCandidates,
   PendingDispatchEscapeCandidate,
   SerializedComponentEvent,
-} from "./ComponentParser";
-import type { CrossFilePass } from "./cross-file-pass";
-import { createDiagnostic } from "./diagnostics";
+} from "./model";
 import { findImportedExport, type ResolveContext } from "./module-exports";
 import { type AstNode, asNode } from "./module-graph";
 import { compareSerializedEvents } from "./parser/event-order";

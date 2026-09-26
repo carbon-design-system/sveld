@@ -1,6 +1,6 @@
 import type { FunctionDeclaration, Node } from "estree";
 import { isIdentifier, isMemberExpression } from "../ast-guards";
-import type { ComponentPropReExport } from "../ComponentParser";
+import type { ComponentPropReExport } from "../model";
 import type { ParserContext } from "./context";
 
 /** `ImportDeclaration` fields we read from the Svelte/acorn-typescript AST. */

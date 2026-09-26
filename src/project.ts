@@ -10,7 +10,6 @@ import type {
   GenerateBundleResult,
 } from "./bundle";
 import { createExtendsTargetValidator, validateModuleReExportNames } from "./bundle-validation";
-import type { ComponentParseResult, ParsedComponent, PendingCrossFileCandidates } from "./ComponentParser";
 import {
   type CollectedComponents,
   collectComponents,
@@ -22,6 +21,7 @@ import {
 import { resolveCrossFileCandidates } from "./cross-file";
 import { appendDiagnostics, applyDiagnosticIgnores, dedupeDiagnostics, type SveldDiagnostic } from "./diagnostics";
 import { checkComponentExamples } from "./example-check";
+import type { ComponentParseResult, ParsedComponent, PendingCrossFileCandidates } from "./model";
 import { ModuleGraph } from "./module-graph";
 import { hashSource, ParseCache, resolveCacheFilePath } from "./parse-cache";
 import { type EntryExports, parseEntryExports } from "./parse-entry-exports";

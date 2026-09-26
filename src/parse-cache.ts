@@ -7,7 +7,7 @@ import type {
   ParsedComponent,
   ParsedComponentTypeScriptMetadata,
   PendingCrossFileCandidates,
-} from "./ComponentParser";
+} from "./model";
 import { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "./parsed-component-metadata";
 import { VERSION as svelteVersion } from "./svelte-version";
 

@@ -1,4 +1,4 @@
-export { default as ComponentParser, type SerializedComponentEvent } from "./ComponentParser";
+export { default as ComponentParser } from "./ComponentParser";
 export {
   type ApiChange,
   CHECK_REPORT_SCHEMA_VERSION,
@@ -21,6 +21,7 @@ export {
 } from "./diagnostics";
 export type { SvelteEntryPoint } from "./get-svelte-entry";
 export { defineConfig, type SveldConfig, type SveldRuntimeOptions } from "./load-config";
+export type { SerializedComponentEvent } from "./model";
 export { default, type JsonOptions, type MarkdownOptions, type TypesOptions } from "./plugin";
 export { type SveldResult, sveld } from "./sveld";
 export { buildComponentApiDocument, type ComponentApiDocument } from "./writer/document-model";
