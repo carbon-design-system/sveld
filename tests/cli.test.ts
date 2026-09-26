@@ -507,7 +507,7 @@ describe("cli() unknown flag", () => {
     await cli(process);
 
     expect(process.exitCode).toBe(1);
-    expect(errorSpy).toHaveBeenCalledWith("Unknown flag: --markdwon Did you mean --markdown?");
+    expect(errorSpy).toHaveBeenCalledWith('sveld: unknown flag "--markdwon". Did you mean "--markdown"?');
     expect(existsSync(join(dir, "types"))).toBe(false);
     expect(existsSync(join(dir, "COMPONENT_API.json"))).toBe(false);
   });
