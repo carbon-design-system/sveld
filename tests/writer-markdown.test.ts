@@ -60,14 +60,6 @@ describe("writeMarkdown", () => {
     }
   });
 
-  test("does not print a progress line when write is false", async () => {
-    const components: ComponentDocs = new Map([["Button", mockComponentDocApi("Button", "Button.svelte")]]);
-
-    await writeMarkdown(components, { outFile: "unused.md", write: false });
-
-    expect(errorSpy).not.toHaveBeenCalled();
-  });
-
   test("renderMarkdownDocument matches the document writeMarkdown writes to disk", async () => {
     const components: ComponentDocs = new Map([["Button", mockComponentDocApi("Button", "Button.svelte")]]);
     const rendered = renderMarkdownDocument(components, {});

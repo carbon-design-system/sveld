@@ -179,11 +179,11 @@ describe("mergeConfig", () => {
     expect(
       mergeConfig(fileConfig, {
         jsonOptions: { outDir: "docs" },
-        markdownOptions: { write: false },
+        markdownOptions: { outDir: "docs" },
       }),
     ).toEqual({
       jsonOptions: { outFile: "api.json", outDir: "docs" },
-      markdownOptions: { outFile: "index.md", write: false },
+      markdownOptions: { outFile: "index.md", outDir: "docs" },
     });
   });
 
@@ -241,5 +241,25 @@ describe("validateOptions", () => {
   test("does not warn about typesOptions.indexTypes", () => {
     validateOptions({ typesOptions: { indexTypes: true } });
     expect(warnSpy).not.toHaveBeenCalled();
+  });
+
+  test("warns about writer fields that sveld injects itself or no longer supports", () => {
+    validateOptions({
+      typesOptions: {
+        // @ts-expect-error `cache` is injected by sveld, not a public `typesOptions` key
+        cache: false,
+      },
+      jsonOptions: {
+        // @ts-expect-error `entryExports` is injected by sveld
+        entryExports: [],
+      },
+      markdownOptions: {
+        // @ts-expect-error `write` was removed
+        write: false,
+      },
+    });
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('unknown option "typesOptions.cache"'));
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('unknown option "jsonOptions.entryExports"'));
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('unknown option "markdownOptions.write"'));
   });
 });

@@ -11,9 +11,14 @@ import {
 import Writer from "./Writer";
 import WriterMarkdown, { type AppendType } from "./WriterMarkdown";
 
-export interface WriteMarkdownOptions {
-  write?: boolean;
-  outFile: string;
+/** User-settable `markdownOptions`. */
+export interface MarkdownOptions {
+  /**
+   * Path (relative to the project root) for the single combined Markdown
+   * document. Ignored when `outDir` is set.
+   * @default "COMPONENT_INDEX.md"
+   */
+  outFile?: string;
   /**
    * Emit one `<ModuleName>.md` file per component into this directory,
    * plus an index `README.md` linking to each, instead of the single
@@ -22,12 +27,17 @@ export interface WriteMarkdownOptions {
    */
   outDir?: string;
   /**
-   * @internal Entry-barrel exports when `documentExports` is on. Always
-   * computed from the parsed bundle and injected by the caller; setting it
-   * via `markdownOptions` has no effect.
+   * Called every time a heading, quote, paragraph, divider, or raw block is
+   * appended to the document, to inject extra content.
    */
-  entryExports?: EntryExports;
   onAppend?: (type: AppendType, document: WriterMarkdown, components: ComponentDocs) => void;
+}
+
+/** `MarkdownOptions` plus the fields the caller (`plugin.ts`) always injects. */
+export interface WriteMarkdownOptions extends MarkdownOptions {
+  outFile: string;
+  /** Entry-barrel exports when `documentExports` is on. */
+  entryExports?: EntryExports;
 }
 
 function newDocument(options: Pick<WriteMarkdownOptions, "onAppend">, components: ComponentDocs): WriterMarkdown {
@@ -86,9 +96,8 @@ export function renderMarkdownDocument(
 /**
  * @example
  * ```ts
- * const markdown = await writeMarkdown(components, {
+ * await writeMarkdown(components, {
  *   outFile: "COMPONENTS.md",
- *   write: true,
  *   onAppend: (type, doc) => {
  *     console.log(`Appended ${type}`);
  *   }
@@ -97,18 +106,11 @@ export function renderMarkdownDocument(
  */
 export default async function writeMarkdown(components: ComponentDocs, options: WriteMarkdownOptions) {
   if (options.outDir) {
-    if (options.write !== false) await writeMarkdownComponents(components, options);
-    return undefined;
+    await writeMarkdownComponents(components, options);
+    return;
   }
 
-  const write = options?.write !== false;
-  const rendered = renderMarkdownDocument(components, options);
-
-  if (write) {
-    const outFile = resolve(options.outFile);
-    const wasWritten = await new Writer().write(outFile, rendered);
-    info(`${wasWritten ? "created" : "unchanged"} "${options.outFile}".`);
-  }
-
-  return rendered;
+  const outFile = resolve(options.outFile);
+  const wasWritten = await new Writer().write(outFile, renderMarkdownDocument(components, options));
+  info(`${wasWritten ? "created" : "unchanged"} "${options.outFile}".`);
 }

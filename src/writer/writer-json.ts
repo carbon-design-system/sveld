@@ -7,19 +7,19 @@ import type { ComponentDocApi, ComponentDocs } from "../plugin";
 import { buildComponentApiDocument, type ComponentApiDocument } from "./document-model";
 import Writer from "./Writer";
 
-export interface WriteJsonOptions {
-  /** @internal Unused by this writer; kept for backward compatibility. Always set by the caller. */
-  input: string;
-  /** @internal Resolved from `entry` and always injected by the caller (`plugin.ts`); not user-configurable via `jsonOptions`. */
-  inputDir: string;
-  outFile: string;
-  outDir?: string;
+/** User-settable `jsonOptions`. */
+export interface JsonOptions {
   /**
-   * @internal Entry-barrel exports when `documentExports` is on. Always
-   * computed from the parsed bundle and injected by the caller; setting it
-   * via `jsonOptions` has no effect.
+   * Path (relative to the project root) for the single combined JSON
+   * document. Ignored when `outDir` is set.
+   * @default "COMPONENT_API.json"
    */
-  entryExports?: EntryExports;
+  outFile?: string;
+  /**
+   * Emit one `<ComponentName>.api.json` file per component into this
+   * directory instead of the single combined `outFile`.
+   */
+  outDir?: string;
   /**
    * Include `source`/`componentCommentSource` position ranges in the
    * output. These are the bulk of a large component library's
@@ -29,6 +29,15 @@ export interface WriteJsonOptions {
    * @default true
    */
   source?: boolean;
+}
+
+/** `JsonOptions` plus the fields the caller (`plugin.ts`) always injects. */
+export interface WriteJsonOptions extends JsonOptions {
+  outFile: string;
+  /** Resolved from `entry`. */
+  inputDir: string;
+  /** Entry-barrel exports when `documentExports` is on. */
+  entryExports?: EntryExports;
 }
 
 /** Narrows a `source`/`componentCommentSource` value to an actual `SourceRange`, as opposed to `EntryExport.source` (a module path string). */
