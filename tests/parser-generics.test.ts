@@ -32,6 +32,17 @@ describe("splitTopLevelCommas", () => {
       splitTopLevelCommas("Row extends DataTableRow = DataTableRow, K extends keyof Map<string, Row> = never"),
     ).toEqual(["Row extends DataTableRow = DataTableRow", " K extends keyof Map<string, Row> = never"]);
   });
+
+  test("does not close a bracket at the > of an arrow", () => {
+    expect(splitTopLevelCommas("T extends Map<(a: string) => void, number>, U")).toEqual([
+      "T extends Map<(a: string) => void, number>",
+      " U",
+    ]);
+  });
+
+  test("ignores commas inside string literals", () => {
+    expect(splitTopLevelCommas(`T extends "a,b" | 'c,d', U`)).toEqual([`T extends "a,b" | 'c,d'`, " U"]);
+  });
 });
 
 describe("parseGenericsAttribute", () => {
