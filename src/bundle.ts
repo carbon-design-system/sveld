@@ -529,7 +529,8 @@ export function processComponent(
   let moduleName = exportName;
 
   if (entries.length === 1 && exportName === "default") {
-    moduleName = parse(filePath).name;
+    // Named after the file, like a `--glob` component: `my-button.svelte` is `mybutton`.
+    moduleName = sanitizeModuleName(parse(filePath).name.replace(HYPHEN_REGEX, ""));
   }
 
   if (hasSvelteExtension(filePath)) {
