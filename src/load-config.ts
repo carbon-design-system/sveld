@@ -58,12 +58,6 @@ export interface SveldRuntimeOptions extends PluginSveldOptions {
    * stderr. CLI-only; `sveld()` ignores `format` for its own console output.
    */
   format?: "text" | "json" | "github";
-  /**
-   * Resolve the entry, load config, and parse components as usual, but print
-   * `would write "<path>"` for each output file to stdout instead of writing
-   * it (including the parse cache). CLI-only; the Vite plugin ignores it.
-   */
-  dryRun?: boolean;
 }
 
 /**
@@ -232,7 +226,6 @@ const KNOWN_TOP_LEVEL_KEYS = [
   "checkLevel",
   "stdout",
   "format",
-  "dryRun",
   "diagnostics",
 ];
 
@@ -245,15 +238,14 @@ const KNOWN_NESTED_KEYS: Record<string, string[]> = {
     "transform",
     "indexTypes",
     "exports",
-    "dryRun",
     "cache",
     "resolvedPathByFilePath",
     "crossFileResolvedPathByFilePath",
   ],
-  jsonOptions: ["input", "outFile", "outDir", "entryExports", "dryRun", "source"],
-  markdownOptions: ["write", "outFile", "outDir", "entryExports", "onAppend", "dryRun"],
-  customElementsOptions: ["outFile", "dryRun"],
-  llmsOptions: ["outDir", "linkBase", "title", "summary", "entryExports", "dryRun"],
+  jsonOptions: ["input", "outFile", "outDir", "entryExports", "source"],
+  markdownOptions: ["write", "outFile", "outDir", "entryExports", "onAppend"],
+  customElementsOptions: ["outFile"],
+  llmsOptions: ["outDir", "linkBase", "title", "summary", "entryExports"],
   diagnostics: ["ignore"],
 };
 

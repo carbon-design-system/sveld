@@ -204,7 +204,6 @@ async function benchOnce(
         preamble: "",
         exports: result.exports,
         inputDir,
-        dryRun: false,
         cache: result.cache,
         resolvedPathByFilePath: result.resolvedPathByFilePath,
         crossFileResolvedPathByFilePath: result.crossFileResolvedPathByFilePath,
@@ -222,7 +221,6 @@ async function benchOnce(
       input,
       inputDir,
       entryExports: result.entryExports,
-      dryRun: false,
     });
     json = performance.now() - jsonStart;
 
@@ -230,7 +228,6 @@ async function benchOnce(
     await writeMarkdown(result.components, {
       outFile: "COMPONENT_INDEX.md",
       entryExports: result.entryExports,
-      dryRun: false,
     });
     markdown = performance.now() - markdownStart;
   } finally {

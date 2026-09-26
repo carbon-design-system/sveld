@@ -109,7 +109,7 @@ const UNRESOLVED_ENTRY_MESSAGE =
  * neither reports diagnostics nor diffs a snapshot, so a config shared with
  * the CLI would otherwise look like it applies here too.
  */
-const RUNTIME_ONLY_KEYS = ["reportDiagnostics", "strict", "check", "checkLevel", "stdout", "format", "dryRun"];
+const RUNTIME_ONLY_KEYS = ["reportDiagnostics", "strict", "check", "checkLevel", "stdout", "format"];
 
 /** Debounce window (ms) for coalescing rapid file changes into one regeneration. */
 const WATCH_DEBOUNCE_MS = 50;
@@ -255,13 +255,8 @@ export default function pluginSveld(opts?: PluginSveldOptions): SveldPlugin {
  * // Generates: types/*.d.ts, COMPONENT_API.json, COMPONENT_INDEX.md
  * ```
  */
-export async function writeOutput(
-  result: GenerateBundleResult,
-  opts: PluginSveldOptions & { dryRun?: boolean },
-  input: string,
-) {
+export async function writeOutput(result: GenerateBundleResult, opts: PluginSveldOptions, input: string) {
   const inputDir = dirname(input);
-  const dryRun = opts?.dryRun === true;
 
   if (opts?.types !== false) {
     /**
@@ -275,7 +270,6 @@ export async function writeOutput(
       ...opts?.typesOptions,
       exports: result.exports,
       inputDir,
-      dryRun,
       cache: result.cache,
       resolvedPathByFilePath: result.resolvedPathByFilePath,
       crossFileResolvedPathByFilePath: result.crossFileResolvedPathByFilePath,
@@ -294,7 +288,6 @@ export async function writeOutput(
       input,
       inputDir,
       entryExports: result.entryExports,
-      dryRun,
     } satisfies WriteJsonOptions);
   }
 
@@ -308,7 +301,6 @@ export async function writeOutput(
       outFile: "COMPONENT_INDEX.md",
       ...opts?.markdownOptions,
       entryExports: result.entryExports,
-      dryRun,
     } satisfies WriteMarkdownOptions);
   }
 
@@ -321,7 +313,6 @@ export async function writeOutput(
       outFile: "custom-elements.json",
       ...opts?.customElementsOptions,
       inputDir,
-      dryRun,
     } satisfies WriteCustomElementsOptions);
   }
 
@@ -333,7 +324,6 @@ export async function writeOutput(
     await writeLlms(result.components, {
       ...opts?.llmsOptions,
       entryExports: result.entryExports,
-      dryRun,
     } satisfies WriteLlmsOptions);
   }
 }

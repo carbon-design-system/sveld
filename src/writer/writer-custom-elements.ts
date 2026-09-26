@@ -11,8 +11,6 @@ export interface WriteCustomElementsOptions {
   /** @internal Resolved from `entry` and always injected by the caller (`plugin.ts`); not user-configurable via `customElementsOptions`. */
   inputDir: string;
   outFile: string;
-  /** @internal Report the resolved path instead of writing. Always set by the caller from `sveld --dry-run`. */
-  dryRun?: boolean;
 }
 
 /**
@@ -43,8 +41,8 @@ export default async function writeCustomElements(components: ComponentDocs, opt
   const raw = renderCustomElementsManifest(components, options);
 
   const output_path = path.resolve(options.outFile);
-  const writer = new Writer({ dryRun: options.dryRun });
+  const writer = new Writer();
   const wasWritten = await writer.write(output_path, raw);
 
-  if (!options.dryRun) info(`${wasWritten ? "created" : "unchanged"} "${options.outFile}".`);
+  info(`${wasWritten ? "created" : "unchanged"} "${options.outFile}".`);
 }

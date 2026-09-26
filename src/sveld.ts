@@ -118,7 +118,7 @@ export async function sveld(opts?: SveldOptions): Promise<SveldResult> {
   await writeOutput(result, merged, input);
   // Persists any generated `.d.ts` text writeOutput just cached, on top of
   // the parse-only save generateBundle() already did.
-  if (!merged.dryRun) result.cache?.save();
+  result.cache?.save();
 
   const shouldReport = merged.reportDiagnostics || merged.strict;
   const diagnostics = filterSpeculativeDiagnostics(result.diagnostics, shouldReport);

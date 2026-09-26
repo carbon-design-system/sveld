@@ -114,8 +114,6 @@ export interface WriteTsDefinitionsOptions extends WriteTsDefinitionOptions {
   preamble: string;
   /** @internal Always computed from the parsed bundle and injected by the caller; not user-configurable via `typesOptions`. */
   exports: ParsedExports;
-  /** @internal Report resolved paths instead of writing. Always set by the caller from `sveld --dry-run`. */
-  dryRun?: boolean;
   /**
    * @internal Reuses generated `.d.ts` text across runs for components whose
    * source (and every emit option from `serializeEmitOptions`) hasn't
@@ -166,7 +164,7 @@ export function generatedTextCacheKey(moduleName: string, emitOptions: WriteTsDe
  */
 export default async function writeTsDefinitions(components: ComponentDocs, options: WriteTsDefinitionsOptions) {
   const ts_base_path = resolve(options.outDir, "index.d.ts");
-  const writer = new Writer({ dryRun: options.dryRun });
+  const writer = new Writer();
   const document = buildComponentApiDocument(components);
   const typeExports = createTypeExports(collectIndexTypeExports(document, options));
   const indexDTs =
@@ -207,8 +205,6 @@ export default async function writeTsDefinitions(components: ComponentDocs, opti
   const written = (await Promise.all([...writePromises, indexWritePromise])).filter(Boolean).length;
   const total = writePromises.length + 1;
 
-  if (!options.dryRun) {
-    const count = written === 0 ? `unchanged ${total}` : `created ${written} of ${total}`;
-    info(`${count} TypeScript definitions in "${options.outDir}".`);
-  }
+  const count = written === 0 ? `unchanged ${total}` : `created ${written} of ${total}`;
+  info(`${count} TypeScript definitions in "${options.outDir}".`);
 }

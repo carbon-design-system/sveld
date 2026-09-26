@@ -1,9 +1,8 @@
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { ComponentProp, ComponentSlot, SerializedComponentEvent, TypeDef } from "../src/ComponentParser";
 import { setQuiet } from "../src/logger";
-import { normalizeSeparators } from "../src/path";
 import type { ComponentDocs } from "../src/plugin";
 import writeLlms, { renderLlmsDocuments } from "../src/writer/writer-llms";
 import { mockComponentDocApi } from "./test-brands";
@@ -352,30 +351,6 @@ describe("writeLlms", () => {
       await writeLlms(components, options);
       expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('unchanged "docs/llms.txt".'));
       expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('unchanged "docs/llms-full.txt".'));
-    } finally {
-      process.chdir(previousCwd);
-      rmSync(tempDir, { recursive: true, force: true });
-    }
-  });
-
-  test("dry-run reports the resolved paths and writes nothing to disk", async () => {
-    const tempDir = mkdtempSync(join(tmpdir(), "sveld-llms-dry-run-"));
-    const previousCwd = process.cwd();
-    process.chdir(tempDir);
-    const logSpy = jest.spyOn(console, "log").mockImplementation(() => {});
-
-    try {
-      await writeLlms(components, { dryRun: true });
-
-      const cwd = process.cwd();
-      expect(existsSync(join(tempDir, "llms.txt"))).toBe(false);
-      expect(existsSync(join(tempDir, "llms-full.txt"))).toBe(false);
-      expect(logSpy).toHaveBeenCalledWith(
-        expect.stringContaining(`would write "${normalizeSeparators(join(cwd, "llms.txt"))}"`),
-      );
-      expect(logSpy).toHaveBeenCalledWith(
-        expect.stringContaining(`would write "${normalizeSeparators(join(cwd, "llms-full.txt"))}"`),
-      );
     } finally {
       process.chdir(previousCwd);
       rmSync(tempDir, { recursive: true, force: true });

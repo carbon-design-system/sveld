@@ -36,8 +36,6 @@ export interface WriteLlmsOptions {
   summary?: string;
   /** @internal Entry-barrel exports when `documentExports` is on. Always computed from the parsed bundle and injected by the caller. */
   entryExports?: EntryExports;
-  /** @internal Report the resolved paths instead of writing. Always set by the caller from `sveld --dry-run`. */
-  dryRun?: boolean;
 }
 
 /** Terse 5-column table shared by every `ComponentProp[]`-shaped section (Props, Bindings, Module exports). */
@@ -221,7 +219,7 @@ export function renderLlmsDocuments(
  */
 export default async function writeLlms(components: ComponentDocs, options: WriteLlmsOptions) {
   const { llmsTxt, llmsFullTxt } = renderLlmsDocuments(components, options);
-  const writer = new Writer({ dryRun: options.dryRun });
+  const writer = new Writer();
 
   const llmsRelPath = normalizeSeparators(path.join(options.outDir ?? "", "llms.txt"));
   const llmsFullRelPath = normalizeSeparators(path.join(options.outDir ?? "", "llms-full.txt"));
@@ -231,8 +229,6 @@ export default async function writeLlms(components: ComponentDocs, options: Writ
     writer.write(path.resolve(llmsFullRelPath), llmsFullTxt),
   ]);
 
-  if (!options.dryRun) {
-    info(`${llmsWritten ? "created" : "unchanged"} "${llmsRelPath}".`);
-    info(`${llmsFullWritten ? "created" : "unchanged"} "${llmsFullRelPath}".`);
-  }
+  info(`${llmsWritten ? "created" : "unchanged"} "${llmsRelPath}".`);
+  info(`${llmsFullWritten ? "created" : "unchanged"} "${llmsFullRelPath}".`);
 }

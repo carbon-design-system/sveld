@@ -29,8 +29,6 @@ export interface WriteJsonOptions {
    * @default true
    */
   source?: boolean;
-  /** @internal Report resolved paths instead of writing. Always set by the caller from `sveld --dry-run`. */
-  dryRun?: boolean;
 }
 
 /** Narrows a `source`/`componentCommentSource` value to an actual `SourceRange`, as opposed to `EntryExport.source` (a module path string). */
@@ -113,9 +111,9 @@ async function writeJsonComponents(components: ComponentDocs, options: WriteJson
       const hasCollision = (moduleNameCounts.get(c.moduleName) ?? 0) > 1;
       const fileName = jsonFileName(c, hasCollision, warnedModuleNames);
       const outFile = path.resolve(path.join(options.outDir || "", fileName));
-      const writer = new Writer({ dryRun: options.dryRun });
+      const writer = new Writer();
       const wasWritten = await writer.write(outFile, formatJsonOutput(c));
-      if (!options.dryRun) info(`${wasWritten ? "created" : "unchanged"} "${outFile}".`);
+      info(`${wasWritten ? "created" : "unchanged"} "${outFile}".`);
     }),
   );
 }
@@ -164,10 +162,10 @@ export function renderJsonLines(
 async function writeJsonLocal(components: ComponentDocs, options: WriteJsonOptions) {
   const raw = renderJsonDocument(components, options);
   const output_path = path.resolve(options.outFile);
-  const writer = new Writer({ dryRun: options.dryRun });
+  const writer = new Writer();
   const wasWritten = await writer.write(output_path, raw);
 
-  if (!options.dryRun) info(`${wasWritten ? "created" : "unchanged"} "${options.outFile}".`);
+  info(`${wasWritten ? "created" : "unchanged"} "${options.outFile}".`);
 }
 
 /**
