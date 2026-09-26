@@ -1,5 +1,7 @@
 import { dirname } from "node:path";
+import type { ComponentDocApi } from "./bundle";
 import type { PendingConstDefaultCandidate } from "./ComponentParser";
+import { type CrossFilePass, dropUnknownTypeDiagnostic, findCandidateProp, setResolvedField } from "./cross-file-pass";
 import {
   findImportedExport,
   type InternalExport,
@@ -39,3 +41,32 @@ export function resolveConstDefaultCandidates(
     return { candidate, literal: match.primitiveLiteral, declaredType: match.declaredType };
   });
 }
+
+/**
+ * Swap the imported identifier for its literal in `value`/`defaultValue`,
+ * matching a same-file `const`. Type the prop from the const's declared
+ * type, else the literal, only when nothing more explicit won, and drop the
+ * parse-time `prop-unknown-type`.
+ */
+function applyConstDefaultResolutions(component: ComponentDocApi, resolutions: ConstDefaultResolution[]): void {
+  for (const { candidate, literal, declaredType } of resolutions) {
+    if (!literal) continue;
+    const prop = findCandidateProp(component, candidate);
+    if (!prop) continue;
+
+    setResolvedField(prop, "value", literal.raw);
+    setResolvedField(prop, "defaultValue", { raw: literal.raw, kind: "literal", value: literal.value });
+    if (prop.typeSource !== "unknown") continue;
+
+    setResolvedField(prop, "type", declaredType?.type ?? literal.type);
+    setResolvedField(prop, "typeSource", declaredType?.source ?? "default");
+    dropUnknownTypeDiagnostic(component, candidate);
+  }
+}
+
+/** Writes an imported `export const` literal in as a prop's default. */
+export const constDefaultsPass: CrossFilePass<PendingConstDefaultCandidate, ConstDefaultResolution> = {
+  collect: (pending) => pending.pendingConstDefaultCandidates ?? [],
+  resolve: resolveConstDefaultCandidates,
+  apply: applyConstDefaultResolutions,
+};

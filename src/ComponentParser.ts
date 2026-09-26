@@ -357,7 +357,7 @@ export interface LocalTypeDeclaration {
 
 /**
  * What a parse leaves for a pass that can read the files a component
- * imports from: `generateBundle` resolves these, and
+ * imports from: `generateBundle` resolves these (see `cross-file.ts`), and
  * `finalizeWithoutCrossFileResolution` settles them without file access.
  */
 export interface PendingCrossFileCandidates {
