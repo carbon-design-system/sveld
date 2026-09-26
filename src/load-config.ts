@@ -244,7 +244,6 @@ const KNOWN_NESTED_KEYS: Record<string, string[]> = {
     "outDir",
     "preamble",
     "format",
-    "exportTypes",
     "transform",
     "indexTypes",
     "inline",

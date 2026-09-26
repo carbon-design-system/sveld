@@ -13,7 +13,7 @@
  * own `node_modules/svelte`.
  *
  * The matrix is representative, not the cartesian product: every emit
- * option at a non-default value at least once, plus one risky combination.
+ * option at a non-default value at least once.
  * `inline` and `transform` aren't covered: `inline` needs a full bundle
  * (`generateBundle`) to resolve imports, and `transform` is consumer code.
  *
@@ -56,9 +56,6 @@ export interface OptionSet {
 export const OPTION_MATRIX: OptionSet[] = [
   { name: "class", options: { format: "class" } },
   { name: "component", options: { format: "component" } },
-  { name: "export-types-none", options: { exportTypes: false } },
-  { name: "export-types-partial", options: { exportTypes: { props: false, typedefs: false } } },
-  { name: "component-private", options: { format: "component", exportTypes: false } },
 ];
 
 export interface SetResult {

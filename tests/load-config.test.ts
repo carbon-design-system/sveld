@@ -287,11 +287,6 @@ describe("validateOptions", () => {
     expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('unknown option "typesOptions.printWidth"'));
   });
 
-  test("does not warn about typesOptions.exportTypes", () => {
-    validateOptions({ typesOptions: { exportTypes: false } });
-    expect(warnSpy).not.toHaveBeenCalled();
-  });
-
   test("does not warn about typesOptions.transform", () => {
     validateOptions({ typesOptions: { transform: (text: string) => text } });
     expect(warnSpy).not.toHaveBeenCalled();

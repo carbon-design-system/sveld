@@ -177,20 +177,6 @@ describe("parseCliOptions", () => {
     });
   });
 
-  test("--types-export=all sets typesOptions.exportTypes", () => {
-    expect(parseCliOptions(["--types-export=all"])).toEqual({
-      kind: "options",
-      options: { typesOptions: { exportTypes: "all" } },
-    });
-  });
-
-  test("--types-export=none sets typesOptions.exportTypes", () => {
-    expect(parseCliOptions(["--types-export=none"])).toEqual({
-      kind: "options",
-      options: { typesOptions: { exportTypes: "none" } },
-    });
-  });
-
   test("--types-inline=local sets typesOptions.inline", () => {
     expect(parseCliOptions(["--types-inline=local"])).toEqual({
       kind: "options",
@@ -299,13 +285,6 @@ describe("parseCliOptions", () => {
     });
   });
 
-  test("--types-export accepts its value as the next argument", () => {
-    expect(parseCliOptions(["--types-export", "none"])).toEqual({
-      kind: "options",
-      options: { typesOptions: { exportTypes: "none" } },
-    });
-  });
-
   test("--types-inline accepts its value as the next argument", () => {
     expect(parseCliOptions(["--types-inline", "all"])).toEqual({
       kind: "options",
@@ -340,13 +319,6 @@ describe("parseCliOptions", () => {
     expect(parseCliOptions(["--types-format", "--json"])).toEqual({
       kind: "usage-error",
       message: "sveld: --types-format requires a value (pass --types-format=<value> or --types-format <value>).",
-    });
-  });
-
-  test("--types-export followed by another flag falls back to a usage error naming the flag", () => {
-    expect(parseCliOptions(["--types-export", "--json"])).toEqual({
-      kind: "usage-error",
-      message: "sveld: --types-export requires a value (pass --types-export=<value> or --types-export <value>).",
     });
   });
 
@@ -908,18 +880,6 @@ describe("cli() --types-format merges with config file typesOptions", () => {
     expect(existsSync(outputPath)).toBe(true);
     expect(readFileSync(outputPath, "utf-8")).toContain("declare const Button: Component<");
   });
-
-  test("--types-export=none keeps the config file's typesOptions.outDir", async () => {
-    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types-export=none"];
-
-    await cli(process);
-
-    const outputPath = join(dir, "custom-types", "Button.svelte.d.ts");
-    expect(existsSync(outputPath)).toBe(true);
-    const output = readFileSync(outputPath, "utf-8");
-    expect(output).toContain("type ButtonProps");
-    expect(output).not.toContain("export type ButtonProps");
-  });
 });
 
 describe("cli() --types-* usage errors", () => {
@@ -946,18 +906,6 @@ describe("cli() --types-* usage errors", () => {
     process.exitCode = 0;
     rmSync(dir, { recursive: true, force: true });
     jest.restoreAllMocks();
-  });
-
-  test("--types-export=oops errors and generates nothing", async () => {
-    process.argv = ["bun", "cli.js", "--entry=src/index.js", "--types-export=oops"];
-
-    await cli(process);
-
-    expect(process.exitCode).toBe(1);
-    expect(errorSpy).toHaveBeenCalledWith(
-      expect.stringContaining('--types-export must be "all" or "none"; got "oops"'),
-    );
-    expect(existsSync(join(dir, "types"))).toBe(false);
   });
 
   test("--types-format=oops errors and generates nothing", async () => {

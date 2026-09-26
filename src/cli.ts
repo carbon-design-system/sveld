@@ -51,9 +51,8 @@ Generate TypeScript definitions and component documentation for a Svelte
 library. With no flags, only TypeScript definitions are generated for the
 entry resolved from package.json#svelte.
 
---entry, --cache, --check, --types-format, --types-export, and
---types-inline accept their value as --flag=value or as a separate
---flag value argument.
+--entry, --cache, --check, --types-format, and --types-inline accept
+their value as --flag=value or as a separate --flag value argument.
 
 Options:
   --entry=<path>        Entry point to uncompiled Svelte source (default: package.json "svelte" field)
@@ -73,7 +72,6 @@ Options:
   --report-diagnostics  Print unresolved-type diagnostics to stderr
   --strict[=errors|ci|local]  Exit with code 4 when diagnostics exist (implies --report-diagnostics); --strict=errors only fails on error-severity diagnostics; --strict=ci expands to {strict:true, reportDiagnostics:true, check:true, checkExamples:true}, --strict=local to {reportDiagnostics:true}
   --types-format=<format>  ".d.ts" output format: "class" (default) or "component" (Svelte 5 Component<...>)
-  --types-export=<all|none>  Sets typesOptions.exportTypes; "all" exports every generated type (default), "none" keeps them all local
   --types-inline=<local|all>  Sets typesOptions.inline; copies imported types into the .d.ts instead of importing them (default: false; pass --types-inline=false to reset)
   --types-index-types    Sets typesOptions.indexTypes; also re-exports generated types from index.d.ts (pass --types-index-types=false to disable)
   --check[=<path>]      Diff the parsed API against a committed snapshot; exit 3 on a breaking change (default path: COMPONENT_API.json)
@@ -127,7 +125,6 @@ const KNOWN_FLAGS = [
   "check",
   "check-level",
   "types-format",
-  "types-export",
   "types-inline",
   "types-index-types",
   "format",
@@ -155,17 +152,10 @@ const BOOLEAN_FLAGS = new Set([
 ]);
 
 /** Value-taking flags that also accept their value as the next argument. */
-const SPACE_SEPARATED_VALUE_FLAGS = new Set([
-  "entry",
-  "cache",
-  "check",
-  "types-format",
-  "types-export",
-  "types-inline",
-]);
+const SPACE_SEPARATED_VALUE_FLAGS = new Set(["entry", "cache", "check", "types-format", "types-inline"]);
 
 /** Of those, the flags that error (rather than falling back to a bare default) when no value is given. */
-const REQUIRES_VALUE_FLAGS = new Set(["entry", "types-format", "types-export", "types-inline"]);
+const REQUIRES_VALUE_FLAGS = new Set(["entry", "types-format", "types-inline"]);
 
 /** Closest known flag (canonical spelling) to an unrecognized raw flag name, or undefined if none is close enough. */
 function suggestFlag(rawFlag: string): string | undefined {
@@ -270,14 +260,6 @@ function parseCliFlagValue(flag: string, value: string | boolean, arg: string, r
       return typeof value === "string"
         ? { kind: "option", option: { typesOptions: { format: value as "class" | "component" } } }
         : { kind: "option", option: {} };
-    case "types-export":
-      // "all"/"none" are the only accepted values; anything else is validated
-      // (and rejected) in `cli()` once merged with the config file, same as
-      // `--format`. The raw string rides through `exportTypes` (typed
-      // `boolean | {...}`) until that validation converts it to a boolean.
-      return typeof value === "string"
-        ? { kind: "option", option: { typesOptions: { exportTypes: value as unknown as boolean } } }
-        : { kind: "option", option: {} };
     case "types-inline":
       // `--types-inline=false` resets to the default (imports stay imports);
       // `"local"`/`"all"` are validated in `cli()`.
@@ -345,8 +327,7 @@ export function parseCliOptions(argv: string[]): CliParseResult {
 
 /**
  * A `--types-*` flag whose value must be one of a fixed set of strings, stored on `typesOptions`
- * verbatim (no mapping, unlike `--types-export`'s all/none -> boolean conversion below). Validated
- * in `cli()` once merged with the config file, same as `--format`.
+ * verbatim. Validated in `cli()` once merged with the config file, same as `--format`.
  */
 interface TypesEnumFlag {
   flagName: string;
@@ -501,20 +482,6 @@ export async function cli(process: NodeJS.Process) {
     console.error(`sveld: --check-examples must be "syntax" when given a value; got "${options.checkExamples}".`);
     process.exitCode = EXIT_CODES.USAGE_ERROR;
     return;
-  }
-
-  // `--types-export` rides through `typesOptions.exportTypes` as a raw
-  // string; convert it to the boolean form once validated.
-  const rawExportTypes = options.typesOptions?.exportTypes as unknown;
-
-  if (typeof rawExportTypes === "string") {
-    if (rawExportTypes !== "all" && rawExportTypes !== "none") {
-      console.error(`sveld: --types-export must be "all" or "none"; got "${rawExportTypes}".`);
-      process.exitCode = EXIT_CODES.USAGE_ERROR;
-      return;
-    }
-
-    options.typesOptions = { ...options.typesOptions, exportTypes: rawExportTypes === "all" };
   }
 
   for (const { flagName, key, values } of TYPES_ENUM_FLAGS) {
