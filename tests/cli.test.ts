@@ -476,7 +476,32 @@ describe("cli() entry resolution failures", () => {
     await cli(process);
 
     expect(process.exitCode).toBe(0);
-    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('falling back to "src/index.js"'));
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('using "src/index.js"'));
+  });
+
+  test("a mistyped --entry exits 1 instead of falling back to src/index.js", async () => {
+    mkdirSync(join(dir, "src"), { recursive: true });
+    writeFileSync(join(dir, "src", "index.js"), "export {};\n");
+    process.argv = ["bun", "cli.js", "--entry=src/indx.js"];
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(1);
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("Invalid entry point"));
+    expect(errorSpy).not.toHaveBeenCalledWith(expect.stringContaining('using "src/index.js"'));
+  });
+
+  test("a package.json#svelte path that doesn't exist exits 1 and names the field", async () => {
+    mkdirSync(join(dir, "src"), { recursive: true });
+    writeFileSync(join(dir, "src", "index.js"), "export {};\n");
+    writeFileSync(join(dir, "package.json"), JSON.stringify({ svelte: "./src/missing.js" }));
+
+    await cli(process);
+
+    expect(process.exitCode).toBe(1);
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('The "svelte" field in package.json points to "./src/missing.js"'),
+    );
   });
 });
 
@@ -889,7 +914,7 @@ describe("cli() --quiet", () => {
 
     await cli(process);
 
-    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('falling back to "src/index.js"'));
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('using "src/index.js"'));
   });
 });
 
