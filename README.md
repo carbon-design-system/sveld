@@ -121,7 +121,6 @@ export default class Button extends SvelteComponentTyped<
 - [Approach](#approach)
 - [Features](#features)
   - [`.d.ts` output format (`typesOptions.format`)](#dts-output-format-typesoptionsformat)
-  - [Opt-in semantic resolution (`resolveTypes`)](#opt-in-semantic-resolution-resolvetypes)
   - [Persistent parse cache (`cache`)](#persistent-parse-cache-cache)
   - [Compile-checked `@example` blocks (`checkExamples`)](#compile-checked-example-blocks-checkexamples)
   - [Type inference diagnostics](#type-inference-diagnostics)
@@ -290,36 +289,6 @@ export declare class Store<T> {
 
 In JSON the class is a `moduleExports` entry with `kind: "class"`, `type: "typeof Store"`, and its members under `members`; the Markdown and `llms-full.txt` output list them in a members table after the Module exports table.
 
-### Opt-in semantic resolution (`resolveTypes`)
-
-Imported whole-object `$props()` types stay opaque in JSON by default (`"props": []`). Turn on `resolveTypes` when a docs site or prop table needs the individual fields.
-
-```ts
-await sveld({ json: true, resolveTypes: true });
-```
-
-```svelte
-<script lang="ts">
-  import type { Props } from "./types";
-
-  let props: Props = $props();
-</script>
-```
-
-Without `resolveTypes`, JSON lists no props. With it, each field shows up with `"typeSource": "typescript"`:
-
-```jsonc
-{
-  "props": [
-    { "name": "disabled", "type": "boolean", "isRequired": false, "typeSource": "typescript" },
-    { "name": "href", "type": "string", "isRequired": true, "typeSource": "typescript" },
-    { "name": "variant", "type": "\"primary\" | \"secondary\"", "isRequired": true, "typeSource": "typescript" }
-  ]
-}
-```
-
-**Performance.** Off by default. This is one of the two paths that load TypeScript. It needs `typescript` 7+ and a `tsconfig.json` (see [Requirements](#requirements)); if either is missing, `resolveTypes` fails the run instead of silently producing empty props. It also runs slower than the AST-only pipeline and gets slower as your types grow. Use it only when you need expanded JSON. `.d.ts` output is unchanged.
-
 ### Persistent parse cache (`cache`)
 
 Parsed output is written to disk and reused when the source file has not changed, on by default. That applies across runs, including CI on a fresh checkout. Generated `.d.ts` text is cached the same way, but is only reused when the component source _and_ every `typesOptions` value that affects output (for example [`format`](#dts-output-format-typesoptionsformat)) are unchanged; changing any of them regenerates that component's `.d.ts` without invalidating its cached parse.
@@ -375,7 +344,7 @@ A `svelte`/`html`-fenced example is syntax-checked, not type-checked: sveld pars
 
 The TS/JS check is narrow on purpose too. It catches renamed or removed symbols and wrong argument counts. Neither path is full type checking, and neither pulls in types sveld cannot see.
 
-The TS/JS path needs `typescript` 7+ and a `tsconfig.json`, same as `resolveTypes` (see [Requirements](#requirements)); missing either fails the run rather than silently skipping every example. The markup path needs neither: pass `checkExamples: "syntax"` to run only it, so a project with only `svelte`/`html` examples (or no `tsconfig.json`) never loads TypeScript. Use `--strict` (or the `strict` option) to fail CI when an example breaks.
+The TS/JS path needs `typescript` 7+ and a `tsconfig.json` (see [Requirements](#requirements)); missing either fails the run rather than silently skipping every example. The markup path needs neither: pass `checkExamples: "syntax"` to run only it, so a project with only `svelte`/`html` examples (or no `tsconfig.json`) never loads TypeScript. Use `--strict` (or the `strict` option) to fail CI when an example breaks.
 
 ### Type inference diagnostics
 
@@ -535,7 +504,7 @@ A bare `@sveld-ignore` (no code) suppresses every diagnostic for that symbol.
 - `sveld` is ESM-only. `require("sveld")` does not work — use `import` or dynamic `import()`.
 - The [persistent parse cache](#persistent-parse-cache-cache) hashes source with `node:crypto`'s one-shot `hash()`, which needs Node 22 (or Bun).
 - `sveld` bundles its own template parser to parse `.svelte` files, kept in parity with `svelte/compiler` (see [Approach](#approach)). Parsing does not depend on the Svelte version installed in your project, so Svelte 3 and Svelte 4 codebases parse the same way Svelte 5 codebases do — there is no compiler version to match up.
-- [`resolveTypes`](#opt-in-semantic-resolution-resolvetypes) and [`checkExamples`](#compile-checked-example-blocks-checkexamples) are optional and need `typescript` 7 or later (which provides `typescript/unstable/async`) plus a `tsconfig.json`. Everything else, including `.d.ts` generation, is AST-only and never loads TypeScript. If either is enabled and TypeScript can't be started (missing, too old, or no `tsconfig.json`), the run fails loudly: `sveld()` throws and the CLI exits `2` naming the requirement, rather than silently skipping the check.
+- [`checkExamples`](#compile-checked-example-blocks-checkexamples) is optional and needs `typescript` 7 or later (which provides `typescript/unstable/async`) plus a `tsconfig.json` to check plain TS/JS examples. Everything else, including `.d.ts` generation, is AST-only and never loads TypeScript. If it's enabled and TypeScript can't be started (missing, too old, or no `tsconfig.json`), the run fails loudly: `sveld()` throws and the CLI exits `2` naming the requirement, rather than silently skipping the check.
 
 ## Usage
 
@@ -621,7 +590,7 @@ npx sveld --json --markdown
 
 If no entry point is configured (no `package.json#svelte` field and no `--entry`), the CLI exits `1` and prints the reason to `stderr`, unless `src/index.js` exists relative to your working directory: then sveld uses it and prints a one-line note asking you to set `package.json#svelte` (or `--entry`). An `--entry` or `package.json#svelte` path that doesn't exist always exits `1`.
 
-Flags are kebab-case: `--entry`, `--glob`, `--types`, `--json`, `--markdown`, `--custom-elements`, `--llms`, `--fail-fast`, `--dry-run`, `--cache`, `--resolve-types`, `--check-examples`, `--report-diagnostics`, `--strict`, `--check`, `--check-level`, `--types-format`, `--types-index-types`, `--quiet`, `--stdout`, `--format`. The camelCase spellings `--resolveTypes` and `--checkExamples` still work as deprecated aliases for compatibility with existing scripts. `--entry`, `--cache`, `--check`, and `--types-format` take their value either as `--flag=value` or as a separate `--flag value` argument (`sveld --entry src/index.js` and `sveld --entry=src/index.js` are equivalent); if the next argument starts with `--` it's not consumed as a value, so `--cache` and `--check` fall back to their default location and the rest of that list report a usage error naming the flag. Boolean flags (`--json`, `--glob`, `--strict`, `--types-index-types`, and the like) never consume a following argument. An unrecognized flag (e.g. `--markdwon`) prints `sveld: unknown flag "--markdwon".` to `stderr`, exits `1`, and skips generation; when a close match exists it appends a suggestion, e.g. `Did you mean "--markdown"?`. sveld takes no positional arguments, so any non-flag argument errors the same way.
+Flags are kebab-case: `--entry`, `--glob`, `--types`, `--json`, `--markdown`, `--custom-elements`, `--llms`, `--fail-fast`, `--dry-run`, `--cache`, `--check-examples`, `--report-diagnostics`, `--strict`, `--check`, `--check-level`, `--types-format`, `--types-index-types`, `--quiet`, `--stdout`, `--format`. The camelCase spelling `--checkExamples` still works as a deprecated alias for compatibility with existing scripts. `--entry`, `--cache`, `--check`, and `--types-format` take their value either as `--flag=value` or as a separate `--flag value` argument (`sveld --entry src/index.js` and `sveld --entry=src/index.js` are equivalent); if the next argument starts with `--` it's not consumed as a value, so `--cache` and `--check` fall back to their default location and the rest of that list report a usage error naming the flag. Boolean flags (`--json`, `--glob`, `--strict`, `--types-index-types`, and the like) never consume a following argument. An unrecognized flag (e.g. `--markdwon`) prints `sveld: unknown flag "--markdwon".` to `stderr`, exits `1`, and skips generation; when a close match exists it appends a suggestion, e.g. `Did you mean "--markdown"?`. sveld takes no positional arguments, so any non-flag argument errors the same way.
 
 Writer progress lines (`created "..."` / `unchanged "..."`) print to `stderr`, keeping `stdout` reserved for machine-readable data. Pass `--quiet` (or `quiet: true` in `sveld.config.*`) to suppress them; it does not suppress error messages, the diagnostics summary (`--report-diagnostics` / `--strict`), or the `--check` report.
 
@@ -983,7 +952,6 @@ The `svelte` condition lets bundlers that understand it (Vite, Rollup, webpack v
 - **`config`** (boolean | string, optional, default: `false`): Load `sveld.config.{js,mjs,ts}` and merge it with these options; these options win when a key is set in both. `true` resolves the config from the Vite project root (or `process.cwd()` outside Vite); a string is an explicit path to the config file. The plugin warns about keys only the CLI and `sveld()` act on (`reportDiagnostics`, `strict`, `check`, `checkLevel`, `stdout`, `format`, `dryRun`). See [Config File](#config-file).
 - **`watch`** (boolean, optional, default: `false`): Regenerate output incrementally when relevant source changes during `vite dev` / `vite build --watch`. A reparse is triggered by: editing a component; editing the entry barrel itself, which adds/removes the corresponding component; or editing a non-`.svelte` file a component depends on via [`@extendProps`](#extendprops) / `@extends` or a typedef `import("./x")` reference. Only the affected components are re-parsed, rather than rebuilding every component. Overlapping regenerations are queued, never run concurrently. Without this option, the plugin only runs during `vite build`.
 - **`failFast`** (boolean, optional, default: `false`): Abort the entire run when a single component fails to parse. By default, parse failures are reported to `stderr` and the remaining components still emit their output; the CLI then exits `2`. Also available as the `--fail-fast` CLI flag.
-- **`resolveTypes`** (boolean, optional, default: `false`): Load the TypeScript program to expand opaque imported whole-object `$props()` types into JSON. Also available as `--resolve-types` (`--resolveTypes` remains as a deprecated alias). See [Opt-in semantic resolution](#opt-in-semantic-resolution-resolvetypes).
 - **`cache`** (boolean | string, optional, default: `true`): Write parsed component output to disk and skip re-parsing unchanged files on later runs. On by default, writing to `node_modules/.cache/sveld/parse-cache.json`; a string sets a custom path; pass `false` to disable. Also available as `--cache` / `--cache=<path>` / `--cache=false`. See [Persistent parse cache](#persistent-parse-cache-cache).
 - **`checkExamples`** (`boolean | "syntax"`, optional, default: `false`): `true` runs plain TS/JS `@example` blocks through the TypeScript program (`example-compile-error` diagnostics) and `svelte`/`html` blocks through sveld's own template parser (`example-syntax-error` diagnostics). `"syntax"` runs only the markup path, so `typescript` is never loaded. Also available as `--check-examples` / `--check-examples=syntax` (`--checkExamples` remains as a deprecated alias). See [Compile-checked `@example` blocks](#compile-checked-example-blocks-checkexamples).
 - **`reportDiagnostics`** (boolean, optional, default: `false`): Print unresolved-type diagnostics to stderr (CLI) or `console.warn` (programmatic API). Also available as `--report-diagnostics`. See [Type inference diagnostics](#type-inference-diagnostics).

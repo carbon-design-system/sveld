@@ -67,7 +67,6 @@ Options:
   --quiet               Suppress progress logs (errors, the diagnostics summary, and the --check report are unaffected)
   --stdout[=json|ndjson] Print the document from exactly one of --json, --markdown, or --custom-elements to stdout and write nothing to disk (rejects --types and --check); --stdout=ndjson prints one JSON object per component per line and requires --json
   --cache[=<path>]      Persist parsed output and skip re-parsing unchanged files (on by default, default path: node_modules/.cache/sveld/parse-cache.json; pass --cache=false to disable)
-  --resolve-types       Expand opaque imported $props() types into JSON (alias: --resolveTypes, deprecated)
   --check-examples[=syntax]  Check @example blocks: TS/JS against the TypeScript program, svelte/html markup against sveld's own parser (alias: --checkExamples, deprecated); --check-examples=syntax runs only the markup path and never loads TypeScript
   --report-diagnostics  Print unresolved-type diagnostics to stderr
   --strict[=errors|ci|local]  Exit with code 4 when diagnostics exist (implies --report-diagnostics); --strict=errors only fails on error-severity diagnostics; --strict=ci expands to {strict:true, reportDiagnostics:true, check:true, checkExamples:true}, --strict=local to {reportDiagnostics:true}
@@ -97,7 +96,6 @@ type CliFlagResult =
 
 /** Maps deprecated camelCase flag spellings to their canonical kebab-case form. */
 const FLAG_ALIASES: Record<string, string> = {
-  resolveTypes: "resolve-types",
   checkExamples: "check-examples",
 };
 
@@ -115,7 +113,6 @@ const KNOWN_FLAGS = [
   "llms",
   "strict",
   "report-diagnostics",
-  "resolve-types",
   "check-examples",
   "fail-fast",
   "dry-run",
@@ -142,7 +139,6 @@ const BOOLEAN_FLAGS = new Set([
   "llms",
   "strict",
   "report-diagnostics",
-  "resolve-types",
   "check-examples",
   "fail-fast",
   "dry-run",
@@ -229,8 +225,6 @@ function parseCliFlagValue(flag: string, value: string | boolean, arg: string, r
       return { kind: "option", option: { strict: value as "errors" | "ci" | "local" } };
     case "report-diagnostics":
       return { kind: "option", option: { reportDiagnostics: value === true || value === "true" } };
-    case "resolve-types":
-      return { kind: "option", option: { resolveTypes: value === true || value === "true" } };
     case "check-examples":
       // Bare `--check-examples` runs both the TypeScript and syntax paths;
       // `--check-examples=syntax` runs only the markup path, so `typescript`

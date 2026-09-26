@@ -23,8 +23,7 @@ import type { WriteTsDefinitionsOptions } from "./writer/writer-ts-definitions";
 export type { ComponentDocApi, ComponentDocs, GenerateBundleResult } from "./bundle";
 export { generateBundle, toGenerateBundleOptions } from "./bundle";
 
-export interface PluginSveldOptions
-  extends Pick<GenerateBundleOptions, "resolveTypes" | "cache" | "checkExamples" | "diagnostics"> {
+export interface PluginSveldOptions extends Pick<GenerateBundleOptions, "cache" | "checkExamples" | "diagnostics"> {
   /**
    * Specify the entry point to uncompiled Svelte source.
    * If not provided, sveld will use the "svelte" field from package.json.
