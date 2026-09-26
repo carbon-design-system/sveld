@@ -1,5 +1,5 @@
 import type { ComponentParseError } from "./bundle";
-import { type CheckResult, resolveCheckSnapshotFile, runCheck } from "./check";
+import { bumpMeetsLevel, type CheckLevel, type CheckResult, resolveCheckSnapshotFile, runCheck } from "./check";
 import {
   failingDiagnostics,
   filterSpeculativeDiagnostics,
@@ -26,12 +26,33 @@ export interface SveldResult {
   errors: ComponentParseError[];
   /**
    * Suggested process exit code for this run, using the same mapping as the
-   * CLI (the lowest applicable code wins): `0` on success, `2` when a
-   * component failed to parse, `3` on a breaking API change, `4` when
-   * `strict` diagnostics exist. `sveld()` never mutates `process.exitCode` itself; assign this
+   * CLI (see {@link resolveExitCode}). `sveld()` never mutates `process.exitCode` itself; assign this
    * value yourself if you want the process to exit non-zero.
    */
-  exitCode: 0 | 2 | 3 | 4;
+  exitCode: ExitCode;
+}
+
+type ExitCode = 0 | 1 | 2 | 3 | 4;
+
+/**
+ * The exit-code contract shared by the CLI and `sveld()`. The lowest
+ * applicable code wins: `1` for a snapshot whose `schemaVersion` doesn't
+ * match, `2` when a component failed to parse, `3` when `check` finds a
+ * change at or above `checkLevel`, `4` when `strict` diagnostics exist.
+ */
+export function resolveExitCode(run: {
+  errors: readonly unknown[];
+  check?: CheckResult;
+  checkLevel?: CheckLevel;
+  diagnostics: SveldDiagnostic[];
+  /** After {@link expandStrictProfile}, so never a `"ci"`/`"local"` profile name. */
+  strict?: boolean | "errors";
+}): ExitCode {
+  if (run.check?.changes.some((change) => change.kind === "schema")) return 1;
+  if (run.errors.length > 0) return 2;
+  if (run.check && bumpMeetsLevel(run.check.bump, run.checkLevel ?? "major")) return 3;
+  if (failingDiagnostics(run.diagnostics, run.strict).length > 0) return 4;
+  return 0;
 }
 
 /**
@@ -90,16 +111,13 @@ export async function sveld(opts?: SveldOptions): Promise<SveldResult> {
     }
   }
 
-  // Lowest applicable code wins (2 beats 3 beats 4), matching the CLI's exit-code contract.
-  let exitCode: 0 | 2 | 3 | 4 = 0;
-
-  if (result.errors.length > 0) {
-    exitCode = 2;
-  } else if (checkResult?.bump === "major") {
-    exitCode = 3;
-  } else if (failingDiagnostics(diagnostics, merged.strict).length > 0) {
-    exitCode = 4;
-  }
+  const exitCode = resolveExitCode({
+    errors: result.errors,
+    check: checkResult,
+    checkLevel: merged.checkLevel,
+    diagnostics,
+    strict: merged.strict,
+  });
 
   return { diagnostics, check: checkResult, errors: result.errors, exitCode };
 }
