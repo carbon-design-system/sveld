@@ -15,10 +15,10 @@ import {
   processComponent,
   readFileMap,
   reportParseErrors,
-  resolveCrossFileCandidates,
   syncCrossFileResults,
   validateModuleReExportNames,
 } from "./bundle";
+import { resolveCrossFileCandidates } from "./cross-file";
 import { buildReverseDeps, expandAffected } from "./dependency-graph";
 import { dedupeDiagnostics, type SveldDiagnostic } from "./diagnostics";
 import { resetDirectoryListings } from "./fs-listing";

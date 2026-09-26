@@ -1,6 +1,8 @@
 import { existsSync } from "node:fs";
 import { dirname } from "node:path";
+import type { ComponentDocApi } from "./bundle";
 import type { PendingCallDefaultCandidate } from "./ComponentParser";
+import { type CrossFilePass, dropUnknownTypeDiagnostic, findCandidateProp, setResolvedField } from "./cross-file-pass";
 import { findModuleExport, type ResolveContext, resolveModuleFile } from "./parse-entry-exports";
 
 export type CallDefaultFailureReason = "module-not-found" | "export-not-found" | "return-type-unresolved";
@@ -72,3 +74,38 @@ export function describeCallDefaultFailure(
       return `Prop "${candidate.propName}" default calls "${candidate.calleeName}()" imported from "${candidate.importSource}", but its return type could not be resolved; falling back to "any".`;
   }
 }
+
+/**
+ * Apply each resolution onto props/moduleExports. Drop or rewrite the
+ * parse-time `prop-unknown-type` diagnostic. Skip when `typeSource !==
+ * "unknown"` so an explicit `@type` keeps winning.
+ */
+function applyCallDefaultResolutions(component: ComponentDocApi, resolutions: CallDefaultResolution[]): void {
+  for (const { candidate, type, failureReason } of resolutions) {
+    const prop = findCandidateProp(component, candidate);
+    if (prop?.typeSource !== "unknown") continue;
+
+    if (type) {
+      setResolvedField(prop, "type", type);
+      setResolvedField(prop, "typeSource", "typescript");
+      dropUnknownTypeDiagnostic(component, candidate);
+      continue;
+    }
+
+    if (candidate.location === "props" && failureReason) {
+      const existing = component.diagnostics?.find(
+        (diagnostic) => diagnostic.kind === "prop-unknown-type" && diagnostic.name === candidate.propName,
+      );
+      if (existing) existing.message = describeCallDefaultFailure(candidate, failureReason);
+    }
+  }
+}
+
+/** Types a prop from the return type of the imported function its default calls. */
+export const callDefaultsPass: CrossFilePass<PendingCallDefaultCandidate, CallDefaultResolution> = {
+  // A default calling a local function was settled at parse time.
+  collect: (pending) =>
+    pending.pendingCallDefaultCandidates?.filter((candidate) => candidate.importSource !== undefined) ?? [],
+  resolve: resolveCallDefaultCandidates,
+  apply: applyCallDefaultResolutions,
+};

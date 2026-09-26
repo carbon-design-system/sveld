@@ -1,6 +1,14 @@
 import { dirname } from "node:path";
 import { isIdentifier, isLiteral, resolveStaticStringLiteral } from "./ast-guards";
-import type { PendingDispatchEscapeCandidate } from "./ComponentParser";
+import type { ComponentDocApi } from "./bundle";
+import type {
+  DispatchedEvent,
+  PendingCrossFileCandidates,
+  PendingDispatchEscapeCandidate,
+  SerializedComponentEvent,
+} from "./ComponentParser";
+import type { CrossFilePass } from "./cross-file-pass";
+import { createDiagnostic } from "./diagnostics";
 import {
   type AstNode,
   asNode,
@@ -8,6 +16,7 @@ import {
   type ResolveContext,
   resolveModuleFile,
 } from "./parse-entry-exports";
+import { compareSerializedEvents } from "./parser/event-order";
 import type { DetailTypeSource } from "./parser/events";
 import { type WalkableNode, walkNodes } from "./parser/walk";
 import { getParserStack } from "./parser-stack";
@@ -217,3 +226,116 @@ export function describeDispatchEscapeFailure(
       return `${helper} passes it on`;
   }
 }
+
+/**
+ * Add the events each helper dispatches, unless the component already
+ * dispatches one by that name (its `@event` tag wins). A helper event
+ * replaces a forwarded event of the same name. A helper sveld couldn't read
+ * gets a `dispatch-escapes` diagnostic. The held-back `event-no-source`
+ * diagnostics come back only when every helper was read and none of them
+ * dispatches the event.
+ */
+function applyDispatchEscapeResolutions(
+  component: ComponentDocApi,
+  resolutions: DispatchEscapeResolution[],
+  {
+    deferredEventNoSourceDiagnostics: deferredEventNoSource = [],
+    untypedJsDocEventNames: untypedEventNames = [],
+  }: PendingCrossFileCandidates,
+): void {
+  const helperEvents = new Map<string, DispatchedEvent>();
+  const diagnostics = [...(component.diagnostics ?? [])];
+  let everyHelperRead = true;
+
+  for (const { candidate, events, failureReason } of resolutions) {
+    if (failureReason) {
+      everyHelperRead = false;
+      diagnostics.push(
+        createDiagnostic({
+          component: component.filePath,
+          kind: "dispatch-escapes",
+          name: candidate.dispatcherName,
+          message: `\`${candidate.dispatcherName}\` is passed to \`${candidate.calleeText}\`, but sveld couldn't read the events it dispatches: ${describeDispatchEscapeFailure(candidate, failureReason)}. Document them with @event tags.`,
+          ...(candidate.source ? { source: candidate.source } : {}),
+          ...(candidate.ignored ? { ignored: true } : {}),
+        }),
+      );
+      continue;
+    }
+    for (const event of events ?? []) {
+      if (helperEvents.has(event.name)) continue;
+      helperEvents.set(event.name, {
+        type: "dispatched",
+        name: event.name,
+        detail: event.detail,
+        ...(candidate.source ? { source: candidate.source } : {}),
+      });
+    }
+  }
+
+  if (everyHelperRead) {
+    for (const diagnostic of deferredEventNoSource) {
+      if (!helperEvents.has(diagnostic.name)) diagnostics.push(diagnostic);
+    }
+  }
+  component.diagnostics = diagnostics;
+
+  if (helperEvents.size === 0) return;
+
+  // As with a same-file dispatch (`addDispatchedEvent`), the forwarded
+  // entry's `@event` metadata, detail included, carries over.
+  const forwardedByName = new Map<string, SerializedComponentEvent>();
+  const dispatchedNames = new Set<string>();
+  for (const event of component.events) {
+    if (event.type === "dispatched") dispatchedNames.add(event.name);
+    else if (!forwardedByName.has(event.name)) forwardedByName.set(event.name, event);
+  }
+
+  // An untyped `@event`'s `null` detail is only a fallback, as for a same-file dispatch.
+  const untypedNames = new Set(untypedEventNames);
+  const detailByUntypedName = new Map<string, string>();
+  const added: DispatchedEvent[] = [];
+  for (const helperEvent of helperEvents.values()) {
+    if (dispatchedNames.has(helperEvent.name)) {
+      if (untypedNames.has(helperEvent.name) && helperEvent.detail !== undefined) {
+        detailByUntypedName.set(helperEvent.name, helperEvent.detail);
+      }
+      continue;
+    }
+    const forwarded = forwardedByName.get(helperEvent.name);
+    if (!forwarded) {
+      added.push(helperEvent);
+      continue;
+    }
+    const source = helperEvent.source ?? forwarded.source;
+    added.push({
+      type: "dispatched",
+      name: helperEvent.name,
+      detail: forwarded.detail ?? helperEvent.detail,
+      ...(forwarded.description ? { description: forwarded.description } : {}),
+      ...(forwarded.deprecated === undefined ? {} : { deprecated: forwarded.deprecated }),
+      ...(forwarded.tags ? { tags: forwarded.tags } : {}),
+      ...(forwarded.internal ? { internal: true as const } : {}),
+      ...(source ? { source } : {}),
+    });
+  }
+  if (added.length === 0 && detailByUntypedName.size === 0) return;
+
+  const replacedNames = new Set(added.map((event) => event.name));
+  component.events = [
+    ...component.events
+      .filter((event) => event.type === "dispatched" || !replacedNames.has(event.name))
+      .map((event) => {
+        const detail = event.type === "dispatched" ? detailByUntypedName.get(event.name) : undefined;
+        return detail === undefined ? event : { ...event, detail };
+      }),
+    ...added,
+  ].sort(compareSerializedEvents);
+}
+
+/** Adds the events a component's dispatcher is passed to an imported helper to dispatch. */
+export const dispatchEscapesPass: CrossFilePass<PendingDispatchEscapeCandidate, DispatchEscapeResolution> = {
+  collect: (pending) => pending.pendingDispatchEscapeCandidates ?? [],
+  resolve: resolveDispatchEscapeCandidates,
+  apply: applyDispatchEscapeResolutions,
+};
