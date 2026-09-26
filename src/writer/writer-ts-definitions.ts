@@ -284,7 +284,7 @@ export default async function writeTsDefinitions(components: ComponentDocs, opti
       component,
       filePath: relativeFilePath,
     });
-    await writer.write(ts_filepath, transformedText);
+    return writer.write(ts_filepath, transformedText);
   });
 
   const indexWritePromise = (async () => {
@@ -292,10 +292,14 @@ export default async function writeTsDefinitions(components: ComponentDocs, opti
       kind: "index",
       filePath: "index.d.ts",
     });
-    await writer.write(ts_base_path, `${transformedIndexDts}\n`);
+    return writer.write(ts_base_path, `${transformedIndexDts}\n`);
   })();
 
-  await Promise.all([...writePromises, indexWritePromise]);
+  const written = (await Promise.all([...writePromises, indexWritePromise])).filter(Boolean).length;
+  const total = writePromises.length + 1;
 
-  if (!options.dryRun) info("created TypeScript definitions.");
+  if (!options.dryRun) {
+    const count = written === 0 ? `unchanged ${total}` : `created ${written} of ${total}`;
+    info(`${count} TypeScript definitions in "${options.outDir}".`);
+  }
 }
