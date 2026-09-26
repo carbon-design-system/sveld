@@ -1,3 +1,4 @@
+import { dirname } from "node:path";
 import type { ComponentParseError } from "./bundle";
 import {
   bumpMeetsLevel,
@@ -18,6 +19,8 @@ import { getSvelteEntry } from "./get-svelte-entry";
 import { expandStrictProfile, loadConfig, mergeConfig, type SveldRuntimeOptions, validateOptions } from "./load-config";
 import { setQuiet } from "./logger";
 import { generateBundle, toGenerateBundleOptions, writeOutput } from "./plugin";
+import type { ComponentApiDocument } from "./writer/document-model";
+import { buildJsonDocument } from "./writer/writer-json";
 
 type SveldOptions = SveldRuntimeOptions;
 
@@ -31,6 +34,12 @@ export interface SveldResult {
   check?: CheckResult;
   /** Parse errors for components that failed to parse (empty unless `failFast` is disabled and a component errors). */
   errors: ComponentParseError[];
+  /**
+   * The component API document for the exported components, exactly as the
+   * `json` writer writes `COMPONENT_API.json`. Populated whether or not
+   * `json` is enabled, so custom output can be rendered from it directly.
+   */
+  document: ComponentApiDocument;
   /**
    * Suggested process exit code for this run, using the same mapping as the
    * CLI (see {@link resolveExitCode}). `sveld()` never mutates `process.exitCode` itself; assign this
@@ -131,5 +140,11 @@ export async function sveld(opts?: SveldOptions): Promise<SveldResult> {
     strict: merged.strict,
   });
 
-  return { diagnostics, check: checkResult, errors: result.errors, exitCode };
+  const document = buildJsonDocument(result.components, {
+    inputDir: dirname(input),
+    entryExports: result.entryExports,
+    source: merged.jsonOptions?.source,
+  });
+
+  return { diagnostics, check: checkResult, errors: result.errors, document, exitCode };
 }
