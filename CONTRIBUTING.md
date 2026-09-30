@@ -39,7 +39,7 @@ bun install
 | --- | --- |
 | `bun test` | Unit and fixture snapshot tests (`bun test --parallel`). |
 | `bun run test:update` | Rewrite the fixture outputs (`tests/fixtures/**`) to match the current parser and writers. |
-| `bun run build` | Bundle `src/index.ts` to `lib/` and emit `.d.ts`. Add `-w` / `--watch` for watch mode. |
+| `bun run build` | Bundle `src/index.ts`, `src/cli-entry.ts`, and `src/browser.ts` to `dist/`, emit `.d.ts`, write a publish-ready `dist/package.json`. Add `-w` / `--watch` for watch mode. |
 | `bun run typecheck` | `tsc --noEmit` over `src/` and `tests/`. |
 | `bun run test:fixtures-types` | Type-check the generated fixture outputs (`tests/fixtures/**`). |
 | `bun run test:types-matrix` | Regenerate every fixture's `.d.ts` under a matrix of `typesOptions` combinations and type-check each set. Add `--keep` to keep the temp output. |
@@ -157,9 +157,9 @@ A change to props, events, slots, or context handling should be exercised across
 
 ## Build
 
-[`scripts/build.ts`](scripts/build.ts) (`bun run build`) removes `lib/`, bundles `src/index.ts` / `src/cli-entry.ts` / `src/browser.ts` with `Bun.build` (minified ESM), then rolls public types into only `lib/index.d.ts` and `lib/browser.d.ts` via [`scripts/bundle-dts.ts`](scripts/bundle-dts.ts) (TypeScript 6 Compiler API from `@typescript/typescript6`; intermediate per-file `.d.ts` stay in memory). `lib/` is gitignored and is never committed. `bun run build -w` rebuilds on changes under `src/`.
+[`scripts/build.ts`](scripts/build.ts) (`bun run build`) removes `dist/` and makes it the package root, so the published tarball is flat (no `lib/` prefix). It copies `README.md`, `LICENSE`, `schema/`, and the bin launcher ([`scripts/cli-launcher.js`](scripts/cli-launcher.js) becomes `dist/cli.js`, executable) in first, so a failed build never leaves a manifest next to missing assets. It then bundles `src/index.ts` / `src/cli-entry.ts` / `src/browser.ts` with `Bun.build` (minified ESM), rolls public types into only `dist/index.d.ts` and `dist/browser.d.ts` via [`scripts/bundle-dts.ts`](scripts/bundle-dts.ts) (TypeScript 6 Compiler API from `@typescript/typescript6`; intermediate per-file `.d.ts` stay in memory), and writes `dist/package.json`: a copy of the root manifest without `devDependencies`, `scripts`, and `files`, with `./dist/*` paths rewritten to `./*` (and `bin` to a bare `cli.js`, which is the form npm wants). `dist/` is gitignored and is never committed. `bun run build -w` rebuilds on changes under `src/`.
 
-The published binary is [`cli.js`](cli.js), which dynamically imports the built `lib/index.js` and calls `cli`.
+The published binary is `dist/cli.js`, which enables Node's compile cache, dynamically imports the built `cli-entry.js`, and calls `cli`.
 
 ## Playground
 
@@ -226,7 +226,7 @@ The following applies only to maintainers.
 
 ### Release
 
-[`publish-to-npm.yml`](.github/workflows/publish-to-npm.yml) publishes to NPM with [provenance](https://docs.npmjs.com/generating-provenance-statements) when a tag starting with `v` is pushed. It installs, runs `bun run build`, prunes with `bunx culls`, and runs `npm publish --provenance --access public`.
+[`release.yml`](.github/workflows/release.yml) publishes to NPM with [provenance](https://docs.npmjs.com/generating-provenance-statements) when a tag starting with `v` is pushed. It installs, runs `bun run build`, then `npm publish --provenance --access public` from `dist/`.
 
 #### Versioning
 

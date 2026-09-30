@@ -12,7 +12,8 @@ $.env({
     process.env.BUN_INSTALL_GLOBAL_DIR ?? join(import.meta.dir, "..", "node_modules", ".cache", "e2e-link"),
 });
 
-await $`bun link`;
+// Link the built `dist/`, the same tree that gets published.
+await $`cd dist && bun link`;
 
 let hasError = false;
 
@@ -137,9 +138,9 @@ for (const dir of dirs) {
 }
 
 // Smoke-test the published bin shim: a config file that throws while
-// loading must exit non-zero (see cli.js's rejection handler), otherwise
+// loading must exit non-zero (see the launcher's rejection handler), otherwise
 // CI gates using --strict or --check would pass silently on a crash.
-const cliPath = `${import.meta.dir}/../cli.js`;
+const cliPath = `${import.meta.dir}/../dist/cli.js`;
 const crashResult = Bun.spawnSync(["node", cliPath], {
   cwd: `${import.meta.dir}/e2e/cli-crash`,
   stdout: "pipe",
