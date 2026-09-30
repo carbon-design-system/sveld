@@ -4,7 +4,7 @@ import { join, relative } from "node:path";
 
 /**
  * A fingerprint of every file under `srcDir`: path and contents, in a fixed
- * order. The build bakes it into `lib/` so the parse cache, which is keyed on
+ * order. The build bakes it into `dist/` so the parse cache, which is keyed on
  * the sveld version, still misses after a rebuild from changed sources that
  * didn't bump the version (local builds, e2e, git dependencies).
  */

@@ -7,7 +7,7 @@ import * as nodeModule from "node:module";
 // 22.1+; a no-op on older Node and Bun), so startup skips recompiling them.
 nodeModule.enableCompileCache?.();
 
-import("./lib/cli-entry.js")
+import("./cli-entry.js")
   .then(({ cli }) => cli(process))
   .catch((error) => {
     console.error(error);

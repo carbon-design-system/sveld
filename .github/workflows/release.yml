@@ -32,10 +32,8 @@ jobs:
       - name: Build package
         run: bun run build
 
-      - name: Prune package
-        run: bunx culls
-
       - name: Publish package
+        working-directory: dist
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
         run: npm publish --provenance --access public

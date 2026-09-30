@@ -12,7 +12,6 @@
         "@typescript/typescript6": "^6.0.2",
         "acorn": "^8.18.0",
         "ajv": "^8.20.0",
-        "culls": "^0.2.0",
         "ostia": "^0.2.7",
         "svelte": "^5.57.1",
         "typescript": "^7.0.2",
@@ -153,8 +152,6 @@
     "color-convert": ["color-convert@2.0.1", "", { "dependencies": { "color-name": "~1.1.4" } }, "sha512-RRECPsj7iu/xb5oKYcsFHSppFNnsj/52OVTRKb4zP5onXwVF3zVmmToNcOfGC+CRDpfK/U584fMg38ZHCaElKQ=="],
 
     "color-name": ["color-name@1.1.4", "", {}, "sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA=="],
-
-    "culls": ["culls@0.2.0", "", { "bin": { "culls": "dist/index.js" } }, "sha512-SXout6aJuwBKzA9HuACs1Z9Yn51UwpgKPwEwMm9NU0bLoZUTIJer0M+qN+yY3Vki6Pt9QxKRpcjRetSisQOFAw=="],
 
     "devalue": ["devalue@5.9.4", "", {}, "sha512-sPAT4pztbu6586/hrhOnMKS17IJrvg12mXiSPSS3W5qDeN2RGgvZ0diZCm31dBbnevfVmujNO3IM2wrS4Y2Rhg=="],
 
