@@ -11,6 +11,7 @@ const outDir = resolve(root, "dist");
 
 /** Root-manifest fields that only matter to this repo, not to consumers. */
 const STRIP_PKG_FIELDS = ["devDependencies", "scripts", "files"];
+const BIN_DIST_PREFIX = /^dist\//;
 const DIST_PREFIX = /\.\/dist\//g;
 
 // `dist/` is the package root: it is what gets published, so the tarball has
@@ -26,7 +27,7 @@ await chmod(resolve(outDir, "cli.js"), 0o755);
 
 /**
  * Writes `dist/package.json`: the root manifest without repo-only fields and
- * with `./dist/*` paths rewritten to `./*`, so they resolve once `dist/` is
+ * with `./dist/*` paths rewritten to `./*` (and `bin` to a bare `cli.js`, which is the form npm wants), so they resolve once `dist/` is
  * the package root. The root manifest stays the single source of truth.
  */
 async function writePackageManifest() {
@@ -34,6 +35,11 @@ async function writePackageManifest() {
 
   for (const field of STRIP_PKG_FIELDS) {
     delete pkg[field];
+  }
+
+  // npm wants `bin` paths without a leading "./" (`npm pkg fix` strips it).
+  for (const [name, path] of Object.entries(pkg.bin as Record<string, string>)) {
+    pkg.bin[name] = path.replace(BIN_DIST_PREFIX, "");
   }
 
   await writeFile(resolve(outDir, "package.json"), `${JSON.stringify(pkg, null, 2).replace(DIST_PREFIX, "./")}\n`);

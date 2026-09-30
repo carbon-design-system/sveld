@@ -50,7 +50,7 @@
     "typescript": "^7.0.2"
   },
   "bin": {
-    "sveld": "./dist/cli.js"
+    "sveld": "dist/cli.js"
   },
   "repository": {
     "type": "git",
