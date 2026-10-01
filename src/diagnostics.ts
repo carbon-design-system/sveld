@@ -12,7 +12,7 @@ import type { ParsedComponent, SourceRange } from "./model";
  * - `example-compile-error`: a TS/JS `@example` block failed to type-check (opt-in, `checkExamples`).
  * - `example-syntax-error`: a `svelte`/`html` `@example` block failed to parse (opt-in, `checkExamples`).
  * - `syntax-skipped`: `$props()`/`{@render}` syntax the parser can't model; omitted from output.
- * - `type-syntax-error`: a JSDoc `{type}` isn't valid TypeScript (e.g. `{"a" | }`, or closure-style `{?string}`), so it would break the `.d.ts`; typed as `any` instead.
+ * - `type-syntax-error`: a JSDoc `{type}` isn't valid TypeScript (e.g. `{"a" | }`, or closure-style `{?string}`), or has a `//` comment, so it would break the `.d.ts`; typed as `any` instead.
  * - `rest-props-unresolved`: every `{...$$restProps}` target was a component, so `$RestProps` couldn't be typed.
  * - `context-duplicate-key`: `setContext` called more than once with the same key; only the first call's shape is used.
  * - `context-key-unresolved`: a `setContext` key isn't a string literal, a `const`-bound string, `Symbol()`, or an imported `export const` string; the context is skipped.

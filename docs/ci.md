@@ -116,7 +116,7 @@ Codes are stable, so use them (not `message`) in config and scripts.
 | `sveld/example-compile-error` | `error` | Fix the `@example` TS/JS block so it type-checks, or remove it. |
 | `sveld/example-syntax-error` | `error` | Fix the `@example` `svelte`/`html` markup so it parses, or remove it. |
 | `sveld/syntax-skipped` | `error` | Rewrite the flagged syntax in a form sveld can model. The message says what was skipped. |
-| `sveld/type-syntax-error` | `error` | Fix the JSDoc `{type}` so it parses as TypeScript: close the bracket, drop the trailing `\|`, or rewrite closure syntax (`{?string}` as `{string \| null}`, `{Array.<string>}` as `{string[]}`). Until then it's `any`. |
+| `sveld/type-syntax-error` | `error` | Fix the JSDoc `{type}` so it parses as TypeScript: close the bracket, drop the trailing `\|`, turn a `//` comment into `/* */` (it would comment out the rest of the `.d.ts` line), or rewrite closure syntax (`{?string}` as `{string \| null}`, `{Array.<string>}` as `{string[]}`). Until then it's `any`. |
 | `sveld/rest-props-unresolved` | `warning` | Spread rest props onto a plain element (or `svelte:element`), or add `@restProps`. |
 | `sveld/context-duplicate-key` | `warning` | Remove the duplicate `setContext` call or give it a distinct key. Only the first call's shape is used. |
 | `sveld/context-key-unresolved` | `warning` | Use a string literal, a `const` string, `Symbol()`, or an `export const` from a relative module as the key. Otherwise the context is left out. |

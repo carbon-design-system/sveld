@@ -78,6 +78,24 @@ describe("ComponentParser diagnostics", () => {
     expect(events.find((e) => e.name === "change")).toMatchObject({ detail: "{ id: string; }" });
   });
 
+  test("flags a JSDoc type with a `//` comment, which would break the inline .d.ts type", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <script>
+        import { createEventDispatcher } from "svelte";
+        /** @event {string // the value} change */
+        const dispatch = createEventDispatcher();
+        dispatch("change", "a");
+      </script>
+    `;
+
+    const { events, diagnostics } = parser.parseSvelteComponent(source, parseContext);
+    const syntaxError = diagnostics?.find((d) => d.kind === "type-syntax-error");
+
+    expect(syntaxError?.message).toContain("has a `//` comment");
+    expect(events.find((e) => e.name === "change")).toMatchObject({ detail: "any" });
+  });
+
   test("flags setContext values that default to any", () => {
     const parser = new ComponentParser();
     const source = `

@@ -3,7 +3,7 @@
  * events, slot prop types, generics), record the diagnostics that need
  * the whole component, and build the {@link ParsedComponent}.
  */
-import type { CallExpression, Literal } from "sveast";
+import { type CallExpression, isValidType as isOneType, type Literal } from "sveast";
 import { getElementByTag } from "../element-tag-map";
 import type {
   ComponentContext,
@@ -319,11 +319,15 @@ function recordUnknownPropTypes(ctx: ParserContext, props: ComponentProp[], modu
 /** Whether `type` parses as TypeScript; records a `type-syntax-error` when it doesn't. */
 function isValidType(ctx: ParserContext, type: string | undefined, name: string, source?: SourceRange): boolean {
   if (type === undefined || isValidTypeText(type)) return true;
+  // Valid when not inline, so what failed is the check for a `//` comment.
+  const problem = isOneType(type)
+    ? "has a `//` comment, which would comment out the code after it in the .d.ts"
+    : "is not valid TypeScript";
   recordDiagnostic(
     ctx,
     "type-syntax-error",
     name,
-    `Type \`${type}\` of "${name}" is not valid TypeScript; falling back to "any".`,
+    `Type \`${type}\` of "${name}" ${problem}; falling back to "any".`,
     source,
   );
   return false;
