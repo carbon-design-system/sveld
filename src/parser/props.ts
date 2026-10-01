@@ -33,6 +33,7 @@ import { trackAdditionalTypeDependencyNode } from "./type-resolution";
 import { assignValueOrUndefined, formatParamList } from "./utils";
 import { importedMemberBinding } from "./value-imports";
 import { findVariableTypeAndDescription, resolveLocalVarJSDoc } from "./variable-jsdoc";
+import { collectReturnArguments } from "./walk";
 
 export function addProp(ctx: ParserContext, prop_name: string, data: ComponentProp) {
   if (assignValueOrUndefined(prop_name) === undefined) return;
@@ -753,55 +754,6 @@ function inferReturnTypeFromNode(node: FunctionDeclaration | FunctionExpression 
     }
   }
   return inferred ?? "any";
-}
-
-/**
- * Walk a block body and collect each `return`'s argument, skipping nested
- * functions. Bare `return;` becomes `null`.
- *
- * Not fused with the componentRoot walk: this runs from `processInitializer`, called
- * synchronously while the outer walk is still on the ancestor `ExportNamedDeclaration`/
- * `VariableDeclaration` node, so it needs the inferred type before the outer walk would
- * otherwise reach these descendant statements. Deferring it to ride along with the outer
- * traversal would mean computing prop types in a second pass instead of inline.
- */
-function collectReturnArguments(body: unknown): unknown[] {
-  const returnArgs: unknown[] = [];
-  collectReturnArgumentsInto(body, returnArgs);
-  return returnArgs;
-}
-
-/**
- * Own-function `return` arguments only: nested functions have their own
- * returns, so the walk stops at them. `body` is a `BlockStatement`, never a
- * function node, so the root is always descended.
- */
-function collectReturnArgumentsInto(node: unknown, returnArgs: unknown[]): void {
-  if (!node || typeof node !== "object") return;
-  const current = node as { type?: unknown; argument?: unknown; [key: string]: unknown };
-  if (typeof current.type !== "string") return;
-
-  if (
-    current.type === "FunctionDeclaration" ||
-    current.type === "FunctionExpression" ||
-    current.type === "ArrowFunctionExpression"
-  ) {
-    return;
-  }
-  if (current.type === "ReturnStatement") {
-    returnArgs.push(current.argument ?? null);
-  }
-
-  for (const key in current) {
-    if (key === "leadingComments") continue;
-    const value = current[key];
-    if (!value || typeof value !== "object") continue;
-    if (Array.isArray(value)) {
-      for (let i = 0; i < value.length; i++) collectReturnArgumentsInto(value[i], returnArgs);
-    } else {
-      collectReturnArgumentsInto(value, returnArgs);
-    }
-  }
 }
 
 /**

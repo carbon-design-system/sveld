@@ -1,7 +1,6 @@
 import { resolve } from "node:path";
 import type {
   ArrowFunctionExpression,
-  BlockStatement,
   Declaration,
   ExportDefaultDeclaration,
   Expression,
@@ -12,7 +11,6 @@ import type {
   Node,
   Pattern,
   Program,
-  Statement,
   TSDeclareFunction,
   TSEnumDeclaration,
   TSEnumMember,
@@ -21,6 +19,7 @@ import { resolveStaticStringLiteral, unwrapTypeCastExpression } from "./ast-guar
 import type { ModuleGraph, ModuleSource } from "./module-graph";
 import type { EntryExport } from "./parse-entry-exports";
 import { parseComments } from "./parser/comment-parser";
+import { collectReturnArguments } from "./parser/walk";
 import { getParserStack } from "./parser-stack";
 import { returnTypeOfFunctionType } from "./type-text";
 
@@ -295,13 +294,8 @@ function inferAstLiteralReturnType(fn: FunctionLike): string | undefined {
   if (fn.async || fn.generator || fn.type === "TSDeclareFunction") return undefined;
 
   const body = fn.body;
-  const returnArgs: Array<Expression | null> = [];
-  if (body.type === "BlockStatement") {
-    collectAstReturnArguments(body, returnArgs);
-    if (returnArgs.length === 0) return undefined;
-  } else {
-    returnArgs.push(body);
-  }
+  const returnArgs = body.type === "BlockStatement" ? collectReturnArguments(body) : [body];
+  if (returnArgs.length === 0) return undefined;
 
   let inferred: string | undefined;
   for (const arg of returnArgs) {
@@ -312,49 +306,6 @@ function inferAstLiteralReturnType(fn: FunctionLike): string | undefined {
     else if (inferred !== primitive) return undefined;
   }
   return inferred;
-}
-
-function collectAstReturnArguments(body: BlockStatement, out: Array<Expression | null>): void {
-  for (const statement of body.body) collectStatementReturnArguments(statement, out);
-}
-
-/**
- * A statement's `return` arguments, without entering nested functions. A
- * `return` can only sit in a statement, so following every statement that
- * holds others finds them all.
- */
-function collectStatementReturnArguments(statement: Statement, out: Array<Expression | null>): void {
-  switch (statement.type) {
-    case "ReturnStatement":
-      out.push(statement.argument ?? null);
-      return;
-    case "BlockStatement":
-      collectAstReturnArguments(statement, out);
-      return;
-    case "IfStatement":
-      collectStatementReturnArguments(statement.consequent, out);
-      if (statement.alternate) collectStatementReturnArguments(statement.alternate, out);
-      return;
-    case "ForStatement":
-    case "ForInStatement":
-    case "ForOfStatement":
-    case "WhileStatement":
-    case "DoWhileStatement":
-    case "LabeledStatement":
-    case "WithStatement":
-      collectStatementReturnArguments(statement.body, out);
-      return;
-    case "TryStatement":
-      collectAstReturnArguments(statement.block, out);
-      if (statement.handler) collectAstReturnArguments(statement.handler.body, out);
-      if (statement.finalizer) collectAstReturnArguments(statement.finalizer, out);
-      return;
-    case "SwitchStatement":
-      for (const switchCase of statement.cases) {
-        for (const consequent of switchCase.consequent) collectStatementReturnArguments(consequent, out);
-      }
-      return;
-  }
 }
 
 /** A `TSEnumMember`'s literal initializer value, or `undefined` for anything not a plain string/number literal. */

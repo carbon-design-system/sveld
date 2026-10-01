@@ -268,11 +268,11 @@ export function getCommentTags(parsed: JSDocComment[]) {
 
 /**
  * The block `parseCustomTypes` already parsed at this comment's offset, when it
- * spans exactly the same text acorn reported. The source scan only opens a
+ * spans exactly the same text the parser reported. The source scan only opens a
  * block whose `/**` leads its line and only closes on a line ending in `*\/`,
  * so a block found at the same `start` with the same `end` tokenizes to the
  * same lines as `formatComment(value)` would (the gutter strip discards the
- * indentation acorn's `onComment` removed). Anything else - `/** doc *\/ code`
+ * indentation the parser's comment value drops). Anything else - `/** doc *\/ code`
  * on one line, `/***` ignore blocks - misses here and is parsed from `value`.
  */
 function parsedSourceBlock(

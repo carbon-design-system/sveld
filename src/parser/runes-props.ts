@@ -409,7 +409,7 @@ function getJsDocPropsMembers(
 /** Top-level `$props()` declarations in runes components. */
 export function parseRunesPropsDeclaration(ctx: ParserContext, node: VariableDeclaration) {
   for (const declarator of node.declarations) {
-    if (!isCallExpressionNamed(unwrapTypeCastExpression(declarator.init), "$props")) continue;
+    if (!isCallExpressionNamed(declarator.init, "$props")) continue;
 
     if (declarator.id.type === "Identifier") {
       ctx.wholePropsLocals.add(declarator.id.name);

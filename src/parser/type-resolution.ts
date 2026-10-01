@@ -7,6 +7,7 @@ import type {
   TypeElement,
   TypeNode,
 } from "sveast";
+import { SKIP, walk } from "sveast/walk";
 import type {
   LocalTypeDeclaration,
   ParsedComponentTypeScriptMetadata,
@@ -85,123 +86,50 @@ export function collectReferencedTypeDependencies(
   referencedLocalTypes: Set<string>,
   visitedLocalTypes: Set<string> = new Set(),
 ) {
-  if (!typeNode?.type) return;
+  if (!typeNode) return;
 
-  switch (typeNode.type) {
-    case "TSInterfaceDeclaration":
-      // `interface A extends B<C>`: each heritage clause names a type like a reference does.
-      for (const heritage of typeNode.extends ?? []) {
-        collectTypeReferenceDependencies(
-          ctx,
-          heritage.expression,
-          heritage.typeParameters?.params,
-          referencedImportedTypes,
-          referencedLocalTypes,
-          visitedLocalTypes,
-        );
+  const collect = (node: TSNode | undefined) =>
+    collectReferencedTypeDependencies(ctx, node, referencedImportedTypes, referencedLocalTypes, visitedLocalTypes);
+
+  // Each case below picks the parts of a node that name types; any other
+  // node's children are walked as they are.
+  walk(typeNode, {
+    enter(node) {
+      switch (node.type) {
+        case "TSInterfaceDeclaration":
+          // `interface A extends B<C>`: each heritage clause names a type like a reference does.
+          for (const heritage of node.extends ?? []) {
+            collectTypeReferenceDependencies(
+              ctx,
+              heritage.expression,
+              heritage.typeParameters?.params,
+              referencedImportedTypes,
+              referencedLocalTypes,
+              visitedLocalTypes,
+            );
+          }
+          collectMemberDependencies(node.body.body, collect);
+          return SKIP;
+        case "TSTypeAliasDeclaration":
+        case "TSTypeAnnotation":
+          collect(node.typeAnnotation);
+          return SKIP;
+        case "TSTypeLiteral":
+          collectMemberDependencies(node.members, collect);
+          return SKIP;
+        case "TSTypeReference":
+          collectTypeReferenceDependencies(
+            ctx,
+            node.typeName,
+            node.typeArguments?.params,
+            referencedImportedTypes,
+            referencedLocalTypes,
+            visitedLocalTypes,
+          );
+          return SKIP;
       }
-      collectMemberDependencies(
-        ctx,
-        typeNode.body.body,
-        referencedImportedTypes,
-        referencedLocalTypes,
-        visitedLocalTypes,
-      );
-      return;
-    case "TSTypeAliasDeclaration":
-    case "TSParenthesizedType":
-    case "TSTypeAnnotation":
-      collectReferencedTypeDependencies(
-        ctx,
-        typeNode.typeAnnotation,
-        referencedImportedTypes,
-        referencedLocalTypes,
-        visitedLocalTypes,
-      );
-      return;
-    case "TSIntersectionType":
-    case "TSUnionType":
-      for (const nestedType of typeNode.types ?? []) {
-        collectReferencedTypeDependencies(
-          ctx,
-          nestedType,
-          referencedImportedTypes,
-          referencedLocalTypes,
-          visitedLocalTypes,
-        );
-      }
-      return;
-    case "TSTypeLiteral":
-      collectMemberDependencies(
-        ctx,
-        typeNode.members,
-        referencedImportedTypes,
-        referencedLocalTypes,
-        visitedLocalTypes,
-      );
-      return;
-    case "TSTypeReference":
-      collectTypeReferenceDependencies(
-        ctx,
-        typeNode.typeName,
-        typeNode.typeArguments?.params,
-        referencedImportedTypes,
-        referencedLocalTypes,
-        visitedLocalTypes,
-      );
-      return;
-
-    case "TSArrayType":
-    case "TSRestType":
-    case "TSOptionalType":
-    case "TSIndexedAccessType":
-    case "TSTypeOperator":
-    case "TSExpressionWithTypeArguments":
-    case "TSTupleType":
-    case "TSConditionalType":
-    case "TSInferType":
-    case "TSMappedType":
-    case "TSFunctionType":
-    case "TSConstructorType":
-    case "TSTypeQuery":
-    case "TSImportType":
-    case "TSLiteralType":
-    case "TSTypePredicate":
-    case "TSNamedTupleMember":
-      break;
-    default:
-      break;
-  }
-
-  // `for...in` rather than `Object.values`: no per-node array allocation.
-  for (const key in typeNode) {
-    const value = (typeNode as unknown as Record<string, unknown>)[key];
-    if (!value || typeof value !== "object") continue;
-
-    if (Array.isArray(value)) {
-      for (const item of value) {
-        if (!item || typeof item !== "object" || !("type" in item)) continue;
-        collectReferencedTypeDependencies(
-          ctx,
-          item as TSNode,
-          referencedImportedTypes,
-          referencedLocalTypes,
-          visitedLocalTypes,
-        );
-      }
-      continue;
-    }
-
-    if ("type" in value) {
-      collectReferencedTypeDependencies(
-        ctx,
-        value as TSNode,
-        referencedImportedTypes,
-        referencedLocalTypes,
-        visitedLocalTypes,
-      );
-    }
-  }
+    },
+  });
 }
 
 function buildTypeImportStatements(ctx: ParserContext, referencedImportedTypes: Set<string>) {
@@ -308,22 +236,9 @@ function collectTypeReferenceDependencies(
 }
 
 /** The dependencies of a type literal's or interface body's property types. */
-function collectMemberDependencies(
-  ctx: ParserContext,
-  members: TypeElement[],
-  referencedImportedTypes: Set<string>,
-  referencedLocalTypes: Set<string>,
-  visitedLocalTypes: Set<string>,
-) {
+function collectMemberDependencies(members: TypeElement[], collect: (node: TSNode | undefined) => void) {
   for (const member of members) {
-    if (member.type !== "TSPropertySignature") continue;
-    collectReferencedTypeDependencies(
-      ctx,
-      member.typeAnnotation?.typeAnnotation,
-      referencedImportedTypes,
-      referencedLocalTypes,
-      visitedLocalTypes,
-    );
+    if (member.type === "TSPropertySignature") collect(member.typeAnnotation?.typeAnnotation);
   }
 }
 

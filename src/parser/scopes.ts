@@ -10,13 +10,13 @@ import type {
   Pattern,
   VariableDeclarator,
 } from "sveast";
+import { extractIdentifiers } from "sveast/walk";
 import {
   getPropertyName,
   isCallExpressionNamed,
   isIdentifier,
   isMemberExpression,
   isVariableDeclaration,
-  unwrapTypeCastExpression,
 } from "../ast-guards";
 import type { LexicalScope, ScopeBinding, ScopeBindingKind } from "../model";
 import type { ParserContext } from "./context";
@@ -57,39 +57,17 @@ export function isCalleeBoundInNestedScope(ctx: ParserContext, callee: unknown):
   return isIdentifier(node) && isBoundInNestedScope(ctx, node.name);
 }
 
-/** Collects all identifier names bound by a destructuring/assignment pattern (or plain expression). */
+/**
+ * The names a destructuring or assignment pattern binds. Anything else, such
+ * as a member expression target, binds nothing.
+ */
 export function collectPatternIdentifiers(
-  target: Pattern | Expression | null | undefined,
+  target: Parameters<typeof extractIdentifiers>[0] | null | undefined,
   names: Set<string> = new Set(),
 ) {
-  if (!target || typeof target !== "object" || !("type" in target)) return names;
-
-  switch (target.type) {
-    case "Identifier":
-      names.add(target.name);
-      break;
-    case "AssignmentPattern":
-      collectPatternIdentifiers(target.left, names);
-      break;
-    case "ArrayPattern":
-      for (const element of target.elements) {
-        collectPatternIdentifiers(element ?? undefined, names);
-      }
-      break;
-    case "ObjectPattern":
-      for (const property of target.properties) {
-        if (property.type === "Property") {
-          collectPatternIdentifiers(property.value as Pattern, names);
-        } else if (property.type === "RestElement") {
-          collectPatternIdentifiers(property.argument, names);
-        }
-      }
-      break;
-    case "RestElement":
-      collectPatternIdentifiers(target.argument, names);
-      break;
+  if (target) {
+    for (const identifier of extractIdentifiers(target)) names.add(identifier.name);
   }
-
   return names;
 }
 
@@ -109,6 +87,9 @@ export function markReactivePropsFromMutationTarget(
     return;
   }
 
+  // Past an identifier, only a destructuring assignment's left side binds
+  // names; a member expression target (`x.y = ...`, `x.y++`) binds none.
+  if (target.type !== "ObjectPattern" && target.type !== "ArrayPattern") return;
   const identifiers = collectPatternIdentifiers(target);
 
   for (const identifier of identifiers) {
@@ -231,7 +212,7 @@ function declareVariableDeclaration(
   const variableDeclaration = declaration;
 
   for (const declarator of variableDeclaration.declarations) {
-    if (allowRunesProps && isCallExpressionNamed(unwrapTypeCastExpression(declarator.init), "$props")) {
+    if (allowRunesProps && isCallExpressionNamed(declarator.init, "$props")) {
       for (const binding of extractRunesScopeBindings(declarator)) {
         declareScopeBinding(
           binding.kind === "prop" ? lexicalScope : varScope,
@@ -362,8 +343,9 @@ function collectComponentScopeDeclarations(ctx: ParserContext, instance: AST.Scr
 /**
  * Resets `ctx.componentScope` / `ctx.scopeDeclarations` / `ctx.activeScopes` and declares the
  * top-level `<script>` bindings. Does not walk the component tree; nested scope declarations are
- * built incrementally by {@link enterNestedScopeDeclarationNode} inside the caller's own traversal
- * of `componentRoot` (fused with prop/slot/event extraction there rather than walked separately).
+ * built incrementally by {@link enterNestedScopeDeclarationNode} inside the caller's own walk of
+ * the instance script and template (fused with prop/slot/event extraction there rather than walked
+ * separately).
  */
 export function initComponentScope(ctx: ParserContext) {
   ctx.componentScope.clear();
@@ -373,10 +355,10 @@ export function initComponentScope(ctx: ParserContext) {
   collectComponentScopeDeclarations(ctx, ctx.parsed?.instance);
 }
 
-/** Mutable stack tracking the enclosing `var`-hoisting scope while walking `componentRoot`. */
+/** Mutable stack tracking the enclosing `var`-hoisting scope during the component walk. */
 export type ScopeWalkState = { varScopeStack: LexicalScope[] };
 
-/** Creates the scope-walk state for a fresh traversal of `componentRoot`, seeded with `ctx.componentScope`. */
+/** Creates the scope-walk state for a fresh component walk, seeded with `ctx.componentScope`. */
 export function createScopeWalkState(ctx: ParserContext): ScopeWalkState {
   return { varScopeStack: [ctx.componentScope] };
 }
@@ -384,7 +366,7 @@ export function createScopeWalkState(ctx: ParserContext): ScopeWalkState {
 /**
  * Per-node `enter` step of the (formerly standalone) nested-scope-declaration walk. Declares
  * bindings for `node` if it's a scope owner and pushes it as the active `var` scope for its
- * descendants. Must be called during the same top-down traversal of `componentRoot` that
+ * descendants. Must be called during the same component walk that
  * {@link leaveNestedScopeDeclarationNode} tears down, and before any logic that reads
  * `ctx.scopeDeclarations` for `node` itself (its own scope is only created here, on entry).
  */

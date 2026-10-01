@@ -14,7 +14,8 @@ import type {
   SimpleCallExpression,
   TSNode,
 } from "sveast";
-import { isCallExpressionNamed, isIdentifier, isMemberExpression, unwrapTypeCastExpression } from "../ast-guards";
+import { SKIP, type Visitor, walk as walkTree } from "sveast/walk";
+import { isCallExpressionNamed, isIdentifier, isMemberExpression } from "../ast-guards";
 import type { ComponentElement, ComponentInlineElement, SlotProps, SlotPropValue } from "../model";
 import { resolveMemberExpressionType } from "./bindings";
 import type { ParserContext } from "./context";
@@ -37,24 +38,12 @@ import {
 import { addSlot, buildSlotPropsFromObjectExpression, DEFAULT_SLOT_NAME, extractRenderTagInfo } from "./slots";
 import { sourceAtPos, sourceRangeFromNode } from "./source-position";
 import { collectValueImportBindings } from "./value-imports";
-import { walkNodes } from "./walk";
+import { isTypeOnlySubtree } from "./walk";
 
 /** Matches `@component` in HTML comments. */
 const COMPONENT_COMMENT_REGEX = /^@component/;
 
 const CARRIAGE_RETURN_REGEX = /\r/g;
-
-/**
- * The synthetic root the component walk starts from, so one walk covers
- * both the instance script and the template.
- */
-interface ComponentRootNode {
-  type: "ComponentRoot";
-  instance: AST.Script | undefined;
-  fragment: AST.Fragment | undefined;
-}
-
-type ComponentWalkNode = AST.SvelteNode | ComponentRootNode;
 
 /**
  * Node types the component walk acts on. Keep in sync with the cases in
@@ -107,7 +96,7 @@ export interface ComponentWalkResult {
 }
 
 /** The name `parent` binds a call's result to: `x` in `const x = call()`. */
-function parentIdName(parent: ComponentWalkNode | null): string | undefined {
+function parentIdName(parent: AST.SvelteNode | null): string | undefined {
   return parent && "id" in parent && parent.id && "name" in parent.id ? parent.id.name : undefined;
 }
 
@@ -115,7 +104,7 @@ function enterCallExpression(
   ctx: ParserContext,
   walk: ComponentWalkResult,
   callExpr: SimpleCallExpression,
-  parent: ComponentWalkNode | null,
+  parent: AST.SvelteNode | null,
 ) {
   const calleeName = callExpr.callee.type === "Identifier" ? callExpr.callee.name : undefined;
 
@@ -301,7 +290,7 @@ function addRenderTagSlot(ctx: ParserContext, node: AST.RenderTag) {
 }
 
 /** A bare `on:event` (no handler) forwards the event; dispatched events win and are reconciled after the walk. */
-function addForwardedEvent(ctx: ParserContext, node: AST.OnDirective, parent: ComponentWalkNode | null) {
+function addForwardedEvent(ctx: ParserContext, node: AST.OnDirective, parent: AST.SvelteNode | null) {
   const eventName = node.name;
   if (node.expression != null || !eventName) return;
   if (parent == null || !("name" in parent)) return;
@@ -344,7 +333,7 @@ function addForwardedEvent(ctx: ParserContext, node: AST.OnDirective, parent: Co
 }
 
 /** `bind:*` marks props reactive; `bind:this` on elements also narrows the prop type. */
-function recordBindDirective(ctx: ParserContext, node: AST.BindDirective, parent: ComponentWalkNode | null) {
+function recordBindDirective(ctx: ParserContext, node: AST.BindDirective, parent: AST.SvelteNode | null) {
   if (!(parent && (isElementLikeType(parent.type) || isComponentLikeType(parent.type)))) {
     return;
   }
@@ -401,19 +390,17 @@ export function walkComponent(ctx: ParserContext): ComponentWalkResult {
     locallyBoundCalls: new Set(),
   };
 
-  const componentRoot: ComponentRootNode = {
-    type: "ComponentRoot",
-    instance: ctx.parsed?.instance,
-    fragment: ctx.parsed?.fragment,
-  };
-
   initComponentScope(ctx);
   ctx.activeScopes.push(ctx.componentScope);
   const scopeWalkState = createScopeWalkState(ctx);
 
-  walkNodes<ComponentWalkNode>(
-    componentRoot,
-    (node, parent) => {
+  const visitor: Visitor = {
+    enter(node, parent) {
+      // Every type this walk acts on is value-level (calls, declarations,
+      // assignments, directives, slots), and scopes only come from
+      // functions/blocks, so type-level TS subtrees have nothing for it.
+      if (isTypeOnlySubtree(node.type)) return SKIP;
+
       // Fuse scope declaration into this walk (see enterNestedScopeDeclarationNode).
       // Only scope-owner nodes get a scope, so the returned scope is the
       // same one a `scopeDeclarations.get(node)` lookup would find.
@@ -456,9 +443,7 @@ export function walkComponent(ctx: ParserContext): ComponentWalkResult {
           ctx.vars.add(node);
           if (
             parent?.type === "Program" &&
-            node.declarations.some((declarator) =>
-              isCallExpressionNamed(unwrapTypeCastExpression(declarator.init), "$props"),
-            )
+            node.declarations.some((declarator) => isCallExpressionNamed(declarator.init, "$props"))
           ) {
             parseRunesPropsDeclaration(ctx, node);
           }
@@ -489,7 +474,7 @@ export function walkComponent(ctx: ParserContext): ComponentWalkResult {
           break;
       }
     },
-    (node) => {
+    leave(node) {
       // Scopes exist exactly for scope-owner nodes (see `enter` above), and
       // function-scope owners are a subset, so one type check covers both.
       if (isScopeOwner(node)) {
@@ -497,11 +482,11 @@ export function walkComponent(ctx: ParserContext): ComponentWalkResult {
         leaveNestedScopeDeclarationNode(scopeWalkState, node);
       }
     },
-    // Every type this walk acts on is value-level (calls, declarations,
-    // assignments, directives, slots), and scopes only come from
-    // functions/blocks, so type-level TS subtrees have nothing for it.
-    { skipTypeOnlySubtrees: true },
-  );
+  };
+  // The instance script and then the template, as one pass: the scopes the
+  // script declares stay live while the template is walked.
+  if (ctx.parsed?.instance) walkTree(ctx.parsed.instance, visitor);
+  if (ctx.parsed?.fragment) walkTree(ctx.parsed.fragment, visitor);
 
   return walk;
 }
