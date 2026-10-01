@@ -140,7 +140,7 @@ describe("checkExamples: syntax-checking svelte/html fences", () => {
     const byName = Object.fromEntries(syntaxDiagnostics.map((d) => [d.name, d]));
 
     expect(byName.validExample).toBeUndefined();
-    expect(byName.brokenExample?.message).toContain("invalid closing tag");
+    expect(byName.brokenExample?.message).toContain("attempted to close an element that was not open");
   });
 
   test("checkExamples: true with only markup fences never loads TypeScript (no tsconfig.json needed)", async () => {

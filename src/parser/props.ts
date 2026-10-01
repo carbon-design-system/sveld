@@ -16,14 +16,13 @@ import type {
   SequenceExpression,
   TemplateLiteral,
   UnaryExpression,
-} from "estree";
+} from "sveast";
 import { getPropertyName, isCallExpressionNamed } from "../ast-guards";
 import type {
   ComponentProp,
   ComponentPropDefaultValue,
   ComponentPropDefaultValueKind,
   ComponentPropParam,
-  ModernRunesTypeNode,
   ProcessedInitializer,
 } from "../model";
 import { returnTypeOfFunctionType } from "../type-text";
@@ -502,7 +501,7 @@ export function inferVariableInitializerType(ctx: ParserContext, name: string): 
     const call = init as CallExpression;
     const callee = sourceForExpression(ctx, call.callee);
     if (callee === "$state" || callee === "$state.raw" || callee === "$derived") {
-      const typeArgument = (call as { typeArguments?: { params?: ModernRunesTypeNode[] } }).typeArguments?.params?.[0];
+      const typeArgument = call.typeArguments?.params[0];
       if (typeArgument) {
         trackAdditionalTypeDependencyNode(ctx, typeArgument);
         return sourceForExpression(ctx, typeArgument);
@@ -623,13 +622,6 @@ function localFunctionValuedInitializer(
 }
 
 /**
- * A `: T` annotation as acorn-typescript attaches it to an identifier
- * (`typeAnnotation`) or a function (`returnType`). estree doesn't declare
- * either field.
- */
-type TsTypeAnnotation = { type?: string; typeAnnotation?: { start?: number; end?: number } };
-
-/**
  * Return type from `const f: () => string = ...` when the arrow omits `): string`.
  */
 function bindingCallableReturnTypeText(ctx: ParserContext, name: string): string | undefined {
@@ -646,11 +638,8 @@ function bindingCallableReturnTypeText(ctx: ParserContext, name: string): string
       ) {
         continue;
       }
-      const annotated: Identifier & { typeAnnotation?: TsTypeAnnotation } = id;
-      const annotation = annotated.typeAnnotation;
-      if (annotation?.type !== "TSTypeAnnotation") return undefined;
-      const typeNode = annotation.typeAnnotation;
-      if (!typeNode || typeof typeNode.start !== "number" || typeof typeNode.end !== "number") return undefined;
+      const typeNode = id.typeAnnotation?.typeAnnotation;
+      if (!typeNode) return undefined;
       return returnTypeOfFunctionType(sourceAtPos(ctx, typeNode.start, typeNode.end));
     }
   }
@@ -660,13 +649,10 @@ function bindingCallableReturnTypeText(ctx: ParserContext, name: string): string
 /** Explicit TS return annotation text on a function (`): T`). */
 function functionReturnTypeAnnotationText(
   ctx: ParserContext,
-  node: (FunctionDeclaration | FunctionExpression | ArrowFunctionExpression) & { returnType?: TsTypeAnnotation },
+  node: FunctionDeclaration | FunctionExpression | ArrowFunctionExpression,
 ): string | undefined {
-  const returnType = node.returnType;
-  if (returnType?.type !== "TSTypeAnnotation") return undefined;
-
-  const annotation = returnType.typeAnnotation;
-  if (!annotation || typeof annotation.start !== "number" || typeof annotation.end !== "number") return undefined;
+  const annotation = node.returnType?.typeAnnotation;
+  if (!annotation) return undefined;
 
   return sourceAtPos(ctx, annotation.start, annotation.end);
 }

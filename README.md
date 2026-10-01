@@ -279,7 +279,7 @@ Try sveld in the browser at [sveld.onrender.com](https://sveld.onrender.com) (so
 - Node 22 or later, or Bun. sveld is ESM-only.
 - A `sveld.config.ts` needs a runtime that strips TypeScript: Bun, or Node 22.18+ / 23.6+.
 - The optional [`checkExamples`](docs/ci.md#checking-example-blocks) check for TS/JS examples needs `typescript` 7+ and a `tsconfig.json`. Nothing else loads TypeScript.
-- Your installed Svelte version doesn't affect parsing. sveld uses its own template parser, kept in parity with `svelte/compiler`.
+- Your installed Svelte version doesn't affect parsing. sveld parses with [sveast](https://github.com/metonym/sveast), kept in parity with `svelte/compiler`.
 
 ## Contributing
 

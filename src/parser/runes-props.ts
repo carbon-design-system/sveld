@@ -1,16 +1,24 @@
-import type { AssignmentPattern, Identifier, Property, VariableDeclaration, VariableDeclarator } from "estree";
-import type { AST } from "svelte/compiler";
+import type {
+  AST,
+  AssignmentPattern,
+  Declaration,
+  Identifier,
+  Program,
+  Property,
+  TSNode,
+  TSTypeReference,
+  TypeElement,
+  VariableDeclaration,
+  VariableDeclarator,
+} from "sveast";
 import { getPropertyName, getTypeCastAnnotation, isCallExpressionNamed, unwrapTypeCastExpression } from "../ast-guards";
 import type {
   CustomElementPropConfig,
-  ModernRunesTypeMember,
-  ModernRunesTypeNode,
   RunesPropsDeclarationMetadata,
   RunesPropTypeMetadata,
   SourceRange,
   TypeImportBinding,
 } from "../model";
-import type { TemplateRoot } from "../svelte-template-parse";
 import { indexOfClosingBracket, indexOfTopLevel, splitTopLevel } from "../type-text";
 import type { ParserContext, TypedefMember } from "./context";
 import { trackPropLocalName } from "./context";
@@ -44,11 +52,14 @@ const IDENTIFIER_TOKEN_REGEX = /[A-Za-z_$][\w$]*/g;
  */
 function buildTypeParameterSubstitutions(
   ctx: ParserContext,
-  declaration: ModernRunesTypeNode,
-  reference: ModernRunesTypeNode,
+  declaration: TSNode,
+  reference: TSTypeReference,
 ): Map<string, string> {
   const substitutions = new Map<string, string>();
-  const typeParams = declaration.typeParameters?.params;
+  const typeParams =
+    declaration.type === "TSInterfaceDeclaration" || declaration.type === "TSTypeAliasDeclaration"
+      ? declaration.typeParameters?.params
+      : undefined;
   const typeArgs = reference.typeArguments?.params;
   if (!typeParams?.length || !typeArgs?.length) return substitutions;
 
@@ -73,14 +84,14 @@ function substituteTypeParameters(type: string, substitutions: Map<string, strin
 /** Flatten a runes `$props()` type node into prop name -> metadata, following local aliases and intersections. */
 function buildRunesPropTypeMetadataMap(
   ctx: ParserContext,
-  typeNode: ModernRunesTypeNode | undefined,
-  localTypeDeclarations: Map<string, ModernRunesTypeNode>,
+  typeNode: TSNode | undefined,
+  localTypeDeclarations: Map<string, TSNode>,
   visitedTypeNames: Set<string> = new Set(),
 ): Map<string, RunesPropTypeMetadata> {
   const metadata = new Map<string, RunesPropTypeMetadata>();
   if (!typeNode?.type) return metadata;
 
-  const mergeMembers = (members: ModernRunesTypeMember[]) => {
+  const mergeMembers = (members: TypeElement[]) => {
     for (const member of members) {
       if (member?.type !== "TSPropertySignature" || member.computed) continue;
       if (!member.key) continue;
@@ -173,46 +184,9 @@ function buildRunesPropTypeMetadataMap(
   return metadata;
 }
 
-/**
- * The fields `buildRunesPropTypeMetadata` reads off a top-level script
- * statement. estree's statement types don't name the TS nodes and fields
- * acorn-typescript adds (`TSInterfaceDeclaration`, `importKind`, an
- * identifier's `typeAnnotation`), so statements are read through this.
- */
-type ModernScriptStatement = {
-  type?: string;
-  start?: number;
-  end?: number;
-  importKind?: string;
-  source?: { value?: string } | null;
-  specifiers?: Array<{
-    type?: string;
-    importKind?: string;
-    local?: { name?: string };
-    exported?: { name?: string };
-    imported?: { type?: string; name?: string; value?: string };
-  }>;
-  id?: { name?: string };
-  /** `export <declaration>`: the declared statement itself. */
-  declaration?: ModernScriptStatement;
-  declarations?: Array<{
-    id?: {
-      type?: string;
-      name?: string;
-      typeAnnotation?: {
-        start?: number;
-        end?: number;
-        typeAnnotation?: ModernRunesTypeNode;
-      };
-    };
-    init?: unknown;
-    start?: number;
-  }>;
-};
-
 /** A script's top-level statements, TS nodes included. */
-function scriptStatements(script: AST.Script | undefined): ModernScriptStatement[] {
-  return (script?.content.body ?? []) as ModernScriptStatement[];
+function scriptStatements(script: AST.Script | undefined): Program["body"] {
+  return script?.content.body ?? [];
 }
 
 /** JSON-safe copy of the raw `customElement.props` config read off `parsed.options`. */
@@ -235,12 +209,17 @@ function buildCustomElementPropConfigs(
  * declaration. `exported` marks a module-script `export`ed type, which the
  * `.d.ts` exports too.
  */
-function collectScriptTypeDeclaration(ctx: ParserContext, statement: ModernScriptStatement, exported: boolean) {
+function collectScriptTypeDeclaration(
+  ctx: ParserContext,
+  statement: Program["body"][number] | Declaration,
+  exported: boolean,
+) {
   if (statement.type === "ImportDeclaration" && statement.source?.value) {
     for (const specifier of statement.specifiers ?? []) {
       const localName = specifier.local?.name;
       if (!localName) continue;
-      const isTypeOnly = statement.importKind === "type" || specifier.importKind === "type";
+      const isTypeOnly =
+        statement.importKind === "type" || (specifier.type === "ImportSpecifier" && specifier.importKind === "type");
       if (!isTypeOnly) continue;
 
       let specifierType: TypeImportBinding["specifierType"] | undefined;
@@ -270,19 +249,18 @@ function collectScriptTypeDeclaration(ctx: ParserContext, statement: ModernScrip
       });
     }
   }
-  const isEnum = statement.type === "TSEnumDeclaration";
   if (
-    (isEnum || statement.type === "TSInterfaceDeclaration" || statement.type === "TSTypeAliasDeclaration") &&
-    statement.id?.name &&
-    statement.start !== undefined &&
-    statement.end !== undefined
+    statement.type === "TSEnumDeclaration" ||
+    statement.type === "TSInterfaceDeclaration" ||
+    statement.type === "TSTypeAliasDeclaration"
   ) {
-    const code = isEnum
-      ? buildEnumLocalTypeDeclarationCode(ctx, statement)
-      : sourceAtPos(ctx, statement.start, statement.end)?.trim();
+    const code =
+      statement.type === "TSEnumDeclaration"
+        ? buildEnumLocalTypeDeclarationCode(ctx, statement)
+        : sourceAtPos(ctx, statement.start, statement.end)?.trim();
     ctx.localTypeDeclarationsByName.set(statement.id.name, {
       code: code ?? "",
-      node: statement as ModernRunesTypeNode,
+      node: statement,
       start: statement.start,
       ...(exported ? { exported } : {}),
     });
@@ -296,7 +274,7 @@ function collectScriptTypeDeclaration(ctx: ParserContext, statement: ModernScrip
  * this tree, read only during this call. After that, only the extracted
  * `.code` string is used.
  */
-export function buildRunesPropTypeMetadata(ctx: ParserContext, parsed: TemplateRoot) {
+export function buildRunesPropTypeMetadata(ctx: ParserContext, parsed: AST.Root) {
   ctx.runesPropsDeclarationMetadataByDeclaratorStart.clear();
   ctx.explicitPropTypesByName.clear();
   ctx.explicitVariableTypesByName.clear();
@@ -331,9 +309,9 @@ export function buildRunesPropTypeMetadata(ctx: ParserContext, parsed: TemplateR
       collectScriptTypeDeclaration(ctx, statement.declaration, true);
     } else if (statement.type === "ExportNamedDeclaration" && !statement.source) {
       // `export type { Local }`: a local type exported under its own name.
-      for (const specifier of statement.specifiers ?? []) {
-        const localName = specifier.local?.name;
-        if (localName && localName === specifier.exported?.name) typeOnlyExportNames.add(localName);
+      for (const specifier of statement.specifiers) {
+        if (specifier.local.type !== "Identifier" || specifier.exported.type !== "Identifier") continue;
+        if (specifier.local.name === specifier.exported.name) typeOnlyExportNames.add(specifier.local.name);
       }
     } else {
       collectScriptTypeDeclaration(ctx, statement, false);
@@ -381,14 +359,11 @@ export function buildRunesPropTypeMetadata(ctx: ParserContext, parsed: TemplateR
       // `let props = $props() as Props` / `... satisfies Props` carry their type on the
       // initializer rather than on `declarator.id`, so fall back to that when there's no
       // explicit `: Props` annotation on the binding itself.
-      const castTypeNode = declarator.id?.typeAnnotation
-        ? undefined
-        : (getTypeCastAnnotation(declarator.init) as ModernRunesTypeNode | undefined);
-      const effectiveTypeNode = declarator.id?.typeAnnotation?.typeAnnotation ?? castTypeNode;
+      const annotation = "typeAnnotation" in declarator.id ? declarator.id.typeAnnotation : undefined;
+      const castTypeNode = annotation ? undefined : getTypeCastAnnotation(declarator.init);
+      const effectiveTypeNode = annotation?.typeAnnotation ?? castTypeNode;
 
-      const canonicalType = declarator.id?.typeAnnotation
-        ? getTypeAnnotationText(ctx, declarator.id.typeAnnotation)
-        : getTypeNodeText(ctx, castTypeNode as { start?: number; end?: number } | undefined);
+      const canonicalType = annotation ? getTypeAnnotationText(ctx, annotation) : getTypeNodeText(ctx, castTypeNode);
       const metadata = buildRunesPropTypeMetadataMap(
         ctx,
         effectiveTypeNode,
@@ -649,7 +624,7 @@ function splitMemberNameAndType(member: string): { name: string; type: string } 
  */
 export function registerTypedDispatcherEvents(
   ctx: ParserContext,
-  typeArgument: ModernRunesTypeNode | undefined,
+  typeArgument: TSNode | undefined,
   dispatcherName: string,
   fallbackSource: SourceRange | undefined,
 ) {

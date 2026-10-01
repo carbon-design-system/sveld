@@ -1,23 +1,13 @@
-import type { ImportDeclaration } from "estree";
-import type { AST } from "svelte/compiler";
+import type { AST, ImportDeclaration } from "sveast";
 import { isIdentifier, isMemberExpression } from "../ast-guards";
 import type { ComponentPropReExport } from "../model";
 import type { ParserContext } from "./context";
 
 /**
- * An `ImportDeclaration` as acorn-typescript parses it: estree's, plus the
- * `importKind` it sets on `import type` and `import { type x }`.
- */
-export type ImportDeclarationNode = ImportDeclaration & {
-  importKind?: "type" | "value";
-  specifiers: Array<ImportDeclaration["specifiers"][number] & { importKind?: "type" | "value" }>;
-};
-
-/**
  * Record named value imports by local name for later cross-file call-default
  * resolution. Skips type-only imports; those are not runtime callees.
  */
-export function collectValueImportBindings(ctx: ParserContext, node: ImportDeclarationNode): void {
+export function collectValueImportBindings(ctx: ParserContext, node: ImportDeclaration): void {
   const source = node.source.value;
   if (typeof source !== "string" || node.importKind === "type") return;
 
@@ -73,7 +63,7 @@ export function importedCalleeBinding(ctx: ParserContext, callee: unknown): Impo
   for (const script of [ctx.parsed?.instance, ctx.parsed?.module]) {
     for (const statement of script?.content.body ?? []) {
       if (statement.type !== "ImportDeclaration") continue;
-      const declaration: ImportDeclarationNode = statement;
+      const declaration = statement;
       const source = declaration.source.value;
       if (declaration.importKind === "type" || typeof source !== "string") continue;
       const specifier = declaration.specifiers.find((candidate) => candidate.local.name === localName);
@@ -108,14 +98,14 @@ export function collectReExportableImports(script: AST.Script): Map<string, Comp
 
   for (const statement of script.content.body) {
     if (statement.type !== "ImportDeclaration") continue;
-    const node: ImportDeclarationNode = statement;
+    const node = statement;
     if (node.importKind === "type") continue;
     const from = node.source.value;
     if (typeof from !== "string") continue;
 
     for (const specifier of node.specifiers) {
       const localName = specifier.local.name;
-      if (!localName || specifier.importKind === "type") continue;
+      if (!localName || (specifier.type === "ImportSpecifier" && specifier.importKind === "type")) continue;
       let imported: string;
       if (specifier.type === "ImportDefaultSpecifier") imported = "default";
       else if (specifier.type === "ImportNamespaceSpecifier") imported = "*";

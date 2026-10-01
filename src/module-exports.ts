@@ -1,12 +1,47 @@
 import { resolve } from "node:path";
-import { isIdentifier, resolveStaticStringLiteral, unwrapTypeCastExpression } from "./ast-guards";
-import { type AstNode, asNode, asNodeArray, type ModuleGraph, type ModuleSource } from "./module-graph";
+import type {
+  ArrowFunctionExpression,
+  BlockStatement,
+  Declaration,
+  ExportDefaultDeclaration,
+  Expression,
+  FunctionDeclaration,
+  FunctionExpression,
+  MaybeNamedClassDeclaration,
+  MaybeNamedFunctionDeclaration,
+  Node,
+  Pattern,
+  Program,
+  Statement,
+  TSDeclareFunction,
+  TSEnumDeclaration,
+  TSEnumMember,
+} from "sveast";
+import { resolveStaticStringLiteral, unwrapTypeCastExpression } from "./ast-guards";
+import type { ModuleGraph, ModuleSource } from "./module-graph";
 import type { EntryExport } from "./parse-entry-exports";
 import { parseComments } from "./parser/comment-parser";
 import { getParserStack } from "./parser-stack";
 import { returnTypeOfFunctionType } from "./type-text";
 
 const NEWLINE_REGEX = /\r?\n/;
+
+/** A function a function-valued export is declared as. */
+export type ExportedFunction =
+  | FunctionDeclaration
+  | MaybeNamedFunctionDeclaration
+  | FunctionExpression
+  | ArrowFunctionExpression;
+
+/** A function, or an ambient `declare function` signature with no body. */
+type FunctionLike = ExportedFunction | TSDeclareFunction;
+
+/** A top-level statement, or the declaration an `export` statement wraps. */
+type DeclarationLike =
+  | Program["body"][number]
+  | Declaration
+  | MaybeNamedClassDeclaration
+  | MaybeNamedFunctionDeclaration;
 const JSDOC_LINE_PREFIX_REGEX = /^\s*\*+/;
 
 /**
@@ -39,7 +74,7 @@ export interface InternalExport extends Omit<EntryExport, "source"> {
    * or a `const` arrow/function expression). `resolve-dispatch-escapes.ts`
    * reads the events it dispatches through a parameter.
    */
-  functionNode?: AstNode;
+  functionNode?: ExportedFunction;
   /**
    * The module a namespace export (`export * as ns from "./x"`, or an
    * `import * as ns` the module re-exports) is the namespace object of. Its
@@ -81,8 +116,8 @@ export function createResolveContext(graph: ModuleGraph): ResolveContext {
   return { graph, cache: new Map(), computing: new Set() };
 }
 
-function identifierName(node: AstNode | undefined): string | undefined {
-  return isIdentifier(node) ? node.name : undefined;
+function identifierName(node: Node | null | undefined): string | undefined {
+  return node?.type === "Identifier" ? node.name : undefined;
 }
 
 /**
@@ -131,37 +166,30 @@ function jsDocDescription(block: string): string | undefined {
   return description.join(" ") || undefined;
 }
 
-function textOf(source: ModuleSource, node: AstNode | undefined): string | undefined {
+function textOf(source: ModuleSource, node: { start: number; end: number } | undefined): string | undefined {
   if (!node) return undefined;
   return source.text.slice(node.start, node.end);
 }
 
-function annotationText(source: ModuleSource, annotated: AstNode | undefined): string | undefined {
-  const annotation = asNode(annotated?.typeAnnotation);
-  if (annotation?.type !== "TSTypeAnnotation") return undefined;
-  return textOf(source, asNode(annotation.typeAnnotation));
+function annotationText(source: ModuleSource, annotated: Pattern): string | undefined {
+  return "typeAnnotation" in annotated ? textOf(source, annotated.typeAnnotation?.typeAnnotation) : undefined;
 }
 
 /**
  * Function/arrow/`TSDeclareFunction` return annotation text (`): T`).
  * Lives on `returnType`, not `typeAnnotation` (that annotates bindings).
  */
-function functionReturnAnnotationText(source: ModuleSource, fn: AstNode): string | undefined {
-  const returnAnnotation = asNode(fn.returnType);
-  return returnAnnotation?.type === "TSTypeAnnotation"
-    ? textOf(source, asNode(returnAnnotation.typeAnnotation))
-    : undefined;
+function functionReturnAnnotationText(source: ModuleSource, fn: FunctionLike): string | undefined {
+  return textOf(source, fn.returnType?.typeAnnotation);
 }
 
-function buildSignature(source: ModuleSource, fn: AstNode): string {
-  const params = asNodeArray(fn.params)
-    .map((param) => textOf(source, param) ?? "")
-    .join(", ");
+function buildSignature(source: ModuleSource, fn: FunctionLike): string {
+  const params = fn.params.map((param) => textOf(source, param) ?? "").join(", ");
   const returnType = functionReturnAnnotationText(source, fn);
   return `(${params})${returnType ? ` => ${returnType}` : ""}`;
 }
 
-function inferLiteralType(init: AstNode): string | undefined {
+function inferLiteralType(init: Expression): string | undefined {
   if (init.type === "Literal") {
     const value = init.value;
     if (typeof value === "string") return "string";
@@ -173,7 +201,7 @@ function inferLiteralType(init: AstNode): string | undefined {
 }
 
 /** `300`, `-1`, `"a"`, `true`, or a template with no expressions. */
-function primitiveLiteralOf(source: ModuleSource, init: AstNode): PrimitiveLiteral | undefined {
+function primitiveLiteralOf(source: ModuleSource, init: Expression): PrimitiveLiteral | undefined {
   const raw = textOf(source, init);
   if (raw === undefined) return undefined;
 
@@ -186,8 +214,8 @@ function primitiveLiteralOf(source: ModuleSource, init: AstNode): PrimitiveLiter
   }
 
   if (init.type === "UnaryExpression" && init.operator === "-") {
-    const argument = asNode(init.argument);
-    if (argument?.type === "Literal" && typeof argument.value === "number") {
+    const argument = init.argument;
+    if (argument.type === "Literal" && typeof argument.value === "number") {
       return { raw, value: -argument.value, type: "number" };
     }
     return undefined;
@@ -202,17 +230,17 @@ function primitiveLiteralOf(source: ModuleSource, init: AstNode): PrimitiveLiter
  * stands for, as `setContext` with a same-file key reads it: its static
  * description, or the binding name when it has none.
  */
-function symbolKeyDescription(init: AstNode, bindingName: string): string | undefined {
+function symbolKeyDescription(init: Expression, bindingName: string): string | undefined {
   if (init.type !== "CallExpression" && init.type !== "NewExpression") return undefined;
-  const callee = asNode(init.callee);
+  const callee = init.callee;
   const isSymbol =
     identifierName(callee) === "Symbol" ||
-    (callee?.type === "MemberExpression" &&
+    (callee.type === "MemberExpression" &&
       !callee.computed &&
-      identifierName(asNode(callee.object)) === "Symbol" &&
-      identifierName(asNode(callee.property)) === "for");
+      identifierName(callee.object) === "Symbol" &&
+      identifierName(callee.property) === "for");
   if (!isSymbol) return undefined;
-  const description = resolveStaticStringLiteral(asNodeArray(init.arguments)[0]);
+  const description = resolveStaticStringLiteral(init.arguments[0]);
   return description || bindingName;
 }
 
@@ -263,13 +291,11 @@ function portableDeclaredType(
  * Literal-only return inference for a function/arrow (same idea as
  * `inferReturnTypeFromNode` in props.ts). string/number/boolean/template only.
  */
-function inferAstLiteralReturnType(fn: AstNode): string | undefined {
-  if (fn.async || fn.generator) return undefined;
+function inferAstLiteralReturnType(fn: FunctionLike): string | undefined {
+  if (fn.async || fn.generator || fn.type === "TSDeclareFunction") return undefined;
 
-  const body = asNode(fn.body);
-  if (!body) return undefined;
-
-  const returnArgs: Array<AstNode | null> = [];
+  const body = fn.body;
+  const returnArgs: Array<Expression | null> = [];
   if (body.type === "BlockStatement") {
     collectAstReturnArguments(body, returnArgs);
     if (returnArgs.length === 0) return undefined;
@@ -288,53 +314,56 @@ function inferAstLiteralReturnType(fn: AstNode): string | undefined {
   return inferred;
 }
 
-function collectAstReturnArguments(body: AstNode, out: Array<AstNode | null>): void {
-  for (const statement of asNodeArray(body.body)) {
-    if (
-      statement.type === "FunctionDeclaration" ||
-      statement.type === "FunctionExpression" ||
-      statement.type === "ArrowFunctionExpression"
-    ) {
-      continue;
-    }
-    if (statement.type === "ReturnStatement") {
-      out.push(asNode(statement.argument) ?? null);
-      continue;
-    }
-    // Nested blocks (if/for/while) without entering nested functions.
-    if (statement.type === "BlockStatement") {
+function collectAstReturnArguments(body: BlockStatement, out: Array<Expression | null>): void {
+  for (const statement of body.body) collectStatementReturnArguments(statement, out);
+}
+
+/** A statement's `return` arguments, without entering nested functions. */
+function collectStatementReturnArguments(statement: Statement, out: Array<Expression | null>): void {
+  switch (statement.type) {
+    case "ReturnStatement":
+      out.push(statement.argument ?? null);
+      return;
+    case "BlockStatement":
       collectAstReturnArguments(statement, out);
-      continue;
-    }
-    const consequent = asNode(statement.consequent);
-    if (consequent?.type === "BlockStatement") collectAstReturnArguments(consequent, out);
-    else if (consequent?.type === "ReturnStatement") out.push(asNode(consequent.argument) ?? null);
-    const alternate = asNode(statement.alternate);
-    if (alternate?.type === "BlockStatement") collectAstReturnArguments(alternate, out);
-    else if (alternate?.type === "ReturnStatement") out.push(asNode(alternate.argument) ?? null);
-    const blockBody = asNode(statement.body);
-    if (blockBody?.type === "BlockStatement") collectAstReturnArguments(blockBody, out);
+      return;
+    case "IfStatement":
+      collectBranchReturnArguments(statement.consequent, out);
+      if (statement.alternate) collectBranchReturnArguments(statement.alternate, out);
+      return;
+    // Loop and labeled bodies, when they're blocks.
+    case "ForStatement":
+    case "ForInStatement":
+    case "ForOfStatement":
+    case "WhileStatement":
+    case "DoWhileStatement":
+    case "LabeledStatement":
+    case "WithStatement":
+      if (statement.body.type === "BlockStatement") collectAstReturnArguments(statement.body, out);
+      return;
   }
 }
 
+/** An `if`'s branch: a block, or a bare `return`. */
+function collectBranchReturnArguments(branch: Statement, out: Array<Expression | null>): void {
+  if (branch.type === "BlockStatement") collectAstReturnArguments(branch, out);
+  else if (branch.type === "ReturnStatement") out.push(branch.argument ?? null);
+}
+
 /** A `TSEnumMember`'s literal initializer value, or `undefined` for anything not a plain string/number literal. */
-function enumMemberLiteralValue(member: AstNode): string | number | undefined {
-  const initializer = asNode(member.initializer);
+function enumMemberLiteralValue(member: TSEnumMember): string | number | undefined {
+  const initializer = member.initializer;
   if (!initializer) return undefined;
 
   if (initializer.type === "Literal") {
-    const value = (initializer as unknown as { value: unknown }).value;
+    const value = initializer.value;
     return typeof value === "string" || typeof value === "number" ? value : undefined;
   }
 
   // Negative numeric literals parse as `UnaryExpression` (`-1`), not `Literal`.
-  if (initializer.type === "UnaryExpression") {
-    const argument = asNode((initializer as unknown as { argument?: unknown }).argument);
-    const operator = (initializer as unknown as { operator?: string }).operator;
-    if (operator === "-" && argument?.type === "Literal") {
-      const value = (argument as unknown as { value: unknown }).value;
-      if (typeof value === "number") return -value;
-    }
+  if (initializer.type === "UnaryExpression" && initializer.operator === "-") {
+    const argument = initializer.argument;
+    if (argument.type === "Literal" && typeof argument.value === "number") return -argument.value;
   }
 
   return undefined;
@@ -347,15 +376,14 @@ function enumMemberLiteralValue(member: AstNode): string | number | undefined {
  * bare enum name) when a member's value can't be determined - e.g. a
  * computed initializer like `1 << 2`.
  */
-function enumMemberUnionType(declaration: AstNode): string | undefined {
-  const members = asNodeArray(declaration.members);
+function enumMemberUnionType(declaration: TSEnumDeclaration): string | undefined {
+  const members = declaration.members;
   if (members.length === 0) return undefined;
 
   const literals: string[] = [];
   let nextNumeric = 0;
   for (const member of members) {
-    const initializer = asNode(member.initializer);
-    if (!initializer) {
+    if (!member.initializer) {
       literals.push(String(nextNumeric));
       nextNumeric += 1;
       continue;
@@ -378,7 +406,7 @@ function enumMemberUnionType(declaration: AstNode): string | undefined {
  */
 function describeDeclaration(
   source: ModuleSource,
-  declaration: AstNode,
+  declaration: DeclarationLike,
   jsdocStart: number,
   anonymousName?: string,
 ): InternalExport[] {
@@ -392,11 +420,12 @@ function describeDeclaration(
   const internalField = internal ? ({ internal: true } as const) : {};
 
   if (declaration.type === "VariableDeclaration") {
-    const kind = (declaration.kind as "const" | "let" | "var") ?? "const";
+    // `using` can't be exported; anything but `let`/`var` reads as `const`.
+    const kind = declaration.kind === "let" || declaration.kind === "var" ? declaration.kind : "const";
     const results: InternalExport[] = [];
 
-    for (const declarator of asNodeArray(declaration.declarations)) {
-      const id = asNode(declarator.id);
+    for (const declarator of declaration.declarations) {
+      const id = declarator.id;
       const name = identifierName(id);
       if (!name) continue;
 
@@ -407,8 +436,8 @@ function describeDeclaration(
       let literalValue: string | undefined;
       let primitiveLiteral: PrimitiveLiteral | undefined;
       let declaredType: InternalExport["declaredType"];
-      let functionNode: AstNode | undefined;
-      const init = asNode(declarator.init);
+      let functionNode: ExportedFunction | undefined;
+      const init = declarator.init;
 
       if (init) {
         if (init.type === "ArrowFunctionExpression" || init.type === "FunctionExpression") {
@@ -423,7 +452,7 @@ function describeDeclaration(
           value = textOf(source, init);
           if (!type) type = inferLiteralType(init);
           // `"k" as const` and `"k" satisfies string` hold the same value as `"k"`.
-          const inner = asNode(unwrapTypeCastExpression(init)) ?? init;
+          const inner = unwrapTypeCastExpression(init);
           literalValue = resolveStaticStringLiteral(inner) ?? symbolKeyDescription(inner, name);
           if (kind === "const") {
             primitiveLiteral = primitiveLiteralOf(source, inner);
@@ -456,7 +485,7 @@ function describeDeclaration(
 
   // Ambient signature in a `.d.ts`: `export function uniqueId(prefix?: string): string;`
   if (declaration.type === "FunctionDeclaration" || declaration.type === "TSDeclareFunction") {
-    const name = identifierName(asNode(declaration.id)) ?? anonymousName;
+    const name = identifierName(declaration.id) ?? anonymousName;
     if (!name) return [];
     return [
       {
@@ -479,7 +508,7 @@ function describeDeclaration(
   }
 
   if (declaration.type === "ClassDeclaration") {
-    const className = identifierName(asNode(declaration.id));
+    const className = identifierName(declaration.id);
     const name = className ?? anonymousName;
     if (!name) return [];
     return [
@@ -498,13 +527,13 @@ function describeDeclaration(
   }
 
   if (declaration.type === "TSTypeAliasDeclaration") {
-    const name = identifierName(asNode(declaration.id));
+    const name = identifierName(declaration.id);
     if (!name) return [];
     return [
       {
         name,
         kind: "type",
-        type: textOf(source, asNode(declaration.typeAnnotation)),
+        type: textOf(source, declaration.typeAnnotation),
         description,
         deprecated,
         tags,
@@ -516,13 +545,13 @@ function describeDeclaration(
   }
 
   if (declaration.type === "TSInterfaceDeclaration") {
-    const name = identifierName(asNode(declaration.id));
+    const name = identifierName(declaration.id);
     if (!name) return [];
     return [
       {
         name,
         kind: "interface",
-        type: textOf(source, asNode(declaration.body)),
+        type: textOf(source, declaration.body),
         description,
         deprecated,
         tags,
@@ -534,7 +563,7 @@ function describeDeclaration(
   }
 
   if (declaration.type === "TSEnumDeclaration") {
-    const name = identifierName(asNode(declaration.id));
+    const name = identifierName(declaration.id);
     if (!name) return [];
     return [
       {
@@ -561,11 +590,10 @@ function describeDeclaration(
  */
 function describeDefaultExport(
   source: ModuleSource,
-  node: AstNode,
+  node: ExportDefaultDeclaration,
   resolveLocal: (name: string) => InternalExport | null,
 ): InternalExport | undefined {
-  const declaration = asNode(node.declaration);
-  if (!declaration) return undefined;
+  const declaration = node.declaration;
 
   if (
     declaration.type === "FunctionDeclaration" ||
@@ -597,17 +625,17 @@ function describeDefaultExport(
  * `default` for a default import, or `*` for a namespace import.
  */
 function findImportSource(
-  body: AstNode[],
+  body: Program["body"],
   name: string,
 ): { specifier: string; importedName: string; isTypeOnly: boolean } | null {
   for (const node of body) {
     if (node.type !== "ImportDeclaration") continue;
-    const specifierValue = asNode(node.source)?.value;
-    if (typeof specifierValue !== "string") continue;
+    const specifierValue = node.source.value;
 
-    for (const specifier of asNodeArray(node.specifiers)) {
-      if (identifierName(asNode(specifier.local)) !== name) continue;
-      const isTypeOnly = node.importKind === "type" || specifier.importKind === "type";
+    for (const specifier of node.specifiers) {
+      if (specifier.local.name !== name) continue;
+      const isTypeOnly =
+        node.importKind === "type" || (specifier.type === "ImportSpecifier" && specifier.importKind === "type");
       if (specifier.type === "ImportDefaultSpecifier") {
         return { specifier: specifierValue, importedName: "default", isTypeOnly };
       }
@@ -615,7 +643,7 @@ function findImportSource(
         return { specifier: specifierValue, importedName: "*", isTypeOnly };
       }
       if (specifier.type === "ImportSpecifier") {
-        const importedName = identifierName(asNode(specifier.imported)) ?? name;
+        const importedName = identifierName(specifier.imported) ?? name;
         return { specifier: specifierValue, importedName, isTypeOnly };
       }
     }
@@ -658,7 +686,7 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
   /** Local declarations indexed by name for `export { x }` lookups. */
   const localDeclarations = new Map<string, InternalExport>();
   for (const node of body) {
-    const declaration = node.type === "ExportNamedDeclaration" ? asNode(node.declaration) : node;
+    const declaration = node.type === "ExportNamedDeclaration" ? node.declaration : node;
     if (!declaration) continue;
     for (const described of describeDeclaration(source, declaration, declaration.start)) {
       localDeclarations.set(described.name, described);
@@ -698,13 +726,13 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
 
   for (const node of body) {
     if (node.type === "ExportAllDeclaration") {
-      const specifierValue = asNode(node.source)?.value;
-      if (typeof specifierValue !== "string" || specifierValue.endsWith(".svelte")) continue;
+      const specifierValue = node.source.value;
+      if (specifierValue.endsWith(".svelte")) continue;
       const target = ctx.graph.resolve(specifierValue, source.dir);
       if (!target) continue;
       const isTypeOnly = node.exportKind === "type";
       // `export * as ns from "./x"` exports the one name `ns`, like an explicit export.
-      const namespaceName = identifierName(asNode(node.exported));
+      const namespaceName = identifierName(node.exported);
       if (namespaceName) {
         results.push(namespaceExport(namespaceName, target, isTypeOnly));
         continue;
@@ -726,17 +754,16 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
     if (node.type !== "ExportNamedDeclaration") continue;
 
     // Inline `export const/function/class/type/interface/enum`.
-    const declaration = asNode(node.declaration);
+    const declaration = node.declaration;
     if (declaration) {
       results.push(...describeDeclaration(source, declaration, node.start));
       continue;
     }
 
-    const specifierValue = asNode(node.source)?.value;
-    const moduleSpecifier = typeof specifierValue === "string" ? specifierValue : undefined;
+    const moduleSpecifier = node.source?.value;
     if (moduleSpecifier?.endsWith(".svelte")) {
-      for (const specifier of asNodeArray(node.specifiers)) {
-        const exportedName = identifierName(asNode(specifier.exported));
+      for (const specifier of node.specifiers) {
+        const exportedName = identifierName(specifier.exported);
         if (exportedName) results.push(componentExport(exportedName, moduleSpecifier));
       }
       continue;
@@ -744,10 +771,9 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
 
     const stmtIsTypeOnly = node.exportKind === "type";
 
-    for (const specifier of asNodeArray(node.specifiers)) {
-      if (specifier.type !== "ExportSpecifier") continue;
-      const exportedName = identifierName(asNode(specifier.exported));
-      const localName = identifierName(asNode(specifier.local));
+    for (const specifier of node.specifiers) {
+      const exportedName = identifierName(specifier.exported);
+      const localName = identifierName(specifier.local);
       if (!exportedName || !localName) continue;
 
       const elementIsTypeOnly = stmtIsTypeOnly || specifier.exportKind === "type";

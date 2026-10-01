@@ -46,7 +46,7 @@ export function isTypeOnlySubtree(type: string): boolean {
 /**
  * Walks `root` and every node under it. `N` is the caller's node type: every
  * object with a string `type` found under `root` is passed as an `N`, so it
- * must cover whatever the tree can hold (e.g. `TemplateAstNode` for the
+ * must cover whatever the tree can hold (e.g. `AST.SvelteNode` for the
  * template parser's tree).
  */
 export function walkNodes<N extends { type: string }>(

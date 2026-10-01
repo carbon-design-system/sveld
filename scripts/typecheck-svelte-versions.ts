@@ -17,7 +17,6 @@ import { mkdtempSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { $ } from "bun";
-import { devDependencies } from "../package.json";
 import { runOptionMatrix } from "./typecheck-option-matrix";
 
 const SVELTE_VERSIONS = ["3", "4"];
@@ -29,8 +28,7 @@ for (const version of SVELTE_VERSIONS) {
   // `extends` path to the repo's tsconfig.fixtures.json.
   const root = realpathSync(mkdtempSync(path.join(tmpdir(), `sveld-svelte${version}-`)));
   try {
-    // `acorn`: the one other package a fixture's `.d.ts` imports (module-reexport).
-    const dependencies = { svelte: version, acorn: devDependencies.acorn };
+    const dependencies = { svelte: version };
     writeFileSync(path.join(root, "package.json"), `${JSON.stringify({ private: true, dependencies }, null, 2)}\n`);
     // biome-ignore lint/performance/noAwaitInLoops: each version installs into its own dir; two at once only race on bun's cache.
     await $`bun install --silent`.cwd(root);

@@ -32,7 +32,7 @@ const SRC_ROOT = join(__dirname, "..", "src");
 /**
  * Walks every module reachable from `src/browser.ts` via relative imports
  * and asserts none of them import a `node:*` built-in. Bare specifiers
- * (`svelte/compiler`, `acorn`, `@sveltejs/acorn-typescript`) are out of
+ * (`svelte/compiler`, `sveast`) are out of
  * scope. They're expected to be browser-safe and bundled by the consumer.
  * Nothing in `src/` currently imports outside `src/`.
  */

@@ -211,7 +211,8 @@ export function mergeGlobbedComponents(
  * augments the set with every `.svelte` file under the entry directory.
  *
  * @param documentExports - When `true`, log and continue if the entry file fails
- *   the acorn component-export parse (TypeScript-only syntax is common).
+ *   the component-export parse, which reads it as JavaScript (TypeScript-only
+ *   syntax is common).
  * @param graph - Lists directories for the glob walk and resolves the
  *   barrel's re-exports.
  */

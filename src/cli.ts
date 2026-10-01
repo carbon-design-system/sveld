@@ -66,7 +66,7 @@ Options:
   -q, --quiet           Suppress progress logs (errors, the diagnostics summary, and the --check report are unaffected)
   --stdout              Print the document from exactly one of --json or --markdown to stdout and write nothing to disk (rejects --types and --check)
   --cache[=<path>]      Persist parsed output and skip re-parsing unchanged files (on by default, default path: node_modules/.cache/sveld/parse-cache.json; pass --cache=false to disable)
-  --check-examples[=syntax]  Check @example blocks: TS/JS against the TypeScript program, svelte/html markup against sveld's own parser; --check-examples=syntax runs only the markup path and never loads TypeScript
+  --check-examples[=syntax]  Check @example blocks: TS/JS against the TypeScript program, svelte/html markup against sveast; --check-examples=syntax runs only the markup path and never loads TypeScript
   --report-diagnostics  Print unresolved-type diagnostics to stderr
   --strict[=errors]     Exit with code 4 when diagnostics exist (implies --report-diagnostics); --strict=errors only fails on error-severity diagnostics
   --types-format=<format>  ".d.ts" output format: "class" (default) or "component" (Svelte 5 Component<...>)

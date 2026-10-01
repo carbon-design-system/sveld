@@ -3,10 +3,9 @@
  * module's exports and the imports, functions, and variables the instance
  * script can see.
  */
-import type { ClassDeclaration, ExportNamedDeclaration, Node } from "estree";
+import type { AST, ClassDeclaration, ExportNamedDeclaration, Node } from "sveast";
 import type { ComponentProp, ComponentPropReExport } from "../model";
-import type { TemplateAstNode } from "../svelte-template-parse";
-import { type ClassDeclarationLike, readClassDeclaration } from "./classes";
+import { readClassDeclaration } from "./classes";
 import type { ParserContext } from "./context";
 import { recordDiagnostic } from "./diagnostics";
 import {
@@ -90,7 +89,7 @@ function addModuleClassExport(
     typeParameters,
     extends: baseClass,
     implements: implemented,
-  } = readClassDeclaration(ctx, declaration as ClassDeclarationLike);
+  } = readClassDeclaration(ctx, declaration);
   const classTypeParameters = typeParameters ?? jsdocInfo?.typeParameters;
 
   addModuleExport(ctx, name, {
@@ -209,7 +208,7 @@ export function walkModuleScript(ctx: ParserContext): void {
 
   const reExportableImports = collectReExportableImports(module);
 
-  walkNodes<TemplateAstNode>(module, (node, parent) => {
+  walkNodes<AST.SvelteNode>(module, (node, parent) => {
     // Module script is in scope for instance. Record imports/funcs/vars
     // the same way so instance CallExpression defaults can see them.
     if (node.type === "ImportDeclaration") {

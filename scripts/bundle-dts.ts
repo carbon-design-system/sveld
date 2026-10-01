@@ -109,7 +109,7 @@ function norm(p: string): string {
 function sourceToDtsPath(source: string, srcRoot: string, emitted: Map<string, string>): string {
   const rel = relative(srcRoot, source).replace(TS_EXT_RE, ".d.ts").replaceAll("\\", "/");
   // Match the whole path relative to `src/`: a suffix match on `index.d.ts`
-  // also matched `template-parse/index.d.ts`, and whichever came first won.
+  // also matched another module's `index.d.ts`, and whichever came first won.
   for (const key of emitted.keys()) {
     if (relative(srcRoot, key).replaceAll("\\", "/") === rel) return key;
   }

@@ -1,11 +1,11 @@
 name: svelte canary
 
-# Early warning for the hand-rolled parser (src/template-parse/): svelte
-# ships new template syntax in minor releases (<svelte:boundary> in 5.3,
-# {@attach} in 5.29), so this runs the shim compare, unit tests, and the
-# differential fuzzer against the newest svelte@latest, ahead of the
-# lockfile pin. The npm `next` dist-tag is stale (pre-5.0), so `latest`
-# is the real frontier. Scheduled and manual only; never blocks PRs.
+# Early warning for sveld's analysis: svelte ships new template syntax in
+# minor releases (<svelte:boundary> in 5.3, {@attach} in 5.29), so this runs
+# the unit tests against the newest svelte@latest, ahead of the lockfile
+# pin. Parser parity with svelte is checked in sveast's own canary. The npm
+# `next` dist-tag is stale (pre-5.0), so `latest` is the real frontier.
+# Scheduled and manual only; never blocks PRs.
 
 on:
   schedule:
@@ -36,22 +36,8 @@ jobs:
           echo "svelte version:"
           grep '"version"' node_modules/svelte/package.json
 
-      - name: Parser shim compare
-        run: bun test svelte-template-parse-shim
-
       - name: Full unit tests
         run: bun run test
-
-      - name: Differential fuzz
-        run: bun run fuzz --iterations 300 --findings-dir fuzz-findings
-
-      - name: Upload fuzz findings
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: fuzz-findings
-          path: fuzz-findings
-          if-no-files-found: ignore
 
       - name: Open or update issue on failure
         if: failure()
@@ -63,8 +49,7 @@ jobs:
           BODY="The svelte canary workflow failed.
 
           This usually means a new svelte release changed template syntax
-          that src/template-parse/ does not yet handle (or shifted output
-          in a way the shim compare/fuzzer caught). See
+          or AST shapes that sveld's analysis doesn't handle yet. See
           .github/workflows/svelte-canary.yml for context.
 
           Failed run: ${RUN_URL}"

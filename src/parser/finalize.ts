@@ -3,7 +3,7 @@
  * events, slot prop types, generics), record the diagnostics that need
  * the whole component, and build the {@link ParsedComponent}.
  */
-import type { CallExpression, Literal } from "estree";
+import type { CallExpression, Literal } from "sveast";
 import { getElementByTag } from "../element-tag-map";
 import type {
   ComponentContext,
@@ -17,7 +17,7 @@ import type {
   TypeDef,
 } from "../model";
 import { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "../parsed-component-metadata";
-import { isValidTypeText } from "../template-parse/acorn-bridge";
+import { isValidTypeText } from "../type-text-validity";
 import type { ComponentWalkResult } from "./component-walk";
 import { getPropTypeByLocalOrPublic, type ParserContext, resolvePublicPropName } from "./context";
 import { buildDiagnostic, isSveldIgnored, recordDiagnostic, recordSveldIgnore } from "./diagnostics";

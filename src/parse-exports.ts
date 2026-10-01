@@ -1,36 +1,10 @@
 import { readFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
-import type { Node } from "acorn";
+import type { Identifier, StringLiteral } from "sveast";
 import { asRelativeSourcePath, type RelativeSourcePath } from "./brands";
 import { ModuleGraph } from "./module-graph";
 import { normalizeSeparators, SVELTE_EXT_REGEX } from "./path";
 import { UnresolvedModuleError } from "./resolve-alias";
-
-interface NodeImportDeclaration extends Node {
-  type: "ImportDeclaration";
-  specifiers: { local: { name: string } }[];
-  source: null | { value: string };
-}
-
-interface NodeExportNamedDeclaration extends Node, Pick<NodeImportDeclaration, "source"> {
-  type: "ExportNamedDeclaration";
-  specifiers: { local: { name: string }; exported: { name: string } }[];
-}
-
-interface NodeExportDefaultDeclaration extends Node {
-  type: "ExportDefaultDeclaration";
-  declaration: { type: string; name: string };
-}
-
-interface NodeExportAllDeclaration extends Node, Pick<NodeImportDeclaration, "source"> {
-  type: "ExportAllDeclaration";
-}
-
-type BodyNode =
-  | NodeImportDeclaration
-  | NodeExportNamedDeclaration
-  | NodeExportDefaultDeclaration
-  | NodeExportAllDeclaration;
 
 export type ParsedExports = Record<
   string,
@@ -41,9 +15,9 @@ export type ParsedExports = Record<
   }
 >;
 
-interface ProgramNode extends Node {
-  type: "Program";
-  body: BodyNode[];
+/** An export or import name: `x`, or the string in `export { "x-y" as z }`. */
+function moduleExportName(node: Identifier | StringLiteral): string {
+  return node.type === "Identifier" ? node.name : node.value;
 }
 
 /**
@@ -123,7 +97,7 @@ function readExports(
   resolving: Set<string>,
   fromFile: string,
 ): ParsedExports {
-  const ast = graph.parseJavaScript(fromFile, source) as ProgramNode;
+  const ast = graph.parseJavaScript(fromFile, source);
 
   const exports_by_identifier: ParsedExports = {};
 
@@ -139,9 +113,8 @@ function readExports(
         exports_by_identifier[id] = { source: asRelativeSourcePath(""), default: true };
       }
     } else if (node.type === "ExportAllDeclaration") {
-      if (!node.source) continue;
-
       const specifier = node.source.value;
+
       const file_path = graph.resolve(specifier, dir);
 
       if (!file_path) {
@@ -197,8 +170,8 @@ function readExports(
       }
 
       for (const specifier of node.specifiers) {
-        const exported_name = specifier.exported.name;
-        const local_name = specifier.local.name;
+        const exported_name = moduleExportName(specifier.exported);
+        const local_name = moduleExportName(specifier.local);
         const id = exported_name || local_name;
 
         if (chain === null) continue;
@@ -224,16 +197,15 @@ function readExports(
       const first = node.specifiers[0];
       if (!first) continue;
       const id = first.local.name;
+      const importSource = node.source.value;
 
       if (id in exports_by_identifier) {
         if (!exports_by_identifier[id].source) {
-          exports_by_identifier[id].source = asRelativeSourcePath(
-            graph.aliases.relative(node.source?.value ?? "", dir),
-          );
+          exports_by_identifier[id].source = asRelativeSourcePath(graph.aliases.relative(importSource, dir));
         }
       } else {
         exports_by_identifier[id] = {
-          source: asRelativeSourcePath(graph.aliases.relative(node.source?.value ?? "", dir)),
+          source: asRelativeSourcePath(graph.aliases.relative(importSource, dir)),
           default: id === "default",
         };
       }

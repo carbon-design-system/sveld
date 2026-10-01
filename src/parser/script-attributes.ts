@@ -1,4 +1,4 @@
-import type { AST } from "svelte/compiler";
+import type { AST } from "sveast";
 import type { ScriptLanguage, SourceRange } from "../model";
 import type { ParserContext } from "./context";
 import { recordDiagnostic } from "./diagnostics";

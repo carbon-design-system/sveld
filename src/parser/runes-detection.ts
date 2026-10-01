@@ -1,4 +1,4 @@
-import type { Pattern } from "estree";
+import type { Pattern } from "sveast";
 import type { SyntaxMode } from "../model";
 import type { ParserContext } from "./context";
 import { collectPatternIdentifiers, isScopeOwner } from "./scopes";
