@@ -1,5 +1,6 @@
 import { dirname } from "node:path";
 import type { Expression, Node, Pattern, SpreadElement, TSParameterProperty } from "sveast";
+import { isReference, STOP, walk } from "sveast/walk";
 import { resolveStaticStringLiteral } from "./ast-guards";
 import type { ComponentDocApi } from "./bundle";
 import type { CrossFilePass } from "./cross-file-pass";
@@ -13,7 +14,6 @@ import type {
 import { type ExportedFunction, findImportedExport, type ResolveContext } from "./module-exports";
 import { compareSerializedEvents } from "./parser/event-order";
 import type { DetailTypeSource } from "./parser/events";
-import { walkNodes } from "./parser/walk";
 import { getParserStack } from "./parser-stack";
 
 export type DispatchEscapeFailureReason =
@@ -146,40 +146,40 @@ function collectDispatchedEvents(
   const referenceName = "name" in binding ? binding.name : binding.object;
   let failureReason: DispatchEscapeFailureReason | undefined;
 
-  walkNodes<Node>(body, (node, parent, prop) => {
-    if (failureReason) return;
-
-    if (node.type === "CallExpression") {
-      if (!isDispatcherCallee(node.callee, binding)) return;
-      const args = node.arguments;
-      const names = staticEventNames(args[0]);
-      if (!names) {
-        failureReason = "dynamic-event-name";
+  walk(body, {
+    enter(node, parent, prop) {
+      if (node.type === "CallExpression") {
+        if (!isDispatcherCallee(node.callee, binding)) return;
+        const args = node.arguments;
+        const names = staticEventNames(args[0]);
+        if (!names) {
+          failureReason = "dynamic-event-name";
+          return STOP;
+        }
+        for (const name of names) {
+          const details = detailsByName.get(name) ?? new Set<string>();
+          details.add(detailType(args[1]));
+          detailsByName.set(name, details);
+        }
         return;
       }
-      for (const name of names) {
-        const details = detailsByName.get(name) ?? new Set<string>();
-        details.add(detailType(args[1]));
-        detailsByName.set(name, details);
+
+      const isCallee = parent?.type === "CallExpression" && prop === "callee";
+      if (node.type === "MemberExpression" && isDispatcherCallee(node, binding) && !isCallee) {
+        failureReason = "passed-on";
+        return STOP;
       }
-      return;
-    }
 
-    const isCallee = parent?.type === "CallExpression" && prop === "callee";
-    if (node.type === "MemberExpression" && isDispatcherCallee(node, binding) && !isCallee) {
+      if (node.type !== "Identifier" || node.name !== referenceName) return;
+      if (isCallee) return;
+      // `options.anything`: `options.dispatch` itself was checked above.
+      if (!("name" in binding) && parent?.type === "MemberExpression" && prop === "object") return;
+      // `x.dispatch`, `{ dispatch: ... }` or a `dispatch:` label names something else.
+      if (!isReference(node, parent)) return;
+      // Any other use (an argument, a stored reference) may dispatch out of sight.
       failureReason = "passed-on";
-      return;
-    }
-
-    if (node.type !== "Identifier" || node.name !== referenceName) return;
-    if (isCallee) return;
-    // `options.anything`: `options.dispatch` itself was checked above.
-    if (!("name" in binding) && parent?.type === "MemberExpression" && prop === "object") return;
-    // `x.dispatch` or `{ dispatch: ... }` names something else.
-    if (parent?.type === "MemberExpression" && prop === "property" && !parent.computed) return;
-    if (parent?.type === "Property" && prop === "key" && !parent.computed) return;
-    // Any other use (an argument, a stored reference) may dispatch out of sight.
-    failureReason = "passed-on";
+      return STOP;
+    },
   });
 
   if (failureReason) return { candidate, failureReason };

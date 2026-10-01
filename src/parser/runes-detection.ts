@@ -1,4 +1,5 @@
-import type { Pattern } from "sveast";
+import type { AST, Pattern } from "sveast";
+import { isReference, SKIP, STOP, walk } from "sveast/walk";
 import type { SyntaxMode } from "../model";
 import type { ParserContext } from "./context";
 import { collectPatternIdentifiers, isScopeOwner } from "./scopes";
@@ -7,54 +8,9 @@ import { isTypeOnlySubtree } from "./walk";
 /**
  * Bare rune identifiers as they appear in `scope.references` keys. Dotted forms like `$state.raw`
  * or `$derived.by` never occur as an `Identifier.name` - they're a `MemberExpression` whose
- * `.object` is the bare identifier, which `isValueReference` below already resolves correctly.
+ * `.object` is the bare identifier, which `isReference` counts as a reference.
  */
 const RUNE_NAMES = new Set(["$state", "$derived", "$effect", "$props", "$bindable", "$inspect", "$host"]);
-
-/**
- * True if `node` (an `Identifier`) is used as a value reference rather than a non-reference
- * position - a member-expression property (`foo.$state`), an object-literal key (`{ $state: 1 }`),
- * or an import/export rename target. Ported from the `is-reference` package (same helper svelte's
- * own analyzer uses, github.com/Rich-Harris/is-reference) rather than taken on as a dependency for
- * one ~15-line function.
- */
-function isValueReference(node: { type: string }, parent: { type: string } | undefined): boolean {
-  switch (parent?.type) {
-    // disregard `bar` in `foo.bar`
-    case "MemberExpression":
-      return (
-        (parent as { computed?: boolean; object?: unknown }).computed ||
-        node === (parent as { object?: unknown }).object
-      );
-    // disregard the `foo` in `class {foo(){}}` but keep it in `class {[foo](){}}`
-    case "MethodDefinition":
-      return !!(parent as { computed?: boolean }).computed;
-    // disregard the `meta` in `import.meta`
-    case "MetaProperty":
-      return node === (parent as { meta?: unknown }).meta;
-    // disregard the `foo` in `class {foo=bar}` but keep it in `class {[foo]=bar}` and `class {bar=foo}`
-    case "PropertyDefinition":
-      return (
-        (parent as { computed?: boolean; value?: unknown }).computed || node === (parent as { value?: unknown }).value
-      );
-    // disregard the `bar` in `{ bar: foo }`, but keep it in `{ [bar]: foo }`
-    case "Property":
-      return (
-        (parent as { computed?: boolean; value?: unknown }).computed || node === (parent as { value?: unknown }).value
-      );
-    // disregard the `bar` in `export { foo as bar }` or the `foo` in `import { foo as bar }`
-    case "ExportSpecifier":
-    case "ImportSpecifier":
-      return node === (parent as { local?: unknown }).local;
-    // disregard the `foo` in `foo: while (...) { ... break foo; ... continue foo; }`
-    case "LabeledStatement":
-    case "BreakStatement":
-    case "ContinueStatement":
-      return false;
-    default:
-      return true;
-  }
-}
 
 const RUNE_NAME_LIST = Array.from(RUNE_NAMES);
 
@@ -103,45 +59,30 @@ function isShadowed(name: string, scopeStack: ScopeStack): boolean {
 }
 
 /** Declares the identifiers a scope-owning node introduces directly (not through nested scopes). */
-function collectScopeOwnerNames(node: unknown): Set<string> {
+function collectScopeOwnerNames(node: AST.SvelteNode): Set<string> {
   const names = new Set<string>();
-  if (!node || typeof node !== "object" || !("type" in node)) return names;
-
-  switch (String(node.type)) {
+  switch (node.type) {
     case "FunctionDeclaration":
     case "FunctionExpression":
-    case "ArrowFunctionExpression": {
-      const fn = node as { id?: { name?: string }; params?: unknown[] };
-      if (fn.id?.name) names.add(fn.id.name);
-      for (const param of fn.params ?? []) {
-        collectPatternIdentifiers(param as Pattern, names);
-      }
+    case "ArrowFunctionExpression":
+      if (node.type !== "ArrowFunctionExpression" && node.id) names.add(node.id.name);
+      for (const param of node.params) collectPatternIdentifiers(param, names);
       break;
-    }
     case "BlockStatement":
-      collectDirectBlockNames((node as { body?: unknown[] }).body, names);
+      collectDirectBlockNames(node.body, names);
       break;
     case "CatchClause":
-      collectPatternIdentifiers((node as { param?: Pattern | null }).param, names);
+      collectPatternIdentifiers(node.param, names);
       break;
-    case "EachBlock": {
-      const eachBlock = node as { context?: Pattern; index?: { name?: string } | string };
-      collectPatternIdentifiers(eachBlock.context, names);
-      if (typeof eachBlock.index === "string") {
-        names.add(eachBlock.index);
-      } else if (eachBlock.index?.name) {
-        names.add(eachBlock.index.name);
-      }
+    case "EachBlock":
+      collectPatternIdentifiers(node.context, names);
+      if (node.index) names.add(node.index);
       break;
-    }
-    case "AwaitBlock": {
-      const awaitBlock = node as { value?: Pattern | null; error?: Pattern | null };
-      collectPatternIdentifiers(awaitBlock.value, names);
-      collectPatternIdentifiers(awaitBlock.error, names);
+    case "AwaitBlock":
+      collectPatternIdentifiers(node.value, names);
+      collectPatternIdentifiers(node.error, names);
       break;
-    }
   }
-
   return names;
 }
 
@@ -180,75 +121,36 @@ function collectDirectBlockNames(body: unknown, names: Set<string>) {
   }
 }
 
-/** True if `root`'s subtree contains an unshadowed reference to a rune name. */
-function scanForRuneReference(root: unknown, baseScope: ScopeStack): boolean {
-  if (!root || typeof root !== "object") return false;
-  return scanNode(root as ScannableNode, undefined, [...baseScope]);
-}
-
-interface ScannableNode {
-  type: string;
-  name?: string;
-  [key: string]: unknown;
-}
-
 /**
- * Recursive scan with a real early exit: the first unshadowed rune reference
- * ends the whole walk, which for a runes component is usually within the
- * first few statements. Same child rule as `parser/walk.ts` (own enumerable
- * keys in order; a child is any object with a string `type`, directly or in
- * an array), minus `leadingComments`, which hold no identifiers.
+ * True if `root`'s subtree contains an unshadowed reference to a rune name.
+ * The first one ends the walk, which for a runes component is usually within
+ * the first few statements.
  */
-function scanNode(node: ScannableNode, parent: ScannableNode | undefined, scopeStack: ScopeStack): boolean {
-  // Type-level TS subtrees hold no value references (svelte strips them
-  // before its own analysis; every identifier under one has a TS parent,
-  // which the check below rejects anyway), so don't descend into them.
-  // Value-level TS wrappers like `x as T` still get walked for the
-  // expression inside.
-  if (isTypeOnlySubtree(node.type)) return false;
-
-  const ownsScope = isScopeOwner(node);
-  if (ownsScope) scopeStack.push(collectScopeOwnerNames(node));
-
+function scanForRuneReference(root: AST.SvelteNode | undefined, baseScope: ScopeStack): boolean {
+  if (!root) return false;
+  const scopeStack = [...baseScope];
   let found = false;
-
-  if (
-    parent &&
-    node.type === "Identifier" &&
-    node.name !== undefined &&
-    RUNE_NAMES.has(node.name) &&
-    !parent.type.startsWith("TS") &&
-    isValueReference(node, parent) &&
-    !isShadowed(node.name, scopeStack)
-  ) {
-    found = true;
-  } else {
-    for (const key in node) {
-      if (key === "leadingComments") continue;
-      const value = node[key];
-      if (!value || typeof value !== "object") continue;
-
-      if (Array.isArray(value)) {
-        for (let i = 0; i < value.length; i++) {
-          const item = value[i];
-          if (item && typeof item === "object" && typeof (item as ScannableNode).type === "string") {
-            if (scanNode(item as ScannableNode, node, scopeStack)) {
-              found = true;
-              break;
-            }
-          }
-        }
-        if (found) break;
-      } else if (typeof (value as ScannableNode).type === "string") {
-        if (scanNode(value as ScannableNode, node, scopeStack)) {
-          found = true;
-          break;
-        }
+  walk(root, {
+    enter(node, parent) {
+      // Type-level TS subtrees hold no value references (svelte strips them
+      // before its own analysis; every identifier under one has a TS parent,
+      // which the check below rejects anyway), so don't descend into them.
+      if (isTypeOnlySubtree(node.type)) return SKIP;
+      if (isScopeOwner(node)) scopeStack.push(collectScopeOwnerNames(node));
+      if (
+        node.type === "Identifier" &&
+        RUNE_NAMES.has(node.name) &&
+        isReference(node, parent) &&
+        !isShadowed(node.name, scopeStack)
+      ) {
+        found = true;
+        return STOP;
       }
-    }
-  }
-
-  if (ownsScope) scopeStack.pop();
+    },
+    leave(node) {
+      if (isScopeOwner(node)) scopeStack.pop();
+    },
+  });
   return found;
 }
 

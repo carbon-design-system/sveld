@@ -1916,7 +1916,7 @@ describe("ComponentParser", () => {
     test("is not derailed by a regex literal containing a quote before the JSDoc block", () => {
       // A hand-rolled scanner that only knew about string literals would
       // treat the `"` inside `/"/` as an opening quote and skip past the
-      // comment. The table reads acorn's own comment list instead.
+      // comment. The table reads the parser's own comment list instead.
       const parser = new ComponentParser();
       const source = `
         <script>

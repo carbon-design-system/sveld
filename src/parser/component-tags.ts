@@ -1198,7 +1198,7 @@ export function parseCustomTypes(ctx: ParserContext, scanSource: string | undefi
   ctx.functionDocCommentStarts = functionDocStarts;
   const blocks = parseComments(scanSource);
   // Leading-comment lookups during the main walk reuse these instead of
-  // re-tokenizing each block from acorn's comment value (see `parsedSourceBlock`).
+  // re-tokenizing each block from the parser's comment value (see `parsedSourceBlock`).
   for (const block of blocks) ctx.jsDocBlocksByStart.set(block.start, block);
   for (const block of blocks) {
     new CommentBlockReader(ctx, generics, block, functionDocStarts.has(block.start)).read();

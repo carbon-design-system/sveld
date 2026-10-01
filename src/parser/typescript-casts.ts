@@ -1,3 +1,6 @@
+import type { AST } from "sveast";
+import { walk } from "sveast/walk";
+
 /**
  * Value-level TS wrapper expressions that change a node's own `.type` without changing its
  * runtime meaning. `compile()` strips these (via `remove_typescript_nodes`) before exposing its
@@ -19,54 +22,18 @@ const TYPE_CAST_WRAPPER_TYPES = new Set([
   "TSInstantiationExpression",
 ]);
 
-interface AstNode {
-  type: string;
-  expression?: AstNode;
-  [key: string]: unknown;
-}
-
-function isAstNode(value: unknown): value is AstNode {
-  return value !== null && typeof value === "object" && typeof (value as AstNode).type === "string";
-}
-
-/** The innermost non-wrapper expression under `node`, or `node` itself when it isn't a wrapper (or wraps nothing). */
-function unwrap(node: AstNode): AstNode {
-  if (!TYPE_CAST_WRAPPER_TYPES.has(node.type)) return node;
-  let inner = node.expression;
-  while (inner && TYPE_CAST_WRAPPER_TYPES.has(inner.type)) inner = inner.expression;
-  return inner ?? node;
-}
-
-export function stripTypeCastWrappers(root: unknown): void {
-  if (!isAstNode(root)) return;
-  stripChildren(root);
-}
-
 /**
- * Replaces each wrapper child in place with its unwrapped expression, then
- * keeps walking inside the replacement. Same traversal and replacement
- * semantics as the estree-walker `enter` + `replace` this used to run, on a
- * plain recursive walk with no visitor context.
+ * Replaces each wrapper in place with the expression it wraps. Returning the
+ * replacement from `enter` makes `walk` write it to the parent and enter it
+ * next, so `a as B as C` loses one layer per call, down to `a`.
  */
-function stripChildren(node: AstNode): void {
-  // `for...in` on acorn/svelte nodes: plain objects, no enumerable prototype keys.
-  for (const key in node) {
-    if (key === "leadingComments") continue;
-    const value = node[key];
-    if (!value || typeof value !== "object") continue;
-
-    if (Array.isArray(value)) {
-      for (let i = 0; i < value.length; i++) {
-        const item = value[i];
-        if (!isAstNode(item)) continue;
-        const replacement = unwrap(item);
-        if (replacement !== item) value[i] = replacement;
-        stripChildren(replacement);
+export function stripTypeCastWrappers(root: AST.SvelteNode | undefined): void {
+  if (!root) return;
+  walk(root, {
+    enter(node) {
+      if (TYPE_CAST_WRAPPER_TYPES.has(node.type) && "expression" in node && node.expression) {
+        return node.expression;
       }
-    } else if (isAstNode(value)) {
-      const replacement = unwrap(value);
-      if (replacement !== value) node[key] = replacement;
-      stripChildren(replacement);
-    }
-  }
+    },
+  });
 }

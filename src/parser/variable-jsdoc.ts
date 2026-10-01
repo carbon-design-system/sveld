@@ -18,7 +18,7 @@ interface TopLevelDeclaration {
 
 /**
  * Every `/* *\/` comment inside `[programStart, programEnd)`, taken from the
- * comments acorn already collected while parsing the script (which skips
+ * comments sveast already collected while parsing the script (which skips
  * string, template, and regex literal contents correctly), so the script
  * source isn't rescanned for them here.
  */

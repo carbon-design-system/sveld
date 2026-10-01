@@ -451,6 +451,34 @@ describe("cross-file CallExpression prop-default resolution", () => {
     expect(prop?.type).not.toBe("string");
   });
 
+  test("cross-file literal return inference ignores nested functions' returns", async () => {
+    writeFileSync(
+      path.join(dir, "utils.js"),
+      `export function label(items) {
+  const count = items.filter(function (item) {
+    return 1;
+  }).length;
+  return \`\${count} items\`;
+}
+`,
+    );
+    writeFileSync(
+      path.join(dir, "NestedReturns.svelte"),
+      `<script>
+  import { label } from "./utils.js";
+  export let value = label([]);
+</script>
+<div>{value}</div>
+`,
+    );
+    writeFileSync(path.join(dir, "index.js"), `export { default as NestedReturns } from "./NestedReturns.svelte";\n`);
+
+    const result = await generateBundle(path.join(dir, "index.js"), true);
+    const prop = byModuleName(result.allComponentsForTypes, "NestedReturns")?.props.find((p) => p.name === "value");
+    // The callback's `return 1` belongs to the callback, not to `label`.
+    expect(prop?.type).toBe("string");
+  });
+
   test("binding-annotated const export supplies returnType for call defaults", async () => {
     writeFileSync(path.join(dir, "utils.ts"), `export const uniqueId: () => string = () => "x";\n`);
     writeFileSync(
