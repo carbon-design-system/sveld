@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.38.1](https://github.com/carbon-design-system/sveld/releases/tag/v0.38.1) - 2026-10-01
+
+**Features**
+
+- publish a flat package from `dist/` instead of `lib/` (a2bda66, #500)
+- drop unused external imports from the rolled-up `.d.ts` (92ccc99)
+
+**Fixes**
+
+- reject JSDoc types with a `//` comment that swallows code (22d4e79)
+- skip side-effect imports and anonymous defaults in barrels (af27a44, #502)
+
 ## [0.38.0](https://github.com/carbon-design-system/sveld/releases/tag/v0.38.0) - 2026-09-26
 
 **Breaking Changes**
