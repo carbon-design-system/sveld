@@ -247,7 +247,9 @@ function rollupDts(
     for (const ref of collectTypeRefs(decl.node)) queue.push(ref);
   }
 
-  const chunks: string[] = [...externalLines.values()];
+  const usedNames = new Set<string>();
+  for (const decl of kept) for (const ref of collectTypeRefs(decl.node)) usedNames.add(ref);
+  const chunks: string[] = [...externalLines.values()].flatMap((line) => pruneImport(line, usedNames));
 
   for (const decl of allDecls) {
     if (!kept.has(decl)) continue;
@@ -445,6 +447,32 @@ function collectTypeRefs(node: ts.Node): Set<string> {
   };
   visit(node);
   return refs;
+}
+
+/**
+ * `line` with the bindings no kept declaration references dropped, or
+ * nothing when none are left: a module's emitted imports cover all its
+ * declarations, not just the ones the rollup keeps, and a dead
+ * `import ... from "estree"` would make consumers resolve a package sveld
+ * never uses at runtime. Re-exports and side-effect imports pass through.
+ */
+function pruneImport(line: string, usedNames: Set<string>): string[] {
+  const stmt = ts.createSourceFile("import.d.ts", line, ts.ScriptTarget.Latest).statements[0];
+  if (!(stmt && ts.isImportDeclaration(stmt) && stmt.importClause)) return [line];
+  const clause = stmt.importClause;
+  const defaultName = clause.name && usedNames.has(clause.name.text) ? clause.name.text : undefined;
+  const bindings = clause.namedBindings;
+  let named: string | undefined;
+  if (bindings && ts.isNamespaceImport(bindings)) {
+    if (usedNames.has(bindings.name.text)) named = `* as ${bindings.name.text}`;
+  } else if (bindings) {
+    const kept = bindings.elements.filter((element) => usedNames.has(element.name.text));
+    if (kept.length > 0) named = `{ ${kept.map((element) => element.getText(stmt.getSourceFile())).join(", ")} }`;
+  }
+  if (!defaultName && !named) return [];
+  const typeOnly = clause.isTypeOnly ? "type " : "";
+  const what = [defaultName, named].filter(Boolean).join(", ");
+  return [`import ${typeOnly}${what} from ${stmt.moduleSpecifier.getText(stmt.getSourceFile())};`];
 }
 
 /** Relative module specs appearing in `import("./x").Y` type queries. */
