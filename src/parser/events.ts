@@ -1,4 +1,4 @@
-import type { ArrayExpression, CallExpression, ObjectExpression, Property } from "estree";
+import type { ArrayExpression, CallExpression, ObjectExpression, Property } from "sveast";
 import { getPropertyName, isIdentifier, isLiteral, isNewExpressionNamed, isObjectExpression } from "../ast-guards";
 import type { DispatchedEvent } from "../model";
 import type { ParserContext } from "./context";

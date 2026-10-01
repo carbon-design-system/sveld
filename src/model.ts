@@ -2,7 +2,7 @@
  * The parsed-component model: what `ComponentParser` produces, and what the
  * cross-file pass, the writers, and the parse cache read.
  */
-import type { Property } from "estree";
+import type { TSNode } from "sveast";
 import type { SveldDiagnostic } from "./diagnostics";
 import { PARSED_COMPONENT_TYPE_SCRIPT_METADATA } from "./parsed-component-metadata";
 
@@ -60,36 +60,6 @@ export interface RunesPropsDeclarationMetadata {
   referencedImportedTypes: Set<string>;
   referencedLocalTypes: Set<string>;
 }
-
-export type ModernRunesTypeNode = {
-  type?: string;
-  id?: { name?: string };
-  start?: number;
-  end?: number;
-  body?: { body?: ModernRunesTypeMember[] };
-  typeAnnotation?: ModernRunesTypeNode;
-  typeName?: unknown;
-  types?: ModernRunesTypeNode[];
-  members?: ModernRunesTypeMember[];
-  /** Declaration-side `<T, U = Default>` (interfaces/type aliases). */
-  typeParameters?: { params?: Array<{ name?: string }> };
-  /** Reference-side `<string, number>` concrete arguments (`TSTypeReference`). */
-  typeArguments?: { params?: ModernRunesTypeNode[] };
-};
-
-export type ModernRunesTypeMember = {
-  type?: string;
-  computed?: boolean;
-  optional?: boolean;
-  start?: number;
-  end?: number;
-  key?: Property["key"];
-  typeAnnotation?: {
-    start?: number;
-    end?: number;
-    typeAnnotation?: ModernRunesTypeNode;
-  };
-};
 
 export interface TypeImportBinding {
   importedName?: string;
@@ -183,7 +153,7 @@ export interface PendingDispatchEscapeCandidate {
 
 export interface LocalTypeDeclaration {
   code: string;
-  node: ModernRunesTypeNode;
+  node: TSNode;
   start: number;
   /** Exported from the module script, so the `.d.ts` exports it too. */
   exported?: boolean;

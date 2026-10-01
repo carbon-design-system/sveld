@@ -72,8 +72,8 @@ async function buildEntry(entrypoints: string[], target: "node" | "browser") {
     target,
     minify: true,
     sourcemap: false,
-    // Default Bun treats `node_modules` as external. Bundle them so acorn
-    // and `@sveltejs/acorn-typescript` ship inside `dist`.
+    // Default Bun treats `node_modules` as external. Bundle them so sveast
+    // ships inside `dist`.
     packages: "bundle",
     // Emit the parser stack (behind `./parser-stack`'s dynamic import) as its
     // own chunk instead of inlining it, so a fully cached CLI run never loads it.

@@ -14,4 +14,4 @@
 
 **`checkExamples` fails the run.** Checking TS/JS examples needs `typescript` 7+ and a `tsconfig.json`. Install them, or use `checkExamples: "syntax"` to check only `svelte`/`html` examples. See [Checking `@example` blocks](ci.md#checking-example-blocks).
 
-**Does my Svelte version matter?** No. sveld parses `.svelte` files with its own template parser, kept in parity with `svelte/compiler` by a differential test suite and a weekly check against `svelte@latest`. Svelte 3, 4, and 5 components parse the same way regardless of the installed version.
+**Does my Svelte version matter?** No. sveld parses `.svelte` files with [sveast](https://github.com/metonym/sveast), a standalone parser that produces `svelte/compiler`'s AST and is kept in parity with it by a differential test suite and a check against `svelte@latest`. Svelte 3, 4, and 5 components parse the same way regardless of the installed version.

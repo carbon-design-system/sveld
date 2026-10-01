@@ -22,7 +22,7 @@ describe("bundleDts", () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
-  // A suffix match once rolled `src/template-parse/index.ts` up as the
+  // A suffix match once rolled another module's `index.ts` up as the
   // package's `index.d.ts`, publishing types with nothing but `parse`.
   test("rolls up src/index.ts's public API, not another index.ts", () => {
     const text = readFileSync(join(dir, "index.d.ts"), "utf8");

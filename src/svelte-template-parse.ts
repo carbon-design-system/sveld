@@ -1,2 +1,10 @@
-export { parse, type TemplateAstNode, type TemplateRoot, type TemplateScript } from "./template-parse/index";
-export { TemplateParseNotImplementedError } from "./template-parse/not-implemented";
+import type { AST } from "sveast";
+import { parse as parseComponent } from "sveast";
+
+/**
+ * Parses a component with sveast, which produces svelte/compiler's modern
+ * AST. `<style>` isn't parsed: sveld only reads its bounds.
+ */
+export function parse(source: string): AST.Root {
+  return parseComponent(source, { css: false });
+}

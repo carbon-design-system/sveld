@@ -1,4 +1,4 @@
-import type { FunctionDeclaration, VariableDeclaration } from "estree";
+import type { AST, FunctionDeclaration, TSNode, VariableDeclaration } from "sveast";
 import type { SveldDiagnostic } from "../diagnostics";
 import type {
   ComponentContext,
@@ -15,7 +15,6 @@ import type {
   InternalComponentSlot,
   LexicalScope,
   LocalTypeDeclaration,
-  ModernRunesTypeNode,
   PendingCallDefaultCandidate,
   PendingConstDefaultCandidate,
   PendingContextKeyCandidate,
@@ -29,7 +28,6 @@ import type {
   TypeImportBinding,
   ValueImportBinding,
 } from "../model";
-import type { TemplateRoot } from "../svelte-template-parse";
 import type { JSDocComment } from "./comment-parser";
 
 /** One top-level member of an object `@typedef`, from a `@property` tag or an inline `{ ... }` type. */
@@ -45,7 +43,7 @@ export interface ParserContext {
   syntaxMode: SyntaxMode;
   scriptLanguage?: ScriptLanguage;
   source?: string;
-  parsed?: TemplateRoot;
+  parsed?: AST.Root;
 
   /**
    * Explicit `<svelte:options runes={...} />` value. When set, overrides rune-reference detection.
@@ -106,7 +104,7 @@ export interface ParserContext {
   readonly explicitPropTypesByName: Map<string, string>;
   readonly explicitVariableTypesByName: Map<string, string>;
   /** The annotation node behind each {@link explicitVariableTypesByName} entry. */
-  readonly explicitVariableTypeNodesByName: Map<string, ModernRunesTypeNode>;
+  readonly explicitVariableTypeNodesByName: Map<string, TSNode>;
   readonly typeImportBindingsByLocalName: Map<string, TypeImportBinding>;
   readonly localTypeDeclarationsByName: Map<string, LocalTypeDeclaration>;
   /**
@@ -115,7 +113,7 @@ export interface ParserContext {
    * imported/local dependencies still need pulling into the `.d.ts` — see
    * {@link buildTypeScriptMetadata}.
    */
-  readonly additionalTypeDependencyNodes: ModernRunesTypeNode[];
+  readonly additionalTypeDependencyNodes: TSNode[];
   readonly wholePropsLocals: Set<string>;
   readonly restPropLocals: Set<string>;
 

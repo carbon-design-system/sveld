@@ -4,11 +4,18 @@
  * props, and collects the calls that phase 4 ({@link finalizeComponent})
  * turns into dispatched events once the dispatcher's name is known.
  */
-import type { CallExpression, Expression, Identifier, Literal, ObjectExpression } from "estree";
-import type { AST } from "svelte/compiler";
+import type {
+  AST,
+  CallExpression,
+  Expression,
+  Identifier,
+  Literal,
+  ObjectExpression,
+  SimpleCallExpression,
+  TSNode,
+} from "sveast";
 import { isCallExpressionNamed, isIdentifier, isMemberExpression, unwrapTypeCastExpression } from "../ast-guards";
-import type { ComponentElement, ComponentInlineElement, ModernRunesTypeNode, SlotProps, SlotPropValue } from "../model";
-import type { TemplateAstNode, TemplateScript } from "../svelte-template-parse";
+import type { ComponentElement, ComponentInlineElement, SlotProps, SlotPropValue } from "../model";
 import { resolveMemberExpressionType } from "./bindings";
 import type { ParserContext } from "./context";
 import { parseSetContextCall } from "./contexts";
@@ -43,11 +50,11 @@ const CARRIAGE_RETURN_REGEX = /\r/g;
  */
 interface ComponentRootNode {
   type: "ComponentRoot";
-  instance: TemplateScript | undefined;
+  instance: AST.Script | undefined;
   fragment: AST.Fragment | undefined;
 }
 
-type ComponentWalkNode = TemplateAstNode | ComponentRootNode;
+type ComponentWalkNode = AST.SvelteNode | ComponentRootNode;
 
 /**
  * Node types the component walk acts on. Keep in sync with the cases in
@@ -83,7 +90,7 @@ export interface ComponentWalkResult {
   /** Local name of the `createEventDispatcher()` result. */
   dispatcherName: string | undefined;
   dispatcherDeclaratorNode: unknown;
-  dispatcherTypeArgument: ModernRunesTypeNode | undefined;
+  dispatcherTypeArgument: TSNode | undefined;
   /** Locals bound to `$host()`. */
   hostLocalNames: Set<string>;
   hostDispatchedEventNames: Set<string>;
@@ -99,12 +106,6 @@ export interface ComponentWalkResult {
   locallyBoundCalls: Set<CallExpression>;
 }
 
-/**
- * A call as acorn-typescript parses it: estree's, plus `f<T>()`'s explicit
- * type arguments.
- */
-type TsCallExpression = CallExpression & { typeArguments?: { params?: ModernRunesTypeNode[] } };
-
 /** The name `parent` binds a call's result to: `x` in `const x = call()`. */
 function parentIdName(parent: ComponentWalkNode | null): string | undefined {
   return parent && "id" in parent && parent.id && "name" in parent.id ? parent.id.name : undefined;
@@ -113,7 +114,7 @@ function parentIdName(parent: ComponentWalkNode | null): string | undefined {
 function enterCallExpression(
   ctx: ParserContext,
   walk: ComponentWalkResult,
-  callExpr: TsCallExpression,
+  callExpr: SimpleCallExpression,
   parent: ComponentWalkNode | null,
 ) {
   const calleeName = callExpr.callee.type === "Identifier" ? callExpr.callee.name : undefined;

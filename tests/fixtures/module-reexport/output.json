@@ -70,7 +70,7 @@
   ],
   "moduleExports": [
     {
-      "name": "tokTypes",
+      "name": "tick",
       "kind": "re-export",
       "isFunction": false,
       "isFunctionDeclaration": false,
@@ -78,8 +78,8 @@
       "constant": false,
       "reactive": false,
       "reExport": {
-        "from": "acorn",
-        "imported": "tokTypes"
+        "from": "svelte",
+        "imported": "tick"
       },
       "source": {
         "start": {
@@ -88,7 +88,7 @@
         },
         "end": {
           "line": 7,
-          "column": 22
+          "column": 18
         }
       }
     }

@@ -1,7 +1,7 @@
 /**
  * Lazily loads the parser stack (`./parser-stack-modules`) behind a dynamic
  * import: `ComponentParser`, the template and script parsers, and the JSDoc
- * helpers, which pull in acorn and `@sveltejs/acorn-typescript`.
+ * helpers, which pull in sveast.
  *
  * A fully cached run never parses, so it never evaluates any of that.
  * Callers about to parse (`bundle.ts`, `parse-entry-exports.ts`, `watch.ts`)

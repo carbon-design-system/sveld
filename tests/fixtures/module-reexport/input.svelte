@@ -2,9 +2,9 @@
   context="module"
   lang="ts"
 >
-  import { tokTypes } from "acorn";
+  import { tick } from "svelte";
 
-  export { tokTypes };
+  export { tick };
 </script>
 
 <script lang="ts">

@@ -1,4 +1,4 @@
-import type { CallExpression, Expression, FunctionExpression, NewExpression, Node, ObjectExpression } from "estree";
+import type { CallExpression, Expression, FunctionExpression, NewExpression, Node, ObjectExpression } from "sveast";
 import {
   getPropertyName,
   isIdentifier,

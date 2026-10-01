@@ -3,7 +3,6 @@ import { createDiagnostic, type SveldDiagnostic } from "./diagnostics";
 import type { ComponentProp, ComponentSlot, ParsedComponent, SourceRange } from "./model";
 import { loadParserStack } from "./parser-stack";
 import type { TypeResolver } from "./resolve-types";
-import { TemplateParseNotImplementedError } from "./template-parse/not-implemented";
 
 /** `"compile"` runs through the TypeScript program; `"syntax"` runs through sveld's template parser only. */
 type ExampleCheckKind = "compile" | "syntax";
@@ -32,7 +31,7 @@ const FENCE_REGEX = /^```([\w-]*)\r?\n([\s\S]*?)\r?\n?```$/;
 /** Languages sveld can type-check with `tsc`. */
 const COMPILE_FENCE_LANGS = new Set(["", "js", "jsx", "ts", "tsx", "javascript", "typescript"]);
 
-/** Languages sveld can syntax-check with its own template parser. */
+/** Languages sveld can syntax-check with sveast. */
 const SYNTAX_FENCE_LANGS = new Set(["svelte", "html"]);
 
 interface ExtractedExampleCode {
@@ -174,15 +173,13 @@ function candidatesForKind(
 
 /**
  * Syntax-checks `kind: "syntax"` `@example` blocks (Svelte/HTML markup) with
- * sveld's own template parser: parse only, discard the AST. A parser error
- * becomes an `example-syntax-error` diagnostic; a construct the parser
- * doesn't model yet ({@link TemplateParseNotImplementedError}) is not the
- * example's fault, so it's skipped rather than reported.
+ * sveast, the template parser: parse only, discard the AST. A parser error
+ * becomes an `example-syntax-error` diagnostic.
  */
 async function checkComponentExamplesSyntax(
   candidates: CheckExamplesCandidate[],
 ): Promise<Map<ComponentDocApi, SveldDiagnostic[]>> {
-  const { parseSvelte } = await loadParserStack();
+  const { formatParseError, parseSvelte } = await loadParserStack();
   const found = new Map<ComponentDocApi, SveldDiagnostic[]>();
   for (const { component, sources } of candidates) {
     const diagnostics: SveldDiagnostic[] = [];
@@ -191,13 +188,12 @@ async function checkComponentExamplesSyntax(
       try {
         parseSvelte(source.code);
       } catch (error) {
-        if (error instanceof TemplateParseNotImplementedError) continue;
         diagnostics.push(
           createDiagnostic({
             component: component.filePath,
             kind: "example-syntax-error",
             name: source.name,
-            message: error instanceof Error ? error.message : String(error),
+            message: formatParseError(error),
             ...(source.source ? { source: source.source } : {}),
           }),
         );

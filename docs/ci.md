@@ -175,7 +175,7 @@ export default defineConfig({
 `@example` blocks are plain text, so a renamed prop can leave them broken unnoticed. `checkExamples: true` (`--check-examples`) checks them:
 
 - `js`/`ts`/`jsx`/`tsx` fences, untagged fences, and unfenced code run through the TypeScript program and report `sveld/example-compile-error`. This catches renamed or removed symbols and wrong argument counts. It's not a full type check.
-- `svelte`/`html` fences are parsed with sveld's template parser and report `sveld/example-syntax-error` for malformed markup (a mismatched closing tag, an unterminated attribute). Props and expression types aren't checked; use `svelte-check` in your own tests for that.
+- `svelte`/`html` fences are parsed with sveld's template parser ([sveast](https://github.com/metonym/sveast)) and report `sveld/example-syntax-error` for malformed markup (a mismatched closing tag, an unterminated attribute). Props and expression types aren't checked; use `svelte-check` in your own tests for that.
 - Unfenced markup (a body starting with `<`) and other fence languages are skipped.
 
 ```

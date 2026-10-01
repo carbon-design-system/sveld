@@ -1,5 +1,6 @@
 import type {
   ArrowFunctionExpression,
+  AST,
   BlockStatement,
   CatchClause,
   ExportSpecifier,
@@ -8,8 +9,7 @@ import type {
   FunctionExpression,
   Pattern,
   VariableDeclarator,
-} from "estree";
-import type { AST } from "svelte/compiler";
+} from "sveast";
 import {
   getPropertyName,
   isCallExpressionNamed,
@@ -265,7 +265,9 @@ function declareFunctionLikeScopeBindings(
   }
 
   for (const param of node.params) {
-    for (const identifier of collectPatternIdentifiers(param)) {
+    // `constructor(private x)`: the parameter is wrapped.
+    const pattern = param.type === "TSParameterProperty" ? param.parameter : param;
+    for (const identifier of collectPatternIdentifiers(pattern)) {
       declareScopeBinding(scope, identifier, { kind: "local" });
     }
   }

@@ -1,5 +1,6 @@
 import { dirname } from "node:path";
-import { isIdentifier, resolveStaticStringLiteral } from "./ast-guards";
+import type { Expression, Node, Pattern, SpreadElement, TSParameterProperty } from "sveast";
+import { resolveStaticStringLiteral } from "./ast-guards";
 import type { ComponentDocApi } from "./bundle";
 import type { CrossFilePass } from "./cross-file-pass";
 import { createDiagnostic } from "./diagnostics";
@@ -9,11 +10,10 @@ import type {
   PendingDispatchEscapeCandidate,
   SerializedComponentEvent,
 } from "./model";
-import { findImportedExport, type ResolveContext } from "./module-exports";
-import { type AstNode, asNode } from "./module-graph";
+import { type ExportedFunction, findImportedExport, type ResolveContext } from "./module-exports";
 import { compareSerializedEvents } from "./parser/event-order";
 import type { DetailTypeSource } from "./parser/events";
-import { type WalkableNode, walkNodes } from "./parser/walk";
+import { walkNodes } from "./parser/walk";
 import { getParserStack } from "./parser-stack";
 
 export type DispatchEscapeFailureReason =
@@ -70,36 +70,37 @@ export function resolveDispatchEscapeCandidates(
 }
 
 /** `param = fallback` → `param`. */
-function withoutDefault(node: AstNode | undefined): AstNode | undefined {
-  return node?.type === "AssignmentPattern" ? asNode(node.left) : node;
+function withoutDefault(node: Pattern | TSParameterProperty | undefined): Pattern | TSParameterProperty | undefined {
+  return node?.type === "AssignmentPattern" ? node.left : node;
 }
 
-function dispatcherBinding(fn: AstNode, candidate: PendingDispatchEscapeCandidate): DispatcherBinding | undefined {
-  const params = Array.isArray(fn.params) ? fn.params : [];
-  const param = withoutDefault(asNode(params[candidate.argumentIndex]));
+function dispatcherBinding(
+  fn: ExportedFunction,
+  candidate: PendingDispatchEscapeCandidate,
+): DispatcherBinding | undefined {
+  const param = withoutDefault(fn.params[candidate.argumentIndex]);
 
-  if (candidate.property === undefined) return isIdentifier(param) ? { name: param.name } : undefined;
+  if (candidate.property === undefined) return param?.type === "Identifier" ? { name: param.name } : undefined;
   if (!candidate.property) return undefined;
 
-  if (isIdentifier(param)) return { object: param.name, property: candidate.property };
-  if (param?.type !== "ObjectPattern" || !Array.isArray(param.properties)) return undefined;
+  if (param?.type === "Identifier") return { object: param.name, property: candidate.property };
+  if (param?.type !== "ObjectPattern") return undefined;
 
-  for (const property of param.properties as AstNode[]) {
+  for (const property of param.properties) {
     if (property.type !== "Property" || property.computed) continue;
-    const key = asNode(property.key);
-    if (!isIdentifier(key) || key.name !== candidate.property) continue;
-    const value = withoutDefault(asNode(property.value));
-    return isIdentifier(value) ? { name: value.name } : undefined;
+    if (property.key.type !== "Identifier" || property.key.name !== candidate.property) continue;
+    const value = withoutDefault(property.value);
+    return value?.type === "Identifier" ? { name: value.name } : undefined;
   }
   return undefined;
 }
 
 /** Event names a `dispatch(...)` first argument can take, or `null` when one isn't static. */
-function staticEventNames(node: AstNode | undefined): string[] | null {
+function staticEventNames(node: Expression | SpreadElement | undefined): string[] | null {
   if (!node) return null;
   if (node.type === "ConditionalExpression") {
-    const consequent = staticEventNames(asNode(node.consequent));
-    const alternate = staticEventNames(asNode(node.alternate));
+    const consequent = staticEventNames(node.consequent);
+    const alternate = staticEventNames(node.alternate);
     return consequent && alternate ? [...consequent, ...alternate] : null;
   }
   const name = resolveStaticStringLiteral(node);
@@ -116,45 +117,41 @@ const helperDetailTypeSource: DetailTypeSource = {
  * same-file dispatch's is: object and array literals structurally, other
  * literals as their value. Anything else is `any`.
  */
-function detailType(node: AstNode | undefined): string {
+function detailType(node: Expression | SpreadElement | undefined): string {
   if (!node) return "null";
   const { deriveLiteralDetailType, literalDetailToTypeText } = getParserStack();
   if (node.type === "Literal") return literalDetailToTypeText(node.value);
   return deriveLiteralDetailType(helperDetailTypeSource, node) ?? "any";
 }
 
-function isDispatcherCallee(node: WalkableNode, binding: DispatcherBinding): boolean {
+function isDispatcherCallee(node: Node, binding: DispatcherBinding): boolean {
   if ("name" in binding) return node.type === "Identifier" && node.name === binding.name;
   if (node.type !== "MemberExpression" || node.computed) return false;
-  const object = asNode(node.object);
-  const property = asNode(node.property);
   return (
-    isIdentifier(object) &&
-    object.name === binding.object &&
-    isIdentifier(property) &&
-    property.name === binding.property
+    node.object.type === "Identifier" &&
+    node.object.name === binding.object &&
+    node.property.type === "Identifier" &&
+    node.property.name === binding.property
   );
 }
 
 function collectDispatchedEvents(
-  fn: AstNode,
+  fn: ExportedFunction,
   binding: DispatcherBinding,
   candidate: PendingDispatchEscapeCandidate,
 ): DispatchEscapeResolution {
-  const body = asNode(fn.body);
-  if (!body) return { candidate, events: [] };
+  const body = fn.body;
 
   const detailsByName = new Map<string, Set<string>>();
   const referenceName = "name" in binding ? binding.name : binding.object;
   let failureReason: DispatchEscapeFailureReason | undefined;
 
-  walkNodes(body as WalkableNode, (node, parent, prop) => {
+  walkNodes<Node>(body, (node, parent, prop) => {
     if (failureReason) return;
 
     if (node.type === "CallExpression") {
-      const callee = asNode(node.callee);
-      if (!callee || !isDispatcherCallee(callee as WalkableNode, binding)) return;
-      const args = Array.isArray(node.arguments) ? (node.arguments as AstNode[]) : [];
+      if (!isDispatcherCallee(node.callee, binding)) return;
+      const args = node.arguments;
       const names = staticEventNames(args[0]);
       if (!names) {
         failureReason = "dynamic-event-name";

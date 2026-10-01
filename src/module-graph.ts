@@ -1,9 +1,10 @@
 import type { Dirent } from "node:fs";
 import { readFileSync, statSync } from "node:fs";
 import { basename, dirname, isAbsolute, join, resolve } from "node:path";
-import { type Program, parse as parseJavaScript } from "acorn";
+import { type Program, parseModule as parseJavaScript } from "sveast";
 import { DirectoryListings } from "./fs-listing";
 import { warn } from "./logger";
+import { formatParseError } from "./parse-error";
 import { getParserStack } from "./parser-stack";
 import { MODULE_EXTENSIONS } from "./path";
 import { PathAliases } from "./resolve-alias";
@@ -18,14 +19,6 @@ const TYPESCRIPT_COUNTERPART_EXTENSIONS: Record<string, string[]> = {
   ".cjs": [".cts", ".d.cts"],
 };
 
-/** Minimal AST node shape exposed by the Svelte/acorn-typescript parser. */
-export interface AstNode {
-  type: string;
-  start: number;
-  end: number;
-  [key: string]: unknown;
-}
-
 /** Parsed-source context shared while walking a single module. */
 export interface ModuleSource {
   /** The file's full text, which the AST offsets index into. */
@@ -37,15 +30,7 @@ export interface ModuleSource {
 }
 
 /** A module's text and top-level statements, or `null` when it can't be read or parsed. */
-export type ParsedModule = { source: ModuleSource; body: AstNode[] } | null;
-
-export function asNode(value: unknown): AstNode | undefined {
-  return value && typeof value === "object" ? (value as AstNode) : undefined;
-}
-
-export function asNodeArray(value: unknown): AstNode[] {
-  return Array.isArray(value) ? (value as AstNode[]) : [];
-}
+export type ParsedModule = { source: ModuleSource; body: Program["body"] } | null;
 
 /** `./x`, `../x`, `.`, `..`, or an absolute path, as opposed to a bare package specifier. */
 function isPathSpecifier(specifier: string): boolean {
@@ -160,7 +145,12 @@ export class ModuleGraph {
   parseJavaScript(filePath: string, source: string): Program {
     const cached = this.programs.get(filePath);
     if (cached?.source === source) return cached.ast;
-    const ast = parseJavaScript(source, { ecmaVersion: "latest", sourceType: "module" });
+    let ast: Program;
+    try {
+      ast = parseJavaScript(source);
+    } catch (error) {
+      throw new Error(formatParseError(error));
+    }
     this.programs.set(filePath, { source, ast });
     return ast;
   }
@@ -202,8 +192,8 @@ export class ModuleGraph {
  * Parses a module file into its top-level statements, with byte offsets into
  * the file's own text for verbatim text extraction.
  *
- * A plain module goes straight to acorn with the TypeScript plugin (a `.js`
- * file is valid input too). A `.svelte` file yields its module script
+ * A plain module is parsed by sveast's `parseModule` with TypeScript on (a
+ * `.js` file is valid input too). A `.svelte` file yields its module script
  * (`<script module>` / `<script context="module">`), the only place a
  * component declares exports other than its default.
  */
@@ -216,16 +206,15 @@ function parseModule(filePath: string): ParsedModule {
   }
 
   try {
-    let body: AstNode[];
+    let body: Program["body"];
     if (filePath.endsWith(".svelte")) {
-      body = asNodeArray(getParserStack().parseSvelte(text).module?.content.body);
+      body = getParserStack().parseSvelte(text).module?.content.body ?? [];
     } else {
-      body = asNodeArray(getParserStack().parseProgram(text, true, []).body);
+      body = getParserStack().parseModule(text, { typescript: true }).body;
     }
     return { source: { text, filePath, dir: dirname(filePath) }, body };
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    warn(`Warning: sveld couldn't parse ${filePath} to read its exports (${message}); skipping it.`);
+    warn(`Warning: sveld couldn't parse ${filePath} to read its exports (${formatParseError(error)}); skipping it.`);
     return null;
   }
 }

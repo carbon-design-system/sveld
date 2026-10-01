@@ -1,13 +1,15 @@
 import type {
   CallExpression,
+  Expression,
   Identifier,
   Literal,
   MemberExpression,
   NewExpression,
   ObjectExpression,
   Property,
+  TypeNode,
   VariableDeclaration,
-} from "estree";
+} from "sveast";
 
 export function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -45,28 +47,14 @@ export function isCallExpressionNamed(node: unknown, calleeName: string): node i
   return !!node.callee && isObject(node.callee) && node.callee.type === "Identifier" && node.callee.name === calleeName;
 }
 
-export function unwrapTypeCastExpression(node: unknown): unknown {
-  if (
-    isObject(node) &&
-    (node.type === "TSAsExpression" || node.type === "TSSatisfiesExpression") &&
-    "expression" in node
-  ) {
-    return unwrapTypeCastExpression(node.expression);
-  }
-
-  return node;
+export function unwrapTypeCastExpression<T extends Expression | null | undefined>(node: T): T | Expression {
+  return node?.type === "TSAsExpression" || node?.type === "TSSatisfiesExpression"
+    ? unwrapTypeCastExpression(node.expression)
+    : node;
 }
 
-export function getTypeCastAnnotation(node: unknown): unknown {
-  if (
-    isObject(node) &&
-    (node.type === "TSAsExpression" || node.type === "TSSatisfiesExpression") &&
-    "typeAnnotation" in node
-  ) {
-    return node.typeAnnotation;
-  }
-
-  return undefined;
+export function getTypeCastAnnotation(node: Expression | null | undefined): TypeNode | undefined {
+  return node?.type === "TSAsExpression" || node?.type === "TSSatisfiesExpression" ? node.typeAnnotation : undefined;
 }
 
 function isNewExpression(node: unknown): node is NewExpression {

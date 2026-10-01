@@ -1,6 +1,6 @@
 import { SvelteComponentTyped } from "svelte";
 
-export { tokTypes } from "acorn";
+export { tick } from "svelte";
 
 export type ModuleReexportProps = {
   /**

@@ -574,6 +574,23 @@ describe("writerTsDefinition", () => {
     expect(output).toContain("Adds one.");
   });
 
+  test("imports the types a module-script class's heritage clauses pass as type arguments", () => {
+    const source = `
+      <script context="module" lang="ts">
+        import type { Iface, Payload, Options } from "./types.js";
+        import { Base } from "./base.js";
+        export class Store extends Base<Payload> implements Iface<Options> {}
+      </script>
+    `;
+    const parsed = new ComponentParser().parseSvelteComponent(source, {
+      moduleName: "Test",
+      filePath: "./Test.svelte",
+    });
+    const component = { ...parsed, moduleName: "Test", filePath: asNormalizedPath("./Test.svelte") };
+
+    expect(writeTsDefinition(component)).toContain('import type { Iface, Options, Payload } from "./types.js";');
+  });
+
   test("generates snippet props for named slots (Svelte 5 compatibility)", () => {
     const component_api: ComponentDocApi = {
       moduleName: "CardComponent",

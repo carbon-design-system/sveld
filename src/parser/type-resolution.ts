@@ -1,6 +1,14 @@
 import type {
+  BaseFunction,
+  EntityName,
+  TSDeclareMethod,
+  TSEnumDeclaration,
+  TSNode,
+  TypeElement,
+  TypeNode,
+} from "sveast";
+import type {
   LocalTypeDeclaration,
-  ModernRunesTypeNode,
   ParsedComponentTypeScriptMetadata,
   PendingCrossFileCandidates,
   TypeImportBinding,
@@ -70,12 +78,9 @@ export function getTypeNodeText(ctx: ParserContext, typeNode: { start?: number; 
   return sourceAtPos(ctx, start, end)?.trim();
 }
 
-/** One `extends` clause of an interface declaration. */
-type InterfaceHeritage = { expression?: unknown; typeParameters?: { params?: ModernRunesTypeNode[] } };
-
 export function collectReferencedTypeDependencies(
   ctx: ParserContext,
-  typeNode: ModernRunesTypeNode | undefined,
+  typeNode: TSNode | undefined,
   referencedImportedTypes: Set<string>,
   referencedLocalTypes: Set<string>,
   visitedLocalTypes: Set<string> = new Set(),
@@ -85,22 +90,19 @@ export function collectReferencedTypeDependencies(
   switch (typeNode.type) {
     case "TSInterfaceDeclaration":
       // `interface A extends B<C>`: each heritage clause names a type like a reference does.
-      for (const heritage of (typeNode as { extends?: InterfaceHeritage[] }).extends ?? []) {
-        collectReferencedTypeDependencies(
+      for (const heritage of typeNode.extends ?? []) {
+        collectTypeReferenceDependencies(
           ctx,
-          {
-            type: "TSTypeReference",
-            typeName: heritage.expression,
-            typeParameters: heritage.typeParameters,
-          } as ModernRunesTypeNode,
+          heritage.expression,
+          heritage.typeParameters?.params,
           referencedImportedTypes,
           referencedLocalTypes,
           visitedLocalTypes,
         );
       }
-      collectReferencedTypeDependencies(
+      collectMemberDependencies(
         ctx,
-        { type: "TSTypeLiteral", members: typeNode.body?.body },
+        typeNode.body.body,
         referencedImportedTypes,
         referencedLocalTypes,
         visitedLocalTypes,
@@ -130,62 +132,25 @@ export function collectReferencedTypeDependencies(
       }
       return;
     case "TSTypeLiteral":
-      for (const member of typeNode.members ?? []) {
-        if (member?.type !== "TSPropertySignature") continue;
-        collectReferencedTypeDependencies(
-          ctx,
-          member.typeAnnotation?.typeAnnotation,
-          referencedImportedTypes,
-          referencedLocalTypes,
-          visitedLocalTypes,
-        );
-      }
+      collectMemberDependencies(
+        ctx,
+        typeNode.members,
+        referencedImportedTypes,
+        referencedLocalTypes,
+        visitedLocalTypes,
+      );
       return;
-    case "TSTypeReference": {
-      const dependencyName = getTypeDependencyName(typeNode.typeName);
-      if (dependencyName) {
-        // A value import used only in a type position (e.g. `import { Size } from` a sibling
-        // module, with no `type` modifier) still needs an `import type` line in the standalone
-        // `.d.ts`; the runtime import in the component's own script is untouched.
-        if (
-          ctx.typeImportBindingsByLocalName.has(dependencyName) ||
-          ctx.valueImportBindingsByLocalName.has(dependencyName)
-        ) {
-          referencedImportedTypes.add(dependencyName);
-        }
-
-        const localDeclaration = ctx.localTypeDeclarationsByName.get(dependencyName);
-        if (localDeclaration && !visitedLocalTypes.has(dependencyName)) {
-          referencedLocalTypes.add(dependencyName);
-          visitedLocalTypes.add(dependencyName);
-          collectReferencedTypeDependencies(
-            ctx,
-            localDeclaration.node,
-            referencedImportedTypes,
-            referencedLocalTypes,
-            visitedLocalTypes,
-          );
-          visitedLocalTypes.delete(dependencyName);
-        }
-      }
-
-      // `Array<Item>`: the parser puts type arguments on `typeArguments`; a synthesized
-      // heritage-clause reference (above) uses `typeParameters`.
-      const typeArgumentsNode = (typeNode as { typeArguments?: unknown }).typeArguments ?? typeNode.typeParameters;
-      if (typeArgumentsNode && typeof typeArgumentsNode === "object") {
-        const paramsNode = typeArgumentsNode as { params?: ModernRunesTypeNode[] };
-        for (const param of paramsNode.params ?? []) {
-          collectReferencedTypeDependencies(
-            ctx,
-            param,
-            referencedImportedTypes,
-            referencedLocalTypes,
-            visitedLocalTypes,
-          );
-        }
-      }
+    case "TSTypeReference":
+      collectTypeReferenceDependencies(
+        ctx,
+        typeNode.typeName,
+        typeNode.typeArguments?.params,
+        referencedImportedTypes,
+        referencedLocalTypes,
+        visitedLocalTypes,
+      );
       return;
-    }
+
     case "TSArrayType":
     case "TSRestType":
     case "TSOptionalType":
@@ -210,7 +175,7 @@ export function collectReferencedTypeDependencies(
 
   // `for...in` rather than `Object.values`: no per-node array allocation.
   for (const key in typeNode) {
-    const value = (typeNode as Record<string, unknown>)[key];
+    const value = (typeNode as unknown as Record<string, unknown>)[key];
     if (!value || typeof value !== "object") continue;
 
     if (Array.isArray(value)) {
@@ -218,7 +183,7 @@ export function collectReferencedTypeDependencies(
         if (!item || typeof item !== "object" || !("type" in item)) continue;
         collectReferencedTypeDependencies(
           ctx,
-          item as ModernRunesTypeNode,
+          item as TSNode,
           referencedImportedTypes,
           referencedLocalTypes,
           visitedLocalTypes,
@@ -230,7 +195,7 @@ export function collectReferencedTypeDependencies(
     if ("type" in value) {
       collectReferencedTypeDependencies(
         ctx,
-        value as ModernRunesTypeNode,
+        value as TSNode,
         referencedImportedTypes,
         referencedLocalTypes,
         visitedLocalTypes,
@@ -300,22 +265,77 @@ function buildTypeImportStatements(ctx: ParserContext, referencedImportedTypes: 
     });
 }
 
+/** A type reference's dependencies: `Name<Args>`, or an interface's `extends Name<Args>`. */
+function collectTypeReferenceDependencies(
+  ctx: ParserContext,
+  typeName: EntityName,
+  typeArguments: TypeNode[] | undefined,
+  referencedImportedTypes: Set<string>,
+  referencedLocalTypes: Set<string>,
+  visitedLocalTypes: Set<string>,
+) {
+  const dependencyName = getTypeDependencyName(typeName);
+  if (dependencyName) {
+    // A value import used only in a type position (e.g. `import { Size } from` a sibling
+    // module, with no `type` modifier) still needs an `import type` line in the standalone
+    // `.d.ts`; the runtime import in the component's own script is untouched.
+    if (
+      ctx.typeImportBindingsByLocalName.has(dependencyName) ||
+      ctx.valueImportBindingsByLocalName.has(dependencyName)
+    ) {
+      referencedImportedTypes.add(dependencyName);
+    }
+
+    const localDeclaration = ctx.localTypeDeclarationsByName.get(dependencyName);
+    if (localDeclaration && !visitedLocalTypes.has(dependencyName)) {
+      referencedLocalTypes.add(dependencyName);
+      visitedLocalTypes.add(dependencyName);
+      collectReferencedTypeDependencies(
+        ctx,
+        localDeclaration.node,
+        referencedImportedTypes,
+        referencedLocalTypes,
+        visitedLocalTypes,
+      );
+      visitedLocalTypes.delete(dependencyName);
+    }
+  }
+
+  // `Array<Item>`
+  for (const param of typeArguments ?? []) {
+    collectReferencedTypeDependencies(ctx, param, referencedImportedTypes, referencedLocalTypes, visitedLocalTypes);
+  }
+}
+
+/** The dependencies of a type literal's or interface body's property types. */
+function collectMemberDependencies(
+  ctx: ParserContext,
+  members: TypeElement[],
+  referencedImportedTypes: Set<string>,
+  referencedLocalTypes: Set<string>,
+  visitedLocalTypes: Set<string>,
+) {
+  for (const member of members) {
+    if (member.type !== "TSPropertySignature") continue;
+    collectReferencedTypeDependencies(
+      ctx,
+      member.typeAnnotation?.typeAnnotation,
+      referencedImportedTypes,
+      referencedLocalTypes,
+      visitedLocalTypes,
+    );
+  }
+}
+
 /**
  * Records a type node found outside the whole-object `$props()` path (legacy
  * annotations, runes per-prop annotations, accessor signatures) so
  * {@link buildTypeScriptMetadata} pulls its imported/local dependencies into
  * the `.d.ts`, same as the whole-object case already does.
  */
-export function trackAdditionalTypeDependencyNode(ctx: ParserContext, typeNode: ModernRunesTypeNode | undefined) {
+export function trackAdditionalTypeDependencyNode(ctx: ParserContext, typeNode: TSNode | undefined) {
   if (typeNode) ctx.additionalTypeDependencyNodes.push(typeNode);
 }
-
-/** The subset of a `TSEnumDeclaration`/`TSEnumMember` AST shape this module reads. */
-type EnumDeclarationNode = {
-  const?: boolean;
-  id?: { name?: string };
-  members?: Array<{ initializer?: { type?: string; value?: unknown } }>;
-};
 
 /**
  * `const enum` members are inlined at compile time and, unlike interfaces/type
@@ -325,13 +345,12 @@ type EnumDeclarationNode = {
  * an equivalent literal union instead; otherwise the caller falls back to the
  * verbatim declaration (best-effort, non-const enums always take that path).
  */
-function buildConstEnumUnionTypeCode(enumStatement: EnumDeclarationNode): string | undefined {
+function buildConstEnumUnionTypeCode(enumStatement: TSEnumDeclaration): string | undefined {
   if (!enumStatement.const) return undefined;
-  const name = enumStatement.id?.name;
-  if (!name) return undefined;
+  const name = enumStatement.id.name;
 
   const literalTexts: string[] = [];
-  for (const member of enumStatement.members ?? []) {
+  for (const member of enumStatement.members) {
     const initializer = member.initializer;
     if (initializer?.type !== "Literal") return undefined;
     const value = initializer.value;
@@ -347,12 +366,11 @@ function buildConstEnumUnionTypeCode(enumStatement: EnumDeclarationNode): string
 /** Builds a `LocalTypeDeclaration`-ready `code` string for a top-level `enum`/`const enum`. */
 export function buildEnumLocalTypeDeclarationCode(
   ctx: ParserContext,
-  enumStatement: EnumDeclarationNode & { start?: number; end?: number },
+  enumStatement: TSEnumDeclaration,
 ): string | undefined {
   const unionCode = buildConstEnumUnionTypeCode(enumStatement);
   if (unionCode) return unionCode;
 
-  if (enumStatement.start === undefined || enumStatement.end === undefined) return undefined;
   const verbatim = sourceAtPos(ctx, enumStatement.start, enumStatement.end)?.trim();
   // Unlike `interface`/`type`, a bare top-level `enum` in a module `.d.ts` (one that already has
   // an `import`/`export`) is a TS1046 error: enums emit a runtime value, so TS requires an
@@ -360,28 +378,8 @@ export function buildEnumLocalTypeDeclarationCode(
   return verbatim ? `declare ${verbatim}` : undefined;
 }
 
-/** A function parameter's AST shape, read for signature text. */
-type FunctionParamLike = {
-  type?: string;
-  name?: string;
-  optional?: boolean;
-  typeAnnotation?: { start?: number; end?: number; typeAnnotation?: ModernRunesTypeNode };
-  left?: { name?: string; typeAnnotation?: { start?: number; end?: number; typeAnnotation?: ModernRunesTypeNode } };
-  argument?: { name?: string };
-  /** `TSParameterProperty` (`constructor(public x: T)`): the parameter it wraps. */
-  parameter?: FunctionParamLike;
-};
-
-/** A `FunctionDeclaration` param/return-type AST shape, read for accessor signature text. */
-export type FunctionDeclarationLike = {
-  params?: FunctionParamLike[];
-  returnType?: { start?: number; end?: number; typeAnnotation?: ModernRunesTypeNode };
-  typeParameters?: {
-    start?: number;
-    end?: number;
-    params?: Array<{ constraint?: ModernRunesTypeNode; default?: ModernRunesTypeNode }>;
-  };
-};
+/** A function, or a method's overload signature: what its signature text is read from. */
+type FunctionDeclarationLike = Pick<BaseFunction | TSDeclareMethod, "params" | "returnType" | "typeParameters">;
 
 /** One parameter of {@link FunctionDeclarationParts}. `type` is unset when it has no annotation. */
 export interface FunctionDeclarationParam {
@@ -410,12 +408,13 @@ export function readFunctionDeclarationParts(
 ): FunctionDeclarationParts {
   const params: FunctionDeclarationParam[] = [];
 
-  for (const rawParam of funcDecl.params ?? []) {
-    const param = rawParam.type === "TSParameterProperty" && rawParam.parameter ? rawParam.parameter : rawParam;
+  for (const rawParam of funcDecl.params) {
+    // `constructor(public x: T)`: the parameter is wrapped.
+    const param = rawParam.type === "TSParameterProperty" ? rawParam.parameter : rawParam;
     if (param.type === "RestElement") {
       trackAdditionalTypeDependencyNode(ctx, param.typeAnnotation?.typeAnnotation);
       params.push({
-        name: param.argument?.name ?? "rest",
+        name: param.argument.type === "Identifier" ? param.argument.name : "rest",
         type: getTypeAnnotationText(ctx, param.typeAnnotation),
         optional: false,
         rest: true,
@@ -425,11 +424,12 @@ export function readFunctionDeclarationParts(
 
     const hasDefault = param.type === "AssignmentPattern";
     const target = hasDefault ? param.left : param;
-    trackAdditionalTypeDependencyNode(ctx, target?.typeAnnotation?.typeAnnotation);
+    const annotation = "typeAnnotation" in target ? target.typeAnnotation : undefined;
+    trackAdditionalTypeDependencyNode(ctx, annotation?.typeAnnotation);
     params.push({
-      name: target?.name ?? "arg",
-      type: getTypeAnnotationText(ctx, target?.typeAnnotation),
-      optional: hasDefault || param.optional === true,
+      name: target.type === "Identifier" ? target.name : "arg",
+      type: getTypeAnnotationText(ctx, annotation),
+      optional: hasDefault || ("optional" in param && param.optional === true),
       rest: false,
     });
   }

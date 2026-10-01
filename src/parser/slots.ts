@@ -1,4 +1,4 @@
-import type { CallExpression, Expression, Identifier, Literal, MemberExpression, ObjectExpression } from "estree";
+import type { CallExpression, Expression, Identifier, Literal, MemberExpression, ObjectExpression } from "sveast";
 import { getPropertyName, isIdentifier, isObjectExpression } from "../ast-guards";
 import type { DeprecatedValue, JsDocPassthroughTag, SlotProps, SlotPropValue, SourceRange } from "../model";
 import { resolveMemberExpressionType } from "./bindings";

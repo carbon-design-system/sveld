@@ -11,10 +11,11 @@ import type {
   Identifier,
   Literal,
   Node,
+  Pattern,
   Program,
   VariableDeclaration,
   VariableDeclarator,
-} from "estree";
+} from "sveast";
 import type { ComponentPropDefaultValue, ProcessedInitializer } from "../model";
 import type { ParserContext } from "./context";
 import { recordDiagnostic, recordSveldIgnore } from "./diagnostics";
@@ -23,7 +24,7 @@ import { resolvePropTypeAndDocs } from "./prop-shared";
 import { addProp, processInitializer, queuePendingCrossFileDefault } from "./props";
 import { collectPatternIdentifiers } from "./scopes";
 import { sourceRangeFromNode } from "./source-position";
-import { buildFunctionDeclarationSignature, type FunctionDeclarationLike } from "./type-resolution";
+import { buildFunctionDeclarationSignature } from "./type-resolution";
 
 /** Name of an export/import specifier's `local`/`exported`/`imported` (an identifier or a string literal). */
 export function moduleExportName(node: Identifier | Literal | undefined): string | undefined {
@@ -81,14 +82,24 @@ function findReactiveDeclaration(
     if (node.body.type !== "ExpressionStatement") continue;
     const assignment = node.body.expression;
     if (assignment.type !== "AssignmentExpression" || assignment.operator !== "=") continue;
+    // `$: (x as T) = value` assigns through a TS cast, which no `let` can declare.
+    if (assignment.left.type.startsWith("TS")) continue;
     if (!collectPatternIdentifiers(assignment.left).has(localName)) continue;
     const declarator: VariableDeclarator = {
       type: "VariableDeclarator",
-      id: assignment.left,
+      id: assignment.left as Pattern,
       init: assignment.right,
+      start: assignment.start,
+      end: assignment.end,
     };
     return {
-      declaration: { type: "VariableDeclaration", kind: "let", declarations: [declarator] },
+      declaration: {
+        type: "VariableDeclaration",
+        kind: "let",
+        declarations: [declarator],
+        start: node.start,
+        end: node.end,
+      },
       declarator,
       statement: node,
     };
@@ -220,8 +231,8 @@ export function collectExportDeclarators(
   const declarators: ExportDeclarator[] = [];
 
   if (declaration.type === "FunctionDeclaration") {
-    const funcDecl = declaration as { id?: { name?: string } } & FunctionDeclarationLike;
-    if (!funcDecl.id?.name) return declarators;
+    const funcDecl = declaration;
+    if (!funcDecl.id) return declarators;
     const accessorSignature =
       ctx.scriptLanguage === "ts" ? buildFunctionDeclarationSignature(ctx, funcDecl) : undefined;
     declarators.push({

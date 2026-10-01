@@ -16,9 +16,6 @@
  *   - parse: parseSvelteComponent on a synthetic pathological component
  *     (200 props with wide union/generic JSDoc types) — realistic samples
  *     alone can't show worst-case type-resolution cost
- *   - parse: template parser only (`src/template-parse/` `parse()`) on the
- *     same samples plus a markup-heavy synthetic (many elements, nested
- *     blocks, a snippet)
  *   - write: writeTsDefinition on the parsed doc for those same components,
  *     including the runes/TS and pathological ones
  *   - write: renderJsonDocument / renderMarkdownDocument (the pure,
@@ -56,7 +53,6 @@ import { setQuiet } from "../src/logger";
 import { ModuleGraph } from "../src/module-graph";
 import { hashSource, ParseCache } from "../src/parse-cache";
 import { getParserStack, loadParserStack } from "../src/parser-stack";
-import { parse as parseTemplate } from "../src/svelte-template-parse";
 import { buildComponentApiDocument } from "../src/writer/document-model";
 import { renderJsonDocument } from "../src/writer/writer-json";
 import { renderMarkdownDocument } from "../src/writer/writer-markdown";
@@ -151,45 +147,6 @@ ${destructured.join("\n")}
 `;
 }
 
-/**
- * Many sibling elements with directives, nested `{#if}` blocks, and a
- * snippet. Stresses the template parser. `buildPathologicalComponent` above
- * stresses JSDoc/type printing, which this parser never touches.
- */
-function buildTemplateHeavyComponent(elementCount: number, nestingDepth: number): string {
-  const items = Array.from(
-    { length: elementCount },
-    (_, i) =>
-      `    <button class:active={i === ${i}} on:click|preventDefault={() => handleClick(${i})} bind:this={refs[${i}]} data-index="${i}" aria-label="Item {${i}}">Item {${i}}</button>`,
-  ).join("\n");
-
-  const opens = Array.from({ length: nestingDepth }, (_, i) => `{#if depth${i} ?? true}`).join("");
-  const closes = Array.from({ length: nestingDepth }, () => "{/if}").join("");
-
-  return `<script lang="ts">
-  export let items: Array<{ id: string; label: string; visible: boolean }> = [];
-  export let refs: HTMLElement[] = [];
-  function handleClick(i: number) { console.log(i); }
-</script>
-
-${opens}
-{#each items as item, i (item.id)}
-  <div class:even={i % 2 === 0}>
-    {#if item.visible}
-      {#snippet row(entry: typeof item)}
-        <span>{entry.label}</span>
-      {/snippet}
-      {@render row(item)}
-    {:else}
-      <em>hidden</em>
-    {/if}
-  </div>
-{/each}
-${items}
-${closes}
-`;
-}
-
 const FIXTURE_DIR = join(import.meta.dir, "..", "tests", "e2e", "carbon", "src");
 const ENTRY = join(FIXTURE_DIR, "index.js");
 
@@ -253,26 +210,6 @@ group("parse: single component (runes + TypeScript, synthetic)", () => {
       });
     });
   }
-});
-
-/**
- * `src/template-parse/` `parse()` alone. No JSDoc extraction, prop
- * resolution, or type-text work. See the groups above for the full pipeline.
- */
-const templateHeavySource = buildTemplateHeavyComponent(150, 8);
-
-group("parse: template parser only (src/template-parse/)", () => {
-  for (const [size, sample] of Object.entries(SAMPLES)) {
-    task(`parse [template-parse] (${size}, ${sample.moduleName})`, () =>
-      parseTemplate(sources[size as keyof typeof SAMPLES]),
-    );
-  }
-
-  task("parse [template-parse] (runes large, lang=ts)", () => parseTemplate(runesSources.large));
-
-  task("parse [template-parse] (markup-heavy, 150 elements x 8 nested blocks)", () =>
-    parseTemplate(templateHeavySource),
-  );
 });
 
 // Run the real pipeline once (quietly) to source real ComponentDocApi

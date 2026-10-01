@@ -34,18 +34,16 @@
     "bench": "bun scripts/bench.ts",
     "bench:cache": "bun scripts/bench.ts --cache",
     "bench:ostia": "ostia bench scripts/bench-ostia.ts",
-    "fuzz": "bun scripts/fuzz-parser.ts",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",
-    "@sveltejs/acorn-typescript": "1.0.13",
     "@types/bun": "^1.4.2",
     "@types/jest": "^30.0.0",
     "@typescript/typescript6": "^6.0.2",
-    "acorn": "^8.18.0",
     "ajv": "^8.20.0",
     "ostia": "^0.2.7",
+    "sveast": "0.4.0",
     "svelte": "^5.57.1",
     "typescript": "^7.0.2"
   },

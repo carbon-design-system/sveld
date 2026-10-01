@@ -1,4 +1,4 @@
-import type { CommentWithLocation } from "../template-parse/comments";
+import type { AST } from "sveast";
 import { getPropByLocalOrPublic, type ParserContext } from "./context";
 import { recordSveldIgnore } from "./diagnostics";
 import { aliasType, getCommentTags, isJsDocGap, parseCommentText, processNodeJSDoc, typeTagDescription } from "./jsdoc";
@@ -23,7 +23,7 @@ interface TopLevelDeclaration {
  * source isn't rescanned for them here.
  */
 function collectBlockComments(
-  comments: CommentWithLocation[],
+  comments: AST.JSComment[],
   source: string,
   programStart: number,
   programEnd: number,

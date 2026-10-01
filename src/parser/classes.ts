@@ -1,84 +1,33 @@
-import type { ComponentClassMember, ComponentPropParam, ModernRunesTypeNode } from "../model";
+import type {
+  ClassDeclaration,
+  ClassExpression,
+  EntityName,
+  MethodDefinition,
+  PropertyDefinition,
+  Statement,
+  TSTypeParameterInstantiation,
+} from "sveast";
+import type { ComponentClassMember, ComponentPropParam } from "../model";
 import type { ParserContext } from "./context";
 import { processNodeJSDoc } from "./jsdoc";
 import {
-  type FunctionDeclarationLike,
   getTypeAnnotationText,
   getTypeNodeText,
   readFunctionDeclarationParts,
   trackAdditionalTypeDependencyNode,
 } from "./type-resolution";
 
-type TypeAnnotationNode = { start?: number; end?: number; typeAnnotation?: ModernRunesTypeNode };
+/** A module-script class {@link readClassDeclaration} reads. */
+type ClassDeclarationLike = ClassDeclaration | ClassExpression;
 
-type MethodValueNode = FunctionDeclarationLike & {
-  type?: string;
-  async?: boolean;
-  body?: { body?: StatementNode[] } | null;
-};
-
-type ParamNode = NonNullable<FunctionDeclarationLike["params"]>[number] & {
-  accessibility?: "public" | "private" | "protected";
-  readonly?: boolean;
-  leadingComments?: unknown[];
-};
-
-type ClassMemberNode = {
-  type: string;
-  kind?: "constructor" | "method" | "get" | "set";
-  key?: { type: string; name?: string; value?: unknown };
-  computed?: boolean;
-  static?: boolean;
-  readonly?: boolean;
-  optional?: boolean;
-  abstract?: boolean;
-  accessibility?: "public" | "private" | "protected";
-  typeAnnotation?: TypeAnnotationNode;
-  /** A method's own `<U>`: on the method, not its function value. */
-  typeParameters?: FunctionDeclarationLike["typeParameters"];
-  value?: unknown;
-  leadingComments?: unknown[];
-  start?: number;
-};
-
-type StatementNode = {
-  type: string;
-  expression?: {
-    type: string;
-    operator?: string;
-    left?: { type: string; computed?: boolean; object?: { type: string }; property?: { type: string; name?: string } };
-  };
-  leadingComments?: unknown[];
-  start?: number;
-};
-
-/** The subset of a `ClassDeclaration` AST shape {@link readClassDeclaration} reads. */
-export type ClassDeclarationLike = {
-  typeParameters?: {
-    start?: number;
-    end?: number;
-    params?: Array<{ constraint?: ModernRunesTypeNode; default?: ModernRunesTypeNode }>;
-  };
-  /** `extends Base`: the base class expression, and its type arguments (`Base<T>`). */
-  superClass?: { type?: string; start?: number; end?: number } | null;
-  superTypeParameters?: { start?: number; end?: number; params?: ModernRunesTypeNode[] };
-  /** `implements A<T>, B`. */
-  implements?: Array<{
-    start?: number;
-    end?: number;
-    expression?: unknown;
-    typeParameters?: { params?: ModernRunesTypeNode[] };
-  }>;
-  body?: { body?: unknown[] };
-};
+/** The class members {@link readClassDeclaration} documents. */
+type ClassMemberNode = MethodDefinition | PropertyDefinition;
 
 type MemberJSDoc = ReturnType<typeof processNodeJSDoc>;
 
-const MEMBER_NODE_TYPES = new Set(["MethodDefinition", "PropertyDefinition", "AccessorProperty"]);
-
 /** `name`, `"quoted-name"`, or `0`; unset for a computed (`[Symbol.iterator]`) or `#private` key. */
 function memberName(member: ClassMemberNode): string | undefined {
-  if (member.computed || !member.key) return undefined;
+  if (member.computed) return undefined;
   if (member.key.type === "Identifier") return member.key.name;
   if (member.key.type === "Literal" && (typeof member.key.value === "string" || typeof member.key.value === "number")) {
     return String(member.key.value);
@@ -110,7 +59,7 @@ function stripAngleBrackets(typeParameters: string | undefined): string | undefi
  */
 function readMethodSignature(
   ctx: ParserContext,
-  fn: MethodValueNode,
+  fn: MethodDefinition["value"],
   jsdoc: MemberJSDoc,
 ): Pick<ComponentClassMember, "params" | "returnType" | "typeParameters"> {
   const parts = readFunctionDeclarationParts(ctx, fn);
@@ -154,12 +103,12 @@ export function readClassDeclaration(
   /** Methods with (non-abstract) overload signatures, whose implementation is left out. */
   const overloaded = new Set<string>();
   const instanceProperties = new Set<string>();
-  let constructorBody: StatementNode[] | undefined;
+  let constructorBody: Statement[] | undefined;
   let constructorIndex = -1;
 
-  for (const rawMember of classDecl.body?.body ?? []) {
-    const member = rawMember as ClassMemberNode;
-    if (!MEMBER_NODE_TYPES.has(member.type) || isHidden(member.accessibility)) continue;
+  for (const member of classDecl.body.body) {
+    if (member.type !== "MethodDefinition" && member.type !== "PropertyDefinition") continue;
+    if (isHidden(member.accessibility)) continue;
     const name = memberName(member);
     if (name === undefined) continue;
     const jsdoc = processNodeJSDoc(ctx, member);
@@ -186,17 +135,17 @@ export function readClassDeclaration(
       continue;
     }
 
-    const value = member.value as MethodValueNode;
+    const value = member.value;
+    // A method's own `<U>` is on the method, not its function value.
     const fn = member.typeParameters ? { ...value, typeParameters: member.typeParameters } : value;
 
     if (member.kind === "constructor") {
       const signature = readMethodSignature(ctx, fn, jsdoc);
       members.push({ kind: "constructor", name: "constructor", params: signature.params, ...memberDocs(jsdoc) });
       constructorIndex = members.length;
-      constructorBody = fn.body?.body;
+      constructorBody = fn.type === "FunctionExpression" ? fn.body.body : undefined;
       // `constructor(public x: T)` also declares a property `x`.
-      const params = (fn.params ?? []) as ParamNode[];
-      params.forEach((param, index) => {
+      fn.params.forEach((param, index) => {
         if (param.type !== "TSParameterProperty" || isHidden(param.accessibility)) return;
         const signatureParam = signature.params?.[index];
         if (!signatureParam) return;
@@ -284,17 +233,19 @@ function readClassHeritage(
   return heritage;
 }
 
-/** Tracks `typeName<typeParameters>` as a type dependency, as if written as a type annotation. */
+/** Tracks `typeName<typeArguments>` as a type dependency, as if written as a type annotation. */
 function trackTypeReference(
   ctx: ParserContext,
-  typeName: unknown,
-  typeParameters: { params?: ModernRunesTypeNode[] } | undefined,
+  typeName: EntityName,
+  typeArguments: TSTypeParameterInstantiation | undefined,
 ) {
   trackAdditionalTypeDependencyNode(ctx, {
     type: "TSTypeReference",
     typeName,
-    ...(typeParameters ? { typeParameters } : {}),
-  } as ModernRunesTypeNode);
+    start: typeName.start,
+    end: typeArguments?.end ?? typeName.end,
+    ...(typeArguments ? { typeArguments } : {}),
+  });
 }
 
 /**
@@ -304,7 +255,7 @@ function trackTypeReference(
  */
 function readConstructorAssignments(
   ctx: ParserContext,
-  body: StatementNode[],
+  body: Statement[],
   declared: Set<string>,
 ): ComponentClassMember[] {
   const properties: ComponentClassMember[] = [];
@@ -312,8 +263,8 @@ function readConstructorAssignments(
     const expression = statement.type === "ExpressionStatement" ? statement.expression : undefined;
     if (expression?.type !== "AssignmentExpression" || expression.operator !== "=") continue;
     const target = expression.left;
-    if (target?.type !== "MemberExpression" || target.computed || target.object?.type !== "ThisExpression") continue;
-    const name = target.property?.type === "Identifier" ? target.property.name : undefined;
+    if (target.type !== "MemberExpression" || target.computed || target.object.type !== "ThisExpression") continue;
+    const name = target.property.type === "Identifier" ? target.property.name : undefined;
     if (!name || declared.has(name)) continue;
     declared.add(name);
     const jsdoc = processNodeJSDoc(ctx, statement);
