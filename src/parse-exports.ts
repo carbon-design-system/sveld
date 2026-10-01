@@ -19,7 +19,7 @@ interface NodeExportNamedDeclaration extends Node, Pick<NodeImportDeclaration, "
 
 interface NodeExportDefaultDeclaration extends Node {
   type: "ExportDefaultDeclaration";
-  declaration: { name: string };
+  declaration: { type: string; name: string };
 }
 
 interface NodeExportAllDeclaration extends Node, Pick<NodeImportDeclaration, "source"> {
@@ -129,6 +129,8 @@ function readExports(
 
   for (const node of ast.body) {
     if (node.type === "ExportDefaultDeclaration") {
+      // `export default Button`; an anonymous default isn't a component.
+      if (node.declaration.type !== "Identifier") continue;
       const id = node.declaration.name;
 
       if (id in exports_by_identifier) {
@@ -218,7 +220,10 @@ function readExports(
         }
       }
     } else if (node.type === "ImportDeclaration") {
-      const id = node.specifiers[0].local.name;
+      // `import "./styles.css"` binds nothing.
+      const first = node.specifiers[0];
+      if (!first) continue;
+      const id = first.local.name;
 
       if (id in exports_by_identifier) {
         if (!exports_by_identifier[id].source) {

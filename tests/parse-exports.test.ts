@@ -288,6 +288,22 @@ describe("parseExports", () => {
     expect(() => parseExports(source, "")).toThrow(UNRESOLVED_RELATIVE_PATH_REGEX);
   });
 
+  test("a side-effect import binds nothing and doesn't throw", () => {
+    const source = `import "./styles.css";\nexport { default as Button } from "./Button.svelte";`;
+
+    expect(parseExports(source, "")).toEqual({
+      Button: { source: "./Button.svelte", default: true },
+    });
+  });
+
+  test("an anonymous default export isn't recorded as a component", () => {
+    const source = `export { default as Button } from "./Button.svelte";\nexport default { version: 1 };`;
+
+    expect(parseExports(source, "")).toEqual({
+      Button: { source: "./Button.svelte", default: true },
+    });
+  });
+
   test("named re-export with an unresolved alias throws a structured error", () => {
     const source = `export { default as Button } from "$components/Button.svelte";`;
 
