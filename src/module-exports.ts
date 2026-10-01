@@ -318,7 +318,11 @@ function collectAstReturnArguments(body: BlockStatement, out: Array<Expression |
   for (const statement of body.body) collectStatementReturnArguments(statement, out);
 }
 
-/** A statement's `return` arguments, without entering nested functions. */
+/**
+ * A statement's `return` arguments, without entering nested functions. A
+ * `return` can only sit in a statement, so following every statement that
+ * holds others finds them all.
+ */
 function collectStatementReturnArguments(statement: Statement, out: Array<Expression | null>): void {
   switch (statement.type) {
     case "ReturnStatement":
@@ -328,10 +332,9 @@ function collectStatementReturnArguments(statement: Statement, out: Array<Expres
       collectAstReturnArguments(statement, out);
       return;
     case "IfStatement":
-      collectBranchReturnArguments(statement.consequent, out);
-      if (statement.alternate) collectBranchReturnArguments(statement.alternate, out);
+      collectStatementReturnArguments(statement.consequent, out);
+      if (statement.alternate) collectStatementReturnArguments(statement.alternate, out);
       return;
-    // Loop and labeled bodies, when they're blocks.
     case "ForStatement":
     case "ForInStatement":
     case "ForOfStatement":
@@ -339,15 +342,19 @@ function collectStatementReturnArguments(statement: Statement, out: Array<Expres
     case "DoWhileStatement":
     case "LabeledStatement":
     case "WithStatement":
-      if (statement.body.type === "BlockStatement") collectAstReturnArguments(statement.body, out);
+      collectStatementReturnArguments(statement.body, out);
+      return;
+    case "TryStatement":
+      collectAstReturnArguments(statement.block, out);
+      if (statement.handler) collectAstReturnArguments(statement.handler.body, out);
+      if (statement.finalizer) collectAstReturnArguments(statement.finalizer, out);
+      return;
+    case "SwitchStatement":
+      for (const switchCase of statement.cases) {
+        for (const consequent of switchCase.consequent) collectStatementReturnArguments(consequent, out);
+      }
       return;
   }
-}
-
-/** An `if`'s branch: a block, or a bare `return`. */
-function collectBranchReturnArguments(branch: Statement, out: Array<Expression | null>): void {
-  if (branch.type === "BlockStatement") collectAstReturnArguments(branch, out);
-  else if (branch.type === "ReturnStatement") out.push(branch.argument ?? null);
 }
 
 /** A `TSEnumMember`'s literal initializer value, or `undefined` for anything not a plain string/number literal. */

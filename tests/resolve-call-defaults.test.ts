@@ -421,6 +421,36 @@ describe("cross-file CallExpression prop-default resolution", () => {
     expect(prop?.type).toBe("string");
   });
 
+  test("cross-file literal return inference sees returns inside try blocks", async () => {
+    writeFileSync(
+      path.join(dir, "utils.js"),
+      `export function pick(kind) {
+  if (kind) return "a";
+  try {
+    return 1;
+  } catch {
+    return 2;
+  }
+}
+`,
+    );
+    writeFileSync(
+      path.join(dir, "MixedReturns.svelte"),
+      `<script>
+  import { pick } from "./utils.js";
+  export let value = pick();
+</script>
+<div>{value}</div>
+`,
+    );
+    writeFileSync(path.join(dir, "index.js"), `export { default as MixedReturns } from "./MixedReturns.svelte";\n`);
+
+    const result = await generateBundle(path.join(dir, "index.js"), true);
+    const prop = byModuleName(result.allComponentsForTypes, "MixedReturns")?.props.find((p) => p.name === "value");
+    // `"a"` and `1` disagree, so there's no single literal type to infer.
+    expect(prop?.type).not.toBe("string");
+  });
+
   test("binding-annotated const export supplies returnType for call defaults", async () => {
     writeFileSync(path.join(dir, "utils.ts"), `export const uniqueId: () => string = () => "x";\n`);
     writeFileSync(
