@@ -1,72 +1,14 @@
+import { createLocator } from "sveast/walk";
 import type { SourcePosition, SourceRange } from "../model";
 import type { ParserContext } from "./context";
 
 /** Matches one or more consecutive `\r`/`\n` so multiline source can collapse to a single space. */
 export const NEWLINE_CR_REGEX = /[\r\n]+/g;
 
-/**
- * Returns (and lazily computes/caches on `ctx`) the 0-based source offset for
- * the start of each line in `ctx.source`.
- */
-function getSourceLineStartOffsets(ctx: ParserContext) {
-  if (ctx.sourceLineStartOffsetsCache) return ctx.sourceLineStartOffsetsCache;
-
-  const offsets = [0];
-  if (ctx.source) {
-    // `indexOf` is a native scan; a per-character comparison loop re-does that
-    // scan one JS-level charCodeAt call at a time.
-    let index = ctx.source.indexOf("\n");
-    while (index !== -1) {
-      offsets.push(index + 1);
-      index = ctx.source.indexOf("\n", index + 1);
-    }
-  }
-
-  ctx.sourceLineStartOffsetsCache = offsets;
-  return offsets;
-}
-
 function sourcePositionFromOffset(ctx: ParserContext, offset: number): SourcePosition | undefined {
   if (!ctx.source || offset < 0 || offset > ctx.source.length) return undefined;
-
-  const offsets = getSourceLineStartOffsets(ctx);
-
-  // Ranges are requested roughly in source order, so the line found last
-  // (or the one after it) is usually right; check it before bisecting.
-  const hint = ctx.sourceLineHint;
-  if (hint !== undefined) {
-    for (let line = hint; line <= hint + 1 && line < offsets.length; line++) {
-      const lineStart = offsets[line];
-      const nextLineStart = offsets[line + 1] ?? Number.POSITIVE_INFINITY;
-      if (offset >= lineStart && offset < nextLineStart) {
-        ctx.sourceLineHint = line;
-        return { line: line + 1, column: offset - lineStart };
-      }
-    }
-  }
-
-  let low = 0;
-  let high = offsets.length - 1;
-
-  while (low <= high) {
-    const mid = (low + high) >>> 1;
-    const lineStart = offsets[mid];
-    const nextLineStart = offsets[mid + 1] ?? Number.POSITIVE_INFINITY;
-
-    if (offset < lineStart) {
-      high = mid - 1;
-    } else if (offset >= nextLineStart) {
-      low = mid + 1;
-    } else {
-      ctx.sourceLineHint = mid;
-      return {
-        line: mid + 1,
-        column: offset - lineStart,
-      };
-    }
-  }
-
-  return undefined;
+  ctx.sourceLocator ??= createLocator(ctx.source);
+  return ctx.sourceLocator(offset);
 }
 
 export function sourceRangeFromOffsets(

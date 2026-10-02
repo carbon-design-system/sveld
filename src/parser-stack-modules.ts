@@ -9,4 +9,4 @@ export { default as ComponentParser } from "./ComponentParser";
 export { formatParseError } from "./parse-error";
 export { deriveLiteralDetailType, literalDetailToTypeText } from "./parser/events";
 export { extractJsDocDeprecatedAndTags, extractJsDocReturnType, getCommentTags } from "./parser/jsdoc";
-export { parse as parseSvelte } from "./svelte-template-parse";
+export { parse as parseSvelte, parseScripts as parseSvelteScripts } from "./svelte-template-parse";

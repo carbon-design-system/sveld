@@ -208,7 +208,7 @@ function parseModule(filePath: string): ParsedModule {
   try {
     let body: Program["body"];
     if (filePath.endsWith(".svelte")) {
-      body = getParserStack().parseSvelte(text).module?.content.body ?? [];
+      body = getParserStack().parseSvelteScripts(text).module?.content.body ?? [];
     } else {
       body = getParserStack().parseModule(text, { typescript: true }).body;
     }

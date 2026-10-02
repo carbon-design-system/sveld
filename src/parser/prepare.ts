@@ -3,6 +3,7 @@
  * front (script language, type annotations, hoisted bindings, and the
  * component-level JSDoc tags).
  */
+import { lexComponent } from "sveast";
 import { parse as parseModernAst } from "../svelte-template-parse";
 import { parseCustomTypes } from "./component-tags";
 import type { ParserContext } from "./context";
@@ -11,22 +12,34 @@ import { buildRunesPropTypeMetadata } from "./runes-props";
 import { stripTypeCastWrappers } from "./typescript-casts";
 import { collectHoistedScriptBindings } from "./value-imports";
 
-const SCRIPT_BLOCK_REGEX = /(<script[^>]*>)([\s\S]*?)(<\/script>)/gi;
-
 /** A `// @ts-...` comment, but not one on a `*` line of a JSDoc block (e.g. in an `@example`). */
 const TS_DIRECTIVE_REGEX = /\/\/(?<!^[ \t]*\*.*\/\/)\s*@ts-[^\n\r]*/gm;
 
+/**
+ * Removes `// @ts-...` directives from the component's top-level `<script>`s.
+ * `lexComponent` finds them the way the parser does, so a `<script>` in an
+ * HTML comment, an attribute, an expression or `<svelte:head>` is left alone.
+ */
 function stripTypeScriptDirectivesFromScripts(source: string): string {
   // Every directive contains `@ts-`; without it there's nothing to strip,
-  // so skip the script-block regex replace (and the source copy it makes).
+  // so skip lexing the component (and the source copy it makes).
   if (!source.includes("@ts-")) return source;
 
-  SCRIPT_BLOCK_REGEX.lastIndex = 0;
-  return source.replace(SCRIPT_BLOCK_REGEX, (_match, openTag, scriptContent, closeTag) => {
-    TS_DIRECTIVE_REGEX.lastIndex = 0;
-    const cleanedContent = scriptContent.replace(TS_DIRECTIVE_REGEX, "");
-    return openTag + cleanedContent + closeTag;
-  });
+  // lexComponent's offsets, like parse's, don't count a leading byte order mark.
+  const bom = source.charCodeAt(0) === 0xfeff ? 1 : 0;
+  const { instance, module } = lexComponent(source);
+  const scripts = [instance, module]
+    .flatMap((script) => (script ? [script.content] : []))
+    .sort((a, b) => a.start - b.start);
+
+  let cleaned = "";
+  let last = 0;
+  for (const { start, end } of scripts) {
+    cleaned += source.slice(last, start + bom);
+    cleaned += source.slice(start + bom, end + bom).replace(TS_DIRECTIVE_REGEX, "");
+    last = end + bom;
+  }
+  return cleaned + source.slice(last);
 }
 
 /** Parses `source` into a fresh `ctx` and collects what the module and component walks read. */
