@@ -517,6 +517,22 @@ describe("ComponentParser", () => {
     expect(constExport?.description).toBe("A constant value");
   });
 
+  test("strips TypeScript directives only from top-level scripts", () => {
+    const parser = new ComponentParser();
+    const source = `
+      <!-- <script> -->
+      <p>Add <code>// @ts-ignore</code> above a line to silence it.</p>
+      <script>
+        /** The label */
+        // @ts-ignore
+        export let label = "";
+      </script>
+    `;
+
+    const result = parser.parseSvelteComponent(source, diagnostics);
+    expect(result.props.find((p) => p.name === "label")?.description).toBe("The label");
+  });
+
   test("strips TypeScript directives before parsing", () => {
     const parser = new ComponentParser();
     const source = `
