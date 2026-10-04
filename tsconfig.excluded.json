@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "erasableSyntaxOnly": false,
+    "paths": { "sveld": ["./src/index.ts"] }
+  },
+  "include": [
+    "tests/e2e/*/sveld.config.ts",
+    "tests/e2e/*/run-*.ts",
+    "tests/fixtures-entry-exports/**/*.ts",
+    "tests/svelte-shim.d.ts"
+  ],
+  "exclude": []
+}
