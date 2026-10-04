@@ -675,7 +675,7 @@ describe("createSerialQueue", () => {
   test("a rejected run does not break the queue for the next call", async () => {
     const order: string[] = [];
     const run = jest
-      .fn<() => Promise<void>>()
+      .fn<Promise<void>, []>()
       .mockImplementationOnce(async () => {
         order.push("first");
         throw new Error("boom");

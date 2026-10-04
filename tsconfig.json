@@ -9,5 +9,6 @@
     "esModuleInterop": true,
     "types": ["bun", "jest"]
   },
-  "include": ["src/**/*", "tests/**/*", "scripts/**/*"]
+  "include": ["src/**/*", "tests/**/*", "scripts/**/*"],
+  "exclude": ["tests/e2e", "tests/fixtures-entry-exports", "tests/fixtures/ts-value-import-as-type"]
 }

@@ -108,7 +108,7 @@ describe("sveld() exitCode and errors", () => {
   let absoluteDir: string;
   let relativeDir: string;
   let entry: string;
-  let previousExitCode: number | string | undefined;
+  let previousExitCode: number | string | null | undefined;
 
   beforeEach(() => {
     absoluteDir = mkdtempSync(join(process.cwd(), "sveld-exitcode-"));

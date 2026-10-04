@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import * as path from "node:path";
 import type { GenerateBundleResult } from "../src/plugin";
 import pluginSveld, { generateBundle, writeOutput } from "../src/plugin";
-import { mockComponentDocApi } from "./test-brands";
+import { mockComponentDocApi, mockParsedExport } from "./test-brands";
 
 /** Mock Rollup plugin context: throws (instead of `never`-returning) so `this.error(...)` surfaces as a rejected promise. */
 const errorContext = {
@@ -166,7 +166,7 @@ describe("writeOutput output paths", () => {
   test("writes every built-in output to an absolute path as given, not under cwd", async () => {
     const button = mockComponentDocApi("Button", "Button.svelte");
     const result: GenerateBundleResult = {
-      exports: { Button: { source: "./Button.svelte", default: true } },
+      exports: { Button: mockParsedExport("./Button.svelte", { default: true }) },
       entryExports: [],
       components: new Map([["Button", button]]),
       allComponentsForTypes: new Map([["Button.svelte", button]]),

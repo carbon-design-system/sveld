@@ -461,7 +461,7 @@ describe("component API JSON schema validates real emitted output", () => {
   const carbonApiPath = "tests/e2e/carbon/COMPONENT_API.json";
   const hasCarbonApi = existsSync(path.join(root, carbonApiPath));
 
-  test.skipIf(!hasCarbonApi)("validates the committed carbon e2e COMPONENT_API.json", () => {
+  (hasCarbonApi ? test : test.skip)("validates the committed carbon e2e COMPONENT_API.json", () => {
     if (!hasCarbonApi) {
       console.warn(`Skipping: ${carbonApiPath} not found in the working tree.`);
       return;
