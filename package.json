@@ -34,7 +34,7 @@
     "bench": "bun scripts/bench.ts",
     "bench:cache": "bun scripts/bench.ts --cache",
     "bench:ostia": "ostia bench scripts/bench-ostia.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit && tsc --project tsconfig.excluded.json"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",
