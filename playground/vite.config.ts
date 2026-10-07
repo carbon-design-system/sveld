@@ -3,7 +3,7 @@ import { optimizeCss, optimizeImports } from "carbon-preprocess-svelte";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  plugins: [svelte({ preprocess: [optimizeImports()] }), optimizeCss()],
+  plugins: [svelte({ preprocess: [optimizeImports()] }), optimizeCss({ propAware: true })],
   optimizeDeps: {
     exclude: ["carbon-components-svelte", "carbon-icons-svelte"],
   },
