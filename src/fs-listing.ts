@@ -1,13 +1,10 @@
 import { type Dirent, existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
-/**
- * One directory's entries. `byName` and `folded` are built on first use.
- */
 interface DirectoryListing {
   entries: Dirent[];
   names: Set<string>;
-  /** On-disk name -> entry; built on first {@link DirectoryListings.entry} lookup. */
+  /** On-disk name -> entry; built on first use. */
   byName?: Map<string, Dirent>;
   /** Case-folded, NFC-normalized name -> on-disk name; built on first fuzzy lookup. */
   folded?: Map<string, string>;
@@ -19,12 +16,8 @@ function foldName(name: string): string {
 
 /**
  * One `readdirSync` per directory, shared by the glob walk and module
- * resolution. Both would otherwise list every component directory on their
- * own, and module resolution would `existsSync` each candidate extension
- * for every specifier instead of reading the listing once.
- *
- * A directory that could not be read (missing, not a directory, permission
- * denied) is remembered as unreadable. {@link clear} before any pass that
+ * resolution, instead of an `existsSync` per candidate extension. Unreadable
+ * directories are remembered as such. {@link clear} before any pass that
  * must see files created since the last one.
  */
 export class DirectoryListings {
@@ -40,11 +33,9 @@ export class DirectoryListings {
   }
 
   /**
-   * The listing entry named exactly `name` in `dir`, or `undefined` when there
-   * is none (including when only a case/normalization variant exists; see
-   * {@link has} for that path). Lets callers read the entry's type from the
-   * listing instead of `lstat`-ing the path again: like `lstat`, `readdir`
-   * entry types describe a symlink itself, not its target.
+   * The entry named exactly `name` in `dir` (a case/normalization variant
+   * doesn't count; see {@link has}). Like `lstat`, its type describes a
+   * symlink itself, not its target.
    */
   entry(dir: string, name: string): Dirent | undefined {
     const listing = this.read(dir);
@@ -57,11 +48,9 @@ export class DirectoryListings {
   }
 
   /**
-   * Whether `dir/name` exists, answered from the cached listing of `dir`. An
-   * exact name match needs no syscall. A name that differs only by case or
-   * Unicode normalization is confirmed with `existsSync`, so it still resolves
-   * on case-insensitive filesystems (as probing the disk directly did) and is
-   * rejected on case-sensitive ones.
+   * Whether `dir/name` exists. A name differing only by case or Unicode
+   * normalization is confirmed with `existsSync`, so it resolves on
+   * case-insensitive filesystems and not on case-sensitive ones.
    */
   has(dir: string, name: string): boolean {
     const listing = this.read(dir);

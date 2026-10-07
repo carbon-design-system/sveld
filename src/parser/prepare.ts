@@ -16,13 +16,10 @@ import { collectHoistedScriptBindings } from "./value-imports";
 const TS_DIRECTIVE_REGEX = /\/\/(?<!^[ \t]*\*.*\/\/)\s*@ts-[^\n\r]*/gm;
 
 /**
- * Removes `// @ts-...` directives from the component's top-level `<script>`s.
- * `lexComponent` finds them the way the parser does, so a `<script>` in an
- * HTML comment, an attribute, an expression or `<svelte:head>` is left alone.
+ * Removes `// @ts-...` directives from the top-level `<script>`s only;
+ * `lexComponent` finds those the way the parser does.
  */
 function stripTypeScriptDirectivesFromScripts(source: string): string {
-  // Every directive contains `@ts-`; without it there's nothing to strip,
-  // so skip lexing the component (and the source copy it makes).
   if (!source.includes("@ts-")) return source;
 
   // lexComponent's offsets, like parse's, don't count a leading byte order mark.
@@ -42,25 +39,17 @@ function stripTypeScriptDirectivesFromScripts(source: string): string {
   return cleaned + source.slice(last);
 }
 
-/** Parses `source` into a fresh `ctx` and collects what the module and component walks read. */
+/** Parses `source` into a fresh `ctx` and collects what the walks read up front. */
 export function prepareComponent(ctx: ParserContext, source: string, filePath: string): void {
   ctx.componentFilePath = filePath;
   const cleanedSource = stripTypeScriptDirectivesFromScripts(source);
   ctx.source = cleanedSource;
 
-  /**
-   * One modern-AST parse feeds both `buildRunesPropTypeMetadata` and the
-   * main walk. There's no conversion step in between, so order doesn't matter.
-   */
   const parsed = parseModernAst(cleanedSource);
   buildRunesPropTypeMetadata(ctx, parsed);
   ctx.parsed = parsed;
 
-  /**
-   * compile() strips TS-only wrapper expressions (`as`/`satisfies`/`!`/type assertions/explicit
-   * generic instantiation) before exposing its AST; parse() alone leaves them in place. Only
-   * TS-tagged scripts can contain them, so skip the walk entirely for plain JS components.
-   */
+  // svelte's compile() strips TS-only wrappers (`as`, `satisfies`, `!`, ...); parse() leaves them.
   if (ctx.scriptLanguage === "ts") {
     stripTypeCastWrappers(parsed.module);
     stripTypeCastWrappers(parsed.instance);
@@ -69,15 +58,8 @@ export function prepareComponent(ctx: ParserContext, source: string, filePath: s
 
   ctx.syntaxMode = detectSyntaxMode(ctx);
 
-  /**
-   * `parseCustomTypes` scans the raw source text for `/** *\/`-style comment blocks
-   * (via `comment-parser`), which has no notion of Svelte's markup structure - a
-   * `/** ... *\/`-shaped comment inside a top-level `<style>` block would otherwise be
-   * misread as a JSDoc block and could produce a spurious typedef/event/etc. Blank out
-   * the style block's own text (same length, so it doesn't shift any offsets) for this
-   * scan only; `ctx.source` itself stays the untouched parsed source so every other
-   * offset computation (source ranges, `sourceAtPos`, ...) is unaffected.
-   */
+  // `parseCustomTypes` scans raw text, so a `/** */` comment in `<style>` would read as
+  // JSDoc. Blank the style block out (same length, so offsets don't move) for that scan only.
   const cssBlock = parsed.css;
   const scanSource = cssBlock
     ? cleanedSource.slice(0, cssBlock.start) +
@@ -85,16 +67,7 @@ export function prepareComponent(ctx: ParserContext, source: string, filePath: s
       cleanedSource.slice(cssBlock.end)
     : cleanedSource;
 
-  /**
-   * Imports and function declarations hoist, so `export let id = uniqueId()` must
-   * resolve even when the import or `function uniqueId()` comes later in the script
-   * (see #410) - and `parseCustomTypes` below needs `ctx.funcDecls` populated too, to
-   * tell a `@template` tag documenting an ordinary function apart from one declaring a
-   * component generic (see `blockDocumentsFunction` in `parser/component-tags.ts`).
-   *
-   * Skip the template. Imports and function declarations never appear in the template
-   * fragment, so walking markup here would re-traverse the largest part of the AST for nothing.
-   */
+  // `parseCustomTypes` needs `ctx.funcDecls` to tell a function's `@template` from a component generic.
   collectHoistedScriptBindings(ctx, parsed.module);
   collectHoistedScriptBindings(ctx, parsed.instance);
 

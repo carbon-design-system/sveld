@@ -8,7 +8,6 @@ import type {
 import type { JSDocComment, JSDocTag } from "./comment-parser";
 import { leadingWhitespaceLength, parseComments, togglesCodeFence } from "./comment-parser";
 import type { ParserContext } from "./context";
-import { assignValueOrUndefined } from "./utils";
 
 const WHITESPACE_CHAR_REGEX = /\s/;
 
@@ -47,7 +46,7 @@ const DESCRIPTION_DASH_PREFIX_REGEX = /^-\s*/;
  */
 export function joinDescriptionLines(lines: readonly string[]): string {
   const out: string[] = [];
-  /** Indentation width of the open fence's opening line; undefined outside a fence. */
+  /** Indentation of the open fence's opening line; undefined outside a fence. */
   let fenceIndent: number | undefined;
   let paragraphBreak = false;
   for (const line of lines) {
@@ -75,9 +74,7 @@ export function joinDescriptionLines(lines: readonly string[]): string {
 }
 
 export function cleanDescription(description: string | undefined): string | undefined {
-  if (description === undefined) return undefined;
-  const cleaned = description.replace(DESCRIPTION_DASH_PREFIX_REGEX, "").trim();
-  return cleaned === "" ? "" : cleaned;
+  return description?.replace(DESCRIPTION_DASH_PREFIX_REGEX, "").trim();
 }
 
 /**
@@ -100,11 +97,9 @@ export function tagHeadIndex(tagLines: ReadonlyArray<{ continuesType?: true }>):
 export const IDE_PASSTHROUGH_TAGS = new Set(["since", "example", "see"]);
 
 /**
- * Tags sveld gives meaning to somewhere other than `parseCustomTypes`'s own
- * switch below: `@bindable` is handled per-prop in {@link getCommentTags},
- * and `@default`/`@required` are conventional documentation tags sveld
- * doesn't act on but doesn't consider a typo either. Anything reaching the
- * `default:` case that isn't in this set or `IDE_PASSTHROUGH_TAGS` is flagged
+ * Known tags that `parseCustomTypes`'s switch doesn't handle: `@bindable` is
+ * read in {@link getCommentTags}; `@default`/`@required` are conventional but
+ * unused. Anything else outside this set and `IDE_PASSTHROUGH_TAGS` is flagged
  * as `jsdoc-unknown-tag`.
  */
 export const OTHER_KNOWN_JSDOC_TAGS = new Set(["bindable", "default", "required"]);
@@ -118,38 +113,20 @@ export function deprecatedValueFromBody(body: string): DeprecatedValue {
   return message === "" ? true : message;
 }
 
+/** Wraps a parser comment value (`* doc `) back into `/** doc *\/` form for `parseComments`. */
 function formatComment(comment: string) {
-  let formatted_comment = comment;
-
-  if (!formatted_comment.startsWith("/*")) {
-    formatted_comment = `/*${formatted_comment}`;
-  }
-
-  if (!formatted_comment.endsWith("*/")) {
-    formatted_comment += "*/";
-  }
-
-  return formatted_comment;
+  const opened = comment.startsWith("/*") ? comment : `/*${comment}`;
+  return opened.endsWith("*/") ? opened : `${opened}*/`;
 }
 
-/**
- * A JSDoc `{type}` as TypeScript text: trimmed, with the JSDoc wildcard `*` as `any`.
- *
- * @example
- * ```ts
- * aliasType("*"); // "any"
- * aliasType(" string "); // "string"
- * ```
- */
+/** A JSDoc `{type}` as TypeScript text: trimmed, with the JSDoc wildcard `*` as `any`. */
 export function aliasType(type: string): string {
-  if (type === "*") return "any";
-  return type.trim();
+  return type === "*" ? "any" : type.trim();
 }
 
 /**
  * `@returns`/`@return` type from raw JSDoc text (with or without `/**` delimiters).
- * Standalone so `parse-entry-exports.ts` can read sibling modules without a
- * component parser context.
+ * Needs no parser context, so modules outside a component can use it.
  */
 export function extractJsDocReturnType(commentValue: string): string | undefined {
   const comment = parseComments(formatComment(commentValue));
@@ -158,9 +135,8 @@ export function extractJsDocReturnType(commentValue: string): string | undefined
 }
 
 /**
- * `@deprecated`, passthrough (`@since`/`@example`/`@see`) tags, and `@ignore`/`@internal` from raw
- * JSDoc text (with or without `/**` delimiters). Standalone so `parse-entry-exports.ts` can read
- * sibling modules without a component parser context, same as {@link extractJsDocReturnType}.
+ * `@deprecated`, passthrough tags, and `@ignore`/`@internal` from raw JSDoc text.
+ * Context-free, like {@link extractJsDocReturnType}.
  */
 export function extractJsDocDeprecatedAndTags(commentValue: string): {
   deprecated?: DeprecatedValue;
@@ -196,10 +172,8 @@ const EXCLUDED_TAGS = new Set([
 ]);
 
 /**
- * `parseComments` memoized per component on the raw comment text. The same
- * block is read more than once per parse (the leading-comment pass and
- * {@link buildVariableJsDocTable} both reach it); the parsed result is only
- * read by callers, never mutated, so sharing it is safe.
+ * `parseComments` memoized per component: the leading-comment pass and the
+ * variable JSDoc table both parse the same blocks. Results are never mutated.
  */
 export function parseCommentText(ctx: ParserContext, text: string): JSDocComment[] {
   let parsed = ctx.parsedJsDocByText.get(text);
@@ -213,14 +187,14 @@ export function parseCommentText(ctx: ParserContext, text: string): JSDocComment
 export function getCommentTags(parsed: JSDocComment[]) {
   const tags = parsed[0]?.tags ?? [];
 
-  let typeTag: (typeof tags)[number] | undefined;
-  const paramTags: typeof tags = [];
-  let returnsTag: (typeof tags)[number] | undefined;
+  let typeTag: JSDocTag | undefined;
+  const paramTags: JSDocTag[] = [];
+  let returnsTag: JSDocTag | undefined;
   let binding: ComponentPropBinding | undefined;
   let deprecated: DeprecatedValue | undefined;
   let internal = false;
-  const additionalTags: typeof tags = [];
-  const passthroughTags: typeof tags = [];
+  const additionalTags: JSDocTag[] = [];
+  const passthroughTags: JSDocTag[] = [];
   const ignoreCodes: string[] = [];
 
   for (const tag of tags) {
@@ -239,10 +213,7 @@ export function getCommentTags(parsed: JSDocComment[]) {
     } else if (IDE_PASSTHROUGH_TAGS.has(tag.tag)) {
       passthroughTags.push(tag);
     } else if (tag.tag === "bindable") {
-      if (tag.type) {
-        continue;
-      }
-
+      if (tag.type) continue;
       const value = `${tag.name}${tag.description ? ` ${tag.description}` : ""}`.trim();
       if (value === "readonly" || value === "writable") {
         binding ??= value;
@@ -266,36 +237,29 @@ export function getCommentTags(parsed: JSDocComment[]) {
   };
 }
 
-/**
- * The block `parseCustomTypes` already parsed at this comment's offset, when it
- * spans exactly the same text the parser reported. The source scan only opens a
- * block whose `/**` leads its line and only closes on a line ending in `*\/`,
- * so a block found at the same `start` with the same `end` tokenizes to the
- * same lines as `formatComment(value)` would (the gutter strip discards the
- * indentation the parser's comment value drops). Anything else - `/** doc *\/ code`
- * on one line, `/***` ignore blocks - misses here and is parsed from `value`.
- */
-function parsedSourceBlock(
-  ctx: ParserContext,
-  comment: { start?: unknown; end?: unknown },
-): JSDocComment[] | undefined {
-  if (typeof comment.start !== "number" || typeof comment.end !== "number") return undefined;
-  const block = ctx.jsDocBlocksByStart.get(comment.start);
-  if (block === undefined || block.end !== comment.end) return undefined;
-  return [block];
+interface LeadingJSDocComment {
+  value: string;
+  start: number;
+  end: number;
 }
 
-function findJSDocComment(leadingComments: unknown[]): { value: string; start?: unknown; end?: unknown } | undefined {
-  if (!leadingComments || leadingComments.length === 0) return undefined;
-  const comment = leadingComments[leadingComments.length - 1];
-  return comment && typeof comment === "object" && "value" in comment ? (comment as { value: string }) : undefined;
+/**
+ * The block `parseCustomTypes` already parsed at this comment's offset, when it
+ * spans exactly the same text. The source scan only opens a block whose `/**`
+ * leads its line and closes on a line ending in `*\/`, so a block with the same
+ * `start` and `end` tokenizes the same as `formatComment(value)` would. Anything
+ * else (`/** doc *\/ code` on one line, `/***`) misses and is parsed from `value`.
+ */
+function parsedSourceBlock(ctx: ParserContext, comment: LeadingJSDocComment): JSDocComment[] | undefined {
+  const block = ctx.jsDocBlocksByStart.get(comment.start);
+  return block?.end === comment.end ? [block] : undefined;
 }
 
 function findAdjacentJSDocComment(
   ctx: ParserContext,
   leadingComments: unknown[] | undefined,
   nodeStart: number | undefined,
-): { value: string; start: number } | undefined {
+): LeadingJSDocComment | undefined {
   if (!leadingComments || leadingComments.length === 0 || nodeStart === undefined || !ctx.source) return undefined;
 
   for (let index = leadingComments.length - 1; index >= 0; index--) {
@@ -305,13 +269,13 @@ function findAdjacentJSDocComment(
     // A `//` line or plain `/* *\/` block (e.g. a lint suppression) isn't the doc comment.
     if (("type" in comment && comment.type === "Line") || !String(comment.value).startsWith("*")) continue;
 
-    if (isJsDocGap(ctx.source, comment.end, nodeStart)) {
-      return comment as { value: string; start: number };
-    }
+    if (isJsDocGap(ctx.source, comment.end, nodeStart)) return comment as LeadingJSDocComment;
   }
 
   return undefined;
 }
+
+const FUNCTION_EXPRESSION_TYPES = new Set(["ArrowFunctionExpression", "FunctionExpression"]);
 
 /**
  * Absolute `/**` start offsets of every JSDoc comment directly documenting a function: a
@@ -359,8 +323,6 @@ export function functionDocCommentStarts(ctx: ParserContext): Set<number> {
   return starts;
 }
 
-const FUNCTION_EXPRESSION_TYPES = new Set(["ArrowFunctionExpression", "FunctionExpression"]);
-
 export function processNodeJSDoc(
   ctx: ParserContext,
   node:
@@ -371,26 +333,8 @@ export function processNodeJSDoc(
     | null
     | undefined,
 ) {
-  if (!node?.leadingComments) return undefined;
-
-  const jsdoc_comment = findAdjacentJSDocComment(ctx, node.leadingComments, node.start);
-  if (!jsdoc_comment) return undefined;
-
-  return processJSDocComment(ctx, [jsdoc_comment]);
-}
-
-export function processLeadingCommentsJSDoc(
-  ctx: ParserContext,
-  node:
-    | {
-        leadingComments?: unknown[];
-        start?: number;
-      }
-    | null
-    | undefined,
-) {
-  if (!node?.leadingComments) return undefined;
-  return processNodeJSDoc(ctx, node);
+  const comment = findAdjacentJSDocComment(ctx, node?.leadingComments, node?.start);
+  return comment && processJSDocComment(ctx, comment);
 }
 
 /** One `@template` tag as a type parameter: `T`, `T extends Foo`, or `T extends Foo = Bar`. */
@@ -421,13 +365,8 @@ export function templateTagParameters(tag: JSDocTag, type: string): Array<{ name
   return parameters;
 }
 
-function processJSDocComment(ctx: ParserContext, leadingComments: unknown[]): NodeJsDoc | undefined {
-  if (!leadingComments) return undefined;
-
-  const jsdoc_comment = findJSDocComment(leadingComments);
-  if (!jsdoc_comment) return undefined;
-
-  const comment = parsedSourceBlock(ctx, jsdoc_comment) ?? parseCommentText(ctx, formatComment(jsdoc_comment.value));
+function processJSDocComment(ctx: ParserContext, jsdocComment: LeadingJSDocComment): NodeJsDoc {
+  const comment = parsedSourceBlock(ctx, jsdocComment) ?? parseCommentText(ctx, formatComment(jsdocComment.value));
 
   const {
     type: typeTag,
@@ -442,31 +381,22 @@ function processJSDocComment(ctx: ParserContext, leadingComments: unknown[]): No
     description: commentDescription,
   } = getCommentTags(comment);
 
-  let type: string | undefined;
-  let params: ComponentPropParam[] | undefined;
-  let returnType: string | undefined;
-  let description: string | undefined;
-
-  // `@type` overrides inferred initializer type
-  if (typeTag) type = aliasType(typeTag.type);
-
-  if (paramTags.length > 0) {
-    params = paramTags
-      .filter((tag) => !tag.name.includes("."))
-      .map((tag) => ({
-        name: tag.name,
-        type: aliasType(tag.type),
-        description: cleanDescription(joinDescriptionLines(tag.description.split("\n"))),
-        optional: tag.optional || false,
-      }));
-  }
-
-  if (returnsTag) returnType = aliasType(returnsTag.type);
+  const params: ComponentPropParam[] | undefined =
+    paramTags.length > 0
+      ? paramTags
+          .filter((tag) => !tag.name.includes("."))
+          .map((tag) => ({
+            name: tag.name,
+            type: aliasType(tag.type),
+            description: cleanDescription(joinDescriptionLines(tag.description.split("\n"))),
+            optional: tag.optional,
+          }))
+      : undefined;
 
   // A function's own `@template`s become its type parameters instead of description text.
   let typeParameters: string | undefined;
   let descriptionTags = additionalTags;
-  if (typeof jsdoc_comment.start === "number" && ctx.functionDocCommentStarts.has(jsdoc_comment.start)) {
+  if (ctx.functionDocCommentStarts.has(jsdocComment.start)) {
     const templateTags = additionalTags.filter((tag) => tag.tag === "template" && tag.name);
     if (templateTags.length > 0) {
       typeParameters = templateTags
@@ -477,24 +407,18 @@ function processJSDocComment(ctx: ParserContext, leadingComments: unknown[]): No
     }
   }
 
-  const formattedDescription = assignValueOrUndefined(commentDescription?.trim());
-  if (formattedDescription || descriptionTags.length > 0) {
-    const descriptionParts: string[] = [];
-    if (formattedDescription) {
-      descriptionParts.push(formattedDescription);
-    }
-    for (const tag of descriptionTags) {
-      // Rebuilt from the text as written, so a `{...}` in it (`@default { a: 1 }`) survives.
-      descriptionParts.push(`@${tag.tag}${tag.text ? ` ${tag.text}` : ""}`);
-    }
-    description = descriptionParts.join("\n");
-  }
+  const formattedDescription = commentDescription?.trim();
+  const descriptionParts = [
+    ...(formattedDescription ? [formattedDescription] : []),
+    // Rebuilt from the text as written, so a `{...}` in it (`@default { a: 1 }`) survives.
+    ...descriptionTags.map((tag) => `@${tag.tag}${tag.text ? ` ${tag.text}` : ""}`),
+  ];
 
   return {
-    type,
+    type: typeTag ? aliasType(typeTag.type) : undefined,
     params,
-    returnType,
-    description,
+    returnType: returnsTag ? aliasType(returnsTag.type) : undefined,
+    description: descriptionParts.length > 0 ? descriptionParts.join("\n") : undefined,
     binding,
     deprecated,
     tags: toPassthroughTags(passthroughTags),

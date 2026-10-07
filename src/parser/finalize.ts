@@ -38,11 +38,15 @@ import { buildPendingCrossFileCandidates, buildTypeScriptMetadata } from "./type
 import { importedCalleeBinding } from "./value-imports";
 import { resolveLocalVarJSDoc } from "./variable-jsdoc";
 
-/** Matches a JSDoc `@slot`/`@snippet` type of an empty object literal, e.g. `{{}}` or `{{ }}`. */
+/** A JSDoc `@slot`/`@snippet` type of `{}`. */
 const EMPTY_OBJECT_TYPE_REGEX = /^\{\s*\}$/;
 
 function mapToArray<T>(map: Map<string, T> | Map<string | null, T>) {
-  return Array.from(map, ([_key, value]) => value);
+  return Array.from(map.values());
+}
+
+function literalValue(node: unknown): Literal["value"] | undefined {
+  return node && typeof node === "object" && "value" in node ? (node as Literal).value : undefined;
 }
 
 /**
@@ -52,6 +56,7 @@ function mapToArray<T>(map: Map<string, T> | Map<string | null, T>) {
  */
 function resolveDispatchedEvents(ctx: ParserContext, walk: ComponentWalkResult): Set<string> {
   const { dispatcherName, callees } = walk;
+  const actuallyDispatchedEvents = new Set<string>(walk.hostDispatchedEventNames);
 
   for (const hostDispatch of walk.hostDispatches) addHostDispatchedEvent(ctx, hostDispatch);
 
@@ -64,54 +69,31 @@ function resolveDispatchedEvents(ctx: ParserContext, walk: ComponentWalkResult):
     );
 
     for (const callee of callees) {
-      if (callee.name === dispatcherName) {
-        const firstArg = callee.arguments[0];
-        const event_name =
-          firstArg && typeof firstArg === "object" && "value" in firstArg ? (firstArg as Literal).value : undefined;
-        const event_argument = callee.arguments[1];
-        const structuralDetail = deriveDetailType(
-          componentDetailTypeSource(ctx, callee.nestedBoundDetailNames),
-          event_argument,
-        );
-        const event_detail =
-          structuralDetail === undefined &&
-          event_argument &&
-          typeof event_argument === "object" &&
-          "value" in event_argument
-            ? (event_argument as Literal).value
-            : undefined;
-        // A `null` value is also how a regex/bigint literal the runtime can't build looks, so check `raw`.
-        const isNullLiteral = event_detail === null && (event_argument as Literal).raw === "null";
+      if (callee.name !== dispatcherName) continue;
+      const event_name = literalValue(callee.arguments[0]);
+      const event_argument = callee.arguments[1];
+      const structuralDetail = deriveDetailType(
+        componentDetailTypeSource(ctx, callee.nestedBoundDetailNames),
+        event_argument,
+      );
+      if (event_name == null) continue;
+      const event_detail = structuralDetail === undefined ? literalValue(event_argument) : undefined;
+      // A `null` value is also how a regex/bigint literal the runtime can't build looks, so check `raw`.
+      const isNullLiteral = event_detail === null && (event_argument as Literal).raw === "null";
 
-        if (event_name != null) {
-          addDispatchedEvent(ctx, {
-            name: String(event_name),
-            detail:
-              structuralDetail ??
-              (isNullLiteral ? "null" : event_detail == null ? "" : literalDetailToTypeText(event_detail)),
-            has_argument: Boolean(event_argument),
-            source: sourceRangeFromNode(ctx, callee.node),
-          });
-        }
-      }
+      addDispatchedEvent(ctx, {
+        name: String(event_name),
+        detail:
+          structuralDetail ??
+          (isNullLiteral ? "null" : event_detail == null ? "" : literalDetailToTypeText(event_detail)),
+        has_argument: Boolean(event_argument),
+        source: sourceRangeFromNode(ctx, callee.node),
+      });
+      actuallyDispatchedEvents.add(String(event_name));
     }
   }
 
-  // Reconcile `@event` JSDoc with actual dispatch vs `on:` forwarding.
-  const actuallyDispatchedEvents = new Set<string>(walk.hostDispatchedEventNames);
-  if (dispatcherName !== undefined) {
-    for (const callee of callees) {
-      if (callee.name === dispatcherName) {
-        const firstArg = callee.arguments[0];
-        const eventName =
-          firstArg && typeof firstArg === "object" && "value" in firstArg ? (firstArg as Literal).value : undefined;
-        if (eventName != null) {
-          actuallyDispatchedEvents.add(String(eventName));
-        }
-      }
-    }
-  }
-
+  // An `@event` that's only forwarded with `on:` becomes a forwarded event.
   ctx.forwardedEvents.forEach((element, eventName) => {
     const event = ctx.events.get(eventName);
     if (event && event.type === "dispatched" && !actuallyDispatchedEvents.has(eventName)) {
@@ -119,19 +101,15 @@ function resolveDispatchedEvents(ctx: ParserContext, walk: ComponentWalkResult):
       const forwardedEvent: ForwardedEvent = {
         type: "forwarded",
         name: eventName,
-        element: element,
+        element,
         description: event_description,
         deprecated: event.deprecated,
         tags: event.tags,
         source: event.source,
       };
-      if (event.internal) {
-        forwardedEvent.internal = true;
-      }
+      if (event.internal) forwardedEvent.internal = true;
       // Keep explicit `@event` detail types, including `null`.
-      if (event.detail !== undefined && event.detail !== "undefined") {
-        forwardedEvent.detail = event.detail;
-      }
+      if (event.detail !== undefined && event.detail !== "undefined") forwardedEvent.detail = event.detail;
       ctx.events.set(eventName, forwardedEvent);
     }
   });
@@ -154,24 +132,15 @@ function buildProps(ctx: ParserContext): ComponentProp[] {
         !(snippetPropNames.has(prop.name) && ctx.slots.has(prop.name === "children" ? DEFAULT_SLOT_NAME : prop.name)),
     )
     .map((prop) => {
-      if (ctx.bindings.has(prop.name)) {
-        const elementTypes = ctx.bindings
-          .get(prop.name)
-          ?.elements.sort()
-          .map((element) => getElementByTag(element))
-          .join(" | ");
-        return {
-          ...prop,
-          type: `null | ${elementTypes}`,
-          typeSource: "inferred" as const,
-          reactive: prop.reactive || ctx.reactive_vars.has(prop.name),
-        };
-      }
+      const reactive = prop.reactive || ctx.reactive_vars.has(prop.name);
+      const binding = ctx.bindings.get(prop.name);
+      if (!binding) return { ...prop, reactive };
 
-      return {
-        ...prop,
-        reactive: prop.reactive || ctx.reactive_vars.has(prop.name),
-      };
+      const elementTypes = binding.elements
+        .sort()
+        .map((element) => getElementByTag(element))
+        .join(" | ");
+      return { ...prop, type: `null | ${elementTypes}`, typeSource: "inferred" as const, reactive };
     });
 }
 
@@ -191,16 +160,13 @@ function buildSlots(ctx: ParserContext): ComponentSlot[] {
           : (publicSlot as ComponentSlot);
       }
 
-      const slot_props = slot.slot_props;
       const new_props: string[] = [];
-
-      for (const key of Object.keys(slot_props)) {
-        if (slot_props[key].replace && slot_props[key].value !== undefined) {
-          slot_props[key].value = getPropTypeByLocalOrPublic(ctx, slot_props[key].value);
+      for (const [key, slotProp] of Object.entries(slot.slot_props)) {
+        if (slotProp.replace && slotProp.value !== undefined) {
+          slotProp.value = getPropTypeByLocalOrPublic(ctx, slotProp.value);
         }
-
-        if (slot_props[key].value === undefined) slot_props[key].value = "any";
-        new_props.push(`${key}: ${slot_props[key].value}`);
+        slotProp.value ??= "any";
+        new_props.push(`${key}: ${slotProp.value}`);
       }
 
       const widenSuffix = slot_props_unresolved_spread ? " & Record<string, any>" : "";
@@ -244,10 +210,7 @@ function resolveGenerics(ctx: ParserContext, props: ComponentProp[], slots: Comp
     }
   }
 
-  /**
-   * The `generics` script attribute is the compiler-checked source of truth,
-   * so it wins over any `@generics`/`@template` JSDoc tags parsed above.
-   */
+  // The compiler-checked `generics` attribute wins over `@generics`/`@template` tags.
   if (ctx.scriptGenericsAttribute) {
     if (ctx.generics) {
       recordDiagnostic(
@@ -264,15 +227,11 @@ function resolveGenerics(ctx: ParserContext, props: ComponentProp[], slots: Comp
 
 /** Events in output form, sorted: forwarded events name their element as a string. */
 function serializeEvents(ctx: ParserContext): SerializedComponentEvent[] {
-  // Forwarded events keep element objects internally; JSON output uses element name strings.
   return mapToArray(ctx.events)
     .map((event): SerializedComponentEvent => {
       switch (event.type) {
         case "forwarded":
-          return {
-            ...event,
-            element: event.element.name,
-          };
+          return { ...event, element: event.element.name };
         case "dispatched":
           return event;
         default: {
@@ -549,10 +508,7 @@ export function finalizeComponent(ctx: ParserContext, walk: ComponentWalkResult)
     );
   }
 
-  /**
-   * `{...$$restProps}` spread only onto components: sveld can't type another
-   * component's rest-prop shape, and no `@restProps` tag supplied one manually.
-   */
+  // Spread only onto components, with no `@restProps` tag: another component's rest-prop shape is unknowable.
   if (ctx.rest_props?.type === "InlineComponent") {
     recordDiagnostic(
       ctx,
@@ -587,9 +543,7 @@ export function finalizeComponent(ctx: ParserContext, walk: ComponentWalkResult)
   };
 
   const typeScriptMetadata = buildTypeScriptMetadata(ctx);
-  if (typeScriptMetadata) {
-    parsedComponent[PARSED_COMPONENT_TYPE_SCRIPT_METADATA] = typeScriptMetadata;
-  }
+  if (typeScriptMetadata) parsedComponent[PARSED_COMPONENT_TYPE_SCRIPT_METADATA] = typeScriptMetadata;
 
   const pending = buildPendingCrossFileCandidates(ctx);
   return pending ? { component: parsedComponent, pending } : { component: parsedComponent };

@@ -1,13 +1,4 @@
-/**
- * Tag-to-DOM-type map from TypeScript `lib.dom.d.ts`. Unknown tags fall back to `HTMLElement`.
- *
- * @example
- * ```ts
- * tag_map["button"] // "HTMLButtonElement"
- * tag_map["div"]    // "HTMLDivElement"
- * tag_map["input"]  // "HTMLInputElement"
- * ```
- */
+/** Tag-to-DOM-type map from TypeScript's `lib.dom.d.ts`. */
 const tag_map = {
   a: "HTMLAnchorElement",
   abbr: "HTMLElement",
@@ -137,19 +128,6 @@ function isElementTag(element: string): element is ElementTag {
   return element in tag_map;
 }
 
-/**
- * Returns the DOM interface for a tag, or `HTMLElement` when unknown.
- *
- * @example
- * ```ts
- * getElementByTag("button")  // Returns: "HTMLButtonElement"
- * getElementByTag("div")     // Returns: "HTMLDivElement"
- * getElementByTag("custom")  // Returns: "HTMLElement" (fallback)
- * ```
- */
 export function getElementByTag(element: string): string {
-  if (isElementTag(element)) {
-    return tag_map[element];
-  }
-  return "HTMLElement";
+  return isElementTag(element) ? tag_map[element] : "HTMLElement";
 }

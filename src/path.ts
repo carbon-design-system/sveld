@@ -1,13 +1,9 @@
 import path, { sep } from "node:path";
 import type { NormalizedPath } from "./brands";
 
-/** Matches a trailing `.svelte` extension. Shared so every module tests/strips it the same way. */
 export const SVELTE_EXT_REGEX = /\.svelte$/;
 
-/**
- * Extensions module resolution probes, in order, for a specifier without
- * one and for a directory's `index` file.
- */
+/** Probed in order for a specifier without an extension and for a directory's `index` file. */
 export const MODULE_EXTENSIONS: readonly string[] = [
   ".ts",
   ".mts",
@@ -20,12 +16,7 @@ export const MODULE_EXTENSIONS: readonly string[] = [
   ".d.ts",
 ];
 
-/**
- * Extensions the watch mode plugin hooks react to: components themselves,
- * the entry barrel (which may be `.js`/`.ts`), modules a component reads
- * values from (any of {@link MODULE_EXTENSIONS}), and
- * `@extendProps`/`@extends` targets.
- */
+/** Components, the entry barrel, imported modules, and `@extends` targets. */
 export const WATCH_RELEVANT_EXT_REGEX = /\.(?:svelte|[mc]?ts|[mc]?js|tsx|jsx)$/;
 
 /**

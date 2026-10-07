@@ -12,15 +12,13 @@ export interface JsDocPassthroughTag {
   body: string;
 }
 
-/**
- * From `@deprecated` JSDoc: a message string, or `true` when the tag has no message.
- */
+/** From `@deprecated` JSDoc: a message string, or `true` when the tag has no message. */
 export type DeprecatedValue = string | true;
 
 export interface SourcePosition {
-  /** 1-based source line number */
+  /** 1-based. */
   line: number;
-  /** 0-based source column number */
+  /** 0-based. */
   column: number;
 }
 
@@ -165,13 +163,9 @@ export interface LocalTypeDeclaration {
  * `finalizeWithoutCrossFileResolution` settles them without file access.
  */
 export interface PendingCrossFileCandidates {
-  /** Unresolved CallExpression defaults. */
   pendingCallDefaultCandidates?: PendingCallDefaultCandidate[];
-  /** Imported-identifier defaults. */
   pendingConstDefaultCandidates?: PendingConstDefaultCandidate[];
-  /** Unresolved `setContext` import keys. */
   pendingContextKeyCandidates?: PendingContextKeyCandidate[];
-  /** Dispatchers passed to imported functions. */
   pendingDispatchEscapeCandidates?: PendingDispatchEscapeCandidate[];
   /**
    * `event-no-source` diagnostics held back while the dispatcher escapes to
@@ -244,13 +238,9 @@ export type ComponentPropBinding = "readonly" | "writable";
 
 /** Function prop parameter from JSDoc `@param` tags. */
 export interface ComponentPropParam {
-  /** Parameter name. */
   name: string;
-  /** Parameter type (e.g. `"string"`, `"CustomType"`). */
   type: string;
-  /** From JSDoc `@param`. */
   description?: string;
-  /** True when optional. */
   optional?: boolean;
 }
 
@@ -291,29 +281,19 @@ export interface ComponentClassMember {
 }
 
 /**
- * A parsed component prop: the shared internal IR that every prop front-end
- * (legacy `<script context="module">` exports, legacy instance
- * `export let`/`export function`, and runes `$props()` destructuring)
- * produces via {@link resolvePropTypeAndDocs}, then hands to `addProp`. The
- * three front-ends differ only in how they extract the raw signals (type
- * text, JSDoc, initializer shape) from their respective AST shapes; the
- * decisions below are shared and, outside the two documented mode
- * differences, identical across modes.
+ * A parsed prop or module export. Module-script exports, legacy
+ * `export let`/`export function`, and runes `$props()` all resolve it
+ * through `resolvePropTypeAndDocs`, so these rules hold in every mode:
  *
- * - `typeSource` precedence: an explicit TypeScript annotation always wins,
- *   then JSDoc (`@type`/`@param`/`@returns`), then a type resolved from an
- *   identifier default's own JSDoc, and only then a bare inferred/initializer
- *   type. See {@link resolveTypeSource}.
- * - JSDoc-vs-TS merge: `type`/`params`/`returnType`/`description` each
- *   independently prefer their JSDoc-sourced value over the identifier
- *   default's resolved value; an explicit TypeScript type additionally beats
- *   JSDoc for `type` only.
- * - Mode difference (preserved, not converged): legacy `export let`/
- *   `export function` never infers `isFunction` from a function-shaped type
- *   text; runes `$props()` does (`inferIsFunctionFromTypeSignature`).
- * - Mode difference (preserved, not converged): legacy falls back to a
- *   matching `@typedef`'s own description when the prop has none; runes does
- *   not pass `typedefs` to {@link resolvePropTypeAndDocs} today.
+ * - `typeSource` precedence: TypeScript annotation, then JSDoc
+ *   (`@type`/`@param`/`@returns`), then an identifier default's own JSDoc,
+ *   then the inferred type.
+ * - `type`/`params`/`returnType`/`description` each prefer JSDoc over the
+ *   identifier default's value; a TypeScript type also beats JSDoc for `type`.
+ *
+ * Two deliberate mode differences: only runes infers `isFunction` from a
+ * function-shaped type, and only legacy falls back to a matching
+ * `@typedef`'s description.
  */
 export interface ComponentProp {
   /** Public prop name; `"*"` for a bare `export * from "..."`. */
@@ -328,7 +308,6 @@ export interface ComponentProp {
   kind: "let" | "const" | "function" | "re-export" | "class";
   /** True when declared with `const`. */
   constant: boolean;
-  /** TypeScript type text. */
   type?: string;
   /** Conservative provenance for the prop type. See the precedence rule on {@link ComponentProp}. */
   typeSource?: ComponentPropTypeSource;
@@ -365,7 +344,6 @@ export interface ComponentProp {
    * type/JSDoc signature in runes only (see {@link ComponentProp}).
    */
   isFunction: boolean;
-  /** True for `function` declarations. */
   isFunctionDeclaration: boolean;
   /** True when declared with `let` and no default. */
   isRequired: boolean;
@@ -386,14 +364,12 @@ export interface ComponentProp {
   internal?: boolean;
   /** Set when `kind` is `"re-export"`. */
   reExport?: ComponentPropReExport;
-  /** Source range when available. */
   source?: SourceRange;
 }
 
 export interface ComponentSlot {
-  /** Slot name (`null` for the default slot). */
+  /** `null` for the default slot. */
   name?: string | null;
-  /** True for the default slot. */
   default: boolean;
   /** Fallback content when the slot is empty. */
   fallback?: string;
@@ -407,13 +383,11 @@ export interface ComponentSlot {
   tags?: JsDocPassthroughTag[];
   /** True from `@ignore`/`@internal` JSDoc; excluded from every output by `buildComponentApiDocument`. */
   internal?: boolean;
-  /** Source range when available. */
   source?: SourceRange;
 }
 
 /** Slot prop type text or a reference to resolve at finalize time. */
 export interface SlotPropValue {
-  /** Type text or reference. */
   value?: string;
   /** True to replace with a prop type reference. */
   replace: boolean;
@@ -422,12 +396,9 @@ export interface SlotPropValue {
 export type SlotProps = Record<string, SlotPropValue>;
 
 /**
- * Internal representation of {@link ComponentSlot} used while parsing.
- *
- * `slot_props` is either raw TS type text (from a JSDoc `@slot`/`@snippet` tag,
- * used as-is) or a structured {@link SlotProps} map (from template parsing,
- * formatted into TS type text once at the end of the parse). Keeping it
- * structured until then avoids a JSON.stringify/JSON.parse round-trip per slot.
+ * {@link ComponentSlot} while parsing. `slot_props` is raw type text from a
+ * `@slot`/`@snippet` tag, or a {@link SlotProps} map from the template that's
+ * formatted once at the end of the parse (avoids a JSON round-trip per slot).
  */
 export type InternalComponentSlot = Omit<ComponentSlot, "slot_props"> & {
   slot_props?: string | SlotProps;
@@ -437,9 +408,7 @@ export type InternalComponentSlot = Omit<ComponentSlot, "slot_props"> & {
 
 /** Event forwarded with `on:eventname` and no handler. */
 export interface ForwardedEvent {
-  /** Discriminator: `"forwarded"`. */
   type: "forwarded";
-  /** Event name. */
   name: string;
   /** Element or component that forwards the event. */
   element: ComponentInlineElement | ComponentElement;
@@ -453,17 +422,13 @@ export interface ForwardedEvent {
   tags?: JsDocPassthroughTag[];
   /** True from `@ignore`/`@internal` JSDoc; excluded from every output by `buildComponentApiDocument`. */
   internal?: boolean;
-  /** Source range when available. */
   source?: SourceRange;
 }
 
 /** Event from `createEventDispatcher()`, `dispatch()`, or `$host().dispatchEvent()`. */
 export interface DispatchedEvent {
-  /** Discriminator: `"dispatched"`. */
   type: "dispatched";
-  /** Event name. */
   name: string;
-  /** Detail type text. */
   detail?: string;
   /** From JSDoc `@event`. */
   description?: string;
@@ -473,7 +438,6 @@ export interface DispatchedEvent {
   tags?: JsDocPassthroughTag[];
   /** True from `@ignore`/`@internal` JSDoc; excluded from every output by `buildComponentApiDocument`. */
   internal?: boolean;
-  /** Source range when available. */
   source?: SourceRange;
 }
 
@@ -492,9 +456,7 @@ export type ComponentEvent = ForwardedEvent | DispatchedEvent;
  * ```
  */
 export interface SerializedForwardedEvent {
-  /** Discriminator: `"forwarded"`. */
   type: "forwarded";
-  /** Event name. */
   name: string;
   /** Element name as a string for JSON output. */
   element: string;
@@ -508,7 +470,6 @@ export interface SerializedForwardedEvent {
   tags?: JsDocPassthroughTag[];
   /** True from `@ignore`/`@internal` JSDoc; excluded from every output by `buildComponentApiDocument`. */
   internal?: boolean;
-  /** Source range when available. */
   source?: SourceRange;
 }
 
@@ -518,9 +479,7 @@ export type SerializedComponentEvent = SerializedForwardedEvent | DispatchedEven
 export interface TypeDef {
   /** Type text (e.g. `"{ x: number; y: number }"`). */
   type: string;
-  /** Type name. */
   name: string;
-  /** From JSDoc. */
   description?: string;
   /** Full `type` alias declaration text. */
   ts: string;
@@ -535,9 +494,7 @@ export interface TypeDef {
 export type ComponentGenerics = [name: string, type: string] | null;
 
 export interface ComponentInlineElement {
-  /** Discriminator: `"InlineComponent"`. */
   type: "InlineComponent";
-  /** Component name. */
   name: string;
 }
 
@@ -617,13 +574,9 @@ export interface ComponentPropBindings {
 }
 
 export interface ComponentContextProp {
-  /** Property name. */
   name: string;
-  /** Property type text. */
   type: string;
-  /** From JSDoc. */
   description?: string;
-  /** True when optional. */
   optional: boolean;
   /** True from `@ignore`/`@internal` JSDoc; excluded from every output by `buildComponentApiDocument`. */
   internal?: boolean;
@@ -631,7 +584,6 @@ export interface ComponentContextProp {
 
 /** Context from `setContext(key, value)`. */
 export interface ComponentContext {
-  /** Context key from `setContext`. */
   key: string;
   /** Generated type name (e.g. `"ModalContext"`). */
   typeName: string;
@@ -641,9 +593,8 @@ export interface ComponentContext {
    * when untyped). `properties` is empty then.
    */
   type?: string;
-  /** From JSDoc. */
   description?: string;
-  /** Context object properties. Empty when {@link ComponentContext.type} is set. */
+  /** Empty when {@link ComponentContext.type} is set. */
   properties: ComponentContextProp[];
   /** True when a `{...spread}` in the context's object literal couldn't be resolved; the generated type intersects with `Record<string, any>`. */
   hasUnresolvedSpread?: boolean;
@@ -672,7 +623,6 @@ export interface ComponentContext {
  * ```
  */
 export interface ParsedComponent {
-  /** Source range of the parsed file. */
   source?: SourceRange;
   syntaxMode: SyntaxMode;
   scriptLanguage?: ScriptLanguage;
@@ -698,9 +648,7 @@ export interface ParsedComponent {
   cssParts?: ComponentCssPart[];
   /** From component-level `@cssprop`/`@cssproperty` JSDoc tags. */
   cssProperties?: ComponentCssProperty[];
-  /**
-   * Type guesses from this parse (unknown props, `any` contexts, orphan `@event` tags).
-   */
+  /** Type guesses from this parse (unknown props, `any` contexts, orphan `@event` tags). */
   diagnostics?: SveldDiagnostic[];
   /** Writer-only TypeScript metadata. Not serialized to JSON. */
   [PARSED_COMPONENT_TYPE_SCRIPT_METADATA]?: ParsedComponentTypeScriptMetadata;

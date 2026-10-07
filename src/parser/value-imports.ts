@@ -3,10 +3,7 @@ import { isIdentifier, isMemberExpression } from "../ast-guards";
 import type { ComponentPropReExport } from "../model";
 import type { ParserContext } from "./context";
 
-/**
- * Record named value imports by local name for later cross-file call-default
- * resolution. Skips type-only imports; those are not runtime callees.
- */
+/** Named value imports by local name, for cross-file call-default resolution. */
 export function collectValueImportBindings(ctx: ParserContext, node: ImportDeclaration): void {
   const source = node.source.value;
   if (typeof source !== "string" || node.importKind === "type") return;
@@ -15,8 +12,6 @@ export function collectValueImportBindings(ctx: ParserContext, node: ImportDecla
     if (specifier.type !== "ImportSpecifier" || specifier.importKind === "type") continue;
 
     const localName = specifier.local.name;
-    if (!localName) continue;
-
     const { imported } = specifier;
     const importedName =
       imported.type === "Identifier" ? imported.name : typeof imported.value === "string" ? imported.value : localName;
@@ -25,7 +20,6 @@ export function collectValueImportBindings(ctx: ParserContext, node: ImportDecla
   }
 }
 
-/** An export of `source`, and any members read off it. */
 type ImportedBinding = { source: string; importedName: string; members?: string[] };
 
 /** The export an import names, read through namespace exports: `keys.THEME`. */
@@ -42,14 +36,13 @@ export function importPath(binding: { importedName: string; members?: string[] }
  * found by searching the component's scripts.
  */
 export function importedCalleeBinding(ctx: ParserContext, callee: unknown): ImportedBinding | undefined {
-  type CalleeNode = { type?: string; computed?: boolean; object?: unknown; property?: unknown };
   // `a.b.c` -> `a`, with members `["b", "c"]`.
   const members: string[] = [];
-  let node = callee as CalleeNode;
-  while (node.type === "MemberExpression") {
+  let node = callee;
+  while (isMemberExpression(node)) {
     if (node.computed || !isIdentifier(node.property)) return undefined;
     members.unshift(node.property.name);
-    node = node.object as CalleeNode;
+    node = node.object;
   }
   if (!isIdentifier(node)) return undefined;
   const localName = node.name;
@@ -63,10 +56,9 @@ export function importedCalleeBinding(ctx: ParserContext, callee: unknown): Impo
   for (const script of [ctx.parsed?.instance, ctx.parsed?.module]) {
     for (const statement of script?.content.body ?? []) {
       if (statement.type !== "ImportDeclaration") continue;
-      const declaration = statement;
-      const source = declaration.source.value;
-      if (declaration.importKind === "type" || typeof source !== "string") continue;
-      const specifier = declaration.specifiers.find((candidate) => candidate.local.name === localName);
+      const source = statement.source.value;
+      if (statement.importKind === "type" || typeof source !== "string") continue;
+      const specifier = statement.specifiers.find((candidate) => candidate.local.name === localName);
       if (specifier?.type === "ImportDefaultSpecifier") {
         return binding(source, "default", members);
       }
@@ -97,15 +89,13 @@ export function collectReExportableImports(script: AST.Script): Map<string, Comp
   const imports = new Map<string, ComponentPropReExport>();
 
   for (const statement of script.content.body) {
-    if (statement.type !== "ImportDeclaration") continue;
-    const node = statement;
-    if (node.importKind === "type") continue;
-    const from = node.source.value;
+    if (statement.type !== "ImportDeclaration" || statement.importKind === "type") continue;
+    const from = statement.source.value;
     if (typeof from !== "string") continue;
 
-    for (const specifier of node.specifiers) {
+    for (const specifier of statement.specifiers) {
+      if (specifier.type === "ImportSpecifier" && specifier.importKind === "type") continue;
       const localName = specifier.local.name;
-      if (!localName || (specifier.type === "ImportSpecifier" && specifier.importKind === "type")) continue;
       let imported: string;
       if (specifier.type === "ImportDefaultSpecifier") imported = "default";
       else if (specifier.type === "ImportNamespaceSpecifier") imported = "*";
@@ -118,17 +108,13 @@ export function collectReExportableImports(script: AST.Script): Map<string, Comp
 }
 
 /**
- * Collect imports and function declarations from a script before prop defaults run.
- * Both hoist, so `export let id = uniqueId()` still resolves when the import or
- * `function uniqueId()` appears later, the pattern carbon-components-svelte uses.
- * The main walk records the same bindings again into keyed maps; that is fine.
+ * Imports and function declarations hoist, so collect them before prop
+ * defaults run: `export let id = uniqueId()` must resolve when `uniqueId` is
+ * declared later (carbon-components-svelte does this).
  */
 export function collectHoistedScriptBindings(ctx: ParserContext, script: AST.Script | undefined): void {
-  // Only top-level statements: imports can't appear anywhere else, and a
-  // function declared inside a block or another function isn't in scope for
-  // a top-level prop default (module code is strict). The main walk still
-  // records every nested declaration afterwards. Reading the script's
-  // `content.body` skips a full walk of the script AST.
+  // Top-level only: a nested function isn't in scope for a top-level prop
+  // default (module code is strict).
   for (const statement of script?.content.body ?? []) {
     if (statement.type === "ImportDeclaration") {
       collectValueImportBindings(ctx, statement);

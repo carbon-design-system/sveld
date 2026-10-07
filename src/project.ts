@@ -12,6 +12,7 @@ import type {
 import { createExtendsTargetValidator, validateModuleReExportNames } from "./bundle-validation";
 import {
   type CollectedComponents,
+  type ComponentEntry,
   collectComponents,
   componentModuleName,
   createGlobMergeState,
@@ -25,66 +26,49 @@ import type { ComponentParseResult, ParsedComponent, PendingCrossFileCandidates 
 import { ModuleGraph } from "./module-graph";
 import { hashSource, ParseCache, resolveCacheFilePath } from "./parse-cache";
 import { type EntryExports, parseEntryExports } from "./parse-entry-exports";
-import type { ParsedExports } from "./parse-exports";
 import { getParserStack, loadParserStack } from "./parser-stack";
 import { hasSvelteExtension, normalizeSeparators, SVELTE_EXT_REGEX } from "./path";
 
-type ComponentEntry = [string, ParsedExports[string]];
-
 /** One component file's output, shared by every entry that points at it. */
 interface ComponentRecord {
-  /**
-   * Parsed, with its `@example` blocks checked and its cross-file candidates
-   * resolved. The bundle-wide checks run on each build's copy instead, since
-   * they depend on the other components.
-   */
+  /** Examples checked and cross-file candidates resolved; bundle-wide checks run per result instead. */
   component: ParsedComponent;
   /** Modules the cross-file pass read for it; undefined when it had nothing to resolve. */
   crossFileReads?: string[];
 }
 
-/** How a component file is named and addressed: from the last `allComponentEntries` entry that points at it. */
+/** From the last `allComponentEntries` entry that points at the file. */
 interface CanonicalEntry {
   moduleName: string;
   filePath: NormalizedPath;
 }
 
-/** Result of {@link Project.update}. */
 export interface ProjectUpdate {
-  /** The full, updated result (all components, with the affected ones re-parsed). */
   result: GenerateBundleResult;
   /**
-   * Absolute paths of the components that were re-parsed (or re-read from
-   * the parse cache) and re-resolved: the changed files, newly
-   * barrel-exported components, and components that read a changed module.
-   * Other components are reused from the previous parse.
+   * Absolute paths of the components re-parsed (or re-read from the parse
+   * cache): changed files, newly exported components, and components that
+   * read a changed module.
    */
   reparsed: string[];
 }
 
-/**
- * Reads the given component file paths into a map of path -> contents.
- *
- * Failed reads are recorded as `null` (and logged) so callers can skip them
- * gracefully rather than aborting the whole bundle.
- */
-export async function readFileMap(filePaths: Iterable<string>): Promise<Map<string, string | null>> {
-  const fileContents = await Promise.all(
-    Array.from(filePaths).map(async (filePath) => {
+/** A failed read is logged and recorded as `null`, so one unreadable file doesn't abort the bundle. */
+async function readFileMap(filePaths: Iterable<string>): Promise<Map<string, string | null>> {
+  const entries = await Promise.all(
+    Array.from(filePaths, async (filePath): Promise<[string, string | null]> => {
       try {
-        const content = await readFile(filePath, "utf-8");
-        return { path: filePath, content };
+        return [filePath, await readFile(filePath, "utf-8")];
       } catch (error) {
         console.warn(`Warning: Failed to read file ${filePath}:`, error);
-        return { path: filePath, content: null };
+        return [filePath, null];
       }
     }),
   );
-
-  return new Map<string, string | null>(fileContents.map(({ path, content }) => [path, content]));
+  return new Map(entries);
 }
 
-export function reportParseErrors(errors: ComponentParseError[]): void {
+function reportParseErrors(errors: ComponentParseError[]): void {
   if (errors.length === 0) return;
   console.error(`sveld: failed to parse ${errors.length} component(s):`);
   for (const { filePath, message } of errors) {
@@ -93,21 +77,15 @@ export function reportParseErrors(errors: ComponentParseError[]): void {
 }
 
 /**
- * The components under one entry point: collect -> parse -> check examples
- * -> resolve cross-file candidates, per component file, then the bundle-wide
- * checks on each result. Keeps one record per component file, which both
- * of a result's maps are views of.
- *
- * {@link build} parses everything; {@link update} then re-parses only the
- * components a set of changed files affects (watch mode). Each returns a
- * fresh result, with fresh maps and component objects, so a caller holding
- * an older result never sees it change.
+ * The components under one entry point, one record per component file that
+ * both of a result's maps are views of. {@link update} re-parses only what a
+ * set of changed files affects (watch mode). Each call returns fresh maps and
+ * component objects, so a caller holding an older result never sees it change.
  */
 export class Project {
   private readonly input: string;
   private readonly glob: boolean;
   private readonly options: GenerateBundleOptions;
-  /** The modules the components and the barrel read, for one {@link build} and its updates. */
   private graph = new ModuleGraph();
   private collected!: CollectedComponents;
   /** The entry barrel's resolved path, or `null` for a directory entry. */
@@ -145,7 +123,6 @@ export class Project {
       this.collected.resolveComponentFilePath,
     );
     this.entryFile = lstatSync(this.input).isFile() ? resolve(this.input) : null;
-    // `cache` is on by default; only an explicit `false` disables it.
     this.cache =
       this.options.cache === false
         ? undefined
@@ -162,16 +139,13 @@ export class Project {
   }
 
   /**
-   * Re-parses the components `changedFilePaths` affect and returns the
-   * updated result. A change to the entry barrel re-reads its exports; under
-   * `glob`, new component files are picked up. A non-`.svelte` file only
-   * re-parses the components the cross-file pass read it for. Must follow a
-   * {@link build}.
+   * A change to the entry barrel re-reads its exports; under `glob`, new
+   * component files are picked up. A non-`.svelte` file only re-parses the
+   * components the cross-file pass read it for. Must follow a {@link build}.
    */
   async update(changedFilePaths: string[]): Promise<ProjectUpdate> {
     const changed = changedFilePaths.map((path) => resolve(path));
-    // A rebuild must see the changed files, and resolve imports against
-    // files added since the last pass.
+    // Also clears directory listings, so imports resolve against added files.
     this.graph.invalidate(...changed);
     if (changed.length === 0) return { result: this.assemble(), reparsed: [] };
 
@@ -189,8 +163,6 @@ export class Project {
     }
     this.indexEntries();
 
-    // A file the barrel stopped exporting (and, under `glob`, that no longer
-    // exists) is out of the bundle, along with its parse error.
     const listed = this.componentPaths();
     for (const path of this.records.keys()) {
       if (!listed.has(path)) this.records.delete(path);
@@ -236,11 +208,10 @@ export class Project {
   }
 
   private async readEntryExports(): Promise<void> {
-    // File entry only; directory inputs have no barrel.
     this.entryDiagnostics = [];
     this.entryExports =
-      this.documentExports && lstatSync(this.input).isFile()
-        ? await parseEntryExports(resolve(this.input), { diagnostics: this.entryDiagnostics, graph: this.graph })
+      this.documentExports && this.entryFile !== null
+        ? await parseEntryExports(this.entryFile, { diagnostics: this.entryDiagnostics, graph: this.graph })
         : [];
   }
 
@@ -318,9 +289,7 @@ export class Project {
       }
     }
 
-    // Without a cache every component is parsed fresh; with one, only load the
-    // parser stack when at least one component actually needs (re)parsing, so
-    // a fully cached run skips it entirely.
+    // A fully cached run never loads the parser stack.
     if (paths.size > 0 && (!cache || misses.size > 0)) {
       await loadParserStack();
     }
@@ -350,8 +319,6 @@ export class Project {
     try {
       result = new (getParserStack().ComponentParser)().parse(source, { moduleName, filePath });
     } catch (error) {
-      // Capture the failure so the remaining components can still be
-      // processed, unless `failFast` asks to abort on the first one.
       if (this.options.failFast) throw error;
       errors.set(path, {
         filePath,
@@ -366,7 +333,6 @@ export class Project {
     return result;
   }
 
-  /** Checks examples and resolves cross-file candidates for freshly parsed components. */
   private async settle(parsed: Map<string, ComponentParseResult>): Promise<Map<string, ComponentRecord>> {
     const { rootDir, resolveComponentFilePath } = this.collected;
     const docs = new Map<string, ComponentDocApi>();
@@ -399,7 +365,6 @@ export class Project {
     return records;
   }
 
-  /** Builds a fresh result from the records: one view per entry, then the bundle-wide checks. */
   private assemble(): GenerateBundleResult {
     const { exports, allComponentEntries, resolveComponentFilePath } = this.collected;
     const cache = this.cache;
@@ -418,27 +383,20 @@ export class Project {
 
     // Keyed by filePath: two globbed files can share a moduleName.
     const allComponentsForTypes: ComponentDocs = new Map();
-    // filePath -> resolved source path for the write-phase text cache, keyed
-    // like `cache`. Components whose output was also read from other files
-    // go in `crossFileResolvedPathByFilePath` instead: the text cache keys
-    // theirs on their content too, since their own source doesn't fix it.
+    // filePath -> resolved source path for the write-phase text cache.
+    // Components that also read other files go in the cross-file map: the
+    // text cache keys theirs on content too, since their own source doesn't
+    // fix their output.
     const resolvedPathByFilePath = cache ? new Map<string, string>() : undefined;
     const crossFileResolvedPathByFilePath = cache ? new Map<string, string>() : undefined;
-    const readsOtherFiles = new Set<string>();
     for (const entry of allComponentEntries) {
       const found = view(allComponentEntries, entry);
       if (found === undefined) continue;
-      allComponentsForTypes.set(found.component.filePath, found.component);
-      resolvedPathByFilePath?.set(found.component.filePath, resolveComponentFilePath(entry[1].source));
-      if (found.record.crossFileReads !== undefined) readsOtherFiles.add(found.component.filePath);
-    }
-    if (resolvedPathByFilePath && crossFileResolvedPathByFilePath) {
-      for (const filePath of allComponentsForTypes.keys()) {
-        const resolvedPath = resolvedPathByFilePath.get(filePath);
-        if (!readsOtherFiles.has(filePath) || resolvedPath === undefined) continue;
-        resolvedPathByFilePath.delete(filePath);
-        crossFileResolvedPathByFilePath.set(filePath, resolvedPath);
-      }
+      const { filePath } = found.component;
+      allComponentsForTypes.set(filePath, found.component);
+      const pathMap =
+        found.record.crossFileReads === undefined ? resolvedPathByFilePath : crossFileResolvedPathByFilePath;
+      pathMap?.set(filePath, resolveComponentFilePath(entry[1].source));
     }
 
     const validateExtendsTarget = createExtendsTargetValidator(

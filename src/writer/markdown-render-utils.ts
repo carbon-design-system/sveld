@@ -47,20 +47,12 @@ export function renderComponentsToMarkdown(
     renderExports(document, entryExports);
   }
 
-  const apiDocument = buildComponentApiDocument(components);
-
-  for (const component of apiDocument.components) {
-    renderComponent(document, component);
+  for (const component of buildComponentApiDocument(components).components) {
+    renderComponentToMarkdown(document, component);
   }
 }
 
-/**
- * Renders the index page for `markdownOptions.outDir` mode: a title, a link
- * list to each component's own file, and the Exports section (when
- * `documentExports` is on) - the same content the combined single-file mode
- * puts before its table of contents, minus the per-component sections
- * themselves, which live in their own files.
- */
+/** The `markdownOptions.outDir` index page: links to each component's own file, then Exports. */
 export function renderComponentIndexToMarkdown(
   document: MarkdownRenderTarget,
   components: ComponentDocApi[],
@@ -84,29 +76,21 @@ function renderExports(document: MarkdownRenderTarget, entryExports: EntryExport
   document.append("raw", EXPORT_TABLE_HEADER);
 
   for (const entry of entryExports) {
-    // Collapse whitespace so multi-line types (e.g. interface bodies) stay on a
-    // single table row. JSON retains the verbatim type text.
+    // Keeps multi-line types (e.g. interface bodies) on one table row.
     const type = (entry.type ?? entry.value)?.replace(WHITESPACE_REGEX, " ").trim();
     document.append(
       "raw",
-      `| ${formatNameWithDeprecation(entry.name, entry.deprecated)} | ${`<code>${entry.kind}</code>`} | ${formatPropType(type)} | ${formatPropDescription(
+      `| ${formatNameWithDeprecation(entry.name, entry.deprecated)} | <code>${entry.kind}</code> | ${formatPropType(type)} | ${formatPropDescription(
         entry.description,
       )} |\n`,
     );
   }
 
-  // "raw" appends (the table rows above) don't trailing-break themselves, so
-  // without this the divider would butt directly against the last row.
   document.append("raw", "\n");
   document.append("divider");
 }
 
-/**
- * `<script context="module">` exports whose `kind` puts them on the
- * compiled component's static side as a getter (`const`) or method
- * (a real function declaration), rather than a plain assignable field.
- * Mirrors the `.d.ts` writer's `genAccessors` filter.
- */
+/** Mirrors the `.d.ts` writer's `genAccessors` filter. */
 function isAccessorProp(prop: ComponentProp): boolean {
   return prop.kind === "const" || prop.isFunctionDeclaration;
 }
@@ -117,40 +101,27 @@ function renderModuleExports(document: MarkdownRenderTarget, moduleExports: Comp
   for (const moduleExport of moduleExports) {
     document.append(
       "raw",
-      `| ${formatNameWithDeprecation(moduleExport.name, moduleExport.deprecated)} | ${`<code>${moduleExport.kind}</code>`} | ${formatExportType(moduleExport)} | ${formatDescriptionWithTags(moduleExport.description, moduleExport.tags)} |\n`,
+      `| ${formatNameWithDeprecation(moduleExport.name, moduleExport.deprecated)} | <code>${moduleExport.kind}</code> | ${formatExportType(moduleExport)} | ${formatDescriptionWithTags(moduleExport.description, moduleExport.tags)} |\n`,
     );
   }
   document.append("raw", "\n");
   renderClassMemberTables(document, moduleExports);
 }
 
-function renderSectionIfNotEmpty<TItem>(
-  document: MarkdownRenderTarget,
-  items: TItem[],
-  renderFn: () => void,
-  emptyMessage?: string,
-) {
+function renderSectionIfNotEmpty(document: MarkdownRenderTarget, items: readonly unknown[], renderFn: () => void) {
   if (items.length > 0) {
     renderFn();
-    // Blank line after the table so the next heading isn't glued to its last row.
     document.append("raw", "\n");
   } else {
-    document.append("p", emptyMessage ?? "None.");
+    document.append("p", "None.");
   }
 }
 
-/** Renders one component's section, for both the combined document and `markdownOptions.outDir`'s per-component files. */
+/** One component's section, for both the combined document and `outDir`'s per-component files. */
 export function renderComponentToMarkdown(document: MarkdownRenderTarget, component: ComponentDocApi) {
-  renderComponent(document, component);
-}
-
-function renderComponent(document: MarkdownRenderTarget, component: ComponentDocApi) {
   document.append("h2", `\`${component.moduleName}\``);
 
-  // Prop/slot types can reference the component's own type parameters (e.g. `Row`
-  // from `<script generics="Row extends DataTableRow">`). Markdown has no declaration
-  // context like the generated `.d.ts` does, so without this the name would appear
-  // in the tables below with nothing in the document defining what it means.
+  // Without this, generic names like `Row` would appear in the tables undefined.
   if (component.generics) {
     document.append("p", `**Type parameters:** ${formatPropType(`<${component.generics[1]}>`)}`);
   }
@@ -176,7 +147,7 @@ function renderComponent(document: MarkdownRenderTarget, component: ComponentDoc
       const kind = isAccessorProp(prop) ? "accessor" : prop.kind;
       document.append(
         "raw",
-        `| ${formatNameWithDeprecation(prop.name, prop.deprecated)} | ${prop.isRequired ? "Yes" : "No"} | ${`<code>${kind}</code>`} | ${
+        `| ${formatNameWithDeprecation(prop.name, prop.deprecated)} | ${prop.isRequired ? "Yes" : "No"} | <code>${kind}</code> | ${
           prop.reactive ? "Yes" : "No"
         } | ${prop.binding ?? "--"} | ${formatPropType(prop.type)} | ${formatPropValue(prop.value)} | ${formatDescriptionWithTags(
           prop.description,

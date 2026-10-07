@@ -27,14 +27,10 @@ import { generateBundle, toGenerateBundleOptions, writeOutput, writeStdout } fro
 import { UnresolvedModuleError } from "./resolve-alias";
 import { resolveExitCode } from "./sveld";
 
-/** Relative fallback entry used only when entry resolution otherwise fails. */
+/** Used only when nothing configures an entry. */
 const FALLBACK_ENTRY = "src/index.js";
 
-/**
- * Documented exit code contract so scripts can branch on failure kind
- * without parsing output. When more than one applies in a single run, the
- * lowest code wins (1 beats 2 beats 3 beats 4).
- */
+/** When more than one applies in a single run, the lowest code wins. */
 const EXIT_CODES = {
   SUCCESS: 0,
   USAGE_ERROR: 1,
@@ -42,9 +38,6 @@ const EXIT_CODES = {
   BREAKING_CHANGE: 3,
   DIAGNOSTICS: 4,
 } as const;
-
-/** CLI options: identical surface to the shared runtime options. */
-type CliOptions = SveldRuntimeOptions;
 
 const HELP_TEXT = `Usage: sveld [options]
 
@@ -85,15 +78,14 @@ Exit codes:
   4  diagnostics present under --strict
 `;
 
-/** Discriminated result of parsing a single CLI argument, kept side-effect free. */
 type CliFlagResult =
-  | { kind: "option"; option: Partial<CliOptions> }
+  | { kind: "option"; option: Partial<SveldRuntimeOptions> }
   | { kind: "help" }
   | { kind: "version" }
   | { kind: "unknown"; arg: string; suggestion?: string }
   | { kind: "usage-error"; message: string };
 
-/** Every recognized canonical flag name, used to suggest a fix for a typo'd flag. */
+/** Suggestion candidates for a typo'd flag. */
 const KNOWN_FLAGS = [
   "help",
   "version",
@@ -117,14 +109,12 @@ const KNOWN_FLAGS = [
   "format",
 ];
 
-/** Single-dash short flags and the long flag each one stands for. */
 const SHORT_FLAGS = new Map([
   ["-h", "--help"],
   ["-v", "--version"],
   ["-q", "--quiet"],
 ]);
 
-/** An uppercase letter, i.e. a camelCase word boundary. */
 const UPPERCASE_RE = /[A-Z]/g;
 
 /** Boolean flags that never consume a following argument as a value. */
@@ -145,27 +135,16 @@ const BOOLEAN_FLAGS = new Set([
 /** Value-taking flags that also accept their value as the next argument. */
 const SPACE_SEPARATED_VALUE_FLAGS = new Set(["entry", "config", "cache", "check", "types-format"]);
 
-/** Of those, the flags that error (rather than falling back to a bare default) when no value is given. */
+/** Of those, the flags that error (rather than using a bare default) when no value is given. */
 const REQUIRES_VALUE_FLAGS = new Set(["entry", "config", "types-format"]);
 
-/**
- * Closest known flag to an unrecognized raw flag name, or undefined if none
- * is close enough. camelCase input is kebab-cased first, so `--failFast`
- * suggests `--fail-fast`.
- */
+/** camelCase input is kebab-cased first, so `--failFast` suggests `--fail-fast`. */
 function suggestFlag(rawFlag: string): string | undefined {
   const kebab = rawFlag.replace(UPPERCASE_RE, (letter) => `-${letter.toLowerCase()}`);
   return closestMatch(kebab, KNOWN_FLAGS);
 }
 
-/**
- * Parses one `--flag` argument, given the raw next argument so value-taking
- * flags can decide whether to consume it as a space-separated value. `arg`
- * is assumed to start with `--`; positional (non-flag) arguments are handled
- * by the caller. Returns the flag name alongside the result so the caller
- * can track flag-adjacent parsing state (for example, whether the previous
- * flag was boolean) without re-parsing `arg`.
- */
+/** Parses one `--flag` argument, consuming `rawNextArg` as its value when the flag takes one. */
 function parseCliFlag(
   arg: string,
   rawNextArg: string | undefined,
@@ -195,6 +174,12 @@ function parseCliFlag(
 }
 
 function parseCliFlagValue(flag: string, value: string | boolean, arg: string): CliFlagResult {
+  const option = (partial: Partial<SveldRuntimeOptions>): CliFlagResult => ({ kind: "option", option: partial });
+  const isTrue = value === true || value === "true";
+  // Enum-valued flags are cast here and validated in `cli()`, where a bad
+  // value is reported as a usage error.
+  const stringValue = typeof value === "string" ? value : undefined;
+
   switch (flag) {
     case "help":
       return { kind: "help" };
@@ -205,75 +190,57 @@ function parseCliFlagValue(flag: string, value: string | boolean, arg: string): 
     case "json":
     case "markdown":
     case "quiet":
-      return { kind: "option", option: { [flag]: value === true || value === "true" } };
+      return option({ [flag]: isTrue });
     case "stdout":
-      if (value === true || value === "true") return { kind: "option", option: { stdout: true } };
-      if (value === "false") return { kind: "option", option: { stdout: false } };
+      if (isTrue) return option({ stdout: true });
+      if (value === "false") return option({ stdout: false });
       return { kind: "usage-error", message: `sveld: --stdout does not take a value; got "${value}".` };
     case "strict":
-      // The value is validated in `cli()` once it can be reported as a usage
-      // error (`--strict=oops`); a bare `--strict` means `true`.
-      if (value === true || value === "true") return { kind: "option", option: { strict: true } };
-      if (value === "false") return { kind: "option", option: { strict: false } };
-      return { kind: "option", option: { strict: value as "errors" } };
+      if (isTrue) return option({ strict: true });
+      if (value === "false") return option({ strict: false });
+      return option({ strict: value as "errors" });
     case "report-diagnostics":
-      return { kind: "option", option: { reportDiagnostics: value === true || value === "true" } };
+      return option({ reportDiagnostics: isTrue });
     case "check-examples":
-      // Bare `--check-examples` runs both the TypeScript and syntax paths;
-      // `--check-examples=syntax` runs only the markup path, so `typescript`
-      // is never loaded even when TS/JS examples exist.
-      if (value === true || value === "true") return { kind: "option", option: { checkExamples: true } };
-      if (value === "false") return { kind: "option", option: { checkExamples: false } };
-      return { kind: "option", option: { checkExamples: value as "syntax" } };
+      if (isTrue) return option({ checkExamples: true });
+      if (value === "false") return option({ checkExamples: false });
+      return option({ checkExamples: value as "syntax" });
     case "fail-fast":
-      return { kind: "option", option: { failFast: value === true || value === "true" } };
+      return option({ failFast: isTrue });
     case "entry":
-      return typeof value === "string" ? { kind: "option", option: { entry: value } } : { kind: "option", option: {} };
+      return option(stringValue === undefined ? {} : { entry: stringValue });
     case "config":
-      return typeof value === "string" ? { kind: "option", option: { config: value } } : { kind: "option", option: {} };
+      return option(stringValue === undefined ? {} : { config: stringValue });
     case "cache":
-      // The cache is on by default; bare `--cache` re-affirms the default
-      // location, `--cache=<path>` overrides it, and `--cache=false` disables it.
-      if (value === "false") return { kind: "option", option: { cache: false } };
-      return { kind: "option", option: { cache: typeof value === "string" ? value : true } };
+      if (value === "false") return option({ cache: false });
+      return option({ cache: stringValue ?? true });
     case "check":
-      // Bare `--check` diffs against the default snapshot path;
-      // `--check=<path>` overrides it; `--check=false` disables it.
-      if (value === "false") return { kind: "option", option: { check: false } };
-      return { kind: "option", option: { check: typeof value === "string" ? value : true } };
+      if (value === "false") return option({ check: false });
+      return option({ check: stringValue ?? true });
     case "types-format":
-      return typeof value === "string"
-        ? { kind: "option", option: { typesOptions: { format: value as "class" | "component" } } }
-        : { kind: "option", option: {} };
+      return option(
+        stringValue === undefined ? {} : { typesOptions: { format: stringValue as "class" | "component" } },
+      );
     case "types-index-types":
-      return { kind: "option", option: { typesOptions: { indexTypes: value === true || value === "true" } } };
+      return option({ typesOptions: { indexTypes: isTrue } });
     case "format":
-      // The value is validated in `cli()` once it can be reported as a usage
-      // error (`--format=yaml`); a bare `--format` is silently ignored.
-      return typeof value === "string"
-        ? { kind: "option", option: { format: value as "text" | "json" } }
-        : { kind: "option", option: {} };
+      return option(stringValue === undefined ? {} : { format: stringValue as "text" | "json" });
     case "check-level":
-      // The value is validated in `cli()` once it can be reported as a usage
-      // error (`--check-level=oops`); a bare `--check-level` is silently ignored.
-      return typeof value === "string"
-        ? { kind: "option", option: { checkLevel: value as "major" | "minor" | "patch" } }
-        : { kind: "option", option: {} };
+      return option(stringValue === undefined ? {} : { checkLevel: stringValue as "major" | "minor" | "patch" });
     default:
       return { kind: "unknown", arg, suggestion: suggestFlag(flag) };
   }
 }
 
-/** Discriminated result of parsing the full argument list. */
 export type CliParseResult =
-  | { kind: "options"; options: CliOptions }
+  | { kind: "options"; options: SveldRuntimeOptions }
   | { kind: "help" }
   | { kind: "version" }
   | { kind: "unknown"; arg: string; suggestion?: string; positionalHint?: boolean }
   | { kind: "usage-error"; message: string };
 
 export function parseCliOptions(argv: string[]): CliParseResult {
-  let options: CliOptions = {};
+  let options: SveldRuntimeOptions = {};
   let previousFlagWasBoolean = false;
 
   for (let i = 0; i < argv.length; i++) {
@@ -285,19 +252,13 @@ export function parseCliOptions(argv: string[]): CliParseResult {
 
     const { result, consumedNext, flag } = parseCliFlag(arg, argv[i + 1]);
 
-    if (result.kind !== "option") {
-      return result;
-    }
+    if (result.kind !== "option") return result;
 
-    // One-level-deep merge (not `Object.assign`) so multiple flags that each
-    // set a different `typesOptions` key (e.g. `--types-format` and
-    // `--types-index-types`) don't clobber each other's nested object.
-    options = mergeConfig<CliOptions>(options, result.option) as CliOptions;
+    // Not `Object.assign`: `--types-format` and `--types-index-types` each set
+    // a `typesOptions` key and mustn't clobber each other.
+    options = mergeConfig<SveldRuntimeOptions>(options, result.option);
     previousFlagWasBoolean = BOOLEAN_FLAGS.has(flag);
-
-    if (consumedNext) {
-      i++;
-    }
+    if (consumedNext) i++;
   }
 
   return { kind: "options", options };
@@ -316,17 +277,17 @@ async function loadCliConfig(configPath: SveldConfig["config"]): Promise<SveldCo
   return loadConfigFrom(resolved);
 }
 
-/**
- * CLI entry point: parse flags, load any config file, generate docs, write
- * outputs.
- *
- * @example
- * ```ts
- * // Called from CLI: sveld --types --json --glob
- * // Parses: { types: true, json: true, glob: true }
- * ```
- */
+/** Returns `true` when `value` is set to something outside `allowed`. */
+function isInvalid(value: unknown, allowed: readonly unknown[]): boolean {
+  return value !== undefined && !allowed.includes(value);
+}
+
 export async function cli(process: NodeJS.Process) {
+  const usageError = (message: string) => {
+    console.error(message);
+    process.exitCode = EXIT_CODES.USAGE_ERROR;
+  };
+
   const parsed = parseCliOptions(process.argv.slice(2));
 
   if (parsed.kind === "help") {
@@ -339,27 +300,14 @@ export async function cli(process: NodeJS.Process) {
     return;
   }
 
-  if (parsed.kind === "usage-error") {
-    console.error(parsed.message);
-    process.exitCode = EXIT_CODES.USAGE_ERROR;
-    return;
-  }
+  if (parsed.kind === "usage-error") return usageError(parsed.message);
 
   if (parsed.kind === "unknown") {
     let message = `sveld: unknown flag "${parsed.arg}".`;
-
-    if (parsed.suggestion) {
-      message += ` Did you mean "--${parsed.suggestion}"?`;
-    }
-
-    if (parsed.positionalHint) {
-      message += " Values are passed as --flag=value or --flag value.";
-    }
-
+    if (parsed.suggestion) message += ` Did you mean "--${parsed.suggestion}"?`;
+    if (parsed.positionalHint) message += " Values are passed as --flag=value or --flag value.";
     console.error(message);
-    console.error("Run sveld --help for a list of available flags.");
-    process.exitCode = EXIT_CODES.USAGE_ERROR;
-    return;
+    return usageError("Run sveld --help for a list of available flags.");
   }
 
   const cliOptions = parsed.options;
@@ -367,81 +315,39 @@ export async function cli(process: NodeJS.Process) {
   try {
     fileConfig = await loadCliConfig(cliOptions.config);
   } catch (error) {
-    // A config file that fails to load is the user's to fix, not a crash:
-    // print the reason, not sveld's (minified) stack.
-    console.error(error instanceof Error ? error.message : String(error));
-    process.exitCode = EXIT_CODES.USAGE_ERROR;
-    return;
+    // The user's to fix, not a crash: print the reason, not sveld's (minified) stack.
+    return usageError(error instanceof Error ? error.message : String(error));
   }
-  const options = mergeConfig<CliOptions>(fileConfig, cliOptions);
+  const options = mergeConfig<SveldRuntimeOptions>(fileConfig, cliOptions);
   validateOptions(options);
 
   if (options.stdout) {
-    const selectedOutputs = [options.json, options.markdown].filter(Boolean).length;
-
-    if (selectedOutputs !== 1) {
-      console.error("sveld: --stdout requires exactly one of --json or --markdown.");
-      process.exitCode = EXIT_CODES.USAGE_ERROR;
-      return;
+    if ([options.json, options.markdown].filter(Boolean).length !== 1) {
+      return usageError("sveld: --stdout requires exactly one of --json or --markdown.");
     }
-
     if (options.types === true) {
-      console.error("sveld: --stdout cannot be combined with --types; type definitions span multiple files.");
-      process.exitCode = EXIT_CODES.USAGE_ERROR;
-      return;
+      return usageError("sveld: --stdout cannot be combined with --types; type definitions span multiple files.");
     }
-
     if (options.check) {
-      console.error("sveld: --stdout cannot be combined with --check; both write their document to stdout.");
-      process.exitCode = EXIT_CODES.USAGE_ERROR;
-      return;
+      return usageError("sveld: --stdout cannot be combined with --check; both write their document to stdout.");
     }
   }
 
-  if (options.format !== undefined && options.format !== "text" && options.format !== "json") {
-    console.error(`sveld: --format must be "text" or "json"; got "${options.format}".`);
-    process.exitCode = EXIT_CODES.USAGE_ERROR;
-    return;
+  if (isInvalid(options.format, ["text", "json"])) {
+    return usageError(`sveld: --format must be "text" or "json"; got "${options.format}".`);
   }
-
-  if (
-    options.strict !== undefined &&
-    options.strict !== true &&
-    options.strict !== false &&
-    options.strict !== "errors"
-  ) {
-    console.error(`sveld: --strict must be "errors" when given a value; got "${options.strict}".`);
-    process.exitCode = EXIT_CODES.USAGE_ERROR;
-    return;
+  if (isInvalid(options.strict, [true, false, "errors"])) {
+    return usageError(`sveld: --strict must be "errors" when given a value; got "${options.strict}".`);
   }
-
-  if (
-    options.checkLevel !== undefined &&
-    options.checkLevel !== "major" &&
-    options.checkLevel !== "minor" &&
-    options.checkLevel !== "patch"
-  ) {
-    console.error(`sveld: --check-level must be "major", "minor", or "patch"; got "${options.checkLevel}".`);
-    process.exitCode = EXIT_CODES.USAGE_ERROR;
-    return;
+  if (isInvalid(options.checkLevel, ["major", "minor", "patch"])) {
+    return usageError(`sveld: --check-level must be "major", "minor", or "patch"; got "${options.checkLevel}".`);
   }
-
-  if (
-    options.checkExamples !== undefined &&
-    options.checkExamples !== true &&
-    options.checkExamples !== false &&
-    options.checkExamples !== "syntax"
-  ) {
-    console.error(`sveld: --check-examples must be "syntax" when given a value; got "${options.checkExamples}".`);
-    process.exitCode = EXIT_CODES.USAGE_ERROR;
-    return;
+  if (isInvalid(options.checkExamples, [true, false, "syntax"])) {
+    return usageError(`sveld: --check-examples must be "syntax" when given a value; got "${options.checkExamples}".`);
   }
-
   const typesFormat = options.typesOptions?.format;
-  if (typesFormat !== undefined && typesFormat !== "class" && typesFormat !== "component") {
-    console.error(`sveld: --types-format must be "class" or "component"; got "${typesFormat}".`);
-    process.exitCode = EXIT_CODES.USAGE_ERROR;
-    return;
+  if (isInvalid(typesFormat, ["class", "component"])) {
+    return usageError(`sveld: --types-format must be "class" or "component"; got "${typesFormat}".`);
   }
 
   setQuiet(options.quiet === true);
@@ -459,9 +365,7 @@ export async function cli(process: NodeJS.Process) {
     );
     input = asSvelteEntryPoint(normalizeSeparators(FALLBACK_ENTRY));
   } else {
-    console.error(`sveld: ${resolution.message}`);
-    process.exitCode = EXIT_CODES.USAGE_ERROR;
-    return;
+    return usageError(`sveld: ${resolution.message}`);
   }
 
   let result: Awaited<ReturnType<typeof generateBundle>>;
@@ -481,16 +385,11 @@ export async function cli(process: NodeJS.Process) {
       await writeStdout(result, options, input);
     } else {
       await writeOutput(result, options, input);
-      // Persists any generated `.d.ts` text writeOutput just cached, on top
-      // of the parse-only save generateBundle() already did.
+      // generateBundle() saved parses only; this adds the `.d.ts` text writeOutput cached.
       result.cache?.save();
     }
   } catch (error) {
-    if (error instanceof UnresolvedModuleError) {
-      console.error(`sveld: ${error.message}`);
-      process.exitCode = EXIT_CODES.USAGE_ERROR;
-      return;
-    }
+    if (error instanceof UnresolvedModuleError) return usageError(`sveld: ${error.message}`);
     console.error(error instanceof Error ? error.message : String(error));
     process.exitCode = EXIT_CODES.GENERATION_FAILURE;
     return;

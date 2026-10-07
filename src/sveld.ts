@@ -15,18 +15,14 @@ import {
   formatDiagnosticsSummaryJson,
   type SveldDiagnostic,
 } from "./diagnostics";
-import { getSvelteEntry } from "./get-svelte-entry";
+import { getSvelteEntry, UNRESOLVED_ENTRY_MESSAGE } from "./get-svelte-entry";
 import { loadConfig, mergeConfig, type SveldRuntimeOptions, validateOptions } from "./load-config";
 import { setQuiet } from "./logger";
 import { generateBundle, toGenerateBundleOptions, writeOutput } from "./plugin";
 import type { ComponentApiDocument } from "./writer/document-model";
 import { buildJsonDocument } from "./writer/writer-json";
 
-type SveldOptions = SveldRuntimeOptions;
-
-/**
- * Result of a programmatic `sveld` run.
- */
+/** Result of a programmatic `sveld` run. */
 export interface SveldResult {
   /** Diagnostics from this run. */
   diagnostics: SveldDiagnostic[];
@@ -88,7 +84,7 @@ export function resolveExitCode(run: {
  * });
  * ```
  */
-export async function sveld(opts?: SveldOptions): Promise<SveldResult> {
+export async function sveld(opts?: SveldRuntimeOptions): Promise<SveldResult> {
   if (opts && "input" in opts) {
     throw new Error("sveld: the `input` option was renamed to `entry`.");
   }
@@ -97,9 +93,7 @@ export async function sveld(opts?: SveldOptions): Promise<SveldResult> {
   const fileConfig = await loadConfig();
   const input = getSvelteEntry(entryOverride ?? fileConfig.entry);
   if (input === null) {
-    throw new Error(
-      'sveld: could not resolve a Svelte entry point. Set package.json#svelte, or pass the "entry" option.',
-    );
+    throw new Error(UNRESOLVED_ENTRY_MESSAGE);
   }
   const merged = mergeConfig<SveldRuntimeOptions>(fileConfig, runtimeOpts, { entry: input });
   validateOptions(merged);
@@ -107,16 +101,12 @@ export async function sveld(opts?: SveldOptions): Promise<SveldResult> {
   const result = await generateBundle(input, merged.glob === true, toGenerateBundleOptions(merged));
 
   // Read the committed snapshot before `writeOutput` can overwrite it.
-  let checkResult: CheckResult | undefined;
-  if (merged.check) {
-    checkResult = await runCheck(result.components, resolveCheckSnapshotFile(merged), {
-      entryExports: result.entryExports,
-    });
-  }
+  const checkResult = merged.check
+    ? await runCheck(result.components, resolveCheckSnapshotFile(merged), { entryExports: result.entryExports })
+    : undefined;
 
   await writeOutput(result, merged, input);
-  // Persists any generated `.d.ts` text writeOutput just cached, on top of
-  // the parse-only save generateBundle() already did.
+  // generateBundle() saved parses only; this adds the `.d.ts` text writeOutput cached.
   result.cache?.save();
 
   const shouldReport = merged.reportDiagnostics || merged.strict;

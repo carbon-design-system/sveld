@@ -18,11 +18,6 @@ interface ComponentParserDiagnostics {
 }
 
 export default class ComponentParser {
-  /**
-   * All per-parse mutable state (props, slots, events, scopes, source, etc.).
-   * See {@link ParserContext} for field-by-field documentation. Replaced
-   * wholesale by `cleanup()` between parses.
-   */
   private ctx: ParserContext = createParserContext();
 
   /**

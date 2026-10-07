@@ -40,17 +40,12 @@ export interface WriteJsonOptions extends JsonOptions {
   entryExports?: EntryExports;
 }
 
-/** Narrows a `source`/`componentCommentSource` value to an actual `SourceRange`, as opposed to `EntryExport.source` (a module path string). */
+/** `EntryExport.source` is a module path string, not a range, so it fails this check. */
 function isSourceRange(value: unknown): value is { start: unknown; end: unknown } {
   return typeof value === "object" && value !== null && !Array.isArray(value) && "start" in value && "end" in value;
 }
 
-/**
- * Recursively strips `source`/`componentCommentSource` position ranges from
- * a component (or any nested value), for `jsonOptions.source: false`.
- * `EntryExport.source` (a declaring-module path string, not a range) is
- * left untouched since it fails the `isSourceRange` check.
- */
+/** For `jsonOptions.source: false`. */
 function stripSourceRanges<T>(value: T): T {
   if (Array.isArray(value)) {
     return value.map((item) => stripSourceRanges(item)) as T;
@@ -67,12 +62,8 @@ function stripSourceRanges<T>(value: T): T {
 }
 
 /**
- * Normalizes each component's `filePath` to be resolvable from `cwd`.
- *
- * This is JSON-output-specific: it makes `COMPONENT_API.json` self-describing.
- * Other writers (e.g. `.d.ts`) need the original relative `filePath` to
- * compute their own output locations, so this must not live in the shared
- * document model.
+ * Makes `filePath` resolvable from `cwd`. JSON-only: other writers need the
+ * original relative `filePath`, so this can't live in the document model.
  */
 function withNormalizedFilePaths(components: ComponentDocApi[], inputDir: string): ComponentDocApi[] {
   return components.map((component) => ({
@@ -82,13 +73,8 @@ function withNormalizedFilePaths(components: ComponentDocApi[], inputDir: string
 }
 
 /**
- * JSON output file name for one component.
- *
- * Two `--glob`-discovered components can share a `moduleName` across
- * directories, e.g. `Menu/Menu.svelte` and `icons/Menu.svelte`. Writing
- * both to `${moduleName}.api.json` would silently overwrite one. On
- * collision, name the file from the source path and warn once per colliding
- * name. Unique names keep `${moduleName}.api.json`.
+ * `--glob` can find two components with one `moduleName` (`Menu/Menu.svelte`,
+ * `icons/Menu.svelte`); on collision, name the file from the source path instead.
  */
 function jsonFileName(component: ComponentDocApi, hasCollision: boolean, warnedModuleNames: Set<string>): string {
   if (!hasCollision) return `${component.moduleName}.api.json`;
@@ -104,7 +90,7 @@ function jsonFileName(component: ComponentDocApi, hasCollision: boolean, warnedM
   return `${removeSvelteExt(component.filePath)}.api.json`;
 }
 
-async function writeJsonComponents(components: ComponentDocs, options: WriteJsonOptions) {
+async function writeJsonComponents(components: ComponentDocs, options: WriteJsonOptions, outDir: string) {
   const document = buildComponentApiDocument(components);
   let output = withNormalizedFilePaths(document.components, options.inputDir);
   if (options.source === false) output = stripSourceRanges(output);
@@ -114,13 +100,13 @@ async function writeJsonComponents(components: ComponentDocs, options: WriteJson
     moduleNameCounts.set(component.moduleName, (moduleNameCounts.get(component.moduleName) ?? 0) + 1);
   }
   const warnedModuleNames = new Set<string>();
+  const writer = new Writer();
 
   await Promise.all(
     output.map(async (c) => {
       const hasCollision = (moduleNameCounts.get(c.moduleName) ?? 0) > 1;
       const fileName = jsonFileName(c, hasCollision, warnedModuleNames);
-      const outFile = path.resolve(path.join(options.outDir || "", fileName));
-      const writer = new Writer();
+      const outFile = path.resolve(path.join(outDir, fileName));
       const wasWritten = await writer.write(outFile, formatJsonOutput(c));
       info(`${wasWritten ? "created" : "unchanged"} "${outFile}".`);
     }),
@@ -128,9 +114,8 @@ async function writeJsonComponents(components: ComponentDocs, options: WriteJson
 }
 
 /**
- * The single combined JSON document, exactly as written to
- * `COMPONENT_API.json`. Shared by `writeJsonLocal`, the CLI's `--stdout`
- * mode, and `sveld()`'s `document`, so the three can't drift.
+ * The combined document as written to `COMPONENT_API.json`. Shared by the file
+ * writer, the CLI's `--stdout` mode, and `sveld()`'s `document` so they can't drift.
  */
 export function buildJsonDocument(
   components: ComponentDocs,
@@ -152,35 +137,12 @@ export function renderJsonDocument(
   return formatJsonOutput(buildJsonDocument(components, options));
 }
 
-async function writeJsonLocal(components: ComponentDocs, options: WriteJsonOptions) {
-  const raw = renderJsonDocument(components, options);
-  const output_path = path.resolve(options.outFile);
-  const writer = new Writer();
-  const wasWritten = await writer.write(output_path, raw);
-
-  info(`${wasWritten ? "created" : "unchanged"} "${options.outFile}".`);
-}
-
-/**
- * @example
- * ```ts
- * // Per-component files:
- * await writeJson(components, {
- *   inputDir: "./src",
- *   outDir: "./dist"
- * });
- *
- * // Single combined file:
- * await writeJson(components, {
- *   inputDir: "./src",
- *   outFile: "components.api.json"
- * });
- * ```
- */
 export default async function writeJson(components: ComponentDocs, options: WriteJsonOptions) {
   if (options.outDir) {
-    await writeJsonComponents(components, options);
-  } else {
-    await writeJsonLocal(components, options);
+    await writeJsonComponents(components, options, options.outDir);
+    return;
   }
+
+  const wasWritten = await new Writer().write(path.resolve(options.outFile), renderJsonDocument(components, options));
+  info(`${wasWritten ? "created" : "unchanged"} "${options.outFile}".`);
 }

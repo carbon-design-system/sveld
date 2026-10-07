@@ -3,20 +3,14 @@ import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { MODULE_EXTENSIONS, normalizeSeparators } from "./path";
 import { type ParsedTsConfig, parseTsConfig } from "./validate";
 
-interface TSConfig extends ParsedTsConfig {}
-
 const pathPatternRegexCache = new Map<string, RegExp>();
 
 const COMMENT_PATTERN = /\/\*[\s\S]*?\*\/|\/\/.*/g;
 const REGEX_SPECIAL_CHARS = /[.+?^${}()|[\]\\]/g;
 
-/** Extensions probed when checking whether an alias mapping candidate exists on disk. */
 const ALIAS_CANDIDATE_EXTENSIONS = [".svelte", ...MODULE_EXTENSIONS];
 
-/**
- * Thrown when a module specifier (an `export *`/named re-export source, or a
- * path alias) cannot be resolved to a file on disk.
- */
+/** A re-export source or path alias that doesn't resolve to a file on disk. */
 export class UnresolvedModuleError extends Error {
   readonly specifier: string;
   readonly fromFile: string;
@@ -31,28 +25,16 @@ export class UnresolvedModuleError extends Error {
   }
 }
 
-/** True when `fullPath` (or `fullPath` plus a common module extension) exists on disk. */
 function pathAliasTargetExists(fullPath: string): boolean {
   if (existsSync(fullPath)) return true;
   return ALIAS_CANDIDATE_EXTENSIONS.some((ext) => existsSync(fullPath + ext));
 }
 
-/** Length of the literal (non-wildcard) prefix of a tsconfig `paths` pattern, for longest-prefix ordering. */
 function patternPrefixLength(pattern: string): number {
   const wildcardIndex = pattern.indexOf("*");
   return wildcardIndex === -1 ? pattern.length : wildcardIndex;
 }
 
-/**
- * Finds the nearest tsconfig.json or jsconfig.json starting from a directory.
- *
- * @example
- * ```ts
- * // From ./src/components/Button.svelte
- * findConfig("./src/components")
- * // Returns: "./tsconfig.json" (if found in project root)
- * ```
- */
 function findConfig(startDir: string): string | null {
   let dir = startDir;
   const root = resolve(dir, "/");
@@ -60,9 +42,7 @@ function findConfig(startDir: string): string | null {
   while (dir !== root) {
     for (const configName of ["tsconfig.json", "jsconfig.json"]) {
       const configPath = join(dir, configName);
-      if (existsSync(configPath)) {
-        return configPath;
-      }
+      if (existsSync(configPath)) return configPath;
     }
     dir = dirname(dir);
   }
@@ -70,7 +50,7 @@ function findConfig(startDir: string): string | null {
   return null;
 }
 
-function parseConfig(configPath: string, configCache: Map<string, TSConfig | null>): TSConfig | null {
+function parseConfig(configPath: string, configCache: Map<string, ParsedTsConfig | null>): ParsedTsConfig | null {
   if (configCache.has(configPath)) {
     return configCache.get(configPath) ?? null;
   }
@@ -86,11 +66,10 @@ function parseConfig(configPath: string, configCache: Map<string, TSConfig | nul
       const jsonContent = content.replace(COMMENT_PATTERN, "");
       parsed = JSON.parse(jsonContent);
     }
-    const config: TSConfig = parseTsConfig(parsed);
+    const config = parseTsConfig(parsed);
 
     if (config.extends) {
       const baseConfigPath = isAbsolute(config.extends) ? config.extends : resolve(dirname(configPath), config.extends);
-
       const fullBaseConfigPath = baseConfigPath.endsWith(".json") ? baseConfigPath : `${baseConfigPath}.json`;
 
       if (existsSync(fullBaseConfigPath)) {
@@ -116,13 +95,12 @@ function parseConfig(configPath: string, configCache: Map<string, TSConfig | nul
   }
 }
 
-/** Result of looking up a specifier against tsconfig/jsconfig `paths`. */
-export interface AliasLookup {
+interface AliasLookup {
   /** Absolute path when resolved via an alias mapping; `importPath` unchanged otherwise. */
   resolved: string;
   /** True when `importPath` is a non-relative specifier that no `paths` entry matched. */
   unresolved: boolean;
-  /** Human-readable description of what was searched, for error messages. */
+  /** What was searched, for error messages. */
   searched: string;
 }
 
@@ -140,20 +118,14 @@ function getPatternRegex(pattern: string): RegExp {
   return regex;
 }
 
-/**
- * Resolves tsconfig/jsconfig `paths` aliases, reading each config file once
- * per instance. A `ModuleGraph` owns one, so config reads last one project.
- */
+/** Resolves tsconfig/jsconfig `paths` aliases, reading each config file once per instance. */
 export class PathAliases {
-  private readonly configs = new Map<string, TSConfig | null>();
+  private readonly configs = new Map<string, ParsedTsConfig | null>();
 
   /**
-   * Resolve a tsconfig/jsconfig path alias, reporting whether resolution failed.
-   *
-   * Patterns are tried longest non-wildcard-prefix first (mirroring `tsc`), not
-   * JSON key order. Within a matched pattern, every mapping is tried in order
-   * and the first one that exists on disk wins; if none exist, the first
-   * mapping is returned as a best-effort guess.
+   * Patterns are tried longest literal prefix first (like `tsc`), not in JSON
+   * key order. Within the matched pattern the first mapping that exists on
+   * disk wins; if none does, the first mapping is a best-effort guess.
    */
   lookup(importPath: string, fromDir: string): AliasLookup {
     if (importPath.startsWith(".") || importPath.startsWith("/")) {
@@ -161,19 +133,13 @@ export class PathAliases {
     }
 
     const configPath = findConfig(fromDir);
-    if (!configPath) {
+    const compilerOptions = configPath ? parseConfig(configPath, this.configs)?.compilerOptions : undefined;
+    const paths = compilerOptions?.paths;
+    if (!configPath || !compilerOptions || !paths) {
       return { resolved: importPath, unresolved: true, searched: "no tsconfig/jsconfig paths found" };
     }
 
-    const config = parseConfig(configPath, this.configs);
-    if (!config?.compilerOptions?.paths) {
-      return { resolved: importPath, unresolved: true, searched: "no tsconfig/jsconfig paths found" };
-    }
-
-    const { baseUrl = ".", paths } = config.compilerOptions;
-    const configDir = dirname(configPath);
-    const resolvedBaseUrl = resolve(configDir, baseUrl);
-
+    const resolvedBaseUrl = resolve(dirname(configPath), compilerOptions.baseUrl ?? ".");
     const patterns = Object.entries(paths).sort(([a], [b]) => patternPrefixLength(b) - patternPrefixLength(a));
 
     for (const [pattern, mappings] of patterns) {
@@ -188,7 +154,7 @@ export class PathAliases {
         }
 
         const fullPath = resolve(resolvedBaseUrl, resolvedPath);
-        if (firstCandidate === undefined) firstCandidate = fullPath;
+        firstCandidate ??= fullPath;
         if (pathAliasTargetExists(fullPath)) {
           return { resolved: fullPath, unresolved: false, searched: configPath };
         }
@@ -200,50 +166,16 @@ export class PathAliases {
     return { resolved: importPath, unresolved: true, searched: `tsconfig paths (${configPath})` };
   }
 
-  /**
-   * Resolve a tsconfig/jsconfig path alias to an absolute filesystem path.
-   *
-   * @example
-   * ```ts
-   * // With tsconfig.json: { "paths": { "$lib/*": ["./src/lib/*"] } }
-   * aliases.absolute("$lib/utils", "./src")
-   * // Returns: "/absolute/path/to/src/lib/utils"
-   *
-   * aliases.absolute("./relative", "./src")
-   * // Returns: "./relative" (unchanged, not an alias)
-   * ```
-   */
+  /** `$lib/utils` -> `/abs/src/lib/utils`; a non-alias comes back unchanged. */
   absolute(importPath: string, fromDir: string): string {
     return this.lookup(importPath, fromDir).resolved;
   }
 
-  /**
-   * Resolve a path alias to a path relative to `fromDir` for generated exports.
-   *
-   * @example
-   * ```ts
-   * // With alias "$lib/utils" -> "./src/lib/utils"
-   * aliases.relative("$lib/utils", "./src")
-   * // Returns: "./lib/utils"
-   *
-   * aliases.relative("./Button.svelte", "./src")
-   * // Returns: "./Button.svelte" (unchanged, not an alias)
-   * ```
-   */
+  /** Like {@link absolute}, but relative to `fromDir` (`./lib/utils`), for generated exports. */
   relative(importPath: string, fromDir: string): string {
-    if (importPath.startsWith(".") || importPath.startsWith("/")) {
-      return importPath;
-    }
-
     const absolutePath = this.absolute(importPath, fromDir);
-
-    if (absolutePath === importPath) {
-      return importPath;
-    }
-
-    let relativePath = relative(fromDir, absolutePath);
-    relativePath = normalizeSeparators(relativePath);
-
+    if (absolutePath === importPath) return importPath;
+    const relativePath = normalizeSeparators(relative(fromDir, absolutePath));
     return relativePath.startsWith(".") ? relativePath : `./${relativePath}`;
   }
 }

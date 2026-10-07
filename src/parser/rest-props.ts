@@ -12,25 +12,14 @@ function createRestPropsFromParent(parent: unknown): RestProps {
   const parentName = "name" in parent && typeof parent.name === "string" ? parent.name : undefined;
   if (!parentName) return undefined;
 
-  const restProps: RestProps = isComponentLike
-    ? {
-        type: "InlineComponent",
-        name: parentName,
-      }
-    : {
-        type: "Element",
-        name: parentName,
-      };
+  if (isComponentLike) return { type: "InlineComponent", name: parentName };
 
-  // `<svelte:element this="div">`: modern AST always stores `.tag` as a node.
-  // A `Literal` has a static tag name. `this={expr}` does not.
+  const restProps: ComponentElement = { type: "Element", name: parentName };
+  // `<svelte:element this="div">` has a static `Literal` tag; `this={expr}` doesn't.
   if (parentName === "svelte:element" && "tag" in parent && parent.tag && typeof parent.tag === "object") {
     const tag = parent.tag as { type?: string; value?: unknown };
-    if (tag.type === "Literal" && typeof tag.value === "string") {
-      (restProps as ComponentElement).thisValue = tag.value;
-    }
+    if (tag.type === "Literal" && typeof tag.value === "string") restProps.thisValue = tag.value;
   }
-
   return restProps;
 }
 

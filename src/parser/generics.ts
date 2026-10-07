@@ -5,7 +5,7 @@ import { collectReferencedTypeDependencies } from "./type-resolution";
 
 const LEADING_IDENTIFIER_REGEX = /^[A-Za-z_$][\w$]*/;
 const IDENTIFIER_REGEX = /[A-Za-z_$][\w$]*/g;
-const LEADING_TYPE_PARAM_MODIFIER_REGEX = /^(?:const|in|out)\s+/;
+const LEADING_TYPE_PARAM_MODIFIERS_REGEX = /^(?:(?:const|in|out)\s+)+/;
 
 /**
  * Parses the `generics` script attribute value (a TypeScript type-parameter
@@ -19,24 +19,18 @@ export function parseGenericsAttribute(value: string): ComponentGenerics {
 
   if (constraints.length === 0) return null;
 
-  const names = constraints.map((constraint) => {
-    let usageSite = constraint;
-    while (LEADING_TYPE_PARAM_MODIFIER_REGEX.test(usageSite)) {
-      usageSite = usageSite.replace(LEADING_TYPE_PARAM_MODIFIER_REGEX, "");
-    }
-    return usageSite.match(LEADING_IDENTIFIER_REGEX)?.[0] ?? constraint;
-  });
+  const names = constraints.map(
+    (constraint) =>
+      constraint.replace(LEADING_TYPE_PARAM_MODIFIERS_REGEX, "").match(LEADING_IDENTIFIER_REGEX)?.[0] ?? constraint,
+  );
 
   return [names.join(", "), constraints.join(", ")];
 }
 
 /**
- * Extends `referencedImportedTypes`/`referencedLocalTypes` with any type names
- * mentioned in the `generics` script attribute (e.g. the `DataTableRow` in
- * `Row extends DataTableRow = DataTableRow`). These names only appear in the
- * raw attribute string, not in the `$props()` type annotation AST that
- * {@link collectReferencedTypeDependencies} normally walks, so without this
- * they would never get hoisted into the emitted `.d.ts`.
+ * Type names in the `generics` attribute (`DataTableRow` in `Row extends
+ * DataTableRow`) exist only as raw text, not in any AST
+ * {@link collectReferencedTypeDependencies} walks, so they're matched here.
  */
 export function collectGenericsAttributeTypeDependencies(
   ctx: ParserContext,
@@ -60,7 +54,6 @@ export function collectGenericsAttributeTypeDependencies(
   }
 }
 
-/** Appends one component generic (`name`, `constraint`) to {@link ParserContext.generics}. */
 export function accumulateGeneric(ctx: ParserContext, name: string, constraint: string): void {
   if (ctx.generics) {
     ctx.generics = [`${ctx.generics[0]}, ${name}`, `${ctx.generics[1]}, ${constraint}`];

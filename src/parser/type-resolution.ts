@@ -23,60 +23,32 @@ export function getRunesPropsDeclarationMetadata(ctx: ParserContext, declaratorS
   return ctx.runesPropsDeclarationMetadataByDeclaratorStart.get(declaratorStart);
 }
 
-export function getRunesPropTypeMetadata(ctx: ParserContext, declaratorStart: number | undefined, propName: string) {
-  return getRunesPropsDeclarationMetadata(ctx, declaratorStart)?.props.get(propName);
+export function getTypeReferenceName(typeName: EntityName): string {
+  return typeName.type === "Identifier" ? typeName.name : typeName.right.name;
 }
 
-export function getTypeReferenceName(typeName: unknown): string | undefined {
-  if (!typeName || typeof typeName !== "object" || !("type" in typeName)) return undefined;
-
-  if (typeName.type === "Identifier" && "name" in typeName && typeof typeName.name === "string") {
-    return typeName.name;
-  }
-
-  if (
-    typeName.type === "TSQualifiedName" &&
-    "right" in typeName &&
-    typeName.right &&
-    typeof typeName.right === "object" &&
-    "name" in typeName.right &&
-    typeof typeName.right.name === "string"
-  ) {
-    return typeName.right.name;
-  }
-
-  return undefined;
+/** The leftmost name, which is what's imported or declared (`ns` in `ns.Type`). */
+function getTypeDependencyName(typeName: EntityName): string {
+  return typeName.type === "Identifier" ? typeName.name : getTypeDependencyName(typeName.left);
 }
 
-function getTypeDependencyName(typeName: unknown): string | undefined {
-  if (!typeName || typeof typeName !== "object" || !("type" in typeName)) return undefined;
-
-  if (typeName.type === "Identifier" && "name" in typeName && typeof typeName.name === "string") {
-    return typeName.name;
-  }
-
-  if (typeName.type === "TSQualifiedName" && "left" in typeName && typeName.left && typeof typeName.left === "object") {
-    return getTypeDependencyName(typeName.left);
-  }
-
-  return undefined;
+function getSpanText(ctx: ParserContext, span: { start?: number; end?: number } | undefined, startOffset: number) {
+  const start = span?.start;
+  const end = span?.end;
+  if (start === undefined || end === undefined) return undefined;
+  return sourceAtPos(ctx, start + startOffset, end)?.trim();
 }
 
+/** A `TSTypeAnnotation`'s text without its leading colon. */
 export function getTypeAnnotationText(
   ctx: ParserContext,
   typeAnnotation: { start?: number; end?: number } | undefined,
 ) {
-  const start = typeAnnotation?.start;
-  const end = typeAnnotation?.end;
-  if (start === undefined || end === undefined) return undefined;
-  return sourceAtPos(ctx, start + 1, end)?.trim();
+  return getSpanText(ctx, typeAnnotation, 1);
 }
 
 export function getTypeNodeText(ctx: ParserContext, typeNode: { start?: number; end?: number } | undefined) {
-  const start = typeNode?.start;
-  const end = typeNode?.end;
-  if (start === undefined || end === undefined) return undefined;
-  return sourceAtPos(ctx, start, end)?.trim();
+  return getSpanText(ctx, typeNode, 0);
 }
 
 export function collectReferencedTypeDependencies(
@@ -91,13 +63,12 @@ export function collectReferencedTypeDependencies(
   const collect = (node: TSNode | undefined) =>
     collectReferencedTypeDependencies(ctx, node, referencedImportedTypes, referencedLocalTypes, visitedLocalTypes);
 
-  // Each case below picks the parts of a node that name types; any other
-  // node's children are walked as they are.
+  // Cases pick the parts of a node that name types; other nodes are walked as-is.
   walk(typeNode, {
     enter(node) {
       switch (node.type) {
         case "TSInterfaceDeclaration":
-          // `interface A extends B<C>`: each heritage clause names a type like a reference does.
+          // Each `extends B<C>` clause names a type like a reference does.
           for (const heritage of node.extends ?? []) {
             collectTypeReferenceDependencies(
               ctx,
@@ -203,39 +174,31 @@ function collectTypeReferenceDependencies(
   visitedLocalTypes: Set<string>,
 ) {
   const dependencyName = getTypeDependencyName(typeName);
-  if (dependencyName) {
-    // A value import used only in a type position (e.g. `import { Size } from` a sibling
-    // module, with no `type` modifier) still needs an `import type` line in the standalone
-    // `.d.ts`; the runtime import in the component's own script is untouched.
-    if (
-      ctx.typeImportBindingsByLocalName.has(dependencyName) ||
-      ctx.valueImportBindingsByLocalName.has(dependencyName)
-    ) {
-      referencedImportedTypes.add(dependencyName);
-    }
-
-    const localDeclaration = ctx.localTypeDeclarationsByName.get(dependencyName);
-    if (localDeclaration && !visitedLocalTypes.has(dependencyName)) {
-      referencedLocalTypes.add(dependencyName);
-      visitedLocalTypes.add(dependencyName);
-      collectReferencedTypeDependencies(
-        ctx,
-        localDeclaration.node,
-        referencedImportedTypes,
-        referencedLocalTypes,
-        visitedLocalTypes,
-      );
-      visitedLocalTypes.delete(dependencyName);
-    }
+  // A value import used only as a type (no `type` modifier) still needs an
+  // `import type` line in the standalone `.d.ts`.
+  if (ctx.typeImportBindingsByLocalName.has(dependencyName) || ctx.valueImportBindingsByLocalName.has(dependencyName)) {
+    referencedImportedTypes.add(dependencyName);
   }
 
-  // `Array<Item>`
+  const localDeclaration = ctx.localTypeDeclarationsByName.get(dependencyName);
+  if (localDeclaration && !visitedLocalTypes.has(dependencyName)) {
+    referencedLocalTypes.add(dependencyName);
+    visitedLocalTypes.add(dependencyName);
+    collectReferencedTypeDependencies(
+      ctx,
+      localDeclaration.node,
+      referencedImportedTypes,
+      referencedLocalTypes,
+      visitedLocalTypes,
+    );
+    visitedLocalTypes.delete(dependencyName);
+  }
+
   for (const param of typeArguments ?? []) {
     collectReferencedTypeDependencies(ctx, param, referencedImportedTypes, referencedLocalTypes, visitedLocalTypes);
   }
 }
 
-/** The dependencies of a type literal's or interface body's property types. */
 function collectMemberDependencies(members: TypeElement[], collect: (node: TSNode | undefined) => void) {
   for (const member of members) {
     if (member.type === "TSPropertySignature") collect(member.typeAnnotation?.typeAnnotation);
@@ -243,22 +206,17 @@ function collectMemberDependencies(members: TypeElement[], collect: (node: TSNod
 }
 
 /**
- * Records a type node found outside the whole-object `$props()` path (legacy
- * annotations, runes per-prop annotations, accessor signatures) so
- * {@link buildTypeScriptMetadata} pulls its imported/local dependencies into
- * the `.d.ts`, same as the whole-object case already does.
+ * Records a type node outside the whole-object `$props()` path (legacy and
+ * per-prop annotations, accessor signatures) so {@link buildTypeScriptMetadata}
+ * pulls its dependencies into the `.d.ts`.
  */
 export function trackAdditionalTypeDependencyNode(ctx: ParserContext, typeNode: TSNode | undefined) {
   if (typeNode) ctx.additionalTypeDependencyNodes.push(typeNode);
 }
 
 /**
- * `const enum` members are inlined at compile time and, unlike interfaces/type
- * aliases, can't be safely re-declared verbatim in a standalone `.d.ts`: many
- * bundlers (esbuild, swc, Vite) reject `const enum` entirely under
- * `isolatedModules`. When every member has a literal initializer, widen it to
- * an equivalent literal union instead; otherwise the caller falls back to the
- * verbatim declaration (best-effort, non-const enums always take that path).
+ * Many bundlers reject `const enum` under `isolatedModules`, so one whose
+ * members all have literal initializers is emitted as a literal union instead.
  */
 function buildConstEnumUnionTypeCode(enumStatement: TSEnumDeclaration): string | undefined {
   if (!enumStatement.const) return undefined;
@@ -278,7 +236,6 @@ function buildConstEnumUnionTypeCode(enumStatement: TSEnumDeclaration): string |
   return `type ${name} = ${literalTexts.join(" | ")};`;
 }
 
-/** Builds a `LocalTypeDeclaration`-ready `code` string for a top-level `enum`/`const enum`. */
 export function buildEnumLocalTypeDeclarationCode(
   ctx: ParserContext,
   enumStatement: TSEnumDeclaration,
@@ -287,16 +244,12 @@ export function buildEnumLocalTypeDeclarationCode(
   if (unionCode) return unionCode;
 
   const verbatim = sourceAtPos(ctx, enumStatement.start, enumStatement.end)?.trim();
-  // Unlike `interface`/`type`, a bare top-level `enum` in a module `.d.ts` (one that already has
-  // an `import`/`export`) is a TS1046 error: enums emit a runtime value, so TS requires an
-  // explicit `declare` (or `export`) modifier the same way it would for a `class`/`function`/`let`.
+  // A bare `enum` in a module `.d.ts` is TS1046: it emits a value, so it needs `declare`.
   return verbatim ? `declare ${verbatim}` : undefined;
 }
 
-/** A function, or a method's overload signature: what its signature text is read from. */
 type FunctionDeclarationLike = Pick<BaseFunction | TSDeclareMethod, "params" | "returnType" | "typeParameters">;
 
-/** One parameter of {@link FunctionDeclarationParts}. `type` is unset when it has no annotation. */
 export interface FunctionDeclarationParam {
   name: string;
   type?: string;
@@ -304,7 +257,7 @@ export interface FunctionDeclarationParam {
   rest: boolean;
 }
 
-/** A function's own TS annotations, as text. Each unset field had no annotation. */
+/** A function's own TS annotations, as text; unset fields had no annotation. */
 export interface FunctionDeclarationParts {
   params: FunctionDeclarationParam[];
   returnType?: string;
@@ -312,11 +265,7 @@ export interface FunctionDeclarationParts {
   typeParameters?: string;
 }
 
-/**
- * Reads a function's type parameters, params (name, annotation, optional,
- * rest), and return type from its own TS annotations, and records each
- * annotation so the `.d.ts` pulls in the types it names.
- */
+/** Also records each annotation so the `.d.ts` pulls in the types it names. */
 export function readFunctionDeclarationParts(
   ctx: ParserContext,
   funcDecl: FunctionDeclarationLike,
@@ -385,16 +334,16 @@ export function buildFunctionDeclarationSignature(
   };
 }
 
+function copyIfAny<T>(items: T[]): T[] | undefined {
+  return items.length > 0 ? items.slice() : undefined;
+}
+
 /** What the parse leaves for the cross-file pass, or `undefined` when it depends on no other file. */
 export function buildPendingCrossFileCandidates(ctx: ParserContext): PendingCrossFileCandidates | undefined {
-  const pendingCallDefaultCandidates =
-    ctx.pendingCallDefaultCandidates.length > 0 ? ctx.pendingCallDefaultCandidates.slice() : undefined;
-  const pendingConstDefaultCandidates =
-    ctx.pendingConstDefaultCandidates.length > 0 ? ctx.pendingConstDefaultCandidates.slice() : undefined;
-  const pendingContextKeyCandidates =
-    ctx.pendingContextKeyCandidates.length > 0 ? ctx.pendingContextKeyCandidates.slice() : undefined;
-  const pendingDispatchEscapeCandidates =
-    ctx.pendingDispatchEscapeCandidates.length > 0 ? ctx.pendingDispatchEscapeCandidates.slice() : undefined;
+  const pendingCallDefaultCandidates = copyIfAny(ctx.pendingCallDefaultCandidates);
+  const pendingConstDefaultCandidates = copyIfAny(ctx.pendingConstDefaultCandidates);
+  const pendingContextKeyCandidates = copyIfAny(ctx.pendingContextKeyCandidates);
+  const pendingDispatchEscapeCandidates = copyIfAny(ctx.pendingDispatchEscapeCandidates);
   if (
     !pendingCallDefaultCandidates &&
     !pendingConstDefaultCandidates &&
@@ -405,8 +354,7 @@ export function buildPendingCrossFileCandidates(ctx: ParserContext): PendingCros
   }
 
   // Both only matter to an escaped dispatcher's helpers.
-  const deferredEventNoSourceDiagnostics =
-    ctx.deferredEventNoSourceDiagnostics.length > 0 ? ctx.deferredEventNoSourceDiagnostics.slice() : undefined;
+  const deferredEventNoSourceDiagnostics = copyIfAny(ctx.deferredEventNoSourceDiagnostics);
   const untypedJsDocEventNames =
     pendingDispatchEscapeCandidates && ctx.untypedJsDocEventNames.size > 0
       ? Array.from(ctx.untypedJsDocEventNames)

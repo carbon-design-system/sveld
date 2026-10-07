@@ -13,14 +13,8 @@ export interface ContextKeyResolution {
   key?: string;
 }
 
-/**
- * Read each candidate's imported key from its declaring module
- * ({@link findImportedExport} follows re-exports and namespace exports).
- * Only `export const` with a string literal or static template counts.
- * `export let` / `var` stay unresolved even if the initializer is a literal.
- * AST only, no `tsc`.
- */
-export function resolveContextKeyCandidates(
+/** Only `export const` with a string literal or static template counts; `let`/`var` are live bindings. */
+function resolveContextKeyCandidates(
   componentFilePath: string,
   candidates: PendingContextKeyCandidate[],
   ctx: ResolveContext,
@@ -39,9 +33,8 @@ export function resolveContextKeyCandidates(
 }
 
 /**
- * Append each resolved context to `component.contexts`. Unresolved keys and
- * duplicate keys get the same diagnostics `parseSetContextCall` records for
- * a local call, and the first call in source order keeps its shape.
+ * Unresolved and duplicate keys get the same diagnostics `parseSetContextCall`
+ * records for a local call; the first call in source order keeps its shape.
  */
 function applyContextKeyResolutions(component: ComponentDocApi, resolutions: ContextKeyResolution[]): void {
   for (const { candidate, key } of resolutions) {
@@ -63,7 +56,6 @@ function applyContextKeyResolutions(component: ComponentDocApi, resolutions: Con
     const contexts = [...(component.contexts ?? [])];
     const duplicateIndex = contexts.findIndex((existing) => existing.key === key);
     if (duplicateIndex !== -1) {
-      // Same rule as a same-file duplicate: the first call's shape wins and the later call is flagged.
       const duplicate = contexts[duplicateIndex];
       const candidateIsFirst = startsAfter(duplicate.source, candidate.source);
       const laterSource = candidateIsFirst ? duplicate.source : candidate.source;

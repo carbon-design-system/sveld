@@ -1,7 +1,6 @@
-/** Largest edit distance for which a typo suggestion is still offered. */
 const MAX_SUGGESTION_DISTANCE = 3;
 
-/** Edit distance between two strings, counting a swap of adjacent characters (`evnet`) as one edit. */
+/** Counts a swap of adjacent characters (`evnet`) as one edit. */
 function levenshteinDistance(a: string, b: string): number {
   const rows = a.length + 1;
   const columns = b.length + 1;
@@ -27,10 +26,7 @@ function levenshteinDistance(a: string, b: string): number {
   return distances[rows - 1][columns - 1];
 }
 
-/**
- * Closest candidate string to `input` by edit distance, or `undefined` if
- * none is within `maxDistance`.
- */
+/** Closest candidate to `input` by edit distance, or `undefined` if none is within `maxDistance`. */
 export function closestMatch(
   input: string,
   candidates: Iterable<string>,
@@ -41,16 +37,11 @@ export function closestMatch(
 
   for (const candidate of candidates) {
     const distance = levenshteinDistance(input, candidate);
-
     if (distance < closestDistance) {
       closest = candidate;
       closestDistance = distance;
     }
   }
 
-  if (closest === undefined || closestDistance > maxDistance) {
-    return undefined;
-  }
-
-  return closest;
+  return closestDistance <= maxDistance ? closest : undefined;
 }

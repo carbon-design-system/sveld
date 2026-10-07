@@ -7,12 +7,9 @@ import { VERSION as svelteVersion } from "../svelte-version";
 export const COMPONENT_API_SCHEMA_VERSION = 1;
 
 /**
- * Canonical, renderer-agnostic representation of a component collection.
- *
- * Every writer (JSON, Markdown, TypeScript definitions) builds this document
- * via `buildComponentApiDocument` instead of independently sorting/filtering
- * the raw `ComponentDocs` map, so sort order and field stripping can't drift
- * between output formats.
+ * Canonical, renderer-agnostic representation of a component collection. Every
+ * writer builds it via `buildComponentApiDocument`, so sort order and field
+ * stripping can't drift between output formats.
  */
 export interface ComponentApiDocument {
   schemaVersion: 1;
@@ -33,17 +30,11 @@ export interface BuildComponentApiDocumentOptions {
   entryExports?: EntryExports;
 }
 
-/** Drops `@ignore`/`@internal`-tagged entries. The raw, unfiltered list lives on `ParsedComponent`. */
 function excludeInternal<T extends { internal?: boolean }>(items: T[]): T[] {
   return items.some((item) => item.internal) ? items.filter((item) => !item.internal) : items;
 }
 
-/**
- * Strips `@ignore`/`@internal` members from every list a component exposes, so no writer -
- * Markdown, JSON, `.d.ts`, custom elements - has to filter independently. The raw,
- * unfiltered `ParsedComponent` (props/events/slots/etc. still carrying `internal: true`) remains
- * available to callers that read the parser output directly, e.g. `sveld --check`.
- */
+/** Done once here so no writer filters independently; `sveld --check` still sees the raw `ParsedComponent`. */
 function excludeInternalMembers(component: ComponentDocApi): ComponentDocApi {
   return {
     ...component,
@@ -72,10 +63,10 @@ export function buildComponentApiDocument(
   components: ComponentDocs,
   options: BuildComponentApiDocumentOptions = {},
 ): ComponentApiDocument {
-  const sorted = Array.from(components, ([, component]) => {
-    // `diagnostics` is for the Node API only; rendered output skips it.
+  const sorted = Array.from(components.values(), (component) => {
+    // `diagnostics` is for the Node API only.
     const { diagnostics: _diagnostics, ...rest } = component;
-    return excludeInternalMembers(rest as ComponentDocApi);
+    return excludeInternalMembers(rest);
   }).sort((a, b) => compareText(a.moduleName, b.moduleName));
 
   const document: ComponentApiDocument = {

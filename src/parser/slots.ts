@@ -1,4 +1,4 @@
-import type { CallExpression, Expression, Identifier, Literal, MemberExpression, ObjectExpression } from "sveast";
+import type { AST, ObjectExpression, Property, SimpleCallExpression } from "sveast";
 import { getPropertyName, isIdentifier, isObjectExpression } from "../ast-guards";
 import type { DeprecatedValue, JsDocPassthroughTag, SlotProps, SlotPropValue, SourceRange } from "../model";
 import { resolveMemberExpressionType } from "./bindings";
@@ -7,35 +7,21 @@ import { recordDiagnostic } from "./diagnostics";
 import { parseObjectTypeLiteralMembers } from "./object-type-literal";
 import { resolveConstInitializer } from "./props";
 import { sourceAtPos, sourceRangeFromNode } from "./source-position";
-import { assignValueOrUndefined } from "./utils";
 import { findVariableTypeAndDescription } from "./variable-jsdoc";
 
 export const DEFAULT_SLOT_NAME = null;
 
-function inferSlotPropValueFromExpression(ctx: ParserContext, expression: unknown): SlotPropValue {
-  const slot_prop_value: SlotPropValue = {
-    value: undefined,
-    replace: false,
-  };
-
-  if (!expression || typeof expression !== "object" || !("type" in expression)) {
-    return slot_prop_value;
-  }
+function inferSlotPropValueFromExpression(ctx: ParserContext, expression: Property["value"]): SlotPropValue {
+  const slot_prop_value: SlotPropValue = { value: undefined, replace: false };
 
   if (expression.type === "Identifier") {
-    slot_prop_value.value = (expression as Identifier).name;
+    slot_prop_value.value = expression.name;
     slot_prop_value.replace = true;
   } else if (expression.type === "Literal") {
-    slot_prop_value.value = String((expression as Literal).value);
+    slot_prop_value.value = String(expression.value);
   } else if (expression.type === "MemberExpression") {
     slot_prop_value.value = resolveMemberExpressionType(ctx, expression);
-  } else if (
-    (expression.type === "ObjectExpression" || expression.type === "TemplateLiteral") &&
-    "start" in expression &&
-    "end" in expression &&
-    typeof expression.start === "number" &&
-    typeof expression.end === "number"
-  ) {
+  } else if (expression.type === "ObjectExpression" || expression.type === "TemplateLiteral") {
     slot_prop_value.value = sourceAtPos(ctx, expression.start, expression.end);
   }
 
@@ -43,11 +29,9 @@ function inferSlotPropValueFromExpression(ctx: ParserContext, expression: unknow
 }
 
 /**
- * Resolves `{...identifier}` inside a `{@render x({...})}` argument to a
- * property map: the spread-of-a-literal's own properties (recursively), or,
- * when the identifier only has a resolvable JSDoc/native object-type
- * annotation, that type's members. Returns `null` when neither resolves, so
- * the caller can widen the slot's props to `Record<string, any>`.
+ * `{...identifier}` in a `{@render x({...})}` argument: the object literal it's
+ * bound to, else the members of its object-type annotation. `null` when
+ * neither resolves, so the caller widens to `Record<string, any>`.
  */
 function resolveSlotSpreadShape(ctx: ParserContext, argument: unknown): SlotProps | null {
   if (!isIdentifier(argument)) return null;
@@ -107,108 +91,31 @@ export function buildSlotPropsFromObjectExpression(
 
 function resolveRenderTagPropReference(
   ctx: ParserContext,
-  callee: unknown,
+  callee: SimpleCallExpression["callee"],
 ): { publicName: string; trackingName: string } | null {
-  if (!callee || typeof callee !== "object" || !("type" in callee)) {
-    return null;
-  }
-
   if (callee.type === "Identifier") {
-    const identifier = callee as Identifier;
-    const publicName = ctx.propLocalToPublicName.get(identifier.name);
-    if (!publicName) return null;
-
-    return {
-      publicName,
-      trackingName: identifier.name,
-    };
+    const publicName = ctx.propLocalToPublicName.get(callee.name);
+    return publicName ? { publicName, trackingName: callee.name } : null;
   }
 
-  if (callee.type !== "MemberExpression") {
-    return null;
-  }
+  if (callee.type !== "MemberExpression") return null;
+  if (callee.object.type !== "Identifier" || !ctx.wholePropsLocals.has(callee.object.name)) return null;
 
-  const memberExpression = callee as MemberExpression;
-  const objectName =
-    memberExpression.object &&
-    typeof memberExpression.object === "object" &&
-    "type" in memberExpression.object &&
-    memberExpression.object.type === "Identifier"
-      ? memberExpression.object.name
-      : undefined;
-  if (!objectName || !ctx.wholePropsLocals.has(objectName)) {
-    return null;
-  }
-
+  const { property } = callee;
   let publicName: string | undefined;
-  if (
-    !memberExpression.computed &&
-    memberExpression.property &&
-    typeof memberExpression.property === "object" &&
-    "type" in memberExpression.property
-  ) {
-    if (memberExpression.property.type === "Identifier") {
-      publicName = memberExpression.property.name;
-    } else if (memberExpression.property.type === "Literal" && memberExpression.property.value != null) {
-      publicName = String(memberExpression.property.value);
-    }
-  } else if (
-    memberExpression.computed &&
-    memberExpression.property &&
-    typeof memberExpression.property === "object" &&
-    "type" in memberExpression.property &&
-    memberExpression.property.type === "Literal" &&
-    "value" in memberExpression.property &&
-    memberExpression.property.value != null
-  ) {
-    publicName = String(memberExpression.property.value);
+  if (!callee.computed && property.type === "Identifier") {
+    publicName = property.name;
+  } else if (property.type === "Literal" && property.value != null) {
+    publicName = String(property.value);
   }
 
-  if (!publicName) return null;
-
-  return {
-    publicName,
-    trackingName: publicName,
-  };
+  return publicName ? { publicName, trackingName: publicName } : null;
 }
 
-export function extractRenderTagInfo(
-  ctx: ParserContext,
-  expression: unknown,
-): { publicName: string; trackingName: string; arguments: Array<Expression | unknown> } | null {
-  let callExpression = expression;
-
-  if (
-    callExpression &&
-    typeof callExpression === "object" &&
-    "type" in callExpression &&
-    callExpression.type === "ChainExpression"
-  ) {
-    callExpression = (callExpression as { expression?: unknown }).expression;
-  }
-
-  if (
-    !callExpression ||
-    typeof callExpression !== "object" ||
-    !("type" in callExpression) ||
-    callExpression.type !== "CallExpression"
-  ) {
-    return null;
-  }
-
-  const callExpr = callExpression as CallExpression;
-
-  if (!callExpr.callee || typeof callExpr.callee !== "object" || !("type" in callExpr.callee)) {
-    return null;
-  }
-
-  const propReference = resolveRenderTagPropReference(ctx, callExpr.callee);
-  if (!propReference) return null;
-
-  return {
-    ...propReference,
-    arguments: callExpr.arguments,
-  };
+export function extractRenderTagInfo(ctx: ParserContext, expression: AST.RenderTag["expression"]) {
+  const call = expression.type === "ChainExpression" ? expression.expression : expression;
+  const propReference = resolveRenderTagPropReference(ctx, call.callee);
+  return propReference && { ...propReference, arguments: call.arguments };
 }
 
 export function addSlot(
@@ -235,28 +142,26 @@ export function addSlot(
     source?: SourceRange;
   },
 ) {
-  const default_slot = slot_name === undefined || slot_name === "";
-  const name: string | null = default_slot ? DEFAULT_SLOT_NAME : (slot_name ?? "");
-  const fallback = assignValueOrUndefined(slot_fallback);
+  const name = slot_name || DEFAULT_SLOT_NAME;
+  const default_slot = name === DEFAULT_SLOT_NAME;
+  const fallback = slot_fallback || undefined;
   const props = slot_props === undefined || slot_props === "" ? undefined : slot_props;
   const description = slot_description?.trim() || undefined;
 
-  if (ctx.slots.has(name)) {
-    const existing_slot = ctx.slots.get(name);
-    if (existing_slot) {
-      ctx.slots.set(name, {
-        ...existing_slot,
-        default: existing_slot.default ?? default_slot,
-        fallback,
-        slot_props: existing_slot.slot_props === undefined ? props : existing_slot.slot_props,
-        slot_props_unresolved_spread: existing_slot.slot_props_unresolved_spread || slot_props_unresolved_spread,
-        description: existing_slot.description || description,
-        deprecated: existing_slot.deprecated ?? slot_deprecated,
-        tags: existing_slot.tags || slot_tags,
-        ...(existing_slot.internal || slot_internal ? { internal: true as const } : {}),
-        source: source || existing_slot.source,
-      });
-    }
+  const existing_slot = ctx.slots.get(name);
+  if (existing_slot) {
+    ctx.slots.set(name, {
+      ...existing_slot,
+      default: existing_slot.default ?? default_slot,
+      fallback,
+      slot_props: existing_slot.slot_props === undefined ? props : existing_slot.slot_props,
+      slot_props_unresolved_spread: existing_slot.slot_props_unresolved_spread || slot_props_unresolved_spread,
+      description: existing_slot.description || description,
+      deprecated: existing_slot.deprecated ?? slot_deprecated,
+      tags: existing_slot.tags || slot_tags,
+      ...(existing_slot.internal || slot_internal ? { internal: true as const } : {}),
+      source: source || existing_slot.source,
+    });
   } else {
     ctx.slots.set(name, {
       name,

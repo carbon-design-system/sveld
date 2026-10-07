@@ -40,11 +40,7 @@ function isCallExpression(node: unknown): node is CallExpression {
 }
 
 export function isCallExpressionNamed(node: unknown, calleeName: string): node is CallExpression {
-  if (!isCallExpression(node)) {
-    return false;
-  }
-
-  return !!node.callee && isObject(node.callee) && node.callee.type === "Identifier" && node.callee.name === calleeName;
+  return isCallExpression(node) && isIdentifier(node.callee) && node.callee.name === calleeName;
 }
 
 export function unwrapTypeCastExpression<T extends Expression | null | undefined>(node: T): T | Expression {
@@ -62,11 +58,7 @@ function isNewExpression(node: unknown): node is NewExpression {
 }
 
 export function isNewExpressionNamed(node: unknown, calleeName: string): node is NewExpression {
-  if (!isNewExpression(node)) {
-    return false;
-  }
-
-  return !!node.callee && isObject(node.callee) && node.callee.type === "Identifier" && node.callee.name === calleeName;
+  return isNewExpression(node) && isIdentifier(node.callee) && node.callee.name === calleeName;
 }
 
 /**
@@ -86,8 +78,7 @@ export function resolveStaticStringLiteral(node: unknown): string | null {
   if (node.type === "TemplateLiteral") {
     const quasis = (node as { quasis?: Array<{ value?: { cooked?: string | null } }> }).quasis;
     if (quasis?.length === 1) {
-      const cooked = quasis[0]?.value?.cooked;
-      return cooked == null ? null : cooked;
+      return quasis[0]?.value?.cooked ?? null;
     }
   }
 
@@ -96,7 +87,6 @@ export function resolveStaticStringLiteral(node: unknown): string | null {
 
 /** Name of a non-computed object key: an identifier's name or a literal's value as text. */
 export function getPropertyName(node: Property["key"]): string | undefined {
-  if (!node || typeof node !== "object" || !("type" in node)) return undefined;
   if (isIdentifier(node)) return node.name;
   if (isLiteral(node)) return node.value == null ? undefined : String(node.value);
   return undefined;

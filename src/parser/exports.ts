@@ -107,11 +107,7 @@ function findReactiveDeclaration(
   return undefined;
 }
 
-/**
- * Maps ESTree `VariableDeclaration.kind` to `ComponentProp.kind`.
- * `var` becomes `let` for Svelte-oriented output; `using` / `await using`
- * map to `const` (single binding, not a valid Svelte prop keyword).
- */
+/** `var` reads as `let`; `using` / `await using` as `const`. */
 function variableDeclarationKindToComponentPropKind(kind: VariableDeclaration["kind"]): "let" | "const" {
   if (kind === "var") return "let";
   if (kind === "using" || kind === "await using") return "const";
@@ -231,12 +227,11 @@ export function collectExportDeclarators(
   const declarators: ExportDeclarator[] = [];
 
   if (declaration.type === "FunctionDeclaration") {
-    const funcDecl = declaration;
-    if (!funcDecl.id) return declarators;
+    if (!declaration.id) return declarators;
     const accessorSignature =
-      ctx.scriptLanguage === "ts" ? buildFunctionDeclarationSignature(ctx, funcDecl) : undefined;
+      ctx.scriptLanguage === "ts" ? buildFunctionDeclarationSignature(ctx, declaration) : undefined;
     declarators.push({
-      prop_name: specifier?.exportedName ?? funcDecl.id.name,
+      prop_name: specifier?.exportedName ?? declaration.id.name,
       kind: "function",
       isFunctionDeclaration: true,
       value: undefined,
@@ -244,7 +239,7 @@ export function collectExportDeclarators(
       explicitType: accessorSignature?.hasAnnotations ? accessorSignature.signature : undefined,
       initializerIsFunction: true,
       isRequired: false,
-      localName: funcDecl.id.name,
+      localName: declaration.id.name,
       defaultValue: undefined,
       inferredTypeForSource: undefined,
       resolvedJSDoc: undefined,
@@ -254,20 +249,10 @@ export function collectExportDeclarators(
 
   if (declaration.type !== "VariableDeclaration") return declarators;
 
-  const varDecl = declaration as VariableDeclaration;
-  const kind = variableDeclarationKindToComponentPropKind(varDecl.kind);
-  const declaratorsToProcess = specifier?.declarator ? [specifier.declarator] : varDecl.declarations;
+  const kind = variableDeclarationKindToComponentPropKind(declaration.kind);
+  const declaratorsToProcess = specifier?.declarator ? [specifier.declarator] : declaration.declarations;
 
-  for (const declarator of declaratorsToProcess) {
-    if (!declarator || typeof declarator !== "object" || !("id" in declarator)) {
-      continue;
-    }
-
-    const { id, init } = declarator as VariableDeclarator;
-    if (!id || typeof id !== "object") {
-      continue;
-    }
-
+  for (const { id, init } of declaratorsToProcess) {
     if (id.type !== "Identifier") {
       // `export let { a, b } = obj`: each name is exported (as a prop,
       // defaulting to its part of `obj`) with no inferable type.

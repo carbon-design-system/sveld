@@ -3,13 +3,14 @@ import { info } from "../logger";
 import type { EntryExports } from "../parse-entry-exports";
 import type { ComponentDocs } from "../plugin";
 import { buildComponentApiDocument } from "./document-model";
-import { type AppendType, MarkdownDocument } from "./markdown-document";
+import type { AppendType, MarkdownDocument } from "./markdown-document";
 import {
   renderComponentIndexToMarkdown,
   renderComponentsToMarkdown,
   renderComponentToMarkdown,
 } from "./markdown-render-utils";
 import Writer from "./Writer";
+import { createMarkdownDocument } from "./writer-markdown-core";
 
 /** User-settable `markdownOptions`. */
 export interface MarkdownOptions {
@@ -40,27 +41,15 @@ export interface WriteMarkdownOptions extends MarkdownOptions {
   entryExports?: EntryExports;
 }
 
-function newDocument(options: Pick<WriteMarkdownOptions, "onAppend">, components: ComponentDocs): MarkdownDocument {
-  return new MarkdownDocument({
-    onAppend: (type, document) => {
-      options.onAppend?.call(null, type, document, components);
-    },
-  });
-}
-
 /**
- * Writes one `<ModuleName>.md` file per component into `outDir`, plus an
- * index `README.md` linking to each. Mirrors `writer-json.ts`'s `outDir`
- * mode; unlike JSON, `moduleName` collisions aren't handled here since the
- * built-in Markdown writer only ever receives the "exported" component set,
- * where `moduleName` is unique by construction.
+ * Unlike the JSON writer, `moduleName` collisions aren't handled: this only
+ * receives the exported component set, where `moduleName` is unique.
  */
-async function writeMarkdownComponents(components: ComponentDocs, options: WriteMarkdownOptions) {
-  const outDir = options.outDir as string;
+async function writeMarkdownComponents(components: ComponentDocs, options: WriteMarkdownOptions, outDir: string) {
   const document = buildComponentApiDocument(components, { entryExports: options.entryExports });
   const writer = new Writer();
 
-  const indexDocument = newDocument(options, components);
+  const indexDocument = createMarkdownDocument(components, options);
   renderComponentIndexToMarkdown(indexDocument, document.components, options.entryExports);
   const indexFile = resolve(join(outDir, "README.md"));
   const wroteIndex = await writer.write(indexFile, indexDocument.end());
@@ -68,7 +57,7 @@ async function writeMarkdownComponents(components: ComponentDocs, options: Write
 
   await Promise.all(
     document.components.map(async (component) => {
-      const componentDocument = newDocument(options, components);
+      const componentDocument = createMarkdownDocument(components, options);
       renderComponentToMarkdown(componentDocument, component);
       const outFile = resolve(join(outDir, `${component.moduleName}.md`));
       const wasWritten = await writer.write(outFile, componentDocument.end());
@@ -77,36 +66,19 @@ async function writeMarkdownComponents(components: ComponentDocs, options: Write
   );
 }
 
-/**
- * Renders the Markdown document without touching disk. Used by both
- * `writeMarkdown` and the CLI's `--stdout` mode so the two channels can't
- * drift.
- */
+/** Shared by `writeMarkdown` and the CLI's `--stdout` mode so the two can't drift. */
 export function renderMarkdownDocument(
   components: ComponentDocs,
   options: Pick<WriteMarkdownOptions, "entryExports" | "onAppend">,
 ): string {
-  const document = newDocument(options, components);
-
+  const document = createMarkdownDocument(components, options);
   renderComponentsToMarkdown(document, components, options.entryExports);
-
   return document.end();
 }
 
-/**
- * @example
- * ```ts
- * await writeMarkdown(components, {
- *   outFile: "COMPONENTS.md",
- *   onAppend: (type, doc) => {
- *     console.log(`Appended ${type}`);
- *   }
- * });
- * ```
- */
 export default async function writeMarkdown(components: ComponentDocs, options: WriteMarkdownOptions) {
   if (options.outDir) {
-    await writeMarkdownComponents(components, options);
+    await writeMarkdownComponents(components, options, options.outDir);
     return;
   }
 

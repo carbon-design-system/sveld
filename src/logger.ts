@@ -1,29 +1,17 @@
-/**
- * Progress logging for the writers.
- *
- * Writers are invoked through the writer registry and don't receive runtime
- * options today, so threading a `quiet` param through every writer signature
- * would be a larger refactor than the `quiet` option warrants. A
- * module-level toggle (set once per run by `cli()`, `sveld()`, or the plugin)
- * is the pragmatic shape instead.
- */
+// A module-level toggle, set once per run by `cli()`, `sveld()`, or the plugin,
+// because writers don't receive runtime options.
 let quiet = false;
 
-/** Sets the module-level quiet toggle. Called once per run by `cli()`, `sveld()`, or the plugin. */
 export function setQuiet(value: boolean): void {
   quiet = value;
 }
 
-/** Writes a progress line to stderr, suppressed when quiet mode is on. */
+/** Writes to stderr unless quiet. */
 export function info(message: string): void {
-  if (!quiet) {
-    console.error(message);
-  }
+  if (!quiet) console.error(message);
 }
 
-/** Writes a warning line to stderr, suppressed when quiet mode is on. */
+/** Writes to stderr unless quiet. */
 export function warn(message: string): void {
-  if (!quiet) {
-    console.error(message);
-  }
+  if (!quiet) console.error(message);
 }

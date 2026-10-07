@@ -14,10 +14,6 @@ export function formatParamList(params: Array<{ name: string; type: string; opti
   return params.map((param) => `${param.name}${param.optional ? "?" : ""}: ${param.type}`).join(", ");
 }
 
-export function assignValueOrUndefined(value?: "" | string) {
-  return value === undefined || value === "" ? undefined : value;
-}
-
 const TEXT_COLLATOR = new Intl.Collator("en");
 
 /**

@@ -5,9 +5,9 @@ import type { PendingCallDefaultCandidate } from "./model";
 import { findModuleExport, type ResolveContext } from "./module-exports";
 import type { ModuleGraph } from "./module-graph";
 
-export type CallDefaultFailureReason = "module-not-found" | "export-not-found" | "return-type-unresolved";
+type CallDefaultFailureReason = "module-not-found" | "export-not-found" | "return-type-unresolved";
 
-export interface CallDefaultResolution {
+interface CallDefaultResolution {
   candidate: PendingCallDefaultCandidate;
   /** Present on success. */
   type?: string;
@@ -17,7 +17,6 @@ export interface CallDefaultResolution {
 
 const FILE_EXTENSION_REGEX = /\.[^./\\]+$/;
 
-/** Sibling `foo.d.ts` for `foo.js` when it exists. */
 function siblingDeclarationFile(resolvedFile: string, graph: ModuleGraph): string | null {
   if (resolvedFile.endsWith(".d.ts")) return null;
   const dtsPath = resolvedFile.replace(FILE_EXTENSION_REGEX, ".d.ts");
@@ -25,12 +24,11 @@ function siblingDeclarationFile(resolvedFile: string, graph: ModuleGraph): strin
 }
 
 /**
- * Read each candidate's callee return type from its declaring module
- * ({@link findModuleExport} follows re-exports). If the `.js` has no
- * `@returns`, try a sibling `.d.ts`. AST/JSDoc only. Not inlined in
- * `ComponentParser` because the browser build cannot use `node:fs`.
+ * Reads each callee's return type from its declaring module, falling back to
+ * a sibling `.d.ts`. Outside `ComponentParser` because the browser build
+ * can't use `node:fs`.
  */
-export function resolveCallDefaultCandidates(
+function resolveCallDefaultCandidates(
   componentFilePath: string,
   candidates: PendingCallDefaultCandidate[],
   ctx: ResolveContext,
@@ -60,11 +58,7 @@ export function resolveCallDefaultCandidates(
   });
 }
 
-/** Message for a candidate that stayed unresolved after the cross-file pass. */
-export function describeCallDefaultFailure(
-  candidate: PendingCallDefaultCandidate,
-  reason: CallDefaultFailureReason,
-): string {
+function describeCallDefaultFailure(candidate: PendingCallDefaultCandidate, reason: CallDefaultFailureReason): string {
   switch (reason) {
     case "module-not-found":
       return `Prop "${candidate.propName}" default calls "${candidate.calleeName}()", but "${candidate.importSource}" could not be resolved; falling back to "any".`;
@@ -75,11 +69,7 @@ export function describeCallDefaultFailure(
   }
 }
 
-/**
- * Apply each resolution onto props/moduleExports. Drop or rewrite the
- * parse-time `prop-unknown-type` diagnostic. Skip when `typeSource !==
- * "unknown"` so an explicit `@type` keeps winning.
- */
+/** Drops or rewrites the parse-time `prop-unknown-type`. An explicit `@type` keeps winning. */
 function applyCallDefaultResolutions(component: ComponentDocApi, resolutions: CallDefaultResolution[]): void {
   for (const { candidate, type, failureReason } of resolutions) {
     const prop = findCandidateProp(component, candidate);

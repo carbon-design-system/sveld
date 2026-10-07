@@ -1,11 +1,9 @@
-/** Characters that need escaping when dropped literally into a `RegExp` source string. */
 const REGEXP_SPECIAL_CHARS = ".+^$()[]{}|\\";
 
 /**
- * Minimal glob matcher for `diagnostics.ignore[].component` patterns: `*`
- * matches within a path segment, `**` matches across segments (including an
- * optional following `/`), and `?` matches one character. No dependency on a
- * glob library; sveld ships no runtime dependencies.
+ * For `diagnostics.ignore[].component`: `*` matches within a path segment,
+ * `**` across segments (eating a following `/`), `?` one character. Hand-rolled
+ * since sveld ships no runtime dependencies.
  */
 function globToRegExpSource(pattern: string): string {
   let source = "";
@@ -36,7 +34,6 @@ function globToRegExpSource(pattern: string): string {
   return source;
 }
 
-/** True when `value` matches the glob `pattern` (see {@link globToRegExpSource} for supported syntax). */
 export function matchesGlob(pattern: string, value: string): boolean {
   return new RegExp(`^${globToRegExpSource(pattern)}$`).test(value);
 }

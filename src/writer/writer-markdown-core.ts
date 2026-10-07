@@ -6,14 +6,20 @@ export interface WriteMarkdownCoreOptions {
   onAppend?: (type: AppendType, document: MarkdownDocument, components: ComponentDocs) => void;
 }
 
-export function writeMarkdownCore(components: ComponentDocs, options?: WriteMarkdownCoreOptions): string {
-  const document = new MarkdownDocument({
+/** A document whose `onAppend` also receives `components`. */
+export function createMarkdownDocument(
+  components: ComponentDocs,
+  options: WriteMarkdownCoreOptions | undefined,
+): MarkdownDocument {
+  return new MarkdownDocument({
     onAppend: (type, document) => {
       options?.onAppend?.call(null, type, document, components);
     },
   });
+}
 
+export function writeMarkdownCore(components: ComponentDocs, options?: WriteMarkdownCoreOptions): string {
+  const document = createMarkdownDocument(components, options);
   renderComponentsToMarkdown(document, components);
-
   return document.end();
 }

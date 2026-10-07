@@ -14,31 +14,22 @@ import { VERSION as svelteVersion } from "./svelte-version";
 /** Bumped whenever the on-disk cache shape changes in a way old caches can't read. */
 const CACHE_FORMAT_VERSION = 10;
 
-/** Default on-disk location for the persistent parse cache, relative to the project root. */
+/** Relative to the project root. */
 export const DEFAULT_CACHE_FILE = join("node_modules", ".cache", "sveld", "parse-cache.json");
 
-/** One cached parse for a component file. */
 interface ParseCacheEntry {
-  /** sha256 of the raw source at cache time. */
+  /** sha256 of the source. */
   hash: string;
   component: ParsedComponent;
-  /**
-   * `component[PARSED_COMPONENT_TYPE_SCRIPT_METADATA]`, captured explicitly:
-   * `JSON.stringify` drops symbol-keyed properties, so it can't ride along
-   * on `component` through a disk round-trip.
-   */
+  /** `component[PARSED_COMPONENT_TYPE_SCRIPT_METADATA]`: JSON drops symbol keys. */
   typeScriptMetadata?: ParsedComponentTypeScriptMetadata;
   pending?: PendingCrossFileCandidates;
-  /**
-   * Generated `.d.ts` text for this entry's `hash`, keyed additionally by the
-   * serialized emit options since those change the output shape.
-   */
+  /** Generated `.d.ts` text, keyed by the serialized emit options. */
   generatedText?: { key: string; text: string };
 }
 
 interface ParseCacheFile {
   formatVersion: number;
-  /** Invalidates the whole cache when sveld or the Svelte compiler upgrades. */
   toolchainVersion: string;
   entries: Record<string, ParseCacheEntry>;
 }
@@ -54,9 +45,8 @@ function currentToolchainVersion(): string {
 }
 
 /**
- * The directory of the nearest `package.json` at or above `dir`, or `dir`
- * itself when there's none. The input is often `src/`; the cache belongs next
- * to the project's own `node_modules`, not in a new one inside `src/`.
+ * The nearest `package.json` directory at or above `dir`, else `dir`. The
+ * input is often `src/`, and the cache belongs in the project's `node_modules`.
  */
 function findProjectRoot(dir: string): string {
   for (let current = resolve(dir); ; current = dirname(current)) {
@@ -65,10 +55,7 @@ function findProjectRoot(dir: string): string {
   }
 }
 
-/**
- * Resolves the effective cache file path for `cache: true | string`. A
- * relative path is resolved against the project root (see `findProjectRoot`).
- */
+/** A relative `cache` path resolves against the project root. */
 export function resolveCacheFilePath(rootDir: string, cache: boolean | string): string {
   const projectRoot = findProjectRoot(rootDir);
   if (typeof cache === "string") {
@@ -87,31 +74,25 @@ function emptyCacheFile(): ParseCacheFile {
 
 function readCacheFile(cacheFilePath: string): ParseCacheFile {
   try {
-    const raw = readFileSync(cacheFilePath, "utf-8");
-    const parsed = JSON.parse(raw) as ParseCacheFile;
+    const parsed = JSON.parse(readFileSync(cacheFilePath, "utf-8")) as ParseCacheFile;
     if (parsed.formatVersion !== CACHE_FORMAT_VERSION || parsed.toolchainVersion !== currentToolchainVersion()) {
       return emptyCacheFile();
     }
     return parsed;
   } catch {
-    // Missing, unreadable, or corrupt cache file: start fresh.
     return emptyCacheFile();
   }
 }
 
-/**
- * Cross-run parse cache. Entries match on file path and sha256 of source.
- * Symbol-keyed TypeScript metadata is stored separately because JSON drops symbols.
- */
+/** Cross-run parse cache, matching entries on file path and source hash. */
 export class ParseCache {
   private readonly cacheFilePath: string;
   private readonly file: ParseCacheFile;
   private readonly next = new Map<string, ParseCacheEntry>();
   /**
-   * Whether `next` differs from what's on disk: an entry was added or its
-   * generated text changed. Dropped entries show up as `next` holding fewer
-   * entries than `savedEntryCount`, since without a `set()` every entry in
-   * `next` came from the file.
+   * An entry was added or its generated text changed. Dropped entries show
+   * up as `next.size < savedEntryCount` instead: without a `set()`, every
+   * entry in `next` came from the file.
    */
   private dirty = false;
   private savedEntryCount: number;
@@ -122,16 +103,11 @@ export class ParseCache {
     this.savedEntryCount = Object.keys(this.file.entries).length;
   }
 
-  /** True when `get()` would return a hit for `resolvedPath` and `hash`. */
   has(resolvedPath: string, hash: string): boolean {
     return this.lookup(resolvedPath, hash) !== undefined;
   }
 
-  /**
-   * This run's entry for `resolvedPath`, else the one read from disk, when
-   * its hash matches. A long-lived cache (watch mode) sees a file it parsed
-   * earlier in the session, not just the ones it was loaded with.
-   */
+  /** This run's entry first, so a long-lived cache (watch mode) sees files parsed this session. */
   private lookup(resolvedPath: string, hash: string): ParseCacheEntry | undefined {
     const current = this.next.get(resolvedPath);
     if (current?.hash === hash) return current;
@@ -139,7 +115,6 @@ export class ParseCache {
     return saved?.hash === hash ? saved : undefined;
   }
 
-  /** Returns the cached parse for `resolvedPath` when its content hash still matches. */
   get(resolvedPath: string, hash: string): ComponentParseResult | null {
     const entry = this.lookup(resolvedPath, hash);
     if (entry === undefined) return null;
@@ -147,9 +122,8 @@ export class ParseCache {
     // Keep the entry for save() even if nothing else touches it this run.
     this.next.set(resolvedPath, entry);
 
-    // Hand out a copy: the cross-file passes in `generateBundle` resolve
-    // props and diagnostics in place, and those results must not be saved
-    // as if they came from this file's source alone.
+    // A copy: the cross-file passes mutate props and diagnostics in place, and
+    // those results must not be saved as if they came from this source alone.
     const { component, typeScriptMetadata, pending } = structuredClone({
       component: entry.component,
       typeScriptMetadata: entry.typeScriptMetadata,
@@ -161,10 +135,7 @@ export class ParseCache {
     return pending === undefined ? { component } : { component, pending };
   }
 
-  /**
-   * Records a freshly parsed component so it can be reused on a future run.
-   * Stores a copy, for the same reason `get()` returns one.
-   */
+  /** Stores a copy, for the same reason `get()` returns one. */
   set(resolvedPath: string, hash: string, { component, pending }: ComponentParseResult): void {
     this.dirty = true;
     this.next.set(resolvedPath, {
@@ -177,24 +148,14 @@ export class ParseCache {
     });
   }
 
-  /**
-   * Returns the cached generated `.d.ts` text for `resolvedPath`, if this
-   * run's parse entry for it (a fresh parse or a hash-verified hit - see
-   * `get()`/`set()`) already carries text generated for `key`, the
-   * serialized emit options (see `serializeEmitOptions`).
-   */
+  /** Reads this run's entry only, so the text is for the hash `get()`/`set()` verified. */
   getGeneratedText(resolvedPath: string, key: string): string | undefined {
     const entry = this.next.get(resolvedPath);
     if (entry?.generatedText === undefined || entry.generatedText.key !== key) return undefined;
     return entry.generatedText.text;
   }
 
-  /**
-   * Records generated `.d.ts` text against this run's parse entry for
-   * `resolvedPath`. No-op if that entry hasn't been recorded via `get()`/`set()`
-   * (shouldn't happen: the write phase only runs after every component has
-   * been parsed).
-   */
+  /** No-op without this run's entry, which the write phase always has. */
   setGeneratedText(resolvedPath: string, key: string, text: string): void {
     const entry = this.next.get(resolvedPath);
     if (entry === undefined) return;
@@ -204,25 +165,18 @@ export class ParseCache {
   }
 
   /**
-   * Persists this run's cache entries back to disk. Writes to a pid-suffixed
-   * temp file and renames it over the target so concurrent sveld processes
-   * sharing a cache dir can't interleave writes into a truncated file; a
-   * failed rename (e.g. read-only cache dir) falls back to a direct write so
-   * generation never fails just because the cache couldn't be saved.
-   * Skipped when nothing changed since the file was read or last saved.
+   * Writes a pid-suffixed temp file and renames it over the target, so
+   * concurrent processes can't interleave a truncated file. A failed rename
+   * falls back to a direct write; a failed write is dropped rather than
+   * failing generation. Skipped when nothing changed since the last save.
    */
   save(): void {
-    // A fully cached run would otherwise rewrite an identical file, twice.
     if (!this.dirty && this.next.size === this.savedEntryCount) return;
     this.dirty = false;
     this.savedEntryCount = this.next.size;
 
     mkdirSync(dirname(this.cacheFilePath), { recursive: true });
-    const file: ParseCacheFile = {
-      formatVersion: CACHE_FORMAT_VERSION,
-      toolchainVersion: currentToolchainVersion(),
-      entries: Object.fromEntries(this.next),
-    };
+    const file: ParseCacheFile = { ...emptyCacheFile(), entries: Object.fromEntries(this.next) };
     const contents = JSON.stringify(file);
     const tmpPath = `${this.cacheFilePath}.${process.pid}.tmp`;
     try {
@@ -231,9 +185,7 @@ export class ParseCache {
     } catch {
       try {
         writeFileSync(this.cacheFilePath, contents);
-      } catch {
-        // Cache dir is unwritable (e.g. read-only): skip persisting rather than fail generation.
-      }
+      } catch {}
     }
   }
 }

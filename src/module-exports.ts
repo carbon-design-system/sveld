@@ -25,14 +25,12 @@ import { returnTypeOfFunctionType } from "./type-text";
 
 const NEWLINE_REGEX = /\r?\n/;
 
-/** A function a function-valued export is declared as. */
 export type ExportedFunction =
   | FunctionDeclaration
   | MaybeNamedFunctionDeclaration
   | FunctionExpression
   | ArrowFunctionExpression;
 
-/** A function, or an ambient `declare function` signature with no body. */
 type FunctionLike = ExportedFunction | TSDeclareFunction;
 
 /** A top-level statement, or the declaration an `export` statement wraps. */
@@ -43,18 +41,11 @@ type DeclarationLike =
   | MaybeNamedFunctionDeclaration;
 const JSDOC_LINE_PREFIX_REGEX = /^\s*\*+/;
 
-/**
- * Internal export with absolute `declFile` plus optional `returnType` for
- * function-valued exports (used by `resolve-call-defaults.ts`). Stripped
- * before public `EntryExport` output in `parseEntryExports`.
- */
+/** `parseEntryExports` strips the fields public `EntryExport` doesn't have. */
 export interface InternalExport extends Omit<EntryExport, "source"> {
   declFile: string;
   returnType?: string;
-  /**
-   * String from a literal or static-template initializer.
-   * `resolve-context-keys.ts` uses this when a `setContext` key is imported.
-   */
+  /** String from a literal or static-template initializer, for imported `setContext` keys. */
   literalValue?: string;
   /**
    * `export const` primitive literal (string, number, boolean, or a static
@@ -84,15 +75,13 @@ export interface InternalExport extends Omit<EntryExport, "source"> {
 }
 
 export interface PrimitiveLiteral {
-  /** Initializer source text. */
   raw: string;
   value: string | number | boolean;
   type: "string" | "number" | "boolean";
 }
 
-/** Resolution state shared across the recursive module walk. */
 export interface ResolveContext {
-  /** Resolves specifiers and parses modules; shared by every context of a project. */
+  /** Shared by every context of a project. */
   graph: ModuleGraph;
   /**
    * Memoized exports per file so repeated lookups stay cheap. Unlike a
@@ -101,7 +90,7 @@ export interface ResolveContext {
    * order gets its own.
    */
   cache: Map<string, InternalExport[]>;
-  /** Files currently being resolved, used to break import cycles. */
+  /** Files currently being resolved, to break import cycles. */
   computing: Set<string>;
   /**
    * Called for a name two `export *` statements of `filePath` bring in from
@@ -110,7 +99,6 @@ export interface ResolveContext {
   onAmbiguousStarExport?: (filePath: string, name: string, entries: InternalExport[]) => void;
 }
 
-/** A fresh cache and cycle set, parsing modules through `graph`. */
 export function createResolveContext(graph: ModuleGraph): ResolveContext {
   return { graph, cache: new Map(), computing: new Set() };
 }
@@ -140,9 +128,8 @@ function withoutTrailingComments(text: string): string {
   }
 }
 
-/** The `/** ... *\/` block directly before `start`, if any. */
+/** The `/** ... *\/` block directly before `start`, with only whitespace or other comments between. */
 function leadingJsDocBlock(text: string, start: number): string | undefined {
-  // JSDoc must sit directly above the declaration (whitespace or other comments only); anchor on nearest `*/`.
   const before = withoutTrailingComments(text.slice(0, start));
   if (!before.endsWith("*/")) return undefined;
 
@@ -174,10 +161,6 @@ function annotationText(source: ModuleSource, annotated: Pattern): string | unde
   return "typeAnnotation" in annotated ? textOf(source, annotated.typeAnnotation?.typeAnnotation) : undefined;
 }
 
-/**
- * Function/arrow/`TSDeclareFunction` return annotation text (`): T`).
- * Lives on `returnType`, not `typeAnnotation` (that annotates bindings).
- */
 function functionReturnAnnotationText(source: ModuleSource, fn: FunctionLike): string | undefined {
   return textOf(source, fn.returnType?.typeAnnotation);
 }
@@ -308,7 +291,6 @@ function inferAstLiteralReturnType(fn: FunctionLike): string | undefined {
   return inferred;
 }
 
-/** A `TSEnumMember`'s literal initializer value, or `undefined` for anything not a plain string/number literal. */
 function enumMemberLiteralValue(member: TSEnumMember): string | number | undefined {
   const initializer = member.initializer;
   if (!initializer) return undefined;
@@ -328,11 +310,8 @@ function enumMemberLiteralValue(member: TSEnumMember): string | number | undefin
 }
 
 /**
- * Builds a literal union type for a `TSEnumDeclaration` (`"A" | "B"` for a
- * string enum, `0 | 1` for a numeric one), matching what the enum's members
- * actually widen to. Falls back to `undefined` (letting the caller keep the
- * bare enum name) when a member's value can't be determined - e.g. a
- * computed initializer like `1 << 2`.
+ * The literal union an enum's members widen to (`"A" | "B"`, `0 | 1`), or
+ * `undefined` when a member is computed (`1 << 2`).
  */
 function enumMemberUnionType(declaration: TSEnumDeclaration): string | undefined {
   const members = declaration.members;
@@ -368,14 +347,20 @@ function describeDeclaration(
   jsdocStart: number,
   anonymousName?: string,
 ): InternalExport[] {
-  const declFile = source.filePath;
   const rawJsDoc = leadingJsDocBlock(source.text, jsdocStart);
   const description = rawJsDoc ? jsDocDescription(rawJsDoc) : undefined;
   const jsDocReturnType = rawJsDoc ? getParserStack().extractJsDocReturnType(rawJsDoc) : undefined;
   const { deprecated, tags, internal } = rawJsDoc
     ? getParserStack().extractJsDocDeprecatedAndTags(rawJsDoc)
     : { deprecated: undefined, tags: undefined, internal: false };
-  const internalField = internal ? ({ internal: true } as const) : {};
+  // Spread after each entry's own fields: key order is the entry-exports JSON order.
+  const shared = {
+    description,
+    deprecated,
+    tags,
+    ...(internal ? { internal: true as const } : {}),
+    declFile: source.filePath,
+  };
 
   if (declaration.type === "VariableDeclaration") {
     // `using` can't be exported; anything but `let`/`var` reads as `const`.
@@ -429,11 +414,7 @@ function describeDeclaration(
         primitiveLiteral,
         declaredType,
         functionNode,
-        description,
-        deprecated,
-        tags,
-        ...internalField,
-        declFile,
+        ...shared,
         isTypeOnly: false,
       });
     }
@@ -455,11 +436,7 @@ function describeDeclaration(
           jsDocReturnType ??
           inferAstLiteralReturnType(declaration),
         ...(declaration.type === "FunctionDeclaration" ? { functionNode: declaration } : {}),
-        description,
-        deprecated,
-        tags,
-        ...internalField,
-        declFile,
+        ...shared,
         isTypeOnly: false,
       },
     ];
@@ -474,11 +451,7 @@ function describeDeclaration(
         name,
         kind: "class",
         ...(className ? { type: className } : {}),
-        description,
-        deprecated,
-        tags,
-        ...internalField,
-        declFile,
+        ...shared,
         isTypeOnly: false,
       },
     ];
@@ -492,11 +465,7 @@ function describeDeclaration(
         name,
         kind: "type",
         type: textOf(source, declaration.typeAnnotation),
-        description,
-        deprecated,
-        tags,
-        ...internalField,
-        declFile,
+        ...shared,
         isTypeOnly: true,
       },
     ];
@@ -510,11 +479,7 @@ function describeDeclaration(
         name,
         kind: "interface",
         type: textOf(source, declaration.body),
-        description,
-        deprecated,
-        tags,
-        ...internalField,
-        declFile,
+        ...shared,
         isTypeOnly: true,
       },
     ];
@@ -528,11 +493,7 @@ function describeDeclaration(
         name,
         kind: "enum",
         type: enumMemberUnionType(declaration) ?? name,
-        description,
-        deprecated,
-        tags,
-        ...internalField,
-        declFile,
+        ...shared,
         isTypeOnly: false,
       },
     ];
@@ -641,7 +602,6 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
   const { source, body } = parsed;
   const results: InternalExport[] = [];
 
-  /** Local declarations indexed by name for `export { x }` lookups. */
   const localDeclarations = new Map<string, InternalExport>();
   for (const node of body) {
     const declaration = node.type === "ExportNamedDeclaration" ? node.declaration : node;
@@ -711,7 +671,6 @@ export function collectModuleExports(filePath: string, ctx: ResolveContext): Int
 
     if (node.type !== "ExportNamedDeclaration") continue;
 
-    // Inline `export const/function/class/type/interface/enum`.
     const declaration = node.declaration;
     if (declaration) {
       results.push(...describeDeclaration(source, declaration, node.start));

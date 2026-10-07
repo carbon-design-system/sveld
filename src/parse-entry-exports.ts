@@ -33,31 +33,19 @@ export interface EntryExport {
 
 export type EntryExports = EntryExport[];
 
-export interface ParseEntryExportsOptions {
+interface ParseEntryExportsOptions {
   /**
    * Receives an `export-ambiguous` diagnostic for each name two of the
    * entry's `export *` statements bring in from different modules.
    */
   diagnostics?: SveldDiagnostic[];
-  /** Resolves and parses the modules the barrel re-exports from; a fresh one by default. */
+  /** A fresh one by default. */
   graph?: ModuleGraph;
 }
 
 /**
- * List consts, functions, and types exported from an entry barrel.
- *
- * Follows re-exports with AST-only traversal. Skips `.svelte` files.
- *
- * @param entryFile - Absolute path to the entry module.
- * @param options - Where to record diagnostics about the barrel.
- * @returns Exports deduplicated by name, sorted alphabetically.
- *
- * @example
- * ```ts
- * // entry: export { VERSION } from "./constants"; export type { Theme } from "./types";
- * await parseEntryExports("/abs/src/index.ts");
- * // [{ name: "Theme", kind: "type", isTypeOnly: true, ... }, { name: "VERSION", kind: "const", ... }]
- * ```
+ * Consts, functions, and types an entry barrel exports (not components),
+ * following re-exports via the AST. Deduplicated by name, sorted by name.
  */
 export async function parseEntryExports(
   entryFile: string,
@@ -76,7 +64,6 @@ export async function parseEntryExports(
     ...createResolveContext(options.graph ?? new ModuleGraph()),
     onAmbiguousStarExport: (filePath, name, entries) => {
       if (filePath !== resolved || !options.diagnostics) return;
-      // Components get their own docs, from `parse-exports.ts`.
       if (entries.every((entry) => entry.declFile.endsWith(".svelte"))) return;
       const sources = Array.from(new Set(entries.map((entry) => relativeSource(entry.declFile))));
       const quoted = sources.map((source) => `"${source}"`);
@@ -96,8 +83,6 @@ export async function parseEntryExports(
   // Entries sharing a name are one declaration's overloads; the last (the
   // implementation signature) wins.
   for (const entry of collected) {
-    // The barrel's default export isn't a named export, and components get
-    // their own docs.
     if (entry.name === "default" || entry.declFile.endsWith(".svelte")) continue;
     // Drop the fields public `EntryExport` doesn't expose.
     const {
@@ -111,9 +96,7 @@ export async function parseEntryExports(
       ...rest
     } = entry;
     const source = relativeSource(declFile);
-    // A namespace export has no declaration to copy type text from; name the
-    // module it wraps, as component docs do for a module-script re-export.
-    // `kind` stays "const": the binding is a const namespace object.
+    // No declaration to copy type text from; `kind` stays "const" (a namespace object).
     if (namespaceFile !== undefined) rest.type = `typeof import(${JSON.stringify(relativeSource(namespaceFile))})`;
     byName.set(entry.name, { ...rest, source });
   }

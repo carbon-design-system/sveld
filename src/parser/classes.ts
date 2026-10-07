@@ -17,10 +17,8 @@ import {
   trackAdditionalTypeDependencyNode,
 } from "./type-resolution";
 
-/** A module-script class {@link readClassDeclaration} reads. */
 type ClassDeclarationLike = ClassDeclaration | ClassExpression;
 
-/** The class members {@link readClassDeclaration} documents. */
 type ClassMemberNode = MethodDefinition | PropertyDefinition;
 
 type MemberJSDoc = ReturnType<typeof processNodeJSDoc>;
@@ -39,7 +37,6 @@ function isHidden(accessibility: string | undefined): boolean {
   return accessibility === "private" || accessibility === "protected";
 }
 
-/** A member's description, `@deprecated`, and passthrough tags, leaving out unset ones. */
 function memberDocs(jsdoc: MemberJSDoc): Pick<ComponentClassMember, "description" | "deprecated" | "tags"> {
   return {
     ...(jsdoc?.description ? { description: jsdoc.description } : {}),
@@ -83,15 +80,11 @@ function readMethodSignature(
 }
 
 /**
- * The public members of a module-script class: its constructor, methods,
- * properties (fields, constructor parameter properties, getter/setter pairs,
- * and, in a JS script, `this.x = ...` assignments in the constructor), in
- * source order. Private (`#x`, `private`), `protected`, computed-key, and
- * `@internal`/`@ignore` members are left out. An overloaded method keeps
- * its overload signatures, not its implementation's.
- *
- * Also returns the class's TS type parameters (without angle brackets) and
- * heritage clauses.
+ * A module-script class's public members in source order: constructor,
+ * methods, and properties (fields, constructor parameter properties,
+ * getter/setter pairs, and in JS, `this.x = ...` in the constructor). Leaves
+ * out `#x`, `private`, `protected`, computed-key, and `@internal`/`@ignore`
+ * members; an overloaded method keeps its overload signatures only.
  */
 export function readClassDeclaration(
   ctx: ParserContext,
@@ -135,9 +128,8 @@ export function readClassDeclaration(
       continue;
     }
 
-    const value = member.value;
     // A method's own `<U>` is on the method, not its function value.
-    const fn = member.typeParameters ? { ...value, typeParameters: member.typeParameters } : value;
+    const fn = member.typeParameters ? { ...member.value, typeParameters: member.typeParameters } : member.value;
 
     if (member.kind === "constructor") {
       const signature = readMethodSignature(ctx, fn, jsdoc);
@@ -205,11 +197,7 @@ export function readClassDeclaration(
   return { members, ...(typeParameters ? { typeParameters } : {}), ...heritage };
 }
 
-/**
- * The class's `extends` and `implements` clauses as source text, with the
- * names they reference tracked as type dependencies, so an imported base
- * class or interface gets an `import type` in the `.d.ts`.
- */
+/** `extends`/`implements` as source text; their names are tracked so imported ones get an `import type`. */
 function readClassHeritage(
   ctx: ParserContext,
   classDecl: ClassDeclarationLike,

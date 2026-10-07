@@ -11,7 +11,6 @@ import {
   type ComponentApiDocument,
 } from "./writer/document-model";
 
-/** Splits a function-type param segment on its first `:` or `=` to isolate the name/optional-marker prefix. */
 const PARAM_NAME_SPLIT_REGEX = /[:=]/;
 
 type Prop = ComponentDocApi["props"][number];
@@ -43,6 +42,8 @@ export interface CheckResult {
   bump: SemverBump;
 }
 
+const DEFAULT_SNAPSHOT_FILE = "COMPONENT_API.json";
+
 const BUMP_RANK: Record<SemverBump, number> = { none: 0, patch: 1, minor: 2, major: 3 };
 
 function maxBump(a: SemverBump, b: SemverBump): SemverBump {
@@ -58,10 +59,6 @@ export function bumpMeetsLevel(bump: SemverBump, level: CheckLevel): boolean {
   return BUMP_RANK[bump] >= BUMP_RANK[level];
 }
 
-/**
- * Splits a type string on top-level `|`, ignoring `|` nested inside
- * `<>`/`()`/`{}`/`[]` or string literals (e.g. a `"a|b"` literal member).
- */
 function splitUnionMembers(type: string): Set<string> {
   return new Set(
     splitTopLevel(type, "|")
@@ -75,12 +72,7 @@ interface ParsedFunctionType {
   returnType: string;
 }
 
-/**
- * Textually parses `type` as an arrow/function type (`(a: string) => void`)
- * via a simple top-level `=>` scan. Returns `undefined` when `type` isn't
- * shaped like one (no top-level arrow, or the params segment isn't wrapped
- * in a single parenthesized group).
- */
+/** Textually splits `(a: string) => void` into params and return type; `undefined` if not shaped like one. */
 function parseFunctionType(type: string): ParsedFunctionType | undefined {
   const arrowIndex = indexOfTopLevelArrow(type);
   if (arrowIndex === -1) return undefined;
@@ -95,17 +87,13 @@ function parseFunctionType(type: string): ParsedFunctionType | undefined {
   return { params, returnType };
 }
 
-/** True when a function-type param segment (e.g. `b?: number`) is marked optional with `?`. */
+/** True for an optional param segment like `b?: number`. */
 function isOptionalParam(param: string): boolean {
   const name = param.split(PARAM_NAME_SPLIT_REGEX, 1)[0] ?? "";
   return name.trimEnd().endsWith("?");
 }
 
-/**
- * Classifies a change between two parsed function-type signatures: a
- * changed return type or a removed/reordered param is breaking; trailing
- * optional params gained at the end are additive.
- */
+/** A changed return type or removed/reordered param is breaking; new trailing optional params are additive. */
 function classifyFunctionTypeChange(oldFn: ParsedFunctionType, newFn: ParsedFunctionType): SemverBump {
   if (oldFn.returnType !== newFn.returnType) return "major";
   if (newFn.params.length < oldFn.params.length) return "major";
@@ -139,15 +127,27 @@ function classifyTypeChange(oldType: string | undefined, newType: string | undef
   const gainedMembers = [...newMembers].some((member) => !oldMembers.has(member));
   const lostMembers = [...oldMembers].some((member) => !newMembers.has(member));
 
-  if (!gainedMembers && !lostMembers) return "none"; // same members, reordered
-  if (gainedMembers && !lostMembers) return "minor";
-  if (lostMembers && !gainedMembers) return "major";
-  return "major"; // both gained and lost members
+  if (!lostMembers) return gainedMembers ? "minor" : "none";
+  return "major";
 }
 
 /** True when `bind:<name>` works: declared with runes `$bindable()` or legacy `@bindable writable`. */
 function isWritableBinding(prop: Prop): boolean {
   return prop.bindable === true || prop.binding === "writable";
+}
+
+/** Items only in `newItems`, keys only in `oldItems`, and pairs present in both (in `oldItems` order). */
+function matchByKey<T>(oldItems: T[], newItems: T[], key: (item: T) => string) {
+  const oldByKey = new Map(oldItems.map((item) => [key(item), item]));
+  const newByKey = new Map(newItems.map((item) => [key(item), item]));
+  const added = [...newByKey].filter(([name]) => !oldByKey.has(name));
+  const removed = [...oldByKey.keys()].filter((name) => !newByKey.has(name));
+  const common: [name: string, oldItem: T, newItem: T][] = [];
+  for (const [name, oldItem] of oldByKey) {
+    const newItem = newByKey.get(name);
+    if (newItem) common.push([name, oldItem, newItem]);
+  }
+  return { added, removed, common };
 }
 
 function diffPropList(
@@ -158,102 +158,50 @@ function diffPropList(
 ): ApiChange[] {
   const label = kind === "prop" ? "prop" : "export";
   const changes: ApiChange[] = [];
-  const oldByName = new Map(oldProps.map((prop) => [prop.name, prop]));
-  const newByName = new Map(newProps.map((prop) => [prop.name, prop]));
+  const push = (name: string, bump: SemverBump, change: string) =>
+    changes.push({ component, kind, name, bump, message: `${label} "${name}" ${change}` });
+  const { added, removed, common } = matchByKey(oldProps, newProps, (prop) => prop.name);
 
-  for (const [name, prop] of newByName) {
-    if (oldByName.has(name)) continue;
-    changes.push({
-      component,
-      kind,
-      name,
-      bump: prop.isRequired ? "major" : "minor",
-      message: `${label} "${name}" added${prop.isRequired ? " (required)" : ""}`,
-    });
+  for (const [name, prop] of added) {
+    push(name, prop.isRequired ? "major" : "minor", `added${prop.isRequired ? " (required)" : ""}`);
   }
 
-  for (const [name] of oldByName) {
-    if (newByName.has(name)) continue;
-    changes.push({ component, kind, name, bump: "major", message: `${label} "${name}" removed` });
-  }
+  for (const name of removed) push(name, "major", "removed");
 
-  for (const [name, oldProp] of oldByName) {
-    const newProp = newByName.get(name);
-    if (!newProp) continue;
-
+  for (const [name, oldProp, newProp] of common) {
     if (oldProp.isRequired !== newProp.isRequired) {
-      changes.push({
-        component,
-        kind,
-        name,
-        bump: newProp.isRequired ? "major" : "minor",
-        message: `${label} "${name}" became ${newProp.isRequired ? "required" : "optional"}`,
-      });
+      push(name, newProp.isRequired ? "major" : "minor", `became ${newProp.isRequired ? "required" : "optional"}`);
     }
 
     const typeBump = classifyTypeChange(oldProp.type, newProp.type);
     if (typeBump !== "none") {
-      changes.push({
-        component,
-        kind,
-        name,
-        bump: typeBump,
-        message: `${label} "${name}" type changed from \`${oldProp.type ?? "unknown"}\` to \`${newProp.type ?? "unknown"}\``,
-      });
+      push(name, typeBump, `type changed from \`${oldProp.type ?? "unknown"}\` to \`${newProp.type ?? "unknown"}\``);
     }
 
-    const oldWritable = isWritableBinding(oldProp);
     const newWritable = isWritableBinding(newProp);
-    if (oldWritable !== newWritable) {
-      changes.push({
-        component,
-        kind,
+    if (isWritableBinding(oldProp) !== newWritable) {
+      push(
         name,
-        bump: newWritable ? "minor" : "major",
-        message: `${label} "${name}" ${newWritable ? "gained a writable binding" : "lost its writable binding"}`,
-      });
+        newWritable ? "minor" : "major",
+        newWritable ? "gained a writable binding" : "lost its writable binding",
+      );
     }
 
     if (oldProp.value !== newProp.value && typeBump === "none") {
-      changes.push({
-        component,
-        kind,
-        name,
-        bump: "patch",
-        message: `${label} "${name}" default changed from \`${oldProp.value ?? "none"}\` to \`${newProp.value ?? "none"}\``,
-      });
+      push(name, "patch", `default changed from \`${oldProp.value ?? "none"}\` to \`${newProp.value ?? "none"}\``);
     }
 
-    const oldDeprecated = oldProp.deprecated !== undefined;
     const newDeprecated = newProp.deprecated !== undefined;
-    if (oldDeprecated !== newDeprecated) {
-      changes.push({
-        component,
-        kind,
-        name,
-        bump: newDeprecated ? "minor" : "patch",
-        message: `${label} "${name}" ${newDeprecated ? "marked as deprecated" : "no longer deprecated"}`,
-      });
+    if ((oldProp.deprecated !== undefined) !== newDeprecated) {
+      push(name, newDeprecated ? "minor" : "patch", newDeprecated ? "marked as deprecated" : "no longer deprecated");
     }
 
     if (oldProp.constant !== newProp.constant) {
-      changes.push({
-        component,
-        kind,
-        name,
-        bump: "minor",
-        message: `${label} "${name}" ${newProp.constant ? "became constant" : "became mutable"}`,
-      });
+      push(name, "minor", newProp.constant ? "became constant" : "became mutable");
     }
 
     if (oldProp.reactive !== newProp.reactive) {
-      changes.push({
-        component,
-        kind,
-        name,
-        bump: "minor",
-        message: `${label} "${name}" ${newProp.reactive ? "became reactive" : "stopped being reactive"}`,
-      });
+      push(name, "minor", newProp.reactive ? "became reactive" : "stopped being reactive");
     }
   }
 
@@ -262,23 +210,17 @@ function diffPropList(
 
 function diffEvents(component: string, oldEvents: Event[], newEvents: Event[]): ApiChange[] {
   const changes: ApiChange[] = [];
-  const oldByName = new Map(oldEvents.map((event) => [event.name, event]));
-  const newByName = new Map(newEvents.map((event) => [event.name, event]));
+  const { added, removed, common } = matchByKey(oldEvents, newEvents, (event) => event.name);
 
-  for (const [name] of newByName) {
-    if (oldByName.has(name)) continue;
+  for (const [name] of added) {
     changes.push({ component, kind: "event", name, bump: "minor", message: `event "${name}" added` });
   }
 
-  for (const [name] of oldByName) {
-    if (newByName.has(name)) continue;
+  for (const name of removed) {
     changes.push({ component, kind: "event", name, bump: "major", message: `event "${name}" removed` });
   }
 
-  for (const [name, oldEvent] of oldByName) {
-    const newEvent = newByName.get(name);
-    if (!newEvent) continue;
-
+  for (const [name, oldEvent, newEvent] of common) {
     if (oldEvent.type !== newEvent.type) {
       changes.push({
         component,
@@ -307,29 +249,19 @@ function diffEvents(component: string, oldEvents: Event[], newEvents: Event[]): 
   return changes;
 }
 
-function slotKey(slot: Slot): string {
-  return slot.name ?? "default";
-}
-
 function diffSlots(component: string, oldSlots: Slot[], newSlots: Slot[]): ApiChange[] {
   const changes: ApiChange[] = [];
-  const oldByName = new Map(oldSlots.map((slot) => [slotKey(slot), slot]));
-  const newByName = new Map(newSlots.map((slot) => [slotKey(slot), slot]));
+  const { added, removed, common } = matchByKey(oldSlots, newSlots, (slot) => slot.name ?? "default");
 
-  for (const [name] of newByName) {
-    if (oldByName.has(name)) continue;
+  for (const [name] of added) {
     changes.push({ component, kind: "slot", name, bump: "minor", message: `slot "${name}" added` });
   }
 
-  for (const [name] of oldByName) {
-    if (newByName.has(name)) continue;
+  for (const name of removed) {
     changes.push({ component, kind: "slot", name, bump: "major", message: `slot "${name}" removed` });
   }
 
-  for (const [name, oldSlot] of oldByName) {
-    const newSlot = newByName.get(name);
-    if (!newSlot) continue;
-
+  for (const [name, oldSlot, newSlot] of common) {
     const bump = classifyTypeChange(oldSlot.slot_props, newSlot.slot_props);
     if (bump !== "none") {
       changes.push({
@@ -349,9 +281,7 @@ function diffSlots(component: string, oldSlots: Slot[], newSlots: Slot[]): ApiCh
 const NON_SEMANTIC_KEYS = new Set(["description", "source", "componentCommentSource", "tags"]);
 
 function stripNonSemanticFields(value: unknown): unknown {
-  if (Array.isArray(value)) {
-    return value.map(stripNonSemanticFields);
-  }
+  if (Array.isArray(value)) return value.map(stripNonSemanticFields);
   if (value !== null && typeof value === "object") {
     const result: Record<string, unknown> = {};
     for (const [key, val] of Object.entries(value)) {
@@ -373,13 +303,7 @@ function diffShape(component: string, oldComponent: ComponentDocApi, newComponen
     const oldJson = JSON.stringify(stripNonSemanticFields(oldComponent[field]));
     const newJson = JSON.stringify(stripNonSemanticFields(newComponent[field]));
     if (oldJson !== newJson) {
-      changes.push({
-        component,
-        kind: "shape",
-        name: field,
-        bump: "major",
-        message: `"${field}" changed (breaking)`,
-      });
+      changes.push({ component, kind: "shape", name: field, bump: "major", message: `"${field}" changed (breaking)` });
     }
   }
 
@@ -400,22 +324,21 @@ function diffComponent(oldComponent: ComponentDocApi, newComponent: ComponentDoc
 /** Diffs two `COMPONENT_API.json` documents and assigns a semver bump to each change. */
 export function diffApiDocuments(previous: ComponentApiDocument, next: ComponentApiDocument): ApiChange[] {
   const changes: ApiChange[] = [];
-  const oldByName = new Map(previous.components.map((component) => [component.moduleName, component]));
-  const newByName = new Map(next.components.map((component) => [component.moduleName, component]));
+  const { added, removed, common } = matchByKey(
+    previous.components,
+    next.components,
+    (component) => component.moduleName,
+  );
 
-  for (const [name] of newByName) {
-    if (oldByName.has(name)) continue;
+  for (const [name] of added) {
     changes.push({ component: name, kind: "component", bump: "minor", message: `component "${name}" added` });
   }
 
-  for (const [name] of oldByName) {
-    if (newByName.has(name)) continue;
+  for (const name of removed) {
     changes.push({ component: name, kind: "component", bump: "major", message: `component "${name}" removed` });
   }
 
-  for (const [name, oldComponent] of oldByName) {
-    const newComponent = newByName.get(name);
-    if (!newComponent) continue;
+  for (const [, oldComponent, newComponent] of common) {
     changes.push(...diffComponent(oldComponent, newComponent));
   }
 
@@ -449,7 +372,7 @@ export interface RunCheckOptions {
  */
 export function resolveCheckSnapshotFile(options: Pick<SveldRuntimeOptions, "check" | "jsonOptions">): string {
   if (typeof options.check === "string") return options.check;
-  return options.jsonOptions?.outFile ?? "COMPONENT_API.json";
+  return options.jsonOptions?.outFile ?? DEFAULT_SNAPSHOT_FILE;
 }
 
 /**
@@ -462,7 +385,7 @@ export function writesCheckSnapshot(
   snapshotFile: string,
 ): boolean {
   if (!options.json || options.stdout || options.jsonOptions?.outDir) return false;
-  return path.resolve(options.jsonOptions?.outFile ?? "COMPONENT_API.json") === path.resolve(snapshotFile);
+  return path.resolve(options.jsonOptions?.outFile ?? DEFAULT_SNAPSHOT_FILE) === path.resolve(snapshotFile);
 }
 
 /**
@@ -513,7 +436,7 @@ const BUMP_LABELS: Record<SemverBump, string> = {
 export function formatCheckReport(result: CheckResult): string {
   if (!result.snapshotExists) {
     const generate =
-      result.snapshotFile === "COMPONENT_API.json"
+      result.snapshotFile === DEFAULT_SNAPSHOT_FILE
         ? "`sveld --json`"
         : `\`sveld --json\` with \`jsonOptions.outFile: "${result.snapshotFile}"\``;
     return `sveld --check: no snapshot found at "${result.snapshotFile}". Generate it with ${generate} and commit it.`;
@@ -523,10 +446,11 @@ export function formatCheckReport(result: CheckResult): string {
     return `sveld --check: no API changes detected against "${result.snapshotFile}".`;
   }
 
-  const lines: string[] = [];
   const total = result.changes.length;
-  lines.push(`sveld --check: ${total} API change${total === 1 ? "" : "s"} detected against "${result.snapshotFile}".`);
-  lines.push(`Suggested semver bump: ${result.bump}.`);
+  const lines = [
+    `sveld --check: ${total} API change${total === 1 ? "" : "s"} detected against "${result.snapshotFile}".`,
+    `Suggested semver bump: ${result.bump}.`,
+  ];
 
   const byComponent = new Map<string, ApiChange[]>();
   for (const change of result.changes) {
@@ -536,8 +460,7 @@ export function formatCheckReport(result: CheckResult): string {
   }
 
   for (const [component, changes] of byComponent) {
-    lines.push("");
-    lines.push(`  ${component}`);
+    lines.push("", `  ${component}`);
     for (const change of changes) {
       const label = change.kind === "schema" ? "schema" : BUMP_LABELS[change.bump];
       lines.push(`    [${label}] ${change.message}`);

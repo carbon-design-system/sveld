@@ -20,25 +20,15 @@ import {
 } from "./exports";
 import { processNodeJSDoc } from "./jsdoc";
 import { sourceRangeFromNode } from "./source-position";
-import { assignValueOrUndefined } from "./utils";
 import { collectReExportableImports, collectValueImportBindings } from "./value-imports";
 
 /** The bare base-class name in an `extends` clause: `Base` in `Base<T>`; none for `mixin(Base)` or `ns.Base`. */
 const CLASS_BASE_NAME_REGEX = /^[A-Za-z_$][\w$]*(?=\s*(?:<|$))/;
 
 function addModuleExport(ctx: ParserContext, prop_name: string, data: ComponentProp) {
-  if (assignValueOrUndefined(prop_name) === undefined) return;
-
-  if (ctx.moduleExports.has(prop_name)) {
-    const existing_slot = ctx.moduleExports.get(prop_name);
-
-    ctx.moduleExports.set(prop_name, {
-      ...existing_slot,
-      ...data,
-    });
-  } else {
-    ctx.moduleExports.set(prop_name, data);
-  }
+  if (!prop_name) return;
+  const existing = ctx.moduleExports.get(prop_name);
+  ctx.moduleExports.set(prop_name, existing ? { ...existing, ...data } : data);
 }
 
 /** Records an `export ... from` (or `export { imported }`) as-is; the `.d.ts` writer emits it verbatim. */
@@ -62,7 +52,7 @@ function addModuleReExport(ctx: ParserContext, node: Node, name: string, reExpor
   });
 }
 
-/** `export { x as default }` or `export * as default from "..."`: the component is the default export. */
+/** `export { x as default }` / `export * as default from "..."` collide with the component itself. */
 function recordDefaultExportConflict(ctx: ParserContext, node: Node) {
   recordDiagnostic(
     ctx,
@@ -73,7 +63,6 @@ function recordDefaultExportConflict(ctx: ParserContext, node: Node) {
   );
 }
 
-/** A module-script `export class Foo {}` or `export { Foo }` of a class, with its public members. */
 function addModuleClassExport(
   ctx: ParserContext,
   node: ExportNamedDeclaration,
@@ -103,7 +92,7 @@ function addModuleClassExport(
     type: `typeof ${localName}`,
     ...(classTypeParameters ? { typeParameters: classTypeParameters } : {}),
     members,
-    ...((declaration as { abstract?: boolean }).abstract ? { abstract: true as const } : {}),
+    ...(declaration.abstract ? { abstract: true as const } : {}),
     ...(baseClass ? { extends: baseClass } : {}),
     ...(implemented ? { implements: implemented } : {}),
     isFunction: false,
@@ -115,7 +104,7 @@ function addModuleClassExport(
   });
 }
 
-/** Adds the module exports a module-script `export` declaration (or one specifier of an `export { ... }`) declares. */
+/** The exports a module-script `export` declaration (or one specifier of an `export { ... }`) declares. */
 function addModuleDeclarationExports(
   ctx: ParserContext,
   node: ExportNamedDeclaration,
@@ -193,14 +182,9 @@ function dropUndeclaredClassBases(ctx: ParserContext) {
 }
 
 /**
- * Walks `<script context="module">`, when there is one.
- *
- * Not fused with the component walk: `module` is a disjoint AST rooted separately from
- * `instance`/`fragment`, not a subtree reachable from either, so there is no shared root to
- * traverse once. Wrapping both in one synthetic root would require branch-tracking to keep
- * module-export handling (`addModuleExport`) from firing on instance-level exports
- * (`addProp`) and vice versa, for a pass that most components skip entirely (module scripts
- * are rare) - not worth the added complexity here.
+ * Not fused with the component walk: `module` is a separate root, and one
+ * synthetic root would need branch-tracking to keep module and instance
+ * export handling apart, for a pass most components skip.
  */
 export function walkModuleScript(ctx: ParserContext): void {
   const module = ctx.parsed?.module;
@@ -210,19 +194,10 @@ export function walkModuleScript(ctx: ParserContext): void {
 
   walk(module, {
     enter(node, parent) {
-      // Module script is in scope for instance. Record imports/funcs/vars
-      // the same way so instance CallExpression defaults can see them.
-      if (node.type === "ImportDeclaration") {
-        collectValueImportBindings(ctx, node);
-      }
-
-      if (node.type === "FunctionDeclaration" && node.id?.name) {
-        ctx.funcDecls.set(node.id.name, node);
-      }
-
-      if (node.type === "VariableDeclaration") {
-        ctx.vars.add(node);
-      }
+      // The module script is in scope for the instance script's prop defaults.
+      if (node.type === "ImportDeclaration") collectValueImportBindings(ctx, node);
+      if (node.type === "FunctionDeclaration" && node.id?.name) ctx.funcDecls.set(node.id.name, node);
+      if (node.type === "VariableDeclaration") ctx.vars.add(node);
 
       if (node.type === "ExportNamedDeclaration") {
         if (node.declaration != null) {

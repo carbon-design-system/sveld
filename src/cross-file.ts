@@ -27,14 +27,10 @@ function bind<Candidate, Resolution>(
 const PASSES = [bind(callDefaultsPass), bind(constDefaultsPass), bind(contextKeysPass), bind(dispatchEscapesPass)];
 
 /**
- * Resolves each component's cross-file candidates in place: prop defaults
- * that call or name an import, `setContext` keys bound to an import, and
- * events dispatched by an imported helper. AST/JSDoc only (no tsc).
- *
- * Each component gets its own resolve context, so its result doesn't depend
- * on which components ran first, and the files that context read are the
- * component's cross-file dependencies. Returns them keyed by `filePath`,
- * for every component that had something to resolve.
+ * Resolves each component's cross-file candidates in place. AST/JSDoc only
+ * (no tsc). Each component gets its own resolve context, so its result
+ * doesn't depend on run order, and the files that context read are its
+ * cross-file dependencies: returned keyed by `filePath`.
  */
 export async function resolveCrossFileCandidates(
   scope: Iterable<ComponentDocApi>,
@@ -56,8 +52,6 @@ export async function resolveCrossFileCandidates(
   // Warm-cache runs skip the parser stack, but sibling modules still need it.
   await loadParserStack();
 
-  // Per-component contexts keep each result independent of order; the
-  // graph's parses are shared.
   for (const { component, passes } of work) {
     const ctx = createResolveContext(graph);
     const filePath = resolveComponentFilePath(component.filePath);

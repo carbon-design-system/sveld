@@ -2,13 +2,9 @@ import { BACKTICK_REGEX } from "./markdown-format-utils";
 
 const NON_SLUG_CHAR_REGEX = /[^\w\- ]+/g;
 const SLUG_SPACE_REGEX = /\s+/g;
+const TOC_PLACEHOLDER = "<!-- __TOC__ -->";
 
-/**
- * Mirrors GitHub's heading slugger: lowercase, strip backticks, drop any
- * character that isn't a letter/number/space/hyphen/underscore, then turn
- * spaces into hyphens. Duplicate anchors get `-1`, `-2`, ... suffixes,
- * tracked via `seen`.
- */
+/** Mirrors GitHub's heading slugger, including `-1`, `-2`, ... suffixes for duplicates. */
 function slugifyHeading(raw: string, seen: Map<string, number>): string {
   const slug = raw
     .toLowerCase()
@@ -82,10 +78,7 @@ export class MarkdownDocument {
       case "h4":
       case "h5":
       case "h6": {
-        const length = Number(type.slice(-1));
-
-        this.sourceParts.push(`${"#".repeat(length)} ${raw}`);
-
+        this.sourceParts.push(`${"#".repeat(Number(type.slice(-1)))} ${raw}`);
         if (this.hasToC && type === "h2") {
           this.toc.push({ indent: 0, raw: raw ?? "" });
         }
@@ -111,7 +104,7 @@ export class MarkdownDocument {
   }
 
   public tableOfContents(): this {
-    this.sourceParts.push("<!-- __TOC__ -->");
+    this.sourceParts.push(TOC_PLACEHOLDER);
     this.hasToC = true;
     this.appendLineBreaks();
     return this;
@@ -119,21 +112,17 @@ export class MarkdownDocument {
 
   public end(): string {
     const source = this.sourceParts.join("");
-    // The placeholder only exists after `tableOfContents()`; skip the
-    // full-text search otherwise.
     if (!this.hasToC) return source;
 
-    const placeholder = "<!-- __TOC__ -->";
-    const at = source.indexOf(placeholder);
+    const at = source.indexOf(TOC_PLACEHOLDER);
     if (at === -1) return source;
 
     const seenAnchors = new Map<string, number>();
     const toc = this.toc
       .map(({ indent, raw }) => `${" ".repeat(indent)}- [${raw}](#${slugifyHeading(raw, seenAnchors)})`)
       .join("\n");
-    // Spliced by index rather than `String#replace`, so a heading containing
-    // `$&`-style replacement patterns is inserted verbatim.
-    return source.slice(0, at) + toc + source.slice(at + placeholder.length);
+    // Not `String#replace`: a heading containing `$&` must be inserted verbatim.
+    return source.slice(0, at) + toc + source.slice(at + TOC_PLACEHOLDER.length);
   }
 }
 
